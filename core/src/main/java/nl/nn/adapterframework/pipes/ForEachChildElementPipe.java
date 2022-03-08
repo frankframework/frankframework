@@ -35,6 +35,7 @@ import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
@@ -72,13 +73,13 @@ import nl.nn.adapterframework.xml.XmlWriter;
  */
 public class ForEachChildElementPipe extends StringIteratorPipe implements IThreadCreator {
 
-	public final int DEFAULT_XSLT_VERSION=1; // currently only Xalan supports XSLT Streaming
-	
+	public final int DEFAULT_XSLT_VERSION = 1; // currently only Xalan supports XSLT Streaming
+
 	private @Getter boolean processFile=false;
 	private @Getter String containerElement;
 	private @Getter String targetElement;
 	private @Getter String elementXPathExpression=null;
-	private @Getter int xsltVersion=DEFAULT_XSLT_VERSION; 
+	private @Getter int xsltVersion=DEFAULT_XSLT_VERSION;
 	private @Getter boolean removeNamespaces=true;
 	private boolean streamingXslt;
 
@@ -100,8 +101,8 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 				if (getXsltVersion()==0) {
 					setXsltVersion(DEFAULT_XSLT_VERSION);
 				}
-				if (getXsltVersion()!=DEFAULT_XSLT_VERSION) {
-					ConfigurationWarnings.add(this, log, "XsltProcessor xsltVersion ["+getXsltVersion()+"] currently does not support streaming XSLT, might lead to memory problems for large messages");
+				if (streamingXslt && getXsltVersion() != DEFAULT_XSLT_VERSION) {
+					ConfigurationWarnings.add(this, log, "XsltProcessor xsltVersion ["+getXsltVersion()+"] currently does not support streaming XSLT, might lead to memory problems for large messages", SuppressKeys.XSLT_STREAMING_SUPRESS_KEY);
 				}
 				extractElementsTp=TransformerPool.getInstance(makeEncapsulatingXslt("root",getElementXPathExpression(), getXsltVersion(), getNamespaceDefs()));
 			}
@@ -150,14 +151,12 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		"</xsl:stylesheet>";
 	}
 
-	
 	private class ItemCallbackCallingHandler extends NodeSetFilter {
 		private ItemCallback callback;
-		
+
 		private XmlWriter xmlWriter;
 		private Exception rootException=null;
 		private StopReason stopReason=null;
-
 
 		public ItemCallbackCallingHandler(ItemCallback callback) {
 			super(null, null, false, false, null);
@@ -173,9 +172,8 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 				throw new SaxException(e);
 			}
 			super.startDocument();
-			
-		}
 
+		}
 
 		@Override
 		public void endDocument() throws SAXException {
@@ -211,7 +209,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			}
 			checkInterrupt();
 		}
-		
+
 		private void checkInterrupt() throws SAXException {
 			if (Thread.currentThread().isInterrupted()) {
 				rootException = new InterruptedException("Thread has been interrupted");
@@ -219,8 +217,6 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 				throw new SAXException("Thread has been interrupted");
 			}
 		}
-		
-
 
 		@Override
 		public void startElement(String uri, String localName, String qName, Attributes attributes)	throws SAXException {
@@ -266,7 +262,6 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 //			System.out.println("endEntity ["+arg0+"]");
 		}
 
-		
 		public boolean isStopRequested() {
 			return stopReason != null;
 		}
@@ -274,9 +269,9 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 	}
 
 	private class StopSensor extends FullXmlFilter {
-		
+
 		private ItemCallbackCallingHandler itemHandler;
-		
+
 		public StopSensor(ItemCallbackCallingHandler itemHandler, ContentHandler handler) {
 			super(handler);
 			this.itemHandler=itemHandler;
@@ -289,18 +284,18 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			}
 		}
 	}
-	
+
 	private class HandlerRecord {
 		private ItemCallbackCallingHandler itemHandler;
 		private ContentHandler inputHandler;
 		private String errorMessage="Could not parse input";
 		private TransformerErrorListener transformerErrorListener=null;
 	}
-	
+
 	protected void createHandler(HandlerRecord result, ThreadConnector threadConnector, PipeLineSession session, ItemCallback callback) throws TransformerConfigurationException {
 		result.itemHandler = new ItemCallbackCallingHandler(callback);
 		result.inputHandler=result.itemHandler;
-		
+
 		if (getXmlDebugger()!=null && (StringUtils.isNotEmpty(getContainerElement()) || StringUtils.isNotEmpty(getTargetElement()) || getExtractElementsTp()!=null)) {
 			String containerElementString = StringUtils.isNotEmpty(getContainerElement()) ? "filter to containerElement '"+getContainerElement()+"'" : null;
 			String targetElementString = StringUtils.isNotEmpty(getTargetElement()) ? "filter to targetElement '"+getTargetElement()+"'" :null;
@@ -308,11 +303,11 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			String label = "XML after preprocessing: " + Misc.concat(", ",containerElementString, targetElementString, xpathString);
 			result.inputHandler=getXmlDebugger().inspectXml(session, label, result.inputHandler);
 		}
-		
+
 		if (isRemoveNamespaces()) {
 			result.inputHandler = new NamespaceRemovingFilter(result.inputHandler);
 		}
-		
+
 		if (getExtractElementsTp()!=null) {
 			if (log.isDebugEnabled()) log.debug("transforming input to obtain list of elements using xpath ["+getElementXPathExpression()+"]");
 			TransformerFilter transformerFilter = getExtractElementsTp().getTransformerFilter(threadConnector, result.inputHandler);
@@ -326,9 +321,9 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		if (StringUtils.isNotEmpty(getContainerElement())) {
 			result.inputHandler = new NodeSetFilter(XmlUtils.getNamespaceMap(getNamespaceDefs()), getContainerElement(), false, true, result.inputHandler);
 		}
-		
+
 		result.inputHandler = new StopSensor(result.itemHandler, result.inputHandler);
-		
+
 		result.inputHandler = new ExceptionCatchingFilter(result.inputHandler) {
 			@Override
 			protected void handleException(Exception e) throws SAXException {
@@ -377,8 +372,6 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			throw new StreamingException(handlerRecord.errorMessage, e);
 		}
 	}
-
-
 
 	@Override
 	protected StopReason iterateOverInput(Message input, PipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeoutException {
@@ -440,8 +433,6 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		//rethrowTransformerException(handlerRecord.transformerErrorListener, handlerRecord.errorMessage);
 	}
 
-	
-	
 	private void rethrowTransformerException(TransformerErrorListener transformerErrorListener, String errorMessage) throws SenderException {
 		if (transformerErrorListener!=null) {
 			TransformerException tex = transformerErrorListener.getFatalTransformerException();
@@ -454,8 +445,6 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			}
 		}
 	}
-
-	
 
 	protected TransformerPool getExtractElementsTp() {
 		return extractElementsTp;
@@ -502,7 +491,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 	public void setXslt2(boolean b) {
 		xsltVersion=b?2:1;
 	}
-	
+
 	@IbisDoc({"8", "When set <code>true</code> namespaces (and prefixes) in the input message are removed before transformation", "true"})
 	public void setRemoveNamespaces(boolean b) {
 		removeNamespaces = b;
