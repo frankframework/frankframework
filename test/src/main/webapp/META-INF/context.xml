@@ -101,17 +101,63 @@
  -->
  	<!-- pinGlobalTxToPhysicalConnection does not work the same for mariadb as it does for mysql, therefor still locking problems under XA for mariadb -->
 	
+<Resource name="jdbc/pgxads"
+auth="Container"
+type="org.postgresql.xa.PGXADataSource"
+factory="org.postgresql.xa.PGXADataSourceFactory"
+serverName="host.docker.internal"
+databaseName="testiaf"
+user="${testiaf_user/username:-testiaf_user}"
+username="${testiaf_user/username:-testiaf_user}"
+password="${testiaf_user/password:-testiaf_user00}"
+url="jdbc:postgresql://host.docker.internal:5432/testiaf"
+/>
 
-	<Resource 
+<Resource name="jdbc/ibis4test-postgres-xa"
+auth="Container"
+type="javax.sql.XADataSource"
+url="jdbc:postgresql://host.docker.internal:5432/testiaf"
+factory="org.apache.tomcat.jdbc.pool.DataSourceFactory"
+
+		driverClassName="org.postgresql.Driver"
+
+timeBetweenEvictionRunsMillis="34000"
+minEvictableIdleTimeMillis="55000"
+testOnBorrow="true"
+testOnCreate="true"
+validationInterval="34000"
+validationQuery="select 1"
+user="${testiaf_user/username:-testiaf_user}"
+username="${testiaf_user/username:-testiaf_user}"
+password="${testiaf_user/password:-testiaf_user00}"
+/>
+
+<!-- 	<Resource 
 		name="jdbc/ibis4test-postgres-xa" 
-		factory="org.apache.naming.factory.BeanFactory"
+		auth="Container"
+		factory="org.postgresql.xa.PGXADataSourceFactory"
 		type="org.postgresql.xa.PGXADataSource" 
+		driverClassName="org.postgresql.Driver"
 		URL="jdbc:postgresql://host.docker.internal:5432/testiaf"
+		username="${testiaf_user/username:-testiaf_user}"
+		password="${testiaf_user/password:-testiaf_user00}"
+		serverName="host.docker.internal"
+		portNumber="5432"
+		databaseName="testiaf"
+	/> -->
+	
+<!-- 	<Resource name="jdbc/ibis4test-postgres-xa"
+		auth="Container"
+		type="org.postgresql.xa.PGXADataSource"
+		factory="org.postgresql.xa.PGXADataSourceFactory"
+		serverName="host.docker.internal"
+		databaseName="testiaf"
+		portNumber="5432"
 		user="${testiaf_user/username:-testiaf_user}"
 		password="${testiaf_user/password:-testiaf_user00}"
-	/>
-
-	<Resource name="jdbc/ibis4test-postgres" auth="Container"
+	/> -->
+<!-- 
+	<Resource name="jdbc/ibis4test-postgres" auth="Container"`
 		type="javax.sql.DataSource" 
 		driverClassName="org.postgresql.Driver"
 		url="jdbc:postgresql://host.docker.internal:5432/testiaf"
@@ -119,7 +165,7 @@
 		password="${testiaf_user/password:-testiaf_user00}"
 		maxTotal="10"
 		maxWaitMillis="5000"
-	/>
+	/> -->
 
 	<Resource 
 		name="mongodb/ibis4test"
