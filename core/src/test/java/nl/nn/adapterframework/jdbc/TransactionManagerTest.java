@@ -4,22 +4,15 @@ import static org.junit.Assert.assertEquals;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Map;
-import java.util.WeakHashMap;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.junit.Test;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 
 import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
-import nl.nn.adapterframework.testutil.TestConfiguration;
-import nl.nn.adapterframework.testutil.TransactionManagerType;
 import nl.nn.adapterframework.util.JdbcUtil;
-import nl.nn.adapterframework.util.SpringUtils;
 
 public class TransactionManagerTest extends TransactionManagerTestBase {
-	private static Map<TransactionManagerType, TestConfiguration> configurations = new WeakHashMap<>();
 
 	protected void checkNumberOfLines(int expected) throws JdbcException, SQLException {
 		checkNumberOfLines(expected, "select count(*) from TEMP where TKEY = 1");
@@ -32,15 +25,6 @@ public class TransactionManagerTest extends TransactionManagerTestBase {
 		}
 	}
 
-	@Override
-	public void setup() throws Exception {
-//		TestConfiguration config = configurations.computeIfAbsent(getTransactionManagerType(), txType -> new TestConfiguration(getTransactionManagerType().getSpringConfiguration()));
-//		SpringUtils.autowireByName(config, txManager);
-//		config.getAutowireCapableBeanFactory().initializeBean(txManager, "txManager");
-//		System.err.println("toito: " + getTransactionManagerType() + " + " +config.getName());
-		super.setup();
-	}
-
 	@Test
 	public void testCommit() throws Exception {
 		JdbcUtil.executeStatement(connection, "DELETE FROM TEMP where TKEY=1");
@@ -50,9 +34,7 @@ public class TransactionManagerTest extends TransactionManagerTestBase {
 		try (Connection txManagedConnection = getConnection()) {
 			checkNumberOfLines(0);
 			JdbcUtil.executeStatement(txManagedConnection, "INSERT INTO TEMP (tkey) VALUES (1)");
-//			checkNumberOfLines(0);			
 		}
-//		checkNumberOfLines(0);
 
 		txManager.commit(txStatus);
 

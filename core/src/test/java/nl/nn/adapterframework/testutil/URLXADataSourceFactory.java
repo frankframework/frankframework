@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.testutil;
 
+import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
@@ -15,6 +16,11 @@ public abstract class URLXADataSourceFactory extends URLDataSourceFactory {
 		if (StringUtils.isNotEmpty(userId)) BeanUtils.setProperty(xaDataSource, "user", userId);
 		if (StringUtils.isNotEmpty(password)) BeanUtils.setProperty(xaDataSource, "password", password);
 		return augmentXADataSource(xaDataSource, product);
+	}
+
+	@Override
+	protected DataSource augmentDatasource(CommonDataSource xaDataSource, String product) {
+		return super.augmentDatasource(xaDataSource, product);
 	}
 
 	protected abstract DataSource augmentXADataSource(XADataSource xaDataSource, String product);

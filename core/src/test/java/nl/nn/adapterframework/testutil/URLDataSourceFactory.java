@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Properties;
 
 import javax.naming.NamingException;
+import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 
 import org.springframework.jdbc.datasource.DelegatingDataSource;
@@ -20,7 +21,7 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 	public static final String PRODUCT_KEY = "product";
 	public static final String TEST_PEEK_KEY = "testPeek";
 	private static final int DB_LOGIN_TIMEOUT = 1;
-	private static List<String> skippedDatasources = new ArrayList<>();
+	private static List<String> availableDatasources = null;
 
 	private static final Object[][] TEST_DATASOURCES = {
 			// ProductName, Url, user, password, testPeekDoesntFindRecordsAlreadyLocked
@@ -34,29 +35,31 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 		};
 
 	public URLDataSourceFactory() {
-		DriverManager.setLoginTimeout(DB_LOGIN_TIMEOUT);
+		if(availableDatasources == null) {
+			availableDatasources = new ArrayList<>();
+			DriverManager.setLoginTimeout(DB_LOGIN_TIMEOUT);
 
-		for (Object[] datasource: TEST_DATASOURCES) {
-			String product = (String)datasource[0];
-			if(skippedDatasources.contains(product)) continue;
+			for (Object[] datasource: TEST_DATASOURCES) {
+				String product = (String)datasource[0];
+				String url = (String)datasource[1];
+				String userId = (String)datasource[2];
+				String password = (String)datasource[3];
+				boolean testPeek = (boolean)datasource[4];
+				String xaImplClassName = (String)datasource[5];
 
-			String url = (String)datasource[1];
-			String userId = (String)datasource[2];
-			String password = (String)datasource[3];
-			boolean testPeek = (boolean)datasource[4];
-			String xaImplClassName = (String)datasource[5];
-
-			try { //Attempt to add the DataSource and skip it if it cannot be instantiated
-				DataSource ds = createDataSource(product, url, userId, password, testPeek, xaImplClassName);
-				// Check if we can make a connection
-				if(validateConnection(ds)) {
-					add(namedDataSource(ds, product, testPeek), product);
-				} else {
-					skippedDatasources.add(product);
+				try { //Attempt to add the DataSource and skip it if it cannot be instantiated
+					DataSource ds = createDataSource(product, url, userId, password, testPeek, xaImplClassName);
+					// Check if we can make a connection
+					if(validateConnection(ds)) {
+						availableDatasources.add(product);
+//						add(namedDataSource(ds, product, testPeek), product);
+//					} else {
+//						skippedDatasources.add(product);
+					}
+				} catch (Exception e) {
+					log.info("ignoring DataSource, cannot complete setup", e);
+					e.printStackTrace();
 				}
-			} catch (Exception e) {
-				log.info("ignoring DataSource, cannot complete setup", e);
-				e.printStackTrace();
 			}
 		}
 	}
@@ -68,6 +71,27 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 			log.warn("Cannot connect to ["+ds+"], skipping:"+e.getMessage());
 		}
 		return false;
+	}
+
+	private CommonDataSource namedDataSource(String jndiName) {
+		for (Object[] datasource: TEST_DATASOURCES) {
+			String product = (String)datasource[0];
+			if(product.equals(jndiName)) {
+				String url = (String)datasource[1];
+				String userId = (String)datasource[2];
+				String password = (String)datasource[3];
+				boolean testPeek = (boolean)datasource[4];
+				String xaImplClassName = (String)datasource[5];
+
+				try {
+					DataSource ds = createDataSource(product, url, userId, password, testPeek, xaImplClassName);
+					return namedDataSource(ds, product, testPeek);
+				} catch (Exception e) {
+					fail(e.getMessage());
+				}
+			}
+		}
+		return null;
 	}
 
 	private DataSource namedDataSource(DataSource ds, String name, boolean testPeek) {
@@ -83,25 +107,26 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 	}
 
 	protected DataSource createDataSource(String product, String url, String userId, String password, boolean testPeek, String implClassname) throws Exception {
-		DriverManagerDataSource dataSource = new DriverManagerDataSource(url, userId, password);
-		Properties properties = new Properties();
-		properties.setProperty(PRODUCT_KEY, product);
-		properties.setProperty(TEST_PEEK_KEY, ""+testPeek);
-		dataSource.setConnectionProperties(properties);
-		return dataSource;
+		return new DriverManagerDataSource(url, userId, password);
 	}
 
 	@Override
 	public DataSource get(String jndiName, Properties jndiEnvironment) throws NamingException {
-		if("jdbc/testconfiguration".equals(jndiName)) { //Spring tries to fetch the default DataSource (jdbc.datasource.default) which must be set explicitly during tests
-			return objects.get("H2");
-		}
-
-		if(!objects.containsKey(jndiName)) {
+		if(!availableDatasources.contains(jndiName)) {
 			throw new IllegalStateException("jndi ["+jndiName+"] not configured in test environment");
 		}
 
 		return super.get(jndiName, jndiEnvironment);
+	}
+
+	@Override
+	protected CommonDataSource lookup(String jndiName, Properties jndiEnvironment) throws NamingException {
+		return namedDataSource(jndiName);
+	}
+
+	@Override
+	public List<String> getDataSourceNames() {
+		return availableDatasources;
 	}
 
 	public List<DataSource> getAvailableDataSources() {

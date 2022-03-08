@@ -31,4 +31,12 @@
 	</bean>
 
 	<alias name="txManagerProxy" alias="txManager"/>
+
+	<bean
+		id="defaultDataSource"
+		factory-bean="dataSourceFactory"
+		factory-method="getDataSource"
+		>
+		<constructor-arg value="${DataSourceName}" />
+	</bean>
 </beans>

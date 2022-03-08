@@ -42,7 +42,7 @@ public abstract class TransactionManagerTestBase extends JdbcTestBase {
 			List<DataSource> datasources;
 			if (StringUtils.isNotEmpty(singleDatasource)) {
 				datasources = new ArrayList<>();
-				datasources.add(type.getDataSourceFactory().getDataSource(singleDatasource));
+				datasources.add(type.getDataSource(singleDatasource));
 			} else {
 				datasources = type.getAvailableDataSources();
 			}
@@ -59,7 +59,7 @@ public abstract class TransactionManagerTestBase extends JdbcTestBase {
 	public void setup() throws Exception {
 		super.setup();
 
-		configuration = transactionManagerType.getConfigurationContext();
+		configuration = transactionManagerType.getConfigurationContext(productKey);
 		txManager = configuration.getBean(SpringTxManagerProxy.class, "txManager");
 //		setupDataSource();
 

@@ -27,7 +27,7 @@ import bitronix.tm.resource.common.XAResourceProducer;
 import nl.nn.adapterframework.jta.StatusRecordingTransactionManager;
 
 public class BtmJtaTransactionManager extends StatusRecordingTransactionManager {
-	
+
 	private static final long serialVersionUID = 1L;
 
 	@Override
@@ -53,7 +53,7 @@ public class BtmJtaTransactionManager extends StatusRecordingTransactionManager 
 			XAResourceProducer<?,?> resourceProducer = ResourceRegistrar.get(name);
 			resourceProducer.close();
 		}
-		
+
 		int inflightCount = transactionManager.getInFlightTransactionCount();
 		return inflightCount>0;
 	}

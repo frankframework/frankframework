@@ -2,11 +2,13 @@ package nl.nn.adapterframework.testutil;
 
 import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.WeakHashMap;
 
+import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -24,8 +26,9 @@ public enum TransactionManagerType {
 	BTM(BTMXADataSourceFactory.class, "springTOMCATBTM.xml"), 
 	NARAYANA(NarayanaXADataSourceFactory.class, "springTOMCATNARAYANA.xml");
 
-	private static Map<TransactionManagerType, TestConfiguration> configurations = new WeakHashMap<>();
-	private URLDataSourceFactory dataSourceFactory;
+	private static Map<TransactionManagerType, TestConfiguration> transactionManagerConfigurations = new WeakHashMap<>();
+	private static Map<String, TestConfiguration> datasourceConfigurations = new WeakHashMap<>();
+
 	private Class<? extends URLDataSourceFactory> factory;
 	private String[] springConfigurationFiles;
 
@@ -48,11 +51,15 @@ public enum TransactionManagerType {
 //		}
 	}
 
-	public URLDataSourceFactory getDataSourceFactory() {
-		return getConfigurationContext().getBean(URLDataSourceFactory.class, "dataSourceFactory");
+	public URLDataSourceFactory getDataSourceFactory(ApplicationContext ac) {
+		return ac.getBean(URLDataSourceFactory.class, "dataSourceFactory");
 	}
 
-	private synchronized TestConfiguration create() {
+	private TestConfiguration create() {
+		return create("H2");
+	}
+
+	private synchronized TestConfiguration create(String productKey) {
 		System.out.println("================== creating ==================");
 		TestConfiguration config = new TestConfiguration(springConfigurationFiles);
 		MutablePropertySources propertySources = config.getEnvironment().getPropertySources();
@@ -60,6 +67,7 @@ public enum TransactionManagerType {
 		propertySources.remove(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME);
 		Properties properties = new Properties();
 		properties.setProperty("URLDataSourceFactory", factory.getCanonicalName());
+		properties.setProperty("DataSourceName", productKey);
 		propertySources.addFirst(new PropertiesPropertySource("testProperties", properties));
 
 		config.setName(this.name());
@@ -71,16 +79,38 @@ public enum TransactionManagerType {
 		return config;
 	}
 
-	public TestConfiguration getConfigurationContext() {
-		return configurations.computeIfAbsent(this, TransactionManagerType::create);
+//	public void updateTransactionManager() {
+//		if(this == TransactionManagerType.DATASOURCE) {
+//			getConfigurationContext();
+//		}
+//	}
+
+	public TestConfiguration getConfigurationContext(String productKey) {
+		if(this == TransactionManagerType.DATASOURCE) {
+			return datasourceConfigurations.computeIfAbsent(productKey, key -> create(key));
+		}
+		return transactionManagerConfigurations.computeIfAbsent(this, TransactionManagerType::create);
 	}
 
-	public List<DataSource> getAvailableDataSources() {
-		return getDataSourceFactory().getAvailableDataSources();
+	public List<DataSource> getAvailableDataSources() throws NamingException {
+		URLDataSourceFactory dataSourceFactory = new URLDataSourceFactory();
+		List<String> names = dataSourceFactory.getDataSourceNames();
+		List<DataSource> datasources = new ArrayList<>();
+		for (String datasourceName : names) {
+			datasources.add(getDataSource(datasourceName));
+		}
+		return datasources;
+//		try {
+//			dataSourceFactory = URLDataSourceFactory.class.newInstance();
+//		} catch (Exception e) {
+//			fail(ExceptionUtils.getStackTrace(e));
+//		}
+//		List<DataSource> datasources;
+//		return dataSourceFactory.getAvailableDataSources();
 	}
 
-	String[] getSpringConfiguration() {
-		// TODO Auto-generated method stub
-		return null;
+	public DataSource getDataSource(String productKey) throws NamingException {
+		ApplicationContext ac = getConfigurationContext(productKey);
+		return getDataSourceFactory(ac).get(productKey);
 	}
 }

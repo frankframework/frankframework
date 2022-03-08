@@ -9,10 +9,6 @@ import bitronix.tm.resource.jdbc.PoolingDataSource;
 
 public class BTMXADataSourceFactory extends URLXADataSourceFactory {
 
-	static {
-//		createBtmTransactionManager();
-	}
-
 	public static void createBtmTransactionManager() {
 		if(TransactionManagerServices.isTransactionManagerRunning()) {
 			TransactionManagerServices.getTransactionManager().shutdown();

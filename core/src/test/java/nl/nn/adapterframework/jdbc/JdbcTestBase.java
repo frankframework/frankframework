@@ -69,7 +69,7 @@ public abstract class JdbcTestBase {
 		List<DataSource> datasources;
 		if (StringUtils.isNotEmpty(singleDatasource)) {
 			datasources = new ArrayList<>();
-			datasources.add(type.getDataSourceFactory().getDataSource(singleDatasource));
+			datasources.add(type.getDataSource(singleDatasource));
 		} else {
 			datasources = type.getAvailableDataSources();
 		}
@@ -179,7 +179,7 @@ public abstract class JdbcTestBase {
 	/** Populates all database related fields that are normally wired through Spring */
 	protected void autowire(JdbcFacade jdbcFacade) {
 		jdbcFacade.setDatasourceName(getDataSourceName());
-		jdbcFacade.setDataSourceFactory(transactionManagerType.getDataSourceFactory());
+//		jdbcFacade.setDataSourceFactory(transactionManagerType.getDataSourceFactory());
 		jdbcFacade.setDbmsSupportFactory(dbmsSupportFactory);
 	}
 
