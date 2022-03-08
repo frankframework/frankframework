@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -193,6 +193,11 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 		sender.setOmitXmlDeclaration(b);
 	}
 	
+	@IbisDocRef({"5", XSLTSENDER})
+	public void setDisableOutputEscaping(boolean b) {
+		sender.setDisableOutputEscaping(b);
+	}
+
 	@IbisDocRef({"6", XSLTSENDER})
 	public void setNamespaceDefs(String namespaceDefs) {
 		sender.setNamespaceDefs(namespaceDefs);

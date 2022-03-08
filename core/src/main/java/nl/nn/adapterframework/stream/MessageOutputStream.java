@@ -218,7 +218,7 @@ public class MessageOutputStream implements AutoCloseable {
 		if (owner==null) {
 			return "";
 		}
-		return "MessageOutputStream of ("+owner.getClass().getName()+") ["+owner.getName()+"] ";
+		return "MessageOutputStream of "+ClassUtils.nameOf(owner)+" ";
 	}
 	
 	public OutputStream asStream() throws StreamingException {
@@ -423,10 +423,10 @@ public class MessageOutputStream implements AutoCloseable {
 		}
 		MessageOutputStream target = nextProvider==null ? null : nextProvider.provideOutputStream(session, null);
 		if (target!=null) {
-			log.debug("OutputStream for {} [{}] is provided by {} [{}]", ()->owner.getClass().getSimpleName(), ()->owner.getName(), ()->next.getClass().getSimpleName(), ()->next.getName());
+			log.debug("OutputStream for {} is provided by {}", ()->ClassUtils.nameOf(owner), ()->ClassUtils.nameOf(next));
 			return target;
 		}
-		log.debug("providing MessageOutputStreamCap for {} [{}]", ()->owner.getClass().getSimpleName(), ()->owner.getName());
+		log.debug("providing MessageOutputStreamCap for {}", ()->ClassUtils.nameOf(owner));
 		return new MessageOutputStreamCap(owner, next);
 	}
 }
