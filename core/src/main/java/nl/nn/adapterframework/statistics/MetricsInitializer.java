@@ -68,6 +68,15 @@ public class MetricsInitializer implements StatisticsKeeperIterationHandler<Metr
 
 	@Override
 	public void handleStatisticsKeeper(NodeConfig data, StatisticsKeeper sk) throws SenderException {
+		if (sk==null) {
+			System.out.println ("---> StatisticsKeeper is null");
+			return;
+		}
+		if (data==null) {
+			System.out.println ("---> data is null, sk="+sk.getName());
+			sk.initMetrics(registry, sk.getName(), null);
+			return;
+		}
 		sk.initMetrics(registry, data.name, data.tags);
 	}
 

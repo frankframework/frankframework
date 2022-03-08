@@ -62,6 +62,7 @@ public class CounterStatistic extends ScalarMetricBase<Counter> {
 
 	@Override
 	public long getValue() {
+		if (meter==null) return 0;
 		return (long)meter.count();
 	}
 
