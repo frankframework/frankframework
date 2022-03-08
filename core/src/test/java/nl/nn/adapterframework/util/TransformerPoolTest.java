@@ -45,7 +45,7 @@ public class TransformerPoolTest {
 		Resource resource = Resource.getResource(stylesheetURL);
 		TransformerPool transformerPool = TransformerPool.getInstance(resource);
 		String result = transformerPool.transform(xml, null);
-		result=result.replaceAll("[\n\r]", "");		
+		result=result.replaceAll("[\n\r]", "");
 		assertEquals(expectedStylesheetURL, result);
 	}
 
@@ -54,10 +54,10 @@ public class TransformerPoolTest {
 		Resource resource = Resource.getResource(stylesheetURL);
 		TransformerPool transformerPool = TransformerPool.getInstance(resource);
 		Map<String,String> configMap = transformerPool.getConfigMap();
-		
+
 		assertEquals("{stylesheet-version=2.0, output-method=xml, output-indent=yes, output-omit-xml-declaration=yes, disable-output-escaping=no}", configMap.toString());
 		assertFalse(transformerPool.getDisableOutputEscaping());
 		assertTrue(transformerPool.getIndent());
 	}
-	
+
 }

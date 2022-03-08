@@ -51,13 +51,7 @@ public class ConsecutiveXsltPipeTest extends PipeTestBase<XsltPipe> {
 
 		PipeLineResult pipeLineResult=pipeline.process("", new Message("<result><field>&lt;Document&gt;&lt;Header&gt;HeaderValue&lt;/Header&gt;&lt;Action&gt;ActionValue&lt;/Action&gt;&lt;/Document&gt;</field></result>"), session);
 
-		System.err.println(pipeLineResult.getResult().asString());
-		
 		MatchUtils.assertXmlEquals("<Document><Header>HeaderValue</Header><ActionFound>ActionValue</ActionFound></Document>", pipeLineResult.getResult().asString());
-		
-//		IForwardTarget target = pipeline.resolveForward(pipe, pipeForward);
-
-//		assertNotNull(target);
 	}
 
 }

@@ -84,15 +84,15 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	private @Getter OutputType outputType=null;
 	private @Getter Boolean omitXmlDeclaration;
 	private @Getter Boolean indentXml=null; 
-	private @Getter Boolean disableOutputEscaping=null; 
+	private @Getter Boolean disableOutputEscaping=null;
 	private @Getter boolean removeNamespaces=false;
 	private @Getter boolean skipEmptyTags=false;
 	private @Getter int xsltVersion=0; // set to 0 for auto detect.
 	private @Getter boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
 	private @Getter boolean debugInput = false;
-	
+
 	private TransformerPool transformerPool;
-	
+
 	private Map<String, TransformerPool> dynamicTransformerPoolMap;
 	private int transformerPoolMapSize = 100;
 
@@ -108,10 +108,10 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		
+	
 		streamingXslt = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, false);
 		dynamicTransformerPoolMap = Collections.synchronizedMap(new LRUMap(transformerPoolMapSize));
-		
+	
 		if(StringUtils.isNotEmpty(getXpathExpression()) && getOutputType()==null) {
 			setOutputType(DEFAULT_XPATH_OUTPUT_METHOD);
 		}
@@ -175,8 +175,8 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		}
 		return input; // TODO might be necessary to do something about namespaceaware
 	}
-	
-	
+
+
 	@Override
 	public MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
 		if (!canProvideOutputStream()) {
@@ -186,7 +186,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		try {
 			TransformerPool poolToUse = getTransformerPoolToUse(session);
 			boolean canStreamOut = streamingXslt && !isDisableOutputEscaping(poolToUse); // TODO fix problem in TransactionConnecor that currently inhibits streaming out when disable-output-escaping is used
-			ThreadConnector threadConnector = canStreamOut ? new ThreadConnector(this, threadLifeCycleEventListener, txManager,  session) : null; 
+			ThreadConnector threadConnector = canStreamOut ? new ThreadConnector(this, threadLifeCycleEventListener, txManager,  session) : null;
 			MessageOutputStream target = MessageOutputStream.getTargetStream(this, session, next);
 			ContentHandler handler = createHandler(null, threadConnector, session, poolToUse, target);
 			return new MessageOutputStream(this, handler, target, threadLifeCycleEventListener, txManager, session, threadConnector);
@@ -194,7 +194,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 			throw new StreamingException(e);
 		}
 	}
-	
+
 	protected boolean isDisableOutputEscaping(TransformerPool poolToUse) throws TransformerException, IOException, SAXException {
 		Boolean disableOutputEscaping = getDisableOutputEscaping();
 		if (log.isTraceEnabled()) log.trace("Configured disableOutputEscaping ["+disableOutputEscaping+"]");
