@@ -1373,8 +1373,7 @@ angular.module('iaf.beheerconsole')
 	];
 	var filterCookie = Cookies.get($scope.processState+"Filter");
 	if(filterCookie) {
-		for(i in columns) {
-			var column = columns[i];
+		for(let column in columns) {
 			if(column.name && filterCookie[column.name] === false) {
 				column.visible = false;
 			}
@@ -1407,8 +1406,8 @@ angular.module('iaf.beheerconsole')
 			var table = $('#datatable').DataTable();
 			var data = table.rows( {page:'current'} ).data();
 			// visit rows in the current page once (draw event is fired after rowcallbacks)
-			for(var i=0;i<data.length;i++){
-				$scope.selectedMessages[data[i].id] = false;
+			for(let item in data){
+				$scope.selectedMessages[item.id] = false;
 			}
 		},
 		rowCallback: function(row, data) {
@@ -1441,13 +1440,16 @@ angular.module('iaf.beheerconsole')
 			var direction = order.dir; // asc or desc
 
 			var url = $scope.base_url+"?max="+length+"&skip="+start+"&sort="+direction;
-			var search = $scope.search;
-			for(column in search) {
-				var value = search[column];
-				if(value) {
-					url += "&"+column+"="+value;
+			let search = $scope.search;
+			let searchSession = {};
+			for(let column in search) {
+				let text = search[column];
+				if(text) {
+					url += "&"+column+"="+text;
+					searchSession[column] = text;
 				}
 			}
+			Session.set('search', searchSession);
 			Api.Get(url, function(response) {
 				response.draw = data.draw;
 				response.recordsTotal = response.totalMessages;
@@ -1458,22 +1460,42 @@ angular.module('iaf.beheerconsole')
 		}
 	};
 	$scope.targetStates = [];
+	let searchSession = Session.get('search');
 	$scope.search = {
-		id: "",
-		startDate: "",
-		host: "",
-		messageId: "",
-		correlationId: "",
-		comment: "",
-		label: "",
+		id: searchSession ? searchSession['id'] : "",
+		startDate: searchSession ? searchSession["startDate"] : "",
+		endDate: searchSession ? searchSession["endDate"] : "",
+		host: searchSession ? searchSession["host"] : "",
+		messageId: searchSession ? searchSession["messageId"] : "",
+		correlationId: searchSession ? searchSession["correlationId"] : "",
+		comment: searchSession ? searchSession["comment"] : "",
+		label: searchSession ? searchSession["label"] : "",
+		message: searchSession ? searchSession["message"] : ""
 	};
+
+	$scope.clearSearch = function() {
+		Session.remove('search');
+		$scope.search = {};
+		$scope.updateTable();
+	};
+
+	$scope.filterBoxExpanded = false;
+	var search = $scope.search;
+	if(search){
+		for(let column in search) {
+			let value = search[column];
+			if(value && value != "") {
+				$scope.filterBoxExpanded = true;
+			}
+		}
+	}
 
 	$scope.updateFilter = function(column) {
 		Cookies.set($scope.processState+"Filter", $scope.displayColumn);
 
-		var table = $('#datatable').DataTable();
+		let table = $('#datatable').DataTable();
 		if(table) {
-			var tableColumn = table.column(column+":name");
+			let tableColumn = table.column(column+":name");
 			if(tableColumn && tableColumn.length == 1)
 				tableColumn.visible( $scope.displayColumn[column] );
 			table.draw();
@@ -1605,7 +1627,7 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('PipeMessageLogListCtrl', ['$scope', 'Api', 'Cookies', '$compile', function($scope, Api, Cookies, $compile) {
+.controller('PipeMessageLogListCtrl', ['$scope', 'Api', 'Cookies', '$compile','Session', function($scope, Api, Cookies, $compile, Session) {
 	var base_url = "adapters/"+$scope.adapterName+"/pipes/"+$scope.pipeName+"/messages";
 
 	var a =  '<a ui-sref="pages.pipemessagelog.view({adapter:adapterName,pipe:pipeName,messageId:message.id})" class="btn btn-info btn-xs" type="button"><i class="fa fa-file-text-o"></i> View</a>';
@@ -1626,8 +1648,7 @@ angular.module('iaf.beheerconsole')
 
 	var filterCookie = Cookies.get("PipeMessageLogFilter");
 	if(filterCookie) {
-		for(i in columns) {
-			var column = columns[i];
+		for(let column in columns) {
 			if(column.name && filterCookie[column.name] === false) {
 				column.visible = false;
 			}
@@ -1666,6 +1687,7 @@ angular.module('iaf.beheerconsole')
 		serverSide: true,
 		processing: true,
 		paging: true,
+		lengthMenu: [10,25,50,100,500,999],
 		order: [[ 2, 'desc' ]],
 		columns: columns,
 		sAjaxDataProp: 'messages',
@@ -1677,12 +1699,15 @@ angular.module('iaf.beheerconsole')
 
 			var url = base_url+"?max="+length+"&skip="+start+"&sort="+direction;
 			var search = $scope.search;
-			for(column in search) {
-				var value = search[column];
-				if(value) {
-					url += "&"+column+"="+value;
+			let searchSession = {};
+			for(let column in search) {
+				let text = search[column];
+				if(text) {
+					url += "&"+column+"="+text;
+					searchSession[column] = text;
 				}
 			}
+			Session.set('search', searchSession);
 			Api.Get(url, function(response) {
 				response.draw = data.draw;
 				response.recordsTotal = response.totalMessages;
@@ -1692,28 +1717,48 @@ angular.module('iaf.beheerconsole')
 		}
 	};
 
+	let searchSession = Session.get('search');
+	$scope.search = {
+		id: searchSession ? searchSession['id'] : "",
+		startDate: searchSession ? searchSession["startDate"] : "",
+		endDate: searchSession ? searchSession["endDate"] : "",
+		host: searchSession ? searchSession["host"] : "",
+		messageId: searchSession ? searchSession["messageId"] : "",
+		correlationId: searchSession ? searchSession["correlationId"] : "",
+		comment: searchSession ? searchSession["comment"] : "",
+		label: searchSession ? searchSession["label"] : "",
+		message: searchSession ? searchSession["message"] : ""
+	};
+
+	$scope.clearSearch = function() {
+		Session.remove('search');
+		$scope.search = {};
+		$scope.updateTable();
+	};
+
+	$scope.filterBoxExpanded = false;
+	var search = $scope.search;
+	if(search){
+		for(let column in search) {
+			let value = search[column];
+			if(value && value != "") {
+				$scope.filterBoxExpanded = true;
+			}
+		}
+	}
+
 	$scope.updateFilter = function(column) {
 		Cookies.set("PipeMessageLogFilter", $scope.displayColumn);
 
-		var table = $('#datatable').DataTable();
+		let table = $('#datatable').DataTable();
 		if(table) {
-			var tableColumn = table.column(column+":name");
+			let tableColumn = table.column(column+":name");
 			if(tableColumn && tableColumn.length == 1)
 				tableColumn.visible( $scope.displayColumn[column] );
 			table.draw();
 		}
-	}
-
-	$scope.search = {
-		id: "",
-		startDate: "",
-		type: "",
-		host: "",
-		messageId: "",
-		correlationId: "",
-		comment: "",
-		label: "",
 	};
+
 }])
 
 .controller('PipeMessageLogViewCtrl', ['$scope', 'Api', '$state', 'SweetAlert', function($scope, Api, $state, SweetAlert) {
