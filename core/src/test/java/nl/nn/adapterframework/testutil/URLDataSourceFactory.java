@@ -26,11 +26,11 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 	private static final Object[][] TEST_DATASOURCES = {
 			// ProductName, Url, user, password, testPeekDoesntFindRecordsAlreadyLocked
 			{ "H2",         "jdbc:h2:mem:test;LOCK_TIMEOUT=1000", null, null, false, "org.h2.jdbcx.JdbcDataSource" },
-			{ "Oracle",     "jdbc:oracle:thin:@localhost:1521:ORCLCDB", 			"testiaf_user", "testiaf_user00", false, "oracle.jdbc.xa.client.OracleXADataSource" }, 
-			{ "MS_SQL",     "jdbc:sqlserver://localhost:1433;database=testiaf", 	"testiaf_user", "testiaf_user00", false, "com.microsoft.sqlserver.jdbc.SQLServerXADataSource" }, 
-			{ "MySQL",      "jdbc:mysql://localhost:3307/testiaf?sslMode=DISABLED&disableMariaDbDriver=1&pinGlobalTxToPhysicalConnection=true&serverTimezone=Europe/Amsterdam", "testiaf_user", "testiaf_user00", true, "com.mysql.cj.jdbc.MysqlXADataSource" }, 
+			{ "Oracle",     "jdbc:oracle:thin:@localhost:1521:ORCLCDB", 			"testiaf_user", "testiaf_user00", false, "oracle.jdbc.xa.client.OracleXADataSource" },
+			{ "MS_SQL",     "jdbc:sqlserver://localhost:1433;database=testiaf", 	"testiaf_user", "testiaf_user00", false, "com.microsoft.sqlserver.jdbc.SQLServerXADataSource" },
+			{ "MySQL",      "jdbc:mysql://localhost:3307/testiaf?sslMode=DISABLED&disableMariaDbDriver=1&pinGlobalTxToPhysicalConnection=true&serverTimezone=Europe/Amsterdam", "testiaf_user", "testiaf_user00", true, "com.mysql.cj.jdbc.MysqlXADataSource" },
 			//{ "MariaDB",   "jdbc:mariadb://localhost:3306/testiaf", 				"testiaf_user", "testiaf_user00", false }, // can have only one entry per product key
-			{ "MariaDB",   "jdbc:mysql://localhost:3306/testiaf?sslMode=DISABLED&disableMariaDbDriver=true&pinGlobalTxToPhysicalConnection=true&serverTimezone=Europe/Amsterdam", "testiaf_user", "testiaf_user00", false, "com.mysql.cj.jdbc.MysqlXADataSource" }, 
+			{ "MariaDB",   "jdbc:mysql://localhost:3306/testiaf?sslMode=DISABLED&disableMariaDbDriver=true&pinGlobalTxToPhysicalConnection=true&serverTimezone=Europe/Amsterdam", "testiaf_user", "testiaf_user00", false, "com.mysql.cj.jdbc.MysqlXADataSource" },
 			{ "PostgreSQL", "jdbc:postgresql://localhost:5432/testiaf", 			"testiaf_user", "testiaf_user00", true, "org.postgresql.xa.PGXADataSource" }
 		};
 
@@ -52,9 +52,6 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 					// Check if we can make a connection
 					if(validateConnection(ds)) {
 						availableDatasources.add(product);
-//						add(namedDataSource(ds, product, testPeek), product);
-//					} else {
-//						skippedDatasources.add(product);
 					}
 				} catch (Exception e) {
 					log.info("ignoring DataSource, cannot complete setup", e);
@@ -73,7 +70,33 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 		return false;
 	}
 
-	private CommonDataSource namedDataSource(String jndiName) {
+	private DataSource namedDataSource(DataSource ds, String name, boolean testPeek) {
+		return new DelegatingDataSource(ds) {
+			@Override
+			public String toString() {
+				StringBuilder builder = new StringBuilder();
+				builder.append(String.format("%s [%s]", PRODUCT_KEY, name));
+				builder.append(String.format(" %s [%s]", TEST_PEEK_KEY, testPeek));
+				return builder.toString();
+			}
+		};
+	}
+
+	protected DataSource createDataSource(String product, String url, String userId, String password, boolean testPeek, String implClassname) throws Exception {
+		return new DriverManagerDataSource(url, userId, password);
+	}
+
+	@Override //fail fast
+	public DataSource get(String jndiName, Properties jndiEnvironment) throws NamingException {
+		if(!availableDatasources.contains(jndiName)) {
+			throw new IllegalStateException("jndi ["+jndiName+"] not configured in test environment");
+		}
+
+		return super.get(jndiName, jndiEnvironment);
+	}
+
+	@Override
+	protected CommonDataSource lookup(String jndiName, Properties jndiEnvironment) throws NamingException {
 		for (Object[] datasource: TEST_DATASOURCES) {
 			String product = (String)datasource[0];
 			if(product.equals(jndiName)) {
@@ -94,50 +117,8 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 		return null;
 	}
 
-	private DataSource namedDataSource(DataSource ds, String name, boolean testPeek) {
-		return new DelegatingDataSource(ds) {
-			@Override
-			public String toString() {
-				StringBuilder builder = new StringBuilder();
-				builder.append(String.format("%s [%s]", PRODUCT_KEY, name));
-				builder.append(String.format(" %s [%s]", TEST_PEEK_KEY, testPeek));
-				return builder.toString();
-			}
-		};
-	}
-
-	protected DataSource createDataSource(String product, String url, String userId, String password, boolean testPeek, String implClassname) throws Exception {
-		return new DriverManagerDataSource(url, userId, password);
-	}
-
-	@Override
-	public DataSource get(String jndiName, Properties jndiEnvironment) throws NamingException {
-		if(!availableDatasources.contains(jndiName)) {
-			throw new IllegalStateException("jndi ["+jndiName+"] not configured in test environment");
-		}
-
-		return super.get(jndiName, jndiEnvironment);
-	}
-
-	@Override
-	protected CommonDataSource lookup(String jndiName, Properties jndiEnvironment) throws NamingException {
-		return namedDataSource(jndiName);
-	}
-
 	@Override
 	public List<String> getDataSourceNames() {
-		return availableDatasources;
-	}
-
-	public List<DataSource> getAvailableDataSources() {
-		List<DataSource> availableDatasources = new ArrayList<>();
-		for(String dataSourceName : getDataSourceNames()) {
-			try {
-				availableDatasources.add(getDataSource(dataSourceName));
-			} catch (NamingException e) {
-				fail(this.getClass().getSimpleName() +" should not look for DataSources in the JNDI");
-			}
-		}
 		return availableDatasources;
 	}
 }

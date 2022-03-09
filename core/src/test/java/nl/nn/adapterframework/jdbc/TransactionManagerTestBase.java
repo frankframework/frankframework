@@ -6,27 +6,19 @@ import java.util.List;
 
 import javax.naming.NamingException;
 import javax.sql.DataSource;
-import javax.transaction.TransactionManager;
-import javax.transaction.UserTransaction;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.runners.Parameterized.Parameters;
 import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.support.AbstractPlatformTransactionManager;
 
-import lombok.Getter;
 import nl.nn.adapterframework.jta.IThreadConnectableTransactionManager;
 import nl.nn.adapterframework.jta.SpringTxManagerProxy;
-import nl.nn.adapterframework.jta.ThreadConnectableDataSourceTransactionManager;
-import nl.nn.adapterframework.jta.ThreadConnectableJtaTransactionManager;
-import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TransactionManagerType;
 
 public abstract class TransactionManagerTestBase extends JdbcTestBase {
 
 	protected IThreadConnectableTransactionManager txManager;
-	private @Getter TestConfiguration configuration;
 
 	private static TransactionManagerType singleTransactionManagerType = null; // set to a specific transaction manager type, to speed up testing
 
@@ -58,9 +50,7 @@ public abstract class TransactionManagerTestBase extends JdbcTestBase {
 	@Before
 	public void setup() throws Exception {
 		super.setup();
-
-		configuration = transactionManagerType.getConfigurationContext(productKey);
-		txManager = configuration.getBean(SpringTxManagerProxy.class, "txManager");
+		txManager = getConfiguration().getBean(SpringTxManagerProxy.class, "txManager");
 //		setupDataSource();
 
 		System.err.println(dataSource);

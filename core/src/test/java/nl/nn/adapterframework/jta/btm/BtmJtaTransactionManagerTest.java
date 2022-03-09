@@ -61,7 +61,7 @@ public class BtmJtaTransactionManagerTest {
 		}
 		folder.delete();
 	}
-	
+
 	public BtmJtaTransactionManager getBtmJtaTransactionManager() {
 		BtmJtaTransactionManager result = new BtmJtaTransactionManager();
 		result.setStatusFile(folder.getRoot()+"/"+STATUS_FILE);

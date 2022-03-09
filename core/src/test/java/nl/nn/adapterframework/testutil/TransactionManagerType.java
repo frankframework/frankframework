@@ -1,7 +1,5 @@
 package nl.nn.adapterframework.testutil;
 
-import static org.junit.Assert.fail;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -11,19 +9,16 @@ import java.util.WeakHashMap;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.StandardEnvironment;
 
-import lombok.Getter;
-import nl.nn.adapterframework.lifecycle.SpringContextScope;
-import nl.nn.adapterframework.util.SpringUtils;
+import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 
 public enum TransactionManagerType {
-	DATASOURCE(URLDataSourceFactory.class, "springTOMCAT.xml"), 
-	BTM(BTMXADataSourceFactory.class, "springTOMCATBTM.xml"), 
+	DATASOURCE(URLDataSourceFactory.class, "springTOMCAT.xml"),
+	BTM(BTMXADataSourceFactory.class, "springTOMCATBTM.xml"),
 	NARAYANA(NarayanaXADataSourceFactory.class, "springTOMCATNARAYANA.xml");
 
 	private static Map<TransactionManagerType, TestConfiguration> transactionManagerConfigurations = new WeakHashMap<>();
@@ -34,21 +29,11 @@ public enum TransactionManagerType {
 
 	private TransactionManagerType(Class<? extends URLDataSourceFactory> clazz) {
 		this(clazz, null);
-//		try {
-//			dataSourceFactory = clazz.newInstance();
-//		} catch (Exception e) {
-//			fail(ExceptionUtils.getStackTrace(e));
-//		}
 	}
 
 	private TransactionManagerType(Class<? extends URLDataSourceFactory> clazz, String springConfigurationFile) {
 		springConfigurationFiles = new String[]{ springConfigurationFile, "testTXConfigurationContext.xml" };
 		factory = clazz;
-//		try {
-//			dataSourceFactory = clazz.newInstance();
-//		} catch (Exception e) {
-//			fail(ExceptionUtils.getStackTrace(e));
-//		}
 	}
 
 	public URLDataSourceFactory getDataSourceFactory(ApplicationContext ac) {
@@ -79,12 +64,6 @@ public enum TransactionManagerType {
 		return config;
 	}
 
-//	public void updateTransactionManager() {
-//		if(this == TransactionManagerType.DATASOURCE) {
-//			getConfigurationContext();
-//		}
-//	}
-
 	public TestConfiguration getConfigurationContext(String productKey) {
 		if(this == TransactionManagerType.DATASOURCE) {
 			return datasourceConfigurations.computeIfAbsent(productKey, key -> create(key));
@@ -94,21 +73,18 @@ public enum TransactionManagerType {
 
 	public List<DataSource> getAvailableDataSources() throws NamingException {
 		URLDataSourceFactory dataSourceFactory = new URLDataSourceFactory();
-		List<String> names = dataSourceFactory.getDataSourceNames();
+		List<String> availableDataSources = dataSourceFactory.getDataSourceNames();
+
 		List<DataSource> datasources = new ArrayList<>();
-		for (String datasourceName : names) {
+		for (String datasourceName : availableDataSources) {
 			datasources.add(getDataSource(datasourceName));
 		}
 		return datasources;
-//		try {
-//			dataSourceFactory = URLDataSourceFactory.class.newInstance();
-//		} catch (Exception e) {
-//			fail(ExceptionUtils.getStackTrace(e));
-//		}
-//		List<DataSource> datasources;
-//		return dataSourceFactory.getAvailableDataSources();
 	}
 
+	/**
+	 * fetch the DataSource through the configured {@link JndiDataSourceFactory}.
+	 */
 	public DataSource getDataSource(String productKey) throws NamingException {
 		ApplicationContext ac = getConfigurationContext(productKey);
 		return getDataSourceFactory(ac).get(productKey);

@@ -33,6 +33,8 @@ import lombok.Getter;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
+import nl.nn.adapterframework.jdbc.dbms.IDbmsSupportFactory;
+import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TransactionManagerType;
 import nl.nn.adapterframework.testutil.URLDataSourceFactory;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -44,6 +46,7 @@ public abstract class JdbcTestBase {
 	protected final static String TEST_CHANGESET_PATH = "Migrator/Ibisstore_4_unittests_changeset.xml";
 	protected final static String DEFAULT_CHANGESET_PATH = "IAF_Util/IAF_DatabaseChangelog.xml";
 	protected static Logger log = LogUtil.getLogger(JdbcTestBase.class);
+	private @Getter TestConfiguration configuration;
 
 	protected static String singleDatasource = null; // "MariaDB";  // set to a specific datasource name, to speed up testing
 
@@ -60,7 +63,7 @@ public abstract class JdbcTestBase {
 	@Parameterized.Parameter(1)
 	public DataSource dataSource;
 
-	private @Getter DbmsSupportFactory dbmsSupportFactory = new DbmsSupportFactory();
+	private @Getter IDbmsSupportFactory dbmsSupportFactory;
 	protected @Getter IDbmsSupport dbmsSupport;
 
 	@Parameters(name= "{0}: {1}")
@@ -88,6 +91,8 @@ public abstract class JdbcTestBase {
 		dataSourceInfo = parseDataSourceInfo(dsInfo);
 		productKey = dataSourceInfo.getProperty(URLDataSourceFactory.PRODUCT_KEY);
 		testPeekShouldSkipRecordsAlreadyLocked = Boolean.parseBoolean(dataSourceInfo.getProperty(URLDataSourceFactory.TEST_PEEK_KEY));
+		configuration = transactionManagerType.getConfigurationContext(productKey);
+		dbmsSupportFactory = configuration.getBean(IDbmsSupportFactory.class, "dbmsSupportFactory");
 
 		prepareDatabase();
 	}
@@ -178,9 +183,8 @@ public abstract class JdbcTestBase {
 
 	/** Populates all database related fields that are normally wired through Spring */
 	protected void autowire(JdbcFacade jdbcFacade) {
+		configuration.autowireByName(jdbcFacade);
 		jdbcFacade.setDatasourceName(getDataSourceName());
-//		jdbcFacade.setDataSourceFactory(transactionManagerType.getDataSourceFactory());
-		jdbcFacade.setDbmsSupportFactory(dbmsSupportFactory);
 	}
 
 	public String getDataSourceName() {
@@ -206,9 +210,9 @@ public abstract class JdbcTestBase {
 		if (queryType==QueryType.SELECT) {
 			if(!selectForUpdate) {
 				return  connection.prepareStatement(context.getQuery());
-			} 
+			}
 			return connection.prepareStatement(context.getQuery(), ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
-		}	
+		}
 		JdbcUtil.executeStatement(connection, context.getQuery());
 		return null;
 	}

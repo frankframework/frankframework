@@ -107,7 +107,7 @@ public class TestConfiguration extends Configuration {
 
 	public MessageKeeper getMessageKeeper() {
 		MessageEventListener mel = getBean("MessageEventListener", MessageEventListener.class);
-		return mel.getMessageKeeper(TestConfiguration.TEST_CONFIGURATION_NAME);
+		return mel.getMessageKeeper(getName());
 	}
 
 	public MessageKeeper getGlobalMessageKeeper() {

@@ -24,22 +24,13 @@ import nl.nn.adapterframework.jdbc.JdbcTestBase;
 import nl.nn.adapterframework.testutil.ConfigurationMessageEventListener;
 import nl.nn.adapterframework.testutil.TestAppender;
 import nl.nn.adapterframework.testutil.TestAssertions;
-import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.MessageKeeper;
 
 public class MigratorTest extends JdbcTestBase {
-	private TestConfiguration configuration;
 	private LiquibaseMigrator migrator = null;
 	private String tableName="DUMMYTABLE";
-
-	private TestConfiguration getConfiguration() {
-		if(configuration == null) {
-			configuration = new TestConfiguration();
-		}
-		return configuration;
-	}
 
 	@Override
 	protected void prepareDatabase() throws Exception {
@@ -50,8 +41,15 @@ public class MigratorTest extends JdbcTestBase {
 		dropTable("DATABASECHANGELOGLOCK");
 
 		migrator = getConfiguration().createBean(LiquibaseMigrator.class);
-		migrator.setDataSourceFactory(getTransactionManagerType().getDataSourceFactory());
 		migrator.setDatasourceName(getDataSourceName());
+		getConfiguration().autowireByName(migrator);
+	}
+
+	@Override
+	public void setup() throws Exception {
+		super.setup();
+
+		getConfiguration().refresh();
 	}
 
 	@Test
@@ -59,10 +57,10 @@ public class MigratorTest extends JdbcTestBase {
 		AppConstants.getInstance().setProperty("liquibase.changeLogFile", "/Migrator/DatabaseChangelog.xml");
 		migrator.update();
 
-		MessageKeeper messageKeeper = configuration.getMessageKeeper();
+		MessageKeeper messageKeeper = getConfiguration().getMessageKeeper();
 		assertNotNull("no message logged to the messageKeeper", messageKeeper);
 		assertEquals(2, messageKeeper.size()); //Configuration startup message + liquibase update
-		assertEquals("Configuration [TestConfiguration] LiquiBase applied [2] change(s) and added tag [two:Niels Meijer]", messageKeeper.getMessage(1).getMessageText());
+		assertEquals("Configuration [DATASOURCE] LiquiBase applied [2] change(s) and added tag [two:Niels Meijer]", messageKeeper.getMessage(1).getMessageText());
 		assertFalse("table ["+tableName+"] should not exist", isTablePresent(tableName));
 	}
 
@@ -71,14 +69,14 @@ public class MigratorTest extends JdbcTestBase {
 		AppConstants.getInstance().setProperty("liquibase.changeLogFile", "/Migrator/DatabaseChangelogError.xml");
 		migrator.update();
 
-		ConfigurationWarnings warnings = configuration.getConfigurationWarnings();
+		ConfigurationWarnings warnings = getConfiguration().getConfigurationWarnings();
 		assertEquals(1, warnings.size());
 
 		String warning = warnings.get(0);
 		assertTrue(warning.contains("LiquibaseMigrator Error running LiquiBase update. Failed to execute [3] change(s)")); //Test ObjectName + Error
 		assertTrue(warning.contains("Migration failed for change set Migrator/DatabaseChangelogError.xml::error::Niels Meijer")); //Test liquibase exception
 		//H2 logs 'Table \"DUMMYTABLE\" already exists' Oracle throws 'ORA-00955: name is already used by an existing object'
-		assertTrue("table ["+tableName+"] should exist", isTablePresent(tableName));
+		assertFalse("table ["+tableName+"] should not exist", isTablePresent(tableName)); // TX should be rolled back
 	}
 
 	@Test
@@ -152,7 +150,7 @@ public class MigratorTest extends JdbcTestBase {
 			String msg = "LiquiBase applied [2] change(s) and added tag [two:Niels Meijer]";
 			assertFalse("expected message not to be logged but found ["+appender.getLogLines()+"]", appender.contains(msg)); //Validate Liquibase doesn't log
 
-			ConfigurationMessageEventListener configurationMessages = configuration.getBean("ConfigurationMessageListener", ConfigurationMessageEventListener.class);
+			ConfigurationMessageEventListener configurationMessages = getConfiguration().getBean("ConfigurationMessageListener", ConfigurationMessageEventListener.class);
 			assertTrue(configurationMessages.contains(msg)); //Validate Liquibase did run
 		} finally {
 			TestAppender.removeAppender(appender);
