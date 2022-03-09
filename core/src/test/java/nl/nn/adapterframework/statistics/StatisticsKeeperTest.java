@@ -128,7 +128,7 @@ public class StatisticsKeeperTest {
 		assertEquals(sk.getIntervalItemName(3), 249.5,    sk.getIntervalItemValue(3)); // avg
 		assertEquals(sk.getIntervalItemName(4), 24950L,   sk.getIntervalItemValue(4)); // sum
 		assertEquals(sk.getIntervalItemName(5), 6308350L, sk.getIntervalItemValue(5)); // sumSq
-		
+
 	}
 
 	@Test
