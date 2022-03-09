@@ -23,7 +23,7 @@ public class MicroMeterPercentileEstimator implements PercentileEstimator {
 
 	private @Setter DistributionSummary distributionSummary;
 	private double[] percentiles;
-	
+
 	public MicroMeterPercentileEstimator(DistributionSummary distributionSummary, double[] percentiles) {
 		this.distributionSummary = distributionSummary;
 		this.percentiles = percentiles;

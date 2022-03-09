@@ -43,7 +43,7 @@ public class StatisticsKeeperTest {
 		}
 		return null;
 	}
-	
+
 	@Test
 	public void testLineair() {
 		StatisticsKeeper sk = createStatisticsKeeper();
