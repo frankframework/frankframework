@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.util;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Enumeration;
@@ -164,7 +165,7 @@ public abstract class MessageUtils {
 	/**
 	 * Computes the {@link MimeType} when not available.
 	 * <p>
-	 * NOTE: This is a <b>very</b> resource intensive operation!
+	 * NOTE: This is a resource intensive operation, the first 64k is being read and stored in memory.
 	 */
 	public static MimeType computeMimeType(Message message, String filename) {
 		Map<String, Object> context = message.getContext();
@@ -179,11 +180,12 @@ public abstract class MessageUtils {
 		}
 
 		try {
-			message.preserve();
 			TikaConfig tika = new TikaConfig();
 			Metadata metadata = new Metadata();
 			metadata.set(TikaMetadataKeys.RESOURCE_NAME_KEY, name);
-			org.apache.tika.mime.MediaType tikaMediaType = tika.getDetector().detect(message.asInputStream(), metadata);
+			int tikaMimeMagicLength = tika.getMimeRepository().getMinLength();
+			byte[] magic = message.getMagic(tikaMimeMagicLength);
+			org.apache.tika.mime.MediaType tikaMediaType = tika.getDetector().detect(new ByteArrayInputStream(magic), metadata);
 			return MimeType.valueOf(tikaMediaType.toString());
 		} catch (Throwable t) {
 			LOG.warn("error parsing message to determine mimetype", t);

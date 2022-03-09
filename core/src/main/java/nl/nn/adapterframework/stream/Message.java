@@ -395,10 +395,10 @@ public class Message implements Serializable {
 		}
 
 		if (request instanceof InputStream) {
-			InputStream stream = (InputStream) request;
-			if(!stream.markSupported()) {
-				request = new BufferedInputStream(stream, readLimit);
+			if(!((InputStream) request).markSupported()) {
+				request = new BufferedInputStream((InputStream) request, readLimit);
 			}
+			InputStream stream = (InputStream) request;
 			stream.mark(readLimit);
 			try {
 				return readBytesFromInputStream(stream, readLimit);
