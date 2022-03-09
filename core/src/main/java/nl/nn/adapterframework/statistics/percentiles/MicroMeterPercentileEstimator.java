@@ -60,7 +60,7 @@ public class MicroMeterPercentileEstimator implements PercentileEstimator {
 		XmlBuilder sample = new XmlBuilder("sample");
 //		sample.addAttribute("percentile",""+(100*index)/values.length);
 //		sample.addAttribute("value",""+values[index]);
-		
+
 		return sample;
 	}
 

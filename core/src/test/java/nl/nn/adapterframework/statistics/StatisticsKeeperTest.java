@@ -70,7 +70,7 @@ public class StatisticsKeeperTest {
 	double getItemValueByName(StatisticsKeeper sk, String name) {
 		return (double)sk.getItemValue(sk.getItemIndex(name));
 	}
-	
+
 	@Test
 	public void testInterval() {
 		StatisticsKeeper sk = createStatisticsKeeper();
