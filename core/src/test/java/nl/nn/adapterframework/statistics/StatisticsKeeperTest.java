@@ -110,7 +110,7 @@ public class StatisticsKeeperTest {
 		assertEquals(sk.getIntervalItemName(4), 0L,   sk.getIntervalItemValue(4)); // sum
 		assertEquals(sk.getIntervalItemName(5), 0L,   sk.getIntervalItemValue(5)); // sumSq
 
-		
+
 		for (int i=200; i<300; i++) {
 			sk.addValue(i);
 		}
@@ -130,31 +130,6 @@ public class StatisticsKeeperTest {
 		assertEquals(sk.getIntervalItemName(5), 6308350L, sk.getIntervalItemValue(5)); // sumSq
 		
 	}
-
-
-//	@Test
-//	public void testCompareDistributionSummary() {
-//		StatisticsKeeper sk = new StatisticsKeeper("test");
-//		sk.initMetrics(new SimpleMeterRegistry(), "group", new ArrayList<>());
-//
-//		for (int i=0; i<100; i++) {
-//			sk.addValue(i);
-//		}
-//
-//		assertEquals(sk.getCount(),  sk.getDistributionSummary().count());
-//		assertEquals(sk.getMax(),    sk.getDistributionSummary().max(), 0.001);
-//		assertEquals(sk.getAvg(),    sk.getDistributionSummary().mean(), 0.001);
-//		assertEquals(sk.getTotal(),  sk.getDistributionSummary().totalAmount(), 0.001);
-//
-//		
-//		HistogramSnapshot snapshot = sk.getDistributionSummary().takeSnapshot();
-//		snapshot.outputSummary(System.out, 0.01);
-////		snapshot.
-////		for (Measurement measurement:sk.getDistributionSummary().measure()) {
-////			System.out.println("measurement: "+ToStringBuilder.reflectionToString(measurement));
-////		}
-////		
-//	}
 
 	@Test
 	public void testGetMap() {
