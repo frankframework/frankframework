@@ -105,7 +105,7 @@ public class StatisticsKeeper<B extends IBasics<S>, S> implements ItemList {
 				//.publishPercentileHistogram()
 				;
 		DistributionSummary distributionSummary = builder.register(registry);
-		
+
 		if (cumulative instanceof MicroMeterBasics) {
 			((MicroMeterBasics)cumulative).setDistributionSummary(distributionSummary);
 			mark=cumulative.takeSnapshot();

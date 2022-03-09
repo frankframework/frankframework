@@ -32,11 +32,11 @@ import nl.nn.adapterframework.util.XmlBuilder;
  */
 public class MicroMeterBasics implements IBasics<MicroMeterSnapshot> {
 
-	public static final int NUM_BASIC_ITEMS=6;   
+	public static final int NUM_BASIC_ITEMS=6;
 
 	private @Setter DistributionSummary distributionSummary;
 	private HistogramSnapshot snapshot;
-	
+
 	protected long min = Long.MAX_VALUE;
 	protected long sumOfSquares=0;
 
@@ -46,7 +46,7 @@ public class MicroMeterBasics implements IBasics<MicroMeterSnapshot> {
 		protected long max = 0;
 		protected long sumOfSquares;
 	}
-	
+
 
 	@Override
 	public MicroMeterSnapshot takeSnapshot() {
@@ -55,7 +55,7 @@ public class MicroMeterBasics implements IBasics<MicroMeterSnapshot> {
 		result.sumOfSquares= sumOfSquares;
 		return result;
 	}
-	
+
 	public void addValue(long value) {
 		if (distributionSummary!=null) {
 			distributionSummary.record(value);
@@ -63,7 +63,7 @@ public class MicroMeterBasics implements IBasics<MicroMeterSnapshot> {
 		checkMinMax(value);
 		addSums(value);
 	}
-	
+
 	public void checkMinMax(long value) {
 		if (value < min) {
 			min = value;
@@ -182,7 +182,7 @@ public class MicroMeterBasics implements IBasics<MicroMeterSnapshot> {
 	}
 
 
-	
+
 	public long getCount() {
 		return distributionSummary!=null ? distributionSummary.count() : 0;
 	}

@@ -26,11 +26,11 @@ public class StatisticsKeeperTest {
 	public String  description=null;
 	@Parameter(1)
 	public Class<IBasics> basicsClass;
-	
+
 	@Parameters(name = "{index}: {0} - {1}")
 	public static Collection estimators() {
-		return Arrays.asList(new Object[][] { 
-			{ "classic", Basics.class }, 
+		return Arrays.asList(new Object[][] {
+			{ "classic", Basics.class },
 			{ "micrometer", MicroMeterBasics.class }
 		});
 	}
