@@ -66,7 +66,7 @@ public class MigratorTest extends JdbcTestBase {
 
 	@Test
 	public void testFaultyChangelogFile() throws Exception {
-		AppConstants.getInstance().setProperty("liquibase.changeLogFile", "/Migrator/DatabaseChangelogError.xml");
+		AppConstants.getInstance(getConfiguration().getClassLoader()).setProperty("liquibase.changeLogFile", "/Migrator/DatabaseChangelogError.xml");
 		migrator.update();
 
 		ConfigurationWarnings warnings = getConfiguration().getConfigurationWarnings();

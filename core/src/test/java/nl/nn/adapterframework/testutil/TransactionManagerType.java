@@ -45,7 +45,6 @@ public enum TransactionManagerType {
 	}
 
 	private synchronized TestConfiguration create(String productKey) {
-		System.out.println("================== creating ==================");
 		TestConfiguration config = new TestConfiguration(springConfigurationFiles);
 		MutablePropertySources propertySources = config.getEnvironment().getPropertySources();
 		propertySources.remove(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME);
@@ -57,9 +56,6 @@ public enum TransactionManagerType {
 
 		config.setName(this.name());
 		config.refresh();
-
-		System.err.println(config);
-		System.out.println("================== finished ==================");
 
 		return config;
 	}

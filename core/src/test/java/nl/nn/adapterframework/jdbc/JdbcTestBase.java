@@ -118,7 +118,7 @@ public abstract class JdbcTestBase {
 				liquibase.dropAll();
 			} catch(Exception e) {
 				log.warn("Liquibase failed to drop all objects. Trying to rollback the changesets");
-				liquibase.rollback(liquibase.getChangeSetStatuses(null).size(), null); 
+				liquibase.rollback(liquibase.getChangeSetStatuses(null).size(), null);
 			}
 			liquibase.close();
 		}
@@ -170,9 +170,9 @@ public abstract class JdbcTestBase {
 					log.warn(JdbcUtil.warningsToString(warnings));
 				}
 			}
-			JdbcUtil.executeStatement(connection, 
+			JdbcUtil.executeStatement(connection,
 					"CREATE TABLE TEMP(TKEY "+dbmsSupport.getNumericKeyFieldType()+ " PRIMARY KEY, TVARCHAR "+dbmsSupport.getTextFieldType()+"(100), TINT INT, TNUMBER NUMERIC(10,5), " +
-					"TDATE DATE, TDATETIME "+dbmsSupport.getTimestampFieldType()+", TBOOLEAN "+dbmsSupport.getBooleanFieldType()+", "+ 
+					"TDATE DATE, TDATETIME "+dbmsSupport.getTimestampFieldType()+", TBOOLEAN "+dbmsSupport.getBooleanFieldType()+", "+
 					"TCLOB "+dbmsSupport.getClobFieldType()+", TBLOB "+dbmsSupport.getBlobFieldType()+")");
 			SQLWarning warnings = connection.getWarnings();
 			if(warnings != null) {
