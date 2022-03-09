@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ public class PercentileEstimatorRanked extends PercentileEstimatorBase {
 			ranks[i]=i+1;
 		}
 	}
-	
+
 	protected void condenseValues() {
 		local_count = local_count >> 1;
 		for (int i=0; i<local_count; i++) {
@@ -52,7 +52,7 @@ public class PercentileEstimatorRanked extends PercentileEstimatorBase {
 		
 		return rankBefore+1+rank_range*(value-valueBefore)/value_range;
 	}
-	
+
 	public synchronized void addValue(long value, long count, long min, long max) {
 		if (count > 2) { // make sure min and max are set and relevant
 			if (local_count >= values.length) {
@@ -75,9 +75,9 @@ public class PercentileEstimatorRanked extends PercentileEstimatorBase {
 				ranks[local_count] = count-1;
 				max=value;
 			} else {
-				long rankBefore; 
+				long rankBefore;
 				long rankAfter;
-				long valueBefore; 
+				long valueBefore;
 				long valueAfter;
 				
   				if (i==0) {
@@ -98,10 +98,10 @@ public class PercentileEstimatorRanked extends PercentileEstimatorBase {
 //				System.out.println("seting slot "+i+" to v"+values[i]+"r"+ranks[i]);
 			}
 			local_count++;
-		}	
+		}
 //		printInternals(count, min, max);
 	}
-	
+
 	protected double getInterpolatedPercentile(int p, long count, long min, long max) {
 		if (count==0) {
 			return Double.NaN;
@@ -117,7 +117,7 @@ public class PercentileEstimatorRanked extends PercentileEstimatorBase {
 		 * 
 		 * example:
 		 * p=50 => pos=8
-		 *  
+		 *
 		 */
 
 		// find double of required rank			
@@ -139,7 +139,7 @@ public class PercentileEstimatorRanked extends PercentileEstimatorBase {
 			rankBefore=1;
 			valueBefore=min;
 			rankAfter=count;
-			valueAfter=max;			
+			valueAfter=max;
 		} else {
 			int i;
 			for (i=local_count-1; (i>=0) && (ranks[i]*2-1 > pos); i--);
@@ -170,13 +170,13 @@ public class PercentileEstimatorRanked extends PercentileEstimatorBase {
 		return getInterpolatedPercentile(getPercentage(index),count,min,max);
 	}
 
-    public void printInternals(long count, long min, long max) {
-    	System.out.print("c"+count+"/lc"+local_count+" min="+min);
+	public void printInternals(long count, long min, long max) {
+		System.out.print("c"+count+"/lc"+local_count+" min="+min);
 		for (int i=0; i<local_count; i++) {
 			System.out.print(" "+i+":(v"+values[i]+",r"+ranks[i]+")");
 		}
 		System.out.println(" max="+max);
-    }	
+	}
 
 
 
@@ -190,11 +190,11 @@ public class PercentileEstimatorRanked extends PercentileEstimatorBase {
 		
 		if (index<=0) {
 			value=min;
-			rank=1;			
+			rank=1;
 		} else {
 			if (index>=local_count+1) {
 				value=max;
-				rank=count;			
+				rank=count;
 			} else {
 				value=values[index-1];
 				rank=ranks[index-1];
@@ -205,14 +205,8 @@ public class PercentileEstimatorRanked extends PercentileEstimatorBase {
 		sample.addAttribute("value",""+value);
 		sample.addAttribute("rank",""+rank);
 		sample.addAttribute("percentile",""+((100*rank)-50)/count);
-		
+
 		return sample;
 	}
 
-	public void clear(){
-		super.clear();
-		local_count=0;
-	}
-
-    	
 }

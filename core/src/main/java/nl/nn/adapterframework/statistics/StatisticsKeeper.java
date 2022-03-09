@@ -82,6 +82,10 @@ public class StatisticsKeeper<B extends IBasics<S>, S> implements ItemList {
 		this(name, (B)new MicroMeterBasics(), statConfigKey, DEFAULT_BOUNDARY_LIST);
 	}
 
+	protected StatisticsKeeper(String name, B basics) {
+		this(name, basics, statConfigKey, DEFAULT_BOUNDARY_LIST);
+	}
+
 	public void initMetrics(MeterRegistry registry, String name, Iterable<Tag> tags) {
 		double[] serviceLevelObjectives = new double[classBoundaries.length];
 		for (int i=0;i<classBoundaries.length;i++) {

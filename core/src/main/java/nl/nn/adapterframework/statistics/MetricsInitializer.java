@@ -20,6 +20,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
@@ -27,9 +28,10 @@ import io.micrometer.core.instrument.binder.cache.EhCache2Metrics;
 import net.sf.ehcache.Ehcache;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.util.LogUtil;
 
 public class MetricsInitializer implements StatisticsKeeperIterationHandler<MetricsInitializer.NodeConfig> {
-
+	protected Logger log = LogUtil.getLogger(this);
 
 	private MeterRegistry registry;
 	private NodeConfig root;
@@ -69,11 +71,11 @@ public class MetricsInitializer implements StatisticsKeeperIterationHandler<Metr
 	@Override
 	public void handleStatisticsKeeper(NodeConfig data, StatisticsKeeper sk) throws SenderException {
 		if (sk==null) {
-			System.out.println ("---> StatisticsKeeper is null");
+			log.warn("StatisticsKeeper is null");
 			return;
 		}
 		if (data==null) {
-			System.out.println ("---> data is null, sk="+sk.getName());
+			log.warn("NodeConfig data is null, sk="+sk.getName());
 			sk.initMetrics(registry, sk.getName(), null);
 			return;
 		}

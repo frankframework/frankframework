@@ -2,22 +2,51 @@ package nl.nn.adapterframework.statistics;
 
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import nl.nn.adapterframework.statistics.HasStatistics.Action;
 
+@RunWith(Parameterized.class)
 public class StatisticsKeeperTest {
 
+	@Parameter(0)
+	public String  description=null;
+	@Parameter(1)
+	public Class<IBasics> basicsClass;
+	
+	@Parameters(name = "{index}: {0} - {1}")
+	public static Collection estimators() {
+		return Arrays.asList(new Object[][] { 
+			{ "classic", Basics.class }, 
+			{ "micrometer", MicroMeterBasics.class }
+		});
+	}
 
+	public StatisticsKeeper createStatisticsKeeper() {
+		try {
+			return new StatisticsKeeper("test", basicsClass.newInstance());
+		} catch (InstantiationException | IllegalAccessException e) {
+			fail(e.getMessage());
+		}
+		return null;
+	}
+	
 	@Test
 	public void testLineair() {
-		StatisticsKeeper sk = new StatisticsKeeper("test");
+		StatisticsKeeper sk = createStatisticsKeeper();
 		sk.initMetrics(new SimpleMeterRegistry(), "testLineair", null);
 
 		for (int i=0; i<100; i++) {
@@ -44,7 +73,7 @@ public class StatisticsKeeperTest {
 	
 	@Test
 	public void testInterval() {
-		StatisticsKeeper sk = new StatisticsKeeper("test");
+		StatisticsKeeper sk = createStatisticsKeeper();
 		sk.initMetrics(new SimpleMeterRegistry(), "testInterval", null);
 
 		assertEquals(sk.getIntervalItemName(0), 0L,   sk.getIntervalItemValue(0)); // count
@@ -129,7 +158,7 @@ public class StatisticsKeeperTest {
 
 	@Test
 	public void testGetMap() {
-		StatisticsKeeper sk = new StatisticsKeeper("test");
+		StatisticsKeeper sk = createStatisticsKeeper();
 		sk.initMetrics(new SimpleMeterRegistry(), "group", new ArrayList<>());
 
 		for (int i=0; i<100; i++) {
