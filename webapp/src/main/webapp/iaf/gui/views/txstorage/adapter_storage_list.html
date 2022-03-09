@@ -31,37 +31,37 @@
 								<tr>
 									<th>Storage ID</th>
 									<td><input disabled icheck type="checkbox" ng-change="updateFilter('id')" ng-model="displayColumn.id"/></td>
-									<td><input type="text" class="full-width" ng-model="search.id" ng-model-options="{ debounce: 500 }"/></td>
+									<td><input type="text" class="full-width" ng-model="search.id"/></td>
 								</tr>
 								<tr>
 									<th>Timestamp (From)</th>
 									<td><input icheck type="checkbox" ng-change="updateFilter('insertDate')" ng-model="displayColumn.insertDate"/></td>
-									<td><input type="text" class="full-width" ng-model="search.startDate" ng-model-options="{ debounce: 2000 }" title="Expects a timestamp with at least yyyy-mm"/></td>
+									<td><input type="text" class="full-width" ng-model="search.startDate" title="Expects a timestamp with at least yyyy-mm"/></td>
 								</tr>
 								<tr>
 									<th>Timestamp (To)</th>
 									<td>&nbsp;</td>
-									<td><input type="text" class="full-width" ng-model="search.endDate" ng-model-options="{ debounce: 2000 }" title="Expects a timestamp with at least yyyy-mm"/></td>
+									<td><input type="text" class="full-width" ng-model="search.endDate" title="Expects a timestamp with at least yyyy-mm"/></td>
 								</tr>
 								<tr>
 									<th>Host</th>
 									<td><input icheck type="checkbox" ng-change="updateFilter('host')" ng-model="displayColumn.host"/></td>
-									<td><input type="text" class="full-width" ng-model="search.host" ng-model-options="{ debounce: 500 }"/></td>
+									<td><input type="text" class="full-width" ng-model="search.host"/></td>
 								</tr>
 								<tr>
 									<th>Original ID</th>
 									<td><input icheck type="checkbox" ng-change="updateFilter('originalId')" ng-model="displayColumn.originalId"/></td>
-									<td><input type="text" class="full-width" ng-model="search.messageId" ng-model-options="{ debounce: 500 }"/></td>
+									<td><input type="text" class="full-width" ng-model="search.messageId"/></td>
 								</tr>
 								<tr>
 									<th>Correlation ID</th>
 									<td><input icheck type="checkbox" ng-change="updateFilter('correlationId')" ng-model="displayColumn.correlationId"/></td>
-									<td><input type="text" class="full-width" ng-model="search.correlationId" ng-model-options="{ debounce: 500 }"/></td>
+									<td><input type="text" class="full-width" ng-model="search.correlationId"/></td>
 								</tr>
 								<tr>
 									<th>Comment</th>
 									<td><input icheck type="checkbox" ng-change="updateFilter('comment')" ng-model="displayColumn.comment"/></td>
-									<td><input type="text" class="full-width" ng-model="search.comment" ng-model-options="{ debounce: 500 }"/></td>
+									<td><input type="text" class="full-width" ng-model="search.comment"/></td>
 								</tr>
 								<tr>
 									<th>Expires</th>
@@ -71,19 +71,19 @@
 								<tr>
 									<th>Label</th>
 									<td><input icheck type="checkbox" ng-change="updateFilter('label')" ng-model="displayColumn.label"/></td>
-									<td><input type="text" class="full-width" ng-model="search.label" ng-model-options="{ debounce: 500 }"/></td>
+									<td><input type="text" class="full-width" ng-model="search.label"/></td>
 								</tr>
 								<tr>
 									<th>Message</th>
 									<td>&nbsp;</td>
-									<td><input type="text" class="full-width" ng-model="search.message" ng-model-options="{ debounce: 500 }"/></td>
+									<td><input type="text" class="full-width" ng-model="search.message"/></td>
 								</tr>
 								<tr>
 									<th>&nbsp;</th>
 									<td>&nbsp;</td>
 									<td>
-										<button ladda="searching" ng-click="updateTable()" class="btn btn-info btn-xs" type="button"><i class="fa fa-search" aria-hidden="true"></i> Search</button>
-										<button ng-click="clearSearch()" class="btn btn-warning btn-xs" type="button"><i class="fa fa-times" aria-hidden="true"></i> Clear</button>
+										<button ladda="searching" ng-click="searchUpdated()" class="btn btn-info btn-sm" type="button"><i class="fa fa-search" aria-hidden="true"></i> Search</button>
+										<button ladda="clear" ng-click="clearSearch()" class="btn btn-warning btn-sm" type="button"><i class="fa fa-times" aria-hidden="true"></i> Clear</button>
 									</td>
 								</tr>
 							</tbody>

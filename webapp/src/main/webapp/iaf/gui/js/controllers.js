@@ -1391,6 +1391,12 @@ angular.module('iaf.beheerconsole')
 			label: true,
 		}
 	}
+	
+	$scope.searchUpdated = function() {
+		$scope.searching = true;
+		$scope.updateTable();
+	};
+	
 	$scope.dtOptions = {
 		stateSave: true,
 		stateSaveCallback: function(settings, data) {
@@ -1456,6 +1462,8 @@ angular.module('iaf.beheerconsole')
 				response.recordsFiltered = response.skipMessages;
 				$scope.targetStates = response.targetStates;
 				callback(response);
+				$scope.searching = false;
+				$scope.clear = false;
 			});
 		}
 	};
@@ -1474,6 +1482,7 @@ angular.module('iaf.beheerconsole')
 	};
 
 	$scope.clearSearch = function() {
+		$scope.clear = true;
 		Session.remove('search');
 		$scope.search = {};
 		$scope.updateTable();
@@ -1667,6 +1676,11 @@ angular.module('iaf.beheerconsole')
 		}
 	}
 
+	$scope.searchUpdated = function() {
+		$scope.searching = true;
+		$scope.updateTable();
+	};
+
 	$scope.dtOptions = {
 		stateSave: true,
 		rowCallback: function(row, data) {
@@ -1713,6 +1727,8 @@ angular.module('iaf.beheerconsole')
 				response.recordsTotal = response.totalMessages;
 				response.recordsFiltered = response.messages.length;
 				callback(response);
+				$scope.searching = false;
+				$scope.clear = false;
 			});
 		}
 	};
@@ -1731,6 +1747,7 @@ angular.module('iaf.beheerconsole')
 	};
 
 	$scope.clearSearch = function() {
+		$scope.clear = true;
 		Session.remove('search');
 		$scope.search = {};
 		$scope.updateTable();
