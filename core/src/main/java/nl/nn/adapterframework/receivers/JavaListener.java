@@ -57,7 +57,7 @@ import nl.nn.adapterframework.util.LogUtil;
  *
  * @author  Gerrit van Brakel
  */
-public class JavaListener implements IPushingListener<String>, RequestProcessor, HasPhysicalDestination {
+public class JavaListener implements IPushingListener<Message>, RequestProcessor, HasPhysicalDestination {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
@@ -71,7 +71,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 	private boolean httpWsdl = false;
 
 	private static Map<String, JavaListener> registeredListeners;
-	private IMessageHandler<String> handler;
+	private IMessageHandler<Message> handler;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -153,13 +153,13 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 		Message message =  new Message(rawMessage);
 		if (throwException) {
 			try {
-				return handler.processRequest(this, correlationId, rawMessage, message, (Map<String,Object>)context).asString();
+				return handler.processRequest(this, correlationId, Message.asMessage(rawMessage), message, (Map<String,Object>)context).asString();
 			} catch (IOException e) {
 				throw new ListenerException("cannot convert stream", e);
 			}
 		} 
 		try {
-			return handler.processRequest(this, correlationId, rawMessage, message, context).asString();
+			return handler.processRequest(this, correlationId, Message.asMessage(rawMessage), message, context).asString();
 		} catch (ListenerException | IOException e) {
 			try {
 				return handler.formatException(null,correlationId, message, e).asString();
@@ -215,14 +215,14 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 
 
 	@Override
-	public String getIdFromRawMessage(String rawMessage, Map<String,Object> context) throws ListenerException {
+	public String getIdFromRawMessage(Message rawMessage, Map<String,Object> context) throws ListenerException {
 		// do nothing
 		return null;
 	}
 
 	@Override
-	public Message extractMessage(String rawMessage, Map<String,Object> context) throws ListenerException {
-		return new Message(rawMessage);
+	public Message extractMessage(Message rawMessage, Map<String,Object> context) throws ListenerException {
+		return rawMessage;
 	}
 
 	@Override
@@ -235,10 +235,10 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 
 
 	@Override
-	public void setHandler(IMessageHandler<String> handler) {
+	public void setHandler(IMessageHandler<Message> handler) {
 		this.handler = handler;
 	}
-	public IMessageHandler<String> getHandler() {
+	public IMessageHandler<Message> getHandler() {
 		return handler;
 	}
 
