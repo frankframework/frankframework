@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2017 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package nl.nn.adapterframework.align;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +36,7 @@ import org.xml.sax.SAXException;
  */
 public class Properties2Xml extends Map2Xml<String,String,Map<String,String>> {
 
-//	private String attributeSeparator=".";
+	private String attributeSeparator=".";
 //	private String indexSeparator=".";
 	private String valueSeparator=",";
 
@@ -55,11 +56,30 @@ public class Properties2Xml extends Map2Xml<String,String,Map<String,String>> {
 
 	@Override
 	public boolean hasChild(XSElementDeclaration elementDeclaration, String node, String childName) throws SAXException {
-		if (data.containsKey(childName))
+		if (data.containsKey(childName)) {
 			return true;
+		}
+		for (String key:data.keySet()) {
+			if (key.startsWith(childName+attributeSeparator)) {
+				return true;
+			}
+		}
 		return false;
 	}
 	
+	@Override
+	public Map<String, String> getAttributes(XSElementDeclaration elementDeclaration, String node) throws SAXException {
+		Map<String, String> result=new LinkedHashMap<>();
+		String name = elementDeclaration.getName();
+		String prefix = name+attributeSeparator;
+		for (String key:data.keySet()) {
+			if (key.startsWith(prefix)) {
+				String attributeKey = key.substring(prefix.length());
+				result.put(attributeKey, data.get(key));
+			}
+		}
+		return result;
+	}
 
 	@Override
 	public Iterable<String> getChildrenByName(String node, XSElementDeclaration childElementDeclaration) throws SAXException {
