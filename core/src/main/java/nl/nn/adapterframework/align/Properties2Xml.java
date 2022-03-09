@@ -41,7 +41,7 @@ public class Properties2Xml extends Map2Xml<String,String,Map<String,String>> {
 	private String valueSeparator=",";
 
 	private Map<String,String> data;
-	
+
 	public Properties2Xml(ValidatorHandler validatorHandler, List<XSModel> schemaInformation, String rootElement) {
 		super(validatorHandler, schemaInformation);
 		setRootElement(rootElement);
@@ -66,7 +66,7 @@ public class Properties2Xml extends Map2Xml<String,String,Map<String,String>> {
 		}
 		return false;
 	}
-	
+
 	@Override
 	public Map<String, String> getAttributes(XSElementDeclaration elementDeclaration, String node) throws SAXException {
 		Map<String, String> result=new LinkedHashMap<>();
@@ -119,7 +119,6 @@ public class Properties2Xml extends Map2Xml<String,String,Map<String,String>> {
 		}
 		
 		return p2x.translate(data);
- 	}
-
+	}
 
 }
