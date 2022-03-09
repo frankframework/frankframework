@@ -156,9 +156,6 @@ public class Message implements Serializable {
 	 * If no charset was provided and the requested charset is <code>auto</auto>, try to parse the charset.
 	 * If unsuccessful return the default; <code>UTF-8</code>.
 	 */
-	private String computeCharset() throws IOException {
-		return computeCharset(getCharset());
-	}
 	private String computeCharset(String defaultCharset) throws IOException {
 		if (StreamUtil.AUTO_DETECT_CHARSET.equalsIgnoreCase(defaultCharset)) {
 			Charset charset = MessageUtils.computeCharset(this);
@@ -307,7 +304,7 @@ public class Message implements Serializable {
 			return (Reader) request;
 		}
 		if (isBinary()) {
-			String readerCharset = computeCharset(); //Doesn't overwrite the Message's charset unless it's set to AUTO
+			String readerCharset = computeCharset(getCharset()); //Don't overwrite the Message's charset unless it's set to AUTO
 			if (StringUtils.isEmpty(readerCharset)) {
 				readerCharset=StringUtils.isNotEmpty(defaultCharset)?defaultCharset:StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 			}
@@ -409,7 +406,7 @@ public class Message implements Serializable {
 				stream.reset();
 			}
 		}
-		if (request instanceof ThrowingSupplier) {
+		if (isRepeatable()) {
 			try (InputStream stream = asInputStream()) { //Message is repeatable, close the stream after it's been (partially) read.
 				return readBytesFromInputStream(stream, readLimit);
 			}

@@ -14,7 +14,7 @@ import java.util.Arrays;
 import org.junit.Test;
 
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.StreamUtil.ByteSkipingOutputStream;
+import nl.nn.adapterframework.util.StreamUtil.MarkCompensatingOutputStream;
 
 public class StreamUtilTest {
 
@@ -130,7 +130,7 @@ public class StreamUtilTest {
 		byte[] bytes = "A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z".getBytes(); //76 chars
 		ByteArrayOutputStream boas = new ByteArrayOutputStream();
 		BufferedOutputStream bout = new BufferedOutputStream(boas, 16);
-		try (ByteSkipingOutputStream out = new ByteSkipingOutputStream(bout)) {
+		try (MarkCompensatingOutputStream out = new MarkCompensatingOutputStream(bout)) {
 
 			out.write(bytes, 9, 6);
 			out.flush();
@@ -138,7 +138,7 @@ public class StreamUtilTest {
 
 			for (int i = 0; i < bytes.length/4; i++) {
 				if(i%2==0) {
-					out.skip(3);
+					out.mark(3);
 				}
 				out.write(bytes, i*4, 4);
 			}

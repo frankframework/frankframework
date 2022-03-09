@@ -415,14 +415,14 @@ public class StreamUtil {
 		return new WatchedInputStream(stream);
 	}
 
-	public static OutputStream markOutputStream(OutputStream stream) {
-		return new ByteSkipingOutputStream(stream);
+	public static MarkCompensatingOutputStream markCompensatingOutputStream(OutputStream stream) {
+		return new MarkCompensatingOutputStream(stream);
 	}
 
-	static class ByteSkipingOutputStream extends FilterOutputStream {
+	static class MarkCompensatingOutputStream extends FilterOutputStream {
 		private int bytesToSkip = 0;
 
-		public ByteSkipingOutputStream(OutputStream out) {
+		public MarkCompensatingOutputStream(OutputStream out) {
 			super(out);
 		}
 
@@ -452,11 +452,11 @@ public class StreamUtil {
 			}
 		}
 
-		public synchronized void skip(int bytesToSkip) {
+		public synchronized void mark(int bytesToSkip) {
 			this.bytesToSkip = bytesToSkip;
 		}
 		public void reset() {
-			skip(0);
+			mark(0);
 		}
 	}
 
@@ -519,8 +519,8 @@ public class StreamUtil {
 	public static InputStream captureInputStream(InputStream in, OutputStream capture, int maxSize, boolean captureRemainingOnClose) {
 
 		CountingInputStream counter = new CountingInputStream(in);
-		OutputStream markableOutputStream = markOutputStream(limitSize(capture, maxSize));
-		return new TeeInputStream(counter, markableOutputStream, true) {
+		MarkCompensatingOutputStream markCompensatingOutputStream = markCompensatingOutputStream(limitSize(capture, maxSize));
+		return new TeeInputStream(counter, markCompensatingOutputStream, true) {
 
 			@Override
 			public void close() throws IOException {
@@ -538,13 +538,13 @@ public class StreamUtil {
 
 			@Override
 			public synchronized void mark(int readlimit) {
-				((ByteSkipingOutputStream) markableOutputStream).skip(readlimit);
+				markCompensatingOutputStream.mark(readlimit);
 				super.mark(readlimit);
 			}
 
 			@Override
 			public synchronized void reset() throws IOException {
-				((ByteSkipingOutputStream) markableOutputStream).reset();
+				markCompensatingOutputStream.reset();
 				super.reset();
 			}
 		};
