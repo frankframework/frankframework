@@ -19,6 +19,11 @@ import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Setter;
 import nl.nn.adapterframework.util.XmlBuilder;
 
+/**
+ * Percentile estimator, based on MicroMeter DistributionSummary.
+ * 
+ * @author Gerrit van Brakel
+ */
 public class MicroMeterPercentileEstimator implements PercentileEstimator {
 
 	private @Setter DistributionSummary distributionSummary;

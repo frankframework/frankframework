@@ -24,11 +24,9 @@ import nl.nn.adapterframework.statistics.MicroMeterBasics.MicroMeterSnapshot;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
- * Container for basic statistical estimators.
- * 
+ * Container for basic statistical estimators, based on MicroMeter DistributionSummary.
  * 
  * @author  Gerrit van Brakel
- * @since   4.9.9
  */
 public class MicroMeterBasics implements IBasics<MicroMeterSnapshot> {
 
