@@ -72,10 +72,30 @@ public class Properties2Xml extends Map2Xml<String,String,Map<String,String>> {
 		Map<String, String> result=new LinkedHashMap<>();
 		String name = elementDeclaration.getName();
 		String prefix = name+attributeSeparator;
-		for (String key:data.keySet()) {
-			if (key.startsWith(prefix)) {
-				String attributeKey = key.substring(prefix.length());
-				result.put(attributeKey, data.get(key));
+		String dataString = data.get(name);
+		if (dataString!=null && dataString.contains(valueSeparator)) {
+			String[] dataValues = dataString.split(valueSeparator);
+			for (String key:data.keySet()) {
+				if (key.startsWith(prefix)) {
+					String attributeName = key.substring(prefix.length());
+					String[] attributeValues = data.get(key).split(valueSeparator);
+					for (int i=0; i<dataValues.length; i++) {
+						if (dataValues[i].equals(node)) {
+							if (i>=attributeValues.length) {
+								i=attributeValues.length-1;
+							}
+							result.put(attributeName, attributeValues[i]);
+							break;
+						}
+					}
+				}
+			}
+		} else {
+			for (String key:data.keySet()) {
+				if (key.startsWith(prefix)) {
+					String attributeKey = key.substring(prefix.length());
+					result.put(attributeKey, data.get(key));
+				}
 			}
 		}
 		return result;
