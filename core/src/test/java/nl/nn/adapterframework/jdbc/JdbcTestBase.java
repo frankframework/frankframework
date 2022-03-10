@@ -42,7 +42,6 @@ import nl.nn.adapterframework.testutil.URLDataSourceFactory;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
 
-
 @RunWith(Parameterized.class)
 public abstract class JdbcTestBase {
 	protected final static String TEST_CHANGESET_PATH = "Migrator/Ibisstore_4_unittests_changeset.xml";
@@ -54,7 +53,6 @@ public abstract class JdbcTestBase {
 
 	protected Liquibase liquibase;
 	protected boolean testPeekShouldSkipRecordsAlreadyLocked = false;
-//	protected String productKey = "unknown";
 	protected Properties dataSourceInfo;
 
 	/** Only to be used for setup and teardown like actions */

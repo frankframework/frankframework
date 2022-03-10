@@ -50,45 +50,10 @@ public abstract class TransactionManagerTestBase extends JdbcTestBase {
 	public void setup() throws Exception {
 		super.setup();
 		txManager = getConfiguration().getBean(SpringTxManagerProxy.class, "txManager");
-//		setupDataSource();
 
 		prepareDatabase();
 	}
-/*
-	protected void setupDataSource() throws Exception {
-		switch (transactionManagerType) {
-			case DATASOURCE:
-				setupSpringTransactionManager();
-				break;
-			case BTM:
-				setupBTM();
-				break;
-			case NARAYANA:
-				setupNarayana();
-				break;
-			default:
-				throw new IllegalArgumentException("Don't know how to setupTransactionManagerAndDataSource() for transactionManagerType ["+transactionManagerType+"]");
-		}
-	}
 
-	private void setupSpringTransactionManager() {
-		// setup a TransactionManager like in springTOMCAT.xml
-		ThreadConnectableDataSourceTransactionManager dataSourceTransactionManager = new ThreadConnectableDataSourceTransactionManager(dataSource);
-		dataSourceTransactionManager.setTransactionSynchronization(AbstractPlatformTransactionManager.SYNCHRONIZATION_ON_ACTUAL_TRANSACTION);
-		txManager = dataSourceTransactionManager;
-	}
-
-	private void setupBTM() {
-		bitronix.tm.BitronixTransactionManager btm = bitronix.tm.TransactionManagerServices.getTransactionManager();
-		txManager = new ThreadConnectableJtaTransactionManager(btm, btm);
-	}
-
-	private void setupNarayana() throws Exception {
-		TransactionManager tm = com.arjuna.ats.jta.TransactionManager.transactionManager();
-		UserTransaction utx = com.arjuna.ats.jta.UserTransaction.userTransaction();
-		txManager = new ThreadConnectableJtaTransactionManager(utx, tm);
-	}
-*/
 	public TransactionDefinition getTxDef(int transactionAttribute, int timeout) {
 		return SpringTxManagerProxy.getTransactionDefinition(transactionAttribute, timeout);
 	}

@@ -2,7 +2,6 @@ package nl.nn.adapterframework.testutil;
 
 import static org.junit.Assert.fail;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -47,7 +46,7 @@ public enum TransactionManagerType {
 	}
 
 	private TestConfiguration create() {
-		return create("H2");
+		return create("H2"); //only used to satisfy Spring startup
 	}
 
 	private synchronized TestConfiguration create(String productKey) {
@@ -97,17 +96,6 @@ public enum TransactionManagerType {
 	public List<String> getAvailableDataSources() throws NamingException {
 		URLDataSourceFactory dataSourceFactory = new URLDataSourceFactory();
 		return dataSourceFactory.getDataSourceNames();
-	}
-
-	public List<DataSource> getAvailableDataSources2() throws NamingException {
-		URLDataSourceFactory dataSourceFactory = new URLDataSourceFactory();
-		List<String> availableDataSources = dataSourceFactory.getDataSourceNames();
-
-		List<DataSource> datasources = new ArrayList<>();
-		for (String datasourceName : availableDataSources) {
-			datasources.add(getDataSource(datasourceName));
-		}
-		return datasources;
 	}
 
 	/**
