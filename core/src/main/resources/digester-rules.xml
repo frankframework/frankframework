@@ -10,8 +10,8 @@
 	<rule pattern="configuration/jmsRealms" registerMethod="setJmsRealms" factory="nl.nn.adapterframework.configuration.digester.JmsRealmsFactory"/>
 	<rule pattern="*/jmsRealm" registerMethod="registerJmsRealm" beanClass="nl.nn.adapterframework.jms.JmsRealm"/>
 
-	<rule pattern="configuration/sapSystems" registerMethod="setSapSystems"/>
-	<rule pattern="*/sapSystem" registerMethod="registerSapSystems" object="nl.nn.adapterframework.extensions.sap.SapSystem" selfRegisterMethod="registerItem"/>
+	<rule pattern="configuration/sapSystems" registerMethod="setSapSystems" beanClass="nl.nn.adapterframework.configuration.extensions.SapSystems"/>
+	<rule pattern="*/sapSystem" registerMethod="registerSapSystem" beanClass="nl.nn.adapterframework.extensions.sap.SapSystem" selfRegisterMethod="registerItem"/>
 
 	<rule pattern="*/adapter" registerMethod="registerAdapter" beanClass="nl.nn.adapterframework.core.Adapter"/>
 	<rule pattern="*/adapter/pipeline" registerMethod="setPipeLine" beanClass="nl.nn.adapterframework.core.PipeLine"/>
