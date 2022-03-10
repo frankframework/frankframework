@@ -261,7 +261,7 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCoFu
 	@Override
 	@Mandatory
 	public void setSapSystemName(String string) {
-		super.setSapSystemName(string);;
+		super.setSapSystemName(string);
 	}
 
 	/** Name of the RFC-destination to be registered in the SAP system */
