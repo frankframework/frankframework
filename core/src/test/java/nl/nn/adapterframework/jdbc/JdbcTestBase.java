@@ -22,6 +22,7 @@ import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.springframework.jdbc.datasource.DelegatingDataSource;
 
 import liquibase.Contexts;
 import liquibase.Liquibase;
@@ -159,7 +160,9 @@ public abstract class JdbcTestBase {
 	}
 
 	protected void prepareDatabase() throws Exception {
-		connection = getConnection();
+		connection = new DelegatingDataSource(dataSource).getConnection();
+		connection.setAutoCommit(true); //Ensure this connection is NOT transactional!
+
 		dbmsSupport = dbmsSupportFactory.getDbmsSupport(dataSource);
 
 		try(Connection connection = getConnection()) {

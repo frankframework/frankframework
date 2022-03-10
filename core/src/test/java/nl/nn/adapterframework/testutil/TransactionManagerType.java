@@ -32,7 +32,11 @@ public enum TransactionManagerType {
 	}
 
 	private TransactionManagerType(Class<? extends URLDataSourceFactory> clazz, String springConfigurationFile) {
-		springConfigurationFiles = new String[]{ springConfigurationFile, "testTXConfigurationContext.xml" };
+		if(springConfigurationFile == null) {
+			springConfigurationFiles = new String[]{ "testConfigurationContext.xml" };
+		} else {
+			springConfigurationFiles = new String[]{ springConfigurationFile, "testTXConfigurationContext.xml" };
+		}
 		factory = clazz;
 	}
 
@@ -65,6 +69,22 @@ public enum TransactionManagerType {
 			return datasourceConfigurations.computeIfAbsent(productKey, key -> create(key));
 		}
 		return transactionManagerConfigurations.computeIfAbsent(this, TransactionManagerType::create);
+	}
+
+	public synchronized void closeConfigurationContext() {
+		if(this == TransactionManagerType.DATASOURCE) {
+			for (String productKey : datasourceConfigurations.keySet()) {
+				TestConfiguration ac = datasourceConfigurations.remove(productKey);
+				if(ac != null) {
+					ac.close();
+				}
+			}
+		} else {
+			TestConfiguration ac = transactionManagerConfigurations.remove(this);
+			if(ac != null) {
+				ac.close();
+			}
+		}
 	}
 
 	public List<DataSource> getAvailableDataSources() throws NamingException {
