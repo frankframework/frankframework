@@ -1,5 +1,5 @@
 /*
-   Copyright 2013,2019 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013,2019 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,9 +24,10 @@ import nl.nn.adapterframework.core.INamedObject;
  * @author Gerrit van Brakel
  * @since  7.3
  */
-public interface ISapSystem extends INamedObject {
+public interface ISapSystem extends INamedObject, nl.nn.adapterframework.configuration.extensions.ISapSystem {
 
 
+	@Override
 	public void registerItem(Object dummyParent);
 
 	public void setGwhost(String string);
