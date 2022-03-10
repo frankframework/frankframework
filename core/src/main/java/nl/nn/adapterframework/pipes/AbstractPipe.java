@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.TransactionAttributes;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.Mandatory;
 import nl.nn.adapterframework.monitoring.EventPublisher;
 import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -318,9 +319,9 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 
 	/**
 	 * The functional name of this pipe
-	 * TODO add ff.mandatory tag once validators and wrappers can be excluded.
 	 */
 	@Override
+	@Mandatory
 	public void setName(String name) {
 		this.name=name;
 		inSizeStatDummyObject.setName(getName() + " (in)");
