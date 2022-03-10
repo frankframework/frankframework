@@ -49,6 +49,7 @@ public class MigratorTest extends TransactionManagerTestBase {
 	public void setup() throws Exception {
 		super.setup();
 
+		//Make sure there are no previous warnings present
 		getConfiguration().getConfigurationWarnings().destroy();
 		getConfiguration().getConfigurationWarnings().afterPropertiesSet();
 	}
