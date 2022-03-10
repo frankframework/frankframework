@@ -71,11 +71,9 @@
 				</configuration>
 			</plugin>
 			<!-- use maven-jar-plugin to make separate artifacts of context, configurations, resources and testscenarios, to inject them into deployments -->
-			<!--
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.2.0</version>
 				<executions>
 					<execution>
 						<id>zip-context</id>
@@ -87,6 +85,18 @@
 							<classifier>context</classifier>
 							<classesDirectory>src/main/webapp/META-INF</classesDirectory>
 							<includes>context.xml</includes>
+						</configuration>
+					</execution>
+					<execution>
+						<id>zip-customViews</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<configuration>
+							<classifier>customViews</classifier>
+							<classesDirectory>src/main/webapp</classesDirectory>
+							<excludes>**/META-INF/*</excludes>
 						</configuration>
 					</execution>
 					<execution>
@@ -125,7 +135,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			-->
 		</plugins>
 	</build>
 

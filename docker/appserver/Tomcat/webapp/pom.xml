@@ -57,7 +57,28 @@
 							<overWriteSnapshots>true</overWriteSnapshots>
 							<excludeTransitive>true</excludeTransitive>
 							<stripVersion>true</stripVersion>
-							<excludeClassifiers>configurations,resources,scenarios</excludeClassifiers>
+						</configuration>
+					</execution>
+					<execution>
+						<id>unpack</id>
+			            <phase>package</phase>
+			            <goals>
+			            	<goal>unpack</goal>
+			            </goals>
+						<configuration>
+							<artifactItems>
+				                <artifactItem>
+									<groupId>${config.groupid}</groupId>
+									<artifactId>${config.project}</artifactId>
+									<version>${config.project.version}</version>
+									<type>war</type>
+									<outputDirectory>${project.build.directory}/dependencies/war</outputDirectory>
+				                </artifactItem>
+				            </artifactItems>
+			            	<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+							<excludeTransitive>true</excludeTransitive>
+							<stripVersion>true</stripVersion>
 						</configuration>
 					</execution>
 				</executions>
