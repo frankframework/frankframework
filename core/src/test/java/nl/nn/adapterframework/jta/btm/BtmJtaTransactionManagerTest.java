@@ -2,6 +2,7 @@ package nl.nn.adapterframework.jta.btm;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,10 +27,8 @@ import org.springframework.util.StreamUtils;
 
 import bitronix.tm.BitronixTransactionManager;
 import bitronix.tm.TransactionManagerServices;
-import nl.nn.adapterframework.testutil.BTMXADataSourceFactory;
 import nl.nn.adapterframework.testutil.TransactionManagerType;
 
-//@Ignore
 public class BtmJtaTransactionManagerTest {
 
 	public String STATUS_FILE = "status.txt";
@@ -42,13 +41,15 @@ public class BtmJtaTransactionManagerTest {
 	public static void ensureBTMisNotActive() {
 		if(TransactionManagerServices.isTransactionManagerRunning()) {
 			TransactionManagerType.BTM.closeConfigurationContext();
-//			TransactionManagerServices.getTransactionManager().shutdown();
+			TransactionManagerServices.getTransactionManager().shutdown();
 		}
 	}
 
 	@AfterClass
 	public static void reinstatePreviousTM() {
-//		BTMXADataSourceFactory.createBtmTransactionManager();
+		if(TransactionManagerServices.isTransactionManagerRunning()) {
+			fail("TransactionManager still running");
+		}
 	}
 
 	@Before
@@ -59,13 +60,14 @@ public class BtmJtaTransactionManagerTest {
 
 	@After
 	public void tearDown() {
-		if (delegateTransactionManager!=null) {
+		if (delegateTransactionManager != null) {
 			delegateTransactionManager.shutdownTransactionManager();
+			delegateTransactionManager = null;
 		}
 		folder.delete();
 	}
 
-	public BtmJtaTransactionManager getBtmJtaTransactionManager() {
+	private BtmJtaTransactionManager getBtmJtaTransactionManager() {
 		BtmJtaTransactionManager result = new BtmJtaTransactionManager();
 		result.setStatusFile(folder.getRoot()+"/"+STATUS_FILE);
 		result.setUidFile(folder.getRoot()+"/"+TMUID_FILE);
@@ -120,7 +122,7 @@ public class BtmJtaTransactionManagerTest {
 		assertStatus("COMPLETED", tmUid);
 	}
 
-	@Ignore("This test takes 1 minute to executed")
+	@Ignore("This test takes 1 minute to execute")
 	@Test
 	public void testShutdownWithPendingTransactions() throws NotSupportedException, SystemException {
 		TransactionManagerServices.getConfiguration().setDefaultTransactionTimeout(1);

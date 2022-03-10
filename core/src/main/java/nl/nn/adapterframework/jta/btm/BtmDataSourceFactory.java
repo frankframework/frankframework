@@ -42,6 +42,7 @@ public class BtmDataSourceFactory extends JndiDataSourceFactory implements Dispo
 		return (DataSource)dataSource;
 	}
 
+	//TODO fix this, datasources are wrapped in delegates
 	@Override
 	// implementation is necessary, because PoolingDataSource does not implement AutoCloseable
 	public void destroy() throws Exception {

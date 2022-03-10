@@ -1,5 +1,7 @@
 package nl.nn.adapterframework.testutil;
 
+import static org.junit.Assert.fail;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -49,19 +51,24 @@ public enum TransactionManagerType {
 	}
 
 	private synchronized TestConfiguration create(String productKey) {
-		TestConfiguration config = new TestConfiguration(springConfigurationFiles);
-		MutablePropertySources propertySources = config.getEnvironment().getPropertySources();
-		propertySources.remove(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME);
-		propertySources.remove(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME);
-		Properties properties = new Properties();
-		properties.setProperty("URLDataSourceFactory", factory.getCanonicalName());
-		properties.setProperty("DataSourceName", productKey);
-		propertySources.addFirst(new PropertiesPropertySource("testProperties", properties));
+		try {
+			TestConfiguration config = new TestConfiguration(springConfigurationFiles);
+			MutablePropertySources propertySources = config.getEnvironment().getPropertySources();
+			propertySources.remove(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME);
+			propertySources.remove(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME);
+			Properties properties = new Properties();
+			properties.setProperty("URLDataSourceFactory", factory.getCanonicalName());
+			properties.setProperty("DataSourceName", productKey);
+			propertySources.addFirst(new PropertiesPropertySource("testProperties", properties));
 
-		config.setName(this.name());
-		config.refresh();
+			config.setName(this.name());
+			config.refresh();
 
-		return config;
+			return config;
+		} catch (Throwable t) {
+			fail(t.getMessage());
+			throw t;
+		}
 	}
 
 	public TestConfiguration getConfigurationContext(String productKey) {
@@ -87,7 +94,12 @@ public enum TransactionManagerType {
 		}
 	}
 
-	public List<DataSource> getAvailableDataSources() throws NamingException {
+	public List<String> getAvailableDataSources() throws NamingException {
+		URLDataSourceFactory dataSourceFactory = new URLDataSourceFactory();
+		return dataSourceFactory.getDataSourceNames();
+	}
+
+	public List<DataSource> getAvailableDataSources2() throws NamingException {
 		URLDataSourceFactory dataSourceFactory = new URLDataSourceFactory();
 		List<String> availableDataSources = dataSourceFactory.getDataSourceNames();
 

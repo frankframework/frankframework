@@ -38,15 +38,15 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 		runQuery("DELETE FROM TEMP WHERE TKEY=999");
 		runQuery("INSERT INTO TEMP (TKEY,TINT) VALUES (999, 1)");
 	}
-	
+
 	@Test
 	public void testSimpleTransaction() throws Exception {
-		
+
 		TransactionStatus txStatus = startTransaction();
 
 		try {
 			runQuery("UPDATE TEMP SET TINT=2 WHERE TKEY=999");
-				
+
 		} finally {
 			if (txStatus.isRollbackOnly()) {
 				txManager.rollback(txStatus);
@@ -60,7 +60,6 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 
 	@Test
 	public void testNewTransactionMustLock() throws Exception {
-		
 		TransactionStatus txStatus = startTransaction();
 
 		try {
@@ -86,16 +85,15 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 		assertEquals(2,runSelectQuery("SELECT TINT FROM TEMP WHERE TKEY=999"));
 	}
 
-	
 	@Test
 	public void testBasicSameThread() throws Exception {
-		displayTransaction();		
+		displayTransaction();
 		TransactionStatus txStatus = startTransaction();
-		displayTransaction();		
+		displayTransaction();
 
 		try {
 			runQuery("UPDATE TEMP SET TINT=2 WHERE TKEY=999");
-			displayTransaction();		
+			displayTransaction();
 
 			runQuery("UPDATE TEMP SET TINT=3 WHERE TKEY=999 AND TINT=2");
 		} finally {
@@ -106,7 +104,6 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 
 	@Test
 	public void testBasic() throws Exception {
-		
 		TransactionStatus txStatus = startTransaction();
 
 		// do some action in main thread
@@ -124,10 +121,9 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 		}
 		assertEquals(3,runSelectQuery("SELECT TINT FROM TEMP WHERE TKEY=999"));
 	}
-	
+
 	@Test
 	public void testNoOuterTransaction() throws Exception {
-		
 		// do some action in main thread
 		runQuery("UPDATE TEMP SET TINT=2 WHERE TKEY=999");
 
@@ -139,9 +135,10 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 		}
 		assertEquals(3,runSelectQuery("SELECT TINT FROM TEMP WHERE TKEY=999"));
 	}
+
 	@Test
 	public void testBasicRollbackInChildThread() throws Exception {
-		
+
 		TransactionStatus txStatus = startTransaction();
 		// do some action in main thread
 		try {
@@ -164,7 +161,7 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 		TransactionDefinition txDef = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW,txTimeout);
 		return txManager.getTransaction(txDef);
 	}
-	
+
 	private void runQuery(String query) throws SQLException {
 		try (Connection con = getConnection()) {
 			try (PreparedStatement stmt = con.prepareStatement(query)) {
@@ -192,7 +189,7 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 			}
 		}
 	}
-	
+
 	private int runSelectQuery(String query) throws SQLException {
 		try (Connection con = getConnection()) {
 			try (PreparedStatement stmt = con.prepareStatement(query)) {
@@ -206,7 +203,7 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 	public void runInConnectedChildThread(String query) throws InterruptedException {
 		try (TransactionConnector transactionConnector = TransactionConnector.getInstance(txManager)) {
 			Thread thread = new Thread() {
-	
+
 				@Override
 				public void run() {
 					if (transactionConnector!=null) transactionConnector.beginChildThread();
@@ -218,13 +215,12 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 						if (transactionConnector!=null) transactionConnector.endChildThread();
 					}
 				}
-				
 			};
 			thread.start();
 			thread.join();
 		}
 	}
-	
+
 	public void displayTransaction() throws SystemException, IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
 		if (txManager instanceof IThreadConnectableTransactionManager) {
 			IThreadConnectableTransactionManager tctm = (IThreadConnectableTransactionManager)txManager;
@@ -239,14 +235,14 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 			tctm.resumeTransaction(transaction, resources);
 			System.out.println("-> Transaction: "+ToStringBuilder.reflectionToString(transaction, ToStringStyle.MULTI_LINE_STYLE));
 			System.out.println("-> Resources: "+ToStringBuilder.reflectionToString(resources, ToStringStyle.MULTI_LINE_STYLE));
-			
+
 			Object wasActive = ClassUtils.getDeclaredFieldValue(resources, "wasActive");
 			System.out.println("-> wasActive: "+wasActive);
 
 			Object suspendedResources = ClassUtils.getDeclaredFieldValue(resources, "suspendedResources");
 			if (suspendedResources!=null) {
 				System.out.println("-> suspendedResources: "+ToStringBuilder.reflectionToString(suspendedResources, ToStringStyle.MULTI_LINE_STYLE));
-				
+
 				if (suspendedResources instanceof BitronixTransaction) {
 					BitronixTransaction bt = (BitronixTransaction)suspendedResources;
 					XAResourceManager rm = bt.getResourceManager();
@@ -254,9 +250,7 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 					Uid gtrid = rm.getGtrid();
 					System.out.println("-> gtrid: "+gtrid);
 				}
-				
 			}
-			
 //			AbstractPlatformTransactionManager.SuspendedResourcesHolder holder = 
 		}
 	}

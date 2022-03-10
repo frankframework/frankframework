@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.jdbc;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 import java.sql.Connection;
@@ -53,7 +54,7 @@ public abstract class JdbcTestBase {
 
 	protected Liquibase liquibase;
 	protected boolean testPeekShouldSkipRecordsAlreadyLocked = false;
-	protected String productKey = "unknown";
+//	protected String productKey = "unknown";
 	protected Properties dataSourceInfo;
 
 	/** Only to be used for setup and teardown like actions */
@@ -62,7 +63,8 @@ public abstract class JdbcTestBase {
 	@Parameterized.Parameter(0)
 	public @Getter TransactionManagerType transactionManagerType;
 	@Parameterized.Parameter(1)
-	public DataSource dataSource;
+	public String productKey;
+	private DataSource dataSource;
 
 	private @Getter IDbmsSupportFactory dbmsSupportFactory;
 	protected @Getter IDbmsSupport dbmsSupport;
@@ -70,16 +72,16 @@ public abstract class JdbcTestBase {
 	@Parameters(name= "{0}: {1}")
 	public static Collection data() throws NamingException {
 		TransactionManagerType type = TransactionManagerType.DATASOURCE;
-		List<DataSource> datasources;
+		List<String> datasources;
 		if (StringUtils.isNotEmpty(singleDatasource)) {
 			datasources = new ArrayList<>();
-			datasources.add(type.getDataSource(singleDatasource));
+			datasources.add(singleDatasource);
 		} else {
 			datasources = type.getAvailableDataSources();
 		}
 		List<Object[]> matrix = new ArrayList<>();
 
-		for(DataSource ds : datasources) {
+		for(String ds : datasources) {
 			matrix.add(new Object[] {type, ds});
 		}
 
@@ -88,9 +90,13 @@ public abstract class JdbcTestBase {
 
 	@Before
 	public void setup() throws Exception {
+		dataSource = transactionManagerType.getDataSource(productKey);
+
 		String dsInfo = dataSource.toString(); //We can assume a connection has already been made by the URLDataSourceFactory to validate the DataSource/connectivity
 		dataSourceInfo = parseDataSourceInfo(dsInfo);
-		productKey = dataSourceInfo.getProperty(URLDataSourceFactory.PRODUCT_KEY);
+
+		assertEquals("DataSourceName does not match", productKey,dataSourceInfo.getProperty(URLDataSourceFactory.PRODUCT_KEY));
+
 		testPeekShouldSkipRecordsAlreadyLocked = Boolean.parseBoolean(dataSourceInfo.getProperty(URLDataSourceFactory.TEST_PEEK_KEY));
 		configuration = transactionManagerType.getConfigurationContext(productKey);
 		dbmsSupportFactory = configuration.getBean(IDbmsSupportFactory.class, "dbmsSupportFactory");

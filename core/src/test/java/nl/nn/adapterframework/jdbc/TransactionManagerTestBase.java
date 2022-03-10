@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.List;
 
 import javax.naming.NamingException;
-import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
@@ -31,14 +30,14 @@ public abstract class TransactionManagerTestBase extends JdbcTestBase {
 		List<Object[]> matrix = new ArrayList<>();
 
 		for(TransactionManagerType type: transactionManagerTypes) {
-			List<DataSource> datasources;
+			List<String> datasources;
 			if (StringUtils.isNotEmpty(singleDatasource)) {
 				datasources = new ArrayList<>();
-				datasources.add(type.getDataSource(singleDatasource));
+				datasources.add(singleDatasource);
 			} else {
 				datasources = type.getAvailableDataSources();
 			}
-			for(DataSource ds : datasources) {
+			for(String ds : datasources) {
 				matrix.add(new Object[] {type, ds});
 			}
 		}
@@ -53,7 +52,6 @@ public abstract class TransactionManagerTestBase extends JdbcTestBase {
 		txManager = getConfiguration().getBean(SpringTxManagerProxy.class, "txManager");
 //		setupDataSource();
 
-		System.err.println(dataSource);
 		prepareDatabase();
 	}
 /*
