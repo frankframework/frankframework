@@ -1,32 +1,32 @@
 <results>
-  <result senderClass="SenderSeries" senderName="Wrapper0" type="String">
-    <dummy />
-  </result>
-  <result senderClass="SenderSeries" senderName="Wrapper1" type="String">
-    <dummy />
-  </result>
-  <result senderClass="SenderSeries" senderName="Wrapper2" type="String">
-    <dummy />
-  </result>
-  <result senderClass="SenderSeries" senderName="Wrapper3" type="String">
-    <dummy />
-  </result>
-  <result senderClass="SenderSeries" senderName="Wrapper4" type="String">
-    <dummy />
-  </result>
-  <result senderClass="SenderSeries" senderName="Wrapper5" type="String">
-    <dummy />
-  </result>
-  <result senderClass="SenderSeries" senderName="Wrapper6" type="String">
-    <dummy />
-  </result>
-  <result senderClass="SenderSeries" senderName="Wrapper7" type="String">
-    <dummy />
-  </result>
-  <result senderClass="SenderSeries" senderName="Wrapper8" type="String">
-    <dummy />
-  </result>
-  <result senderClass="SenderSeries" senderName="Wrapper9" type="String">
-    <dummy />
-  </result>
+	<result senderClass="SenderSeries" senderName="Wrapper0" type="String">
+		<dummy/>
+	</result>
+	<result senderClass="SenderSeries" senderName="Wrapper1" type="String">
+		<dummy/>
+	</result>
+	<result senderClass="SenderSeries" senderName="Wrapper2" type="String">
+		<dummy/>
+	</result>
+	<result senderClass="SenderSeries" senderName="Wrapper3" type="String">
+		<dummy/>
+	</result>
+	<result senderClass="SenderSeries" senderName="Wrapper4" type="String">
+		<dummy/>
+	</result>
+	<result senderClass="SenderSeries" senderName="Wrapper5" type="String">
+		<dummy/>
+	</result>
+	<result senderClass="SenderSeries" senderName="Wrapper6" type="String">
+		<dummy/>
+	</result>
+	<result senderClass="SenderSeries" senderName="Wrapper7" type="String">
+		<dummy/>
+	</result>
+	<result senderClass="SenderSeries" senderName="Wrapper8" type="String">
+		<dummy/>
+	</result>
+	<result senderClass="SenderSeries" senderName="Wrapper9" type="String">
+		<dummy/>
+	</result>
 </results>

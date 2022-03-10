@@ -28,7 +28,7 @@ public interface IOutputStreamingSupport {
 
 	/**
 	 * return a {@link MessageOutputStream} that can be used to write a message to, that then will be processed in a streaming way.
-	 * If a target MessageOutputStream is required to stream output to, this can be obtained from <code>next</next>, if specified.
+	 * If a target MessageOutputStream is required to stream output to, this can be obtained from <code>next</code>, if specified.
 	 * If the implementor of this method is a pipe, and it is the last one in the chain of streaming pipes, it must provide the appropriate
 	 * forward in the provide MessageOutputStream.
 	 * If the class cannot provide an outputstream, it must return null.

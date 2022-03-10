@@ -1,158 +1,145 @@
 <document name="Test Tool correlation id">
 <record>
-  <broker>0000588</broker>
-  <workitem>088643357</workitem>
-  <workitemlist>008643357</workitemlist>
-  <procesdate>P</procesdate>
-  <clientname>20060907</clientname>
-  <lastmodified>G ggggg</lastmodified>
-  <stage>20070327</stage>
-  <endstage>997</endstage>
-  <processend>000</processend>
+	<broker>0000588</broker>
+	<workitem>088643357</workitem>
+	<workitemlist>008643357</workitemlist>
+	<procesdate>P</procesdate>
+	<clientname>20060907</clientname>
+	<lastmodified>G ggggg</lastmodified>
+	<stage>20070327</stage>
+	<endstage>997</endstage>
+	<processend>000</processend>
 </record>
-
 <record>
-  <broker>0121212</broker>
-  <workitem>088699346</workitem>
-  <workitemlist>008699346</workitemlist>
-  <procesdate>P</procesdate>
-  <clientname>20051124</clientname>
-  <lastmodified>ABCD Dol Dam Schimmel Edelman Kermans en</lastmodified>
-  <stage>20070327</stage>
-  <endstage>997</endstage>
-  <processend>000</processend>
+	<broker>0121212</broker>
+	<workitem>088699346</workitem>
+	<workitemlist>008699346</workitemlist>
+	<procesdate>P</procesdate>
+	<clientname>20051124</clientname>
+	<lastmodified>ABCD Dol Dam Schimmel Edelman Kermans en</lastmodified>
+	<stage>20070327</stage>
+	<endstage>997</endstage>
+	<processend>000</processend>
 </record>
-
 <record>
-  <broker>0121545</broker>
-  <workitem>088659321</workitem>
-  <workitemlist>008659321</workitemlist>
-  <procesdate>P</procesdate>
-  <clientname>20070614</clientname>
-  <lastmodified>FS Jares</lastmodified>
-  <stage>20070614</stage>
-  <endstage>130</endstage>
-  <processend>000</processend>
+	<broker>0121545</broker>
+	<workitem>088659321</workitem>
+	<workitemlist>008659321</workitemlist>
+	<procesdate>P</procesdate>
+	<clientname>20070614</clientname>
+	<lastmodified>FS Jares</lastmodified>
+	<stage>20070614</stage>
+	<endstage>130</endstage>
+	<processend>000</processend>
 </record>
-
 <record>
-  <broker>0122222</broker>
-  <workitem>088699150</workitem>
-  <workitemlist>008699150</workitemlist>
-  <procesdate>P</procesdate>
-  <clientname>20051109</clientname>
-  <lastmodified>P van Veen</lastmodified>
-  <stage>20070327</stage>
-  <endstage>997</endstage>
-  <processend>000</processend>
+	<broker>0122222</broker>
+	<workitem>088699150</workitem>
+	<workitemlist>008699150</workitemlist>
+	<procesdate>P</procesdate>
+	<clientname>20051109</clientname>
+	<lastmodified>P van Veen</lastmodified>
+	<stage>20070327</stage>
+	<endstage>997</endstage>
+	<processend>000</processend>
 </record>
-
 <record>
-  <broker>0123456</broker>
-  <workitem>088629489</workitem>
-  <workitemlist>008629489</workitemlist>
-  <procesdate>P</procesdate>
-  <clientname>20060216</clientname>
-  <lastmodified>H h</lastmodified>
-  <stage>20070327</stage>
-  <endstage>997</endstage>
-  <processend>000</processend>
+	<broker>0123456</broker>
+	<workitem>088629489</workitem>
+	<workitemlist>008629489</workitemlist>
+	<procesdate>P</procesdate>
+	<clientname>20060216</clientname>
+	<lastmodified>H h</lastmodified>
+	<stage>20070327</stage>
+	<endstage>997</endstage>
+	<processend>000</processend>
 </record>
-
 <record>
-  <broker>0123456</broker>
-  <workitem>088646951</workitem>
-  <workitemlist>008646951</workitemlist>
-  <procesdate>P</procesdate>
-  <clientname>20061121</clientname>
-  <lastmodified>P P</lastmodified>
-  <stage>20070327</stage>
-  <endstage>130</endstage>
-  <processend>000</processend>
+	<broker>0123456</broker>
+	<workitem>088646951</workitem>
+	<workitemlist>008646951</workitemlist>
+	<procesdate>P</procesdate>
+	<clientname>20061121</clientname>
+	<lastmodified>P P</lastmodified>
+	<stage>20070327</stage>
+	<endstage>130</endstage>
+	<processend>000</processend>
 </record>
-
 <record>
-  <broker>0123456</broker>
-  <workitem>088699139</workitem>
-  <workitemlist>008699139</workitemlist>
-  <procesdate>P</procesdate>
-  <clientname>20051109</clientname>
-  <lastmodified>S s</lastmodified>
-  <stage>20070327</stage>
-  <endstage>997</endstage>
-  <processend>000</processend>
+	<broker>0123456</broker>
+	<workitem>088699139</workitem>
+	<workitemlist>008699139</workitemlist>
+	<procesdate>P</procesdate>
+	<clientname>20051109</clientname>
+	<lastmodified>S s</lastmodified>
+	<stage>20070327</stage>
+	<endstage>997</endstage>
+	<processend>000</processend>
 </record>
-
 <record>
-  <broker>0123456</broker>
-  <workitem>088699284</workitem>
-  <workitemlist>008699284</workitemlist>
-  <procesdate>P</procesdate>
-  <clientname>20051118</clientname>
-  <lastmodified>FDS gilpe</lastmodified>
-  <stage>20051124</stage>
-  <endstage>113</endstage>
-  <processend>000</processend>
+	<broker>0123456</broker>
+	<workitem>088699284</workitem>
+	<workitemlist>008699284</workitemlist>
+	<procesdate>P</procesdate>
+	<clientname>20051118</clientname>
+	<lastmodified>FDS gilpe</lastmodified>
+	<stage>20051124</stage>
+	<endstage>113</endstage>
+	<processend>000</processend>
 </record>
-
 <record>
-  <broker>0147744</broker>
-  <workitem>004204654</workitem>
-  <workitemlist>004204654</workitemlist>
-  <procesdate>P</procesdate>
-  <clientname>20070619</clientname>
-  <lastmodified>HH Dr Leeuwenwortel</lastmodified>
-  <stage>20070619</stage>
-  <endstage>130</endstage>
-  <processend>000</processend>
+	<broker>0147744</broker>
+	<workitem>004204654</workitem>
+	<workitemlist>004204654</workitemlist>
+	<procesdate>P</procesdate>
+	<clientname>20070619</clientname>
+	<lastmodified>HH Dr Leeuwenwortel</lastmodified>
+	<stage>20070619</stage>
+	<endstage>130</endstage>
+	<processend>000</processend>
 </record>
-
 <record>
-  <broker>0147744</broker>
-  <workitem>004204655</workitem>
-  <workitemlist>004204655</workitemlist>
-  <procesdate>P</procesdate>
-  <clientname>20070619</clientname>
-  <lastmodified>GEEN Idee hommel</lastmodified>
-  <stage>20070619</stage>
-  <endstage>130</endstage>
-  <processend>000</processend>
+	<broker>0147744</broker>
+	<workitem>004204655</workitem>
+	<workitemlist>004204655</workitemlist>
+	<procesdate>P</procesdate>
+	<clientname>20070619</clientname>
+	<lastmodified>GEEN Idee hommel</lastmodified>
+	<stage>20070619</stage>
+	<endstage>130</endstage>
+	<processend>000</processend>
 </record>
-
 <record>
-  <broker>0159858</broker>
-  <workitem>088647954</workitem>
-  <workitemlist>008647954</workitemlist>
-  <procesdate>P</procesdate>
-  <clientname>20061130</clientname>
-  <lastmodified>F Lodewijkx</lastmodified>
-  <stage>20070327</stage>
-  <endstage>997</endstage>
-  <processend>000</processend>
+	<broker>0159858</broker>
+	<workitem>088647954</workitem>
+	<workitemlist>008647954</workitemlist>
+	<procesdate>P</procesdate>
+	<clientname>20061130</clientname>
+	<lastmodified>F Lodewijkx</lastmodified>
+	<stage>20070327</stage>
+	<endstage>997</endstage>
+	<processend>000</processend>
 </record>
-
 <record>
-  <broker>0223355</broker>
-  <workitem>004200048</workitem>
-  <workitemlist>004200048</workitemlist>
-  <procesdate>P</procesdate>
-  <clientname>20060911</clientname>
-  <lastmodified>P de Clown</lastmodified>
-  <stage>20070327</stage>
-  <endstage>997</endstage>
-  <processend>000</processend>
+	<broker>0223355</broker>
+	<workitem>004200048</workitem>
+	<workitemlist>004200048</workitemlist>
+	<procesdate>P</procesdate>
+	<clientname>20060911</clientname>
+	<lastmodified>P de Clown</lastmodified>
+	<stage>20070327</stage>
+	<endstage>997</endstage>
+	<processend>000</processend>
 </record>
-
 <record>
-  <broker>0223355</broker>
-  <workitem>004200049</workitem>
-  <workitemlist>004200049</workitemlist>
-  <procesdate>P</procesdate>
-  <clientname>20060911</clientname>
-  <lastmodified>P de Clown</lastmodified>
-  <stage>20070327</stage>
-  <endstage>997</endstage>
-  <processend>000</processend>
+	<broker>0223355</broker>
+	<workitem>004200049</workitem>
+	<workitemlist>004200049</workitemlist>
+	<procesdate>P</procesdate>
+	<clientname>20060911</clientname>
+	<lastmodified>P de Clown</lastmodified>
+	<stage>20070327</stage>
+	<endstage>997</endstage>
+	<processend>000</processend>
 </record>
-
 </document>
