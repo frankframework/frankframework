@@ -94,7 +94,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	public final static String OUTPUT_WRAPPER_NAME   = "- pipeline outputWrapper";
 
 	private final String DEFAULT_SUCCESS_EXIT_NAME = "READY";
-	
+
 	private @Getter String firstPipe;
 	private @Getter int maxThreads = 0;
 	private @Getter boolean storeOriginalMessageWithoutNamespaces = false;
