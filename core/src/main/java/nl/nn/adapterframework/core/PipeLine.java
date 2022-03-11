@@ -740,7 +740,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	/** 
 	 * Name of the first pipe to execute when a message is to be processed
-	 * @ff.default <first pipe of the pipeline>" })
+	 * @ff.default first pipe of the pipeline
 	 */
 	public void setFirstPipe(String pipeName) {
 		firstPipe = pipeName;
