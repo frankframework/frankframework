@@ -164,11 +164,12 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			cache.configure(owner.getName() + "-Pipeline");
 		}
 		if (pipeLineExits.size() < 1) {
+			// if no Exits are configured, then insert a default one, named 'READY', with state 'SUCCESS'
 			PipeLineExit defaultExit = new PipeLineExit();
 			defaultExit.setPath(DEFAULT_SUCCESS_EXIT_NAME);
 			defaultExit.setState(ExitState.SUCCESS);
 			registerPipeLineExit(defaultExit);
-			log.debug("Created default Exit");
+			log.debug("Created default Exit named ["+defaultExit.getName()+"], state ["+defaultExit.getState()+"]");
 		}
 		for (int i=0; i < pipes.size(); i++) {
 			IPipe pipe = getPipe(i);
@@ -196,7 +197,8 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 					} else {
 						PipeLineExit plexit = findExitByState(ExitState.SUCCESS);
 						if (plexit != null) {
-							plexit = pipeLineExits.values().iterator().next(); // if there is no success exit, then just get the first one
+							// if there is no success exit, then appearantly only error exits are configured; Just get the first configured one
+							plexit = pipeLineExits.values().iterator().next(); 
 						}
 						if (plexit != null) {
 							PipeForward pf = new PipeForward();
