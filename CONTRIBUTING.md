@@ -139,7 +139,7 @@ You can download Eclipse and load the Frank!Framework sources into it using the 
 ### Install Eclipse with Lombok
 
 - Open the webpage with [downloads of Eclipse](https://www.eclipse.org/downloads/packages/). At the top of this page, you see a link to download an installer. We recommend that you do not use an installer, because you can also download a .zip file with the sources of Eclipse. When you use a zip file instead of an installer, it is easier to have different versions of Eclipse on your development computer.
-- Click the link "Eclipse IDE for Enterprise Java and Web Developers". A page opens with a big Download button to the right. Skip that one because it is an installer. Click a link to the left of that, under "Download Links". We tested our instructions with version 2021-12, but older versions should also work. Note that 64-bit Eclipse doesn't work with 32-bit JRE/JDK (doesn't start without any message). To install Eclipse, just unzip your download to a directory of your choice.
+- Click the link "Eclipse IDE for Enterprise Java and Web Developers". A page opens with a big Download button to the right. Skip that one because it is an installer. Click a link to the left of that, under "Download Links". We tested our instructions with version 2021-12, but older versions should also work. To install Eclipse, just unzip your download to a directory of your choice.
 - You may get an error "path too long". You can fix that by giving your .zip file a shorter name and trying again.
 - Download the Lombok library. This is easier than letting Maven do the download and then finding the .jar file in Eclipse. Browse to https://projectlombok.org/. On the top menu, choose "Download".
 - Download version 1.18.22. You may need the link "older versions".
