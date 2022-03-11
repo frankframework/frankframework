@@ -1355,7 +1355,7 @@ angular.module('iaf.beheerconsole')
 	$scope.targetStates = [];
 	var a = '';
 
-	a += '<input icheck type="checkbox" ng-model="selectedMessages[message.id]"/>'// ng-if="::(targetStates || processState==\'Error\')"/>';
+	a += '<input icheck type="checkbox" ng-model="selectedMessages[message.id]"/>';
 	a += '<div ng-show="!selectedMessages[message.id]">';
 	a += '<a ui-sref="pages.storage.view({adapter:adapterName,receiver:receiverName,processState:processState,messageId:message.id})" class="btn btn-info btn-xs" type="button"><i class="fa fa-file-text-o"></i> View</a>';
 	a += '<button ng-if="::processState==\'Error\'" ladda="message.resending" data-style="slide-down" title="Resend Message" ng-click="resendMessage(message)" class="btn btn-warning btn-xs" type="button"><i class="fa fa-repeat"></i> Resend</button>';
