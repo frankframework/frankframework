@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2021 WeAreFrank!
+   Copyright 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -52,9 +52,9 @@ public class DigesterRulesParser extends DigesterRulesHandler {
 		String pattern = rule.getPattern();
 
 		if (parsedPatterns.contains(pattern)) {
-			// Duplicate patterns are used to tell FrankDoc parser about changed multiplicity. 
+			// Duplicate patterns are used to tell FrankDoc parser about changed multiplicity.
 			// Original method will still be available to be used by digester, so second instance of rule can be ignored here.
-			log.warn("pattern [{}] already parsed", pattern); 
+			log.warn("pattern [{}] already parsed", pattern);
 			return;
 		}
 		parsedPatterns.add(pattern);
@@ -104,7 +104,7 @@ public class DigesterRulesParser extends DigesterRulesHandler {
 			}
 			if(object instanceof ObjectCreationFactory) {
 				return (ObjectCreationFactory) object;
-			} 
+			}
 			throw new IllegalArgumentException("factory type must implement ObjectCreationFactory");
 		}
 		if(log.isTraceEnabled()) log.trace("no factory specified, returing default ["+GenericFactory.class.getCanonicalName()+"]");
@@ -122,8 +122,7 @@ public class DigesterRulesParser extends DigesterRulesHandler {
 	protected <T> T autoWireAndInitializeBean(Class<T> clazz) {
 		if(applicationContext != null) {
 			return SpringUtils.createBean(applicationContext, clazz); //Wire the factory through Spring
-		} else {
-			throw new IllegalStateException("ApplicationContext not set");
 		}
+		throw new IllegalStateException("ApplicationContext not set");
 	}
 }
