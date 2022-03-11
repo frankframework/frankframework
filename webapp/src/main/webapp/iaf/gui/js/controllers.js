@@ -1304,7 +1304,7 @@ angular.module('iaf.beheerconsole')
 	if(!$scope.storageSource)
 		return SweetAlert.Warning("Invalid URL", "Component type [receivers] or [pipes] is not provided in url!");
 	$scope.processState = $state.params.processState;
-	if($scope.receiverName && !$scope.processState)
+	if(!$scope.processState)
 		return SweetAlert.Warning("Invalid URL", "No storage type provided!");
 
 	$scope.base_url = "adapters/"+Misc.escapeURL($scope.adapterName)+ "/"+$scope.storageSource+"/"+Misc.escapeURL($scope.storageSourceName)+"/stores/"+$scope.processState;
