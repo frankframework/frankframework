@@ -823,7 +823,7 @@
 							<docletArtifact>
 								<groupId>org.ibissource</groupId>
 								<artifactId>frank-doc</artifactId>
-								<version>1.0</version>
+								<version>1.1-SNAPSHOT</version>
 							</docletArtifact>
 							<additionalOptions>
 								<additionalOption>-outputDirectory</additionalOption>
@@ -832,6 +832,8 @@
 								<additionalOption>${project.basedir}/core/src/main/resources/digester-rules.xml</additionalOption>
 								<additionalOption>-rootClass</additionalOption>
 								<additionalOption>nl.nn.adapterframework.configuration.Configuration</additionalOption>
+								<additionalOption>-frankFrameworkVersion</additionalOption>
+								<additionalOption>${project.version}</additionalOption>
 							</additionalOptions>
 							<outputDirectory>${project.build.directory}/frankdoc</outputDirectory>
 							<source>1.8</source>
