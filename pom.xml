@@ -832,6 +832,8 @@
 								<additionalOption>${project.basedir}/core/src/main/resources/digester-rules.xml</additionalOption>
 								<additionalOption>-rootClass</additionalOption>
 								<additionalOption>nl.nn.adapterframework.configuration.Configuration</additionalOption>
+								<additionalOption>-frankFrameworkVersion</additionalOption>
+								<additionalOption>${project.version}</additionalOption>
 							</additionalOptions>
 							<outputDirectory>${project.build.directory}/frankdoc</outputDirectory>
 							<source>1.8</source>
