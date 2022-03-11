@@ -1349,7 +1349,7 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('AdapterStorageCtrl', ['$scope', 'Api', '$compile', 'Cookies','Session','Misc', 'SweetAlert', function($scope, Api, $compile, Cookies, Session, Misc, SweetAlert) {
+.controller('AdapterStorageCtrl', ['$scope', 'Api', '$compile', 'Cookies','Session', 'SweetAlert', function($scope, Api, $compile, Cookies, Session, SweetAlert) {
 	$scope.closeNotes();
 	$scope.selectedMessages = [];
 	$scope.targetStates = [];

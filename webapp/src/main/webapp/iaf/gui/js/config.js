@@ -113,7 +113,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 		},
 		params: {
 			adapter: { value: '', squash: true},
-			receiver: { value: '', squash: true},
+			storageSourceName: { value: '', squash: true},
 			processState: { value: '', squash: true},
 			storageSource: { value: '', squash: true},
 		},
