@@ -33,9 +33,9 @@ public class DigesterRule {
 	private @Getter @Setter String pattern;
 
 	/**
-	 * The 'object-create-rule' attribute.
+	 * The class to use when creating the bean through Spring.
 	 */
-	private @Getter @Setter String object;
+	private @Getter @Setter String beanClass;
 
 	/**
 	 * The 'factory-create-rule' attribute.
@@ -59,10 +59,6 @@ public class DigesterRule {
 	 */
 	private @Getter @Setter String registerTextMethod;
 
-	/**
-	 * The class to use when creating the bean through Spring.
-	 */
-	private @Getter @Setter String beanClass;
 
 	@Override
 	public String toString() {

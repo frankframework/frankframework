@@ -19,7 +19,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.digester3.Digester;
-import org.apache.commons.digester3.ObjectCreateRule;
 import org.apache.commons.digester3.ObjectCreationFactory;
 import org.apache.commons.digester3.Rule;
 import org.apache.commons.digester3.binder.LinkedRuleBuilder;
@@ -68,18 +67,13 @@ public class DigesterRulesParser extends DigesterRulesHandler {
 			return;
 		}
 
-		if(StringUtils.isNotEmpty(rule.getObject())) { //If a class is specified, load the class through the digester create-object-rule
-//			ruleBuilder.createObject().ofTypeSpecifiedByAttribute(rule.getObject()); //Can't use 'ruleBuilder' as this tries to load the class at configure time and not runtime
-			ruleBuilder.addRule(new ObjectCreateRule(rule.getObject()));
-		} else {
-			ObjectCreationFactory<Object> factory = getFactory(rule.getFactory());
-			if(factory instanceof IDigesterRuleAware) {
-				((IDigesterRuleAware)factory).setDigesterRule(rule);
-			}
-			if(factory != null) {
-				factory.setDigester(digester); //When using a custom factory you have to inject the digester manually... Sigh
-				ruleBuilder.factoryCreate().usingFactory(factory); //If a factory is specified, use the factory to create the object
-			}
+		ObjectCreationFactory<Object> factory = getFactory(rule.getFactory());
+		if(factory instanceof IDigesterRuleAware) {
+			((IDigesterRuleAware)factory).setDigesterRule(rule);
+		}
+		if(factory != null) {
+			factory.setDigester(digester); //When using a custom factory you have to inject the digester manually... Sigh
+			ruleBuilder.factoryCreate().usingFactory(factory); //If a factory is specified, use the factory to create the object
 		}
 		if(rule.getRegisterMethod() != null) { //set the register method (set-next-rule)
 			ruleBuilder.setNext(rule.getRegisterMethod());
