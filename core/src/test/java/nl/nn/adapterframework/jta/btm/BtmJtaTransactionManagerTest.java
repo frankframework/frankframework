@@ -40,7 +40,9 @@ public class BtmJtaTransactionManagerTest {
 	public static void ensureBTMisNotActive() {
 		if(TransactionManagerServices.isTransactionManagerRunning()) {
 			TransactionManagerType.BTM.closeConfigurationContext();
-			TransactionManagerServices.getTransactionManager().shutdown();
+		}
+		if(TransactionManagerServices.isTransactionManagerRunning()) {
+			fail("unable to shutdown BTM TransactionManager");
 		}
 	}
 
