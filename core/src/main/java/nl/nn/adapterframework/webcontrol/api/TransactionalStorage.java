@@ -698,7 +698,7 @@ public class TransactionalStorage extends Base {
 						continue;
 
 					count++;
-					if (count > filter.skipMessages() && messages.size() < filter.maxMessages()) { 
+					if (count > filter.skipMessages() && messages.size() < filter.maxMessages()) {
 						StorageItemDTO dto = new StorageItemDTO(iterItem);
 						dto.setPosition(count);
 						messages.add(dto);
