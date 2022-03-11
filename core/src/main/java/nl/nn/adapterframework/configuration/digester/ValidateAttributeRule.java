@@ -28,7 +28,7 @@ import org.springframework.core.annotation.AnnotationUtils;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
 import nl.nn.adapterframework.configuration.SuppressKeys;
-import nl.nn.adapterframework.doc.ProtectedAttribute;
+import nl.nn.adapterframework.doc.Protected;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.StringResolver;
@@ -67,7 +67,7 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 		}
 		if (m==null) { //validate if the attribute exists
 			addLocalWarning("does not have an attribute ["+name+"] to set to value ["+value+"]");
-		} else if(AnnotationUtils.findAnnotation(m, ProtectedAttribute.class) != null) {
+		} else if(AnnotationUtils.findAnnotation(m, Protected.class) != null) {
 			addLocalWarning("attribute ["+name+"] is protected, cannot be set from configuration");
 		} else {
 			checkDeprecationAndConfigurationWarning(name, m); //check if the setter has been deprecated

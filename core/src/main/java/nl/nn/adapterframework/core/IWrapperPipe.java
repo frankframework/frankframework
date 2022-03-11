@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2021 WeAreFrank!
+   Copyright 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.core;
 
 import nl.nn.adapterframework.doc.FrankDocGroup;
+import nl.nn.adapterframework.doc.Optional;
 
 /**
  * Marker interface for Wrappers
@@ -27,4 +28,9 @@ import nl.nn.adapterframework.doc.FrankDocGroup;
 public interface IWrapperPipe extends IPipe {
 
 	enum Direction { WRAP, UNWRAP; };
+
+	/** The functional name of this pipe, is not required when used as a Wrapper */
+	@Override
+	@Optional
+	public void setName(String name);
 }

@@ -26,8 +26,8 @@ import java.util.StringTokenizer;
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
-import lombok.Getter;
 import nl.nn.adapterframework.statistics.HasStatistics.Action;
+import nl.nn.adapterframework.statistics.percentiles.MicroMeterPercentileEstimator;
 import nl.nn.adapterframework.statistics.percentiles.PercentileEstimator;
 import nl.nn.adapterframework.statistics.percentiles.PercentileEstimatorRanked;
 import nl.nn.adapterframework.util.AppConstants;
@@ -39,15 +39,15 @@ import nl.nn.adapterframework.util.XmlUtils;
  * 
  * @author Johan Verrips / Gerrit van Brakel
  */
-public class StatisticsKeeper implements ItemList {
+public class StatisticsKeeper<B extends IBasics<S>, S> implements ItemList {
 
 	private static final boolean calculatePercentiles = true;
 
 	private String name = null;
 	private long first = Long.MIN_VALUE;
 	private long last = 0;
-	private Basics cumulative;
-	private Basics mark;
+	private B cumulative;
+	private S mark;
 	private long[] classBoundaries;
 	private long[] classCounts;
 
@@ -66,7 +66,7 @@ public class StatisticsKeeper implements ItemList {
 
 	protected PercentileEstimator pest;
 
-	private @Getter DistributionSummary distributionSummary;
+	private DistributionSummary distributionSummary;
 
 	private static List<String> labels;
 	private static List<String> types;
@@ -79,7 +79,11 @@ public class StatisticsKeeper implements ItemList {
 	 * @see AppConstants
 	 */
 	public StatisticsKeeper(String name) {
-		this(name, Basics.class, statConfigKey, DEFAULT_BOUNDARY_LIST);
+		this(name, (B)new MicroMeterBasics(), statConfigKey, DEFAULT_BOUNDARY_LIST);
+	}
+
+	protected StatisticsKeeper(String name, B basics) {
+		this(name, basics, statConfigKey, DEFAULT_BOUNDARY_LIST);
 	}
 
 	public void initMetrics(MeterRegistry registry, String name, Iterable<Tag> tags) {
@@ -100,15 +104,23 @@ public class StatisticsKeeper implements ItemList {
 				.publishPercentiles(percentiles)
 				//.publishPercentileHistogram()
 				;
-		distributionSummary = builder.register(registry);
+		DistributionSummary distributionSummary = builder.register(registry);
+
+		if (cumulative instanceof MicroMeterBasics) {
+			((MicroMeterBasics)cumulative).setDistributionSummary(distributionSummary);
+			mark=cumulative.takeSnapshot();
+			pest = new MicroMeterPercentileEstimator(distributionSummary, percentiles);
+		} else {
+			this.distributionSummary = distributionSummary;
+		}
 	}
 
-	protected StatisticsKeeper(String name, Class basicsClass, String boundaryConfigKey, String defaultBoundaryList) {
+	protected StatisticsKeeper(String name, B basics, String boundaryConfigKey, String defaultBoundaryList) {
 		super();
 		this.name = name;
 		try {
-			cumulative=(Basics)basicsClass.newInstance();
-			mark=(Basics)basicsClass.newInstance();
+			cumulative=basics;
+			mark = cumulative.takeSnapshot();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -141,7 +153,7 @@ public class StatisticsKeeper implements ItemList {
 			return;
 		}
 		if (action==Action.MARK_FULL || action==Action.MARK_MAIN) {
-			mark.mark(cumulative);
+			mark = cumulative.takeSnapshot();
 		}
 	}
 
@@ -157,7 +169,7 @@ public class StatisticsKeeper implements ItemList {
 		long curMin=cumulative.getMin();
 		long curMax=cumulative.getMax();
 		cumulative.addValue(value);
-		mark.checkMinMax(value);
+		cumulative.updateIntervalMinMax(mark, value);
 		if (calculatePercentiles) {
 			pest.addValue(value,cumulative.getCount(),curMin,curMax);
 		}
@@ -190,7 +202,7 @@ public class StatisticsKeeper implements ItemList {
 
 	@Override
 	public String getItemName(int index) {
-		if (index < Basics.NUM_BASIC_ITEMS) {
+		if (index < IBasics.NUM_BASIC_ITEMS) {
 			return cumulative.getItemName(index);
 		}
 		switch (index) {
@@ -234,7 +246,7 @@ public class StatisticsKeeper implements ItemList {
 
 	@Override
 	public Type getItemType(int index) {
-		if (index<Basics.NUM_BASIC_ITEMS) {
+		if (index<IBasics.NUM_BASIC_ITEMS) {
 			return cumulative.getItemType(index);
 		}
 		switch (index) {
@@ -262,7 +274,7 @@ public class StatisticsKeeper implements ItemList {
 
 	@Override
 	public Object getItemValue(int index) {
-		if (index<Basics.NUM_BASIC_ITEMS) {
+		if (index<IBasics.NUM_BASIC_ITEMS) {
 			return cumulative.getItemValue(index);
 		}
 		switch (index) {
@@ -282,9 +294,9 @@ public class StatisticsKeeper implements ItemList {
 	public Object getIntervalItemValue(int index) {
 		switch (index) {
 			case 0: return new Long(cumulative.getIntervalCount(mark));
-			case 1: if (cumulative.getCount() == mark.getCount()) return null; else return new Long(mark.getMin());
-			case 2: if (cumulative.getCount() == mark.getCount()) return null; else return new Long(mark.getMax());
-			case 3: if (cumulative.getCount() == mark.getCount()) return null; else return new Double(cumulative.getIntervalAverage(mark));
+			case 1: if (cumulative.getIntervalCount(mark) == 0) return null; return new Long(cumulative.getIntervalMin(mark));
+			case 2: if (cumulative.getIntervalCount(mark) == 0) return null; return new Long(cumulative.getIntervalMax(mark));
+			case 3: if (cumulative.getIntervalCount(mark) == 0) return null; return new Double(cumulative.getIntervalAverage(mark));
 			case 4: return new Long(cumulative.getIntervalSum(mark));
 			case 5: return new Long(cumulative.getIntervalSumOfSquares(mark));
 			default : return null;
