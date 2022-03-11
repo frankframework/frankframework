@@ -1297,14 +1297,17 @@ angular.module('iaf.beheerconsole')
 	$scope.adapterName = $state.params.adapter;
 	if(!$scope.adapterName)
 		return SweetAlert.Warning("Invalid URL", "No adapter name provided!");
-	$scope.receiverName = $state.params.receiver;
-	if(!$scope.receiverName)
-		return SweetAlert.Warning("Invalid URL", "No receiver name provided!");
+	$scope.storageSourceName = $state.params.storageSourceName;
+	if(!$scope.storageSourceName)
+		return SweetAlert.Warning("Invalid URL", "No receiver or pipe name provided!");
+	$scope.storageSource = $state.params.storageSource;
+	if(!$scope.storageSource)
+		return SweetAlert.Warning("Invalid URL", "Component type [receivers] or [pipes] is not provided in url!");
 	$scope.processState = $state.params.processState;
-	if(!$scope.processState)
+	if($scope.receiverName && !$scope.processState)
 		return SweetAlert.Warning("Invalid URL", "No storage type provided!");
 
-	$scope.base_url = "adapters/"+Misc.escapeURL($scope.adapterName)+"/receivers/"+Misc.escapeURL($scope.receiverName)+"/stores/"+$scope.processState;
+	$scope.base_url = "adapters/"+Misc.escapeURL($scope.adapterName)+ "/"+$scope.storageSource+"/"+Misc.escapeURL($scope.storageSourceName)+"/stores/"+$scope.processState;
 
 	$scope.updateTable = function() {
 		var table = $('#datatable').DataTable();
@@ -1346,12 +1349,13 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('AdapterStorageCtrl', ['$scope', 'Api', '$compile', 'Cookies','Session', function($scope, Api, $compile, Cookies, Session) {
+.controller('AdapterStorageCtrl', ['$scope', 'Api', '$compile', 'Cookies','Session','Misc', 'SweetAlert', function($scope, Api, $compile, Cookies, Session, Misc, SweetAlert) {
 	$scope.closeNotes();
 	$scope.selectedMessages = [];
+	$scope.targetStates = [];
 	var a = '';
 
-	a += '<input icheck type="checkbox" ng-model="selectedMessages[message.id]" ng-if="::(targetStates || processState==\'Error\')"/>';
+	a += '<input icheck type="checkbox" ng-model="selectedMessages[message.id]"/>'// ng-if="::(targetStates || processState==\'Error\')"/>';
 	a += '<div ng-show="!selectedMessages[message.id]">';
 	a += '<a ui-sref="pages.storage.view({adapter:adapterName,receiver:receiverName,processState:processState,messageId:message.id})" class="btn btn-info btn-xs" type="button"><i class="fa fa-file-text-o"></i> View</a>';
 	a += '<button ng-if="::processState==\'Error\'" ladda="message.resending" data-style="slide-down" title="Resend Message" ng-click="resendMessage(message)" class="btn btn-warning btn-xs" type="button"><i class="fa fa-repeat"></i> Resend</button>';
@@ -1412,8 +1416,8 @@ angular.module('iaf.beheerconsole')
 			var table = $('#datatable').DataTable();
 			var data = table.rows( {page:'current'} ).data();
 			// visit rows in the current page once (draw event is fired after rowcallbacks)
-			for(let item in data){
-				$scope.selectedMessages[item.id] = false;
+			for(var i=0;i<data.length;i++){
+				$scope.selectedMessages[data[i].id] = false;
 			}
 		},
 		rowCallback: function(row, data) {
@@ -1459,15 +1463,17 @@ angular.module('iaf.beheerconsole')
 			Api.Get(url, function(response) {
 				response.draw = data.draw;
 				response.recordsTotal = response.totalMessages;
-				response.recordsFiltered = response.skipMessages;
 				$scope.targetStates = response.targetStates;
 				callback(response);
+				$scope.searching = false;
+				$scope.clear = false;
+			}, function(error){
 				$scope.searching = false;
 				$scope.clear = false;
 			});
 		}
 	};
-	$scope.targetStates = [];
+
 	let searchSession = Session.get('search');
 	$scope.search = {
 		id: searchSession ? searchSession['id'] : "",
@@ -1564,6 +1570,31 @@ angular.module('iaf.beheerconsole')
 			$scope.updateTable();
 		});
 	}
+
+	$scope.downloadMessages = function() {
+		let fd = getFormData();
+		let selectedMessages = fd.get("messageIds");
+		if(!selectedMessages || selectedMessages.length == 0){
+			SweetAlert.Warning("No message selected!");
+		} else {
+			$scope.messagesDownloading = true;
+			Api.Post($scope.base_url+"/messages/download", fd, function(response) {
+				let blob = new Blob([response], {type: 'application/octet-stream'});
+				let downloadLink = document.createElement('a');
+				downloadLink.href = window.URL.createObjectURL(blob);
+				downloadLink.setAttribute('download', 'messages.zip');
+				document.body.appendChild(downloadLink);
+				downloadLink.click();
+				downloadLink.parentNode.removeChild(downloadLink);
+				$scope.addNote("success", "Successfully downloaded messages");
+				$scope.messagesDownloading = false;
+			}, function(data) {
+				$scope.messagesDownloading = false;
+				$scope.addNote("danger", "Something went wrong, unable to download selected messages!");
+			}, null, 'blob');
+		}
+	}
+
 	$scope.changingProcessState = false;
 	$scope.changeProcessState = function(processState, targetState) {
 		$scope.changingProcessState = true;
@@ -1596,7 +1627,7 @@ angular.module('iaf.beheerconsole')
 		} else {
 			SweetAlert.Warning("Message not found", "message id ["+$scope.message.id+"] error ["+statusText+"]");
 		}
-		$state.go("pages.storage.list", {adapter:$scope.adapterName, receiver:$scope.receiverName, processState:$scope.processState});
+		$state.go("pages.storage.list", {adapter:$scope.adapterName, storageSource:$scope.storageSource, storageSourceName:$scope.storageSourceName, processState:$scope.processState});
 	}, {responseType:'text', transformResponse: function(data) {
 		return data;
 	}});
@@ -1604,201 +1635,16 @@ angular.module('iaf.beheerconsole')
 	$scope.resendMessage = function(message) {
 		$scope.doResendMessage(message, function(messageId) {
 			//Go back to the storage list if successful
-			$state.go("pages.storage.list", {adapter:$scope.adapterName, receiver:$scope.receiverName, processState:$scope.processState});
+			$state.go("pages.storage.list", {adapter:$scope.adapterName, storageSource:$scope.storageSource, storageSourceName:$scope.storageSourceName, processState:$scope.processState});
 		});
 	};
 
 	$scope.deleteMessage = function(message) {
 		$scope.doDeleteMessage(message, function(messageId) {
 			//Go back to the storage list if successful
-			$state.go("pages.storage.list", {adapter:$scope.adapterName, receiver:$scope.receiverName, processState:$scope.processState});
+			$state.go("pages.storage.list", {adapter:$scope.adapterName, storageSource:$scope.storageSource, storageSourceName:$scope.storageSourceName, processState:$scope.processState});
 		});
 	};
-}])
-
-.controller('PipeMessageLogBaseCtrl', ['$scope', 'Misc', '$state', 'SweetAlert', function($scope, Misc, $state, SweetAlert) {
-	$scope.adapterName = $state.params.adapter;
-	if(!$scope.adapterName)
-		return SweetAlert.Warning("Invalid URL", "No adapter name provided!");
-	$scope.pipeName = $state.params.pipe;
-	if(!$scope.pipeName)
-		return SweetAlert.Warning("Invalid URL", "No pipe name provided!");
-
-	var base_url = "adapters/"+$scope.adapterName+"/pipes/"+$scope.pipeName+"/messages";
-	$scope.downloadMessage = function(messageId) {
-		window.open(Misc.getServerPath() + "iaf/api/"+base_url+"/"+encodeURIComponent(encodeURIComponent(messageId))+"/download");
-	};
-
-	$scope.updateTable = function() {
-		var table = $('#datatable').DataTable();
-		if(table)
-			table.draw();
-	};
-}])
-
-.controller('PipeMessageLogListCtrl', ['$scope', 'Api', 'Cookies', '$compile','Session', function($scope, Api, Cookies, $compile, Session) {
-	var base_url = "adapters/"+$scope.adapterName+"/pipes/"+$scope.pipeName+"/messages";
-
-	var a =  '<a ui-sref="pages.pipemessagelog.view({adapter:adapterName,pipe:pipeName,messageId:message.id})" class="btn btn-info btn-xs" type="button"><i class="fa fa-file-text-o"></i> View</a>';
-		a += '<button title="Download Message" ng-click="downloadMessage(message.id)" class="btn btn-info btn-xs" type="button"><i class="fa fa-arrow-circle-o-down"></i> Download</button>';
-
-	var columns = [
-		{ "data": null, defaultContent: a, className: "m-b-xxs storageActions", bSortable: false},
-		{ "name": "pos", "data": "position", bSortable: false },
-		{ "name": "id", "data": "id", bSortable: false },
-		{ "name": "insertDate", "data": "insertDate", className: "date" },
-		{ "name": "host", "data": "host", bSortable: false },
-		{ "name": "originalId", "data": "originalId", bSortable: false },
-		{ "name": "correlationId", "data": "correlationId", bSortable: false },
-		{ "name": "comment", "data": "comment", bSortable: false },
-		{ "name": "expiryDate", "data": "expiryDate", className: "date", bSortable: false },
-		{ "name": "label", "data": "label", bSortable: false },
-	];
-
-	var filterCookie = Cookies.get("PipeMessageLogFilter");
-	if(filterCookie) {
-		for(let column in columns) {
-			if(column.name && filterCookie[column.name] === false) {
-				column.visible = false;
-			}
-		}
-		$scope.displayColumn = filterCookie;
-	} else {
-		$scope.displayColumn = {
-			id: true,
-			insertDate: true,
-			host: true,
-			originalId: true,
-			correlationId: true,
-			comment: true,
-			expiryDate: true,
-			label: true,
-		}
-	}
-
-	$scope.searchUpdated = function() {
-		$scope.searching = true;
-		$scope.updateTable();
-	};
-
-	$scope.dtOptions = {
-		stateSave: true,
-		rowCallback: function(row, data) {
-			var row = $(row);// .children("td:first").addClass("m-b-xxs");
-			row.children("td.date").each(function(_, element) {
-				var time = $(this).text();
-				if(time)
-					$(element).attr({"to-date": "", "time": time });
-			});
-			var scope = $scope.$new();
-			scope.message = data;
-			$compile(row)(scope);
-		},
-		searching: false,
-		scrollX: true,
-		bAutoWidth: false,
-		orderCellsTop: true,
-		serverSide: true,
-		processing: true,
-		paging: true,
-		lengthMenu: [10,25,50,100,500,999],
-		order: [[ 2, 'desc' ]],
-		columns: columns,
-		sAjaxDataProp: 'messages',
-		ajax: function (data, callback, settings) {
-			var start = data.start;
-			var length = data.length;
-			var order = data.order[0];
-			var direction = order.dir; // asc or desc
-
-			var url = base_url+"?max="+length+"&skip="+start+"&sort="+direction;
-			var search = $scope.search;
-			let searchSession = {};
-			for(let column in search) {
-				let text = search[column];
-				if(text) {
-					url += "&"+column+"="+text;
-					searchSession[column] = text;
-				}
-			}
-			Session.set('search', searchSession);
-			Api.Get(url, function(response) {
-				response.draw = data.draw;
-				response.recordsTotal = response.totalMessages;
-				response.recordsFiltered = response.messages.length;
-				callback(response);
-				$scope.searching = false;
-				$scope.clear = false;
-			});
-		}
-	};
-
-	let searchSession = Session.get('search');
-	$scope.search = {
-		id: searchSession ? searchSession['id'] : "",
-		startDate: searchSession ? searchSession["startDate"] : "",
-		endDate: searchSession ? searchSession["endDate"] : "",
-		host: searchSession ? searchSession["host"] : "",
-		messageId: searchSession ? searchSession["messageId"] : "",
-		correlationId: searchSession ? searchSession["correlationId"] : "",
-		comment: searchSession ? searchSession["comment"] : "",
-		label: searchSession ? searchSession["label"] : "",
-		message: searchSession ? searchSession["message"] : ""
-	};
-
-	$scope.clearSearch = function() {
-		$scope.clear = true;
-		Session.remove('search');
-		$scope.search = {};
-		$scope.updateTable();
-	};
-
-	$scope.filterBoxExpanded = false;
-	var search = $scope.search;
-	if(search){
-		for(let column in search) {
-			let value = search[column];
-			if(value && value != "") {
-				$scope.filterBoxExpanded = true;
-			}
-		}
-	}
-
-	$scope.updateFilter = function(column) {
-		Cookies.set("PipeMessageLogFilter", $scope.displayColumn);
-
-		let table = $('#datatable').DataTable();
-		if(table) {
-			let tableColumn = table.column(column+":name");
-			if(tableColumn && tableColumn.length == 1)
-				tableColumn.visible( $scope.displayColumn[column] );
-			table.draw();
-		}
-	};
-
-}])
-
-.controller('PipeMessageLogViewCtrl', ['$scope', 'Api', '$state', 'SweetAlert', function($scope, Api, $state, SweetAlert) {
-	$scope.message = {};
-
-	$scope.message.id = $state.params.messageId;
-	if(!$scope.message.id)
-		return SweetAlert.Warning("Invalid URL", "No message id provided!");
-
-	var url = "adapters/"+$scope.adapterName+"/pipes/"+$scope.pipeName+"/messages/"+encodeURIComponent(encodeURIComponent($scope.message.id));
-	Api.Get(url, function(data) {
-		$scope.metadata = JSON.parse(data);
-	}, function(_, statusCode, statusText) {
-		if(statusCode == 500) {
-			SweetAlert.Warning("An error occured while opening the message", "message id ["+$scope.message.id+"] error ["+statusText+"]");
-		} else {
-			SweetAlert.Warning("Message not found", "message id ["+$scope.message.id+"] error ["+statusText+"]");
-		}
-		$state.go("pages.pipemessagelog.list", {adapter:$scope.adapterName, pipe:$scope.pipeName});
-	}, {responseType:'text', transformResponse: function(data) {
-		return data;
-	}});
-
 }])
 
 .controller('WebservicesCtrl', ['$scope', 'Api', 'Misc', function($scope, Api, Misc) {

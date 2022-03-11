@@ -53,9 +53,11 @@ angular.module('iaf.beheerconsole')
 			var callback = args.shift();
 			var error = args.shift();
 			var intercept = args.shift();
+			var responseType = args.shift();
 
 			return $http.post(buildURI(uri), object, {
 				headers: headers,
+				responseType: responseType,
 				transformRequest: angular.identity,
 				intercept: intercept,
 			}).then(function(response){
