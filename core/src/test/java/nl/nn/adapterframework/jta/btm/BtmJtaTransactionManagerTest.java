@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -20,6 +19,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.springframework.transaction.TransactionSystemException;
@@ -35,7 +35,7 @@ public class BtmJtaTransactionManagerTest {
 	public String TMUID_FILE = "tm-uid.txt";
 
 	private BtmJtaTransactionManager delegateTransactionManager;
-	private TemporaryFolder folder;
+	public @Rule TemporaryFolder folder = new TemporaryFolder();
 
 	@BeforeClass
 	public static void ensureBTMisNotActive() {
@@ -46,16 +46,10 @@ public class BtmJtaTransactionManagerTest {
 	}
 
 	@AfterClass
-	public static void reinstatePreviousTM() {
+	public static void validateNoTXIsActive() {
 		if(TransactionManagerServices.isTransactionManagerRunning()) {
 			fail("TransactionManager still running");
 		}
-	}
-
-	@Before
-	public void setup() throws IOException {
-		folder = new TemporaryFolder();
-		folder.create();
 	}
 
 	@After
@@ -64,15 +58,14 @@ public class BtmJtaTransactionManagerTest {
 			delegateTransactionManager.shutdownTransactionManager();
 			delegateTransactionManager = null;
 		}
-		folder.delete();
 	}
 
 	private BtmJtaTransactionManager getBtmJtaTransactionManager() {
 		BtmJtaTransactionManager result = new BtmJtaTransactionManager();
 		result.setStatusFile(folder.getRoot()+"/"+STATUS_FILE);
 		result.setUidFile(folder.getRoot()+"/"+TMUID_FILE);
-		TransactionManagerServices.getConfiguration().setLogPart1Filename(folder.getRoot()+"/btm1.tlog");
-		TransactionManagerServices.getConfiguration().setLogPart2Filename(folder.getRoot()+"/btm2.tlog");
+		TransactionManagerServices.getConfiguration().setLogPart1Filename(folder.getRoot()+"/btm-1.tlog");
+		TransactionManagerServices.getConfiguration().setLogPart2Filename(folder.getRoot()+"/btm-2.tlog");
 		delegateTransactionManager = result;
 		return result;
 	}

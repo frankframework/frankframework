@@ -22,8 +22,6 @@ import org.springframework.transaction.TransactionSystemException;
 import bitronix.tm.BitronixTransactionManager;
 import bitronix.tm.Configuration;
 import bitronix.tm.TransactionManagerServices;
-import bitronix.tm.resource.ResourceRegistrar;
-import bitronix.tm.resource.common.XAResourceProducer;
 import nl.nn.adapterframework.jta.StatusRecordingTransactionManager;
 
 public class BtmJtaTransactionManager extends StatusRecordingTransactionManager {
@@ -45,14 +43,11 @@ public class BtmJtaTransactionManager extends StatusRecordingTransactionManager 
 	@Override
 	protected boolean shutdownTransactionManager() {
 		BitronixTransactionManager transactionManager = (BitronixTransactionManager)getTransactionManager();
-		transactionManager.shutdown();
-
-		// unregister existing resources, to avoid problems registering them again, e.g. in fullReload()
-		for (String name:ResourceRegistrar.getResourcesUniqueNames()) {
-			log.debug("Closing and unregistering resource ["+name+"]");
-			XAResourceProducer<?,?> resourceProducer = ResourceRegistrar.get(name);
-			resourceProducer.close();
+		if(transactionManager == null) { //TX was never created?
+			return true;
 		}
+
+		transactionManager.shutdown();
 
 		int inflightCount = transactionManager.getInFlightTransactionCount();
 		return inflightCount>0;
