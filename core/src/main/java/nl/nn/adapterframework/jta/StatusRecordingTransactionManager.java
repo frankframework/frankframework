@@ -63,7 +63,6 @@ public abstract class StatusRecordingTransactionManager extends ThreadConnectabl
 	 * @return true if any transactions are pending, that need to be recovered later. 
 	 */
 	protected abstract TransactionManager createTransactionManager() throws TransactionSystemException;
-	//TODO make it so the boolean represents whether the action 'shutdown' was successful.
 	protected abstract boolean shutdownTransactionManager() throws TransactionSystemException;
 
 	/*
