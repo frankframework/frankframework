@@ -57,7 +57,7 @@ import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.Mandatory;
 import nl.nn.adapterframework.extensions.sap.ISapListener;
 import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.stream.Message;
@@ -258,13 +258,23 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCoFu
 		return ToStringBuilder.reflectionToString(this);
 	}
 
-	@IbisDoc({"1", "Name of the RFC-destination to be registered in the SAP system", ""})
 	@Override
+	@Mandatory
+	public void setSapSystemName(String string) {
+		super.setSapSystemName(string);
+	}
+
+	/** Name of the RFC-destination to be registered in the SAP system */
+	@Override
+	@Mandatory
 	public void setProgid(String string) {
 		progid = string;
 	}
 
-	@IbisDoc({"2", "The number of connections that should be registered at the gateway", "2"})
+	/** 
+	  * The number of connections that should be registered at the gateway
+	  * @ff.default 2
+	  */
 	@Override
 	public void setConnectionCount(String connectionCount) {
 		this.connectionCount = connectionCount;

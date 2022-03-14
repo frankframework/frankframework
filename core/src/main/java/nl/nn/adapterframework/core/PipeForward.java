@@ -18,6 +18,7 @@ package nl.nn.adapterframework.core;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import lombok.Getter;
+import nl.nn.adapterframework.doc.Mandatory;
 
 /**
  * Bean that knows a functional name of a Forward, to be referred by
@@ -54,13 +55,15 @@ public class PipeForward {
 	/**
 	 * the <code>name</code> is a symbolic reference to a <code>path</code>.<br/>
 	 */
+	@Mandatory
 	public void setName(String name) {
 		this.name = name;
 	}
 
 	/**
-	 * The path is the name of the Pipe to execute/store
+	 * The path is the name of the Pipe to execute or the Exit to be used
 	 */
+	@Mandatory
 	public void setPath(String path) {
 		this.path = path;
 	}
