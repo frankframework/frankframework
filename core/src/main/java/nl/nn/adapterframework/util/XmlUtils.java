@@ -212,14 +212,18 @@ public class XmlUtils {
 		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
 			+ "<xsl:output method=\"text\"/>"
-			+ "<xsl:template match=\"/\">"
-			+ "<xsl:for-each select=\"/xsl:stylesheet/@*\">"
-			+ "<xsl:value-of select=\"concat('stylesheet-',name(),'=',.,';')\"/>"
-			+ "</xsl:for-each>"
-			+ "<xsl:for-each select=\"/xsl:stylesheet/xsl:output/@*\">"
-			+ "<xsl:value-of select=\"concat('output-',name(),'=',.,';')\"/>"
-			+ "</xsl:for-each>"
-			+ "</xsl:template>"
+			+ 	"<xsl:template match=\"/\">"
+			+ 		"<xsl:for-each select=\"/xsl:stylesheet/@*\">"
+			+ 			"<xsl:value-of select=\"concat('stylesheet-',name(),'=',.,';')\"/>"
+			+ 		"</xsl:for-each>"
+			+ 		"<xsl:for-each select=\"/xsl:stylesheet/xsl:output/@*\">"
+			+ 			"<xsl:value-of select=\"concat('output-',name(),'=',.,';')\"/>"
+			+ 		"</xsl:for-each>"
+			+ 		"disable-output-escaping=<xsl:choose>"
+			+ 				"<xsl:when test=\"//*[@disable-output-escaping='yes']\">yes</xsl:when>"
+			+ 				"<xsl:otherwise>no</xsl:otherwise>"
+			+ 			"</xsl:choose>;"
+			+ 	"</xsl:template>"
 			+ "</xsl:stylesheet>";
 	}
 

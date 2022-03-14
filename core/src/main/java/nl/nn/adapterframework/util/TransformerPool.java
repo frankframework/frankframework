@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -468,5 +468,14 @@ public class TransformerPool {
 	public String getOutputMethod() throws TransformerException, IOException, SAXException {
 		Map<String,String> configMap=getConfigMap();
 		return configMap.get("output-method");
+	}
+
+	public Boolean getDisableOutputEscaping() throws TransformerException, IOException, SAXException {
+		Map<String,String> configMap=getConfigMap();
+		String setting=configMap.get("disable-output-escaping");
+		if (setting==null) {
+			return null;
+		}
+		return "yes".equals(setting);
 	}
 }
