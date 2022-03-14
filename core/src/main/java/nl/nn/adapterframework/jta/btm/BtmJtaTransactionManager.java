@@ -43,7 +43,7 @@ public class BtmJtaTransactionManager extends StatusRecordingTransactionManager 
 	@Override
 	protected boolean shutdownTransactionManager() {
 		BitronixTransactionManager transactionManager = (BitronixTransactionManager)getTransactionManager();
-		if(transactionManager == null) { //TX was never created?
+		if(transactionManager == null) { //TM was never created?
 			return true;
 		}
 

@@ -22,11 +22,12 @@ import nl.nn.adapterframework.util.SpringUtils;
  */
 public class TestConfiguration extends Configuration {
 	public static final String TEST_CONFIGURATION_NAME = "TestConfiguration";
+	private static final String TEST_CONFIGURATION_FILE = "testConfigurationContext.xml";
 	private QuerySenderPostProcessor qsPostProcessor = new QuerySenderPostProcessor();
 
 	//Configures a standalone configuration.
 	public TestConfiguration() {
-		this("testConfigurationContext.xml");
+		this(TEST_CONFIGURATION_FILE);
 
 		refresh();
 	}

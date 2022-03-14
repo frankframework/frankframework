@@ -70,17 +70,17 @@ public abstract class JdbcTestBase {
 	@Parameters(name= "{0}: {1}")
 	public static Collection data() throws NamingException {
 		TransactionManagerType type = TransactionManagerType.DATASOURCE;
-		List<String> datasources;
+		List<String> productNames; //See URLDataSourceFactory.TEST_DATASOURCES
 		if (StringUtils.isNotEmpty(singleDatasource)) {
-			datasources = new ArrayList<>();
-			datasources.add(singleDatasource);
+			productNames = new ArrayList<>();
+			productNames.add(singleDatasource);
 		} else {
-			datasources = type.getAvailableDataSources();
+			productNames = type.getAvailableDataSources();
 		}
 		List<Object[]> matrix = new ArrayList<>();
 
-		for(String ds : datasources) {
-			matrix.add(new Object[] {type, ds});
+		for(String name : productNames) {
+			matrix.add(new Object[] {type, name});
 		}
 
 		return matrix;
@@ -93,6 +93,7 @@ public abstract class JdbcTestBase {
 		String dsInfo = dataSource.toString(); //We can assume a connection has already been made by the URLDataSourceFactory to validate the DataSource/connectivity
 		dataSourceInfo = parseDataSourceInfo(dsInfo);
 
+		//The datasourceName must be equal to the ProductKey to ensure we're testing the correct datasource
 		assertEquals("DataSourceName does not match", productKey,dataSourceInfo.getProperty(URLDataSourceFactory.PRODUCT_KEY));
 
 		testPeekShouldSkipRecordsAlreadyLocked = Boolean.parseBoolean(dataSourceInfo.getProperty(URLDataSourceFactory.TEST_PEEK_KEY));

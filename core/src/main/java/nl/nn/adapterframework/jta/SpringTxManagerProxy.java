@@ -24,7 +24,6 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.jta.JtaTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -37,7 +36,6 @@ import nl.nn.adapterframework.util.LogUtil;
 public class SpringTxManagerProxy implements IThreadConnectableTransactionManager<Object,Object>, InitializingBean {
 	private static final Logger log = LogUtil.getLogger(SpringTxManagerProxy.class);
 
-	private @Setter @Getter String realTxManagerBeanName;
 	private IThreadConnectableTransactionManager<Object,Object> threadConnectableProxy;
 	private @Setter PlatformTransactionManager realTxManager;
 
