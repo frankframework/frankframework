@@ -330,6 +330,7 @@ public class TransactionalStorage extends Base {
 			ProcessState state = ProcessState.getProcessStateFromName(processState); 
 			storage = receiver.getMessageBrowser(state);
 			targetPSInfo = getTargetProcessStateInfo(receiver.targetProcessStates().get(state));
+			listener = receiver.getListener();
 		}
 
 		if(storage == null) {
