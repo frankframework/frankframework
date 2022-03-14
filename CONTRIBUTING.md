@@ -165,7 +165,7 @@ You can download Eclipse and load the Frank!Framework sources into it using the 
 - Press Install / Update.
 - If you have trouble with these instructions, then you can get help on the https://projectlombok.org/ site. On the top menu, choose "install" | "Eclipse".
 - You may have to restart Eclipse to start using the Lombok integration.
-- The Frank!Framework can only run on Java 8. Please install a Java 8 JDK in addition to the JRE that is included in your Eclipse installation. You can find it [here](https://www.azul.com/downloads/?package=jdk). This is the Zulu OpenJDK, so no issues with copyright. After downloading, install it in Windows | Preferences | Java | Installed JREs.
+- We prefer to run the Frank!Framework on Java 8. Please install a Java 8 JDK in addition to the JRE that is included in your Eclipse installation. You can find it [here](https://www.azul.com/downloads/?package=jdk). This is the Zulu OpenJDK, so no issues with copyright. After downloading, install it in Windows | Preferences | Java | Installed JREs.
 - You may have to delete the JRE that came with Eclipse there.
 
 ### Set up a Tomcat server in Eclipse
