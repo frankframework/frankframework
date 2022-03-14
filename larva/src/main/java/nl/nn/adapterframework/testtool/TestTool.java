@@ -1948,7 +1948,7 @@ public class TestTool {
 				queues = null;
 				errorMessage("Could not find property '" + name + ".serviceName'", writers);
 			} else {
-				ListenerMessageHandler<Message> listenerMessageHandler = new ListenerMessageHandler<>();
+				ListenerMessageHandler<String> listenerMessageHandler = new ListenerMessageHandler<>();
 
 				if(properties.contains(name + ".requestTimeOut") || properties.contains(name + ".responseTimeOut")) {
 					errorMessage("properties "+name+".requestTimeOut/"+name+".responseTimeOut have been replaced with "+name+".timeout", writers);
