@@ -48,7 +48,7 @@ import nl.nn.adapterframework.util.SpringUtils;
 public class CleanupDatabaseJob extends JobDef {
 	private @Getter int queryTimeout;
 
-	private class MessageLogObject {
+	protected class MessageLogObject {
 		private String datasourceName;
 		private String tableName;
 		private String expiryDateField;
@@ -242,7 +242,7 @@ public class CleanupDatabaseJob extends JobDef {
 		}
 	}
 
-	private List<MessageLogObject> getAllMessageLogs(IbisManager ibisManager) {
+	protected List<MessageLogObject> getAllMessageLogs(IbisManager ibisManager) {
 		List<MessageLogObject> messageLogs = new ArrayList<>();
 		for(IAdapter adapter : ibisManager.getRegisteredAdapters()) {
 			for (Receiver<?> receiver: adapter.getReceivers()) {

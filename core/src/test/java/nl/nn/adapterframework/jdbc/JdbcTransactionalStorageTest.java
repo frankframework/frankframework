@@ -197,14 +197,15 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 		storage.configure();
 
 		Message message = createMessage();
+		String key;
 		try (Connection connection = getConnection()) {
 			String storeMessageOutput = storage.storeMessage(connection,"1", "correlationId", new Date(), "comment", "label", message);
 
-			String key = storeMessageOutput.substring(storeMessageOutput.indexOf(">")+1, storeMessageOutput.lastIndexOf("<"));
-
-			Message result = storage.getMessage(key);
-			assertEquals(message.asString(),result.asString());
+			key = storeMessageOutput.substring(storeMessageOutput.indexOf(">")+1, storeMessageOutput.lastIndexOf("<"));
 		}
+
+		Message result = storage.getMessage(key);
+		assertEquals(message.asString(),result.asString());
 	}
 
 	@Test
@@ -217,12 +218,12 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 			String storeMessageOutput = storage.storeMessage(connection,"1", "correlationId", new Date(), "comment", "label", message);
 
 			key = storeMessageOutput.substring(storeMessageOutput.indexOf(">")+1, storeMessageOutput.lastIndexOf("<"));
+		}
 
-			try(IMessageBrowsingIteratorItem item = storage.getContext(key)){
-				assertEquals("correlationId", item.getCorrelationId());
-				assertEquals("comment", item.getCommentString());
-				assertEquals("label", item.getLabel());
-			}
+		try(IMessageBrowsingIteratorItem item = storage.getContext(key)){
+			assertEquals("correlationId", item.getCorrelationId());
+			assertEquals("comment", item.getCommentString());
+			assertEquals("label", item.getLabel());
 		}
 
 		Message result = storage.getMessage(key);
