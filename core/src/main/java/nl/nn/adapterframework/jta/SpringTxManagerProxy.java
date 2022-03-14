@@ -24,6 +24,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.jta.JtaTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -37,7 +38,7 @@ public class SpringTxManagerProxy implements IThreadConnectableTransactionManage
 	private static final Logger log = LogUtil.getLogger(SpringTxManagerProxy.class);
 
 	private IThreadConnectableTransactionManager<Object,Object> threadConnectableProxy;
-	private @Setter PlatformTransactionManager realTxManager;
+	private @Getter @Setter PlatformTransactionManager realTxManager;
 
 	private boolean trace=false;
 
@@ -76,10 +77,6 @@ public class SpringTxManagerProxy implements IThreadConnectableTransactionManage
 		getRealTxManager().rollback(txStatus);
 	}
 
-	public PlatformTransactionManager getRealTxManager() {
-		return realTxManager;
-	}
-
 	public IThreadConnectableTransactionManager<Object,Object> getThreadConnectableProxy() {
 		if (threadConnectableProxy==null) {
 			PlatformTransactionManager realTxManager = getRealTxManager();
@@ -112,7 +109,7 @@ public class SpringTxManagerProxy implements IThreadConnectableTransactionManage
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		if(realTxManager == null) {
-			throw new IllegalStateException("TxManager not set");
+			throw new IllegalStateException("RealTxManager not set");
 		}
 	}
 }
