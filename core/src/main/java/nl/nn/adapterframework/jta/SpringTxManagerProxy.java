@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,8 +16,7 @@
 package nl.nn.adapterframework.jta;
 
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
@@ -25,7 +24,6 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.jta.JtaTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -35,13 +33,11 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author  Tim van der Leeuw
  * @since   4.8
  */
-public class SpringTxManagerProxy implements IThreadConnectableTransactionManager<Object,Object>, BeanFactoryAware {
+public class SpringTxManagerProxy implements IThreadConnectableTransactionManager<Object,Object>, InitializingBean {
 	private static final Logger log = LogUtil.getLogger(SpringTxManagerProxy.class);
-	
-	private @Setter BeanFactory beanFactory;
-	private @Setter @Getter String realTxManagerBeanName;
+
 	private IThreadConnectableTransactionManager<Object,Object> threadConnectableProxy;
-	private PlatformTransactionManager realTxManager;
+	private @Setter PlatformTransactionManager realTxManager;
 
 	private boolean trace=false;
 
@@ -55,9 +51,8 @@ public class SpringTxManagerProxy implements IThreadConnectableTransactionManage
 		if (timeout > 0) {
 			result.setTimeout(timeout);
 		}
-		return result; 
+		return result;
 	}
-	
 
 	@Override
 	public TransactionStatus getTransaction(TransactionDefinition txDef) throws TransactionException {
@@ -82,15 +77,6 @@ public class SpringTxManagerProxy implements IThreadConnectableTransactionManage
 	}
 
 	public PlatformTransactionManager getRealTxManager() {
-		// This can be called from multiple threads, however
-		// not synchronized for performance-reasons.
-		// I consider this safe, because the TX manager should
-		// be retrieved as a singleton-bean from the Spring
-		// Bean Factory and thus each thread should always
-		// get the same instance.
-		if (realTxManager == null) {
-			realTxManager = (PlatformTransactionManager) beanFactory.getBean(realTxManagerBeanName);
-		}
 		return realTxManager;
 	}
 
@@ -107,7 +93,7 @@ public class SpringTxManagerProxy implements IThreadConnectableTransactionManage
 		}
 		return threadConnectableProxy;
 	}
-	
+
 	@Override
 	public Object getCurrentTransaction() throws TransactionException {
 		return getThreadConnectableProxy().getCurrentTransaction();
@@ -120,8 +106,13 @@ public class SpringTxManagerProxy implements IThreadConnectableTransactionManage
 
 	@Override
 	public void resumeTransaction(Object transaction, Object resources) {
-		getThreadConnectableProxy().resumeTransaction(transaction, resources);	
+		getThreadConnectableProxy().resumeTransaction(transaction, resources);
 	}
 
-	
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		if(realTxManager == null) {
+			throw new IllegalStateException("TxManager not set");
+		}
+	}
 }
