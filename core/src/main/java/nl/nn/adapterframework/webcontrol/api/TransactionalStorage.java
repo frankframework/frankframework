@@ -95,6 +95,7 @@ public class TransactionalStorage extends Base {
 
 		String message = null;
 		IMessageBrowser<?> storage = null;
+		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
 		messageId = Misc.urlDecode(messageId);
 
 		if(STORAGESOURCE_TYPE_PIPE.equals(storageSource)) {
