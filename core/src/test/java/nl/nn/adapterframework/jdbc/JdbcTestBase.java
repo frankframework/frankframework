@@ -55,7 +55,7 @@ public abstract class JdbcTestBase {
 	protected boolean testPeekShouldSkipRecordsAlreadyLocked = false;
 	protected Properties dataSourceInfo;
 
-	/** Only to be used for setup and teardown like actions */
+	/** NON-Transactional Connection. Only to be used for set-up and tear-down like actions! */
 	protected Connection connection;
 
 	@Parameterized.Parameter(0)
@@ -98,6 +98,9 @@ public abstract class JdbcTestBase {
 		testPeekShouldSkipRecordsAlreadyLocked = Boolean.parseBoolean(dataSourceInfo.getProperty(URLDataSourceFactory.TEST_PEEK_KEY));
 		configuration = transactionManagerType.getConfigurationContext(productKey);
 		dbmsSupportFactory = configuration.getBean(IDbmsSupportFactory.class, "dbmsSupportFactory");
+
+		connection = new DelegatingDataSource(dataSource).getConnection();
+		connection.setAutoCommit(true); //Ensure this connection is NOT transactional!
 
 		prepareDatabase();
 	}
@@ -149,9 +152,7 @@ public abstract class JdbcTestBase {
 	}
 
 	public boolean isTablePresent(String tableName) throws Exception {
-		try(Connection connection = getConnection()) {
-			return dbmsSupport.isTablePresent(connection, tableName);
-		}
+		return dbmsSupport.isTablePresent(connection, tableName);
 	}
 
 	public void dropTable(String tableName) throws Exception {
@@ -164,27 +165,22 @@ public abstract class JdbcTestBase {
 	}
 
 	protected void prepareDatabase() throws Exception {
-		connection = new DelegatingDataSource(dataSource).getConnection();
-		connection.setAutoCommit(true); //Ensure this connection is NOT transactional!
-
 		dbmsSupport = dbmsSupportFactory.getDbmsSupport(dataSource);
 
-		try(Connection connection = getConnection()) {
-			if (dbmsSupport.isTablePresent(connection, "TEMP")) {
-				JdbcUtil.executeStatement(connection, "DROP TABLE TEMP");
-				SQLWarning warnings = connection.getWarnings();
-				if(warnings != null) {
-					log.warn(JdbcUtil.warningsToString(warnings));
-				}
-			}
-			JdbcUtil.executeStatement(connection,
-					"CREATE TABLE TEMP(TKEY "+dbmsSupport.getNumericKeyFieldType()+ " PRIMARY KEY, TVARCHAR "+dbmsSupport.getTextFieldType()+"(100), TINT INT, TNUMBER NUMERIC(10,5), " +
-					"TDATE DATE, TDATETIME "+dbmsSupport.getTimestampFieldType()+", TBOOLEAN "+dbmsSupport.getBooleanFieldType()+", "+
-					"TCLOB "+dbmsSupport.getClobFieldType()+", TBLOB "+dbmsSupport.getBlobFieldType()+")");
+		if (dbmsSupport.isTablePresent(connection, "TEMP")) {
+			JdbcUtil.executeStatement(connection, "DROP TABLE TEMP");
 			SQLWarning warnings = connection.getWarnings();
 			if(warnings != null) {
 				log.warn(JdbcUtil.warningsToString(warnings));
 			}
+		}
+		JdbcUtil.executeStatement(connection,
+				"CREATE TABLE TEMP(TKEY "+dbmsSupport.getNumericKeyFieldType()+ " PRIMARY KEY, TVARCHAR "+dbmsSupport.getTextFieldType()+"(100), TINT INT, TNUMBER NUMERIC(10,5), " +
+				"TDATE DATE, TDATETIME "+dbmsSupport.getTimestampFieldType()+", TBOOLEAN "+dbmsSupport.getBooleanFieldType()+", "+
+				"TCLOB "+dbmsSupport.getClobFieldType()+", TBLOB "+dbmsSupport.getBlobFieldType()+")");
+		SQLWarning warnings = connection.getWarnings();
+		if(warnings != null) {
+			log.warn(JdbcUtil.warningsToString(warnings));
 		}
 	}
 

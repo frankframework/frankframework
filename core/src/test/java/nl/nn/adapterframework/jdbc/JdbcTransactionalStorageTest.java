@@ -32,14 +32,15 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 	@Before
 	public void setup() throws Exception {
 		super.setup();
-		storage = new JdbcTransactionalStorage<Message>();
+		storage = getConfiguration().createBean(JdbcTransactionalStorage.class);
 		storage.setTableName(tableName);
 		storage.setMessageField(messageField);
 		storage.setKeyField(keyField);
 		storage.setCheckTable(false);
-		autowire(storage);
 		storage.setSequenceName("SEQ_"+tableName);
 		System.setProperty("tableName", tableName);
+		autowire(storage);
+
 		runMigrator(TEST_CHANGESET_PATH);
 	}
 
@@ -57,7 +58,7 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 		storage.configure();
 		// check created query
 		String expected = "SELECT "+keyField+","+messageField+" FROM "+tableName+" WHERE "+keyField+"=?";
-		String query = storage.selectDataQuery; 
+		String query = storage.selectDataQuery;
 		assertEquals(expected, query);
 
 		Message message = createMessage();
@@ -67,7 +68,7 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 		try (Connection connection = getConnection()) {
 			try (PreparedStatement stmt = prepareStatement(connection)) {
 
-				ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				OutputStream out = blobsCompressed ? new DeflaterOutputStream(baos) : baos;
 				try (ObjectOutputStream oos = new ObjectOutputStream(out)) {
 					oos.writeObject(message);
@@ -109,7 +110,7 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 		// insert a record 
 		try (PreparedStatement stmt = prepareStatement(connection)) {
 
-			ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			OutputStream out = blobsCompressed ? new DeflaterOutputStream(baos) : baos;
 			try (ObjectOutputStream oos = new ObjectOutputStream(out)) {
 				oos.writeObject(message);
@@ -176,10 +177,10 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 
 		try (Connection connection = getConnection()) {
 			String storeMessageOutput = storage.storeMessage(connection,"1", "correlationId", new Date(), "comment", "label", message);
-	
+
 			String key = storeMessageOutput.substring(storeMessageOutput.indexOf(">")+1, storeMessageOutput.lastIndexOf("<"));
 			String selectQuery = "SELECT * FROM "+tableName+" where "+storage.getKeyField()+"="+key;
-	
+
 			try (ResultSet rs = connection.prepareStatement(selectQuery).executeQuery()) {
 				if(rs.next()) {
 					Message result = storage.retrieveObject(rs, 1);
@@ -198,9 +199,9 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 		Message message = createMessage();
 		try (Connection connection = getConnection()) {
 			String storeMessageOutput = storage.storeMessage(connection,"1", "correlationId", new Date(), "comment", "label", message);
-	
+
 			String key = storeMessageOutput.substring(storeMessageOutput.indexOf(">")+1, storeMessageOutput.lastIndexOf("<"));
-	
+
 			Message result = storage.getMessage(key);
 			assertEquals(message.asString(),result.asString());
 		}

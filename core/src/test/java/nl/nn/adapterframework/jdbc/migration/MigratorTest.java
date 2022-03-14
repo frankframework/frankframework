@@ -42,7 +42,6 @@ public class MigratorTest extends TransactionManagerTestBase {
 
 		migrator = getConfiguration().createBean(LiquibaseMigrator.class);
 		migrator.setDatasourceName(getDataSourceName());
-		getConfiguration().autowireByName(migrator);
 	}
 
 	@Override
@@ -52,6 +51,7 @@ public class MigratorTest extends TransactionManagerTestBase {
 		//Make sure there are no previous warnings present
 		getConfiguration().getConfigurationWarnings().destroy();
 		getConfiguration().getConfigurationWarnings().afterPropertiesSet();
+		getConfiguration().getMessageKeeper().clear();
 	}
 
 	@Test
@@ -61,8 +61,8 @@ public class MigratorTest extends TransactionManagerTestBase {
 
 		MessageKeeper messageKeeper = getConfiguration().getMessageKeeper();
 		assertNotNull("no message logged to the messageKeeper", messageKeeper);
-		assertEquals(3, messageKeeper.size()); //Configuration startup message + liquibase update
-		assertEquals("Configuration ["+getTransactionManagerType().name()+"] LiquiBase applied [2] change(s) and added tag [two:Niels Meijer]", messageKeeper.getMessage(2).getMessageText());
+		assertEquals(1, messageKeeper.size());
+		assertEquals("Configuration ["+getTransactionManagerType().name()+"] LiquiBase applied [2] change(s) and added tag [two:Niels Meijer]", messageKeeper.getMessage(0).getMessageText());
 		assertFalse("table ["+tableName+"] should not exist", isTablePresent(tableName));
 	}
 

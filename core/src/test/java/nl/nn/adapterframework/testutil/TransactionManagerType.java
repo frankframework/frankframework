@@ -58,6 +58,7 @@ public enum TransactionManagerType {
 			Properties properties = new Properties();
 			properties.setProperty("URLDataSourceFactory", factory.getCanonicalName());
 			properties.setProperty("DataSourceName", productKey);
+			properties.setProperty("TransactionManagerType", this.name());
 			propertySources.addFirst(new PropertiesPropertySource("testProperties", properties));
 
 			config.setName(this.name());
