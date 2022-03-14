@@ -406,13 +406,13 @@ public class Message implements Serializable {
 				stream.reset();
 			}
 		}
+		if(request instanceof byte[]) { //copy of, else we can bump into buffer overflow exceptions
+			return Arrays.copyOf((byte[]) request, readLimit);
+		}
 		if (isRepeatable()) {
 			try (InputStream stream = asInputStream()) { //Message is repeatable, close the stream after it's been (partially) read.
 				return readBytesFromInputStream(stream, readLimit);
 			}
-		}
-		if(request instanceof byte[]) { //copy of, else we can bump into buffer overflow exceptions
-			return Arrays.copyOf((byte[]) request, readLimit);
 		}
 
 		return null;
