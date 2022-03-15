@@ -204,7 +204,7 @@ public class HttpSender extends HttpSenderBase {
 		}
 
 		super.configure();
-		
+
 		if (getTreatInputMessageAsParameters()==null && getHttpMethod()!=HttpMethod.GET) {
 			setTreatInputMessageAsParameters(Boolean.TRUE);
 		}
@@ -242,9 +242,9 @@ public class HttpSender extends HttpSenderBase {
 			} catch (IOException e) {
 				throw new SenderException(getLogPrefix()+"unable to read message", e);
 			}
-		} else { // RAW + BINARY
-			return getMethod(uri, message, parameters);
 		}
+		// RAW + BINARY
+		return getMethod(uri, message, parameters);
 	}
 
 	// Encode query parameter values.
@@ -383,7 +383,7 @@ public class HttpSender extends HttpSenderBase {
 			try {
 				hmethod.setEntity(new UrlEncodedFormEntity(requestFormElements, getCharSet()));
 			} catch (UnsupportedEncodingException e) {
-				throw new SenderException(getLogPrefix()+"unsupported encoding for one or more post parameters");
+				throw new SenderException(getLogPrefix()+"unsupported encoding for one or more post parameters", e);
 			}
 		}
 		else { //formdata and mtom
@@ -395,10 +395,10 @@ public class HttpSender extends HttpSenderBase {
 	}
 
 	protected FormBodyPart createMultipartBodypart(String name, String message) {
-		if(postType.equals(PostType.MTOM))
+		if(postType.equals(PostType.MTOM)) {
 			return createMultipartBodypart(name, message, "application/xop+xml");
-		else
-			return createMultipartBodypart(name, message, null);
+		}
+		return createMultipartBodypart(name, message, null);
 	}
 
 	protected FormBodyPart createMultipartBodypart(String name, String message, String contentType) {
@@ -502,9 +502,8 @@ public class HttpSender extends HttpSenderBase {
 
 		if (partObject.isBinary()) {
 			return createMultipartBodypart(partSessionKey, partObject.asInputStream(), partName, partMimeType);
-		} else {
-			return createMultipartBodypart(partName, partObject.asString(), partMimeType);
 		}
+		return createMultipartBodypart(partName, partObject.asString(), partMimeType);
 	}
 
 	protected boolean validateResponseCode(int statusCode) {
@@ -576,10 +575,9 @@ public class HttpSender extends HttpSenderBase {
 			} else {
 				return getResponseBody(responseHandler);
 			}
-		} else {
-			streamResponseBody(responseHandler, response);
-			return Message.nullMessage();
 		}
+		streamResponseBody(responseHandler, response);
+		return Message.nullMessage();
 	}
 
 	public Message getResponseBody(HttpResponseHandler responseHandler) {
