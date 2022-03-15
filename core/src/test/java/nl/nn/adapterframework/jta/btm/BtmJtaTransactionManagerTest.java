@@ -61,7 +61,7 @@ public class BtmJtaTransactionManagerTest {
 		}
 		folder.delete();
 	}
-	
+
 	public BtmJtaTransactionManager getBtmJtaTransactionManager() {
 		BtmJtaTransactionManager result = new BtmJtaTransactionManager();
 		result.setStatusFile(folder.getRoot()+"/"+STATUS_FILE);
@@ -71,7 +71,7 @@ public class BtmJtaTransactionManagerTest {
 		delegateTransactionManager = result;
 		return result;
 	}
-	
+
 	@Test
 	public void testCleanSetup() {
 		BtmJtaTransactionManager tm = getBtmJtaTransactionManager();
@@ -82,10 +82,10 @@ public class BtmJtaTransactionManagerTest {
 		String btmServerId = TransactionManagerServices.getConfiguration().getServerId();
 		String tmUid = tm.getUid();
 		assertEquals(btmServerId, tmUid);
-		
+
 		assertStatus("ACTIVE", tmUid);
 	}
-	
+
 	@Test
 	public void testPresetTmUid() {
 		String presetTmUid = "fakeTmUid";
@@ -97,10 +97,10 @@ public class BtmJtaTransactionManagerTest {
 
 		assertEquals(presetTmUid, TransactionManagerServices.getConfiguration().getServerId());
 		assertEquals(presetTmUid, tm.getUid());
-		
+
 		assertStatus("ACTIVE", presetTmUid);
 	}
-	
+
 	@Test
 	public void testCleanShutdown() {
 		BtmJtaTransactionManager tm = getBtmJtaTransactionManager();
@@ -111,12 +111,12 @@ public class BtmJtaTransactionManagerTest {
 		assertNotNull(tmUid);
 
 		assertStatus("ACTIVE", tmUid);
-		
+
 		tm.destroy();
 
 		assertStatus("COMPLETED", tmUid);
 	}
-	
+
 	@Ignore("This test takes 1 minute to executed")
 	@Test
 	public void testShutdownWithPendingTransactions() throws NotSupportedException, SystemException {
@@ -129,12 +129,11 @@ public class BtmJtaTransactionManagerTest {
 		assertNotNull(tmUid);
 
 		assertStatus("ACTIVE", tmUid);
-		
+
 		tm.destroy();
 
 		assertStatus("PENDING", tmUid);
 	}
-	
 
 	public void assertStatus(String status, String tmUid) {
 		assertEquals(status, read(STATUS_FILE));
@@ -142,7 +141,7 @@ public class BtmJtaTransactionManagerTest {
 			assertEquals(tmUid, read(TMUID_FILE));
 		}
 	}
-	
+
 	public void write(String filename, String text) throws TransactionSystemException {
 		Path file = Paths.get(folder.getRoot()+"/"+filename);
 		try {
@@ -153,7 +152,7 @@ public class BtmJtaTransactionManagerTest {
 			throw new TransactionSystemException("Cannot write line ["+text+"] to file ["+file+"]", e);
 		}
 	}
-	
+
 	public String read(String filename) {
 		Path file = Paths.get(folder.getRoot()+"/"+filename);
 		if (!Files.exists(file)) {
