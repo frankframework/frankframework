@@ -30,14 +30,14 @@ public abstract class TransactionManagerTestBase extends JdbcTestBase {
 		List<Object[]> matrix = new ArrayList<>();
 
 		for(TransactionManagerType type: transactionManagerTypes) {
-			List<String> productNames;
+			List<String> datasourceNames;
 			if (StringUtils.isNotEmpty(singleDatasource)) {
-				productNames = new ArrayList<>();
-				productNames.add(singleDatasource);
+				datasourceNames = new ArrayList<>();
+				datasourceNames.add(singleDatasource);
 			} else {
-				productNames = type.getAvailableDataSources();
+				datasourceNames = type.getAvailableDataSources();
 			}
-			for(String name : productNames) {
+			for(String name : datasourceNames) {
 				matrix.add(new Object[] {type, name});
 			}
 		}
