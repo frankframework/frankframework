@@ -46,7 +46,7 @@ public abstract class StatusRecordingTransactionManager extends ThreadConnectabl
 
 	private static final long serialVersionUID = 1L;
 	private static final int TMUID_MAX_LENGTH=51;
-	
+
 	private @Getter @Setter String statusFile;
 	private @Getter @Setter String uidFile;
 	private @Getter @Setter String uid;
@@ -57,12 +57,13 @@ public abstract class StatusRecordingTransactionManager extends ThreadConnectabl
 		PENDING,
 		COMPLETED;
 	}
-	
-	/**
-	 * shut down the transaction manager, attempting to complete all running transactions
-	 * @return true if any transactions are pending, that need to be recovered later. 
-	 */
+
 	protected abstract TransactionManager createTransactionManager() throws TransactionSystemException;
+
+	/**
+	 * Shutdown the transaction manager, attempting to complete all running transactions.
+	 * @return true if a successful shutdown took place, or false if any transactions are pending that need to be recovered later.
+	 */
 	protected abstract boolean shutdownTransactionManager() throws TransactionSystemException;
 
 	/*
@@ -80,10 +81,10 @@ public abstract class StatusRecordingTransactionManager extends ThreadConnectabl
 	}
 
 	protected String determineTmUid() {
-		String recorded_tmuid = read(getUidFile());
-		if (StringUtils.isNotEmpty(recorded_tmuid)) {
-			log.info("retrieved tmuid ["+recorded_tmuid+"] from ["+getUidFile()+"]");
-			setUid(recorded_tmuid);
+		String recordedTmUid = read(getUidFile());
+		if (StringUtils.isNotEmpty(recordedTmUid)) {
+			log.info("retrieved tmuid ["+recordedTmUid+"] from ["+getUidFile()+"]");
+			setUid(recordedTmUid);
 		}
 		if (StringUtils.isEmpty(getUid())) {
 			String tmuid = Misc.getHostname()+"-"+Misc.createSimpleUUID();
@@ -93,7 +94,7 @@ public abstract class StatusRecordingTransactionManager extends ThreadConnectabl
 			setUid(tmuid);
 			log.info("created tmuid ["+getUid()+"]");
 		}
-		if (!getUid().equals(recorded_tmuid)) {
+		if (!getUid().equals(recordedTmUid)) {
 			write(getUidFile(),getUid());
 		}
 		return getUid();
@@ -103,14 +104,14 @@ public abstract class StatusRecordingTransactionManager extends ThreadConnectabl
 	public void destroy() {
 		log.info("shutting down transaction manager");
 		boolean transactionsPending = shutdownTransactionManager();
-		writeStatus(transactionsPending ? Status.PENDING : Status.COMPLETED);
+		writeStatus(transactionsPending ? Status.COMPLETED : Status.PENDING);
 		log.info("transaction manager shutdown completed");
 	}
 
 	public void writeStatus(Status status) throws TransactionSystemException {
 		write(getStatusFile(), status.toString());
 	}
-	
+
 	public void write(String filename, String text) throws TransactionSystemException {
 		if (StringUtils.isNotEmpty(filename)) {
 			Path file = Paths.get(filename);
@@ -127,7 +128,7 @@ public abstract class StatusRecordingTransactionManager extends ThreadConnectabl
 			}
 		}
 	}
-	
+
 	public String read(String filename) {
 		if (StringUtils.isNotEmpty(filename)) {
 			Path file = Paths.get(filename);
