@@ -22,22 +22,22 @@ import nl.nn.adapterframework.core.PipeLine.ExitState;
  * The Exit of a Pipeline that specifies the end state of a PipeLine. The state is returned to the receiver as well as
  * the optionally specified http status code.
  * 
- * When a Pipeline doesn't have an Exits element configured it will be initialized with one Exit having path READY and
+ * When a Pipeline doesn't have an Exits element configured it will be initialized with one Exit having name READY and
  * state SUCCESS
  * 
- * The path of an Exit can be referenced by the Forward of a Pipe
+ * The name of an Exit can be referenced by the Forward of a Pipe
  * 
  * <p>
  * <b>example:</b> <code><pre>
  *   &lt;exits&gt;
- *      &lt;exit path="READY" state="SUCCESS" /&gt;
- *      &lt;exit path="Created" state="ERROR" code="201" empty="true" /&gt;
- *      &lt;exit path="NotModified" state="ERROR" code="304" empty="true" /&gt;
- *      &lt;exit path="BadRequest" state="ERROR" code="400" empty="true" /&gt;
- *      &lt;exit path="NotAuthorized" state="ERROR" code="401" empty="true" /&gt;
- *      &lt;exit path="NotAllowed" state="ERROR" code="403" empty="true" /&gt;
- *      &lt;exit path="Teapot" state="SUCCESS" code="418" /&gt;
- *      &lt;exit path="ServerError" state="ERROR" code="500" /&gt;
+ *      &lt;exit name="READY" state="SUCCESS" /&gt;
+ *      &lt;exit name="Created" state="ERROR" code="201" empty="true" /&gt;
+ *      &lt;exit name="NotModified" state="ERROR" code="304" empty="true" /&gt;
+ *      &lt;exit name="BadRequest" state="ERROR" code="400" empty="true" /&gt;
+ *      &lt;exit name="NotAuthorized" state="ERROR" code="401" empty="true" /&gt;
+ *      &lt;exit name="NotAllowed" state="ERROR" code="403" empty="true" /&gt;
+ *      &lt;exit name="Teapot" state="SUCCESS" code="418" /&gt;
+ *      &lt;exit name="ServerError" state="ERROR" code="500" /&gt;
  *   &lt;/exits&gt;
  * </pre></code>
  * </p>
@@ -47,7 +47,9 @@ import nl.nn.adapterframework.core.PipeLine.ExitState;
  */
 public class PipeLineExit implements IForwardTarget {
 
-	private @Getter String path;
+	// getName() is required by {@link IForwardTarget}, this way PipeForwards can be resolved to either Pipes or
+	// PipeLineExits.
+	private @Getter String name;
 	private @Getter ExitState state;
 	private @Getter int exitCode = 0;
 	private @Getter String responseRoot;
@@ -59,22 +61,25 @@ public class PipeLineExit implements IForwardTarget {
 
 	/**
 	 * The name of the Exit that can be referenced by the Forward of a Pipe. When a Pipeline doesn't have an Exits
-	 * element configured it will be initialized with one Exit having path READY (and state SUCCESS)
+	 * element configured it will be initialized with one Exit having name READY (and state SUCCESS)
 	 * @ff.mandatory
 	 */
-	public void setPath(String newPath) {
-		path = newPath;
+	public void setName(String name) {
+		this.name = name;
 	}
-	@Override
-	// getName() is required by {@link IForwardTarget}. It is required that it returns the path,
-	// this way PipeForwards can be resolved to either Pipes or PipeLineExits.
-	public String getName() {
-		return getPath();
+
+	/**
+	 * The name of the Exit that can be referenced by the Forward of a Pipe. When a Pipeline doesn't have an Exits
+	 * element configured it will be initialized with one Exit having name READY (and state SUCCESS)
+	 * @deprecated
+	 */
+	public void setPath(String path) {
+		name = path;
 	}
 
 	/**
 	 * The state of the Pipeline that is returned to the Receiver for this Exit. When a Pipeline doesn't have an Exits
-	 * element configured it will be initialized with one Exit having state SUCCESS (and path READY)
+	 * element configured it will be initialized with one Exit having state SUCCESS (and name READY)
 	 * @ff.mandatory
 	 */
 	public void setState(ExitState value) {

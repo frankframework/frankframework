@@ -166,7 +166,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		if (pipeLineExits.size() < 1) {
 			// if no Exits are configured, then insert a default one, named 'READY', with state 'SUCCESS'
 			PipeLineExit defaultExit = new PipeLineExit();
-			defaultExit.setPath(DEFAULT_SUCCESS_EXIT_NAME);
+			defaultExit.setName(DEFAULT_SUCCESS_EXIT_NAME);
 			defaultExit.setState(ExitState.SUCCESS);
 			registerPipeLineExit(defaultExit);
 			log.debug("Created default Exit named ["+defaultExit.getName()+"], state ["+defaultExit.getState()+"]");
@@ -203,7 +203,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 						if (plexit != null) {
 							PipeForward pf = new PipeForward();
 							pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
-							pf.setPath(plexit.getPath());
+							pf.setPath(plexit.getName());
 							pipe.registerForward(pf);
 						}
 					}
@@ -624,9 +624,9 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		for (int i=0; i<pipes.size(); i++) {
 			result+="pipe"+i+"=["+getPipe(i).getName()+"]";
 		}
-		for (String exitPath : pipeLineExits.keySet()) {
-			PipeLineExit pe = pipeLineExits.get(exitPath);
-			result += "[path:" + pe.getPath() + " state:" + pe.getState() + "]";
+		for (String exitName : pipeLineExits.keySet()) {
+			PipeLineExit pe = pipeLineExits.get(exitName);
+			result += "[name:" + pe.getName() + " state:" + pe.getState() + "]";
 		}
 		return result;
 	}
@@ -652,7 +652,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		this.outputWrapper = outputWrapper;
 	}
 
-	@IbisDoc({ "PipeLine exits. If no exits are specified, a default one is created with path=\""+DEFAULT_SUCCESS_EXIT_NAME+"\" and state=\"SUCCESS\""})
+	@IbisDoc({ "PipeLine exits. If no exits are specified, a default one is created with name=\""+DEFAULT_SUCCESS_EXIT_NAME+"\" and state=\"SUCCESS\""})
 	public void setPipeLineExits(PipeLineExits exits) {
 		for(PipeLineExit exit:exits.getExits()) {
 			registerPipeLineExit(exit);
@@ -664,8 +664,8 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	 * @ff.deprecated
 	 */
 	public void registerPipeLineExit(PipeLineExit exit) {
-		if (pipeLineExits.containsKey(exit.getPath())) {
-			ConfigurationWarnings.add(this, log, "exit named ["+exit.getPath()+"] already exists");
+		if (pipeLineExits.containsKey(exit.getName())) {
+			ConfigurationWarnings.add(this, log, "exit named ["+exit.getName()+"] already exists");
 		}
 		if (exit.getExitCode()>0) {
 			for(PipeLineExit item: pipeLineExits.values()) {
@@ -675,7 +675,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 				}
 			}
 		}
-		pipeLineExits.put(exit.getPath(), exit);
+		pipeLineExits.put(exit.getName(), exit);
 	}
 
 	/** Global forwards */
