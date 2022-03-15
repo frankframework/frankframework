@@ -3,7 +3,7 @@
 
 	<groupId>org.ibissource</groupId>
 	<artifactId>ibis-adapterframework-parent</artifactId>
-	<version>7.7-RC2-SNAPSHOT</version>
+	<version>7.7-RC2</version>
 	<packaging>pom</packaging>
 
 	<properties>
@@ -66,69 +66,69 @@
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-core</artifactId>
-				<version>7.7-RC2-SNAPSHOT</version>
+				<version>7.7-RC2</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>credentialprovider</artifactId>
-				<version>7.7-RC2-SNAPSHOT</version>
+				<version>7.7-RC2</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-ifsa</artifactId>
-				<version>7.7-RC2-SNAPSHOT</version>
+				<version>7.7-RC2</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-tibco</artifactId>
-				<version>7.7-RC2-SNAPSHOT</version>
+				<version>7.7-RC2</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-sap</artifactId>
-				<version>7.7-RC2-SNAPSHOT</version>
+				<version>7.7-RC2</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-coolgen</artifactId>
-				<version>7.7-RC2-SNAPSHOT</version>
+				<version>7.7-RC2</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-ibm</artifactId>
-				<version>7.7-RC2-SNAPSHOT</version>
+				<version>7.7-RC2</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-larva</artifactId>
-				<version>7.7-RC2-SNAPSHOT</version>
+				<version>7.7-RC2</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-akamai</artifactId>
-				<version>7.7-RC2-SNAPSHOT</version>
+				<version>7.7-RC2</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-cmis</artifactId>
-				<version>7.7-RC2-SNAPSHOT</version>
+				<version>7.7-RC2</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-webapp</artifactId>
-				<version>7.7-RC2-SNAPSHOT</version>
+				<version>7.7-RC2</version>
 				<type>war</type>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-ear</artifactId>
-				<version>7.7-RC2-SNAPSHOT</version>
+				<version>7.7-RC2</version>
 				<type>ear</type>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-test</artifactId>
-				<version>7.7-RC2-SNAPSHOT</version>
+				<version>7.7-RC2</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
@@ -138,17 +138,17 @@
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-idin</artifactId>
-				<version>7.7-RC2-SNAPSHOT</version>
+				<version>7.7-RC2</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-ladybug</artifactId>
-				<version>7.7-RC2-SNAPSHOT</version>
+				<version>7.7-RC2</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-aspose</artifactId>
-				<version>7.7-RC2-SNAPSHOT</version>
+				<version>7.7-RC2</version>
 			</dependency>
 
 			<dependency>
@@ -523,7 +523,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore></ignore>
+										<ignore />
 									</action>
 								</pluginExecution>
 								<pluginExecution>
@@ -536,7 +536,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore></ignore>
+										<ignore />
 									</action>
 								</pluginExecution>
 							</pluginExecutions>
@@ -579,7 +579,7 @@
 		<url>https://github.com/ibissource/iaf</url>
 		<connection>scm:git:https://github.com/ibissource/iaf.git</connection>
 		<developerConnection>scm:git:https://github.com/ibissource/iaf.git</developerConnection>
-		<tag>HEAD</tag>
+		<tag>v7.7-RC2</tag>
 	</scm>
 
 	<profiles>
