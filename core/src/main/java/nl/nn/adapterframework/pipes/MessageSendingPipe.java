@@ -65,6 +65,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.processors.ListenerProcessor;
 import nl.nn.adapterframework.processors.PipeProcessor;
+import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -620,7 +621,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 							label=labelTp.transform(input,null);
 						}
 					}
-					messageLog.storeMessage(storedMessageID,correlationID,new Date(),messageTrail,label, input);
+					messageLog.storeMessage(storedMessageID,correlationID,new Date(),messageTrail,label, new MessageWrapper(input, correlationID));
 
 					long messageLogEndTime = System.currentTimeMillis();
 					long messageLogDuration = messageLogEndTime - messageLogStartTime;

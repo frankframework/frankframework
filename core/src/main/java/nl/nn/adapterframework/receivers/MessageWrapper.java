@@ -38,10 +38,17 @@ public class MessageWrapper<M> implements Serializable, IMessageWrapper {
 	private Message message;
 	private String id;
 
-	public MessageWrapper()  {
+	public MessageWrapper() {
 		super();
 	}
-	public MessageWrapper(M rawMessage, IListener<M> listener) throws ListenerException  {
+
+	public MessageWrapper(Message message, String messageId) {
+		this();
+		this.message = message;
+		this.id = messageId;
+	}
+
+	public MessageWrapper(M rawMessage, IListener<M> listener) throws ListenerException {
 		this();
 		message = listener.extractMessage(rawMessage, context);
 		Object rm = context.remove("originalRawMessage"); //PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);

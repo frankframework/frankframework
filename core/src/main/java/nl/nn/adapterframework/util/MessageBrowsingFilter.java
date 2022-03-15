@@ -149,7 +149,7 @@ public class MessageBrowsingFilter {
 
 	public boolean matchMessage(IMessageBrowsingIteratorItem iterItem) throws ListenerException, IOException {
 		if(message != null) {
-			String msg = getRawMessage(storage, listener, iterItem.getId());
+			String msg = getRawMessageAsText(storage, listener, iterItem.getId());
 			if (!StringUtils.containsIgnoreCase(msg, message)) {
 				return false;
 			}
@@ -157,7 +157,7 @@ public class MessageBrowsingFilter {
 		return true;
 	}
 
-	private String getRawMessage(IMessageBrowser<?> messageBrowser, IListener listener, String messageId) throws IOException, ListenerException {
+	private String getRawMessageAsText(IMessageBrowser<?> messageBrowser, IListener listener, String messageId) throws IOException, ListenerException {
 		Object rawmsg = messageBrowser.browseMessage(messageId);
 
 		String msg = null;
