@@ -393,7 +393,6 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		}
 	}
 
-	@IbisDoc({"name of the pipe", ""})
 	@Override
 	public void setName(String name) {
 		super.setName(name);
