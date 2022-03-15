@@ -19,20 +19,25 @@ import lombok.Getter;
 import nl.nn.adapterframework.core.PipeLine.ExitState;
 
 /**
- * The PipeLineExit, that represents a terminator of the PipeLine, provides a placeholder
- * for a path (corresponding to a pipeforward) and a state (that is returned to the receiver).
+ * The Exit of a Pipeline that specifies the end state of a PipeLine. The state is returned to the receiver as well as
+ * the optionally specified http status code.
+ * 
+ * When a Pipeline doesn't have an Exits element the Pipeline will be initialized with one Exit having path READY and
+ * state SUCCESS
+ * 
+ * The path of an Exit can be referenced by the Forward of a Pipe
  * 
  * <p>
  * <b>example:</b> <code><pre>
  *   &lt;exits&gt;
- *      &lt;exit path="EXIT" state="success" /&gt;
- *      &lt;exit path="Created" state="error" code="201" empty="true" /&gt;
- *      &lt;exit path="NotModified" state="error" code="304" empty="true" /&gt;
- *      &lt;exit path="BadRequest" state="error" code="400" empty="true" /&gt;
- *      &lt;exit path="NotAuthorized" state="error" code="401" empty="true" /&gt;
- *      &lt;exit path="NotAllowed" state="error" code="403" empty="true" /&gt;
- *      &lt;exit path="Teapot" state="success" code="418" /&gt;
- *      &lt;exit path="ServerError" state="error" code="500" /&gt;
+ *      &lt;exit path="READY" state="SUCCESS" /&gt;
+ *      &lt;exit path="Created" state="ERROR" code="201" empty="true" /&gt;
+ *      &lt;exit path="NotModified" state="ERROR" code="304" empty="true" /&gt;
+ *      &lt;exit path="BadRequest" state="ERROR" code="400" empty="true" /&gt;
+ *      &lt;exit path="NotAuthorized" state="ERROR" code="401" empty="true" /&gt;
+ *      &lt;exit path="NotAllowed" state="ERROR" code="403" empty="true" /&gt;
+ *      &lt;exit path="Teapot" state="SUCCESS" code="418" /&gt;
+ *      &lt;exit path="ServerError" state="ERROR" code="500" /&gt;
  *   &lt;/exits&gt;
  * </pre></code>
  * </p>
@@ -53,7 +58,8 @@ public class PipeLineExit implements IForwardTarget {
 	}
 
 	/**
-	 * Name of the pipeline exit
+	 * The path of the Exit that can be referenced by the Forward of a Pipe. When a Pipeline doesn't have an Exits
+	 * element the Pipeline will be initialized with one Exit having path READY (and state SUCCESS)
 	 * @ff.mandatory
 	 */
 	public void setPath(String newPath) {
@@ -67,7 +73,8 @@ public class PipeLineExit implements IForwardTarget {
 	}
 
 	/**
-	 * The exit state defines possible exists to the Pipeline.
+	 * The state of the Pipeline that is returned to the Receiver for this Exit. When a Pipeline doesn't have an Exits
+	 * element the Pipeline will be initialized with one Exit having state SUCCESS (and path READY)
 	 * @ff.mandatory
 	 */
 	public void setState(ExitState value) {
@@ -83,7 +90,7 @@ public class PipeLineExit implements IForwardTarget {
 	}
 
 	/**
-	 * Configures the responseRoot in the OpenAPI schema for this exit. If not set, the responseRoot value of the validator will be used. If that contains multiple (comma separated) values, the first will be used for the exits with state <code>success</code>, the last for the other exits.
+	 * Configures the responseRoot in the OpenAPI schema for this exit. If not set, the responseRoot value of the validator will be used. If that contains multiple (comma separated) values, the first will be used for the exits with state <code>SUCCESS</code>, the last for the other exits.
 	 */
 	public void setResponseRoot(String responseRoot) {
 		this.responseRoot = responseRoot;
