@@ -22,7 +22,7 @@ import nl.nn.adapterframework.core.PipeLine.ExitState;
  * The Exit of a Pipeline that specifies the end state of a PipeLine. The state is returned to the receiver as well as
  * the optionally specified http status code.
  * 
- * When a Pipeline doesn't have an Exits element the Pipeline will be initialized with one Exit having path READY and
+ * When a Pipeline doesn't have an Exits element configured it will be initialized with one Exit having path READY and
  * state SUCCESS
  * 
  * The path of an Exit can be referenced by the Forward of a Pipe
@@ -58,8 +58,8 @@ public class PipeLineExit implements IForwardTarget {
 	}
 
 	/**
-	 * The path of the Exit that can be referenced by the Forward of a Pipe. When a Pipeline doesn't have an Exits
-	 * element the Pipeline will be initialized with one Exit having path READY (and state SUCCESS)
+	 * The name of the Exit that can be referenced by the Forward of a Pipe. When a Pipeline doesn't have an Exits
+	 * element configured it will be initialized with one Exit having path READY (and state SUCCESS)
 	 * @ff.mandatory
 	 */
 	public void setPath(String newPath) {
@@ -74,7 +74,7 @@ public class PipeLineExit implements IForwardTarget {
 
 	/**
 	 * The state of the Pipeline that is returned to the Receiver for this Exit. When a Pipeline doesn't have an Exits
-	 * element the Pipeline will be initialized with one Exit having state SUCCESS (and path READY)
+	 * element configured it will be initialized with one Exit having state SUCCESS (and path READY)
 	 * @ff.mandatory
 	 */
 	public void setState(ExitState value) {

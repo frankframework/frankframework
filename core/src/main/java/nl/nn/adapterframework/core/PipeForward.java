@@ -61,7 +61,8 @@ public class PipeForward {
 	}
 
 	/**
-	 * The path is the name of the Pipe to execute or the Exit to be used
+	 * The name of the next Pipe or Exit. The path of an Exit specifies it's name. When the Pipeline doesn't have an
+	 * Exits element configured it will be initialized with one Exit having path READY and state SUCCESS
 	 */
 	@Mandatory
 	public void setPath(String path) {
