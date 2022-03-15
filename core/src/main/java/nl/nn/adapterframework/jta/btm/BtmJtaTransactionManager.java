@@ -50,6 +50,6 @@ public class BtmJtaTransactionManager extends StatusRecordingTransactionManager 
 		transactionManager.shutdown();
 
 		int inflightCount = transactionManager.getInFlightTransactionCount();
-		return inflightCount>0;
+		return inflightCount == 0;
 	}
 }
