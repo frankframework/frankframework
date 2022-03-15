@@ -5,27 +5,21 @@ import java.util.Collection;
 import java.util.List;
 
 import javax.naming.NamingException;
-import javax.sql.DataSource;
-import javax.transaction.TransactionManager;
-import javax.transaction.UserTransaction;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.runners.Parameterized.Parameters;
 import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.support.AbstractPlatformTransactionManager;
 
 import nl.nn.adapterframework.jta.IThreadConnectableTransactionManager;
 import nl.nn.adapterframework.jta.SpringTxManagerProxy;
-import nl.nn.adapterframework.jta.ThreadConnectableDataSourceTransactionManager;
-import nl.nn.adapterframework.jta.ThreadConnectableJtaTransactionManager;
 import nl.nn.adapterframework.testutil.TransactionManagerType;
 
 public abstract class TransactionManagerTestBase extends JdbcTestBase {
 
 	protected IThreadConnectableTransactionManager txManager;
 
-	private static TransactionManagerType singleTransactionManagerType = null; 	// set to a specific transaction manager type, to speed up testing
+	private static TransactionManagerType singleTransactionManagerType = null; // set to a specific transaction manager type, to speed up testing
 
 	@Parameters(name= "{0}: {1}")
 	public static Collection data() throws NamingException {
@@ -36,15 +30,15 @@ public abstract class TransactionManagerTestBase extends JdbcTestBase {
 		List<Object[]> matrix = new ArrayList<>();
 
 		for(TransactionManagerType type: transactionManagerTypes) {
-			List<DataSource> datasources;
+			List<String> datasourceNames;
 			if (StringUtils.isNotEmpty(singleDatasource)) {
-				datasources = new ArrayList<>();
-				datasources.add(type.getDataSourceFactory().getDataSource(singleDatasource));
+				datasourceNames = new ArrayList<>();
+				datasourceNames.add(singleDatasource);
 			} else {
-				datasources = type.getAvailableDataSources();
+				datasourceNames = type.getAvailableDataSources();
 			}
-			for(DataSource ds : datasources) {
-				matrix.add(new Object[] {type, ds});
+			for(String name : datasourceNames) {
+				matrix.add(new Object[] {type, name});
 			}
 		}
 
@@ -55,44 +49,9 @@ public abstract class TransactionManagerTestBase extends JdbcTestBase {
 	@Before
 	public void setup() throws Exception {
 		super.setup();
-
-		setupDataSource();
+		txManager = getConfiguration().getBean(SpringTxManagerProxy.class, "txManager");
 
 		prepareDatabase();
-	}
-
-	protected void setupDataSource() throws Exception {
-		switch (transactionManagerType) {
-			case DATASOURCE:
-				setupSpringTransactionManager();
-				break;
-			case BTM:
-				setupBTM();
-				break;
-			case NARAYANA:
-				setupNarayana();
-				break;
-			default:
-				throw new IllegalArgumentException("Don't know how to setupTransactionManagerAndDataSource() for transactionManagerType ["+transactionManagerType+"]");
-		}
-	}
-
-	private void setupSpringTransactionManager() {
-		// setup a TransactionManager like in springTOMCAT.xml
-		ThreadConnectableDataSourceTransactionManager dataSourceTransactionManager = new ThreadConnectableDataSourceTransactionManager(dataSource);
-		dataSourceTransactionManager.setTransactionSynchronization(AbstractPlatformTransactionManager.SYNCHRONIZATION_ON_ACTUAL_TRANSACTION);
-		txManager = dataSourceTransactionManager;
-	}
-
-	private void setupBTM() {
-		bitronix.tm.BitronixTransactionManager btm = bitronix.tm.TransactionManagerServices.getTransactionManager();
-		txManager = new ThreadConnectableJtaTransactionManager(btm, btm);
-	}
-
-	private void setupNarayana() throws Exception {
-		TransactionManager tm = com.arjuna.ats.jta.TransactionManager.transactionManager();
-		UserTransaction utx = com.arjuna.ats.jta.UserTransaction.userTransaction();
-		txManager = new ThreadConnectableJtaTransactionManager(utx, tm);
 	}
 
 	public TransactionDefinition getTxDef(int transactionAttribute, int timeout) {
