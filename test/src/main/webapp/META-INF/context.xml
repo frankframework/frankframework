@@ -101,30 +101,24 @@
  -->
  	<!-- pinGlobalTxToPhysicalConnection does not work the same for mariadb as it does for mysql, therefor still locking problems under XA for mariadb -->
 	
-	<!-- Use with BTM -->
- 	<Resource 
+
+	<Resource 
 		name="jdbc/ibis4test-postgres-xa" 
-		factory="org.postgresql.xa.PGXADataSourceFactory"
+		factory="org.apache.naming.factory.BeanFactory"
 		type="org.postgresql.xa.PGXADataSource" 
-		url="jdbc:postgresql://host.docker.internal:5432/testiaf"
+		URL="jdbc:postgresql://host.docker.internal:5432/testiaf"
 		user="${testiaf_user/username:-testiaf_user}"
-		username="${testiaf_user/username:-testiaf_user}"
 		password="${testiaf_user/password:-testiaf_user00}"
-		portNumber="5432"
-		serverName="host.docker.internal"
-		databaseName="testiaf"
 	/>
 
-	<!-- Use with default Tomcat pooling -->
 	<Resource name="jdbc/ibis4test-postgres" auth="Container"
-		type="javax.sql.XADataSource"
-		factory="org.apache.tomcat.jdbc.pool.DataSourceFactory"
-		user="${testiaf_user/username:-testiaf_user}"
-		username="${testiaf_user/username:-testiaf_user}"
-		password="${testiaf_user/password:-testiaf_user00}"
+		type="javax.sql.DataSource" 
 		driverClassName="org.postgresql.Driver"
 		url="jdbc:postgresql://host.docker.internal:5432/testiaf"
-		dataSourceJNDI="jdbc/ibis4test-postgres-xa"
+		user="${testiaf_user/username:-testiaf_user}"
+		password="${testiaf_user/password:-testiaf_user00}"
+		maxTotal="10"
+		maxWaitMillis="5000"
 	/>
 
 	<Resource 
