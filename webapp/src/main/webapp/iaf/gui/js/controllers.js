@@ -1442,6 +1442,19 @@ angular.module('iaf.beheerconsole')
 		lengthMenu: [10,25,50,100,500,999],
 		order: [[ 3, 'asc' ]],
 		columns: columns,
+		columnDefs: [ {
+			targets: 0,
+			render: function ( data, type, row ) {
+				if(type === 'display'){
+					for(let i in data){
+						var columnData = data[i];
+						if(typeof columnData == 'string' && columnData.length > 30)
+							data[i] = '<span class="ellipsis" title="'+columnData+'">'+columnData.substr(0, 15)+' &#8230; '+columnData.substr(-15)+'</span>';
+					}
+				}
+				return data;
+			}
+		}],
 		sAjaxDataProp: 'messages',
 		ajax: function (data, callback, settings) {
 			var start = data.start;
