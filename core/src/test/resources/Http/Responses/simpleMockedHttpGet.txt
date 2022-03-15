@@ -1,2 +1,2 @@
-GET /hallo HTTP/1.1
+GET / HTTP/1.1
 Message-Id: testmessageac13ecb1--30fe9225_16caa708707_-7fb1

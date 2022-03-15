@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -174,6 +174,7 @@ public class HttpSender extends HttpSenderBase {
 	private @Getter String multipartXmlSessionKey;
 	private @Getter String mtomContentTransferEncoding = null; //Defaults to 8-bit for normal String messages, 7-bit for e-mails and binary for streams
 	private @Getter boolean encodeMessages = false;
+	private @Getter Boolean treatInputMessageAsParameters = null;
 
 	private @Getter PostType postType = PostType.RAW;
 
@@ -203,6 +204,10 @@ public class HttpSender extends HttpSenderBase {
 		}
 
 		super.configure();
+		
+		if (getTreatInputMessageAsParameters()==null && getHttpMethod()!=HttpMethod.GET) {
+			setTreatInputMessageAsParameters(Boolean.TRUE);
+		}
 
 		if (getHttpMethod() != HttpMethod.POST) {
 			if (!isParamsInUrl()) {
@@ -278,7 +283,8 @@ public class HttpSender extends HttpSenderBase {
 					queryParametersAppended = appendParameters(queryParametersAppended,relativePath,parameters);
 					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"path after appending of parameters ["+relativePath+"]");
 				}
-				HttpGet getMethod = new HttpGet(relativePath+(parameters==null && !Message.isEmpty(message)? message.asString():""));
+
+				HttpGet getMethod = new HttpGet(relativePath+(parameters==null && BooleanUtils.isTrue(getTreatInputMessageAsParameters()) && !Message.isEmpty(message)? message.asString():""));
 
 				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+getMethod.getURI().getQuery()+"]");
 				if (null != getFullContentType()) { //Manually set Content-Type header
@@ -291,7 +297,7 @@ public class HttpSender extends HttpSenderBase {
 			case PATCH:
 				HttpEntity entity;
 				if(postType.equals(PostType.RAW)) {
-					String messageString = message.asString();
+					String messageString = BooleanUtils.isTrue(getTreatInputMessageAsParameters()) && !Message.isEmpty(message) ? message.asString() : "";
 					if (parameters!=null) {
 						StringBuffer msg = new StringBuffer(messageString);
 						appendParameters(true,msg,parameters);
@@ -755,5 +761,10 @@ public class HttpSender extends HttpSenderBase {
 	@IbisDoc({"64", "specifies whether messages will encoded, e.g. spaces will be replaced by '+' etc.", "false"})
 	public void setEncodeMessages(boolean b) {
 		encodeMessages = b;
+	}
+
+	@IbisDoc({"65", "if <code>true</code>, the input will be added to the URL for methodType=GET, or for methodType=POST, PUT or PATCH if postType=RAW. This used to be the default behaviour in framework version 7.7 and earlier", "for methodType=GET: <code>false</code>,<br/>for methodTypes POST, PUT, PATCH: <code>true</code> "})
+	public void setTreatInputMessageAsParameters(Boolean b) {
+		treatInputMessageAsParameters = b;
 	}
 }
