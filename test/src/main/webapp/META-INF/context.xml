@@ -115,7 +115,7 @@
 		type="javax.sql.DataSource" 
 		driverClassName="org.postgresql.Driver"
 		url="jdbc:postgresql://host.docker.internal:5432/testiaf"
-		user="${testiaf_user/username:-testiaf_user}"
+		username="${testiaf_user/username:-testiaf_user}"
 		password="${testiaf_user/password:-testiaf_user00}"
 		maxTotal="10"
 		maxWaitMillis="5000"
