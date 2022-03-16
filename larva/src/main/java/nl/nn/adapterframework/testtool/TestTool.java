@@ -96,6 +96,7 @@ import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.senders.DelaySender;
 import nl.nn.adapterframework.senders.IbisJavaSender;
+import nl.nn.adapterframework.stream.FileMessage;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CaseInsensitiveComparator;
@@ -156,8 +157,7 @@ public class TestTool {
 		// See IbisContext.setDefaultApplicationServerType() and userstory
 		// 'Refactor ConfigurationServlet en AppConstants' too.
 		Configuration configuration = ibisContext.getIbisManager().getConfigurations().get(0);
-		AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
-		return appConstants;
+		return AppConstants.getInstance(configuration.getClassLoader());
 	}
 
 	public static void runScenarios(ServletContext application, HttpServletRequest request, Writer out) {
@@ -4203,138 +4203,120 @@ public class TestTool {
 	 */
 	private static Map<String, Object> createParametersMapFromParamProperties(Properties properties, String property, Map<String, Object> writers, boolean createParameterObjects, PipeLineSession session) {
 		debugMessage("Search parameters for property '" + property + "'", writers);
-		Map<String, Object> result = new HashMap<String, Object>();
+		final String _name = ".name";
+		final String _param = ".param";
+		final String _type = ".type";
+		Map<String, Object> result = new HashMap<>();
 		boolean processed = false;
 		int i = 1;
 		while (!processed) {
-			String name = properties.getProperty(property + ".param" + i + ".name");
+			String name = properties.getProperty(property + _param + i + _name);
 			if (name != null) {
 				Object value;
-				String type = properties.getProperty(property + ".param" + i + ".type");
+				String type = properties.getProperty(property + _param + i + _type);
 				if ("httpResponse".equals(type)) {
 					String outputFile;
-					String filename = properties.getProperty(property + ".param" + i + ".filename");
+					String filename = properties.getProperty(property + _param + i + ".filename");
 					if (filename != null) {
-						outputFile = properties.getProperty(property + ".param" + i + ".filename.absolutepath");
+						outputFile = properties.getProperty(property + _param + i + ".filename.absolutepath");
 					} else {
-						outputFile = properties.getProperty(property + ".param" + i + ".outputfile");
+						outputFile = properties.getProperty(property + _param + i + ".outputfile");
 					}
 					HttpServletResponseMock httpServletResponseMock = new HttpServletResponseMock();
 					httpServletResponseMock.setOutputFile(outputFile);
 					value = httpServletResponseMock;
 				} else if ("httpRequest".equals(type)) {
-					value = properties.getProperty(property + ".param" + i + ".value");
+					value = properties.getProperty(property + _param + i + ".value");
 					if("multipart".equals(value)){
 						MockMultipartHttpServletRequest request = new MockMultipartHttpServletRequest();
 						// following line is required to avoid
 						// "(FileUploadException) the request was rejected because
 						// no multipart boundary was found"
-						request.setContentType(
-								"multipart/mixed;boundary=gc0p4Jq0M2Yt08jU534c0p");
-						List<Part> parts = new ArrayList<Part>();
+						request.setContentType("multipart/mixed;boundary=gc0p4Jq0M2Yt08jU534c0p");
+						List<Part> parts = new ArrayList<>();
 						boolean partsProcessed = false;
 						int j = 1;
 						while (!partsProcessed) {
-							String filename = properties.getProperty(property
-									+ ".param" + i + ".part" + j + ".filename");
+							String filename = properties.getProperty(property + _param + i + ".part" + j + ".filename");
 							if (filename == null) {
 								partsProcessed = true;
 							} else {
-								String partFile = properties.getProperty(property
-										+ ".param" + i + ".part" + j + ".filename.absolutepath");
-								String partType = properties.getProperty(property
-										+ ".param" + i + ".part" + j + ".type");
-								String partName = properties.getProperty(property
-										+ ".param" + i + ".part" + j + ".name");
+								String partFile = properties.getProperty(property + _param + i + ".part" + j + ".filename.absolutepath");
+								String partType = properties.getProperty(property + _param + i + ".part" + j + _type);
+								String partName = properties.getProperty(property + _param + i + ".part" + j + _name);
 								if ("file".equalsIgnoreCase(partType)) {
 									File file = new File(partFile);
 									try {
-										FilePart filePart = new FilePart(
-												"file" + j,
-												(partName == null
-														? file.getName()
-														: partName),
-												file);
+										FilePart filePart = new FilePart( "file" + j, (partName == null ? file.getName() : partName), file);
 										parts.add(filePart);
 									} catch (FileNotFoundException e) {
-										errorMessage(
-												"Could not read file '" + partFile
-														+ "': " + e.getMessage(),
-												e, writers);
+										errorMessage("Could not read file '" + partFile+ "': " + e.getMessage(), e, writers);
 									}
 								} else {
 									String string = readFile(partFile, writers);
-									StringPart stringPart = new StringPart(
-											(partName == null ? "string" + j
-													: partName),
-											string);
+									StringPart stringPart = new StringPart((partName == null ? "string" + j : partName), string);
 									parts.add(stringPart);
 								}
 								j++;
 							}
 						}
-						Part allParts[] = new Part[parts.size()];
+						Part[] allParts = new Part[parts.size()];
 						allParts = parts.toArray(allParts);
-						MultipartRequestEntity multipartRequestEntity = new MultipartRequestEntity(
-								allParts, new PostMethod().getParams());
+						MultipartRequestEntity multipartRequestEntity = new MultipartRequestEntity(allParts, new PostMethod().getParams());
 						ByteArrayOutputStream requestContent = new ByteArrayOutputStream();
 						try {
 							multipartRequestEntity.writeRequest(requestContent);
 						} catch (IOException e) {
-							errorMessage(
-									"Could not create multipart: " + e.getMessage(),
-									e, writers);
+							errorMessage("Could not create multipart: " + e.getMessage(), e, writers);
 						}
 						request.setContent(requestContent.toByteArray());
-						request.setContentType(
-								multipartRequestEntity.getContentType());
+						request.setContentType(multipartRequestEntity.getContentType());
 						value = request;
 					}
 					else{
-						MockHttpServletRequest request = new MockHttpServletRequest();
-						value = request;
+						value = new MockHttpServletRequest();
 					}
 				} else {
-					value = properties.getProperty(property + ".param" + i + ".value");
+					value = properties.getProperty(property + _param + i + ".value");
 					if (value == null) {
-						String filename = properties.getProperty(property + ".param" + i + ".valuefile.absolutepath");
+						String filename = properties.getProperty(property + _param + i + ".valuefile.absolutepath");
 						if (filename != null) {
-							value = readFile(filename, writers);
+							value = new FileMessage(new File(filename));
 						} else {
-							String inputStreamFilename = properties.getProperty(property + ".param" + i + ".valuefileinputstream.absolutepath");
+							String inputStreamFilename = properties.getProperty(property + _param + i + ".valuefileinputstream.absolutepath");
 							if (inputStreamFilename != null) {
-								try {
-									value = new FileInputStream(inputStreamFilename);
-								} catch(FileNotFoundException e) {
-									errorMessage("Could not read file '" + inputStreamFilename + "': " + e.getMessage(), e, writers);
-								}
+								errorMessage("valuefileinputstream is no longer supported use valuefile instead", writers);
 							}
 						}
 					}
 				}
-				if (value != null && value instanceof String) {
-					if ("node".equals(properties.getProperty(property + ".param" + i + ".type"))) {
-						try {
-							value = XmlUtils.buildNode((String)value, true);
-						} catch (DomBuilderException e) {
-							errorMessage("Could not build node for parameter '" + name + "' with value: " + value, e, writers);
-						}
-					} else if ("domdoc".equals(properties.getProperty(property + ".param" + i + ".type"))) {
-						try {
-							value = XmlUtils.buildDomDocument((String)value, true);
-						} catch (DomBuilderException e) {
-							errorMessage("Could not build node for parameter '" + name + "' with value: " + value, e, writers);
-						}
-					} else if ("list".equals(properties.getProperty(property + ".param" + i + ".type"))) {
-						List<String> parts = new ArrayList<String>(Arrays.asList(((String)value).split("\\s*(,\\s*)+")));
-						List<String> list = new LinkedList<String>();
+				if ("node".equals(type)) {
+					try {
+						value = XmlUtils.buildNode(Message.asString(value), true);
+					} catch (DomBuilderException | IOException e) {
+						errorMessage("Could not build node for parameter '" + name + "' with value: " + value, e, writers);
+					}
+				} else if ("domdoc".equals(type)) {
+					try {
+						value = XmlUtils.buildDomDocument(Message.asString(value), true);
+					} catch (DomBuilderException | IOException e) {
+						errorMessage("Could not build node for parameter '" + name + "' with value: " + value, e, writers);
+					}
+				} else if ("list".equals(type)) {
+					try {
+						List<String> parts = new ArrayList<>(Arrays.asList(Message.asString(value).split("\\s*(,\\s*)+")));
+						List<String> list = new LinkedList<>();
 						for (String part : parts) {
 							list.add(part);
 						}
 						value = list;
-					} else if ("map".equals(properties.getProperty(property + ".param" + i + ".type"))) {
-						List<String> parts = new ArrayList<String>(Arrays.asList(((String)value).split("\\s*(,\\s*)+")));
-						Map<String, String> map = new LinkedHashMap<String, String>();
+					} catch (IOException e) {
+						errorMessage("Could not build a list for parameter '" + name + "' with value: " + value, e, writers);
+					}
+				} else if ("map".equals(type)) {
+					try {
+						List<String> parts = new ArrayList<>(Arrays.asList(Message.asString(value).split("\\s*(,\\s*)+")));
+						Map<String, String> map = new LinkedHashMap<>();
 						for (String part : parts) {
 							String[] splitted = part.split("\\s*(=\\s*)+", 2);
 							if (splitted.length==2) {
@@ -4344,12 +4326,14 @@ public class TestTool {
 							}
 						}
 						value = map;
+					} catch (IOException e) {
+						errorMessage("Could not build a map for parameter '" + name + "' with value: " + value, e, writers);
 					}
 				}
 				if (createParameterObjects) {
-					String  pattern = properties.getProperty(property + ".param" + i + ".pattern");
+					String  pattern = properties.getProperty(property + _param + i + ".pattern");
 					if (value == null && pattern == null) {
-						errorMessage("Property '" + property + ".param" + i + " doesn't have a value or pattern", writers);
+						errorMessage("Property '" + property + _param + i + " doesn't have a value or pattern", writers);
 					} else {
 						try {
 							Parameter parameter = new Parameter();
@@ -4370,7 +4354,7 @@ public class TestTool {
 					}
 				} else {
 					if (value == null) {
-						errorMessage("Property '" + property + ".param" + i + ".value' or '" + property + ".param" + i + ".valuefile' or '" + property + ".param" + i + ".valuefileinputstream' not found while property '" + property + ".param" + i + ".name' exist", writers);
+						errorMessage("Property '" + property + _param + i + ".value' or '" + property + _param + i + ".valuefile' not found while property '" + property + _param + i + ".name' exist", writers);
 					} else {
 						result.put(name, value);
 						debugMessage("Add param with name '" + name + "' and value '" + value + "' for property '" + property + "'", writers);

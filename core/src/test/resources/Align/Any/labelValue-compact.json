@@ -1,0 +1,12 @@
+{
+  "labels": [
+    {
+      "@name": "lbl1",
+      "#text": "value1"
+    },
+    {
+      "@name": "lbl2",
+      "#text": "value2"
+    }
+  ]
+}

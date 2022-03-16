@@ -14,7 +14,7 @@
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-ladybug</artifactId>
-			<version>2.2-20220124.232559</version>
+			<version>2.2-20220224.132325</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.codehaus.woodstox</groupId>

@@ -1,5 +1,5 @@
 /*
-   Copyright 2017,2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2017,2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -199,11 +199,12 @@ public abstract class ToXml<C,N> extends XmlAligner {
 		if (log.isTraceEnabled()) log.trace("node ["+name+"] search for attributeDeclaration");
 		XSTypeDefinition typeDefinition=elementDeclaration.getTypeDefinition();
 		XSObjectList attributeUses=getAttributeUses(typeDefinition);
-		if (attributeUses==null || attributeUses.getLength()==0) {
+		XSWildcard wildcard = typeDefinition instanceof XSComplexTypeDefinition ? ((XSComplexTypeDefinition)typeDefinition).getAttributeWildcard():null;
+		if ((attributeUses==null || attributeUses.getLength()==0) && wildcard==null) {
 			if (nodeAttributes!=null && nodeAttributes.size()>0) {
-				log.warn("node ["+name+"] found ["+nodeAttributes.size()+"] attributes, but no declared AttributeUses");
+				log.warn("node ["+name+"] found ["+nodeAttributes.size()+"] attributes, but no declared AttributeUses or wildcard");
 			} else {
-				if (log.isTraceEnabled()) log.trace("node ["+name+"] no attributeUses, no attributes");
+				if (log.isTraceEnabled()) log.trace("node ["+name+"] no attributeUses or wildcard, no attributes");
 			}
 		} else {
 			if (nodeAttributes==null || nodeAttributes.isEmpty()) {
@@ -223,6 +224,13 @@ public abstract class ToXml<C,N> extends XmlAligner {
 						if (log.isTraceEnabled()) log.trace("node ["+name+"] adding attribute ["+attName+"] value ["+value+"]");
 						attributes.addAttribute(uri, attName, attqname, type, value);
 					}
+				}
+				if (wildcard!=null) {
+					nodeAttributes.forEach((attName,value)-> {
+						if (log.isTraceEnabled()) log.trace("node ["+name+"] adding attribute ["+attName+"] value ["+value+"] via wildcard");
+						attributes.addAttribute("", attName, attName, null, value);
+					});
+					nodeAttributes.clear();
 				}
 			}
 		}

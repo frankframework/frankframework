@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,19 @@
 */
 package nl.nn.adapterframework.statistics;
 
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 
+import io.micrometer.core.instrument.DistributionSummary;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
+import nl.nn.adapterframework.statistics.HasStatistics.Action;
+import nl.nn.adapterframework.statistics.percentiles.MicroMeterPercentileEstimator;
 import nl.nn.adapterframework.statistics.percentiles.PercentileEstimator;
 import nl.nn.adapterframework.statistics.percentiles.PercentileEstimatorRanked;
 import nl.nn.adapterframework.util.AppConstants;
@@ -31,15 +39,15 @@ import nl.nn.adapterframework.util.XmlUtils;
  * 
  * @author Johan Verrips / Gerrit van Brakel
  */
-public class StatisticsKeeper implements ItemList {
+public class StatisticsKeeper<B extends IBasics<S>, S> implements ItemList {
 
 	private static final boolean calculatePercentiles = true;
 
 	private String name = null;
 	private long first = Long.MIN_VALUE;
 	private long last = 0;
-	private Basics cumulative;
-	private Basics mark;
+	private B cumulative;
+	private S mark;
 	private long[] classBoundaries;
 	private long[] classCounts;
 
@@ -58,6 +66,11 @@ public class StatisticsKeeper implements ItemList {
 
 	protected PercentileEstimator pest;
 
+	private DistributionSummary distributionSummary;
+
+	private static List<String> labels;
+	private static List<String> types;
+
 	/**
 	 * Constructor for StatisticsKeeper.
 	 *
@@ -66,15 +79,48 @@ public class StatisticsKeeper implements ItemList {
 	 * @see AppConstants
 	 */
 	public StatisticsKeeper(String name) {
-		this(name, Basics.class, statConfigKey, DEFAULT_BOUNDARY_LIST);
+		this(name, (B)new MicroMeterBasics(), statConfigKey, DEFAULT_BOUNDARY_LIST);
 	}
 
-	protected StatisticsKeeper(String name, Class basicsClass, String boundaryConfigKey, String defaultBoundaryList) {
+	protected StatisticsKeeper(String name, B basics) {
+		this(name, basics, statConfigKey, DEFAULT_BOUNDARY_LIST);
+	}
+
+	public void initMetrics(MeterRegistry registry, String name, Iterable<Tag> tags) {
+		double[] serviceLevelObjectives = new double[classBoundaries.length];
+		for (int i=0;i<classBoundaries.length;i++) {
+			serviceLevelObjectives[i]=classBoundaries[i];
+		}
+		double[] percentiles = new double[pest.getNumPercentiles()];
+		for (int i=0;i<pest.getNumPercentiles();i++) {
+			percentiles[i]=((double)pest.getPercentage(i))/100;
+		}
+		DistributionSummary.Builder builder= DistributionSummary
+				.builder(name)
+				.baseUnit(getUnits())
+				.tags(tags)
+				.tag("name", getName())
+				.serviceLevelObjectives(serviceLevelObjectives)
+				.publishPercentiles(percentiles)
+				//.publishPercentileHistogram()
+				;
+		DistributionSummary distributionSummary = builder.register(registry);
+
+		if (cumulative instanceof MicroMeterBasics) {
+			((MicroMeterBasics)cumulative).setDistributionSummary(distributionSummary);
+			mark=cumulative.takeSnapshot();
+			pest = new MicroMeterPercentileEstimator(distributionSummary, percentiles);
+		} else {
+			this.distributionSummary = distributionSummary;
+		}
+	}
+
+	protected StatisticsKeeper(String name, B basics, String boundaryConfigKey, String defaultBoundaryList) {
 		super();
 		this.name = name;
 		try {
-			cumulative=(Basics)basicsClass.newInstance();
-			mark=(Basics)basicsClass.newInstance();
+			cumulative=basics;
+			mark = cumulative.takeSnapshot();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -102,27 +148,20 @@ public class StatisticsKeeper implements ItemList {
 		return "ms";
 	}
 
-	public void performAction(int action) {
-		if (action==HasStatistics.STATISTICS_ACTION_FULL || action==HasStatistics.STATISTICS_ACTION_SUMMARY) {
+	public void performAction(Action action) {
+		if (action==Action.FULL || action==Action.SUMMARY) {
 			return;
 		}
-		if (action==HasStatistics.STATISTICS_ACTION_RESET) {
-			clear();
-		}
-		if (action==HasStatistics.STATISTICS_ACTION_MARK_FULL || action==HasStatistics.STATISTICS_ACTION_MARK_MAIN) {
-			mark.mark(cumulative);
+		if (action==Action.MARK_FULL || action==Action.MARK_MAIN) {
+			mark = cumulative.takeSnapshot();
 		}
 	}
 
-	public void clear() {
-		cumulative.reset();
-		mark.reset();
-		first=0;
-		last=0;
-		pest.clear();
-	}
 
 	public void addValue(long value) {
+		if (distributionSummary!=null) {
+			distributionSummary.record(value);
+		}
 		if (first==Long.MIN_VALUE) {
 			first=value;
 		}
@@ -130,7 +169,7 @@ public class StatisticsKeeper implements ItemList {
 		long curMin=cumulative.getMin();
 		long curMax=cumulative.getMax();
 		cumulative.addValue(value);
-		mark.checkMinMax(value);
+		cumulative.updateIntervalMinMax(mark, value);
 		if (calculatePercentiles) {
 			pest.addValue(value,cumulative.getCount(),curMin,curMax);
 		}
@@ -163,7 +202,7 @@ public class StatisticsKeeper implements ItemList {
 
 	@Override
 	public String getItemName(int index) {
-		if (index < Basics.NUM_BASIC_ITEMS) {
+		if (index < IBasics.NUM_BASIC_ITEMS) {
 			return cumulative.getItemName(index);
 		}
 		switch (index) {
@@ -179,7 +218,7 @@ public class StatisticsKeeper implements ItemList {
 		}
 	}
 
-	public String getIntervalItemName(int index) {
+	protected String getIntervalItemName(int index) {
 		switch (index) {
 			case 0: return ITEM_NAME_COUNT;
 			case 1: return ITEM_NAME_MIN;
@@ -191,7 +230,7 @@ public class StatisticsKeeper implements ItemList {
 		}
 	}
 
-	public int getItemIndex(String name) {
+	protected int getItemIndex(String name) {
 		int top=NUM_STATIC_ITEMS+classBoundaries.length;
 		if (calculatePercentiles) {
 			top+=pest.getNumPercentiles();
@@ -206,36 +245,36 @@ public class StatisticsKeeper implements ItemList {
 	}
 
 	@Override
-	public int getItemType(int index) {
-		if (index<Basics.NUM_BASIC_ITEMS) {
+	public Type getItemType(int index) {
+		if (index<IBasics.NUM_BASIC_ITEMS) {
 			return cumulative.getItemType(index);
 		}
 		switch (index) {
-			case 6: return ITEM_TYPE_TIME;
-			case 7: return ITEM_TYPE_TIME;
+			case 6: return Type.TIME;
+			case 7: return Type.TIME;
 			default :
 				if ((index-NUM_STATIC_ITEMS) < classBoundaries.length) {
-					return ITEM_TYPE_FRACTION;
+					return Type.FRACTION;
 				}
-				return ITEM_TYPE_TIME;
+				return Type.TIME;
 		}
 	}
 
-	public int getIntervalItemType(int index) {
+	public Type getIntervalItemType(int index) {
 		switch (index) {
-			case 0: return ITEM_TYPE_INTEGER;
-			case 1: return ITEM_TYPE_TIME;
-			case 2: return ITEM_TYPE_TIME;
-			case 3: return ITEM_TYPE_TIME;
-			case 4: return ITEM_TYPE_INTEGER;
-			case 5: return ITEM_TYPE_INTEGER;
-			default : return ITEM_TYPE_INTEGER;
+			case 0: return Type.INTEGER;
+			case 1: return Type.TIME;
+			case 2: return Type.TIME;
+			case 3: return Type.TIME;
+			case 4: return Type.INTEGER;
+			case 5: return Type.INTEGER;
+			default : return Type.INTEGER;
 		}
 	}
 
 	@Override
 	public Object getItemValue(int index) {
-		if (index<Basics.NUM_BASIC_ITEMS) {
+		if (index<IBasics.NUM_BASIC_ITEMS) {
 			return cumulative.getItemValue(index);
 		}
 		switch (index) {
@@ -255,9 +294,9 @@ public class StatisticsKeeper implements ItemList {
 	public Object getIntervalItemValue(int index) {
 		switch (index) {
 			case 0: return new Long(cumulative.getIntervalCount(mark));
-			case 1: if (cumulative.getCount() == mark.getCount()) return null; else return new Long(mark.getMin());
-			case 2: if (cumulative.getCount() == mark.getCount()) return null; else return new Long(mark.getMax());
-			case 3: if (cumulative.getCount() == mark.getCount()) return null; else return new Double(cumulative.getIntervalAverage(mark));
+			case 1: if (cumulative.getIntervalCount(mark) == 0) return null; return new Long(cumulative.getIntervalMin(mark));
+			case 2: if (cumulative.getIntervalCount(mark) == 0) return null; return new Long(cumulative.getIntervalMax(mark));
+			case 3: if (cumulative.getIntervalCount(mark) == 0) return null; return new Double(cumulative.getIntervalAverage(mark));
 			case 4: return new Long(cumulative.getIntervalSum(mark));
 			case 5: return new Long(cumulative.getIntervalSumOfSquares(mark));
 			default : return null;
@@ -273,7 +312,7 @@ public class StatisticsKeeper implements ItemList {
 			items.addSubElement(item);
 			item.addAttribute("index",""+i);
 			item.addAttribute("name",XmlUtils.encodeChars(getItemName(i)));
-			item.addAttribute("type",""+getItemType(i));
+			item.addAttribute("type", getItemType(i).name());
 			item.addAttribute("value",ItemUtil.getItemValueFormated(this,i));
 		}
 		XmlBuilder item = new XmlBuilder("item");
@@ -301,6 +340,74 @@ public class StatisticsKeeper implements ItemList {
 		}
 		return ItemUtil.toXml(this, elementName, getName(), timeFormat, percentageFormat, countFormat);
 	}
+
+	public static List<String> getLabels() {
+		if (labels == null) {
+			List<String> newLabels = new ArrayList<>();
+			newLabels.add("Name");
+			StatisticsKeeper tmp = new StatisticsKeeper("tmpStatKeeper");
+			for (int i=0;i<tmp.getItemCount();i++) {
+				newLabels.add(tmp.getItemName(i));
+			}
+			labels = newLabels;
+		}
+		return labels;
+	}
+	public static List<String> getTypes() {
+		if (types == null) {
+			List<String> newTypes = new ArrayList<>();
+			newTypes.add("STRING");
+			StatisticsKeeper tmp = new StatisticsKeeper("tmpStatKeeper");
+			for (int i=0;i<tmp.getItemCount();i++) {
+				newTypes.add(tmp.getItemType(i).name());
+			}
+			types = newTypes;
+		}
+		return types;
+	}
+
+	public Map<String, Object> asMap() {
+		Map<String, Object> tmp = new LinkedHashMap<String, Object>();
+		tmp.put("Name", getName());
+		for (int i=0; i< getItemCount(); i++) {
+			Object item = getItemValue(i);
+			String key = getItemName(i).replace("< ", "");
+			if (item==null) {
+				tmp.put(key, null);
+			} else {
+				switch (getItemType(i)) {
+					case INTEGER:
+						tmp.put(key, item);
+						break;
+					case TIME:
+						if(item instanceof Long) {
+							tmp.put(key, item);
+						} else {
+							Double val = (Double) item;
+							if(val.isNaN() || val.isInfinite()) {
+								tmp.put(key, null);
+							} else {
+								tmp.put(key, new BigDecimal(val).setScale(1, BigDecimal.ROUND_HALF_EVEN));
+							}
+						}
+						break;
+					case FRACTION:
+						Double val = (Double) item;
+						if(val.isNaN() || val.isInfinite()) {
+							tmp.put(key, null);
+						} else {
+							tmp.put(key, new BigDecimal(((Double) item).doubleValue()*100).setScale(1,  BigDecimal.ROUND_HALF_EVEN));
+						}
+						break;
+					default:
+						throw new IllegalStateException("Unknown item type ["+getItemType(i)+"]");
+				}
+			}
+		}
+		return tmp;
+	}
+
+
 
 	public long getCount() {
 		return cumulative.getCount();

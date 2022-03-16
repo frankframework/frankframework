@@ -63,7 +63,7 @@ public class SenderWrapper extends SenderWrapperBase {
 	}
 
 	@Override
-	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
+	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
 		if (getSender() instanceof HasStatistics) {
 			((HasStatistics)getSender()).iterateOverStatistics(hski,data,action);
 		}

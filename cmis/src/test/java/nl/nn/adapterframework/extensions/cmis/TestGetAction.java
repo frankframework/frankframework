@@ -137,7 +137,7 @@ public class TestGetAction extends SenderTestBase<CmisSender>{
 		return sender;
 	}
 
-	public void configure() throws ConfigurationException, SenderException, TimeoutException {
+	public void configure() throws ConfigurationException {
 		sender.setGetProperties(getProperties);
 		sender.setGetDocumentContent(getDocumentContent);
 

@@ -1,0 +1,6 @@
+<root xmlns="urn:labelValue">
+	<labels>
+		<label name="lbl1">value1</label>
+		<label name="lbl2">value2</label>
+	</labels>
+</root>

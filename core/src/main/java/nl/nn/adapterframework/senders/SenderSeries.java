@@ -90,7 +90,7 @@ public class SenderSeries extends SenderWrapperBase {
 	}
 
 	@Override
-	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
+	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
 		//Object senderData=hski.openGroup(data,getName(),"sender");
 		for (ISender sender: getSenders()) {
 			hski.handleStatisticsKeeper(data,getStatisticsKeeper(sender));		

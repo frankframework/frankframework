@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.testutil;
 
+import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
@@ -17,10 +18,16 @@ public abstract class URLXADataSourceFactory extends URLDataSourceFactory {
 		return augmentXADataSource(xaDataSource, product);
 	}
 
+	@Override
+	protected DataSource augmentDatasource(CommonDataSource xaDataSource, String product) {
+		return super.augmentDatasource(xaDataSource, product);
+	}
+
 	protected abstract DataSource augmentXADataSource(XADataSource xaDataSource, String product);
 
+	@SuppressWarnings({ "unused", "null" }) //only used to verify that all datasources use the same setters
 	private void testClassMethods() {
-		org.h2.jdbcx.JdbcDataSource h2 = null; 
+		org.h2.jdbcx.JdbcDataSource h2 = null;
 		oracle.jdbc.xa.client.OracleXADataSource oracle = null;
 		com.microsoft.sqlserver.jdbc.SQLServerXADataSource mssql = null;
 		com.mysql.cj.jdbc.MysqlXADataSource mysql = null;
@@ -51,5 +58,4 @@ public abstract class URLXADataSourceFactory extends URLDataSourceFactory {
 		postgres.setUser("x");
 		postgres.setPassword("x");
 	}
-	
 }

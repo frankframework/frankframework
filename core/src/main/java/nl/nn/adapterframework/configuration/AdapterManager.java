@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -59,11 +59,6 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 			throw new IllegalStateException("Adapter [" + adapter.getName() + "] already registered.");
 		}
 
-		if(adapterLifecycleWrappers != null) {
-			for (AdapterLifecycleWrapperBase adapterProcessor : adapterLifecycleWrappers) {
-				adapterProcessor.addAdapter(adapter);
-			}
-		}
 		adapters.put(adapter.getName(), adapter);
 	}
 
@@ -134,6 +129,11 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 
 		for (Adapter adapter : getAdapterList()) {
 			try {
+				if(adapterLifecycleWrappers != null) {
+					for (AdapterLifecycleWrapperBase adapterProcessor : adapterLifecycleWrappers) {
+						adapterProcessor.addAdapter(adapter);
+					}
+				}
 				adapter.configure();
 			} catch (ConfigurationException e) {
 				log.error("error configuring adapter ["+adapter.getName()+"]", e);

@@ -444,11 +444,11 @@ public class Message implements Serializable {
 		}
 		if (request instanceof Reader) {
 			log.debug("returning Reader as InputSource");
-			return (new InputSource((Reader) request));
+			return new InputSource((Reader) request);
 		}
 		if (request instanceof String) {
 			log.debug("returning String as InputSource");
-			return (new InputSource(new StringReader((String) request)));
+			return new InputSource(new StringReader((String) request));
 		}
 		log.debug("returning as InputSource");
 		if (isBinary()) {

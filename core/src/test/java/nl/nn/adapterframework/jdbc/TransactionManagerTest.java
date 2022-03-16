@@ -34,9 +34,7 @@ public class TransactionManagerTest extends TransactionManagerTestBase {
 		try (Connection txManagedConnection = getConnection()) {
 			checkNumberOfLines(0);
 			JdbcUtil.executeStatement(txManagedConnection, "INSERT INTO TEMP (tkey) VALUES (1)");
-//			checkNumberOfLines(0);			
 		}
-//		checkNumberOfLines(0);
 
 		txManager.commit(txStatus);
 

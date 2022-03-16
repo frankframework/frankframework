@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,27 +16,23 @@
 package nl.nn.adapterframework.xml;
 
 import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.util.Properties;
 
 import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.util.StringResolver;
+import nl.nn.adapterframework.util.XmlUtils;
 
-public class ElementPropertyResolver extends XmlWriter {
+public class ElementPropertyResolver extends FullXmlFilter {
 	private Properties properties;
 	private StringBuffer pendingSubstBuff = new StringBuffer();
 
 	private boolean collectingBuffer;
 
-	public ElementPropertyResolver(Properties properties) {
-		this(new StringWriter(), properties);
-	}
-
-	public ElementPropertyResolver(Writer writer, Properties properties) {
-		super(writer);
+	public ElementPropertyResolver(ContentHandler handler, Properties properties) {
+		super(handler);
 		if(properties == null) {
 			throw new IllegalArgumentException("no properties defined");
 		}
@@ -62,7 +58,7 @@ public class ElementPropertyResolver extends XmlWriter {
 	private void substitute() throws SAXException {
 		if (collectingBuffer) {
 			try {
-				getWriter().append(StringResolver.substVars(pendingSubstBuff.toString(), properties));
+				XmlUtils.parseNodeSet(StringResolver.substVars(pendingSubstBuff.toString(), properties), getContentHandler());
 			} catch (IllegalArgumentException | IOException e) {
 				throw new SaxException("Could not substitute", e);
 			}

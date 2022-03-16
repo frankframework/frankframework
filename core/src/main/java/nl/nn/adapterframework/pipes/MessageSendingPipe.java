@@ -400,41 +400,6 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		propagateName();
 	}
 
-//	/**
-//	 * When true, the streaming capability of the nested sender is taken into account to determine if the pipe can provide an OutputStream.
-//	 * Descender classes may override this method when necessary.
-//	 */
-//	protected boolean senderAffectsStreamProvidingCapability() {
-//		return true;
-//	}
-//	/**
-//	 * When true, the ability of the nested sender to write to is taken into account to determine if the pipe can stream its output.
-//	 * Descender classes may override this method when necessary.
-//	 */
-//	protected boolean senderAffectsStreamWritingCapability() {
-//		return true;
-//	}
-//	
-//	@Override
-//	public protected canProvideOutputStream() {
-//		return super.canProvideOutputStream() 
-//				&& (!senderAffectsStreamProvidingCapability() || 
-//					sender instanceof IOutputStreamingSupport && ((IOutputStreamingSupport)sender).canProvideOutputStream()
-//				   )
-//				&& getInputWrapper()==null
-//				&& getInputValidator()==null;
-//	}
-//
-//	@Override
-//	public boolean requiresOutputStream() {
-//		return super.requiresOutputStream() 
-//				&& (!senderAffectsStreamWritingCapability() || 
-//					sender instanceof IOutputStreamingSupport && ((IOutputStreamingSupport)sender).requiresOutputStream()
-//				   )
-//				&& getOutputWrapper()==null
-//				&& getOutputValidator()==null
-//				&& !isStreamResultToServlet();
-//	}
 
 	@Override
 	public boolean supportsOutputStreamPassThrough() {
@@ -509,6 +474,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			if (validationResult!=null && !validationResult.isSuccessful()) {
 				return validationResult;
 			}
+			input = validationResult.getResult();
 		}
 
 		if (StringUtils.isNotEmpty(getStubFilename())) {
@@ -724,8 +690,11 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			log.debug(getLogPrefix(session)+"validating response");
 			PipeRunResult validationResult;
 			validationResult = pipeProcessor.processPipe(getPipeLine(), outputValidator, Message.asMessage(result), session);
-			if (validationResult!=null && !validationResult.isSuccessful()) {
-				return validationResult;
+			if (validationResult!=null) {
+				if (!validationResult.isSuccessful()) {
+					return validationResult;
+				}
+				result = validationResult.getResult();
 			}
 		}
 		if (getOutputWrapper()!=null) {
@@ -954,7 +923,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	}
 
 	@Override
-	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
+	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
 		if (sender instanceof HasStatistics) {
 			((HasStatistics)sender).iterateOverStatistics(hski,data,action);
 		}

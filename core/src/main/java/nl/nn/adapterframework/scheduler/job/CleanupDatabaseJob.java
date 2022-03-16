@@ -48,7 +48,7 @@ import nl.nn.adapterframework.util.SpringUtils;
 public class CleanupDatabaseJob extends JobDef {
 	private @Getter int queryTimeout;
 
-	private class MessageLogObject {
+	protected class MessageLogObject {
 		private String datasourceName;
 		private String tableName;
 		private String expiryDateField;
@@ -99,7 +99,7 @@ public class CleanupDatabaseJob extends JobDef {
 	}
 
 	@Override
-	public void beforeExecuteJob(IbisManager ibisManager) {
+	public boolean beforeExecuteJob(IbisManager ibisManager) {
 		Set<String> datasourceNames = getAllLockerDatasourceNames(ibisManager);
 
 		for (String datasourceName : datasourceNames) {
@@ -135,6 +135,7 @@ public class CleanupDatabaseJob extends JobDef {
 				}
 			}
 		}
+		return true;
 	}
 
 	@Override
@@ -241,7 +242,7 @@ public class CleanupDatabaseJob extends JobDef {
 		}
 	}
 
-	private List<MessageLogObject> getAllMessageLogs(IbisManager ibisManager) {
+	protected List<MessageLogObject> getAllMessageLogs(IbisManager ibisManager) {
 		List<MessageLogObject> messageLogs = new ArrayList<>();
 		for(IAdapter adapter : ibisManager.getRegisteredAdapters()) {
 			for (Receiver<?> receiver: adapter.getReceivers()) {

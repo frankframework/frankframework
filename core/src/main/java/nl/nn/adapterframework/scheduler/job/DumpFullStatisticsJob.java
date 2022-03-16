@@ -17,12 +17,12 @@ package nl.nn.adapterframework.scheduler.job;
 
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.scheduler.JobDef;
-import nl.nn.adapterframework.statistics.HasStatistics;
+import nl.nn.adapterframework.statistics.HasStatistics.Action;
 
 public class DumpFullStatisticsJob extends JobDef {
 
 	@Override
 	public void execute(IbisManager ibisManager) {
-		ibisManager.dumpStatistics(HasStatistics.STATISTICS_ACTION_MARK_FULL);
+		ibisManager.dumpStatistics(Action.MARK_FULL);
 	}
 }
