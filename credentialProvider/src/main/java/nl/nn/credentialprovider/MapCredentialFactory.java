@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2021 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,7 +21,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 import nl.nn.credentialprovider.util.AppConstants;
 import nl.nn.credentialprovider.util.ClassUtils;
@@ -81,6 +83,21 @@ public abstract class MapCredentialFactory implements ICredentialFactory {
 	@Override
 	public ICredentials getCredentials(String alias, String defaultUsername, String defaultPassword) {
 		return new MapCredentials(alias, defaultUsername, defaultPassword, usernameSuffix, passwordSuffix, aliases);
+	}
+
+	@Override
+	public Set<String> getAliases() throws Exception{
+		Set<String> aliasNames = new LinkedHashSet<>();
+		for (String name:aliases.keySet()) {
+			if (name.endsWith(usernameSuffix)) {
+				name = name.substring(0, name.length()-usernameSuffix.length());
+			}
+			if (name.endsWith(passwordSuffix)) {
+				name = name.substring(0, name.length()-passwordSuffix.length());
+			}
+			aliasNames.add(name);
+		}
+		return aliasNames;
 	}
 
 }

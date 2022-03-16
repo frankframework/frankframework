@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
 */
 package nl.nn.credentialprovider;
 
+import java.util.Collection;
+
 public interface ICredentialFactory {
 
 	/**
@@ -24,9 +26,14 @@ public interface ICredentialFactory {
 	default void initialize() throws Exception {
 		// implementations can do their initialization, and throw an exception if they cannot.
 	};
-	
+
 	public boolean hasCredentials(String alias);
-	
+
 	public ICredentials getCredentials(String alias, String defaultUsername, String defaultPassword);
 
+	/**
+	 * return a list of aliases, or null if such a list cannot be provided.
+	 * @throws Exception 
+	 */
+	public Collection<String> getAliases() throws Exception;
 }

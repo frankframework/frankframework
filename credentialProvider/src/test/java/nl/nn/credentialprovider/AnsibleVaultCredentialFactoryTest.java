@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 
@@ -25,9 +26,9 @@ public class AnsibleVaultCredentialFactoryTest {
 	public String ANSIBLE_VAULT_KEY_FILE="/credentials-vault-key.txt";
 
 	public String ANSIBLE_VAULT_PASSWORD="GEHEIM";
-	
+
 	private AnsibleVaultCredentialFactory credentialFactory;
-	
+
 	@Before
 	public void setup() throws IOException {
 		String vaultUrl = this.getClass().getResource(ANSIBLE_VAULT_FILE).toExternalForm();
@@ -37,14 +38,14 @@ public class AnsibleVaultCredentialFactoryTest {
 		String keyUrl = this.getClass().getResource(ANSIBLE_VAULT_KEY_FILE).toExternalForm();
 		String keyFile =  Paths.get(keyUrl.substring(keyUrl.indexOf(":/")+2)).toString();
 		assumeTrue(Files.exists(Paths.get(keyFile)));
-		
+
 		System.setProperty("credentialFactory.ansibleVault.vaultFile", vaultFile);
 		System.setProperty("credentialFactory.ansibleVault.keyFile", keyFile);
-		
+
 		credentialFactory = new AnsibleVaultCredentialFactory();
 		credentialFactory.initialize();
 	}
-	
+
 	public void setupVault(Properties aliases, String title) throws IOException {
 		ByteArrayOutputStream credentialData = new ByteArrayOutputStream();
 		aliases.store(credentialData, title);
@@ -56,8 +57,8 @@ public class AnsibleVaultCredentialFactoryTest {
 		System.out.println("Ansible Vault:\n"+new String(encryptedVault));
 
 	}
-	
-	
+
+
 	//@Test
 	// run this to obtain a fresh ansible vault
 	public void testSetupVault() throws IOException {
@@ -194,6 +195,11 @@ public class AnsibleVaultCredentialFactoryTest {
 		assertEquals(expectedUsername, mc.getUsername());
 		assertEquals(expectedPassword, mc.getPassword());
 	}
-	
-	
+
+	@Test
+	public void testGetAliases() throws Exception {
+		Collection<String> aliases = credentialFactory.getAliases();
+		assertEquals("[straight, singleValue, noUsername]", aliases.toString());
+	}
+
 }
