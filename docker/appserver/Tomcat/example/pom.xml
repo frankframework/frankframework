@@ -87,13 +87,6 @@
 									<classifier>context</classifier>
 									<outputDirectory>${project.build.directory}/dependencies</outputDirectory>
 				                </artifactItem>
-				                <artifactItem>
-									<groupId>${config.groupid}</groupId>
-									<artifactId>${config.project}</artifactId>
-									<version>${config.project.version}</version>
-									<classifier>customViews</classifier>
-									<outputDirectory>${project.build.directory}/dependencies/customViews</outputDirectory>
-				                </artifactItem>
 				            </artifactItems>
 			            	<overWriteReleases>false</overWriteReleases>
 							<overWriteSnapshots>true</overWriteSnapshots>
