@@ -914,19 +914,22 @@ public class MessageTest {
 	public void testMessageDefaultCharset() throws Exception {
 		String utf8Input = "Më-×m👌‰Œœ‡TzdDEyMt120=";
 		ByteArrayInputStream source = new ByteArrayInputStream(utf8Input.getBytes("utf-8"));
-		Message message = new Message(source); //non-repeatable stream, default charset
+		Message binaryMessage = new Message(source); //non-repeatable stream, no provided charset
 
-		String stringResult = message.asString("ISO-8859-1");
-		assertEquals(utf8Input, stringResult);
+		assertEquals(utf8Input, binaryMessage.asString()); //Default must be used
+
+		Message characterMessage = new Message(utf8Input);
+
+		assertEquals(utf8Input, characterMessage.asString("ISO-8859-1")); //This should not be used as there is no binary conversion
 	}
 
 	@Test
 	public void testMessageDetectCharset() throws Exception {
 		String utf8Input = "Më-×m👌‰Œœ‡TzdDEyMt120=";
 		ByteArrayInputStream source = new ByteArrayInputStream(utf8Input.getBytes("utf-8"));
-		Message message = new Message(source, "auto"); //non-repeatable stream, detect charset
+		Message message = new Message(source, "auto"); //Set the MessageContext charset
 
-		String stringResult = message.asString("ISO-8859-1");
+		String stringResult = message.asString("ISO-8859-ik-besta-niet"); //use MessageContext charset
 		assertEquals(utf8Input, stringResult);
 	}
 
@@ -935,9 +938,9 @@ public class MessageTest {
 		URL isoInputFile = TestFileUtils.getTestFileURL("/Util/MessageUtils/iso-8859-1.txt");
 		assertNotNull("unable to find isoInputFile", isoInputFile);
 
-		Message message = new Message(isoInputFile.openStream(), "auto"); //non-repeatable stream, detect charset
+		Message message = new UrlMessage(isoInputFile); //repeatable stream, detect charset
 
-		String stringResult = message.asString("unused-charset-value");
+		String stringResult = message.asString("auto"); //detect when reading
 		assertEquals(Misc.streamToString(isoInputFile.openStream(), "ISO-8859-1"), stringResult);
 	}
 }

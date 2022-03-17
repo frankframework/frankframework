@@ -139,7 +139,6 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 
 		String encodedString = "TcOrLcOXbfCfkYzigLDFksWT4oChVHpkREV5TXQxMjA9";
 		String decodedString = "Më-×m👌‰Œœ‡TzdDEyMt120=";
-		byte[] decodedBytes = decodedString.getBytes("UTF-8");
 
 		PipeRunResult decodeResult = doPipe(encodedString);
 		Message result = decodeResult.getResult();
