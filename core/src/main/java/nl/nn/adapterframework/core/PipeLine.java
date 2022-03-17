@@ -174,7 +174,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 			if (pipe instanceof FixedForwardPipe) {
 				FixedForwardPipe ffpipe = (FixedForwardPipe)pipe;
-				// getSuccessForward will return null since it has not been set. See below configure(pipe)
+				// getSuccessForward will return null if it has not been set. See below configure(pipe)
 				if (ffpipe.findForward(PipeForward.SUCCESS_FORWARD_NAME) == null) {
 					int i2 = i + 1;
 					if (i2 < pipes.size()) {
@@ -652,8 +652,8 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	/** 
 	 * PipeLine exits.
-	 * @ff.deprecated
 	 */
+	@Deprecated
 	public void registerPipeLineExit(PipeLineExit exit) {
 		if (pipeLineExits.containsKey(exit.getPath())) {
 			ConfigurationWarnings.add(this, log, "exit named ["+exit.getPath()+"] already exists");
@@ -740,7 +740,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	/** 
 	 * Name of the first pipe to execute when a message is to be processed
-	 * @ff.default <first pipe of the pipeline>" })
+	 * @ff.default first pipe of the pipeline
 	 */
 	public void setFirstPipe(String pipeName) {
 		firstPipe = pipeName;
