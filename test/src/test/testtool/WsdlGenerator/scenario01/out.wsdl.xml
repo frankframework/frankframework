@@ -720,14 +720,14 @@
 	</wsdl:binding>
 	<wsdl:service name="Service_WsdlGenerator">
 		<wsdl:port name="Port_WsdlGenerator" binding="tns:Binding_WsdlGenerator">
-			<soap:address location="jms/i4testiaf_in"/>
+			<soap:address location="${jms.destination.i4testiaf_in}"/>
 			<jndi:context>
 				<jndi:property name="java.naming.factory.initial" type="java.lang.String">com.tibco.tibjms.naming.TibjmsInitialContextFactory</jndi:property>
 				<jndi:property name="java.naming.provider.url" type="java.lang.String">tibjmsnaming://host-for-jms%2Fqcf-on-LOC:37222</jndi:property>
 				<jndi:property name="java.naming.factory.object" type="java.lang.String">com.tibco.tibjms.custom.CustomObjectFactory</jndi:property>
 			</jndi:context>
 			<jms:connectionFactory>externalJndiName-for-jms/qcf-on-LOC</jms:connectionFactory>
-			<jms:targetAddress destination="queue">jms/i4testiaf_in</jms:targetAddress>
+			<jms:targetAddress destination="queue">${jms.destination.i4testiaf_in}</jms:targetAddress>
 		</wsdl:port>
 	</wsdl:service>
 </wsdl:definitions>

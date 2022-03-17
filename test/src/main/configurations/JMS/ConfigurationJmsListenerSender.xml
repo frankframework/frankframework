@@ -12,8 +12,8 @@
 			<pipe name="Send2Jms"
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jms.JmsSender"
-					jmsRealm="qcf" destinationName="jms/i4testiaf_in" synchronous="true"
-					replyToName="jms/i4testiaf_out">
+					jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_in}" synchronous="true"
+					replyToName="${jms.destination.i4testiaf_out}">
 					<param name="SOURCE" value="${hostname}_I4TIAF1" />
 				</sender>
 				<forward name="success" path="EXIT" />
@@ -24,10 +24,10 @@
 		active="${active.jms}">
 		<receiver name="JmsRRListener">
 			<listener className="nl.nn.adapterframework.jms.JmsListener"
-				destinationName="jms/i4testiaf_in" useReplyTo="false" jmsRealm="qcf"
+				destinationName="${jms.destination.i4testiaf_in}" useReplyTo="false" jmsRealm="qcf"
 				forceMessageIdAsCorrelationId="true" messageSelector="SOURCE='${hostname}_I4TIAF1'">
 				<sender className="nl.nn.adapterframework.jms.JmsSender"
-					destinationName="jms/i4testiaf_out" jmsRealm="qcf">
+					destinationName="${jms.destination.i4testiaf_out}" jmsRealm="qcf">
 					<param name="SOURCE" value="${hostname}_I4TIAF1" />
 				</sender>
 			</listener>
@@ -54,7 +54,7 @@
 			<pipe name="send2Jms"
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jms.JmsSender"
-					jmsRealm="qcf" destinationName="jms/i4testiaf_ff">
+					jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_ff}">
 					<param name="SOURCE" value="${hostname}_FF1" />
 				</sender>
 				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
@@ -83,7 +83,7 @@
 			<pipe name="send2Jms"
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jms.JmsSender"
-					jmsRealm="qcf" destinationName="jms/i4testiaf_ff">
+					jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_ff}">
 					<param name="SOURCE" value="${hostname}_FF2" />
 				</sender>
 				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
@@ -132,7 +132,7 @@
 			<pipe name="send2Jms"
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jms.JmsSender"
-					jmsRealm="qcf" destinationName="jms/i4testiaf_ff">
+					jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_ff}">
 					<param name="SOURCE" value="${hostname}_FF3" />
 				</sender>
 				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
@@ -156,7 +156,7 @@
 			</exits>
 			<pipe name="send2Jms">
 				<sender className="nl.nn.adapterframework.jms.JmsSender"
-					jmsRealm="qcf" destinationName="jms/i4testiaf_ff" destinationParam="destination">
+					jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_ff}" destinationParam="destination">
 					<param name="SOURCE" value="IAFTEST_DYNDEST" />
 					<param name="destination" sessionKey="originalMessage" xpathExpression="*/@destination" />
 				</sender>
@@ -174,7 +174,7 @@
 			maxRetries="0" hideRegex="(?&lt;=&lt;value&gt;).*?(?=&lt;/value&gt;)"
 			hideMethod="firstHalf">
 			<listener className="nl.nn.adapterframework.jms.JmsListener"
-				destinationName="jms/i4testiaf_ff" useReplyTo="false" jmsRealm="qcf"
+				destinationName="${jms.destination.i4testiaf_ff}" useReplyTo="false" jmsRealm="qcf"
 				messageSelector="SOURCE='${hostname}_FF3'" />
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
 				slotId="${applicationId}/JmsFFListener" />

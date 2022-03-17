@@ -5,7 +5,7 @@
 		<receiver
 			numThreads="4">
 			<listener className="nl.nn.adapterframework.extensions.esb.EsbJmsListener"
-				destinationName="jms/i4testiaf_in" jmsRealm="qcf" messageProtocol="RR"
+				destinationName="${jms.destination.i4testiaf_in}" jmsRealm="qcf" messageProtocol="RR"
 				messageSelector="SOURCE ='I4TIAF2a'" />
 		</receiver>
 		<receiver>
@@ -58,7 +58,7 @@
 		<receiver
 			numThreads="4">
 			<listener className="nl.nn.adapterframework.extensions.esb.EsbJmsListener"
-				destinationName="jms/i4testiaf_in" jmsRealm="qcf" messageProtocol="RR"
+				destinationName="${jms.destination.i4testiaf_in}" jmsRealm="qcf" messageProtocol="RR"
 				messageSelector="SOURCE ='I4TIAF2b'" />
 		</receiver>
 		<pipeline firstPipe="FixedReply">
@@ -103,7 +103,7 @@
 		<receiver
 			numThreads="4">
 			<listener className="nl.nn.adapterframework.extensions.esb.EsbJmsListener"
-				destinationName="jms/i4testiaf_in" jmsRealm="qcf" messageProtocol="RR"
+				destinationName="${jms.destination.i4testiaf_in}" jmsRealm="qcf" messageProtocol="RR"
 				messageSelector="SOURCE ='I4TIAF2c'" />
 		</receiver>
 		<receiver>
@@ -149,7 +149,7 @@
 		<receiver
 			numThreads="4">
 			<listener className="nl.nn.adapterframework.extensions.esb.EsbJmsListener"
-				destinationName="jms/i4testiaf_in" jmsRealm="qcf" messageProtocol="RR"
+				destinationName="${jms.destination.i4testiaf_in}" jmsRealm="qcf" messageProtocol="RR"
 				messageSelector="SOURCE ='I4TIAF2d'" />
 		</receiver>
 		<receiver>
