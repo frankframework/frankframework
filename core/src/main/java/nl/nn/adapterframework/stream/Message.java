@@ -527,9 +527,13 @@ public class Message implements Serializable {
 				throw new IOException("Could not convert type Node to String", e);
 			}
 		}
+
 		// save the generated String as the request before returning it
-		request = StreamUtil.readerToString(asReader(defaultCharset), null);
-		return (String) request;
+		String result = StreamUtil.readerToString(asReader(defaultCharset), null);
+		if(!isBinary() || !isRepeatable()) {
+			request = result;
+		}
+		return result;
 	}
 
 	public boolean isEmpty() {

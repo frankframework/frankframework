@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -47,18 +47,6 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 		return new Base64Pipe();
 	}
 
-//	@Test(expected = IllegalArgumentException.class)
-//	public void noDirection() throws ConfigurationException {
-//		pipe.setDirection("");
-//		pipe.configure();
-//	}
-//
-//	@Test(expected = IllegalArgumentException.class)
-//	public void wrongDirection() throws ConfigurationException {
-//		pipe.setDirection("not encode");
-//		pipe.configure();
-//	}
-
 	@Test(expected = IllegalArgumentException.class)
 	public void wrongOutputType() throws ConfigurationException {
 		pipe.setOutputType("not string or stream or bytes");
@@ -98,23 +86,25 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 	}
 
 	@Test
-	public void wrongCharsetEncodingButProvidedAuto() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	public void wrongCharsetShouldNotBeUsed() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		pipe.setCharset("ISO-8859-1"); //Should be ignored
 		pipe.configure();
 		pipe.start();
+
 		String utf8Input = "Më-×m👌‰Œœ‡TzdDEyMt120=";
-		byte[] inputString = utf8Input.getBytes("UTF-8"); //String containing utf-8 characters
-		Message in = new Message(inputString, "auto"); //Saving it with a different charset
+		byte[] inputBytes = utf8Input.getBytes("UTF-8"); //String containing utf-8 characters
+		Message in = new Message(inputBytes, "auto"); //Saving it with a different charset
 
 		assertEquals(utf8Input, in.asString()); // read the message which should update the auto field in the MessageContext
 		assertEquals("UTF-8", in.getContext().get(MessageContext.METADATA_CHARSET)); //base64#charset attribute should be ignored because of explicit value in the MessageContext.
 
 		Message result = doPipe(pipe, in, session).getResult();
 
+		assertEquals("TcOrLcOXbfCfkYzigLDFksWT4oChVHpkREV5TXQxMjA9", result.asString().trim()); //validate and preserve the message
+
 		InputStream decodedResult = new Base64InputStream(result.asInputStream(), false);
 		assertEquals(utf8Input, Misc.streamToString(decodedResult));
 
-		assertEquals("Test120/Pz8/P1R6ZERFeU10MTIwPQ==", result.asString().trim());
 	}
 
 	@Test
