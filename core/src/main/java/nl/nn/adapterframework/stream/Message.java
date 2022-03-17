@@ -156,26 +156,26 @@ public class Message implements Serializable {
 	 * If no charset was provided and the requested charset is <code>auto</auto>, try to parse the charset.
 	 * If unsuccessful return the default; <code>UTF-8</code>.
 	 */
-	private String computeDecodingCharset(String decodingCharset) throws IOException {
-		String providedCharset = getCharset();
+	private String computeDecodingCharset(String defaultDecodingCharset) throws IOException {
+		String decodingCharset = getCharset();
 
-		if (StringUtils.isEmpty(providedCharset)) {
-			providedCharset = StringUtils.isNotEmpty(decodingCharset)?decodingCharset:StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+		if (StringUtils.isEmpty(decodingCharset)) {
+			decodingCharset = StringUtils.isNotEmpty(defaultDecodingCharset)?defaultDecodingCharset:StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 		}
 
-		if (StreamUtil.AUTO_DETECT_CHARSET.equalsIgnoreCase(providedCharset)) {
-			Charset charset = MessageUtils.computeCharset(this);
-			providedCharset = (charset != null) ? charset.name() : null;
+		if (StreamUtil.AUTO_DETECT_CHARSET.equalsIgnoreCase(decodingCharset)) {
+			Charset charset = MessageUtils.computeDecodingCharset(this);
+			decodingCharset = (charset != null) ? charset.name() : null;
 		}
 
-		return providedCharset;
+		return decodingCharset;
 	}
 
-	private String computeEncodingCharset(String encodingCharset) {
-		if (StringUtils.isEmpty(encodingCharset)) {
-			encodingCharset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+	private String computeEncodingCharset(String defaultEncodingCharset) {
+		if (StringUtils.isEmpty(defaultEncodingCharset)) {
+			defaultEncodingCharset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 		}
-		return encodingCharset;
+		return defaultEncodingCharset;
 	}
 
 	/**
@@ -306,7 +306,7 @@ public class Message implements Serializable {
 	public Reader asReader() throws IOException {
 		return asReader(null);
 	}
-	public Reader asReader(String decodingCharset) throws IOException {
+	public Reader asReader(String defaultDecodingCharset) throws IOException {
 		if (request == null) {
 			return null;
 		}
@@ -315,7 +315,7 @@ public class Message implements Serializable {
 			return (Reader) request;
 		}
 		if (isBinary()) {
-			String readerCharset = computeDecodingCharset(decodingCharset); //Don't overwrite the Message's charset unless it's set to AUTO
+			String readerCharset = computeDecodingCharset(defaultDecodingCharset); //Don't overwrite the Message's charset unless it's set to AUTO
 
 			log.debug("returning InputStream as Reader");
 			InputStream inputStream = asInputStream();
@@ -347,7 +347,7 @@ public class Message implements Serializable {
 	/**
 	 * @param defaultCharset is only used when the Message object is of character type (String)
 	 */
-	public InputStream asInputStream(String encodeCharset) throws IOException {
+	public InputStream asInputStream(String defaultEncodingCharset) throws IOException {
 		try {
 			if (request == null) {
 				return null;
@@ -368,7 +368,7 @@ public class Message implements Serializable {
 				log.debug("returning Node as InputStream");
 				return new ByteArrayInputStream(asByteArray());
 			}
-			String charset = computeEncodingCharset(encodeCharset);
+			String charset = computeEncodingCharset(defaultEncodingCharset);
 			if (request instanceof Reader) {
 				log.debug("returning Reader as InputStream");
 				return new ReaderInputStream((Reader) request, charset);
@@ -490,7 +490,7 @@ public class Message implements Serializable {
 	public byte[] asByteArray() throws IOException {
 		return asByteArray(null);
 	}
-	public byte[] asByteArray(String encodeCharset) throws IOException {
+	public byte[] asByteArray(String defaultEncodingCharset) throws IOException {
 		if (request == null) {
 			return null;
 		}
@@ -505,7 +505,7 @@ public class Message implements Serializable {
 				throw new IOException("Could not convert Node to byte[]", e);
 			}
 		}
-		String charset = computeEncodingCharset(encodeCharset);
+		String charset = computeEncodingCharset(defaultEncodingCharset);
 		if (request instanceof String) {
 			return ((String)request).getBytes(charset);
 		}

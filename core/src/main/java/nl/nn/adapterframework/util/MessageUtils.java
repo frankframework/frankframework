@@ -99,8 +99,8 @@ public abstract class MessageUtils {
 	 * Reads the first 10k bytes of (binary) messages to determine the charset when not present in the {@link MessageContext}.
 	 * @throws IOException when it cannot read the first 10k bytes.
 	 */
-	public static Charset computeCharset(Message message) throws IOException {
-		return computeCharset(message, charsetConfidenceLevel);
+	public static Charset computeDecodingCharset(Message message) throws IOException {
+		return computeDecodingCharset(message, charsetConfidenceLevel);
 	}
 
 	/**
@@ -108,35 +108,36 @@ public abstract class MessageUtils {
 	 * @param confidence percentage required to successfully determine the charset.
 	 * @throws IOException when it cannot read the first 10k bytes.
 	 */
-	public static Charset computeCharset(Message message, int confidence) throws IOException {
+	public static Charset computeDecodingCharset(Message message, int confidence) throws IOException {
+		if(Message.isEmpty(message) || !message.isBinary()) {
+			return null;
+		}
+
 		if(StringUtils.isNotEmpty(message.getCharset()) && !StreamUtil.AUTO_DETECT_CHARSET.equalsIgnoreCase(message.getCharset())) {
-			Charset.forName(message.getCharset());
+			return Charset.forName(message.getCharset());
 		}
 
-		if(message.isBinary()) {
-			CharsetDetector detector = new CharsetDetector();
-			detector.setText(message.getMagic());
-			CharsetMatch match = detector.detect();
-			String charset = match.getName();
+		CharsetDetector detector = new CharsetDetector();
+		detector.setText(message.getMagic());
+		CharsetMatch match = detector.detect();
+		String charset = match.getName();
 
-			if(match.getConfidence() > 90) {
-				LOG.debug("update charset for message [{}], full match [{}] with confidence level [{}/{}]", message, charset, match.getConfidence(), confidence);
-				return updateMessageCharset(message, charset);
-			}
-
-			//Guesstimate, encoding is not UTF-8 but either CP1252/Latin1/ISO-8859-1.
-			if(charset.startsWith("windows-125")) {
-				charset = "windows-1252";//1250/1/3 have a combined adoption rate of 1.6% assume 1252 instead!
-			}
-			if(match.getConfidence() >= confidence) {
-				LOG.debug("update charset for message [{}], potential match [{}] with confidence level [{}/{}]", message, charset, match.getConfidence(), confidence);
-				return updateMessageCharset(message, charset);
-			}
-
-			updateMessageCharset(message, null);
-			LOG.info("unable to detect charset for message [{}] closest match [{}] did not meet confidence level [{}/{}]", message, charset, match.getConfidence(), confidence);
+		if(match.getConfidence() > 90) {
+			LOG.debug("update charset for message [{}], full match [{}] with confidence level [{}/{}]", message, charset, match.getConfidence(), confidence);
+			return updateMessageCharset(message, charset);
 		}
-		return null; //fall back to the default charset.
+
+		//Guesstimate, encoding is not UTF-8 but either CP1252/Latin1/ISO-8859-1.
+		if(charset.startsWith("windows-125")) {
+			charset = "windows-1252";//1250/1/3 have a combined adoption rate of 1.6% assume 1252 instead!
+		}
+		if(match.getConfidence() >= confidence) {
+			LOG.debug("update charset for message [{}], potential match [{}] with confidence level [{}/{}]", message, charset, match.getConfidence(), confidence);
+			return updateMessageCharset(message, charset);
+		}
+
+		LOG.info("unable to detect charset for message [{}] closest match [{}] did not meet confidence level [{}/{}]", message, charset, match.getConfidence(), confidence);
+		return updateMessageCharset(message, null); //return NULL so calling method can fall back to the default charset.
 	}
 
 	//Update the MessageContext charset field, it may not remain StreamUtil.AUTO_DETECT_CHARSET

@@ -46,7 +46,7 @@ public class MessageUtilsTest {
 		assertNotNull("cannot find test file ["+testFile+"]", url);
 
 		Message message = new UrlMessage(url);
-		Charset computedCharset = MessageUtils.computeCharset(message, 40);
+		Charset computedCharset = MessageUtils.computeDecodingCharset(message, 40);
 
 		assertEquals("charset mismatch", expectedCharset, computedCharset);
 
