@@ -627,7 +627,7 @@ public class TransactionalStorage extends Base {
 				} catch (IOException e) {
 					throw new ApiException(e, 500);
 				}
-			} else if(rawmsg instanceof Message){
+			} else if(rawmsg instanceof Message) { // For backwards compatibility: in case the message is stored as Message and the listener uses a different type.
 				try {
 					msg = ((Message)rawmsg).asString();
 				} catch (IOException e) {
