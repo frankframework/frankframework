@@ -943,4 +943,32 @@ public class MessageTest {
 		String stringResult = message.asString("auto"); //detect when reading
 		assertEquals(Misc.streamToString(isoInputFile.openStream(), "ISO-8859-1"), stringResult);
 	}
+
+	@Test
+	public void testCharsetDeterminationAndFallbackToDefault() throws Exception {
+		Message messageNullCharset = new Message((String) null) { //NullMessage, charset cannot be determined
+			@Override
+			public String getCharset() {
+				return null;
+			};
+		};
+		Message messageAutoCharset = new Message((String) null) { //NullMessage, charset cannot be determined
+			@Override
+			public String getCharset() {
+				return "AUTO";
+			};
+		};
+
+		// getCharset()==null && defaultDecodingCharset==AUTO ==> decodingCharset = UTF-8
+		assertEquals("UTF-8", messageNullCharset.computeDecodingCharset("AUTO"));
+
+		// getCharset()==AUTO && defaultDecodingCharset==xyz ==> decodingCharset = xyz
+		assertEquals("ISO-8559-15", messageAutoCharset.computeDecodingCharset("ISO-8559-15"));
+
+		// getCharset()==AUTO && defaultDecodingCharset==AUTO ==> decodingCharset = UTF-8
+		assertEquals("UTF-8", messageAutoCharset.computeDecodingCharset("AUTO"));
+
+		// getCharset()==AUTO && defaultDecodingCharset==null ==> decodingCharset = UTF-8
+		assertEquals("UTF-8", messageAutoCharset.computeDecodingCharset(null));
+	}
 }

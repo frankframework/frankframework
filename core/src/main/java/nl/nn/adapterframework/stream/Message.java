@@ -156,7 +156,7 @@ public class Message implements Serializable {
 	 * If no charset was provided and the requested charset is <code>auto</auto>, try to parse the charset.
 	 * If unsuccessful return the default; <code>UTF-8</code>.
 	 */
-	private String computeDecodingCharset(String defaultDecodingCharset) throws IOException {
+	protected String computeDecodingCharset(String defaultDecodingCharset) throws IOException {
 		String decodingCharset = getCharset();
 
 		if (StringUtils.isEmpty(decodingCharset)) {
@@ -165,7 +165,15 @@ public class Message implements Serializable {
 
 		if (StreamUtil.AUTO_DETECT_CHARSET.equalsIgnoreCase(decodingCharset)) {
 			Charset charset = MessageUtils.computeDecodingCharset(this);
-			decodingCharset = (charset != null) ? charset.name() : null;
+
+			if (charset == null) {
+				if(StringUtils.isNotEmpty(defaultDecodingCharset) && !StreamUtil.AUTO_DETECT_CHARSET.equalsIgnoreCase(defaultDecodingCharset)) {
+					return defaultDecodingCharset;
+				}
+				return StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+			} else {
+				return charset.name();
+			}
 		}
 
 		return decodingCharset;
