@@ -21,12 +21,13 @@
 
 	<bean name="listenerContainer" class="nl.nn.adapterframework.receivers.PullingListenerContainer" scope="prototype" />
 	<bean name="taskExecutor" class="org.springframework.core.task.SimpleAsyncTaskExecutor" scope="singleton" />
-	<bean id="schedulerHelper" class="nl.nn.adapterframework.testutil.SchedulerHelperMock" lazy-init="true" />
 
 	<bean name="flowDiagramManager" class="nl.nn.adapterframework.util.flow.FlowDiagramManager" autowire="no" scope="singleton" lazy-init="true" />
+
+	<!-- Suppress Spring initialisation warnings by providing a dummy class -->
+	<bean id="schedulerHelper" class="nl.nn.adapterframework.testutil.SchedulerHelperMock" lazy-init="true" />
 	<bean name="flowGenerator" class="nl.nn.adapterframework.testutil.DummyFlowGenerator" scope="prototype" lazy-init="true" />
 
-	<bean id="jndiContextPrefixFactory" class="nl.nn.adapterframework.core.JndiContextPrefixFactory" />
 	<bean id="MessageEventListener" class="nl.nn.adapterframework.lifecycle.MessageEventListener" scope="singleton" />
 	<bean id="ConfigurationMessageListener" class="nl.nn.adapterframework.testutil.ConfigurationMessageEventListener" scope="singleton" />
 </beans>
