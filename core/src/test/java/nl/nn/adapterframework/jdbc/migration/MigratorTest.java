@@ -20,26 +20,17 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Resource;
-import nl.nn.adapterframework.jdbc.JdbcTestBase;
+import nl.nn.adapterframework.jdbc.TransactionManagerTestBase;
 import nl.nn.adapterframework.testutil.ConfigurationMessageEventListener;
 import nl.nn.adapterframework.testutil.TestAppender;
 import nl.nn.adapterframework.testutil.TestAssertions;
-import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.MessageKeeper;
 
-public class MigratorTest extends JdbcTestBase {
-	private TestConfiguration configuration;
+public class MigratorTest extends TransactionManagerTestBase {
 	private LiquibaseMigrator migrator = null;
 	private String tableName="DUMMYTABLE";
-
-	private TestConfiguration getConfiguration() {
-		if(configuration == null) {
-			configuration = new TestConfiguration();
-		}
-		return configuration;
-	}
 
 	@Override
 	protected void prepareDatabase() throws Exception {
@@ -50,8 +41,17 @@ public class MigratorTest extends JdbcTestBase {
 		dropTable("DATABASECHANGELOGLOCK");
 
 		migrator = getConfiguration().createBean(LiquibaseMigrator.class);
-		migrator.setDataSourceFactory(getTransactionManagerType().getDataSourceFactory());
 		migrator.setDatasourceName(getDataSourceName());
+	}
+
+	@Override
+	public void setup() throws Exception {
+		super.setup();
+
+		//Make sure there are no previous warnings present
+		getConfiguration().getConfigurationWarnings().destroy();
+		getConfiguration().getConfigurationWarnings().afterPropertiesSet();
+		getConfiguration().getMessageKeeper().clear();
 	}
 
 	@Test
@@ -59,19 +59,19 @@ public class MigratorTest extends JdbcTestBase {
 		AppConstants.getInstance().setProperty("liquibase.changeLogFile", "/Migrator/DatabaseChangelog.xml");
 		migrator.update();
 
-		MessageKeeper messageKeeper = configuration.getMessageKeeper();
+		MessageKeeper messageKeeper = getConfiguration().getMessageKeeper();
 		assertNotNull("no message logged to the messageKeeper", messageKeeper);
-		assertEquals(2, messageKeeper.size()); //Configuration startup message + liquibase update
-		assertEquals("Configuration [TestConfiguration] LiquiBase applied [2] change(s) and added tag [two:Niels Meijer]", messageKeeper.getMessage(1).getMessageText());
+		assertEquals(1, messageKeeper.size());
+		assertEquals("Configuration ["+getTransactionManagerType().name()+"] LiquiBase applied [2] change(s) and added tag [two:Niels Meijer]", messageKeeper.getMessage(0).getMessageText());
 		assertFalse("table ["+tableName+"] should not exist", isTablePresent(tableName));
 	}
 
 	@Test
 	public void testFaultyChangelogFile() throws Exception {
-		AppConstants.getInstance().setProperty("liquibase.changeLogFile", "/Migrator/DatabaseChangelogError.xml");
+		AppConstants.getInstance(getConfiguration().getClassLoader()).setProperty("liquibase.changeLogFile", "/Migrator/DatabaseChangelogError.xml");
 		migrator.update();
 
-		ConfigurationWarnings warnings = configuration.getConfigurationWarnings();
+		ConfigurationWarnings warnings = getConfiguration().getConfigurationWarnings();
 		assertEquals(1, warnings.size());
 
 		String warning = warnings.get(0);
@@ -152,7 +152,7 @@ public class MigratorTest extends JdbcTestBase {
 			String msg = "LiquiBase applied [2] change(s) and added tag [two:Niels Meijer]";
 			assertFalse("expected message not to be logged but found ["+appender.getLogLines()+"]", appender.contains(msg)); //Validate Liquibase doesn't log
 
-			ConfigurationMessageEventListener configurationMessages = configuration.getBean("ConfigurationMessageListener", ConfigurationMessageEventListener.class);
+			ConfigurationMessageEventListener configurationMessages = getConfiguration().getBean("ConfigurationMessageListener", ConfigurationMessageEventListener.class);
 			assertTrue(configurationMessages.contains(msg)); //Validate Liquibase did run
 		} finally {
 			TestAppender.removeAppender(appender);

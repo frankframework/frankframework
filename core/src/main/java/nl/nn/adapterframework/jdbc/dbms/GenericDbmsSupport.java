@@ -399,7 +399,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 			throw new JdbcException("exception checking for existence of table [" + tableName + "]"+(schemaName==null?"":" with schema ["+schemaName+"]"), e);
 		}
 	}
-	
+
 	@Override
 	public boolean isColumnPresent(Connection conn, String tableName, String columnName) throws JdbcException {
 		return this.isColumnPresent(conn, null, tableName, columnName);
