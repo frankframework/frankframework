@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import lombok.Getter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.core.ListenerException;
@@ -34,9 +35,9 @@ public class MessageWrapper<M> implements Serializable, IMessageWrapper {
 
 	static final long serialVersionUID = -8251009650246241025L;
 
-	private Map<String,Object> context = new LinkedHashMap<>();
-	private Message message;
-	private String id;
+	private @Getter Map<String,Object> context = new LinkedHashMap<>();
+	private @Getter Message message;
+	private @Getter String id;
 
 	public MessageWrapper() {
 		super();
@@ -51,28 +52,15 @@ public class MessageWrapper<M> implements Serializable, IMessageWrapper {
 	public MessageWrapper(M rawMessage, IListener<M> listener) throws ListenerException {
 		this();
 		message = listener.extractMessage(rawMessage, context);
-		Object rm = context.remove("originalRawMessage"); //PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
+		context.remove("originalRawMessage"); //PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
 		id = listener.getIdFromRawMessage(rawMessage, context);
-	}
-
-	@Override
-	public Map<String,Object> getContext() {
-		return context;
 	}
 
 	public void setId(String string) {
 		id = string;
 	}
-	@Override
-	public String getId() {
-		return id;
-	}
 
 	public void setMessage(Message message) {
 		this.message = message;
-	}
-	@Override
-	public Message getMessage() {
-		return message;
 	}
 }
