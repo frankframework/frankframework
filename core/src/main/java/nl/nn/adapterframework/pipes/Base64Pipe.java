@@ -18,8 +18,6 @@ package nl.nn.adapterframework.pipes;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.codec.binary.Base64InputStream;
@@ -139,14 +137,7 @@ public class Base64Pipe extends StreamingPipe {
 			targetStream = target.asStream(outputCharset);
 		}
 		OutputStream base64 = new Base64OutputStream(targetStream, directionEncode, getLineLength(), lineSeparatorArray);
-		if (directionEncode && StringUtils.isNotEmpty(getCharset())) {
-			try {
-				return new MessageOutputStream(this, new OutputStreamWriter(base64, getCharset()), target);
-			} catch (UnsupportedEncodingException e) {
-				throw new StreamingException("cannot open OutputStreamWriter", e);
-			}
-		}
-		return new MessageOutputStream(this, base64, target);
+		return new MessageOutputStream(this, base64, target, getCharset());
 	}
 
 	/** @ff.default ENCODE */
