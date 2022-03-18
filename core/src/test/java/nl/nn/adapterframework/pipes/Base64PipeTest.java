@@ -56,13 +56,13 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 		byte[] inputBytes = utf8Input.getBytes("UTF-8"); //String containing utf-8 characters
 		Message in = new Message(inputBytes, "UTF-8"); //Saving it with a different charset
 
-		assertEquals(utf8Input, in.asString()); // read the message which should update the auto field in the MessageContext
+		assertEquals(utf8Input, in.asString());
 
 		Message result = doPipe(pipe, in, session).getResult();
 
 		assertEquals("TcOrLcOXbfCfkYzigLDFksWT4oChVHpkREV5TXQxMjA9", result.asString().trim()); //validate and preserve the message
 
-		InputStream decodedResult = new Base64InputStream(result.asInputStream(), false);
+		InputStream decodedResult = new Base64InputStream(result.asInputStream(), false); //When reading the (binary) message again, regardless of what asString charset we used, it should not have changed the original message
 		assertEquals(utf8Input, Misc.streamToString(decodedResult));
 	}
 
