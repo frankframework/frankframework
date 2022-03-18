@@ -30,7 +30,7 @@ import nl.nn.adapterframework.util.LogUtil;
 
 public class LiquibaseXmlChangeLogParser extends XMLChangeLogSAXParser {
 	protected Logger log = LogUtil.getLogger(this);
-	
+
 	@Override
 	protected ParsedNode parseToNode(String physicalChangeLogLocation, ChangeLogParameters changeLogParameters, ResourceAccessor resourceAccessor) throws ChangeLogParseException {
 		try {
