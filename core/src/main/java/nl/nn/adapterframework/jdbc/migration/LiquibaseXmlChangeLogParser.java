@@ -37,7 +37,7 @@ public class LiquibaseXmlChangeLogParser extends XMLChangeLogSAXParser {
 			Map<String, Object> scopeValues = new HashMap<>();
 			scopeValues.put(Scope.Attr.resourceAccessor.name(), resourceAccessor);
 			String scopeId = Scope.enter(scopeValues);
-			
+
 			try {
 				return super.parseToNode(physicalChangeLogLocation, changeLogParameters, resourceAccessor);
 			} finally {
