@@ -606,10 +606,10 @@ public class TransactionalStorage extends Base {
 	}
 
 	private String getMessage(IMessageBrowser<?> messageBrowser, IListener<?> listener, String messageId) {
-		return getRawMessage(messageBrowser, listener, messageId);
+		return getMessageText(messageBrowser, listener, messageId);
 	}
 
-	private String getRawMessage(IMessageBrowser<?> messageBrowser, IListener listener, String messageId) {
+	private String getMessageText(IMessageBrowser<?> messageBrowser, IListener listener, String messageId) {
 		Object rawmsg = null;
 		try {
 			rawmsg = messageBrowser.browseMessage(messageId);
@@ -627,11 +627,17 @@ public class TransactionalStorage extends Base {
 				} catch (IOException e) {
 					throw new ApiException(e, 500);
 				}
+			} else if(rawmsg instanceof Message) { // For backwards compatibility: earlier MessageLog messages were stored as Message.
+				try {
+					msg = ((Message)rawmsg).asString();
+				} catch (IOException e) {
+					throw new ApiException(e, 500);
+				}
 			} else {
 				try {
 					if (listener!=null) {
 						msg = listener.extractMessage(rawmsg, null).asString();
-					} 
+					}
 				} catch (Exception e) {
 					log.warn("Exception reading value raw message", e);
 				}
