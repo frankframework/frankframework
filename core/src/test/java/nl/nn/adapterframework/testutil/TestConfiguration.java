@@ -22,7 +22,8 @@ import nl.nn.adapterframework.util.SpringUtils;
  */
 public class TestConfiguration extends Configuration {
 	public static final String TEST_CONFIGURATION_NAME = "TestConfiguration";
-	private static final String TEST_CONFIGURATION_FILE = "testConfigurationContext.xml";
+	public static final String TEST_CONFIGURATION_FILE = "testConfigurationContext.xml";
+	public static final String TEST_DATABASE_ENABLED_CONFIGURATION_FILE = "testDatabaseEnabledConfigurationContext.xml";
 	private QuerySenderPostProcessor qsPostProcessor = new QuerySenderPostProcessor();
 
 	//Configures a standalone configuration.

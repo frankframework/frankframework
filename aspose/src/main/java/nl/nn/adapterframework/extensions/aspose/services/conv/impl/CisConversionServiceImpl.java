@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021 WeAreFrank!
+   Copyright 2019, 2021-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,7 +18,8 @@ package nl.nn.adapterframework.extensions.aspose.services.conv.impl;
 import java.io.IOException;
 
 import org.apache.logging.log4j.Logger;
-import org.apache.tika.mime.MediaType;
+import org.springframework.http.MediaType;
+import org.springframework.util.MimeType;
 
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionException;
@@ -28,9 +29,9 @@ import nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors.Co
 import nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors.ConvertorFactory;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.MessageUtils;
 /**
- * @author
- * 	Gerard van der Hoorn
+ * @author Gerard van der Hoorn
  */
 public class CisConversionServiceImpl implements CisConversionService {
 
@@ -54,8 +55,14 @@ public class CisConversionServiceImpl implements CisConversionService {
 	public CisConversionResult convertToPdf(Message message, String filename, ConversionOption conversionOption) throws IOException {
 
 		CisConversionResult result = null;
-		MediaType mediaType = getMediaType(message, filename);
+		MimeType mimeType = MessageUtils.computeMimeType(message, filename);
+		if(mimeType == null || "x-tika-msoffice".equals(mimeType.getSubtype())) {
+			// If we cannot determine the MimeType based on the files magic numbers, read part of the file.
+			// MS Office files can be password protected, which can only be determined by reading a part of the file.
+			mimeType = getMediaType(message, filename);
+		}
 
+		MediaType mediaType = MediaType.asMediaType(mimeType);
 		if (isPasswordProtected(mediaType)) {
 			result = CisConversionResult.createPasswordFailureResult(filename, conversionOption, mediaType);
 		} else {
@@ -93,6 +100,9 @@ public class CisConversionServiceImpl implements CisConversionService {
 		return ("x-tika-ooxml-protected".equals(mediaType.getSubtype()));
 	}
 
+	/**
+	 * Read the message to determine the MediaType
+	 */
 	private MediaType getMediaType(Message message, String filename) {
 		MediaType mediaType = null;
 		try {
