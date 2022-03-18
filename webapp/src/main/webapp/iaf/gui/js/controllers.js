@@ -1479,10 +1479,10 @@ angular.module('iaf.beheerconsole')
 				$scope.targetStates = response.targetStates;
 				callback(response);
 				$scope.searching = false;
-				$scope.clear = false;
+				$scope.clearSearchLadda = false;
 			}, function(error){
 				$scope.searching = false;
-				$scope.clear = false;
+				$scope.clearSearchLadda = false;
 			});
 		}
 	};
@@ -1501,7 +1501,7 @@ angular.module('iaf.beheerconsole')
 	};
 
 	$scope.clearSearch = function() {
-		$scope.clear = true;
+		$scope.clearSearchLadda = true;
 		Session.remove('search');
 		$scope.search = {};
 		$scope.updateTable();

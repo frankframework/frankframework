@@ -66,6 +66,7 @@ import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.MessageBrowsingFilter;
 import nl.nn.adapterframework.util.Misc;
 
@@ -73,7 +74,14 @@ import nl.nn.adapterframework.util.Misc;
 public class TransactionalStorage extends Base {
 
 	protected static final TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-	private static final String STORAGESOURCE_TYPE_PIPE = "pipes";
+
+	public enum StorageSource {
+		RECEIVERS, PIPES; 
+
+		public static StorageSource fromString(String value) {
+			return EnumUtils.parse(StorageSource.class, value); 
+		}
+	}
 
 	@GET
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -98,7 +106,7 @@ public class TransactionalStorage extends Base {
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
 		messageId = Misc.urlDecode(messageId);
 
-		if(STORAGESOURCE_TYPE_PIPE.equals(storageSource)) {
+		if(StorageSource.fromString(storageSource) == StorageSource.PIPES) {
 			MessageSendingPipe pipe = (MessageSendingPipe) adapter.getPipeLine().getPipe(storageSourceName);
 			if(pipe == null) {
 				throw new ApiException("Pipe ["+storageSourceName+"] not found!");
@@ -179,7 +187,7 @@ public class TransactionalStorage extends Base {
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
 		messageId = Misc.urlDecode(messageId);
 		String message;
-		if(STORAGESOURCE_TYPE_PIPE.equals(storageSource)) {
+		if(StorageSource.fromString(storageSource) == StorageSource.PIPES) {
 			MessageSendingPipe pipe = (MessageSendingPipe) adapter.getPipeLine().getPipe(storageSourceName);
 			if(pipe == null) {
 				throw new ApiException("Pipe ["+storageSourceName+"] not found!");
@@ -227,7 +235,7 @@ public class TransactionalStorage extends Base {
 
 		IMessageBrowser<?> storage;
 		IListener<?> listener;
-		if(STORAGESOURCE_TYPE_PIPE.equals(storageSource)) {
+		if(StorageSource.fromString(storageSource) == StorageSource.PIPES) {
 			MessageSendingPipe pipe = (MessageSendingPipe) adapter.getPipeLine().getPipe(storageSourceName);
 			if(pipe == null) {
 				throw new ApiException("Pipe ["+storageSourceName+"] not found!");
@@ -315,7 +323,7 @@ public class TransactionalStorage extends Base {
 		IMessageBrowser<?> storage = null;
 		IListener<?> listener = null;
 		Map<ProcessState, Map<String, String>> targetPSInfo = null;
-		if(STORAGESOURCE_TYPE_PIPE.equals(storageSource)) {
+		if(StorageSource.fromString(storageSource) == StorageSource.PIPES) {
 			MessageSendingPipe pipe = (MessageSendingPipe) adapter.getPipeLine().getPipe(storageSourceName);
 			if(pipe == null) {
 				throw new ApiException("Pipe ["+storageSourceName+"] not found!");
