@@ -70,6 +70,7 @@ public class Message implements Serializable {
 	private @Getter Class<?> requestClass;
 
 	private @Getter Map<String,Object> context;
+	private boolean failedToDetermineCharset = false;
 
 	private Set<AutoCloseable> resourcesToClose;
 
@@ -164,9 +165,13 @@ public class Message implements Serializable {
 		}
 
 		if (StreamUtil.AUTO_DETECT_CHARSET.equalsIgnoreCase(decodingCharset)) {
-			Charset charset = MessageUtils.computeDecodingCharset(this);
+			Charset charset = null;
+			if(!failedToDetermineCharset) {
+				charset = MessageUtils.computeDecodingCharset(this);
+			}
 
 			if (charset == null) {
+				failedToDetermineCharset = true;
 				if(StringUtils.isNotEmpty(defaultDecodingCharset) && !StreamUtil.AUTO_DETECT_CHARSET.equalsIgnoreCase(defaultDecodingCharset)) {
 					return defaultDecodingCharset;
 				}
@@ -353,7 +358,7 @@ public class Message implements Serializable {
 	}
 
 	/**
-	 * @param defaultCharset is only used when the Message object is of character type (String)
+	 * @param defaultEncodingCharset is only used when the Message object is of character type (String)
 	 */
 	public InputStream asInputStream(String defaultEncodingCharset) throws IOException {
 		try {

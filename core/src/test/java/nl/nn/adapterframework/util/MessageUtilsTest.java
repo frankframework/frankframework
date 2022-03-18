@@ -2,6 +2,7 @@ package nl.nn.adapterframework.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeTrue;
 
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -54,6 +55,23 @@ public class MessageUtilsTest {
 			String asString = message.asString(computedCharset == null ? null : computedCharset.name());
 
 			assertEquals("fileContent mismatch", fileContent, asString);
+		}
+	}
+
+	@Test
+	public void testDetection() throws Exception {
+		assumeTrue(expectedCharset != Charset.forName("windows-1252"));
+
+		URL url = TestFileUtils.getTestFileURL("/Util/MessageUtils/"+testFile);
+		assertNotNull("cannot find test file ["+testFile+"]", url);
+
+		Message message = new UrlMessage(url);
+		String result = message.asString("auto"); //calls asReader();
+
+		assertEquals("charset mismatch", expectedCharset.name(), message.getCharset());
+
+		if(fileContent != null) {
+			assertEquals("fileContent mismatch", fileContent, result);
 		}
 	}
 }

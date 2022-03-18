@@ -50,6 +50,7 @@ import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.SerializationTester;
+import nl.nn.adapterframework.testutil.TestAppender;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -946,13 +947,13 @@ public class MessageTest {
 
 	@Test
 	public void testCharsetDeterminationAndFallbackToDefault() throws Exception {
-		Message messageNullCharset = new Message((String) null) { //NullMessage, charset cannot be determined
+		Message messageNullCharset = new Message((byte[]) null) { //NullMessage, charset cannot be determined
 			@Override
 			public String getCharset() {
 				return null;
 			};
 		};
-		Message messageAutoCharset = new Message((String) null) { //NullMessage, charset cannot be determined
+		Message messageAutoCharset = new Message((byte[]) null) { //NullMessage, charset cannot be determined
 			@Override
 			public String getCharset() {
 				return "AUTO";
@@ -970,5 +971,39 @@ public class MessageTest {
 
 		// getCharset()==AUTO && defaultDecodingCharset==null ==> decodingCharset = UTF-8
 		assertEquals("UTF-8", messageAutoCharset.computeDecodingCharset(null));
+	}
+
+	@Test
+	public void shouldOnlyDetectCharsetOnce() throws Exception {
+		Message message = new Message("’•†™".getBytes("cp-1252")) { //NullMessage, charset cannot be determined
+			@Override
+			public String getCharset() {
+				return "AUTO";
+			};
+		};
+
+		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%m").build();
+		TestAppender.addToRootLogger(appender);
+
+		try {
+			message.asString("auto"); //calls asReader();
+			message.asString(); //calls asReader();
+			message.asString("auto"); //calls asReader();
+			message.asString(); //calls asReader();
+			message.asString("auto"); //calls asReader();
+			message.asString(); //calls asReader();
+			message.asString("auto"); //calls asReader();
+			message.asString(); //calls asReader();
+
+			int i = 0;
+			for (String log : appender.getLogLines()) {
+				if(log.contains("unable to detect charset for message")) {
+					i++;
+				}
+			}
+			assertEquals("charset should be determined only once", 1, i);
+		} finally {
+			TestAppender.removeAppender(appender);
+		}
 	}
 }
