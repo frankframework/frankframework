@@ -76,10 +76,10 @@ public class TransactionalStorage extends Base {
 	protected static final TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 
 	public enum StorageSource {
-		RECEIVERS, PIPES; 
+		RECEIVERS, PIPES;
 
 		public static StorageSource fromString(String value) {
-			return EnumUtils.parse(StorageSource.class, value); 
+			return EnumUtils.parse(StorageSource.class, value);
 		}
 	}
 
