@@ -326,6 +326,15 @@ public final class ShowSecurityItems extends Base {
 
 	private List<String> getAuthEntries() {
 		List<String> entries = new ArrayList<String>();
+		try {
+			Collection<String> knownAliases = CredentialFactory.getAliases();
+			if (knownAliases!=null) {
+				entries.addAll(knownAliases); // start with all aliases in the CredentialProvider
+			}
+		} catch (Exception e) {
+			log.warn("could not retrieve aliases from CredentialFactory", e);
+		}
+		// and add all aliases that are used in the configuration
 		for (Configuration configuration : getIbisManager().getConfigurations()) {
 			String configString = configuration.getLoadedConfiguration();
 			if(configString == null) continue; //If a configuration can't be found, continue...
@@ -340,8 +349,7 @@ public final class ShowSecurityItems extends Base {
 						}
 					}
 				}
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				log.warn("an error occurred while evaulating 'authAlias' xPathExpression", e);
 			}
 		}

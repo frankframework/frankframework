@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
    limitations under the License.
 */
 package nl.nn.adapterframework.util;
+
+import java.util.Collection;
 
 import nl.nn.credentialprovider.ICredentials;
 
@@ -53,5 +55,9 @@ public class CredentialFactory  {
 
 	public String getPassword() {
 		return credentials.getPassword();
+	}
+
+	public static Collection<String> getAliases() throws Exception {
+		return nl.nn.credentialprovider.CredentialFactory.getAliases();
 	}
 }
