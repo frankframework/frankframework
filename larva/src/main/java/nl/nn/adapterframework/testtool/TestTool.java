@@ -1779,6 +1779,7 @@ public class TestTool {
 			String xhtmlString = (String)properties.get(name + ".xhtml");
 			String methodtype = (String)properties.get(name + ".methodType");
 			String paramsInUrlString = (String)properties.get(name + ".paramsInUrl");
+			Boolean treatInputMessageAsParameters = new Boolean((String)properties.get(name + ".treatInputMessageAsParameters"));
 			String inputMessageParam = (String)properties.get(name + ".inputMessageParam");
 			String multipartString = (String)properties.get(name + ".multipart");
  			String styleSheetName = (String)properties.get(name + ".styleSheetName");
@@ -1808,6 +1809,7 @@ public class TestTool {
 					httpSender.setPassword(password);
 					httpSender.setAuthAlias(authAlias);
 					httpSender.setHeadersParams(headerParams);
+					httpSender.setTreatInputMessageAsParameters(treatInputMessageAsParameters);
 					if (StringUtils.isNotEmpty(xhtmlString)) {
 						httpSender.setXhtml(Boolean.valueOf(xhtmlString).booleanValue());
 					}
