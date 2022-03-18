@@ -303,7 +303,7 @@ public class ConfigurationUtils {
 
 			String activeBool = qs.getDbmsSupport().getBooleanValue(activateConfig);
 			String reloadBool = qs.getDbmsSupport().getBooleanValue(automaticReload);
-			String query = ("INSERT INTO IBISCONFIG (NAME, VERSION, FILENAME, CONFIG, CRE_TYDST, RUSER, ACTIVECONFIG, AUTORELOAD) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, "+qs.getDbmsSupport().getBooleanValue(activeBool)+", "+qs.getDbmsSupport().getBooleanValue(reloadBool)+")");
+			String query = ("INSERT INTO IBISCONFIG (NAME, VERSION, FILENAME, CONFIG, CRE_TYDST, RUSER, ACTIVECONFIG, AUTORELOAD) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, "+activeBool+", "+reloadBool+")");
 			PreparedStatement stmt = conn.prepareStatement(query);
 			stmt.setString(1, name);
 			stmt.setString(2, version);
