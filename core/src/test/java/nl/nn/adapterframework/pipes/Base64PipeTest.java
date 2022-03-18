@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 
+import org.apache.commons.codec.binary.Base64InputStream;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -45,17 +46,25 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 		return new Base64Pipe();
 	}
 
-//	@Test(expected = IllegalArgumentException.class)
-//	public void noDirection() throws ConfigurationException {
-//		pipe.setDirection("");
-//		pipe.configure();
-//	}
-//
-//	@Test(expected = IllegalArgumentException.class)
-//	public void wrongDirection() throws ConfigurationException {
-//		pipe.setDirection("not encode");
-//		pipe.configure();
-//	}
+	@Test
+	public void wrongCharsetShouldNotBeUsed() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+		pipe.setCharset("ISO-8859-1"); //Should be ignored
+		pipe.configure();
+		pipe.start();
+
+		String utf8Input = "Më-×m👌‰Œœ‡TzdDEyMt120=";
+		byte[] inputBytes = utf8Input.getBytes("UTF-8"); //String containing utf-8 characters
+		Message in = new Message(inputBytes, "UTF-8"); //Saving it with a different charset
+
+		assertEquals(utf8Input, in.asString());
+
+		Message result = doPipe(pipe, in, session).getResult();
+
+		assertEquals("TcOrLcOXbfCfkYzigLDFksWT4oChVHpkREV5TXQxMjA9", result.asString().trim()); //validate and preserve the message
+
+		InputStream decodedResult = new Base64InputStream(result.asInputStream(), false); //When reading the (binary) message again, regardless of what asString charset we used, it should not have changed the original message
+		assertEquals(utf8Input, Misc.streamToString(decodedResult));
+	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void wrongOutputType() throws ConfigurationException {
