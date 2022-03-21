@@ -44,6 +44,6 @@ public class AttributePropertyResolver extends FullXmlFilter {
 
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-		super.startElement(uri, localName, qName, new AttributesWrapper(attributes, v->StringResolver.substVars(v, properties, null, propsToHide)));
+		super.startElement(uri, localName, qName, new AttributesWrapper(attributes, v->StringResolver.substVars(v, properties, null, propsToHide, true)));
 	}
 }
