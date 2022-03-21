@@ -5,7 +5,7 @@
 		</receiver>
 		<pipeline firstPipe="HelloBeautifulWorld">
 			<exit path="EXIT" state="success"/>
-			<pipe name="HelloBeautifulWorld" returnString="Hello Beautiful World [ &gt;&quot;&lt; ] [******] &lt;@quot;&gt;" className="nl.nn.adapterframework.pipes.FixedResultPipe">
+			<pipe name="HelloBeautifulWorld" returnString="Hello Beautiful World ${digester.property:-[ &gt;&quot;&lt; ]} [${secret:-******}] &lt;@quot;&gt;" className="nl.nn.adapterframework.pipes.FixedResultPipe">
 				<forward name="success" path="EXIT"/>
 			</pipe>
 		</pipeline>
