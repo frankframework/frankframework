@@ -1,2 +1,0 @@
-liquibase.parser.core.sql.SqlChangeLogParser
-nl.nn.adapterframework.jdbc.migration.LiquibaseXmlChangeLogParser

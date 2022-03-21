@@ -20,7 +20,9 @@ import java.io.Writer;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 
@@ -95,6 +97,14 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 
 		ResourceAccessor resourceAccessor = new LiquibaseResourceAccessor(resource);
 		DatabaseConnection connection = getDatabaseConnection();
+
+		Map<String, Object> scopeValues = new HashMap<>();
+		scopeValues.put(Scope.Attr.resourceAccessor.name(), resourceAccessor);
+		try {
+			Scope.enter(scopeValues);
+		} catch (Exception e) {
+			throw new LiquibaseException(e);
+		}
 
 		return new Liquibase(resource.getSystemId(), resourceAccessor, connection);
 	}
