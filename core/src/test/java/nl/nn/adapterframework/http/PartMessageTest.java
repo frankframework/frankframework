@@ -11,16 +11,16 @@ public class PartMessageTest {
 
 	@Test
 	public void testIllegalCharset() throws MessagingException {
-		
+
 		TestPart testPart = new TestPart("application/pdf; charset=application/pdf");
-		
+
 		PartMessage partMessage = new PartMessage(testPart);
-		
+
 		assertNull(partMessage.getCharset());
 	}
-	
+
 	private class TestPart extends MimeBodyPart {
-		
+
 		TestPart(String contentType) {
 			super();
 			headers.addHeader("Content-Type", contentType);
