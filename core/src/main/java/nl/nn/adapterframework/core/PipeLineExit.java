@@ -74,7 +74,7 @@ public class PipeLineExit implements IForwardTarget {
 	 * @deprecated
 	 */
 	public void setPath(String path) {
-		name = path;
+		setName(path);
 	}
 
 	/**
