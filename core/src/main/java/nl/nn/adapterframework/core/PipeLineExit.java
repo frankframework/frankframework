@@ -69,9 +69,8 @@ public class PipeLineExit implements IForwardTarget {
 	}
 
 	/**
-	 * The name of the Exit that can be referenced by the Forward of a Pipe. When a Pipeline doesn't have an Exits
-	 * element configured it will be initialized with one Exit having name READY (and state SUCCESS)
 	 * @deprecated
+	 * @ConfigurationWarning("The attribute 'path' has been renamed 'name'")
 	 */
 	public void setPath(String path) {
 		setName(path);
