@@ -4,16 +4,22 @@
 #
 
 setup() {
-#wait for the SQL Server to come up
-sleep 25s
-
-mkdir /var/opt/mssql/iaf-test-data/
-chown mssql /var/opt/mssql/iaf-test-data/
-chgrp mssql /var/opt/mssql/iaf-test-data/
-
-echo "running set up script"
-#run the setup script to create the DB and the schema in the DB
-/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P MssqlPass123 -d master -i /create_user.sql
+	mkdir /var/opt/mssql/iaf-test-data/
+	chown mssql /var/opt/mssql/iaf-test-data/
+	chgrp mssql /var/opt/mssql/iaf-test-data/
+	
+	echo "Running create_user script"
+	for i in {1..120};
+		do
+		    /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P MssqlPass123 -d master -i /create_user.sql
+		    if [ $? -eq 0 ]
+		    then
+		        echo "create_user completed"
+		        break
+		    else
+		        sleep 1
+		    fi
+		done
 }
 
 setup &
