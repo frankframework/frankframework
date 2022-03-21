@@ -234,7 +234,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			FolderId result;
 			FolderView folderViewIn = new FolderView(10);
 			if (StringUtils.isNotEmpty(folderName)) {
-				log.debug("searching folder ["+folderName+"]");
 				SearchFilter searchFilterIn = new SearchFilter.IsEqualTo(FolderSchema.DisplayName, folderName);
 				if (baseFolderId==null) {
 					findFoldersResultsIn = exchangeService.findFolders(WellKnownFolderName.MsgFolderRoot, searchFilterIn, folderViewIn);
@@ -262,12 +261,11 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			} else {
 				result=findFoldersResultsIn.getFolders().get(0).getId();
 			}
+			releaseConnection(exchangeService);
 			return result;
 		} catch (Exception e) {
 			invalidateConnection(exchangeService);
 			throw new FileSystemException("Cannot find folder ["+folderName+"]", e);
-		} finally {
-			releaseConnection(exchangeService);
 		}
 	}
 
@@ -278,12 +276,11 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		try {
 			ItemId itemId = ItemId.getItemIdFromString(filename);
 			EmailMessage item = EmailMessage.bind(exchangeService,itemId);
+			releaseConnection(exchangeService);
 			return item;
 		} catch (Exception e) {
 			invalidateConnection(exchangeService);
 			throw new FileSystemException("Cannot convert filename ["+filename+"] into an ItemId", e);
-		} finally {
-			releaseConnection(exchangeService);
 		}
 	}
 
@@ -306,18 +303,19 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		ExchangeService exchangeService = getConnection();
 		try {
 			EmailMessage emailMessage = EmailMessage.bind(exchangeService, f.getId());
-			return itemExistsInFolder(exchangeService, emailMessage.getParentFolderId(), f.getId().toString());
+			boolean result = itemExistsInFolder(exchangeService, emailMessage.getParentFolderId(), f.getId().toString());
+			releaseConnection(exchangeService);
+			return result;
 		} catch (ServiceResponseException e) {
 			ServiceError errorCode = e.getErrorCode();
 			if (errorCode == ServiceError.ErrorItemNotFound) {
 				return false;
 			}
+			releaseConnection(exchangeService);
 			throw new FileSystemException(e);
 		} catch (Exception e) {
 			invalidateConnection(exchangeService);
 			throw new FileSystemException(e);
-		} finally {
-			releaseConnection(exchangeService);
 		}
 	}
 
@@ -343,23 +341,22 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			if (findResults.getTotalCount() == 0) {
 				releaseConnection(exchangeService);
 				return FileSystemUtils.getDirectoryStream((Iterator<EmailMessage>)null);
-			} else {
-				Iterator<Item> itemIterator = findResults.getItems().iterator();
-				return FileSystemUtils.getDirectoryStream(new Iterator<EmailMessage>() {
-
-					@Override
-					public boolean hasNext() {
-						return itemIterator.hasNext();
-					}
-
-					@Override
-					public EmailMessage next() {
-						// must cast <Items> to <EmailMessage> separately, cannot cast Iterator<Item> to Iterator<EmailMessage> 
-						return (EmailMessage)itemIterator.next();
-					}
-					
-				}, (Runnable)() -> { releaseConnection(exchangeService); });
 			}
+			Iterator<Item> itemIterator = findResults.getItems().iterator();
+			return FileSystemUtils.getDirectoryStream(new Iterator<EmailMessage>() {
+
+				@Override
+				public boolean hasNext() {
+					return itemIterator.hasNext();
+				}
+
+				@Override
+				public EmailMessage next() {
+					// must cast <Items> to <EmailMessage> separately, cannot cast Iterator<Item> to Iterator<EmailMessage> 
+					return (EmailMessage)itemIterator.next();
+				}
+				
+			}, (Runnable)() -> { releaseConnection(exchangeService); });
 		} catch (Exception e) {
 			invalidateConnection(exchangeService);
 			throw new FileSystemException("Cannot list messages in folder ["+folder+"]", e);
@@ -382,22 +379,21 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	@Override
 	public Message readFile(EmailMessage f, String charset) throws FileSystemException, IOException {
 		EmailMessage emailMessage;
-		PropertySet ps = new PropertySet(EmailMessageSchema.Subject);
-//		ps = new PropertySet(EmailMessageSchema.DateTimeReceived,
-//				EmailMessageSchema.From, EmailMessageSchema.Subject,
-//				EmailMessageSchema.Body,
-//				EmailMessageSchema.DateTimeSent);
-//		
+		
 		ExchangeService exchangeService = getConnection();
 		try {
 			if (f.getId()!=null) {
-				emailMessage = EmailMessage.bind(exchangeService, f.getId(), ps);
+				PropertySet ps = new PropertySet(EmailMessageSchema.DateTimeReceived,
+						EmailMessageSchema.From, EmailMessageSchema.Subject,
+						EmailMessageSchema.DateTimeSent,
+						EmailMessageSchema.LastModifiedTime,
+						EmailMessageSchema.Size);
 				if (isReadMimeContents()) {
-					emailMessage.load(new PropertySet(ItemSchema.MimeContent));
+					ps.add(ItemSchema.MimeContent);
 				} else {
-					emailMessage.load(new PropertySet(ItemSchema.Body));
-					
+					ps.add(ItemSchema.Body);
 				}
+				emailMessage = EmailMessage.bind(exchangeService, f.getId(), ps);
 			} else {
 				emailMessage = f;
 			}
@@ -405,12 +401,12 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 				MimeContent mc = emailMessage.getMimeContent();
 				return new Message(mc.getContent(), charset);
 			}
-			return new Message(MessageBody.getStringFromMessageBody(emailMessage.getBody()), FileSystemUtils.getContext(this,f));
+			Message result = new Message(MessageBody.getStringFromMessageBody(emailMessage.getBody()), FileSystemUtils.getContext(this, emailMessage));
+			releaseConnection(exchangeService);
+			return result;
 		} catch (Exception e) {
 			invalidateConnection(exchangeService);
 			throw new FileSystemException(e);
-		} finally {
-			releaseConnection(exchangeService);
 		}
 	}
 	
@@ -427,12 +423,12 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		ExchangeService exchangeService = getConnection();
 		try {
 			FolderId destinationFolderId = getFolderIdByFolderName(exchangeService, destinationFolder, createFolder);
-			return (EmailMessage)f.move(destinationFolderId);
+			EmailMessage result = (EmailMessage)f.move(destinationFolderId);
+			releaseConnection(exchangeService);
+			return result;
 		} catch (Exception e) {
 			invalidateConnection(exchangeService);
 			throw new FileSystemException(e);
-		} finally {
-			releaseConnection(exchangeService);
 		}
 	}
 
@@ -441,12 +437,12 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		ExchangeService exchangeService = getConnection();
 		try {
 			FolderId destinationFolderId = getFolderIdByFolderName(exchangeService, destinationFolder, createFolder);
-			return (EmailMessage)f.copy(destinationFolderId);
+			EmailMessage result = (EmailMessage)f.copy(destinationFolderId);
+			releaseConnection(exchangeService);
+			return result;
 		} catch (Exception e) {
 			invalidateConnection(exchangeService);
 			throw new FileSystemException(e);
-		} finally {
-			releaseConnection(exchangeService);
 		}
 	}
 
@@ -548,15 +544,11 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 				log.warn("Message ["+f.getId()+"] Cannot load message headers: "+ e.getMessage());
 			}
  			result.put(IMailFileSystem.BEST_REPLY_ADDRESS_KEY, MailFileSystemUtils.findBestReplyAddress(result,getReplyAddressFields()));
+			releaseConnection(exchangeService);
 			return result;
 		} catch (Exception e) {
 			invalidateConnection(exchangeService);
-			exchangeService = null;
 			throw new FileSystemException(e);
-		} finally {
-			if (exchangeService!=null) {
-				releaseConnection(exchangeService);
-			}
 		}
 	}
 
@@ -602,12 +594,11 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			for (Attachment attachment : attachmentCollection) {
 				result.add(attachment);
 			}
+			releaseConnection(exchangeService);
 			return result.iterator();
 		} catch (Exception e) {
 			invalidateConnection(exchangeService);
 			throw new FileSystemException("cannot read attachments",e);
-		} finally {
-			releaseConnection(exchangeService);
 		}
 	}
 
@@ -716,11 +707,10 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			Folder folder = new Folder(exchangeService);
 			folder.setDisplayName(folderName);
 			folder.save(new FolderId(basefolderId.getUniqueId()));
+			releaseConnection(exchangeService);
 		} catch (Exception e) {
 			invalidateConnection(exchangeService);
 			throw new FileSystemException("cannot create folder ["+folderName+"]", e);
-		} finally {
-			releaseConnection(exchangeService);
 		}
 	}
 
@@ -735,11 +725,10 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 				folder.empty(DeleteMode.HardDelete, true);
 			}
 			folder.delete(DeleteMode.HardDelete);
+			releaseConnection(exchangeService);
 		} catch (Exception e) {
 			invalidateConnection(exchangeService);
 			throw new FileSystemException(e);
-		} finally {
-			releaseConnection(exchangeService);
 		}
 	}
 
