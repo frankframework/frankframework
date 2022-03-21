@@ -44,15 +44,15 @@
 			<artifactId>slf4j-api</artifactId>
 			<version>1.7.31</version>
 		</dependency>
-		<dependency><!--LOG4J SLF4J Binding-->
+		<dependency><!-- LOG4J SLF4J Binding -->
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-slf4j-impl</artifactId>
 		</dependency>
-		<dependency><!--Apache Commons Logging Binding-->
+		<dependency><!-- Apache Commons Logging Binding -->
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-jcl</artifactId>
 		</dependency>
-		<dependency><!-- Java Util Logging Binding-->
+		<dependency><!-- Java Util Logging Binding -->
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-jul</artifactId>
 		</dependency>
@@ -652,6 +652,23 @@
 			<groupId>com.nimbusds</groupId>
 			<artifactId>nimbus-jose-jwt</artifactId>
 			<version>9.15.2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.tika</groupId>
+			<artifactId>tika-core</artifactId>
+			<version>1.28.1</version>
+		</dependency>
+		<!-- explicitly defined because of dependency inheritance -->
+		<dependency>
+			<groupId>com.ibm.icu</groupId>
+			<artifactId>icu4j</artifactId>
+			<version>70.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.ibm.icu</groupId>
+			<artifactId>icu4j-charset</artifactId>
+			<version>70.1</version>
 		</dependency>
 
 		<!-- Test scoped dependencies -->

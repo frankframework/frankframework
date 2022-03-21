@@ -5,6 +5,8 @@ import static org.junit.Assert.fail;
 
 import java.sql.ResultSet;
 
+import org.springframework.beans.BeansException;
+
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisManager;
@@ -19,20 +21,31 @@ import nl.nn.adapterframework.util.SpringUtils;
  * @author Niels Meijer
  */
 public class TestConfiguration extends Configuration {
-	public final static String TEST_CONFIGURATION_NAME = "TestConfiguration";
+	public static final String TEST_CONFIGURATION_NAME = "TestConfiguration";
+	public static final String TEST_CONFIGURATION_FILE = "testConfigurationContext.xml";
+	public static final String TEST_DATABASE_ENABLED_CONFIGURATION_FILE = "testDatabaseEnabledConfigurationContext.xml";
 	private QuerySenderPostProcessor qsPostProcessor = new QuerySenderPostProcessor();
 
 	//Configures a standalone configuration.
 	public TestConfiguration() {
+		this(TEST_CONFIGURATION_FILE);
+
+		refresh();
+	}
+
+	public TestConfiguration(String... configurationFiles) {
 		super();
 		setAutoStart(false);
 
 		ClassLoader classLoader = new JunitTestClassLoaderWrapper(); //Add ability to retrieve classes from src/test/resources
 		setClassLoader(classLoader); //Add the test classpath
-		setConfigLocation("testConfigurationContext.xml");
+		setConfigLocations(configurationFiles);
 		setName(TEST_CONFIGURATION_NAME);
+	}
 
-		refresh();
+	@Override
+	public void refresh() throws BeansException, IllegalStateException {
+		super.refresh();
 
 		//Add Custom Pre-Instantiation Processor to mock statically created FixedQuerySenders.
 		qsPostProcessor.setApplicationContext(this);
@@ -96,7 +109,7 @@ public class TestConfiguration extends Configuration {
 
 	public MessageKeeper getMessageKeeper() {
 		MessageEventListener mel = getBean("MessageEventListener", MessageEventListener.class);
-		return mel.getMessageKeeper(TestConfiguration.TEST_CONFIGURATION_NAME);
+		return mel.getMessageKeeper(getName());
 	}
 
 	public MessageKeeper getGlobalMessageKeeper() {

@@ -244,7 +244,7 @@
 				<groupId>org.projectlombok</groupId>
 				<artifactId>lombok</artifactId>
 				<!-- If you update this version number, please update it in CONTRIBUTING.md  as well! -->
-				<version>1.18.12</version>
+				<version>1.18.22</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
@@ -401,7 +401,6 @@
 					<version>2.4</version>
 					<executions>
 						<execution>
-							<?m2e ignore?> <!-- Eclipse doesn't seem to like this plugin, it doesn't need to be executed by Eclipse so ignore it -->
 							<id>Check-CopyRight-Notice</id>
 							<goals>
 								<goal>copyright</goal><!-- Checks for Copyright notices -->
@@ -426,7 +425,6 @@
 					<version>1.0</version>
 					<executions>
 						<execution>
-							<?m2e ignore?>
 							<id>find-project-root-directory</id>
 							<goals>
 								<goal>directory-of</goal>
@@ -559,6 +557,46 @@
 							</goals>
 						</execution>
 					</executions>
+				</plugin>
+
+				<!-- This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself -->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.glassfish.copyright</groupId>
+										<artifactId>glassfish-copyright-maven-plugin</artifactId>
+										<versionRange>[2.4,)</versionRange>
+										<goals>
+											<goal>check</goal>
+											<goal>copyright</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.commonjava.maven.plugins</groupId>
+										<artifactId>directory-maven-plugin</artifactId>
+										<versionRange>[1.0,)</versionRange>
+										<goals>
+											<goal>directory-of</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
 				</plugin>
 			</plugins>
 		</pluginManagement>

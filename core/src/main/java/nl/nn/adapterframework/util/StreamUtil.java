@@ -61,6 +61,7 @@ public class StreamUtil {
 	public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING=DEFAULT_CHARSET.displayName();
 	public static final int DEFAULT_STREAM_CAPTURE_LIMIT=10000;
+	public static final String AUTO_DETECT_CHARSET = "auto";
 
 	// DEFAULT_CHARSET and DEFAULT_INPUT_STREAM_ENCODING must be defined before LogUtil.getLogger() is called, otherwise DEFAULT_CHARSET returns null.
 	protected static Logger log = LogUtil.getLogger(StreamUtil.class);
@@ -414,6 +415,55 @@ public class StreamUtil {
 		return new WatchedInputStream(stream);
 	}
 
+	public static MarkCompensatingOutputStream markCompensatingOutputStream(OutputStream stream) {
+		return new MarkCompensatingOutputStream(stream);
+	}
+
+	static class MarkCompensatingOutputStream extends FilterOutputStream {
+		private int bytesToSkip = 0;
+
+		public MarkCompensatingOutputStream(OutputStream out) {
+			super(out);
+		}
+
+		@Override
+		public synchronized void write(int b) throws IOException {
+			if(bytesToSkip > 0) {
+				--bytesToSkip;
+				return;
+			}
+
+			out.write(b);
+		}
+
+		@Override
+		public synchronized void write(byte[] b, int off, int len) throws IOException {
+			if(bytesToSkip == 0) {
+				out.write(b, off, len);
+				return;
+			}
+
+			int sizeToRead = Math.abs(off - len);
+			if(bytesToSkip < sizeToRead) {
+				out.write(b, off + bytesToSkip, len - bytesToSkip);
+				reset();
+			} else {
+				bytesToSkip -= sizeToRead;
+			}
+		}
+
+		public synchronized void mark(int bytesToSkip) {
+			this.bytesToSkip = bytesToSkip;
+		}
+		public void reset() {
+			mark(0);
+		}
+	}
+
+	/**
+	 * Triggers the next byte after the threshold has been reached.
+	 * If bytes are written in chunks it triggers after processing the entire chunk.
+	 */
 	public static OutputStream limitSize(OutputStream stream, int maxSize) {
 		return new ThresholdingOutputStream(maxSize) {
 
@@ -469,7 +519,8 @@ public class StreamUtil {
 	public static InputStream captureInputStream(InputStream in, OutputStream capture, int maxSize, boolean captureRemainingOnClose) {
 
 		CountingInputStream counter = new CountingInputStream(in);
-		return new TeeInputStream(counter, limitSize(capture, maxSize), true) {
+		MarkCompensatingOutputStream markCompensatingOutputStream = markCompensatingOutputStream(limitSize(capture, maxSize));
+		return new TeeInputStream(counter, markCompensatingOutputStream, true) {
 
 			@Override
 			public void close() throws IOException {
@@ -485,6 +536,17 @@ public class StreamUtil {
 				}
 			}
 
+			@Override
+			public synchronized void mark(int readlimit) {
+				markCompensatingOutputStream.mark(readlimit);
+				super.mark(readlimit);
+			}
+
+			@Override
+			public synchronized void reset() throws IOException {
+				markCompensatingOutputStream.reset();
+				super.reset();
+			}
 		};
 
 	}
