@@ -50,9 +50,12 @@ import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.SerializationTester;
+import nl.nn.adapterframework.testutil.TestAppender;
+import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.XmlWriter;
+import nl.nn.credentialprovider.util.Misc;
 
 public class MessageTest {
 
@@ -65,8 +68,13 @@ public class MessageTest {
 
 	private SerializationTester<Message> serializationTester = new SerializationTester<Message>();
 
-	protected void testAsInputStream(Message adapter) throws IOException {
-		InputStream result = adapter.asInputStream();
+	protected void testAsInputStream(Message message) throws IOException {
+		if(message.isBinary()) {
+			byte[] header = message.getMagic(6);
+			assertEquals("<root>", new String(header));
+		}
+
+		InputStream result = message.asInputStream();
 		String actual = StreamUtil.streamToString(result, null, "UTF-8");
 		MatchUtils.assertXmlEquals(testString, actual);
 	}
@@ -87,12 +95,22 @@ public class MessageTest {
 	}
 
 	protected void testAsString(Message message) throws IOException {
+		if(message.isBinary()) {
+			byte[] header = message.getMagic(6);
+			assertEquals("<root>", new String(header));
+		}
+
 		String actual = message.asString();
 		MatchUtils.assertXmlEquals(testString, actual);
 	}
 
-	protected void testAsByteArray(Message adapter) throws IOException {
-		byte[] actual = adapter.asByteArray();
+	protected void testAsByteArray(Message message) throws IOException {
+		if(message.isBinary()) {
+			byte[] header = message.getMagic(6);
+			assertEquals("<root>", new String(header));
+		}
+
+		byte[] actual = message.asByteArray();
 		byte[] expected = testString.getBytes("UTF-8");
 		assertEquals("lengths differ", expected.length, actual.length);
 		for (int i = 0; i < expected.length; i++) {
@@ -891,5 +909,101 @@ public class MessageTest {
 	public void testNullMessageIsEmpty() {
 		Message message = null;
 		assertTrue(Message.isEmpty(message));
+	}
+
+	@Test
+	public void testMessageDefaultCharset() throws Exception {
+		String utf8Input = "Më-×m👌‰Œœ‡TzdDEyMt120=";
+		ByteArrayInputStream source = new ByteArrayInputStream(utf8Input.getBytes("utf-8"));
+		Message binaryMessage = new Message(source); //non-repeatable stream, no provided charset
+
+		assertEquals(utf8Input, binaryMessage.asString()); //Default must be used
+
+		Message characterMessage = new Message(utf8Input);
+
+		assertEquals(utf8Input, characterMessage.asString("ISO-8859-1")); //This should not be used as there is no binary conversion
+	}
+
+	@Test
+	public void testMessageDetectCharset() throws Exception {
+		String utf8Input = "Më-×m👌‰Œœ‡TzdDEyMt120=";
+		ByteArrayInputStream source = new ByteArrayInputStream(utf8Input.getBytes("utf-8"));
+		Message message = new Message(source, "auto"); //Set the MessageContext charset
+
+		String stringResult = message.asString("ISO-8859-ik-besta-niet"); //use MessageContext charset
+		assertEquals(utf8Input, stringResult);
+	}
+
+	@Test
+	public void testMessageDetectCharsetISO8859() throws Exception {
+		URL isoInputFile = TestFileUtils.getTestFileURL("/Util/MessageUtils/iso-8859-1.txt");
+		assertNotNull("unable to find isoInputFile", isoInputFile);
+
+		Message message = new UrlMessage(isoInputFile); //repeatable stream, detect charset
+
+		String stringResult = message.asString("auto"); //detect when reading
+		assertEquals(Misc.streamToString(isoInputFile.openStream(), "ISO-8859-1"), stringResult);
+	}
+
+	@Test
+	public void testCharsetDeterminationAndFallbackToDefault() throws Exception {
+		Message messageNullCharset = new Message((byte[]) null) { //NullMessage, charset cannot be determined
+			@Override
+			public String getCharset() {
+				return null;
+			};
+		};
+		Message messageAutoCharset = new Message((byte[]) null) { //NullMessage, charset cannot be determined
+			@Override
+			public String getCharset() {
+				return "AUTO";
+			};
+		};
+
+		// getCharset()==null && defaultDecodingCharset==AUTO ==> decodingCharset = UTF-8
+		assertEquals("UTF-8", messageNullCharset.computeDecodingCharset("AUTO"));
+
+		// getCharset()==AUTO && defaultDecodingCharset==xyz ==> decodingCharset = xyz
+		assertEquals("ISO-8559-15", messageAutoCharset.computeDecodingCharset("ISO-8559-15"));
+
+		// getCharset()==AUTO && defaultDecodingCharset==AUTO ==> decodingCharset = UTF-8
+		assertEquals("UTF-8", messageAutoCharset.computeDecodingCharset("AUTO"));
+
+		// getCharset()==AUTO && defaultDecodingCharset==null ==> decodingCharset = UTF-8
+		assertEquals("UTF-8", messageAutoCharset.computeDecodingCharset(null));
+	}
+
+	@Test
+	public void shouldOnlyDetectCharsetOnce() throws Exception {
+		Message message = new Message("’•†™".getBytes("cp-1252")) { //NullMessage, charset cannot be determined
+			@Override
+			public String getCharset() {
+				return "AUTO";
+			};
+		};
+
+		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%m").build();
+		TestAppender.addToRootLogger(appender);
+
+		try {
+			message.asString("auto"); //calls asReader();
+			message.asString(); //calls asReader();
+			message.asString("auto"); //calls asReader();
+			message.asString(); //calls asReader();
+			message.asString("auto"); //calls asReader();
+			message.asString(); //calls asReader();
+			message.asString("auto"); //calls asReader();
+			message.asString(); //calls asReader();
+
+			int i = 0;
+			for (String log : appender.getLogLines()) {
+				if(log.contains("unable to detect charset for message")) {
+					i++;
+				}
+			}
+			assertEquals("charset should be determined only once", 1, i);
+		} finally {
+			TestAppender.removeAppender(appender);
+		}
 	}
 }

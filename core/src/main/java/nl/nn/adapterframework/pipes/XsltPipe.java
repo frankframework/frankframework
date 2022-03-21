@@ -193,6 +193,11 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 		sender.setOmitXmlDeclaration(b);
 	}
 	
+	@IbisDocRef({"5", XSLTSENDER})
+	public void setDisableOutputEscaping(boolean b) {
+		sender.setDisableOutputEscaping(b);
+	}
+
 	@IbisDocRef({"6", XSLTSENDER})
 	public void setNamespaceDefs(String namespaceDefs) {
 		sender.setNamespaceDefs(namespaceDefs);

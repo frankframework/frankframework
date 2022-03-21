@@ -121,8 +121,8 @@
 		id="txManagerProxy"
 		class="nl.nn.adapterframework.jta.SpringTxManagerProxy"
 		>
-		<property name="realTxManagerBeanName">
-			<idref bean="txManagerReal"/>
+		<property name="realTxManager">
+			<ref bean="txManagerReal"/>
 		</property>
 	</bean>
 

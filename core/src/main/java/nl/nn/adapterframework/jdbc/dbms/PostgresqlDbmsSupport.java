@@ -1,5 +1,5 @@
 /*
-Copyright 2020, 2021 WeAreFrank!
+Copyright 2020-2022 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import java.sql.Types;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.apache.commons.codec.Charsets;
 import org.apache.commons.lang3.StringUtils;
 //import org.postgresql.largeobject.LargeObject;
 //import org.postgresql.largeobject.LargeObjectManager;
@@ -51,7 +50,7 @@ import nl.nn.adapterframework.util.StreamUtil;
 public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 
 	private final boolean useLargeObjectFeature=false;
-	
+
 	@Override
 	public Dbms getDbms() {
 		return Dbms.POSTGRESQL;
@@ -86,11 +85,10 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 	}
 
 
-	
 //	private LargeObjectManager getLargeObjectManager(Statement stmt) throws SQLException {
 //		return stmt.getConnection().unwrap(org.postgresql.PGConnection.class).getLargeObjectAPI();
 //	}
-	
+
 	private Object createLob(Statement stmt) throws SQLException {
 		if (useLargeObjectFeature) {
 			throw new IllegalStateException("Handling BLOBs and CLOBs as LargeObjects not available");
@@ -111,7 +109,7 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 //		}
 		return (ByteArrayOutputStream)blobUpdateHandle;
 	}
-	
+
 	private void updateLob(ResultSet rs, int column, Object blobUpdateHandle, boolean binary) throws SQLException {
 		if (useLargeObjectFeature) {
 			rs.updateLong(column, (long)blobUpdateHandle);
@@ -120,7 +118,7 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 		if (binary) {
 			rs.updateBytes(column, (((ByteArrayOutputStream)blobUpdateHandle).toByteArray()));
 		} else {
-			rs.updateString(column, new String(((ByteArrayOutputStream)blobUpdateHandle).toByteArray(),Charsets.UTF_8));
+			rs.updateString(column, new String(((ByteArrayOutputStream)blobUpdateHandle).toByteArray(), StreamUtil.DEFAULT_CHARSET));
 		}
 	}
 	private void updateLob(ResultSet rs, String column, Object blobUpdateHandle, boolean binary) throws SQLException {
@@ -131,7 +129,7 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 		if (binary) {
 			rs.updateBytes(column, (((ByteArrayOutputStream)blobUpdateHandle).toByteArray()));
 		} else {
-			rs.updateString(column, new String(((ByteArrayOutputStream)blobUpdateHandle).toByteArray(),Charsets.UTF_8));
+			rs.updateString(column, new String(((ByteArrayOutputStream)blobUpdateHandle).toByteArray(), StreamUtil.DEFAULT_CHARSET));
 		}
 	}
 	private void updateLob(PreparedStatement stmt, int column, Object blobUpdateHandle, boolean binary) throws SQLException {
@@ -142,7 +140,7 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 		if (binary) {
 			stmt.setBytes(column, (((ByteArrayOutputStream)blobUpdateHandle).toByteArray()));
 		} else {
-			stmt.setString(column, new String(((ByteArrayOutputStream)blobUpdateHandle).toByteArray(),Charsets.UTF_8));
+			stmt.setString(column, new String(((ByteArrayOutputStream)blobUpdateHandle).toByteArray(), StreamUtil.DEFAULT_CHARSET));
 		}
 	}
 
@@ -155,7 +153,7 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 	public boolean isClobType(final ResultSetMetaData rsmeta, final int colNum) throws SQLException {
 		return rsmeta.getColumnType(colNum)==Types.VARCHAR && "text".equals(rsmeta.getColumnTypeName(colNum));
 	}
-	
+
 	@Override
 	public Reader getClobReader(ResultSet rs, int column) throws SQLException, JdbcException {
 		return rs.getCharacterStream(column);

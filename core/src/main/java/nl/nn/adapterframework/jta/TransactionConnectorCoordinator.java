@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -65,12 +65,12 @@ public class TransactionConnectorCoordinator<T,R> implements AutoCloseable {
 	}
 
 	public void setLastInThread(TransactionConnector<T,R> target) {
-		log.debug("setting lastInThread [{}] to [{}]", lastInThread, target);
+		log.debug("setting lastInThread [{}] to target [{}]", lastInThread, target);
 		lastInThread = target;
 	}
 	
 	public boolean isLastInThread(TransactionConnector<T,R> target) {
-		log.debug("comparing target [{}] to lastInThread to [{}]", target, lastInThread);
+		log.debug("comparing lastInThread [{}] to target [{}]", lastInThread, target);
 		return lastInThread==target;
 	}
 	
@@ -111,21 +111,25 @@ public class TransactionConnectorCoordinator<T,R> implements AutoCloseable {
 	public void resumeTransactionInChildThread(TransactionConnector<T,R> requester) {
 		Thread thread = Thread.currentThread();
 		if (thread!=parentThread) {
+			log.debug("resumeTransactionInChildThread() current thread [{}] unequal to parentThread [{}], so resuming transaction forced", ()->Thread.currentThread().getName(), ()->parentThread.getName());
 			resumeTransaction(true);
 		} else {
 			if (isLastInThread(requester)) {
+				log.debug("resumeTransactionInChildThread() requester [{}] is last in thread, so resuming transaction", requester);
 				resumeTransaction();
+			} else {
+				log.debug("resumeTransactionInChildThread() requester [{}] is not last in thread, not resuming transaction", requester);
 			}
 		}
 	}
 
 	public void suspendTransaction() {
 		if (!suspended) {
-			log.debug("suspending transaction of parent thread [{}] in thread [{}]", ()->parentThread.getName(), ()->Thread.currentThread().getName());
+			log.debug("suspending transaction of parent thread [{}], current thread [{}]", ()->parentThread.getName(), ()->Thread.currentThread().getName());
 			resourceHolder = this.txManager.suspendTransaction(transaction);
 			suspended = true;
 		} else {	
-			log.debug("transaction was already suspended of parent thread [{}] in thread [{}]", ()->parentThread.getName(), ()->Thread.currentThread().getName());
+			log.debug("transaction of parent thread [{}] was already suspended, current thread [{}]", ()->parentThread.getName(), ()->Thread.currentThread().getName());
 		}
 	}
 	
@@ -134,26 +138,28 @@ public class TransactionConnectorCoordinator<T,R> implements AutoCloseable {
 	}
 	public void resumeTransaction(boolean force) {
 		if (suspended || force) {
-			log.debug("resumeTransaction() resuming transaction of parent thread [{}] in thread [{}]", ()->parentThread.getName(), ()->Thread.currentThread().getName());
-			txManager.resumeTransaction(transaction, resourceHolder);
-			suspended = false;
+			log.debug("resumeTransaction() resuming transaction of parent thread [{}], current thread [{}]", ()->parentThread.getName(), ()->Thread.currentThread().getName());
+			if (!force || !TransactionSynchronizationManager.isSynchronizationActive()) {
+				txManager.resumeTransaction(transaction, resourceHolder);
+			}
 		} else {	
-			log.debug("resumeTransaction() transaction was already resumed of parent thread [{}] in thread [{}]", ()->parentThread.getName(), ()->Thread.currentThread().getName());
+			log.debug("resumeTransaction() transaction of parent thread [{}] was already resumed, current thread [{}]", ()->parentThread.getName(), ()->Thread.currentThread().getName());
 		}
+		suspended = false;
 	}
 	@Override
 	public void close() {
 		Thread currentThread = Thread.currentThread();
 		if (currentThread != parentThread) {
-			throw new IllegalStateException("["+hashCode()+"] close() must be called from parentThread");
+			throw new IllegalStateException("close() must be called from parentThread");
 		}
 		if (transaction!=null) {
-			log.debug("[{}] close() resuming transaction in thread [{}] after child thread ended", ()->hashCode(), ()->parentThread.getName());
+			log.debug("close() resuming transaction in thread [{}] after child thread ended", ()->parentThread.getName());
 			txManager.resumeTransaction(transaction, resourceHolder);
 			transaction=null;
 			coordinators.remove();
 		} else {
-			log.debug("[{}] close() already called", ()->hashCode());
+			log.debug("close() already called");
 		}
 	}
 }

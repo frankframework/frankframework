@@ -99,12 +99,6 @@ public class TestMap2Xml extends AlignTestBase {
 		super.testNull();
 	}
 
-	@Override
-	@Test
-	@Ignore("Map2XML does not support attributes")
-	public void testAttributes() throws Exception {
-		super.testAttributes();
-	}
 
 	@Override
 	@Test
@@ -168,23 +162,4 @@ public class TestMap2Xml extends AlignTestBase {
 	public void testFamilyTree() throws Exception {
 		testFiles("FamilyTree/family.xsd", "urn:family", "family", "FamilyTree/family", true);
 	}
-
-	@Test
-	@Ignore("Problem with converting property array into xml")
-	public void testTextAndAttributes() throws Exception {
-		super.testTextAndAttributes();
-	}
-
-	@Test
-	@Ignore("The conversion fails to add label name attributes, see https://github.com/ibissource/iaf/issues/2806")
-	public void testLabelValue() throws Exception {
-		super.testLabelValue();
-	}
-
-	@Test
-	@Ignore("The conversion fails to handle 'anyAttribute' properly, see https://github.com/ibissource/iaf/issues/2807")
-	public void testAnyAttribute() throws Exception {
-		super.testAnyAttribute();
-	}
-
 }

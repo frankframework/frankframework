@@ -29,6 +29,8 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ProcessState;
+import nl.nn.adapterframework.doc.Default;
+import nl.nn.adapterframework.doc.Optional;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
@@ -160,82 +162,52 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 		this.sessionKeys = sessionKeys;
 	}
 
-	/**
-	 * Name of the table to be used
-	 * 
-	 * @ff.default IBISSTORE
-	 */
 	@Override
+	@Default ("IBISSTORE")
+	@Optional
 	public void setTableName(String string) {
 		super.setTableName(string);
 	}
 
-	/**
-	 * Primary key field of the table, used to identify messages
-	 * 
-	 * @ff.default MESSAGEKEY
-	 */
 	@Override
+	@Default ("MESSAGEKEY")
 	public void setKeyField(String fieldname) {
 		super.setKeyField(fieldname);
 	}
 
-	/**
-	 * field containing the message data
-	 * 
-	 * @ff.default MESSAGE
-	 */
 	@Override
+	@Default ("MESSAGE")
 	public void setMessageField(String fieldname) {
 		super.setMessageField(fieldname);
 	}
 
-	/**
-	 * Type of the field containing the message data
-	 * 
-	 * @ff.default BLOB
-	 */
 	@Override
+	@Default ("BLOB")
 	public void setMessageFieldType(MessageFieldType fieldtype) {
 		super.setMessageFieldType(fieldtype);
 	}
 
-	/**
-	 * Controls automatically whether blobdata is stored compressed and/or serialized in the database. N.B. When set true, then the BLOB will be converted into a string when read
-	 * 
-	 * @ff.default <code>true</code>
-	 */
 	@Override
+	@Default ("<code>true</code>")
 	public void setBlobSmartGet(boolean b) {
 		super.setBlobSmartGet(b);
 	}
 
-	/**
-	 * Field containing the status of the message
-	 * 
-	 * @ff.default TYPE
-	 */
 	@Override
+	@Default ("TYPE")
+	@Optional
 	public void setStatusField(String fieldname) {
 		super.setStatusField(fieldname);
 	}
 
-	/**
-	 * Field used to store the date and time of the last change of the statusField
-	 * 
-	 * @ff.default MESSAGEDATE
-	 */
 	@Override
+	@Default ("MESSAGEDATE")
 	public void setTimestampField(String fieldname) {
 		super.setTimestampField(fieldname);
 	}
 
-	/**
-	 * Field used to store the reason of the last change of the statusField
-	 * 
-	 * @ff.default COMMENTS
-	 */
 	@Override
+	@Default ("COMMENTS")
 	public void setCommentField(String commentField) {
 		super.setCommentField(commentField);
 	}
@@ -258,22 +230,16 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 		super.setStatusValueInProcess(string);
 	}
 
-	/**
-	 * Value of statusField indicating the processing of the row resulted in an error
-	 * 
-	 * @ff.default <code>E</code>
-	 */
 	@Override
+	@Default ("<code>E</code>")
+	@Optional
 	public void setStatusValueError(String string) {
 		super.setStatusValueError(string);
 	}
 
-	/**
-	 * Value of status field indicating row is processed OK
-	 * 
-	 * @ff.default <code>A</code>
-	 */
 	@Override
+	@Default ("<code>A</code>")
+	@Optional
 	public void setStatusValueProcessed(String string) {
 		super.setStatusValueProcessed(string);
 	}

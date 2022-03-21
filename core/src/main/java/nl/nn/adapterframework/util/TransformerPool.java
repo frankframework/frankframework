@@ -469,4 +469,13 @@ public class TransformerPool {
 		Map<String,String> configMap=getConfigMap();
 		return configMap.get("output-method");
 	}
+
+	public Boolean getDisableOutputEscaping() throws TransformerException, IOException, SAXException {
+		Map<String,String> configMap=getConfigMap();
+		String setting=configMap.get("disable-output-escaping");
+		if (setting==null) {
+			return null;
+		}
+		return "yes".equals(setting);
+	}
 }

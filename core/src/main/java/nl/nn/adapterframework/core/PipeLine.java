@@ -31,6 +31,7 @@ import nl.nn.adapterframework.cache.ICache;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.pipes.AbstractPipe;
@@ -91,6 +92,8 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	public final static String OUTPUT_VALIDATOR_NAME = "- pipeline outputValidator";
 	public final static String INPUT_WRAPPER_NAME    = "- pipeline inputWrapper";
 	public final static String OUTPUT_WRAPPER_NAME   = "- pipeline outputWrapper";
+
+	private final String DEFAULT_SUCCESS_EXIT_NAME = "READY";
 
 	private @Getter String firstPipe;
 	private @Getter int maxThreads = 0;
@@ -160,6 +163,14 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		if (cache != null) {
 			cache.configure(owner.getName() + "-Pipeline");
 		}
+		if (pipeLineExits.size() < 1) {
+			// if no Exits are configured, then insert a default one, named 'READY', with state 'SUCCESS'
+			PipeLineExit defaultExit = new PipeLineExit();
+			defaultExit.setPath(DEFAULT_SUCCESS_EXIT_NAME);
+			defaultExit.setState(ExitState.SUCCESS);
+			registerPipeLineExit(defaultExit);
+			log.debug("Created default Exit named ["+defaultExit.getName()+"], state ["+defaultExit.getState()+"]");
+		}
 		for (int i=0; i < pipes.size(); i++) {
 			IPipe pipe = getPipe(i);
 
@@ -174,7 +185,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 			if (pipe instanceof FixedForwardPipe) {
 				FixedForwardPipe ffpipe = (FixedForwardPipe)pipe;
-				// getSuccessForward will return null since it has not been set. See below configure(pipe)
+				// getSuccessForward will return null if it has not been set. See below configure(pipe)
 				if (ffpipe.findForward(PipeForward.SUCCESS_FORWARD_NAME) == null) {
 					int i2 = i + 1;
 					if (i2 < pipes.size()) {
@@ -186,6 +197,10 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 					} else {
 						PipeLineExit plexit = findExitByState(ExitState.SUCCESS);
 						if (plexit != null) {
+							// if there is no success exit, then appearantly only error exits are configured; Just get the first configured one
+							plexit = pipeLineExits.values().iterator().next();
+						}
+						if (plexit != null) {
 							PipeForward pf = new PipeForward();
 							pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
 							pf.setPath(plexit.getPath());
@@ -195,9 +210,6 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 				}
 			}
 			configure(pipe);
-		}
-		if (pipeLineExits.size() < 1) {
-			throw new ConfigurationException("no PipeLine Exits specified");
 		}
 		if (pipes.isEmpty()) {
 			throw new ConfigurationException("no Pipes in PipeLine");
@@ -640,10 +652,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		this.outputWrapper = outputWrapper;
 	}
 
-	/** 
-	 * PipeLine exits.
-	 * @ff.mandatory
-	 */
+	@IbisDoc({ "PipeLine exits. If no exits are specified, a default one is created with path=\""+DEFAULT_SUCCESS_EXIT_NAME+"\" and state=\"SUCCESS\""})
 	public void setPipeLineExits(PipeLineExits exits) {
 		for(PipeLineExit exit:exits.getExits()) {
 			registerPipeLineExit(exit);
@@ -652,8 +661,8 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	/** 
 	 * PipeLine exits.
-	 * @ff.deprecated
 	 */
+	@Deprecated
 	public void registerPipeLineExit(PipeLineExit exit) {
 		if (pipeLineExits.containsKey(exit.getPath())) {
 			ConfigurationWarnings.add(this, log, "exit named ["+exit.getPath()+"] already exists");
@@ -740,7 +749,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	/** 
 	 * Name of the first pipe to execute when a message is to be processed
-	 * @ff.default <first pipe of the pipeline>" })
+	 * @ff.default first pipe of the pipeline
 	 */
 	public void setFirstPipe(String pipeName) {
 		firstPipe = pipeName;

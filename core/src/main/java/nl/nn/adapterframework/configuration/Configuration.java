@@ -43,7 +43,7 @@ import nl.nn.adapterframework.configuration.extensions.SapSystems;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.ProtectedAttribute;
+import nl.nn.adapterframework.doc.Protected;
 import nl.nn.adapterframework.jdbc.migration.DatabaseMigratorBase;
 import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
@@ -506,13 +506,13 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	/** The entire (raw) configuration */
-	@ProtectedAttribute
+	@Protected
 	public void setOriginalConfiguration(String originalConfiguration) {
 		this.originalConfiguration = originalConfiguration;
 	}
 
 	/** The loaded (with resolved properties) configuration */
-	@ProtectedAttribute
+	@Protected
 	public void setLoadedConfiguration(String loadedConfiguration) {
 		this.loadedConfiguration = loadedConfiguration;
 	}
@@ -570,7 +570,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	@Override
-	@ProtectedAttribute
+	@Protected
 	public void setBeanName(String name) {
 		super.setBeanName(name);
 		setDisplayName("ConfigurationContext [" + name + "]");

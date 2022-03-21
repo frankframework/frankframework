@@ -79,7 +79,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.core.TransactionAttributes;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.doc.ProtectedAttribute;
+import nl.nn.adapterframework.doc.Protected;
 import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.jms.JMSFacade;
@@ -1287,7 +1287,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 //			threadContext=pipelineSession; // this is to enable Listeners to use session variables, for instance in afterProcessMessage()
 			try {
 				if (getMessageLog()!=null) {
-					getMessageLog().storeMessage(messageId, businessCorrelationId, new Date(), RCV_MESSAGE_LOG_COMMENTS, label, pipelineMessage);
+					getMessageLog().storeMessage(messageId, businessCorrelationId, new Date(), RCV_MESSAGE_LOG_COMMENTS, label, new MessageWrapper(pipelineMessage, messageId));
 				}
 				log.debug(getLogPrefix()+"preparing TimeoutGuard");
 				TimeoutGuard tg = new TimeoutGuard("Receiver "+getName());
@@ -1738,7 +1738,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	 * Changes runstate. 
 	 * Always stops the receiver when state is `**ERROR**`
 	 */
-	@ProtectedAttribute
+	@Protected
 	public void setRunState(RunState state) {
 		if(RunState.ERROR.equals(state)) {
 			stopRunning();
