@@ -1560,36 +1560,39 @@ angular.module('iaf.beheerconsole')
 		return fd;
 	}
 	$scope.resendMessages = function() {
-		$scope.messagesResending = true;
-		Api.Post($scope.base_url, getFormData(), function() {
-			$scope.messagesResending = false;
-			$scope.addNote("success", "Successfully resent messages");
-			$scope.updateTable();
-		}, function(data) {
-			$scope.messagesResending = false;
-			$scope.addNote("danger", "Something went wrong, unable to resend all messages!");
-			$scope.updateTable();
-		});
+		let fd = getFormData();
+		if($scope.isSelectedMessages(fd)) {
+			$scope.messagesResending = true;
+			Api.Post($scope.base_url, fd, function() {
+				$scope.messagesResending = false;
+				$scope.addNote("success", "Successfully resent messages");
+				$scope.updateTable();
+			}, function(data) {
+				$scope.messagesResending = false;
+				$scope.addNote("danger", "Something went wrong, unable to resend all messages!");
+				$scope.updateTable();
+			});
+		}
 	}
 	$scope.deleteMessages = function() {
-		$scope.messagesDeleting = true;
-		Api.Delete($scope.base_url, getFormData(), function() {
-			$scope.messagesDeleting = false;
-			$scope.addNote("success", "Successfully deleted messages");
-			$scope.updateTable();
-		}, function(data) {
-			$scope.messagesDeleting = false;
-			$scope.addNote("danger", "Something went wrong, unable to delete all messages!");
-			$scope.updateTable();
-		});
+		let fd = getFormData();
+		if($scope.isSelectedMessages(fd)) {
+			$scope.messagesDeleting = true;
+			Api.Delete($scope.base_url, fd, function() {
+				$scope.messagesDeleting = false;
+				$scope.addNote("success", "Successfully deleted messages");
+				$scope.updateTable();
+			}, function(data) {
+				$scope.messagesDeleting = false;
+				$scope.addNote("danger", "Something went wrong, unable to delete all messages!");
+				$scope.updateTable();
+			});
+		}
 	}
 
 	$scope.downloadMessages = function() {
 		let fd = getFormData();
-		let selectedMessages = fd.get("messageIds");
-		if(!selectedMessages || selectedMessages.length == 0){
-			SweetAlert.Warning("No message selected!");
-		} else {
+		if($scope.isSelectedMessages(fd)) {
 			$scope.messagesDownloading = true;
 			Api.Post($scope.base_url+"/messages/download", fd, function(response) {
 				let blob = new Blob([response], {type: 'application/octet-stream'});
@@ -1610,18 +1613,30 @@ angular.module('iaf.beheerconsole')
 
 	$scope.changingProcessState = false;
 	$scope.changeProcessState = function(processState, targetState) {
-		$scope.changingProcessState = true;
-		var data = getFormData();
-		Api.Post($scope.base_url+"/move/"+targetState, data, function() {
-			$scope.changingProcessState = false;
-			$scope.addNote("success", "Successfully changed the state of messages to "+targetState);
-			$scope.updateTable();
-		}, function(data) {
-			$scope.changingProcessState = false;
-			$scope.addNote("danger", "Something went wrong, unable to move selected messages!");
-			$scope.updateTable();
-		});
+		let fd = getFormData();
+		if($scope.isSelectedMessages(fd)) {
+			$scope.changingProcessState = true;
+			Api.Post($scope.base_url+"/move/"+targetState, fd, function() {
+				$scope.changingProcessState = false;
+				$scope.addNote("success", "Successfully changed the state of messages to "+targetState);
+				$scope.updateTable();
+			}, function(data) {
+				$scope.changingProcessState = false;
+				$scope.addNote("danger", "Something went wrong, unable to move selected messages!");
+				$scope.updateTable();
+			});
+		}
 	}
+
+	$scope.isSelectedMessages = function(data){
+		let selectedMessages = data.get("messageIds");
+		if(!selectedMessages || selectedMessages.length == 0){
+			SweetAlert.Warning("No message selected!");
+			return false;
+		} else {
+			return true;
+		}
+	};
 }])
 
 .controller('AdapterViewStorageIdCtrl', ['$scope', 'Api', '$state', 'SweetAlert', function($scope, Api, $state, SweetAlert) {
