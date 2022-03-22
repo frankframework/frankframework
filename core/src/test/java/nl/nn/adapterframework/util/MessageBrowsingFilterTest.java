@@ -3,6 +3,7 @@ package nl.nn.adapterframework.util;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.Date;
@@ -17,6 +18,7 @@ import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.jdbc.TransactionManagerTestBase;
 import nl.nn.adapterframework.jdbc.dbms.Dbms;
 import nl.nn.adapterframework.receivers.JavaListener;
+import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 
 public class MessageBrowsingFilterTest extends TransactionManagerTestBase {
@@ -47,8 +49,9 @@ public class MessageBrowsingFilterTest extends TransactionManagerTestBase {
 		String messageRoot = "message";
 		filter.setMessageMask(messageRoot, storage);
 		storage.configure();
-		storage.storeMessage(getConnection(),"1", "corrId", new Date(), "comments", "label", new Message(messageRoot));
-		storage.storeMessage(getConnection(),"2", "corrId2", new Date(), "comments", "label", new Message("out filter"));
+		storage.storeMessage("1", "corrId", new Date(), "comments", "label", new Message(messageRoot));
+		storage.storeMessage("2", "corrId2", new Date(), "comments", "label", new Message("out filter"));
+
 		int count = 0 ;
 		try(IMessageBrowsingIterator iterator = storage.getIterator()){
 			while(iterator.hasNext()) {
@@ -57,9 +60,10 @@ public class MessageBrowsingFilterTest extends TransactionManagerTestBase {
 				}
 			}
 		}
-		
+
 		assertEquals(1, count);
 	}
+
 	private void fillTable() throws Exception {
 		StringBuilder sb = new StringBuilder("INSERT INTO "+tableName+" (" +
 				(dbmsSupport.autoIncrementKeyMustBeInserted() ? storage.getKeyField()+"," : "")
@@ -93,7 +97,7 @@ public class MessageBrowsingFilterTest extends TransactionManagerTestBase {
 		}
 
 		try(Connection connection = getConnection()) {
-			try(PreparedStatement stmt = getConnection().prepareStatement(sb.toString())) {
+			try(PreparedStatement stmt = connection.prepareStatement(sb.toString())) {
 				stmt.execute();
 			}
 		}
@@ -103,7 +107,7 @@ public class MessageBrowsingFilterTest extends TransactionManagerTestBase {
 	public void testTypeFilter() throws Exception {
 		filter.setTypeMask("L");
 		storage.configure();
-		
+
 		fillTable();
 
 		int count = 0 ;
@@ -114,17 +118,18 @@ public class MessageBrowsingFilterTest extends TransactionManagerTestBase {
 				}
 			}
 		}
-		
+
 		assertEquals(2, count);
 	}
-	
+
 	@Test
 	public void testDateFilter() throws Exception {
 		filter.setStartDateMask("2021-07-13 11:03:19.860");
 		filter.setEndDateMask("2021-07-13 11:07:19.860");
 		storage.configure();
+
 		fillTable();
-		
+
 		int count = 0;
 		try(IMessageBrowsingIterator iterator = storage.getIterator()){
 			while(iterator.hasNext()) {
@@ -135,15 +140,32 @@ public class MessageBrowsingFilterTest extends TransactionManagerTestBase {
 		}
 		assertEquals(3,count);
 	}
-	
+
 	@Test
-	public void testMessageFilterWithListener() throws Exception {
+	public void testMessageFilterWithMessageWrapper() throws Exception {
+		MessageWrapper messageInFilter = new MessageWrapper(new Message("message"), "firstMessageID");
+		MessageWrapper messageOutOfFilter = new MessageWrapper(new Message("out filter"), "id");
+		testMessageFilterWithJavaListenerHelper(messageInFilter, messageOutOfFilter);
+	}
+
+	@Test
+	public void testMessageFilterWithMessage() throws Exception {
+		testMessageFilterWithJavaListenerHelper(new Message("message"), new Message("out filter"));
+	}
+
+	@Test
+	public void testMessageFilterWithString() throws Exception {
+		testMessageFilterWithJavaListenerHelper("message", "out filter");
+	}
+
+	public void testMessageFilterWithJavaListenerHelper(Serializable messageInFilter, Serializable messageOutOfFilter) throws Exception {
 		String messageRoot = "message";
-		
+
 		filter.setMessageMask(messageRoot, storage, listener);
 		storage.configure();
-		storage.storeMessage(getConnection(),"1", "corrId", new Date(), "comments", "label", "message");
-		storage.storeMessage(getConnection(),"2", "corrId2", new Date(), "comments", "label", "out filter");
+		storage.storeMessage("1", "corrId", new Date(), "comments", "label", messageInFilter);
+		storage.storeMessage("2", "corrId2", new Date(), "comments", "label", messageOutOfFilter);
+
 		int count = 0 ;
 		try(IMessageBrowsingIterator iterator = storage.getIterator()){
 			while(iterator.hasNext()) {
@@ -152,8 +174,7 @@ public class MessageBrowsingFilterTest extends TransactionManagerTestBase {
 				}
 			}
 		}
-		
+
 		assertEquals(1, count);
 	}
-	
 }

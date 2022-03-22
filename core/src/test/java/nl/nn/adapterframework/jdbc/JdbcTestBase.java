@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.jdbc;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 import java.sql.Connection;
@@ -22,6 +23,7 @@ import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.springframework.jdbc.datasource.DelegatingDataSource;
 
 import liquibase.Contexts;
 import liquibase.Liquibase;
@@ -33,50 +35,52 @@ import lombok.Getter;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
+import nl.nn.adapterframework.jdbc.dbms.IDbmsSupportFactory;
+import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TransactionManagerType;
 import nl.nn.adapterframework.testutil.URLDataSourceFactory;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
-
 
 @RunWith(Parameterized.class)
 public abstract class JdbcTestBase {
 	protected final static String TEST_CHANGESET_PATH = "Migrator/Ibisstore_4_unittests_changeset.xml";
 	protected final static String DEFAULT_CHANGESET_PATH = "IAF_Util/IAF_DatabaseChangelog.xml";
 	protected static Logger log = LogUtil.getLogger(JdbcTestBase.class);
+	private @Getter TestConfiguration configuration;
 
 	protected static String singleDatasource = null; // "MariaDB";  // set to a specific datasource name, to speed up testing
 
 	protected Liquibase liquibase;
 	protected boolean testPeekShouldSkipRecordsAlreadyLocked = false;
-	protected String productKey = "unknown";
 	protected Properties dataSourceInfo;
 
-	/** Only to be used for setup and teardown like actions */
+	/** NON-Transactional Connection. Only to be used for set-up and tear-down like actions! */
 	protected Connection connection;
 
 	@Parameterized.Parameter(0)
 	public @Getter TransactionManagerType transactionManagerType;
 	@Parameterized.Parameter(1)
-	public DataSource dataSource;
+	public String productKey;
+	private DataSource dataSource;
 
-	private @Getter DbmsSupportFactory dbmsSupportFactory = new DbmsSupportFactory();
+	private @Getter IDbmsSupportFactory dbmsSupportFactory;
 	protected @Getter IDbmsSupport dbmsSupport;
 
 	@Parameters(name= "{0}: {1}")
 	public static Collection data() throws NamingException {
 		TransactionManagerType type = TransactionManagerType.DATASOURCE;
-		List<DataSource> datasources;
+		List<String> datasourceNames; //See URLDataSourceFactory.TEST_DATASOURCES
 		if (StringUtils.isNotEmpty(singleDatasource)) {
-			datasources = new ArrayList<>();
-			datasources.add(type.getDataSourceFactory().getDataSource(singleDatasource));
+			datasourceNames = new ArrayList<>();
+			datasourceNames.add(singleDatasource);
 		} else {
-			datasources = type.getAvailableDataSources();
+			datasourceNames = type.getAvailableDataSources();
 		}
 		List<Object[]> matrix = new ArrayList<>();
 
-		for(DataSource ds : datasources) {
-			matrix.add(new Object[] {type, ds});
+		for(String name : datasourceNames) {
+			matrix.add(new Object[] {type, name});
 		}
 
 		return matrix;
@@ -84,10 +88,20 @@ public abstract class JdbcTestBase {
 
 	@Before
 	public void setup() throws Exception {
+		dataSource = transactionManagerType.getDataSource(productKey);
+
 		String dsInfo = dataSource.toString(); //We can assume a connection has already been made by the URLDataSourceFactory to validate the DataSource/connectivity
 		dataSourceInfo = parseDataSourceInfo(dsInfo);
-		productKey = dataSourceInfo.getProperty(URLDataSourceFactory.PRODUCT_KEY);
+
+		//The datasourceName must be equal to the ProductKey to ensure we're testing the correct datasource
+		assertEquals("DataSourceName does not match ProductKey", productKey,dataSourceInfo.getProperty(URLDataSourceFactory.PRODUCT_KEY));
+
 		testPeekShouldSkipRecordsAlreadyLocked = Boolean.parseBoolean(dataSourceInfo.getProperty(URLDataSourceFactory.TEST_PEEK_KEY));
+		configuration = transactionManagerType.getConfigurationContext(productKey);
+		dbmsSupportFactory = configuration.getBean(IDbmsSupportFactory.class, "dbmsSupportFactory");
+
+		connection = new DelegatingDataSource(dataSource).getConnection();
+		connection.setAutoCommit(true); //Ensure this connection is NOT transactional!
 
 		prepareDatabase();
 	}
@@ -113,7 +127,7 @@ public abstract class JdbcTestBase {
 				liquibase.dropAll();
 			} catch(Exception e) {
 				log.warn("Liquibase failed to drop all objects. Trying to rollback the changesets");
-				liquibase.rollback(liquibase.getChangeSetStatuses(null).size(), null); 
+				liquibase.rollback(liquibase.getChangeSetStatuses(null).size(), null);
 			}
 			liquibase.close();
 		}
@@ -139,9 +153,7 @@ public abstract class JdbcTestBase {
 	}
 
 	public boolean isTablePresent(String tableName) throws Exception {
-		try(Connection connection = getConnection()) {
-			return dbmsSupport.isTablePresent(connection, tableName);
-		}
+		return dbmsSupport.isTablePresent(connection, tableName);
 	}
 
 	public void dropTable(String tableName) throws Exception {
@@ -154,33 +166,29 @@ public abstract class JdbcTestBase {
 	}
 
 	protected void prepareDatabase() throws Exception {
-		connection = getConnection();
 		dbmsSupport = dbmsSupportFactory.getDbmsSupport(dataSource);
 
-		try(Connection connection = getConnection()) {
-			if (dbmsSupport.isTablePresent(connection, "TEMP")) {
-				JdbcUtil.executeStatement(connection, "DROP TABLE TEMP");
-				SQLWarning warnings = connection.getWarnings();
-				if(warnings != null) {
-					log.warn(JdbcUtil.warningsToString(warnings));
-				}
-			}
-			JdbcUtil.executeStatement(connection, 
-					"CREATE TABLE TEMP(TKEY "+dbmsSupport.getNumericKeyFieldType()+ " PRIMARY KEY, TVARCHAR "+dbmsSupport.getTextFieldType()+"(100), TINT INT, TNUMBER NUMERIC(10,5), " +
-					"TDATE DATE, TDATETIME "+dbmsSupport.getTimestampFieldType()+", TBOOLEAN "+dbmsSupport.getBooleanFieldType()+", "+ 
-					"TCLOB "+dbmsSupport.getClobFieldType()+", TBLOB "+dbmsSupport.getBlobFieldType()+")");
+		if (dbmsSupport.isTablePresent(connection, "TEMP")) {
+			JdbcUtil.executeStatement(connection, "DROP TABLE TEMP");
 			SQLWarning warnings = connection.getWarnings();
 			if(warnings != null) {
 				log.warn(JdbcUtil.warningsToString(warnings));
 			}
 		}
+		JdbcUtil.executeStatement(connection,
+				"CREATE TABLE TEMP(TKEY "+dbmsSupport.getNumericKeyFieldType()+ " PRIMARY KEY, TVARCHAR "+dbmsSupport.getTextFieldType()+"(100), TINT INT, TNUMBER NUMERIC(10,5), " +
+				"TDATE DATE, TDATETIME "+dbmsSupport.getTimestampFieldType()+", TBOOLEAN "+dbmsSupport.getBooleanFieldType()+", "+
+				"TCLOB "+dbmsSupport.getClobFieldType()+", TBLOB "+dbmsSupport.getBlobFieldType()+")");
+		SQLWarning warnings = connection.getWarnings();
+		if(warnings != null) {
+			log.warn(JdbcUtil.warningsToString(warnings));
+		}
 	}
 
 	/** Populates all database related fields that are normally wired through Spring */
 	protected void autowire(JdbcFacade jdbcFacade) {
+		configuration.autowireByName(jdbcFacade);
 		jdbcFacade.setDatasourceName(getDataSourceName());
-		jdbcFacade.setDataSourceFactory(transactionManagerType.getDataSourceFactory());
-		jdbcFacade.setDbmsSupportFactory(dbmsSupportFactory);
 	}
 
 	public String getDataSourceName() {
@@ -206,9 +214,9 @@ public abstract class JdbcTestBase {
 		if (queryType==QueryType.SELECT) {
 			if(!selectForUpdate) {
 				return  connection.prepareStatement(context.getQuery());
-			} 
+			}
 			return connection.prepareStatement(context.getQuery(), ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
-		}	
+		}
 		JdbcUtil.executeStatement(connection, context.getQuery());
 		return null;
 	}
