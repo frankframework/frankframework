@@ -99,7 +99,7 @@ public class StringResolver {
 		return substVars(val, props1, props2, propsToHide, delimStart, delimStop, false);
 	}
 
-	public static String substVars(String val, Map props1, Map props2, List<String> propsToHide, String delimStart, String delimStop, boolean displayWithValue) throws IllegalArgumentException {
+	public static String substVars(String val, Map props1, Map props2, List<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName) throws IllegalArgumentException {
 		StringBuilder sb = new StringBuilder();
 		int head = 0;
 		int pointer, tail;
@@ -116,7 +116,7 @@ public class StringResolver {
 				sb.append(val.substring(head, val.length()));
 				return sb.toString();
 			}
-			sb.append(val.substring(head, displayWithValue ? pointer + delimStart.length() : pointer));
+			sb.append(val.substring(head, resolveWithPropertyName ? pointer + delimStart.length() : pointer));
 			tail = indexOfDelimStop(val, pointer, delimStart, delimStop);
 			if (tail == -1) {
 				throw new IllegalArgumentException('[' + val + "] has no closing brace. Opening brace at position [" + pointer + "]");
@@ -126,8 +126,8 @@ public class StringResolver {
 			String key = val.substring(pointer, tail);
 			propertyComposer = key;
 			if (key.contains(delimStart)) {
-				key = substVars(key, props1, props2, displayWithValue);
-				if(key.contains(VALUE_SEPARATOR) && displayWithValue) {
+				key = substVars(key, props1, props2, resolveWithPropertyName);
+				if(key.contains(VALUE_SEPARATOR) && resolveWithPropertyName) {
 					propertyComposer = key;
 					key = extractKeyValue(key, delimStart, delimStop, VALUE_SEPARATOR);
 				}
@@ -186,16 +186,16 @@ public class StringResolver {
 				// the where the properties are
 				// x1=${x2}
 				// x2=p2
-				if(displayWithValue) {
+				if(resolveWithPropertyName) {
 					sb.append(propertyComposer + ":-");
 				}
 				if (!replacement.equals(expression) && !replacement.contains(delimStart + key + delimStop)) {
-					String recursiveReplacement = substVars(replacement, props1, props2, displayWithValue);
+					String recursiveReplacement = substVars(replacement, props1, props2, resolveWithPropertyName);
 					sb.append(recursiveReplacement);
 				} else {
 					sb.append(replacement);
 				}
-				if(displayWithValue) {
+				if(resolveWithPropertyName) {
 					sb.append(delimStop);
 				}
 			}
@@ -213,10 +213,10 @@ public class StringResolver {
 		int delimStartIndex = key.indexOf(delimStart, pointer);
 		if(delimStartIndex != -1) {
 			sb.append(key.substring(pointer, delimStartIndex));
-			int valueSeperator = key.indexOf(defualtValueSeparator, delimStartIndex);
-			if(valueSeperator != -1) {
+			int valueSeparator = key.indexOf(defualtValueSeparator, delimStartIndex);
+			if(valueSeparator != -1) {
 				int delimStopIndex = indexOfDelimStop(key, delimStartIndex, delimStart, delimStop);
-				String valueOfKey = key.substring(valueSeperator+defualtValueSeparator.length(), delimStopIndex);
+				String valueOfKey = key.substring(valueSeparator+defualtValueSeparator.length(), delimStopIndex);
 				if(valueOfKey.contains(delimStart)) {
 					sb.append(extractKeyValue(valueOfKey, delimStart, delimStop, defualtValueSeparator));
 				} else {
@@ -235,16 +235,16 @@ public class StringResolver {
 		return substVars(val, props, null);
 	}
 
-	public static String substVars(String val, Map props, boolean displayWithValue) {
-		return substVars(val, props, null, displayWithValue);
+	public static String substVars(String val, Map props, boolean resolveWithPropertyName) {
+		return substVars(val, props, null, resolveWithPropertyName);
 	}
 
-	public static String substVars(String val, Map props1, Map props2, boolean displayWithValue) throws IllegalArgumentException {
-		return substVars(val, props1, props2, null, DELIM_START, DELIM_STOP, displayWithValue);
+	public static String substVars(String val, Map props1, Map props2, boolean resolveWithPropertyName) throws IllegalArgumentException {
+		return substVars(val, props1, props2, null, DELIM_START, DELIM_STOP, resolveWithPropertyName);
 	}
 
-	public static String substVars(String val, Map props1, Map props2, List<String> propsToHide, boolean displayWithValue) throws IllegalArgumentException {
-		return substVars(val, props1, props2, propsToHide, DELIM_START, DELIM_STOP, displayWithValue);
+	public static String substVars(String val, Map props1, Map props2, List<String> propsToHide, boolean resolveWithPropertyName) throws IllegalArgumentException {
+		return substVars(val, props1, props2, propsToHide, DELIM_START, DELIM_STOP, resolveWithPropertyName);
 	}
 
 	public static boolean needsResolution(String string) {
