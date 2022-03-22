@@ -2964,6 +2964,13 @@ public class TestTool {
 				errorMessage("Could not read file '" + fileName + "'", writers);
 			} else {
 				queueName = step.substring(i + 1, step.lastIndexOf("."));
+				String resolveProperties = properties.getProperty("scenario.resolveProperties");
+
+				if( resolveProperties == null || !resolveProperties.equalsIgnoreCase("false") ){
+					AppConstants appConstants = AppConstants.getInstance();
+					fileContent = StringResolver.substVars(fileContent, appConstants);
+				}
+
 				if (step.endsWith(".read") || (allowReadlineSteps && step.endsWith(".readline"))) {
 					if ("nl.nn.adapterframework.jms.JmsListener".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeJmsListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);	
@@ -2991,13 +2998,6 @@ public class TestTool {
 						errorMessage("Property '" + queueName + ".className' not found or not valid", writers);
 					}
 				} else {
-					String resolveProperties = properties.getProperty("scenario.resolveProperties");
-
-					if( resolveProperties == null || !resolveProperties.equalsIgnoreCase("false") ){
-						AppConstants appConstants = AppConstants.getInstance();
-						fileContent = StringResolver.substVars(fileContent, appConstants);
-					}
-
 					if ("nl.nn.adapterframework.jms.JmsSender".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeJmsSenderWrite(stepDisplayName, queues, writers, queueName, fileContent);
 					} else if ("nl.nn.adapterframework.http.IbisWebServiceSender".equals(properties.get(queueName + ".className"))) {
