@@ -123,8 +123,8 @@ public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupM
 		if (this.containerLog.isDebugEnabled()) this.containerLog.debug("Found roles: " + roles.toString());
 		return roles;
 	}
-		
-	
+
+
 	@Override
 	protected void startInternal() throws LifecycleException {
 		if (log.isTraceEnabled()) {
