@@ -16,7 +16,13 @@ setup() {
 		        echo "create_user completed"
 		        break
 		    else
-		        sleep 1
+		        if [[ $i == 120 ]]
+		        then
+		                echo "WARN: timeout in create_user"
+		                break
+		        else         
+		                sleep 1
+		        fi
 		    fi
 		done
 }
