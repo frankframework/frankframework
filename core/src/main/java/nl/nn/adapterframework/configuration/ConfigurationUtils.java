@@ -266,7 +266,7 @@ public class ConfigurationUtils {
 		return result;
 	}
 
-	public static boolean addConfigToDatabase(IbisContext ibisContext, String dataSourceName, boolean activate_config, boolean automatic_reload, String name, String version, String fileName, InputStream file, String ruser) throws ConfigurationException {
+	public static boolean addConfigToDatabase(IbisContext ibisContext, String dataSourceName, boolean activateConfig, boolean automaticReload, String name, String version, String fileName, InputStream file, String ruser) throws ConfigurationException {
 		String workdataSourceName = dataSourceName;
 		if (StringUtils.isEmpty(workdataSourceName)) {
 			workdataSourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
@@ -287,7 +287,7 @@ public class ConfigurationUtils {
 			conn = qs.getConnection();
 			int updated = 0;
 
-			if (activate_config) {
+			if (activateConfig) {
 				String query = ("UPDATE IBISCONFIG SET ACTIVECONFIG = '"+(qs.getDbmsSupport().getBooleanValue(false))+"' WHERE NAME=?");
 				PreparedStatement stmt = conn.prepareStatement(query);
 				stmt.setString(1, name);
@@ -301,7 +301,9 @@ public class ConfigurationUtils {
 				stmt.execute();
 			}
 
-			String query = ("INSERT INTO IBISCONFIG (NAME, VERSION, FILENAME, CONFIG, CRE_TYDST, RUSER, ACTIVECONFIG, AUTORELOAD) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?)");
+			String activeBool = qs.getDbmsSupport().getBooleanValue(activateConfig);
+			String reloadBool = qs.getDbmsSupport().getBooleanValue(automaticReload);
+			String query = ("INSERT INTO IBISCONFIG (NAME, VERSION, FILENAME, CONFIG, CRE_TYDST, RUSER, ACTIVECONFIG, AUTORELOAD) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, "+activeBool+", "+reloadBool+")");
 			PreparedStatement stmt = conn.prepareStatement(query);
 			stmt.setString(1, name);
 			stmt.setString(2, version);
@@ -312,8 +314,6 @@ public class ConfigurationUtils {
 			} else {
 				stmt.setString(5, ruser);
 			}
-			stmt.setObject(6, qs.getDbmsSupport().getBooleanValue(activate_config));
-			stmt.setObject(7, qs.getDbmsSupport().getBooleanValue(automatic_reload));
 
 			return stmt.executeUpdate() > 0;
 		} catch (SenderException | JdbcException | SQLException e) {
