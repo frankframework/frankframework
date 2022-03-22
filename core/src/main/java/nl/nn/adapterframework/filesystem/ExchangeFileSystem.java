@@ -782,8 +782,9 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	@Override
 	public String getSubject(EmailMessage emailMessage) throws FileSystemException {
 		try {
+			emailMessage.load(new PropertySet(ItemSchema.Subject));
 			return emailMessage.getSubject();
-		} catch (ServiceLocalException e) {
+		} catch (Exception e) {
 			throw new FileSystemException("Could not get Subject", e);
 		}
 	}
@@ -798,7 +799,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		} catch (Exception e) {
 			throw new FileSystemException("Could not get MimeContent", e);
 		}
-
 	}
 
 	@Override
