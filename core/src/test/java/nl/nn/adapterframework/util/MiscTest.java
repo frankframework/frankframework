@@ -603,6 +603,14 @@ public class MiscTest {
 		TestAssertions.assertEqualsIgnoreCRLF(expectedString, Misc.jsonPretty(inputString));
 	}
 	
+	@Test
+	public void testPrettyJsonArray() throws IOException {
+		URL input = TestFileUtils.getTestFileURL("/Misc/minifiedJsonArray.json");
+		String inputString = Misc.resourceToString(input);
+		URL expected = TestFileUtils.getTestFileURL("/Misc/prettifiedJsonArray.json");
+		String expectedString = Misc.resourceToString(expected);
+		TestAssertions.assertEqualsIgnoreCRLF(expectedString, Misc.jsonPretty(inputString));
+	}
 
 	@Test
 	public void testAuthorityInUrlString1() {
