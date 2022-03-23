@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -44,8 +44,8 @@ public class XmlWellFormedChecker extends FixedForwardPipe implements IValidator
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		registerEvent(AbstractXmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT);
-		registerEvent(AbstractXmlValidator.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT);
+		registerEvent(AbstractXmlValidator.ValidationResult.PARSER_ERROR.getEvent());
+		registerEvent(AbstractXmlValidator.ValidationResult.VALID.getEvent());
 	}
 
 
@@ -63,10 +63,10 @@ public class XmlWellFormedChecker extends FixedForwardPipe implements IValidator
 			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
 		}
 		if (XmlUtils.isWellFormed(input, messageRoot)) {
-			throwEvent(AbstractXmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT);
+			throwEvent(AbstractXmlValidator.ValidationResult.VALID.getEvent());
 			return new PipeRunResult(getSuccessForward(), message);
 		}
-		throwEvent(AbstractXmlValidator.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT);
+		throwEvent(AbstractXmlValidator.ValidationResult.PARSER_ERROR.getEvent());
 		PipeForward forward = findForward("parserError");
 		if (forward==null) {
 			forward = findForward("failure");

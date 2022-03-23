@@ -1,5 +1,5 @@
 /*
-   Copyright 2017, 2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2017, 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -48,6 +48,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.document.DocumentFormat;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.validation.AbstractXmlValidator.ValidationResult;
 import nl.nn.adapterframework.validation.RootValidations;
 import nl.nn.adapterframework.validation.ValidationContext;
 import nl.nn.adapterframework.validation.XmlValidatorException;
@@ -63,7 +64,7 @@ import nl.nn.adapterframework.xml.XmlWriter;
 public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestination {
 
 	public static final String INPUT_FORMAT_SESSION_KEY_PREFIX = "Json2XmlValidator.inputformat ";
-	
+
 	private @Getter boolean compactJsonArrays=true;
 	private @Getter boolean strictJsonArraySyntax=false;
 	private @Getter boolean jsonWithRootElements=false;
@@ -82,7 +83,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	{
 		setSoapNamespace("");
 	}
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -94,7 +95,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			setInputFormatSessionKey(INPUT_FORMAT_SESSION_KEY_PREFIX+getName());
 		}
 	}
-	
+
 	public DocumentFormat getOutputFormat(PipeLineSession session, boolean responseMode) throws PipeRunException {
 		DocumentFormat format=null;
 		try {
@@ -122,7 +123,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		}
 		return format;
 	}
-	
+
 	protected void storeInputFormat(DocumentFormat format, PipeLineSession session, boolean responseMode) {
 		if (!responseMode) {
 			String sessionKey = getInputFormatSessionKey();
@@ -132,9 +133,9 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			}
 		}
 	}
-	
+
 	/**
-	 * Validate the XML or JSON input, and align/convert it into JSON or XML according to a XML-Schema. 
+	 * Validate the XML or JSON input, and align/convert it into JSON or XML according to a XML-Schema.
 	 * The format of the input message (XML or JSON) is automatically detected.
 	 * @throws PipeRunException when <code>isThrowException</code> is true and a validationerror occurred.
 	 */
@@ -188,7 +189,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			throw new PipeRunException(this, "Cannot align JSON", e);
 		}
 	}
-	
+
 	protected RootValidations getJsonRootValidations(boolean responseMode) {
 		if (isValidateJsonToRootElementOnly()) {
 			String root=getMessageRoot(responseMode);
@@ -196,15 +197,15 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 				return null;
 			}
 			return new RootValidations(root);
-		} 
+		}
 		return getRootValidations(responseMode);
 	}
-	
+
 	protected PipeRunResult alignXml2Json(String messageToValidate, PipeLineSession session, boolean responseMode) throws XmlValidatorException, PipeRunException, ConfigurationException {
 
 		ValidationContext context = validator.createValidationContext(session, getJsonRootValidations(responseMode), getInvalidRootNamespaces());
 		ValidatorHandler validatorHandler = validator.getValidatorHandler(session,context);
-		
+
 		// Make sure to use Xerces' ValidatorHandlerImpl, otherwise casting below will fail.
 		XmlAligner aligner = new XmlAligner(validatorHandler);
 		Xml2Json xml2json = new Xml2Json(aligner, isCompactJsonArrays(), !isJsonWithRootElements());
@@ -214,17 +215,17 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		if (StringUtils.isNotEmpty(getRootElementSessionKey())) {
 			handler = new RootElementToSessionKeyFilter(session, getRootElementSessionKey(), getRootNamespaceSessionKey(), handler);
 		}
-		
+
 		aligner.setContentHandler(handler);
 		aligner.setErrorHandler(context.getErrorHandler());
-		
-		String resultEvent= validator.validate(messageToValidate, session, getLogPrefix(session), validatorHandler, xml2json, context);
+
+		ValidationResult validationResult= validator.validate(messageToValidate, session, getLogPrefix(session), validatorHandler, xml2json, context);
 		String out=xml2json.toString();
-		PipeForward forward=determineForward(resultEvent, session, responseMode);
+		PipeForward forward=determineForward(validationResult, session, responseMode);
 		PipeRunResult result=new PipeRunResult(forward,out);
 		return result;
 	}
-	
+
 	protected PipeRunResult alignJson(String messageToValidate, PipeLineSession session, boolean responseMode) throws PipeRunException, XmlValidatorException {
 
 		ValidationContext context;
@@ -235,7 +236,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		} catch (ConfigurationException e) {
 			throw new PipeRunException(this,"Cannot create ValidationContext",e);
 		}
-		String resultEvent;
+		ValidationResult validationResult;
 		String out=null;
 		try {
 			Json2Xml aligner = new Json2Xml(validatorHandler, context.getXsModels(), isCompactJsonArrays(), getMessageRoot(responseMode), isStrictJsonArraySyntax());
@@ -260,8 +261,8 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 				aligner.setOverrideValues(parametervalues);
 			}
 			JsonStructure jsonStructure = Json.createReader(new StringReader(messageToValidate)).read();
-	
-			// cannot build filter chain as usual backwardly, because it ends differently. 
+
+			// cannot build filter chain as usual backwardly, because it ends differently.
 			// This will be fixed once an OutputStream can be provided to Xml2Json
 			XMLFilterImpl sourceFilter = aligner;
 			if (StringUtils.isNotEmpty(getRootElementSessionKey())) {
@@ -269,7 +270,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 				aligner.setContentHandler(storeRootFilter);
 				sourceFilter=storeRootFilter;
 			}
-			
+
 			if (getOutputFormat(session,responseMode) == DocumentFormat.JSON) {
 				Xml2Json xml2json = new Xml2Json(aligner, isCompactJsonArrays(), !isJsonWithRootElements());
 				sourceFilter.setContentHandler(xml2json);
@@ -287,10 +288,10 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 				out = xmlWriter.toString();
 			}
 		} catch (Exception e) {
-			resultEvent= validator.finalizeValidation(context, session, e);
+			validationResult= validator.finalizeValidation(context, session, e);
 		}
-		resultEvent= validator.finalizeValidation(context, session, null);
-		PipeForward forward=determineForward(resultEvent, session, responseMode);
+		validationResult= validator.finalizeValidation(context, session, null);
+		PipeForward forward=determineForward(validationResult, session, responseMode);
 		PipeRunResult result=new PipeRunResult(forward,out);
 		return result;
 	}
@@ -303,7 +304,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		if (StringUtils.isNotEmpty(getTargetNamespace())) {
 			namespace = getTargetNamespace();
 		} else {
-			if (StringUtils.isNotEmpty(getSchemaLocation())) { 
+			if (StringUtils.isNotEmpty(getSchemaLocation())) {
 				namespace = getSchemaLocation().split(" ")[0];
 			}
 		}
@@ -324,14 +325,14 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		}
 		return xml.substring(0, elementEnd)+" xmlns=\""+namespace+"\""+xml.substring(elementEnd);
 	}
-	
+
 	public JsonStructure createRequestJsonSchema() {
 		return createJsonSchema(getRoot());
 	}
 	public JsonStructure createResponseJsonSchema() {
 		return createJsonSchema(getResponseRoot());
  	}
-	
+
 	public JsonObject createJsonSchemaDefinitions(String definitionsPath) {
 		List<XSModel> models = validator.getXSModels();
 		XmlTypeToJsonSchemaConverter converter = new XmlTypeToJsonSchemaConverter(models, isCompactJsonArrays(), !isJsonWithRootElements(), getSchemaLocation(), definitionsPath);
@@ -347,8 +348,8 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		JsonStructure jsonschema = converter.createJsonSchema(elementName, namespace);
 		return jsonschema;
 	}
-	
-	
+
+
 
 	@Override
 	public String getPhysicalDestinationName() {

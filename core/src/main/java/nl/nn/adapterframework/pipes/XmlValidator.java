@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015-2017 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2015-2017 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -56,9 +56,10 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.TransformerPool;
-import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
+import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.validation.AbstractXmlValidator;
+import nl.nn.adapterframework.validation.AbstractXmlValidator.ValidationResult;
 import nl.nn.adapterframework.validation.RootValidation;
 import nl.nn.adapterframework.validation.RootValidations;
 import nl.nn.adapterframework.validation.Schema;
@@ -76,8 +77,10 @@ import nl.nn.adapterframework.xml.RootElementToSessionKeyFilter;
  *
  * @ff.forward parserError a parser exception occurred, probably caused by non-well-formed XML. If not specified, <code>failure</code> is used in such a case.
  * @ff.forward failure The document is not valid according to the configured schema.
+ * @ff.forward warnings warnings occurred. If not specified, <code>success</code> is used.
  * @ff.forward outputParserError a <code>parserError</code> when validating a response. If not specified, <code>parserError</code> is used.
  * @ff.forward outputFailure a <code>failure</code> when validating a response. If not specified, <code>failure</code> is used.
+ * @ff.forward outputWarnings warnings occurred when validating a response. If not specified, <code>warnings</code> is used.
  * 
  * @author Johan Verrips IOS
  * @author Jaco de Groot
@@ -183,9 +186,10 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			}
 
 			validator.configure(getLogPrefix(null));
-			registerEvent(AbstractXmlValidator.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT);
-			registerEvent(AbstractXmlValidator.XML_VALIDATOR_NOT_VALID_MONITOR_EVENT);
-			registerEvent(AbstractXmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT);
+			registerEvent(AbstractXmlValidator.ValidationResult.PARSER_ERROR.getEvent());
+			registerEvent(AbstractXmlValidator.ValidationResult.NOT_VALID.getEvent());
+			registerEvent(AbstractXmlValidator.ValidationResult.VALID_WITH_WARNINGS.getEvent());
+			registerEvent(AbstractXmlValidator.ValidationResult.VALID.getEvent());
 		} catch(ConfigurationException e) {
 			configurationException = e;
 			throw e;
@@ -280,7 +284,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		if (storeRootFilter!=null) {
 			validatorHandler.setContentHandler(storeRootFilter);
 		}
-		String resultEvent = validator.validate(messageToValidate, session, getLogPrefix(session), validatorHandler, storeRootFilter, context);
+		ValidationResult resultEvent = validator.validate(messageToValidate, session, getLogPrefix(session), validatorHandler, storeRootFilter, context);
 		return determineForward(resultEvent, session, responseMode);
 	}
 
@@ -288,13 +292,25 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return new RootValidations(messageRoot);
 	}
 
-	protected PipeForward determineForward(String resultEvent, PipeLineSession session, boolean responseMode) throws PipeRunException {
-		throwEvent(resultEvent);
-		if (AbstractXmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT.equals(resultEvent)) {
+	protected PipeForward determineForward(ValidationResult validationResult, PipeLineSession session, boolean responseMode) throws PipeRunException {
+		throwEvent(validationResult.getEvent());
+		PipeForward forward = null;
+		if (validationResult == AbstractXmlValidator.ValidationResult.VALID_WITH_WARNINGS) {
+			if (responseMode) {
+				forward = findForward("outputWarnings");
+			}
+			if (forward == null) {
+				forward = findForward("warnings");
+			}
+			if (forward == null) {
+				forward = getSuccessForward();
+			}
+			return forward;
+		}
+		if (validationResult == AbstractXmlValidator.ValidationResult.VALID) {
 			return getSuccessForward();
 		}
-		PipeForward forward = null;
-		if (AbstractXmlValidator.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT.equals(resultEvent)) {
+		if (validationResult == AbstractXmlValidator.ValidationResult.PARSER_ERROR) {
 			if (responseMode) {
 				forward = findForward("outputParserError");
 			}
@@ -302,6 +318,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 				forward = findForward("parserError");
 			}
 		}
+		// case validationResult == AbstractXmlValidator.ValidationResult.NOT_VALID
 		if (forward == null) {
 			if (responseMode) {
 				forward = findForward("outputFailure");

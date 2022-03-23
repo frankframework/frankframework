@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2015, 2016 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.validation.XmlValidatorErrorHandler.ReasonType;
 
 /**
  * baseclass for validating input message against a XML-Schema.
@@ -59,10 +60,24 @@ import nl.nn.adapterframework.util.XmlUtils;
 public abstract class AbstractXmlValidator implements IConfigurationAware {
 	protected static Logger log = LogUtil.getLogger(AbstractXmlValidator.class);
 
-	public static final String XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT = "Invalid XML: parser error";
-	public static final String XML_VALIDATOR_NOT_VALID_MONITOR_EVENT = "Invalid XML: does not comply to XSD";
-	public static final String XML_VALIDATOR_VALID_MONITOR_EVENT = "valid XML";
+//	public static final String XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT = "Invalid XML: parser error";
+//	public static final String XML_VALIDATOR_NOT_VALID_MONITOR_EVENT = "Invalid XML: does not comply to XSD";
+//	public static final String XML_VALIDATOR_VALID_MONITOR_EVENT = "valid XML";
+//	public static final String XML_VALIDATOR_VALID_WITH_WARNINGS_MONITOR_EVENT = "valid XML with warnings";
 
+	public enum ValidationResult {
+		PARSER_ERROR("Invalid XML: parser error"),
+		NOT_VALID("Invalid XML: does not comply to XSD"),
+		VALID_WITH_WARNINGS("valid XML with warnings"),
+		VALID("valid XML");
+		
+		private @Getter String event;
+		
+		private ValidationResult(String event) {
+			this.event = event;
+		}
+	}
+	
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
@@ -121,11 +136,11 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 		}
 	}
 
-	protected String handleFailures(XmlValidatorErrorHandler xmlValidatorErrorHandler, PipeLineSession session, String event, Throwable t) throws XmlValidatorException {
+	protected ValidationResult handleFailures(XmlValidatorErrorHandler xmlValidatorErrorHandler, PipeLineSession session, ValidationResult result, Throwable t) throws XmlValidatorException {
 		// A SAXParseException will already be reported by the parser to the
 		// XmlValidatorErrorHandler through the ErrorHandler interface.
 		if (t != null && !(t instanceof SAXParseException)) {
-			xmlValidatorErrorHandler.addReason(t);
+			xmlValidatorErrorHandler.addReason(t, ReasonType.ERROR);
 		}
 		String fullReasons = xmlValidatorErrorHandler.getReasons();
 		if (StringUtils.isNotEmpty(getReasonSessionKey())) {
@@ -140,7 +155,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 			throw new XmlValidatorException(fullReasons, t);
 		}
 		log.warn(getLogPrefix(session) + "validation failed: " + fullReasons, t);
-		return event;
+		return result;
 	}
 
 	public ValidationContext createValidationContext(PipeLineSession session, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws ConfigurationException, PipeRunException {
@@ -163,16 +178,16 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 	/**
 	 * @param input   the XML string to validate
 	 * @param session a {@link PipeLineSession pipeLineSession}
-	 * @return MonitorEvent declared in{@link AbstractXmlValidator}
+	 * @return ValidationResult
 	 * @throws XmlValidatorException when <code>isThrowException</code> is true and a validationerror occurred.
 	 */
-	public String validate(Object input, PipeLineSession session, String logPrefix, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws XmlValidatorException, PipeRunException, ConfigurationException {
+	public ValidationResult validate(Object input, PipeLineSession session, String logPrefix, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws XmlValidatorException, PipeRunException, ConfigurationException {
 		ValidationContext context = createValidationContext(session, rootValidations, invalidRootNamespaces);
 		ValidatorHandler validatorHandler = getValidatorHandler(session, context);
 		return validate(input, session, logPrefix, validatorHandler, null, context);
 	}
 
-	public String validate(Object input, PipeLineSession session, String logPrefix, ValidatorHandler validatorHandler, XMLFilterImpl filter, ValidationContext context) throws XmlValidatorException, PipeRunException, ConfigurationException {
+	public ValidationResult validate(Object input, PipeLineSession session, String logPrefix, ValidatorHandler validatorHandler, XMLFilterImpl filter, ValidationContext context) throws XmlValidatorException, PipeRunException, ConfigurationException {
 
 		if (filter != null) {
 			// If a filter is present, connect its output to the context.contentHandler.
@@ -189,7 +204,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 		return validate(is, validatorHandler, session, context);
 	}
 
-	public String validate(InputSource inputSource, ValidatorHandler validatorHandler, PipeLineSession session, ValidationContext context) throws XmlValidatorException {
+	public ValidationResult validate(InputSource inputSource, ValidatorHandler validatorHandler, PipeLineSession session, ValidationContext context) throws XmlValidatorException {
 		try {
 			XmlUtils.parseXml(inputSource, validatorHandler, context.getErrorHandler());
 		} catch (IOException | SAXException e) {
@@ -207,14 +222,17 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 	 * @return the result event, e.g. 'valid XML' or 'Invalid XML'
 	 * @throws XmlValidatorException, when configured to do so
 	 */
-	public String finalizeValidation(ValidationContext context, PipeLineSession session, Throwable t) throws XmlValidatorException {
+	public ValidationResult finalizeValidation(ValidationContext context, PipeLineSession session, Throwable t) throws XmlValidatorException {
 		if (t != null) {
-			return handleFailures(context.getErrorHandler(), session, XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT, t);
+			return handleFailures(context.getErrorHandler(), session, ValidationResult.PARSER_ERROR, t);
 		}
-		if (context.getErrorHandler().hasErrorOccured()) {
-			return handleFailures(context.getErrorHandler(), session, XML_VALIDATOR_NOT_VALID_MONITOR_EVENT, null);
+		if (context.getErrorHandler().isErrorOccurred()) {
+			return handleFailures(context.getErrorHandler(), session, ValidationResult.NOT_VALID, null);
 		}
-		return XML_VALIDATOR_VALID_MONITOR_EVENT;
+		if (context.getErrorHandler().isWarningsOccurred()) {
+			return handleFailures(context.getErrorHandler(), session, ValidationResult.VALID_WITH_WARNINGS, null);
+		}
+		return ValidationResult.VALID;
 	}
 
 
