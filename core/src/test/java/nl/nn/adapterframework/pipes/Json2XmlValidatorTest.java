@@ -21,7 +21,6 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.document.DocumentFormat;
-import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
@@ -452,14 +451,12 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 
 		assertEquals(expectedForward, prr.getPipeForward().getName());
 		if (outputFormat == DocumentFormat.XML) {
-			MatchUtils.assertXmlEquals("recovered result", expectedResult, prr.getResult().asString(), true);
+			assertXmlEquals("recovered result", expectedResult, prr.getResult().asString(), true);
 		} else {
 			assertEquals(expectedResult, prr.getResult().asString());
 		}
 
 		assertThat((String)session.get("reasons"), containsString(expectedErrorMessage));
-
-		System.out.println("XmlReasons:"+session.get("XmlReasons"));
 	}
 
 	@Test

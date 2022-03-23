@@ -58,7 +58,6 @@ public class TestJson2Xml extends AlignTestBase {
 				e.printStackTrace();
 				fail("expected reason ["+expectedFailureReason+"] in msg ["+msg+"]");
 			}
-			System.out.println("resulting xml: "+xmlWriter.toString());
 		}
 	}
 
