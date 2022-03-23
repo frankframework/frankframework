@@ -102,6 +102,16 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 				if(searchTextLC) {
 					if(JSON.stringify(obj).replace(/"/g, '').toLowerCase().indexOf(searchTextLC) > -1) {
 						r[element] = obj;
+					} else { // search in parent
+						let elementParent = elements[element].parent;
+						while(elementParent){
+							let parentObj = elements[elementParent];
+							if(JSON.stringify(parentObj).replace(/"/g, '').toLowerCase().indexOf(searchTextLC) > -1) {
+								r[element] = obj;
+								break;
+							}
+							elementParent = elements[elementParent].parent;
+						}
 					}
 				} else {
 					r[element] = obj;
