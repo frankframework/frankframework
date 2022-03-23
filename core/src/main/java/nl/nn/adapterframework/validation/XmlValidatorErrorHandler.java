@@ -94,7 +94,11 @@ public class XmlValidatorErrorHandler implements ErrorHandler {
 		String location = null;
 		if (t instanceof SAXParseException) {
 			SAXParseException spe = (SAXParseException)t;
-			location = "at ("+spe.getLineNumber()+ ","+spe.getColumnNumber()+")";
+			int lineNumber = spe.getLineNumber();
+			int columnNumber = spe.getColumnNumber();
+			if (lineNumber>=0 && columnNumber>=0) {
+				location = "at ("+lineNumber+ ","+columnNumber+")";
+			}
 		}
 		String message;
 		if (t instanceof SAXException) {

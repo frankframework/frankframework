@@ -208,6 +208,8 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 
 		// Make sure to use Xerces' ValidatorHandlerImpl, otherwise casting below will fail.
 		XmlAligner aligner = new XmlAligner(validatorHandler);
+		//aligner.setIgnoreUndeclaredElements(isIgnoreUndeclaredElements()); // cannot ignore XML Schema Validation failure in this case, currently
+		aligner.setRecoverFromRecoverableErrors(true);
 		Xml2Json xml2json = new Xml2Json(aligner, isCompactJsonArrays(), !isJsonWithRootElements());
 
 		XMLFilterImpl handler = xml2json;
@@ -247,6 +249,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			aligner.setErrorHandler(context.getErrorHandler());
 			aligner.setFailOnWildcards(isFailOnWildcards());
 			aligner.setIgnoreUndeclaredElements(isIgnoreUndeclaredElements());
+			aligner.setRecoverFromRecoverableErrors(true);
 			ParameterList parameterList = getParameterList();
 			if (parameterList!=null) {
 				Map<String,Object> parametervalues = null;
