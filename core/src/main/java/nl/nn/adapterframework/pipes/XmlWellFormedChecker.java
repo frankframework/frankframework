@@ -18,15 +18,15 @@ package nl.nn.adapterframework.pipes;
 import java.io.IOException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.validation.AbstractXmlValidator;
+import nl.nn.adapterframework.validation.AbstractXmlValidator.ValidationResult;
 
 /**
  *<code>Pipe</code> that checks the well-formedness of the input message.
@@ -44,8 +44,8 @@ public class XmlWellFormedChecker extends FixedForwardPipe implements IValidator
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		registerEvent(AbstractXmlValidator.ValidationResult.PARSER_ERROR.getEvent());
-		registerEvent(AbstractXmlValidator.ValidationResult.VALID.getEvent());
+		registerEvent(ValidationResult.PARSER_ERROR.getEvent());
+		registerEvent(ValidationResult.VALID.getEvent());
 	}
 
 
@@ -63,10 +63,10 @@ public class XmlWellFormedChecker extends FixedForwardPipe implements IValidator
 			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
 		}
 		if (XmlUtils.isWellFormed(input, messageRoot)) {
-			throwEvent(AbstractXmlValidator.ValidationResult.VALID.getEvent());
+			throwEvent(ValidationResult.VALID.getEvent());
 			return new PipeRunResult(getSuccessForward(), message);
 		}
-		throwEvent(AbstractXmlValidator.ValidationResult.PARSER_ERROR.getEvent());
+		throwEvent(ValidationResult.PARSER_ERROR.getEvent());
 		PipeForward forward = findForward("parserError");
 		if (forward==null) {
 			forward = findForward("failure");

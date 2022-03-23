@@ -32,7 +32,7 @@ public class XmlValidatorErrorHandler implements ErrorHandler {
 	private @Getter String reasons;
 	private final XmlValidatorContentHandler xmlValidatorContentHandler;
 	private XmlBuilder xmlReasons = new XmlBuilder("reasons");
-	
+
 	public enum ReasonType {
 		WARNING,
 		ERROR;
@@ -96,7 +96,7 @@ public class XmlValidatorErrorHandler implements ErrorHandler {
 			SAXParseException spe = (SAXParseException)t;
 			int lineNumber = spe.getLineNumber();
 			int columnNumber = spe.getColumnNumber();
-			if (lineNumber>=0 && columnNumber>=0) {
+			if (lineNumber>=0 || columnNumber>=0) {
 				location = "at ("+lineNumber+ ","+columnNumber+")";
 			}
 		}

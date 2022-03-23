@@ -186,10 +186,10 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			}
 
 			validator.configure(getLogPrefix(null));
-			registerEvent(AbstractXmlValidator.ValidationResult.PARSER_ERROR.getEvent());
-			registerEvent(AbstractXmlValidator.ValidationResult.NOT_VALID.getEvent());
-			registerEvent(AbstractXmlValidator.ValidationResult.VALID_WITH_WARNINGS.getEvent());
-			registerEvent(AbstractXmlValidator.ValidationResult.VALID.getEvent());
+			registerEvent(ValidationResult.PARSER_ERROR.getEvent());
+			registerEvent(ValidationResult.NOT_VALID.getEvent());
+			registerEvent(ValidationResult.VALID_WITH_WARNINGS.getEvent());
+			registerEvent(ValidationResult.VALID.getEvent());
 		} catch(ConfigurationException e) {
 			configurationException = e;
 			throw e;
@@ -295,7 +295,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	protected PipeForward determineForward(ValidationResult validationResult, PipeLineSession session, boolean responseMode) throws PipeRunException {
 		throwEvent(validationResult.getEvent());
 		PipeForward forward = null;
-		if (validationResult == AbstractXmlValidator.ValidationResult.VALID_WITH_WARNINGS) {
+		if (validationResult == ValidationResult.VALID_WITH_WARNINGS) {
 			if (responseMode) {
 				forward = findForward("outputWarnings");
 			}
@@ -307,10 +307,10 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			}
 			return forward;
 		}
-		if (validationResult == AbstractXmlValidator.ValidationResult.VALID) {
+		if (validationResult == ValidationResult.VALID) {
 			return getSuccessForward();
 		}
-		if (validationResult == AbstractXmlValidator.ValidationResult.PARSER_ERROR) {
+		if (validationResult == ValidationResult.PARSER_ERROR) {
 			if (responseMode) {
 				forward = findForward("outputParserError");
 			}
@@ -318,7 +318,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 				forward = findForward("parserError");
 			}
 		}
-		// case validationResult == AbstractXmlValidator.ValidationResult.NOT_VALID
+		// case validationResult == ValidationResult.NOT_VALID
 		if (forward == null) {
 			if (responseMode) {
 				forward = findForward("outputFailure");

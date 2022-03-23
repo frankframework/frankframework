@@ -60,24 +60,19 @@ import nl.nn.adapterframework.validation.XmlValidatorErrorHandler.ReasonType;
 public abstract class AbstractXmlValidator implements IConfigurationAware {
 	protected static Logger log = LogUtil.getLogger(AbstractXmlValidator.class);
 
-//	public static final String XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT = "Invalid XML: parser error";
-//	public static final String XML_VALIDATOR_NOT_VALID_MONITOR_EVENT = "Invalid XML: does not comply to XSD";
-//	public static final String XML_VALIDATOR_VALID_MONITOR_EVENT = "valid XML";
-//	public static final String XML_VALIDATOR_VALID_WITH_WARNINGS_MONITOR_EVENT = "valid XML with warnings";
-
 	public enum ValidationResult {
 		PARSER_ERROR("Invalid XML: parser error"),
 		NOT_VALID("Invalid XML: does not comply to XSD"),
 		VALID_WITH_WARNINGS("valid XML with warnings"),
 		VALID("valid XML");
-		
+
 		private @Getter String event;
-		
+
 		private ValidationResult(String event) {
 			this.event = event;
 		}
 	}
-	
+
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
@@ -98,7 +93,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 	protected Boolean ignoreUnknownNamespaces;
 	private boolean ignoreCaching = false;
 	private String xmlSchemaVersion=null;
-	
+
 	protected SchemasProvider schemasProvider;
 
 	private boolean started = false;
