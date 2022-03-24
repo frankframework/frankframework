@@ -95,12 +95,19 @@ public abstract class ConnectedFileSystemBase<F,C> extends FileSystemBase<F> {
 	 */
 	protected C getConnection() throws FileSystemException {
 		try {
-			return isPooledConnection() ? connectionPool!=null ? connectionPool.borrowObject() : null : globalConnection;
+			return isPooledConnection()
+					? connectionPool!=null ? connectionPool.borrowObject() : null // connectionPool can be null if getConnection() is called before open() or after close() is called. This happens in the adapter status page when the adapter is stopped.
+					: globalConnection;
 		} catch (Exception e) {
 			throw new FileSystemException("Cannot get connection from pool of "+ClassUtils.nameOf(this), e);
 		}
 	}
 
+	/**
+	 * Release the connection, return it to the pool.
+	 * This method should not be called if invalidateConnection() has been called with the same connection, so the typical use case
+	 * cannot be in a finally-clause after an exception-clause.
+	 */
 	protected void releaseConnection(C connection) {
 		if (isPooledConnection()) {
 			try {
