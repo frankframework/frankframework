@@ -112,14 +112,14 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 			PipeForward forward=result.getPipeForward();
 			evaluateResult(forward.getName(), session, null, expectedFailureReasons);
 		} catch (Exception e) {
-			evaluateResult(ValidationResult.NOT_VALID, session, e, expectedFailureReasons);
-			return ValidationResult.NOT_VALID;
+			evaluateResult(ValidationResult.INVALID, session, e, expectedFailureReasons);
+			return ValidationResult.INVALID;
 		}
 		return null;
 	}
 
 	public void evaluateResult(String forwardName, PipeLineSession session, Exception e, String[] expectedFailureReasons) {
-		ValidationResult validationResult = forwardName.equals("success") ? ValidationResult.VALID : ValidationResult.NOT_VALID;
+		ValidationResult validationResult = forwardName.equals("success") ? ValidationResult.VALID : ValidationResult.INVALID;
 		evaluateResult(validationResult, session, e, expectedFailureReasons);
 	}
 
