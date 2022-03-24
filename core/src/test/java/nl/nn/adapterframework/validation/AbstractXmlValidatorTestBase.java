@@ -54,7 +54,7 @@ public abstract class AbstractXmlValidatorTestBase extends XmlValidatorTestBase 
 			return result;
 		} catch (Exception e) {
 			evaluateResult(null, session, e, expectedFailureReasons);
-			return ValidationResult.NOT_VALID;
+			return ValidationResult.INVALID;
 		}
 	}
 }

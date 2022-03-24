@@ -66,7 +66,6 @@ public class XmlAligner extends XMLFilterImpl {
 
 	private @Setter PSVIProvider psviProvider;
 	private boolean indent=true;
-	private @Getter @Setter boolean recoverFromRecoverableErrors=false;
 	private @Getter @Setter boolean ignoreUndeclaredElements=false;
 
 	private @Getter AlignmentContext context;
@@ -389,9 +388,9 @@ public class XmlAligner extends XMLFilterImpl {
 	}
 
 	public void handleRecoverableError(String message, boolean ignoreFlag) throws SAXParseException {
+		SAXParseException saxException = new SAXParseException(message, getDocumentLocator());
 		ErrorHandler errorHandler = getErrorHandler();
 		if (errorHandler!=null) {
-			SAXParseException saxException = new SAXParseException(message, getDocumentLocator());
 			try {
 				if (ignoreFlag) {
 					errorHandler.warning(saxException);
@@ -403,6 +402,6 @@ public class XmlAligner extends XMLFilterImpl {
 				log.warn("exception handling error", e);
 			}
 		}
-		throw new SAXParseException(message, getDocumentLocator());
+		throw saxException;
 	}
 }

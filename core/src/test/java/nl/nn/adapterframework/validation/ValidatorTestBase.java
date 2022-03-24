@@ -28,7 +28,7 @@ import nl.nn.adapterframework.validation.AbstractXmlValidator.ValidationResult;
 public abstract class ValidatorTestBase {
 	protected Logger log = LogUtil.getLogger(this);
 
-	public String MSG_INVALID_CONTENT="Failed"; // Travis does not see the 'Invalid content' message 
+	public String MSG_INVALID_CONTENT="Failed"; // Travis does not see the 'Invalid content' message
 	public String MSG_CANNOT_FIND_DECLARATION="Cannot find the declaration of element";
 	public String MSG_UNKNOWN_NAMESPACE="Unknown namespace";
 	public String MSG_SCHEMA_NOT_FOUND="Cannot find";
@@ -143,14 +143,14 @@ public abstract class ValidatorTestBase {
 			// expected invalid XML
 			if (failureReason != null) {
 				if (e == null) {
-					assertEquals(ValidationResult.NOT_VALID, result);
+					assertEquals(ValidationResult.INVALID, result);
 				}
 				checkFailureReasons(failureReason, "failure reason", expectedFailureReasons);
 			} else {
 				if (e != null) {
 					checkFailureReasons(e.getMessage(), "exception message", expectedFailureReasons);
 				} else {
-					assertEquals(ValidationResult.NOT_VALID, result);
+					assertEquals(ValidationResult.INVALID, result);
 					checkFailureReasons("", "failure reason", expectedFailureReasons);
 				}
 			}

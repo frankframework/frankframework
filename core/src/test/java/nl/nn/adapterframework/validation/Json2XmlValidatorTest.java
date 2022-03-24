@@ -114,7 +114,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 				event = ValidationResult.VALID;
 			} else {
 				if (prr.getPipeForward().getName().equals("failure")) {
-					event = ValidationResult.NOT_VALID;
+					event = ValidationResult.INVALID;
 				} else if (prr.getPipeForward().getName().equals("warnings")) {
 					event = ValidationResult.VALID_WITH_WARNINGS;
 				} else if (prr.getPipeForward().getName().equals("parserError")) {
@@ -138,7 +138,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 
 			return event;
 		} catch (PipeRunException pre) {
-			evaluateResult(ValidationResult.NOT_VALID, session, pre, expectedFailureReasons);
+			evaluateResult(ValidationResult.INVALID, session, pre, expectedFailureReasons);
 		}
 		return null;
 	}
