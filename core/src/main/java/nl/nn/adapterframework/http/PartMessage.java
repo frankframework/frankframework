@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,13 +15,10 @@
 */
 package nl.nn.adapterframework.http;
 
-import java.nio.charset.UnsupportedCharsetException;
-
 import javax.mail.MessagingException;
 import javax.mail.Part;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.ParseException;
 import org.apache.http.entity.ContentType;
 
 import nl.nn.adapterframework.stream.Message;
@@ -44,7 +41,7 @@ public class PartMessage extends Message {
 				if(contentType.getCharset() != null) {
 					this.setCharset(contentType.getCharset().name());
 				}
-			} catch (UnsupportedCharsetException | ParseException | MessagingException e) {
+			} catch (Exception e) {
 				log.warn("Could not determine charset", e);
 			}
 		}
