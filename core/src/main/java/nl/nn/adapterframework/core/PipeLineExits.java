@@ -20,6 +20,9 @@ import java.util.List;
 
 import lombok.Getter;
 
+/**
+ * If no exits are specified, a default one is created with path="READY" and state="SUCCESS".
+ */
 public class PipeLineExits {
 
 	private @Getter List<PipeLineExit> exits = new LinkedList<>();
