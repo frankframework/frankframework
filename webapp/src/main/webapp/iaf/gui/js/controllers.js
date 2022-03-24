@@ -2053,6 +2053,7 @@ angular.module('iaf.beheerconsole')
 	function updateLogInformation() {
 		Api.Get(logURL+"/settings", function(data) {
 			$scope.loggers = data.loggers;
+			$scope.loggersLength = Object.keys(data.loggers).length;
 			$scope.definitions = data.definitions;
 		}, function(data) {
 			console.error(data);
