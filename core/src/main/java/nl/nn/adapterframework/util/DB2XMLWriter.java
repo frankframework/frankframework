@@ -128,7 +128,7 @@ public class DB2XMLWriter {
 			try {
 				ResultSetMetaData rsmeta = rs.getMetaData();
 				if (includeFieldDefinition) {
-					addFieldDefinitions(root, dbmsSupport, rs, rsmeta);
+					addFieldDefinitions(root, rs, rsmeta);
 				}
 
 				//----------------------------------------
@@ -147,24 +147,24 @@ public class DB2XMLWriter {
 		}
 	}
 
-	public static String getFieldDefinitions(IDbmsSupport dbmsSupport, ResultSet rs) throws SAXException, SQLException {
+	public static String getFieldDefinitions(ResultSet rs) throws SAXException, SQLException {
 		XmlWriter writer = new XmlWriter();
-		addFieldDefinitions(dbmsSupport, rs, writer);
+		addFieldDefinitions(rs, writer);
 		return writer.toString();
 	}
-	public static void addFieldDefinitions(IDbmsSupport dbmsSupport, ResultSet rs, ContentHandler handler) throws SAXException, SQLException {
+	public static void addFieldDefinitions(ResultSet rs, ContentHandler handler) throws SAXException, SQLException {
 		ResultSetMetaData rsmeta = rs.getMetaData();
 		try (SaxElementBuilder fields = new SaxElementBuilder("fielddefinition", handler)) {
-			addFieldDefinitionsToContainer(fields, dbmsSupport, rs, rsmeta);
+			addFieldDefinitionsToContainer(fields, rs, rsmeta);
 		}
 	}
-	public static void addFieldDefinitions(SaxElementBuilder root, IDbmsSupport dbmsSupport, ResultSet rs, ResultSetMetaData rsmeta) throws SAXException, SQLException {
+	public static void addFieldDefinitions(SaxElementBuilder root, ResultSet rs, ResultSetMetaData rsmeta) throws SAXException, SQLException {
 		try (SaxElementBuilder fields = root.startElement("fielddefinition")) {
-			addFieldDefinitionsToContainer(fields, dbmsSupport, rs, rsmeta);
+			addFieldDefinitionsToContainer(fields, rs, rsmeta);
 		}
 	}
 
-	private static void addFieldDefinitionsToContainer(SaxElementBuilder fields, IDbmsSupport dbmsSupport, ResultSet rs, ResultSetMetaData rsmeta) throws SAXException, SQLException {
+	private static void addFieldDefinitionsToContainer(SaxElementBuilder fields, ResultSet rs, ResultSetMetaData rsmeta) throws SAXException, SQLException {
 		int nfields = rsmeta.getColumnCount();
 
 		for (int j = 1; j <= nfields; j++) {
