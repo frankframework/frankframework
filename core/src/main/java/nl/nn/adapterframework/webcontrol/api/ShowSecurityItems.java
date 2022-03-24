@@ -59,7 +59,7 @@ import org.xml.sax.InputSource;
 
 /**
  * Shows the used certificate.
- * 
+ *
  * @since	7.0-B1
  * @author	Niels Meijer
  */
@@ -111,7 +111,7 @@ public final class ShowSecurityItems extends Base {
 			log.debug("cannot get deployment descriptor", e);
 			return null;
 		}
-		
+
 		if (xmlDoc==null) {
 			log.debug("could get deployment descriptor");
 			return null;
@@ -169,7 +169,7 @@ public final class ShowSecurityItems extends Base {
 			log.debug("cannot get security role bindings", e);
 			return null;
 		}
-		
+
 		if (xmlDoc==null) {
 			log.debug("could get security role bindings");
 			return null;
@@ -186,7 +186,7 @@ public final class ShowSecurityItems extends Base {
 				for (int j = 0; j < fieldsInRowset.getLength(); j++) {
 					if (fieldsInRowset.item(j).getNodeType() == Node.ELEMENT_NODE) {
 						Element field = (Element) fieldsInRowset.item(j);
-						
+
 						if("role".equals(field.getNodeName())) {
 							role = field.getAttribute("href");
 							if(role.indexOf("#") > -1)
@@ -306,7 +306,7 @@ public final class ShowSecurityItems extends Base {
 		} catch (Throwable t) {
 			log.debug("Caught NoClassDefFoundError, just no sapSystem available: " + t.getMessage());
 		}
-		
+
 		if (sapSystems!=null) {
 			Iterator<String> iter = sapSystems.iterator();
 			while (iter.hasNext()) {
@@ -327,7 +327,7 @@ public final class ShowSecurityItems extends Base {
 	private List<String> getAuthEntries() {
 		List<String> entries = new ArrayList<String>();
 		try {
-			Collection<String> knownAliases = CredentialFactory.getAliases();
+			Collection<String> knownAliases = CredentialFactory.getConfiguredAliases();
 			if (knownAliases!=null) {
 				entries.addAll(knownAliases); // start with all aliases in the CredentialProvider
 			}

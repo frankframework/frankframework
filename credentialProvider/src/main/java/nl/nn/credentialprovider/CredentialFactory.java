@@ -33,7 +33,7 @@ public class CredentialFactory {
 	private final String DEFAULT_CREDENTIAL_FACTORY2=WebSphereCredentialFactory.class.getName();
 
 	private static String optionalPrefix;
-	
+
 	private ICredentialFactory delegate;
 
 	private static CredentialFactory self;
@@ -67,7 +67,7 @@ public class CredentialFactory {
 	void forceDelegate(ICredentialFactory delegate) {
 		this.delegate=delegate;
 	}
-	
+
 	private boolean tryFactory(String factoryClassName) {
 		if (Misc.isNotEmpty(factoryClassName)) {
 			log.info("trying to configure CredentialFactory ["+factoryClassName+"]");
@@ -83,19 +83,19 @@ public class CredentialFactory {
 		}
 		return false;
 	}
-	
+
 	private static String findAlias(String rawAlias) {
 		if (optionalPrefix!=null && rawAlias!=null && rawAlias.toLowerCase().startsWith(optionalPrefix)) {
 			return rawAlias.substring(optionalPrefix.length());
 		}
 		return rawAlias;
 	}
-	
+
 	public static boolean hasCredential(String rawAlias) {
 		ICredentialFactory delegate = getInstance().delegate;
 		return delegate==null || delegate.hasCredentials(findAlias(rawAlias));
 	}
-	
+
 	public static ICredentials getCredentials(String rawAlias, String defaultUsername, String defaultPassword) {
 		ICredentialFactory delegate = getInstance().delegate;
 		if (delegate!=null) {
@@ -107,9 +107,9 @@ public class CredentialFactory {
 		return new Credentials(findAlias(rawAlias), defaultUsername, defaultPassword);
 	}
 
-	public static Collection<String> getAliases() throws Exception {
+	public static Collection<String> getConfiguredAliases() throws Exception {
 		ICredentialFactory delegate = getInstance().delegate;
-		return delegate!=null ? delegate.getAliases() : null;
+		return delegate!=null ? delegate.getConfiguredAliases() : null;
 	}
 
 }

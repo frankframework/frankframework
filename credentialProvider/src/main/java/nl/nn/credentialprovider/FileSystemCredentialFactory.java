@@ -29,7 +29,7 @@ public class FileSystemCredentialFactory implements ICredentialFactory {
 	public final String FILESYSTEM_ROOT_PROPERTY="credentialFactory.filesystem.root";
 	public final String USERNAME_FILE_PROPERTY="credentialFactory.filesystem.usernamefile";
 	public final String PASSWORD_FILE_PROPERTY="credentialFactory.filesystem.passwordfile";
-	
+
 	public final String FILESYSTEM_ROOT_DEFAULT="/etc/secrets";
 	public static final String USERNAME_FILE_DEFAULT="username";
 	public static final String PASSWORD_FILE_DEFAULT="password";
@@ -37,7 +37,7 @@ public class FileSystemCredentialFactory implements ICredentialFactory {
 	private Path root;
 	private String usernamefile;
 	private String passwordfile;
-	
+
 	@Override
 	public void initialize() {
 		AppConstants appConstants = AppConstants.getInstance();
@@ -46,11 +46,11 @@ public class FileSystemCredentialFactory implements ICredentialFactory {
 			throw new IllegalStateException("No property ["+FILESYSTEM_ROOT_PROPERTY+"] found");
 		}
 		this.root = Paths.get(fsroot);
-		
+
 		if (!Files.exists(root)) {
 			throw new IllegalArgumentException("Credential Filesystem ["+root+"] does not exist");
 		}
-		
+
 		usernamefile = appConstants.getProperty(USERNAME_FILE_PROPERTY, USERNAME_FILE_DEFAULT);
 		passwordfile = appConstants.getProperty(PASSWORD_FILE_PROPERTY, PASSWORD_FILE_DEFAULT);
 	}
@@ -66,7 +66,7 @@ public class FileSystemCredentialFactory implements ICredentialFactory {
 	}
 
 	@Override
-	public List<String> getAliases() throws Exception{
+	public List<String> getConfiguredAliases() throws Exception{
 		List<String> aliases = new LinkedList<>();
 		Files.list(Paths.get(root.toString())).forEach(p->aliases.add(p.getFileName().toString()));
 		return aliases;

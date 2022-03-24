@@ -14,9 +14,9 @@ import org.junit.Test;
 public class PropertyFileCredentialFactoryTest {
 
 	public String PROPERTIES_FILE="/credentials-unencrypted.txt";
-	
+
 	private PropertyFileCredentialFactory credentialFactory;
-	
+
 	@Before
 	public void setup() throws IOException {
 		String propertiesUrl = this.getClass().getResource(PROPERTIES_FILE).toExternalForm();
@@ -32,7 +32,7 @@ public class PropertyFileCredentialFactoryTest {
 
 	@Test
 	public void testNoAlias() {
-		
+
 		String alias = null;
 		String username = "fakeUsername";
 		String password = "fakePassword";
@@ -105,7 +105,7 @@ public class PropertyFileCredentialFactoryTest {
 
 	@Test
 	public void testGetAliases() throws Exception {
-		Collection<String> aliases = credentialFactory.getAliases();
+		Collection<String> aliases = credentialFactory.getConfiguredAliases();
 		assertEquals("[straight, noUsername, singleValue]", aliases.toString());
 	}
 

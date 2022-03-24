@@ -21,7 +21,7 @@ public interface ICredentialFactory {
 
 	/**
 	 * initialize() of an implementation can throw an exception when the credentialFactory cannot be properly configured and used.
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	default void initialize() throws Exception {
 		// implementations can do their initialization, and throw an exception if they cannot.
@@ -32,8 +32,8 @@ public interface ICredentialFactory {
 	public ICredentials getCredentials(String alias, String defaultUsername, String defaultPassword);
 
 	/**
-	 * return a list of aliases, or null if such a list cannot be provided.
-	 * @throws Exception 
+	 * return a list of all configured aliases, or null if such a list cannot be provided.
+	 * @throws Exception
 	 */
-	public Collection<String> getAliases() throws Exception;
+	public Collection<String> getConfiguredAliases() throws Exception;
 }

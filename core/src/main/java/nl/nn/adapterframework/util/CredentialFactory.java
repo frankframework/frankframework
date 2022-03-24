@@ -22,19 +22,19 @@ import nl.nn.credentialprovider.ICredentials;
 /**
  * Provides user-id and password from the WebSphere authentication-alias repository.
  * A default username and password can be set, too.
- * 
+ *
  * Note:
  * In WSAD the aliases are named just as you type them.
  * In WebSphere 5 and 6, and in RAD7/RSA7 aliases are prefixed with the name of the server.
  * It is therefore sensible to use a environment setting to find the name of the alias.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.4.2
  */
 public class CredentialFactory  {
 
 	private ICredentials credentials=null;
-	
+
 	public CredentialFactory(String alias, String defaultUsername, String defaultPassword) {
 		credentials = nl.nn.credentialprovider.CredentialFactory.getCredentials(alias, defaultUsername, defaultPassword);
 	}
@@ -57,7 +57,7 @@ public class CredentialFactory  {
 		return credentials.getPassword();
 	}
 
-	public static Collection<String> getAliases() throws Exception {
-		return nl.nn.credentialprovider.CredentialFactory.getAliases();
+	public static Collection<String> getConfiguredAliases() throws Exception {
+		return nl.nn.credentialprovider.CredentialFactory.getConfiguredAliases();
 	}
 }

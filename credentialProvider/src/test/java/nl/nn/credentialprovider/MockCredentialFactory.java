@@ -26,7 +26,7 @@ public class MockCredentialFactory extends HashMap<String,Credentials> implement
 	}
 
 	@Override
-	public Collection<String> getAliases() throws Exception {
+	public Collection<String> getConfiguredAliases() throws Exception {
 		return keySet();
 	}
 }

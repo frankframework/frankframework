@@ -32,7 +32,7 @@ public class WebSphereCredentialFactory implements ICredentialFactory {
 	}
 
 	@Override
-	public Collection<String> getAliases() {
+	public Collection<String> getConfiguredAliases() {
 		return null; // don't know how to list JAAS authentication aliases programmatically
 	}
 }

@@ -54,7 +54,7 @@ public abstract class MapCredentialFactory implements ICredentialFactory {
 		usernameSuffix = appConstants.getProperty(USERNAME_SUFFIX_PROPERTY, USERNAME_SUFFIX_DEFAULT);
 		passwordSuffix = appConstants.getProperty(PASSWORD_SUFFIX_PROPERTY, PASSWORD_SUFFIX_DEFAULT);
 	}
-	
+
 	protected abstract String getPropertyBase();
 
 	protected abstract Map<String,String> getCredentialMap(AppConstants appConstants) throws MalformedURLException, IOException;
@@ -86,7 +86,7 @@ public abstract class MapCredentialFactory implements ICredentialFactory {
 	}
 
 	@Override
-	public Set<String> getAliases() throws Exception{
+	public Set<String> getConfiguredAliases() throws Exception{
 		Set<String> aliasNames = new LinkedHashSet<>();
 		for (String name:aliases.keySet()) {
 			if (name.endsWith(usernameSuffix)) {
