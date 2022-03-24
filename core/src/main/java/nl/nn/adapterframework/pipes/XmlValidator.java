@@ -51,6 +51,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.IbisDocRef;
+import nl.nn.adapterframework.doc.Optional;
 import nl.nn.adapterframework.soap.SoapVersion;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -492,6 +493,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		}
 
 		@IbisDoc({"name of the pipe", ""})
+		@Optional
 		@Override
 		public void setName(String name) {
 			this.name=name;
