@@ -259,6 +259,11 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
+	public String getSchema(Connection conn) throws JdbcException {
+		return JdbcUtil.executeStringQuery(conn, "SELECT CURRENT_SCHEMA()");
+	}
+	
+	@Override
 	public boolean isTablePresent(Connection conn, String tableName) throws JdbcException {
 		return doIsTablePresent(conn, "pg_catalog.pg_tables", "schemaname", "tablename", "public", tableName);
 	}
