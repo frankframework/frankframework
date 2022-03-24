@@ -18,7 +18,7 @@ http://schemas.ibissource.org/ibisdoc.xsd, OK
 			/>
 		</Receiver>
 		<Pipeline firstPipe="HelloBeautifulWorld">
-			<Exit path="EXIT" state="success"/>
+			<Exit name="EXIT" state="success"/>
 			<FixedResultPipe
 				name="HelloBeautifulWorld"
 				returnString="Hello Beautiful World ${digester.property} [${secret}] &lt;@quot;&gt;"

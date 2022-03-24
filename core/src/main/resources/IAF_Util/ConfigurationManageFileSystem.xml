@@ -5,7 +5,7 @@
 		</Receiver>
 		
 		<Pipeline firstPipe="IterateActions">
-			<Exit path="EXIT" state="success" />
+			<Exit name="EXIT" state="success" />
 			
 			<XmlInputValidator schema="ManageFileSystem/xsd/ManageFileSystem.xsd" root="manageFileSystemREQ">
 				<forward name="failure" path="InputValidateFailure" />
