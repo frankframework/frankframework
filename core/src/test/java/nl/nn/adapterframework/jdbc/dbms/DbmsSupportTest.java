@@ -70,6 +70,23 @@ public class DbmsSupportTest extends JdbcTestBase {
 	}
 
 	@Test
+	public void testGetTableColumns() throws Exception {
+		try (ResultSet rs = dbmsSupport.getTableColumns(connection, "TEMP")) {
+			while(rs.next()) {
+				String tablename = rs.getString("TABLE_NAME");
+				String columnName = rs.getString("COLUMN_NAME");
+				int datatype = rs.getInt("DATA_TYPE");
+				int columnSize = rs.getInt("COLUMN_SIZE");
+
+				if (columnName.equalsIgnoreCase("TINT")) {
+					return;
+				}
+			}
+			fail("Column TINT not found");
+		}
+	}
+
+	@Test
 	public void testGetDateTimeLiteral() throws Exception {
 		JdbcUtil.executeStatement(connection, "INSERT INTO TEMP(TKEY, TVARCHAR, TINT, TDATE, TDATETIME) VALUES (1,2,3,"+dbmsSupport.getDateAndOffset(dbmsSupport.getDatetimeLiteral(new Date()),4)+","+dbmsSupport.getDatetimeLiteral(new Date())+")");
 		Object result = JdbcUtil.executeQuery(dbmsSupport, connection, "SELECT "+dbmsSupport.getTimestampAsDate("TDATETIME")+" FROM TEMP WHERE TKEY=1", null);
@@ -82,7 +99,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 		Object result = JdbcUtil.executeQuery(dbmsSupport, connection, "SELECT "+dbmsSupport.getTimestampAsDate("TDATETIME")+" FROM TEMP WHERE TKEY=2", null);
 		System.out.println("result:"+result);
 	}
-	
+
 	@Test
 	public void testNumericAsDouble() throws Exception {
 		String number = "1234.5678";
@@ -93,7 +110,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 			stmt.setDouble(1, Double.parseDouble(number));
 			stmt.execute();
 		}
-		
+
 		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TNUMBER FROM TEMP WHERE TKEY=3", QueryType.SELECT)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
@@ -112,7 +129,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 			stmt.setFloat(1, Float.parseFloat(number));
 			stmt.execute();
 		}
-		
+
 		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TNUMBER FROM TEMP WHERE TKEY=4", QueryType.SELECT)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
@@ -121,8 +138,8 @@ public class DbmsSupportTest extends JdbcTestBase {
 		}
 	}
 
-	@Test 
-	// test the alias functionality as used in JdbcTableListener. 
+	@Test
+	// test the alias functionality as used in JdbcTableListener.
 	// Asserts that columns can be identified with and without alias.
 	public void testSelectWithAlias() throws Exception {
 		String insertQuery = "INSERT INTO TEMP(TKEY, TNUMBER, TVARCHAR) VALUES (5,5,'A')";
@@ -131,7 +148,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 		try (PreparedStatement stmt = connection.prepareStatement(insertQuery)) {
 			stmt.execute();
 		}
-		
+
 		try (PreparedStatement stmt = executeTranslatedQuery(connection, selectQuery, QueryType.SELECT)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
@@ -139,13 +156,13 @@ public class DbmsSupportTest extends JdbcTestBase {
 			}
 		}
 	}
-	
+
 	@Test
 	public void testJdbcSetParameter() throws Exception {
 		String number = "1234.5678";
 		String datetime = DateUtils.format(new Date(), DateUtils.FORMAT_GENERICDATETIME);
 		String date = DateUtils.format(new Date(), DateUtils.shortIsoFormat);
-		
+
 		assumeFalse(dbmsSupport.getDbmsName().equals("Oracle")); // This fails on Oracle, cannot set a non-integer number via setString()
 		QueryExecutionContext context = new QueryExecutionContext("INSERT INTO TEMP(TKEY, TNUMBER, TDATE, TDATETIME) VALUES (5,?,?,?)", QueryType.OTHER, null);
 		dbmsSupport.convertQuery(context, "Oracle");
@@ -157,7 +174,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 			//JdbcUtil.setParameter(stmt, 4, bool, dbmsSupport.isParameterTypeMatchRequired());
 			stmt.execute();
 		}
-		
+
 		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TNUMBER, TDATE, TDATETIME FROM TEMP WHERE TKEY=5", QueryType.SELECT)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
@@ -169,7 +186,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 		}
 	}
 
-	
+
 	@Test
 	public void testWriteAndReadClob() throws Exception {
 		String clobContents = "Dit is de content van de clob";
@@ -194,7 +211,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 				assertEquals(clobContents, actual);
 			}
 		}
-		
+
 	}
 
 	@Test
@@ -243,12 +260,12 @@ public class DbmsSupportTest extends JdbcTestBase {
 				assertEquals(clobContents, actual);
 			}
 		}
-		
+
 	}
 
 	@Test
 	public void testInsertEmptyClobUsingDbmsSupport() throws Exception {
-		
+
 		JdbcUtil.executeStatement(connection, "INSERT INTO TEMP (TKEY,TCLOB) VALUES (13,"+dbmsSupport.emptyClobValue()+")");
 
 		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TCLOB FROM TEMP WHERE TKEY=13", QueryType.SELECT)) {
@@ -274,7 +291,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 				dbmsSupport.updateBlob(resultSet, 1, blobHandle);
 				resultSet.updateRow();
 			}
-		}		
+		}
 		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM TEMP WHERE TKEY=20", QueryType.SELECT)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
@@ -283,9 +300,9 @@ public class DbmsSupportTest extends JdbcTestBase {
 				assertEquals(blobContents, actual);
 			}
 		}
-		
+
 	}
-	
+
 
 	@Test
 	public void testWriteAndReadBlobCompressed() throws Exception {
@@ -302,7 +319,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 				dbmsSupport.updateBlob(resultSet, 1, blobHandle);
 				resultSet.updateRow();
 			}
-		}		
+		}
 		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM TEMP WHERE TKEY=21", QueryType.SELECT)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
@@ -310,7 +327,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 				assertEquals(blobContents, actual);
 			}
 		}
-		
+
 	}
 
 	@Test
@@ -357,12 +374,12 @@ public class DbmsSupportTest extends JdbcTestBase {
 				assertEquals(blobContents, actual);
 			}
 		}
-		
+
 	}
 
 	@Test
 	public void testInsertEmptyBlobUsingDbmsSupport() throws Exception {
-		
+
 		JdbcUtil.executeStatement(connection, "INSERT INTO TEMP (TKEY,TBLOB) VALUES (25,"+dbmsSupport.emptyBlobValue()+")");
 
 		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM TEMP WHERE TKEY=25", QueryType.SELECT)) {
@@ -371,7 +388,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 				assertThat(JdbcUtil.getBlobAsString(dbmsSupport, resultSet, 1, "UTF-8", false, false, false), IsEmptyString.isEmptyOrNullString() );
 			}
 		}
-		
+
 	}
 
 	@Test
@@ -396,28 +413,28 @@ public class DbmsSupportTest extends JdbcTestBase {
 				assertEquals(clobContents, actual2);
 			}
 		}
-		
+
 	}
 
 
-	
+
 	@Test
 	public void testBooleanHandling() throws Exception {
 		executeTranslatedQuery(connection, "INSERT INTO TEMP (TKEY,TINT,TBOOLEAN) VALUES (30,99,"+dbmsSupport.getBooleanValue(false)+")", QueryType.OTHER);
 		executeTranslatedQuery(connection, "INSERT INTO TEMP (TKEY,TINT,TBOOLEAN) VALUES (31,99,"+dbmsSupport.getBooleanValue(true)+")", QueryType.OTHER);
-		
+
 		assertEquals(30, JdbcUtil.executeIntQuery(connection, "SELECT TKEY FROM TEMP WHERE TINT=99 AND TBOOLEAN="+dbmsSupport.getBooleanValue(false)));
 		assertEquals(31, JdbcUtil.executeIntQuery(connection, "SELECT TKEY FROM TEMP WHERE TINT=99 AND TBOOLEAN="+dbmsSupport.getBooleanValue(true)));
-		
+
 	}
-	
+
 	private boolean peek(String query) throws Exception {
 		try (Connection peekConnection=getConnection()) {
 			peekConnection.setAutoCommit(false);
 			return !JdbcUtil.isQueryResultEmpty(peekConnection, query);
 		}
 	}
-	
+
 	@Test
 	public void testQueueHandling() throws Exception {
 		executeTranslatedQuery(connection, "INSERT INTO TEMP (TKEY,TINT) VALUES (40,100)", QueryType.OTHER);
@@ -427,12 +444,12 @@ public class DbmsSupportTest extends JdbcTestBase {
 
 		String readQueueQuery = dbmsSupport.prepareQueryTextForWorkQueueReading(1, selectQuery);
 		String peekQueueQuery = dbmsSupport.prepareQueryTextForWorkQueuePeeking(1, selectQuery);
-		
+
 		// test that peek and read find records when they are available
 		assertEquals(40, JdbcUtil.executeIntQuery(connection, peekQueueQuery));
 		assertEquals(40, JdbcUtil.executeIntQuery(connection, readQueueQuery));
 		assertEquals(40, JdbcUtil.executeIntQuery(connection, peekQueueQuery));
-		
+
 		try (Connection workConn1=getConnection()) {
 			workConn1.setAutoCommit(false);
 			try (Statement stmt1= workConn1.createStatement()) {
@@ -460,7 +477,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 						// insert another record
 						executeTranslatedQuery(connection, "INSERT INTO TEMP (TKEY,TINT) VALUES (41,100)", QueryType.OTHER);
 						if (testPeekFindsRecordsWhenTheyAreAvailable) assertTrue("second record should have been seen by peek query", peek(peekQueueQuery));// assert that record is seen
-						
+
 						try (Connection workConn2=getConnection()) {
 							workConn2.setAutoCommit(false);
 							try (Statement stmt2= workConn2.createStatement()) {
@@ -476,7 +493,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 			}
 		}
 	}
-	
+
 	@Test
 	public void testIsBlobType() throws SQLException {
 		try (Connection connection=getConnection()) {
@@ -487,13 +504,13 @@ public class DbmsSupportTest extends JdbcTestBase {
 						assertEquals("column type name ["+rsmeta.getColumnTypeName(i)+"] precision ["+rsmeta.getPrecision(i)+"] column type ["+rsmeta.getColumnType(i)+"]", i==8, dbmsSupport.isBlobType(rsmeta, i));
 					}
 				}
-				
+
 			}
 		}
 	}
-	
-	
-	
+
+
+
 	@Test
 	public void testIsClobType() throws SQLException {
 		try (Connection connection=getConnection()) {
@@ -504,7 +521,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 						assertEquals("column type name ["+rsmeta.getColumnTypeName(i)+"] precision ["+rsmeta.getPrecision(i)+"] column type ["+rsmeta.getColumnType(i)+"]", i==9, dbmsSupport.isClobType(rsmeta, i));
 					}
 				}
-				
+
 			}
 		}
 	}
@@ -520,11 +537,11 @@ public class DbmsSupportTest extends JdbcTestBase {
 						assertEquals("column type name ["+rsmeta.getColumnTypeName(i)+"] precision ["+rsmeta.getPrecision(i)+"] column type ["+rsmeta.getColumnType(i)+"]", i==6, dbmsSupport.isBlobType(rsmeta, i));
 					}
 				}
-				
+
 			}
 		}
 	}
-	
+
 	@Test
 	public void testIsClobTypeIbisTemp() throws Exception {
 		try (Connection connection=getConnection()) {
@@ -536,7 +553,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 						assertEquals("column type name ["+rsmeta.getColumnTypeName(i)+"] precision ["+rsmeta.getPrecision(i)+"] column type ["+rsmeta.getColumnType(i)+"]", i==7, dbmsSupport.isClobType(rsmeta, i));
 					}
 				}
-				
+
 			}
 		}
 	}

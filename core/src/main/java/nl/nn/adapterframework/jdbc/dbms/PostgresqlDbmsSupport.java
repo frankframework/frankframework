@@ -43,7 +43,7 @@ import nl.nn.adapterframework.util.StreamUtil;
 
 /**
 * Support for PostgreSQL.
-* 
+*
 * Limitations:
 *   PostgreSQL blobs and clobs are handled via byte arrays that are kept in memory. The maximum size of blobs and clobs is therefor limited by memory size.
 */
@@ -218,7 +218,7 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 	public InputStream getBlobInputStream(ResultSet rs, String column) throws SQLException, JdbcException{
 		return rs.getBinaryStream(column);
 	}
-	
+
 	@Override
 	public Object getBlobHandle(ResultSet rs, int column) throws SQLException, JdbcException {
 		return createLob(rs.getStatement());
@@ -262,7 +262,12 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 	public String getSchema(Connection conn) throws JdbcException {
 		return JdbcUtil.executeStringQuery(conn, "SELECT CURRENT_SCHEMA()");
 	}
-	
+
+	@Override
+	public ResultSet getTableColumns(Connection conn, String tableName) throws JdbcException {
+		return super.getTableColumns(conn, tableName.toLowerCase());
+	}
+
 	@Override
 	public boolean isTablePresent(Connection conn, String tableName) throws JdbcException {
 		return doIsTablePresent(conn, "pg_catalog.pg_tables", "schemaname", "tablename", "public", tableName);
@@ -308,7 +313,7 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 //			public void close() throws Exception {
 //				JdbcUtil.executeStatement(conn, "COMMIT");
 //			}
-//			
+//
 //		};
 //	}
 

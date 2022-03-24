@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	protected static final String TYPE_BLOB = "blob";
 	protected static final String TYPE_CLOB = "clob";
 	protected static final String TYPE_FUNCTION = "function";
-	
+
 	protected static Map<String,ISqlTranslator> sqlTranslators = new HashMap<>();
 
 	@Override
@@ -100,7 +100,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	public String getAutoIncrementKeyFieldType() {
 		return "INT DEFAULT AUTOINCREMENT";
 	}
-	
+
 	@Override
 	public boolean autoIncrementKeyMustBeInserted() {
 		return false;
@@ -115,7 +115,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	public boolean autoIncrementUsesSequenceObject() {
 		return false;
 	}
-	
+
 	@Override
 	public String getInsertedAutoIncrementValueQuery(String sequenceName) {
 		return null;
@@ -197,7 +197,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		rs.updateClob(column, (Clob)clobHandle);
 	}
 
-	
+
 	@Override
 	public Object getClobHandle(PreparedStatement stmt, int column) throws SQLException, JdbcException {
 		return stmt.getConnection().createClob();
@@ -266,7 +266,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	public Object getBlobHandle(ResultSet rs, String column) throws SQLException, JdbcException {
 		return rs.getBlob(column);
 	}
-	
+
 	protected  OutputStream getBlobOutputStream(ResultSet rs, Object blobUpdateHandle) throws SQLException, JdbcException {
 		return ((Blob)blobUpdateHandle).setBinaryStream(1L);
 	}
@@ -318,19 +318,19 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		return blob.getBinaryStream();
 	}
 
-	
-	
+
+
 	@Override
 	public String getTextFieldType() {
 		return "VARCHAR";
 	}
-	
-	
+
+
 	@Override
 	public String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery) throws JdbcException {
 		return prepareQueryTextForWorkQueueReading(batchSize, selectQuery, -1);
 	}
-	
+
 	@Override
 	public String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery, int wait) throws JdbcException {
 		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
@@ -354,7 +354,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		log.warn("don't know how to perform getFirstRecordQuery for this database type, doing a guess...");
 		String query="select * from "+tableName+" where ROWNUM=1";
 		return query;
-	} 
+	}
 
 	@Override
 	public String prepareQueryTextForNonLockingRead(String selectQuery) throws JdbcException {
@@ -384,6 +384,15 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	@Override
 	public String getSchema(Connection conn) throws JdbcException {
 		return null;
+	}
+
+	@Override
+	public ResultSet getTableColumns(Connection conn, String tableName) throws JdbcException {
+		try {
+			return conn.getMetaData().getColumns(null, null, tableName, null);
+		} catch (SQLException e) {
+			throw new JdbcException("exception retrieving columns for table [" + tableName + "]", e);
+		}
 	}
 
 	@Override
@@ -502,7 +511,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		String sqlState = e.getSQLState();
 		return sqlState!=null && sqlState.startsWith("23");
 	}
-	
+
 	@Override
 	public String getRowNumber(String order, String sort) {
 		return "";
@@ -539,10 +548,10 @@ public class GenericDbmsSupport implements IDbmsSupport {
 			ISqlTranslator translator = sqlTranslators.get(translatorKey);
 			if (translator==null) {
 				if (sqlTranslators.containsKey(sqlDialectFrom)) {
-					// if translator==null, but the key is present in the map, 
-					// then we already tried to setup this translator, and did not succeed. 
+					// if translator==null, but the key is present in the map,
+					// then we already tried to setup this translator, and did not succeed.
 					// No need to try again.
-					warnConvertQuery(sqlDialectFrom); 
+					warnConvertQuery(sqlDialectFrom);
 					return;
 				}
 				try {
@@ -577,7 +586,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 			queryExecutionContext.setQuery(convertedQueries!=null?convertedQueries.toString():"");
 		}
 	}
-	
+
 	protected void warnConvertQuery(String sqlDialectFrom) {
 		log.warn("don't know how to convert queries from [" + sqlDialectFrom + "] to [" + getDbmsName() + "]");
 	}
