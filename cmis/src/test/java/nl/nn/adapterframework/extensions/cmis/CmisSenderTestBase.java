@@ -27,10 +27,28 @@ import nl.nn.adapterframework.senders.SenderTestBase;
 
 public class CmisSenderTestBase extends SenderTestBase<CmisSender> {
 	protected static final boolean STUBBED = false;
+	private static final String ENDPOINT = "http://localhost:8080";
 
 	@Override
 	public CmisSender createSender() throws Exception {
-		CmisSender sender = new CmisSender();
+		CmisSender sender = new CmisSender() {
+			@Override
+			public void setBindingType(String bindingType) {
+				super.setBindingType(bindingType);
+
+				switch (bindingType) {
+				case "atompub":
+					setUrl(ENDPOINT+"/atom11");
+					break;
+				case "webservices":
+					setUrl(ENDPOINT+"/services11/cmis");
+					break;
+				case "browser":
+					setUrl(ENDPOINT+"/browser");
+					break;
+				}
+			}
+		};
 		sender.setUsername("test");
 		sender.setPassword("test");
 		sender.setRepository("test");
@@ -41,7 +59,6 @@ public class CmisSenderTestBase extends SenderTestBase<CmisSender> {
 
 		sender = spy(sender);
 
-		sender.setUrl("http://dummy.url");
 		sender.setKeepSession(false);
 
 		Session cmisSession = mock(Session.class);
