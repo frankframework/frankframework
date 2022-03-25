@@ -26,15 +26,22 @@ import org.mockito.stubbing.Answer;
 import nl.nn.adapterframework.senders.SenderTestBase;
 
 public class CmisSenderTestBase extends SenderTestBase<CmisSender> {
+	protected static final boolean STUBBED = false;
 
 	@Override
 	public CmisSender createSender() throws Exception {
-		CmisSender sender = spy(new CmisSender());
-
-		sender.setUrl("http://dummy.url");
-		sender.setRepository("test");
+		CmisSender sender = new CmisSender();
 		sender.setUsername("test");
 		sender.setPassword("test");
+		sender.setRepository("test");
+
+		if(!STUBBED) {
+			return sender;
+		}
+
+		sender = spy(sender);
+
+		sender.setUrl("http://dummy.url");
 		sender.setKeepSession(false);
 
 		Session cmisSession = mock(Session.class);

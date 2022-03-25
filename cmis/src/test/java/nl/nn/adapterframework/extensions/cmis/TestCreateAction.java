@@ -23,22 +23,8 @@ import nl.nn.adapterframework.util.Misc;
 
 @RunWith(Parameterized.class)
 public class TestCreateAction extends CmisSenderTestBase {
-	private static final boolean STUBBED = true;
 	private static final AtomicInteger atomicInt = new AtomicInteger();
 	private static final String ENDPOINT = "http://localhost:8080";
-
-	@Override
-	public CmisSender createSender() throws Exception {
-		if(STUBBED) {
-			return super.createSender();
-		}
-
-		CmisSender sender = new CmisSender();
-		sender.setUsername("test");
-		sender.setPassword("test");
-		sender.setRepository("test");
-		return sender;
-	}
 
 	private final static String EMPTY_INPUT = "";
 	private final static String EMPTY_RESULT = "[unknown]";
