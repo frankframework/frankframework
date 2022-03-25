@@ -156,7 +156,7 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 
 function javaDocUrlOf(element) {
 	if(element.fullName && element.fullName.includes(".")) {
-		return 'https://javadoc.ibissource.org/latest/' + element.fullName.replaceAll(".", "/") + '.html'	
+		return 'https://javadoc.frankframework.org/' + element.fullName.replaceAll(".", "/") + '.html'	
 	} else {
 		// We only have a JavaDoc URL if we have an element with a Java class. The
 		// exception we handle here is <Module>.
