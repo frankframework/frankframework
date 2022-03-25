@@ -77,10 +77,10 @@ import nl.nn.adapterframework.xml.RootElementToSessionKeyFilter;
  *
  * @ff.forward parserError a parser exception occurred, probably caused by non-well-formed XML. If not specified, <code>failure</code> is used in such a case.
  * @ff.forward failure The document is not valid according to the configured schema.
- * @ff.forward warning warnings occurred. If not specified, <code>success</code> is used.
+ * @ff.forward warnings warnings occurred. If not specified, <code>success</code> is used.
  * @ff.forward outputParserError a <code>parserError</code> when validating a response. If not specified, <code>parserError</code> is used.
  * @ff.forward outputFailure a <code>failure</code> when validating a response. If not specified, <code>failure</code> is used.
- * @ff.forward outputWarning warnings occurred when validating a response. If not specified, <code>warnings</code> is used.
+ * @ff.forward outputWarnings warnings occurred when validating a response. If not specified, <code>warnings</code> is used.
  *
  * @author Johan Verrips IOS
  * @author Jaco de Groot
@@ -298,10 +298,10 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		switch(validationResult) {
 			case VALID_WITH_WARNINGS:
 				if (responseMode) {
-					forward = findForward("outputWarning");
+					forward = findForward("outputWarnings");
 				}
 				if (forward == null) {
-					forward = findForward("warning");
+					forward = findForward("warnings");
 				}
 				if (forward == null) {
 					forward = getSuccessForward();
