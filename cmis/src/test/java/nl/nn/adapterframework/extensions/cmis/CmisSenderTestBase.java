@@ -1,5 +1,7 @@
 package nl.nn.adapterframework.extensions.cmis;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.math.BigInteger;
@@ -24,9 +26,11 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import nl.nn.adapterframework.senders.SenderTestBase;
+import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.credentialprovider.util.Misc;
 
 public class CmisSenderTestBase extends SenderTestBase<CmisSender> {
-	protected static final boolean STUBBED = false;
+	protected static final boolean STUBBED = true;
 	private static final String ENDPOINT = "http://localhost:8080";
 
 	@Override
@@ -63,6 +67,7 @@ public class CmisSenderTestBase extends SenderTestBase<CmisSender> {
 
 		Session cmisSession = mock(Session.class);
 		ObjectFactory objectFactory = mock(ObjectFactoryImpl.class);
+		doAnswer(new ContentStreamMock()).when(objectFactory).createContentStream(anyString(), anyLong(), anyString(), any(InputStream.class));
 		doReturn(objectFactory).when(cmisSession).getObjectFactory();
 
 //		GENERIC cmis object
@@ -78,7 +83,7 @@ public class CmisSenderTestBase extends SenderTestBase<CmisSender> {
 
 //		CREATE
 		Folder folder = mock(FolderImpl.class);
-		doAnswer(cmisObject).when(folder).createDocument(anyMap(), any(), any(VersioningState.class));
+		doAnswer(cmisObject).when(folder).createDocument(anyMap(), any(), any(VersioningState.class)); //improve test to validate the ContentStream!
 		doReturn(folder).when(cmisSession).getRootFolder();
 		doAnswer(cmisObject).when(cmisSession).createDocument(anyMap(), any(), any(), any());
 
@@ -101,7 +106,27 @@ public class CmisSenderTestBase extends SenderTestBase<CmisSender> {
 		}
 	}
 
-	public static class ContentStreamMock implements ContentStream {
+	public static class ContentStreamMock implements ContentStream, Answer<ContentStream> {
+		private byte[] stream = "dummy_stream".getBytes();
+		private String name = null;
+		private String mimeType = "text/xml";
+
+		@Override
+		public ContentStream answer(InvocationOnMock invocation) throws Throwable {
+			name = (String) invocation.getArguments()[0];
+			long length = (long) invocation.getArguments()[1];
+			String mimeType = (String) invocation.getArguments()[2];
+			InputStream content = (InputStream) invocation.getArguments()[3];
+			stream = Misc.streamToBytes(content);
+			assertEquals(stream.length, length);
+			assertEquals("application/octet-stream", mimeType);
+
+			if(name.startsWith("/fileInput-")) {
+				String testFileContent = TestFileUtils.getTestFile("/fileInput.txt");
+				assertEquals(testFileContent, new String(stream));
+			}
+			return this;
+		}
 
 		@Override
 		public void setExtensions(List<CmisExtensionElement> extensions) {
@@ -115,22 +140,22 @@ public class CmisSenderTestBase extends SenderTestBase<CmisSender> {
 
 		@Override
 		public InputStream getStream() {
-			return new ByteArrayInputStream("dummy_stream".getBytes());
+			return new ByteArrayInputStream(stream);
 		}
 
 		@Override
 		public String getMimeType() {
-			return "text/xml";
+			return mimeType;
 		}
 
 		@Override
 		public long getLength() {
-			return 0;
+			return stream.length;
 		}
 
 		@Override
 		public String getFileName() {
-			return null;
+			return name;
 		}
 
 		@Override

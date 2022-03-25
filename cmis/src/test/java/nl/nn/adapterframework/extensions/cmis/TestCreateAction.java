@@ -162,7 +162,7 @@ public class TestCreateAction extends CmisSenderTestBase {
 		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
 	}
 
-	@Test
+	@Test //should base64 decode the fileContent string
 	public void fileContentFromSessionKeyAsString() throws Exception {
 		session.put("fileContent", getTestFile(true).asString());
 		sender.setFileContentSessionKey("fileContent");
