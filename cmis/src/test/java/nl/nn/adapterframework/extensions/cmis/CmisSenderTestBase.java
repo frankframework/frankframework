@@ -32,7 +32,7 @@ public class CmisSenderTestBase extends SenderTestBase<CmisSender> {
 		CmisSender sender = spy(new CmisSender());
 
 		sender.setUrl("http://dummy.url");
-		sender.setRepository("dummyRepository");
+		sender.setRepository("test");
 		sender.setUsername("test");
 		sender.setPassword("test");
 		sender.setKeepSession(false);
