@@ -17,6 +17,7 @@ package nl.nn.adapterframework.senders;
 
 import org.apache.commons.net.ftp.FTPFile;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.encryption.HasKeystore;
@@ -30,6 +31,7 @@ import nl.nn.adapterframework.ftp.FtpSession.Prot;
 
 public class FtpFileSystemSender extends FileSystemSender<FTPFile, FtpFileSystem> implements HasKeystore, HasTruststore {
 
+	private final @Getter String domain = "FTP";
 	private final String FTPFILESYSTEM = "nl.nn.adapterframework.filesystem.FtpFileSystem";
 
 	public FtpFileSystemSender() {

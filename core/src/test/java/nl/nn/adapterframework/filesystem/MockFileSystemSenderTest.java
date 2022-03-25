@@ -10,10 +10,15 @@ public class MockFileSystemSenderTest extends FileSystemSenderTest <FileSystemSe
 
 	@Override
 	public FileSystemSender<MockFile, MockFileSystem<MockFile>> createFileSystemSender() {
-		FileSystemSender<MockFile,MockFileSystem<MockFile>> result=new FileSystemSender<MockFile,MockFileSystem<MockFile>>();
+		FileSystemSender<MockFile,MockFileSystem<MockFile>> result=new FileSystemSender<MockFile,MockFileSystem<MockFile>>(){
+
+			@Override
+			public String getDomain() {
+				return "";
+			}
+
+		};
 		result.setFileSystem(((MockFileSystemTestHelper<MockFile>)helper).getFileSystem());
 		return result;
 	}
-
-
 }

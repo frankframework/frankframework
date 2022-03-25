@@ -33,6 +33,7 @@ import javax.mail.internet.InternetAddress;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import microsoft.exchange.webservices.data.autodiscover.IAutodiscoverRedirectionUrl;
 import microsoft.exchange.webservices.data.core.ExchangeService;
 import microsoft.exchange.webservices.data.core.PropertySet;
@@ -102,7 +103,7 @@ import nl.nn.adapterframework.xml.SaxElementBuilder;
  *
  */
 public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachment,ExchangeService> {
-
+	private final @Getter String domain = "Exchange";
 	private String mailAddress;
 	private boolean validateAllRedirectUrls=true;
 	private String url;

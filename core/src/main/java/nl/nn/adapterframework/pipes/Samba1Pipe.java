@@ -16,11 +16,13 @@
 package nl.nn.adapterframework.pipes;
 
 import jcifs.smb.SmbFile;
+import lombok.Getter;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.filesystem.FileSystemPipe;
 import nl.nn.adapterframework.filesystem.Samba1FileSystem;
 
 public class Samba1Pipe extends FileSystemPipe<SmbFile, Samba1FileSystem> {
+	private final @Getter String domain = "Samba";
 
 	public Samba1Pipe() {
 		setFileSystem(new Samba1FileSystem());

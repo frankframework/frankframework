@@ -22,6 +22,7 @@ import java.util.Iterator;
 
 import org.apache.commons.codec.binary.Base64InputStream;
 
+import lombok.Getter;
 import microsoft.exchange.webservices.data.property.complex.FileAttachment;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IForwardTarget;
@@ -40,6 +41,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  */
 public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F,A>> extends FileSystemSender<F,FS> {
 
+	private final @Getter String domain = "LocalFileSystem";
 	public final FileSystemAction[] ACTIONS_FS_WITH_ATTACHMENTS= {FileSystemAction.LISTATTACHMENTS};
 
 	private boolean attachmentsAsSessionKeys=false;

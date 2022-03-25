@@ -354,6 +354,19 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 			breadcrumbs: 'Security Items'
 		}
 	})
+	.state('pages.connection_overview', {
+		url: "/connections",
+		templateUrl: "views/ShowConnectionOverview.html",
+		resolve: {
+			loadPlugin: function($ocLazyLoad) {
+				return $ocLazyLoad.load('datatables');
+			},
+		},
+		data: {
+			pageTitle: 'Connection Overview',
+			breadcrumbs: 'Connection Overview'
+		}
+	})
 	.state('pages.monitors', {
 		url: "/monitors?configuration",
 		templateUrl: "views/ShowMonitors.html",

@@ -58,6 +58,8 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author  Gerrit van Brakel
  */
 public class JavaListener implements IPushingListener<String>, RequestProcessor, HasPhysicalDestination {
+
+	private final @Getter String domain = "JVM";
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;

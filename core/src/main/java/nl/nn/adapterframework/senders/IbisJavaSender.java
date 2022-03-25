@@ -58,6 +58,8 @@ import nl.nn.adapterframework.util.Misc;
  */
 public class IbisJavaSender extends SenderWithParametersBase implements HasPhysicalDestination {
 
+	private final @Getter String domain = "JVM";
+
 	private @Getter String serviceName;
 	private @Getter String serviceNameSessionKey;
 	private @Getter String returnedSessionKeys = null;

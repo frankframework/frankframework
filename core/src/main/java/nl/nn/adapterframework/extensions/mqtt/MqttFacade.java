@@ -36,6 +36,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 public class MqttFacade implements HasPhysicalDestination, IConfigurable {
+	private final @Getter String domain = "MQTT";
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 

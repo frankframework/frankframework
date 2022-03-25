@@ -16,11 +16,14 @@
 package nl.nn.adapterframework.senders;
 
 import jcifs.smb.SmbFile;
+import lombok.Getter;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.filesystem.FileSystemSender;
 import nl.nn.adapterframework.filesystem.Samba1FileSystem;
 
 public class Samba1Sender extends FileSystemSender<SmbFile, Samba1FileSystem> {
+
+	private final @Getter String domain = "Samba";
 
 	public Samba1Sender() {
 		setFileSystem(new Samba1FileSystem());

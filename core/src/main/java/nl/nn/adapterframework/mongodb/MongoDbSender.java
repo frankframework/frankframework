@@ -88,6 +88,7 @@ import nl.nn.adapterframework.util.StringResolver;
  */
 public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDestination {
 
+	private final @Getter String domain = "JDBC";
 	public final String PARAM_DATABASE="database";
 	public final String PARAM_COLLECTION="collection";
 	public final String PARAM_FILTER="filter";

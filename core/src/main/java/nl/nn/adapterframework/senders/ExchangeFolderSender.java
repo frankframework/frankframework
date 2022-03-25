@@ -15,6 +15,7 @@
  */
 package nl.nn.adapterframework.senders;
 
+import lombok.Getter;
 import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.doc.IbisDocRef;
@@ -27,6 +28,7 @@ import nl.nn.adapterframework.filesystem.FileSystemSender;
  */
 public class ExchangeFolderSender extends FileSystemSender<EmailMessage,ExchangeFileSystem> {
 
+	private final @Getter String domain = "Exchange";
 	public final String EXCHANGE_FILE_SYSTEM ="nl.nn.adapterframework.filesystem.ExchangeFileSystem";
 
 	public ExchangeFolderSender() {

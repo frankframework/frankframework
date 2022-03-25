@@ -171,6 +171,8 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public abstract class HttpSenderBase extends SenderWithParametersBase implements HasPhysicalDestination, HasKeystore, HasTruststore {
 
+	private final @Getter String domain = "Http";
+	
 	private @Getter String url;
 	private @Getter String urlParam = "url";
 
@@ -766,7 +768,6 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		}
 		return getUrl();
 	}
-
 
 	@IbisDoc({"URL or base of URL to be used", ""})
 	public void setUrl(String string) {

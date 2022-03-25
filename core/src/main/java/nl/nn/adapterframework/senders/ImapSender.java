@@ -17,13 +17,16 @@ package nl.nn.adapterframework.senders;
 
 import javax.mail.Message;
 
+import lombok.Getter;
 import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.filesystem.FileSystemSender;
 import nl.nn.adapterframework.filesystem.ImapFileSystem;
 
 public class ImapSender extends FileSystemSender<Message, ImapFileSystem> {
+
+	private final @Getter String domain = "IMAP";
 	public final String IMAP_FILE_SYSTEM ="nl.nn.adapterframework.filesystem.ImapFileSystem";
-	
+
 	public ImapSender() {
 		setFileSystem(new ImapFileSystem());
 	}
@@ -37,8 +40,7 @@ public class ImapSender extends FileSystemSender<Message, ImapFileSystem> {
 	public void setPort(int port) {
 		getFileSystem().setPort(port);
 	}
-	
-	
+
 	@IbisDocRef({"3", IMAP_FILE_SYSTEM})
 	public void setAuthAlias(String authAlias) {
 		getFileSystem().setAuthAlias(authAlias);
@@ -48,23 +50,20 @@ public class ImapSender extends FileSystemSender<Message, ImapFileSystem> {
 	public void setUsername(String username) {
 		getFileSystem().setUsername(username);
 	}
-	
+
 	@IbisDocRef({"5", IMAP_FILE_SYSTEM})
 	public void setPassword(String password) {
 		getFileSystem().setPassword(password);
 	}
 
-	
 	@IbisDocRef({"6", IMAP_FILE_SYSTEM})
 	public void setBaseFolder(String baseFolder) {
 		getFileSystem().setBaseFolder(baseFolder);
 	}
 
-
 	@IbisDocRef({"7", IMAP_FILE_SYSTEM})
 	public void setReplyAddressFields(String replyAddressFields) {
 		getFileSystem().setReplyAddressFields(replyAddressFields);
 	}
-	
 
 }

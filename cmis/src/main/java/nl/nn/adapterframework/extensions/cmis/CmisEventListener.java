@@ -25,6 +25,7 @@ import nl.nn.adapterframework.util.EnumUtils;
 
 public class CmisEventListener extends PushingListenerAdapter implements HasPhysicalDestination {
 
+	private final String domain = "CMIS Event";
 	private CmisEvent cmisEvent = null;
 
 	@Override
@@ -53,6 +54,11 @@ public class CmisEventListener extends PushingListenerAdapter implements HasPhys
 		sb.append(cmisEvent.name());
 
 		return sb.toString();
+	}
+
+	@Override
+	public String getDomain() {
+		return domain;
 	}
 
 	@Override
