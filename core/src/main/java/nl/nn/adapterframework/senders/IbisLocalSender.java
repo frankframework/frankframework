@@ -90,7 +90,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	private @Getter String javaListener;
 	private @Getter String javaListenerSessionKey;
 	private @Getter boolean isolated=false;
-	private @Getter(onMethod=@__({@Override})) boolean synchronous=true;
+	private @Getter(onMethod = @__({@Override})) boolean synchronous=true;
 	private @Getter boolean checkDependency=true;
 	private @Getter int dependencyTimeOut=60;
 	private @Getter String returnedSessionKeys=null;
