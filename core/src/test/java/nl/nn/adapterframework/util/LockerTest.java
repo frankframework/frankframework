@@ -45,11 +45,11 @@ public class LockerTest extends TransactionManagerTestBase {
 	private void createDbTableIfNotExists() throws Exception {
 		if (!isTablePresent("IBISLOCK")) {
 			JdbcUtil.executeStatement(connection,
-				"CREATE TABLE IBISLOCK(" + 
-				"OBJECTID "+dbmsSupport.getTextFieldType()+"(100) NOT NULL PRIMARY KEY, " + 
-				"TYPE "+dbmsSupport.getTextFieldType()+"(1) NULL, " + 
-				"HOST "+dbmsSupport.getTextFieldType()+"(100) NULL, " + 
-				"CREATIONDATE "+dbmsSupport.getTimestampFieldType()+" NULL, " + 
+				"CREATE TABLE IBISLOCK(" +
+				"OBJECTID "+dbmsSupport.getTextFieldType()+"(100) NOT NULL PRIMARY KEY, " +
+				"TYPE "+dbmsSupport.getTextFieldType()+"(1) NULL, " +
+				"HOST "+dbmsSupport.getTextFieldType()+"(100) NULL, " +
+				"CREATIONDATE "+dbmsSupport.getTimestampFieldType()+" NULL, " +
 				"EXPIRYDATE "+dbmsSupport.getTimestampFieldType()+" NULL)");
 			tableCreated = true;
 		}
@@ -59,7 +59,7 @@ public class LockerTest extends TransactionManagerTestBase {
 	@Override
 	public void teardown() throws Exception {
 		if (tableCreated) {
-			dropTable("IBISLOCK");// drop the table if it was created, to avoid interference with Liquibase
+			dropTableIfPresent("IBISLOCK");// drop the table if it was created, to avoid interference with Liquibase
 		}
 		super.teardown();
 	}
@@ -127,7 +127,7 @@ public class LockerTest extends TransactionManagerTestBase {
 		locker.setTxManager(txManager);
 		locker.setObjectId("myLocker");
 		locker.configure();
-		
+
 		TimeoutGuard testTimeout = new TimeoutGuard(10,"Testtimeout");
 		try {
 			Semaphore otherReady = new Semaphore();
@@ -139,29 +139,29 @@ public class LockerTest extends TransactionManagerTestBase {
 			lockerTester.setWaitBeforeAction(otherContinue);
 			lockerTester.setFinalizeActionDone(otherFinished);
 			lockerTester.start();
-			
+
 			otherReady.acquire();
 			String objectId = locker.acquire();
 			otherContinue.release();
 			otherFinished.acquire();
-			
+
 			assertNotNull(objectId);
 			assertNotNull(lockerTester.getCaught());
-			
+
 		} finally {
 			if (testTimeout.cancel()) {
 				fail("test timed out");
 			}
 		}
 	}
-	
+
 	@Test
 	public void testTakeLockFailsAfterExecutingInsertInOtherThread() throws Exception {
 		cleanupLocks();
 		locker.setTxManager(txManager);
 		locker.setObjectId("myLocker");
 		locker.configure();
-		
+
 		TimeoutGuard testTimeout = new TimeoutGuard(10,"Testtimeout");
 		try {
 			Semaphore otherReady = new Semaphore();
@@ -173,7 +173,7 @@ public class LockerTest extends TransactionManagerTestBase {
 			lockerTester.setWaitAfterAction(otherContinue);
 			lockerTester.setFinalizeActionDone(otherFinished);
 			lockerTester.start();
-			
+
 			otherReady.acquire();
 			Timer timer = new Timer("let other thread commit after one second");
 			timer.schedule(new TimerTask() {
@@ -184,10 +184,10 @@ public class LockerTest extends TransactionManagerTestBase {
 							}, 1000L);
 			String objectId = locker.acquire();
 			otherFinished.acquire();
-			
+
 			assertNull(objectId);
 			assertNull(lockerTester.getCaught());
-			
+
 		} finally {
 			if (testTimeout.cancel()) {
 				fail("test timed out");
@@ -202,9 +202,9 @@ public class LockerTest extends TransactionManagerTestBase {
 		locker.setObjectId("myLocker");
 		locker.setLockWaitTimeout(1);
 		locker.configure();
-		
+
 		boolean lockerUnderTestReturned = false;
-		
+
 		log.debug("Creating Timeout Guard");
 		TimeoutGuard testTimeout = new TimeoutGuard(20,"Testtimeout");
 		try {
@@ -220,7 +220,7 @@ public class LockerTest extends TransactionManagerTestBase {
 			log.debug("Inserting lock into table in other thread");
 			lockerTester.start();
 			log.debug("Waiting for other thread to return from insert");
-			
+
 			otherInsertReady.acquire();
 			log.debug("other thread returned from insert, acquiring lock");
 			String objectId = locker.acquire();
@@ -229,27 +229,27 @@ public class LockerTest extends TransactionManagerTestBase {
 			log.debug("Locker returned, releasing process in other thread to finish");
 
 			lockerUnderTestReturned = true;
-			
+
 			otherContinue.release();
 			log.debug("Other threads process released, waiting to finish");
 			try {
 				otherFinished.acquire();
 			} catch (Throwable t) {
 				// we do not consider this a failure condition:
-				// This test is not about the other thread to complete without problems, 
+				// This test is not about the other thread to complete without problems,
 				// only about this thread to wait at most <timeout> seconds for the lock.
 				boolean interrupted = Thread.interrupted();
 				log.warn("Ignoring exception waiting for other thread to complete, interrupted ["+interrupted+"]", t);
 			}
-			
+
 			// N.B. commented out test for other thread:
-			// This test is not about the other thread to complete without problems, 
+			// This test is not about the other thread to complete without problems,
 			// only about this thread to wait at most <timeout> seconds for the lock.
-			
+
 			//log.debug("Other threads process finished, testing conditions");
 			//assertNull(lockerTester.getCaught());
 			log.debug("testLockWaitTimeout() passed");
-			
+
 		} catch (Throwable t) {
 			log.error("testLockWaitTimeout() threw exception", t);
 			throw t;
@@ -341,7 +341,7 @@ public class LockerTest extends TransactionManagerTestBase {
 	@Test
 	public void testLockerUnlock() throws Exception {
 		cleanupLocks();
-		String lockObjectId = null; 
+		String lockObjectId = null;
 
 		locker.setTxManager(txManager);
 		locker.setTransactionAttribute(TransactionAttribute.REQUIRED);
@@ -384,7 +384,7 @@ public class LockerTest extends TransactionManagerTestBase {
 			super.initAction();
 			conn = getConnection();
 		}
-		
+
 		@Override
 		public void action() throws Exception {
 			executeTranslatedQuery(conn, "INSERT INTO IBISLOCK (OBJECTID) VALUES('myLocker')", QueryType.OTHER);
@@ -400,7 +400,7 @@ public class LockerTest extends TransactionManagerTestBase {
 				super.finalizeAction();
 			}
 		}
-		
+
 	}
 
 }
