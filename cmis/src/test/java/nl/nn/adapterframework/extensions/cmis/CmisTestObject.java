@@ -53,10 +53,10 @@ public abstract class CmisTestObject extends Mockito implements Document, Answer
 
 	@Override
 	public String getId() {
-		return Base64.encode(objectId.getBytes());
+		return Base64.encodeBase64String(objectId.getBytes());
 	}
 	public String getObjectId() {
-		return Base64.encode(objectId.getBytes());
+		return Base64.encodeBase64String(objectId.getBytes());
 	}
 
 	@Override
