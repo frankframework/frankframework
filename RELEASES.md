@@ -2,7 +2,7 @@ Ibis AdapterFramework release notes
 ===================================
 
 [Tags](https://github.com/ibissource/iaf/releases)
-[JavaDocs](https://javadoc.ibissource.org/latest/)
+[JavaDocs](https://javadoc.frankframework.org/)
 
 Upcoming (7.8)
 --------------

@@ -106,7 +106,7 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 			MessageWrapper<?> messageWrapper = (MessageWrapper<?>)rawMessage;
 			try {
 				StringTokenizer strTokenizer = new StringTokenizer(messageWrapper.getMessage().asString(), ",");
-				messageWrapper.setMessage(new Message(strTokenizer.nextToken()));
+				messageWrapper.setMessage(new Message(StringEscapeUtils.unescapeCsv(strTokenizer.nextToken())));
 				int i = 0;
 				while (strTokenizer.hasMoreTokens()) {
 					threadContext.put(sessionKeysList.get(i), StringEscapeUtils.unescapeCsv(strTokenizer.nextToken()));

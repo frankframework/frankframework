@@ -24,7 +24,7 @@
 		</Pipeline>
 	</Adapter>
 	<Adapter name="readIbisstore">
-		<Receiver name="readIbisstoreReceiver">
+		<Receiver name="readIbisstoreReceiver" pollInterval="1">
 			<listener name="MyListener"
 				className="nl.nn.adapterframework.jdbc.MessageStoreListener"
 				slotId="TestMessageStoreSenderAndListener-Queue"
@@ -32,6 +32,12 @@
 		</Receiver>
 		<Pipeline firstPipe="DoIt">
 			<Exit state="success" path="EXIT" code="200" />
+			<inputValidator className="nl.nn.adapterframework.pipes.XmlValidator"
+				schema="xsd/any.xsd"
+				root="Envelope"
+				throwException="true">
+			</inputValidator>
+
 			<FixedResultPipe name="DoIt"
 				returnString="Hello World">
 				<Forward name="success" path="EXIT" />
