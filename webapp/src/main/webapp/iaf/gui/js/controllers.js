@@ -1738,7 +1738,7 @@ angular.module('iaf.beheerconsole')
 	}});
 
 }])
-.controller('ConnectionOverviewCtrl', ['$scope', 'Api', '$state', 'SweetAlert', 'Misc', function($scope, Api, $state, SweetAlert, Misc) {
+.controller('ConnectionOverviewCtrl', ['$scope', 'Api', function($scope, Api) {
 	$scope.dtOptions = {
 		processing: true,
 		lengthMenu: [50,100,250,500],
