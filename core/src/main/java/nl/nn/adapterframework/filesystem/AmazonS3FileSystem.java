@@ -54,7 +54,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 
 public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWritableFileSystem<S3Object> {
-	private final @Getter String domain = "Amazon";
+	private final @Getter(onMethod = @__(@Override)) String domain = "Amazon";
 	public static final List<String> AVAILABLE_REGIONS = getAvailableRegions();
 //	public static final List<String> STORAGE_CLASSES = getStorageClasses();
 //	public static final List<String> TIERS = getTiers();

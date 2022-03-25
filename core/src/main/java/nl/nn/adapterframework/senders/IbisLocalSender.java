@@ -83,7 +83,7 @@ import nl.nn.adapterframework.util.Misc;
  */
 public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination {
 
-	private final @Getter String domain = "Local";
+	private final @Getter(onMethod = @__(@Override)) String domain = "Local";
 
 	private Configuration configuration;
 	private @Getter String serviceName;

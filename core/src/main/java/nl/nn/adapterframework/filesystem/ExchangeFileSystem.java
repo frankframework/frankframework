@@ -103,7 +103,7 @@ import nl.nn.adapterframework.xml.SaxElementBuilder;
  *
  */
 public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachment,ExchangeService> {
-	private final @Getter String domain = "Exchange";
+	private final @Getter(onMethod = @__(@Override)) String domain = "Exchange";
 	private String mailAddress;
 	private boolean validateAllRedirectUrls=true;
 	private String url;

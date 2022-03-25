@@ -45,7 +45,7 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTPFile> {
 
-	private final @Getter String domain = "FTP";
+	private final @Getter(onMethod = @__(@Override)) String domain = "FTP";
 	private String remoteDirectory = "";
 
 	private boolean open;

@@ -23,7 +23,7 @@ import nl.nn.adapterframework.filesystem.FileSystemPipe;
 import nl.nn.adapterframework.filesystem.LocalFileSystem;
 
 public class LocalFileSystemPipe extends FileSystemPipe<Path, LocalFileSystem>{
-	private final @Getter String domain = "LocalFilesystem";
+	private final @Getter(onMethod = @__(@Override)) String domain = "LocalFilesystem";
 
 	public LocalFileSystemPipe() {
 		setFileSystem(new LocalFileSystem());

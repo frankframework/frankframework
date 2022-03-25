@@ -21,7 +21,7 @@ import nl.nn.adapterframework.filesystem.FileSystemPipe;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem;
 
 public class Samba2Pipe extends FileSystemPipe<String, Samba2FileSystem> {
-	private final @Getter String domain = "Samba";
+	private final @Getter(onMethod = @__(@Override)) String domain = "Samba";
 
 	public Samba2Pipe() {
 		setFileSystem(new Samba2FileSystem());

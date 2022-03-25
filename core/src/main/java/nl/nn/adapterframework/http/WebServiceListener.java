@@ -58,7 +58,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  */
 public class WebServiceListener extends PushingListenerAdapter implements HasPhysicalDestination, HasSpecialDefaultValues, ApplicationContextAware {
 
-	private final @Getter String domain = "Http";
+	private final @Getter(onMethod = @__(@Override)) String domain = "Http";
 	private @Getter boolean soap = true;
 	private @Getter String serviceNamespaceURI;
 	private SoapWrapper soapWrapper = null;

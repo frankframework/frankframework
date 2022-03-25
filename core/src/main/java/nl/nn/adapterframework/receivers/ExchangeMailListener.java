@@ -30,7 +30,7 @@ import nl.nn.adapterframework.filesystem.MailListener;
  */
 public class ExchangeMailListener extends MailListener<EmailMessage,Attachment,ExchangeFileSystem> {
 
-	private final @Getter String domain = "Exchange";
+	private final @Getter(onMethod = @__(@Override)) String domain = "Exchange";
 
 	public final String EXCHANGE_FILE_SYSTEM ="nl.nn.adapterframework.filesystem.ExchangeFileSystem";
 

@@ -15,6 +15,7 @@
  */
 package nl.nn.adapterframework.extensions.cmis;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ListenerException;
@@ -25,7 +26,7 @@ import nl.nn.adapterframework.util.EnumUtils;
 
 public class CmisEventListener extends PushingListenerAdapter implements HasPhysicalDestination {
 
-	private final String domain = "CMIS Event";
+	private final @Getter(onMethod = @__(@Override)) String domain = "CMIS Event";
 	private CmisEvent cmisEvent = null;
 
 	@Override
@@ -54,11 +55,6 @@ public class CmisEventListener extends PushingListenerAdapter implements HasPhys
 		sb.append(cmisEvent.name());
 
 		return sb.toString();
-	}
-
-	@Override
-	public String getDomain() {
-		return domain;
 	}
 
 	@Override

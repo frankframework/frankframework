@@ -24,7 +24,7 @@ import nl.nn.adapterframework.filesystem.ImapFileSystem;
 
 public class ImapSender extends FileSystemSender<Message, ImapFileSystem> {
 
-	private final @Getter String domain = "IMAP";
+	private final @Getter(onMethod = @__(@Override)) String domain = "IMAP";
 	public final String IMAP_FILE_SYSTEM ="nl.nn.adapterframework.filesystem.ImapFileSystem";
 
 	public ImapSender() {

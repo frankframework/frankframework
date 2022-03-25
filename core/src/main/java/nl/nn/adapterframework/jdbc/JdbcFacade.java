@@ -62,7 +62,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * @since 	4.1
  */
 public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAEnabled, HasStatistics {
-	private final @Getter String domain = "JDBC";
+	private final @Getter(onMethod = @__(@Override)) String domain = "JDBC";
 	private String datasourceName = null;
 	private String authAlias = null;
 	private String username = null;

@@ -23,7 +23,7 @@ import nl.nn.adapterframework.filesystem.FileSystemSender;
 import nl.nn.adapterframework.filesystem.LocalFileSystem;
 
 public class LocalFileSystemSender extends FileSystemSender<Path, LocalFileSystem>{
-	private final @Getter String domain = "LocalFilesystem";
+	private final @Getter(onMethod = @__(@Override)) String domain = "LocalFilesystem";
 
 	public LocalFileSystemSender() {
 		setFileSystem(new LocalFileSystem());

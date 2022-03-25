@@ -19,7 +19,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class MockFileSystem<M extends MockFile> extends MockFolder implements IWritableFileSystem<M> {
-	private final @Getter String domain = "Filesystem";
+	private final @Getter(onMethod = @__(@Override)) String domain = "Filesystem";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private boolean configured=false;

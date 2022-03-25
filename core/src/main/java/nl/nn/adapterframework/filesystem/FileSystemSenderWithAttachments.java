@@ -41,7 +41,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  */
 public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F,A>> extends FileSystemSender<F,FS> {
 
-	private final @Getter String domain = "LocalFileSystem";
+	private final @Getter(onMethod = @__(@Override)) String domain = "LocalFileSystem";
 	public final FileSystemAction[] ACTIONS_FS_WITH_ATTACHMENTS= {FileSystemAction.LISTATTACHMENTS};
 
 	private boolean attachmentsAsSessionKeys=false;

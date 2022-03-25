@@ -50,7 +50,7 @@ import nl.nn.adapterframework.util.AppConstants;
  */
 public class ApiListener extends PushingListenerAdapter implements HasPhysicalDestination, ReceiverAware<String> {
 
-	private final @Getter String domain = "Http";
+	private final @Getter(onMethod = @__(@Override)) String domain = "Http";
 	private @Getter String uriPattern;
 	private @Getter boolean updateEtag = true;
 	private @Getter String operationId;

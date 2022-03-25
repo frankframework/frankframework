@@ -23,7 +23,7 @@ import nl.nn.adapterframework.filesystem.FileSystemListener;
 import nl.nn.adapterframework.filesystem.LocalFileSystem;
 
 public class DirectoryListener extends FileSystemListener<Path, LocalFileSystem>{
-	private final @Getter String domain = "LocalFilesystem";
+	private final @Getter(onMethod = @__(@Override)) String domain = "LocalFilesystem";
 
 	@Override
 	protected LocalFileSystem createFileSystem() {

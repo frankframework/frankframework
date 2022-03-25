@@ -25,7 +25,7 @@ import nl.nn.adapterframework.filesystem.MailListener;
 
 public class ImapListener extends MailListener<Message, MimeBodyPart, ImapFileSystem> {
 
-	private final @Getter String domain = "IMAP";
+	private final @Getter(onMethod = @__(@Override)) String domain = "IMAP";
 
 	public final String IMAP_FILE_SYSTEM ="nl.nn.adapterframework.filesystem.ImapFileSystem";
 	

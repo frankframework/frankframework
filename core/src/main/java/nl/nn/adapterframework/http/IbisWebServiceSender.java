@@ -42,7 +42,7 @@ import nl.nn.adapterframework.util.AppConstants;
  */
 public class IbisWebServiceSender extends SenderBase implements HasPhysicalDestination {
 
-	private final @Getter String domain = "Local";
+	private final @Getter(onMethod = @__(@Override)) String domain = "Local";
 
 	private String ibisHost = "localhost";
 	private String ibisInstance = null;

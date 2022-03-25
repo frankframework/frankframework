@@ -23,7 +23,7 @@ import nl.nn.adapterframework.filesystem.Samba1FileSystem;
 
 public class Samba1Sender extends FileSystemSender<SmbFile, Samba1FileSystem> {
 
-	private final @Getter String domain = "Samba";
+	private final @Getter(onMethod = @__(@Override)) String domain = "Samba";
 
 	public Samba1Sender() {
 		setFileSystem(new Samba1FileSystem());

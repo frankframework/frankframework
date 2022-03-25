@@ -45,7 +45,7 @@ import nl.nn.adapterframework.util.LogUtil;
  *
  */
 public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFileSystem<Path> {
-	private final @Getter String domain = "LocalFilesystem";
+	private final @Getter(onMethod = @__(@Override)) String domain = "LocalFilesystem";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String root;

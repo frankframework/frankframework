@@ -63,7 +63,7 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
 
 public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IMAPFolder> {
-	private final @Getter String domain = "IMAP";
+	private final @Getter(onMethod = @__(@Override)) String domain = "IMAP";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private @Getter String host;

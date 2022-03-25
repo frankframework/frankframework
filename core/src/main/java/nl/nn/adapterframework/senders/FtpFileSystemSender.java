@@ -31,7 +31,7 @@ import nl.nn.adapterframework.ftp.FtpSession.Prot;
 
 public class FtpFileSystemSender extends FileSystemSender<FTPFile, FtpFileSystem> implements HasKeystore, HasTruststore {
 
-	private final @Getter String domain = "FTP";
+	private final @Getter(onMethod = @__(@Override)) String domain = "FTP";
 	private final String FTPFILESYSTEM = "nl.nn.adapterframework.filesystem.FtpFileSystem";
 
 	public FtpFileSystemSender() {

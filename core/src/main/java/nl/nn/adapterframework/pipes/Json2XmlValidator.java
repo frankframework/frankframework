@@ -62,7 +62,7 @@ import nl.nn.adapterframework.xml.XmlWriter;
  */
 public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestination {
 
-	private final @Getter String domain = "XML Schema";
+	private final @Getter(onMethod = @__(@Override)) String domain = "XML Schema";
 	public static final String INPUT_FORMAT_SESSION_KEY_PREFIX = "Json2XmlValidator.inputformat ";
 	
 	private @Getter boolean compactJsonArrays=true;
