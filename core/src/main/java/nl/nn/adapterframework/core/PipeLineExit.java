@@ -47,8 +47,6 @@ import nl.nn.adapterframework.core.PipeLine.ExitState;
  */
 public class PipeLineExit implements IForwardTarget {
 
-	// getName() is required by {@link IForwardTarget}, this way PipeForwards can be resolved to either Pipes or
-	// PipeLineExits.
 	private @Getter String name;
 	private @Getter ExitState state;
 	private @Getter int exitCode = 0;
