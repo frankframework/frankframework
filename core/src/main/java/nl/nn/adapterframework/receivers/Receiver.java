@@ -440,13 +440,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			if (timeoutGuard.cancel()) {
 				throw new TimeoutException("timeout exceeded while starting receiver");
 			}
-
-			throwEvent(RCV_STARTED_RUNNING_MONITOR_EVENT);
-			if (getListener() instanceof IPullingListener){
-				// start all threads. Also sets runstate=STARTED 
-				listenerContainer.start();
-			}
 		}
+		if (getListener() instanceof IPullingListener){
+			// start all threads. Also sets runstate=STARTED 
+			listenerContainer.start();
+		}
+		throwEvent(RCV_STARTED_RUNNING_MONITOR_EVENT);
 	}
 
 	/**
