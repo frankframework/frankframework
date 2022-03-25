@@ -264,18 +264,18 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public ResultSet getTableColumns(Connection conn, String tableName) throws JdbcException {
-		return super.getTableColumns(conn, tableName.toLowerCase());
+	public ResultSet getTableColumns(Connection conn, String schemaName, String tableName, String columnNamePattern) throws JdbcException {
+		return super.getTableColumns(conn, schemaName, tableName.toLowerCase(), columnNamePattern!=null ? columnNamePattern.toLowerCase() : null);
 	}
 
 	@Override
-	public boolean isTablePresent(Connection conn, String tableName) throws JdbcException {
-		return doIsTablePresent(conn, "pg_catalog.pg_tables", "schemaname", "tablename", "public", tableName);
+	public boolean isTablePresent(Connection conn, String schemaName, String tableName) throws JdbcException {
+		return super.isTablePresent(conn, schemaName, tableName.toLowerCase());
 	}
 
 	@Override
 	public boolean isColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException {
-		return doIsColumnPresent(conn, "information_schema.columns", "TABLE_SCHEMA", "TABLE_NAME", "COLUMN_NAME", schemaName!=null?schemaName:"public", tableName, columnName);
+		return super.isColumnPresent(conn, schemaName, tableName.toLowerCase(), columnName.toLowerCase());
 	}
 
 	@Override
@@ -285,9 +285,8 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 		}
 		if (wait < 0) {
 			return selectQuery+(batchSize>0?" LIMIT "+batchSize:"")+" FOR UPDATE SKIP LOCKED";
-		} else {
-			throw new IllegalArgumentException(getDbms()+" does not support setting lock wait timeout in query");
 		}
+		throw new IllegalArgumentException(getDbms()+" does not support setting lock wait timeout in query");
 	}
 
 	@Override
@@ -297,9 +296,8 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 		}
 		if (wait < 0) {
 			return selectQuery+(batchSize>0?" LIMIT "+batchSize:"")+" FOR SHARE SKIP LOCKED"; // take shared lock, to be able to use 'skip locked'
-		} else {
-			throw new IllegalArgumentException(getDbms()+" does not support setting lock wait timeout in query");
 		}
+		throw new IllegalArgumentException(getDbms()+" does not support setting lock wait timeout in query");
 	}
 
 	// commented out prepareSessionForNonLockingRead(), see https://dev.mysql.com/doc/refman/8.0/en/innodb-consistent-read.html

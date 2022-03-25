@@ -388,8 +388,18 @@ public class GenericDbmsSupport implements IDbmsSupport {
 
 	@Override
 	public ResultSet getTableColumns(Connection conn, String tableName) throws JdbcException {
+		return getTableColumns(conn, null, tableName);
+	}
+
+	@Override
+	public ResultSet getTableColumns(Connection conn, String schemaName, String tableName) throws JdbcException {
+		return getTableColumns(conn, schemaName, tableName, null);
+	}
+
+	@Override
+	public ResultSet getTableColumns(Connection conn, String schemaName, String tableName, String columnNamePattern) throws JdbcException {
 		try {
-			return conn.getMetaData().getColumns(null, null, tableName, null);
+			return conn.getMetaData().getColumns(null, schemaName, tableName, columnNamePattern);
 		} catch (SQLException e) {
 			throw new JdbcException("exception retrieving columns for table [" + tableName + "]", e);
 		}

@@ -147,6 +147,8 @@ public interface IDbmsSupport {
 	void convertQuery(QueryExecutionContext queryExecutionContext, String sqlDialectFrom) throws SQLException, JdbcException;
 
 	ResultSet getTableColumns(Connection conn, String tableName) throws JdbcException;
+	ResultSet getTableColumns(Connection conn, String schemaName, String tableName) throws JdbcException;
+	ResultSet getTableColumns(Connection conn, String schemaName, String tableName, String columnNamePattern) throws JdbcException;
 	boolean isTablePresent(Connection conn, String tableName) throws JdbcException;
 	boolean isTablePresent(Connection conn, String schemaName, String tableName) throws JdbcException;
 	boolean isColumnPresent(Connection conn, String tableName, String columnName) throws JdbcException;

@@ -36,7 +36,7 @@ public class FixedQuerySenderTest extends SenderTestBase<FixedQuerySender> {
 		super.setUp();
 
 		sender.setDatasourceName("H2");
-		sender.setQuery("SELECT * FROM TEMP");
+		sender.setQuery("SELECT * FROM "+JdbcTestBase.TEST_TABLE);
 
 		boolean databaseIsPresent = false;
 		try {
@@ -53,7 +53,7 @@ public class FixedQuerySenderTest extends SenderTestBase<FixedQuerySender> {
 
 		try {
 			if (dbmsSupport.isTablePresent(connection, "TEMP")) {
-				JdbcUtil.executeStatement(connection, "DROP TABLE TEMP");
+				JdbcUtil.executeStatement(connection, "DROP TABLE "+JdbcTestBase.TEST_TABLE);
 				log.warn(JdbcUtil.warningsToString(connection.getWarnings()));
 			}
 		} catch (Exception e) {
@@ -61,9 +61,9 @@ public class FixedQuerySenderTest extends SenderTestBase<FixedQuerySender> {
 			fail(e.getMessage());
 		}
 		try {
-			JdbcUtil.executeStatement(connection, 
-					"CREATE TABLE TEMP(TKEY "+dbmsSupport.getNumericKeyFieldType()+ " PRIMARY KEY, TVARCHAR "+dbmsSupport.getTextFieldType()+"(100), TINT INT, TNUMBER NUMERIC(10,5), " +
-					"TDATE DATE, TDATETIME "+dbmsSupport.getTimestampFieldType()+", TBOOLEAN "+dbmsSupport.getBooleanFieldType()+", "+ 
+			JdbcUtil.executeStatement(connection,
+					"CREATE TABLE "+JdbcTestBase.TEST_TABLE+"(TKEY "+dbmsSupport.getNumericKeyFieldType()+ " PRIMARY KEY, TVARCHAR "+dbmsSupport.getTextFieldType()+"(100), TINT INT, TNUMBER NUMERIC(10,5), " +
+					"TDATE DATE, TDATETIME "+dbmsSupport.getTimestampFieldType()+", TBOOLEAN "+dbmsSupport.getBooleanFieldType()+", "+
 					"TCLOB "+dbmsSupport.getClobFieldType()+", TBLOB "+dbmsSupport.getBlobFieldType()+")");
 			log.warn(JdbcUtil.warningsToString(connection.getWarnings()));
 		} catch (Exception e) {
@@ -74,7 +74,7 @@ public class FixedQuerySenderTest extends SenderTestBase<FixedQuerySender> {
 
 	@Test
 	public void testNamedParametersTrue() throws Exception {
-		sender.setQuery("INSERT INTO TEMP (TKEY, TVARCHAR) VALUES ('1', ?{namedParam1})");
+		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (TKEY, TVARCHAR) VALUES ('1', ?{namedParam1})");
 		sender.addParameter(new Parameter("namedParam1", "value"));
 		sender.setUseNamedParams(true);
 
@@ -87,7 +87,7 @@ public class FixedQuerySenderTest extends SenderTestBase<FixedQuerySender> {
 
 	@Test
 	public void testNamedParameters() throws Exception {
-		sender.setQuery("INSERT INTO TEMP (TKEY, TVARCHAR) VALUES ('1', ?{param})");
+		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (TKEY, TVARCHAR) VALUES ('1', ?{param})");
 		sender.addParameter(new Parameter("param", "value"));
 
 		sender.configure();
@@ -99,15 +99,15 @@ public class FixedQuerySenderTest extends SenderTestBase<FixedQuerySender> {
 
 	@Test
 	public void testUseNamedParametersStringValueContains_unp_start() throws Exception {
-		sender.setQuery("INSERT INTO TEMP (TKEY, TVARCHAR) VALUES ('3', '?{param}')");
+		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (TKEY, TVARCHAR) VALUES ('3', '?{param}')");
 
 		sender.configure();
 		sender.open();
 
 		Message result = sendMessage("dummy");
 		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
-		
-		sender.setQuery("SELECT TVARCHAR FROM TEMP WHERE TKEY='3'");
+
+		sender.setQuery("SELECT TVARCHAR FROM "+JdbcTestBase.TEST_TABLE+" WHERE TKEY='3'");
 		sender.setQueryType("select");
 		sender.setScalar(true);
 
@@ -120,7 +120,7 @@ public class FixedQuerySenderTest extends SenderTestBase<FixedQuerySender> {
 	public void testUseNamedParametersStringValueContains_unp_start_resolveParam() throws Exception {
 		exception.expect(SenderException.class);
 
-		sender.setQuery("INSERT INTO TEMP (TKEY, TVARCHAR) VALUES ('1', '?{param}')");
+		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (TKEY, TVARCHAR) VALUES ('1', '?{param}')");
 
 		sender.addParameter(new Parameter("param", "value"));
 
@@ -129,10 +129,10 @@ public class FixedQuerySenderTest extends SenderTestBase<FixedQuerySender> {
 
 		sendMessage("dummy");
 	}
-	
+
 	@Test
 	public void testUseNamedParametersWithoutNamedParam() throws Exception {
-		sender.setQuery("INSERT INTO TEMP (TKEY, TVARCHAR) VALUES ('1', 'text')");
+		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (TKEY, TVARCHAR) VALUES ('1', 'text')");
 		sender.setUseNamedParams(true);
 		sender.configure();
 		sender.open();
@@ -144,22 +144,22 @@ public class FixedQuerySenderTest extends SenderTestBase<FixedQuerySender> {
 	@Test
 	public void testUseNamedParametersWithoutParam() throws Exception {
 		exception.expect(SenderException.class);
-		exception.expectMessage("Syntax error in SQL statement \"INSERT INTO TEMP (TKEY, TVARCHAR) VALUES ('1', ?{param})[*]\"");
+		exception.expectMessage("Syntax error in SQL statement \"INSERT INTO "+JdbcTestBase.TEST_TABLE+" (TKEY, TVARCHAR) VALUES ('1', ?{param})[*]\"");
 
-		sender.setQuery("INSERT INTO TEMP (TKEY, TVARCHAR) VALUES ('1', ?{param})");
+		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (TKEY, TVARCHAR) VALUES ('1', ?{param})");
 		sender.setUseNamedParams(true);
 		sender.configure();
 		sender.open();
 
 		sendMessage("dummy");
 	}
-	
+
 	@Test
 	public void testNamedParamInQueryFlagFalse() throws Exception {
 		exception.expect(SenderException.class);
-		exception.expectMessage("Syntax error in SQL statement \"INSERT INTO TEMP (TKEY, TVARCHAR) VALUES ('1', ?{param})[*]\"");
+		exception.expectMessage("Syntax error in SQL statement \"INSERT INTO "+JdbcTestBase.TEST_TABLE+" (TKEY, TVARCHAR) VALUES ('1', ?{param})[*]\"");
 
-		sender.setQuery("INSERT INTO TEMP (TKEY, TVARCHAR) VALUES ('1', ?{param})");
+		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (TKEY, TVARCHAR) VALUES ('1', ?{param})");
 		sender.setUseNamedParams(false);
 		sender.configure();
 		sender.open();
@@ -170,9 +170,9 @@ public class FixedQuerySenderTest extends SenderTestBase<FixedQuerySender> {
 	@Test
 	public void testInCompleteNamedParamInQuery() throws Exception {
 		exception.expect(SenderException.class);
-		exception.expectMessage("Syntax error in SQL statement \"INSERT INTO TEMP (TKEY, TVARCHAR) VALUES ('1', ?{param)[*]\"");
+		exception.expectMessage("Syntax error in SQL statement \"INSERT INTO "+JdbcTestBase.TEST_TABLE+" (TKEY, TVARCHAR) VALUES ('1', ?{param)[*]\"");
 
-		sender.setQuery("INSERT INTO TEMP (TKEY, TVARCHAR) VALUES ('1', ?{param)");
+		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (TKEY, TVARCHAR) VALUES ('1', ?{param)");
 		sender.configure();
 		sender.open();
 
@@ -180,7 +180,7 @@ public class FixedQuerySenderTest extends SenderTestBase<FixedQuerySender> {
 	}
 	@Test
 	public void testColumnsReturnedWithSpaceBetween() throws Exception {
-		sender.setQuery("INSERT INTO TEMP (TKEY, TVARCHAR) VALUES ('1', ?)");
+		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (TKEY, TVARCHAR) VALUES ('1', ?)");
 		sender.addParameter(new Parameter("param1", "value"));
 
 		sender.setColumnsReturned("TKEY, TVARCHAR");
@@ -190,10 +190,10 @@ public class FixedQuerySenderTest extends SenderTestBase<FixedQuerySender> {
 		Message result=sendMessage("dummy");
 		assertEquals(resultColumnsReturned, result.asString());
 	}
-	
+
 	@Test
 	public void testColumnsReturnedWithDoubleSpace() throws Exception {
-		sender.setQuery("INSERT INTO TEMP (TKEY, TVARCHAR) VALUES ('1', ?)");
+		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (TKEY, TVARCHAR) VALUES ('1', ?)");
 		sender.addParameter(new Parameter("param1", "value"));
 
 		sender.setColumnsReturned("  TKEY,  TVARCHAR  ");
@@ -203,10 +203,10 @@ public class FixedQuerySenderTest extends SenderTestBase<FixedQuerySender> {
 		Message result=sendMessage("dummy");
 		assertEquals(resultColumnsReturned, result.asString());
 	}
-	
+
 	@Test
 	public void testColumnsReturned() throws Exception {
-		sender.setQuery("INSERT INTO TEMP (TKEY, TVARCHAR) VALUES ('1', ?)");
+		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (TKEY, TVARCHAR) VALUES ('1', ?)");
 		sender.addParameter(new Parameter("param1", "value"));
 
 		sender.setColumnsReturned("TKEY,TVARCHAR");
