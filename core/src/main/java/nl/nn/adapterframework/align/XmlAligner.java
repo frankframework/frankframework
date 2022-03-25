@@ -388,10 +388,10 @@ public class XmlAligner extends XMLFilterImpl {
 	}
 
 	public void handleRecoverableError(String message, boolean ignoreFlag) throws SAXParseException {
-		SAXParseException saxException = new SAXParseException(message, getDocumentLocator());
 		ErrorHandler errorHandler = getErrorHandler();
 		if (errorHandler!=null) {
 			try {
+				SAXParseException saxException = new SAXParseException(message, getDocumentLocator());
 				if (ignoreFlag) {
 					errorHandler.warning(saxException);
 				} else {
@@ -402,6 +402,8 @@ public class XmlAligner extends XMLFilterImpl {
 				log.warn("exception handling error", e);
 			}
 		}
-		throw saxException;
+		if (!ignoreFlag) {
+			throw new SAXParseException(message, getDocumentLocator());
+		}
 	}
 }
