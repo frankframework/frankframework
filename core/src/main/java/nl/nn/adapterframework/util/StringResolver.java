@@ -102,6 +102,7 @@ public class StringResolver {
 	public static String substVars(String val, Map props1, Map props2, List<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName) throws IllegalArgumentException {
 		StringBuilder sb = new StringBuilder();
 		String providedDefaultValue=null;
+		boolean containsDefault = false;
 		int head = 0;
 		int pointer, tail;
 		String propertyComposer = "";
@@ -121,6 +122,7 @@ public class StringResolver {
 			if(val.indexOf(VALUE_SEPARATOR) != -1) {
 				tail = val.indexOf(VALUE_SEPARATOR);
 				providedDefaultValue = val.substring(tail+VALUE_SEPARATOR.length(), indexOfDelimStop(val, pointer, delimStart, delimStop));
+				containsDefault=true;
 			} else {
 				tail = indexOfDelimStop(val, pointer, delimStart, delimStop);
 			}
@@ -203,14 +205,16 @@ public class StringResolver {
 					sb.append(replacement);
 				}
 			} else {
-				if(providedDefaultValue != null) {
+				if(providedDefaultValue != null) { // use default value of property if missing actual
 					sb.append(providedDefaultValue);
 				}
 			}
 			if(resolveWithPropertyName) {
 				sb.append(delimStop);
 			}
-			tail = indexOfDelimStop(val, pointer, delimStart, delimStop);
+			if(containsDefault) { // tail points to index of ':-' update tail to point delimStop 
+				tail = indexOfDelimStop(val, pointer, delimStart, delimStop);
+			}
 			head = tail + delimStop.length();
 		}
 	}
