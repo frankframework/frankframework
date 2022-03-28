@@ -104,11 +104,22 @@ public abstract class ConnectedFileSystemBase<F,C> extends FileSystemBase<F> {
 	}
 
 	/**
+	 * Release the connection, return it to the pool or invalidate it.
+	 */
+	protected void releaseConnection(C connection, boolean invalidateConnection) {
+		if (invalidateConnection) {
+			invalidateConnection(connection);
+		} else {
+			releaseConnection(connection);
+		}
+	}
+
+	/**
 	 * Release the connection, return it to the pool.
 	 * This method should not be called if invalidateConnection() has been called with the same connection, so the typical use case
 	 * cannot be in a finally-clause after an exception-clause.
 	 */
-	protected void releaseConnection(C connection) {
+	private void releaseConnection(C connection) {
 		if (isPooledConnection()) {
 			try {
 				connectionPool.returnObject(connection);
@@ -122,7 +133,7 @@ public abstract class ConnectedFileSystemBase<F,C> extends FileSystemBase<F> {
 	 * Remove the connection from the pool, e.g. after it has been part of trouble.
 	 * If a shared (non-pooled) connection is invalidated, the shared connection is recreated.
 	 */
-	protected void invalidateConnection(C connection) {
+	private void invalidateConnection(C connection) {
 		try {
 			if (isPooledConnection()) {
 				connectionPool.invalidateObject(connection);
