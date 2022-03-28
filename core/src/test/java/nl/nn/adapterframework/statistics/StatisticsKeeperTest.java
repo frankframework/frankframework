@@ -141,12 +141,12 @@ public class StatisticsKeeperTest {
 		}
 
 		Map<String,Object> map = sk.asMap();
-		assertMapValue(map, "Name", "test");
-		assertMapValue(map, "Count", "100");
-		assertMapValue(map, "Min", "0");
-		assertMapValue(map, "Max", "9900");
-		assertMapValue(map, "Avg", "4950.0");
-		assertMapValue(map, "StdDev", "2901.1");
+		assertMapValue(map, "name", "test");
+		assertMapValue(map, "count", "100");
+		assertMapValue(map, "min", "0");
+		assertMapValue(map, "max", "9900");
+		assertMapValue(map, "avg", "4950.0");
+		assertMapValue(map, "stdDev", "2901.1");
 		assertMapValue(map, "100ms", "1.0");
 		assertMapValue(map, "1000ms", "10.0");
 		assertMapValue(map, "2000ms", "20.0");
@@ -166,9 +166,9 @@ public class StatisticsKeeperTest {
 		List<String> labels = StatisticsKeeper.getLabels();
 		List<String> types  = StatisticsKeeper.getTypes();
 
-		assertEquals("Name", labels.get(0));
+		assertEquals("name", labels.get(0));
 		assertEquals("STRING", types.get(0));
-		assertEquals("Count", labels.get(1));
+		assertEquals("count", labels.get(1));
 		assertEquals("INTEGER", types.get(1));
 	}
 

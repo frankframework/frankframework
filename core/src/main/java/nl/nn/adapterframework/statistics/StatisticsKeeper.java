@@ -36,7 +36,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Keeps statistics (min, max, count etc).
- * 
+ *
  * @author Johan Verrips / Gerrit van Brakel
  */
 public class StatisticsKeeper<B extends IBasics<S>, S> implements ItemList {
@@ -344,7 +344,7 @@ public class StatisticsKeeper<B extends IBasics<S>, S> implements ItemList {
 	public static List<String> getLabels() {
 		if (labels == null) {
 			List<String> newLabels = new ArrayList<>();
-			newLabels.add("Name");
+			newLabels.add("name");
 			StatisticsKeeper tmp = new StatisticsKeeper("tmpStatKeeper");
 			for (int i=0;i<tmp.getItemCount();i++) {
 				newLabels.add(tmp.getItemName(i));
