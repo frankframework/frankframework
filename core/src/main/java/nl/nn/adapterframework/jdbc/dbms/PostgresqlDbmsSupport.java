@@ -275,7 +275,7 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 
 	@Override
 	public boolean isColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException {
-		return super.isColumnPresent(conn, schemaName, tableName.toLowerCase(), columnName.toLowerCase());
+		return super.isColumnPresent(conn, schemaName!=null?schemaName:"public", tableName.toLowerCase(), columnName.toLowerCase());
 	}
 
 	@Override
