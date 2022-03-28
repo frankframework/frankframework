@@ -133,7 +133,7 @@ public class TestGetAction extends CmisSenderTestBase {
 	}
 
 	@Test
-	public void sendMessageFileContent() throws Exception {
+	public void sendMessageFileContentSessionKey() throws Exception {
 		sender.setFileContentSessionKey("fileContent");
 		configure();
 

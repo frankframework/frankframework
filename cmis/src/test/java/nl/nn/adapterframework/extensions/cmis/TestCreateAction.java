@@ -60,15 +60,15 @@ public class TestCreateAction extends CmisSenderTestBase {
 		if(EMPTY_INPUT.equals(input)) {
 			assumeTrue(STUBBED); //Only test empty named objects when stubbed
 			this.expectedResult = EMPTY_RESULT;
+			this.input = new Message(EMPTY_INPUT);
 		} else {
 			String filename = "/fileInput-"+atomicInt.getAndIncrement()+".txt";
-			input = input.replace("${filename}", filename);
+			this.input = new Message(input.replace("${filename}", filename));
 			this.expectedResult = filename;
 		}
 
 		this.bindingType = bindingType;
 		this.action = action;
-		this.input = new Message(input);
 	}
 
 	private void configure() throws Exception {

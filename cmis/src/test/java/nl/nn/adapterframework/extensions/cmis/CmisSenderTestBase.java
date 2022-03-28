@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.util.List;
@@ -58,6 +57,7 @@ public class CmisSenderTestBase extends SenderTestBase<CmisSender> {
 					break;
 				default:
 					fail("BindingType ["+bindingType+"] not implemented");
+					break;
 				}
 			}
 		};
