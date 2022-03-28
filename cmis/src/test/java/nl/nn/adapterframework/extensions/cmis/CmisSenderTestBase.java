@@ -115,16 +115,19 @@ public class CmisSenderTestBase extends SenderTestBase<CmisSender> {
 		public ContentStream answer(InvocationOnMock invocation) throws Throwable {
 			name = (String) invocation.getArguments()[0];
 			long length = (long) invocation.getArguments()[1];
-			String mimeType = (String) invocation.getArguments()[2];
+			this.mimeType = (String) invocation.getArguments()[2];
 			InputStream content = (InputStream) invocation.getArguments()[3];
+
 			stream = Misc.streamToBytes(content);
-			assertEquals(stream.length, length);
-			assertEquals("application/octet-stream", mimeType);
+			if(length > 0) { //if a length has been provided, validate it.
+				assertEquals(stream.length, length);
+			}
 
 			if(name.startsWith("/fileInput-")) {
 				String testFileContent = TestFileUtils.getTestFile("/fileInput.txt");
 				assertEquals(testFileContent, new String(stream));
 			}
+
 			return this;
 		}
 

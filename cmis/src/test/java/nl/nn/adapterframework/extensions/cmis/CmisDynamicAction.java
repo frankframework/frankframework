@@ -50,6 +50,6 @@ public class CmisDynamicAction extends CmisSenderTestBase {
 		session.put("ContentStream", "text");
 
 		String result = sendMessage("<cmis><id>testId</id></cmis>").asString();
-		TestAssertions.assertEqualsIgnoreCRLF("<cmis>\n\t<id>dGVzdElk</id>\n\t<contentStream length=\"0\" mimeType=\"text/xml\"/>\n</cmis>", result);
+		TestAssertions.assertEqualsIgnoreCRLF("<cmis>\n\t<id>dGVzdElk</id>\n\t<contentStream length=\"12\" mimeType=\"text/xml\"/>\n</cmis>", result);
 	}
 }
