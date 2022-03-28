@@ -27,15 +27,15 @@ import nl.nn.adapterframework.util.Misc;
 public class TestCreateAction extends CmisSenderTestBase {
 	private static final AtomicInteger atomicInt = new AtomicInteger();
 
-	private final static String EMPTY_INPUT = "";
-	private final static String EMPTY_RESULT = "[unknown]";
+	private static final String EMPTY_INPUT = "";
+	private static final String EMPTY_RESULT = "[unknown]";
 
-	private final static String INPUT = "<cmis><objectId>random</objectId><objectTypeId>cmis:document</objectTypeId><fileName>${filename}</fileName>"
+	private static final String INPUT = "<cmis><objectId>random</objectId><objectTypeId>cmis:document</objectTypeId><fileName>${filename}</fileName>"
 			+ "<properties><property name=\"cmis:description\" type=\"string\">123456789</property>"
 			+ "<property name=\"cmis:lastModificationDate\" type=\"datetime\">2019-02-26T16:31:15</property>"
 			+ "<property name=\"cmis:creationDate\" type=\"boolean\">true</property></properties></cmis>";
 
-	private final static String FILE_INPUT = "/fileInput.txt";
+	private static final String FILE_INPUT = "/fileInput.txt";
 
 	@Parameters(name = "{0} - {1} - {index}")
 	public static Collection<Object[]> data() {
@@ -57,7 +57,7 @@ public class TestCreateAction extends CmisSenderTestBase {
 	private String expectedResult;
 
 	public TestCreateAction(String bindingType, String action, String input) {
-		if(input == EMPTY_INPUT) {
+		if(EMPTY_INPUT.equals(input)) {
 			assumeTrue(STUBBED); //Only test empty named objects when stubbed
 			this.expectedResult = EMPTY_RESULT;
 		} else {
