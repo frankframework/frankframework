@@ -4,9 +4,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.util.List;
+
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.chemistry.opencmis.client.api.Folder;
 import org.apache.chemistry.opencmis.client.api.ItemIterable;
@@ -26,6 +30,7 @@ import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.credentialprovider.util.Misc;
@@ -83,6 +88,11 @@ public class CmisSenderTestBase extends SenderTestBase<CmisSender> {
 //		GET
 		OperationContext operationContext = mock(OperationContextImpl.class);
 		doReturn(operationContext).when(cmisSession).createOperationContext();
+
+		HttpServletResponse response = mock(HttpServletResponse.class);
+		session.put(PipeLineSession.HTTP_RESPONSE_KEY, response);
+		ServletOutputStream outputStream = mock(ServletOutputStream.class);
+		doReturn(outputStream).when(response).getOutputStream();
 
 //		CREATE
 		Folder folder = mock(FolderImpl.class);
