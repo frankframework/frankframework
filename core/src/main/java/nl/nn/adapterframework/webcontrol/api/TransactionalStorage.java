@@ -89,7 +89,7 @@ public class TransactionalStorage extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response browseMessage(
 				@PathParam("adapterName") String adapterName,
-				@PathParam("storageSource") String storageSource,
+				@PathParam("storageSource") StorageSource storageSource,
 				@PathParam("storageSourceName") String storageSourceName,
 				@PathParam("processState") String processState,
 				@PathParam("messageId") String messageId
@@ -106,7 +106,7 @@ public class TransactionalStorage extends Base {
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
 		messageId = Misc.urlDecode(messageId);
 
-		if(StorageSource.fromString(storageSource) == StorageSource.PIPES) {
+		if(storageSource == StorageSource.PIPES) {
 			MessageSendingPipe pipe = (MessageSendingPipe) adapter.getPipeLine().getPipe(storageSourceName);
 			if(pipe == null) {
 				throw new ApiException("Pipe ["+storageSourceName+"] not found!");
@@ -172,7 +172,7 @@ public class TransactionalStorage extends Base {
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	public Response downloadMessage(
 			@PathParam("adapterName") String adapterName,
-			@PathParam("storageSource") String storageSource,
+			@PathParam("storageSource") StorageSource storageSource,
 			@PathParam("storageSourceName") String storageSourceName,
 			@PathParam("processState") String processState,
 			@PathParam("messageId") String messageId
@@ -187,7 +187,7 @@ public class TransactionalStorage extends Base {
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
 		messageId = Misc.urlDecode(messageId);
 		String message;
-		if(StorageSource.fromString(storageSource) == StorageSource.PIPES) {
+		if(storageSource == StorageSource.PIPES) {
 			MessageSendingPipe pipe = (MessageSendingPipe) adapter.getPipeLine().getPipe(storageSourceName);
 			if(pipe == null) {
 				throw new ApiException("Pipe ["+storageSourceName+"] not found!");
@@ -221,7 +221,7 @@ public class TransactionalStorage extends Base {
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	public Response downloadMessages(
 			@PathParam("adapterName") String adapterName,
-			@PathParam("storageSource") String storageSource,
+			@PathParam("storageSource") StorageSource storageSource,
 			@PathParam("storageSourceName") String storageSourceName,
 			@PathParam("processState") String processState,
 			MultipartBody input
@@ -235,7 +235,7 @@ public class TransactionalStorage extends Base {
 
 		IMessageBrowser<?> storage;
 		IListener<?> listener;
-		if(StorageSource.fromString(storageSource) == StorageSource.PIPES) {
+		if(storageSource == StorageSource.PIPES) {
 			MessageSendingPipe pipe = (MessageSendingPipe) adapter.getPipeLine().getPipe(storageSourceName);
 			if(pipe == null) {
 				throw new ApiException("Pipe ["+storageSourceName+"] not found!");
@@ -296,7 +296,7 @@ public class TransactionalStorage extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response browseMessages(
 				@PathParam("adapterName") String adapterName,
-				@PathParam("storageSource") String storageSource,
+				@PathParam("storageSource") StorageSource storageSource,
 				@PathParam("storageSourceName") String storageSourceName,
 				@PathParam("processState") String processState,
 				@QueryParam("type") String type,
@@ -323,7 +323,7 @@ public class TransactionalStorage extends Base {
 		IMessageBrowser<?> storage = null;
 		IListener<?> listener = null;
 		Map<ProcessState, Map<String, String>> targetPSInfo = null;
-		if(StorageSource.fromString(storageSource) == StorageSource.PIPES) {
+		if(storageSource == StorageSource.PIPES) {
 			MessageSendingPipe pipe = (MessageSendingPipe) adapter.getPipeLine().getPipe(storageSourceName);
 			if(pipe == null) {
 				throw new ApiException("Pipe ["+storageSourceName+"] not found!");
