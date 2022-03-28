@@ -101,6 +101,7 @@ public class StringResolver {
 
 	public static String substVars(String val, Map props1, Map props2, List<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName) throws IllegalArgumentException {
 		StringBuilder sb = new StringBuilder();
+		String providedDefaultValue=null;
 		int head = 0;
 		int pointer, tail;
 		String propertyComposer = "";
@@ -117,7 +118,12 @@ public class StringResolver {
 				return sb.toString();
 			}
 			sb.append(val.substring(head, resolveWithPropertyName ? pointer + delimStart.length() : pointer));
-			tail = indexOfDelimStop(val, pointer, delimStart, delimStop);
+			if(val.indexOf(VALUE_SEPARATOR) != -1) {
+				tail = val.indexOf(VALUE_SEPARATOR);
+				providedDefaultValue = val.substring(tail+VALUE_SEPARATOR.length(), indexOfDelimStop(val, pointer, delimStart, delimStop));
+			} else {
+				tail = indexOfDelimStop(val, pointer, delimStart, delimStop);
+			}
 			if (tail == -1) {
 				throw new IllegalArgumentException('[' + val + "] has no closing brace. Opening brace at position [" + pointer + "]");
 			}
@@ -177,6 +183,10 @@ public class StringResolver {
 				}
 			}
 
+			if(resolveWithPropertyName) {
+				sb.append(propertyComposer + ":-");
+			}
+
 			if (replacement != null) {
 				if (propsToHide != null && (propsToHide.contains(key) || mustHideCredential)) {
 					replacement = Misc.hide(replacement);
@@ -186,19 +196,21 @@ public class StringResolver {
 				// the where the properties are
 				// x1=${x2}
 				// x2=p2
-				if(resolveWithPropertyName) {
-					sb.append(propertyComposer + ":-");
-				}
 				if (!replacement.equals(expression) && !replacement.contains(delimStart + key + delimStop)) {
 					String recursiveReplacement = substVars(replacement, props1, props2, resolveWithPropertyName);
 					sb.append(recursiveReplacement);
 				} else {
 					sb.append(replacement);
 				}
-				if(resolveWithPropertyName) {
-					sb.append(delimStop);
+			} else {
+				if(providedDefaultValue != null) {
+					sb.append(providedDefaultValue);
 				}
 			}
+			if(resolveWithPropertyName) {
+				sb.append(delimStop);
+			}
+			tail = indexOfDelimStop(val, pointer, delimStart, delimStop);
 			head = tail + delimStop.length();
 		}
 	}
@@ -268,7 +280,7 @@ public class StringResolver {
 		} while (stopPos > 0 && numEmbeddedStart != numEmbeddedStop);
 		return stopPos;
 	}
-	
+
 	private static boolean mayExpandAuthAlias(String aliasName, Map props1) {
 		if (authAliasesAllowedToExpand==null) {
 			Set<String> aliases = new HashSet<>();

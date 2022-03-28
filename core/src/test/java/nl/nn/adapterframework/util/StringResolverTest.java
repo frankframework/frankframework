@@ -40,6 +40,33 @@ public class StringResolverTest {
 	}
 
 	@Test
+	public void resolveNonExistent() {
+		String result = StringResolver.substVars("blalblalab ${key7}", properties);
+		assertEquals("blalblalab ", result);
+
+		result = StringResolver.substVars("blalblalab ${key7}", properties, true);
+		assertEquals("blalblalab ${key7:-}", result);
+	}
+
+	@Test
+	public void resolveNonExistentWithDefault() {
+		String result = StringResolver.substVars("blalblalab ${dir}", properties);
+		assertEquals("blalblalab d:/temporary/dir", result);
+
+		result = StringResolver.substVars("blalblalab ${dir}", properties, true);
+		assertEquals("blalblalab ${dir:-${path:-d:/temporary}/dir}", result);
+	}
+
+	@Test
+	public void resolveWithDefault() {
+		String result = StringResolver.substVars("blalblalab ${dir2}", properties);
+		assertEquals("blalblalab c:/temp/dir", result);
+
+		result = StringResolver.substVars("blalblalab ${dir2}", properties, true);
+		assertEquals("blalblalab ${dir2:-${log.dir:-c:/temp}/dir}", result);
+	}
+
+	@Test
 	public void resolveRecursively() {
 		String result = StringResolver.substVars("blalblalab ${key4}", properties);
 		assertEquals("blalblalab value1.value2.value1", result);
