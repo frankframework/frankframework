@@ -9,12 +9,7 @@ public class MockFileSystemPipeTest extends FileSystemPipeTest <FileSystemPipe<M
 
 	@Override
 	public FileSystemPipe<MockFile, MockFileSystem<MockFile>> createFileSystemPipe() {
-		FileSystemPipe<MockFile,MockFileSystem<MockFile>> result = new FileSystemPipe<MockFile,MockFileSystem<MockFile>>() {
-			@Override
-			public String getDomain() {
-				return "";
-			}
-		};
+		FileSystemPipe<MockFile,MockFileSystem<MockFile>> result = new FileSystemPipe<MockFile,MockFileSystem<MockFile>>() {};
 		result.setFileSystem(((MockFileSystemTestHelper<MockFile>)helper).getFileSystem());
 		return result;
 	}

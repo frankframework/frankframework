@@ -119,6 +119,11 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 		return getFileSystem().getPhysicalDestinationName();
 	}
 
+	@Override
+	public String getDomain() {
+		return getFileSystem().getDomain();
+	}
+
 	public void setFileSystem(FS fileSystem) {
 		this.fileSystem=fileSystem;
 	}

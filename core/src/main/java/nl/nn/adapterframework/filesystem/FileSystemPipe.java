@@ -134,6 +134,11 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 		return getFileSystem().getPhysicalDestinationName();
 	}
 
+	@Override
+	public String getDomain() {
+		return getFileSystem().getDomain();
+	}
+
 	public FS getFileSystem() {
 		return fileSystem;
 	}

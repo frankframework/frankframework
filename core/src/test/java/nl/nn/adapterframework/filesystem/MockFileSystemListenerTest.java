@@ -17,11 +17,6 @@ public class MockFileSystemListenerTest extends FileSystemListenerExtraTest <Moc
 				return ((MockFileSystemTestHelper<MockFile>)helper).getFileSystem();
 			}
 
-			@Override
-			public String getDomain() {
-				return "";
-			}
-
 		};
 		return result;
 	}
