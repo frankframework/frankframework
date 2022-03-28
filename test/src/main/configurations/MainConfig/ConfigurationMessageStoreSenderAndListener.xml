@@ -34,7 +34,7 @@
 				slotId="TestMessageStoreSenderAndListener-Queue"
 				sessionKeys="key1,key2" />
 		</Receiver>
-		<Pipeline firstPipe="DoIt">
+		<Pipeline>
 			<Exit state="success" path="EXIT" code="200" />
 			<inputValidator className="nl.nn.adapterframework.pipes.XmlValidator"
 				schema="xsd/any.xsd"
@@ -42,10 +42,12 @@
 				throwException="true">
 			</inputValidator>
 
-			<FixedResultPipe name="DoIt" substituteVars="true"
-				returnString="original message [${originalMessage}] key1 [${key1}] key2 [${key2}]">
+			<XsltPipe name="collectResults" xpathExpression="concat('original message [',$msg,'] key1 [',$k1,'] key2 [',$k2,']')" >
+				<Param name="msg" sessionKey="originalMessage" />
+				<Param name="k1" sessionKey="key1" />
+				<Param name="k2" sessionKey="key2" />
 				<Forward name="success" path="EXIT" />
-			</FixedResultPipe>
+			</XsltPipe>
 		</Pipeline>
 	</Adapter>
 	
