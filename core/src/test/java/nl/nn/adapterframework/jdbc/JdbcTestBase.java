@@ -163,17 +163,21 @@ public abstract class JdbcTestBase {
 
 	public void dropTableIfPresent(Connection connection, String tableName) throws Exception {
 		if (connection!=null && !connection.isClosed()) {
-			if (dbmsSupport.isTablePresent(connection, tableName)) {
-				JdbcUtil.executeStatement(connection, "DROP TABLE "+tableName);
-				SQLWarning warnings = connection.getWarnings();
-				if(warnings != null) {
-					log.warn(JdbcUtil.warningsToString(warnings));
-				}
-			}
-			assertFalse("table ["+tableName+"] should not exist", dbmsSupport.isTablePresent(connection, tableName));
+			dropTableIfPresent(dbmsSupport, connection, tableName);
 		} else {
 			log.warn("connection is null or closed, cannot drop table ["+tableName+"]");
 		}
+	}
+
+	public static void dropTableIfPresent(IDbmsSupport dbmsSupport, Connection connection, String tableName) throws Exception {
+		if (dbmsSupport.isTablePresent(connection, tableName)) {
+			JdbcUtil.executeStatement(connection, "DROP TABLE "+tableName);
+			SQLWarning warnings = connection.getWarnings();
+			if(warnings != null) {
+				log.warn(JdbcUtil.warningsToString(warnings));
+			}
+		}
+		assertFalse("table ["+tableName+"] should not exist", dbmsSupport.isTablePresent(connection, tableName));
 	}
 
 	protected void prepareDatabase() throws Exception {

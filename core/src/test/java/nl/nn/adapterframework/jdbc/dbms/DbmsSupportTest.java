@@ -56,7 +56,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 	public void testIsTablePresent() throws JdbcException {
 		assertTrue("Should have found existing table", dbmsSupport.isTablePresent(connection, TEST_TABLE));
 		assertFalse(dbmsSupport.isTablePresent(connection, "XXXX"));
-		assumeThat(productKey, not(anyOf(equalTo("MariaDB"),equalTo("MySQL")))); // MariaDB and MySQL are case sensitive for table names
+		assumeThat(productKey, not(anyOf(equalTo("MariaDB"),equalTo("MySQL")))); // MariaDB and MySQL require exact case for table name parameters
 		assertTrue("Should have found existing table", dbmsSupport.isTablePresent(connection, TEST_TABLE.toLowerCase()));
 		assertTrue("Should have found existing table", dbmsSupport.isTablePresent(connection, TEST_TABLE.toUpperCase()));
 	}
@@ -66,7 +66,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 		String schema = dbmsSupport.getSchema(connection);
 		assertTrue("Should have found existing table in schema", dbmsSupport.isTablePresent(connection, schema, TEST_TABLE));
 		assertFalse(dbmsSupport.isTablePresent(connection, "XXXX"));
-		assumeThat(productKey, not(anyOf(equalTo("MariaDB"),equalTo("MySQL")))); // MariaDB and MySQL are case sensitive for table names
+		assumeThat(productKey, not(anyOf(equalTo("MariaDB"),equalTo("MySQL")))); // MariaDB and MySQL require exact case for table name parameters
 		assertTrue("Should have found existing table in schema", dbmsSupport.isTablePresent(connection, schema, TEST_TABLE.toLowerCase()));
 		assertTrue("Should have found existing table in schema", dbmsSupport.isTablePresent(connection, schema, TEST_TABLE.toUpperCase()));
 	}
@@ -77,7 +77,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 		assertTrue("Should have found existing column", dbmsSupport.isColumnPresent(connection, TEST_TABLE, "tint"));
 		assertFalse(dbmsSupport.isColumnPresent(connection, TEST_TABLE, "XXXX"));
 		assertFalse(dbmsSupport.isColumnPresent(connection, "XXXX", "XXXX"));
-		assumeThat(productKey, not(anyOf(equalTo("MariaDB"),equalTo("MySQL")))); // MariaDB and MySQL are case sensitive for table names
+		assumeThat(productKey, not(anyOf(equalTo("MariaDB"),equalTo("MySQL")))); // MariaDB and MySQL require exact case for table name parameters
 		assertTrue("Should have found existing column", dbmsSupport.isColumnPresent(connection, TEST_TABLE.toLowerCase(), "TINT"));
 		assertTrue("Should have found existing column", dbmsSupport.isColumnPresent(connection, TEST_TABLE.toUpperCase(), "TINT"));
 	}
@@ -88,7 +88,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 		assertTrue("Should have found existing column in schema ["+schema+"]", dbmsSupport.isColumnPresent(connection, schema, TEST_TABLE, "TINT"));
 		assertFalse(dbmsSupport.isColumnPresent(connection, schema, TEST_TABLE, "XXXX"));
 		assertFalse(dbmsSupport.isColumnPresent(connection, schema, "XXXX", "XXXX"));
-		assumeThat(productKey, not(anyOf(equalTo("MariaDB"),equalTo("MySQL")))); // MariaDB and MySQL are case sensitive for table names
+		assumeThat(productKey, not(anyOf(equalTo("MariaDB"),equalTo("MySQL")))); // MariaDB and MySQL require exact case for table name parameters
 		assertTrue("Should have found existing column in schema ["+schema+"]", dbmsSupport.isColumnPresent(connection, schema, TEST_TABLE.toLowerCase(), "TINT"));
 		assertTrue("Should have found existing column in schema ["+schema+"]", dbmsSupport.isColumnPresent(connection, schema, TEST_TABLE.toUpperCase(), "TINT"));
 	}
@@ -112,7 +112,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 	@Test
 	public void testGetTableColumns() throws Exception {
 		testGetTableColumns(TEST_TABLE);
-		assumeThat(productKey, not(anyOf(equalTo("MariaDB"),equalTo("MySQL")))); // MariaDB and MySQL are case sensitive for table names
+		assumeThat(productKey, not(anyOf(equalTo("MariaDB"),equalTo("MySQL")))); // MariaDB and MySQL require exact case for table name parameters
 		testGetTableColumns(TEST_TABLE.toLowerCase());
 		testGetTableColumns(TEST_TABLE.toUpperCase());
 	}
@@ -137,7 +137,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 	@Test
 	public void testGetTableColumnsInSchema() throws Exception {
 		testGetTableColumnsInSchema(TEST_TABLE);
-		assumeThat(productKey, not(anyOf(equalTo("MariaDB"),equalTo("MySQL")))); // MariaDB and MySQL are case sensitive for table names
+		assumeThat(productKey, not(anyOf(equalTo("MariaDB"),equalTo("MySQL")))); // MariaDB and MySQL require exact case for table name parameters
 		testGetTableColumnsInSchema(TEST_TABLE.toLowerCase());
 		testGetTableColumnsInSchema(TEST_TABLE.toUpperCase());
 	}
@@ -168,7 +168,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 	public void testGetTableColumnsSpecific() throws Exception {
 		testGetTableColumnsSpecific(TEST_TABLE, "TINT");
 		testGetTableColumnsSpecific(TEST_TABLE, "tint");
-		assumeThat(productKey, not(anyOf(equalTo("MariaDB"),equalTo("MySQL")))); // MariaDB and MySQL are case sensitive for table names
+		assumeThat(productKey, not(anyOf(equalTo("MariaDB"),equalTo("MySQL")))); // MariaDB and MySQL require exact case for table name parameters
 		testGetTableColumnsSpecific(TEST_TABLE.toLowerCase(), "TINT");
 		testGetTableColumnsSpecific(TEST_TABLE.toUpperCase(), "TINT");
 	}

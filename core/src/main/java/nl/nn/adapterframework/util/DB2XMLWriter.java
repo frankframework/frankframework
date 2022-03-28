@@ -128,7 +128,7 @@ public class DB2XMLWriter {
 			try {
 				ResultSetMetaData rsmeta = rs.getMetaData();
 				if (includeFieldDefinition) {
-					addFieldDefinitions(root, rs, rsmeta);
+					addFieldDefinitions(root, rsmeta);
 				}
 
 				//----------------------------------------
@@ -155,16 +155,16 @@ public class DB2XMLWriter {
 	public static void addFieldDefinitions(ResultSet rs, ContentHandler handler) throws SAXException, SQLException {
 		ResultSetMetaData rsmeta = rs.getMetaData();
 		try (SaxElementBuilder fields = new SaxElementBuilder("fielddefinition", handler)) {
-			addFieldDefinitionsToContainer(fields, rs, rsmeta);
+			addFieldDefinitionsToContainer(fields, rsmeta);
 		}
 	}
-	public static void addFieldDefinitions(SaxElementBuilder root, ResultSet rs, ResultSetMetaData rsmeta) throws SAXException, SQLException {
+	public static void addFieldDefinitions(SaxElementBuilder root, ResultSetMetaData rsmeta) throws SAXException, SQLException {
 		try (SaxElementBuilder fields = root.startElement("fielddefinition")) {
-			addFieldDefinitionsToContainer(fields, rs, rsmeta);
+			addFieldDefinitionsToContainer(fields, rsmeta);
 		}
 	}
 
-	private static void addFieldDefinitionsToContainer(SaxElementBuilder fields, ResultSet rs, ResultSetMetaData rsmeta) throws SAXException, SQLException {
+	private static void addFieldDefinitionsToContainer(SaxElementBuilder fields, ResultSetMetaData rsmeta) throws SAXException, SQLException {
 		int nfields = rsmeta.getColumnCount();
 
 		for (int j = 1; j <= nfields; j++) {

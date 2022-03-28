@@ -52,10 +52,7 @@ public class FixedQuerySenderTest extends SenderTestBase<FixedQuerySender> {
 		Connection connection = sender.getConnection();
 
 		try {
-			if (dbmsSupport.isTablePresent(connection, "TEMP")) {
-				JdbcUtil.executeStatement(connection, "DROP TABLE "+JdbcTestBase.TEST_TABLE);
-				log.warn(JdbcUtil.warningsToString(connection.getWarnings()));
-			}
+			JdbcTestBase.dropTableIfPresent(dbmsSupport, connection, JdbcTestBase.TEST_TABLE);
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail(e.getMessage());
