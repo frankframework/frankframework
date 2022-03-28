@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,15 +15,16 @@
 */
 package nl.nn.adapterframework.senders;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.validation.AbstractXmlValidator;
 import nl.nn.adapterframework.validation.XercesXmlValidator;
 
 
@@ -37,13 +38,13 @@ import nl.nn.adapterframework.validation.XercesXmlValidator;
  */
 public class XmlValidatorSender extends XercesXmlValidator implements ISenderWithParameters {
 
-	private String name;
-	
+	private @Getter @Setter String name;
+
 	@Override
 	public void configure() throws ConfigurationException {
 		configure(getLogPrefix());
 	}
-	
+
 	@Override
 	public void close() throws SenderException {
 	}
@@ -66,12 +67,12 @@ public class XmlValidatorSender extends XercesXmlValidator implements ISenderWit
 	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		String fullReasons="tja";
 		try {
-			String resultEvent = validate(message, session, getLogPrefix(),null,null);
+			ValidationResult validationResult = validate(message, session, getLogPrefix(),null,null);
 			
-			if (AbstractXmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT.equals(resultEvent)) {
+			if (validationResult == ValidationResult.VALID || validationResult == ValidationResult.VALID_WITH_WARNINGS) {
 				return message;
 			}
-			fullReasons = resultEvent; // TODO: find real fullReasons
+			fullReasons = validationResult.getEvent(); // TODO: find real fullReasons
 			if (isThrowException()) {
 				throw new SenderException(fullReasons);
 			}
@@ -94,13 +95,5 @@ public class XmlValidatorSender extends XercesXmlValidator implements ISenderWit
 	protected String getLogPrefix() {
 		return "["+this.getClass().getName()+"] ["+getName()+"] ";
 	}
-	
-	@Override
-	public String getName() {
-		return name;
-	}
-	@Override
-	public void setName(String name) {
-		this.name=name;
-	}
+
 }
