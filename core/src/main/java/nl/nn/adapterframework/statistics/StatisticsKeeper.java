@@ -368,7 +368,7 @@ public class StatisticsKeeper<B extends IBasics<S>, S> implements ItemList {
 
 	public Map<String, Object> asMap() {
 		Map<String, Object> tmp = new LinkedHashMap<String, Object>();
-		tmp.put("Name", getName());
+		tmp.put("name", getName());
 		for (int i=0; i< getItemCount(); i++) {
 			Object item = getItemValue(i);
 			String key = getItemName(i).replace("< ", "");
