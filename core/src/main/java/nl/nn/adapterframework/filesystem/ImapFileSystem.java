@@ -586,7 +586,6 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 				releaseConnection(baseFolder, false);
 			} catch (FileSystemException e) {
 				log.warn("cannot get urlName", e);
-			} finally {
 			}
 		}
 		String name = urlName == null ? "<no url>" : urlName.toString();
