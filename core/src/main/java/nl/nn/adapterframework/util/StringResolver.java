@@ -186,7 +186,7 @@ public class StringResolver {
 			}
 
 			if(resolveWithPropertyName) {
-				sb.append(propertyComposer + ":-");
+				sb.append(propertyComposer + VALUE_SEPARATOR);
 			}
 
 			if (replacement != null) {
