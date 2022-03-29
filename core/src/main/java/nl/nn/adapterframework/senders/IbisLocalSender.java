@@ -142,7 +142,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 					}
 				}
 				if(loops == 0 && (listener==null || !listener.isOpen())) {
-					throw new SenderException("Unable to open JavaListener ["+getJavaListener()+"] in "+getDependencyTimeOut()+" seconds. Make sure that the listener ["+getJavaListener()+"] exists or increase the timeout so that the sub-adapter may start before timeout limit.");
+					log.warn("Unable to open JavaListener ["+getJavaListener()+"] in "+getDependencyTimeOut()+" seconds. Make sure that the listener ["+getJavaListener()+"] exists or increase the timeout so that the sub-adapter may start before timeout limit.");
 				}
 			}
 		}
