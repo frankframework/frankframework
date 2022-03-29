@@ -2,6 +2,6 @@
 <Envelope>
 	<Header>
 		<MessageID>1</MessageID>
-		<Message contentType="application/xml" encoding="UTF-8">test</Message>
+		<Message contentType="application/xml" encoding="UTF-8">test, with comma</Message>
 	</Header>
 </Envelope>
