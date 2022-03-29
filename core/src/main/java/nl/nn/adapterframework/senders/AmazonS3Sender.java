@@ -17,7 +17,6 @@ package nl.nn.adapterframework.senders;
 
 import com.amazonaws.services.s3.model.S3Object;
 
-import lombok.Getter;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.filesystem.AmazonS3FileSystem;
 import nl.nn.adapterframework.filesystem.FileSystemSender;
@@ -34,7 +33,6 @@ import nl.nn.adapterframework.filesystem.FileSystemSender;
  * <br/>
  */
 public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSystem> {
-	private final @Getter(onMethod = @__(@Override)) String domain = "Amazon";
 
 //	private List<FileSystemAction> specificActions = Arrays.asList(FileSystemAction.CREATEBUCKET,FileSystemAction.DELETEBUCKET,FileSystemAction.RESTORE,FileSystemAction.COPYS3OBJECT);
 	

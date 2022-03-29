@@ -17,13 +17,11 @@ package nl.nn.adapterframework.pipes;
 
 import java.nio.file.Path;
 
-import lombok.Getter;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.filesystem.FileSystemPipe;
 import nl.nn.adapterframework.filesystem.LocalFileSystem;
 
 public class LocalFileSystemPipe extends FileSystemPipe<Path, LocalFileSystem>{
-	private final @Getter(onMethod = @__(@Override)) String domain = "LocalFilesystem";
 
 	public LocalFileSystemPipe() {
 		setFileSystem(new LocalFileSystem());

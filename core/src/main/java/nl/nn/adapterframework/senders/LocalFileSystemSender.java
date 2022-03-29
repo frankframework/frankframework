@@ -17,18 +17,16 @@ package nl.nn.adapterframework.senders;
 
 import java.nio.file.Path;
 
-import lombok.Getter;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.filesystem.FileSystemSender;
 import nl.nn.adapterframework.filesystem.LocalFileSystem;
 
 public class LocalFileSystemSender extends FileSystemSender<Path, LocalFileSystem>{
-	private final @Getter(onMethod = @__(@Override)) String domain = "LocalFilesystem";
 
 	public LocalFileSystemSender() {
 		setFileSystem(new LocalFileSystem());
 	}
-
+	
 	@IbisDoc({"1", "Optional base folder, that serves as root for all other folders", ""})
 	public void setRoot(String root) {
 		getFileSystem().setRoot(root);

@@ -15,7 +15,6 @@
  */
 package nl.nn.adapterframework.receivers;
 
-import lombok.Getter;
 import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
 import microsoft.exchange.webservices.data.property.complex.Attachment;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
@@ -30,10 +29,8 @@ import nl.nn.adapterframework.filesystem.MailListener;
  */
 public class ExchangeMailListener extends MailListener<EmailMessage,Attachment,ExchangeFileSystem> {
 
-	private final @Getter(onMethod = @__(@Override)) String domain = "Exchange";
-
 	public final String EXCHANGE_FILE_SYSTEM ="nl.nn.adapterframework.filesystem.ExchangeFileSystem";
-
+	
 	@Override
 	protected ExchangeFileSystem createFileSystem() {
 		return new ExchangeFileSystem();

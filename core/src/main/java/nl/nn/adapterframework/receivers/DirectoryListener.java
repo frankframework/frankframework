@@ -17,13 +17,11 @@ package nl.nn.adapterframework.receivers;
 
 import java.nio.file.Path;
 
-import lombok.Getter;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.filesystem.FileSystemListener;
 import nl.nn.adapterframework.filesystem.LocalFileSystem;
 
 public class DirectoryListener extends FileSystemListener<Path, LocalFileSystem>{
-	private final @Getter(onMethod = @__(@Override)) String domain = "LocalFilesystem";
 
 	@Override
 	protected LocalFileSystem createFileSystem() {

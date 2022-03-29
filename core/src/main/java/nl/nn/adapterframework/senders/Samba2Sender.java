@@ -15,14 +15,11 @@
 */
 package nl.nn.adapterframework.senders;
 
-import lombok.Getter;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.filesystem.FileSystemSender;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem;
 
 public class Samba2Sender extends FileSystemSender<String, Samba2FileSystem> {
-
-	private final @Getter(onMethod = @__(@Override)) String domain = "Samba";
 
 	public Samba2Sender() {
 		setFileSystem(new Samba2FileSystem());
