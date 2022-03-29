@@ -95,27 +95,33 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 		}
 		if(!elements || elements.length < 1 || !$scope.group) return []; //Cannot filter elements if no group has been selected
 		let r = {};
+		let matchedParents = {}; // cache mapped parents
 		let groupMembers = getGroupMembers($scope.types, $scope.group.types);
-		for(element in elements) {
-			if(groupMembers.indexOf(element) > -1) {
-				let obj = elements[element];
-				if(searchTextLC) {
-					if(JSON.stringify(obj).replace(/"/g, '').toLowerCase().indexOf(searchTextLC) > -1) {
-						r[element] = obj;
-					} else { // search in parent
-						let elementParent = elements[element].parent;
-						while(elementParent){
-							let parentObj = elements[elementParent];
+		for(i in groupMembers) {
+			let element = groupMembers[i];
+			let obj = elements[element];
+			if(searchTextLC) {
+				if(JSON.stringify(obj).replace(/"/g, '').toLowerCase().indexOf(searchTextLC) > -1) {
+					r[element] = obj;
+				} else { // search in parent (accessing children is an expensive operation)
+					let elementParent = elements[element].parent;
+					while(elementParent) {
+						let parentObj = elements[elementParent];
+						if(matchedParents[elementParent]) { // if parent matched already leave the loop
+							r[element] = obj;
+							break;
+						} else {
 							if(JSON.stringify(parentObj).replace(/"/g, '').toLowerCase().indexOf(searchTextLC) > -1) {
 								r[element] = obj;
+								matchedParents[elementParent] = parentObj;
 								break;
 							}
-							elementParent = elements[elementParent].parent;
 						}
+						elementParent = elements[elementParent].parent;
 					}
-				} else {
-					r[element] = obj;
 				}
+			} else {
+				r[element] = obj;
 			}
 		}
 		return r;
