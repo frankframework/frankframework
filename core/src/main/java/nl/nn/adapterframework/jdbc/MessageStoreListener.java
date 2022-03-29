@@ -107,10 +107,11 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 			try {
 				CSVParser parser = CSVParser.parse(messageWrapper.getMessage().asString(), CSVFormat.DEFAULT);
 				CSVRecord record = parser.getRecords().get(0);
-				StringTokenizer strTokenizer = new StringTokenizer(messageWrapper.getMessage().asString(), ",");
 				messageWrapper.setMessage(new Message(record.get(0)));
 				for (int i=1; i<record.size();i++) {
-					threadContext.put(sessionKeysList.get(i-1), record.get(i));
+					if (sessionKeysList.size()>=i) {
+						threadContext.put(sessionKeysList.get(i-1), record.get(i));
+					}
 				}
 			} catch (IOException e) {
 				throw new ListenerException("cannot convert message",e);
