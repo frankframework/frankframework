@@ -22,7 +22,8 @@ import nl.nn.adapterframework.statistics.HasStatistics.Action;
 public class DumpFullStatisticsJob extends JobDef {
 
 	@Override
-	public void execute(IbisManager ibisManager) {
+	public void execute() {
+		IbisManager ibisManager = getApplicationContext().getBean(IbisManager.class);
 		ibisManager.dumpStatistics(Action.MARK_FULL);
 	}
 }

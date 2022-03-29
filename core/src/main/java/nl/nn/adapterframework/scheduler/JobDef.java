@@ -23,7 +23,6 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IConfigurationAware;
 import nl.nn.adapterframework.core.TransactionAttributes;
 import nl.nn.adapterframework.scheduler.job.IJob;
@@ -329,9 +328,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 
 	@Override
 	public JobDetail getJobDetail() {
-		IbisManager ibisManager = applicationContext.getBean("ibisManager", IbisManager.class);
-
-		return IbisJobBuilder.fromJobDef(this).setIbisManager(ibisManager).build();
+		return IbisJobBuilder.fromJobDef(this).build();
 	}
 
 	public synchronized boolean incrementCountThreads() {
@@ -347,13 +344,13 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 	}
 
 	/** Called before executeJob to prepare resources for executeJob method. Returns false if job does not need to run */
-	public boolean beforeExecuteJob(IbisManager ibisManager) {
+	public boolean beforeExecuteJob() {
 		return true;
 	}
 
 	/** Called from {@link ConfiguredJob} which should trigger this job definition. */
 	@Override
-	public final void executeJob(IbisManager ibisManager) {
+	public final void executeJob() {
 		if (!incrementCountThreads()) { 
 			String msg = "maximum number of threads that may execute concurrently [" + getNumThreads() + "] is exceeded, the processing of this thread will be aborted";
 			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
@@ -361,7 +358,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 			return;
 		}
 		try {
-			if(beforeExecuteJob(ibisManager)) {
+			if(beforeExecuteJob()) {
 				if (getLocker() != null) {
 					String objectId = null;
 					try {
@@ -374,7 +371,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 						TimeoutGuard tg = new TimeoutGuard("Job "+getName());
 						try {
 							tg.activateGuard(getTransactionTimeout());
-							runJob(ibisManager);
+							runJob();
 						} finally {
 							if (tg.cancel()) {
 								log.error(getLogPrefix()+"thread has been interrupted");
@@ -391,7 +388,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 						getMessageKeeper().add("unable to acquire lock ["+getName()+"] did not run");
 					}
 				} else {
-					runJob(ibisManager);
+					runJob();
 				}
 			} else {
 				getMessageKeeper().add("job execution skipped");
@@ -404,12 +401,12 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 	/**
 	 * Wrapper around running the job, to log and deal with Exception in a uniform manner.
 	 */
-	private void runJob(IbisManager ibisManager) {
+	private void runJob() {
 		long startTime = System.currentTimeMillis();
 		getMessageKeeper().add("starting to run the job");
 
 		try {
-			execute(ibisManager);
+			execute();
 		} catch (Exception e) {
 			String msg = "error while executing job ["+this+"] (as part of scheduled job execution): " + e.getMessage();
 			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);

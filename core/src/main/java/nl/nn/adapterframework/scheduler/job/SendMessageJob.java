@@ -20,7 +20,6 @@ import org.apache.commons.lang3.StringUtils;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
@@ -56,7 +55,7 @@ public class SendMessageJob extends JobDef {
 	}
 
 	@Override
-	public void execute(IbisManager ibisManager) throws JobExecutionException, TimeoutException {
+	public void execute() throws JobExecutionException, TimeoutException {
 		try {
 			localSender.open();
 			//sendMessage message cannot be NULL

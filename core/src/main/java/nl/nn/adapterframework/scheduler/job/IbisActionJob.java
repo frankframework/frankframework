@@ -70,7 +70,8 @@ public class IbisActionJob extends JobDef {
 	}
 
 	@Override
-	public void execute(IbisManager ibisManager) {
+	public void execute() {
+		IbisManager ibisManager = getApplicationContext().getBean(IbisManager.class);
 		ibisManager.handleAction(ibisAction, getConfigurationName(), getAdapterName(), getReceiverName(), "scheduled job ["+getName()+"]", true);
 	}
 
