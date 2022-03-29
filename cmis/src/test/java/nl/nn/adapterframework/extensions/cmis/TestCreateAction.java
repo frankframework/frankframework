@@ -93,7 +93,7 @@ public class TestCreateAction extends CmisSenderTestBase {
 		return new String(Base64.decodeBase64(message.asByteArray()));
 	}
 
-	@Test //GING FOUT
+	@Test
 	public void fileFromSessionKeyAsString() throws Exception {
 		session.put("fileContent", getTestFile(false).asString());
 		sender.setFileSessionKey("fileContent");
@@ -103,7 +103,7 @@ public class TestCreateAction extends CmisSenderTestBase {
 		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
 	}
 
-	@Test //GING FOUT
+	@Test
 	public void fileFromSessionKeyAsStringParameter() throws Exception {
 		session.put("fileContent", getTestFile(false).asString());
 		Parameter fileSessionKey = new Parameter("fileSessionKey", "fileContent");
@@ -195,7 +195,7 @@ public class TestCreateAction extends CmisSenderTestBase {
 		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
 	}
 
-	@Test //GING FOUT
+	@Test
 	public void fileStreamFromSessionKeyAsString() throws Exception {
 		session.put("fis", getTestFile(false).asString());
 		sender.setFileInputStreamSessionKey("fis");
