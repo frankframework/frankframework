@@ -88,18 +88,6 @@
 						</configuration>
 					</execution>
 					<execution>
-						<id>zip-customViews</id>
-						<phase>package</phase>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-						<configuration>
-							<classifier>customViews</classifier>
-							<classesDirectory>src/main/webapp</classesDirectory>
-							<excludes>**/META-INF/*</excludes>
-						</configuration>
-					</execution>
-					<execution>
 						<id>zip-configurations</id>
 						<phase>package</phase>
 						<goals>
