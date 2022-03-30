@@ -14,11 +14,7 @@
 	</parent>
 	
 	<properties>
-		<config.tag>webapp</config.tag>
-		<config.groupid>org.ibissource</config.groupid>
-		<config.project>ibis-adapterframework-${config.tag}</config.project>
-		<config.project.version>${project.version}</config.project.version>
-		<config.image.tag>iaf-${config.tag}-tomcat</config.image.tag>
+		<config.image.tag>iaf-webapp-tomcat</config.image.tag>
 	</properties>
 	
 	
@@ -30,9 +26,9 @@
 			<type>pom</type>
 		</dependency>
 		<dependency>
-			<groupId>${config.groupid}</groupId>
-			<artifactId>${config.project}</artifactId>
-			<version>${config.project.version}</version>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-webapp</artifactId>
+			<version>${project.version}</version>
 			<type>war</type>
 		</dependency>
 	</dependencies>
@@ -68,9 +64,9 @@
 						<configuration>
 							<artifactItems>
 				                <artifactItem>
-									<groupId>${config.groupid}</groupId>
-									<artifactId>${config.project}</artifactId>
-									<version>${config.project.version}</version>
+									<groupId>org.ibissource</groupId>
+									<artifactId>ibis-adapterframework-webapp</artifactId>
+									<version>${project.version}</version>
 									<type>war</type>
 									<outputDirectory>${project.build.directory}/dependencies/war</outputDirectory>
 				                </artifactItem>
