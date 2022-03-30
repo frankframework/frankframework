@@ -47,9 +47,11 @@ public class NarayanaDataSource implements DataSource {
 	private @Setter int maxConnections = 50;
 
 	private @Getter CommonDataSource targetDataSource;
+	private String dbUrl;
 
-	public NarayanaDataSource(CommonDataSource dataSource) {
+	public NarayanaDataSource(CommonDataSource dataSource, String dbUrl) {
 		this.targetDataSource = dataSource;
+		this.dbUrl = dbUrl;
 	}
 
 	@Override
@@ -58,7 +60,7 @@ public class NarayanaDataSource implements DataSource {
 		properties.put(TransactionalDriver.XADataSource, getTargetDataSource());
 		properties.setProperty(TransactionalDriver.poolConnections, ""+connectionPooling);
 		properties.setProperty(TransactionalDriver.maxConnections, ""+maxConnections);
-		return ConnectionManager.create(null, properties);
+		return ConnectionManager.create(dbUrl, properties);
 	}
 
 	@Override
@@ -69,8 +71,9 @@ public class NarayanaDataSource implements DataSource {
 		properties.put(TransactionalDriver.password, password);
 		properties.setProperty(TransactionalDriver.poolConnections, ""+connectionPooling);
 		properties.setProperty(TransactionalDriver.maxConnections, ""+maxConnections);
-		return ConnectionManager.create(null, properties);
+		return ConnectionManager.create(dbUrl, properties);
 	}
+
 
 	@Override
 	public PrintWriter getLogWriter() throws SQLException {
