@@ -67,7 +67,7 @@
 								<exec executable="docker" failonerror="true">
 									<arg value="build"/>
 									<arg value="-t"/>
-									<arg value="iaf-${config.tag}-tomcat"/>
+									<arg value="iaf-test-tomcat"/>
 									<arg value="."/>
 								</exec>
 							</target>
