@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,19 +15,23 @@
 */
 package nl.nn.adapterframework.jta.narayana;
 
+import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
+import java.sql.Wrapper;
 import java.util.Properties;
 
+import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
 import org.apache.logging.log4j.Logger;
-import org.springframework.jdbc.datasource.DelegatingDataSource;
 
 import com.arjuna.ats.internal.jdbc.ConnectionManager;
 import com.arjuna.ats.jdbc.TransactionalDriver;
 
+import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -36,14 +40,16 @@ import nl.nn.adapterframework.util.LogUtil;
  * {@link ConnectionManager} to acquire connections.
  *
  */
-public class NarayanaDataSource extends DelegatingDataSource {
+public class NarayanaDataSource implements DataSource {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private @Setter boolean connectionPooling = true;
 	private @Setter int maxConnections = 50;
 
-	public NarayanaDataSource(DataSource dataSource) {
-		super(dataSource);
+	private @Getter CommonDataSource targetDataSource;
+
+	public NarayanaDataSource(CommonDataSource dataSource) {
+		this.targetDataSource = dataSource;
 	}
 
 	@Override
@@ -64,5 +70,43 @@ public class NarayanaDataSource extends DelegatingDataSource {
 		properties.setProperty(TransactionalDriver.poolConnections, ""+connectionPooling);
 		properties.setProperty(TransactionalDriver.maxConnections, ""+maxConnections);
 		return ConnectionManager.create(null, properties);
+	}
+
+	@Override
+	public PrintWriter getLogWriter() throws SQLException {
+		return targetDataSource.getLogWriter();
+	}
+
+	@Override
+	public int getLoginTimeout() throws SQLException {
+		return targetDataSource.getLoginTimeout();
+	}
+
+	@Override
+	public java.util.logging.Logger getParentLogger() throws SQLFeatureNotSupportedException {
+		return targetDataSource.getParentLogger();
+	}
+
+	@Override
+	public void setLogWriter(PrintWriter writer) throws SQLException {
+		targetDataSource.setLogWriter(writer);
+	}
+
+	@Override
+	public void setLoginTimeout(int timeout) throws SQLException {
+		targetDataSource.setLoginTimeout(timeout);
+	}
+
+	@Override
+	public boolean isWrapperFor(Class<?> iface) throws SQLException {
+		return iface.isInstance(this) || ((Wrapper)targetDataSource).isWrapperFor(iface);
+	}
+
+	@Override
+	public <T> T unwrap(Class<T> iface) throws SQLException {
+		if (iface.isInstance(this)) {
+			return (T) this;
+		}
+		return ((Wrapper)targetDataSource).unwrap(iface);
 	}
 }
