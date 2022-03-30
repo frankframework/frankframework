@@ -1,15 +1,14 @@
-FROM iaf-as-tomcat AS iaf-example-tomcat
+FROM iaf-webapp-tomcat AS iaf-example-tomcat
 
 # copy any additional drivers
 COPY target/dependencies/*.jar /usr/local/tomcat/lib/
 
-# copy war
-COPY target/dependencies/ibis-adapterframework-example.war /usr/local/tomcat/webapps/ROOT.war
+# copy resources
+COPY target/dependencies/resources /opt/frank/resources
 
-# copy configuration, properties and testscenarios
-#COPY target/dependencies/frank/configuration/*-resources.jar /opt/frank/resources/
-#COPY target/dependencies/frank/configuration/*-configurations.jar /opt/frank/configurations/
-#COPY target/dependencies/frank/testtool /opt/frank/testtool
+# copy context, normally this file is mounted from the environment
+# The example webapp uses an H2 internal database as it does not need to store actual data, so the context.xml can be part of the image
+COPY target/dependencies/context.xml /usr/local/tomcat/conf/Catalina/localhost/ROOT.xml
 
 # Set permissions after copy, to improve startup time
 RUN /setPermissions.sh
