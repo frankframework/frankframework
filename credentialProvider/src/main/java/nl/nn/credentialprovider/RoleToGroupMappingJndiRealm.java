@@ -17,10 +17,18 @@ package nl.nn.credentialprovider;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
+import java.util.Set;
 
 import javax.naming.InvalidNameException;
+import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
+import javax.naming.directory.Attributes;
 
 import org.apache.catalina.Container;
 import org.apache.catalina.Context;
@@ -39,7 +47,7 @@ import nl.nn.credentialprovider.rolemapping.RoleGroupMappingRuleSet;
 /**
  * Extension of {@link org.apache.catalina.realm.JNDIRealm} where we take care of the
  * role to ldap group mapping
- * 
+ *
  * Set the <code>pathname</code> parameter to the role-mapping file where the
  * role to ldap group mapping is defined.
  *
@@ -124,12 +132,44 @@ public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupM
 		return roles;
 	}
 
+	/**
+	 * Overrides getRoles to find the nested group memberships of this user, assuming users and groups
+	 * have a "memberOf" like attribute (specifed by 'userRoleName' and 'roleName') that specifies the groups
+	 * they are member of. The original getRoles assumed groups have a 'member' attribute, specifying their
+	 * members. That approach is not available in this implementation.
+	 */
+	@Override
+	protected List<String> getRoles(JNDIConnection connection, User user) throws NamingException {
+		List<String> roles = user.getRoles();
+		Set<String> allRoles = new LinkedHashSet<>(roles);
+		Queue<String> rolesToCheck = new LinkedList<>(allRoles);
+
+		if (this.containerLog.isTraceEnabled()) this.containerLog.trace("allRoles in: "+allRoles);
+
+		String[] attrIds = { getRoleName() };
+
+		String role;
+		while((role=rolesToCheck.poll())!=null) {
+			Attributes attrs = connection.context.getAttributes(role, attrIds);
+
+			for (NamingEnumeration<? extends Attribute> attEnum= attrs.getAll(); attEnum.hasMoreElements();) {
+				Attribute attr = attEnum.next();
+				String nestedRole = attr.get().toString();
+				if (this.containerLog.isTraceEnabled()) this.containerLog.trace("nestedRole: "+nestedRole);
+				if (!allRoles.contains(nestedRole)) {
+					rolesToCheck.add(nestedRole);
+					allRoles.add(nestedRole);
+				}
+			}
+		}
+		if (this.containerLog.isTraceEnabled()) this.containerLog.trace("allRoles out: "+allRoles);
+		return new ArrayList<>(allRoles);
+	}
+
 
 	@Override
 	protected void startInternal() throws LifecycleException {
-		if (log.isTraceEnabled()) {
-			log.trace(">>> startInternal");
-		}
+		if (log.isTraceEnabled()) log.trace(">>> startInternal");
 		super.startInternal();
 
 		try {
@@ -138,9 +178,7 @@ public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupM
 			throw new LifecycleException(e);
 		}
 
-		if (log.isTraceEnabled()) {
-			log.trace("<<< startInternal");
-		}
+		if (log.isTraceEnabled()) log.trace("<<< startInternal");
 	}
 
 	/**
