@@ -21,8 +21,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.StringEscapeUtils;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -38,7 +40,7 @@ import nl.nn.adapterframework.util.Misc;
 /**
  * Read messages from the ibisstore previously stored by a
  * {@link MessageStoreSender}.
- * 
+ *
  * Example configuration:
  * <code><pre>
 		&lt;listener
@@ -55,7 +57,7 @@ import nl.nn.adapterframework.util.Misc;
 			slotId="${instance.name}/ServiceName"
 		/>
  * </pre></code>
- * 
+ *
  * @author Jaco de Groot
  */
 public class MessageStoreListener<M> extends JdbcTableListener<M> {
@@ -78,7 +80,7 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 		setStatusValueProcessed(IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode());
 		setStatusValueError(IMessageBrowser.StorageType.ERRORSTORAGE.getCode());
 	}
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -105,12 +107,13 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 		if (rawMessage != null && sessionKeys != null) {
 			MessageWrapper<?> messageWrapper = (MessageWrapper<?>)rawMessage;
 			try {
-				StringTokenizer strTokenizer = new StringTokenizer(messageWrapper.getMessage().asString(), ",");
-				messageWrapper.setMessage(new Message(StringEscapeUtils.unescapeCsv(strTokenizer.nextToken())));
-				int i = 0;
-				while (strTokenizer.hasMoreTokens()) {
-					threadContext.put(sessionKeysList.get(i), StringEscapeUtils.unescapeCsv(strTokenizer.nextToken()));
-					i++;
+				CSVParser parser = CSVParser.parse(messageWrapper.getMessage().asString(), CSVFormat.DEFAULT);
+				CSVRecord record = parser.getRecords().get(0);
+				messageWrapper.setMessage(new Message(record.get(0)));
+				for (int i=1; i<record.size();i++) {
+					if (sessionKeysList.size()>=i) {
+						threadContext.put(sessionKeysList.get(i-1), record.get(i));
+					}
 				}
 			} catch (IOException e) {
 				throw new ListenerException("cannot convert message",e);
@@ -121,13 +124,13 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 
 	protected IMessageBrowser<M> augmentMessageBrowser(IMessageBrowser<M> browser) {
 		if (browser!=null && browser instanceof JdbcTableMessageBrowser) {
-			JdbcTableMessageBrowser<Object> jtmb = (JdbcTableMessageBrowser<Object>)browser;
+			JdbcTableMessageBrowser<?> jtmb = (JdbcTableMessageBrowser<?>)browser;
 			jtmb.setExpiryDateField("EXPIRYDATE");
 			jtmb.setHostField("HOST");
 		}
 		return browser;
 	}
-	
+
 	@Override
 	public IMessageBrowser<M> getMessageBrowser(ProcessState state) {
 		IMessageBrowser<M> browser = super.getMessageBrowser(state);
@@ -214,7 +217,7 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 
 	/**
 	 * Value of statusField indicating row is available to be processed. If set empty, any row not having any of the other status values is considered available.
-	 * 
+	 *
 	 * @ff.default <code>M</code>
 	 */
 	@Override

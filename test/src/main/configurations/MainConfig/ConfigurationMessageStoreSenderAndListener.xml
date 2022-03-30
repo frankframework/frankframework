@@ -6,7 +6,11 @@
 				className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
 				slotId="TestMessageStoreSenderAndListener-WriteErrors"/>
 		</Receiver>
-		<Pipeline firstPipe="sendMessagePipe">
+		<Pipeline>
+			<PutInSessionPipe name="prepareSessionKeys">
+				<Param name="key1" value="a,b,c"/>
+				<Param name="key2" value="double quote: [&quot;] single quote [']"/>
+			</PutInSessionPipe>
 			<SenderPipe name="sendMessagePipe">
 				<sender
 					className="nl.nn.adapterframework.jdbc.MessageStoreSender"
@@ -30,7 +34,7 @@
 				slotId="TestMessageStoreSenderAndListener-Queue"
 				sessionKeys="key1,key2" />
 		</Receiver>
-		<Pipeline firstPipe="DoIt">
+		<Pipeline>
 			<Exit state="success" path="EXIT" code="200" />
 			<inputValidator className="nl.nn.adapterframework.pipes.XmlValidator"
 				schema="xsd/any.xsd"
@@ -38,10 +42,12 @@
 				throwException="true">
 			</inputValidator>
 
-			<FixedResultPipe name="DoIt"
-				returnString="Hello World">
+			<XsltPipe name="collectResults" xpathExpression="concat('original message [',$msg,'] key1 [',$k1,'] key2 [',$k2,']')" >
+				<Param name="msg" sessionKey="originalMessage" />
+				<Param name="k1" sessionKey="key1" />
+				<Param name="k2" sessionKey="key2" />
 				<Forward name="success" path="EXIT" />
-			</FixedResultPipe>
+			</XsltPipe>
 		</Pipeline>
 	</Adapter>
 	

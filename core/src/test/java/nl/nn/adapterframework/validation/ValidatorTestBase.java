@@ -20,6 +20,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.testutil.TestScopeProvider;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.validation.AbstractXmlValidator.ValidationResult;
 
 /**
  * @author Gerrit van Brakel
@@ -27,7 +28,7 @@ import nl.nn.adapterframework.util.LogUtil;
 public abstract class ValidatorTestBase {
 	protected Logger log = LogUtil.getLogger(this);
 
-	public String MSG_INVALID_CONTENT="Failed"; // Travis does not see the 'Invalid content' message 
+	public String MSG_INVALID_CONTENT="Failed"; // Travis does not see the 'Invalid content' message
 	public String MSG_CANNOT_FIND_DECLARATION="Cannot find the declaration of element";
 	public String MSG_UNKNOWN_NAMESPACE="Unknown namespace";
 	public String MSG_SCHEMA_NOT_FOUND="Cannot find";
@@ -112,13 +113,13 @@ public abstract class ValidatorTestBase {
 		validate(rootNamespace, schemaLocation, false, false, inputFile, expected );
 	}
 
-	public abstract String validate(String rootElement, String rootNamespace, String schemaLocation, boolean addNamespaceToSchema, boolean ignoreUnknownNamespaces, String inputFile, String[] expectedFailureReasons) throws Exception;
+	public abstract ValidationResult validate(String rootElement, String rootNamespace, String schemaLocation, boolean addNamespaceToSchema, boolean ignoreUnknownNamespaces, String inputFile, String[] expectedFailureReasons) throws Exception;
 
-	public String validate(String rootNamespace, String schemaLocation, boolean addNamespaceToSchema, boolean ignoreUnknownNamespaces, String inputFile, String[] expectedFailureReasons) throws Exception {
+	public ValidationResult validate(String rootNamespace, String schemaLocation, boolean addNamespaceToSchema, boolean ignoreUnknownNamespaces, String inputFile, String[] expectedFailureReasons) throws Exception {
 		return validate(null, rootNamespace, schemaLocation, addNamespaceToSchema, ignoreUnknownNamespaces, inputFile, expectedFailureReasons);
 	}
 
-	public void evaluateResult(String event, PipeLineSession session, Exception e, String[] expectedFailureReasons) {
+	public void evaluateResult(ValidationResult result, PipeLineSession session, Exception e, String[] expectedFailureReasons) {
 		String failureReason=(String)(session.get("failureReason"));
 		if (failureReason != null) {
 			log.info("no failure reason");
@@ -135,21 +136,21 @@ public abstract class ValidatorTestBase {
 				e.printStackTrace();
 				fail("expected XML to pass");
 			}
-			if (!event.equals("valid XML") && !event.equals("success")) {
-				fail("result must be 'valid XML' or 'success' but was [" + event + "]");
+			if (result != ValidationResult.VALID) {
+				fail("result must be 'valid XML' but was [" + result + "]");
 			}
 		} else {
 			// expected invalid XML
 			if (failureReason != null) {
 				if (e == null) {
-					assertEquals("Invalid XML", event);
+					assertEquals(ValidationResult.INVALID, result);
 				}
 				checkFailureReasons(failureReason, "failure reason", expectedFailureReasons);
 			} else {
 				if (e != null) {
 					checkFailureReasons(e.getMessage(), "exception message", expectedFailureReasons);
 				} else {
-					assertEquals("Invalid XML", event);
+					assertEquals(ValidationResult.INVALID, result);
 					checkFailureReasons("", "failure reason", expectedFailureReasons);
 				}
 			}

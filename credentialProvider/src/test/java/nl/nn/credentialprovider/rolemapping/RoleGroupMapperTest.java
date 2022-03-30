@@ -1,7 +1,12 @@
 package nl.nn.credentialprovider.rolemapping;
 
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.junit.Assert.assertEquals;
+
 import java.io.File;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.catalina.Context;
@@ -19,7 +24,6 @@ import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 import org.apache.tomcat.unittest.TesterContext;
 import org.apache.tomcat.util.file.ConfigFileLoader;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,6 +46,13 @@ public class RoleGroupMapperTest extends AbstractLdapTestUnit {
 		realm.setConnectionURL("ldap://localhost:" + port);
 		realm.setConnectionName("cn=LdapTester1,ou=Users,dc=myorg,dc=com");
 		realm.setConnectionPassword("12345");
+
+		realm.setUserBase("ou=Users,dc=myorg,dc=com");
+		realm.setUserSearch("(CN={0})");
+		realm.setUserRoleName("memberOf");
+		realm.setUserSubtree(true);
+
+		realm.setRoleName("memberOf");
 
 		if (context != null) {
 			realm.setContainer(context);
@@ -69,7 +80,7 @@ public class RoleGroupMapperTest extends AbstractLdapTestUnit {
 	}
 
 	@Test
-	public void testJNDIRealmEx() throws LifecycleException {
+	public void testEmptyRoleToGroupMappingJndiRealm() throws LifecycleException {
 
 		RoleToGroupMappingJndiRealm realm = setupRoleToGroupMappingJndiRealm(null, null);
 		realm.start();
@@ -83,26 +94,38 @@ public class RoleGroupMapperTest extends AbstractLdapTestUnit {
 		realm.start();
 	}
 
-	@SuppressWarnings("serial")
 	@Test
-	public void testExistingResource() throws LifecycleException {
-
-		Map<String, String> expectedRoleMappings = new HashMap<String, String>() {
-			{
-				put("Admin", "director");
-				put("Admin2", "director2");
-			}
-		};
+	public void testGetNestedGroups() throws LifecycleException {
 
 		TesterContext context = new TesterContext();
-
 		RoleToGroupMappingJndiRealm realm = setupRoleToGroupMappingJndiRealm(context, "classpath:conf/tomcat-role-group-mapping.xml");
-
 		realm.start();
 
-		Assert.assertEquals(expectedRoleMappings, context.getRoleMapping());
+		List<String> roles = realm.getRoles("LdapTester1");
 
-		log.info("Configured roleMappings: " + context.getRoleMapping());
+		assertThat(roles, contains(
+				"cn=UserGroup1,ou=Groups,dc=myorg,dc=com",
+				"cn=ApplGroup1,ou=Groups,dc=myorg,dc=com",
+				"cn=ApplSubGroup1,ou=Groups,dc=myorg,dc=com"
+			));
+
+	}
+
+	@Test
+	public void testGetRoleMapping() throws LifecycleException {
+
+		TesterContext context = new TesterContext();
+		RoleToGroupMappingJndiRealm realm = setupRoleToGroupMappingJndiRealm(context, "classpath:conf/tomcat-role-group-mapping.xml");
+		realm.start();
+
+		// this mapping is used to find the required group for a role, apparently
+		Map<String,String> roleToGroupMapping = context.getRoleMapping();
+
+		log.info("Configured roleMappings: " + roleToGroupMapping);
+
+		assertEquals("director", roleToGroupMapping.get("Admin"));
+		assertEquals("director2", roleToGroupMapping.get("Admin2"));
+		assertEquals("cn=UserGroup1,ou=Groups,dc=myorg,dc=com", roleToGroupMapping.get("PowerUser"));
 
 	}
 

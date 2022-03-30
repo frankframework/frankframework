@@ -23,6 +23,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.validation.AbstractXmlValidator;
+import nl.nn.adapterframework.validation.AbstractXmlValidator.ValidationResult;
 import nl.nn.adapterframework.validation.JavaxXmlValidator;
 import nl.nn.adapterframework.validation.XercesXmlValidator;
 import nl.nn.adapterframework.validation.XmlValidatorException;
@@ -34,101 +35,105 @@ import nl.nn.adapterframework.validation.XmlValidatorTestBase;
 @RunWith(value = Parameterized.class)
 public class XmlValidatorTest extends XmlValidatorTestBase {
 
-    private Class<AbstractXmlValidator> implementation;
+	private Class<AbstractXmlValidator> implementation;
 
-    public XmlValidatorTest(Class<AbstractXmlValidator> implementation) {
-        this.implementation = implementation;
-    }
+	public XmlValidatorTest(Class<AbstractXmlValidator> implementation) {
+		this.implementation = implementation;
+	}
 
-    @Parameterized.Parameters
-    public static Collection<Object[]> data() {
-        Object[][] data = new Object[][]{
-            {XercesXmlValidator.class}
-            ,{JavaxXmlValidator.class}
-        };
-        return Arrays.asList(data);
-    }
+	@Parameterized.Parameters
+	public static Collection<Object[]> data() {
+		Object[][] data = new Object[][]{
+			{XercesXmlValidator.class}
+			,{JavaxXmlValidator.class}
+		};
+		return Arrays.asList(data);
+	}
 
- 
-    protected static PipeForward createSuccessForward() {
-        PipeForward forward = new PipeForward();
-        forward.setName("success");
-        return forward;
-    }
 
-    protected static PipeForward createFailureForward() {
-        PipeForward forward = new PipeForward();
-        forward.setName("failure");
-        return forward;
-    }
+	protected static PipeForward createSuccessForward() {
+		PipeForward forward = new PipeForward();
+		forward.setName("success");
+		return forward;
+	}
 
-    XmlValidator getValidator(String schemaLocation) throws ConfigurationException {
-        return getValidator(schemaLocation, false);
-    }
-    XmlValidator getValidator(String schemaLocation, boolean addNamespaceToSchema) throws ConfigurationException {
-        return getValidator(schemaLocation, addNamespaceToSchema, implementation);
-    }
+	protected static PipeForward createFailureForward() {
+		PipeForward forward = new PipeForward();
+		forward.setName("failure");
+		return forward;
+	}
 
-    public static XmlValidator getValidator(String schemaLocation, Class<AbstractXmlValidator> implementation) throws ConfigurationException {
-        return getValidator(schemaLocation, false, implementation);
-    }
- 
-    public static XmlValidator getValidator(String schemaLocation, boolean addNamespaceToSchema, Class<AbstractXmlValidator> implementation) throws ConfigurationException {
-    	XmlValidator validator=getUnconfiguredValidator(schemaLocation, addNamespaceToSchema, implementation);
-    	validator.configure();
-    	return validator;
-    }
-    
-   public static XmlValidator getUnconfiguredValidator(String schemaLocation, Class<AbstractXmlValidator> implementation) throws ConfigurationException {
-        return getUnconfiguredValidator(schemaLocation, false, implementation);
-    }
+	XmlValidator getValidator(String schemaLocation) throws ConfigurationException {
+		return getValidator(schemaLocation, false);
+	}
+	XmlValidator getValidator(String schemaLocation, boolean addNamespaceToSchema) throws ConfigurationException {
+		return getValidator(schemaLocation, addNamespaceToSchema, implementation);
+	}
 
-   public static XmlValidator getUnconfiguredValidator(String schemaLocation, boolean addNamespaceToSchema, Class<AbstractXmlValidator> implementation) throws ConfigurationException {
-        XmlValidator validator = new XmlValidator();
-        try {
-            validator.setImplementation(implementation);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        validator.setSchemaLocation(schemaLocation);
-        if (addNamespaceToSchema) {
-            validator.setAddNamespaceToSchema(addNamespaceToSchema);
-        }
-        validator.registerForward(createSuccessForward());
-        validator.setThrowException(true);
-        validator.setFullSchemaChecking(true);
-        return validator;
-    }
-    
+	public static XmlValidator getValidator(String schemaLocation, Class<AbstractXmlValidator> implementation) throws ConfigurationException {
+		return getValidator(schemaLocation, false, implementation);
+	}
 
-    
-   protected String runAndEvaluate(XmlValidator validator, String inputfile, String[] expectedFailureReasons) throws IOException  {
-	   System.out.println("inputfile ["+inputfile+"]");
-       String testXml=inputfile!=null?getTestXml(inputfile+".xml"):null;
-  		PipeLineSession session=new PipeLineSession();
-       try {
-      		PipeRunResult result=validator.doPipe(new Message(testXml), session);
-      		PipeForward forward=result.getPipeForward();
-	        evaluateResult(forward.getName(), session, null, expectedFailureReasons);
-       } catch (Exception e) {
-	        evaluateResult(null, session, e, expectedFailureReasons);
-	    	return "Invalid XML";
-       }
-       return null;
-   }
-   
-    
-    @Override
-	public String validate(String rootelement, String rootNamespace, String schemaLocation, boolean addNamespaceToSchema,
+	public static XmlValidator getValidator(String schemaLocation, boolean addNamespaceToSchema, Class<AbstractXmlValidator> implementation) throws ConfigurationException {
+		XmlValidator validator=getUnconfiguredValidator(schemaLocation, addNamespaceToSchema, implementation);
+		validator.configure();
+		return validator;
+	}
+
+	public static XmlValidator getUnconfiguredValidator(String schemaLocation, Class<AbstractXmlValidator> implementation) throws ConfigurationException {
+		return getUnconfiguredValidator(schemaLocation, false, implementation);
+	}
+
+	public static XmlValidator getUnconfiguredValidator(String schemaLocation, boolean addNamespaceToSchema, Class<AbstractXmlValidator> implementation) throws ConfigurationException {
+		XmlValidator validator = new XmlValidator();
+		try {
+			validator.setImplementation(implementation);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		validator.setSchemaLocation(schemaLocation);
+		if (addNamespaceToSchema) {
+			validator.setAddNamespaceToSchema(addNamespaceToSchema);
+		}
+		validator.registerForward(createSuccessForward());
+		validator.setThrowException(true);
+		validator.setFullSchemaChecking(true);
+		return validator;
+	}
+
+
+
+	protected ValidationResult runAndEvaluate(XmlValidator validator, String inputfile, String[] expectedFailureReasons) throws IOException  {
+		System.out.println("inputfile ["+inputfile+"]");
+		String testXml=inputfile!=null?getTestXml(inputfile+".xml"):null;
+		PipeLineSession session=new PipeLineSession();
+		try {
+			PipeRunResult result=validator.doPipe(new Message(testXml), session);
+			PipeForward forward=result.getPipeForward();
+			evaluateResult(forward.getName(), session, null, expectedFailureReasons);
+		} catch (Exception e) {
+			evaluateResult(ValidationResult.INVALID, session, e, expectedFailureReasons);
+			return ValidationResult.INVALID;
+		}
+		return null;
+	}
+
+	public void evaluateResult(String forwardName, PipeLineSession session, Exception e, String[] expectedFailureReasons) {
+		ValidationResult validationResult = forwardName.equals("success") ? ValidationResult.VALID : ValidationResult.INVALID;
+		evaluateResult(validationResult, session, e, expectedFailureReasons);
+	}
+
+	@Override
+	public ValidationResult validate(String rootelement, String rootNamespace, String schemaLocation, boolean addNamespaceToSchema,
 			boolean ignoreUnknownNamespaces, String inputfile, String[] expectedFailureReasons) throws Exception,
 			IllegalAccessException, XmlValidatorException, PipeRunException, IOException {
-    	XmlValidator validator =getValidator(schemaLocation, addNamespaceToSchema, implementation);
-    	if (rootelement!=null) validator.setRoot(rootelement);
-   		validator.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);
-   		validator.configure();
-   		validator.start();
-    	return runAndEvaluate(validator, inputfile, expectedFailureReasons);
-    }
+		XmlValidator validator =getValidator(schemaLocation, addNamespaceToSchema, implementation);
+		if (rootelement!=null) validator.setRoot(rootelement);
+		validator.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);
+		validator.configure();
+		validator.start();
+		return runAndEvaluate(validator, inputfile, expectedFailureReasons);
+	}
 
 
 	/*
@@ -142,19 +147,19 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 	 * in case a SOAP Message needs to be validated, in other cases give this
 	 * property an empty value</td>
 	 * <td>http://schemas.xmlsoap.org/soap/envelope/</td></tr>
-	 * 
+	 *
 	 */
 	public void testSoapNamespaceFeature(String schema, String root, String inputFile) throws ConfigurationException, IOException, PipeRunException, XmlValidatorException, PipeStartException {
-        XmlValidator validator = new XmlValidator();
-        try {
-            validator.setImplementation(implementation);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+		XmlValidator validator = new XmlValidator();
+		try {
+			validator.setImplementation(implementation);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 
-        validator.registerForward(createSuccessForward());
-        validator.setThrowException(true);
-        validator.setFullSchemaChecking(true);
+		validator.registerForward(createSuccessForward());
+		validator.setThrowException(true);
+		validator.setFullSchemaChecking(true);
 		validator.setRoot(root);
 		validator.setSoapNamespace("http://www.w3.org/2003/05/soap-envelope");
 		validator.setSchema(schema);
@@ -172,12 +177,12 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 //	@Test
 //	public void straighforwardInEnvelope() throws IllegalAccessException, InstantiationException, XmlValidatorException, IOException, PipeRunException, ConfigurationException {
 //		validation("A",ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_OK,INPUT_FILE_BASIC_A_OK_IN_ENVELOPE,false,null);
-//	 	validation("A",ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_OK,INPUT_FILE_BASIC_A_ERR_IN_ENVELOPE,false,MSG_INVALID_CONTENT);
-//	 	validation("A",ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE,INPUT_FILE_BASIC_A_OK_IN_ENVELOPE,false,MSG_CANNOT_FIND_DECLARATION);
+//		validation("A",ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_OK,INPUT_FILE_BASIC_A_ERR_IN_ENVELOPE,false,MSG_INVALID_CONTENT);
+//		validation("A",ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE,INPUT_FILE_BASIC_A_OK_IN_ENVELOPE,false,MSG_CANNOT_FIND_DECLARATION);
 //		validation("A",ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE,INPUT_FILE_BASIC_A_ERR_IN_ENVELOPE,false,MSG_CANNOT_FIND_DECLARATION);
 //	}
 
-	
+
 	public void testStoreRootElement(String schema, String root, String inputFile) throws Exception {
 		XmlValidator validator = new XmlValidator();
 
@@ -203,7 +208,7 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 	public void testStoreRootElement() throws Exception {
 		testStoreRootElement(SCHEMA_LOCATION_BASIC_A_OK, "A", INPUT_FILE_BASIC_A_OK);
 	}
-	
+
 	@Test
 	public void testWrongRootElement() throws Exception {
 		String schema = SCHEMA_LOCATION_BASIC_A_OK;
@@ -212,7 +217,7 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 
 		validator.registerForward(createSuccessForward());
 		validator.registerForward(createFailureForward());
-		
+
 		validator.setFullSchemaChecking(true);
 		validator.setRoot("anotherElement");
 		validator.setReasonSessionKey("reason");
@@ -233,13 +238,13 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 	@Test
 	public void testMultipleRootElement() throws Exception {
 		String schema = SCHEMA_LOCATION_BASIC_A_OK;
-		String root = "A"; 
+		String root = "A";
 		String inputFile = INPUT_FILE_BASIC_A_OK;
 		XmlValidator validator = new XmlValidator();
 
 		validator.registerForward(createSuccessForward());
 		validator.registerForward(createFailureForward());
-		
+
 		validator.setFullSchemaChecking(true);
 		validator.setRoot(root+",anotherElement"); // if multiple root elements are specified, in a comma separated list, the validation succeeds if one of these root elements is found
 		validator.setSchemaLocation(schema);
@@ -257,13 +262,13 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 	@Test
 	public void testRuntimeRootElement() throws Exception {
 		String schema = SCHEMA_LOCATION_BASIC_A_OK;
-		String root = "A"; 
+		String root = "A";
 		String inputFile = INPUT_FILE_BASIC_A_OK;
 		XmlValidator validator = new XmlValidator();
 
 		validator.registerForward(createSuccessForward());
 		validator.registerForward(createFailureForward());
-		
+
 		validator.setFullSchemaChecking(true);
 		validator.setRoot("oneElement,anotherElement"); // if multiple root elements are specified, in a comma separated list, the validation succeeds if one of these root elements is found
 		validator.setSchemaLocation(schema);
@@ -281,13 +286,13 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 	@Test
 	public void testWrongRuntimeRootElement() throws Exception {
 		String schema = SCHEMA_LOCATION_BASIC_A_OK;
-		String root = "A"; 
+		String root = "A";
 		String inputFile = INPUT_FILE_BASIC_A_OK;
 		XmlValidator validator = new XmlValidator();
 
 		validator.registerForward(createSuccessForward());
 		validator.registerForward(createFailureForward());
-		
+
 		validator.setFullSchemaChecking(true);
 		validator.setRoot(root);
 		validator.setReasonSessionKey("reason");
