@@ -6,10 +6,8 @@ import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
@@ -113,16 +111,8 @@ public class RoleGroupMapperTest extends AbstractLdapTestUnit {
 
 	}
 
-	@SuppressWarnings("serial")
 	@Test
 	public void testGetRoleMapping() throws LifecycleException {
-
-		Map<String, String> expectedRoleMappings = new HashMap<String, String>() {
-			{
-				put("Admin", "director");
-				put("Admin2", "director2");
-			}
-		};
 
 		TesterContext context = new TesterContext();
 		RoleToGroupMappingJndiRealm realm = setupRoleToGroupMappingJndiRealm(context, "classpath:conf/tomcat-role-group-mapping.xml");
@@ -131,14 +121,12 @@ public class RoleGroupMapperTest extends AbstractLdapTestUnit {
 		// this mapping is used to find the required group for a role, apparently
 		Map<String,String> roleToGroupMapping = context.getRoleMapping();
 
-		for (Entry e:context.getRoleMapping().entrySet()) {
-			 System.out.println("k: ["+e.getKey()+"], v:["+e.getValue()+"], type: "+e.getValue().getClass().getName());
-		}
+		log.info("Configured roleMappings: " + roleToGroupMapping);
+
 		assertEquals("director", roleToGroupMapping.get("Admin"));
 		assertEquals("director2", roleToGroupMapping.get("Admin2"));
 		assertEquals("cn=UserGroup1,ou=Groups,dc=myorg,dc=com", roleToGroupMapping.get("PowerUser"));
 
-		log.info("Configured roleMappings: " + context.getRoleMapping());
 	}
 
 }
