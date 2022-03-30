@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018-2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2018-2019 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.cxf.jaxws.EndpointImpl;
 import org.springframework.context.ApplicationContextAware;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
@@ -57,15 +58,16 @@ import nl.nn.adapterframework.util.XmlBuilder;
  */
 public class WebServiceListener extends PushingListenerAdapter implements HasPhysicalDestination, HasSpecialDefaultValues, ApplicationContextAware {
 
-	private boolean soap = true;
-	private String serviceNamespaceURI;
+	private final @Getter(onMethod = @__(@Override)) String domain = "Http";
+	private @Getter boolean soap = true;
+	private @Getter String serviceNamespaceURI;
 	private SoapWrapper soapWrapper = null;
 
 	/* CXF Implementation */
-	private String address;
-	private boolean mtomEnabled = false;
-	private String attachmentSessionKeys = "";
-	private String multipartXmlSessionKey = "multipartXml";
+	private @Getter String address;
+	private @Getter boolean mtomEnabled = false;
+	private @Getter String attachmentSessionKeys = "";
+	private @Getter String multipartXmlSessionKey = "multipartXml";
 	private List<String> attachmentSessionKeysList = new ArrayList<String>();
 	private EndpointImpl endpoint = null;
 	private SpringBus cxfBus;
@@ -212,21 +214,10 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	public void setSoap(boolean b) {
 		soap = b;
 	}
-	public boolean isSoap() {
-		return soap;
-	}
-
-	public String getServiceNamespaceURI() {
-		return serviceNamespaceURI;
-	}
 
 	@IbisDoc({"namespace of the service that is provided by the adapter of this listener", ""})
 	public void setServiceNamespaceURI(String string) {
 		serviceNamespaceURI = string;
-	}
-
-	public boolean isApplicationFaultsAsSoapFaults() {
-		return isApplicationFaultsAsExceptions();
 	}
 	public void setApplicationFaultsAsSoapFaults(boolean b) {
 		setApplicationFaultsAsExceptions(b);
@@ -241,29 +232,17 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 				this.address = address;
 		}
 	}
-	public String getAddress() {
-		return address;
-	}
 
 	public void setMtomEnabled(boolean mtomEnabled) {
 		this.mtomEnabled = mtomEnabled;
-	}
-	public boolean isMtomEnabled() {
-		return mtomEnabled;
 	}
 
 	public void setAttachmentSessionKeys(String attachmentSessionKeys) {
 		this.attachmentSessionKeys = attachmentSessionKeys;
 	}
-	public String getAttachmentSessionKeys() {
-		return attachmentSessionKeys;
-	}
 
 	public void setMultipartXmlSessionKey(String multipartXmlSessionKey) {
 		this.multipartXmlSessionKey = multipartXmlSessionKey;
-	}
-	public String getMultipartXmlSessionKey() {
-		return multipartXmlSessionKey;
 	}
 
 	@Override
