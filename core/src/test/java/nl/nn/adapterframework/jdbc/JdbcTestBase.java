@@ -33,7 +33,6 @@ import liquibase.database.jvm.JdbcConnection;
 import liquibase.resource.ClassLoaderResourceAccessor;
 import lombok.Getter;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
-import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupportFactory;
 import nl.nn.adapterframework.testutil.TestConfiguration;
@@ -49,7 +48,9 @@ public abstract class JdbcTestBase {
 	protected static Logger log = LogUtil.getLogger(JdbcTestBase.class);
 	private @Getter TestConfiguration configuration;
 
-	protected static String singleDatasource = null; // "MariaDB";  // set to a specific datasource name, to speed up testing
+	public static final String TEST_TABLE="Temp"; // use mixed case tablename for testing
+
+	protected static String singleDatasource = null;  //null; // "MariaDB";  // set to a specific datasource name, to speed up testing
 
 	protected Liquibase liquibase;
 	protected boolean testPeekShouldSkipRecordsAlreadyLocked = false;
@@ -130,14 +131,12 @@ public abstract class JdbcTestBase {
 				liquibase.rollback(liquibase.getChangeSetStatuses(null).size(), null);
 			}
 			liquibase.close();
+			liquibase = null;
 		}
 
 		if (connection != null && !connection.isClosed()) {
 			try {
-				IDbmsSupport dbmsSupport = new DbmsSupportFactory().getDbmsSupport(connection);
-				if (dbmsSupport.isTablePresent(connection, "TEMP")) {
-					connection.createStatement().execute("DROP TABLE TEMP");
-				}
+				dropTableIfPresent(connection, TEST_TABLE);
 			} finally {
 				connection.close();
 			}
@@ -156,29 +155,39 @@ public abstract class JdbcTestBase {
 		return dbmsSupport.isTablePresent(connection, tableName);
 	}
 
-	public void dropTable(String tableName) throws Exception {
+	public void dropTableIfPresent(String tableName) throws Exception {
 		try(Connection connection = getConnection()) {
-			if (dbmsSupport.isTablePresent(connection, tableName)) {
-				JdbcUtil.executeStatement(connection, "DROP TABLE "+tableName);
-			}
-			assertFalse("table ["+tableName+"] should not exist", dbmsSupport.isTablePresent(connection, tableName));
+			dropTableIfPresent(connection, tableName);
 		}
 	}
 
-	protected void prepareDatabase() throws Exception {
-		dbmsSupport = dbmsSupportFactory.getDbmsSupport(dataSource);
+	public void dropTableIfPresent(Connection connection, String tableName) throws Exception {
+		if (connection!=null && !connection.isClosed()) {
+			dropTableIfPresent(dbmsSupport, connection, tableName);
+		} else {
+			log.warn("connection is null or closed, cannot drop table ["+tableName+"]");
+		}
+	}
 
-		if (dbmsSupport.isTablePresent(connection, "TEMP")) {
-			JdbcUtil.executeStatement(connection, "DROP TABLE TEMP");
+	public static void dropTableIfPresent(IDbmsSupport dbmsSupport, Connection connection, String tableName) throws Exception {
+		if (dbmsSupport.isTablePresent(connection, tableName)) {
+			JdbcUtil.executeStatement(connection, "DROP TABLE "+tableName);
 			SQLWarning warnings = connection.getWarnings();
 			if(warnings != null) {
 				log.warn(JdbcUtil.warningsToString(warnings));
 			}
 		}
+		assertFalse("table ["+tableName+"] should not exist", dbmsSupport.isTablePresent(connection, tableName));
+	}
+
+	protected void prepareDatabase() throws Exception {
+		dbmsSupport = dbmsSupportFactory.getDbmsSupport(dataSource);
+
+		dropTableIfPresent(connection, TEST_TABLE);
 		JdbcUtil.executeStatement(connection,
-				"CREATE TABLE TEMP(TKEY "+dbmsSupport.getNumericKeyFieldType()+ " PRIMARY KEY, TVARCHAR "+dbmsSupport.getTextFieldType()+"(100), TINT INT, TNUMBER NUMERIC(10,5), " +
-				"TDATE DATE, TDATETIME "+dbmsSupport.getTimestampFieldType()+", TBOOLEAN "+dbmsSupport.getBooleanFieldType()+", "+
-				"TCLOB "+dbmsSupport.getClobFieldType()+", TBLOB "+dbmsSupport.getBlobFieldType()+")");
+				"CREATE TABLE "+TEST_TABLE+"(tKEY "+dbmsSupport.getNumericKeyFieldType()+ " PRIMARY KEY, tVARCHAR "+dbmsSupport.getTextFieldType()+"(100), tINT INT, tNUMBER NUMERIC(10,5), " +
+				"tDATE DATE, tDATETIME "+dbmsSupport.getTimestampFieldType()+", tBOOLEAN "+dbmsSupport.getBooleanFieldType()+", "+
+				"tCLOB "+dbmsSupport.getClobFieldType()+", tBLOB "+dbmsSupport.getBlobFieldType()+")");
 		SQLWarning warnings = connection.getWarnings();
 		if(warnings != null) {
 			log.warn(JdbcUtil.warningsToString(warnings));

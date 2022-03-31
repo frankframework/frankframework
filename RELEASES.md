@@ -2,12 +2,18 @@ Ibis AdapterFramework release notes
 ===================================
 
 [Tags](https://github.com/ibissource/iaf/releases)
-[JavaDocs](https://javadoc.ibissource.org/latest/)
+[JavaDocs](https://javadoc.frankframework.org/)
+
+Upcoming (7.8)
+--------------
+
+### Non backwards compatible changes
+
+- HttpSender no longer treats input message as parameters by default. For 7.7 compatibility, set attribute treatInputMessageAsParameters=true
 
 
-
-Upcoming (7.7)
---------
+7.7
+---
 
 [Commits](https://github.com/ibissource/iaf/compare/v7.6-RC1...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)

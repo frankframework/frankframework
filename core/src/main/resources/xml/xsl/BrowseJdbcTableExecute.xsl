@@ -94,14 +94,7 @@
 				<xsl:for-each select="fielddefinition/field">
 					<xsl:if test="not(@name=$rnum)">
 						<xsl:if test="number(@size)&gt;$maxColumnSize">
-							<xsl:choose>
-								<xsl:when test="starts-with($dbmsName, 'MS_SQL')">
-									<xsl:text>LEN(</xsl:text>
-								</xsl:when>
-								<xsl:otherwise>
-									<xsl:text>LENGTH(</xsl:text>
-								</xsl:otherwise>
-							</xsl:choose>
+							<xsl:text>LENGTH(</xsl:text>
 						</xsl:if>
 						<xsl:value-of select="@name"/>
 						<xsl:if test="number(@size)&gt;$maxColumnSize">

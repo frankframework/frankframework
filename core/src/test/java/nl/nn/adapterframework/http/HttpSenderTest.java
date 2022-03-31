@@ -78,6 +78,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		Message input = new Message("hallo");
 
 		sender.setMethodType(HttpMethod.GET);
+		sender.setTreatInputMessageAsParameters(true);
 
 		sender.configure();
 		sender.open();
@@ -173,6 +174,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		sender.setMethodType(HttpMethod.GET);
 		sender.setEncodeMessages(true);
+		sender.setTreatInputMessageAsParameters(true);
 
 		sender.configure();
 		sender.open();
@@ -242,6 +244,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		sender.setMethodType(HttpMethod.POST); //should handle both upper and lowercase methodtypes :)
 		sender.setEncodeMessages(true);
+		sender.setTreatInputMessageAsParameters(true);
 
 		sender.configure();
 		sender.open();
@@ -269,6 +272,29 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		String result = sender.sendMessage(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpPostAppendParamsToBody.txt"), result.trim());
+	}
+
+	@Test
+	public void simpleMockedHttpPostParamsOnly() throws Throwable {
+		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		sender.setUrl("http://127.0.0.1/something&dummy=true");
+		Message input = new Message("hallo");
+
+		PipeLineSession pls = new PipeLineSession(session);
+
+		sender.setMethodType(HttpMethod.POST); //should handle both upper and lowercase methodtypes :)
+
+		sender.addParameter(new Parameter("key", "value"));
+
+		sender.addParameter(new Parameter("otherKey", "otherValue"));
+
+		sender.setTreatInputMessageAsParameters(false);
+
+		sender.configure();
+		sender.open();
+
+		String result = sender.sendMessage(input, pls).asString();
+		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpPostAppendParamsToBodyAndEmptyBody.txt"), result.trim());
 	}
 
 	@Test
@@ -368,7 +394,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	}
 
 	@Test
-	public void simpleMockedHttpCharset() throws Throwable {
+	public void simpleMockedHttpPostCharset() throws Throwable {
 		sender = getSender();
 		Message input = new Message("hallo");
 
@@ -381,7 +407,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.open();
 
 		String result = sender.sendMessage(input, pls).asString();
-		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpCharset.txt"), result.trim());
+		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpPostCharset.txt"), result.trim());
 	}
 
 	@Test

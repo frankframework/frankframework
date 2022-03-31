@@ -440,13 +440,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			if (timeoutGuard.cancel()) {
 				throw new TimeoutException("timeout exceeded while starting receiver");
 			}
-
-			throwEvent(RCV_STARTED_RUNNING_MONITOR_EVENT);
-			if (getListener() instanceof IPullingListener){
-				// start all threads. Also sets runstate=STARTED 
-				listenerContainer.start();
-			}
 		}
+		if (getListener() instanceof IPullingListener){
+			// start all threads. Also sets runstate=STARTED 
+			listenerContainer.start();
+		}
+		throwEvent(RCV_STARTED_RUNNING_MONITOR_EVENT);
 	}
 
 	/**
@@ -1287,7 +1286,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 //			threadContext=pipelineSession; // this is to enable Listeners to use session variables, for instance in afterProcessMessage()
 			try {
 				if (getMessageLog()!=null) {
-					getMessageLog().storeMessage(messageId, businessCorrelationId, new Date(), RCV_MESSAGE_LOG_COMMENTS, label, pipelineMessage);
+					getMessageLog().storeMessage(messageId, businessCorrelationId, new Date(), RCV_MESSAGE_LOG_COMMENTS, label, new MessageWrapper(pipelineMessage, messageId));
 				}
 				log.debug(getLogPrefix()+"preparing TimeoutGuard");
 				TimeoutGuard tg = new TimeoutGuard("Receiver "+getName());

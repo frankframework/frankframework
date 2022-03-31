@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 	public String getAutoIncrementKeyFieldType() {
 		return "NUMBER(10)";
 	}
-	
+
 	@Override
 	public boolean autoIncrementKeyMustBeInserted() {
 		return true;
@@ -96,7 +96,7 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 	}
 	@Override
 	public String getUpdateBlobQuery(String table, String blobField, String keyField) {
-		return "SELECT "+blobField+ " FROM "+table+ " WHERE "+keyField+"=?"+ " FOR UPDATE";	
+		return "SELECT "+blobField+ " FROM "+table+ " WHERE "+keyField+"=?"+ " FOR UPDATE";
 	}
 
 	@Override
@@ -107,8 +107,8 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 	public String getTextFieldType() {
 		return "VARCHAR2";
 	}
-	
-	
+
+
 	@Override
 	public String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery, int wait) throws JdbcException {
 		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
@@ -128,21 +128,21 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 		}
 	}
 
-	
+
 	@Override
 	public String getFirstRecordQuery(String tableName) throws JdbcException {
 		String query="select * from "+tableName+" where ROWNUM=1";
 		return query;
-	} 
+	}
 
 	@Override
 	public String provideIndexHintAfterFirstKeyword(String tableName, String indexName) {
-		return " /*+ INDEX ( "+tableName+ " "+indexName+" ) */ "; 
+		return " /*+ INDEX ( "+tableName+ " "+indexName+" ) */ ";
 	}
 
 	@Override
 	public String provideFirstRowsHintAfterFirstKeyword(int rowCount) {
-		return " /*+ FIRST_ROWS( "+rowCount+" ) */ "; 
+		return " /*+ FIRST_ROWS( "+rowCount+" ) */ ";
 	}
 
 	@Override
@@ -193,12 +193,27 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
+	public ResultSet getTableColumns(Connection conn, String schemaName, String tableName, String columnNamePattern) throws JdbcException {
+		return super.getTableColumns(conn, schemaName, tableName.toUpperCase(), columnNamePattern!=null ? columnNamePattern.toUpperCase() : null);
+	}
+
+	@Override
+	public boolean isTablePresent(Connection conn, String schemaName, String tableName) throws JdbcException {
+		return super.isTablePresent(conn, schemaName, tableName.toUpperCase());
+	}
+
+	@Override
+	public boolean isColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException {
+		return super.isColumnPresent(conn, schemaName, tableName.toUpperCase(), columnName.toUpperCase());
+	}
+
+	@Override
 	public boolean isIndexPresent(Connection conn, String schemaOwner, String tableName, String indexName) {
 		String query="select count(*) from all_indexes where owner='"+schemaOwner.toUpperCase()+"' and table_name='"+tableName.toUpperCase()+"' and index_name='"+indexName.toUpperCase()+"'";
 		try {
 			if (JdbcUtil.executeIntQuery(conn, query)>=1) {
 				return true;
-			} 
+			}
 			return false;
 		} catch (Exception e) {
 			log.warn("could not determine presence of index ["+indexName+"] on table ["+tableName+"]",e);
@@ -212,7 +227,7 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 		try {
 			if (JdbcUtil.executeIntQuery(conn, query)>=1) {
 				return true;
-			}  
+			}
 			return false;
 		} catch (Exception e) {
 			log.warn("could not determine presence of sequence ["+sequenceName+"]",e);
@@ -226,7 +241,7 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 		try {
 			if (JdbcUtil.executeIntQuery(conn, query, columnName.toUpperCase())>=1) {
 				return true;
-			} 
+			}
 			return false;
 		} catch (Exception e) {
 			log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"]",e);

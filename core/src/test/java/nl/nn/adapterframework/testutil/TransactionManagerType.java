@@ -34,9 +34,9 @@ public enum TransactionManagerType {
 
 	private TransactionManagerType(Class<? extends URLDataSourceFactory> clazz, String springConfigurationFile) {
 		if(springConfigurationFile == null) {
-			springConfigurationFiles = new String[]{ "testConfigurationContext.xml" };
+			springConfigurationFiles = new String[]{ TestConfiguration.TEST_CONFIGURATION_FILE };
 		} else {
-			springConfigurationFiles = new String[]{ springConfigurationFile, "testTXConfigurationContext.xml" };
+			springConfigurationFiles = new String[]{ springConfigurationFile, TestConfiguration.TEST_DATABASE_ENABLED_CONFIGURATION_FILE };
 		}
 		factory = clazz;
 	}

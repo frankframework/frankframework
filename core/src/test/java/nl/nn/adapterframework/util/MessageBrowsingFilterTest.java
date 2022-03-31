@@ -3,6 +3,7 @@ package nl.nn.adapterframework.util;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.Date;
@@ -17,6 +18,7 @@ import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.jdbc.TransactionManagerTestBase;
 import nl.nn.adapterframework.jdbc.dbms.Dbms;
 import nl.nn.adapterframework.receivers.JavaListener;
+import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 
 public class MessageBrowsingFilterTest extends TransactionManagerTestBase {
@@ -140,13 +142,29 @@ public class MessageBrowsingFilterTest extends TransactionManagerTestBase {
 	}
 
 	@Test
-	public void testMessageFilterWithListener() throws Exception {
+	public void testMessageFilterWithMessageWrapper() throws Exception {
+		MessageWrapper messageInFilter = new MessageWrapper(new Message("message"), "firstMessageID");
+		MessageWrapper messageOutOfFilter = new MessageWrapper(new Message("out filter"), "id");
+		testMessageFilterWithJavaListenerHelper(messageInFilter, messageOutOfFilter);
+	}
+
+	@Test
+	public void testMessageFilterWithMessage() throws Exception {
+		testMessageFilterWithJavaListenerHelper(new Message("message"), new Message("out filter"));
+	}
+
+	@Test
+	public void testMessageFilterWithString() throws Exception {
+		testMessageFilterWithJavaListenerHelper("message", "out filter");
+	}
+
+	public void testMessageFilterWithJavaListenerHelper(Serializable messageInFilter, Serializable messageOutOfFilter) throws Exception {
 		String messageRoot = "message";
 
 		filter.setMessageMask(messageRoot, storage, listener);
 		storage.configure();
-		storage.storeMessage("1", "corrId", new Date(), "comments", "label", "message");
-		storage.storeMessage("2", "corrId2", new Date(), "comments", "label", "out filter");
+		storage.storeMessage("1", "corrId", new Date(), "comments", "label", messageInFilter);
+		storage.storeMessage("2", "corrId2", new Date(), "comments", "label", messageOutOfFilter);
 
 		int count = 0 ;
 		try(IMessageBrowsingIterator iterator = storage.getIterator()){

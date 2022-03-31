@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Baseclass for {@link IBasicFileSystem FileSystems} that use a 'Connection' to connect to their storage.
- * 
+ *
  * @author Gerrit van Brakel
  *
  */
@@ -38,7 +38,7 @@ public abstract class ConnectedFileSystemBase<F,C> extends FileSystemBase<F> {
 
 	// implementations that have a thread-safe connection can set pooledConnection = false to use a shared connection.
 	private @Setter @Getter boolean pooledConnection=true;
-	
+
 	private C globalConnection;
 	private ObjectPool<C> connectionPool;
 
@@ -46,7 +46,7 @@ public abstract class ConnectedFileSystemBase<F,C> extends FileSystemBase<F> {
 	 * Create a fresh connection to the FileSystem.
 	 */
 	protected abstract C createConnection() throws FileSystemException;
-	
+
 	/**
 	 * Close connection to the FileSystem, releasing all resources.
 	 */
@@ -59,18 +59,21 @@ public abstract class ConnectedFileSystemBase<F,C> extends FileSystemBase<F> {
 			}
 		}
 	}
-	
-	
+
+
 	@Override
 	public void open() throws FileSystemException {
 		if (isPooledConnection()) {
 			openPool();
 		} else {
 			globalConnection = createConnection();
+			if (globalConnection==null) {
+				throw new FileSystemException("Cannot create connection");
+			}
 		}
 		super.open();
 	}
-	
+
 	@Override
 	public void close() throws FileSystemException {
 		try {
@@ -85,20 +88,38 @@ public abstract class ConnectedFileSystemBase<F,C> extends FileSystemBase<F> {
 			}
 		}
 	}
-	
+
 
 	/**
 	 * Get a Connection from the pool, or the global shared connection.
 	 */
 	protected C getConnection() throws FileSystemException {
 		try {
-			return isPooledConnection() ? connectionPool.borrowObject() : globalConnection;
+			return isPooledConnection()
+					? connectionPool!=null ? connectionPool.borrowObject() : null // connectionPool can be null if getConnection() is called before open() or after close() is called. This happens in the adapter status page when the adapter is stopped.
+					: globalConnection;
 		} catch (Exception e) {
 			throw new FileSystemException("Cannot get connection from pool of "+ClassUtils.nameOf(this), e);
 		}
 	}
-	
-	protected void releaseConnection(C connection) {
+
+	/**
+	 * Release the connection, return it to the pool or invalidate it.
+	 */
+	protected void releaseConnection(C connection, boolean invalidateConnection) {
+		if (invalidateConnection) {
+			invalidateConnection(connection);
+		} else {
+			releaseConnection(connection);
+		}
+	}
+
+	/**
+	 * Release the connection, return it to the pool.
+	 * This method should not be called if invalidateConnection() has been called with the same connection, so the typical use case
+	 * cannot be in a finally-clause after an exception-clause.
+	 */
+	private void releaseConnection(C connection) {
 		if (isPooledConnection()) {
 			try {
 				connectionPool.returnObject(connection);
@@ -107,12 +128,12 @@ public abstract class ConnectedFileSystemBase<F,C> extends FileSystemBase<F> {
 			}
 		}
 	}
-	
+
 	/**
 	 * Remove the connection from the pool, e.g. after it has been part of trouble.
 	 * If a shared (non-pooled) connection is invalidated, the shared connection is recreated.
 	 */
-	protected void invalidateConnection(C connection) {
+	private void invalidateConnection(C connection) {
 		try {
 			if (isPooledConnection()) {
 				connectionPool.invalidateObject(connection);
@@ -127,7 +148,7 @@ public abstract class ConnectedFileSystemBase<F,C> extends FileSystemBase<F> {
 			log.warn("Cannot invalidate connection of "+ClassUtils.nameOf(this), e);
 		}
 	}
-	
+
 	/**
 	 * Postpone the release of the connection to after the stream is closed.
 	 * If any IOExceptions on the stream occur, the connection is invalidated.
@@ -156,7 +177,7 @@ public abstract class ConnectedFileSystemBase<F,C> extends FileSystemBase<F> {
 					super.destroyObject(p);
 				}
 
-			}); 
+			});
 		}
 	}
 

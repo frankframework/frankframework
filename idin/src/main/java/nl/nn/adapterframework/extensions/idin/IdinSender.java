@@ -60,6 +60,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Niels Meijer
  */
 public class IdinSender extends SenderWithParametersBase implements HasPhysicalDestination {
+	private final String domain = "Idin";
 	private String merchantID = null;
 	private int merchantSubID = 0;
 	private String merchantReturnUrl = null;
@@ -633,5 +634,10 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 	public String getServiceLogsPattern() {
 		return this.serviceLogsPattern;
+	}
+
+	@Override
+	public String getDomain() {
+		return domain;
 	}
 }

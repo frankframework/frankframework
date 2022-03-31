@@ -220,7 +220,7 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 						message=new Message(JdbcUtil.getClobAsString(getDbmsSupport(), rs,getMessageField(),false));
 						break;
 					case BLOB:
-						if (isBlobSmartGet() || StringUtils.isNotEmpty(getBlobCharset())) {
+						if (isBlobSmartGet() || StringUtils.isNotEmpty(getBlobCharset())) { // in this case blob contains a String
 							message=new Message(JdbcUtil.getBlobAsString(getDbmsSupport(), rs,getMessageField(),getBlobCharset(),isBlobsCompressed(),isBlobSmartGet(),false));
 						} else {
 							try (InputStream blobStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), rs, getMessageField(), isBlobsCompressed())) {

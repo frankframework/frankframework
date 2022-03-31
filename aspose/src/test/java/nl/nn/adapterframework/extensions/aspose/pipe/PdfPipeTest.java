@@ -44,6 +44,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.extensions.aspose.pipe.PdfPipe.DocumentAction;
 import nl.nn.adapterframework.pipes.PipeTestBase;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.UrlMessage;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
@@ -107,13 +108,13 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 		if(convertedDocumentMatcher.find()) { //Find converted document location
 			String convertedFilePath = convertedDocumentMatcher.group();
-			System.out.println("found converted file ["+convertedFilePath+"]");
+			log.debug("found converted file ["+convertedFilePath+"]");
 
 			URL expectedFileUrl = TestFileUtils.getTestFileURL(expectedFile);
 			assertNotNull("cannot find expected file ["+expectedFile+"]", expectedFileUrl);
 			File file = new File(expectedFileUrl.toURI());
 			String expectedFilePath = file.getPath();
-			System.out.println("converted relative path ["+expectedFile+"] to absolute file ["+expectedFilePath+"]");
+			log.debug("converted relative path ["+expectedFile+"] to absolute file ["+expectedFilePath+"]");
 
 			PDFUtil pdfUtil = new PDFUtil();
 			//remove Aspose evaluation copy information
@@ -142,7 +143,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 		PipeLineSession session = new PipeLineSession();
 		URL input = TestFileUtils.getTestFileURL(fileToConvert);
-		pipe.doPipe(Message.asMessage(new File(input.toURI())), session);
+		pipe.doPipe(new UrlMessage(input), session);
 
 		//returns <main conversionOption="0" mediaType="xxx/xxx" documentName="filename" numberOfPages="1" convertedDocument="xxx.pdf" />
 		return session.getMessage("documents").asString();
@@ -292,7 +293,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	public void mailWithWordAttachment() throws Exception {
 		expectSuccessfullConversion("mailWithWordAttachment", "/PdfPipe/MailWithAttachments/mailWithWordAttachment.msg", "/PdfPipe/xml-results/mailWithWordAttachment.xml", "/PdfPipe/results/mailWithWordAttachment.pdf");
 	}
-	
+
 	@Test
 	public void multiThreadedMailWithWordAttachment() throws Exception {
 		pipe.setName("multiThreadedmailWithWordAttachment");
@@ -311,9 +312,9 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 			try {
 				PipeRunResult prr = pipe.doPipe(Message.asMessage(new File(item.toURI())), session);
 				Message result = prr.getResult();
-				MatchUtils.assertXmlEquals("Conversion XML does not match", applyIgnores(result.asString()), applyIgnores(expected), true);
+				MatchUtils.assertXmlEquals("Conversion XML does not match", applyIgnores(expected), applyIgnores(result.asString()), true);
 			} catch (Exception e) {
-				fail("Failed to execute test " + e.getMessage());
+				fail("Failed to execute test ("+e.getClass()+"): " + e.getMessage());
 			}
 		});
 	}

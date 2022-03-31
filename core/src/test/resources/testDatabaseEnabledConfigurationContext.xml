@@ -19,7 +19,9 @@
 
 	<import resource="testConfigurationContext.xml"/>
 
+	<bean id="jndiContextPrefixFactory" class="nl.nn.adapterframework.core.JndiContextPrefixFactory" />
 	<bean id="dataSourceFactory" class="${URLDataSourceFactory}" />
+	<bean name="dbmsSupportFactory" class="nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory" />
 
 	<bean
 		id="txManagerProxy"

@@ -105,16 +105,17 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 	})
 	.state('pages.storage', {
 		abstract: true,
-		url: "/adapters/:adapter/receivers/:receiver/",
+		url: "/adapters/:adapter/:storageSource/:storageSourceName/",
 		template: "<div ui-view ng-controller='StorageBaseCtrl'></div>",
 		controller: function($state) {
 			$state.current.data.pageTitle = $state.params.processState + " List";
-			$state.current.data.breadcrumbs = "Adapter > "+$state.params.processState+" List";
+			$state.current.data.breadcrumbs = "Adapter > " + ($state.params.storageSource=='pipes' ? "Pipes > " + $state.params.storageSourceName + " > ": "") + $state.params.processState+" List";
 		},
 		params: {
 			adapter: { value: '', squash: true},
-			receiver: { value: '', squash: true},
+			storageSourceName: { value: '', squash: true},
 			processState: { value: '', squash: true},
+			storageSource: { value: '', squash: true},
 		},
 		data: {
 			pageTitle: '',
@@ -137,42 +138,8 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 			messageId: { value: '', squash: true},
 		},
 		controller: function($state) {
-			$state.current.data.breadcrumbs = "Adapter > "+$state.params.processState+" List > View Message "+$state.params.messageId;
+			$state.current.data.breadcrumbs = "Adapter > "+($state.params.storageSource=='pipes' ? "Pipes > " + $state.params.storageSourceName + " > ": "")+$state.params.processState+" List > View Message "+$state.params.messageId;
 		},
-	})
-	
-	.state('pages.pipemessagelog', {
-		abstract: true,
-		url: "/adapters/:adapter/pipes/:pipe",
-		template: "<div ui-view></div>",
-		controller: 'PipeMessageLogBaseCtrl',
-		data: {
-			pageTitle: 'Adapter',
-			breadcrumbs: 'Adapter > Pipe > MessageLog'
-		},
-		params: {
-			adapter: { value: '', squash: true},
-			pipe: { value: '', squash: true},
-		},
-	})
-	.state('pages.pipemessagelog.list', {
-		url: "/messages",
-		templateUrl: "views/txstorage/pipe_messagelog_list.html",
-		resolve: {
-			loadPlugin: function($ocLazyLoad) {
-				return $ocLazyLoad.load('datatables');
-			},
-		},
-	})
-	.state('pages.pipemessagelog.view', {
-		url: "/messages/:messageId",
-		templateUrl: "views/txstorage/pipe_messagelog_view.html",
-		params: {
-			messageId: { value: '', squash: true},
-		},
-		controller: function($state) {
-			$state.current.data.breadcrumbs = "Adapter > Pipe > MessageLog > View Message "+$state.params.messageId;
-		}
 	})
 	.state('pages.notifications', {
 		url: "/notifications",
@@ -352,6 +319,19 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 		data: {
 			pageTitle: 'Security Items',
 			breadcrumbs: 'Security Items'
+		}
+	})
+	.state('pages.connection_overview', {
+		url: "/connections",
+		templateUrl: "views/ShowConnectionOverview.html",
+		resolve: {
+			loadPlugin: function($ocLazyLoad) {
+				return $ocLazyLoad.load('datatables');
+			},
+		},
+		data: {
+			pageTitle: 'Connection Overview',
+			breadcrumbs: 'Connection Overview'
 		}
 	})
 	.state('pages.monitors', {

@@ -22,7 +22,7 @@ import nl.nn.adapterframework.core.SenderException;
 
 /**
  * Class for a messageLog element to be used in combination with a
- * {@link MessageStoreSender} who's messaged are processed by a
+ * {@link MessageStoreSender} who's messages are processed by a
  * {@link MessageStoreListener}.
  * 
  * @author Jaco de Groot

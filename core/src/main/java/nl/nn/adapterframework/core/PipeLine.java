@@ -661,8 +661,8 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	/** 
 	 * PipeLine exits.
-	 * @ff.deprecated
 	 */
+	@Deprecated
 	public void registerPipeLineExit(PipeLineExit exit) {
 		if (pipeLineExits.containsKey(exit.getPath())) {
 			ConfigurationWarnings.add(this, log, "exit named ["+exit.getPath()+"] already exists");

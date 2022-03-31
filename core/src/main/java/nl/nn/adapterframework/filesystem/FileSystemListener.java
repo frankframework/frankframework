@@ -207,6 +207,11 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		return destination.toString();
 	}
 
+	@Override
+	public String getDomain() {
+		return getFileSystem().getDomain();
+	}
+
 	public FS getFileSystem() {
 		return fileSystem;
 	}
