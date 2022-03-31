@@ -89,7 +89,7 @@
 						<tbody>
 							<tr ng-repeat="definition in definitions">
 								<td>{{definition.name}}</td>
-								<td uib-dropdown style="width: 180px;">
+								<td uib-dropdown style="width: 180px;" ng-class="($index > 4 && $index >= (definitions.length - 5)) ? 'dropup' : ''">
 									<button type="button" class="btn-invisible" uib-dropdown-toggle>
 										{{definition.level}} <span class="caret"></span>
 									</button>
@@ -127,7 +127,7 @@
 						<tbody>
 							<tr ng-repeat="(name, level) in loggers">
 								<td>{{name}}</td>
-								<td uib-dropdown style="width: 180px;">
+								<td uib-dropdown style="width: 180px;" ng-class="($index > 4 && $index >= (loggersLength - 5)) ? 'dropup' : ''">
 									<button type="button" class="btn-invisible" uib-dropdown-toggle>
 										{{level}} <span class="caret"></span>
 									</button>

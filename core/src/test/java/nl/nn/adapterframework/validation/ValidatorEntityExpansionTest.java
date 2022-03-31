@@ -116,7 +116,7 @@ public class ValidatorEntityExpansionTest extends EntityResolvingTest {
 		instance.validate(is, validatorHandler, session, context);
 
 		XmlValidatorErrorHandler errorHandler = context.getErrorHandler();
-		if (errorHandler.hasErrorOccured()) {
+		if (errorHandler.isErrorOccurred()) {
 			throw new SAXException(errorHandler.getReasons());
 		}
 		return sb.toString();

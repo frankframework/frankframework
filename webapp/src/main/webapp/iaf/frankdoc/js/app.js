@@ -130,7 +130,7 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 					if(nameOrAlias.length == 2) {
 						return nameOrAlias[1]; //If it's an alias
 					}
-					return method.substring(1, method.indexOf("("))
+					return method.substring(1, method.indexOf("("));
 				}
 			}
 			let captures = referencedElement.split(" ");

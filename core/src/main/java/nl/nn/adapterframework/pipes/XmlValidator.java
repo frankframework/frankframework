@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015-2017 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2015-2017 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -56,9 +56,10 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.TransformerPool;
-import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
+import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.validation.AbstractXmlValidator;
+import nl.nn.adapterframework.validation.AbstractXmlValidator.ValidationResult;
 import nl.nn.adapterframework.validation.RootValidation;
 import nl.nn.adapterframework.validation.RootValidations;
 import nl.nn.adapterframework.validation.Schema;
@@ -76,9 +77,11 @@ import nl.nn.adapterframework.xml.RootElementToSessionKeyFilter;
  *
  * @ff.forward parserError a parser exception occurred, probably caused by non-well-formed XML. If not specified, <code>failure</code> is used in such a case.
  * @ff.forward failure The document is not valid according to the configured schema.
+ * @ff.forward warnings warnings occurred. If not specified, <code>success</code> is used.
  * @ff.forward outputParserError a <code>parserError</code> when validating a response. If not specified, <code>parserError</code> is used.
  * @ff.forward outputFailure a <code>failure</code> when validating a response. If not specified, <code>failure</code> is used.
- * 
+ * @ff.forward outputWarnings warnings occurred when validating a response. If not specified, <code>warnings</code> is used.
+ *
  * @author Johan Verrips IOS
  * @author Jaco de Groot
  */
@@ -183,9 +186,10 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			}
 
 			validator.configure(getLogPrefix(null));
-			registerEvent(AbstractXmlValidator.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT);
-			registerEvent(AbstractXmlValidator.XML_VALIDATOR_NOT_VALID_MONITOR_EVENT);
-			registerEvent(AbstractXmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT);
+			registerEvent(ValidationResult.PARSER_ERROR.getEvent());
+			registerEvent(ValidationResult.INVALID.getEvent());
+			registerEvent(ValidationResult.VALID_WITH_WARNINGS.getEvent());
+			registerEvent(ValidationResult.VALID.getEvent());
 		} catch(ConfigurationException e) {
 			configurationException = e;
 			throw e;
@@ -230,10 +234,10 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 
 	/**
 	 * Validate the XML string
-	 * 
+	 *
 	 * @param message   a String
 	 * @param session a {@link PipeLineSession Pipelinesession}
-	 * 
+	 *
 	 * @throws PipeRunException when <code>isThrowException</code> is true and a validationerror occurred.
 	 */
 	@Override
@@ -280,7 +284,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		if (storeRootFilter!=null) {
 			validatorHandler.setContentHandler(storeRootFilter);
 		}
-		String resultEvent = validator.validate(messageToValidate, session, getLogPrefix(session), validatorHandler, storeRootFilter, context);
+		ValidationResult resultEvent = validator.validate(messageToValidate, session, getLogPrefix(session), validatorHandler, storeRootFilter, context);
 		return determineForward(resultEvent, session, responseMode);
 	}
 
@@ -288,36 +292,51 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return new RootValidations(messageRoot);
 	}
 
-	protected PipeForward determineForward(String resultEvent, PipeLineSession session, boolean responseMode) throws PipeRunException {
-		throwEvent(resultEvent);
-		if (AbstractXmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT.equals(resultEvent)) {
-			return getSuccessForward();
-		}
+	protected PipeForward determineForward(ValidationResult validationResult, PipeLineSession session, boolean responseMode) throws PipeRunException {
+		throwEvent(validationResult.getEvent());
 		PipeForward forward = null;
-		if (AbstractXmlValidator.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT.equals(resultEvent)) {
-			if (responseMode) {
-				forward = findForward("outputParserError");
-			}
-			if (forward == null) {
-				forward = findForward("parserError");
-			}
+		switch(validationResult) {
+			case VALID_WITH_WARNINGS:
+				if (responseMode) {
+					forward = findForward("outputWarnings");
+				}
+				if (forward == null) {
+					forward = findForward("warnings");
+				}
+				if (forward == null) {
+					forward = getSuccessForward();
+				}
+				return forward;
+			case VALID:
+				return getSuccessForward();
+			case PARSER_ERROR:
+				if (responseMode) {
+					forward = findForward("outputParserError");
+				}
+				if (forward == null) {
+					forward = findForward("parserError");
+				}
+				//$FALL-THROUGH$
+			case INVALID:
+				if (forward == null) {
+					if (responseMode) {
+						forward = findForward("outputFailure");
+					}
+					if (forward == null) {
+						forward = findForward("failure");
+					}
+				}
+				if (forward == null) {
+					if (isForwardFailureToSuccess()) {
+						forward = getSuccessForward();
+					} else {
+						throw new PipeRunException(this, "not implemented: should get reason from validator");
+					}
+				}
+				return forward;
+			default:
+				throw new IllegalStateException("Unknown validationResult ["+validationResult+"]");
 		}
-		if (forward == null) {
-			if (responseMode) {
-				forward = findForward("outputFailure");
-			}
-			if (forward == null) {
-				forward = findForward("failure");
-			}
-		}
-		if (forward == null) {
-			if (isForwardFailureToSuccess()) {
-				forward = getSuccessForward();
-			} else {
-				throw new PipeRunException(this, "not implemented: should get reason from validator");
-			}
-		}
-		return forward;
 	}
 
 	@Deprecated
@@ -739,7 +758,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	 * The value of the schema attribute is only used if the schemaLocation
 	 * attribute and the noNamespaceSchemaLocation are not set
 	 * </p>
-	 * 
+	 *
 	 * @see ClassUtils#getResourceURL
 	 */
 	@IbisDoc({"1", "the filename of the schema on the classpath. see doc on the method. (effectively the same as noNamespaceSchemaLocation)", "" })
@@ -929,7 +948,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	public void setXmlSchemaVersion(String xmlSchemaVersion) {
 		validator.setXmlSchemaVersion(xmlSchemaVersion);
 	}
-	
+
 	@Deprecated
 	@IbisDoc({"The namespace of the SOAP envelope, when this property has a value and the input message is a SOAP message, " +
 		"the content of the SOAP Body is used for validation, hence the SOAP Envelope and SOAP Body elements are not considered part of the message to validate. " +

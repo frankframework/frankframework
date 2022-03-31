@@ -729,10 +729,13 @@ public class WsdlGenerator {
 
     protected void writeSoapOperation(XMLStreamWriter w, IListener<?> listener) throws XMLStreamException, IOException, ConfigurationException {
         w.writeStartElement(WSDL_NAMESPACE, "operation");
-        w.writeAttribute("name", "Operation_" + WsdlGeneratorUtils.getNCName(getSoapAction(listener))); {
+        String soapAction = getSoapAction(listener);
+        w.writeAttribute("name", "Operation_" + WsdlGeneratorUtils.getNCName(soapAction)); {
             w.writeEmptyElement(wsdlSoapNamespace, "operation");
             w.writeAttribute("style", "document");
-            w.writeAttribute("soapAction", getSoapAction(listener));
+            if(!soapAction.startsWith("${")) {
+            	w.writeAttribute("soapAction", soapAction);
+            }
             w.writeStartElement(WSDL_NAMESPACE, "input"); {
                 writeSoapHeader(w, inputRoot, inputHeaderElement, inputHeaderIsOptional);
                 writeSoapBody(w, inputBodyElement);

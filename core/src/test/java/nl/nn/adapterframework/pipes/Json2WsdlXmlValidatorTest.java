@@ -13,6 +13,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.validation.AbstractXmlValidator.ValidationResult;
 import nl.nn.adapterframework.validation.ValidatorTestBase;
 import nl.nn.adapterframework.validation.XmlValidatorException;
 
@@ -23,7 +24,7 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 	private PipeLineSession session = new PipeLineSession();
 
 	@Override
-	public String validate(String rootElement, String rootNamespace, String schemaLocation, boolean addNamespaceToSchema,
+	public ValidationResult validate(String rootElement, String rootNamespace, String schemaLocation, boolean addNamespaceToSchema,
 			boolean ignoreUnknownNamespaces, String inputFile, String[] expectedFailureReasons)
 			throws ConfigurationException, InstantiationException, IllegalAccessException, XmlValidatorException,
 			PipeRunException, IOException {

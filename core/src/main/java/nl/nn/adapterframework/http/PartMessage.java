@@ -15,14 +15,12 @@
 */
 package nl.nn.adapterframework.http;
 
-import java.nio.charset.UnsupportedCharsetException;
 import java.util.Map;
 
 import javax.mail.MessagingException;
 import javax.mail.Part;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.ParseException;
 import org.apache.http.entity.ContentType;
 
 import nl.nn.adapterframework.stream.Message;
@@ -54,7 +52,7 @@ public class PartMessage extends Message {
 				if(contentType.getCharset() != null) {
 					context.put(MessageContext.METADATA_CHARSET, contentType.getCharset().name());
 				}
-			} catch (UnsupportedCharsetException | ParseException | MessagingException e) {
+			} catch (Exception e) {
 				log.warn("Could not determine charset", e);
 			}
 		}

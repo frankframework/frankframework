@@ -2,7 +2,7 @@ package nl.nn.adapterframework.filesystem;
 
 public class MockFileSystemListenerTest extends FileSystemListenerExtraTest <MockFile,MockFileSystem<MockFile>>{
 
-	
+
 	@Override
 	protected IFileSystemTestHelperFullControl getFileSystemTestHelper() {
 		return new MockFileSystemTestHelper<MockFile>();
@@ -16,7 +16,7 @@ public class MockFileSystemListenerTest extends FileSystemListenerExtraTest <Moc
 			protected MockFileSystem<MockFile> createFileSystem() {
 				return ((MockFileSystemTestHelper<MockFile>)helper).getFileSystem();
 			}
-			
+
 		};
 		return result;
 	}
