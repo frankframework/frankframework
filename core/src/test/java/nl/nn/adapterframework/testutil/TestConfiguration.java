@@ -82,7 +82,7 @@ public class TestConfiguration extends Configuration {
 	 * Create and register the IbisManger with the Configuration
 	 */
 	@Override
-	public IbisManager getIbisManager() {
+	public synchronized IbisManager getIbisManager() {
 		if(super.getIbisManager() == null) {
 			IbisManager ibisManager = new MockIbisManager();
 			ibisManager.addConfiguration(this);
