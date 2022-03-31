@@ -36,8 +36,8 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 	@Before
 	public void setup() throws Exception {
 		super.setup();
-		runQuery("DELETE FROM "+JdbcTestBase.TEST_TABLE+" WHERE TKEY=999");
-		runQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (TKEY,TINT) VALUES (999, 1)");
+		runQuery("DELETE FROM "+TEST_TABLE+" WHERE TKEY=999");
+		runQuery("INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (999, 1)");
 	}
 
 	@Test
@@ -46,15 +46,15 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 		TransactionStatus txStatus = startTransaction();
 
 		try {
-			runQuery("UPDATE "+JdbcTestBase.TEST_TABLE+" SET TINT=2 WHERE TKEY=999");
+			runQuery("UPDATE "+TEST_TABLE+" SET TINT=2 WHERE TKEY=999");
 
 		} finally {
 			if (txStatus.isRollbackOnly()) {
 				txManager.rollback(txStatus);
-				assertEquals(1,runSelectQuery("SELECT TINT FROM "+JdbcTestBase.TEST_TABLE+" WHERE TKEY=999"));
+				assertEquals(1,runSelectQuery("SELECT TINT FROM "+TEST_TABLE+" WHERE TKEY=999"));
 			} else {
 				txManager.commit(txStatus);
-				assertEquals(2,runSelectQuery("SELECT TINT FROM "+JdbcTestBase.TEST_TABLE+" WHERE TKEY=999"));
+				assertEquals(2,runSelectQuery("SELECT TINT FROM "+TEST_TABLE+" WHERE TKEY=999"));
 			}
 		}
 	}
@@ -64,11 +64,11 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 		TransactionStatus txStatus = startTransaction();
 
 		try {
-			runQuery("UPDATE "+JdbcTestBase.TEST_TABLE+" SET TINT=2 WHERE TKEY=999");
+			runQuery("UPDATE "+TEST_TABLE+" SET TINT=2 WHERE TKEY=999");
 
 			TransactionStatus txStatus2 = startTransaction();
 			try {
-				runQuery("UPDATE "+JdbcTestBase.TEST_TABLE+" SET TINT=3 WHERE TKEY=999 AND TINT=2");
+				runQuery("UPDATE "+TEST_TABLE+" SET TINT=3 WHERE TKEY=999 AND TINT=2");
 			} catch (Exception e) {
 				log.info("expected exception", e);
 			} finally {
@@ -83,7 +83,7 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 		} finally {
 			txManager.commit(txStatus);
 		}
-		assertEquals(2,runSelectQuery("SELECT TINT FROM "+JdbcTestBase.TEST_TABLE+" WHERE TKEY=999"));
+		assertEquals(2,runSelectQuery("SELECT TINT FROM "+TEST_TABLE+" WHERE TKEY=999"));
 	}
 
 	@Test
@@ -93,14 +93,14 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 		displayTransaction();
 
 		try {
-			runQuery("UPDATE "+JdbcTestBase.TEST_TABLE+" SET TINT=2 WHERE TKEY=999");
+			runQuery("UPDATE "+TEST_TABLE+" SET TINT=2 WHERE TKEY=999");
 			displayTransaction();
 
-			runQuery("UPDATE "+JdbcTestBase.TEST_TABLE+" SET TINT=3 WHERE TKEY=999 AND TINT=2");
+			runQuery("UPDATE "+TEST_TABLE+" SET TINT=3 WHERE TKEY=999 AND TINT=2");
 		} finally {
 			txManager.commit(txStatus);
 		}
-		assertEquals(3,runSelectQuery("SELECT TINT FROM "+JdbcTestBase.TEST_TABLE+" WHERE TKEY=999"));
+		assertEquals(3,runSelectQuery("SELECT TINT FROM "+TEST_TABLE+" WHERE TKEY=999"));
 	}
 
 	@Test
@@ -109,10 +109,10 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 
 		// do some action in main thread
 		try {
-			runQuery("UPDATE "+JdbcTestBase.TEST_TABLE+" SET TINT=2 WHERE TKEY=999");
+			runQuery("UPDATE "+TEST_TABLE+" SET TINT=2 WHERE TKEY=999");
 
 			try {
-				runInConnectedChildThread("UPDATE "+JdbcTestBase.TEST_TABLE+" SET TINT=3 WHERE TKEY=999 AND TINT=2");
+				runInConnectedChildThread("UPDATE "+TEST_TABLE+" SET TINT=3 WHERE TKEY=999 AND TINT=2");
 			} catch (Throwable t) {
 				t.printStackTrace();
 				fail();
@@ -120,21 +120,21 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 		} finally {
 			txManager.commit(txStatus);
 		}
-		assertEquals(3,runSelectQuery("SELECT TINT FROM "+JdbcTestBase.TEST_TABLE+" WHERE TKEY=999"));
+		assertEquals(3,runSelectQuery("SELECT TINT FROM "+TEST_TABLE+" WHERE TKEY=999"));
 	}
 
 	@Test
 	public void testNoOuterTransaction() throws Exception {
 		// do some action in main thread
-		runQuery("UPDATE "+JdbcTestBase.TEST_TABLE+" SET TINT=2 WHERE TKEY=999");
+		runQuery("UPDATE "+TEST_TABLE+" SET TINT=2 WHERE TKEY=999");
 
 		try {
-			runInConnectedChildThread("UPDATE "+JdbcTestBase.TEST_TABLE+" SET TINT=3 WHERE TKEY=999 AND TINT=2");
+			runInConnectedChildThread("UPDATE "+TEST_TABLE+" SET TINT=3 WHERE TKEY=999 AND TINT=2");
 		} catch (Throwable t) {
 			t.printStackTrace();
 			fail();
 		}
-		assertEquals(3,runSelectQuery("SELECT TINT FROM "+JdbcTestBase.TEST_TABLE+" WHERE TKEY=999"));
+		assertEquals(3,runSelectQuery("SELECT TINT FROM "+TEST_TABLE+" WHERE TKEY=999"));
 	}
 
 	@Test
@@ -143,10 +143,10 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 		TransactionStatus txStatus = startTransaction();
 		// do some action in main thread
 		try {
-			runQuery("UPDATE "+JdbcTestBase.TEST_TABLE+" SET TINT=2 WHERE TKEY=999");
+			runQuery("UPDATE "+TEST_TABLE+" SET TINT=2 WHERE TKEY=999");
 
 			try {
-				runInConnectedChildThread("UPDATE "+JdbcTestBase.TEST_TABLE+" SET TINT=3 WHERE TKEY=999 AND TINT=2");
+				runInConnectedChildThread("UPDATE "+TEST_TABLE+" SET TINT=3 WHERE TKEY=999 AND TINT=2");
 			} catch (Throwable t) {
 				t.printStackTrace();
 				fail();
@@ -154,7 +154,7 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 		} finally {
 			txManager.commit(txStatus);
 		}
-		assertEquals(3,runSelectQuery("SELECT TINT FROM "+JdbcTestBase.TEST_TABLE+" WHERE TKEY=999"));
+		assertEquals(3,runSelectQuery("SELECT TINT FROM "+TEST_TABLE+" WHERE TKEY=999"));
 	}
 
 	private TransactionStatus startTransaction() {

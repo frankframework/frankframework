@@ -13,7 +13,7 @@
 
 	<properties>
 		<apache.tomcat.version>9.0.60</apache.tomcat.version>
-		<apache-directory-server.version>2.0.0.AM25</apache-directory-server.version>
+		<apache-directory-server.version>2.0.0.AM26</apache-directory-server.version>
 	</properties>
 
 	<dependencies>
@@ -39,6 +39,11 @@
 			</exclusions>
 		</dependency>
 
+		<dependency>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest-all</artifactId>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>

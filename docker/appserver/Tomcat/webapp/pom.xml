@@ -3,8 +3,8 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>ibis-adapterframework-docker-as-tomcat-iaf-example</artifactId>
-	<name>Frank!Framework Docker image Tomcat/iaf-example</name>
+	<artifactId>ibis-adapterframework-docker-as-tomcat-iaf-webapp</artifactId>
+	<name>Frank!Framework Docker image Tomcat/iaf-webapp</name>
 	<packaging>pom</packaging>
 
 	<parent>
@@ -12,25 +12,24 @@
 		<artifactId>ibis-adapterframework-docker-as-tomcat</artifactId>
 		<version>${revision}</version>
 	</parent>
-		
+	
+	<properties>
+		<config.image.tag>iaf-webapp-tomcat</config.image.tag>
+	</properties>
+	
+	
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-docker-as-tomcat-iaf-webapp</artifactId>
+			<artifactId>ibis-adapterframework-docker-as-tomcat</artifactId>
 			<version>${project.version}</version>
 			<type>pom</type>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-example</artifactId>
+			<artifactId>ibis-adapterframework-webapp</artifactId>
 			<version>${project.version}</version>
-			<classifier>resources</classifier>
-		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-example</artifactId>
-			<version>${project.version}</version>
-			<classifier>context</classifier>
+			<type>war</type>
 		</dependency>
 	</dependencies>
 
@@ -54,7 +53,6 @@
 							<overWriteSnapshots>true</overWriteSnapshots>
 							<excludeTransitive>true</excludeTransitive>
 							<stripVersion>true</stripVersion>
-							<excludeClassifiers>resources,context</excludeClassifiers>
 						</configuration>
 					</execution>
 					<execution>
@@ -67,17 +65,10 @@
 							<artifactItems>
 				                <artifactItem>
 									<groupId>org.ibissource</groupId>
-									<artifactId>ibis-adapterframework-example</artifactId>
+									<artifactId>ibis-adapterframework-webapp</artifactId>
 									<version>${project.version}</version>
-									<classifier>resources</classifier>
-									<outputDirectory>${project.build.directory}/dependencies/resources</outputDirectory>
-				                </artifactItem>
-				                <artifactItem>
-									<groupId>org.ibissource</groupId>
-									<artifactId>ibis-adapterframework-example</artifactId>
-									<version>${project.version}</version>
-									<classifier>context</classifier>
-									<outputDirectory>${project.build.directory}/dependencies</outputDirectory>
+									<type>war</type>
+									<outputDirectory>${project.build.directory}/dependencies/war</outputDirectory>
 				                </artifactItem>
 				            </artifactItems>
 			            	<overWriteReleases>false</overWriteReleases>
@@ -102,7 +93,7 @@
 								<exec executable="docker" failonerror="true">
 									<arg value="build"/>
 									<arg value="-t"/>
-									<arg value="iaf-example-tomcat"/>
+									<arg value="${config.image.tag}"/>
 									<arg value="."/>
 								</exec>
 							</target>
@@ -115,5 +106,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
 </project>
