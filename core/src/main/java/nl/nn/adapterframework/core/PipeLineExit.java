@@ -20,13 +20,14 @@ import nl.nn.adapterframework.core.PipeLine.ExitState;
 
 /**
  * The Exit of a Pipeline that specifies the end state of a PipeLine. The state is returned to the receiver as well as
- * the optionally specified http status code.
- * 
+ * the optionally specified http status code. Each Exit should have a unique name.
+ * <p>
+ * <p>
  * When a Pipeline doesn't have an Exits element configured it will be initialized with one Exit having path READY and
  * state SUCCESS
  * 
- * The path of an Exit can be referenced by the Forward of a Pipe
- * 
+ * The path of an Exit can be referenced by the Forward of a Pipe.
+ * <p>
  * <p>
  * <b>example:</b> <code><pre>
  *   &lt;exits&gt;
