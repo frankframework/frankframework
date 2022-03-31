@@ -25,6 +25,7 @@ public class OAuthAccessTokenManagerTest {
 	String serviceClientSecret = "testiaf-service-pwd";
 
 	private HttpSender httpSender = new HttpSender();
+	private int expiry = 60;
 
 	@Before
 	public void setup() throws Exception {
@@ -43,7 +44,7 @@ public class OAuthAccessTokenManagerTest {
 
 		CredentialFactory client_cf = new CredentialFactory(null, clientId, clientSecret);
 
-		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenEndpoint, scope, client_cf, true, httpSender);
+		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenEndpoint, scope, client_cf, true, httpSender, expiry);
 				
 		String accessToken = accessTokenManager.getAccessToken(null);
 		
@@ -59,7 +60,7 @@ public class OAuthAccessTokenManagerTest {
 
 		CredentialFactory client_cf = new CredentialFactory(null, clientId, clientSecret);
 
-		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenEndpoint, scope, client_cf, true, httpSender);
+		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenEndpoint, scope, client_cf, true, httpSender, expiry);
 				
 		String accessToken = accessTokenManager.getAccessToken(null);
 		
@@ -75,7 +76,7 @@ public class OAuthAccessTokenManagerTest {
 
 		CredentialFactory client_cf = new CredentialFactory(null, clientId, clientSecret);
 
-		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenEndpoint, scope, client_cf, true, httpSender);
+		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenEndpoint, scope, client_cf, true, httpSender, expiry);
 
 		HttpAuthenticationException exception = assertThrows(HttpAuthenticationException.class, ()->accessTokenManager.getAccessToken(null));
 		assertThat(exception.getMessage(), containsString("unauthorized_client"));
@@ -90,7 +91,7 @@ public class OAuthAccessTokenManagerTest {
 
 		CredentialFactory client_cf = new CredentialFactory(null, clientId, clientSecret);
 
-		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenEndpoint, scope, client_cf, true, httpSender);
+		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenEndpoint, scope, client_cf, true, httpSender, expiry);
 
 		HttpAuthenticationException exception = assertThrows(HttpAuthenticationException.class, ()->accessTokenManager.getAccessToken(null));
 		assertThat(exception.getMessage(), containsString("404"));
