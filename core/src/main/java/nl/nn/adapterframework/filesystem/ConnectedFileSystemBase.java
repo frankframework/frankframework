@@ -107,10 +107,12 @@ public abstract class ConnectedFileSystemBase<F,C> extends FileSystemBase<F> {
 	 * Release the connection, return it to the pool or invalidate it.
 	 */
 	protected void releaseConnection(C connection, boolean invalidateConnection) {
-		if (invalidateConnection) {
-			invalidateConnection(connection);
-		} else {
-			releaseConnection(connection);
+		if (connection!=null) {
+			if (invalidateConnection) {
+				invalidateConnection(connection);
+			} else {
+				releaseConnection(connection);
+			}
 		}
 	}
 
