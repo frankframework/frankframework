@@ -56,8 +56,8 @@ import nl.nn.adapterframework.util.Misc;
  * <br/>
  * In the AppConstants there may be a property named "log.logIntermediaryResults" (true/false)
  * which indicates whether the intermediary results (between calling pipes) have to be logged.
- * *
- * <p><b>Transaction control</b><br>
+ * <br/><br/>
+ * <b>Transaction control</b><br>
  * THE FOLLOWING TO BE UPDATED, attribute 'transacted' replaced by 'transactionAttribute'
  *
  * If {@link #setTransacted(boolean) transacted} is set to <code>true</code>, messages will be processed
