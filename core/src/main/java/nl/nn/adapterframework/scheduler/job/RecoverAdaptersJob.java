@@ -34,7 +34,7 @@ public class RecoverAdaptersJob extends JobDef {
 		int countAdapterStateStarted=0;
 		int countReceiver=0;
 		int countReceiverStateStarted=0;
-		IbisManager ibisManager = getApplicationContext().getBean(IbisManager.class);
+		IbisManager ibisManager = getIbisManager();
 		for (Adapter adapter: ibisManager.getRegisteredAdapters()) {
 			countAdapter++;
 			RunState adapterRunState = adapter.getRunState();

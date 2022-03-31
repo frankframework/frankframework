@@ -195,7 +195,7 @@ public class CleanupDatabaseJob extends JobDef {
 	 */
 	protected Set<String> getAllLockerDatasourceNames() {
 		Set<String> datasourceNames = new HashSet<>();
-		IbisManager ibisManager = getApplicationContext().getBean(IbisManager.class);
+		IbisManager ibisManager = getIbisManager();
 		for (Configuration configuration : ibisManager.getConfigurations()) {
 			for (IJob jobdef : configuration.getScheduledJobs()) {
 				if (jobdef.getLocker()!=null) {
@@ -244,7 +244,7 @@ public class CleanupDatabaseJob extends JobDef {
 
 	protected List<MessageLogObject> getAllMessageLogs() {
 		List<MessageLogObject> messageLogs = new ArrayList<>();
-		IbisManager ibisManager = getApplicationContext().getBean(IbisManager.class);
+		IbisManager ibisManager = getIbisManager();
 		for(IAdapter adapter : ibisManager.getRegisteredAdapters()) {
 			for (Receiver<?> receiver: adapter.getReceivers()) {
 				collectMessageLogs(messageLogs, receiver.getMessageLog());

@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.scheduler.job;
 
-import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.statistics.HasStatistics.Action;
 
@@ -23,7 +22,6 @@ public class DumpStatisticsJob extends JobDef {
 
 	@Override
 	public void execute() {
-		IbisManager ibisManager = getApplicationContext().getBean(IbisManager.class);
-		ibisManager.dumpStatistics(Action.MARK_MAIN);
+		getIbisManager().dumpStatistics(Action.MARK_MAIN);
 	}
 }

@@ -42,7 +42,7 @@ public class CheckReloadJob extends JobDef {
 	@Override
 	public boolean beforeExecuteJob() {
 		if(!atLeastOneConfigrationHasDBClassLoader) {
-			IbisManager ibisManager = getApplicationContext().getBean(IbisManager.class);
+			IbisManager ibisManager = getIbisManager();
 			for (Configuration configuration : ibisManager.getConfigurations()) {
 				if(DATABASE_CLASSLOADER.equals(configuration.getClassLoaderType())) {
 					atLeastOneConfigrationHasDBClassLoader=true;
@@ -55,7 +55,7 @@ public class CheckReloadJob extends JobDef {
 	
 	@Override
 	public void execute() {
-		IbisManager ibisManager = getApplicationContext().getBean(IbisManager.class);
+		IbisManager ibisManager = getIbisManager();
 		if (ibisManager.getIbisContext().isLoadingConfigs()) {
 			String msg = "skipping checkReload because one or more configurations are currently loading";
 			getMessageKeeper().add(msg, MessageKeeperLevel.INFO);

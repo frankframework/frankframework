@@ -83,7 +83,7 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 			try (Connection conn = qs.getConnection()) {
 				try (PreparedStatement stmt = conn.prepareStatement("SELECT JOBNAME,JOBGROUP,ADAPTER,RECEIVER,CRON,EXECUTIONINTERVAL,MESSAGE,LOCKER,LOCK_KEY FROM IBISSCHEDULES")) {
 					try (ResultSet rs = stmt.executeQuery()) {
-						IbisManager ibisManager = getApplicationContext().getBean(IbisManager.class);
+						IbisManager ibisManager = getIbisManager();
 						while(rs.next()) {
 							String jobName = rs.getString("JOBNAME");
 							String jobGroup = rs.getString("JOBGROUP");

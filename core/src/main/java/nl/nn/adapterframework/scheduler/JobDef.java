@@ -23,6 +23,7 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IConfigurationAware;
 import nl.nn.adapterframework.core.TransactionAttributes;
 import nl.nn.adapterframework.scheduler.job.IJob;
@@ -417,6 +418,10 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 		long duration = endTime - startTime;
 		statsKeeper.addValue(duration);
 		getMessageKeeper().add("finished running the job in ["+(duration)+"] ms");
+	}
+
+	protected IbisManager getIbisManager() {
+		return getApplicationContext().getBean(IbisManager.class);
 	}
 
 	protected String getLogPrefix() {
