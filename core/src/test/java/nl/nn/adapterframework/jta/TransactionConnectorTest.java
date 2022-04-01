@@ -23,7 +23,6 @@ import org.springframework.transaction.jta.JtaTransactionObject;
 import bitronix.tm.BitronixTransaction;
 import bitronix.tm.internal.XAResourceManager;
 import bitronix.tm.utils.Uid;
-import nl.nn.adapterframework.jdbc.JdbcTestBase;
 import nl.nn.adapterframework.jdbc.TransactionManagerTestBase;
 import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.ClassUtils;
