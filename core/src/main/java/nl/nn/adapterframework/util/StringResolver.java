@@ -223,18 +223,18 @@ public class StringResolver {
 	 * Resolves just the values of the properties in case a property key depends on other keys
 	 * e.g System.getProperty("prefix_${key:-value}") will find no matching data, this method extracts the 'value' for property lookup prefix_value
 	 */
-	private static String extractKeyValue(String key, String delimStart, String delimStop, String defualtValueSeparator) {
+	private static String extractKeyValue(String key, String delimStart, String delimStop, String defaultValueSeparator) {
 		StringBuilder sb = new StringBuilder();
 		int pointer = 0;
 		int delimStartIndex = key.indexOf(delimStart, pointer);
 		if(delimStartIndex != -1) {
 			sb.append(key.substring(pointer, delimStartIndex));
-			int valueSeparator = key.indexOf(defualtValueSeparator, delimStartIndex);
+			int valueSeparator = key.indexOf(defaultValueSeparator, delimStartIndex);
 			if(valueSeparator != -1) {
 				int delimStopIndex = indexOfDelimStop(key, delimStartIndex, delimStart, delimStop);
-				String valueOfKey = key.substring(valueSeparator+defualtValueSeparator.length(), delimStopIndex);
+				String valueOfKey = key.substring(valueSeparator+defaultValueSeparator.length(), delimStopIndex);
 				if(valueOfKey.contains(delimStart)) {
-					sb.append(extractKeyValue(valueOfKey, delimStart, delimStop, defualtValueSeparator));
+					sb.append(extractKeyValue(valueOfKey, delimStart, delimStop, defaultValueSeparator));
 				} else {
 					sb.append(valueOfKey);
 				}
