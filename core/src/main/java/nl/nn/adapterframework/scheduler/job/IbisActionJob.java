@@ -21,7 +21,6 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.AdapterManager;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.scheduler.JobDef;
@@ -70,8 +69,8 @@ public class IbisActionJob extends JobDef {
 	}
 
 	@Override
-	public void execute(IbisManager ibisManager) {
-		ibisManager.handleAction(ibisAction, getConfigurationName(), getAdapterName(), getReceiverName(), "scheduled job ["+getName()+"]", true);
+	public void execute() {
+		getIbisManager().handleAction(ibisAction, getConfigurationName(), getAdapterName(), getReceiverName(), "scheduled job ["+getName()+"]", true);
 	}
 
 	public void setAction(Action action) {

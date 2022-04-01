@@ -29,11 +29,12 @@ public class RecoverAdaptersJob extends JobDef {
 	protected Logger heartbeatLog = LogUtil.getLogger("HEARTBEAT");
 
 	@Override
-	public void execute(IbisManager ibisManager) {
+	public void execute() {
 		int countAdapter=0;
 		int countAdapterStateStarted=0;
 		int countReceiver=0;
 		int countReceiverStateStarted=0;
+		IbisManager ibisManager = getIbisManager();
 		for (Adapter adapter: ibisManager.getRegisteredAdapters()) {
 			countAdapter++;
 			RunState adapterRunState = adapter.getRunState();

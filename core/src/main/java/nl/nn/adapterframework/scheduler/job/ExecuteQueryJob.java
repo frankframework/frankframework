@@ -20,7 +20,6 @@ import org.apache.commons.lang3.StringUtils;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -55,7 +54,7 @@ public class ExecuteQueryJob extends JobDef {
 	}
 
 	@Override
-	public void execute(IbisManager ibisManager) throws JobExecutionException, TimeoutException {
+	public void execute() throws JobExecutionException, TimeoutException {
 		try {
 			qs.open();
 			Message result = qs.sendMessage(Message.nullMessage(), null);
