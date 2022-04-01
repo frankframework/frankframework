@@ -470,6 +470,9 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	@Override
 	public String getName(EmailMessage f) {
 		try {
+			if (f.getId()==null) {
+				return null; // attachments don't have an id, but appear to be loaded at the same time as the main message
+			}
 			return f.getId().toString();
 		} catch (ServiceLocalException e) {
 			throw new RuntimeException("Could not determine Name",e);
@@ -478,11 +481,15 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	@Override
 	public String getCanonicalName(EmailMessage f) throws FileSystemException {
 		try {
+			if (f.getId()==null) {
+				return null; // attachments don't have an id, but appear to be loaded at the same time as the main message
+			}
 			return f.getId().getUniqueId();
 		} catch (ServiceLocalException e) {
 			throw new FileSystemException("Could not determine CanonicalName",e);
 		}
 	}
+
 	@Override
 	public Date getModificationTime(EmailMessage f) throws FileSystemException {
 		try {
@@ -803,7 +810,9 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	@Override
 	public String getSubject(EmailMessage emailMessage) throws FileSystemException {
 		try {
-			emailMessage.load(new PropertySet(ItemSchema.Subject));
+			if (emailMessage.getId()!=null) { // attachments don't have an id, but appear to be loaded at the same time as the main message
+				emailMessage.load(new PropertySet(ItemSchema.Subject)); 
+			}
 			return emailMessage.getSubject();
 		} catch (Exception e) {
 			throw new FileSystemException("Could not get Subject", e);
