@@ -22,7 +22,7 @@ Some example XML configurations:
 - [HelloWorlds](example/src/main/resources/ConfigurationHelloWorlds.xml)
 - [ManageDatabase](core/src/main/resources/IAF_Util/ConfigurationManageDatabase.xml)
 
-See them in action: https://frank4example.frankframework.org
+See them in action: https://frank2example.frankframework.org
 
 
 The Ibis Adapter Framework is being renamed to "Frank!Framework". There is a user manual, the Frank!Manual, which can
