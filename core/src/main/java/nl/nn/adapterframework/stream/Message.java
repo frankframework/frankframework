@@ -64,6 +64,14 @@ import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public class Message implements Serializable {
+
+	/**
+	 * Have hardcoded serialVersionUID since we store messages of this type in database.
+	 * Otherwise, the id will be generated automatically and there is no guarantee that the generated
+	 * ids will have the same value for different versions.
+	 */
+	private static final long serialVersionUID = 9006430187897207348L;
+
 	protected transient Logger log = LogUtil.getLogger(this);
 
 	private Object request;
