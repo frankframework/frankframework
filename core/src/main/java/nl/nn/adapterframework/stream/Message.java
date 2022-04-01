@@ -70,7 +70,7 @@ public class Message implements Serializable {
 	 * Otherwise, the id will be generated automatically and there is no guarantee that the generated
 	 * ids will have the same value for different versions.
 	 */
-	private static final long serialVersionUID = 9006430187897207348L;
+	private static final long serialVersionUID = -7522029760889459698L;
 
 	protected transient Logger log = LogUtil.getLogger(this);
 
