@@ -8,7 +8,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<log4j2.version>2.17.1</log4j2.version>
+		<log4j2.version>2.17.2</log4j2.version>
 		<h2.version>2.1.210</h2.version>
 		<btm.version>3.0.0-mk1</btm.version>
 		<narayana.version>5.11.0.Final</narayana.version>
@@ -133,7 +133,7 @@
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-test-integration</artifactId>
-				<version>7.7-SNAPSHOT</version>
+				<version>7.7.1-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>

@@ -2,9 +2,6 @@ package nl.nn.adapterframework.filesystem;
 
 import org.apache.commons.net.ftp.FTPFile;
 
-import nl.nn.adapterframework.filesystem.FileSystemSenderTest;
-import nl.nn.adapterframework.filesystem.FtpFileSystem;
-import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
 import nl.nn.adapterframework.senders.FtpFileSystemSender;
 
 /**
