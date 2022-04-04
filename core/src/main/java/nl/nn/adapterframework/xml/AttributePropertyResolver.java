@@ -29,7 +29,7 @@ import nl.nn.adapterframework.util.StringResolver;
 public class AttributePropertyResolver extends FullXmlFilter {
 	private Properties properties;
 	private List<String> propsToHide;
-	private static final boolean resolveWithPropertyName = AppConstants.getInstance().getBoolean("properties.display.name", false);
+	private static final boolean resolveWithPropertyName = AppConstants.getInstance().getBoolean("properties.resolve.withName", false);
 
 	public AttributePropertyResolver(Properties properties) {
 		this(new XmlWriter(), properties, null);
