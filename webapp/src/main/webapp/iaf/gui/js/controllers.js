@@ -1321,33 +1321,34 @@ angular.module('iaf.beheerconsole')
 
 	$scope.doDeleteMessage = function(message, callback) {
 		message.deleting = true;
-
-		Api.Delete($scope.base_url+"/messages/"+encodeURIComponent(encodeURIComponent($scope.extractMessageId(message.id))), function() {
+		let messageId = $scope.extractMessageId(message.id);
+		Api.Delete($scope.base_url+"/messages/"+encodeURIComponent(encodeURIComponent(messageId)), function() {
 			if(callback != undefined && typeof callback == 'function')
-				callback(extractMessageId(message.id));
-			$scope.addNote("success", "Successfully deleted message with ID: "+$scope.extractMessageId(message.id));
+				callback(messageId);
+			$scope.addNote("success", "Successfully deleted message with ID: "+messageId);
 			$scope.updateTable();
 		}, function() {
 			message.deleting = false;
-			$scope.addNote("danger", "Unable to delete messages with ID: "+$scope.extractMessageId(message.id));
+			$scope.addNote("danger", "Unable to delete messages with ID: "+messageId);
 			$scope.updateTable();
 		}, false);
 	};
 	$scope.downloadMessage = function(messageId) {
-		window.open(Misc.getServerPath() + "iaf/api/"+$scope.base_url+"/messages/"+encodeURIComponent(encodeURIComponent($scope.extractMessageId(messageId)))+"/download");
+		let messageId = $scope.extractMessageId(message.id);
+		window.open(Misc.getServerPath() + "iaf/api/"+$scope.base_url+"/messages/"+encodeURIComponent(encodeURIComponent(messageId))+"/download");
 	};
 
 	$scope.doResendMessage = function(message, callback) {
 		message.resending = true;
-
-		Api.Put($scope.base_url+"/messages/"+encodeURIComponent(encodeURIComponent($scope.extractMessageId(message.id))), false, function() {
+		let messageId = $scope.extractMessageId(message.id);
+		Api.Put($scope.base_url+"/messages/"+encodeURIComponent(encodeURIComponent(messageId)), false, function() {
 			if(callback != undefined && typeof callback == 'function')
 				callback(extractMessageId(message.id));
-			$scope.addNote("success", "Successfully resent message with ID: "+$scope.extractMessageId(message.id));
+			$scope.addNote("success", "Successfully resent message with ID: "+messageId);
 			$scope.updateTable();
 		}, function(data) {
 			message.resending = false;
-			$scope.addNote("danger", "Unable to resend message ["+$scope.extractMessageId(message.id)+"]. "+data);
+			$scope.addNote("danger", "Unable to resend message ["+messageId+"]. "+data);
 			$scope.updateTable();
 		}, false);
 	};
