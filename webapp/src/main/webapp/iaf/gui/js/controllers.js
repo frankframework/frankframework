@@ -1367,10 +1367,6 @@ angular.module('iaf.beheerconsole')
 	a += '<button title="Download Message" ng-click="downloadMessage(extractMessageId(message.id))" class="btn btn-info btn-xs" type="button"><i class="fa fa-arrow-circle-o-down"></i> Download</button>';
 	a += '</div';
 
-	
-	$scope.extractMessageId = function(messageId){
-		return messageId.startsWith("<span") ? $(messageId).attr("title") : messageId;
-	}
 	var columns = [
 		{ "data": null, defaultContent: a, className: "m-b-xxs storageActions", bSortable: false},
 		{ "name": "pos", "data": "position", bSortable: false },
@@ -1403,12 +1399,10 @@ angular.module('iaf.beheerconsole')
 			label: true,
 		}
 	}
-
 	$scope.searchUpdated = function() {
 		$scope.searching = true;
 		$scope.updateTable();
 	};
-
 	$scope.dtOptions = {
 		stateSave: true,
 		stateSaveCallback: function(settings, data) {
