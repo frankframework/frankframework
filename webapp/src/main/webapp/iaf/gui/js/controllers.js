@@ -1317,7 +1317,7 @@ angular.module('iaf.beheerconsole')
 
 	$scope.extractMessageId = function(messageId){
 		return messageId.startsWith("<span") ? $(messageId).attr("title") : messageId;
-	}
+	};
 
 	$scope.doDeleteMessage = function(message, callback) {
 		message.deleting = true;
