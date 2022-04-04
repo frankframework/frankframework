@@ -1,8 +1,11 @@
 package nl.nn.adapterframework.jdbc;
 
+import static org.hamcrest.CoreMatchers.anyOf;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assume.assumeThat;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
@@ -28,7 +31,7 @@ public class FixedQuerySenderTest extends JdbcSenderTestBase<FixedQuerySender> {
 		} else if(getDataSourceName().equals("PostgreSQL")) {
 			assertThat(ex.getMessage(), CoreMatchers.containsString("No value specified for parameter 1"));
 		} else if(getDataSourceName().equals("Oracle")) {
-			assertThat(ex.getMessage(), CoreMatchers.containsString("Missing IN or OUT parameter at index:: 1"));
+			assertThat(ex.getMessage(), CoreMatchers.containsString("errorCode [17041]"));
 		} else if(getDataSourceName().equals("MS_SQL")) {
 			assertThat(ex.getMessage(), CoreMatchers.containsString("The value is not set for the parameter number 1"));
 		} else {
@@ -145,7 +148,8 @@ public class FixedQuerySenderTest extends JdbcSenderTestBase<FixedQuerySender> {
 	}
 
 	@Test
-	public void testColumnsReturnedWithSpaceBetween() throws Exception {
+	public void testMultipleColumnsReturnedWithSpaceBetween() throws Exception {
+		assumeThat(productKey, anyOf(is("H2"),is("Oracle")));
 		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (tKEY, tVARCHAR) VALUES ('1', ?)");
 		sender.addParameter(new Parameter("param1", "value"));
 
@@ -159,7 +163,8 @@ public class FixedQuerySenderTest extends JdbcSenderTestBase<FixedQuerySender> {
 	}
 
 	@Test
-	public void testColumnsReturnedWithDoubleSpace() throws Exception {
+	public void testMultipleColumnsReturnedWithDoubleSpace() throws Exception {
+		assumeThat(productKey, anyOf(is("H2"),is("Oracle")));
 		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (tKEY, tVARCHAR) VALUES ('1', ?)");
 		sender.addParameter(new Parameter("param1", "value"));
 
@@ -173,7 +178,8 @@ public class FixedQuerySenderTest extends JdbcSenderTestBase<FixedQuerySender> {
 	}
 
 	@Test
-	public void testColumnsReturned() throws Exception {
+	public void testMultipleColumnsReturned() throws Exception {
+		assumeThat(productKey, anyOf(is("H2"),is("Oracle")));
 		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (tKEY, tVARCHAR) VALUES ('1', ?)");
 		sender.addParameter(new Parameter("param1", "value"));
 
