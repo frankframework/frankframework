@@ -1334,8 +1334,7 @@ angular.module('iaf.beheerconsole')
 		}, false);
 	};
 	$scope.downloadMessage = function(messageId) {
-		let messageId = $scope.extractMessageId(message.id);
-		window.open(Misc.getServerPath() + "iaf/api/"+$scope.base_url+"/messages/"+encodeURIComponent(encodeURIComponent(messageId))+"/download");
+		window.open(Misc.getServerPath() + "iaf/api/"+$scope.base_url+"/messages/"+encodeURIComponent(encodeURIComponent($scope.extractMessageId(messageId)))+"/download");
 	};
 
 	$scope.doResendMessage = function(message, callback) {
