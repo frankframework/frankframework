@@ -1371,7 +1371,7 @@ angular.module('iaf.beheerconsole')
 	var columns = [
 		{ "data": null, defaultContent: a, className: "m-b-xxs storageActions", bSortable: false},
 		{ "name": "pos", "data": "position", bSortable: false },
-		{ "name": "id", "data": "id", bSortable: false},
+		{ "name": "id", "data": "id", bSortable: false },
 		{ "name": "insertDate", "data": "insertDate", className: "date" },
 		{ "name": "host", "data": "host", bSortable: false },
 		{ "name": "originalId", "data": "originalId", bSortable: false },
@@ -1400,10 +1400,12 @@ angular.module('iaf.beheerconsole')
 			label: true,
 		}
 	}
+
 	$scope.searchUpdated = function() {
 		$scope.searching = true;
 		$scope.updateTable();
 	};
+
 	$scope.dtOptions = {
 		stateSave: true,
 		stateSaveCallback: function(settings, data) {
