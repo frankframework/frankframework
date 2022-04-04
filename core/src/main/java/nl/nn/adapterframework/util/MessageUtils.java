@@ -19,9 +19,13 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.xml.soap.AttachmentPart;
+import javax.xml.soap.MimeHeader;
+import javax.xml.soap.SOAPException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -59,6 +63,27 @@ public abstract class MessageUtils {
 		return result;
 	}
 
+	public static MessageContext getContext(Iterator<MimeHeader> mimeHeaders) {
+		MessageContext result = new MessageContext();
+		while (mimeHeaders.hasNext()) {
+			MimeHeader header = mimeHeaders.next();
+			String name = header.getName();
+			if("Content-Transfer-Encoding".equals(name)) {
+				try {
+					Charset charset = Charset.forName(header.getValue());
+					result.withCharset(charset);
+				} catch (Exception e) {
+					LOG.warn("Could not determine charset", e);
+				}
+			} else if("Content-Type".equals(name)) {
+				result.withMimeType(header.getValue());
+			} else {
+				result.put(name, header.getValue());
+			}
+		}
+		return result;
+	}
+
 	/**
 	 * If content is present (POST/PUT) one of the following headers must be set:<br/>
 	 * Content-Length / Transfer-Encoding <br/>
@@ -71,6 +96,11 @@ public abstract class MessageUtils {
 		} else {
 			return Message.nullMessage();
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public static Message parse(AttachmentPart soapAttachment) throws SOAPException {
+		return new Message(soapAttachment.getRawContentBytes(), getContext(soapAttachment.getAllMimeHeaders()));
 	}
 
 	public static String computeContentType(Message message) {
