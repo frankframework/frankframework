@@ -1366,7 +1366,7 @@ angular.module('iaf.beheerconsole')
 	var columns = [
 		{ "data": null, defaultContent: a, className: "m-b-xxs storageActions", bSortable: false},
 		{ "name": "pos", "data": "position", bSortable: false },
-		{ "name": "messageId", "data": "messageId", bSortable: false },
+		{ "name": "displayedId", "data": "displayedId", bSortable: false },
 		{ "name": "insertDate", "data": "insertDate", className: "date" },
 		{ "name": "host", "data": "host", bSortable: false },
 		{ "name": "originalId", "data": "originalId", bSortable: false },
@@ -1385,7 +1385,7 @@ angular.module('iaf.beheerconsole')
 		$scope.displayColumn = filterCookie;
 	} else {
 		$scope.displayColumn = {
-			messageId: true,
+			displayedId: true,
 			insertDate: true,
 			host: true,
 			originalId: true,
@@ -1417,7 +1417,7 @@ angular.module('iaf.beheerconsole')
 			var data = table.rows( {page:'current'} ).data();
 			// visit rows in the current page once (draw event is fired after rowcallbacks)
 			for(var i=0;i<data.length;i++){
-				$scope.selectedMessages[data[i].messageId] = false;
+				$scope.selectedMessages[data[i].id] = false;
 			}
 		},
 		rowCallback: function(row, data) {
@@ -1429,7 +1429,7 @@ angular.module('iaf.beheerconsole')
 			});
 			var scope = $scope.$new();
 			scope.message = data;
-			$scope.selectedMessages[data.messageId] = false;
+			$scope.selectedMessages[data.id] = false;
 			$compile(row)(scope);
 		},
 		searching: false,

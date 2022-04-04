@@ -140,7 +140,7 @@ public class TransactionalStorage extends Base {
 
 	public static class StorageItemDTO {
 		private @Getter String id; //MessageId
-		private @Getter String messageId; // just to display truncated data
+		private @Getter String displayedId; // just to display truncated data
 		private @Getter String originalId; //Made up Id?
 		private @Getter String correlationId;
 		private @Getter String type;
@@ -156,7 +156,7 @@ public class TransactionalStorage extends Base {
 
 		public StorageItemDTO(IMessageBrowsingIteratorItem item) throws ListenerException {
 			id = item.getId();
-			messageId = item.getId(); // just to display truncated data
+			displayedId = item.getId(); // just to display truncated data
 			originalId = item.getOriginalId();
 			correlationId = item.getCorrelationId();
 			type = item.getType();
