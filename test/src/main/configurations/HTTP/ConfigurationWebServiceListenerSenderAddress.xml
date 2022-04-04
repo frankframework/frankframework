@@ -1,5 +1,5 @@
 <module>
-    <!-- serviceNamespaceURI listeners -->
+    <!-- WebServiceListeners with address -->
 	<adapter name="WebServiceListenerAddress" 
 		description="Test the functioning of the WebServiceListener with the attribute address">
 		<receiver>
