@@ -2,6 +2,7 @@ package nl.nn.adapterframework.configuration.digester;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.ArgumentMatchers.anyString;
 
 import java.io.StringWriter;
 import java.net.URL;
@@ -10,12 +11,15 @@ import java.util.Properties;
 import javax.xml.validation.ValidatorHandler;
 
 import org.junit.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXParseException;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationDigester;
+import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestConfiguration;
@@ -42,6 +46,24 @@ public class ConfigurationDigesterTest {
 		String result = writer.toString();
 		String expected = TestFileUtils.getTestFile("/Digester/Canonicalized/SimpleConfiguration.xml");
 		MatchUtils.assertXmlEquals(expected, result);
+	}
+
+	@Test
+	public void testSingleExitInContainerElementSchemaParsingDisabled() throws Exception {
+		try(Configuration configuration = new TestConfiguration()){
+			try(MockedStatic<ConfigurationUtils> configutil = Mockito.mockStatic(ConfigurationUtils.class)){
+				configutil.when(() -> ConfigurationUtils.getConfigurationFile(configuration.getClassLoader(), configuration.getName())).thenReturn("/Digester/SimpleConfiguration/Configuration.xml");
+				configutil.when(() -> ConfigurationUtils.getCanonicalizedConfiguration(anyString())).thenReturn(TestFileUtils.getTestFile("/Digester/Canonicalized/SimpleConfiguration.xml"));
+				configutil.when(() -> ConfigurationUtils.getActivatedConfiguration(anyString())).thenReturn(TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfigurationActived.xml"));
+				// disable schema parsing
+				AppConstants.getInstance(configuration.getClassLoader()).setProperty("configurations.digester.schemaBasedParsing", false);
+	
+				ConfigurationDigester digester = new ConfigurationDigester();
+				digester.setApplicationContext(configuration);
+				digester.digest();
+			}
+		}
+		//expect no exceptions
 	}
 
 	//Both OLD and NEW configuration parsers should set the same values for 'loadedConfiguration': properties resolved, secrets hidden
