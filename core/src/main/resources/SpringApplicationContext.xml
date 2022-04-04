@@ -93,13 +93,6 @@
 		lazy-init="true"
 		>
 	</bean>
-	<bean
-		name="flowGenerator"
-		class="nl.nn.adapterframework.util.flow.JavaScriptFlowGenerator"
-		scope="prototype"
-		lazy-init="true"
-		>
-	</bean>
 
 	<bean name="applicationWarnings" class="nl.nn.adapterframework.configuration.ApplicationWarnings" />
 

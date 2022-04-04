@@ -34,6 +34,9 @@ import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.xml.sax.SAXException;
@@ -72,6 +75,8 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 	private URL noImageAvailable;
 	private String fileExtension = null;
 
+	private static final String FLOW_GENERATOR_NAME = "flowGenerator";
+
 	/**
 	 * Optional IFlowGenerator. If non present the FlowDiagramManager should still be 
 	 * able to generate dot files and return the `noImageAvailable` image.
@@ -80,6 +85,17 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
+		String generatorBeanClass = AppConstants.getInstance().getProperty("flow.generator");
+		if(StringUtils.isNotEmpty(generatorBeanClass) && !applicationContext.containsBeanDefinition(FLOW_GENERATOR_NAME)) { //if a generator has been configured, add the bean definition
+			GenericBeanDefinition beanDefinition = new GenericBeanDefinition();
+			beanDefinition.setBeanClass(IFlowGenerator.class);
+			beanDefinition.setBeanClassName(generatorBeanClass);
+			beanDefinition.setAutowireMode(AutowireCapableBeanFactory.AUTOWIRE_BY_NAME);
+			beanDefinition.setScope("prototype");
+			DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) applicationContext.getAutowireCapableBeanFactory();
+			beanFactory.registerBeanDefinition(FLOW_GENERATOR_NAME, beanDefinition);
+		}
+
 		Resource xsltSourceConfig = Resource.getResource(ADAPTER2DOT_XSLT);
 		transformerPoolAdapter = TransformerPool.getInstance(xsltSourceConfig, 2);
 
@@ -114,8 +130,12 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 			throw new IllegalStateException("ApplicationContext has not been autowired, cannot instantiate IFlowDiagram");
 		}
 
+		if(!applicationContext.containsBeanDefinition(FLOW_GENERATOR_NAME)) {
+			return null;
+		}
+
 		try {
-			IFlowGenerator generator = applicationContext.getBean("flowGenerator", IFlowGenerator.class);
+			IFlowGenerator generator = applicationContext.getBean(FLOW_GENERATOR_NAME, IFlowGenerator.class);
 
 			if(log.isTraceEnabled()) log.trace("created new FlowGenerator instance ["+generator+"]");
 			return generator;
