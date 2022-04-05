@@ -107,9 +107,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
-		if (getParameterList()!=null) {
-			getParameterList().setNamesMustBeUnique(true);
-		}
+		parameterNamesMustBeUnique = true;
 		super.configure();
 
 		streamingXslt = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, false);

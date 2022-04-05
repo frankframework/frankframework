@@ -47,9 +47,7 @@ public class PutInSession extends FixedForwardPipe {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (getParameterList()!=null) {
-			getParameterList().setNamesMustBeUnique(true);
-		}
+		parameterNamesMustBeUnique = true;
 		super.configure();
 	}
 

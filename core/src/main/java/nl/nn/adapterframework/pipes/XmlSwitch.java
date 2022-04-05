@@ -43,10 +43,10 @@ import nl.nn.adapterframework.util.TransformerPool.OutputType;
 /**
  * Selects an exitState, based on either the content of the input message, by means
  * of a XSLT-stylesheet, the content of a session variable or, by default, by returning the name of the root-element.
- * 
+ *
  * @ff.forward "&lt;name of the root-element&gt;" default
  * @ff.forward "&lt;result of transformation&gt;" when <code>styleSheetName</code> or <code>xpathExpression</code> is specified
- * 
+ *
  * @author Johan Verrips
  */
 public class XmlSwitch extends AbstractPipe {
@@ -57,7 +57,7 @@ public class XmlSwitch extends AbstractPipe {
 
 	private @Getter String styleSheetName = null;
 	private @Getter String xpathExpression = null;
-	private @Getter String namespaceDefs = null; 
+	private @Getter String namespaceDefs = null;
 	private String sessionKey = null;
 	private @Getter String storeForwardInSessionKey = null;
 	private @Getter String notFoundForwardName = null;
@@ -69,10 +69,11 @@ public class XmlSwitch extends AbstractPipe {
 
 	/**
 	 * If no {@link #setStyleSheetName(String) styleSheetName} is specified, the
-	 * switch uses the root node. 
+	 * switch uses the root node.
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
+		parameterNamesMustBeUnique = true;
 		super.configure();
 		if (getNotFoundForwardName()!=null) {
 			if (findForward(getNotFoundForwardName())==null){
@@ -111,7 +112,7 @@ public class XmlSwitch extends AbstractPipe {
 		registerEvent(XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT);
 		registerEvent(XML_SWITCH_FORWARD_NOT_FOUND_MONITOR_EVENT);
 	}
-	
+
 	@Override
 	public void start() throws PipeStartException {
 		super.start();
@@ -123,7 +124,7 @@ public class XmlSwitch extends AbstractPipe {
 			}
 		}
 	}
-	
+
 	@Override
 	public void stop() {
 		super.stop();
@@ -179,7 +180,7 @@ public class XmlSwitch extends AbstractPipe {
 			throwEvent(XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT);
 			pipeForward=findForward(getEmptyForwardName());
 		} else {
-			
+
 			if (findForward(forward) != null) {
 				throwEvent(XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT);
 				pipeForward=findForward(forward);
@@ -190,14 +191,14 @@ public class XmlSwitch extends AbstractPipe {
 				pipeForward=findForward(getNotFoundForwardName());
 			}
 		}
-		
+
 		if (pipeForward==null) {
 			throw new PipeRunException (this, getLogPrefix(session)+"cannot find forward or pipe named ["+forward+"]");
 		}
 		if(StringUtils.isNotEmpty(getStoreForwardInSessionKey())) {
 			session.put(getStoreForwardInSessionKey(), pipeForward.getName());
 		}
-		
+
 		return new PipeRunResult(pipeForward, message);
 	}
 
@@ -216,7 +217,7 @@ public class XmlSwitch extends AbstractPipe {
 	@Deprecated
 	@ConfigurationWarning("Please use the attribute styleSheetName.")
 	public void setServiceSelectionStylesheetFilename(String newServiceSelectionStylesheetFilename) {
-		setStyleSheetName(newServiceSelectionStylesheetFilename); 
+		setStyleSheetName(newServiceSelectionStylesheetFilename);
 	}
 
 	@IbisDoc({"2", "xpath-expression that returns a string representing the forward to look up. It's possible to refer to a parameter (which e.g. contains a value from a sessionkey) by using the parameter name prefixed with $", ""})
@@ -231,8 +232,8 @@ public class XmlSwitch extends AbstractPipe {
 
 	@Deprecated
 	@ConfigurationWarning("Please use 'getInputFromSessionKey' or 'forwardNameSessionKey' attribute instead.")
-	@IbisDoc({"4", "Name of the key in the <code>PipeLineSession</code> to retrieve the input message from, if a styleSheetName or a xpathExpression is specified. " + 
-					"If no styleSheetName or xpathExpression is specified, the value of the session variable is used as the name of the forward. " + 
+	@IbisDoc({"4", "Name of the key in the <code>PipeLineSession</code> to retrieve the input message from, if a styleSheetName or a xpathExpression is specified. " +
+					"If no styleSheetName or xpathExpression is specified, the value of the session variable is used as the name of the forward. " +
 					"If none of sessionKey, styleSheetName or xpathExpression are specified, the element name of the root node of the input message is taken as the name of forward.", ""})
 	public void setSessionKey(String sessionKey){
 		this.sessionKey = sessionKey;

@@ -79,9 +79,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
-		if (getParameterList()!=null) {
-			getParameterList().setNamesMustBeUnique(true);
-		}
+		parameterNamesMustBeUnique = true;
 		super.configure();
 		appConstants = AppConstants.getInstance(getConfigurationClassLoader());
 		if (StringUtils.isNotEmpty(getFilename()) && !isLookupAtRuntime()) {

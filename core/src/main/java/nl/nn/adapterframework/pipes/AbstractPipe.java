@@ -77,7 +77,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  *
  * @ff.forward success successful processing of the message of the pipe
  * @ff.forward exception an exception was caught when processing the message
- * 
+ *
  * @author     Johan Verrips / Gerrit van Brakel
  *
  * @see PipeLineSession
@@ -113,6 +113,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 
 	private Map<String, PipeForward> pipeForwards = new Hashtable<String, PipeForward>();
 	private ParameterList parameterList = new ParameterList();
+	protected boolean parameterNamesMustBeUnique;
 	private @Setter EventPublisher eventPublisher=null;
 
 	private @Getter @Setter PipeLine pipeLine;
@@ -139,6 +140,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 
 		if (params!=null) {
 			try {
+				params.setNamesMustBeUnique(parameterNamesMustBeUnique);
 				params.configure();
 			} catch (ConfigurationException e) {
 				throw new ConfigurationException(getLogPrefix(null)+"while configuring parameters",e);
@@ -224,7 +226,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	}
 
 	@Override
-	/** Forwards are used to determine the next Pipe to execute in the Pipeline */ 
+	/** Forwards are used to determine the next Pipe to execute in the Pipeline */
 	public void registerForward(PipeForward forward) throws ConfigurationException {
 		String forwardName = forward.getName();
 		if(forwardName != null) {
@@ -275,7 +277,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 		if (pipeline==null) {
 			return null;
 		}
-	
+
 		//Omit global pipeline-forwards and only return local pipe-forwards
 		List<IPipe> pipes = pipeline.getPipes();
 		for (int i=0; i<pipes.size(); i++) {
@@ -376,7 +378,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	public void setElementToMoveSessionKey(String string) {
 		elementToMoveSessionKey = string;
 	}
-	
+
 	@Override
 	public void setElementToMoveChain(String string) {
 		elementToMoveChain = string;
@@ -397,7 +399,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 		this.restoreMovedElements = restoreMovedElements;
 	}
 
-	
+
 	@IbisDoc({"controls namespace-awareness of possible xml parsing in descender-classes", "application default"})
 	public void setNamespaceAware(boolean b) {
 		namespaceAware = b;
@@ -437,10 +439,10 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 		logIntermediaryResults = string;
 	}
 
-	/** 
-	 * Regular expression to mask strings in the log. For example, the regular expression <code>(?&lt;=&lt;password&gt;).*?(?=&lt;/password&gt;)</code> 
-	 * will replace every character between keys '&lt;password&gt;' and '&lt;/password&gt;'. <b>note:</b> this feature is used at adapter level, 
-	 * so one pipe affects all pipes in the pipeline (and multiple values in different pipes are merged) 
+	/**
+	 * Regular expression to mask strings in the log. For example, the regular expression <code>(?&lt;=&lt;password&gt;).*?(?=&lt;/password&gt;)</code>
+	 * will replace every character between keys '&lt;password&gt;' and '&lt;/password&gt;'. <b>note:</b> this feature is used at adapter level,
+	 * so one pipe affects all pipes in the pipeline (and multiple values in different pipes are merged)
 	 */
 	public void setHideRegex(String hideRegex) {
 		this.hideRegex = hideRegex;
