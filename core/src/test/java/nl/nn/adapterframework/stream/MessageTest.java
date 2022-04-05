@@ -796,8 +796,7 @@ public class MessageTest {
 
 	@Test
 	public void testDeserialization76CompatibilityWithString() throws Exception {
-		String source = testString;
-
+//		String source = testString;
 //		Message in = new Message(source);
 //		byte[] wire = serializationTester.serialize(in);
 //		System.out.println("Character: "+Hex.encodeHexString(wire));
@@ -811,8 +810,7 @@ public class MessageTest {
 
 	@Test
 	public void testDeserialization76CompatibilityWithByteArray() throws Exception {
-		byte[] source = testString.getBytes("utf-8");
-
+//		byte[] source = testString.getBytes("utf-8");
 //		Message in = new Message(source, "UTF-8");
 //		byte[] wire = serializationTester.serialize(in);
 //		System.out.println("Bytes: "+Hex.encodeHexString(wire));
