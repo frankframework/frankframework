@@ -66,7 +66,7 @@ import nl.nn.adapterframework.xml.XmlWriter;
  * Perform an XSLT transformation with a specified stylesheet or XPath-expression.
  *
  * @ff.parameters any parameters defined on the sender will be applied to the created transformer
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.9
  */
@@ -74,16 +74,16 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 
 	public final OutputType DEFAULT_OUTPUT_METHOD=OutputType.XML;
 	public final OutputType DEFAULT_XPATH_OUTPUT_METHOD=OutputType.TEXT;
-	public final boolean DEFAULT_INDENT=false; // some existing ibises expect default for indent to be false 
-	public final boolean DEFAULT_OMIT_XML_DECLARATION=false; 
-	
+	public final boolean DEFAULT_INDENT=false; // some existing ibises expect default for indent to be false
+	public final boolean DEFAULT_OMIT_XML_DECLARATION=false;
+
 	private @Getter String styleSheetName;
 	private @Getter String styleSheetNameSessionKey=null;
 	private @Getter String xpathExpression=null;
-	private @Getter String namespaceDefs = null; 
+	private @Getter String namespaceDefs = null;
 	private @Getter OutputType outputType=null;
 	private @Getter Boolean omitXmlDeclaration;
-	private @Getter Boolean indentXml=null; 
+	private @Getter Boolean indentXml=null;
 	private @Getter Boolean disableOutputEscaping=null;
 	private @Getter boolean removeNamespaces=false;
 	private @Getter boolean skipEmptyTags=false;
@@ -107,11 +107,12 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
+		parameterNamesMustBeUnique = true;
 		super.configure();
-	
+
 		streamingXslt = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, false);
 		dynamicTransformerPoolMap = Collections.synchronizedMap(new LRUMap(transformerPoolMapSize));
-	
+
 		if(StringUtils.isNotEmpty(getXpathExpression()) && getOutputType()==null) {
 			setOutputType(DEFAULT_XPATH_OUTPUT_METHOD);
 		}
@@ -155,11 +156,11 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	@Override
 	public void close() throws SenderException {
 		super.close();
-		
+
 		if (transformerPool!=null) {
 			transformerPool.close();
 		}
-		
+
 		if (dynamicTransformerPoolMap!=null && !dynamicTransformerPoolMap.isEmpty()) {
 			for(TransformerPool tp : dynamicTransformerPoolMap.values()) {
 				tp.close();
@@ -228,7 +229,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		}
 		return poolToUse;
 	}
-	
+
 	protected ContentHandler createHandler(Message input, ThreadConnector threadConnector, PipeLineSession session, TransformerPool poolToUse, MessageOutputStream target) throws StreamingException {
 		ContentHandler handler = null;
 
@@ -253,7 +254,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 			}
 
 			boolean disableOutputEscaping = isDisableOutputEscaping(poolToUse);
-			
+
 			Boolean indentXml = getIndentXml();
 			if (log.isTraceEnabled()) log.trace("Configured indentXml ["+indentXml+"]");
 			if (indentXml==null) {
@@ -264,7 +265,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 				indentXml = DEFAULT_INDENT;
 				if (log.isTraceEnabled()) log.trace("Default indentXml ["+indentXml+"]");
 			}
-			
+
 			Object targetStream = target.asNative();
 			if (targetStream instanceof ContentHandler && !disableOutputEscaping) {
 				handler = (ContentHandler)targetStream;
@@ -298,26 +299,26 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 			if (isSkipEmptyTags()) {
 				handler = new SkipEmptyTagsFilter(handler);
 			}
-			
+
 
 			TransformerFilter mainFilter = poolToUse.getTransformerFilter(threadConnector, handler);
 			if (pvl!=null) {
 				XmlUtils.setTransformerParameters(mainFilter.getTransformer(), pvl.getValueMap());
 			}
 			handler=filterInput(mainFilter, session);
-			
+
 			return handler;
 		} catch (Exception e) {
 			//log.warn(getLogPrefix()+"intermediate exception logging",e);
 			throw new StreamingException(getLogPrefix()+"Exception on creating transformerHandler chain", e);
-		} 
+		}
 	}
-	
+
 
 	protected XMLReader getXmlReader(PipeLineSession session, ContentHandler handler) throws ParserConfigurationException, SAXException {
 		return XmlUtils.getXMLReader(handler);
 	}
-	
+
 
 	/*
 	 * alternative implementation of send message, that should do the same as the original, but reuses the streaming content handler
@@ -351,7 +352,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 			throw new SenderException(getLogPrefix()+"Exception on transforming input", e);
 		}
 	}
-	
+
 
 	@Override
 	public boolean isSynchronous() {
@@ -372,7 +373,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	public void setStyleSheetCacheSize(int size) {
 		transformerPoolMapSize = size;
 	}
-	
+
 	@IbisDoc({"4", "Alternatively: xpath-expression to create stylesheet from", ""})
 	public void setXpathExpression(String string) {
 		xpathExpression = string;
