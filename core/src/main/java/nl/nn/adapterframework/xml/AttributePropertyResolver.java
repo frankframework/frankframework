@@ -22,12 +22,14 @@ import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.StringResolver;
 
 
 public class AttributePropertyResolver extends FullXmlFilter {
 	private Properties properties;
 	private List<String> propsToHide;
+	private static final boolean resolveWithPropertyName = AppConstants.getInstance().getBoolean("properties.resolve.withName", false);
 
 	public AttributePropertyResolver(Properties properties) {
 		this(new XmlWriter(), properties, null);
@@ -44,6 +46,6 @@ public class AttributePropertyResolver extends FullXmlFilter {
 
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-		super.startElement(uri, localName, qName, new AttributesWrapper(attributes, v->StringResolver.substVars(v, properties, null, propsToHide)));
+		super.startElement(uri, localName, qName, new AttributesWrapper(attributes, v->StringResolver.substVars(v, properties, null, propsToHide, resolveWithPropertyName)));
 	}
 }
