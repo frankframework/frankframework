@@ -43,11 +43,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
-import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
-import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
@@ -86,13 +84,9 @@ public final class ShowConfiguration extends Base {
 
 			try {
 				ResponseBuilder response = Response.status(Response.Status.OK);
-				if("dot".equalsIgnoreCase(flow)) {
-					response.entity(flowDiagramManager.generateDot(getIbisManager().getConfigurations())).type(MediaType.TEXT_PLAIN);
-				} else {
-					response.entity(flowDiagramManager.get(getIbisManager().getConfigurations())).type("image/svg+xml");
-				}
+				response.entity(flowDiagramManager.get(getIbisManager().getConfigurations())).type(flowDiagramManager.getMediaType());
 				return response.build();
-			} catch (SAXException | TransformerException | IOException e) {
+			} catch (IOException e) {
 				throw new ApiException(e);
 			}
 		}
@@ -216,7 +210,7 @@ public final class ShowConfiguration extends Base {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/configurations/{configuration}/flow")
 	@Produces(MediaType.TEXT_PLAIN)
-	public Response getAdapterFlow(@PathParam("configuration") String configurationName, @QueryParam("dot") boolean dot) throws ApiException {
+	public Response getAdapterFlow(@PathParam("configuration") String configurationName) throws ApiException {
 
 		Configuration configuration = getIbisManager().getConfiguration(configurationName);
 
@@ -228,13 +222,9 @@ public final class ShowConfiguration extends Base {
 
 		try {
 			ResponseBuilder response = Response.status(Response.Status.OK);
-			if(dot) {
-				response.entity(flowDiagramManager.generateDot(configuration)).type(MediaType.TEXT_PLAIN);
-			} else {
-				response.entity(flowDiagramManager.get(configuration)).type("image/svg+xml");
-			}
+			response.entity(flowDiagramManager.get(configuration)).type(flowDiagramManager.getMediaType());
 			return response.build();
-		} catch (SAXException | TransformerException | IOException e) {
+		} catch (IOException e) {
 			throw new ApiException(e);
 		}
 	}

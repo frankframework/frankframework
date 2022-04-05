@@ -17,15 +17,18 @@ package nl.nn.adapterframework.util.flow;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.ref.SoftReference;
 
-import org.apache.commons.lang3.StringUtils;
+import javax.xml.transform.TransformerException;
+
 import org.apache.logging.log4j.Logger;
+import org.springframework.http.MediaType;
+import org.xml.sax.SAXException;
 
-import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.flow.graphviz.Format;
+import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.flow.graphviz.GraphvizEngine;
-import nl.nn.adapterframework.util.flow.graphviz.Options;
 
 /**
  * Initialized through Spring. Uses @{link GraphvizEngine} to get an available 
@@ -34,64 +37,100 @@ import nl.nn.adapterframework.util.flow.graphviz.Options;
 public class JavaScriptFlowGenerator implements IFlowGenerator {
 	private static Logger log = LogUtil.getLogger(JavaScriptFlowGenerator.class);
 
-	private GraphvizEngine engine;
-	private Options options = Options.create();
-	private String jsFormat = AppConstants.getInstance().getProperty("graphviz.js.format", "SVG");
+	private static final String ADAPTER2DOT_XSLT = "/xml/xsl/adapter2dot.xsl";
+	private static final String CONFIGURATION2DOT_XSLT = "/xml/xsl/configuration2dot.xsl";
+
+	private TransformerPool transformerPoolAdapter;
+	private TransformerPool transformerPoolConfig;
+
+	/**
+	 * Optional IFlowGenerator. If non present the FlowDiagramManager should still be 
+	 * able to generate dot files and return the `noImageAvailable` image.
+	 */
+	private ThreadLocal<SoftReference<GraphvizEngine>> graphvisEngines = new ThreadLocal<>();
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		if(log.isTraceEnabled()) log.trace("creating JavaScriptFlowGenerator");
-		engine = new GraphvizEngine();
 
-		Format format;
+		Resource xsltSourceConfig = Resource.getResource(ADAPTER2DOT_XSLT);
+		transformerPoolAdapter = TransformerPool.getInstance(xsltSourceConfig, 2);
+
+		Resource xsltSourceIbis = Resource.getResource(CONFIGURATION2DOT_XSLT);
+		transformerPoolConfig = TransformerPool.getInstance(xsltSourceIbis, 2);
+	}
+
+	/**
+	 * The IFlowGenerator is wrapped in a SoftReference, wrapped in a ThreadLocal. 
+	 * When the thread is cleaned up, it will remove the instance. Or when the GC is 
+	 * running out of heapspace, it will remove the IFlowGenerator. This method makes sure,
+	 * as long as the IFlowGenerator bean can initialize, always a valid instance is returned.
+	 */
+	public GraphvizEngine getGraphvizEngine() {
+		SoftReference<GraphvizEngine> reference = graphvisEngines.get();
+		if(reference == null || reference.get() == null) {
+			GraphvizEngine generator = createGraphvizEngine();
+			if(generator == null) {
+				return null;
+			}
+
+			reference = new SoftReference<>(generator);
+			graphvisEngines.set(reference);
+		}
+
+		return reference.get();
+	}
+
+	private GraphvizEngine createGraphvizEngine() {
 		try {
-			format = Format.valueOf(jsFormat.toUpperCase());
+			return new GraphvizEngine();
+		} catch (Throwable t) {
+			log.warn("failed to initalize IFlowGenerator", t);
+			return null;
 		}
-		catch(IllegalArgumentException e) {
-			throw new IllegalArgumentException("unknown format["+jsFormat.toUpperCase()+"], must be one of "+Format.values());
-		}
-
-		options = options.format(format);
-
-		if(log.isDebugEnabled()) log.debug("Setting Graphviz options to ["+options+"]");
 	}
 
 	@Override
-	public void generateFlow(String name, String dot, OutputStream outputStream) throws IOException {
+	public void generateFlow(String xml, OutputStream outputStream) throws FlowGenerationException {
+		String dot = null;
 		try {
-			String flow = engine.execute(dot, options);
+			if(xml.startsWith("<adapter")) {
+				dot = transformerPoolAdapter.transform(xml, null);
+			} else {
+				dot = transformerPoolConfig.transform(xml, null);
+			}
+		} catch (IOException | TransformerException | SAXException e) {
+			throw new FlowGenerationException("error transforming [xml] to [dot]", e);
+		}
+
+		try {
+			String flow = getGraphvizEngine().execute(dot);
 
 			outputStream.write(flow.getBytes());
-		} catch (FlowGenerationException e) {
-			throw new IOException (e);
-		}
-	}
-
-	@Override
-	public void setFileExtension(String jsFormat) {
-		if(StringUtils.isNotEmpty(jsFormat)) {
-			this.jsFormat = jsFormat;
+		} catch (IOException e) {
+			throw new FlowGenerationException(e);
 		}
 	}
 
 	@Override
 	public String getFileExtension() {
-		return jsFormat.toLowerCase();
+		return "svg";
+	}
+
+	@Override
+	public MediaType getMediaType() {
+		return new MediaType("image", "svg+xml");
 	}
 
 	@Override
 	public void destroy() {
-		engine.close();
-		if(log.isTraceEnabled()) log.trace("destroyed JavaScriptFlowGenerator");
-	}
+		if(transformerPoolAdapter != null)
+			transformerPoolAdapter.close();
 
-	/**
-	 * The {@link FlowDiagramManager} uses a ThreadLocal+SoftReference map to cache the 
-	 * {@link IFlowGenerator FlowGenerators}. This method ensures that the engine is destroyed properly.
-	 */
-	@Override
-	protected void finalize() throws Throwable {
-		destroy();
-		super.finalize();
+		if(transformerPoolConfig != null)
+			transformerPoolConfig.close();
+
+		graphvisEngines.remove();
+		if(log.isTraceEnabled()) log.trace("destroyed JavaScriptFlowGenerator");
 	}
 }

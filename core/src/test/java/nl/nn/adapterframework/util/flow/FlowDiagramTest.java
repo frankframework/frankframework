@@ -13,58 +13,22 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package nl.nn.adapterframework.util;
+package nl.nn.adapterframework.util.flow;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.adapterframework.util.flow.FlowDiagramManager;
-import nl.nn.adapterframework.util.flow.IFlowGenerator;
-import nl.nn.adapterframework.util.flow.JavaScriptFlowGenerator;
+import nl.nn.adapterframework.util.TransformerPool;
 
 public class FlowDiagramTest {
 
 	@Test
 	public void canInitDefaultWithoutErrors() throws Exception {
 		IFlowGenerator generator = new JavaScriptFlowGenerator();
-		generator.afterPropertiesSet();
-
-		FlowDiagramManager flow = new FlowDiagramManager() {
-			@Override
-			protected IFlowGenerator createFlowGenerator() {
-				return generator;
-			}
-		};
-
-		assertNotNull(flow);
-		flow.afterPropertiesSet();
-	}
-
-	@Test
-	public void canInitSVGWithoutErrors() throws Exception {
-		IFlowGenerator generator = new JavaScriptFlowGenerator();
-		generator.setFileExtension("svG");
-		generator.afterPropertiesSet();
-
-		FlowDiagramManager flow = new FlowDiagramManager() {
-			@Override
-			protected IFlowGenerator createFlowGenerator() {
-				return generator;
-			}
-		};
-
-		assertNotNull(flow);
-		flow.afterPropertiesSet();
-		assertEquals("svg", generator.getFileExtension());
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void getUnknownFormat() throws Exception {
-		IFlowGenerator generator = new JavaScriptFlowGenerator();
-		generator.setFileExtension("application/pdf");
 		generator.afterPropertiesSet();
 
 		FlowDiagramManager flow = new FlowDiagramManager() {
