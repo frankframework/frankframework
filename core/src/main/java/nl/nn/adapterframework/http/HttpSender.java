@@ -346,8 +346,9 @@ public class HttpSender extends HttpSenderBase {
 
 	/**
 	 * Returns a multi-parted message, either as X-WWW-FORM-URLENCODED, FORM-DATA or MTOM
+	 * @throws IOException 
 	 */
-	protected HttpPost getMultipartPostMethodWithParamsInBody(URI uri, String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
+	protected HttpPost getMultipartPostMethodWithParamsInBody(URI uri, String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException, IOException {
 		HttpPost hmethod = new HttpPost(uri);
 
 		if (postType.equals(PostType.URLENCODED) && StringUtils.isEmpty(getMultipartXmlSessionKey())) { // x-www-form-urlencoded
@@ -419,7 +420,7 @@ public class HttpSender extends HttpSenderBase {
 		return bodyPart.build();
 	}
 
-	protected HttpEntity createMultiPartEntity(String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
+	protected HttpEntity createMultiPartEntity(String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException, IOException {
 		MultipartEntityBuilder entity = MultipartEntityBuilder.create();
 
 		entity.setCharset(Charset.forName(getCharSet()));
@@ -492,20 +493,16 @@ public class HttpSender extends HttpSenderBase {
 		return entity.build();
 	}
 
-	protected FormBodyPart elementToFormBodyPart(Element element, IPipeLineSession session) {
+	protected FormBodyPart elementToFormBodyPart(Element element, IPipeLineSession session) throws IOException {
 		String partName = element.getAttribute("name"); //Name of the part
 		String partSessionKey = element.getAttribute("sessionKey"); //SessionKey to retrieve data from
 		String partMimeType = element.getAttribute("mimeType"); //MimeType of the part
-		Object partObject = session.get(partSessionKey);
+		Message partObject = session.getMessage(partSessionKey);
 
-		if (partObject instanceof InputStream) {
-			InputStream fis = (InputStream) partObject;
-
-			return createMultipartBodypart(partSessionKey, fis, partName, partMimeType);
+		if (partObject.isBinary()) {
+			return createMultipartBodypart(partSessionKey, partObject.asInputStream(), partName, partMimeType);
 		} else {
-			String partValue = (String) session.get(partSessionKey);
-
-			return createMultipartBodypart(partName, partValue, partMimeType);
+			return createMultipartBodypart(partName, partObject.asString(), partMimeType);
 		}
 	}
 
