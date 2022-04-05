@@ -1449,7 +1449,7 @@ angular.module('iaf.beheerconsole')
 					for(let i in data){
 						var columnData = data[i];
 						if(typeof columnData == 'string' && columnData.length > 30)
-							data[i] = '<span class="ellipsis" title="'+columnData+'">'+columnData.substr(0, 15)+' &#8230; '+columnData.substr(-15)+'</span>';
+							data[i] = '<span class="ellipsis" title="'+columnData.replace(/"/g, '&quot;')+'">'+columnData.substr(0, 15)+' &#8230; '+columnData.substr(-15)+'</span>';
 					}
 				}
 				return data;
@@ -1722,7 +1722,12 @@ angular.module('iaf.beheerconsole')
 			});
 		}
 	};
-
+}])
+.controller('InlineStoreOverviewCtrl', ['$scope', 'Api', function($scope, Api) {
+	Api.Get("inlinestores/overview", function(data) {
+		$scope.result = data;
+	});
+	
 }])
 .controller('WebservicesCtrl', ['$scope', 'Api', 'Misc', function($scope, Api, Misc) {
 	$scope.rootURL = Misc.getServerPath();
