@@ -136,10 +136,10 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		super.open();
 		basefolderId = getBaseFolderId(getMailAddress(),getBaseFolder());
 	}
-	
-	public FolderId getBaseFolderId(String emailAddress, String baseFolderName) throws FileSystemException {	
+
+	public FolderId getBaseFolderId(String emailAddress, String baseFolderName) throws FileSystemException {
 		FolderId basefolderId;
-		
+
 		log.debug("searching inbox ");
 		FolderId inboxId;
 		if (StringUtils.isNotEmpty(emailAddress)) {
@@ -841,7 +841,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	public String getSubject(EmailMessage emailMessage) throws FileSystemException {
 		try {
 			if (emailMessage.getId()!=null) { // attachments don't have an id, but appear to be loaded at the same time as the main message
-				emailMessage.load(new PropertySet(ItemSchema.Subject)); 
+				emailMessage.load(new PropertySet(ItemSchema.Subject));
 			}
 			return emailMessage.getSubject();
 		} catch (Exception e) {
