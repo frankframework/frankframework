@@ -19,11 +19,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
-import nl.nn.adapterframework.stream.Message;
 
 public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 
-	private JdbcTransactionalStorage<Message> storage;
+	private JdbcTransactionalStorage<String> storage;
 	private final String tableName = "JDBCTRANSACTIONALSTORAGETEST";
 	private final String messageField = "MESSAGE";
 	private final String keyField = "MESSAGEKEY";
@@ -61,10 +60,10 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 		String query = storage.selectDataQuery;
 		assertEquals(expected, query);
 
-		Message message = createMessage();
+		String message = createMessage();
 		String storageKey = null;
 
-		// insert a record 
+		// insert a record
 		try (Connection connection = getConnection()) {
 			try (PreparedStatement stmt = prepareStatement(connection)) {
 
@@ -87,8 +86,8 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 			}
 		}
 
-		Message data =  storage.browseMessage(storageKey);
-		assertEquals(message.asString(), data.asString());
+		String data = storage.browseMessage(storageKey);
+		assertEquals(message, data);
 	}
 
 	@Test
@@ -105,9 +104,9 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 		storage.setBlobsCompressed(blobsCompressed);
 		storage.configure();
 
-		Message message = createMessage();
+		String message = createMessage();
 
-		// insert a record 
+		// insert a record
 		try (PreparedStatement stmt = prepareStatement(connection)) {
 
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -122,8 +121,8 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 			try (PreparedStatement statement = connection.prepareStatement(selectQuery)) {
 				ResultSet rs = statement.executeQuery();
 				if(rs.next()) {
-					Message result = storage.retrieveObject(rs, 9);
-					assertEquals(message.asString(),result.asString());
+					String result = storage.retrieveObject(rs, 9);
+					assertEquals(message,result);
 				} else {
 					Assert.fail("The query ["+selectQuery+"] returned empty result set expected 1");
 				}
@@ -148,12 +147,12 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 		return !dbmsSupport.autoIncrementKeyMustBeInserted() ? connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS) : connection.prepareStatement(query, new String[]{storage.getKeyField()});
 	}
 
-	private Message createMessage() {
+	private String createMessage() {
 		StringBuilder sb = new StringBuilder();
 		for(int i=0; i<5;i++) {
 			sb.append("message");
 		}
-		return Message.asMessage(sb.toString());
+		return sb.toString();
 	}
 
 	@Test
@@ -173,7 +172,7 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 		storage.setBlobsCompressed(blobsCompressed);
 		storage.configure();
 
-		Message message = createMessage();
+		String message = createMessage();
 
 		try (Connection connection = getConnection()) {
 			String storeMessageOutput = storage.storeMessage(connection,"1", "correlationId", new Date(), "comment", "label", message);
@@ -183,8 +182,8 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 
 			try (ResultSet rs = connection.prepareStatement(selectQuery).executeQuery()) {
 				if(rs.next()) {
-					Message result = storage.retrieveObject(rs, 1);
-					assertEquals(message.asString(),result.asString());
+					String result = storage.retrieveObject(rs, 1);
+					assertEquals(message,result);
 				} else {
 					Assert.fail("The query ["+selectQuery+"] returned empty result set expected 1");
 				}
@@ -196,7 +195,7 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 	public void testStoreAndGetMessage() throws Exception {
 		storage.configure();
 
-		Message message = createMessage();
+		String message = createMessage();
 		String key;
 		try (Connection connection = getConnection()) {
 			String storeMessageOutput = storage.storeMessage(connection,"1", "correlationId", new Date(), "comment", "label", message);
@@ -204,8 +203,8 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 			key = storeMessageOutput.substring(storeMessageOutput.indexOf(">")+1, storeMessageOutput.lastIndexOf("<"));
 		}
 
-		Message result = storage.getMessage(key);
-		assertEquals(message.asString(),result.asString());
+		String result = storage.getMessage(key);
+		assertEquals(message,result);
 	}
 
 	@Test
@@ -213,7 +212,7 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 		storage.configure();
 		String key = null;
 
-		Message message = createMessage();
+		String message = createMessage();
 		try (Connection connection = getConnection()) {
 			String storeMessageOutput = storage.storeMessage(connection,"1", "correlationId", new Date(), "comment", "label", message);
 
@@ -226,7 +225,8 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 			assertEquals("label", item.getLabel());
 		}
 
-		Message result = storage.getMessage(key);
-		assertEquals(message.asString(),result.asString());
+		String result = storage.getMessage(key);
+		assertEquals(message,result);
 	}
+
 }
