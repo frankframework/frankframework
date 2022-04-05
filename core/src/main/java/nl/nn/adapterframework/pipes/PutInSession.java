@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.io.IOException;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -33,16 +34,24 @@ import nl.nn.adapterframework.stream.Message;
 /**
  * Puts the input or the <code>{@link #setValue(String) value}</code> in the PipeLineSession, under the key specified by
  * <code>{@link #setSessionKey(String) sessionKey}</code>. Additionally, stores parameter values in the PipeLineSession.
- * 
  *
- * @ff.parameters the result of each parameter defined will be we stored in the PipeLineSession, under the key specified by the parameter name 
- * 
+ *
+ * @ff.parameters the result of each parameter defined will be we stored in the PipeLineSession, under the key specified by the parameter name
+ *
  * @author Johan Verrips
  */
 public class PutInSession extends FixedForwardPipe {
 
 	private @Getter String sessionKey;
 	private @Getter String value;
+
+	@Override
+	public void configure() throws ConfigurationException {
+		if (getParameterList()!=null) {
+			getParameterList().setNamesMustBeUnique(true);
+		}
+		super.configure();
+	}
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {

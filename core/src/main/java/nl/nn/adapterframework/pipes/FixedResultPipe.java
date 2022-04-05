@@ -1,11 +1,11 @@
 /*
-   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -46,39 +46,42 @@ import nl.nn.adapterframework.util.XmlUtils;
  * Provides an example of a pipe. It may return the contents of a file
  * (in the classpath) when <code>filename</code> or <code>filenameSessionKey</code> is specified, otherwise the
  * input of <code>returnString</code> is returned.
- * 
+ *
  * @ff.parameters Any parameters defined on the pipe will be used for replacements. Each occurrence of <code>${name-of-parameter}</code> in the file {@link #setFilename(String) filename} will be replaced by its corresponding <i>value-of-parameter</i>. This works only with files, not with values supplied in attribute {@link #setReturnString(String) returnString}
  *
  * @ff.forward filenotfound the configured file was not found (when this forward isn't specified an exception will be thrown)
  *
- * 
+ *
  * @author Johan Verrips
  */
 public class FixedResultPipe extends FixedForwardPipe {
-	
+
 	private final static String FILE_NOT_FOUND_FORWARD = "filenotfound";
-	
+
 	AppConstants appConstants;
-    private String filename;
-    private String filenameSessionKey;
-    private String returnString;
-    private boolean substituteVars=false;
+	private String filename;
+	private String filenameSessionKey;
+	private String returnString;
+	private boolean substituteVars=false;
 	private String replaceFrom = null;
 	private String replaceTo = null;
 	private String styleSheetName = null;
 	private boolean lookupAtRuntime=false;
 	private boolean replaceFixedParams=false;
-	
-    /**
-     * checks for correct configuration, and translates the filename to
-     * a file, to check existence. 
-     * If a filename or filenameSessionKey was specified, the contents of the file is put in the
-     * <code>returnString</code>, so that the <code>returnString</code>
-     * may always be returned.
-     * @throws ConfigurationException
-     */
-    @Override
+
+	/**
+	 * checks for correct configuration, and translates the filename to
+	 * a file, to check existence.
+	 * If a filename or filenameSessionKey was specified, the contents of the file is put in the
+	 * <code>returnString</code>, so that the <code>returnString</code>
+	 * may always be returned.
+	 * @throws ConfigurationException
+	 */
+	@Override
 	public void configure() throws ConfigurationException {
+		if (getParameterList()!=null) {
+			getParameterList().setNamesMustBeUnique(true);
+		}
 		super.configure();
 		appConstants = AppConstants.getInstance(getConfigurationClassLoader());
 		if (StringUtils.isNotEmpty(getFilename()) && !isLookupAtRuntime()) {
@@ -91,20 +94,20 @@ public class FixedResultPipe extends FixedForwardPipe {
 			if (resource==null) {
 				throw new ConfigurationException("cannot find resource ["+getFilename()+"]");
 			}
-            try {
+			try {
 				returnString = Misc.resourceToString(resource, Misc.LINE_SEPARATOR);
-            } catch (Throwable e) {
-                throw new ConfigurationException("got exception loading ["+getFilename()+"]", e);
-            }
-        }
-        if ((StringUtils.isEmpty(getFilename())) && (StringUtils.isEmpty(getFilenameSessionKey())) && returnString==null) {  // allow an empty returnString to be specified
-            throw new ConfigurationException("has neither filename nor filenameSessionKey nor returnString specified");
-        }
+			} catch (Throwable e) {
+				throw new ConfigurationException("got exception loading ["+getFilename()+"]", e);
+			}
+		}
+		if ((StringUtils.isEmpty(getFilename())) && (StringUtils.isEmpty(getFilenameSessionKey())) && returnString==null) {  // allow an empty returnString to be specified
+			throw new ConfigurationException("has neither filename nor filenameSessionKey nor returnString specified");
+		}
 		if (StringUtils.isNotEmpty(replaceFrom)) {
 			returnString = replace(returnString, replaceFrom, replaceTo );
 		}
-    }
-    
+	}
+
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String result=returnString;
@@ -181,15 +184,15 @@ public class FixedResultPipe extends FixedForwardPipe {
 			}
 		}
 
-	    log.debug(getLogPrefix(session)+ " returning fixed result [" + result + "]");
+		log.debug(getLogPrefix(session)+ " returning fixed result [" + result + "]");
 
-   		return new PipeRunResult(getSuccessForward(), result);
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 
-	public static String replace (String target, String from, String to) {   
+	public static String replace (String target, String from, String to) {
 		// target is the original string
 		// from   is the string to be replaced
-		// to     is the string which will used to replace
+		// to	 is the string which will used to replace
 		int start = target.indexOf (from);
 		if (start==-1) return target;
 		int lf = from.length();
@@ -216,18 +219,18 @@ public class FixedResultPipe extends FixedForwardPipe {
 
 	@Deprecated
 	@ConfigurationWarning("attribute 'fileName' is replaced with 'filename'")
-    public void setFileName(String fileName) {
+	public void setFileName(String fileName) {
 		setFilename(fileName);
-    }
+	}
 
 	/**
-     * Sets the name of the filename. The filename should not be specified
-     * as an absolute path, but as a resource in the classpath.
-     */
+	 * Sets the name of the filename. The filename should not be specified
+	 * as an absolute path, but as a resource in the classpath.
+	 */
 	@IbisDoc({"name of the file containing the resultmessage", ""})
 	public void setFilename(String filename) {
-        this.filename = filename;
-    }
+		this.filename = filename;
+	}
 	public String getFilename() {
 		return filename;
 	}
@@ -250,9 +253,9 @@ public class FixedResultPipe extends FixedForwardPipe {
 	}
 
 	@IbisDoc({"returned message", ""})
-    public void setReturnString(String returnString) {
-        this.returnString = returnString;
-    }
+	public void setReturnString(String returnString) {
+		this.returnString = returnString;
+	}
 	public String getReturnString() {
 		return returnString;
 	}
