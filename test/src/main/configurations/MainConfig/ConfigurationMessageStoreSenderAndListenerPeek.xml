@@ -23,12 +23,10 @@
 			<pipe name="switchAction" className="nl.nn.adapterframework.pipes.XmlSwitch" xpathExpression="request/@action"></pipe>
 			<pipe name="store" className="nl.nn.adapterframework.pipes.SenderPipe"> <!-- this message will be picked up by MessageStoreListener, and then turned into an 'A' record -->
 				<sender className="nl.nn.adapterframework.jdbc.MessageStoreSender" slotId="${applicationId}/MessageStoreListener" />
-				<messageLog className="nl.nn.adapterframework.jdbc.DummyTransactionalStorage" slotId="${applicationId}/MessageStoreListener" type="M" />
 				<forward name="success" path="okReply" />
 			</pipe>
 			<pipe name="store2" className="nl.nn.adapterframework.pipes.SenderPipe"> <!-- this message will remain on this table -->
 				<sender className="nl.nn.adapterframework.jdbc.MessageStoreSender" slotId="${applicationId}/MessageStoreListener2" />
-				<messageLog className="nl.nn.adapterframework.jdbc.DummyTransactionalStorage" slotId="${applicationId}/MessageStoreListener2" type="M" />
 				<forward name="success" path="okReply" />
 			</pipe>
 			<pipe name="okReply" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="&lt;reply&gt;ok&lt;/reply&gt;">
