@@ -1122,19 +1122,15 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		} catch (ListenerException e) {
 			IbisTransaction itxErrorStorage = new IbisTransaction(txManager, TXNEW_CTRL, "errorStorage of receiver [" + getName() + "]");
 			try {	
-				if (msg instanceof Serializable) {
-					String originalMessageId = (String)threadContext.get(PipeLineSession.originalMessageIdKey);
-					String correlationId = (String)threadContext.get(PipeLineSession.businessCorrelationIdKey);
-					String receivedDateStr = (String)threadContext.get(PipeLineSession.TS_RECEIVED_KEY);
-					if (receivedDateStr==null) {
-						log.warn(getLogPrefix()+PipeLineSession.TS_RECEIVED_KEY+" is unknown, cannot update comments");
-					} else {
-						Date receivedDate = DateUtils.parseToDate(receivedDateStr,DateUtils.FORMAT_FULL_GENERIC);
-						errorStorage.deleteMessage(storageKey);
-						errorStorage.storeMessage(originalMessageId, correlationId,receivedDate,"after retry: "+e.getMessage(),null, msg);	
-					}
+				String originalMessageId = (String)threadContext.get(PipeLineSession.originalMessageIdKey);
+				String correlationId = (String)threadContext.get(PipeLineSession.businessCorrelationIdKey);
+				String receivedDateStr = (String)threadContext.get(PipeLineSession.TS_RECEIVED_KEY);
+				if (receivedDateStr==null) {
+					log.warn(getLogPrefix()+PipeLineSession.TS_RECEIVED_KEY+" is unknown, cannot update comments");
 				} else {
-					log.warn(getLogPrefix()+"retried message is not serializable, cannot update comments");
+					Date receivedDate = DateUtils.parseToDate(receivedDateStr,DateUtils.FORMAT_FULL_GENERIC);
+					errorStorage.deleteMessage(storageKey);
+					errorStorage.storeMessage(originalMessageId, correlationId,receivedDate,"after retry: "+e.getMessage(),null, msg);	
 				}
 			} catch (SenderException e1) {
 				itxErrorStorage.setRollbackOnly();
@@ -1286,7 +1282,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 //			threadContext=pipelineSession; // this is to enable Listeners to use session variables, for instance in afterProcessMessage()
 			try {
 				if (getMessageLog()!=null) {
-					getMessageLog().storeMessage(messageId, businessCorrelationId, new Date(), RCV_MESSAGE_LOG_COMMENTS, label, pipelineMessage);
+					getMessageLog().storeMessage(messageId, businessCorrelationId, new Date(), RCV_MESSAGE_LOG_COMMENTS, label, new MessageWrapper(pipelineMessage, messageId));
 				}
 				log.debug(getLogPrefix()+"preparing TimeoutGuard");
 				TimeoutGuard tg = new TimeoutGuard("Receiver "+getName());
