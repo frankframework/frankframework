@@ -41,6 +41,7 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.apache.commons.codec.binary.Hex;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.w3c.dom.Document;
@@ -66,7 +67,13 @@ public class MessageTest {
 	protected String testString = "<root><sub>abc&amp;&lt;&gt;</sub><sub>" + CDATA_START + "<a>a&amp;b</a>" + CDATA_END + "</sub><data attr=\"één €\">één €</data></root>";
 	protected String testStringFile = "/Message/testString.txt";
 
-	private SerializationTester<Message> serializationTester = new SerializationTester<Message>();
+	private String characterWire76 = "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300034c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000e777261707065645265717565737471007e00027870707400743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e7078";
+	private String binaryWire76 =    "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300034c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000e777261707065645265717565737471007e000278707400055554462d38757200025b42acf317f8060854e00200007870000000743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e7078";
+
+	private String characterWire77 = "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300044c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000c72657175657374436c6173737400114c6a6176612f6c616e672f436c6173733b4c00107265736f7572636573546f436c6f736574000f4c6a6176612f7574696c2f5365743b7870707400743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e767200106a6176612e6c616e672e537472696e67a0f0a4387a3bb34202000078707078";
+	private String binaryWire77 =    "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300044c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000c72657175657374436c6173737400114c6a6176612f6c616e672f436c6173733b4c00107265736f7572636573546f436c6f736574000f4c6a6176612f7574696c2f5365743b78707400055554462d38757200025b42acf317f8060854e00200007870000000743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e7671007e00077078";
+
+	private SerializationTester<Message> serializationTester=new SerializationTester<Message>();
 
 	protected void testAsInputStream(Message message) throws IOException {
 		if(message.isBinary()) {
@@ -833,6 +840,64 @@ public class MessageTest {
 		try (Writer fw = new OutputStreamWriter(new FileOutputStream(file), "utf-8")) {
 			fw.write(contents);
 		}
+	}
+
+	@Test
+	public void testDeserialization76CompatibilityWithString() throws Exception {
+//		String source = testString;
+//		Message in = new Message(source);
+//		byte[] wire = serializationTester.serialize(in);
+//		System.out.println("Character: "+Hex.encodeHexString(wire));
+
+		byte[] wire = Hex.decodeHex(characterWire76);
+		Message out = serializationTester.deserialize(wire);
+
+		assertFalse(out.isBinary());
+		assertEquals(testString,out.asString());
+	}
+
+	@Test
+	public void testDeserialization76CompatibilityWithByteArray() throws Exception {
+//		byte[] source = testString.getBytes("utf-8");
+//		Message in = new Message(source, "UTF-8");
+//		byte[] wire = serializationTester.serialize(in);
+//		System.out.println("Bytes: "+Hex.encodeHexString(wire));
+
+		byte[] wire = Hex.decodeHex(binaryWire76);
+		Message out = serializationTester.deserialize(wire);
+
+		assertTrue(out.isBinary());
+		assertEquals("UTF-8", out.getCharset());
+		assertEquals(testString,out.asString());
+	}
+
+	@Test
+	public void testDeserialization77CompatibilityWithString() throws Exception {
+//		String source = testString;
+//		Message in = new Message(source);
+//		byte[] wire = serializationTester.serialize(in);
+//		System.out.println("Character: "+Hex.encodeHexString(wire));
+
+		byte[] wire = Hex.decodeHex(characterWire77);
+		Message out = serializationTester.deserialize(wire);
+
+		assertFalse(out.isBinary());
+		assertEquals(testString,out.asString());
+	}
+
+	@Test
+	public void testDeserialization77CompatibilityWithByteArray() throws Exception {
+//		byte[] source = testString.getBytes("utf-8");
+//		Message in = new Message(source, "UTF-8");
+//		byte[] wire = serializationTester.serialize(in);
+//		System.out.println("Bytes: "+Hex.encodeHexString(wire));
+
+		byte[] wire = Hex.decodeHex(binaryWire77);
+		Message out = serializationTester.deserialize(wire);
+
+		assertTrue(out.isBinary());
+		assertEquals("UTF-8", out.getCharset());
+		assertEquals(testString,out.asString());
 	}
 
 	@Test

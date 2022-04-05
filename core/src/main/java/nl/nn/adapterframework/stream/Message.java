@@ -27,6 +27,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
+import java.io.Serializable;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -62,7 +63,10 @@ import nl.nn.adapterframework.util.MessageUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
-public class Message {
+public class Message implements Serializable {
+
+	private static final long serialVersionUID = 437863352486501445L;
+
 	protected transient Logger log = LogUtil.getLogger(this);
 
 	private Object request;
@@ -175,9 +179,8 @@ public class Message {
 					return defaultDecodingCharset;
 				}
 				return StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-			} else {
-				return charset.name();
 			}
+			return charset.name();
 		}
 
 		return decodingCharset;
@@ -705,7 +708,9 @@ public class Message {
 	 */
 	private void writeObject(ObjectOutputStream stream) throws IOException {
 		preserve(true);
-		stream.defaultWriteObject();
+		stream.writeObject(getCharset());
+		stream.writeObject(request);
+		stream.writeObject(requestClass);
 	}
 
 	/*
@@ -713,7 +718,12 @@ public class Message {
 	 */
 	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
 		log = LogUtil.getLogger(this);
-		stream.defaultReadObject();
+
+		String charset = (String)stream.readObject();
+		request = stream.readObject();
+		requestClass = (Class<?>)stream.readObject();
+
+		context = new MessageContext().withCharset(charset);
 	}
 
 	/**
