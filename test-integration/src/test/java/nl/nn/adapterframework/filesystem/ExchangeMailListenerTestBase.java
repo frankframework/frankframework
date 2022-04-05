@@ -575,7 +575,8 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		IMessageBrowser<EmailMessage> browser = mailListener.getMessageBrowser(ProcessState.DONE);
 		assertNotNull(browser);
 
-		assertThat(browser.getMessageCount(), greaterThanOrEqualTo(0));
+		int messageCount = browser.getMessageCount();
+		assertThat(messageCount, greaterThanOrEqualTo(0));
 
 		List<String> itemIds = new ArrayList<>();
 		try (IMessageBrowsingIterator iterator = browser.getIterator()) {
@@ -594,6 +595,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 			Message message = mailListener.getFileSystem().readFile(email, null);
 			log.debug("Id: "+id+"\nEmail: "+message.asString());
 		}
+		assertEquals(itemIds.size(), messageCount);
 	}
 
 	@Test // this happens when the receiver/listener is closed, but its storages are browsed
@@ -606,7 +608,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		IMessageBrowser<EmailMessage> browser = mailListener.getMessageBrowser(ProcessState.DONE);
 		assertNotNull(browser);
 
-		int messageCount = browser.getMessageCount(); // should not throw exception
+		assertEquals(-1, browser.getMessageCount());
 
 		List<String> itemIds = new ArrayList<>();
 		try (IMessageBrowsingIterator iterator = browser.getIterator()) {
