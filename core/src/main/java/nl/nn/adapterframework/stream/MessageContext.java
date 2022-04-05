@@ -98,7 +98,9 @@ public class MessageContext extends LinkedHashMap<String,Object> {
 		return withModificationTime(new Date(time));
 	}
 	public MessageContext withModificationTime(Date time) {
-		put(METADATA_MODIFICATIONTIME, DateUtils.format(time));
+		if (time!=null) {
+			put(METADATA_MODIFICATIONTIME, DateUtils.format(time));
+		}
 		return this;
 	}
 	public MessageContext withModificationTime(String time) throws CalendarParserException {
