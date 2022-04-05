@@ -66,7 +66,7 @@ public class MessageWrapperTest {
 	}
 
 	@Test
-	public void compatiblityDeserializeCharacters() throws Exception {
+	public void testDeserialization76CompatibilityCharacters() throws Exception {
 		String data = "testdata voor messagewrapper";
 		String id = "fakeId";
 		String contextKey = "messageWrapperContextItem";
@@ -90,7 +90,7 @@ public class MessageWrapperTest {
 
 
 	@Test
-	public void compatiblityDeserializeBinary() throws Exception {
+	public void testDeserialization76CompatibilityBinary() throws Exception {
 		byte[] data = "testdata voor messagewrapper".getBytes();
 		String id = "fakeId";
 		String contextKey = "messageWrapperContextItem";
