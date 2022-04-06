@@ -73,7 +73,8 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 	private String attachmentXmlSessionKey = null;
 	private Map<String, MessageFactory> factory = new HashMap<>();
 
-	protected SOAPProviderBase() {
+	// WebServiceProviders must have a default public constructor
+	public SOAPProviderBase() {
 		log.debug("initiating SOAP Service Provider");
 	}
 
