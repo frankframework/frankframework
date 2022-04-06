@@ -72,7 +72,7 @@ public abstract class JdbcTestBase {
 
 	private boolean runMigratorOnlyOncePerDatabaseAndChangelog = true;
 	private Set<String> migratedDatabaseChangelogFiles = new HashSet<>();
-	
+
 	@Parameters(name= "{0}: {1}")
 	public static Collection data() throws NamingException {
 		TransactionManagerType type = TransactionManagerType.DATASOURCE;
