@@ -31,7 +31,7 @@ import java.util.logging.Logger;
 
 public class ClassUtils {
 	protected static Logger log = Logger.getLogger(ClassUtils.class.getName());
-	
+
     /**
      * Return the context classloader.
      * BL: if this is command line operation, the classloading issues
@@ -64,7 +64,7 @@ public class ClassUtils {
 
 		String resourceToUse = resource; //Don't change the original resource name for logging purposes
 
-		// Remove slash like Class.getResource(String name) is doing before delegation to ClassLoader. 
+		// Remove slash like Class.getResource(String name) is doing before delegation to ClassLoader.
 		// Resources retrieved from ClassLoaders should never start with a leading slash
 		if (resourceToUse.startsWith("/")) {
 			resourceToUse = resourceToUse.substring(1);
@@ -85,7 +85,7 @@ public class ClassUtils {
 		return url;
 	}
 
-	
+
     /**
      * Tests if a class implements a given interface
      *
@@ -242,11 +242,11 @@ public class ClassUtils {
 		}
 	}
 	public static Object invokeGetter(Object o, String name, boolean forceAccess) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		Method getterMtd = o.getClass().getMethod(name, null );
+		Method getterMtd = o.getClass().getMethod(name);
 		if (forceAccess) {
 			getterMtd.setAccessible(true);
 		}
-		return getterMtd.invoke(o,null);
+		return getterMtd.invoke(o);
 	}
 	public static Object invokeGetter(Object o, String name) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 		return invokeGetter(o,name,false);

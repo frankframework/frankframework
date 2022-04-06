@@ -63,6 +63,8 @@ public class Message implements Serializable {
 
 	protected transient Logger log = LogUtil.getLogger(this);
 
+	private static final long serialVersionUID = 437863352486501445L;
+
 	private Object request;
 	private @Getter Class<?> requestClass;
 	private @Getter @Setter(AccessLevel.PROTECTED) String charset; // representing a charset of byte typed requests
