@@ -45,15 +45,15 @@
 			<artifactId>slf4j-api</artifactId>
 			<version>1.7.31</version>
 		</dependency>
-		<dependency><!--LOG4J SLF4J Binding-->
+		<dependency><!-- LOG4J SLF4J Binding -->
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-slf4j-impl</artifactId>
 		</dependency>
-		<dependency><!--Apache Commons Logging Binding-->
+		<dependency><!-- Apache Commons Logging Binding -->
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-jcl</artifactId>
 		</dependency>
-		<dependency><!-- Java Util Logging Binding-->
+		<dependency><!-- Java Util Logging Binding -->
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-jul</artifactId>
 		</dependency>
@@ -389,7 +389,7 @@
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpcore</artifactId>
-			<version>4.4.14</version>
+			<version>4.4.15</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
@@ -564,7 +564,7 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>${jackson.databind.version}</version> <!-- patch release -->
+			<version>${jackson.databind.version}</version>
 		</dependency>
 
 		<!-- Use our own JaxB and JaxWS implementations to run on the IBM JDK -->
