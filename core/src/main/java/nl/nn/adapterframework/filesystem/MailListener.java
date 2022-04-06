@@ -109,8 +109,26 @@ public abstract class MailListener<M, A, S extends IMailFileSystem<M,A>> extends
 	}
 
 	@Deprecated
+	@ConfigurationWarning("Please use <code>messageType=mime</code> and sessionKey originalMessage")
 	public void setStoreEmailAsStreamInSessionKey(String string) {
 		storeEmailAsStreamInSessionKey = string;
+	}
+
+	/**
+	 * Determines the contents of the message that is sent to the Pipeline. can be one of:
+	 * <ul>
+	 * <li><code>email</code>, for an XML containing most relevant information, except the body and the attachments</li>
+	 * <li><code>contents</code>, for the body of the message</li>
+	 * <li><code>mime</code>, for the MIME contents of the message</li>
+	 * <li><code>name</code> or <code>path</code>, for an internal handle of mail message, that can be used by a related MailFileSystemSender</li>
+	 * <li>the key of any header present in the message context</li>
+	 * </ul>
+	 *
+	 * @ff.default email
+	 */
+	@Override
+	public void setMessageType(String messageType) {
+		super.setMessageType(messageType);
 	}
 
 }

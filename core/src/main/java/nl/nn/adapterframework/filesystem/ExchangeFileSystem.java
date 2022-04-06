@@ -33,6 +33,7 @@ import javax.mail.internet.InternetAddress;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import microsoft.exchange.webservices.data.autodiscover.IAutodiscoverRedirectionUrl;
 import microsoft.exchange.webservices.data.core.ExchangeService;
 import microsoft.exchange.webservices.data.core.PropertySet;
@@ -103,18 +104,18 @@ import nl.nn.adapterframework.xml.SaxElementBuilder;
  */
 public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachment,ExchangeService> {
 
-	private String mailAddress;
-	private boolean validateAllRedirectUrls=true;
-	private String url;
-	private String accessToken;
-	private String filter;
+	private @Getter String mailAddress;
+	private @Getter boolean validateAllRedirectUrls=true;
+	private @Getter String url;
+	private @Getter String accessToken;
+	private @Getter String filter;
 
-	private String proxyHost = null;
-	private int proxyPort = 8080;
-	private String proxyUsername = null;
-	private String proxyPassword = null;
-	private String proxyAuthAlias = null;
-	private String proxyDomain = null;
+	private @Getter String proxyHost = null;
+	private @Getter int proxyPort = 8080;
+	private @Getter String proxyUsername = null;
+	private @Getter String proxyPassword = null;
+	private @Getter String proxyAuthAlias = null;
+	private @Getter String proxyDomain = null;
 
 	private FolderId basefolderId;
 
@@ -372,6 +373,25 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			}
 		}
 	}
+	
+	@Override
+	public int getNumberOfFilesInFolder(String foldername) throws FileSystemException {
+		if (!isOpen()) {
+			return -1;
+		}
+		ExchangeService exchangeService = getConnection();
+		boolean invalidateConnectionOnRelease = false;
+		try {
+			FolderId folderId = findFolder(basefolderId,foldername);
+			Folder folder = Folder.bind(exchangeService,folderId);
+			return folder.getTotalCount();
+		} catch (Exception e) {
+			invalidateConnectionOnRelease = true;
+			throw new FileSystemException("Cannot list messages in folder ["+foldername+"]", e);
+		} finally {
+			releaseConnection(exchangeService, invalidateConnectionOnRelease);
+		}
+	}
 
 
 	@Override
@@ -413,6 +433,9 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 				return new Message(mc.getContent(), charset);
 			}
 			return new Message(MessageBody.getStringFromMessageBody(emailMessage.getBody()));
+		} catch (FileSystemException e) {
+			invalidateConnectionOnRelease = true;
+			throw e;
 		} catch (Exception e) {
 			invalidateConnectionOnRelease = true;
 			throw new FileSystemException(e);
@@ -841,6 +864,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 				emailMessage.load(ps);
 			}
 			MailFileSystemUtils.addEmailInfo(this, emailMessage, emailXml);
+		} catch (FileSystemException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new FileSystemException(e);
 		}
@@ -851,6 +876,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		try {
 			attachment.load();
 			MailFileSystemUtils.addAttachmentInfo(this, attachment, attachmentsXml);
+		} catch (FileSystemException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new FileSystemException(e);
 		}
@@ -891,14 +918,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	public void setMailAddress(String mailAddress) {
 		this.mailAddress = mailAddress;
 	}
-	public String getMailAddress() {
-		return mailAddress;
-	}
 
 	@IbisDoc({"2", "When <code>true</code>, all redirect uris are accepted when connecting to the server", "true"})
-	public boolean isValidateAllRedirectUrls() {
-		return validateAllRedirectUrls;
-	}
 	public void setValidateAllRedirectUrls(boolean validateAllRedirectUrls) {
 		this.validateAllRedirectUrls = validateAllRedirectUrls;
 	}
@@ -907,16 +928,10 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	public void setUrl(String url) {
 		this.url = url;
 	}
-	public String getUrl() {
-		return url;
-	}
 
 	@IbisDoc({"4", "AccessToken for authentication to Exchange mail server", ""})
 	public void setAccessToken(String accessToken) {
 		this.accessToken = accessToken;
-	}
-	public String getAccessToken() {
-		return accessToken;
 	}
 
 	@IbisDoc({"5", "Alias used to obtain accessToken or username and password for authentication to Exchange mail server. " +
@@ -949,57 +964,36 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	public void setFilter(String filter) {
 		this.filter = filter;
 	}
-	public String getFilter() {
-		return filter;
-	}
 
 
 	@IbisDoc({"13", "proxy host", ""})
 	public void setProxyHost(String proxyHost) {
 		this.proxyHost = proxyHost;
 	}
-	public String getProxyHost() {
-		return proxyHost;
-	}
 
 	@IbisDoc({"14", "proxy port", "8080"})
 	public void setProxyPort(int proxyPort) {
 		this.proxyPort = proxyPort;
-	}
-	public int getProxyPort() {
-		return proxyPort;
 	}
 
 	@IbisDoc({"15", "proxy username", ""})
 	public void setProxyUsername(String proxyUsername) {
 		this.proxyUsername = proxyUsername;
 	}
-	public String getProxyUsername() {
-		return proxyUsername;
-	}
 
 	@IbisDoc({"16", "proxy password", ""})
 	public void setProxyPassword(String proxyPassword) {
 		this.proxyPassword = proxyPassword;
-	}
-	public String getProxyPassword() {
-		return proxyPassword;
 	}
 
 	@IbisDoc({"17", "proxy authAlias", ""})
 	public void setProxyAuthAlias(String proxyAuthAlias) {
 		this.proxyAuthAlias = proxyAuthAlias;
 	}
-	public String getProxyAuthAlias() {
-		return proxyAuthAlias;
-	}
 
 	@IbisDoc({"18", "proxy domain", ""})
 	public void setProxyDomain(String proxyDomain) {
 		this.proxyDomain = proxyDomain;
-	}
-	public String getProxyDomain() {
-		return proxyDomain;
 	}
 
 }

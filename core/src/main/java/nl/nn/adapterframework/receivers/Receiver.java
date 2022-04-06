@@ -1099,7 +1099,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		if (getErrorStorage()==null) {
 			// if there is only a errorStorageBrowser, and no separate and transactional errorStorage,
 			// then the management of the errorStorage is left to the listener.
-			IMessageBrowser errorStorageBrowser = messageBrowsers.get(ProcessState.ERROR);
+			IMessageBrowser<?> errorStorageBrowser = messageBrowsers.get(ProcessState.ERROR);
 			Object msg = errorStorageBrowser.browseMessage(storageKey);
 			processRawMessage(msg, threadContext, -1, true, false);
 			return;
@@ -1363,11 +1363,15 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 						threadContext.putAll(pipelineSession);
 					}
 					try {
+						Object messageForAfterMessageProcessed = rawMessageOrWrapper;
 						if (getListener() instanceof IHasProcessState && !itx.isRollbackOnly()) {
 							ProcessState targetState = messageInError && knownProcessStates.contains(ProcessState.ERROR) ? ProcessState.ERROR : ProcessState.DONE;
-							changeProcessState(rawMessageOrWrapper, targetState, errorMessage);
+							Object movedMessage = changeProcessState(rawMessageOrWrapper, targetState, errorMessage);
+							if (movedMessage!=null) {
+								messageForAfterMessageProcessed = movedMessage;
+							}
 						}
-						getListener().afterMessageProcessed(pipeLineResult, rawMessageOrWrapper, afterMessageProcessedMap);
+						getListener().afterMessageProcessed(pipeLineResult, messageForAfterMessageProcessed, afterMessageProcessedMap);
 					} catch (Exception e) {
 						if (manualRetry) {
 							// Somehow messages wrapped in MessageWrapper are in the ITransactionalStorage. 
