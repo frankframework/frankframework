@@ -305,7 +305,7 @@ public class ApiListenerServlet extends HttpServletBase {
 							CookieUtil.addCookie(request, response, authorizationCookie, 0);
 						}
 
-						if(listener.getAuthenticationMethod() != AuthenticationMethods.AUTHROLE) {
+						if(listener.getAuthenticationMethod() == AuthenticationMethods.AUTHROLE) {
 							response.setHeader("WWW-Authenticate", "Basic realm=Frank");
 						}
 						response.setStatus(401);
