@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2019-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -52,8 +52,8 @@ import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * {@link IPullingListener listener} that looks in a {@link IBasicFileSystem FileSystem} for files.
- * When a file is found, it is moved to an process-folder, so that it isn't found more then once.  
- * The name of the moved file is passed to the pipeline.  
+ * When a file is found, it is moved to an process-folder, so that it isn't found more then once.
+ * The name of the moved file is passed to the pipeline.
  *
  *
  * @author Gerrit van Brakel
@@ -83,17 +83,16 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	private @Getter String messageType="path";
 	private @Getter String messageIdPropertyKey = null;
 	private @Getter String storeMetadataInSessionKey;
-	
+
 	private @Getter boolean disableMessageBrowsers = false;
 	private @Getter String wildcard;
 	private @Getter String excludeWildcard;
 	private @Getter String charset;
 
 	private @Getter long minStableTime = 1000;
-//	private Long fileListFirstFileFound;
 
-	private FS fileSystem;
-	
+	private @Getter FS fileSystem;
+
 	private Set<ProcessState> knownProcessStates;
 	private Map<ProcessState,Set<ProcessState>> targetProcessStates = new HashMap<>();
 
@@ -137,7 +136,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 			// folders can only be checked at 'open()', because the checks need an opened file system.
 			checkForExistenceOfFolder("inputFolder", getInputFolder());
 			if (!checkForExistenceOfFolder("inProcessFolder", getInProcessFolder())) {
-				ConfigurationWarnings.add(this, log, "attribute 'inProcessFolder' has not been set. This listener can only run in a single thread");			
+				ConfigurationWarnings.add(this, log, "attribute 'inProcessFolder' has not been set. This listener can only run in a single thread");
 			}
 			checkForExistenceOfFolder("processedFolder", getProcessedFolder());
 			checkForExistenceOfFolder("errorFolder",getErrorFolder());
@@ -164,7 +163,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 					throw new ListenerException("Cannot create " +attributeName + " [" + folderName + "]",e);
 				}
 				return true;
-			} 
+			}
 			String canonicalNameClause;
 			try {
 				canonicalNameClause=", canonical name ["+fileSystem.getCanonicalName(fileSystem.toFile(folderName))+"],";
@@ -212,10 +211,6 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		return getFileSystem().getDomain();
 	}
 
-	public FS getFileSystem() {
-		return fileSystem;
-	}
-
 	@Override
 	public synchronized F getRawMessage(Map<String,Object> threadContext) throws ListenerException {
 		FS fileSystem=getFileSystem();
@@ -255,15 +250,15 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	@Override
 	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String,Object> context) throws ListenerException {
 		FS fileSystem=getFileSystem();
-		if ((rawMessageOrWrapper instanceof MessageWrapper)) { 
+		if ((rawMessageOrWrapper instanceof MessageWrapper)) {
 			// if it is a MessageWrapper, it comes from an errorStorage, and then the state cannot be managed using folders by the listener itself.
 			MessageWrapper<?> wrapper = (MessageWrapper<?>)rawMessageOrWrapper;
 			if (StringUtils.isNotEmpty(getLogFolder()) || StringUtils.isNotEmpty(getErrorFolder()) || StringUtils.isNotEmpty(getProcessedFolder())) {
 				log.warn("cannot write ["+wrapper.getId()+"] to logFolder, errorFolder or processedFolder after manual retry from errorStorage");
 			}
 		} else {
-			@SuppressWarnings("unchecked") 
-			F rawMessage = (F)rawMessageOrWrapper; // if it is not a wrapper, than it must be an F 
+			@SuppressWarnings("unchecked")
+			F rawMessage = (F)rawMessageOrWrapper; // if it is not a wrapper, than it must be an F
 			try {
 				if (StringUtils.isNotEmpty(getLogFolder())) {
 					FileSystemUtils.copyFile(fileSystem, rawMessage, getLogFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders());
@@ -273,7 +268,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 					return;
 				}
 			} catch (FileSystemException e) {
-				throw new ListenerException("Could not move or delete file ["+fileSystem.getName(rawMessage)+"]",e);
+				throw new ListenerException("Could not copy or delete file ["+fileSystem.getName(rawMessage)+"]",e);
 			}
 		}
 	}
@@ -351,7 +346,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 			}
 			if (StringUtils.isNotEmpty(getStoreMetadataInSessionKey())) {
 				ObjectBuilder metadataBuilder = DocumentBuilderFactory.startObjectDocument(DocumentFormat.XML, "metadata");
-				
+
 				if (attributes!=null) {
 					attributes.forEach((k,v) -> {
 						try {
@@ -417,15 +412,15 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 			throw new IllegalStateException("Unknown state ["+state+"]");
 		}
 	}
-	
+
 	@Override
 	public IMessageBrowser<F> getMessageBrowser(ProcessState state) {
 		if (isDisableMessageBrowsers() || !knownProcessStates().contains(state)) {
 			return null;
 		}
 		return new FileSystemMessageBrowser<F, FS>(getFileSystem(), getStateFolder(state), getMessageIdPropertyKey());
-	}	
-	
+	}
+
 	@Override
 	@IbisDoc({"1", "Name of the listener", ""})
 	public void setName(String name) {
@@ -484,7 +479,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	public void setCreateFolders(boolean createFolders) {
 		this.createFolders = createFolders;
 	}
-	
+
 	@Deprecated
 	@ConfigurationWarning("attribute 'createInputDirectory' has been replaced by 'createFolders'")
 	public void setCreateInputDirectory(boolean createInputDirectory) {
@@ -513,7 +508,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 //		return passWithoutDirectory;
 //	}
 
-	
+
 	@IbisDoc({"9", "Number of copies held of a file with the same name. Backup files have a dot and a number suffixed to their name. If set to 0, no backups will be kept.", "0"})
 	public void setNumberOfBackups(int i) {
 		numberOfBackups = i;
@@ -573,7 +568,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	public void setStoreMetadataInSessionKey(String storeMetadataInSessionKey) {
 		this.storeMetadataInSessionKey = storeMetadataInSessionKey;
 	}
-	
+
 	@IbisDoc({"19", "Charset to be used for extracting the contents"})
 	public void setCharset(String charset) {
 		this.charset = charset;
