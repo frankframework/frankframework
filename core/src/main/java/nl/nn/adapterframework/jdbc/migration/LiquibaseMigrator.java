@@ -65,7 +65,7 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 	private LabelExpression labelExpression = new LabelExpression();
 
 	private Resource getChangeLog() {
-		AppConstants appConstants = AppConstants.getInstance(getApplicationContext().getClassLoader());
+		AppConstants appConstants = AppConstants.getInstance(getConfigurationClassLoader());
 		String changeLogFile = appConstants.getString("liquibase.changeLogFile", "DatabaseChangelog.xml");
 
 		URL resource = getResource(changeLogFile);
@@ -93,7 +93,7 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 			throw new LiquibaseException("no resource provided");
 		}
 
-		ResourceAccessor resourceAccessor = new LiquibaseResourceAccessor(resource);
+		ResourceAccessor resourceAccessor = new LiquibaseResourceAccessor(resource, getConfigurationClassLoader());
 		DatabaseConnection connection = getDatabaseConnection();
 
 		return new Liquibase(resource.getSystemId(), resourceAccessor, connection);

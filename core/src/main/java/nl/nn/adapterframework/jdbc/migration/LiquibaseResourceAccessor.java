@@ -34,10 +34,12 @@ import nl.nn.adapterframework.util.LogUtil;
 public class LiquibaseResourceAccessor implements ResourceAccessor {
 
 	private Resource resource;
+	private ClassLoader classLoader;
 
-	public LiquibaseResourceAccessor(Resource resource) {
+	public LiquibaseResourceAccessor(Resource resource, ClassLoader classLoader) {
 		super();
 		this.resource = resource;
+		this.classLoader = classLoader;
 	}
 
 	/** 
@@ -69,8 +71,9 @@ public class LiquibaseResourceAccessor implements ResourceAccessor {
 	public InputStream openStream(String relativeTo, String path) throws IOException {
 		if(path.equals(resource.getSystemId())) {
 			return resource.openStream();
+		} else if(classLoader != null) { // script may contain include(s)
+			return classLoader.getResourceAsStream(path);
 		}
-
 		return null;
 	}
 
