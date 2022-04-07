@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2015 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -83,7 +84,7 @@ public class SchemaUtils {
 			throws ConfigurationException {
 		return getXsdsRecursive(xsds, true);
 	}
-	
+
 	public static Set<XSD> getXsdsRecursive(Set<XSD> xsds, boolean ignoreRedefine) throws ConfigurationException {
 		Set<XSD> xsdsRecursive = new HashSet<XSD>();
 		xsdsRecursive.addAll(xsds);
@@ -128,10 +129,9 @@ public class SchemaUtils {
 		}
 	}
 
-	
+
 	/**
-	 * @return XSD's when xmlStreamWriter is null, otherwise write to
-	 *		 xmlStreamWriter
+	 * @return XSD's when xmlStreamWriter is null, otherwise write to xmlStreamWriter
 	 */
 	public static Set<XSD> mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(IScopeProvider scopeProvider, Map<String, Set<XSD>> xsdsGroupedByNamespace, XMLStreamWriter xmlStreamWriter) throws XMLStreamException, IOException, ConfigurationException {
 		Set<XSD> resultXsds = new HashSet<XSD>();
@@ -419,7 +419,7 @@ public class SchemaUtils {
 	}
 
 	public static void sortByDependencies(Set<XSD> xsds, List<Schema> schemas) throws ConfigurationException {
-		Set<XSD> xsdsWithDependencies = new HashSet<XSD>();
+		Set<XSD> xsdsWithDependencies = new LinkedHashSet<XSD>();
 		Iterator<XSD> iterator = xsds.iterator();
 		while (iterator.hasNext()) {
 			XSD xsd = iterator.next();
@@ -430,11 +430,15 @@ public class SchemaUtils {
 			}
 		}
 		if (xsds.size() == xsdsWithDependencies.size()) {
-			String message = "Circular dependencies between schemas:";
-			for (XSD xsd : xsdsWithDependencies) {
-				message = message + " [" + xsd.toString() + " with target namespace " + xsd.getTargetNamespace() + " and imported namespaces " + xsd.getImportedNamespaces() + "]";
+			if (LOG.isDebugEnabled()) {
+				String message = "Circular dependencies between schemas:";
+				for (XSD xsd : xsdsWithDependencies) {
+					message = message + " [" + xsd.toString() + " with target namespace " + xsd.getTargetNamespace() + " and imported namespaces " + xsd.getImportedNamespaces() + "]";
+				}
+				LOG.debug(message);
 			}
-			throw new ConfigurationException(message);
+			schemas.addAll(xsds);
+			return;
 		}
 		if (xsdsWithDependencies.size() > 0) {
 			sortByDependencies(xsdsWithDependencies, schemas);

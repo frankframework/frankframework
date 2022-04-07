@@ -309,5 +309,42 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		assertThat((String)session.get("reason"), containsString("Illegal element 'A'. Element(s) 'anotherElement' expected."));
 	}
 
+	@Test
+	public void testWithCircularReferenceInXsd1() throws Exception {
+		XmlValidator validator = new XmlValidator();
+		validator.registerForward(createSuccessForward());
+		validator.registerForward(createFailureForward());
+		validator.setSchemaLocation("http://xmlns/a /Validation/Circular/AB/xsd/A.xsd");
+		validator.setIgnoreUnknownNamespaces(true);
+		validator.setThrowException(true);
+		validator.configure();
+		validator.start();
+
+		String testXml = getTestXml("/Validation/Circular/AB/A.xml");
+		PipeLineSession session = new PipeLineSession();
+		PipeRunResult result = validator.validate(new Message(testXml), session, "A");
+		PipeForward forward = result.getPipeForward();
+
+		assertEquals("success", forward.getName());
+	}
+
+	@Test
+	public void testWithCircularReferenceInXsd2() throws Exception {
+		XmlValidator validator = new XmlValidator();
+		validator.registerForward(createSuccessForward());
+		validator.registerForward(createFailureForward());
+		validator.setSchemaLocation("http://www.egem.nl/StUF/sector/zkn/0310 /Validation/Circular/zds/xsd/zkn0310_msg_zs-dms_resolved2017.xsd");
+		validator.setIgnoreUnknownNamespaces(true);
+		validator.setThrowException(true);
+		validator.configure();
+		validator.start();
+
+		String testXml = getTestXml("/Validation/Circular/zds/ontvangAsynchroon_CreeerZaak_input_example.xml");
+		PipeLineSession session = new PipeLineSession();
+		PipeRunResult result = validator.validate(new Message(testXml), session, "zakLk01");
+		PipeForward forward = result.getPipeForward();
+
+		assertEquals("success", forward.getName());
+	}
 
 }

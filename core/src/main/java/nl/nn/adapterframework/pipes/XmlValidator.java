@@ -20,14 +20,13 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import javax.xml.namespace.QName;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.validation.ValidatorHandler;
 
@@ -37,6 +36,8 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.xml.sax.helpers.XMLFilterImpl;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -87,15 +88,15 @@ import nl.nn.adapterframework.xml.RootElementToSessionKeyFilter;
  */
 public class XmlValidator extends FixedForwardPipe implements SchemasProvider, HasSpecialDefaultValues, IDualModeValidator, IXmlValidator, InitializingBean {
 
-	private String schemaLocation;
-	private String noNamespaceSchemaLocation;
-	private String schemaSessionKey;
-	private String root;
-	private String responseRoot;
-	private boolean forwardFailureToSuccess = false;
+	private @Getter String schemaLocation;
+	private @Getter String noNamespaceSchemaLocation;
+	private @Getter String schemaSessionKey;
+	private @Getter String root;
+	private @Getter String responseRoot;
+	private @Getter boolean forwardFailureToSuccess = false;
 	private String soapNamespace = SoapVersion.SOAP11.namespace;
-	private String rootElementSessionKey;
-	private String rootNamespaceSessionKey;
+	private @Getter String rootElementSessionKey;
+	private @Getter String rootNamespaceSessionKey;
 
 	/*
 	 * Root validations are a set of lists.
@@ -115,7 +116,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	private TransformerPool transformerPoolRemoveNamespaces; // only used in getMessageToValidate(), TODO: avoid setting it up when not necessary
 
 	protected ConfigurationException configurationException;
-
+	
 	protected final String ABSTRACTXMLVALIDATOR="nl.nn.adapterframework.validation.AbstractXmlValidator";
 	{
 		setNamespaceAware(true);
@@ -139,8 +140,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	public void configure() throws ConfigurationException {
 		try {
 			super.configure();
-			if ((StringUtils.isNotEmpty(getNoNamespaceSchemaLocation()) ||
-					StringUtils.isNotEmpty(getSchemaLocation())) &&
+			if ((StringUtils.isNotEmpty(getNoNamespaceSchemaLocation()) || StringUtils.isNotEmpty(getSchemaLocation())) &&
 					StringUtils.isNotEmpty(getSchemaSessionKey())) {
 				throw new ConfigurationException("cannot have schemaSessionKey together with schemaLocation or noNamespaceSchemaLocation");
 			}
@@ -165,7 +165,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 
 			if (!isForwardFailureToSuccess() && !isThrowException()){
 				if (findForward("failure")==null) {
-					throw new ConfigurationException("must either set throwException true, forwardFailureToSuccess true or have a forward with name [failure]");
+					throw new ConfigurationException("must either set throwException=true or have a forward with name [failure]");
 				}
 			}
 
@@ -399,12 +399,6 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return responseMode ? getResponseRoot() : getMessageRoot();
 	}
 
-	/**
-	 * Not ready yet (namespace not yet correctly parsed)
-	 */
-	public QName getRootTag() {
-		return new QName(getSchema()/* TODO */, getRoot());
-	}
 
 	@Override
 	public String getSchemasId() {
@@ -418,7 +412,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 
 	@Override
 	public Set<XSD> getXsds() throws ConfigurationException {
-		Set<XSD> xsds = new HashSet<XSD>();
+		Set<XSD> xsds = new LinkedHashSet<XSD>();
 		if (StringUtils.isNotEmpty(getNoNamespaceSchemaLocation())) {
 			XSD xsd = new XSD();
 			xsd.initNoNamespace(this, getNoNamespaceSchemaLocation());
@@ -446,6 +440,11 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 
 	public List<Schema> getSchemas(boolean checkRootValidations) throws ConfigurationException {
 		Set<XSD> xsds = getXsds();
+		if (!isAddNamespaceToSchema()) {
+			List<Schema> schemas = new ArrayList<Schema>();
+			SchemaUtils.sortByDependencies(xsds, schemas);
+			return schemas;
+		}
 		if (StringUtils.isEmpty(getNoNamespaceSchemaLocation())) {
 			xsds = SchemaUtils.getXsdsRecursive(xsds);
 			if (checkRootValidations) {
@@ -495,7 +494,8 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 
 	public class ResponseValidatorWrapper implements IXmlValidator {
 
-		private String name;
+		private @Getter @Setter String name;
+		
 		private Map<String, PipeForward> forwards=new HashMap<String, PipeForward>();
 
 		protected XmlValidator owner;
@@ -503,17 +503,6 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			super();
 			this.owner=owner;
 			name="ResponseValidator of "+owner.getName();
-		}
-
-		@Override
-		public String getName() {
-			return name;
-		}
-
-		@IbisDoc({"name of the pipe", ""})
-		@Override
-		public void setName(String name) {
-			this.name=name;
 		}
 
 		@Override
@@ -787,25 +776,15 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	public void setSchemaLocation(String schemaLocation) {
 		this.schemaLocation = schemaLocation;
 	}
-	@Override
-	public String getSchemaLocation() {
-		return schemaLocation;
-	}
 
 	@IbisDoc({"3", "A uri reference as a hint as to the location of a schema document with no target namespace.", ""})
 	public void setNoNamespaceSchemaLocation(String noNamespaceSchemaLocation) {
 		this.noNamespaceSchemaLocation = noNamespaceSchemaLocation;
 	}
-	public String getNoNamespaceSchemaLocation() {
-		return noNamespaceSchemaLocation;
-	}
 
 	@IbisDoc({"4", "session key for retrieving a schema", ""})
 	public void setSchemaSessionKey(String schemaSessionKey) {
 		this.schemaSessionKey = schemaSessionKey;
-	}
-	public String getSchemaSessionKey() {
-		return schemaSessionKey;
 	}
 
 	@IbisDoc({"5", "Name of the root element, or a comma separated list of element names. The validation fails if the root element is not present in the list. N.B. for WSDL generation only the first element is used", ""})
@@ -815,18 +794,12 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			addRequestRootValidation(new RootValidation(root));
 		}
 	}
-	public String getRoot() {
-		return root;
-	}
 	@IbisDoc({"6", "Name of the response root element, or a comma separated list of element names. The validation fails if the root element is not present in the list. N.B. for WSDL generation only the first element is used", ""})
 	public void setResponseRoot(String responseRoot) {
 		this.responseRoot = responseRoot;
 		if (StringUtils.isNotEmpty(responseRoot)) {
 			addResponseRootValidation(new RootValidation(responseRoot));
 		}
-	}
-	protected String getResponseRoot() {
-		return responseRoot;
 	}
 
 	@Override
@@ -839,10 +812,6 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	@ConfigurationWarning("please specify a forward with name=failure instead")
 	public void setForwardFailureToSuccess(boolean b) {
 		this.forwardFailureToSuccess = b;
-	}
-	@Deprecated
-	private boolean isForwardFailureToSuccess() {
-		return forwardFailureToSuccess;
 	}
 
 	@IbisDocRef({ABSTRACTXMLVALIDATOR})
@@ -966,16 +935,10 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	public void setRootElementSessionKey(String rootElementSessionKey) {
 		this.rootElementSessionKey = rootElementSessionKey;
 	}
-	public String getRootElementSessionKey() {
-		return rootElementSessionKey;
-	}
 
 	@IbisDoc({"41", "key of session variable to store the namespace of the root element",""})
 	public void setRootNamespaceSessionKey(String rootNamespaceSessionKey) {
 		this.rootNamespaceSessionKey = rootNamespaceSessionKey;
-	}
-	public String getRootNamespaceSessionKey() {
-		return rootNamespaceSessionKey;
 	}
 
 }

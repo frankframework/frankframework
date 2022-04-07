@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015-2017 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2015-2017 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -475,11 +475,10 @@ public class XSD implements Schema, Comparable<XSD> {
 
 	@Override
 	public String getSystemId() {
-		if (noNamespaceSchemaLocation == null) {
+		if (url == null) {
 			return null;
-		} else {
-			return url.toExternalForm();
 		}
+		return url.toExternalForm();
 	}
 
 	public boolean hasDependency(Set<XSD> xsds) {
