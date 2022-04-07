@@ -9,7 +9,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -25,7 +24,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -49,24 +47,24 @@ import nl.nn.adapterframework.validation.XercesXmlValidator;
 @RunWith(value = Parameterized.class)
 public class WsdlTest {
 
-    private final  Class<AbstractXmlValidator> implementation;
+	private final  Class<AbstractXmlValidator> implementation;
 
-    public WsdlTest(Class<AbstractXmlValidator> implementation) {
-        this.implementation = implementation;
-    }
+	public WsdlTest(Class<AbstractXmlValidator> implementation) {
+		this.implementation = implementation;
+	}
 
-    @Parameterized.Parameters
-    public static Collection<Object[]> data() {
-        Object[][] data = new Object[][]{
-            {XercesXmlValidator.class},
-            {JavaxXmlValidator.class}
-        };
-        return Arrays.asList(data);
-    }
+	@Parameterized.Parameters
+	public static Collection<Object[]> data() {
+		Object[][] data = new Object[][]{
+			{XercesXmlValidator.class},
+			{JavaxXmlValidator.class}
+		};
+		return Arrays.asList(data);
+	}
 
 
 	@Test
-	public void basic() throws XMLStreamException, IOException, ParserConfigurationException, SAXException, ConfigurationException, URISyntaxException, NamingException {
+	public void basic() throws XMLStreamException, IOException,ConfigurationException, NamingException {
 		PipeLine simple = mockPipeLine(
 				getXmlValidatorInstance("a", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"),
 				getXmlValidatorInstance("b", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"), "urn:webservice1", "Test1");
@@ -76,7 +74,7 @@ public class WsdlTest {
 	}
 
 	@Test
-	public void basicMultipleRootTagsAllowed() throws XMLStreamException, IOException, ParserConfigurationException, SAXException, ConfigurationException, URISyntaxException, NamingException {
+	public void basicMultipleRootTagsAllowed() throws XMLStreamException, IOException, ConfigurationException, NamingException {
 		PipeLine simple = mockPipeLine(
 				getXmlValidatorInstance("a,x,y", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"),
 				getXmlValidatorInstance("b,p,q", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"), "urn:webservice1", "Test1");
@@ -86,7 +84,7 @@ public class WsdlTest {
 	}
 
 	@Test
-	public void basicMixed() throws XMLStreamException, IOException, ParserConfigurationException, SAXException, ConfigurationException, URISyntaxException, NamingException {
+	public void basicMixed() throws XMLStreamException, IOException, ConfigurationException, NamingException {
 		XmlValidator inputValidator=getXmlValidatorInstance("a", "b", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd");
 		IValidator outputValidator=inputValidator.getResponseValidator();
 		PipeLine simple = mockPipeLine(inputValidator, outputValidator, "urn:webservice1", "Test1");
@@ -96,34 +94,34 @@ public class WsdlTest {
 	}
 
 	@Test
-	public void includeXsdInWsdl() throws XMLStreamException, IOException, ParserConfigurationException, SAXException, ConfigurationException, URISyntaxException, NamingException {
+	public void includeXsdInWsdl() throws XMLStreamException, IOException, ConfigurationException, NamingException {
 		PipeLine simple = mockPipeLine(
 				getXmlValidatorInstance("a", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"),
 				getXmlValidatorInstance("b", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"), "urn:webservice1", "IncludeXsds");
 
 		WsdlGenerator wsdl = new WsdlGenerator(simple);
-        wsdl.setUseIncludes(true);
-        wsdl.init();
+		wsdl.setUseIncludes(true);
+		wsdl.init();
 		test(wsdl, "WsdlTest/includexsds.test.wsdl");
 	}
 
 
 	@Test
-	public void includeXsdInWsdlMixed() throws XMLStreamException, IOException, ParserConfigurationException, SAXException, ConfigurationException, URISyntaxException, NamingException {
+	public void includeXsdInWsdlMixed() throws XMLStreamException, IOException, ConfigurationException, NamingException {
 		XmlValidator inputValidator=getXmlValidatorInstance("a", "b", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd");
 		IValidator outputValidator=inputValidator.getResponseValidator();
 		PipeLine simple = mockPipeLine(inputValidator, outputValidator, "urn:webservice1", "IncludeXsds");
 
 		WsdlGenerator wsdl = new WsdlGenerator(simple);
-        wsdl.setUseIncludes(true);
-        wsdl.init();
+		wsdl.setUseIncludes(true);
+		wsdl.init();
 		test(wsdl, "WsdlTest/includexsds.test.wsdl");
 	}
 
 
 	@Test
 	@Ignore("not finished, but would fail, you must specify root tag now.")
-	public void noroottagAndInclude() throws XMLStreamException, IOException, SAXException, ParserConfigurationException, URISyntaxException, ConfigurationException, NamingException {
+	public void noroottagAndInclude() throws XMLStreamException, IOException, ConfigurationException, NamingException {
 		PipeLine simple = mockPipeLine(
 				getXmlValidatorInstance(null, "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"),
 				getXmlValidatorInstance("b", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"), "urn:webservice1", "TestRootTag");
@@ -133,153 +131,155 @@ public class WsdlTest {
 		test(wsdl, "WsdlTest/noroottag.test.wsdl");
 	}
 
-    @Test
-    public void noroottag() throws XMLStreamException, IOException, SAXException, ParserConfigurationException, URISyntaxException, ConfigurationException, NamingException {
-        PipeLine simple = mockPipeLine(
-            getXmlValidatorInstance(null, "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"),
-            getXmlValidatorInstance("b", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"), "urn:webservice1", "TestRootTag");
-        WsdlGenerator wsdl = new WsdlGenerator(simple);
-        wsdl.init();
-        test(wsdl, "WsdlTest/noroottag.test.wsdl");
-    }
+	@Test
+	public void noroottag() throws XMLStreamException, IOException, ConfigurationException, NamingException {
+		PipeLine simple = mockPipeLine(
+			getXmlValidatorInstance(null, "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"),
+			getXmlValidatorInstance("b", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"), "urn:webservice1", "TestRootTag");
+		WsdlGenerator wsdl = new WsdlGenerator(simple);
+		wsdl.init();
+		test(wsdl, "WsdlTest/noroottag.test.wsdl");
+	}
 
-    @Test
-    public void noroottagMixed() throws XMLStreamException, IOException, SAXException, ParserConfigurationException, URISyntaxException, ConfigurationException, NamingException {
+	@Test
+	public void noroottagMixed() throws XMLStreamException, IOException, ConfigurationException, NamingException {
 		XmlValidator inputValidator=getXmlValidatorInstance(null, "b", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd");
 		IValidator outputValidator=inputValidator.getResponseValidator();
 		PipeLine simple = mockPipeLine(inputValidator, outputValidator, "urn:webservice1", "TestRootTag");
-        WsdlGenerator wsdl = new WsdlGenerator(simple);
-        wsdl.init();
-        test(wsdl, "WsdlTest/noroottag.test.wsdl");
-    }
+		WsdlGenerator wsdl = new WsdlGenerator(simple);
+		wsdl.init();
+		test(wsdl, "WsdlTest/noroottag.test.wsdl");
+	}
 
 
 
 
-    @Test
-    public void wubCalculateQuoteAndPolicyValuesLifeRetail() throws XMLStreamException, IOException, SAXException, ParserConfigurationException, URISyntaxException, ConfigurationException, NamingException {
-        PipeLine pipe = mockPipeLine(
-            getXmlValidatorInstance("CalculationRequest", null, null,
-                "http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail " +
+	@Test
+	public void wubCalculateQuoteAndPolicyValuesLifeRetail() throws XMLStreamException, IOException, ConfigurationException, NamingException {
+		PipeLine pipe = mockPipeLine(
+			getXmlValidatorInstance("CalculationRequest", null, null,
+				"http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail " +
 						"WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail/xsd/CalculationRequestv2.1.xsd"),
-            getXmlValidatorInstance("CalculationResponse", null, null,
-                "http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail_response " +
+			getXmlValidatorInstance("CalculationResponse", null, null,
+				"http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail_response " +
 						"WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail/xsd/CalculationRespons.xsd"),
-            "http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail", "WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail");
-        WsdlGenerator wsdl = new WsdlGenerator(pipe);
-        wsdl.init();
-        wsdl.setUseIncludes(true);
-        test(wsdl, "WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail.test.wsdl");
-    }
+			"http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail", "WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail");
+		WsdlGenerator wsdl = new WsdlGenerator(pipe);
+		wsdl.init();
+		wsdl.setUseIncludes(true);
+		test(wsdl, "WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail.test.wsdl");
+	}
 
-    @Test
-    public void wubCalculateQuoteAndPolicyValuesLifeRetailMixed() throws XMLStreamException, IOException, SAXException, ParserConfigurationException, URISyntaxException, ConfigurationException, NamingException {
-    	XmlValidator inputValidator=getXmlValidatorInstance("CalculationRequest", "CalculationResponse", null,
-    			"http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail/xsd/CalculationRequestv2.1.xsd "+
-    			"http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail_response  WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail/xsd/CalculationRespons.xsd");
-    	IValidator outputValidator = inputValidator.getResponseValidator();
-    	PipeLine pipe = mockPipeLine(inputValidator, outputValidator, 
-            "http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail", "WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail");
-        WsdlGenerator wsdl = new WsdlGenerator(pipe);
-        wsdl.init();
-        wsdl.setUseIncludes(true);
-        test(wsdl, "WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail.test.wsdl");
-    }
+	@Test
+	public void wubCalculateQuoteAndPolicyValuesLifeRetailMixed() throws XMLStreamException, IOException, ConfigurationException, NamingException {
+		XmlValidator inputValidator=getXmlValidatorInstance("CalculationRequest", "CalculationResponse", null,
+				"http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail/xsd/CalculationRequestv2.1.xsd "+
+				"http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail_response  WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail/xsd/CalculationRespons.xsd");
+		inputValidator.configure();
+		IValidator outputValidator = inputValidator.getResponseValidator();
+		PipeLine pipe = mockPipeLine(inputValidator, outputValidator,
+			"http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail", "WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail");
+		WsdlGenerator wsdl = new WsdlGenerator(pipe);
+		wsdl.init();
+		wsdl.setUseIncludes(true);
+		test(wsdl, "WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail.test.wsdl");
+	}
 
-    @Test
-    public void wubFindIntermediary() throws XMLStreamException, IOException, SAXException, ParserConfigurationException, URISyntaxException, ConfigurationException, NamingException {
-        PipeLine pipe = mockPipeLine(
-            getXmlValidatorInstance("FindIntermediaryREQ", null, null,
-                "http://wub2nn.nn.nl/FindIntermediary WsdlTest/FindIntermediary/xsd/XSD_FindIntermediary_v1.1_r1.0.xsd"),
-            getXmlValidatorInstance("FindIntermediaryRLY", null, null,
-                "http://wub2nn.nn.nl/FindIntermediary WsdlTest/FindIntermediary/xsd/XSD_FindIntermediary_v1.1_r1.0.xsd"),
-            "http://wub2nn.nn.nl/FindIntermediary", "WsdlTest/FindIntermediary");
-        WsdlGenerator wsdl = new WsdlGenerator(pipe);
-        wsdl.init();
-        wsdl.setUseIncludes(true);
-        assertTrue(wsdl.isUseIncludes());
+	@Test
+	public void wubFindIntermediary() throws XMLStreamException, IOException, ConfigurationException, NamingException {
+		PipeLine pipe = mockPipeLine(
+			getXmlValidatorInstance("FindIntermediaryREQ", null, null,
+				"http://wub2nn.nn.nl/FindIntermediary WsdlTest/FindIntermediary/xsd/XSD_FindIntermediary_v1.1_r1.0.xsd"),
+			getXmlValidatorInstance("FindIntermediaryRLY", null, null,
+				"http://wub2nn.nn.nl/FindIntermediary WsdlTest/FindIntermediary/xsd/XSD_FindIntermediary_v1.1_r1.0.xsd"),
+			"http://wub2nn.nn.nl/FindIntermediary", "WsdlTest/FindIntermediary");
+		WsdlGenerator wsdl = new WsdlGenerator(pipe);
+		wsdl.init();
+		wsdl.setUseIncludes(true);
+		assertTrue(wsdl.isUseIncludes());
 		test(wsdl, "WsdlTest/FindIntermediary.test.wsdl");
-        zip(wsdl);
-        // assertEquals(2, wsdl.getXSDs(true).size()); TODO?
-    }
+		zip(wsdl);
+		// assertEquals(2, wsdl.getXSDs(true).size()); TODO?
+	}
 
-    @Test
-    public void wubFindIntermediaryMixed() throws XMLStreamException, IOException, SAXException, ParserConfigurationException, URISyntaxException, ConfigurationException, NamingException {
-    	XmlValidator inputValidator=getXmlValidatorInstance("FindIntermediaryREQ", "FindIntermediaryRLY", null,
-                		"http://wub2nn.nn.nl/FindIntermediary WsdlTest/FindIntermediary/xsd/XSD_FindIntermediary_v1.1_r1.0.xsd");
-    	IValidator outputValidator = inputValidator.getResponseValidator();
-        PipeLine pipe = mockPipeLine(inputValidator, outputValidator, "http://wub2nn.nn.nl/FindIntermediary", "WsdlTest/FindIntermediary");
-        WsdlGenerator wsdl = new WsdlGenerator(pipe);
-        wsdl.setUseIncludes(true);
-        wsdl.init();
-        assertTrue(wsdl.isUseIncludes());
+	@Test
+	public void wubFindIntermediaryMixed() throws XMLStreamException, IOException, ConfigurationException, NamingException {
+		XmlValidator inputValidator=getXmlValidatorInstance("FindIntermediaryREQ", "FindIntermediaryRLY", null,
+						"http://wub2nn.nn.nl/FindIntermediary WsdlTest/FindIntermediary/xsd/XSD_FindIntermediary_v1.1_r1.0.xsd");
+		IValidator outputValidator = inputValidator.getResponseValidator();
+		PipeLine pipe = mockPipeLine(inputValidator, outputValidator, "http://wub2nn.nn.nl/FindIntermediary", "WsdlTest/FindIntermediary");
+		WsdlGenerator wsdl = new WsdlGenerator(pipe);
+		wsdl.setUseIncludes(true);
+		wsdl.init();
+		assertTrue(wsdl.isUseIncludes());
 		test(wsdl, "WsdlTest/FindIntermediary.test.wsdl");
-        zip(wsdl);
-        // assertEquals(2, wsdl.getXSDs(true).size()); TODO?
-    }
+		zip(wsdl);
+		// assertEquals(2, wsdl.getXSDs(true).size()); TODO?
+	}
 
-    protected void test(WsdlGenerator wsdl, String testWsdl) throws IOException, SAXException, ParserConfigurationException, XMLStreamException, URISyntaxException, NamingException, ConfigurationException {
-        wsdl.setDocumentation("test");
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        wsdl.wsdl(out, "Test");
-        String result = new String(out.toByteArray());
+	protected void test(WsdlGenerator wsdl, String testWsdl) throws IOException, XMLStreamException, NamingException, ConfigurationException {
+		wsdl.setDocumentation("test");
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		wsdl.wsdl(out, "Test");
+		String result = new String(out.toByteArray());
 
-        String expected = TestFileUtils.getTestFile("/"+testWsdl);
-        assertXmlEquals(expected, result);
-    }
-    
-    protected void zip(WsdlGenerator wsdl) throws IOException, XMLStreamException, URISyntaxException, NamingException, ConfigurationException {
-        File dir = new File(System.getProperty("java.io.tmpdir") + File.separator + "zipfiles");
-        File zipFile = new File(dir, wsdl.getName() + ".zip");
+		String expected = TestFileUtils.getTestFile("/"+testWsdl);
+		assertXmlEquals(expected, result);
+	}
+
+	protected void zip(WsdlGenerator wsdl) throws IOException, XMLStreamException, NamingException, ConfigurationException {
+		File dir = new File(System.getProperty("java.io.tmpdir") + File.separator + "zipfiles");
+		File zipFile = new File(dir, wsdl.getName() + ".zip");
 		zipFile.getParentFile().mkdirs();
-        System.out.println("Creating " + zipFile.getAbsolutePath());
-        wsdl.zip(new FileOutputStream(zipFile), "http://myserver/");
-    }
+		System.out.println("Creating " + zipFile.getAbsolutePath());
+		wsdl.zip(new FileOutputStream(zipFile), "http://myserver/");
+	}
 
-    protected XmlValidator getXmlValidatorInstance(String rootTag, String schema, String schemaLocation) throws ConfigurationException {
-    	return getXmlValidatorInstance(rootTag, null, schema, schemaLocation);
-    }
-    
-    protected XmlValidator getXmlValidatorInstance(String rootTag, String responseRootTag, String schema, String schemaLocation) throws ConfigurationException {
-        XmlValidator validator = XmlValidatorTest.getUnconfiguredValidator(schemaLocation, implementation);
-        validator.setSchema(schema);
-        validator.setRoot(rootTag);
-        if (responseRootTag!=null) {
-        	validator.setResponseRoot(responseRootTag);
-        }
-        return validator;
-    }
+	protected XmlValidator getXmlValidatorInstance(String rootTag, String schema, String schemaLocation) throws ConfigurationException {
+		return getXmlValidatorInstance(rootTag, null, schema, schemaLocation);
+	}
 
-    protected PipeLine mockPipeLine(IValidator inputValidator, IValidator outputValidator, String targetNamespace, String adapterName) {
-        PipeLine simple = mock(PipeLine.class);
-        when(simple.getInputValidator()).thenReturn(inputValidator);
-        when(simple.getOutputValidator()).thenReturn(outputValidator);
-        Adapter adp = mock(Adapter.class);
-        when(simple.getAdapter()).thenReturn(adp);
-        Configuration cfg = mock(Configuration.class);
-        when(simple.getAdapter().getConfiguration()).thenReturn(cfg);
-        final Receiver receiverBase = mock(Receiver.class);
-        WebServiceListener listener = new WebServiceListener();
-        listener.setServiceNamespaceURI(targetNamespace);
-        when(receiverBase.getListener()).thenReturn(listener);
-        when(adp.getReceivers()).thenAnswer(new Answer<Iterable<Receiver>>() {
-            public Iterable<Receiver> answer(InvocationOnMock invocation) throws Throwable {
-                return Arrays.asList(receiverBase);
-            }
-        });
-        when(adp.getName()).thenReturn(adapterName);
-        when(cfg.getClassLoader()).thenReturn(this.getClass().getClassLoader());
-        when(adp.getConfigurationClassLoader()).thenReturn(this.getClass().getClassLoader());
-        when(simple.getConfigurationClassLoader()).thenReturn(this.getClass().getClassLoader());
-        return simple;
-    }
+	protected XmlValidator getXmlValidatorInstance(String rootTag, String responseRootTag, String schema, String schemaLocation) throws ConfigurationException {
+		XmlValidator validator = XmlValidatorTest.getUnconfiguredValidator(schemaLocation, implementation);
+		validator.setSchema(schema);
+		validator.setRoot(rootTag);
+		if (responseRootTag!=null) {
+			validator.setResponseRoot(responseRootTag);
+		}
+		validator.configure();
+		return validator;
+	}
 
-    static DocumentBuilder createDocumentBuilder() throws ParserConfigurationException {
-        DocumentBuilderFactory docBuilderFactory = XmlUtils.getDocumentBuilderFactory();
-        docBuilderFactory.setNamespaceAware(true);
-        DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
-        return docBuilder;
-    }
+	protected PipeLine mockPipeLine(IValidator inputValidator, IValidator outputValidator, String targetNamespace, String adapterName) {
+		PipeLine simple = mock(PipeLine.class);
+		when(simple.getInputValidator()).thenReturn(inputValidator);
+		when(simple.getOutputValidator()).thenReturn(outputValidator);
+		Adapter adp = mock(Adapter.class);
+		when(simple.getAdapter()).thenReturn(adp);
+		Configuration cfg = mock(Configuration.class);
+		when(simple.getAdapter().getConfiguration()).thenReturn(cfg);
+		final Receiver receiverBase = mock(Receiver.class);
+		WebServiceListener listener = new WebServiceListener();
+		listener.setServiceNamespaceURI(targetNamespace);
+		when(receiverBase.getListener()).thenReturn(listener);
+		when(adp.getReceivers()).thenAnswer(new Answer<Iterable<Receiver>>() {
+			public Iterable<Receiver> answer(InvocationOnMock invocation) throws Throwable {
+				return Arrays.asList(receiverBase);
+			}
+		});
+		when(adp.getName()).thenReturn(adapterName);
+		when(cfg.getClassLoader()).thenReturn(this.getClass().getClassLoader());
+		when(adp.getConfigurationClassLoader()).thenReturn(this.getClass().getClassLoader());
+		when(simple.getConfigurationClassLoader()).thenReturn(this.getClass().getClassLoader());
+		return simple;
+	}
+
+	static DocumentBuilder createDocumentBuilder() throws ParserConfigurationException {
+		DocumentBuilderFactory docBuilderFactory = XmlUtils.getDocumentBuilderFactory();
+		docBuilderFactory.setNamespaceAware(true);
+		DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+		return docBuilder;
+	}
 
 
 }

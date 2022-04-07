@@ -42,6 +42,8 @@ import org.apache.logging.log4j.Logger;
 import org.custommonkey.xmlunit.Diff;
 import org.xml.sax.InputSource;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -63,21 +65,21 @@ public class XSD implements Schema, Comparable<XSD> {
 	private javax.wsdl.Definition wsdlDefinition;
 	private javax.wsdl.extensions.schema.Schema wsdlSchema;
 	private String resource;
-	private String resourceInternalReference;
+	private @Setter String resourceInternalReference;
 	private URL url;
-	private ByteArrayOutputStream byteArrayOutputStream;
-	private String resourceTarget;
+	private @Setter ByteArrayOutputStream byteArrayOutputStream;
+	private @Getter String resourceTarget;
 	private String toString;
-	private String namespace;
-	private boolean addNamespaceToSchema = false;
-	private String importedSchemaLocationsToIgnore;
-	protected boolean useBaseImportedSchemaLocationsToIgnore = false;
-	private String importedNamespacesToIgnore;
-	private String parentLocation;
-	private boolean isRootXsd = true;
-	private String targetNamespace;
-	private List<String> rootTags = new ArrayList<String>();
-	private Set<String> importedNamespaces = new HashSet<String>();
+	private @Getter String namespace;
+	private @Getter @Setter boolean addNamespaceToSchema = false;
+	private @Getter @Setter String importedSchemaLocationsToIgnore;
+	protected @Getter @Setter boolean useBaseImportedSchemaLocationsToIgnore = false;
+	private @Getter @Setter String importedNamespacesToIgnore;
+	private @Getter @Setter String parentLocation;
+	private @Getter @Setter boolean rootXsd = true;
+	private @Getter @Setter String targetNamespace;
+	private @Getter List<String> rootTags = new ArrayList<String>();
+	private @Getter Set<String> importedNamespaces = new HashSet<String>();
 	private String xsdTargetNamespace;
 	private String xsdDefaultNamespace;
 
@@ -87,73 +89,7 @@ public class XSD implements Schema, Comparable<XSD> {
 		this.wsdlSchema = wsdlSchema;
 	}
 
-	public void setResourceInternalReference(String resourceInternalReference) {
-		this.resourceInternalReference = resourceInternalReference;
-	}
 
-	public void setByteArrayOutputStream(ByteArrayOutputStream byteArrayOutputStream) {
-		this.byteArrayOutputStream = byteArrayOutputStream;
-	}
-
-	public String getNamespace() {
-		return namespace;
-	}
-
-	public void setAddNamespaceToSchema(boolean addNamespaceToSchema) {
-		this.addNamespaceToSchema = addNamespaceToSchema;
-	}
-
-	public boolean isAddNamespaceToSchema() {
-		return addNamespaceToSchema;
-	}
-
-	public void setImportedSchemaLocationsToIgnore(String string) {
-		importedSchemaLocationsToIgnore = string;
-	}
-
-	public String getImportedSchemaLocationsToIgnore() {
-		return importedSchemaLocationsToIgnore;
-	}
-
-	public boolean isUseBaseImportedSchemaLocationsToIgnore() {
-		return useBaseImportedSchemaLocationsToIgnore;
-	}
-
-	public void setUseBaseImportedSchemaLocationsToIgnore(boolean useBaseImportedSchemaLocationsToIgnore) {
-		this.useBaseImportedSchemaLocationsToIgnore = useBaseImportedSchemaLocationsToIgnore;
-	}
-
-	public void setImportedNamespacesToIgnore(String string) {
-		importedNamespacesToIgnore = string;
-	}
-
-	public String getImportedNamespacesToIgnore() {
-		return importedNamespacesToIgnore;
-	}
-
-	public void setParentLocation(String parentLocation) {
-		this.parentLocation = parentLocation;
-	}
-
-	public String getParentLocation() {
-		return parentLocation;
-	}
-
-	public void setRootXsd(boolean isRootXsd) {
-		this.isRootXsd = isRootXsd;
-	}
-
-	public boolean isRootXsd() {
-		return isRootXsd;
-	}
-
-	public void setTargetNamespace(String targetNamespace) {
-		this.targetNamespace = targetNamespace;
-	}
-
-	public String getTargetNamespace() {
-		return targetNamespace;
-	}
 
 	public void initNoNamespace(IScopeProvider scopeProvider, String noNamespaceSchemaLocation) throws ConfigurationException {
 		this.scopeProvider=scopeProvider;
@@ -284,10 +220,6 @@ public class XSD implements Schema, Comparable<XSD> {
 		return resource.substring(0, resource.lastIndexOf('/') + 1);
 	}
 
-	public String getResourceTarget() {
-		return resourceTarget;
-	}
-
 	@Override
 	public String toString() {
 		return toString;
@@ -353,23 +285,12 @@ public class XSD implements Schema, Comparable<XSD> {
 		}
 	}
 
-	public Set<String> getImportedNamespaces() {
-		return importedNamespaces;
+
+	public Set<XSD> getXsdsRecursive(boolean supportRedifine) throws ConfigurationException {
+		return getXsdsRecursive(new HashSet<XSD>(), supportRedifine);
 	}
 
-	public Set<XSD> getXsdsRecursive() throws ConfigurationException {
-		return getXsdsRecursive(true);
-	}
-
-	public Set<XSD> getXsdsRecursive(boolean ignoreRedefine) throws ConfigurationException {
-		return getXsdsRecursive(new HashSet<XSD>(), ignoreRedefine);
-	}
-
-	public Set<XSD> getXsdsRecursive(Set<XSD> xsds) throws ConfigurationException {
-		return getXsdsRecursive(xsds, true);
-	}
-
-	public Set<XSD> getXsdsRecursive(Set<XSD> xsds, boolean ignoreRedefine) throws ConfigurationException {
+	public Set<XSD> getXsdsRecursive(Set<XSD> xsds, boolean supportRedefine) throws ConfigurationException {
 		try {
 			InputStream in = getInputStream();
 			if (in == null) {
@@ -383,7 +304,7 @@ public class XSD implements Schema, Comparable<XSD> {
 					StartElement el = e.asStartElement();
 					if (el.getName().equals(SchemaUtils.IMPORT) ||
 						el.getName().equals(SchemaUtils.INCLUDE)||
-						(el.getName().equals(SchemaUtils.REDEFINE) && !ignoreRedefine)
+						(el.getName().equals(SchemaUtils.REDEFINE) && supportRedefine)
 						) {
 						Attribute schemaLocationAttribute = el.getAttributeByName(SchemaUtils.SCHEMALOCATION);
 						Attribute namespaceAttribute = el.getAttributeByName(SchemaUtils.NAMESPACE);
@@ -443,7 +364,7 @@ public class XSD implements Schema, Comparable<XSD> {
 								x.setRootXsd(false);
 								x.initNamespace(namespace, scopeProvider, getResourceBase() + schemaLocationAttribute.getValue());
 								if (xsds.add(x)) {
-									x.getXsdsRecursive(xsds, ignoreRedefine);
+									x.getXsdsRecursive(xsds, supportRedefine);
 								}
 							}
 						}
@@ -465,10 +386,6 @@ public class XSD implements Schema, Comparable<XSD> {
 
 	private List<String> listOf(String commaSeparatedItems) {
 		return Arrays.asList(commaSeparatedItems.trim().split("\\s*\\,\\s*", -1));
-	}
-
-	public List<String> getRootTags() {
-		return rootTags;
 	}
 
 	@Override

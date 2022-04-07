@@ -80,16 +80,15 @@ public class SchemaUtils {
 
 	public static final QName WSDL_SCHEMA = new QName(XSD, "schema", "");
 
-	public static Set<XSD> getXsdsRecursive(Set<XSD> xsds)
-			throws ConfigurationException {
-		return getXsdsRecursive(xsds, true);
+	public static Set<XSD> getXsdsRecursive(Set<XSD> xsds) throws ConfigurationException {
+		return getXsdsRecursive(xsds, false);
 	}
 
-	public static Set<XSD> getXsdsRecursive(Set<XSD> xsds, boolean ignoreRedefine) throws ConfigurationException {
+	public static Set<XSD> getXsdsRecursive(Set<XSD> xsds, boolean supportRedefine) throws ConfigurationException {
 		Set<XSD> xsdsRecursive = new HashSet<XSD>();
 		xsdsRecursive.addAll(xsds);
 		for (XSD xsd : xsds) {
-			xsdsRecursive.addAll(xsd.getXsdsRecursive(ignoreRedefine));
+			xsdsRecursive.addAll(xsd.getXsdsRecursive(supportRedefine));
 		}
 		return xsdsRecursive;
 	}

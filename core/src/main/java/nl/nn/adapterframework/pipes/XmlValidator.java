@@ -440,12 +440,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 
 	public List<Schema> getSchemas(boolean checkRootValidations) throws ConfigurationException {
 		Set<XSD> xsds = getXsds();
-		if (!isAddNamespaceToSchema()) {
-			List<Schema> schemas = new ArrayList<Schema>();
-			SchemaUtils.sortByDependencies(xsds, schemas);
-			return schemas;
-		}
-		if (StringUtils.isEmpty(getNoNamespaceSchemaLocation())) {
+		if (isAddNamespaceToSchema() && StringUtils.isEmpty(getNoNamespaceSchemaLocation())) {
 			xsds = SchemaUtils.getXsdsRecursive(xsds);
 			if (checkRootValidations) {
 				checkInputRootValidations(xsds);
@@ -473,7 +468,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			// mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes, in case of
 			// noNamespaceSchemaLocation the WSDL generator doesn't use
 			// XmlValidator.getXsds(). See comment in Wsdl.getXsds() too.
-			Set<XSD> xsds_temp = SchemaUtils.getXsdsRecursive(xsds, false);
+			Set<XSD> xsds_temp = SchemaUtils.getXsdsRecursive(xsds, true);
 			if (checkRootValidations) {
 				checkInputRootValidations(xsds_temp);
 				checkOutputRootValidations(xsds_temp);
