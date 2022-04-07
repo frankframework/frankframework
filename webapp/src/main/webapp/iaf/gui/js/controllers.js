@@ -669,8 +669,8 @@ angular.module('iaf.beheerconsole')
 	};
 })
 
-.controller('StatusCtrl', ['$scope', 'Hooks', 'Api', 'SweetAlert', 'Poller', '$filter', '$state', 'Misc', '$anchorScroll', '$location',
-		function($scope, Hooks, Api, SweetAlert, Poller, $filter, $state, Misc, $anchorScroll, $location) {
+.controller('StatusCtrl', ['$scope', 'Hooks', 'Api', 'SweetAlert', 'Poller', '$filter', '$state', 'Misc', '$anchorScroll', '$location', '$http',
+		function($scope, Hooks, Api, SweetAlert, Poller, $filter, $state, Misc, $anchorScroll, $location, $http) {
 
 	var hash = $location.hash();
 	var adapterName = $state.params.adapter;
@@ -813,7 +813,12 @@ angular.module('iaf.beheerconsole')
 		} else {
 			url += configurationName + "/flow";
 		}
-		$scope.configurationFlowDiagram = url;
+		$http.get(url).then(function(data) {
+			let status = (data && data.status) ? data.status : 204;
+			if(status == 200) {
+				$scope.configurationFlowDiagram = url;
+			}
+		});
 	}
 
 	$scope.$on('appConstants', function() {
