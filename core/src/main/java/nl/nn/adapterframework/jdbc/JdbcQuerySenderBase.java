@@ -1009,7 +1009,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	/** 
 	 * Comma separated list of columns whose values are to be returned. Works only if the driver implements jdbc 3.0 getGeneratedKeys(). 
 	 * Note: not all drivers support multiple values and returned field names may vary between drivers.
-	 * Works for H2 and Oracle. Could works for MS_SQL with a single identity column, with name GENERATED_KEYS, if a identity has been generated. Not supported for other DBMSes.
+	 * Works for H2 and Oracle. Could work for MS_SQL with a single identity column, with name GENERATED_KEYS, if a identity has been generated. Not supported for other DBMSes.
 	 */
 	public void setColumnsReturned(String string) {
 		columnsReturned = string;
