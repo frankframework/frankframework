@@ -1,0 +1,39 @@
+<configuration name="SimpleConfiguration">
+	<adapter name="HelloWorld">
+		<receiver name="HelloWorld">
+			<listener name="HelloWorld" className="nl.nn.adapterframework.receivers.JavaListener"/>
+		</receiver>
+		<pipeline firstPipe="HelloWorld">
+			<exit path="EXIT" state="success"/>
+			<pipe name="HelloWorld" className="nl.nn.adapterframework.pipes.FixedResult" returnString="Hello World">
+				<forward name="success" path="EXIT"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+	<job name="HelloWorld" adapterName="HelloWorld" receiverName="HelloWorld" interval="0" function="sendMessage" className="nl.nn.adapterframework.scheduler.job.Job"/>
+	<adapter name="HelloUniverse">
+		<receiver name="HelloUniverse">
+			<listener name="HelloUniverse" className="nl.nn.adapterframework.receivers.JavaListener"/>
+		</receiver>
+		<pipeline firstPipe="HelloUniverse">
+			<exit path="EXIT" state="success"/>
+			<pipe name="HelloUniverse" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				<sender className="nl.nn.adapterframework.senders.FixedResultSender" returnString="Hello, Universe!"/>
+				<forward name="success" path="EXIT"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+	<adapter name="HelloBeautifulWorld">
+		<receiver name="HelloBeautifulWorld">
+			<listener name="HelloBeautifulWorld" className="nl.nn.adapterframework.receivers.JavaListener"/>
+		</receiver>
+		<pipeline firstPipe="HelloBeautifulWorld">
+			<exits>
+				<exit path="EXIT" state="success"/>
+			</exits>
+			<pipe name="HelloBeautifulWorld" returnString="Hello Beautiful World" className="nl.nn.adapterframework.pipes.FixedResultPipe">
+				<forward name="success" path="EXIT"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+</configuration>

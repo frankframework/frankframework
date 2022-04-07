@@ -3,19 +3,23 @@ package nl.nn.adapterframework.configuration.digester;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URL;
 import java.util.Properties;
 
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.validation.ValidatorHandler;
 
 import org.junit.Test;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
+import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationDigester;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestConfiguration;
@@ -42,6 +46,23 @@ public class ConfigurationDigesterTest {
 		String result = writer.toString();
 		String expected = TestFileUtils.getTestFile("/Digester/Canonicalized/SimpleConfiguration.xml");
 		MatchUtils.assertXmlEquals(expected, result);
+	}
+
+	@Test
+	public void testSingleExitInContainerElementSchemaParsingDisabled() throws Exception {
+		try(Configuration configuration = new TestConfiguration()){
+			ConfigurationDigester digester = new ConfigurationDigester() {
+				@Override
+				public String resolveEntitiesAndProperties(Configuration configuration, Resource resource,
+						Properties appConstants, boolean schemaBasedParsing) throws IOException, SAXException,
+						ConfigurationException, TransformerConfigurationException {
+					return TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfigurationActived.xml");
+				}
+			};
+			digester.setApplicationContext(configuration);
+			digester.digest();
+		}
+		//expect no exceptions
 	}
 
 	//Both OLD and NEW configuration parsers should set the same values for 'loadedConfiguration': properties resolved, secrets hidden
