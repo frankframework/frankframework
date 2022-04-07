@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013-2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -60,7 +60,7 @@ import nl.nn.adapterframework.validation.XSD;
 /**
  * XmlValidator that will read the XSD's to use from a WSDL. As it extends the
  * SoapValidator is will also add the SOAP envelope XSD.
- *
+ * 
  * @author Michiel Meeuwissen
  * @author Jaco de Groot
  */
@@ -82,7 +82,7 @@ public class WsdlXmlValidator extends SoapValidator {
 	}
 
 	public static final String RESOURCE_INTERNAL_REFERENCE_PREFIX = "schema";
-
+	
 	private String wsdl;
 	private Definition definition;
 	private String schemaLocationToAdd;
@@ -164,7 +164,7 @@ public class WsdlXmlValidator extends SoapValidator {
 				}
 				sb.append(" ");
 				sbx.append(" ");
-				String schemaWithNumber = RESOURCE_INTERNAL_REFERENCE_PREFIX + ++counter;
+				String schemaWithNumber = RESOURCE_INTERNAL_REFERENCE_PREFIX + ++counter; 
 				sb.append(schemaWithNumber);
 				sbx.append(schemaWithNumber);
 			}
@@ -174,8 +174,8 @@ public class WsdlXmlValidator extends SoapValidator {
 				&& soapBodyFoundCounter > 1) {
 			throw new ConfigurationException("soapBody [" + getSoapBody() + "] exists multiple times, not possible to create schemaLocation from soapBodyNamespace");
 
-		}
-
+		}		
+		
 		if (sb.length() > 0) {
 			String wsdlSchemaLocation = sb.toString();
 			if (StringUtils.isNotEmpty(getSchemaLocation()) && isAddNamespaceToSchema()) {
@@ -221,7 +221,7 @@ public class WsdlXmlValidator extends SoapValidator {
 		}
 		return sb.toString();
 	}
-
+	
 	@Override
 	protected void checkSchemaSpecified() throws ConfigurationException {
 		if (StringUtils.isEmpty(getWsdl())) {
@@ -245,7 +245,7 @@ public class WsdlXmlValidator extends SoapValidator {
 	}
 
 	@Override
-	protected Set<XSD> createXsds() throws ConfigurationException {
+	public Set<XSD> getXsds() throws ConfigurationException {
 		Set<XSD> xsds = new HashSet<XSD>();
 		SoapVersion soapVersion = getSoapVersion();
 		if (soapVersion == null || soapVersion==SoapVersion.SOAP11 || soapVersion==SoapVersion.AUTO) {
@@ -324,7 +324,7 @@ public class WsdlXmlValidator extends SoapValidator {
 	public String toExtendedString() {
 		return "[" + getConfigurationClassLoader() + "][" + FilenameUtils.normalize(getWsdl()) + "][" + getSoapBody() + "][" + getOutputSoapBody() + "][" + getSoapBodyNamespace() + "]";
 	}
-
+	
 	@IbisDoc({"1", "pairs of uri references which will be added to the wsdl", " "})
 	public void setSchemaLocationToAdd(String schemaLocationToAdd) {
 		this.schemaLocationToAdd = schemaLocationToAdd;
