@@ -6,7 +6,7 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,12 +51,12 @@ public abstract class ValidatorTestBase {
 	public String INPUT_FILE_GPBDB_ERR2=BASE_DIR_VALIDATION+"/Tibco/in/step5error_wrong_tag";
 
 
-	public String ROOT_NAMESPACE_BASIC="http://www.ing.com/testxmlns";
-	public String SCHEMA_LOCATION_BASIC_A_OK                            =ROOT_NAMESPACE_BASIC+" "			+BASE_DIR_VALIDATION+"/Basic/xsd/A_correct.xsd"	;
+	public static String ROOT_NAMESPACE_BASIC="http://www.ing.com/testxmlns";
+	public static String SCHEMA_LOCATION_BASIC_A_OK                     =ROOT_NAMESPACE_BASIC+" "			+BASE_DIR_VALIDATION+"/Basic/xsd/A_correct.xsd"	;
 	public String SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE            =ROOT_NAMESPACE_BASIC+" "			+BASE_DIR_VALIDATION+"/Basic/xsd/A_without_targetnamespace.xsd";
 	public String SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE_MISMATCH   =ROOT_NAMESPACE_BASIC+"_mismatch "	+BASE_DIR_VALIDATION+"/Basic/xsd/A_without_targetnamespace.xsd";
 
-	public String INPUT_FILE_BASIC_A_OK					=BASE_DIR_VALIDATION+"/Basic/in/ok";
+	public static String INPUT_FILE_BASIC_A_OK			=BASE_DIR_VALIDATION+"/Basic/in/ok";
 	public String INPUT_FILE_BASIC_A_OK_IN_ENVELOPE		=BASE_DIR_VALIDATION+"/Basic/in/ok-in-envelope";
 	public String INPUT_FILE_BASIC_A_ERR				=BASE_DIR_VALIDATION+"/Basic/in/with_errors";
 	public String INPUT_FILE_BASIC_A_ERR_IN_ENVELOPE	=BASE_DIR_VALIDATION+"/Basic/in/with_errors-in-envelope";
@@ -187,7 +187,7 @@ public abstract class ValidatorTestBase {
 		return new SchemasProvider() {
 
 			public Set<XSD> getXsds() throws ConfigurationException {
-				Set<XSD> xsds = new HashSet<XSD>();
+				Set<XSD> xsds = new LinkedHashSet<XSD>();
 //				if (StringUtils.isNotEmpty(getNoNamespaceSchemaLocation())) {
 //					XSD xsd = new XSD();
 //					xsd.setClassLoader(classLoader);
