@@ -16,6 +16,7 @@ limitations under the License.
 package nl.nn.adapterframework.webcontrol.api;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
@@ -399,8 +400,13 @@ public final class ShowConfigurationStatus extends Base {
 		FlowDiagramManager flowDiagramManager = getFlowDiagramManager();
 
 		try {
-			ResponseBuilder response = Response.status(Response.Status.OK);
-			response.entity(flowDiagramManager.get(adapter)).type(flowDiagramManager.getMediaType());
+			ResponseBuilder response;
+			InputStream flow = flowDiagramManager.get(adapter);
+			if(flow != null) {
+				response = Response.ok(flow, flowDiagramManager.getMediaType());
+			} else {
+				response = Response.noContent();
+			}
 			return response.build();
 		} catch (IOException e) {
 			throw new ApiException(e);

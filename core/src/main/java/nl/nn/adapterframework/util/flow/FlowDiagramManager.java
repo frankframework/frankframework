@@ -20,7 +20,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.nio.file.Files;
 import java.util.List;
 
@@ -42,7 +41,6 @@ import lombok.Setter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -62,9 +60,6 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 	private File configFlowDir = new File(APP_CONSTANTS.getResolvedProperty("flow.config.dir"));
 	private @Setter ApplicationContext applicationContext;
 
-	private static final String NO_IMAGE_AVAILABLE = "/no_image_available.svg";
-
-	private URL noImageAvailable;
 	private String fileExtension = null;
 	private IFlowGenerator flowGenerator;
 
@@ -93,11 +88,6 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 		} else {
 			if(log.isDebugEnabled()) log.debug("using IFlowGenerator ["+flowGenerator+"]");
 			fileExtension = flowGenerator.getFileExtension();
-		}
-
-		noImageAvailable = ClassUtils.getResourceURL(NO_IMAGE_AVAILABLE);
-		if(noImageAvailable == null) {
-			throw new IllegalStateException("image ["+NO_IMAGE_AVAILABLE+"] not found");
 		}
 	}
 
@@ -135,7 +125,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 		File destFile = retrieveAdapterFlowFile(adapter);
 
 		if(destFile == null || !destFile.exists()) {
-			return noImageAvailable.openStream();
+			return null;
 		}
 
 		return new FileInputStream(destFile);
@@ -145,7 +135,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 		File destFile = retrieveConfigurationFlowFile(configuration);
 
 		if(destFile == null || !destFile.exists()) {
-			return noImageAvailable.openStream();
+			return null;
 		}
 
 		return new FileInputStream(destFile);
@@ -155,7 +145,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 		File destFile = retrieveAllConfigurationsFlowFile();
 
 		if(destFile == null || !destFile.exists()) {
-			return noImageAvailable.openStream();
+			return null;
 		}
 
 		return new FileInputStream(destFile);

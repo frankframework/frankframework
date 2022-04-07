@@ -83,8 +83,13 @@ public final class ShowConfiguration extends Base {
 			FlowDiagramManager flowDiagramManager = getFlowDiagramManager();
 
 			try {
-				ResponseBuilder response = Response.status(Response.Status.OK);
-				response.entity(flowDiagramManager.get(getIbisManager().getConfigurations())).type(flowDiagramManager.getMediaType());
+				ResponseBuilder response;
+				InputStream configFlow = flowDiagramManager.get(getIbisManager().getConfigurations());
+				if(configFlow != null) {
+					response = Response.ok(configFlow, flowDiagramManager.getMediaType());
+				} else {
+					response = Response.noContent();
+				}
 				return response.build();
 			} catch (IOException e) {
 				throw new ApiException(e);
@@ -210,7 +215,7 @@ public final class ShowConfiguration extends Base {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/configurations/{configuration}/flow")
 	@Produces(MediaType.TEXT_PLAIN)
-	public Response getAdapterFlow(@PathParam("configuration") String configurationName) throws ApiException {
+	public Response getConfigurationFlow(@PathParam("configuration") String configurationName) throws ApiException {
 
 		Configuration configuration = getIbisManager().getConfiguration(configurationName);
 
@@ -221,8 +226,13 @@ public final class ShowConfiguration extends Base {
 		FlowDiagramManager flowDiagramManager = getFlowDiagramManager();
 
 		try {
-			ResponseBuilder response = Response.status(Response.Status.OK);
-			response.entity(flowDiagramManager.get(configuration)).type(flowDiagramManager.getMediaType());
+			ResponseBuilder response;
+			InputStream flow = flowDiagramManager.get(configuration);
+			if(flow != null) {
+				response = Response.ok(flow, flowDiagramManager.getMediaType());
+			} else {
+				response = Response.noContent();
+			}
 			return response.build();
 		} catch (IOException e) {
 			throw new ApiException(e);
