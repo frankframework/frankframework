@@ -116,7 +116,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	private TransformerPool transformerPoolRemoveNamespaces; // only used in getMessageToValidate(), TODO: avoid setting it up when not necessary
 
 	protected ConfigurationException configurationException;
-	
+
 	protected final String ABSTRACTXMLVALIDATOR="nl.nn.adapterframework.validation.AbstractXmlValidator";
 	{
 		setNamespaceAware(true);
@@ -495,7 +495,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	public class ResponseValidatorWrapper implements IXmlValidator {
 
 		private @Getter @Setter String name;
-		
+
 		private Map<String, PipeForward> forwards=new HashMap<String, PipeForward>();
 
 		protected XmlValidator owner;

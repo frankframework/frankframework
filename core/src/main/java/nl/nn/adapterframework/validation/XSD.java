@@ -52,7 +52,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * The representation of a XSD.
- * 
+ *
  * @author Michiel Meeuwissen
  * @author  Jaco de Groot
  */
@@ -65,7 +65,6 @@ public class XSD implements Schema, Comparable<XSD> {
 	private String resource;
 	private String resourceInternalReference;
 	private URL url;
-	private String noNamespaceSchemaLocation;
 	private ByteArrayOutputStream byteArrayOutputStream;
 	private String resourceTarget;
 	private String toString;
@@ -157,7 +156,6 @@ public class XSD implements Schema, Comparable<XSD> {
 	}
 
 	public void initNoNamespace(IScopeProvider scopeProvider, String noNamespaceSchemaLocation) throws ConfigurationException {
-		this.noNamespaceSchemaLocation=noNamespaceSchemaLocation;
 		this.scopeProvider=scopeProvider;
 		this.resource=noNamespaceSchemaLocation;
 		url = ClassUtils.getResourceURL(scopeProvider, noNamespaceSchemaLocation);
@@ -189,7 +187,7 @@ public class XSD implements Schema, Comparable<XSD> {
 		}
 		init();
 	}
- 
+
 	public void initFromXsds(String namespace, IScopeProvider scopeProvider, Set<XSD> sourceXsds) throws ConfigurationException {
 		this.namespace=namespace;
 		this.scopeProvider=scopeProvider;
@@ -213,7 +211,7 @@ public class XSD implements Schema, Comparable<XSD> {
 		}
 		init();
 	}
-	
+
 	private void init() throws ConfigurationException {
 		try {
 			InputStream in = getInputStream();
@@ -468,7 +466,7 @@ public class XSD implements Schema, Comparable<XSD> {
 	private List<String> listOf(String commaSeparatedItems) {
 		return Arrays.asList(commaSeparatedItems.trim().split("\\s*\\,\\s*", -1));
 	}
-	
+
 	public List<String> getRootTags() {
 		return rootTags;
 	}
