@@ -1315,13 +1315,9 @@ angular.module('iaf.beheerconsole')
 			table.draw();
 	};
 
-	$scope.extractMessageId = function(messageId){
-		return messageId.startsWith("<span") ? $(messageId).attr("title") : messageId;
-	};
-
 	$scope.doDeleteMessage = function(message, callback) {
 		message.deleting = true;
-		let messageId = $scope.extractMessageId(message.id);
+		let messageId = message.id;
 		Api.Delete($scope.base_url+"/messages/"+encodeURIComponent(encodeURIComponent(messageId)), function() {
 			if(callback != undefined && typeof callback == 'function')
 				callback(messageId);
@@ -1334,15 +1330,15 @@ angular.module('iaf.beheerconsole')
 		}, false);
 	};
 	$scope.downloadMessage = function(messageId) {
-		window.open(Misc.getServerPath() + "iaf/api/"+$scope.base_url+"/messages/"+encodeURIComponent(encodeURIComponent($scope.extractMessageId(messageId)))+"/download");
+		window.open(Misc.getServerPath() + "iaf/api/"+$scope.base_url+"/messages/"+encodeURIComponent(encodeURIComponent(messageId))+"/download");
 	};
 
 	$scope.doResendMessage = function(message, callback) {
 		message.resending = true;
-		let messageId = $scope.extractMessageId(message.id);
+		let messageId = message.id;
 		Api.Put($scope.base_url+"/messages/"+encodeURIComponent(encodeURIComponent(messageId)), false, function() {
 			if(callback != undefined && typeof callback == 'function')
-				callback(extractMessageId(message.id));
+				callback(message.id);
 			$scope.addNote("success", "Successfully resent message with ID: "+messageId);
 			$scope.updateTable();
 		}, function(data) {
@@ -1361,16 +1357,16 @@ angular.module('iaf.beheerconsole')
 
 	a += '<input icheck type="checkbox" ng-model="selectedMessages[message.id]"/>';
 	a += '<div ng-show="!selectedMessages[message.id]">';
-	a += '<a ui-sref="pages.storage.view({adapter:adapterName,receiver:receiverName,processState:processState,messageId: extractMessageId(message.id) })" class="btn btn-info btn-xs" type="button"><i class="fa fa-file-text-o"></i> View</a>';
+	a += '<a ui-sref="pages.storage.view({adapter:adapterName,receiver:receiverName,processState:processState,messageId: message.id })" class="btn btn-info btn-xs" type="button"><i class="fa fa-file-text-o"></i> View</a>';
 	a += '<button ng-if="::processState==\'Error\'" ladda="message.resending" data-style="slide-down" title="Resend Message" ng-click="resendMessage(message)" class="btn btn-warning btn-xs" type="button"><i class="fa fa-repeat"></i> Resend</button>';
 	a += '<button ng-if="::processState==\'Error\'" ladda="message.deleting" data-style="slide-down" title="Delete Message" ng-click="deleteMessage(message)" class="btn btn-danger btn-xs" type="button"><i class="fa fa-times"></i> Delete</button>';
-	a += '<button title="Download Message" ng-click="downloadMessage(extractMessageId(message.id))" class="btn btn-info btn-xs" type="button"><i class="fa fa-arrow-circle-o-down"></i> Download</button>';
+	a += '<button title="Download Message" ng-click="downloadMessage(message.id)" class="btn btn-info btn-xs" type="button"><i class="fa fa-arrow-circle-o-down"></i> Download</button>';
 	a += '</div';
 
 	var columns = [
 		{ "data": null, defaultContent: a, className: "m-b-xxs storageActions", bSortable: false},
 		{ "name": "pos", "data": "position", bSortable: false },
-		{ "name": "id", "data": "id", bSortable: false },
+		{ "name": "id", "data": "messageId", bSortable: false },
 		{ "name": "insertDate", "data": "insertDate", className: "date" },
 		{ "name": "host", "data": "host", bSortable: false },
 		{ "name": "originalId", "data": "originalId", bSortable: false },
@@ -1450,7 +1446,9 @@ angular.module('iaf.beheerconsole')
 			targets: 0,
 			render: function ( data, type, row ) {
 				if(type === 'display') {
+					data["messageId"] = data["id"];
 					for(let i in data) {
+						if(i == "id") continue;
 						var columnData = data[i];
 						if(typeof columnData == 'string' && columnData.length > 30) {
 							data[i] = '<span title="'+columnData.replace(/"/g, '&quot;')+'">'+columnData.substr(0, 15)+' &#8230; '+columnData.substr(-15)+'</span>';
@@ -1555,7 +1553,7 @@ angular.module('iaf.beheerconsole')
 		var messageIds = [];
 		for(i in $scope.selectedMessages) {
 			if($scope.selectedMessages[i]) {
-				messageIds.push($scope.extractMessageId(i));
+				messageIds.push(i);
 				$scope.selectedMessages[i] = false;//unset the messageId
 			}
 		}
