@@ -4,6 +4,8 @@
 	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
 		http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
 
+	<include file="DatabaseChangelog_inserts.xml" relativeToChangelogFile="true"/>
+
 	<changeSet id="one" author="Niels Meijer">
 		<comment>Create DUMMYTABLE</comment>
 		<createTable tableName="DUMMYTABLE">
