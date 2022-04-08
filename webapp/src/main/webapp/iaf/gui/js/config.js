@@ -334,6 +334,14 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 			breadcrumbs: 'Connection Overview'
 		}
 	})
+	.state('pages.inlinestore_overview', {
+		url: "/inlinestores/overview",
+		templateUrl: "views/ShowInlineMessageStoreOverview.html",
+		data: {
+			pageTitle: 'InlineStore Overview',
+			breadcrumbs: 'InlineStore Overview'
+		}
+	})
 	.state('pages.monitors', {
 		url: "/monitors?configuration",
 		templateUrl: "views/ShowMonitors.html",

@@ -61,6 +61,7 @@ import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
+import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
@@ -112,7 +113,7 @@ public class TransactionalStorage extends Base {
 			if(pipe == null) {
 				throw new ApiException("Pipe ["+storageSourceName+"] not found!");
 			}
-			storage = pipe.getMessageLog();
+			storage = getPipeMessageLog(pipe); 
 			message = getMessage(storage, messageId);
 		} else {
 			Receiver<?> receiver = adapter.getReceiverByName(storageSourceName);
@@ -129,6 +130,20 @@ public class TransactionalStorage extends Base {
 		} catch(ListenerException e) {
 			throw new ApiException("Could not get message metadata", e);
 		}
+	}
+
+	private IMessageBrowser<?> getPipeMessageLog(MessageSendingPipe pipe) {
+		IMessageBrowser<?> storage = pipe.getMessageLog();
+		if(storage == null) {
+			ISender sender = pipe.getSender();
+			if(sender instanceof IMessageBrowser<?>) {
+				storage = (IMessageBrowser<?>) sender;
+			}
+		}
+		if(storage == null) {
+			throw new ApiException("Unable to fetch the message log for pipe ["+pipe.getName()+"]");
+		}
+		return storage;
 	}
 
 	private StorageItemDTO getMessageMetadata(IMessageBrowser<?> storage, String messageId, String message) throws ListenerException {
@@ -194,7 +209,7 @@ public class TransactionalStorage extends Base {
 				throw new ApiException("Pipe ["+storageSourceName+"] not found!");
 			}
 
-			message = getMessage(pipe.getMessageLog(), messageId);
+			message = getMessage(getPipeMessageLog(pipe), messageId);
 		} else {
 			Receiver<?> receiver = adapter.getReceiverByName(storageSourceName);
 			if(receiver == null) {
@@ -242,7 +257,7 @@ public class TransactionalStorage extends Base {
 				throw new ApiException("Pipe ["+storageSourceName+"] not found!");
 			}
 
-			storage = pipe.getMessageLog();
+			storage = getPipeMessageLog(pipe);
 			listener=null;
 		} else {
 			Receiver<?> receiver = adapter.getReceiverByName(storageSourceName);
@@ -329,15 +344,13 @@ public class TransactionalStorage extends Base {
 			if(pipe == null) {
 				throw new ApiException("Pipe ["+storageSourceName+"] not found!");
 			}
-
-			storage = pipe.getMessageLog();
+			storage = getPipeMessageLog(pipe);
 		} else {
 			Receiver<?> receiver = adapter.getReceiverByName(storageSourceName);
 			if(receiver == null) {
 				throw new ApiException("Receiver ["+storageSourceName+"] not found!");
 			}
-			
-			ProcessState state = ProcessState.getProcessStateFromName(processState); 
+			ProcessState state = ProcessState.getProcessStateFromName(processState);
 			storage = receiver.getMessageBrowser(state);
 			targetPSInfo = getTargetProcessStateInfo(receiver.targetProcessStates().get(state));
 			listener = receiver.getListener();
@@ -563,11 +576,9 @@ public class TransactionalStorage extends Base {
 		for(int i=0; i < messageIds.length; i++) {
 			try {
 				deleteMessage(receiver.getMessageBrowser(ProcessState.ERROR), messageIds[i]);
-			}
-			catch(ApiException e) { //The message of an ApiException is wrapped in HTML, try to get the original message instead!
+			} catch(ApiException e) { //The message of an ApiException is wrapped in HTML, try to get the original message instead!
 				errorMessages.add(e.getCause().getMessage());
-			}
-			catch(Exception e) {
+			} catch(Exception e) {
 				errorMessages.add(e.getMessage());
 			}
 		}
@@ -671,7 +682,7 @@ public class TransactionalStorage extends Base {
 		MediaType type = MediaType.TEXT_PLAIN_TYPE;
 		if (StringUtils.isEmpty(msg)) {
 			throw new ApiException("message not found");
-		} 
+		}
 		if(msg.startsWith("<")) {
 			type = MediaType.APPLICATION_XML_TYPE;
 		} else if(msg.startsWith("{") || msg.startsWith("[")) {
@@ -679,7 +690,7 @@ public class TransactionalStorage extends Base {
 		}
 		return type;
 	}
-	
+
 	private String getContentDispositionHeader(MediaType type, String filename) {
 		String extension="txt";
 		if(MediaType.APPLICATION_XML_TYPE.equals(type)) {

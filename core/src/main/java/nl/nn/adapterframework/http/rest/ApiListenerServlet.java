@@ -305,6 +305,9 @@ public class ApiListenerServlet extends HttpServletBase {
 							CookieUtil.addCookie(request, response, authorizationCookie, 0);
 						}
 
+						if(listener.getAuthenticationMethod() == AuthenticationMethods.AUTHROLE) {
+							response.setHeader("WWW-Authenticate", "Basic realm=Frank");
+						}
 						response.setStatus(401);
 						log.warn(createAbortingMessage(remoteUser,401) + "no (valid) credentials supplied");
 						return;

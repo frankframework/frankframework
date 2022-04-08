@@ -129,7 +129,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 			while (!listenerOpened
 					&& !configuration.isUnloadInProgressOrDone()
 					&& (loops == -1 || loops > 0)) {
-				JavaListener listener= JavaListener.getListener(getJavaListener());
+				JavaListener listener = JavaListener.getListener(getJavaListener());
 				if (listener!=null) {
 					listenerOpened=listener.isOpen();
 				}
@@ -143,6 +143,9 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 					} catch (InterruptedException e) {
 						throw new SenderException(e);
 					}
+				}
+				if(loops == 0 && (listener==null || !listener.isOpen())) {
+					log.warn("Unable to open JavaListener ["+getJavaListener()+"] in "+getDependencyTimeOut()+" seconds. Make sure that the listener ["+getJavaListener()+"] exists or increase the timeout so that the sub-adapter may start before timeout limit.");
 				}
 			}
 		}

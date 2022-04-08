@@ -64,6 +64,9 @@ import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public class Message implements Serializable {
+
+	private static final long serialVersionUID = 437863352486501445L;
+
 	protected transient Logger log = LogUtil.getLogger(this);
 
 	private Object request;
@@ -146,7 +149,7 @@ public class Message implements Serializable {
 	}
 
 	/**
-	 * Representing a charset of binary requests 
+	 * Representing a charset of binary requests
 	 * @return the charset provided when the message was created
 	 */
 	public String getCharset() {
@@ -176,9 +179,8 @@ public class Message implements Serializable {
 					return defaultDecodingCharset;
 				}
 				return StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-			} else {
-				return charset.name();
 			}
+			return charset.name();
 		}
 
 		return decodingCharset;
@@ -193,7 +195,7 @@ public class Message implements Serializable {
 
 	/**
 	 * Notify the message object that the request object will be used multiple times.
-	 * If the request object can only be read one time, it can turn it into a less volatile representation. 
+	 * If the request object can only be read one time, it can turn it into a less volatile representation.
 	 * For instance, it could replace an InputStream with a byte array or String.
 	 */
 	public void preserve() throws IOException {
@@ -582,7 +584,7 @@ public class Message implements Serializable {
 	}
 
 	/**
-	 * toString can be used to inspect the message. It does not convert the 'request' to a string. 
+	 * toString can be used to inspect the message. It does not convert the 'request' to a string.
 	 */
 	@Override
 	public String toString() {
@@ -706,7 +708,9 @@ public class Message implements Serializable {
 	 */
 	private void writeObject(ObjectOutputStream stream) throws IOException {
 		preserve(true);
-		stream.defaultWriteObject();
+		stream.writeObject(getCharset());
+		stream.writeObject(request);
+		stream.writeObject(requestClass);
 	}
 
 	/*
@@ -714,7 +718,12 @@ public class Message implements Serializable {
 	 */
 	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
 		log = LogUtil.getLogger(this);
-		stream.defaultReadObject();
+
+		String charset = (String)stream.readObject();
+		request = stream.readObject();
+		requestClass = (Class<?>)stream.readObject();
+
+		context = new MessageContext().withCharset(charset);
 	}
 
 	/**
@@ -781,7 +790,7 @@ public class Message implements Serializable {
 	/**
 	 * Can be called when {@link #requiresStream()} is true to retrieve a copy of (part of) the stream that is in this
 	 * message, after the stream has been closed. Primarily for debugging purposes.
-	 * 
+	 *
 	 * When isBinary() is true the Message's charset is used when present to create a Reader that reads the InputStream.
 	 * When charset not present {@link StreamUtil#DEFAULT_INPUT_STREAM_ENCODING} is used.
 	 */

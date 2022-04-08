@@ -10,6 +10,7 @@ Upcoming (7.8)
 ### Non backwards compatible changes
 
 - HttpSender no longer treats input message as parameters by default. For 7.7 compatibility, set attribute treatInputMessageAsParameters=true
+- WebServiceListener does no longer (simultaneously) bind to the listener-name AND address attribute.
 
 
 7.7

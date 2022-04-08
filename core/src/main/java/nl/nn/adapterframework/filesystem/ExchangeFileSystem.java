@@ -104,18 +104,18 @@ import nl.nn.adapterframework.xml.SaxElementBuilder;
  */
 public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachment,ExchangeService> {
 	private final @Getter(onMethod = @__(@Override)) String domain = "Exchange";
-	private String mailAddress;
-	private boolean validateAllRedirectUrls=true;
-	private String url;
-	private String accessToken;
-	private String filter;
+	private @Getter String mailAddress;
+	private @Getter boolean validateAllRedirectUrls=true;
+	private @Getter String url;
+	private @Getter String accessToken;
+	private @Getter String filter;
 
-	private String proxyHost = null;
-	private int proxyPort = 8080;
-	private String proxyUsername = null;
-	private String proxyPassword = null;
-	private String proxyAuthAlias = null;
-	private String proxyDomain = null;
+	private @Getter String proxyHost = null;
+	private @Getter int proxyPort = 8080;
+	private @Getter String proxyUsername = null;
+	private @Getter String proxyPassword = null;
+	private @Getter String proxyAuthAlias = null;
+	private @Getter String proxyDomain = null;
 
 	private FolderId basefolderId;
 
@@ -134,32 +134,39 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	@Override
 	public void open() throws FileSystemException {
 		super.open();
-		log.debug("searching inbox");
+		basefolderId = getBaseFolderId(getMailAddress(),getBaseFolder());
+	}
+
+	public FolderId getBaseFolderId(String emailAddress, String baseFolderName) throws FileSystemException {
+		FolderId basefolderId;
+
+		log.debug("searching inbox ");
 		FolderId inboxId;
-		if (StringUtils.isNotEmpty(getMailAddress())) {
-			Mailbox mailbox = new Mailbox(getMailAddress());
+		if (StringUtils.isNotEmpty(emailAddress)) {
+			Mailbox mailbox = new Mailbox(emailAddress);
 			inboxId = new FolderId(WellKnownFolderName.Inbox, mailbox);
 		} else {
 			inboxId = new FolderId(WellKnownFolderName.Inbox);
 		}
 		log.debug("determined inbox ["+inboxId+"] foldername ["+inboxId.getFolderName()+"]");
 
-		if (StringUtils.isNotEmpty(getBaseFolder())) {
+		if (StringUtils.isNotEmpty(baseFolderName)) {
 			try {
-				basefolderId=findFolder(inboxId,getBaseFolder());
+				basefolderId=findFolder(inboxId,baseFolderName);
 			} catch (Exception e) {
-				throw new FileSystemException("Could not find baseFolder ["+getBaseFolder()+"] as subfolder of ["+inboxId.getFolderName()+"]", e);
+				throw new FileSystemException("Could not find baseFolder ["+baseFolderName+"] as subfolder of ["+inboxId.getFolderName()+"]", e);
 			}
 			if (basefolderId==null) {
-				log.debug("Could not get baseFolder ["+getBaseFolder()+"] as subfolder of ["+inboxId.getFolderName()+"]");
-				basefolderId=findFolder(null,getBaseFolder());
+				log.debug("Could not get baseFolder ["+baseFolderName+"] as subfolder of ["+inboxId.getFolderName()+"]");
+				basefolderId=findFolder(null,baseFolderName);
 			}
 			if (basefolderId==null) {
-				throw new FileSystemException("Could not find baseFolder ["+getBaseFolder()+"]");
+				throw new FileSystemException("Could not find baseFolder ["+baseFolderName+"]");
 			}
 		} else {
 			basefolderId=inboxId;
 		}
+		return basefolderId;
 	}
 
 
@@ -371,6 +378,25 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			if (closeConnectionOnExit) {
 				releaseConnection(exchangeService, invalidateConnectionOnRelease);
 			}
+		}
+	}
+
+	@Override
+	public int getNumberOfFilesInFolder(String foldername) throws FileSystemException {
+		if (!isOpen()) {
+			return -1;
+		}
+		ExchangeService exchangeService = getConnection();
+		boolean invalidateConnectionOnRelease = false;
+		try {
+			FolderId folderId = findFolder(basefolderId,foldername);
+			Folder folder = Folder.bind(exchangeService,folderId);
+			return folder.getTotalCount();
+		} catch (Exception e) {
+			invalidateConnectionOnRelease = true;
+			throw new FileSystemException("Cannot list messages in folder ["+foldername+"]", e);
+		} finally {
+			releaseConnection(exchangeService, invalidateConnectionOnRelease);
 		}
 	}
 
@@ -815,7 +841,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	public String getSubject(EmailMessage emailMessage) throws FileSystemException {
 		try {
 			if (emailMessage.getId()!=null) { // attachments don't have an id, but appear to be loaded at the same time as the main message
-				emailMessage.load(new PropertySet(ItemSchema.Subject)); 
+				emailMessage.load(new PropertySet(ItemSchema.Subject));
 			}
 			return emailMessage.getSubject();
 		} catch (Exception e) {
@@ -899,14 +925,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	public void setMailAddress(String mailAddress) {
 		this.mailAddress = mailAddress;
 	}
-	public String getMailAddress() {
-		return mailAddress;
-	}
 
 	@IbisDoc({"2", "When <code>true</code>, all redirect uris are accepted when connecting to the server", "true"})
-	public boolean isValidateAllRedirectUrls() {
-		return validateAllRedirectUrls;
-	}
 	public void setValidateAllRedirectUrls(boolean validateAllRedirectUrls) {
 		this.validateAllRedirectUrls = validateAllRedirectUrls;
 	}
@@ -915,16 +935,10 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	public void setUrl(String url) {
 		this.url = url;
 	}
-	public String getUrl() {
-		return url;
-	}
 
 	@IbisDoc({"4", "AccessToken for authentication to Exchange mail server", ""})
 	public void setAccessToken(String accessToken) {
 		this.accessToken = accessToken;
-	}
-	public String getAccessToken() {
-		return accessToken;
 	}
 
 	@IbisDoc({"5", "Alias used to obtain accessToken or username and password for authentication to Exchange mail server. " +
@@ -957,57 +971,36 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	public void setFilter(String filter) {
 		this.filter = filter;
 	}
-	public String getFilter() {
-		return filter;
-	}
 
 
 	@IbisDoc({"13", "proxy host", ""})
 	public void setProxyHost(String proxyHost) {
 		this.proxyHost = proxyHost;
 	}
-	public String getProxyHost() {
-		return proxyHost;
-	}
 
 	@IbisDoc({"14", "proxy port", "8080"})
 	public void setProxyPort(int proxyPort) {
 		this.proxyPort = proxyPort;
-	}
-	public int getProxyPort() {
-		return proxyPort;
 	}
 
 	@IbisDoc({"15", "proxy username", ""})
 	public void setProxyUsername(String proxyUsername) {
 		this.proxyUsername = proxyUsername;
 	}
-	public String getProxyUsername() {
-		return proxyUsername;
-	}
 
 	@IbisDoc({"16", "proxy password", ""})
 	public void setProxyPassword(String proxyPassword) {
 		this.proxyPassword = proxyPassword;
-	}
-	public String getProxyPassword() {
-		return proxyPassword;
 	}
 
 	@IbisDoc({"17", "proxy authAlias", ""})
 	public void setProxyAuthAlias(String proxyAuthAlias) {
 		this.proxyAuthAlias = proxyAuthAlias;
 	}
-	public String getProxyAuthAlias() {
-		return proxyAuthAlias;
-	}
 
 	@IbisDoc({"18", "proxy domain", ""})
 	public void setProxyDomain(String proxyDomain) {
 		this.proxyDomain = proxyDomain;
-	}
-	public String getProxyDomain() {
-		return proxyDomain;
 	}
 
 }
