@@ -31,6 +31,7 @@ import javax.wsdl.WSDLException;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.StartElement;
@@ -309,7 +310,6 @@ public class XSD implements Schema, Comparable<XSD> {
 						Attribute schemaLocationAttribute = el.getAttributeByName(SchemaUtils.SCHEMALOCATION);
 						Attribute namespaceAttribute = el.getAttributeByName(SchemaUtils.NAMESPACE);
 						String namespace = this.namespace;
-						boolean addNamespaceToSchema = this.addNamespaceToSchema;
 						if (el.getName().equals(SchemaUtils.IMPORT)) {
 							if (namespaceAttribute == null && StringUtils.isEmpty(xsdDefaultNamespace) && StringUtils.isNotEmpty(xsdTargetNamespace)) {
 								// TODO: concerning import without namespace when in head xsd default namespace doesn't exist and targetNamespace does)
@@ -356,7 +356,7 @@ public class XSD implements Schema, Comparable<XSD> {
 							}
 							if (!skip) {
 								XSD x = new XSD();
-								x.setAddNamespaceToSchema(addNamespaceToSchema);
+								x.setAddNamespaceToSchema(isAddNamespaceToSchema());
 								x.setImportedSchemaLocationsToIgnore(getImportedSchemaLocationsToIgnore());
 								x.setUseBaseImportedSchemaLocationsToIgnore(isUseBaseImportedSchemaLocationsToIgnore());
 								x.setImportedNamespacesToIgnore(getImportedNamespacesToIgnore());
@@ -403,6 +403,21 @@ public class XSD implements Schema, Comparable<XSD> {
 			}
  		}
 		return false;
+	}
+
+	public void addTargetNamespace() throws ConfigurationException {
+		try {
+			List<Attribute> rootAttributes = new ArrayList<Attribute>();
+			List<Namespace> rootNamespaceAttributes = new ArrayList<Namespace>();
+			List<XMLEvent> imports = new ArrayList<XMLEvent>();
+			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+			XMLStreamWriter w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(byteArrayOutputStream, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+			SchemaUtils.xsdToXmlStreamWriter(this, w, true, false, false, false, rootAttributes, rootNamespaceAttributes, imports, true);
+			SchemaUtils.xsdToXmlStreamWriter(this, w, true, false, false, false, rootAttributes, rootNamespaceAttributes, imports, false);
+			setByteArrayOutputStream(byteArrayOutputStream);
+		} catch (XMLStreamException | IOException e) {
+			throw new ConfigurationException(toString(), e);
+		}
 	}
 
 }

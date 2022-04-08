@@ -88,7 +88,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 		}
 		instance.configure();
 		instance.start();
-		validator.setSchemasProvider(getSchemasProvider(schemaLocation, addNamespaceToSchema));
+		validator.setSchemasProvider(instance);
 		validator.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);
 		validator.configure("setup");
 		validator.start();

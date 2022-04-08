@@ -25,8 +25,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -85,7 +85,7 @@ public class SchemaUtils {
 	}
 
 	public static Set<XSD> getXsdsRecursive(Set<XSD> xsds, boolean supportRedefine) throws ConfigurationException {
-		Set<XSD> xsdsRecursive = new HashSet<XSD>();
+		Set<XSD> xsdsRecursive = new LinkedHashSet<XSD>();
 		xsdsRecursive.addAll(xsds);
 		for (XSD xsd : xsds) {
 			xsdsRecursive.addAll(xsd.getXsdsRecursive(supportRedefine));
@@ -98,7 +98,7 @@ public class SchemaUtils {
 		if (sort) {
 			result = new TreeMap<String, Set<XSD>>();
 		} else {
-			result = new HashMap<String, Set<XSD>>();
+			result = new LinkedHashMap<String, Set<XSD>>();
 		}
 		for (XSD xsd : xsds) {
 			Set<XSD> set = result.get(xsd.getNamespace());
@@ -106,7 +106,7 @@ public class SchemaUtils {
 				if (sort) {
 					set = new TreeSet<XSD>();
 				} else {
-					set = new HashSet<XSD>();
+					set = new LinkedHashSet<XSD>();
 				}
 				result.put(xsd.getNamespace(), set);
 			}
@@ -128,12 +128,17 @@ public class SchemaUtils {
 		}
 	}
 
+	public static void addTargetNamespaceToXsds(Set<XSD> xsds) throws ConfigurationException {
+		for (XSD xsd:xsds) {
+			xsd.addTargetNamespace();
+		}
+	}
 
 	/**
 	 * @return XSD's when xmlStreamWriter is null, otherwise write to xmlStreamWriter
 	 */
 	public static Set<XSD> mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(IScopeProvider scopeProvider, Map<String, Set<XSD>> xsdsGroupedByNamespace, XMLStreamWriter xmlStreamWriter) throws XMLStreamException, IOException, ConfigurationException {
-		Set<XSD> resultXsds = new HashSet<XSD>();
+		Set<XSD> resultXsds = new LinkedHashSet<XSD>();
 		for (String namespace: xsdsGroupedByNamespace.keySet()) {
 			Set<XSD> xsds = xsdsGroupedByNamespace.get(namespace);
 			// Get attributes of root elements and get import elements from all XSD's
@@ -193,33 +198,24 @@ public class SchemaUtils {
 	}
 
 	/**
-	 * Including a {@link nl.nn.adapterframework.validation.XSD} into an
-	 * {@link javax.xml.stream.XMLStreamWriter} while parsing it. It is parsed
-	 * (using a low level {@link javax.xml.stream.XMLEventReader} so that
-	 * certain things can be corrected on the fly.
+	 * Including a {@link nl.nn.adapterframework.validation.XSD} into an {@link javax.xml.stream.XMLStreamWriter} while parsing it. It is parsed
+	 * (using a low level {@link javax.xml.stream.XMLEventReader} so that certain things can be corrected on the fly.
+	 *
 	 * @param xsd
 	 * @param xmlStreamWriter
-	 * @param standalone
-	 * When standalone the start and end document contants are ignored, hence
-	 * the xml declaration is ignored.
-	 * @param stripSchemaLocationFromImport
-	 * Useful when generating a WSDL which should contain all XSD's inline
-	 * (without includes or imports). The XSD might have an import with
-	 * schemaLocation to make it valid on it's own, when
-	 * stripSchemaLocationFromImport is true it will be removed.
-	 * @throws java.io.IOException, XMLStreamException
+	 * @param standalone When standalone the start and end document contants are ignored, hence the xml declaration is ignored.
+	 * @param stripSchemaLocationFromImport Useful when generating a WSDL which should contain all XSD's inline (without includes or imports).
+	 *        The XSD might have an import with schemaLocation to make it valid on it's own, when stripSchemaLocationFromImport is true it will be removed.
 	 */
 	public static void xsdToXmlStreamWriter(final XSD xsd, XMLStreamWriter xmlStreamWriter, boolean standalone, boolean stripSchemaLocationFromImport, boolean skipRootStartElement, boolean skipRootEndElement, List<Attribute> rootAttributes, List<Namespace> rootNamespaceAttributes, List<XMLEvent> imports, boolean noOutput) throws IOException, ConfigurationException {
 		Map<String, String> namespacesToCorrect = new HashMap<String, String>();
 		NamespaceCorrectingXMLStreamWriter namespaceCorrectingXMLStreamWriter = new NamespaceCorrectingXMLStreamWriter(xmlStreamWriter, namespacesToCorrect);
 		final XMLStreamEventWriter streamEventWriter = new XMLStreamEventWriter(namespaceCorrectingXMLStreamWriter);
-		InputStream in = null;
-		in = xsd.getInputStream();
-		if (in == null) {
-			throw new IllegalStateException("" + xsd + " not found");
-		}
 		XMLEvent event = null;
-		try {
+		try (InputStream in = xsd.getInputStream()) {
+			if (in == null) {
+				throw new IllegalStateException("" + xsd + " not found");
+			}
 			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(in, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 			while (er.hasNext()) {
 				event = er.nextEvent();
@@ -394,7 +390,7 @@ public class SchemaUtils {
 			}
 			streamEventWriter.flush();
 		} catch (XMLStreamException e) {
-			throw new ConfigurationException(xsd.toString() + " (" + event.getLocation() + "): " + e.getMessage(), e);
+			throw new ConfigurationException(xsd.toString() + " (" + event.getLocation() + ")", e);
 		}
 	}
 

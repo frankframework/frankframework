@@ -315,7 +315,6 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		validator.registerForward(createSuccessForward());
 		validator.registerForward(createFailureForward());
 		validator.setSchemaLocation("http://xmlns/a /Validation/Circular/AB/xsd/A.xsd");
-		validator.setIgnoreUnknownNamespaces(true);
 		validator.setThrowException(true);
 		validator.configure();
 		validator.start();
@@ -334,7 +333,6 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		validator.registerForward(createSuccessForward());
 		validator.registerForward(createFailureForward());
 		validator.setSchemaLocation("http://www.egem.nl/StUF/sector/zkn/0310 /Validation/Circular/zds/xsd/zkn0310_msg_zs-dms_resolved2017.xsd");
-		validator.setIgnoreUnknownNamespaces(true);
 		validator.setThrowException(true);
 		validator.configure();
 		validator.start();
@@ -347,4 +345,40 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		assertEquals("success", forward.getName());
 	}
 
+	@Test //copied from iaf-test /XmlValidator/scenario07a
+	public void testImportIncludeOK() throws Exception {
+		XmlValidator validator = new XmlValidator();
+		validator.registerForward(createSuccessForward());
+		validator.registerForward(createFailureForward());
+		validator.setRoot("root");
+		validator.setSchemaLocation("http://nn.nl/root /Validation/ImportInclude/xsd/root.xsd");
+		validator.setThrowException(true);
+		validator.configure();
+		validator.start();
+
+		String testXml = getTestXml("/Validation/ImportInclude/root-ok.xml");
+		PipeLineSession session = new PipeLineSession();
+		PipeRunResult result = validator.validate(new Message(testXml), session, "root");
+		PipeForward forward = result.getPipeForward();
+
+		assertEquals("success", forward.getName());
+	}
+
+	@Test //copied from iaf-test /XmlValidator/scenario07b
+	public void testImportIncludeError() throws Exception {
+		XmlValidator validator = new XmlValidator();
+		validator.registerForward(createSuccessForward());
+		validator.registerForward(createFailureForward());
+		validator.setRoot("root");
+		validator.setSchemaLocation("http://nn.nl/root /Validation/ImportInclude/xsd/root.xsd");
+		validator.configure();
+		validator.start();
+
+		String testXml = getTestXml("/Validation/ImportInclude/root-err.xml");
+		PipeLineSession session = new PipeLineSession();
+		PipeRunResult result = validator.validate(new Message(testXml), session, "root");
+		PipeForward forward = result.getPipeForward();
+
+		assertEquals("failure", forward.getName());
+	}
 }

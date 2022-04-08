@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013-2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -60,14 +60,14 @@ import nl.nn.adapterframework.validation.XSD;
 /**
  * XmlValidator that will read the XSD's to use from a WSDL. As it extends the
  * SoapValidator is will also add the SOAP envelope XSD.
- * 
+ *
  * @author Michiel Meeuwissen
  * @author Jaco de Groot
  */
 public class WsdlXmlValidator extends SoapValidator {
 	private static final Logger LOG = LogUtil.getLogger(WsdlXmlValidator.class);
 
-	private String soapBodyNamespace = "";
+	private @Getter String soapBodyNamespace = "";
 
 	private static final WSDLFactory FACTORY;
 	static {
@@ -82,10 +82,10 @@ public class WsdlXmlValidator extends SoapValidator {
 	}
 
 	public static final String RESOURCE_INTERNAL_REFERENCE_PREFIX = "schema";
-	
+
 	private String wsdl;
-	private Definition definition;
-	private String schemaLocationToAdd;
+	private @Getter Definition definition;
+	private @Getter String schemaLocationToAdd;
 
 	@IbisDoc({"the wsdl to read the xsd's from", " "})
 	public void setWsdl(String wsdl) throws ConfigurationException {
@@ -164,7 +164,7 @@ public class WsdlXmlValidator extends SoapValidator {
 				}
 				sb.append(" ");
 				sbx.append(" ");
-				String schemaWithNumber = RESOURCE_INTERNAL_REFERENCE_PREFIX + ++counter; 
+				String schemaWithNumber = RESOURCE_INTERNAL_REFERENCE_PREFIX + ++counter;
 				sb.append(schemaWithNumber);
 				sbx.append(schemaWithNumber);
 			}
@@ -174,8 +174,8 @@ public class WsdlXmlValidator extends SoapValidator {
 				&& soapBodyFoundCounter > 1) {
 			throw new ConfigurationException("soapBody [" + getSoapBody() + "] exists multiple times, not possible to create schemaLocation from soapBodyNamespace");
 
-		}		
-		
+		}
+
 		if (sb.length() > 0) {
 			String wsdlSchemaLocation = sb.toString();
 			if (StringUtils.isNotEmpty(getSchemaLocation()) && isAddNamespaceToSchema()) {
@@ -221,7 +221,7 @@ public class WsdlXmlValidator extends SoapValidator {
 		}
 		return sb.toString();
 	}
-	
+
 	@Override
 	protected void checkSchemaSpecified() throws ConfigurationException {
 		if (StringUtils.isEmpty(getWsdl())) {
@@ -324,32 +324,26 @@ public class WsdlXmlValidator extends SoapValidator {
 	public String toExtendedString() {
 		return "[" + getConfigurationClassLoader() + "][" + FilenameUtils.normalize(getWsdl()) + "][" + getSoapBody() + "][" + getOutputSoapBody() + "][" + getSoapBodyNamespace() + "]";
 	}
-	
+
 	@IbisDoc({"1", "pairs of uri references which will be added to the wsdl", " "})
 	public void setSchemaLocationToAdd(String schemaLocationToAdd) {
 		this.schemaLocationToAdd = schemaLocationToAdd;
 	}
 
-	public String getSchemaLocationToAdd() {
-		return schemaLocationToAdd;
-	}
 
 	@IbisDoc({"2", "creates <code>schemalocation</code> attribute based on the wsdl and replaces the namespace of the soap body element", " " })
 	public void setSoapBodyNamespace(String soapBodyNamespace) {
 		this.soapBodyNamespace = soapBodyNamespace;
 	}
 
-	public String getSoapBodyNamespace() {
-		return soapBodyNamespace;
-	}
 }
 
 class ClassLoaderWSDLLocator implements WSDLLocator, IScopeProvider {
 	private @Getter ClassLoader configurationClassLoader = null;
 	private String wsdl;
-	private URL url;
-	private IOException ioException;
-	private String latestImportURI;
+	private @Getter URL url;
+	private @Getter IOException iOException;
+	private @Getter String latestImportURI;
 
 	ClassLoaderWSDLLocator(WsdlXmlValidator wsdlXmlValidator, String wsdl) {
 		configurationClassLoader = wsdlXmlValidator.getConfigurationClassLoader();
@@ -357,13 +351,6 @@ class ClassLoaderWSDLLocator implements WSDLLocator, IScopeProvider {
 		url = ClassUtils.getResourceURL(this, wsdl);
 	}
 
-	public URL getUrl() {
-		return url;
-	}
-
-	public IOException getIOException() {
-		return ioException;
-	}
 
 	@Override
 	public InputSource getBaseInputSource() {
@@ -389,10 +376,6 @@ class ClassLoaderWSDLLocator implements WSDLLocator, IScopeProvider {
 		return getInputSource(latestImportURI);
 	}
 
-	@Override
-	public String getLatestImportURI() {
-		return latestImportURI;
-	}
 
 	@Override
 	public void close() {
@@ -409,7 +392,7 @@ class ClassLoaderWSDLLocator implements WSDLLocator, IScopeProvider {
 			try {
 				inputStream = url.openStream();
 			} catch (IOException e) {
-				ioException = e;
+				iOException = e;
 			}
 			if (inputStream != null) {
 				source = new InputSource(inputStream);

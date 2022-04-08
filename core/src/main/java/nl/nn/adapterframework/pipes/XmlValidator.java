@@ -440,19 +440,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 
 	public List<Schema> getSchemas(boolean checkRootValidations) throws ConfigurationException {
 		Set<XSD> xsds = getXsds();
-		if (isAddNamespaceToSchema() && StringUtils.isEmpty(getNoNamespaceSchemaLocation())) {
-			xsds = SchemaUtils.getXsdsRecursive(xsds);
-			if (checkRootValidations) {
-				checkInputRootValidations(xsds);
-				checkOutputRootValidations(xsds);
-			}
-			try {
-				Map<String, Set<XSD>> xsdsGroupedByNamespace = SchemaUtils.getXsdsGroupedByNamespace(xsds, false);
-				xsds = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(this, xsdsGroupedByNamespace, null);
-			} catch(Exception e) {
-				throw new ConfigurationException(getLogPrefix(null) + "could not merge schema's", e);
-			}
-		} else {
+		if (StringUtils.isNotEmpty(getNoNamespaceSchemaLocation())) {
 			// Support redefine for noNamespaceSchemaLocation for backwards
 			// compatibility. It's deprecated in the latest specification:
 			// http://www.w3.org/TR/xmlschema11-1/#modify-schema
@@ -472,6 +460,25 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			if (checkRootValidations) {
 				checkInputRootValidations(xsds_temp);
 				checkOutputRootValidations(xsds_temp);
+			}
+		} else {
+			if (StringUtils.isNotEmpty(getImportedSchemaLocationsToIgnore())) {
+				xsds = SchemaUtils.getXsdsRecursive(xsds);
+			}
+			if (checkRootValidations) {
+				checkInputRootValidations(xsds);
+				checkOutputRootValidations(xsds);
+			}
+			if (isAddNamespaceToSchema() && StringUtils.isEmpty(getImportedSchemaLocationsToIgnore())) {
+				SchemaUtils.addTargetNamespaceToXsds(xsds);
+			}
+			if (StringUtils.isNotEmpty(getImportedSchemaLocationsToIgnore())) {
+				try {
+					Map<String, Set<XSD>> xsdsGroupedByNamespace = SchemaUtils.getXsdsGroupedByNamespace(xsds, false);
+					xsds = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(this, xsdsGroupedByNamespace, null);
+				} catch(Exception e) {
+					throw new ConfigurationException(getLogPrefix(null) + "could not merge schema's", e);
+				}
 			}
 		}
 		List<Schema> schemas = new ArrayList<Schema>();
