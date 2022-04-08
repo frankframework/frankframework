@@ -11,7 +11,7 @@ The Frank!Doc provides reference information for Frank developers as explained i
 | `@ff.tag` | | Class | Tag that classifies the Java class. First argument is tag name, second argument is tag value. |
 | `@ff.default` | `@Default` | Attribute setter | Describes default value. |
 | `@ff.protected` | `@Protected` | Attribute setter or child setter | Suppresses declaration and inheritance of attribute or child. Annotation is inherited. |
-| `@ff.mandatory` | `@Mandatory` | Attribute or child setter | Makes attribute or child mandatory in Frank config |
+| `@ff.mandatory` | `@Mandatory` | Attribute or child setter | Makes attribute or child mandatory in Frank config. |
 | `@ff.optional` | `@Optional` | Attribute or child setter | Undoes inherited `@ff.mandatory`, making the attribute or child optional even if it overrides a mandatory attribute or child.
 | `@ff.defaultElement` | | Child setter | Set default value of `className` attribute in XSD syntax 1 element. |
 | | `@EnumLabel` | Enum constant | Set representation required in Frank configs. |
