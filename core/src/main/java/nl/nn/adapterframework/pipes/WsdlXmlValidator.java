@@ -21,8 +21,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -139,10 +139,8 @@ public class WsdlXmlValidator extends SoapValidator {
 				boolean soapBodyFound = false;
 				for (int i = 0; i < childNodes.getLength(); i++) {
 					Node n = childNodes.item(i);
-					if (n.getNodeType() == Node.ELEMENT_NODE
-							&& n.getLocalName().equals("element")) {
-						String name = n.getAttributes().getNamedItem("name")
-								.getNodeValue();
+					if (n.getNodeType() == Node.ELEMENT_NODE && n.getLocalName().equals("element")) {
+						String name = n.getAttributes().getNamedItem("name").getNodeValue();
 						if (getSoapBody().equals(name)) {
 							soapBodyFound = true;
 							soapBodyFoundCounter++;
@@ -246,7 +244,7 @@ public class WsdlXmlValidator extends SoapValidator {
 
 	@Override
 	public Set<XSD> getXsds() throws ConfigurationException {
-		Set<XSD> xsds = new HashSet<XSD>();
+		Set<XSD> xsds = new LinkedHashSet<XSD>();
 		SoapVersion soapVersion = getSoapVersion();
 		if (soapVersion == null || soapVersion==SoapVersion.SOAP11 || soapVersion==SoapVersion.AUTO) {
 			XSD xsd = new XSD();
@@ -259,6 +257,7 @@ public class WsdlXmlValidator extends SoapValidator {
 			xsds.add(xsd);
 		}
 		if (StringUtils.isNotEmpty(getSchemaLocationToAdd())) {
+			combineSchemas = true;
 			StringTokenizer st = new StringTokenizer(getSchemaLocationToAdd(), ", \t\r\n\f");
 			while (st.hasMoreTokens()) {
 				XSD xsd = new XSD();
@@ -416,8 +415,7 @@ class SchemaLocation implements Comparable<SchemaLocation> {
 			String schemaNumberString = StringUtils.substringAfter(schema,
 					WsdlXmlValidator.RESOURCE_INTERNAL_REFERENCE_PREFIX);
 			if (StringUtils.isNumeric(schemaNumberString)) {
-				this.schemaFormatted = WsdlXmlValidator.RESOURCE_INTERNAL_REFERENCE_PREFIX
-						+ StringUtils.leftPad(schemaNumberString, 3, "0");
+				this.schemaFormatted = WsdlXmlValidator.RESOURCE_INTERNAL_REFERENCE_PREFIX + StringUtils.leftPad(schemaNumberString, 3, "0");
 			} else {
 				this.schemaFormatted = schema;
 			}

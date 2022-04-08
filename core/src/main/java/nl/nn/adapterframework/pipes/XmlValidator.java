@@ -115,6 +115,8 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	private TransformerPool transformerPoolGetRootNamespace; // only used in getMessageToValidate(), TODO: avoid setting it up when not necessary
 	private TransformerPool transformerPoolRemoveNamespaces; // only used in getMessageToValidate(), TODO: avoid setting it up when not necessary
 
+	protected boolean combineSchemas = false;
+	
 	protected ConfigurationException configurationException;
 
 	protected final String ABSTRACTXMLVALIDATOR="nl.nn.adapterframework.validation.AbstractXmlValidator";
@@ -469,10 +471,10 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 				checkInputRootValidations(xsds);
 				checkOutputRootValidations(xsds);
 			}
-			if (isAddNamespaceToSchema() && StringUtils.isEmpty(getImportedSchemaLocationsToIgnore())) {
+			if (isAddNamespaceToSchema() && !combineSchemas && StringUtils.isEmpty(getImportedSchemaLocationsToIgnore())) {
 				SchemaUtils.addTargetNamespaceToXsds(xsds);
 			}
-			if (StringUtils.isNotEmpty(getImportedSchemaLocationsToIgnore())) {
+			if (combineSchemas || StringUtils.isNotEmpty(getImportedSchemaLocationsToIgnore())) {
 				try {
 					Map<String, Set<XSD>> xsdsGroupedByNamespace = SchemaUtils.getXsdsGroupedByNamespace(xsds, false);
 					xsds = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(this, xsdsGroupedByNamespace, null);
@@ -771,10 +773,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	 * <p><b>Note</b> that spaces are considered separators for this attributed.
 	 * This means that, for example, spaces in filenames should be escaped to %20.
 	 * </p>
-	 *
-	 * N.B. since 4.3.0 schema locations are resolved automatically, without the need for ${baseResourceURL}
 	 */
-	@IbisDoc({"2", "Pairs of uri references (one for the namespace name, and one for a hint as to the location of a schema document defining names for that namespace name). see doc on the method.", ""})
 	public void setSchemaLocation(String schemaLocation) {
 		this.schemaLocation = schemaLocation;
 	}
