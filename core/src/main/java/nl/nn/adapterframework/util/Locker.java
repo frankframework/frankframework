@@ -17,6 +17,7 @@ package nl.nn.adapterframework.util;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLTimeoutException;
 import java.sql.Timestamp;
@@ -79,6 +80,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 	private int retention = -1;
 	private String insertQuery = "INSERT INTO IBISLOCK (objectId, type, host, creationDate, expiryDate) VALUES (?, ?, ?, ?, ?)";
 	private String deleteQuery = "DELETE FROM IBISLOCK WHERE objectId=?";
+	private String selectQuery = "SELECT type, host, creationDate, expiryDate FROM IBISLOCK WHERE objectId=?";
 	private SimpleDateFormat formatter;
 	private int numRetries = 0;
 	private int firstDelay = 0;
@@ -209,7 +211,6 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 					if(itx != null) {
 						itx.setRollbackOnly();
 					}
-					objectIdWithSuffix = null;
 					log.debug(getLogPrefix()+"error executing insert query (as part of locker): ",e);
 					if (numRetries == -1 || r < numRetries) {
 						log.debug(getLogPrefix()+"will try again");
@@ -217,7 +218,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 						log.debug(getLogPrefix()+"will not try again");
 
 						if (timeout || e instanceof SQLTimeoutException || e instanceof SQLException && getDbmsSupport().isConstraintViolation((SQLException)e)) {
-							String msg = "could not obtain lock: ("+e.getClass().getTypeName()+") " + e.getMessage();
+							String msg = "could not obtain lock "+getLockerInfo(objectIdWithSuffix)+" ("+e.getClass().getTypeName()+") " + e.getMessage();
 							if(messageKeeper != null) {
 								messageKeeper.add(msg, MessageKeeperLevel.INFO);
 							}
@@ -226,6 +227,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 							throw e;
 						}
 					}
+					objectIdWithSuffix = null;
 				}
 			} finally {
 				if(itx != null) {
@@ -263,6 +265,26 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 		}
 	}
 
+	public String getLockerInfo(String objectIdWithSuffix) {
+		try {
+			String query = getDbmsSupport().prepareQueryTextForNonLockingRead(selectQuery);
+			try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
+				stmt.clearParameters();
+				stmt.setString(1,objectIdWithSuffix);
+				
+				try (ResultSet rs = stmt.executeQuery()) {
+					if (rs.next()) {
+						String info = "objectId ["+objectId+"] current type ["+rs.getString(1)+"] current host ["+rs.getString(2)+"] current creationDate ["+DateUtils.format(rs.getTimestamp(3))+"] current expirydate ["+DateUtils.format(rs.getTimestamp(4))+"]";
+						return info;
+					}
+					return "(no locker info found)";
+				}
+			}
+		} catch (Exception e) {
+			return "(cannot get locker info: ("+ClassUtils.nameOf(e)+") "+e.getMessage()+")";
+		}
+	}
+	
 	@Override
 	protected String getLogPrefix() {
 		return getName()+" ";
