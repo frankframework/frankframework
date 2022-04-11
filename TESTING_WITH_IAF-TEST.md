@@ -18,7 +18,7 @@ If you want to use a DBMS other that H2, you need to add the corresponding JDBC 
 * For Oracle          : [ojdbc8.jar](https://www.oracle.com/database/technologies/appdev/jdbc-ucp-183-downloads.html)
 * For PostgreSQL      : [postgresql-42.2.14](https://jdbc.postgresql.org/download/postgresql-42.2.14.jar)
 
-In Tomcat's launch configuration (go to the Java EE perspective to access your Tomcat server, find your launch configuration in the Tomcat Overview window), go to the Classpath tab. Click on the User Entries item and click on the [ Add JARs... ] button. Select all JARs in the lib folder, press OK, and press OK again.
+In Tomcat's launch configuration (go to the Java EE perspective to access your Tomcat server, find launch configuration in the Tomcat Overview window), go to the Classpath tab. Click on the User Entries item and click on the [ Add JARs... ] button. Select all JARs in the lib folder, press OK, and press OK again.
 
 ## 2. Tomcat configuration
 
