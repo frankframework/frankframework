@@ -120,7 +120,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	private TransformerPool transformerPoolRemoveNamespaces; // only used in getMessageToValidate(), TODO: avoid setting it up when not necessary
 
 	protected boolean combineSchemas = false;
-	
+
 	protected ConfigurationException configurationException;
 
 	protected final String ABSTRACTXMLVALIDATOR="nl.nn.adapterframework.validation.AbstractXmlValidator";

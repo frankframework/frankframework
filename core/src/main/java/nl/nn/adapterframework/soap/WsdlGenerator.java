@@ -154,7 +154,7 @@ public class WsdlGenerator {
 		if (inputValidator.getConfigurationException() != null) {
 			if (inputValidator.getConfigurationException().getMessage() != null) {
 				throw new IllegalStateException(inputValidator.getConfigurationException().getMessage());
-			} 
+			}
 			throw new IllegalStateException(inputValidator.getConfigurationException().toString());
 		}
 		outputValidator = (IXmlValidator)pipeLine.getOutputValidator();
@@ -469,7 +469,7 @@ public class WsdlGenerator {
 	/**
 	 * Generates a zip file (and writes it to the given outputstream), containing
 	 * the WSDL and all referenced XSD's.
-	 * 
+	 *
 	 * @see #wsdl(java.io.OutputStream, String)
 	 */
 	public void zip(OutputStream stream, String servletName) throws IOException, ConfigurationException, XMLStreamException {
@@ -582,7 +582,7 @@ public class WsdlGenerator {
 	 * @param w
 	 * @throws XMLStreamException
 	 * @throws IOException
-	 * @throws ConfigurationException 
+	 * @throws ConfigurationException
 	 */
 	protected void messages(XMLStreamWriter w) throws XMLStreamException, IOException, ConfigurationException {
 		List<QName> parts = new ArrayList<QName>();
@@ -995,7 +995,7 @@ public class WsdlGenerator {
 	protected void warn(String warning, Exception e) {
 		warn(warning+": ("+ClassUtils.nameOf(e)+") "+e.getMessage());
 	}
-	
+
 	protected void warn(String warning) {
 		warning = "Warning: " + warning;
 		if (!warnings.contains(warning)) {
