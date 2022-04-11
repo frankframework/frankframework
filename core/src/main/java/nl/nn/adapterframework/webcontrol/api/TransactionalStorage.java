@@ -278,8 +278,6 @@ public class TransactionalStorage extends Base {
 							zos.closeEntry();
 						}
 					}
-				} catch (IOException e) {
-					throw new ApiException("Failed to create zip file with messages.", e);
 				}
 			}
 		};
@@ -616,8 +614,7 @@ public class TransactionalStorage extends Base {
 		Object rawmsg = null;
 		try {
 			rawmsg = messageBrowser.browseMessage(messageId);
-		}
-		catch(ListenerException e) {
+		} catch(ListenerException e) {
 			throw new ApiException(e, 404);
 		}
 
