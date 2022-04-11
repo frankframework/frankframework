@@ -34,12 +34,12 @@
 	<rule pattern="*/pipe" registerMethod="addPipe" paramtype="nl.nn.adapterframework.core.IPipe" beanClass="nl.nn.adapterframework.pipes.SenderPipe"/>
 
 	<!-- forward element is on the pipeline / global-forward as well as on the pipe element -->
-	<rule pattern="*/global-forwards" registerMethod="setGlobalForwards"/>
+	<rule pattern="*/global-forwards" registerMethod="setGlobalForwards" beanClass="nl.nn.adapterframework.core.PipeForwards"/>
 	<rule pattern="*/forward" registerMethod="registerForward" beanClass="nl.nn.adapterframework.core.PipeForward"/>
 	<rule pattern="*/child" registerMethod="registerChild"/>
 	<rule pattern="*/outputFields" registerMethod="registerOutputFields"/>
 	<rule pattern="*/inputFields" registerMethod="registerInputFields"/>
-	<rule pattern="*/exits" registerMethod="setPipeLineExits"/>
+	<rule pattern="*/exits" registerMethod="setPipeLineExits" beanClass="nl.nn.adapterframework.core.PipeLineExits"/>
 	<rule pattern="*/exit" registerMethod="registerPipeLineExit" beanClass="nl.nn.adapterframework.core.PipeLineExit"/>
 
 	<rule pattern="configuration/scheduler" registerMethod="setScheduleManager"/>

@@ -99,6 +99,7 @@
 		<Logger name="org.mongodb" level="INFO" />
 		<Logger name="org.quartz" level="WARN" />
 		<Logger name="nl.nn.adapterframework.configuration.digester" level="WARN" />
+		<Logger name="microsoft.exchange" level="INFO" />
 
 		<Logger name="liquibase.migrationLog" level="INFO">
 			<AppenderRef ref="stdout"/>
