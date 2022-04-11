@@ -1317,15 +1317,15 @@ angular.module('iaf.beheerconsole')
 
 	$scope.doDeleteMessage = function(message, callback) {
 		message.deleting = true;
-
-		Api.Delete($scope.base_url+"/messages/"+encodeURIComponent(encodeURIComponent(message.id)), function() {
+		let messageId = message.id;
+		Api.Delete($scope.base_url+"/messages/"+encodeURIComponent(encodeURIComponent(messageId)), function() {
 			if(callback != undefined && typeof callback == 'function')
-				callback(message.id);
-			$scope.addNote("success", "Successfully deleted message with ID: "+message.id);
+				callback(messageId);
+			$scope.addNote("success", "Successfully deleted message with ID: "+messageId);
 			$scope.updateTable();
 		}, function() {
 			message.deleting = false;
-			$scope.addNote("danger", "Unable to delete messages with ID: "+message.id);
+			$scope.addNote("danger", "Unable to delete messages with ID: "+messageId);
 			$scope.updateTable();
 		}, false);
 	};
@@ -1335,15 +1335,15 @@ angular.module('iaf.beheerconsole')
 
 	$scope.doResendMessage = function(message, callback) {
 		message.resending = true;
-
-		Api.Put($scope.base_url+"/messages/"+encodeURIComponent(encodeURIComponent(message.id)), false, function() {
+		let messageId = message.id;
+		Api.Put($scope.base_url+"/messages/"+encodeURIComponent(encodeURIComponent(messageId)), false, function() {
 			if(callback != undefined && typeof callback == 'function')
-				callback(message.id);
-			$scope.addNote("success", "Successfully resent message with ID: "+message.id);
+				callback(messageId);
+			$scope.addNote("success", "Successfully resent message with ID: "+messageId);
 			$scope.updateTable();
 		}, function(data) {
 			message.resending = false;
-			$scope.addNote("danger", "Unable to resend message ["+message.id+"]. "+data.error);
+			$scope.addNote("danger", "Unable to resend message ["+messageId+"]. "+data.error);
 			$scope.updateTable();
 		}, false);
 	};
@@ -1357,7 +1357,7 @@ angular.module('iaf.beheerconsole')
 
 	a += '<input icheck type="checkbox" ng-model="selectedMessages[message.id]"/>';
 	a += '<div ng-show="!selectedMessages[message.id]">';
-	a += '<a ui-sref="pages.storage.view({adapter:adapterName,receiver:receiverName,processState:processState,messageId:message.id})" class="btn btn-info btn-xs" type="button"><i class="fa fa-file-text-o"></i> View</a>';
+	a += '<a ui-sref="pages.storage.view({adapter:adapterName,receiver:receiverName,processState:processState,messageId: message.id })" class="btn btn-info btn-xs" type="button"><i class="fa fa-file-text-o"></i> View</a>';
 	a += '<button ng-if="::processState==\'Error\'" ladda="message.resending" data-style="slide-down" title="Resend Message" ng-click="resendMessage(message)" class="btn btn-warning btn-xs" type="button"><i class="fa fa-repeat"></i> Resend</button>';
 	a += '<button ng-if="::processState==\'Error\'" ladda="message.deleting" data-style="slide-down" title="Delete Message" ng-click="deleteMessage(message)" class="btn btn-danger btn-xs" type="button"><i class="fa fa-times"></i> Delete</button>';
 	a += '<button title="Download Message" ng-click="downloadMessage(message.id)" class="btn btn-info btn-xs" type="button"><i class="fa fa-arrow-circle-o-down"></i> Download</button>';
@@ -1366,7 +1366,7 @@ angular.module('iaf.beheerconsole')
 	var columns = [
 		{ "data": null, defaultContent: a, className: "m-b-xxs storageActions", bSortable: false},
 		{ "name": "pos", "data": "position", bSortable: false },
-		{ "name": "messageId", "data": "messageId", bSortable: false },
+		{ "name": "id", "data": "messageId", bSortable: false },
 		{ "name": "insertDate", "data": "insertDate", className: "date" },
 		{ "name": "host", "data": "host", bSortable: false },
 		{ "name": "originalId", "data": "originalId", bSortable: false },
@@ -1385,7 +1385,7 @@ angular.module('iaf.beheerconsole')
 		$scope.displayColumn = filterCookie;
 	} else {
 		$scope.displayColumn = {
-			messageId: true,
+			id: true,
 			insertDate: true,
 			host: true,
 			originalId: true,
@@ -1395,12 +1395,12 @@ angular.module('iaf.beheerconsole')
 			label: true,
 		}
 	}
-	
+
 	$scope.searchUpdated = function() {
 		$scope.searching = true;
 		$scope.updateTable();
 	};
-	
+
 	$scope.dtOptions = {
 		stateSave: true,
 		stateSaveCallback: function(settings, data) {
@@ -1417,7 +1417,7 @@ angular.module('iaf.beheerconsole')
 			var data = table.rows( {page:'current'} ).data();
 			// visit rows in the current page once (draw event is fired after rowcallbacks)
 			for(var i=0;i<data.length;i++){
-				$scope.selectedMessages[data[i].messageId] = false;
+				$scope.selectedMessages[data[i].id] = false;
 			}
 		},
 		rowCallback: function(row, data) {
@@ -1429,7 +1429,7 @@ angular.module('iaf.beheerconsole')
 			});
 			var scope = $scope.$new();
 			scope.message = data;
-			$scope.selectedMessages[data.messageId] = false;
+			$scope.selectedMessages[data.id] = false;
 			$compile(row)(scope);
 		},
 		searching: false,
@@ -1445,13 +1445,13 @@ angular.module('iaf.beheerconsole')
 		columnDefs: [ {
 			targets: 0,
 			render: function ( data, type, row ) {
-				if(type === 'display'){
-					for(let i in data){
-						if(i !=='id'){
-							var columnData = data[i];
-							if(typeof columnData == 'string' && columnData.length > 30)
-								data[i] = '<span title="'+columnData.replace(/"/g, '&quot;')+'">'+columnData.substr(0, 15)+' &#8230; '+columnData.substr(-15)+'</span>';
-						}
+				if(type === 'display') {
+					data["messageId"] = data["id"];
+					for(let i in data) {
+						if(i == "id") continue;
+						var columnData = data[i];
+						if(typeof columnData == 'string' && columnData.length > 30)
+							data[i] = '<span title="'+columnData.replace(/"/g, '&quot;')+'">'+columnData.substr(0, 15)+' &#8230; '+columnData.substr(-15)+'</span>';
 					}
 				}
 				return data;
