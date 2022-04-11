@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -67,7 +67,7 @@ import nl.nn.adapterframework.xml.XmlWriter;
 /**
  * Sends a message to a Sender for each child element of the input XML.
  * Input can be a String containing XML, a filename (set processFile true), an InputStream or a Reader.
- * 
+ *
  * @author Gerrit van Brakel
  * @since 4.6.1
  */
@@ -84,11 +84,11 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 	private boolean streamingXslt;
 
 	private TransformerPool extractElementsTp=null;
-	private ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
-	private @Setter IThreadConnectableTransactionManager txManager;
+	private @Setter ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
+	private @Setter IThreadConnectableTransactionManager<?,?> txManager;
 	private @Getter @Setter IXmlDebugger xmlDebugger;
 
-	{ 
+	{
 		setNamespaceAware(true);
 	}
 
@@ -137,9 +137,9 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		super.stop();
 	}
 
-	protected String makeEncapsulatingXslt(String rootElementname, String xpathExpression, int xsltVersion, String namespaceDefs) throws TransformerConfigurationException {
+	protected String makeEncapsulatingXslt(String rootElementname, String xpathExpression, int xsltVersion, String namespaceDefs) {
 		String namespaceClause = XmlUtils.getNamespaceClause(namespaceDefs);
-		return 
+		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\""+xsltVersion+".0\" xmlns:xalan=\"http://xml.apache.org/xslt\">" +
 		"<xsl:output method=\"xml\" omit-xml-declaration=\"yes\"/>" +
 		"<xsl:strip-space elements=\"*\"/>" +
@@ -292,7 +292,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		private TransformerErrorListener transformerErrorListener=null;
 	}
 
-	protected void createHandler(HandlerRecord result, ThreadConnector threadConnector, PipeLineSession session, ItemCallback callback) throws TransformerConfigurationException {
+	protected void createHandler(HandlerRecord result, ThreadConnector<?> threadConnector, PipeLineSession session, ItemCallback callback) throws TransformerConfigurationException {
 		result.itemHandler = new ItemCallbackCallingHandler(callback);
 		result.inputHandler=result.itemHandler;
 
@@ -314,7 +314,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			result.inputHandler=transformerFilter;
 			result.transformerErrorListener=(TransformerErrorListener)transformerFilter.getErrorListener();
 			result.errorMessage="Could not process list of elements using xpath ["+getElementXPathExpression()+"]";
-		} 
+		}
 		if (StringUtils.isNotEmpty(getTargetElement())) {
 			result.inputHandler = new NodeSetFilter(XmlUtils.getNamespaceMap(getNamespaceDefs()), getTargetElement(), true, true, result.inputHandler);
 		}
@@ -362,7 +362,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
 		HandlerRecord handlerRecord = new HandlerRecord();
 		try {
-			ThreadConnector threadConnector = streamingXslt ? new ThreadConnector(this, threadLifeCycleEventListener, txManager, session) : null; 
+			ThreadConnector<?> threadConnector = streamingXslt ? new ThreadConnector<>(this, threadLifeCycleEventListener, txManager, session) : null;
 			MessageOutputStream target=getTargetStream(session);
 			Writer resultWriter = target.asWriter();
 			ItemCallback callback = createItemCallBack(session, getSender(), resultWriter);
@@ -396,13 +396,13 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			}
 		}
 		HandlerRecord handlerRecord = new HandlerRecord();
-		try (ThreadConnector threadConnector = streamingXslt ? new ThreadConnector(this, threadLifeCycleEventListener, txManager, session) : null) {
+		try (ThreadConnector<?> threadConnector = streamingXslt ? new ThreadConnector<>(this, threadLifeCycleEventListener, txManager, session) : null) {
 			try {
 				createHandler(handlerRecord, threadConnector, session, callback);
 			} catch (TransformerException e) {
 				throw new SenderException(handlerRecord.errorMessage, e);
 			}
-	
+
 			try {
 				XmlUtils.parseXml(src,handlerRecord.inputHandler);
 			} catch (Exception e) {
@@ -433,73 +433,51 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		//rethrowTransformerException(handlerRecord.transformerErrorListener, handlerRecord.errorMessage);
 	}
 
-	private void rethrowTransformerException(TransformerErrorListener transformerErrorListener, String errorMessage) throws SenderException {
-		if (transformerErrorListener!=null) {
-			TransformerException tex = transformerErrorListener.getFatalTransformerException();
-			if (tex!=null) {
-				throw new SenderException(errorMessage,tex);
-			}
-			IOException iox = transformerErrorListener.getFatalIOException();
-			if (iox!=null) {
-				throw new SenderException(errorMessage,iox);
-			}
-		}
-	}
-
 	protected TransformerPool getExtractElementsTp() {
 		return extractElementsTp;
 	}
 
 
 
-	@IbisDoc({"1", "When set <code>true</code>, the input is assumed to be the name of a file to be processed. Otherwise, the input itself is transformed. The character encoding will be read from the XML declaration", "false"})
+	@IbisDoc({"When set <code>true</code>, the input is assumed to be the name of a file to be processed. Otherwise, the input itself is transformed. The character encoding will be read from the XML declaration", "false"})
 	@Deprecated
 	@ConfigurationWarning("Please add a LocalFileSystemPipe with action=read in front of this pipe instead")
 	public void setProcessFile(boolean b) {
 		processFile = b;
 	}
 
-	@IbisDoc({"2", "Element name (not an XPath-expression), qualified via attribute <code>namespaceDefs</code>, used to determine the 'root' of elements to be iterated over, i.e. the root of the set of child elements. "
+	@IbisDoc({"Element name (not an XPath-expression), qualified via attribute <code>namespaceDefs</code>, used to determine the 'root' of elements to be iterated over, i.e. the root of the set of child elements. "
 			+ "When empty, the pipe will iterate over each direct child element of the root", ""})
 	public void setContainerElement(String containerElement) {
 		this.containerElement = containerElement;
 	}
 
-	@IbisDoc({"3", "Element name (not an XPath-expression), qualified via attribute <code>namespaceDefs</code>, used to determine the type of elements to be iterated over, i.e. the element name of each of the child elements. "
+	@IbisDoc({"Element name (not an XPath-expression), qualified via attribute <code>namespaceDefs</code>, used to determine the type of elements to be iterated over, i.e. the element name of each of the child elements. "
 			+ "When empty, the pipe will iterate over any direct child element of the root or specified containerElement", ""})
 	public void setTargetElement(String targetElement) {
 		this.targetElement = targetElement;
 	}
 
-	@IbisDoc({"4", "XPath-expression used to determine the set of elements to be iterated over, i.e. the set of child elements. When empty, the effective value is /*/*, i.e. the pipe will iterate over each direct child element of the root. "
+	@IbisDoc({"XPath-expression used to determine the set of elements to be iterated over, i.e. the set of child elements. When empty, the effective value is /*/*, i.e. the pipe will iterate over each direct child element of the root. "
 		+"Be aware that memory consumption appears to increase with file size when this attribute is used. When possible, use containerElement and/or targetElement instead.", ""})
 	public void setElementXPathExpression(String string) {
 		elementXPathExpression = string;
 	}
 
-	@IbisDoc({"6", "When set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, supporting XPath 2.0, otherwise xslt processor 1.0 (org.apache.xalan), supporting XPath 1.0. N.B. Be aware that setting this other than 1 might cause the input file being read as a whole in to memory, as Xslt Streaming is currently only supported by the XsltProcessor that is used for xsltVersion=1", "1"})
+	@IbisDoc({"If set to <code>2</code> a XSLT processor 2.0 (net.sf.saxon) will be used, supporting XPath 2.0, otherwise a XSLT processor 1.0 (org.apache.xalan), supporting XPath 1.0. N.B. Be aware that setting this other than 1 might cause the input file being read as a whole in to memory, as XSLT Streaming is currently only supported by the XSLT Processor that is used for xsltVersion=1", "1"})
 	public void setXsltVersion(int xsltVersion) {
 		this.xsltVersion=xsltVersion;
 	}
 
-	@IbisDoc({"7", "when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
-	/**
-	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
-	 */
 	@Deprecated
 	@ConfigurationWarning("It's value is now auto detected. If necessary, replace with a setting of xsltVersion")
 	public void setXslt2(boolean b) {
-		xsltVersion=b?2:1;
+		setXsltVersion(b?2:1);
 	}
 
-	@IbisDoc({"8", "When set <code>true</code> namespaces (and prefixes) in the input message are removed before transformation", "true"})
+	@IbisDoc({"If set <code>true</code> namespaces (and prefixes) are removed from the items just before forwarding them to the sender. N.B. This takes place <strong>after</strong> the transformation for <code>elementXPathExpression</code> if that is specified"})
 	public void setRemoveNamespaces(boolean b) {
 		removeNamespaces = b;
-	}
-
-	@Override
-	public void setThreadLifeCycleEventListener(ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener) {
-		this.threadLifeCycleEventListener=threadLifeCycleEventListener;
 	}
 
 }
