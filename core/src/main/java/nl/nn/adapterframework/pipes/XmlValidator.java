@@ -97,6 +97,10 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	private String soapNamespace = SoapVersion.SOAP11.namespace;
 	private @Getter String rootElementSessionKey;
 	private @Getter String rootNamespaceSessionKey;
+	private @Getter boolean addNamespaceToSchema = false;
+	private @Getter String importedSchemaLocationsToIgnore;
+	private @Getter boolean useBaseImportedSchemaLocationsToIgnore = false;
+	private @Getter String importedNamespacesToIgnore;
 
 	/*
 	 * Root validations are a set of lists.
@@ -863,38 +867,26 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return  validator.getCharset();
 	}
 
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	@IbisDoc({"If set <code>true</code>, the namespace from schemalocation is added to the schema document as targetnamespace", "false"})
 	public void setAddNamespaceToSchema(boolean addNamespaceToSchema) {
-		validator.setAddNamespaceToSchema(addNamespaceToSchema);
-	}
-	public boolean isAddNamespaceToSchema() {
-		return validator.isAddNamespaceToSchema();
+		this.addNamespaceToSchema = addNamespaceToSchema;
 	}
 
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	@IbisDoc({"Comma separated list of schemaLocations which are excluded from an import or include in the schema document", ""})
 	public void setImportedSchemaLocationsToIgnore(String string) {
-		validator.setImportedSchemaLocationsToIgnore(string);
-	}
-	public String getImportedSchemaLocationsToIgnore() {
-		return validator.getImportedSchemaLocationsToIgnore();
+		importedSchemaLocationsToIgnore = string;
 	}
 
-
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	@IbisDoc({"If set <code>true</code>, the comparison for importedSchemaLocationsToIgnore is done on base filename without any path", "false"})
 	public void setUseBaseImportedSchemaLocationsToIgnore(boolean useBaseImportedSchemaLocationsToIgnore) {
-		validator.setUseBaseImportedSchemaLocationsToIgnore(useBaseImportedSchemaLocationsToIgnore);
-	}
-	public boolean isUseBaseImportedSchemaLocationsToIgnore() {
-		return validator.isUseBaseImportedSchemaLocationsToIgnore();
+		this.useBaseImportedSchemaLocationsToIgnore = useBaseImportedSchemaLocationsToIgnore;
 	}
 
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	@IbisDoc({"Comma separated list of namespaces which are excluded from an import or include in the schema document", ""})
 	public void setImportedNamespacesToIgnore(String string) {
-		validator.setImportedNamespacesToIgnore(string);
+		importedNamespacesToIgnore = string;
 	}
-	public String getImportedNamespacesToIgnore() {
-		return validator.getImportedNamespacesToIgnore();
-	}
+
 
 	@IbisDocRef({ABSTRACTXMLVALIDATOR})
 	public void setWarn(boolean warn) {
