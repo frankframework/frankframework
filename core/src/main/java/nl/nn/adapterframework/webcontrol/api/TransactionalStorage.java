@@ -18,6 +18,7 @@ package nl.nn.adapterframework.webcontrol.api;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -409,8 +410,11 @@ public class TransactionalStorage extends Base {
 
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
 		messageId = Misc.urlDecode(messageId);
-
-		resendMessage(receiver, messageId);
+		try {
+			resendMessage(receiver, messageId);
+		} catch(ApiException e) {
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(Arrays.asList(e.getCause().getMessage())).build();
+		}
 
 		return Response.status(Response.Status.OK).build();
 	}
