@@ -53,6 +53,7 @@ public interface IPipeLineSession extends Map<String,Object>, AutoCloseable {
 	public static final String EXIT_STATE_CONTEXT_KEY="exitState";
 	public static final String EXIT_CODE_CONTEXT_KEY="exitCode";
 
+	public Message getMessage(String key);
 	/**
 	 * @return the messageId that was passed to the <code>PipeLine</code> which
 	 *         should be stored under <code>originalMessageKey</code>
