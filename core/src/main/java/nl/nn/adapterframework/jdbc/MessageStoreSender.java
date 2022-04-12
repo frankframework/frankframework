@@ -46,12 +46,6 @@ import nl.nn.adapterframework.stream.Message;
  * is received in which case it can be certain that the message is stored in the
  * ibisstore.
  *
- * Add a messageLog element with class {@link DummyTransactionalStorage} to
- * prevent the warning "... has no messageLog..." and enable the message
- * browser in the console. Set it's type to A to view the messages moved to the
- * messageLog by the {@link MessageStoreListener} or M to view the messages in
- * the messageStore which still need to be processed.
- *
  * Example configuration:
  * <code><pre>
 		&lt;sender
@@ -62,13 +56,6 @@ import nl.nn.adapterframework.stream.Message;
 			>
 			&lt;param name="messageId" xpathExpression="/Envelope/Header/MessageID"/>
 		&lt;/sender>
-		&lt;!-- DummyTransactionalStorage to enable messagestore browser in the console (JdbcTransactionalStorage would store an extra record in the ibisstore) -->
-		&lt;messageLog
-			className="nl.nn.adapterframework.jdbc.DummyTransactionalStorage"
-			datasourceName="${jdbc.datasource.default}"
-			slotId="${instance.name}/ServiceName"
-			type="M"
-		/>
 </pre></code>
  *
  * @ff.parameter messageId messageId to check for duplicates, when this parameter isn't present the messageId is read from sessionKey messageId

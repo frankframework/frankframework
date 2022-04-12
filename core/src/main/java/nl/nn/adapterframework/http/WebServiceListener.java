@@ -68,7 +68,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	private @Getter boolean mtomEnabled = false;
 	private @Getter String attachmentSessionKeys = "";
 	private @Getter String multipartXmlSessionKey = "multipartXml";
-	private List<String> attachmentSessionKeysList = new ArrayList<String>();
+	private List<String> attachmentSessionKeysList = new ArrayList<>();
 	private EndpointImpl endpoint = null;
 	private SpringBus cxfBus;
 
@@ -148,16 +148,19 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	public void close() {
 		super.close();
 
-		if(endpoint != null && endpoint.isPublished())
+		if(endpoint != null && endpoint.isPublished()) {
 			endpoint.stop();
-
-		if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
-			log.debug("unregistering listener ["+getName()+"] from ServiceDispatcher by serviceNamespaceURI ["+getServiceNamespaceURI()+"]");
-			ServiceDispatcher.getInstance().unregisterServiceClient(getServiceNamespaceURI());
 		}
-		else {
-			log.debug("unregistering listener ["+getName()+"] from ServiceDispatcher");
-			ServiceDispatcher.getInstance().unregisterServiceClient(getName()); //Backwards compatibility
+
+		if (StringUtils.isEmpty(getAddress())) {
+			if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
+				log.debug("unregistering listener ["+getName()+"] from ServiceDispatcher by serviceNamespaceURI ["+getServiceNamespaceURI()+"]");
+				ServiceDispatcher.getInstance().unregisterServiceClient(getServiceNamespaceURI());
+			}
+			else {
+				log.debug("unregistering listener ["+getName()+"] from ServiceDispatcher");
+				ServiceDispatcher.getInstance().unregisterServiceClient(getName()); //Backwards compatibility
+			}
 		}
 	}
 

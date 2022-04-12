@@ -16,6 +16,8 @@
 		<jboss-logging.version>3.4.2.Final</jboss-logging.version>
 		<argLine /> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
+		<!-- Override this property to use another version of the Frank!Doc -->
+		<frankdoc.version>1.1-SNAPSHOT</frankdoc.version>
 	</properties>
 
 	<name>Ibis AdapterFramework parent</name>
@@ -861,7 +863,7 @@
 							<docletArtifact>
 								<groupId>org.ibissource</groupId>
 								<artifactId>frank-doc</artifactId>
-								<version>1.1-SNAPSHOT</version>
+								<version>${frankdoc.version}</version>
 							</docletArtifact>
 							<additionalOptions>
 								<additionalOption>-outputDirectory</additionalOption>
