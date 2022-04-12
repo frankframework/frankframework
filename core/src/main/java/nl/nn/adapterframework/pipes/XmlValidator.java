@@ -185,7 +185,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 				}
 			}
 			validator.setSchemasProvider(this);
-			
+
 			if (StringUtils.isNotEmpty(getImportedSchemaLocationsToIgnore())) {
 				combineSchemas = true;
 			}
@@ -340,13 +340,25 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 					if (isForwardFailureToSuccess()) {
 						forward = getSuccessForward();
 					} else {
-						throw new PipeRunException(this, "not implemented: should get reason from validator");
+						String errorMessage = session.get(getReasonSessionKey(), null);
+						if (StringUtils.isEmpty(errorMessage)) {
+							errorMessage = session.get(getXmlReasonSessionKey(), "unknown error");
+						}
+ 						throw new PipeRunException(this, errorMessage);
 					}
 				}
 				return forward;
 			default:
 				throw new IllegalStateException("Unknown validationResult ["+validationResult+"]");
 		}
+	}
+
+	protected PipeRunResult getErrorResult(ValidationResult result, String reason, PipeLineSession session, boolean responseMode) throws PipeRunException {
+		if (StringUtils.isNotEmpty(getReasonSessionKey())) {
+			session.put(getReasonSessionKey(), reason);
+		}
+		PipeForward forward = determineForward(ValidationResult.PARSER_ERROR, session, responseMode);
+		return new PipeRunResult(forward, Message.nullMessage());
 	}
 
 	@Deprecated

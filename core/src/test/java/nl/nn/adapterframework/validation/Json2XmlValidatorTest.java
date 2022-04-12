@@ -124,16 +124,18 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 				}
 			}
 			evaluateResult(event, session, null, expectedFailureReasons);
-			try {
-				RootValidations rootvalidations = null;
-				if (rootelement != null) {
-					rootvalidations = new RootValidations("Envelope", "Body", rootelement);
+			if (event != ValidationResult.PARSER_ERROR) {
+				try {
+					RootValidations rootvalidations = null;
+					if (rootelement != null) {
+						rootvalidations = new RootValidations("Envelope", "Body", rootelement);
+					}
+					ValidationResult validationResult = validator.validate(result, session, "check result", rootvalidations, null);
+					evaluateResult(validationResult, session, null, expectedFailureReasons);
+					return validationResult;
+				} catch (Exception e) {
+					fail("result XML must be valid: " + e.getMessage());
 				}
-				ValidationResult validationResult = validator.validate(result, session, "check result", rootvalidations, null);
-				evaluateResult(validationResult, session, null, expectedFailureReasons);
-				return validationResult;
-			} catch (Exception e) {
-				fail("result XML must be valid: " + e.getMessage());
 			}
 
 			return event;
