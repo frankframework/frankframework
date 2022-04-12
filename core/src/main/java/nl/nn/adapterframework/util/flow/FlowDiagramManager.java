@@ -76,11 +76,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 	}
 
 	public String getMediaType() {
-		MediaType type = MediaType.TEXT_PLAIN;
-		if(flowGenerator != null) {
-			type = flowGenerator.getMediaType();
-		}
-
+		MediaType type = (flowGenerator != null) ? flowGenerator.getMediaType() : MediaType.TEXT_PLAIN;
 		return type.toString();
 	}
 
