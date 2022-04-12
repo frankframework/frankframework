@@ -25,6 +25,7 @@ import java.util.TreeSet;
 
 import liquibase.resource.InputStreamList;
 import liquibase.resource.ResourceAccessor;
+import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -72,7 +73,7 @@ public class LiquibaseResourceAccessor implements ResourceAccessor {
 		if(path.equals(resource.getSystemId())) {
 			return resource.openStream();
 		} else if(classLoader != null) { // script may contain include(s)
-			return classLoader.getResourceAsStream(path);
+			return ((ClassLoaderBase)classLoader).getResource(path, false).openStream();
 		}
 		return null;
 	}
