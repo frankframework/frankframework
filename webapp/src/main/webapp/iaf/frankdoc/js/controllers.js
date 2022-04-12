@@ -22,6 +22,7 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 			}
 		}
 	}
+
 	$scope.flattenElements = function(element) {
 		if(element.parent) {
 			let el = angular.copy(element);
@@ -62,6 +63,7 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 			let types = data.types;
 			let elements = data.elements;
 			let enums = data.enums;
+			$scope.version = (data.metadata && data.metadata.version) ? data.metadata.version : null;
 
 			//map elements so we can search
 			$scope.groups = data.groups;

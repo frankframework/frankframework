@@ -20,6 +20,7 @@
 		'ngSanitize',                   // ngSanitize
 	]).constant("properties", {
 		"server": server,
+		"version": null
 	});
 	console.timeEnd("startup");
 })();
@@ -73,6 +74,7 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 							if($scope.showInheritance) {
 								el = $scope.flattenElements(el);
 							}
+							$state.element = el;
 							$rootScope.$broadcast('element', el);
 						}
 					}
