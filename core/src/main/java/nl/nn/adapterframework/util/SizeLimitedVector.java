@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,8 +22,8 @@ package nl.nn.adapterframework.util;
  * <p>Creation date: (03-03-2003 9:10:43)</p>
  * @author Johan Verrips
  */
-public class SizeLimitedVector extends java.util.Vector {
-	
+public class SizeLimitedVector<E> extends java.util.Vector<E> {
+
 	private int maxSize=Integer.MAX_VALUE;
 /**
  * SizeLimitedVector constructor comment.
@@ -32,9 +32,10 @@ public SizeLimitedVector() {
 	super();
 }
 	public SizeLimitedVector(int maxSize){
-		this.maxSize=maxSize;	
+		this.maxSize=maxSize;
 	}
-	public boolean  add(Object o){
+	@Override
+	public boolean add(E o){
 		super.add(o);
 		if (super.size()>maxSize) super.removeElementAt(0);
 		return true;
@@ -51,6 +52,6 @@ public SizeLimitedVector() {
 		if (this.size()>0){
 			while (size()>maxSize) removeElementAt(0);
 		}
-		
+
 	}
 }
