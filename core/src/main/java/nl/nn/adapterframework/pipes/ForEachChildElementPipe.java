@@ -428,9 +428,6 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			throw new SenderException(e);
 		}
 		return handlerRecord.itemHandler.stopReason;
-		// 2020-06-12 removing below 'rethrowTransformerException()', as it does not break the tests, and cannot be implemented when providing an OutputStream.
-		// However, if cases popup of errors not being signaled, this modification could be the cause.
-		//rethrowTransformerException(handlerRecord.transformerErrorListener, handlerRecord.errorMessage);
 	}
 
 	protected TransformerPool getExtractElementsTp() {
