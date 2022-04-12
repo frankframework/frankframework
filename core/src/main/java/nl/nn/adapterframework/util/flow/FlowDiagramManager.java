@@ -71,7 +71,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 		if(StringUtils.isNotEmpty(generatorBeanClass)) {
 			flowGenerator = createFlowGenerator(generatorBeanClass);
 		} else {
-			log.info("no FlowGenerator found. Unable to generate flow diagrams");
+			log.info("no FlowGenerator configured. No flow diagrams will be generated");
 		}
 	}
 
