@@ -185,6 +185,10 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 				}
 			}
 			validator.setSchemasProvider(this);
+			
+			if (StringUtils.isNotEmpty(getImportedSchemaLocationsToIgnore())) {
+				combineSchemas = true;
+			}
 
 			//do initial schema check
 			if (getSchemasId()!=null) {
@@ -475,15 +479,16 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 				checkInputRootValidations(xsds);
 				checkOutputRootValidations(xsds);
 			}
-			if (isAddNamespaceToSchema() && !combineSchemas && StringUtils.isEmpty(getImportedSchemaLocationsToIgnore())) {
-				SchemaUtils.addTargetNamespaceToXsds(xsds);
-			}
-			if (combineSchemas || StringUtils.isNotEmpty(getImportedSchemaLocationsToIgnore())) {
+			if (combineSchemas) {
 				try {
 					Map<String, Set<XSD>> xsdsGroupedByNamespace = SchemaUtils.getXsdsGroupedByNamespace(xsds, false);
-					xsds = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(this, xsdsGroupedByNamespace, null);
+					xsds = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(this, xsdsGroupedByNamespace, null); // also handles addNamespaceToSchema
 				} catch(Exception e) {
 					throw new ConfigurationException(getLogPrefix(null) + "could not merge schema's", e);
+				}
+			} else {
+				if (isAddNamespaceToSchema()) {
+					SchemaUtils.addTargetNamespaceToXsds(xsds);
 				}
 			}
 		}

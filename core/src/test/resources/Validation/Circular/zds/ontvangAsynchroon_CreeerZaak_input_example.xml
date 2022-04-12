@@ -1,4 +1,8 @@
-<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:BG="http://www.egem.nl/StUF/sector/bg/0310" xmlns:StUF="http://www.egem.nl/StUF/StUF0301" xmlns:ZKN="http://www.egem.nl/StUF/sector/zkn/0310" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.egem.nl/StUF/StUF0301 file:///C:/Gerrit/Workspaces/eclipse/iaf/core/src/test/resources/Validation/Circular/zds/zds_1_1_2_resolved/zkn0310_msg_stuf_zs-dms_resolved2017.xsd">
+<SOAP-ENV:Envelope 
+	xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" 
+	xmlns:BG="http://www.egem.nl/StUF/sector/bg/0310" 
+	xmlns:StUF="http://www.egem.nl/StUF/StUF0301" 
+	xmlns:ZKN="http://www.egem.nl/StUF/sector/zkn/0310">
 	<SOAP-ENV:Header/>
 	<SOAP-ENV:Body>
 		<ZKN:zakLk01>
