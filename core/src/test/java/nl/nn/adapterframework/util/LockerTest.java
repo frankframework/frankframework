@@ -96,8 +96,8 @@ public class LockerTest extends TransactionManagerTestBase {
 
 		String message = messageKeeper.get(0).getMessageText();
 		assertThat(message, containsString("objectId [myLocker]"));
-		assertThat(message, containsString("current host"));
-		assertThat(message, containsString("current creationDate"));
+		assertThat(message, containsString("Process locked by host"));
+		assertThat(message, containsString("with expiry date"));
 	}
 
 	@Test
