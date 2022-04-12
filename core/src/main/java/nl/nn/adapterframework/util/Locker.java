@@ -274,7 +274,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 				
 				try (ResultSet rs = stmt.executeQuery()) {
 					if (rs.next()) {
-						String info = "objectId ["+objectId+"] current type ["+rs.getString(1)+"] current host ["+rs.getString(2)+"] current creationDate ["+DateUtils.format(rs.getTimestamp(3))+"] current expirydate ["+DateUtils.format(rs.getTimestamp(4))+"]";
+						String info = "objectId ["+objectId+"] of type ["+rs.getString(1)+"]. Process locked by host ["+rs.getString(2)+"] at ["+DateUtils.format(rs.getTimestamp(3))+"] with expiry date ["+DateUtils.format(rs.getTimestamp(4))+"]";
 						return info;
 					}
 					return "(no locker info found)";
