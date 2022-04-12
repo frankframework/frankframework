@@ -134,8 +134,9 @@
 	</build>
 	
 	<modules>
-		<module>example</module>
 		<module>test</module>
+		<module>webapp</module>
+		<module>example</module>
 	</modules>
 
 </project>

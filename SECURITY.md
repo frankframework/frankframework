@@ -27,7 +27,7 @@ best practices and perform security testing before releasing your application.
 | Version | Supported          | Security Fixes   | Released         |
 | ------- | ------------------ |----------------- |------------------|
 | 7.8.x   | :white_check_mark: |:white_check_mark:|                  |
-| 7.7.x   | :white_check_mark: |:white_check_mark:| Feb 4, 2022 (RC) |
+| 7.7.x   | :white_check_mark: |:white_check_mark:| Mar 29, 2022     |
 | 7.6.x   | :white_check_mark: |:white_check_mark:| Aug 3, 2021      |
 | 7.5.x   | :x:                |:white_check_mark:| Nov 16, 2020     |
 | 7.0.x   | :x:                |:x:               | Jun 1, 2018      |

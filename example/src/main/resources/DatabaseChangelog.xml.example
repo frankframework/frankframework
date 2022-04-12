@@ -23,7 +23,7 @@ RenameView
 TagDatabase
  -->
 
-	<changeSet id="Ibis4Example:1" author="Niels Meijer">
+	<changeSet id="Frank2Example:1" author="Niels Meijer">
 		<tagDatabase tag="tag1"/>
 	</changeSet>
 

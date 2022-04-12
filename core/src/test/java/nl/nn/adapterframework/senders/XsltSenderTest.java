@@ -1,6 +1,9 @@
 package nl.nn.adapterframework.senders;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 import java.io.IOException;
 
@@ -13,6 +16,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
@@ -22,6 +26,19 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 	@Override
 	public XsltSender createSender() {
 		return new XsltSender();
+	}
+
+	@Test
+	public void duplicateParameters() {
+		sender.setXpathExpression("*");
+		sender.addParameter(new Parameter("a","value1"));
+		sender.addParameter(new Parameter("a","value2"));
+		sender.addParameter(new Parameter("b","value1"));
+		sender.addParameter(new Parameter("b","value2"));
+
+		ConfigurationException e = assertThrows(ConfigurationException.class, sender::configure);
+
+		assertThat(e.getMessage(), containsString("Duplicate parameter names [a, b]"));
 	}
 
 	@Test
@@ -137,7 +154,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 
 		assertEquals(expected, sender.sendMessage(input, session).asString());
 	}
-	
+
 	@Test
 	public void testDynamicStylesheetWithoutDefault() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException, TimeoutException {
 		sender.setStyleSheetNameSessionKey("stylesheetName");
@@ -153,7 +170,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 
 		assertEquals(expected, sender.sendMessage(input, session).asString());
 	}
-	
+
 	@Test
 	public void useDefaultStylesheetWithEmptySessionKey() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException, TimeoutException {
 		sender.setStyleSheetName("/Xslt/dynamicStylesheet/correctDummy.xsl");
@@ -169,7 +186,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 
 		assertEquals(expected, sender.sendMessage(input, session).asString());
 	}
-	
+
 	@Test
 	public void noStylesheetOrXpathOrSessionKeyGiven() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException, TimeoutException {
 		exception.expectMessage("one of xpathExpression, styleSheetName or styleSheetNameSessionKey must be specified");
@@ -184,7 +201,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 
 		assertEquals(expected, sender.sendMessage(input, session).asString());
 	}
-	
+
 	@Test
 	public void stylesheetSessionKeyAndXpathGiven() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException, TimeoutException {
 		sender.setXpathExpression("result");
@@ -201,7 +218,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 
 		assertEquals(expected, sender.sendMessage(input, session).asString());
 	}
-	
+
 	@Test
 	public void useDefaultXpathWithEmptySessionKey() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException, TimeoutException {
 		sender.setXpathExpression("result");
@@ -216,7 +233,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 
 		assertEquals("dummy", result);
 	}
-	
+
 	@Test
 	public void nonexistingStyleSheet() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException, TimeoutException {
 		exception.expectMessage("cannot find [/Xslt/dynamicStylesheet/nonexistingDummy.xsl]");
@@ -234,7 +251,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 
 		assertEquals(expected, sender.sendMessage(input, session).asString());
 	}
-	
+
 	@Ignore("First have to fix this")
 	@Test
 	public void testNamespaceUnaware() throws SenderException, TimeoutException, ConfigurationException, IOException {

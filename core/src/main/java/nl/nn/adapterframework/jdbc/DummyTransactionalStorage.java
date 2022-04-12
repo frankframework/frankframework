@@ -18,17 +18,18 @@ package nl.nn.adapterframework.jdbc;
 import java.io.Serializable;
 import java.util.Date;
 
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.SenderException;
 
 /**
  * Class for a messageLog element to be used in combination with a
- * {@link MessageStoreSender} who's messaged are processed by a
+ * {@link MessageStoreSender} who's messages are processed by a
  * {@link MessageStoreListener}.
  * 
  * @author Jaco de Groot
  */
-//@Deprecated
-//@ConfigurationWarning("It is no longer necessary to use the DummyTransactionalStorage")
+@Deprecated
+@ConfigurationWarning("It is no longer necessary to use the DummyTransactionalStorage")
 public class DummyTransactionalStorage<S extends Serializable> extends JdbcTransactionalStorage<S> {
 
 	@Override

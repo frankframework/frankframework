@@ -36,9 +36,9 @@ public class MigratorTest extends TransactionManagerTestBase {
 	protected void prepareDatabase() throws Exception {
 		super.prepareDatabase();
 		//Ignore programmatic creation of Temp table, run Liquibase instead!
-		dropTable(tableName);
-		dropTable("DATABASECHANGELOG");
-		dropTable("DATABASECHANGELOGLOCK");
+		dropTableIfPresent(tableName);
+		dropTableIfPresent("DATABASECHANGELOG");
+		dropTableIfPresent("DATABASECHANGELOGLOCK");
 
 		migrator = getConfiguration().createBean(LiquibaseMigrator.class);
 		migrator.setDatasourceName(getDataSourceName());

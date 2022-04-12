@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,17 +25,19 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 
 /**
  * Provides a base class for senders with parameters.
- * 
+ *
  * @author Gerrit van Brakel
  * @since  4.3
  */
 public abstract class SenderWithParametersBase extends SenderBase implements ISenderWithParameters {
-	
+
 	protected ParameterList paramList = null;
+	protected boolean parameterNamesMustBeUnique;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		if (paramList!=null) {
+			paramList.setNamesMustBeUnique(parameterNamesMustBeUnique);
 			paramList.configure();
 		}
 	}
@@ -61,7 +63,7 @@ public abstract class SenderWithParametersBase extends SenderBase implements ISe
 			throw new ConfigurationException("either attribute "+attributeName+" or parameter "+parameterName+" must be specified");
 		}
 	}
-	
+
 	protected String getParameterOverriddenAttributeValue(ParameterValueList pvl, String parameterName, String attributeValue) {
 		if (pvl!=null && pvl.contains(parameterName)) {
 			return pvl.getParameterValue(parameterName).asStringValue(attributeValue);
