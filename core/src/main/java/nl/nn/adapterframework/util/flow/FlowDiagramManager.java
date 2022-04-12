@@ -214,7 +214,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 
 	private File retrieveFlowFile(File parent, String fileName) {
 		if(flowGenerator == null) { //fail fast check to see if an IFlowGenerator is available.
-			log.debug("cannot generate FlowFile, no flow-generator found");
+			log.debug("cannot retrieve Flow file, no generator found");
 			return null;
 		}
 
@@ -230,8 +230,8 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 
 	// Don't call this when no generator is set!
 	private void generateFlowDiagram(String name, String xml, File destination) throws IOException {
-		if(flowGenerator == null) { //fail fast check to see if an IFlowGenerator is available.
-			log.debug("cannot generate FlowFile, no flow-generator found");
+		if(flowGenerator == null || StringUtils.isEmpty(xml)) { //fail fast check to see if an IFlowGenerator is available.
+			log.debug("cannot generate flow diagram for {}", name);
 			return;
 		}
 
