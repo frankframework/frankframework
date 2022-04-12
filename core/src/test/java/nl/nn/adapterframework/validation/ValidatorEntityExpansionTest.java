@@ -49,7 +49,7 @@ public class ValidatorEntityExpansionTest extends EntityResolvingTest {
 //		return result;
 		AbstractXmlValidator instance = implementation.newInstance();
 		System.out.println("Created instance [" + instance.getClass().getName() + "]");
-		instance.setSchemasProvider(new SchemasProviderImpl(SCHEMA_NAMESPACE, xsd));
+		instance.setSchemasProvider(new DummySchemasProviderImpl(SCHEMA_NAMESPACE, xsd));
 		instance.setThrowException(true);
 		instance.setFullSchemaChecking(true);
 		instance.configure("init");

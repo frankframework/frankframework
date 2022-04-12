@@ -86,10 +86,6 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 	protected boolean warn = AppConstants.getInstance(configurationClassLoader).getBoolean("xmlValidator.warn", true);
 
 	protected String logPrefix = "";
-	protected @Getter boolean addNamespaceToSchema = false;
-	protected @Getter String importedSchemaLocationsToIgnore;
-	protected @Getter boolean useBaseImportedSchemaLocationsToIgnore = false;
-	protected @Getter String importedNamespacesToIgnore;
 	protected @Getter Boolean ignoreUnknownNamespaces;
 	private @Getter boolean ignoreCaching = false;
 	private @Getter String xmlSchemaVersion=null;
@@ -308,26 +304,6 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 	@IbisDoc({"If set <code>true</code>, send warnings to logging and console about syntax problems in the configured schema('s)", "true"})
 	public void setWarn(boolean warn) {
 		this.warn = warn;
-	}
-
-	@IbisDoc({"If set <code>true</code>, the namespace from schemalocation is added to the schema document as targetnamespace", "false"})
-	public void setAddNamespaceToSchema(boolean addNamespaceToSchema) {
-		this.addNamespaceToSchema = addNamespaceToSchema;
-	}
-
-	@IbisDoc({"Comma separated list of schemaLocations which are excluded from an import or include in the schema document", ""})
-	public void setImportedSchemaLocationsToIgnore(String string) {
-		importedSchemaLocationsToIgnore = string;
-	}
-
-	@IbisDoc({"If set <code>true</code>, the comparison for importedSchemaLocationsToIgnore is done on base filename without any path", "false"})
-	public void setUseBaseImportedSchemaLocationsToIgnore(boolean useBaseImportedSchemaLocationsToIgnore) {
-		this.useBaseImportedSchemaLocationsToIgnore = useBaseImportedSchemaLocationsToIgnore;
-	}
-
-	@IbisDoc({"Comma separated list of namespaces which are excluded from an import or include in the schema document", ""})
-	public void setImportedNamespacesToIgnore(String string) {
-		importedNamespacesToIgnore = string;
 	}
 
 	@IbisDoc({"Ignore namespaces in the input message which are unknown", "true when <code>schema</code> or <code>noNamespaceSchemaLocation</code> is used, false otherwise"})

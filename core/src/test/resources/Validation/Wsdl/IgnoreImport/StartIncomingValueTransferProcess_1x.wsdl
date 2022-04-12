@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Created by TIBCO WSDL-->
+<wsdl:definitions xmlns:ns1="http://nn.nl/XSD/Generic/MessageHeader/1" xmlns:tns="urn:amx:BPMEnvironment/nl.nn.med.PensionsSMB.ValueTransfer.ValueTransferLegacy" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:ns0="http://nn.nl/XSD/PensionsSMB/ValueTransfer/ValueTransferLegacy/1/StartIncomingValueTransferProcess/1" xmlns:jms="http://www.tibco.com/namespaces/ws/2004/soap/binding/JMS" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:jndi="http://www.tibco.com/namespaces/ws/2004/soap/apis/jndi" name="nl.nn.med.PensionsSMB.ValueTransfer.ValueTransferLegacy_1.0.0.201405141212_service_StartIncomingValueTransferProcess_Interface_1_StartIncomingValueTransferProcess_Interface_1" targetNamespace="urn:amx:BPMEnvironment/nl.nn.med.PensionsSMB.ValueTransfer.ValueTransferLegacy" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <wsdl:types>
+        <xs:schema targetNamespace="http://nn.nl/XSD/Generic/MessageHeader/1">
+            <xs:include schemaLocation="schema1.xsd"/>
+        </xs:schema>
+        <xs:schema targetNamespace="http://nn.nl/XSD/PensionsSMB/ValueTransfer/ValueTransferLegacy/1/StartIncomingValueTransferProcess/1">
+            <xs:include schemaLocation="schema2.xsd"/>
+        </xs:schema>
+    </wsdl:types>
+    <wsdl:message name="StartIncomingValueTransferProcess_1_Request">
+        <wsdl:part name="body" element="ns0:StartIncomingValueTransferRequest"/>
+        <wsdl:part name="header" element="ns1:MessageHeader"/>
+    </wsdl:message>
+    <wsdl:portType name="StartIncomingValueTransferProcess_Interface_1">
+        <wsdl:operation name="StartIncomingValueTransferProcess_1">
+            <wsdl:input message="tns:StartIncomingValueTransferProcess_1_Request"/>
+        </wsdl:operation>
+    </wsdl:portType>
+    <wsdl:binding name="StartIncomingValueTransferProcess_Interface_1" type="tns:StartIncomingValueTransferProcess_Interface_1">
+        <soap:binding style="document" transport="http://www.tibco.com/namespaces/ws/2004/soap/binding/JMS"/>
+        <jms:binding messageFormat="text"/>
+        <wsdl:operation name="StartIncomingValueTransferProcess_1">
+            <wsdl:documentation/>
+            <soap:operation style="document" soapAction="StartIncomingValueTransferProcess_1"/>
+            <wsdl:input>
+                <soap:body use="literal" parts="body"/>
+                <soap:header use="literal" message="tns:StartIncomingValueTransferProcess_1_Request" part="header"/>
+            </wsdl:input>
+        </wsdl:operation>
+    </wsdl:binding>
+    <wsdl:service name="nl.nn.med.PensionsSMB.ValueTransfer.ValueTransferLegacy_1.0.0.201405141212_service_StartIncomingValueTransferProcess_Interface_1_StartIncomingValueTransferProcess_Interface_1">
+        <wsdl:port name="StartIncomingValueTransferProcess_Interface_1" binding="tns:StartIncomingValueTransferProcess_Interface_1">
+            <soap:address location="jms/StartIncomingValueTransferProcessAction"/>
+            <jndi:context>
+                <jndi:property name="java.naming.factory.initial" type="java.lang.String">com.tibco.tibjms.naming.TibjmsInitialContextFactory</jndi:property>
+                <jndi:property name="java.naming.provider.url" type="java.lang.String">tibjmsnaming://localhost:7222</jndi:property>
+            </jndi:context>
+            <jms:connectionFactory>QueueConnectionFactory</jms:connectionFactory>
+            <!--The element targetAddress value (ESB.PensionsSMB.TS.ValueTransfer.ValueTransferLegacy.1.StartIncomingValueTransferProcess.1.Action) is the jndi name of the destination. Please replace this with physical destination name at the service consumption point.-->
+            <jms:targetAddress destination="queue">ESB.PensionsSMB.TS.ValueTransfer.ValueTransferLegacy.1.StartIncomingValueTransferProcess.1.Action</jms:targetAddress>
+        </wsdl:port>
+    </wsdl:service>
+</wsdl:definitions>
