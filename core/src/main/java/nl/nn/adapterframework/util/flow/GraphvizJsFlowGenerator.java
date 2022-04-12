@@ -89,6 +89,5 @@ public class GraphvizJsFlowGenerator extends DotFlowGenerator {
 		super.destroy();
 
 		graphvisEngines.remove();
-		if(log.isTraceEnabled()) log.trace("destroyed JavaScriptFlowGenerator");
 	}
 }

@@ -88,12 +88,12 @@ public class DotFlowGenerator implements IFlowGenerator {
 
 	@Override
 	public void destroy() {
-		if(transformerPoolAdapter != null)
+		if(transformerPoolAdapter != null) {
 			transformerPoolAdapter.close();
+		}
 
-		if(transformerPoolConfig != null)
+		if(transformerPoolConfig != null) {
 			transformerPoolConfig.close();
-
-		if(log.isTraceEnabled()) log.trace("destroyed JavaScriptFlowGenerator");
+		}
 	}
 }
