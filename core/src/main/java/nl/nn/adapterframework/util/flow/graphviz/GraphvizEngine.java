@@ -28,7 +28,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.flow.FlowGenerationException;
-import nl.nn.adapterframework.util.flow.JavaScriptFlowGenerator;
+import nl.nn.adapterframework.util.flow.GraphvizJsFlowGenerator;
 import nl.nn.adapterframework.util.flow.ResultHandler;
 
 //TODO: consider moving this to a separate module
@@ -166,7 +166,7 @@ public class GraphvizEngine {
 	}
 
 	/**
-	 * The {@link JavaScriptFlowGenerator} uses a ThreadLocal+SoftReference map to cache the 
+	 * The {@link GraphvizJsFlowGenerator} uses a ThreadLocal+SoftReference map to cache the 
 	 * {@link GraphvisEngine GraphvisEngines}. This method ensures that the engine is destroyed properly.
 	 */
 	@Override

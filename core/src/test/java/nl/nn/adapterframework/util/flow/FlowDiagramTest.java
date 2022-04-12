@@ -1,45 +1,42 @@
-/*
-   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
- */
 package nl.nn.adapterframework.util.flow;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+
+import java.io.ByteArrayOutputStream;
 
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.Resource;
+import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.TransformerPool;
 
 public class FlowDiagramTest {
 
 	@Test
-	public void canInitDefaultWithoutErrors() throws Exception {
-		IFlowGenerator generator = new JavaScriptFlowGenerator();
+	public void testDotGeneratorFlow() throws Exception {
+		IFlowGenerator generator = new DotFlowGenerator();
 		generator.afterPropertiesSet();
 
-		FlowDiagramManager flow = new FlowDiagramManager() {
-			@Override
-			protected IFlowGenerator createFlowGenerator() {
-				return generator;
-			}
-		};
+		String adapter = TestFileUtils.getTestFile("/FlowDiagram/pipelineWithoutFirstPipe.xml");
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		generator.generateFlow(adapter, out);
 
-		assertNotNull(flow);
-		flow.afterPropertiesSet();
+		String dot = TestFileUtils.getTestFile("/FlowDiagram/dot.txt");
+		assertEquals(dot, new String(out.toByteArray()));
+	}
+
+	@Test
+	public void testGraphvizGeneratorFlow() throws Exception {
+		IFlowGenerator generator = new GraphvizJsFlowGenerator();
+		generator.afterPropertiesSet();
+
+		String adapter = TestFileUtils.getTestFile("/FlowDiagram/pipelineWithoutFirstPipe.xml");
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		generator.generateFlow(adapter, out);
+
+		String dot = TestFileUtils.getTestFile("/FlowDiagram/pipelineWithoutFirstPipe.svg");
+		MatchUtils.assertXmlEquals(dot, new String(out.toByteArray()));
 	}
 
 	@Test
