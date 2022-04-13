@@ -18,6 +18,7 @@ package nl.nn.adapterframework.util;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.testutil.TestFileUtils;
@@ -40,6 +41,7 @@ public class FlowDiagramTest {
 		};
 
 		assertNotNull(flow);
+		flow.setApplicationContext(new ClassPathXmlApplicationContext());
 		flow.afterPropertiesSet();
 	}
 
@@ -57,6 +59,7 @@ public class FlowDiagramTest {
 		};
 
 		assertNotNull(flow);
+		flow.setApplicationContext(new ClassPathXmlApplicationContext());
 		flow.afterPropertiesSet();
 		assertEquals("svg", generator.getFileExtension());
 	}

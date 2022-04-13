@@ -95,7 +95,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 
 		IFlowGenerator generator = getFlowGenerator();
 		if(generator == null) {
-			log.warn("no IFlowGenerator found. Unable to generate flow diagrams");
+			log.info("no FlowGenerator configured. No flow diagrams will be generated");
 		} else {
 			if(log.isDebugEnabled()) log.debug("using IFlowGenerator ["+generator+"]");
 			fileExtension = generator.getFileExtension();
@@ -300,6 +300,10 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 
 	// Don't call this when no generator is set!
 	private void generateFlowDiagram(String name, String dot, File destination) throws IOException {
+		if(fileExtension == null || StringUtils.isEmpty(dot)) {
+			log.debug("cannot generate flow diagram for {}", name);
+		}
+
 		log.debug("generating flow diagram for " + name);
 		long start = System.currentTimeMillis();
 
