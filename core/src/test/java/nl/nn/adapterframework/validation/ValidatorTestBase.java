@@ -133,14 +133,14 @@ public abstract class ValidatorTestBase {
 			// expected invalid XML
 			if (failureReason != null) {
 				if (e == null) {
-					assertEquals(ValidationResult.INVALID, result);
+					assertEquals(ValidationResult.PARSER_ERROR, result);
 				}
 				checkFailureReasons(failureReason, "failure reason", expectedFailureReasons);
 			} else {
 				if (e != null) {
 					checkFailureReasons(e.getMessage(), "exception message", expectedFailureReasons);
 				} else {
-					assertEquals(ValidationResult.INVALID, result);
+					assertEquals(ValidationResult.PARSER_ERROR, result);
 					checkFailureReasons("", "failure reason", expectedFailureReasons);
 				}
 			}
