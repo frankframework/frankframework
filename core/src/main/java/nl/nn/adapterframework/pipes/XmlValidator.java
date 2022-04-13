@@ -18,7 +18,6 @@ package nl.nn.adapterframework.pipes;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -635,28 +634,6 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	private void checkOutputRootValidations(Set<XSD> xsds) throws ConfigurationException {
 		if (getResponseRootValidations() != null) {
 			getResponseRootValidations().check(this, xsds);
-		}
-	}
-
-	private void checkRootValidation(List<String> path, Set<XSD> xsds) {
-		boolean found = false;
-		String validElements = path.get(path.size() - 1);
-		List<String> validElementsAsList = Arrays.asList(validElements.split(","));
-		for (String validElement : validElementsAsList) {
-			if (StringUtils.isNotEmpty(validElement)) {
-				List<String> allRootTags = new ArrayList<String>();
-				for (XSD xsd : xsds) {
-					for (String rootTag : xsd.getRootTags()) {
-						allRootTags.add(rootTag);
-						if (validElement.equals(rootTag)) {
-							found = true;
-						}
-					}
-				}
-				if (!found) {
-					ConfigurationWarnings.add(this, log, "Element ["+validElement+"] not in list of available root elements "+allRootTags);
-				}
-			}
 		}
 	}
 
