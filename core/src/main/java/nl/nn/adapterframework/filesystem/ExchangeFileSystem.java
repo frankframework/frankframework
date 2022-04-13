@@ -38,6 +38,8 @@ import com.microsoft.aad.msal4j.ClientCredentialParameters;
 import com.microsoft.aad.msal4j.ConfidentialClientApplication;
 import com.microsoft.aad.msal4j.IAuthenticationResult;
 import lombok.Setter;
+import microsoft.exchange.webservices.data.core.enumeration.misc.ConnectingIdType;
+import microsoft.exchange.webservices.data.misc.ImpersonatedUserId;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -218,6 +220,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			} catch (Exception e){
 				throw new FileSystemException("Could not generate access token!", e);
 			}
+			exchangeService.setImpersonatedUserId(new ImpersonatedUserId(ConnectingIdType.SmtpAddress, getMailAddress()));
+			exchangeService.getHttpHeaders().put("X-AnchorMailbox", getMailAddress());
 		} else {
 			// use deprecated Basic Authentication. Support will end 2021-Q3!
 			log.warn("Using deprecated Basic Authentication method for authentication to Exchange Web Services");
