@@ -205,7 +205,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 
 		CredentialFactory cf = new CredentialFactory(getAuthAlias(), defaultUsername, defaultPassword);
-		if (StringUtils.isEmpty(getClientId())) {
+		if (client != null) {
 			ClientCredentialParameters clientCredentialParam = ClientCredentialParameters.builder(
 				Collections.singleton(SCOPE)
 			).build();
