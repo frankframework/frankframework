@@ -59,15 +59,25 @@ public class ExchangeMailListener extends MailListener<EmailMessage,Attachment,E
 	}
 
 	@IbisDocRef({ EXCHANGE_FILE_SYSTEM})
+	public void setClientId(String clientId) { getFileSystem().setClientId(clientId); }
+
+	@IbisDocRef({ EXCHANGE_FILE_SYSTEM})
+	public void setClientSecret(String clientSecret) { getFileSystem().setClientSecret(clientSecret); }
+
+	@IbisDocRef({ EXCHANGE_FILE_SYSTEM})
 	public void setTenantId(String tenantId) {
 		getFileSystem().setTenantId(tenantId);
 	}
 
+	@Deprecated
+	@ConfigurationWarning("Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to authentication using an accessToken. N.B. username no longer defaults to mailaddress")
 	@IbisDocRef({ EXCHANGE_FILE_SYSTEM})
 	public void setUsername(String username) {
 		getFileSystem().setUsername(username);
 	}
 
+	@Deprecated
+	@ConfigurationWarning("Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to authentication using an accessToken")
 	@IbisDocRef({ EXCHANGE_FILE_SYSTEM})
 	public void setPassword(String password) {
 		getFileSystem().setPassword(password);
@@ -125,12 +135,6 @@ public class ExchangeMailListener extends MailListener<EmailMessage,Attachment,E
 	@IbisDocRef({EXCHANGE_FILE_SYSTEM})
 	public void setProxyDomain(String domain) {
 		getFileSystem().setProxyDomain(domain);
-	}
-
-	@Override
-	public void setName(String name){
-		super.setName(name);
-		getFileSystem().setName(name);
 	}
 
 }

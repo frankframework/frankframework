@@ -41,6 +41,7 @@ import com.microsoft.aad.msal4j.IAuthenticationResult;
 import lombok.Setter;
 import microsoft.exchange.webservices.data.core.enumeration.misc.ConnectingIdType;
 import microsoft.exchange.webservices.data.misc.ImpersonatedUserId;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IConfigurationAware;
 import org.apache.commons.lang3.StringUtils;
@@ -104,8 +105,8 @@ import org.springframework.context.ApplicationContext;
  *     	<li>Request the required API permissions within desired scope <code>https://outlook.office365.com/</code> in Azure AD -> App Registrations -> MyApp -> API Permissions.</li>
  *     	<li>Create a secret for your application in Azure AD -> App Registrations -> MyApp -> Certificates and Secrets</li>
  *     	<li>Configure the clientSecret directly as password or as the password of a JAAS entry referred to by authAlias. Only available upon creation of your secret in the previous step.</li>
- *     	<li>Configure the clientId directly as username or as the username of a JAAS entry referred to by authAlias. Could be retrieved from Azure AD -> App Registrations -> MyApp -> Overview</li>
- *     	<li>Configure the tenantId. Could be retrieved from Azure AD -> App Registrations -> MyApp -> Overview</li>
+ *     	<li>Configure the clientId directly as username or as the username of a JAAS entry referred to by authAlias which could be retrieved from Azure AD -> App Registrations -> MyApp -> Overview</li>
+ *     	<li>Configure the tenantId which could be retrieved from Azure AD -> App Registrations -> MyApp -> Overview</li>
  * 		<li>Make sure your application is able to reach <code>https://login.microsoftonline.com</code>. Required for token retrieval. </li>
  * </ol>
  *
@@ -118,7 +119,7 @@ import org.springframework.context.ApplicationContext;
  * @author Gerrit van Brakel
  *
  */
-public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachment,ExchangeService> implements IConfigurationAware {
+public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachment,ExchangeService> {
 	private final @Getter(onMethod = @__(@Override)) String domain = "Exchange";
 	private @Getter String mailAddress;
 	private @Getter boolean validateAllRedirectUrls=true;
@@ -134,12 +135,10 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	private final String AUTHORITY = "https://login.microsoftonline.com/";
 	private final String SCOPE = "https://outlook.office365.com/.default";
+	private @Getter String clientId = null;
+	private @Getter String clientSecret = null;
 	private @Getter String tenantId = null;
 	private ConfidentialClientApplication client;
-
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
-	private @Getter @Setter ApplicationContext applicationContext;
-	private @Getter @Setter String name = "ExchangeFileSystem";
 
 	private FolderId basefolderId;
 
@@ -150,9 +149,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 				throw new ConfigurationException("illegal value for filter [" + getFilter()	+ "], must be 'NDR' or empty");
 			}
 		}
-		if(StringUtils.isEmpty(getTenantId())){
-			ConfigurationWarnings.add(this, log, "Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to authentication using modern authentication!");
-		}
 		if (StringUtils.isEmpty(getUrl()) && StringUtils.isEmpty(getMailAddress())) {
 			throw new ConfigurationException("either url or mailAddress needs to be specified");
 		}
@@ -162,7 +158,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	public void open() throws FileSystemException {
 		super.open();
 		basefolderId = getBaseFolderId(getMailAddress(),getBaseFolder());
-
 
 		if( StringUtils.isNotEmpty(getTenantId()) ){
 			CredentialFactory cf = getCredentials();
@@ -963,7 +958,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	}
 
 	private CredentialFactory getCredentials(){
-		return new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
+		return new CredentialFactory(getAuthAlias(), getClientId(), getClientSecret());
 	}
 
 	private static class RedirectionUrlCallback implements IAutodiscoverRedirectionUrl {
@@ -989,7 +984,18 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		this.url = url;
 	}
 
-	@IbisDoc({"6", "Tenant ID that represents the tenant in which the registered application exists within Azure AD. Could be found at Azure AD -> App Registrations -> MyApp -> Overview.", ""})
+
+	@IbisDoc({"4", "Client ID that represents a registered application in Azure AD which could be found at Azure AD -> App Registrations -> MyApp -> Overview.", ""})
+	public void setClientId(String clientId) {
+		this.clientId = clientId;
+	}
+
+	@IbisDoc({"5", "Client secret that belongs to registered application in Azure AD which could be found at Azure AD -> App Registrations -> MyApp -> Certificates and Secrets", ""})
+	public void setClientSecret(String clientSecret) {
+		this.clientSecret = clientSecret;
+	}
+
+	@IbisDoc({"6", "Tenant ID that represents the tenant in which the registered application exists within Azure AD which could be found at Azure AD -> App Registrations -> MyApp -> Overview.", ""})
 	public void setTenantId(String tenantId) {
 		this.tenantId = tenantId;
 	}
@@ -1002,18 +1008,23 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		super.setAuthAlias(authAlias);
 	}
 
-	@IbisDoc({"8", "Client ID that represents a registered application in Azure AD which could be found at Azure AD -> App Registrations -> MyApp -> Overview, or username for basic authentication to Exchange mail server.", ""})
+	@IbisDoc({"8", "Username for authentication to Exchange mail server. Ignored when tenantId is also specified", ""})
+	@Deprecated
+	@ConfigurationWarning("Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to authentication using modern authentication!")
 	@Override
 	public void setUsername(String username) {
 		super.setUsername(username);
+		setClientId(username);
 	}
 
-	@IbisDoc({"9", "Client secret that belongs to registered application in Azure AD which could be found at Azure AD -> App Registrations -> MyApp -> Certificates and Secrets, or password for basic authentication to Exchange mail server.", ""})
+	@IbisDoc({"9", "Password for authentication to Exchange mail server. Ignored when tenantId is also specified", ""})
+	@Deprecated
+	@ConfigurationWarning("Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to authentication using modern authentication!")
 	@Override
 	public void setPassword(String password) {
 		super.setPassword(password);
+		setClientSecret(password);
 	}
-
 
 	@IbisDoc({"10", "If empty, all mails are retrieved. If set to <code>NDR</code> only Non-Delivery Report mails ('bounces') are retrieved", ""})
 	public void setFilter(String filter) {

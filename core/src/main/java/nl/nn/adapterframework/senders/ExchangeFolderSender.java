@@ -44,6 +44,12 @@ public class ExchangeFolderSender extends FileSystemSender<EmailMessage,Exchange
 	}
 
 	@IbisDocRef({ EXCHANGE_FILE_SYSTEM})
+	public void setClientId(String clientId) { getFileSystem().setClientId(clientId); }
+
+	@IbisDocRef({ EXCHANGE_FILE_SYSTEM})
+	public void setClientSecret(String clientSecret) { getFileSystem().setClientSecret(clientSecret); }
+
+	@IbisDocRef({ EXCHANGE_FILE_SYSTEM})
 	public void setTenantId(String tenantId) {
 		getFileSystem().setTenantId(tenantId);
 	}
@@ -114,12 +120,6 @@ public class ExchangeFolderSender extends FileSystemSender<EmailMessage,Exchange
 	@IbisDocRef({EXCHANGE_FILE_SYSTEM})
 	public void setProxyDomain(String domain) {
 		getFileSystem().setProxyDomain(domain);
-	}
-
-	@Override
-	public void setName(String name){
-		super.setName(name);
-		getFileSystem().setName(name);
 	}
 
 }
