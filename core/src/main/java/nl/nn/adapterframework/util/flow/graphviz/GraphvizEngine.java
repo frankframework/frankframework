@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2020 WeAreFrank!
+   Copyright 2018-2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.flow.FlowGenerationException;
+import nl.nn.adapterframework.util.flow.GraphvizJsFlowGenerator;
 import nl.nn.adapterframework.util.flow.ResultHandler;
 
 //TODO: consider moving this to a separate module
@@ -41,8 +42,12 @@ public class GraphvizEngine {
 	protected Logger log = LogUtil.getLogger(this);
 	private Engine engine;
 	private String graphvizVersion = AppConstants.getInstance().getProperty("graphviz.js.version", "2.0.0");
+	private String fileFormat = AppConstants.getInstance().getProperty("graphviz.js.format", "SVG");
+
 	// Available JS Engines. Lower index has priority.
 	private static String[] engines = AppConstants.getInstance().getString("flow.javascript.engines", "nl.nn.adapterframework.extensions.javascript.J2V8,nl.nn.adapterframework.extensions.javascript.Nashorn").split(",");
+
+	private Options defaultOptions = null;
 
 	/**
 	 * Create a new GraphvizEngine instance. Using version 2.0.0
@@ -58,11 +63,29 @@ public class GraphvizEngine {
 	 * @throws IOException 
 	 */
 	public GraphvizEngine(String graphvizVersion) throws IOException {
-		if(StringUtils.isNotEmpty(graphvizVersion))
+		if(StringUtils.isNotEmpty(graphvizVersion)) {
 			this.graphvizVersion = graphvizVersion;
+		}
+
+		determineOptions();
 
 		//Create the GraphvizEngine, make sure it can find and load the required libraries
 		getEngine();
+	}
+
+	private Options determineOptions() {
+		Format format;
+		try {
+			format = Format.valueOf(fileFormat.toUpperCase());
+		}
+		catch(IllegalArgumentException e) {
+			throw new IllegalArgumentException("unknown format["+fileFormat.toUpperCase()+"], must be one of "+Format.values());
+		}
+
+		defaultOptions = Options.create().format(format);
+
+		if(log.isDebugEnabled()) log.debug("Setting Graphviz options to ["+defaultOptions+"]");
+		return defaultOptions;
 	}
 
 	/**
@@ -73,7 +96,7 @@ public class GraphvizEngine {
 	 * @throws FlowGenerationException when a JavaScript engine error occurs
 	 */
 	public String execute(String src) throws IOException, FlowGenerationException {
-		return execute(src, Options.create());
+		return execute(src, defaultOptions);
 	}
 
 	/**
@@ -140,6 +163,16 @@ public class GraphvizEngine {
 		if (engine != null) {
 			engine.close();
 		}
+	}
+
+	/**
+	 * The {@link GraphvizJsFlowGenerator} uses a ThreadLocal+SoftReference map to cache the 
+	 * {@link GraphvisEngine GraphvisEngines}. This method ensures that the engine is destroyed properly.
+	 */
+	@Override
+	protected void finalize() throws Throwable {
+		close();
+		super.finalize();
 	}
 
 	private String getVisJsWrapper() {

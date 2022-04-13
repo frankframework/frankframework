@@ -49,10 +49,8 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
-import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
@@ -383,20 +381,21 @@ public final class ShowConfigurationStatus extends Base {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters/{name}/flow")
 	@Produces(MediaType.TEXT_PLAIN)
-	public Response getAdapterFlow(@PathParam("name") String adapterName, @QueryParam("dot") boolean dot) throws ApiException {
+	public Response getAdapterFlow(@PathParam("name") String adapterName) throws ApiException {
 		Adapter adapter = getAdapter(adapterName);
 
 		FlowDiagramManager flowDiagramManager = getFlowDiagramManager();
 
 		try {
-			ResponseBuilder response = Response.status(Response.Status.OK);
-			if(dot) {
-				response.entity(flowDiagramManager.generateDot(adapter)).type(MediaType.TEXT_PLAIN);
+			ResponseBuilder response;
+			InputStream flow = flowDiagramManager.get(adapter);
+			if(flow != null) {
+				response = Response.ok(flow, flowDiagramManager.getMediaType());
 			} else {
-				response.entity(flowDiagramManager.get(adapter)).type("image/svg+xml");
+				response = Response.noContent();
 			}
 			return response.build();
-		} catch (SAXException | TransformerException | IOException e) {
+		} catch (IOException e) {
 			throw new ApiException(e);
 		}
 	}

@@ -1,8 +1,10 @@
 package nl.nn.adapterframework.testutil;
 
-import java.io.IOException;
 import java.io.OutputStream;
 
+import org.springframework.http.MediaType;
+
+import nl.nn.adapterframework.util.flow.FlowGenerationException;
 import nl.nn.adapterframework.util.flow.IFlowGenerator;
 
 /**
@@ -21,18 +23,18 @@ public class DummyFlowGenerator implements IFlowGenerator {
 	}
 
 	@Override
-	public void setFileExtension(String extension) {
-		//Ignore
-	}
-
-	@Override
 	public String getFileExtension() {
 		return null;
 	}
 
 	@Override
-	public void generateFlow(String name, String dot, OutputStream outputStream) throws IOException {
+	public void generateFlow(String dot, OutputStream outputStream) throws FlowGenerationException {
 		//Ignore
+	}
+
+	@Override
+	public MediaType getMediaType() {
+		return null;
 	}
 
 }
