@@ -38,8 +38,11 @@ import com.microsoft.aad.msal4j.ClientCredentialParameters;
 import com.microsoft.aad.msal4j.ConfidentialClientApplication;
 import com.microsoft.aad.msal4j.IAuthenticationResult;
 
+import lombok.Setter;
 import microsoft.exchange.webservices.data.core.enumeration.misc.ConnectingIdType;
 import microsoft.exchange.webservices.data.misc.ImpersonatedUserId;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.IConfigurationAware;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -84,13 +87,13 @@ import microsoft.exchange.webservices.data.search.FolderView;
 import microsoft.exchange.webservices.data.search.ItemView;
 import microsoft.exchange.webservices.data.search.filter.SearchFilter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.ExchangeMailListener;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
+import org.springframework.context.ApplicationContext;
 
 /**
  * Implementation of a {@link IBasicFileSystem} of an Exchange Mail Inbox.
@@ -115,7 +118,7 @@ import nl.nn.adapterframework.xml.SaxElementBuilder;
  * @author Gerrit van Brakel
  *
  */
-public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachment,ExchangeService> {
+public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachment,ExchangeService> implements IConfigurationAware {
 	private final @Getter(onMethod = @__(@Override)) String domain = "Exchange";
 	private @Getter String mailAddress;
 	private @Getter boolean validateAllRedirectUrls=true;
@@ -134,6 +137,10 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	private @Getter String tenantId = null;
 	private ConfidentialClientApplication client;
 
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
+	private @Getter @Setter String name = "ExchangeFileSystem";
+
 	private FolderId basefolderId;
 
 	@Override
@@ -142,6 +149,9 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			if (!getFilter().equalsIgnoreCase("NDR")) {
 				throw new ConfigurationException("illegal value for filter [" + getFilter()	+ "], must be 'NDR' or empty");
 			}
+		}
+		if(StringUtils.isEmpty(getTenantId())){
+			ConfigurationWarnings.add(this, log, "Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to authentication using modern authentication!");
 		}
 		if (StringUtils.isEmpty(getUrl()) && StringUtils.isEmpty(getMailAddress())) {
 			throw new ConfigurationException("either url or mailAddress needs to be specified");
@@ -152,6 +162,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	public void open() throws FileSystemException {
 		super.open();
 		basefolderId = getBaseFolderId(getMailAddress(),getBaseFolder());
+
 
 		if( StringUtils.isNotEmpty(getTenantId()) ){
 			CredentialFactory cf = getCredentials();
@@ -204,7 +215,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	protected ExchangeService createConnection() throws FileSystemException {
 		ExchangeService exchangeService = new ExchangeService(ExchangeVersion.Exchange2010_SP2);
 
-		CredentialFactory cf = getCredentials();
 		if (client != null) {
 			ClientCredentialParameters clientCredentialParam = ClientCredentialParameters.builder(
 				Collections.singleton(SCOPE)
@@ -221,6 +231,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			exchangeService.setImpersonatedUserId(new ImpersonatedUserId(ConnectingIdType.SmtpAddress, getMailAddress()));
 			exchangeService.getHttpHeaders().put("X-AnchorMailbox", getMailAddress());
 		} else {
+			CredentialFactory cf = getCredentials();
 			// use deprecated Basic Authentication. Support will end 2021-Q3!
 			log.warn("Using deprecated Basic Authentication method for authentication to Exchange Web Services");
 			ExchangeCredentials credentials = new WebCredentials(cf.getUsername(), cf.getPassword());
@@ -992,21 +1003,16 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	}
 
 	@IbisDoc({"8", "Client ID that represents a registered application in Azure AD which could be found at Azure AD -> App Registrations -> MyApp -> Overview, or username for basic authentication to Exchange mail server.", ""})
-	@Deprecated
-	@ConfigurationWarning("Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to authentication using modern authentication. N.B. username no longer defaults to mailaddress")
 	@Override
 	public void setUsername(String username) {
 		super.setUsername(username);
 	}
 
 	@IbisDoc({"9", "Client secret that belongs to registered application in Azure AD which could be found at Azure AD -> App Registrations -> MyApp -> Certificates and Secrets, or password for basic authentication to Exchange mail server.", ""})
-	@Deprecated
-	@ConfigurationWarning("Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to authentication using modern authentication!")
 	@Override
 	public void setPassword(String password) {
 		super.setPassword(password);
 	}
-
 
 
 	@IbisDoc({"10", "If empty, all mails are retrieved. If set to <code>NDR</code> only Non-Delivery Report mails ('bounces') are retrieved", ""})

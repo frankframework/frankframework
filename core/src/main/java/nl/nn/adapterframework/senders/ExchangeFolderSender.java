@@ -116,4 +116,10 @@ public class ExchangeFolderSender extends FileSystemSender<EmailMessage,Exchange
 		getFileSystem().setProxyDomain(domain);
 	}
 
+	@Override
+	public void setName(String name){
+		super.setName(name);
+		getFileSystem().setName(name);
+	}
+
 }
