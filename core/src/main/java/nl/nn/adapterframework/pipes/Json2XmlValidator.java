@@ -64,7 +64,7 @@ import nl.nn.adapterframework.xml.XmlWriter;
 public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestination {
 
 	private final @Getter(onMethod = @__(@Override)) String domain = "XML Schema";
-	public static final String INPUT_FORMAT_SESSION_KEY_PREFIX = "Json2XmlValidator.inputformat ";
+	public static final String INPUT_FORMAT_SESSION_KEY_PREFIX = "Json2XmlValidator.inputFormat ";
 
 	private @Getter boolean compactJsonArrays=true;
 	private @Getter boolean strictJsonArraySyntax=false;
@@ -378,22 +378,22 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	}
 
 
-	@IbisDoc({"Only for json input: namespace of the resulting xml. Need only be specified when the namespace of root name is ambiguous in the schema", ""})
+	@IbisDoc({"Only for JSON input: namespace of the resulting XML. Need only be specified when the namespace of root name is ambiguous in the schema", ""})
 	public void setTargetNamespace(String targetNamespace) {
 		this.targetNamespace = targetNamespace;
 	}
 
-	@IbisDoc({"Default format of the result.", "XML"})
+	@IbisDoc({"Default format of the result, that is used if the format cannot be found from outputFormatSessionKey or from inputFormatSessionKey (when validating responses and autoFormat=true)", "XML"})
 	public void setOutputFormat(DocumentFormat outputFormat) {
 		this.outputFormat = outputFormat;
 	}
 
-	@IbisDoc({"Session key to retrieve outputformat from.", "outputformat"})
+	@IbisDoc({"Session key to retrieve outputFormat from", "outputFormat"})
 	public void setOutputFormatSessionKey(String outputFormatSessionKey) {
 		this.outputFormatSessionKey = outputFormatSessionKey;
 	}
 
-	@IbisDoc({"Session key to store the inputformat in, to be able to set the outputformat when autoFormat=true. Can also be used to pass the value of an HTTP Accept header, to obtain a properly formatted response", "Json2XmlValidator.inputformat +<name of the pipe>"})
+	@IbisDoc({"Session key to store the inputFormat in, to be able to set the outputformat when autoFormat=true. Can also be used to pass the value of an HTTP Accept header, to obtain a properly formatted response", INPUT_FORMAT_SESSION_KEY_PREFIX+"+&lt;name of the pipe&gt;"})
 	public void setInputFormatSessionKey(String inputFormatSessionKey) {
 		this.inputFormatSessionKey = inputFormatSessionKey;
 	}
@@ -403,47 +403,47 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		this.autoFormat = autoFormat;
 	}
 
-	@IbisDoc({"If true assume arrays in json do not have the element containers like in xml", "true"})
+	@IbisDoc({"If true assume arrays in JSON do not have the element containers like in XML", "true"})
 	public void setCompactJsonArrays(boolean compactJsonArrays) {
 		this.compactJsonArrays = compactJsonArrays;
 	}
 
-	@IbisDoc({"If true check that incoming json adheres to the specified syntax (compact or full), otherwise both types are accepted for conversion from json to xml", "false"})
+	@IbisDoc({"If true check that incoming JSON adheres to the specified syntax (compact or full), otherwise both types are accepted for conversion from JSON to XML", "false"})
 	public void setStrictJsonArraySyntax(boolean strictJsonArraySyntax) {
 		this.strictJsonArraySyntax = strictJsonArraySyntax;
 	}
 
-	@IbisDoc({"If true, assume that json contains/must contain a root element", "false"})
+	@IbisDoc({"If true, assume that JSON contains/must contain a root element", "false"})
 	public void setJsonWithRootElements(boolean jsonWithRootElements) {
 		this.jsonWithRootElements = jsonWithRootElements;
 	}
 
-	@IbisDoc({"If true, and converting from json to xml, parameter substitutions are searched for optional sub elements too. By default, only mandatory elements are searched for parameter substitutions. N.B. Currenlty this option might cause problems. Please try using more qualified parameters names (using '/') first", "false"})
+	@IbisDoc({"If true, and converting from JSON to XML, parameter substitutions are searched for optional sub elements too. By default, only mandatory elements are searched for parameter substitutions. N.B. Currenlty this option might cause problems. Please try using more qualified parameters names (using '/') first", "false"})
 	public void setDeepSearch(boolean deepSearch) {
 		this.deepSearch = deepSearch;
 	}
 
-	@IbisDoc({"If true, and converting from json to xml, elements in json that are not found in the XML-Schema are ignored", "false"})
+	@IbisDoc({"If true, and converting from JSON to XML, elements in JSON that are not found in the XML-Schema are ignored", "false"})
 	public void setIgnoreUndeclaredElements(boolean ignoreUndeclaredElements) {
 		this.ignoreUndeclaredElements = ignoreUndeclaredElements;
 	}
 
-	@IbisDoc({"If true, an exception is thrown when a wildcard is found in the xml schema when parsing an object. This often indicates that an element is not properly typed in the xml schema, and could lead to ambuigities.", "true"})
+	@IbisDoc({"If true, an exception is thrown when a wildcard is found in the XML Schema when parsing an object. This often indicates that an element is not properly typed in the XML-Schema, and could lead to ambuigities.", "true"})
 	public void setFailOnWildcards(boolean failOnWildcards) {
 		this.failOnWildcards = failOnWildcards;
 	}
 
-	@IbisDoc({"If true, all xml is allowed to be without namespaces. If no namespaces are detected (by the presence of the string 'xmlns') in the xml string, the root namespace is added to the xml", "false"})
+	@IbisDoc({"If true, all XML is allowed to be without namespaces. If no namespaces are detected (by the presence of the string 'xmlns') in the XML, the root namespace is added to the XML", "false"})
 	public void setAcceptNamespaceLessXml(boolean acceptNamespaceLessXml) {
 		this.acceptNamespaceLessXml = acceptNamespaceLessXml;
 	}
 
-	@IbisDoc({"If true, all xml that is generated is without a namespace set", "false"})
+	@IbisDoc({"If true, all XML that is generated is without a namespace set", "false"})
 	public void setProduceNamespaceLessXml(boolean produceNamespaceLessXml) {
 		this.produceNamespaceLessXml = produceNamespaceLessXml;
 	}
 
-	@IbisDoc({"If true, and converting to or from json, then the message root is the only rootValidation, ignoring root validations like for SOAP envelope and header set by descender classes like SoapValidator", "true"})
+	@IbisDoc({"If true, and converting to or from JSON, then the message root is the only rootValidation, ignoring root validations like for SOAP envelope and header set by descender classes like SoapValidator", "true"})
 	public void setValidateJsonToRootElementOnly(boolean validateJsonToRootElementOnly) {
 		this.validateJsonToRootElementOnly = validateJsonToRootElementOnly;
 	}

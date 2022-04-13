@@ -4,13 +4,12 @@ import static nl.nn.adapterframework.testutil.MatchUtils.assertXmlEquals;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.hamcrest.core.StringContains;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -36,28 +35,20 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.setName("Response_To_Json");
 		pipe.setOutputFormat(DocumentFormat.JSON);
 		pipe.setSchema("/Validation/NoNamespace/bp.xsd");
-//		pipe.setRoot("GetPartiesOnAgreement_Response");
-//		pipe.setTargetNamespace("http://nn.nl/XSD/CustomerAdministration/Party/1/GetPartiesOnAgreement/7");
 		pipe.setThrowException(true);
 		pipe.configure();
 		pipe.start();
 
 		String input = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response.xml");
 
-		try {
-			doPipe(pipe, input,session);
-			fail("expected to fail");
-		} catch (PipeRunException e) {
-			assertThat(e.getMessage(),StringContains.containsString("Cannot find the declaration of element 'BusinessPartner'"));
-		}
+		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, input,session));
+		assertThat(e.getMessage(), containsString("Cannot find the declaration of element 'BusinessPartner'"));
 	}
 
 	@Test
 	public void testNoNamespaceXml() throws Exception {
 		pipe.setName("Response_Validator");
 		pipe.setSchema("/Validation/NoNamespace/bp.xsd");
-//		pipe.setRoot("GetPartiesOnAgreement_Response");
-//		pipe.setTargetNamespace("http://nn.nl/XSD/CustomerAdministration/Party/1/GetPartiesOnAgreement/7");
 		pipe.setThrowException(true);
 		pipe.registerForward(new PipeForward("success",null));
 		pipe.configure();
@@ -65,14 +56,46 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 
 		String input = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response.xml");
 
-		try {
-			pipe.doPipe(Message.asMessage(input),session); // cannot use this.doPipe(), because pipe is a XmlValidator, not a Json2XmlValidator
-			fail("expected to fail");
-		} catch (PipeRunException e) {
-			assertThat(e.getMessage(),StringContains.containsString("Cannot find the declaration of element 'BusinessPartner'"));
-		}
+		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, input,session));
+		assertThat(e.getMessage(), containsString("Cannot find the declaration of element 'BusinessPartner'"));
 	}
 
+	@Test
+	public void testAcceptNamespaceLessXMLtoJSON() throws Exception {
+		pipe.setName("Response_To_Json");
+		pipe.setOutputFormat(DocumentFormat.JSON);
+		pipe.setSchema("/Validation/NoNamespace/bp.xsd");
+		pipe.setTargetNamespace("http://nn.nl/XSD/CustomerAdministration/Party/1/GetPartiesOnAgreement/7");
+		pipe.setAcceptNamespaceLessXml(true);
+		pipe.setThrowException(true);
+		pipe.configure();
+		pipe.start();
+
+		String input = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response.xml");
+		String expected = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-compact.json");
+
+		PipeRunResult prr = doPipe(pipe, input,session);
+
+		assertEquals(expected, prr.getResult().asString());
+	}
+
+	@Test
+	public void testAcceptNamespaceLessXMLvalidation() throws Exception {
+		pipe.setName("Response_To_Json");
+		pipe.setSchema("/Validation/NoNamespace/bp.xsd");
+		pipe.setTargetNamespace("http://nn.nl/XSD/CustomerAdministration/Party/1/GetPartiesOnAgreement/7");
+		pipe.setAcceptNamespaceLessXml(true);
+		pipe.setThrowException(true);
+		pipe.configure();
+		pipe.start();
+
+		String input = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response.xml");
+		String expected = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-withNamespace.xml");
+
+		PipeRunResult prr = doPipe(pipe, input,session);
+
+		assertEquals(expected, prr.getResult().asString());
+	}
 
 	@Test
 	public void testWithNamespace() throws Exception {
