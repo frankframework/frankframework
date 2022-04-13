@@ -1595,20 +1595,18 @@ angular.module('iaf.beheerconsole')
 	$scope.downloadMessages = function() {
 		let fd = getFormData();
 		if($scope.isSelectedMessages(fd)) {
+			const size = fd.get("messageIds").split(",").length;
+			$scope.addNote("info", "Downloading " + size + " message(s)...");
 			$scope.messagesDownloading = true;
 			Api.Post($scope.base_url+"/messages/download", fd, function(response) {
-				if(response.size > 22) { // more than media type
-					let blob = new Blob([response], {type: 'application/octet-stream'});
-					let downloadLink = document.createElement('a');
-					downloadLink.href = window.URL.createObjectURL(blob);
-					downloadLink.setAttribute('download', 'messages.zip');
-					document.body.appendChild(downloadLink);
-					downloadLink.click();
-					downloadLink.parentNode.removeChild(downloadLink);
-					$scope.addNote("success", "Successfully downloaded messages");
-				} else {
-					$scope.addNote("danger", "Something went wrong, unable to download selected messages! Check log files for more information.");
-				}
+				let blob = new Blob([response], {type: 'application/octet-stream'});
+				let downloadLink = document.createElement('a');
+				downloadLink.href = window.URL.createObjectURL(blob);
+				downloadLink.setAttribute('download', 'messages.zip');
+				document.body.appendChild(downloadLink);
+				downloadLink.click();
+				downloadLink.parentNode.removeChild(downloadLink);
+				$scope.addNote("success", "Successfully downloaded messages. Please verify the archive by checking the number of messages in it.");
 				$scope.messagesDownloading = false;
 			}, function(data) {
 				$scope.messagesDownloading = false;

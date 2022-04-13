@@ -2,7 +2,7 @@
 <div ui-view></div>
 
 <div class="wrapper wrapper-content animated fadeInRight" ng-controller="AdapterStorageCtrl">
-	<uib-alert ng-repeat="alert in notes | orderBy:'type'" type="{{alert.type}}" close="closeNote($index)">{{alert.message}}</uib-alert>
+	<uib-alert ng-repeat="alert in notes" type="{{alert.type}}" close="closeNote($index)">{{alert.message}}</uib-alert>
 
 	<div class="row">
 		<div class="col-lg-12">
