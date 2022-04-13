@@ -59,7 +59,6 @@ public class ApiExceptionHandler implements ExceptionMapper<WebApplicationExcept
 			Map<String, Object> entity = new HashMap<>(3);
 			entity.put("status", "error");
 			entity.put("error", message);
-			entity.put("stackTrace", exception.getStackTrace());
 
 			response.entity(entity).type(MediaType.APPLICATION_JSON);
 		}
