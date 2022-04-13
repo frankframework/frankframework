@@ -100,8 +100,8 @@ import nl.nn.adapterframework.xml.SaxElementBuilder;
  *     	<li>Create an application in Azure AD -> App Registrations. For more information please read {@link "https://docs.microsoft.com/en-us/exchange/client-developer/exchange-web-services/how-to-authenticate-an-ews-application-by-using-oauth"}</li>
  *     	<li>Request the required API permissions within desired scope <code>https://outlook.office365.com/</code> in Azure AD -> App Registrations -> MyApp -> API Permissions.</li>
  *     	<li>Create a secret for your application in Azure AD -> App Registrations -> MyApp -> Certificates and Secrets</li>
- *     	<li>Configure the clientSecret directly or as the password of a JAAS entry referred to by authAlias. Only available upon creation of your secret in the previous step.</li>
- *     	<li>Configure the clientId directly or as the username of a JAAS entry referred to by authAlias. Could be retrieved from Azure AD -> App Registrations -> MyApp -> Overview</li>
+ *     	<li>Configure the clientSecret directly as password or as the password of a JAAS entry referred to by authAlias. Only available upon creation of your secret in the previous step.</li>
+ *     	<li>Configure the clientId directly as username or as the username of a JAAS entry referred to by authAlias. Could be retrieved from Azure AD -> App Registrations -> MyApp -> Overview</li>
  *     	<li>Configure the tenantId. Could be retrieved from Azure AD -> App Registrations -> MyApp -> Overview</li>
  * 		<li>Make sure your application is able to reach <code>https://login.microsoftonline.com</code>. Required for token retrieval. </li>
  * </ol>
@@ -131,8 +131,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	private final String AUTHORITY = "https://login.microsoftonline.com/";
 	private final String SCOPE = "https://outlook.office365.com/.default";
-	private @Getter String clientId = null;
-	private @Getter String clientSecret = null;
 	private @Getter String tenantId = null;
 	private ConfidentialClientApplication client;
 
@@ -156,10 +154,11 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		basefolderId = getBaseFolderId(getMailAddress(),getBaseFolder());
 
 		if( StringUtils.isNotEmpty(getTenantId()) ){
+			CredentialFactory cf = getCredentials();
 			try {
 				client = ConfidentialClientApplication.builder(
-						getClientId(),
-						ClientCredentialFactory.createFromSecret(getClientSecret()))
+						cf.getUsername(),
+						ClientCredentialFactory.createFromSecret(cf.getPassword()))
 					.authority(AUTHORITY + getTenantId())
 					.build();
 			} catch (MalformedURLException e){
@@ -205,11 +204,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	protected ExchangeService createConnection() throws FileSystemException {
 		ExchangeService exchangeService = new ExchangeService(ExchangeVersion.Exchange2010_SP2);
 
-		String defaultUsername = client != null ? getUsername() : getClientId();
-		String defaultPassword = client != null ? getPassword() : getClientSecret();
-
-
-		CredentialFactory cf = new CredentialFactory(getAuthAlias(), defaultUsername, defaultPassword);
+		CredentialFactory cf = getCredentials();
 		if (client != null) {
 			ClientCredentialParameters clientCredentialParam = ClientCredentialParameters.builder(
 				Collections.singleton(SCOPE)
@@ -956,6 +951,9 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		return Misc.concatStrings("url [" + url + "] mailAddress [" + (getMailAddress() == null ? "" : getMailAddress()) + "]", " ", result);
 	}
 
+	private CredentialFactory getCredentials(){
+		return new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
+	}
 
 	private static class RedirectionUrlCallback implements IAutodiscoverRedirectionUrl {
 
@@ -980,16 +978,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		this.url = url;
 	}
 
-	@IbisDoc({"4", "Client ID that represents a registered application in Azure AD. Could be found at Azure AD -> App Registrations -> MyApp -> Overview.", ""})
-	public void setClientId(String clientId) {
-		this.clientId = clientId;
-	}
-
-	@IbisDoc({"5", "Client secret that belongs to registered application in Azure AD. Could be found at Azure AD -> App Registrations -> MyApp -> Certificates and Secrets", ""})
-	public void setClientSecret(String clientSecret) {
-		this.clientSecret = clientSecret;
-	}
-
 	@IbisDoc({"6", "Tenant ID that represents the tenant in which the registered application exists within Azure AD. Could be found at Azure AD -> App Registrations -> MyApp -> Overview.", ""})
 	public void setTenantId(String tenantId) {
 		this.tenantId = tenantId;
@@ -1003,7 +991,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		super.setAuthAlias(authAlias);
 	}
 
-	@IbisDoc({"8", "Username for authentication to Exchange mail server. Ignored when tenantId is also specified", ""})
+	@IbisDoc({"8", "Client ID that represents a registered application in Azure AD which could be found at Azure AD -> App Registrations -> MyApp -> Overview or username for basic authentication to Exchange mail server.", ""})
 	@Deprecated
 	@ConfigurationWarning("Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to authentication using modern authentication. N.B. username no longer defaults to mailaddress")
 	@Override
@@ -1011,7 +999,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		super.setUsername(username);
 	}
 
-	@IbisDoc({"9", "Password for authentication to Exchange mail server. Ignored when tenantId is also specified", ""})
+	@IbisDoc({"9", "Client secret that belongs to registered application in Azure AD which could be found at Azure AD -> App Registrations -> MyApp -> Certificates and Secrets or password for basic authentication to Exchange mail server.", ""})
 	@Deprecated
 	@ConfigurationWarning("Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to authentication using modern authentication!")
 	@Override
