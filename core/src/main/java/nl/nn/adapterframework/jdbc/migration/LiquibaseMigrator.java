@@ -77,7 +77,7 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 		}
 
 		try {
-			return new BytesResource(resource.openStream(), changeLogFile);
+			return new BytesResource(resource.openStream(), changeLogFile, getConfiguration());
 		} catch (IOException e) {
 			log.debug("unable to open or read changelog ["+changeLogFile+"]", e);
 		}
@@ -93,7 +93,7 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 			throw new LiquibaseException("no resource provided");
 		}
 
-		ResourceAccessor resourceAccessor = new LiquibaseResourceAccessor(resource, getConfigurationClassLoader());
+		ResourceAccessor resourceAccessor = new LiquibaseResourceAccessor(resource);
 		DatabaseConnection connection = getDatabaseConnection();
 
 		return new Liquibase(resource.getSystemId(), resourceAccessor, connection);
