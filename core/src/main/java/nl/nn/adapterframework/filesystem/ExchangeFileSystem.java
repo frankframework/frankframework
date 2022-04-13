@@ -200,8 +200,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	protected ExchangeService createConnection() throws FileSystemException {
 		ExchangeService exchangeService = new ExchangeService(ExchangeVersion.Exchange2010_SP2);
 
-		String defaultUsername = StringUtils.isEmpty(getClientId())? getUsername() : getClientId();
-		String defaultPassword = StringUtils.isEmpty(getClientId())? getPassword() : getClientSecret();
+		String defaultUsername = client != null ? getUsername() : getClientId();
+		String defaultPassword = client != null ? getPassword() : getClientSecret();
 
 
 		CredentialFactory cf = new CredentialFactory(getAuthAlias(), defaultUsername, defaultPassword);
