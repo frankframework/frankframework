@@ -17,6 +17,7 @@ package nl.nn.adapterframework.filesystem;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.DirectoryStream;
@@ -27,10 +28,16 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import javax.mail.internet.InternetAddress;
 
+import com.microsoft.aad.msal4j.ClientCredentialFactory;
+import com.microsoft.aad.msal4j.ClientCredentialParameters;
+import com.microsoft.aad.msal4j.ConfidentialClientApplication;
+import com.microsoft.aad.msal4j.IAuthenticationResult;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -117,6 +124,13 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	private @Getter String proxyAuthAlias = null;
 	private @Getter String proxyDomain = null;
 
+	private final String AUTHORITY = "https://login.microsoftonline.com/";
+	private final String SCOPE = "https://outlook.office365.com/.default";
+	private @Getter @Setter String clientId = null;
+	private @Getter @Setter String clientSecret = null;
+	private @Getter @Setter String tenant = null;
+	private ConfidentialClientApplication client;
+
 	private FolderId basefolderId;
 
 	@Override
@@ -135,6 +149,18 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	public void open() throws FileSystemException {
 		super.open();
 		basefolderId = getBaseFolderId(getMailAddress(),getBaseFolder());
+
+		if(StringUtils.isNotEmpty(getClientId()) && StringUtils.isNotEmpty(getClientSecret()) && StringUtils.isNotEmpty(getTenant()) ){
+			try {
+				client = ConfidentialClientApplication.builder(
+						getClientId(),
+						ClientCredentialFactory.createFromSecret(getClientSecret()))
+					.authority(AUTHORITY + getTenant())
+					.build();
+			} catch (MalformedURLException e){
+				throw new FileSystemException("Failed to initialize MSAL ConfidentialClientApplication.", e);
+			}
+		}
 	}
 
 	public FolderId getBaseFolderId(String emailAddress, String baseFolderName) throws FileSystemException {
@@ -174,13 +200,24 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	protected ExchangeService createConnection() throws FileSystemException {
 		ExchangeService exchangeService = new ExchangeService(ExchangeVersion.Exchange2010_SP2);
 
-		String defaultUsername = StringUtils.isEmpty(getAccessToken())? getUsername() : null;
-		String defaultPassword = StringUtils.isEmpty(getAccessToken())? getPassword() : getAccessToken();
+		String defaultUsername = StringUtils.isEmpty(getClientId())? getUsername() : getClientId();
+		String defaultPassword = StringUtils.isEmpty(getClientId())? getPassword() : getClientSecret();
+
 
 		CredentialFactory cf = new CredentialFactory(getAuthAlias(), defaultUsername, defaultPassword);
-		if (StringUtils.isEmpty(cf.getUsername())) {
-			// use OAuth Bearer token authentication
-			exchangeService.getHttpHeaders().put("Authorization", "Bearer "+cf.getPassword());
+		if (StringUtils.isEmpty(getClientId())) {
+			ClientCredentialParameters clientCredentialParam = ClientCredentialParameters.builder(
+				Collections.singleton(SCOPE)
+			).build();
+
+			CompletableFuture<IAuthenticationResult> future = client.acquireToken(clientCredentialParam);
+			try {
+				String token = future.get().accessToken();
+				// use OAuth Bearer token authentication
+				exchangeService.getHttpHeaders().put("Authorization", "Bearer "+token);
+			} catch (Exception e){
+				throw new FileSystemException("Could not generate access token!", e);
+			}
 		} else {
 			// use deprecated Basic Authentication. Support will end 2021-Q3!
 			log.warn("Using deprecated Basic Authentication method for authentication to Exchange Web Services");
