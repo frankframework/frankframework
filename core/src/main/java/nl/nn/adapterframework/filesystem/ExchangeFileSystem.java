@@ -999,7 +999,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		super.setUsername(username);
 	}
 
-	@IbisDoc({"9", "Client secret that belongs to registered application in Azure AD which could be found at Azure AD -> App Registrations -> MyApp -> Certificates and Secrets or password for basic authentication to Exchange mail server.", ""})
+	@IbisDoc({"9", "Client secret that belongs to registered application in Azure AD which could be found at Azure AD -> App Registrations -> MyApp -> Certificates and Secrets, or password for basic authentication to Exchange mail server.", ""})
 	@Deprecated
 	@ConfigurationWarning("Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to authentication using modern authentication!")
 	@Override
