@@ -344,7 +344,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 						if (StringUtils.isEmpty(errorMessage)) {
 							errorMessage = session.get(getXmlReasonSessionKey(), "unknown error");
 						}
- 						throw new PipeRunException(this, errorMessage);
+						throw new PipeRunException(this, errorMessage);
 					}
 				}
 				return forward;
@@ -638,7 +638,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		}
 	}
 
-	private void checkRootValidation(List<String> path, Set<XSD> xsds) throws ConfigurationException {
+	private void checkRootValidation(List<String> path, Set<XSD> xsds) {
 		boolean found = false;
 		String validElements = path.get(path.size() - 1);
 		List<String> validElementsAsList = Arrays.asList(validElements.split(","));
