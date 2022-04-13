@@ -34,7 +34,7 @@ import nl.nn.adapterframework.util.flow.ResultHandler;
 //TODO: consider moving this to a separate module
 /**
  * JavaScript engine wrapper for VizJs flow diagrams
- * 
+ *
  * @author Niels Meijer
  *
  */
@@ -51,7 +51,7 @@ public class GraphvizEngine {
 
 	/**
 	 * Create a new GraphvizEngine instance. Using version 2.0.0
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public GraphvizEngine() throws IOException {
 		this(null);
@@ -60,7 +60,7 @@ public class GraphvizEngine {
 	/**
 	 * Create a new GraphvizEngine instance
 	 * @param graphvizVersion version of the the VisJs engine to initiate
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public GraphvizEngine(String graphvizVersion) throws IOException {
 		if(StringUtils.isNotEmpty(graphvizVersion)) {
@@ -166,8 +166,8 @@ public class GraphvizEngine {
 	}
 
 	/**
-	 * The {@link GraphvizJsFlowGenerator} uses a ThreadLocal+SoftReference map to cache the 
-	 * {@link GraphvisEngine GraphvisEngines}. This method ensures that the engine is destroyed properly.
+	 * The {@link GraphvizJsFlowGenerator} uses a ThreadLocal+SoftReference map to cache the
+	 * {@link GraphvizEngine GraphvisEngines}. This method ensures that the engine is destroyed properly.
 	 */
 	@Override
 	protected void finalize() throws Throwable {
