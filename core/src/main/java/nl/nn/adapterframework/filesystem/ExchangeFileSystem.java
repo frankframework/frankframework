@@ -991,7 +991,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		super.setAuthAlias(authAlias);
 	}
 
-	@IbisDoc({"8", "Client ID that represents a registered application in Azure AD which could be found at Azure AD -> App Registrations -> MyApp -> Overview or username for basic authentication to Exchange mail server.", ""})
+	@IbisDoc({"8", "Client ID that represents a registered application in Azure AD which could be found at Azure AD -> App Registrations -> MyApp -> Overview, or username for basic authentication to Exchange mail server.", ""})
 	@Deprecated
 	@ConfigurationWarning("Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to authentication using modern authentication. N.B. username no longer defaults to mailaddress")
 	@Override
