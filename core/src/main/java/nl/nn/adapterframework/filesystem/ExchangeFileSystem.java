@@ -985,7 +985,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@IbisDoc({"7", "Alias used to obtain client ID and secret or username and password for authentication to Exchange mail server. " +
 			"If the attribute tenantId is empty, the deprecated Basic Authentication method is used. " +
-			"If the attribute tenantId is not empty, the username and password is treated as the client ID and secret.", ""})
+			"If the attribute tenantId is not empty, the username and password are treated as the client ID and secret.", ""})
 	@Override
 	public void setAuthAlias(String authAlias) {
 		super.setAuthAlias(authAlias);
