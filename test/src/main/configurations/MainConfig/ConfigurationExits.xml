@@ -5,7 +5,7 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit path="EXIT" state="success" code="200"/>
+				<exit name="EXIT" state="success" code="200"/>
 			</exits>
 	
 			<pipe name="XmlSwitch1" className="nl.nn.adapterframework.pipes.XmlSwitch" xpathExpression="*/@channel" />

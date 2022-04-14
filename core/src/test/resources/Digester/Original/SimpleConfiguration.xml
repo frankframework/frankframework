@@ -6,7 +6,7 @@
 			</receiver>
 			<pipeline firstPipe="HelloWorld">
 				<exits>
-					<exit name="EXIT" state="success"/>
+					<exit path="EXIT" state="success"/>
 				</exits>
 				<pipe name="HelloWorld" className="nl.nn.adapterframework.pipes.FixedResult" returnString="Hello World">
 					<forward name="success" path="EXIT"/>
@@ -23,7 +23,7 @@
 			</receiver>
 			<pipeline firstPipe="HelloUniverse">
 				<exits>
-					<exit name="EXIT" state="success"/>
+					<exit path="EXIT" state="success"/>
 				</exits>
 				<pipe name="HelloUniverse" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
 					<sender className="nl.nn.adapterframework.senders.FixedResultSender" returnString="Hello, Universe! ${digester.property} &lt;@quot;&gt;"/>
@@ -39,7 +39,7 @@
 				<JavaListener name="HelloBeautifulWorld"/>
 			</Receiver>
 			<Pipeline firstPipe="HelloBeautifulWorld">
-				<Exit name="EXIT" state="success"/>
+				<Exit path="EXIT" state="success"/>
 				<FixedResultPipe name="HelloBeautifulWorld" returnString="Hello Beautiful World ${digester.property} &lt;@quot;&gt;">
 					<Forward name="success" path="EXIT"/>
 				</FixedResultPipe>
