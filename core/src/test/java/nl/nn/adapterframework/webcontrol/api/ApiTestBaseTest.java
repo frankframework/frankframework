@@ -18,6 +18,8 @@ package nl.nn.adapterframework.webcontrol.api;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -67,6 +69,21 @@ public class ApiTestBaseTest extends Base {
 		response.put("two", "dos");
 		response.put("three", "tres");
 		return Response.ok().entity(response).build();
+	}
+
+	@Test
+	public void testConversions() throws Exception {
+		InputStream string = new ByteArrayInputStream("string".getBytes());
+		InputStream number = new ByteArrayInputStream("50".getBytes());
+		InputStream boolTrue = new ByteArrayInputStream("true".getBytes());
+		InputStream boolFalse = new ByteArrayInputStream("false".getBytes());
+		InputStream boolNull = new ByteArrayInputStream("".getBytes());
+
+		assertEquals("string", Base.convert(String.class, string));
+		assertEquals(true, Base.convert(boolean.class, boolTrue));
+		assertEquals(false, Base.convert(Boolean.class, boolFalse));
+		assertEquals(false, Base.convert(boolean.class, boolNull));
+		assertEquals(50, Base.convert(Integer.class, number).intValue());
 	}
 
 	public static class TestApi extends ApiTestBase<ApiTestBaseTest> {
