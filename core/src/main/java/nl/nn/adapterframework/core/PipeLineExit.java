@@ -61,7 +61,7 @@ public class PipeLineExit implements IForwardTarget {
 	/**
 	 * The name of the Exit that can be referenced by the Forward of a Pipe. When a Pipeline doesn't have an Exits
 	 * element configured it will be initialized with one Exit having name READY (and state SUCCESS)
-	 * @ff.mandatory
+	 * @ff.mandatory ignoreInCompatibilityMode
 	 */
 	public void setName(String name) {
 		this.name = name;
