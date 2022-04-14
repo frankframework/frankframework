@@ -34,8 +34,8 @@ public class BytesResource extends Resource {
 	private String name;
 	private byte[] bytes;
 
-	public BytesResource(byte[] bytes, String name) {
-		super(new GlobalScopeProvider());
+	public BytesResource(byte[] bytes, String name, IScopeProvider scopeProvider) {
+		super(scopeProvider);
 		if(StringUtils.isEmpty(name)) {
 			throw new IllegalStateException("name may not be empty");
 		}
@@ -44,8 +44,8 @@ public class BytesResource extends Resource {
 		this.name = name;
 	}
 
-	public BytesResource(InputStream inputStream, String name) throws IOException {
-		this(Misc.streamToBytes(inputStream), name);
+	public BytesResource(InputStream inputStream, String name, IScopeProvider scopeProvider) throws IOException {
+		this(Misc.streamToBytes(inputStream), name, scopeProvider);
 	}
 
 	@Override
