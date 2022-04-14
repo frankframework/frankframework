@@ -61,12 +61,12 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 	}
 
 	@Test
-	public void testAcceptNamespaceLessXMLtoJSON() throws Exception {
+	public void testAcceptNamespacelessXMLtoJSON() throws Exception {
 		pipe.setName("Response_To_Json");
 		pipe.setOutputFormat(DocumentFormat.JSON);
 		pipe.setSchema("/Validation/NoNamespace/bp.xsd");
 		pipe.setTargetNamespace("http://nn.nl/XSD/CustomerAdministration/Party/1/GetPartiesOnAgreement/7");
-		pipe.setAcceptNamespaceLessXml(true);
+		pipe.setAcceptNamespacelessXml(true);
 		pipe.setThrowException(true);
 		pipe.configure();
 		pipe.start();
@@ -80,11 +80,11 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 	}
 
 	@Test
-	public void testAcceptNamespaceLessXMLvalidation() throws Exception {
+	public void testAcceptNamespacelessXMLvalidation() throws Exception {
 		pipe.setName("Response_To_Json");
 		pipe.setSchema("/Validation/NoNamespace/bp.xsd");
 		pipe.setTargetNamespace("http://nn.nl/XSD/CustomerAdministration/Party/1/GetPartiesOnAgreement/7");
-		pipe.setAcceptNamespaceLessXml(true);
+		pipe.setAcceptNamespacelessXml(true);
 		pipe.setThrowException(true);
 		pipe.configure();
 		pipe.start();
