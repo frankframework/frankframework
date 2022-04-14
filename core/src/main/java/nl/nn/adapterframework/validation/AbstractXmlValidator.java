@@ -50,7 +50,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.validation.XmlValidatorErrorHandler.ReasonType;
 
 /**
- * baseclass for validating input message against a XML-Schema.
+ * baseclass for validating input message against a XML Schema.
  *
  * N.B. noNamespaceSchemaLocation may contain spaces, but not if the schema is stored in a .jar or .zip file on the class path.
  *

@@ -37,6 +37,7 @@ import nl.nn.adapterframework.align.Xml2Json;
 import nl.nn.adapterframework.align.XmlAligner;
 import nl.nn.adapterframework.align.XmlTypeToJsonSchemaConverter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -57,7 +58,7 @@ import nl.nn.adapterframework.xml.RootElementToSessionKeyFilter;
 import nl.nn.adapterframework.xml.XmlWriter;
 
 /**
- *<code>Pipe</code> that validates the XML or JSON input message against a XML-Schema and returns either XML or JSON.
+ *<code>Pipe</code> that validates the XML or JSON input message against a XML Schema and returns either XML or JSON.
  *
  * @author Gerrit van Brakel
  */
@@ -77,8 +78,8 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	private @Getter String inputFormatSessionKey=null;
 	private @Getter String outputFormatSessionKey="outputFormat";
 	private @Getter boolean failOnWildcards=true;
-	private @Getter boolean acceptNamespaceLessXml=false;
-	private @Getter boolean produceNamespaceLessXml=false;
+	private @Getter boolean acceptNamespacelessXml=false;
+	private @Getter boolean produceNamespacelessXml=false;
 	private @Getter boolean validateJsonToRootElementOnly=true;
 	private @Getter boolean allowJson = true;
 
@@ -137,7 +138,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	}
 
 	/**
-	 * Validate the XML or JSON input, and align/convert it into JSON or XML according to a XML-Schema.
+	 * Validate the XML or JSON input, and align/convert it into JSON or XML according to a XML Schema.
 	 * The format of the input message (XML or JSON) is automatically detected.
 	 * @throws PipeRunException when <code>isThrowException</code> is true and a validationerror occurred.
 	 */
@@ -158,14 +159,14 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			char firstChar=messageToValidate.charAt(i);
 			if (firstChar=='<') {
 				// message is XML
-				if (isAcceptNamespaceLessXml()) {
+				if (isAcceptNamespacelessXml()) {
 					messageToValidate=addNamespace(messageToValidate); // TODO: do this via a filter
 					//if (log.isDebugEnabled()) log.debug("added namespace to message ["+messageToValidate+"]");
 				}
 				storeInputFormat(DocumentFormat.XML, session, responseMode);
 				if (getOutputFormat(session,responseMode) != DocumentFormat.JSON) {
 					PipeRunResult result=super.doPipe(new Message(messageToValidate),session, responseMode, messageRoot);
-					if (isProduceNamespaceLessXml()) {
+					if (isProduceNamespacelessXml()) {
 						try {
 							result.setResult(XmlUtils.removeNamespaces(result.getResult().asString()));
 						} catch (IOException e) {
@@ -289,7 +290,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 				XmlWriter xmlWriter = new XmlWriter();
 				xmlWriter.setIncludeXmlDeclaration(true);
 				ContentHandler handler = xmlWriter;
-				if (isProduceNamespaceLessXml()) {
+				if (isProduceNamespacelessXml()) {
 					handler = new NamespaceRemovingFilter(handler);
 				}
 				sourceFilter.setContentHandler(handler);
@@ -423,24 +424,34 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		this.deepSearch = deepSearch;
 	}
 
-	@IbisDoc({"If true, and converting from JSON to XML, elements in JSON that are not found in the XML-Schema are ignored", "false"})
+	@IbisDoc({"If true, and converting from JSON to XML, elements in JSON that are not found in the XML Schema are ignored", "false"})
 	public void setIgnoreUndeclaredElements(boolean ignoreUndeclaredElements) {
 		this.ignoreUndeclaredElements = ignoreUndeclaredElements;
 	}
 
-	@IbisDoc({"If true, an exception is thrown when a wildcard is found in the XML Schema when parsing an object. This often indicates that an element is not properly typed in the XML-Schema, and could lead to ambuigities.", "true"})
+	@IbisDoc({"If true, an exception is thrown when a wildcard is found in the XML Schema when parsing an object. This often indicates that an element is not properly typed in the XML Schema, and could lead to ambuigities.", "true"})
 	public void setFailOnWildcards(boolean failOnWildcards) {
 		this.failOnWildcards = failOnWildcards;
 	}
 
 	@IbisDoc({"If true, all XML is allowed to be without namespaces. If no namespaces are detected (by the presence of the string 'xmlns') in the XML, the root namespace is added to the XML", "false"})
-	public void setAcceptNamespaceLessXml(boolean acceptNamespaceLessXml) {
-		this.acceptNamespaceLessXml = acceptNamespaceLessXml;
+	public void setAcceptNamespacelessXml(boolean acceptNamespacelessXml) {
+		this.acceptNamespacelessXml = acceptNamespacelessXml;
+	}
+	@Deprecated
+	@ConfigurationWarning("The attribute 'acceptNamespaceLessXml' has been renamed 'acceptNamespacelessXml'")
+	public void setAcceptNamespaceLessXml(boolean acceptNamespacelessXml) {
+		setAcceptNamespacelessXml(acceptNamespacelessXml);
 	}
 
 	@IbisDoc({"If true, all XML that is generated is without a namespace set", "false"})
-	public void setProduceNamespaceLessXml(boolean produceNamespaceLessXml) {
-		this.produceNamespaceLessXml = produceNamespaceLessXml;
+	public void setProduceNamespacelessXml(boolean produceNamespacelessXml) {
+		this.produceNamespacelessXml = produceNamespacelessXml;
+	}
+	@Deprecated
+	@ConfigurationWarning("The attribute 'produceNamespaceLessXml' has been renamed 'produceNamespacelessXml'")
+	public void setProduceNamespaceLessXml(boolean produceNamespacelessXml) {
+		setProduceNamespacelessXml(produceNamespacelessXml);
 	}
 
 	@IbisDoc({"If true, and converting to or from JSON, then the message root is the only rootValidation, ignoring root validations like for SOAP envelope and header set by descender classes like SoapValidator", "true"})

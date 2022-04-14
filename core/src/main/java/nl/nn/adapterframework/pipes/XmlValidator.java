@@ -73,7 +73,7 @@ import nl.nn.adapterframework.xml.RootElementToSessionKeyFilter;
 
 
 /**
- *<code>Pipe</code> that validates the input message against a XML-Schema.
+ * Pipe that validates the input message against a XML Schema.
  *
  * @ff.forward parserError a parser exception occurred, probably caused by non-well-formed XML. If not specified, <code>failure</code> is used in such a case.
  * @ff.forward failure The document is not valid according to the configured schema.
@@ -762,15 +762,10 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	}
 
 	/**
-	 * <p>Pairs of URI references (one for the namespace name, and one for a
-	 * hint as to the location of a schema document defining names for that
-	 * namespace name).</p>
-	 * <p> The syntax is the same as for schemaLocation attributes
-	 * in instance documents: e.g, "http://www.example.com file%20name.xsd".</p>
-	 * <p>The user can specify more than one XML Schema in the list.</p>
-	 * <p><b>Note</b> that spaces are considered separators for this attributed.
-	 * This means that, for example, spaces in filenames should be escaped to %20.
-	 * </p>
+	 * Pairs of URI references (one for the namespace name, and one for a hint as to the location of a schema document defining names for that namespace name).<br/>
+	 * The syntax is the same as for schemaLocation attributes in instance documents: e.g, "http://www.example.com file%20name.xsd".<br/>
+	 * The user can specify more than one XML Schema in the list.<br/>
+	 * <b>Note</b> that spaces are considered separators for this attributed. This means that, for example, spaces in filenames should be escaped to %20.
 	 */
 	public void setSchemaLocation(String schemaLocation) {
 		this.schemaLocation = schemaLocation;
