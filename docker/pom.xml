@@ -21,7 +21,7 @@
 		<mariadb.driver.version>2.6.2</mariadb.driver.version>
 		<postgresql.driver.version>42.3.3</postgresql.driver.version>
 		<activemq.driver.version>5.8.0</activemq.driver.version>
-		<!-- ActiveMQ Artemis v2.19 is the latest that works with Java 8 -->
+		<!-- ActiveMQ Artemis v2.19 is the last that works with Java 8 -->
 		<artemis.driver.version>2.19.1</artemis.driver.version>
 	</properties>
 
