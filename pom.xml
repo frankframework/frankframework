@@ -9,22 +9,24 @@
 	<properties>
 		<revision>7.8-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<log4j2.version>2.17.1</log4j2.version>
+		<log4j2.version>2.17.2</log4j2.version>
 		<h2.version>2.1.210</h2.version>
 		<btm.version>3.0.0-mk1</btm.version>
 		<narayana.version>5.11.0.Final</narayana.version>
 		<jboss-logging.version>3.4.2.Final</jboss-logging.version>
 		<argLine /> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
+		<!-- Override this property to use another version of the Frank!Doc -->
+		<frankdoc.version>1.1-SNAPSHOT</frankdoc.version>
 	</properties>
 
 	<name>Ibis AdapterFramework parent</name>
 	<description>The Ibis Adapter Framework is an easy to use, stateless integration framework which allows (transactional) messages to be modified and exchanged between different systems.</description>
-	<url>http://maven.ibissource.org/iaf/</url>
+	<url>https://frankframework.org</url>
 
 	<organization>
-		<name>Ibissource.org</name>
-		<url>https://ibissource.org</url>
+		<name>Frank!Framework</name>
+		<url>https://frankframework.org</url>
 	</organization>
 
 	<licenses>
@@ -39,26 +41,26 @@
 		<developer>
 			<name>Jaco de Groot</name>
 			<email>jaco@ibissource.org</email>
-			<organization>Ibissource</organization>
-			<organizationUrl>https://ibissource.org</organizationUrl>
+			<organization>Frank!Framework</organization>
+			<organizationUrl>https://frankframework.org</organizationUrl>
 		</developer>
 		<developer>
 			<name>Niels Meijer</name>
 			<email>niels@ibissource.org</email>
-			<organization>Ibissource</organization>
-			<organizationUrl>https://ibissource.org</organizationUrl>
+			<organization>Frank!Framework</organization>
+			<organizationUrl>https://frankframework.org</organizationUrl>
 		</developer>
 		<developer>
 			<name>Peter Leeuwenburgh</name>
 			<email>peter@ibissource.org</email>
-			<organization>Ibissource</organization>
-			<organizationUrl>https://ibissource.org</organizationUrl>
+			<organization>Frank!Framework</organization>
+			<organizationUrl>https://frankframework.org</organizationUrl>
 		</developer>
 		<developer>
 			<name>Gerrit van Brakel</name>
 			<email>gerrit@ibissource.org</email>
-			<organization>Ibissource</organization>
-			<organizationUrl>https://ibissource.org</organizationUrl>
+			<organization>Frank!Framework</organization>
+			<organizationUrl>https://frankframework.org</organizationUrl>
 		</developer>
 	</developers>
 
@@ -699,11 +701,11 @@
 			<distributionManagement>
 				<repository>
 					<id>ibissource</id>
-					<url>https://nexus.ibissource.org/content/repositories/releases</url>
+					<url>https://nexus.frankframework.org/content/repositories/releases</url>
 				</repository>
 				<snapshotRepository>
 					<id>ibissource</id>
-					<url>https://nexus.ibissource.org/content/repositories/snapshots</url>
+					<url>https://nexus.frankframework.org/content/repositories/snapshots</url>
 				</snapshotRepository>
 				<site>
 					<id>www.ibissource.org</id>
@@ -713,7 +715,7 @@
 			<repositories>
 				<repository>
 					<id>ibissource</id>
-					<url>https://nexus.ibissource.org/content/groups/public</url>
+					<url>https://nexus.frankframework.org/content/groups/public</url>
 				</repository>
 			</repositories>
 		</profile>
@@ -777,7 +779,7 @@
 			<repositories>
 				<repository>
 					<id>proprietary</id>
-					<url>https://nexus.ibissource.org/content/repositories/private/</url>
+					<url>https://nexus.frankframework.org/content/repositories/private/</url>
 					<snapshots>
 						<!-- Prevent Maven from attempting to download non existing /x.y-SNAPSHOT/maven-metadata.xml on this url for every module on every build -->
 						<enabled>false</enabled>
@@ -837,7 +839,7 @@
 			<pluginRepositories>
 				<pluginRepository>
 					<id>ibissource</id>
-					<url>https://nexus.ibissource.org/content/groups/public</url>
+					<url>https://nexus.frankframework.org/content/groups/public</url>
 					<snapshots>
 						<enabled>true</enabled>
 						<updatePolicy>always</updatePolicy>
@@ -861,7 +863,7 @@
 							<docletArtifact>
 								<groupId>org.ibissource</groupId>
 								<artifactId>frank-doc</artifactId>
-								<version>1.1-SNAPSHOT</version>
+								<version>${frankdoc.version}</version>
 							</docletArtifact>
 							<additionalOptions>
 								<additionalOption>-outputDirectory</additionalOption>

@@ -51,7 +51,7 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 	}
 
 	private void insert(int key, String value) throws JdbcException {
-		JdbcUtil.executeStatement(connection, String.format("INSERT INTO TEMP (TKEY, TVARCHAR, TINT) VALUES ('%d', '%s', '0')", key, value));
+		JdbcUtil.executeStatement(connection, String.format("INSERT INTO "+TEST_TABLE+" (TKEY, TVARCHAR, TINT) VALUES ('%d', '%s', '0')", key, value));
 	}
 
 	@Override
@@ -66,7 +66,7 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 
 	@Test
 	public void testWithStylesheetNoCollectResultsAndIgnoreExceptions() throws Exception {
-		pipe.setQuery("SELECT TKEY, TVARCHAR FROM TEMP ORDER BY TKEY");
+		pipe.setQuery("SELECT TKEY, TVARCHAR FROM "+TEST_TABLE+" ORDER BY TKEY");
 		pipe.setStyleSheetName("Pipes/ResultSetIteratingPipe/CreateMessage.xsl");
 		pipe.setCollectResults(false);
 		pipe.setIgnoreExceptions(true);
@@ -86,7 +86,7 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 
 	@Test
 	public void testWithStylesheetNoCollectResultsAndIgnoreExceptionsParallel() throws Exception {
-		pipe.setQuery("SELECT TKEY, TVARCHAR FROM TEMP ORDER BY TKEY");
+		pipe.setQuery("SELECT TKEY, TVARCHAR FROM "+TEST_TABLE+" ORDER BY TKEY");
 		pipe.setStyleSheetName("Pipes/ResultSetIteratingPipe/CreateMessage.xsl");
 		pipe.setCollectResults(false);
 		pipe.setParallel(true);
@@ -112,14 +112,14 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 
 	@Test
 	public void testWithStylesheetNoCollectResultsAndIgnoreExceptionsWithUpdateInSameTable() throws Exception {
-		pipe.setQuery("SELECT TKEY, TVARCHAR FROM TEMP ORDER BY TKEY");
+		pipe.setQuery("SELECT TKEY, TVARCHAR FROM "+TEST_TABLE+" ORDER BY TKEY");
 		pipe.setStyleSheetName("Pipes/ResultSetIteratingPipe/CreateMessage.xsl");
 		pipe.setCollectResults(false);
 		pipe.setIgnoreExceptions(true);
 		pipe.setDatasourceName(getDataSourceName());
 
 		FixedQuerySender sender = new FixedQuerySender();
-		sender.setQuery("UPDATE TEMP SET TINT = '4', TDATE = CURRENT_TIMESTAMP WHERE TKEY = ?");
+		sender.setQuery("UPDATE "+TEST_TABLE+" SET TINT = '4', TDATE = CURRENT_TIMESTAMP WHERE TKEY = ?");
 		Parameter param = new Parameter();
 		param.setName("ID");
 		param.setXpathExpression("result/id");
@@ -133,7 +133,7 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 
 		PipeRunResult result = doPipe("since query attribute is set, this should be ignored");
 		assertEquals("<results count=\"10\"/>", result.getResult().asString());
-		String jdbcResult = JdbcUtil.executeStringQuery(connection, "SELECT COUNT('TKEY') FROM TEMP WHERE TINT = '4'");
+		String jdbcResult = JdbcUtil.executeStringQuery(connection, "SELECT COUNT('TKEY') FROM "+TEST_TABLE+" WHERE TINT = '4'");
 		assertEquals("10", jdbcResult);
 	}
 

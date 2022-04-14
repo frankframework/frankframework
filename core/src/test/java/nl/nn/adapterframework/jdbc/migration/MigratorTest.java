@@ -5,7 +5,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -36,9 +35,9 @@ public class MigratorTest extends TransactionManagerTestBase {
 	protected void prepareDatabase() throws Exception {
 		super.prepareDatabase();
 		//Ignore programmatic creation of Temp table, run Liquibase instead!
-		dropTable(tableName);
-		dropTable("DATABASECHANGELOG");
-		dropTable("DATABASECHANGELOGLOCK");
+		dropTableIfPresent(tableName);
+		dropTableIfPresent("DATABASECHANGELOG");
+		dropTableIfPresent("DATABASECHANGELOGLOCK");
 
 		migrator = getConfiguration().createBean(LiquibaseMigrator.class);
 		migrator.setDatasourceName(getDataSourceName());
@@ -83,7 +82,6 @@ public class MigratorTest extends TransactionManagerTestBase {
 
 	@Test
 	public void testSQLWriter() throws Exception {
-		assumeTrue(getDataSourceName().equals("H2"));
 
 		Resource resource = Resource.getResource("/Migrator/DatabaseChangelog_plus_changes.xml");
 		assertNotNull(resource);
@@ -91,7 +89,7 @@ public class MigratorTest extends TransactionManagerTestBase {
 		StringWriter writer = new StringWriter();
 		migrator.update(writer, resource);
 
-		String sqlChanges = TestFileUtils.getTestFile("/Migrator/sql_changes.sql");
+		String sqlChanges = TestFileUtils.getTestFile("/Migrator/sql_changes_"+getDataSourceName().toLowerCase()+".sql");
 
 		String result = applyIgnores(writer.toString());
 		result = removeComments(result);
@@ -118,7 +116,7 @@ public class MigratorTest extends TransactionManagerTestBase {
 	}
 
 	private String applyIgnores(String sqlScript) {
-		Pattern regex = Pattern.compile("(\\d+)\\'\\);");
+		Pattern regex = Pattern.compile("(\\d+)\\'\\)");
 		Matcher match = regex.matcher(sqlScript);
 		if(match.find()) {
 			String deploymentId = match.group(1);

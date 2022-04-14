@@ -38,13 +38,13 @@ public interface ItemList {
 		FRACTION
 	}
 
-	final String ITEM_NAME_COUNT="Count";
-	final String ITEM_NAME_MIN="Min";
-	final String ITEM_NAME_MAX="Max";
-	final String ITEM_NAME_AVERAGE="Avg";
-	final String ITEM_NAME_STDDEV="StdDev";
-	final String ITEM_NAME_SUM="Sum";
-	final String ITEM_NAME_SUMSQ="SumSq";
+	final String ITEM_NAME_COUNT="count";
+	final String ITEM_NAME_MIN="min";
+	final String ITEM_NAME_MAX="max";
+	final String ITEM_NAME_AVERAGE="avg";
+	final String ITEM_NAME_STDDEV="stdDev";
+	final String ITEM_NAME_SUM="sum";
+	final String ITEM_NAME_SUMSQ="sumsq";
 
 	final String ITEM_VALUE_NAN="-";
 	

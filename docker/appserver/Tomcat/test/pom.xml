@@ -13,14 +13,6 @@
 		<version>${revision}</version>
 	</parent>
 	
-	<properties>
-		<config.tag>test</config.tag>
-		<config.groupid>org.ibissource</config.groupid>
-		<config.project>ibis-adapterframework-${config.tag}</config.project>
-		<config.project.version>${project.version}</config.project.version>
-	</properties>
-	
-	
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
@@ -29,9 +21,9 @@
 			<type>pom</type>
 		</dependency>
 		<dependency>
-			<groupId>${config.groupid}</groupId>
-			<artifactId>${config.project}</artifactId>
-			<version>${config.project.version}</version>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-test</artifactId>
+			<version>${project.version}</version>
 			<type>war</type>
 		</dependency>
 	</dependencies>
@@ -75,7 +67,7 @@
 								<exec executable="docker" failonerror="true">
 									<arg value="build"/>
 									<arg value="-t"/>
-									<arg value="iaf-${config.tag}-tomcat"/>
+									<arg value="iaf-test-tomcat"/>
 									<arg value="."/>
 								</exec>
 							</target>

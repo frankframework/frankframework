@@ -22,6 +22,7 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 			}
 		}
 	}
+
 	$scope.flattenElements = function(element) {
 		if(element.parent) {
 			let el = angular.copy(element);
@@ -62,6 +63,7 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 			let types = data.types;
 			let elements = data.elements;
 			let enums = data.enums;
+			$scope.version = (data.metadata && data.metadata.version) ? data.metadata.version : null;
 
 			//map elements so we can search
 			$scope.groups = data.groups;
@@ -156,7 +158,7 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 
 function javaDocUrlOf(element) {
 	if(element.fullName && element.fullName.includes(".")) {
-		return 'https://javadoc.ibissource.org/latest/' + element.fullName.replaceAll(".", "/") + '.html'	
+		return 'https://javadoc.frankframework.org/' + element.fullName.replaceAll(".", "/") + '.html';
 	} else {
 		// We only have a JavaDoc URL if we have an element with a Java class. The
 		// exception we handle here is <Module>.
@@ -175,7 +177,7 @@ function copyOf(attr1, attr2, fieldName) {
 		let seen = [];
 		for(i in attr1) {
 			let at = attr1[i];
-			seen.push(at[fieldName])
+			seen.push(at[fieldName]);
 			newAttr.push(at);
 		}
 		for(i in attr2) {

@@ -34,7 +34,7 @@ public class CheckReloadJobTest extends JdbcTestBase {
 	public void testWithEmptyTable() throws Exception {
 		jobDef.configure();
 
-		jobDef.execute(getConfiguration().getIbisManager());
+		jobDef.execute();
 
 		assertEquals(1, jobDef.getMessageKeeper().size());
 		assertTrue(jobDef.getMessageKeeper().getMessage(0).getMessageText().contains("job successfully configured"));

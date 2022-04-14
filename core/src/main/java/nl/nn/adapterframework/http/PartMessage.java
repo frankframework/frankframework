@@ -15,15 +15,12 @@
 */
 package nl.nn.adapterframework.http;
 
-import java.nio.charset.UnsupportedCharsetException;
 import java.util.Map;
 
 import javax.mail.MessagingException;
 import javax.mail.Part;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.ParseException;
-import org.apache.http.entity.ContentType;
 
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
@@ -44,17 +41,14 @@ public class PartMessage extends Message {
 		this(context instanceof MessageContext ? (MessageContext)context : context==null ? new MessageContext() : new MessageContext(context), part);
 	}
 	private PartMessage(MessageContext context, Part part) throws MessagingException {
-		super(() -> part.getInputStream(), context.withName(part.getFileName()), part.getClass());
+		super(part::getInputStream, context.withName(part.getFileName()), part.getClass());
 		this.part = part;
 
-		String charset = context!=null ? (String)context.get(MessageContext.METADATA_CHARSET) : null;
-		if (StringUtils.isEmpty(charset)) {
+		String charset = (String)context.get(MessageContext.METADATA_CHARSET);
+		if (StringUtils.isEmpty(charset)) { //if not explicitly set
 			try {
-				ContentType contentType = ContentType.parse(part.getContentType());
-				if(contentType.getCharset() != null) {
-					context.put(MessageContext.METADATA_CHARSET, contentType.getCharset().name());
-				}
-			} catch (UnsupportedCharsetException | ParseException | MessagingException e) {
+				context.withMimeType(part.getContentType());
+			} catch (Exception e) {
 				log.warn("Could not determine charset", e);
 			}
 		}

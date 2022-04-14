@@ -49,8 +49,8 @@ public class MessageBrowsingFilterTest extends TransactionManagerTestBase {
 		String messageRoot = "message";
 		filter.setMessageMask(messageRoot, storage);
 		storage.configure();
-		storage.storeMessage("1", "corrId", new Date(), "comments", "label", new Message(messageRoot));
-		storage.storeMessage("2", "corrId2", new Date(), "comments", "label", new Message("out filter"));
+		storage.storeMessage("1", "corrId", new Date(), "comments", "label", messageRoot);
+		storage.storeMessage("2", "corrId2", new Date(), "comments", "label", "out filter");
 
 		int count = 0 ;
 		try(IMessageBrowsingIterator iterator = storage.getIterator()){
@@ -150,7 +150,7 @@ public class MessageBrowsingFilterTest extends TransactionManagerTestBase {
 
 	@Test
 	public void testMessageFilterWithMessage() throws Exception {
-		testMessageFilterWithJavaListenerHelper(new Message("message"), new Message("out filter"));
+		testMessageFilterWithJavaListenerHelper("message", "out filter");
 	}
 
 	@Test

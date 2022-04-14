@@ -31,7 +31,7 @@ public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
 		if (dataSource instanceof XADataSource) {
 			XAResourceRecoveryHelper recoveryHelper = new DataSourceXAResourceRecoveryHelper((XADataSource) dataSource);
 			this.recoveryManager.registerXAResourceRecoveryHelper(recoveryHelper);
-			return new NarayanaDataSource((DataSource) dataSource);
+			return new NarayanaDataSource(dataSource, dataSourceName);
 		}
 
 		log.warn("DataSource [{}] is not XA enabled", dataSourceName);

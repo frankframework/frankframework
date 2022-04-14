@@ -69,6 +69,7 @@ import lombok.Setter;
  * @since 4.2
  */
 public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
+	private final @Getter(onMethod = @__(@Override)) String domain = "IFSA";
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;

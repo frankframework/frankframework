@@ -67,7 +67,7 @@ public class MatchUtils {
 	public static String xmlPretty(String xml, boolean removeNamespaces) {
 		XmlWriter xmlWriter = new XmlWriter();
 		xmlWriter.setIncludeComments(false);
-		ContentHandler contentHandler = new PrettyPrintFilter(xmlWriter);
+		ContentHandler contentHandler = new PrettyPrintFilter(xmlWriter, true);
 		if (removeNamespaces) {
 			contentHandler = new NamespaceRemovingFilter(contentHandler);
 		}

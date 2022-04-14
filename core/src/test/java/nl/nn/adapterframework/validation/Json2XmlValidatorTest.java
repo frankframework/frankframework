@@ -21,6 +21,7 @@ import nl.nn.adapterframework.pipes.JsonPipe;
 import nl.nn.adapterframework.pipes.JsonPipe.Direction;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.validation.AbstractXmlValidator.ValidationResult;
 
 /**
  * @author Gerrit van Brakel
@@ -67,7 +68,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 	}
 
 	@Override
-	public String validate(String rootelement, String rootNamespace, String schemaLocation, boolean addNamespaceToSchema, boolean ignoreUnknownNamespaces, String inputFile, String[] expectedFailureReasons) throws Exception {
+	public ValidationResult validate(String rootelement, String rootNamespace, String schemaLocation, boolean addNamespaceToSchema, boolean ignoreUnknownNamespaces, String inputFile, String[] expectedFailureReasons) throws Exception {
 		init();
 		PipeLineSession session = new PipeLineSession();
 		// instance.setSchemasProvider(getSchemasProvider(schemaLocation,
@@ -79,6 +80,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 		instance.setThrowException(true);
 		instance.setFullSchemaChecking(true);
 		instance.setTargetNamespace(rootNamespace);
+		instance.registerForward(new PipeForward("warnings", null));
 		instance.registerForward(new PipeForward("failure", null));
 		instance.registerForward(new PipeForward("parserError", null));
 		if (rootelement != null) {
@@ -86,7 +88,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 		}
 		instance.configure();
 		instance.start();
-		validator.setSchemasProvider(getSchemasProvider(schemaLocation, addNamespaceToSchema));
+		validator.setSchemasProvider(instance);
 		validator.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);
 		validator.configure("setup");
 		validator.start();
@@ -107,32 +109,38 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 			PipeRunResult prr = instance.doPipe(new Message(testJson), session);
 			String result = prr.getResult().asString();
 			log.debug("result [" + ToStringBuilder.reflectionToString(prr) + "]");
-			String event;
+			ValidationResult event;
 			if (prr.isSuccessful()) {
-				event = "valid XML";
+				event = ValidationResult.VALID;
 			} else {
 				if (prr.getPipeForward().getName().equals("failure")) {
-					event = "Invalid XML";
+					event = ValidationResult.INVALID;
+				} else if (prr.getPipeForward().getName().equals("warnings")) {
+					event = ValidationResult.VALID_WITH_WARNINGS;
+				} else if (prr.getPipeForward().getName().equals("parserError")) {
+					event = ValidationResult.PARSER_ERROR;
 				} else {
-					event = prr.getPipeForward().getName();
+					event = null;
 				}
 			}
 			evaluateResult(event, session, null, expectedFailureReasons);
-			try {
-				RootValidations rootvalidations = null;
-				if (rootelement != null) {
-					rootvalidations = new RootValidations("Envelope", "Body", rootelement);
+			if (event != ValidationResult.PARSER_ERROR) {
+				try {
+					RootValidations rootvalidations = null;
+					if (rootelement != null) {
+						rootvalidations = new RootValidations("Envelope", "Body", rootelement);
+					}
+					ValidationResult validationResult = validator.validate(result, session, "check result", rootvalidations, null);
+					evaluateResult(validationResult, session, null, expectedFailureReasons);
+					return validationResult;
+				} catch (Exception e) {
+					fail("result XML must be valid: " + e.getMessage());
 				}
-				String validationResult = validator.validate(result, session, "check result", rootvalidations, null);
-				evaluateResult(validationResult, session, null, expectedFailureReasons);
-				return result;
-			} catch (Exception e) {
-				fail("result XML must be valid: " + e.getMessage());
 			}
 
-			return result;
+			return event;
 		} catch (PipeRunException pre) {
-			evaluateResult("Invalid XML", session, pre, expectedFailureReasons);
+			evaluateResult(ValidationResult.INVALID, session, pre, expectedFailureReasons);
 		}
 		return null;
 	}

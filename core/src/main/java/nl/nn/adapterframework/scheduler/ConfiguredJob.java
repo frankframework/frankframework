@@ -19,7 +19,6 @@ import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
-import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.scheduler.job.IJob;
 
 
@@ -47,7 +46,6 @@ import nl.nn.adapterframework.scheduler.job.IJob;
   */
 public class ConfiguredJob extends BaseJob {
 
-	public static final String MANAGER_KEY = "manager";
 	public static final String JOBDEF_KEY = "jobdef";
 
 	@Override
@@ -55,11 +53,10 @@ public class ConfiguredJob extends BaseJob {
 		String ctName = Thread.currentThread().getName();
 		try {
 			JobDataMap dataMap = context.getJobDetail().getJobDataMap();
-			IbisManager ibisManager = (IbisManager)dataMap.get(MANAGER_KEY);
 			IJob jobDef = (IJob)dataMap.get(JOBDEF_KEY);
 			Thread.currentThread().setName(jobDef.getName() + "["+ctName+"]");
 			log.info(getLogPrefix(jobDef) + "executing");
-			jobDef.executeJob(ibisManager);
+			jobDef.executeJob();
 			log.debug(getLogPrefix(jobDef) + "completed");
 		}
 		catch (Exception e) {
