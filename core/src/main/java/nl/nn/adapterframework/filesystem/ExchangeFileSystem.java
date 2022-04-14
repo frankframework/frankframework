@@ -94,7 +94,7 @@ import nl.nn.adapterframework.xml.SaxElementBuilder;
 
 /**
  * Implementation of a {@link IBasicFileSystem} of an Exchange Mail Inbox.
- *
+ * <br/>
  * To make use of modern authentication:
  * <ol>
  *     	<li>Create an application in Azure AD -> App Registrations. For more information please read {@link "https://docs.microsoft.com/en-us/exchange/client-developer/exchange-web-services/how-to-authenticate-an-ews-application-by-using-oauth"}</li>
@@ -107,7 +107,7 @@ import nl.nn.adapterframework.xml.SaxElementBuilder;
  * </ol>
  *
  *
- * N.B. MS Exchange is susceptible to problems with invalid XML characters, like &#x3;
+ * N.B. MS Exchange is susceptible to problems with invalid XML characters, like &amp;#x3;. 
  * To work around these problems, a special streaming XMLInputFactory is configured in
  * METAINF/services/javax.xml.stream.XMLInputFactory as nl.nn.adapterframework.xml.StaxParserFactory
  *
