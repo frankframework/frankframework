@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.core;
 
 import lombok.Getter;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLine.ExitState;
 
 /**
@@ -66,8 +67,8 @@ public class PipeLineExit implements IForwardTarget {
 		this.name = name;
 	}
 
-@Deprecated
-@ConfigurationWarning("The attribute 'path' has been renamed 'name'")
+	@Deprecated
+	@ConfigurationWarning("The attribute 'path' has been renamed 'name'")
 	public void setPath(String path) {
 		setName(path);
 	}
