@@ -1,5 +1,5 @@
 <browse>
 	<jmsRealm>qcf</jmsRealm>
-	<destinationName>jms/i4testiaf_out</destinationName>
+	<destinationName>${jms.destination.i4testiaf_out}</destinationName>
 	<destinationType>QUEUE</destinationType>
 </browse>
