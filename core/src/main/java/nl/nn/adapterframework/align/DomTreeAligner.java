@@ -34,9 +34,6 @@ import org.xml.sax.SAXException;
 
 public class DomTreeAligner extends Tree2Xml<Document,Node> {
 
-	public DomTreeAligner() {
-		super();
-	}
 	public DomTreeAligner(ValidatorHandler validatorHandler, List<XSModel> schemaInformation) {
 		super(validatorHandler, schemaInformation);
 	}

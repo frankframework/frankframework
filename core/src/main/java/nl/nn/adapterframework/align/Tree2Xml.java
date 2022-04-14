@@ -39,10 +39,6 @@ public abstract class Tree2Xml<C,N> extends ToXml<C,N> {
 
 	SubstitutionProvider<?> sp;
 	
-	public Tree2Xml() {
-		super();
-	}
-
 	public Tree2Xml(ValidatorHandler validatorHandler) {
 		super(validatorHandler);
 	}

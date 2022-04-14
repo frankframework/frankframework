@@ -17,6 +17,7 @@ package nl.nn.adapterframework.align;
 
 import java.net.URL;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -31,9 +32,11 @@ import org.apache.xerces.impl.xs.XMLSchemaLoader;
 import org.apache.xerces.xs.ElementPSVI;
 import org.apache.xerces.xs.PSVIProvider;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
+import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSModel;
 import org.apache.xerces.xs.XSModelGroup;
+import org.apache.xerces.xs.XSNamedMap;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSParticle;
 import org.apache.xerces.xs.XSTerm;
@@ -65,8 +68,10 @@ public class XmlAligner extends XMLFilterImpl {
 	public final String FEATURE_NAMESPACE_PREFIXES="http://xml.org/sax/features/namespace-prefixes";
 
 	private @Setter PSVIProvider psviProvider;
+	protected ValidatorHandler validatorHandler;
 	private boolean indent=true;
 	private @Getter @Setter boolean ignoreUndeclaredElements=false;
+	private @Getter @Setter List<XSModel> schemaInformation;
 
 	private @Getter AlignmentContext context;
 	private int indentLevel;
@@ -90,20 +95,21 @@ public class XmlAligner extends XMLFilterImpl {
 	}
 
 
-	public XmlAligner() {
-		super();
-	}
-
 	private XmlAligner(PSVIProvider psviProvider) {
-		this();
+		super();
 		setPsviProvider(psviProvider);
 	}
 
 	public XmlAligner(ValidatorHandler psviProvidingValidatorHandler) {
 		this((PSVIProvider)psviProvidingValidatorHandler);
 		psviProvidingValidatorHandler.setContentHandler(this);
+		this.validatorHandler = psviProvidingValidatorHandler;
 	}
 
+	public XmlAligner(ValidatorHandler validatorHandler, List<XSModel> schemaInformation) {
+		this(validatorHandler);
+		this.schemaInformation=schemaInformation;
+	}
 
 
 	public void newLine() throws SAXException {
@@ -406,4 +412,39 @@ public class XmlAligner extends XMLFilterImpl {
 			throw new SAXParseException(message, getDocumentLocator());
 		}
 	}
+
+	protected XSElementDeclaration findElementDeclarationForName(String namespace, String name) throws SAXException {
+		Set<XSElementDeclaration> elementDeclarations=findElementDeclarationsForName(namespace, name);
+		if (elementDeclarations==null) {
+			log.warn("No element declarations found for ["+namespace+"]:["+name+"]");
+			return null;
+		}
+		if (elementDeclarations.size()>1) {
+			XSElementDeclaration[] XSElementDeclarationArray=elementDeclarations.toArray(new XSElementDeclaration[0]);
+			throw new SAXException("multiple ["+elementDeclarations.size()+"] elementDeclarations found for ["+namespace+"]:["+name+"]: first two ["+XSElementDeclarationArray[0].getNamespace()+":"+XSElementDeclarationArray[0].getName()+"]["+XSElementDeclarationArray[1].getNamespace()+":"+XSElementDeclarationArray[1].getName()+"]");
+		}
+		if (elementDeclarations.size()==1) {
+			return (XSElementDeclaration)elementDeclarations.toArray()[0];
+		}
+		return null;
+	}
+	protected Set<XSElementDeclaration> findElementDeclarationsForName(String namespace, String name) {
+		Set<XSElementDeclaration> result=new LinkedHashSet<XSElementDeclaration>();
+		if (schemaInformation==null) {
+			log.warn("No SchemaInformation specified, cannot find namespaces for ["+namespace+"]:["+name+"]");
+			return null;
+		}
+		for (XSModel model:schemaInformation) {
+			XSNamedMap components = model.getComponents(XSConstants.ELEMENT_DECLARATION);
+			for (int i=0;i<components.getLength();i++) {
+				XSElementDeclaration item=(XSElementDeclaration)components.item(i);
+				if ((namespace==null || namespace.equals(item.getNamespace())) && (name==null || name.equals(item.getName()))) {
+					if (log.isTraceEnabled()) log.trace("name ["+item.getName()+"] found in namespace ["+item.getNamespace()+"]");
+					result.add(item);
+				}
+			}
+		}
+		return result;
+	}
+
 }

@@ -33,6 +33,7 @@ import org.xml.sax.helpers.XMLFilterImpl;
 
 import lombok.Getter;
 import nl.nn.adapterframework.align.Json2Xml;
+import nl.nn.adapterframework.align.NamespaceAligningFilter;
 import nl.nn.adapterframework.align.Xml2Json;
 import nl.nn.adapterframework.align.XmlAligner;
 import nl.nn.adapterframework.align.XmlTypeToJsonSchemaConverter;
@@ -159,10 +160,10 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			char firstChar=messageToValidate.charAt(i);
 			if (firstChar=='<') {
 				// message is XML
-				if (isAcceptNamespacelessXml()) {
-					messageToValidate=addNamespace(messageToValidate); // TODO: do this via a filter
-					//if (log.isDebugEnabled()) log.debug("added namespace to message ["+messageToValidate+"]");
-				}
+//				if (isAcceptNamespacelessXml()) {
+//					messageToValidate=addNamespace(messageToValidate); // TODO: do this via a filter
+//					//if (log.isDebugEnabled()) log.debug("added namespace to message ["+messageToValidate+"]");
+//				}
 				storeInputFormat(DocumentFormat.XML, session, responseMode);
 				if (getOutputFormat(session,responseMode) != DocumentFormat.JSON) {
 					PipeRunResult result=super.doPipe(new Message(messageToValidate),session, responseMode, messageRoot);
@@ -213,7 +214,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		ValidatorHandler validatorHandler = validator.getValidatorHandler(session,context);
 
 		// Make sure to use Xerces' ValidatorHandlerImpl, otherwise casting below will fail.
-		XmlAligner aligner = new XmlAligner(validatorHandler);
+		XmlAligner aligner = new XmlAligner(validatorHandler, context.getXsModels());
 		if (isIgnoreUndeclaredElements()) {
 			log.warn(getLogPrefix(session)+"cannot ignore undeclared elements when converting from XML");
 		}
@@ -228,8 +229,8 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 
 		aligner.setContentHandler(handler);
 		aligner.setErrorHandler(context.getErrorHandler());
-
-		ValidationResult validationResult= validator.validate(messageToValidate, session, getLogPrefix(session), validatorHandler, xml2json, context);
+		
+		ValidationResult validationResult= validator.validate(messageToValidate, session, getLogPrefix(session), h -> isAcceptNamespacelessXml() ? new NamespaceAligningFilter(aligner, h) : null, validatorHandler, xml2json, context);
 		String out=xml2json.toString();
 		PipeForward forward=determineForward(validationResult, session, responseMode);
 		PipeRunResult result=new PipeRunResult(forward,out);

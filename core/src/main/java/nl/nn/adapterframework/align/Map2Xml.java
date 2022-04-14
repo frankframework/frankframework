@@ -37,10 +37,6 @@ public abstract class Map2Xml<K,V,N,M extends Map<K,V>> extends ToXml<M,N> {
 		setDeepSearch(true);
 	}
 	
-	public Map2Xml() {
-		super();
-	}
-
 	public Map2Xml(ValidatorHandler validatorHandler) {
 		super(validatorHandler);
 	}

@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import javax.xml.validation.ValidatorHandler;
 
@@ -29,6 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.xerces.xs.XSModel;
 import org.springframework.context.ApplicationContext;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -196,27 +198,32 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 	public ValidationResult validate(Object input, PipeLineSession session, String logPrefix, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws XmlValidatorException, PipeRunException, ConfigurationException {
 		ValidationContext context = createValidationContext(session, rootValidations, invalidRootNamespaces);
 		ValidatorHandler validatorHandler = getValidatorHandler(session, context);
-		return validate(input, session, logPrefix, validatorHandler, null, context);
+		return validate(input, session, logPrefix, null, validatorHandler, null, context);
 	}
 
-	public ValidationResult validate(Object input, PipeLineSession session, String logPrefix, ValidatorHandler validatorHandler, XMLFilterImpl filter, ValidationContext context) throws XmlValidatorException, PipeRunException, ConfigurationException {
+	public ValidationResult validate(Object input, PipeLineSession session, String logPrefix, Function<ContentHandler,ContentHandler> preValidationFilterSupplier, ValidatorHandler validatorHandler, XMLFilterImpl postValidationFilter, ValidationContext context) throws XmlValidatorException, PipeRunException, ConfigurationException {
 
-		if (filter != null) {
+		if (postValidationFilter != null) {
 			// If a filter is present, connect its output to the context.contentHandler.
 			// It is assumed that the filter input is already properly connected.
-			filter.setContentHandler(context.getContentHandler());
-			filter.setErrorHandler(context.getErrorHandler());
+			postValidationFilter.setContentHandler(context.getContentHandler());
+			postValidationFilter.setErrorHandler(context.getErrorHandler());
 		} else {
 			validatorHandler.setContentHandler(context.getContentHandler());
 		}
 		validatorHandler.setErrorHandler(context.getErrorHandler());
+		
+		ContentHandler handler = validatorHandler;
+		if (preValidationFilterSupplier!=null) {
+			handler = preValidationFilterSupplier.apply(handler);
+		}
 
 		InputSource is = getInputSource(Message.asMessage(input));
 
-		return validate(is, validatorHandler, session, context);
+		return validate(is, handler, session, context);
 	}
 
-	public ValidationResult validate(InputSource inputSource, ValidatorHandler validatorHandler, PipeLineSession session, ValidationContext context) throws XmlValidatorException {
+	private ValidationResult validate(InputSource inputSource, ContentHandler validatorHandler, PipeLineSession session, ValidationContext context) throws XmlValidatorException {
 		try {
 			XmlUtils.parseXml(inputSource, validatorHandler, context.getErrorHandler());
 		} catch (IOException | SAXException e) {

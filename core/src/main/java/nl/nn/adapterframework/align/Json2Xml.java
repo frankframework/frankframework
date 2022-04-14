@@ -57,16 +57,16 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 	private String attributePrefix="@";
 	private String mixedContentLabel="#text";
 
-	public Json2Xml(ValidatorHandler validatorHandler, boolean insertElementContainerElements, String rootElement) {
-		this(validatorHandler, insertElementContainerElements, rootElement, false);
-	}
-
-	public Json2Xml(ValidatorHandler validatorHandler, boolean insertElementContainerElements, String rootElement, boolean strictSyntax) {
-		super(validatorHandler);
-		this.insertElementContainerElements=insertElementContainerElements;
-		this.strictSyntax=strictSyntax;
-		setRootElement(rootElement);
-	}
+//	public Json2Xml(ValidatorHandler validatorHandler, boolean insertElementContainerElements, String rootElement) {
+//		this(validatorHandler, insertElementContainerElements, rootElement, false);
+//	}
+//
+//	public Json2Xml(ValidatorHandler validatorHandler, boolean insertElementContainerElements, String rootElement, boolean strictSyntax) {
+//		super(validatorHandler);
+//		this.insertElementContainerElements=insertElementContainerElements;
+//		this.strictSyntax=strictSyntax;
+//		setRootElement(rootElement);
+//	}
 
 	public Json2Xml(ValidatorHandler validatorHandler, List<XSModel> schemaInformation, boolean insertElementContainerElements, String rootElement) {
 		this(validatorHandler, schemaInformation, insertElementContainerElements, rootElement, false);
