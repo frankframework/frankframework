@@ -150,8 +150,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	@Override
 	public void open() throws FileSystemException {
 		super.open();
-		basefolderId = getBaseFolderId(getMailAddress(),getBaseFolder());
-
 		if( StringUtils.isNotEmpty(getTenantId()) ){
 			CredentialFactory cf = getCredentials();
 			try {
@@ -164,6 +162,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 				throw new FileSystemException("Failed to initialize MSAL ConfidentialClientApplication.", e);
 			}
 		}
+		basefolderId = getBaseFolderId(getMailAddress(),getBaseFolder());
 	}
 
 	public FolderId getBaseFolderId(String emailAddress, String baseFolderName) throws FileSystemException {

@@ -59,10 +59,14 @@ public class ExchangeMailListener extends MailListener<EmailMessage,Attachment,E
 	}
 
 	@IbisDocRef({ EXCHANGE_FILE_SYSTEM})
-	public void setClientId(String clientId) { getFileSystem().setClientId(clientId); }
+	public void setClientId(String clientId) {
+		getFileSystem().setClientId(clientId);
+	}
 
 	@IbisDocRef({ EXCHANGE_FILE_SYSTEM})
-	public void setClientSecret(String clientSecret) { getFileSystem().setClientSecret(clientSecret); }
+	public void setClientSecret(String clientSecret) {
+		getFileSystem().setClientSecret(clientSecret);
+	}
 
 	@IbisDocRef({ EXCHANGE_FILE_SYSTEM})
 	public void setTenantId(String tenantId) {
