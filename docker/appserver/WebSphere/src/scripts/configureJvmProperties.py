@@ -21,7 +21,6 @@ def setSecurityProperty( name, value ):
 	return
 
 setJVMSystemProperty( 'log.dir', '${SERVER_LOG_ROOT}')
-setJVMSystemProperty( 'dtap.side', 'Docker')
 setJVMSystemProperty( 'dtap.stage', 'TST')
 setJVMSystemProperty( 'web.protocol', 'http')
 setJVMSystemProperty( 'web.port', '9080')
