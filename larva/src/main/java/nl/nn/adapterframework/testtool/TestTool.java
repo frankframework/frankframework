@@ -4219,7 +4219,9 @@ public class TestTool {
 					httpServletResponseMock.setOutputFile(outputFile);
 					value = httpServletResponseMock;
 				}
-				/** httpRequest parameter is only used in CreateRestViewPipe. It is unlikely to create a larva test for this pipe */
+				/** Support for httpRequest parameterType is removed because it depends on Spring and Http-client libraries that contain CVEs. Upgrading these libraries requires some work.
+				On the other hand, httpRequest parameter is only used in CreateRestViewPipe. It is unlikely to create a larva test for this pipe.
+				Therefore, it is decided to stop supporting it. */
 				/* else if ("httpRequest".equals(type)) {
 					value = properties.getProperty(property + _param + i + ".value");
 					if("multipart".equals(value)){
