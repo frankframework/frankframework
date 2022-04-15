@@ -101,14 +101,14 @@ public class IbisApplicationServlet extends HttpServlet {
 	 * @return IbisContext or IllegalStateException when not found
 	 */
 	public static IbisContext getIbisContext(ServletContext servletContext) {
-		AppConstants appConstants = AppConstants.getInstance();
-		String ibisContextKey = appConstants.getResolvedProperty(KEY_CONTEXT);
-		IbisContext ibisContext = (IbisContext)servletContext.getAttribute(ibisContextKey);
-
 		Throwable t = (Throwable) servletContext.getAttribute(KEY_EXCEPTION); // non-recoverable startup error
 		if(t != null) {
 			throw new IllegalStateException("Unable to retrieve IbisContext from ServletContext attribute ["+KEY_CONTEXT+"]", t);
 		}
+
+		AppConstants appConstants = AppConstants.getInstance();
+		String ibisContextKey = appConstants.getResolvedProperty(KEY_CONTEXT);
+		IbisContext ibisContext = (IbisContext)servletContext.getAttribute(ibisContextKey);
 		if(ibisContext != null && ibisContext.getStartupException() != null) { // recoverable startup error
 			throw new IllegalStateException("IbisContext startup failure", ibisContext.getStartupException());
 		}
