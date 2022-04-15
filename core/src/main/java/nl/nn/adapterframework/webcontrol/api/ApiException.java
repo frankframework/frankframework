@@ -34,8 +34,7 @@ import org.apache.logging.log4j.Logger;
  * @author	Niels Meijer
  */
 
-public class ApiException extends WebApplicationException implements Serializable
-{
+public class ApiException extends WebApplicationException implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private transient Logger log = LogUtil.getLogger(this);
 
