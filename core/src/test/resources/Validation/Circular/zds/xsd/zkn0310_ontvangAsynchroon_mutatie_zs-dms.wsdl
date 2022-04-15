@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2013 sp1 (http://www.altova.com) by Robert Melskens (Kwaliteits Instituut Nederlandse Gemeenten) -->
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:StUF="http://www.egem.nl/StUF/StUF0301" xmlns:ZKN="http://www.egem.nl/StUF/sector/zkn/0310" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:wsi="http://ws-i.org/schemas/conformanceClaim/" xmlns:xs="http://www.w3.org/2001/XMLSchema" name="StUF-ZKN0310" targetNamespace="http://www.egem.nl/StUF/sector/zkn/0310">
+	<import namespace="http://www.egem.nl/StUF/StUF0301" location="stuf0301_types.wsdl"/>
+	<documentation>
+		<xs:documentation>
+			   Dit document definieert de webservices voor het portType OntvangAsynchroon voor het ZS-DMS koppelvlak.
+		
+			   Versie 031000
+			
+			   Versie 031001, wijzigingen t.b.v. patch 21 (1-4-2015) vergeleken met versie 031000 zijn de volgende wijzigingen doorgevoerd:			
+			   - ERR0353: Het documentation element is voorzien van een standaard 'appinfo' structuur met daarin informatie over het schema.
+			   - 382488: De backslashes ('\') in het attribute 'schemaLocation' van het 'definitions/types/schema/import' vervangen door forward slashes ('/').
+			
+		</xs:documentation>
+		<xs:appinfo>
+			<StUF:onderdeel>http://www.egem.nl/StUF/sector/zkn/0310</StUF:onderdeel>
+			<StUF:patch>27</StUF:patch>
+			<StUF:patchdatum>20170701</StUF:patchdatum>
+			<StUF:schemaversie>1</StUF:schemaversie>
+		</xs:appinfo>
+	</documentation>
+	<types>
+		<xs:schema>
+			<xs:import namespace="http://www.egem.nl/StUF/sector/zkn/0310" schemaLocation="zkn0310_msg_zs-dms_resolved2017.xsd"/>
+		</xs:schema>
+	</types>
+	<message name="edcLk01">
+		<part name="body" element="ZKN:edcLk01"/>
+	</message>
+	<message name="zakLk01">
+		<part name="body" element="ZKN:zakLk01"/>
+	</message>
+	<portType name="OntvangAsynchroon">
+		<documentation>
+		Dit portType ondersteunt als operaties alle asynchrone berichten gedefinieerd binnen het sectormodel
+	</documentation>
+		<operation name="Bv03">
+			<input message="StUF:Bv03"/>
+			<output message="StUF:Bv03"/>
+			<fault name="fout" message="StUF:Fo03"/>
+		</operation>
+		<operation name="Fo01">
+			<input message="StUF:Fo01"/>
+			<output message="StUF:Bv03"/>
+			<fault name="fout" message="StUF:Fo03"/>
+		</operation>
+		<operation name="Fo03">
+			<input message="StUF:Fo03"/>
+			<output message="StUF:Bv03"/>
+			<fault name="fout" message="StUF:Fo03"/>
+		</operation>
+		<operation name="voegZaakdocumentToe_Lk01">
+			<input message="ZKN:edcLk01"/>
+			<output message="StUF:Bv03"/>
+			<fault name="fout" message="StUF:Fo03"/>
+		</operation>
+		<operation name="maakZaakdocument_Lk01">
+			<input message="ZKN:edcLk01"/>
+			<output message="StUF:Bv03"/>
+			<fault name="fout" message="StUF:Fo03"/>
+		</operation>
+		<operation name="actualiseerZaakstatus_Lk01">
+			<input message="ZKN:zakLk01"/>
+			<output message="StUF:Bv03"/>
+			<fault name="fout" message="StUF:Fo03"/>
+		</operation>
+		<operation name="creeerZaak_Lk01">
+			<input message="ZKN:zakLk01"/>
+			<output message="StUF:Bv03"/>
+			<fault name="fout" message="StUF:Fo03"/>
+		</operation>
+		<operation name="updateZaak_Lk01">
+			<input message="ZKN:zakLk01"/>
+			<output message="StUF:Bv03"/>
+			<fault name="fout" message="StUF:Fo03"/>
+		</operation>
+	</portType>
+	<binding name="SOAPOntvangAsynchroon" type="ZKN:OntvangAsynchroon">
+		<documentation>
+			Omdat de uit te wisselen berichten volledig gedefinieerd zijn in het sectormodel cq de StUF-standaard, kunnen we ze zonder verdere encoding (“literal”) opnemen in de body.
+Niet ondersteunde berichten kunnen uit de binding en portType worden verwijderd.
+		</documentation>
+		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+		<operation name="Bv03">
+			<soap:operation soapAction="http://www.egem.nl/StUF/StUF0301/Bv03"/>
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+			<fault name="fout">
+				<soap:fault name="fout" use="literal"/>
+			</fault>
+		</operation>
+		<operation name="Fo01">
+			<soap:operation soapAction="http://www.egem.nl/StUF/StUF0301/Fo01" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			<input>
+				<soap:body use="literal" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			</input>
+			<output>
+				<soap:body use="literal" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			</output>
+			<fault name="fout">
+				<soap:fault name="fout" use="literal" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			</fault>
+		</operation>
+		<operation name="Fo03">
+			<soap:operation soapAction="http://www.egem.nl/StUF/StUF0301/Fo03" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			<input>
+				<soap:body use="literal" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			</input>
+			<output>
+				<soap:body use="literal" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			</output>
+			<fault name="fout">
+				<soap:fault name="fout" use="literal" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			</fault>
+		</operation>
+		<operation name="voegZaakdocumentToe_Lk01">
+			<soap:operation soapAction="http://www.egem.nl/StUF/sector/zkn/0310/voegZaakdocumentToe_Lk01" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			<input>
+				<soap:body use="literal" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			</input>
+			<output>
+				<soap:body use="literal" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			</output>
+			<fault name="fout">
+				<soap:fault name="fout" use="literal" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			</fault>
+		</operation>
+		<operation name="maakZaakdocument_Lk01">
+			<soap:operation soapAction="http://www.egem.nl/StUF/sector/zkn/0310/maakZaakdocument_Lk01" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			<input>
+				<soap:body use="literal" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			</input>
+			<output>
+				<soap:body use="literal" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			</output>
+			<fault name="fout">
+				<soap:fault name="fout" use="literal" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			</fault>
+		</operation>
+		<operation name="actualiseerZaakstatus_Lk01">
+			<soap:operation soapAction="http://www.egem.nl/StUF/sector/zkn/0310/actualiseerZaakstatus_Lk01" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			<input>
+				<soap:body use="literal" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			</input>
+			<output>
+				<soap:body use="literal" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			</output>
+			<fault name="fout">
+				<soap:fault name="fout" use="literal" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			</fault>
+		</operation>
+		<operation name="creeerZaak_Lk01">
+			<soap:operation soapAction="http://www.egem.nl/StUF/sector/zkn/0310/creeerZaak_Lk01" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			<input>
+				<soap:body use="literal" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			</input>
+			<output>
+				<soap:body use="literal" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			</output>
+			<fault name="fout">
+				<soap:fault name="fout" use="literal" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			</fault>
+		</operation>
+		<operation name="updateZaak_Lk01">
+			<soap:operation soapAction="http://www.egem.nl/StUF/sector/zkn/0310/updateZaak_Lk01" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			<input>
+				<soap:body use="literal" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			</input>
+			<output>
+				<soap:body use="literal" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			</output>
+			<fault name="fout">
+				<soap:fault name="fout" use="literal" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			</fault>
+		</operation>
+	</binding>
+	<service name="OntvangAsynchroon">
+		<documentation>
+	Hieronder wordt de concreet aan te roepen service voor het ontvangen van asynchrone ZKN0310-berichten gedefinieerd. 
+		</documentation>
+		<port name="OntvangAsynchroon" binding="ZKN:SOAPOntvangAsynchroon">
+			<documentation>
+				<wsi:Claim xmlns:wsi="http://ws-i.org/schemas/conformanceClaim/" conformsTo="http://ws-i.org/profiles/basic/1.1"/>
+			</documentation>
+			<soap:address location="http://example.com/OntvangAsynchroon" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+		</port>
+	</service>
+</definitions>

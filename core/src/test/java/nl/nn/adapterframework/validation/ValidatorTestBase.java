@@ -6,7 +6,7 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,12 +51,12 @@ public abstract class ValidatorTestBase {
 	public String INPUT_FILE_GPBDB_ERR2=BASE_DIR_VALIDATION+"/Tibco/in/step5error_wrong_tag";
 
 
-	public String ROOT_NAMESPACE_BASIC="http://www.ing.com/testxmlns";
-	public String SCHEMA_LOCATION_BASIC_A_OK                            =ROOT_NAMESPACE_BASIC+" "			+BASE_DIR_VALIDATION+"/Basic/xsd/A_correct.xsd"	;
-	public String SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE            =ROOT_NAMESPACE_BASIC+" "			+BASE_DIR_VALIDATION+"/Basic/xsd/A_without_targetnamespace.xsd";
-	public String SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE_MISMATCH   =ROOT_NAMESPACE_BASIC+"_mismatch "	+BASE_DIR_VALIDATION+"/Basic/xsd/A_without_targetnamespace.xsd";
+	public static String ROOT_NAMESPACE_BASIC="http://www.ing.com/testxmlns";
+	public static String SCHEMA_LOCATION_BASIC_A_OK                     =ROOT_NAMESPACE_BASIC+" "			+BASE_DIR_VALIDATION+"/Basic/xsd/A_correct.xsd"	;
+	public static String SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE            =ROOT_NAMESPACE_BASIC+" "			+BASE_DIR_VALIDATION+"/Basic/xsd/A_without_targetnamespace.xsd";
+	public static String SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE_MISMATCH   =ROOT_NAMESPACE_BASIC+"_mismatch "	+BASE_DIR_VALIDATION+"/Basic/xsd/A_without_targetnamespace.xsd";
 
-	public String INPUT_FILE_BASIC_A_OK					=BASE_DIR_VALIDATION+"/Basic/in/ok";
+	public static String INPUT_FILE_BASIC_A_OK			=BASE_DIR_VALIDATION+"/Basic/in/ok";
 	public String INPUT_FILE_BASIC_A_OK_IN_ENVELOPE		=BASE_DIR_VALIDATION+"/Basic/in/ok-in-envelope";
 	public String INPUT_FILE_BASIC_A_ERR				=BASE_DIR_VALIDATION+"/Basic/in/with_errors";
 	public String INPUT_FILE_BASIC_A_ERR_IN_ENVELOPE	=BASE_DIR_VALIDATION+"/Basic/in/with_errors-in-envelope";
@@ -83,16 +83,6 @@ public abstract class ValidatorTestBase {
 
 	public void validate(String rootNamespace, String schemaLocation, String inputFile, String[] expectedFailureReasons) throws Exception {
 		validate(rootNamespace, schemaLocation, false, false, inputFile, expectedFailureReasons);
-	}
-
-	protected void validation(String rootElement, String rootNamespace, String schemaLocation, String inputfile, boolean addNamespaceToSchema, String expectedFailureReason) throws Exception {
-		String[] expected = { expectedFailureReason };
-		if (expectedFailureReason == null) expected = null;
-		validate(rootElement, rootNamespace, schemaLocation, addNamespaceToSchema, false, inputfile, expected);
-	}
-
-	protected void validation(String rootNamespace, String schemaLocation, String inputfile, boolean addNamespaceToSchema, String expectedFailureReason) throws Exception {
-		validation(null, rootNamespace, schemaLocation, inputfile, addNamespaceToSchema, expectedFailureReason);
 	}
 
 	public void validate(String rootNamespace, String schemaLocation, boolean addNamespaceToSchema, String inputFile, String expectedFailureReason) throws Exception {
@@ -134,7 +124,7 @@ public abstract class ValidatorTestBase {
 			// expected valid XML
 			if (e != null) {
 				e.printStackTrace();
-				fail("expected XML to pass");
+				fail("expected XML to pass: "+e.getMessage());
 			}
 			if (result != ValidationResult.VALID) {
 				fail("result must be 'valid XML' but was [" + result + "]");
@@ -143,14 +133,14 @@ public abstract class ValidatorTestBase {
 			// expected invalid XML
 			if (failureReason != null) {
 				if (e == null) {
-					assertEquals(ValidationResult.INVALID, result);
+					assertEquals(ValidationResult.PARSER_ERROR, result);
 				}
 				checkFailureReasons(failureReason, "failure reason", expectedFailureReasons);
 			} else {
 				if (e != null) {
 					checkFailureReasons(e.getMessage(), "exception message", expectedFailureReasons);
 				} else {
-					assertEquals(ValidationResult.INVALID, result);
+					assertEquals(ValidationResult.PARSER_ERROR, result);
 					checkFailureReasons("", "failure reason", expectedFailureReasons);
 				}
 			}
@@ -187,27 +177,15 @@ public abstract class ValidatorTestBase {
 		return new SchemasProvider() {
 
 			public Set<XSD> getXsds() throws ConfigurationException {
-				Set<XSD> xsds = new HashSet<XSD>();
-//				if (StringUtils.isNotEmpty(getNoNamespaceSchemaLocation())) {
-//					XSD xsd = new XSD();
-//					xsd.setClassLoader(classLoader);
-//					xsd.setNoNamespaceSchemaLocation(getNoNamespaceSchemaLocation());
-//					xsd.setResource(getNoNamespaceSchemaLocation());
-//					xsd.init();
-//					xsds.add(xsd);
-//				} else {
-					String[] split =  schemaLocation.trim().split("\\s+");
-					if (split.length % 2 != 0) throw new ConfigurationException("The schema must exist from an even number of strings, but it is " + schemaLocation);
-					for (int i = 0; i < split.length; i += 2) {
-						XSD xsd = new XSD();
-						xsd.setAddNamespaceToSchema(addNamespaceToSchema);
-//						xsd.setImportedSchemaLocationsToIgnore(getImportedSchemaLocationsToIgnore());
-//						xsd.setUseBaseImportedSchemaLocationsToIgnore(isUseBaseImportedSchemaLocationsToIgnore());
-//						xsd.setImportedNamespacesToIgnore(getImportedNamespacesToIgnore());
-						xsd.initNamespace(split[i], testScopeProvider, split[i + 1]);
-						xsds.add(xsd);
-					}
-//				}
+				Set<XSD> xsds = new LinkedHashSet<XSD>();
+				String[] split =  schemaLocation.trim().split("\\s+");
+				if (split.length % 2 != 0) throw new ConfigurationException("The schema must exist from an even number of strings, but it is " + schemaLocation);
+				for (int i = 0; i < split.length; i += 2) {
+					XSD xsd = new XSD();
+					xsd.setAddNamespaceToSchema(addNamespaceToSchema);
+					xsd.initNamespace(split[i], testScopeProvider, split[i + 1]);
+					xsds.add(xsd);
+				}
 				return xsds;
 			}
 
@@ -217,10 +195,8 @@ public abstract class ValidatorTestBase {
 				xsds = SchemaUtils.getXsdsRecursive(xsds);
 				//checkRootValidations(xsds);
 				try {
-					Map<String, Set<XSD>> xsdsGroupedByNamespace =
-							SchemaUtils.getXsdsGroupedByNamespace(xsds, false);
-					xsds = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(
-							testScopeProvider, xsdsGroupedByNamespace, null);
+					Map<String, Set<XSD>> xsdsGroupedByNamespace = SchemaUtils.getXsdsGroupedByNamespace(xsds, false);
+					xsds = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(testScopeProvider, xsdsGroupedByNamespace, null);
 				} catch(Exception e) {
 					throw new ConfigurationException("could not merge schema's", e);
 				}

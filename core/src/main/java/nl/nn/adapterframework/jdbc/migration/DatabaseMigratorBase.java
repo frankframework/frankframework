@@ -50,7 +50,7 @@ public abstract class DatabaseMigratorBase implements IConfigurationAware, Initi
 
 	protected Logger log = LogUtil.getLogger(this);
 	private @Setter IDataSourceFactory dataSourceFactory = null;
-	private Configuration configuration;
+	private @Getter Configuration configuration;
 	private @Setter String defaultDatasourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
 	private @Getter String name;
 	private @Getter ClassLoader configurationClassLoader = null;

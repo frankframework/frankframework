@@ -29,12 +29,12 @@ import nl.nn.adapterframework.validation.XercesXmlValidator;
 
 
 /**
- *<code>Sender</code> that validates the input message against a XML-Schema.
+ * Sender that validates the input message against a XML Schema.
  *
  * N.B. noNamespaceSchemaLocation may contain spaces, but not if the schema is stored in a .jar or .zip file on the class path.
- * 
+ *
  * @author  Gerrit van Brakel
- * @since  
+ * @since
  */
 public class XmlValidatorSender extends XercesXmlValidator implements ISenderWithParameters {
 
@@ -53,7 +53,7 @@ public class XmlValidatorSender extends XercesXmlValidator implements ISenderWit
 	}
 
 	@Override
-	public void addParameter(Parameter p) { 
+	public void addParameter(Parameter p) {
 		// class doesn't really have parameters, but implements ISenderWithParameters to get ParameterResolutionContext in sendMessage(), to obtain session
 	}
 
@@ -68,7 +68,7 @@ public class XmlValidatorSender extends XercesXmlValidator implements ISenderWit
 		String fullReasons="tja";
 		try {
 			ValidationResult validationResult = validate(message, session, getLogPrefix(),null,null);
-			
+	
 			if (validationResult == ValidationResult.VALID || validationResult == ValidationResult.VALID_WITH_WARNINGS) {
 				return message;
 			}

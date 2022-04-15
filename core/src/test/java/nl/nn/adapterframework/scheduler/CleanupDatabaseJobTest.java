@@ -13,7 +13,6 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 
-import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcTestBase;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
@@ -47,12 +46,12 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 		jobDef = new CleanupDatabaseJob() {
 
 			@Override
-			protected Set<String> getAllLockerDatasourceNames(IbisManager ibisManager) {
+			protected Set<String> getAllLockerDatasourceNames() {
 				return Collections.singleton(getDataSourceName());
 			}
 
 			@Override
-			protected List<MessageLogObject> getAllMessageLogs(IbisManager ibisManager) {
+			protected List<MessageLogObject> getAllMessageLogs() {
 				List<MessageLogObject> mlo = new ArrayList<>();
 				String datasourceName = storage.getDatasourceName();
 				String expiryDateField = storage.getExpiryDateField();
@@ -77,8 +76,8 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 		// set max rows to 0 
 		AppConstants.getInstance().setProperty("cleanup.database.maxrows", "0");
 
-		jobDef.beforeExecuteJob(getConfiguration().getIbisManager());
-		jobDef.execute(getConfiguration().getIbisManager());
+		jobDef.beforeExecuteJob();
+		jobDef.execute();
 
 		assertEquals(0, getCount(tableName));
 	}
@@ -93,8 +92,8 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 		// check insertion
 		assertEquals(5, getCount(tableName));
 
-		jobDef.beforeExecuteJob(getConfiguration().getIbisManager());
-		jobDef.execute(getConfiguration().getIbisManager());
+		jobDef.beforeExecuteJob();
+		jobDef.execute();
 
 		assertEquals(0, getCount(tableName));
 	}
@@ -163,8 +162,8 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 		// to clean up 1 by 1
 		AppConstants.getInstance().setProperty("cleanup.database.maxrows", "1");
 
-		jobDef.beforeExecuteJob(getConfiguration().getIbisManager());
-		jobDef.execute(getConfiguration().getIbisManager());
+		jobDef.beforeExecuteJob();
+		jobDef.execute();
 
 		int numRows = getCount(tableName);
 

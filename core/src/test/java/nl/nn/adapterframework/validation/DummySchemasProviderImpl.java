@@ -31,43 +31,44 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @author Michiel Meeuwissen
  * @since 5.0
  */
-public class SchemasProviderImpl implements SchemasProvider {
-    private IScopeProvider scopeProvider = new TestScopeProvider();
-    private final String id;
-    private final String xsd;
+public class DummySchemasProviderImpl implements SchemasProvider {
+	private IScopeProvider scopeProvider = new TestScopeProvider();
+	private final String id;
+	private final String xsd;
 
-    public SchemasProviderImpl(String id, String xsd) {
-        this.id = id;
-        this.xsd = xsd;
-    }
-    @Override
+	public DummySchemasProviderImpl(String id, String xsd) {
+		this.id = id;
+		this.xsd = xsd;
+	}
+
+	@Override
 	public String getSchemasId() throws ConfigurationException {
-        return id;
-    }
+		return id;
+	}
 
-    @Override
-    public List<Schema> getSchemas() throws ConfigurationException {
-        return Collections.<Schema>singletonList(
-                new Schema() {
-                    @Override
-                    public InputStream getInputStream() throws IOException {
-                        return ClassUtils.getResourceURL(scopeProvider, xsd).openStream();
-                    }
-                    @Override
-                    public String getSystemId() {
-                        return ClassUtils.getResourceURL(scopeProvider, xsd).toExternalForm();
-                    }
-                }
-        );
-    }
+	@Override
+	public List<Schema> getSchemas() throws ConfigurationException {
+		return Collections.<Schema>singletonList(new Schema() {
+			@Override
+			public InputStream getInputStream() throws IOException {
+				return ClassUtils.getResourceURL(scopeProvider, xsd).openStream();
+			}
 
-    @Override
-    public String getSchemasId(PipeLineSession session) throws PipeRunException {
-    	return null;
-    }
+			@Override
+			public String getSystemId() {
+				return ClassUtils.getResourceURL(scopeProvider, xsd).toExternalForm();
+			}
+		});
+	}
 
-    @Override
-    public List<Schema> getSchemas(PipeLineSession session) throws PipeRunException {
-    	return null;
-    }
+	@Override
+	public String getSchemasId(PipeLineSession session) throws PipeRunException {
+		return null;
+	}
+
+	@Override
+	public List<Schema> getSchemas(PipeLineSession session) throws PipeRunException {
+		return null;
+	}
+
 }

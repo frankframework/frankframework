@@ -37,6 +37,7 @@ import nl.nn.adapterframework.align.Xml2Json;
 import nl.nn.adapterframework.align.XmlAligner;
 import nl.nn.adapterframework.align.XmlTypeToJsonSchemaConverter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -57,14 +58,14 @@ import nl.nn.adapterframework.xml.RootElementToSessionKeyFilter;
 import nl.nn.adapterframework.xml.XmlWriter;
 
 /**
- *<code>Pipe</code> that validates the XML or JSON input message against a XML-Schema and returns either XML or JSON.
+ *<code>Pipe</code> that validates the XML or JSON input message against a XML Schema and returns either XML or JSON.
  *
  * @author Gerrit van Brakel
  */
 public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestination {
 
 	private final @Getter(onMethod = @__(@Override)) String domain = "XML Schema";
-	public static final String INPUT_FORMAT_SESSION_KEY_PREFIX = "Json2XmlValidator.inputformat ";
+	public static final String INPUT_FORMAT_SESSION_KEY_PREFIX = "Json2XmlValidator.inputFormat ";
 
 	private @Getter boolean compactJsonArrays=true;
 	private @Getter boolean strictJsonArraySyntax=false;
@@ -77,9 +78,10 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	private @Getter String inputFormatSessionKey=null;
 	private @Getter String outputFormatSessionKey="outputFormat";
 	private @Getter boolean failOnWildcards=true;
-	private @Getter boolean acceptNamespaceLessXml=false;
-	private @Getter boolean produceNamespaceLessXml=false;
+	private @Getter boolean acceptNamespacelessXml=false;
+	private @Getter boolean produceNamespacelessXml=false;
 	private @Getter boolean validateJsonToRootElementOnly=true;
+	private @Getter boolean allowJson = true;
 
 	{
 		setSoapNamespace("");
@@ -136,7 +138,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	}
 
 	/**
-	 * Validate the XML or JSON input, and align/convert it into JSON or XML according to a XML-Schema.
+	 * Validate the XML or JSON input, and align/convert it into JSON or XML according to a XML Schema.
 	 * The format of the input message (XML or JSON) is automatically detected.
 	 * @throws PipeRunException when <code>isThrowException</code> is true and a validationerror occurred.
 	 */
@@ -157,14 +159,14 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			char firstChar=messageToValidate.charAt(i);
 			if (firstChar=='<') {
 				// message is XML
-				if (isAcceptNamespaceLessXml()) {
+				if (isAcceptNamespacelessXml()) {
 					messageToValidate=addNamespace(messageToValidate); // TODO: do this via a filter
 					//if (log.isDebugEnabled()) log.debug("added namespace to message ["+messageToValidate+"]");
 				}
 				storeInputFormat(DocumentFormat.XML, session, responseMode);
 				if (getOutputFormat(session,responseMode) != DocumentFormat.JSON) {
 					PipeRunResult result=super.doPipe(new Message(messageToValidate),session, responseMode, messageRoot);
-					if (isProduceNamespaceLessXml()) {
+					if (isProduceNamespacelessXml()) {
 						try {
 							result.setResult(XmlUtils.removeNamespaces(result.getResult().asString()));
 						} catch (IOException e) {
@@ -179,8 +181,11 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 					throw new PipeRunException(this, "Alignment of XML to JSON failed",e);
 				}
 			}
+			if (!isAllowJson() && !responseMode) {
+				return getErrorResult(ValidationResult.PARSER_ERROR, "message is not XML, because it starts with ["+firstChar+"] and not with '<'", session, responseMode);
+			}
 			if (firstChar!='{' && firstChar!='[') {
-				throw new PipeRunException(this,"message is not XML or JSON, because it starts with ["+firstChar+"] and not with '<', '{' or '['");
+				return getErrorResult(ValidationResult.PARSER_ERROR, "message is not XML or JSON, because it starts with ["+firstChar+"] and not with '<', '{' or '['", session, responseMode);
 			}
 			storeInputFormat(DocumentFormat.JSON, session, responseMode);
 		}
@@ -285,7 +290,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 				XmlWriter xmlWriter = new XmlWriter();
 				xmlWriter.setIncludeXmlDeclaration(true);
 				ContentHandler handler = xmlWriter;
-				if (isProduceNamespaceLessXml()) {
+				if (isProduceNamespacelessXml()) {
 					handler = new NamespaceRemovingFilter(handler);
 				}
 				sourceFilter.setContentHandler(handler);
@@ -374,74 +379,89 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	}
 
 
-	@IbisDoc({"1", "Only for json input: namespace of the resulting xml. Need only be specified when the namespace of root name is ambiguous in the schema", ""})
+	@IbisDoc({"Only for JSON input: namespace of the resulting XML. Need only be specified when the namespace of root name is ambiguous in the schema", ""})
 	public void setTargetNamespace(String targetNamespace) {
 		this.targetNamespace = targetNamespace;
 	}
 
-	@IbisDoc({"2", "Default format of the result.", "XML"})
+	@IbisDoc({"Default format of the result, that is used if the format cannot be found from outputFormatSessionKey or from inputFormatSessionKey (when validating responses and autoFormat=true)", "XML"})
 	public void setOutputFormat(DocumentFormat outputFormat) {
 		this.outputFormat = outputFormat;
 	}
 
-	@IbisDoc({"3", "Session key to retrieve outputformat from.", "outputformat"})
+	@IbisDoc({"Session key to retrieve outputFormat from", "outputFormat"})
 	public void setOutputFormatSessionKey(String outputFormatSessionKey) {
 		this.outputFormatSessionKey = outputFormatSessionKey;
 	}
 
-	@IbisDoc({"4", "Session key to store the inputformat in, to be able to set the outputformat when autoFormat=true. Can also be used to pass the value of an HTTP Accept header, to obtain a properly formatted response", "Json2XmlValidator.inputformat +<name of the pipe>"})
+	@IbisDoc({"Session key to store the inputFormat in, to be able to set the outputformat when autoFormat=true. Can also be used to pass the value of an HTTP Accept header, to obtain a properly formatted response", INPUT_FORMAT_SESSION_KEY_PREFIX+"+&lt;name of the pipe&gt;"})
 	public void setInputFormatSessionKey(String inputFormatSessionKey) {
 		this.inputFormatSessionKey = inputFormatSessionKey;
 	}
 
-	@IbisDoc({"5", "If true, the format on 'output' is set to the same as the format of the input message on 'input'. The format of the input message is stored in and retrieved from the session variable specified by outputFormatSessionKey", "true"})
+	@IbisDoc({"If true, the format on 'output' is set to the same as the format of the input message on 'input'. The format of the input message is stored in and retrieved from the session variable specified by outputFormatSessionKey", "true"})
 	public void setAutoFormat(boolean autoFormat) {
 		this.autoFormat = autoFormat;
 	}
 
-	@IbisDoc({"6", "If true assume arrays in json do not have the element containers like in xml", "true"})
+	@IbisDoc({"If true assume arrays in JSON do not have the element containers like in XML", "true"})
 	public void setCompactJsonArrays(boolean compactJsonArrays) {
 		this.compactJsonArrays = compactJsonArrays;
 	}
 
-	@IbisDoc({"7", "If true check that incoming json adheres to the specified syntax (compact or full), otherwise both types are accepted for conversion from json to xml", "false"})
+	@IbisDoc({"If true check that incoming JSON adheres to the specified syntax (compact or full), otherwise both types are accepted for conversion from JSON to XML", "false"})
 	public void setStrictJsonArraySyntax(boolean strictJsonArraySyntax) {
 		this.strictJsonArraySyntax = strictJsonArraySyntax;
 	}
 
-	@IbisDoc({"8", "If true, assume that json contains/must contain a root element", "false"})
+	@IbisDoc({"If true, assume that JSON contains/must contain a root element", "false"})
 	public void setJsonWithRootElements(boolean jsonWithRootElements) {
 		this.jsonWithRootElements = jsonWithRootElements;
 	}
 
-	@IbisDoc({"9", "If true, and converting from json to xml, parameter substitutions are searched for optional sub elements too. By default, only mandatory elements are searched for parameter substitutions. N.B. Currenlty this option might cause problems. Please try using more qualified parameters names (using '/') first", "false"})
+	@IbisDoc({"If true, and converting from JSON to XML, parameter substitutions are searched for optional sub elements too. By default, only mandatory elements are searched for parameter substitutions. N.B. Currenlty this option might cause problems. Please try using more qualified parameters names (using '/') first", "false"})
 	public void setDeepSearch(boolean deepSearch) {
 		this.deepSearch = deepSearch;
 	}
 
-	@IbisDoc({"9", "If true, and converting from json to xml, elements in json that are not found in the XML-Schema are ignored", "false"})
+	@IbisDoc({"If true, and converting from JSON to XML, elements in JSON that are not found in the XML Schema are ignored", "false"})
 	public void setIgnoreUndeclaredElements(boolean ignoreUndeclaredElements) {
 		this.ignoreUndeclaredElements = ignoreUndeclaredElements;
 	}
 
-	@IbisDoc({"10", "If true, an exception is thrown when a wildcard is found in the xml schema when parsing an object. This often indicates that an element is not properly typed in the xml schema, and could lead to ambuigities.", "true"})
+	@IbisDoc({"If true, an exception is thrown when a wildcard is found in the XML Schema when parsing an object. This often indicates that an element is not properly typed in the XML Schema, and could lead to ambuigities.", "true"})
 	public void setFailOnWildcards(boolean failOnWildcards) {
 		this.failOnWildcards = failOnWildcards;
 	}
 
-	@IbisDoc({"11", "If true, all xml is allowed to be without namespaces. If no namespaces are detected (by the presence of the string 'xmlns') in the xml string, the root namespace is added to the xml", "false"})
-	public void setAcceptNamespaceLessXml(boolean acceptNamespaceLessXml) {
-		this.acceptNamespaceLessXml = acceptNamespaceLessXml;
+	@IbisDoc({"If true, all XML is allowed to be without namespaces. If no namespaces are detected (by the presence of the string 'xmlns') in the XML, the root namespace is added to the XML", "false"})
+	public void setAcceptNamespacelessXml(boolean acceptNamespacelessXml) {
+		this.acceptNamespacelessXml = acceptNamespacelessXml;
+	}
+	@Deprecated
+	@ConfigurationWarning("The attribute 'acceptNamespaceLessXml' has been renamed 'acceptNamespacelessXml'")
+	public void setAcceptNamespaceLessXml(boolean acceptNamespacelessXml) {
+		setAcceptNamespacelessXml(acceptNamespacelessXml);
 	}
 
-	@IbisDoc({"12", "If true, all xml that is generated is without a namespace set", "false"})
-	public void setProduceNamespaceLessXml(boolean produceNamespaceLessXml) {
-		this.produceNamespaceLessXml = produceNamespaceLessXml;
+	@IbisDoc({"If true, all XML that is generated is without a namespace set", "false"})
+	public void setProduceNamespacelessXml(boolean produceNamespacelessXml) {
+		this.produceNamespacelessXml = produceNamespacelessXml;
+	}
+	@Deprecated
+	@ConfigurationWarning("The attribute 'produceNamespaceLessXml' has been renamed 'produceNamespacelessXml'")
+	public void setProduceNamespaceLessXml(boolean produceNamespacelessXml) {
+		setProduceNamespacelessXml(produceNamespacelessXml);
 	}
 
-	@IbisDoc({"13", "If true, and converting to or from json, then the message root is the only rootValidation, ignoring root validations like for SOAP envelope and header set by descender classes like SoapValidator", "true"})
+	@IbisDoc({"If true, and converting to or from JSON, then the message root is the only rootValidation, ignoring root validations like for SOAP envelope and header set by descender classes like SoapValidator", "true"})
 	public void setValidateJsonToRootElementOnly(boolean validateJsonToRootElementOnly) {
 		this.validateJsonToRootElementOnly = validateJsonToRootElementOnly;
+	}
+
+	@IbisDoc({"Allow JSON input", "true"})
+	public void setAllowJson(boolean allowJson) {
+		this.allowJson = allowJson;
 	}
 
 }

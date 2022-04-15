@@ -357,7 +357,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 			filterSpec = Message.isEmpty(message) ? "" : message.asString();
 		}
 		if (filterSpec.contains(NAMED_PARAM_START) && filterSpec.contains(NAMED_PARAM_END)) {
-			filterSpec = StringResolver.substVars(filterSpec, pvl.getValueMap(), null, null, NAMED_PARAM_START, NAMED_PARAM_END);
+			filterSpec = StringResolver.substVars(filterSpec, pvl.getValueMap(), null, (List)null, NAMED_PARAM_START, NAMED_PARAM_END);
 		}
 		return getDocument(filterSpec);
 	}

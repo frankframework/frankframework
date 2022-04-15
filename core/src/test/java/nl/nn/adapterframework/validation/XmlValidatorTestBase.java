@@ -14,13 +14,13 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  */
 public abstract class XmlValidatorTestBase extends ValidatorTestBase {
 
-    @Test
-    public void straighforward() throws Exception {
-    	validation(ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_OK,INPUT_FILE_BASIC_A_OK,false,null);
-    	validation(ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_OK,INPUT_FILE_BASIC_A_ERR,false,MSG_INVALID_CONTENT);
-    	validation(ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE,INPUT_FILE_BASIC_A_OK,false,MSG_CANNOT_FIND_DECLARATION);
-    	validation(ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE,INPUT_FILE_BASIC_A_ERR,false,MSG_CANNOT_FIND_DECLARATION);
-    }
+	@Test
+	public void straighforward() throws Exception {
+		validate(ROOT_NAMESPACE_BASIC, SCHEMA_LOCATION_BASIC_A_OK, false, INPUT_FILE_BASIC_A_OK, null);
+		validate(ROOT_NAMESPACE_BASIC, SCHEMA_LOCATION_BASIC_A_OK, false, INPUT_FILE_BASIC_A_ERR, MSG_INVALID_CONTENT);
+		validate(ROOT_NAMESPACE_BASIC, SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE, false, INPUT_FILE_BASIC_A_OK, MSG_CANNOT_FIND_DECLARATION);
+		validate(ROOT_NAMESPACE_BASIC, SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE, false, INPUT_FILE_BASIC_A_ERR, MSG_CANNOT_FIND_DECLARATION);
+	}
 
 //    @Test
 //    public void straighforwardInEnvelope() throws IllegalAccessException, InstantiationException, XmlValidatorException, IOException, PipeRunException, ConfigurationException {
@@ -30,44 +30,44 @@ public abstract class XmlValidatorTestBase extends ValidatorTestBase {
 //    	validation("A",ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE,INPUT_FILE_BASIC_A_ERR_IN_ENVELOPE,false,MSG_CANNOT_FIND_DECLARATION);
 //    }
 
-    @Test
-    public void addTargetNamespace() throws Exception {
-    	validation(ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_OK,INPUT_FILE_BASIC_A_OK,true,null);
-    	validation(ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_OK,INPUT_FILE_BASIC_A_ERR,true,MSG_INVALID_CONTENT);
-    	validation(ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE,INPUT_FILE_BASIC_A_OK,true,null);
-    	validation(ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE,INPUT_FILE_BASIC_A_ERR,true,MSG_INVALID_CONTENT);
-    }
+	@Test
+	public void addTargetNamespaceNoop() throws Exception {
+		validate(ROOT_NAMESPACE_BASIC, SCHEMA_LOCATION_BASIC_A_OK, true, INPUT_FILE_BASIC_A_OK, null);
+	}
+	public void addTargetNamespaceNoopWithErrors() throws Exception {
+		validate(ROOT_NAMESPACE_BASIC, SCHEMA_LOCATION_BASIC_A_OK, true, INPUT_FILE_BASIC_A_ERR, MSG_INVALID_CONTENT);
+	}
 
-    @Test
-    public void addNamespaceToSchema() throws Exception {
-        validate(ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE, true ,INPUT_FILE_BASIC_A_OK,null);
-    }
 
-    @Test
-    public void addNamespaceToSchemaWithErrors() throws Exception {
-        validate(ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE, true ,INPUT_FILE_BASIC_A_ERR,MSG_INVALID_CONTENT);
-    }
+	@Test
+	public void addNamespaceToSchema() throws Exception {
+		validate(ROOT_NAMESPACE_BASIC, SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE, true, INPUT_FILE_BASIC_A_OK, null);
+	}
 
-    @Test
-    public void addNamespaceToSchemaNamespaceMismatch() throws Exception {
-        validate(ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE_MISMATCH, true ,INPUT_FILE_BASIC_A_OK,MSG_CANNOT_FIND_DECLARATION);
-    }
+	@Test
+	public void addNamespaceToSchemaWithErrors() throws Exception {
+		validate(ROOT_NAMESPACE_BASIC, SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE, true, INPUT_FILE_BASIC_A_ERR, MSG_INVALID_CONTENT);
+	}
 
-    @Test
-    public void missingMandatoryElement() throws Exception {
-        validate(ROOT_NAMESPACE_GPBDB, SCHEMA_LOCATION_SOAP_ENVELOPE, INPUT_FILE_GPBDB_NOBODY,MSG_IS_NOT_COMPLETE);
-    }
+	@Test
+	public void addNamespaceToSchemaNamespaceMismatch() throws Exception {
+		validate(ROOT_NAMESPACE_BASIC, SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE_MISMATCH, true, INPUT_FILE_BASIC_A_OK, MSG_CANNOT_FIND_DECLARATION);
+	}
 
-    public String getExpectedErrorForPlainText() {
-    	return "Content is not allowed in prolog";
-    }
-    
-    @Test
-    public void validatePlainText() throws Exception {
-    	String inputFile=INPUT_FILE_BASIC_PLAIN_TEXT;
-    	validate(ROOT_NAMESPACE_BASIC, SCHEMA_LOCATION_BASIC_A_OK,inputFile,getExpectedErrorForPlainText());
-    }
+	@Test
+	public void missingMandatoryElement() throws Exception {
+		validate(ROOT_NAMESPACE_GPBDB, SCHEMA_LOCATION_SOAP_ENVELOPE, INPUT_FILE_GPBDB_NOBODY, MSG_IS_NOT_COMPLETE);
+	}
 
+	public String getExpectedErrorForPlainText() {
+		return "Content is not allowed in prolog";
+	}
+
+	@Test
+	public void validatePlainText() throws Exception {
+		String inputFile = INPUT_FILE_BASIC_PLAIN_TEXT;
+		validate(ROOT_NAMESPACE_BASIC, SCHEMA_LOCATION_BASIC_A_OK, inputFile, getExpectedErrorForPlainText());
+	}
 
 
 	

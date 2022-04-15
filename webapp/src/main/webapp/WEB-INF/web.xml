@@ -175,7 +175,7 @@
 	<!-- TODO: find a way to dynamically set this! -->
 	<login-config>
 		<auth-method>BASIC</auth-method>
-		<realm-name>Ibis</realm-name>
+		<realm-name>Frank</realm-name>
 	</login-config>
 
 	<!--

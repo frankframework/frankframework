@@ -1,9 +1,6 @@
 package nl.nn.adapterframework.filesystem;
 
 import jcifs.smb.SmbFile;
-import nl.nn.adapterframework.filesystem.FileSystemSenderTest;
-import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
-import nl.nn.adapterframework.filesystem.Samba1FileSystem;
 import nl.nn.adapterframework.senders.Samba1Sender;
 
 /**

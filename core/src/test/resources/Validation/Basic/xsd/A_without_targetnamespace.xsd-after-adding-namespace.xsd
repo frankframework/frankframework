@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified"
+           xmlns:b="http://xmlns/b" 
+           targetNamespace="http://www.ing.com/testxmlns" xmlns="http://www.ing.com/testxmlns"
+    >
+  <!-- targetNamespace is missing, this is added by the validator configuration -->
+
+  <xs:import namespace="http://xmlns/b" schemaLocation="B.xsd" />
+  <xs:element name="A">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="b:B" minOccurs="0" maxOccurs="2"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

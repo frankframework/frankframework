@@ -68,7 +68,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	private @Getter boolean mtomEnabled = false;
 	private @Getter String attachmentSessionKeys = "";
 	private @Getter String multipartXmlSessionKey = "multipartXml";
-	private List<String> attachmentSessionKeysList = new ArrayList<String>();
+	private List<String> attachmentSessionKeysList = new ArrayList<>();
 	private EndpointImpl endpoint = null;
 	private SpringBus cxfBus;
 
@@ -102,6 +102,10 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 			String msg = "calling webservices via de ServiceDispatcher_ServiceProxy is deprecated. Please specify an address or serviceNamespaceURI and modify the call accordingly";
 			ConfigurationWarnings.add(this, log, msg, SuppressKeys.DEPRECATION_SUPPRESS_KEY, null);
 		}
+		if (StringUtils.isNotEmpty(getServiceNamespaceURI()) && StringUtils.isNotEmpty(getAddress())) {
+			String msg = "Please specify either an address or serviceNamespaceURI but not both";
+			ConfigurationWarnings.add(this, log, msg);
+		}
 
 		Bus bus = getApplicationContext().getBean("cxf", Bus.class);
 		if(bus instanceof SpringBus) {
@@ -126,16 +130,15 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 			} else {
 				log.error("unable to publish listener ["+getName()+"] on CXF endpoint ["+getAddress()+"]");
 			}
-		}
-
-		//Can bind on multiple endpoints
-		if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
-			log.debug("registering listener ["+getName()+"] with ServiceDispatcher by serviceNamespaceURI ["+getServiceNamespaceURI()+"]");
-			ServiceDispatcher.getInstance().registerServiceClient(getServiceNamespaceURI(), this);
-		}
-		else {
-			log.debug("registering listener ["+getName()+"] with ServiceDispatcher");
-			ServiceDispatcher.getInstance().registerServiceClient(getName(), this); //Backwards compatibility
+		} else {
+			if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
+				log.debug("registering listener ["+getName()+"] with ServiceDispatcher by serviceNamespaceURI ["+getServiceNamespaceURI()+"]");
+				ServiceDispatcher.getInstance().registerServiceClient(getServiceNamespaceURI(), this);
+			}
+			else {
+				log.debug("registering listener ["+getName()+"] with ServiceDispatcher");
+				ServiceDispatcher.getInstance().registerServiceClient(getName(), this); //Backwards compatibility
+			}
 		}
 
 		super.open();
@@ -145,16 +148,19 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	public void close() {
 		super.close();
 
-		if(endpoint != null && endpoint.isPublished())
+		if(endpoint != null && endpoint.isPublished()) {
 			endpoint.stop();
-
-		if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
-			log.debug("unregistering listener ["+getName()+"] from ServiceDispatcher by serviceNamespaceURI ["+getServiceNamespaceURI()+"]");
-			ServiceDispatcher.getInstance().unregisterServiceClient(getServiceNamespaceURI());
 		}
-		else {
-			log.debug("unregistering listener ["+getName()+"] from ServiceDispatcher");
-			ServiceDispatcher.getInstance().unregisterServiceClient(getName()); //Backwards compatibility
+
+		if (StringUtils.isEmpty(getAddress())) {
+			if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
+				log.debug("unregistering listener ["+getName()+"] from ServiceDispatcher by serviceNamespaceURI ["+getServiceNamespaceURI()+"]");
+				ServiceDispatcher.getInstance().unregisterServiceClient(getServiceNamespaceURI());
+			}
+			else {
+				log.debug("unregistering listener ["+getName()+"] from ServiceDispatcher");
+				ServiceDispatcher.getInstance().unregisterServiceClient(getName()); //Backwards compatibility
+			}
 		}
 	}
 

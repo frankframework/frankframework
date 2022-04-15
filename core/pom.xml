@@ -11,11 +11,11 @@
 	<name>Ibis AdapterFramework core</name>
 
 	<properties>
-		<spring.version>5.3.15</spring.version>
+		<spring.version>5.3.18</spring.version>
 		<j2v8.version>4.6.0</j2v8.version>
-		<cxf.version>3.4.4</cxf.version>
+		<cxf.version>3.4.7</cxf.version>
 		<jackson.version>2.13.2</jackson.version>
-		<jackson.databind.version>2.13.2.1</jackson.databind.version> <!-- patch release -->
+		<jackson.databind.version>2.13.2.2</jackson.databind.version> <!-- patch release -->
 	</properties>
 
 	<dependencies>
@@ -267,7 +267,7 @@
 		<dependency>
 			<groupId>org.apache.wss4j</groupId>
 			<artifactId>wss4j-ws-security-dom</artifactId>
-			<version>2.4.0</version>
+			<version>2.4.1</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.opensaml</groupId>
@@ -285,6 +285,10 @@
 				<exclusion>
 					<groupId>org.ehcache</groupId>
 					<artifactId>ehcache</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.geronimo.javamail</groupId>
+					<artifactId>geronimo-javamail_1.4_mail</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -396,7 +400,7 @@
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpcore</artifactId>
-			<version>4.4.14</version>
+			<version>4.4.15</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
@@ -452,6 +456,11 @@
 			<version>2.0</version>
 		</dependency>
 		<dependency>
+			<groupId>com.microsoft.azure</groupId>
+			<artifactId>msal4j</artifactId>
+			<version>1.11.3</version>
+		</dependency>
+		<dependency>
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time</artifactId>
 			<version>2.8</version>
@@ -469,7 +478,7 @@
 		<dependency>
 			<groupId>org.liquibase</groupId>
 			<artifactId>liquibase-core</artifactId>
-			<version>4.8.0</version>
+			<version>4.9.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -503,7 +512,7 @@
 		<dependency>
 			<groupId>org.mozilla</groupId>
 			<artifactId>rhino</artifactId>
-			<version>1.7.13</version>
+			<version>1.7.14</version>
 		</dependency>
 		<dependency>
 			<groupId>net.arnx</groupId>
@@ -592,7 +601,7 @@
 		</dependency>
 
 		<!--
-			We cannot upgrade to a later version due to it forcing us to use com.sun.xerces 
+			We cannot upgrade to a later version due to it forcing us to use com.sun.xerces
 			This version depends on the StAX1-API indirectly because of stax-ex.
 		-->
 		<dependency>
@@ -642,11 +651,11 @@
 		</dependency>
 <!--		Bouncy GPG uses this version. However another dependency uses 1.60,
 			and causes problems during loading from classpath.
-			So, it requires to add explicit dependency.-->
+			So, it requires it to be explicitly defined here in the pom -->
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk15on</artifactId>
-			<version>1.69</version>
+			<version>1.70</version>
 		</dependency>
 
 		<dependency>

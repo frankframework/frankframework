@@ -19,3 +19,5 @@ The Frank!Doc provides reference information for Frank developers as explained i
 **Annotation @FrankDocGroup, on interface:**  When a Java class implements an interface that has a `@FrankDocGroup` annotation, then the class is put in the group non-exclusively. A class can belong to multiple groups when it implements multiple interfaces with different groups.
 
 **Annotation @FrankDocGroup, on class:** When a class has a `@FrankDocGroup` annotation, then the class only belongs to that group. `@FrankDocGroup` annotations on classes are inherited by descendant classes, so descendant classes are also in the specified group exclusively.
+
+**@ff.mandatory and @Mandatory:** If you give the JavaDoc tag the value `ignoreInCompatibilityMode`, the attribute or config child will not be mandatory in `FrankConfig-compatibility.xsd`. This behavior may be useful for backward compatibility. The annotation has a Boolean field `ignoreInCompatibilityMode` that does the same.

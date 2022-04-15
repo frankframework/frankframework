@@ -1,5 +1,7 @@
 package nl.nn.adapterframework.util;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -87,8 +89,15 @@ public class LockerTest extends TransactionManagerTestBase {
 		assertNotNull(objectId);
 		assertEquals(1, getRowCount());
 
-		objectId = locker.acquire();
+		MessageKeeper messageKeeper = new MessageKeeper();
+
+		objectId = locker.acquire(messageKeeper);
 		assertNull("Should not be possible to obtain the lock a second time", objectId);
+
+		String message = messageKeeper.get(0).getMessageText();
+		assertThat(message, containsString("objectId [myLocker]"));
+		assertThat(message, containsString("Process locked by host"));
+		assertThat(message, containsString("with expiry date"));
 	}
 
 	@Test

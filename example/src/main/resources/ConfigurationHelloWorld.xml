@@ -17,7 +17,7 @@
 		</receiver>
 		<pipeline firstPipe="HelloWorld">
 			<exits>
-				<exit path="EXIT" state="success"/>
+				<exit name="EXIT" state="success"/>
 			</exits>
 			<pipe
 				name="HelloWorld"
@@ -48,7 +48,7 @@
 		</receiver>
 		<pipeline firstPipe="HelloUniverse">
 			<exits>
-				<exit path="EXIT" state="success"/>
+				<exit name="EXIT" state="success"/>
 			</exits>
 			<pipe name="HelloUniverse"
 				className="nl.nn.adapterframework.pipes.SenderPipe">
