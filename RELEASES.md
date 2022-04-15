@@ -11,6 +11,7 @@ Upcoming (7.8)
 
 - HttpSender no longer treats input message as parameters by default. For 7.7 compatibility, set attribute treatInputMessageAsParameters=true
 - WebServiceListener does no longer (simultaneously) bind to the listener-name AND address attribute.
+- Larva httpRequest parameter is no longer supported
 - Json2XmlValidator input format session key prefix changed from "Json2XmlValidator.inputformat " to "Json2XmlValidator.inputFormat " (capital F)
 
 

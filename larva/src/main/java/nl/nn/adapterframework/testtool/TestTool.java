@@ -17,10 +17,8 @@ package nl.nn.adapterframework.testtool;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,18 +57,11 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.multipart.FilePart;
-import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
-import org.apache.commons.httpclient.methods.multipart.Part;
-import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockMultipartHttpServletRequest;
 
 import nl.nn.adapterframework.configuration.ClassLoaderException;
 import nl.nn.adapterframework.configuration.Configuration;
@@ -4227,7 +4218,11 @@ public class TestTool {
 					HttpServletResponseMock httpServletResponseMock = new HttpServletResponseMock();
 					httpServletResponseMock.setOutputFile(outputFile);
 					value = httpServletResponseMock;
-				} else if ("httpRequest".equals(type)) {
+				}
+				/** Support for httpRequest parameterType is removed because it depends on Spring and Http-client libraries that contain CVEs. Upgrading these libraries requires some work.
+				On the other hand, httpRequest parameter is only used in CreateRestViewPipe. It is unlikely to create a larva test for this pipe.
+				Therefore, it is decided to stop supporting it. */
+				/* else if ("httpRequest".equals(type)) {
 					value = properties.getProperty(property + _param + i + ".value");
 					if("multipart".equals(value)){
 						MockMultipartHttpServletRequest request = new MockMultipartHttpServletRequest();
@@ -4278,7 +4273,8 @@ public class TestTool {
 					else{
 						value = new MockHttpServletRequest();
 					}
-				} else {
+				} */
+				else {
 					value = properties.getProperty(property + _param + i + ".value");
 					if (value == null) {
 						String filename = properties.getProperty(property + _param + i + ".valuefile.absolutepath");
