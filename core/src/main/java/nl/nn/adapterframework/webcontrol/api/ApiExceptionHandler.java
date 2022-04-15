@@ -57,7 +57,7 @@ public class ApiExceptionHandler implements ExceptionMapper<WebApplicationExcept
 		if(message != null) {
 			message = message.replace("\"", "\\\"").replace("\n", " ").replace(System.getProperty("line.separator"), " ");
 			Map<String, Object> entity = new HashMap<>(3);
-			entity.put("status", "error");
+			entity.put("status", Status.INTERNAL_SERVER_ERROR.getReasonPhrase());
 			entity.put("error", message);
 
 			response.entity(entity).type(MediaType.APPLICATION_JSON);
