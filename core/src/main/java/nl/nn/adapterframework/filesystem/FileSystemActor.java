@@ -508,7 +508,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	private void writeContentsToFile(OutputStream out, Message input, ParameterValueList pvl) throws IOException, FileSystemException {
 		Object contents;
 		if (pvl!=null && pvl.contains(PARAMETER_CONTENTS1)) {
-			 contents=pvl.getParameterValue(PARAMETER_CONTENTS1).getValue();
+			contents=pvl.get(PARAMETER_CONTENTS1).getValue();
 		} else {
 			contents=input;
 		}
@@ -530,8 +530,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			out.write(eolArray);
 		}
 	}
-	
-	
+
 	protected boolean canProvideOutputStream() {
 		return (getAction() == FileSystemAction.WRITE || getAction() == FileSystemAction.APPEND)
 				&& parameterList.findParameter(PARAMETER_FILENAME)!=null
