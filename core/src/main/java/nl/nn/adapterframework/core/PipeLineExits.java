@@ -24,18 +24,18 @@ import lombok.Getter;
  * Pipeline exit container in which all (required) {@link PipeLineExit Exit}s must be defined.
  * Multiple exits may be provided each with their unique name.
  * <br/><br/>
- * If no exits are specified, a default one is created with path="READY" and state="SUCCESS".
+ * If no exits are specified, a default one is created with name="READY" and state="SUCCESS".
  * <br/><br/>
  * <b>example:</b> <code><pre>
  *   &lt;exits&gt;
- *      &lt;exit path="READY" state="SUCCESS" /&gt;
- *      &lt;exit path="Created" state="ERROR" code="201" empty="true" /&gt;
- *      &lt;exit path="NotModified" state="ERROR" code="304" empty="true" /&gt;
- *      &lt;exit path="BadRequest" state="ERROR" code="400" empty="true" /&gt;
- *      &lt;exit path="NotAuthorized" state="ERROR" code="401" empty="true" /&gt;
- *      &lt;exit path="NotAllowed" state="ERROR" code="403" empty="true" /&gt;
- *      &lt;exit path="Teapot" state="SUCCESS" code="418" /&gt;
- *      &lt;exit path="ServerError" state="ERROR" code="500" /&gt;
+ *      &lt;exit name="READY" state="SUCCESS" /&gt;
+ *      &lt;exit name="Created" state="ERROR" code="201" empty="true" /&gt;
+ *      &lt;exit name="NotModified" state="ERROR" code="304" empty="true" /&gt;
+ *      &lt;exit name="BadRequest" state="ERROR" code="400" empty="true" /&gt;
+ *      &lt;exit name="NotAuthorized" state="ERROR" code="401" empty="true" /&gt;
+ *      &lt;exit name="NotAllowed" state="ERROR" code="403" empty="true" /&gt;
+ *      &lt;exit name="Teapot" state="SUCCESS" code="418" /&gt;
+ *      &lt;exit name="ServerError" state="ERROR" code="500" /&gt;
  *   &lt;/exits&gt;
  * </pre></code>
  */
