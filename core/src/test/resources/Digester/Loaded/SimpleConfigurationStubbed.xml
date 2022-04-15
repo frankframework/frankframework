@@ -10,7 +10,7 @@
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="testtool-HelloBeautifulWorld-1"/>
 		</receiver>
 		<pipeline firstPipe="HelloBeautifulWorld">
-			<exit path="EXIT" state="success"/>
+			<exit name="EXIT" state="success"/>
 			<pipe name="HelloBeautifulWorld" returnString="Hello Beautiful World ${digester.property} [${secret}] &lt;@quot;&gt;" className="nl.nn.adapterframework.pipes.FixedResultPipe">
 				<forward name="success" path="EXIT"/>
 			</pipe>

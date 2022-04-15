@@ -26,7 +26,7 @@ http://schemas.ibissource.org/ibisdoc.xsd, OK
 				>
 				<Forward name="success" path="EXIT"/>
 			</FixedResultPipe>
-			<Exit path="EXIT" state="success"/>
+			<Exit name="EXIT" state="success"/>
 		</Pipeline>
 	</Adapter>
 </Module>
