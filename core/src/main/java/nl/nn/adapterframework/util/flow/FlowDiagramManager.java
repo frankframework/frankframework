@@ -45,6 +45,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -72,6 +73,8 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 	private URL noImageAvailable;
 	private String fileExtension = null;
 
+	private String generatorBeanClass = AppConstants.getInstance().getProperty("flow.generator");
+
 	/**
 	 * Optional IFlowGenerator. If non present the FlowDiagramManager should still be 
 	 * able to generate dot files and return the `noImageAvailable` image.
@@ -80,6 +83,10 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
+		if(applicationContext == null) {
+			throw new IllegalStateException("ApplicationContext has not been autowired, cannot instantiate IFlowDiagram");
+		}
+
 		Resource xsltSourceConfig = Resource.getResource(ADAPTER2DOT_XSLT);
 		transformerPoolAdapter = TransformerPool.getInstance(xsltSourceConfig, 2);
 
@@ -88,7 +95,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 
 		IFlowGenerator generator = getFlowGenerator();
 		if(generator == null) {
-			log.warn("no IFlowGenerator found. Unable to generate flow diagrams");
+			log.info("no FlowGenerator configured. No flow diagrams will be generated");
 		} else {
 			if(log.isDebugEnabled()) log.debug("using IFlowGenerator ["+generator+"]");
 			fileExtension = generator.getFileExtension();
@@ -110,19 +117,26 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 	 * able to generate dot files and return the `noImageAvailable` image.
 	 */
 	protected IFlowGenerator createFlowGenerator() {
-		if(applicationContext == null) {
-			throw new IllegalStateException("ApplicationContext has not been autowired, cannot instantiate IFlowDiagram");
+		if(StringUtils.isNotEmpty(generatorBeanClass)) {
+			return createFlowGenerator(generatorBeanClass);
 		}
+		return null;
+	}
 
+	protected IFlowGenerator createFlowGenerator(String generatorBeanClass) {
+		if(log.isDebugEnabled()) log.debug("trying to initialize FlowGenerator ["+generatorBeanClass+"]");
 		try {
-			IFlowGenerator generator = applicationContext.getBean("flowGenerator", IFlowGenerator.class);
-
-			if(log.isTraceEnabled()) log.trace("created new FlowGenerator instance ["+generator+"]");
-			return generator;
+			Class<?> clazz = ClassUtils.loadClass(generatorBeanClass);
+			if(clazz.isAssignableFrom(IFlowGenerator.class)) {
+				throw new IllegalStateException("provided generator does not implement IFlowGenerator interface");
+			}
+			return (IFlowGenerator) SpringUtils.createBean(applicationContext, clazz);
+		} catch (ClassNotFoundException e) {
+			log.warn("FlowGenerator class ["+generatorBeanClass+"] not found", e);
 		} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {
-			//Failed to initialize.
-			log.warn("failed to initalize IFlowGenerator", e);
+			log.warn("failed to initalize FlowGenerator", e);
 		}
+
 		return null;
 	}
 
@@ -286,6 +300,10 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 
 	// Don't call this when no generator is set!
 	private void generateFlowDiagram(String name, String dot, File destination) throws IOException {
+		if(fileExtension == null || StringUtils.isEmpty(dot)) {
+			log.debug("cannot generate flow diagram for {}", name);
+		}
+
 		log.debug("generating flow diagram for " + name);
 		long start = System.currentTimeMillis();
 
