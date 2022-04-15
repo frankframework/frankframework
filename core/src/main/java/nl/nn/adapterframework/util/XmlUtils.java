@@ -868,10 +868,6 @@ public class XmlUtils {
 
 		String namespaceClause = getNamespaceClause(namespaceDefs);
 
-		//xslt version 1 ignores namespaces by default, setting this to true will generate a different non-xslt1-parsable xslt
-		if(xsltVersion == 1 && ignoreNamespaces)
-			ignoreNamespaces = false;
-
 		final String copyMethod;
 		if (outputMethod == OutputType.XML) {
 			copyMethod = "copy-of";
@@ -890,6 +886,11 @@ public class XmlUtils {
 			separatorString = " separator=\"" + separator + "\"";
 		}
 		int version = (xsltVersion == 0) ? DEFAULT_XSLT_VERSION : xsltVersion;
+
+		//xslt version 1 ignores namespaces by default, setting this to true will generate a different non-xslt1-parsable xslt
+		if(version == 1 && ignoreNamespaces) {
+			ignoreNamespaces = false;
+		}
 
 		String xsl =
 			// "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
