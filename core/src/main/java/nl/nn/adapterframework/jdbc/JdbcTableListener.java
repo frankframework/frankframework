@@ -218,7 +218,7 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 	}
 
 	/**
-	 * "Value of statusField indicating the processing of the row resulted in an error
+	 * Value of statusField indicating the processing of the row resulted in an error
 	 * @ff.mandatory
 	 */
 	public void setStatusValueError(String string) {
