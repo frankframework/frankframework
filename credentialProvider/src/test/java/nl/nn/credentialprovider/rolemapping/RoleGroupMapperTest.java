@@ -106,7 +106,9 @@ public class RoleGroupMapperTest extends AbstractLdapTestUnit {
 		assertThat(roles, contains(
 				"cn=UserGroup1,ou=Groups,dc=myorg,dc=com",
 				"cn=ApplGroup1,ou=Groups,dc=myorg,dc=com",
-				"cn=ApplSubGroup1,ou=Groups,dc=myorg,dc=com"
+				"cn=ApplSubGroup1,ou=Groups,dc=myorg,dc=com",
+				"cn=ApplSubGroup2,ou=Groups,dc=myorg,dc=com",
+				"cn=ApplSubSubGroup1,ou=SubGroups,ou=Groups,dc=myorg,dc=com"
 			));
 
 	}

@@ -13,7 +13,7 @@
 	<properties>
 		<spring.version>5.3.18</spring.version>
 		<j2v8.version>4.6.0</j2v8.version>
-		<cxf.version>3.4.4</cxf.version>
+		<cxf.version>3.4.7</cxf.version>
 		<jackson.version>2.13.2</jackson.version>
 		<jackson.databind.version>2.13.2.2</jackson.databind.version> <!-- patch release -->
 	</properties>
@@ -473,7 +473,7 @@
 		<dependency>
 			<groupId>org.liquibase</groupId>
 			<artifactId>liquibase-core</artifactId>
-			<version>4.8.0</version>
+			<version>4.9.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
