@@ -107,10 +107,7 @@ public class IbisApplicationServlet extends HttpServlet {
 
 		IbisContext ibisContext = (IbisContext)servletContext.getAttribute(CONTEXT_KEY);
 		if(ibisContext == null) {
-			throw new IllegalStateException("Could not find IbisContext");
-		}
-		if(ibisContext.getStartupException() != null) { // recoverable startup error
-			throw new IllegalStateException("IbisContext startup failure", ibisContext.getStartupException());
+			throw new IllegalStateException("IbisContext not found in ServletContext");
 		}
 
 		return ibisContext;

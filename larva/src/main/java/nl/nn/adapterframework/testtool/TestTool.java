@@ -148,7 +148,7 @@ public class TestTool {
 		globalTimeout=newTimeout;
 	}
 
-	public static IbisContext getIbisContext(ServletContext application) {
+	private static IbisContext getIbisContext(ServletContext application) {
 		return IbisApplicationServlet.getIbisContext(application);
 	}
 
