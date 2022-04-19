@@ -505,7 +505,7 @@
 		<xsl:value-of select="$shapeStart"/>
 		<xsl:value-of select="$text"/>
 		<xsl:if test="$subText != ''">
-			<xsl:text>&amp;lt;br></xsl:text>
+			<xsl:text><![CDATA[<br/>]]></xsl:text>
 			<xsl:value-of select="$subText"/>
 		</xsl:if>
 		<xsl:value-of select="$shapeEnd"/>
@@ -518,7 +518,7 @@
 		<xsl:value-of select="if (xs:boolean(@errorHandling)) then (' -. ') else (' --> |')"/>
 		<xsl:value-of select="@name"/>
 		<xsl:if test="exists(@customText)">
-			<xsl:text>&amp;lt;br></xsl:text>
+			<xsl:text><![CDATA[<br/>]]></xsl:text>
 			<xsl:value-of select="@customText"/>
 		</xsl:if>
 		<xsl:value-of select="if (xs:boolean(@errorHandling)) then (' .-> ') else ('| ')"/>
