@@ -68,9 +68,9 @@ graph
 	end
 	d1e5 --> |success| d1e19
 	d1e19 --> |success| d1e23
-	d1e23 --> |differentAdapter| d1e54
 	d1e23 --> |success| d1e35
 	d1e23 -. exception .-> d1e43
+	d1e23 --> |differentAdapter| d1e54
 	d1e35 --> |then<br/>EXIT| d1e21-EXIT
 	d1e35 --> |else<br/>ServerError| d1e21-ServerError
 	d1e21-EXIT --> |success<br/>EXIT| d1e14
@@ -86,9 +86,9 @@ graph
 	d1e73-ServerError -. success<br/>ServerError .-> d1e65
 	d1e112 -. success<br/>ServerError .-> d1e73-ServerError
 	d1e112 -. failure<br/>ServerError .-> d1e73-ServerError
-	d1e78 --> |differentAdapter| d1e123
 	d1e78 --> |success| d1e90
 	d1e78 -. exception .-> d1e98
+	d1e78 --> |differentAdapter| d1e123
 	d1e90 --> |success<br/>EXIT| d1e73-EXIT
 	d1e90 -. failure<br/>ServerError .-> d1e73-ServerError
 	d1e73-EXIT -. exception .-> d1e112
@@ -106,9 +106,9 @@ graph
 	d1e192 -. success<br/>ServerError .-> d1e144-ServerError
 	d1e192 -. failure<br/>ServerError .-> d1e144-ServerError
 	d1e142 --> |success| d1e152
-	d1e152 --> |differentAdapter| d1e123
 	d1e152 --> |success| d1e164
 	d1e152 -. exception .-> d1e171
+	d1e152 --> |differentAdapter| d1e123
 	d1e164 --> |then<br/>EXIT| d1e144-EXIT
 	d1e164 --> |else<br/>ServerError| d1e144-ServerError
 	d1e144-EXIT --> |success<br/>EXIT| d1e146-EXIT
@@ -119,9 +119,9 @@ graph
 	d1e203 --> |success| d1e217
 	d1e217 --> |success| d1e219
 	d1e219 --> |success| d1e223
-	d1e223 --> |differentAdapter| d1e54
 	d1e223 --> |success<br/>EXIT| d1e221-EXIT
 	d1e223 -. exception<br/>ServerError .-> d1e221-ServerError
+	d1e223 --> |differentAdapter| d1e54
 	d1e221-EXIT --> |success<br/>EXIT| d1e217-EXIT
 	d1e217-EXIT --> |success<br/>EXIT| d1e212
 	d1e221-ServerError -. success<br/>ServerError .-> d1e217-ServerError

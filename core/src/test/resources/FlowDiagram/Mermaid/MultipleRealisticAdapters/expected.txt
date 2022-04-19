@@ -65,9 +65,9 @@ graph
 	d1e118 --> |success| d1e123
 	d1e123 --> |then| d1e130
 	d1e123 --> |else| d1e202
-	d1e130 --> |differentAdapter| d1e227
 	d1e130 --> |success| d1e142
 	d1e130 -. exception<br/>READY .-> d1e21-READY
+	d1e130 --> |differentAdapter| d1e227
 	d1e142 --> |success| d1e156
 	d1e142 -. exception<br/>ServerError .-> d1e21-ServerError
 	d1e156 --> |success| d1e183
@@ -93,7 +93,7 @@ graph
 	d1e227 --> |success| d1e239
 	d1e239 --> |success| d1e251
 	d1e239 -. exception<br/>EXIT .-> d1e236
-	d1e251 --> |differentAdapter| d1e227
 	d1e251 --> |success| d1e263
 	d1e251 -. exception<br/>EXIT .-> d1e236
+	d1e251 --> |differentAdapter| d1e227
 	d1e263 --> |success<br/>EXIT| d1e236
