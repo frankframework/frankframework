@@ -71,7 +71,7 @@ public class InputOutputSenderWrapperProcessor extends SenderWrapperProcessorBas
 				}
 			}
 			if (log.isDebugEnabled()) log.debug(senderWrapperBase.getLogPrefix()+"storing results in session variable ["+senderWrapperBase.getStoreResultInSessionKey()+"]");
-			session.put(senderWrapperBase.getStoreResultInSessionKey(), result.asObject()); //TODO Store raw (repeatable?) Message!
+			session.put(senderWrapperBase.getStoreResultInSessionKey(), result);
 		}
 		return senderWrapperBase.isPreserveInput()?message:result;
 	}
