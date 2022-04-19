@@ -70,7 +70,24 @@ public class MessageTest {
 	private String characterWire77 = "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300044c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000c72657175657374436c6173737400114c6a6176612f6c616e672f436c6173733b4c00107265736f7572636573546f436c6f736574000f4c6a6176612f7574696c2f5365743b7870707400743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e767200106a6176612e6c616e672e537472696e67a0f0a4387a3bb34202000078707078";
 	private String binaryWire77 =    "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300044c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000c72657175657374436c6173737400114c6a6176612f6c616e672f436c6173733b4c00107265736f7572636573546f436c6f736574000f4c6a6176612f7574696c2f5365743b78707400055554462d38757200025b42acf317f8060854e00200007870000000743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e7671007e00077078";
 
-	private SerializationTester<Message> serializationTester=new SerializationTester<Message>();
+	private String[][] characterWires = {
+			{ "7.6", "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300034c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000e777261707065645265717565737471007e00027870707400743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e7078" },
+			{ "7.7", "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300044c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000c72657175657374436c6173737400114c6a6176612f6c616e672f436c6173733b4c00107265736f7572636573546f436c6f736574000f4c6a6176612f7574696c2f5365743b7870707400743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e767200106a6176612e6c616e672e537472696e67a0f0a4387a3bb34202000078707078" },
+			// between 2021-12-07 and 2022-04-06 the serialVersionUID of Message was removed, causing hard to solve deserialization problems.
+			//{ "7.7 2021-12-07 2022-04-06", "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d657373616765979c61c930446c0e0300044c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000c72657175657374436c6173737400114c6a6176612f6c616e672f436c6173733b4c00107265736f7572636573546f436c6f736574000f4c6a6176612f7574696c2f5365743b7870707400743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e767200106a6176612e6c616e672e537472696e67a0f0a4387a3bb34202000078707078" },
+			{ "7.7 2021-06-04", "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300044c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c00107265736f7572636573546f436c6f736574000f4c6a6176612f7574696c2f5365743b4c000e777261707065645265717565737471007e00027870707400743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e707078" },
+			{ "7.7 2021-02-02", "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300024c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b7870707400743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e78" },
+		};
+		private String[][] binaryWires = {
+				{ "7.6", "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300034c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000e777261707065645265717565737471007e000278707400055554462d38757200025b42acf317f8060854e00200007870000000743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e7078" },
+				{ "7.7", "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300044c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000c72657175657374436c6173737400114c6a6176612f6c616e672f436c6173733b4c00107265736f7572636573546f436c6f736574000f4c6a6176612f7574696c2f5365743b78707400055554462d38757200025b42acf317f8060854e00200007870000000743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e7671007e00077078" },
+				// between 2021-12-07 and 2022-04-06 the serialVersionUID of Message was removed, causing hard to solve deserialization problems.
+				//{ "7.7 2021-12-07 2022-04-06", "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d657373616765979c61c930446c0e0300044c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000c72657175657374436c6173737400114c6a6176612f6c616e672f436c6173733b4c00107265736f7572636573546f436c6f736574000f4c6a6176612f7574696c2f5365743b78707400055554462d38757200025b42acf317f8060854e00200007870000000743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e7671007e00077078" },
+				{ "7.7 2021-06-04", "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300044c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c00107265736f7572636573546f436c6f736574000f4c6a6176612f7574696c2f5365743b4c000e777261707065645265717565737471007e000278707400055554462d38757200025b42acf317f8060854e00200007870000000743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e707078" },
+				{ "7.7 2021-02-02", "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300024c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b78707400055554462d38757200025b42acf317f8060854e00200007870000000743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e78" },
+			};
+
+		private SerializationTester<Message> serializationTester=new SerializationTester<Message>();
 
 	protected void testAsInputStream(Message adapter) throws IOException {
 		InputStream result = adapter.asInputStream();
@@ -128,28 +145,28 @@ public class MessageTest {
 		Message adapter = new Message(source);
 		testAsInputStream(adapter);
 	}
-	
+
 	@Test
 	public void testInputStreamAsReader() throws Exception {
 		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes("utf-8"));
 		Message adapter = new Message(source);
 		testAsReader(adapter);
 	}
-	
+
 	@Test
 	public void testInputStreamWithCharsetAsReader() throws Exception {
 		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes("utf-8"));
 		Message adapter = new Message(source, "utf-8");
 		testAsReader(adapter);
 	}
-	
+
 	@Test
 	public void testInputStreamAsInputSource() throws Exception {
 		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes("utf-8"));
 		Message adapter = new Message(source);
 		testAsInputSource(adapter);
 	}
-	
+
 	@Test
 	public void testInputStreamAsByteArray() throws Exception {
 		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes("utf-8"));
@@ -178,12 +195,12 @@ public class MessageTest {
 		ByteArrayOutputStream outputStream = adapter.captureBinaryStream();
 		assertNotNull(outputStream);
 		testAsInputStream(adapter);
-		
+
 		String captured = new String(outputStream.toByteArray(), "utf-8");
 		assertEquals(testString, captured);
 		testToString(adapter, ByteArrayInputStream.class);
 	}
-	
+
 	@Test
 	public void testInputStreamAsReaderCaptured() throws Exception {
 		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes("utf-8"));
@@ -191,11 +208,11 @@ public class MessageTest {
 		ByteArrayOutputStream outputStream = adapter.captureBinaryStream();
 		assertNotNull(outputStream);
 		testAsReader(adapter);
-		
+
 		String captured = new String(outputStream.toByteArray(), "utf-8");
 		assertEquals(testString, captured);
 	}
-	
+
 	@Test
 	public void testInputStreamWithCharsetAsReaderCaptured() throws Exception {
 		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes("utf-8"));
@@ -203,11 +220,11 @@ public class MessageTest {
 		ByteArrayOutputStream outputStream = adapter.captureBinaryStream();
 		assertNotNull(outputStream);
 		testAsReader(adapter);
-		
+
 		String captured = new String(outputStream.toByteArray(), "utf-8");
 		assertEquals(testString, captured);
 	}
-	
+
 	@Test
 	public void testInputStreamAsInputSourceCaptured() throws Exception {
 		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes("utf-8"));
@@ -215,11 +232,11 @@ public class MessageTest {
 		ByteArrayOutputStream outputStream = adapter.captureBinaryStream();
 		assertNotNull(outputStream);
 		testAsInputSource(adapter);
-		
+
 		String captured = new String(outputStream.toByteArray(), "utf-8");
 		assertEquals(testString, captured);
 	}
-	
+
 	@Test
 	public void testInputStreamAsByteArrayCaptured() throws Exception {
 		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes("utf-8"));
@@ -227,7 +244,7 @@ public class MessageTest {
 		ByteArrayOutputStream outputStream = adapter.captureBinaryStream();
 		assertNotNull(outputStream);
 		testAsByteArray(adapter);
-		
+
 		String captured = new String(outputStream.toByteArray(), "utf-8");
 		assertEquals(testString, captured);
 	}
@@ -239,7 +256,7 @@ public class MessageTest {
 		ByteArrayOutputStream outputStream = adapter.captureBinaryStream();
 		assertNotNull(outputStream);
 		testAsString(adapter);
-		
+
 		String captured = new String(outputStream.toByteArray(), "utf-8");
 		assertEquals(testString, captured);
 	}
@@ -251,7 +268,7 @@ public class MessageTest {
 		ByteArrayOutputStream outputStream = adapter.captureBinaryStream();
 		assertNotNull(outputStream);
 		adapter.asInputStream().close();
-		
+
 		String captured = new String(outputStream.toByteArray(), "utf-8");
 		assertEquals(testString, captured);
 	}
@@ -263,7 +280,7 @@ public class MessageTest {
 		ByteArrayOutputStream outputStream = adapter.captureBinaryStream();
 		assertNotNull(outputStream);
 		adapter.preserve();
-		
+
 		String captured = new String(outputStream.toByteArray(), "utf-8");
 		assertEquals(testString, captured);
 	}
@@ -311,7 +328,7 @@ public class MessageTest {
 		testToString(adapter, StringReader.class);
 	}
 
-	
+
 	@Test
 	public void testReaderAsInputStreamCaptured() throws Exception {
 		StringReader source = new StringReader(testString);
@@ -319,7 +336,7 @@ public class MessageTest {
 		StringWriter writer = adapter.captureCharacterStream();
 		assertNotNull(writer);
 		testAsInputStream(adapter);
-		
+
 		String captured = writer.toString();
 		assertEquals(testString, captured);
 	}
@@ -331,7 +348,7 @@ public class MessageTest {
 		StringWriter writer = adapter.captureCharacterStream();
 		assertNotNull(writer);
 		testAsReader(adapter);
-		
+
 		String captured = writer.toString();
 		assertEquals(testString, captured);
 		testToString(adapter, StringReader.class);
@@ -344,7 +361,7 @@ public class MessageTest {
 		StringWriter writer = adapter.captureCharacterStream();
 		assertNotNull(writer);
 		testAsInputSource(adapter);
-		
+
 		String captured = writer.toString();
 		assertEquals(testString, captured);
 	}
@@ -356,7 +373,7 @@ public class MessageTest {
 		StringWriter writer = adapter.captureCharacterStream();
 		assertNotNull(writer);
 		testAsByteArray(adapter);
-		
+
 		String captured = writer.toString();
 		assertEquals(testString, captured);
 	}
@@ -368,7 +385,7 @@ public class MessageTest {
 		StringWriter writer = adapter.captureCharacterStream();
 		assertNotNull(writer);
 		testAsString(adapter);
-		
+
 		String captured = writer.toString();
 		assertEquals(testString, captured);
 	}
@@ -380,7 +397,7 @@ public class MessageTest {
 		StringWriter writer = adapter.captureCharacterStream();
 		assertNotNull(writer);
 		adapter.asReader().close();
-		
+
 		String captured = writer.toString();
 		assertEquals(testString, captured);
 	}
@@ -392,7 +409,7 @@ public class MessageTest {
 		StringWriter writer = adapter.captureCharacterStream();
 		assertNotNull(writer);
 		adapter.preserve();
-		
+
 		String captured = writer.toString();
 		assertEquals(testString, captured);
 	}
@@ -403,7 +420,7 @@ public class MessageTest {
 		Message adapter = new Message(source);
 		StringWriter writer = adapter.captureCharacterStream();
 		assertNotNull(writer);
-		
+
 		String captured = writer.toString();
 		assertEquals("", captured); // input stream is not read, so nothing is captured. Writer could detect that it was not closed, though.
 	}
@@ -452,7 +469,7 @@ public class MessageTest {
 		testToString(adapter, String.class);
 	}
 
-	
+
 	@Test
 	public void testByteArrayAsInputStream() throws Exception {
 		byte[] source = testString.getBytes("utf-8");
@@ -494,8 +511,8 @@ public class MessageTest {
 		Message adapter = new Message(source);
 		testToString(adapter,byte[].class);
 	}
-	
-	
+
+
 	@Test
 	public void testURLAsInputStream() throws Exception {
 		URL source = this.getClass().getResource(testStringFile);
@@ -600,7 +617,7 @@ public class MessageTest {
 		testToString(adapter,File.class);
 	}
 
-	
+
 	@Test
 	public void testPathAsInputStream() throws Exception {
 		Path source = Paths.get(new File(this.getClass().getResource(testStringFile).getPath()).getAbsolutePath());
@@ -653,7 +670,7 @@ public class MessageTest {
 	}
 
 
-	
+
 	@Test
 	public void testDocumentAsInputStream() throws Exception {
 		Document source = XmlUtils.buildDomDocument(new StringReader(testString));
@@ -744,74 +761,74 @@ public class MessageTest {
 	public void testSerializeWithString() throws Exception {
 		String source = testString;
 		Message in = new Message(source);
-		
+
 		byte[] wire = serializationTester.serialize(in);
-		
+
 		assertNotNull(wire);
 		Message out = serializationTester.deserialize(wire);
-		
+
 		assertFalse(out.isBinary());
 		assertEquals(testString,out.asString());
 	}
-	
+
 	@Test
 	public void testSerializeWithByteArray() throws Exception {
 		byte[] source = testString.getBytes("utf-8");
 		Message in = new Message(source);
-		
+
 		byte[] wire = serializationTester.serialize(in);
-		
+
 		assertNotNull(wire);
 		Message out = serializationTester.deserialize(wire);
-		
+
 		assertTrue(out.isBinary());
 		assertEquals(testString,out.asString());
 	}
-	
+
 	@Test
 	public void testSerializeWithReader() throws Exception {
 		Reader source = new StringReader(testString);
 		Message in = new Message(source);
-		
+
 		byte[] wire = serializationTester.serialize(in);
-		
+
 		assertNotNull(wire);
 		Message out = serializationTester.deserialize(wire);
-		
+
 		assertFalse(out.isBinary());
 		assertEquals(testString,out.asString());
 	}
-	
+
 	@Test
 	public void testSerializeWithInputStream() throws Exception {
 		InputStream source = new ByteArrayInputStream(testString.getBytes("utf-8"));
 		Message in = new Message(source);
-		
+
 		byte[] wire = serializationTester.serialize(in);
-		
+
 		assertNotNull(wire);
 		Message out = serializationTester.deserialize(wire);
-		
+
 		assertTrue(out.isBinary());
 		assertEquals(testString,out.asString());
 	}
-	
+
 	@Test
 	public void testSerializeWithFile() throws Exception {
 		TemporaryFolder folder = new TemporaryFolder();
 		folder.create();
 		File source = folder.newFile();
 		writeContentsToFile(source, testString);
-		
+
 		Message in = new FileMessage(source);
 		byte[] wire = serializationTester.serialize(in);
 		writeContentsToFile(source, "fakeContentAsReplacementOfThePrevious");
 		Message out = serializationTester.deserialize(wire);
-		
+
 		assertTrue(out.isBinary());
 		assertEquals(testString,out.asString());
 	}
-	
+
 	@Test
 	public void testSerializeWithURL() throws Exception {
 		TemporaryFolder folder = new TemporaryFolder();
@@ -824,11 +841,11 @@ public class MessageTest {
 		byte[] wire = serializationTester.serialize(in);
 		writeContentsToFile(file, "fakeContentAsReplacementOfThePrevious");
 		Message out = serializationTester.deserialize(wire);
-		
+
 		assertTrue(out.isBinary());
 		assertEquals(testString,out.asString());
 	}
-	
+
 	private void writeContentsToFile(File file, String contents) throws IOException {
 		try (Writer fw = new OutputStreamWriter(new FileOutputStream(file), "utf-8")) {
 			fw.write(contents);
@@ -891,6 +908,35 @@ public class MessageTest {
 		assertTrue(out.isBinary());
 		assertEquals("UTF-8", out.getCharset());
 		assertEquals(testString,out.asString());
+	}
+
+	@Test
+	public void testDeserializationCompatibilityWithString() throws Exception {
+
+		for (int i=0; i< characterWires.length; i++) {
+			String label = characterWires[i][0];
+			//System.out.println("testDeserializationCompatibilityWithString() "+label);
+			byte[] wire = Hex.decodeHex(characterWires[i][1]);
+			Message out = serializationTester.deserialize(wire);
+
+			assertFalse(label, out.isBinary());
+			assertEquals(label, testString,out.asString());
+		}
+	}
+
+	@Test
+	public void testDeserializationCompatibilityWithByteArray() throws Exception {
+
+		for (int i=0; i< binaryWires.length; i++) {
+			String label = binaryWires[i][0];
+			//System.out.println("testDeserializationCompatibilityWithByteArray() "+label);
+			byte[] wire = Hex.decodeHex(binaryWires[i][1]);
+			Message out = serializationTester.deserialize(wire);
+
+			assertTrue(label, out.isBinary());
+			assertEquals(label, "UTF-8", out.getCharset());
+			assertEquals(label, testString,out.asString());
+		}
 	}
 
 	@Test
