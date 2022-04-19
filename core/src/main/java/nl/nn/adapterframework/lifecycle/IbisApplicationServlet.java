@@ -85,15 +85,13 @@ public class IbisApplicationServlet extends HttpServlet {
 
 			//We can't call servletContext.log(message, Exception) as it will prevent the servlet from starting up
 			servletContext.log(String.format("%s, check ibis logs for more information! (%s) %s", msg, startupException.getClass().getName(), startupException.getMessage()));
-
-			servletContext.setAttribute(KEY_EXCEPTION, startupException); //Instead of the IbisContext we store the Exception, see IbisApplicationServlet.getIbisContext(ServletContext)
-		} else { //Since Spring has started, save the IbisContext in the ServletContext
-			String attributeKey = appConstants.getResolvedProperty(KEY_CONTEXT);
-			servletContext.setAttribute(attributeKey, ibisContext);
-			log.debug("stored IbisContext [" + ClassUtils.nameOf(ibisContext) + "]["+ ibisContext + "] in ServletContext under key ["+ attributeKey + "]");
-
-			log.debug("Servlet init finished");
 		}
+
+		String attributeKey = appConstants.getResolvedProperty(KEY_CONTEXT);
+		servletContext.setAttribute(attributeKey, ibisContext);
+		log.debug("stored IbisContext [" + ClassUtils.nameOf(ibisContext) + "]["+ ibisContext + "] in ServletContext under key ["+ attributeKey + "]");
+
+		log.debug("Servlet init finished");
 	}
 
 	/**
@@ -102,13 +100,17 @@ public class IbisApplicationServlet extends HttpServlet {
 	 * @return IbisContext or IllegalStateException when not found
 	 */
 	public static IbisContext getIbisContext(ServletContext servletContext) {
+		Throwable t = (Throwable) servletContext.getAttribute(KEY_EXCEPTION); // non-recoverable startup error
+		if(t != null) {
+			throw new IllegalStateException("Could not initialize IbisContext", t);
+		}
+
 		AppConstants appConstants = AppConstants.getInstance();
 		String ibisContextKey = appConstants.getResolvedProperty(KEY_CONTEXT);
 		IbisContext ibisContext = (IbisContext)servletContext.getAttribute(ibisContextKey);
 
 		if(ibisContext == null) {
-			Throwable t = (Throwable) servletContext.getAttribute(KEY_EXCEPTION);
-			throw new IllegalStateException("Unable to retrieve IbisContext from ServletContext attribute ["+KEY_CONTEXT+"]", t);
+			throw new IllegalStateException("IbisContext not found in ServletContext", t);
 		}
 		return ibisContext;
 	}
