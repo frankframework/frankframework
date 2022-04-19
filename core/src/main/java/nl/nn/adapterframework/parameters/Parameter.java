@@ -542,7 +542,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 				}
 			}
 		}
-		
+
 		if (result !=null && result instanceof Message) {
 			result = ((Message)result).asObject(); // avoid the IOException thrown by asString()
 		}
@@ -614,7 +614,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 			log.debug("Adding leading zeros to parameter ["+getName()+"]" );
 			result = StringUtils.leftPad(result+"", getMinLength(), '0');
 		}
-		return result; 
+		return result;
 	}
 
 	/** Converts raw data to configured parameter type */
