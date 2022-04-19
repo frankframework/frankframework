@@ -5,10 +5,18 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+import javax.mail.internet.InternetHeaders;
+import javax.mail.internet.MimeBodyPart;
+
 import org.apache.commons.codec.binary.Hex;
 import org.junit.Test;
 
+import nl.nn.adapterframework.http.PartMessage;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.PathMessage;
 import nl.nn.adapterframework.testutil.SerializationTester;
 
 public class MessageWrapperTest {
@@ -54,6 +62,61 @@ public class MessageWrapperTest {
 
 		MessageWrapper in = new MessageWrapper();
 		in.setMessage(new Message(data));
+		in.setId(id);
+		in.getContext().put(contextKey, contextValue);
+
+		byte[] wire = serializationTester.serialize(in);
+
+		assertNotNull(wire);
+		MessageWrapper out = serializationTester.deserialize(wire);
+
+		assertTrue(out.getMessage().isBinary());
+		assertEquals(new String(data), out.getMessage().asString());
+		assertEquals(id, out.getId());
+		assertEquals(contextValue, out.getContext().get(contextKey));
+	}
+
+	@Test
+	public void testSerializeDeserializePath() throws Exception {
+		byte[] data = "testdata voor messagewrapper".getBytes();
+		String id = "fakeId";
+		String contextKey = "messageWrapperContextItem";
+		String contextValue = "fakeValue";
+
+		
+		Path file = Files.createTempFile("MessageWrapperTest", null);
+		Files.write(file, data);
+		
+		MessageWrapper in = new MessageWrapper();
+		in.setMessage(new PathMessage(file));
+		in.setId(id);
+		in.getContext().put(contextKey, contextValue);
+
+		byte[] wire = serializationTester.serialize(in);
+
+		Files.delete(file);
+		
+		assertNotNull(wire);
+		MessageWrapper out = serializationTester.deserialize(wire);
+
+		assertTrue(out.getMessage().isBinary());
+		assertEquals(new String(data), out.getMessage().asString());
+		assertEquals(id, out.getId());
+		assertEquals(contextValue, out.getContext().get(contextKey));
+	}
+
+	@Test
+	public void testSerializeDeserializeMimeBodyPart() throws Exception {
+		byte[] data = "testdata voor messagewrapper".getBytes();
+		String id = "fakeId";
+		String contextKey = "messageWrapperContextItem";
+		String contextValue = "fakeValue";
+
+		
+		MimeBodyPart bodyPart = new MimeBodyPart(new InternetHeaders(), data);
+		
+		MessageWrapper in = new MessageWrapper();
+		in.setMessage(new PartMessage(bodyPart));
 		in.setId(id);
 		in.getContext().put(contextKey, contextValue);
 
