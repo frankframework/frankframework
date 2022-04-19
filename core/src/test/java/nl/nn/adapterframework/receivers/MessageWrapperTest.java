@@ -83,10 +83,10 @@ public class MessageWrapperTest {
 		String contextKey = "messageWrapperContextItem";
 		String contextValue = "fakeValue";
 
-		
+
 		Path file = Files.createTempFile("MessageWrapperTest", null);
 		Files.write(file, data);
-		
+
 		MessageWrapper in = new MessageWrapper();
 		in.setMessage(new PathMessage(file));
 		in.setId(id);
@@ -95,7 +95,7 @@ public class MessageWrapperTest {
 		byte[] wire = serializationTester.serialize(in);
 
 		Files.delete(file);
-		
+
 		assertNotNull(wire);
 		MessageWrapper out = serializationTester.deserialize(wire);
 
@@ -112,9 +112,9 @@ public class MessageWrapperTest {
 		String contextKey = "messageWrapperContextItem";
 		String contextValue = "fakeValue";
 
-		
+
 		MimeBodyPart bodyPart = new MimeBodyPart(new InternetHeaders(), data);
-		
+
 		MessageWrapper in = new MessageWrapper();
 		in.setMessage(new PartMessage(bodyPart));
 		in.setId(id);
