@@ -563,8 +563,12 @@ public class Message implements Serializable {
 		return result;
 	}
 
+	public boolean isNull() {
+		return request == null;
+	}
+
 	public boolean isEmpty() {
-		return request == null || request instanceof String && ((String)request).isEmpty();
+		return isNull() || request instanceof String && ((String)request).isEmpty();
 	}
 
 	public void toStringPrefix(Writer writer) throws IOException {
@@ -606,6 +610,24 @@ public class Message implements Serializable {
 		}
 
 		return result.toString();
+	}
+
+	@Override
+	//Effective Java, 2nd Edition (page 49): If the value of the field is null, return 0.
+	public int hashCode() {
+		return (request != null) ? request.hashCode() : 0;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(obj instanceof Message) {
+			Message message2 = (Message) obj;
+			if(!isNull()) {
+				return request.equals(message2.asObject());
+			}
+			return super.equals(message2.asObject());
+		}
+		return false;
 	}
 
 	public static Message asMessage(Object object) {
@@ -705,6 +727,10 @@ public class Message implements Serializable {
 
 	public static boolean isEmpty(Message message) {
 		return (message == null || message.isEmpty());
+	}
+
+	public static boolean isNull(Message message) {
+		return (message == null || message.isNull());
 	}
 
 	/*
