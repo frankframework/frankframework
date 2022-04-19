@@ -633,7 +633,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				} else {
 					result = sendResult.getResult(); // is this correct? result was already set at line 634!
 				}
-				if (result == null || result.isNull()) {
+				if (Message.isNull(result)) {
 					result = new Message("");
 				}
 				if (timeoutPending) {
