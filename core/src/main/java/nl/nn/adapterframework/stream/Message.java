@@ -621,7 +621,7 @@ public class Message implements Serializable {
 			if(!isNull()) {
 				return request.equals(message2.asObject());
 			}
-			return super.equals(message2.asObject());
+			return message2.isNull();
 		}
 		return false;
 	}

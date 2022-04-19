@@ -1097,7 +1097,7 @@ public class MessageTest {
 		assertFalse(message1.equals(message4));
 		assertFalse(message4.equals(message1));
 
-		assertFalse(message4.equals(Message.nullMessage()));
+		assertTrue(message4.equals(Message.nullMessage()));
 
 		assertFalse(message1.equals(input));
 		assertFalse(message1.equals(null));
