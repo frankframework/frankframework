@@ -168,8 +168,9 @@ public abstract class Base implements ApplicationContextAware {
 
 	protected <T> T resolveTypeFromMap(MultipartBody inputDataMap, String key, Class<T> clazz, T defaultValue) throws ApiException {
 		try {
-			if(inputDataMap.getAttachment(key) != null) {
-				return inputDataMap.getAttachment(key).getObject(clazz);
+			Attachment attachment = inputDataMap.getAttachment(key);
+			if(attachment != null) {
+				return convert(clazz, attachment.getObject(InputStream.class));
 			}
 		} catch (Exception e) {
 			log.debug("Failed to parse parameter ["+key+"]", e);
@@ -178,5 +179,24 @@ public abstract class Base implements ApplicationContextAware {
 			return defaultValue;
 		}
 		throw new ApiException("Key ["+key+"] not defined", 400);
+	}
+
+	@SuppressWarnings("unchecked")
+	protected static <T> T convert(Class<T> clazz, InputStream is) throws IOException {
+		if(clazz.isAssignableFrom(InputStream.class)) {
+			return (T) is;
+		}
+		String str = Misc.streamToString(is);
+		if(str == null) {
+			return null;
+		}
+		if(clazz.isAssignableFrom(boolean.class) || clazz.isAssignableFrom(Boolean.class)) {
+			return (T) Boolean.valueOf(str);
+		} else if(clazz.isAssignableFrom(int.class) || clazz.isAssignableFrom(Integer.class)) {
+			return (T) Integer.valueOf(str);
+		} else if(clazz.isAssignableFrom(String.class)) {
+			return (T) str;
+		}
+		throw new IllegalArgumentException("cannot convert to class ["+clazz+"]");
 	}
 }

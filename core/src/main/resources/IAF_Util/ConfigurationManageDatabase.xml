@@ -17,7 +17,7 @@
 				<forward name="parserError" path="InternalXsdError" />
 			</outputValidator>
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe className="nl.nn.adapterframework.pipes.ForEachChildElementPipe" name="Query" elementXPathExpression="manageDatabaseREQ/*" ignoreExceptions="true">
 				<sender className="nl.nn.adapterframework.jdbc.XmlQuerySender" />

@@ -17,22 +17,20 @@ import nl.nn.adapterframework.testutil.PropertyUtil;
 public class ExchangeFileSystemTest extends MailFileSystemTestBase<EmailMessage, Attachment, ExchangeFileSystem>{
 
 	//private String DEFAULT_URL = "https://outlook.office365.com/EWS/Exchange.asmx";
-	
+
 	private String url         = PropertyUtil.getProperty(PROPERTY_FILE, "url");
 	private String mailaddress = PropertyUtil.getProperty(PROPERTY_FILE, "mailaddress");
-	private String accessToken = PropertyUtil.getProperty(PROPERTY_FILE, "accessToken");
 //	private String basefolder2 = PropertyUtil.getProperty(PROPERTY_FILE, "basefolder2");
 //	private String basefolder3 = PropertyUtil.getProperty(PROPERTY_FILE, "basefolder3");
-	
-	
+
+
 	private String nonExistingFileName = "AAMkAGNmZTczMWUwLWQ1MDEtNDA3Ny1hNjU4LTlmYTQzNjE0NjJmYgBGAAAAAAALFKqetECyQKQyuRBrRSzgBwDx14SZku4LS5ibCBco+nmXAAAAAAEMAADx14SZku4LS5ibCBco+nmXAABMFuwsAAA=";
-	
+
 	@Override
 	protected ExchangeFileSystem createFileSystem() throws ConfigurationException {
 		ExchangeFileSystem fileSystem = new ExchangeFileSystem();
 		if (StringUtils.isNotEmpty(url)) fileSystem.setUrl(url);
 		fileSystem.setMailAddress(mailaddress);
-		fileSystem.setAccessToken(accessToken);
 		fileSystem.setUsername(username);
 		fileSystem.setPassword(password);
 		fileSystem.setBaseFolder(basefolder1);
@@ -44,12 +42,11 @@ public class ExchangeFileSystemTest extends MailFileSystemTestBase<EmailMessage,
 		fileSystemTestRandomFileShouldNotExist(nonExistingFileName);
 	}
 
-	
+
 	public ExchangeMailListener getConfiguredListener(String sourceFolder, String inProcessFolder) throws Exception {
 		ExchangeMailListener listener = new ExchangeMailListener();
 		if (StringUtils.isNotEmpty(url)) listener.setUrl(url);
 		listener.setMailAddress(mailaddress);
-		listener.setAccessToken(accessToken);
 		listener.setUsername(username);
 		listener.setPassword(password);
 		listener.setBaseFolder(basefolder1);
@@ -59,7 +56,7 @@ public class ExchangeFileSystemTest extends MailFileSystemTestBase<EmailMessage,
 		listener.open();
 		return listener;
 	}
-	
+
 	@Test
 	public void testMessageIdDoesNotChangeWhenMessageIsMoved() throws Exception {
 		String sourceFolder = "SourceFolder";
@@ -73,22 +70,22 @@ public class ExchangeFileSystemTest extends MailFileSystemTestBase<EmailMessage,
 
 		ExchangeMailListener listener1 = getConfiguredListener(sourceFolder, null);
 		ExchangeMailListener listener2 = getConfiguredListener(sourceFolder, inProcessFolder);
-		
+
 		Map<String,Object> threadContext1 = new HashMap<>();
 		Map<String,Object> threadContext2 = new HashMap<>();
-		
+
 		EmailMessage msg1 = listener1.getRawMessage(threadContext1);
 		String msgId1 = listener1.getIdFromRawMessage(msg1, threadContext1);
 		System.out.println("1st msgid ["+msgId1+"], filename ["+fileSystem.getName(msg1)+"]");
-		
-		
+
+
 		EmailMessage msg2 = listener2.getRawMessage(threadContext2);
 		String msgId2 = listener2.getIdFromRawMessage(msg2, threadContext2);
 		System.out.println("2nd msgid ["+msgId2+"], filename ["+fileSystem.getName(msg2)+"]");
-		
+
 		assertEquals(msgId1, msgId2);
-		
+
 		assertEquals(messageId, msgId2);
 	}
-	
+
 }

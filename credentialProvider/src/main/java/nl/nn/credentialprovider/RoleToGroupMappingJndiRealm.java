@@ -137,6 +137,14 @@ public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupM
 	 * have a "memberOf" like attribute (specifed by 'userRoleName' and 'roleName') that specifies the groups
 	 * they are member of. The original getRoles assumed groups have a 'member' attribute, specifying their
 	 * members. That approach is not available in this implementation.
+	 *
+	 * Shamik uses the nn-tomcat-extensions JNDIRealmEx, with additional settings:
+	 * - roleBase="company specific tenant base"
+	 * - roleSubtree="true"
+	 * - roleSearch="(&amp;(member={0})(objectcategory=group))"
+	 * - roleName="cn"
+	 * - roleNested="true"
+	 * This is expected to be less performant, because it searches each time over all groups.
 	 */
 	@Override
 	protected List<String> getRoles(JNDIConnection connection, User user) throws NamingException {
@@ -152,13 +160,17 @@ public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupM
 		while((role=rolesToCheck.poll())!=null) {
 			Attributes attrs = connection.context.getAttributes(role, attrIds);
 
-			for (NamingEnumeration<? extends Attribute> attEnum= attrs.getAll(); attEnum.hasMoreElements();) {
-				Attribute attr = attEnum.next();
-				String nestedRole = attr.get().toString();
-				if (this.containerLog.isTraceEnabled()) this.containerLog.trace("nestedRole: "+nestedRole);
-				if (!allRoles.contains(nestedRole)) {
-					rolesToCheck.add(nestedRole);
-					allRoles.add(nestedRole);
+			for (NamingEnumeration<? extends Attribute> attsEnum= attrs.getAll(); attsEnum.hasMoreElements();) {
+				Attribute attr = attsEnum.next();
+				for (NamingEnumeration<?> attEnum= attr.getAll(); attEnum.hasMoreElements();) {
+
+					String nestedRole = attEnum.next().toString();
+					if (this.containerLog.isTraceEnabled()) this.containerLog.trace("nestedRole: "+nestedRole);
+
+					if (!allRoles.contains(nestedRole)) {
+						rolesToCheck.add(nestedRole);
+						allRoles.add(nestedRole);
+					}
 				}
 			}
 		}

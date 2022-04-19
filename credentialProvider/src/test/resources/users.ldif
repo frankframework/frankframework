@@ -57,6 +57,11 @@ objectClass: organizationalUnit
 objectClass: top
 ou: Groups
 
+dn: ou=SubGroups,ou=Groups,dc=myorg,dc=com
+objectClass: organizationalUnit
+objectClass: top
+ou: SubGroups
+
 dn: cn=LdapTester1,ou=Users,dc=myorg,dc=com
 objectClass: inetOrgPerson
 objectClass: organizationalPerson
@@ -84,8 +89,24 @@ objectclass: simulatedMicrosoftObject
 cn: ApplGroup1
 member:
 memberOf:cn=ApplSubGroup1,ou=Groups,dc=myorg,dc=com
+memberOf:cn=ApplSubGroup2,ou=Groups,dc=myorg,dc=com
 
 dn: cn=ApplSubGroup1,ou=Groups,dc=myorg,dc=com
+objectClass: GroupOfNames
+objectClass: top
+objectclass: simulatedMicrosoftObject
+cn: ApplGroup1
+member:
+memberOf:cn=ApplSubSubGroup1,ou=SubGroups,ou=Groups,dc=myorg,dc=com
+
+dn: cn=ApplSubGroup2,ou=Groups,dc=myorg,dc=com
+objectClass: GroupOfNames
+objectClass: top
+objectclass: simulatedMicrosoftObject
+cn: ApplGroup1
+member:
+
+dn: cn=ApplSubSubGroup1,ou=SubGroups,ou=Groups,dc=myorg,dc=com
 objectClass: GroupOfNames
 objectClass: top
 objectclass: simulatedMicrosoftObject

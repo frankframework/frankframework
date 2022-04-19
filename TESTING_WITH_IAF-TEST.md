@@ -18,7 +18,7 @@ If you want to use a DBMS other that H2, you need to add the corresponding JDBC 
 * For Oracle          : [ojdbc8.jar](https://www.oracle.com/database/technologies/appdev/jdbc-ucp-183-downloads.html)
 * For PostgreSQL      : [postgresql-42.2.14](https://jdbc.postgresql.org/download/postgresql-42.2.14.jar)
 
-In Tomcat's launch configuration (found in the Tomcat Overview window), go to the Classpath tab. Click on the User Entries item and click on the [ Add JARs... ] button. Select all JARs in the lib folder, press OK, and press OK again.
+In Tomcat's launch configuration (go to the Java EE perspective to access your Tomcat server, find launch configuration in the Tomcat Overview window), go to the Classpath tab. Click on the User Entries item and click on the [ Add JARs... ] button. Select all JARs in the lib folder, press OK, and press OK again.
 
 ## 2. Tomcat configuration
 
@@ -53,3 +53,5 @@ Press [ Start ], sit back, relax, do some stretches, and let's hope for the best
 ### Troubleshooting
 
 * Some parts of the iaf-test module rely on proprietary modules. To tell Maven that it should download these modules, go to Window > Preferences > Maven > User Settings. If you already have a _settings.xml_ file, press the "Open file" link. Otherwise, browse to _C:/Users/(your name)/.m2/_ and create a _settings.xml_ file. Edit the file by adding your own repository or the [frankframework nexus repository](https://nexus.frankframework.org/content/groups/private/) as [mirror](https://maven.apache.org/guides/mini/guide-mirror-settings.html).
+* When your IP-address is dynamically generated, you may have problems connecting to your database that runs in a docker image. The Larva tests reference the database host by a DNS name, `host.docker.internal`. Docker may not automatically update the IP address to which this name refers when your computer is assigned a new IP address. To see whether you have this issue, do `ping host.docker.internal` in a command prompt. If you cannot reach this address, refresh your docker network. You can do that using docker desktop. Press the settings icon (cogwheel) to the top. In the left-hand menu, choose Resources | Network. Update the docker subnet.
+* If you are using an Oracle database, mind the version of the driver you download. For each combination of a JDK version and an Oracle database version, the driver is different. The filename on the Oracle download page depends only on the JDK version though. You can find the Oracle version we use in `ibis-adapterframework-docker/pom.xml`.
