@@ -65,7 +65,7 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 	private LabelExpression labelExpression = new LabelExpression();
 
 	private Resource getChangeLog() {
-		AppConstants appConstants = AppConstants.getInstance(getApplicationContext().getClassLoader());
+		AppConstants appConstants = AppConstants.getInstance(getConfigurationClassLoader());
 		String changeLogFile = appConstants.getString("liquibase.changeLogFile", "DatabaseChangelog.xml");
 
 		URL resource = getResource(changeLogFile);
@@ -77,7 +77,7 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 		}
 
 		try {
-			return new BytesResource(resource.openStream(), changeLogFile);
+			return new BytesResource(resource.openStream(), changeLogFile, getConfiguration());
 		} catch (IOException e) {
 			log.debug("unable to open or read changelog ["+changeLogFile+"]", e);
 		}

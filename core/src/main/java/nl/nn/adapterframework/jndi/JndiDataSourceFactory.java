@@ -69,7 +69,7 @@ public class JndiDataSourceFactory extends JndiObjectFactory<DataSource,CommonDa
 
 	@Override
 	public List<String> getDataSourceNames() {
-		return new ArrayList<String>(objects.keySet());
+		return new ArrayList<>(objects.keySet());
 	}
 
 }

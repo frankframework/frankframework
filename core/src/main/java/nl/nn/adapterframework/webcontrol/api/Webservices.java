@@ -28,7 +28,6 @@ import java.util.Set;
 import java.util.SortedMap;
 
 import javax.annotation.security.RolesAllowed;
-import javax.naming.NamingException;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -192,7 +191,7 @@ public final class Webservices extends Base {
 						} else {
 							wsdl.wsdl(out, servletName);
 						}
-					} catch (ConfigurationException | XMLStreamException | NamingException e) {
+					} catch (ConfigurationException | XMLStreamException e) {
 						throw new WebApplicationException(e);
 					}
 				}

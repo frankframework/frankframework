@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -36,9 +36,26 @@ import nl.nn.adapterframework.util.SpringUtils;
 
 public class CheckReloadJob extends JobDef {
 	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = AppConstants.getInstance().getBoolean("configurations.database.autoLoad", false);
+	private static final String DATABASE_CLASSLOADER = "DatabaseClassLoader";
+	private boolean atLeastOneConfigrationHasDBClassLoader = CONFIG_AUTO_DB_CLASSLOADER;
 
 	@Override
-	public void execute(IbisManager ibisManager) {
+	public boolean beforeExecuteJob() {
+		if(!atLeastOneConfigrationHasDBClassLoader) {
+			IbisManager ibisManager = getIbisManager();
+			for (Configuration configuration : ibisManager.getConfigurations()) {
+				if(DATABASE_CLASSLOADER.equals(configuration.getClassLoaderType())) {
+					atLeastOneConfigrationHasDBClassLoader=true;
+					break;
+				}
+			}
+		}
+		return atLeastOneConfigrationHasDBClassLoader;
+	}
+	
+	@Override
+	public void execute() {
+		IbisManager ibisManager = getIbisManager();
 		if (ibisManager.getIbisContext().isLoadingConfigs()) {
 			String msg = "skipping checkReload because one or more configurations are currently loading";
 			getMessageKeeper().add(msg, MessageKeeperLevel.INFO);
@@ -61,7 +78,7 @@ public class CheckReloadJob extends JobDef {
 				for (Configuration configuration : ibisManager.getConfigurations()) {
 					String configName = configuration.getName();
 					configNames.add(configName);
-					if ("DatabaseClassLoader".equals(configuration.getClassLoaderType())) {
+					if (DATABASE_CLASSLOADER.equals(configuration.getClassLoaderType())) {
 						stmt.setString(1, configName);
 						try (ResultSet rs = stmt.executeQuery()) {
 							if (rs.next()) {
@@ -107,7 +124,7 @@ public class CheckReloadJob extends JobDef {
 				}
 				// unload old (deactivated) configurations
 				for (String currentConfigurationName : configNames) {
-					if (!dbConfigNames.contains(currentConfigurationName) && "DatabaseClassLoader".equals(ibisManager.getConfiguration(currentConfigurationName).getClassLoaderType())) {
+					if (!dbConfigNames.contains(currentConfigurationName) && DATABASE_CLASSLOADER.equals(ibisManager.getConfiguration(currentConfigurationName).getClassLoaderType())) {
 						ibisManager.getIbisContext().unload(currentConfigurationName);
 					}
 				}

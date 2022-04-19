@@ -24,4 +24,5 @@ package nl.nn.adapterframework.core;
  */
 public interface HasPhysicalDestination {
 	public String getPhysicalDestinationName();
+	public String getDomain();
 }

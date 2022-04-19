@@ -6,7 +6,7 @@
 	<!--
 		This XSLT adjusts the IBIS configuration as follows:
 		- disable all receiver elements, except those with childs JdbcQueryListener, DirectoryListener, JavaListener, WebServiceListener and RestListener
-		- add a default receiver (name="testtool-[adapter name]") with a child JavaListener (serviceName="testtool-[adapter name]") to each adapter (and copy all attributes (except transactionAttribute), errorStorage and messageLog from disabled receiver when present)
+		- add a default receiver (name="testtool-[adapter name]") with a child JavaListener (serviceName="testtool-[adapter name]") to each adapter (and copy all attributes (except transactionAttribute=Mandatory, this is replaced with Required), errorStorage and messageLog from disabled receiver when present)
 		- disable all listener elements which have a parent pipe
 		- stub all sender elements, which have a parent pipe, by an IbisJavaSender (serviceName="testtool-[pipe name]"), except the ResultSet2FileSender, DirectQuerySender, FixedQuerySender, XmlQuerySender, DelaySender, EchoSender, IbisLocalSender, LogSender, ParallelSenders, SenderSeries, SenderWrapper, XsltSender, CommandSender, FixedResultSender, FileSender, JavascriptSender, MessageStoreSender and ZipWriterSender
 		- disable all elements sapSystems
@@ -63,6 +63,7 @@
 			<xsl:attribute name="name">
 				<xsl:value-of select="$receiverName" />
 			</xsl:attribute>
+			<xsl:apply-templates select="$baseReceiver/@transactionAttribute" mode="stub"/>
 			<xsl:apply-templates select="$baseReceiver/@*[local-name()!='transactionAttribute' and local-name()!='name']" />
 			<xsl:element name="listener">
 				<xsl:attribute name="className">nl.nn.adapterframework.receivers.JavaListener</xsl:attribute>
@@ -90,6 +91,7 @@
 			<xsl:attribute name="name">
 				<xsl:value-of select="$receiverName" />
 			</xsl:attribute>
+			<xsl:apply-templates select="@transactionAttribute" mode="stub"/>
 			<xsl:apply-templates select="@*[name()!='transactionAttribute' and name()!='name']" />
 			<xsl:element name="listener">
 				<xsl:attribute name="className">nl.nn.adapterframework.receivers.JavaListener</xsl:attribute>
@@ -128,6 +130,12 @@
 				</xsl:for-each>
 			</xsl:element>
 		</xsl:if>
+	</xsl:template>
+	
+	<xsl:template match="receiver/@transactionAttribute" mode="stub">
+		<xsl:attribute name="transactionAttribute">
+			<xsl:value-of select="if (.='Mandatory') then 'Required' else ."/>
+		</xsl:attribute>
 	</xsl:template>
 	
 	<!-- All senders are stubbed except those in the list below -->

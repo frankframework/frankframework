@@ -20,6 +20,7 @@
 		'ngSanitize',                   // ngSanitize
 	]).constant("properties", {
 		"server": server,
+		"version": null
 	});
 	console.timeEnd("startup");
 })();
@@ -73,6 +74,7 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 							if($scope.showInheritance) {
 								el = $scope.flattenElements(el);
 							}
+							$state.element = el;
 							$rootScope.$broadcast('element', el);
 						}
 					}
@@ -95,17 +97,43 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 		}
 		if(!elements || elements.length < 1 || !$scope.group) return []; //Cannot filter elements if no group has been selected
 		let r = {};
+		let matchedParents = {}; // cache matched parents
+		let noMatchParents = {}; // cache no match parents
 		let groupMembers = getGroupMembers($scope.types, $scope.group.types);
-		for(element in elements) {
-			if(groupMembers.indexOf(element) > -1) {
-				let obj = elements[element];
-				if(searchTextLC) {
-					if(JSON.stringify(obj).replace(/"/g, '').toLowerCase().indexOf(searchTextLC) > -1) {
-						r[element] = obj;
-					}
-				} else {
+		for(i in groupMembers) {
+			let element = groupMembers[i];
+			let obj = elements[element];
+			let parentStack = [];
+			if(searchTextLC) {
+				if(JSON.stringify(obj).replace(/"/g, '').toLowerCase().indexOf(searchTextLC) > -1) {
 					r[element] = obj;
+				} else { // search in parent (accessing children is an expensive operation)
+					let elementParent = elements[element].parent;
+					while(elementParent) {
+						parentStack.push(elementParent); // keep list of unmatched parents 
+						if(matchedParents[elementParent]) { // if parent matched already leave the loop
+							r[element] = obj;
+							break;
+						} else if(noMatchParents[elementParent]) { // if parent has no match leave the loop
+							break;
+						}
+						let parentObj = elements[elementParent];
+						if(JSON.stringify(parentObj).replace(/"/g, '').toLowerCase().indexOf(searchTextLC) > -1) {
+							r[element] = obj;
+							matchedParents[elementParent] = true;
+							break;
+						}
+						if(!elements[elementParent].parent){
+							for(let t of parentStack){
+								noMatchParents[t] = true;
+							}
+							break;
+						}
+						elementParent = elements[elementParent].parent;
+					}
 				}
+			} else {
+				r[element] = obj;
 			}
 		}
 		return r;
@@ -130,7 +158,7 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 					if(nameOrAlias.length == 2) {
 						return nameOrAlias[1]; //If it's an alias
 					}
-					return method.substring(1, method.indexOf("("))
+					return method.substring(1, method.indexOf("("));
 				}
 			}
 			let captures = referencedElement.split(" ");

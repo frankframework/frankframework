@@ -53,8 +53,8 @@ import nl.nn.adapterframework.util.SpringUtils;
 public class LoadDatabaseSchedulesJob extends JobDef {
 
 	@Override
-	public void execute(IbisManager ibisManager) {
-		Map<JobKey, IbisJobDetail> databaseJobDetails = new HashMap<JobKey, IbisJobDetail>();
+	public void execute() {
+		Map<JobKey, IbisJobDetail> databaseJobDetails = new HashMap<>();
 		Scheduler scheduler = null;
 		SchedulerHelper sh = getApplicationContext().getBean(SchedulerHelper.class);
 		try {
@@ -83,6 +83,7 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 			try (Connection conn = qs.getConnection()) {
 				try (PreparedStatement stmt = conn.prepareStatement("SELECT JOBNAME,JOBGROUP,ADAPTER,RECEIVER,CRON,EXECUTIONINTERVAL,MESSAGE,LOCKER,LOCK_KEY FROM IBISSCHEDULES")) {
 					try (ResultSet rs = stmt.executeQuery()) {
+						IbisManager ibisManager = getIbisManager();
 						while(rs.next()) {
 							String jobName = rs.getString("JOBNAME");
 							String jobGroup = rs.getString("JOBGROUP");

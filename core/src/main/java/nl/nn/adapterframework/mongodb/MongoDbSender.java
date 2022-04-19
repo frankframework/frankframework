@@ -88,6 +88,7 @@ import nl.nn.adapterframework.util.StringResolver;
  */
 public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDestination {
 
+	private final @Getter(onMethod = @__(@Override)) String domain = "Mongo";
 	public final String PARAM_DATABASE="database";
 	public final String PARAM_COLLECTION="collection";
 	public final String PARAM_FILTER="filter";
@@ -356,7 +357,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 			filterSpec = Message.isEmpty(message) ? "" : message.asString();
 		}
 		if (filterSpec.contains(NAMED_PARAM_START) && filterSpec.contains(NAMED_PARAM_END)) {
-			filterSpec = StringResolver.substVars(filterSpec, pvl.getValueMap(), null, null, NAMED_PARAM_START, NAMED_PARAM_END);
+			filterSpec = StringResolver.substVars(filterSpec, pvl.getValueMap(), null, (List)null, NAMED_PARAM_START, NAMED_PARAM_END);
 		}
 		return getDocument(filterSpec);
 	}

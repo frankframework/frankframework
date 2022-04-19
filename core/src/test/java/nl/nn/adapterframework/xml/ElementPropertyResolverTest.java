@@ -7,6 +7,7 @@ import java.util.Properties;
 
 import org.junit.Test;
 
+import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -32,8 +33,9 @@ public class ElementPropertyResolverTest {
 		Properties properties = new Properties();
 		properties.load(propsURL.openStream());
 
-		ElementPropertyResolver filter = new ElementPropertyResolver(properties);
+		XmlWriter writer = new XmlWriter();
+		ElementPropertyResolver filter = new ElementPropertyResolver(writer, properties);
 		XmlUtils.parseXml(input, filter);
-		TestAssertions.assertEqualsIgnoreCRLF(expected, filter.toString());
+		MatchUtils.assertXmlEquals(expected, writer.toString());
 	}
 }

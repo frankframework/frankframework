@@ -50,6 +50,7 @@ import nl.nn.adapterframework.util.AppConstants;
  */
 public class ApiListener extends PushingListenerAdapter implements HasPhysicalDestination, ReceiverAware<String> {
 
+	private final @Getter(onMethod = @__(@Override)) String domain = "Http";
 	private @Getter String uriPattern;
 	private @Getter boolean updateEtag = true;
 	private @Getter String operationId;
@@ -217,7 +218,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	/** 
-	 * The specified contentType on response. When <code<ANY</code> the response will determine the content type based on the return data.
+	 * The specified contentType on response. When <code>ANY</code> the response will determine the content type based on the return data.
 	 * @ff.default ANY
 	 */
 	public void setProduces(MediaTypes value) {

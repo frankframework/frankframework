@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,6 +26,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.DefaultHandler2;
+
+import nl.nn.adapterframework.validation.XmlValidatorErrorHandler.ReasonType;
 
 /**
  * SAX ContentHandler used during XML validation for some additional validation
@@ -91,7 +93,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 					if (StringUtils.isEmpty(validElements)) {
 						String message = "Illegal element '" + lName + "'. No element expected.";
 						if (xmlValidatorErrorHandler != null) {
-							xmlValidatorErrorHandler.addReason(message, null, null);
+							xmlValidatorErrorHandler.addReason(message, null, null, ReasonType.ERROR);
 						} else {
 							throw new IllegalRootElementException(message);
 						}
@@ -101,7 +103,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 							if (rootElementsFound.contains(rootValidation)) {
 								String message = "Element(s) '" + lName + "' should occur only once.";
 								if (xmlValidatorErrorHandler != null) {
-									xmlValidatorErrorHandler.addReason(message, null, null);
+									xmlValidatorErrorHandler.addReason(message, null, null, ReasonType.ERROR);
 								} else {
 									throw new IllegalRootElementException(message);
 								}
@@ -112,7 +114,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 									if (invalidNamespaces != null && invalidNamespaces.contains(namespaceURI)) {
 										message = "Invalid namespace '" + namespaceURI + "' for element '" + lName + "'";
 										if (xmlValidatorErrorHandler != null) {
-											xmlValidatorErrorHandler.addReason(message, null, null);
+											xmlValidatorErrorHandler.addReason(message, null, null, ReasonType.ERROR);
 										} else {
 											throw new UnknownNamespaceException(message);
 										}
@@ -123,7 +125,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 						} else {
 							String message = "Illegal element '" + lName + "'. Element(s) '" + validElements + "' expected.";
 							if (xmlValidatorErrorHandler != null) {
-								xmlValidatorErrorHandler.addReason(message, null, null);
+								xmlValidatorErrorHandler.addReason(message, null, null, ReasonType.ERROR);
 							} else {
 								throw new IllegalRootElementException(message);
 							}
@@ -154,7 +156,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 				if (!validLastElementsAsList.contains("") && !rootElementsFound.contains(rootValidation)) {
 					String message = "Element(s) '" + validLastElements + "' not found";
 					if (xmlValidatorErrorHandler != null) {
-						xmlValidatorErrorHandler.addReason(message, getXpath(path.subList(0, path.size() - 1)), null);
+						xmlValidatorErrorHandler.addReason(message, getXpath(path.subList(0, path.size() - 1)), null, ReasonType.ERROR);
 					} else {
 						throw new IllegalRootElementException(message);
 					}
@@ -178,7 +180,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 						message = message + " (maximum number of namespace warnings reached)";
 					}
 					if (xmlValidatorErrorHandler != null) {
-						xmlValidatorErrorHandler.addReason(message, null, null);
+						xmlValidatorErrorHandler.addReason(message, null, null, ReasonType.ERROR);
 					} else {
 						throw new UnknownNamespaceException(message);
 					}

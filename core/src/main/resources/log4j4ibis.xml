@@ -86,6 +86,7 @@
 
 	<Loggers>
 		<Logger name="liquibase" level="INFO" />
+		<Logger name="nl.nn.adapterframework.jdbc.migration.LiquibaseXmlChangeLogParser" level="INFO" /> <!-- to avoid stacktraces in DEBUG mode about "Cannot enable ACCESS_EXTERNAL_SCHEMA" -->
 		<Logger name="nl.nn.adapterframework.testtool" level="WARN" />
 		<Logger name="org.apache" level="INFO" />
 		<Logger name="org.apache.commons" level="WARN" />
@@ -98,6 +99,7 @@
 		<Logger name="org.mongodb" level="INFO" />
 		<Logger name="org.quartz" level="WARN" />
 		<Logger name="nl.nn.adapterframework.configuration.digester" level="WARN" />
+		<Logger name="microsoft.exchange" level="INFO" />
 
 		<Logger name="liquibase.migrationLog" level="INFO">
 			<AppenderRef ref="stdout"/>

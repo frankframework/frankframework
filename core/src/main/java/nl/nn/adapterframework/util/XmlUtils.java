@@ -104,6 +104,7 @@ import nl.nn.adapterframework.util.TransformerPool.OutputType;
 import nl.nn.adapterframework.validation.RootValidations;
 import nl.nn.adapterframework.validation.XmlValidatorContentHandler;
 import nl.nn.adapterframework.validation.XmlValidatorErrorHandler;
+import nl.nn.adapterframework.xml.BodyOnlyFilter;
 import nl.nn.adapterframework.xml.CanonicalizeFilter;
 import nl.nn.adapterframework.xml.ClassLoaderEntityResolver;
 import nl.nn.adapterframework.xml.NonResolvingExternalEntityResolver;
@@ -119,7 +120,7 @@ import nl.nn.adapterframework.xml.XmlWriter;
 public class XmlUtils {
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
-	public static final int DEFAULT_XSLT_VERSION = 2;
+	public static final int DEFAULT_XSLT_VERSION = AppConstants.getInstance().getInt("xslt.version.default", 2);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
 	static final String JAXP_SCHEMA_LANGUAGE = "http://java.sun.com/xml/jaxp/properties/schemaLanguage";
@@ -211,14 +212,18 @@ public class XmlUtils {
 		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
 			+ "<xsl:output method=\"text\"/>"
-			+ "<xsl:template match=\"/\">"
-			+ "<xsl:for-each select=\"/xsl:stylesheet/@*\">"
-			+ "<xsl:value-of select=\"concat('stylesheet-',name(),'=',.,';')\"/>"
-			+ "</xsl:for-each>"
-			+ "<xsl:for-each select=\"/xsl:stylesheet/xsl:output/@*\">"
-			+ "<xsl:value-of select=\"concat('output-',name(),'=',.,';')\"/>"
-			+ "</xsl:for-each>"
-			+ "</xsl:template>"
+			+ 	"<xsl:template match=\"/\">"
+			+ 		"<xsl:for-each select=\"/xsl:stylesheet/@*\">"
+			+ 			"<xsl:value-of select=\"concat('stylesheet-',name(),'=',.,';')\"/>"
+			+ 		"</xsl:for-each>"
+			+ 		"<xsl:for-each select=\"/xsl:stylesheet/xsl:output/@*\">"
+			+ 			"<xsl:value-of select=\"concat('output-',name(),'=',.,';')\"/>"
+			+ 		"</xsl:for-each>"
+			+ 		"disable-output-escaping=<xsl:choose>"
+			+ 				"<xsl:when test=\"//*[@disable-output-escaping='yes']\">yes</xsl:when>"
+			+ 				"<xsl:otherwise>no</xsl:otherwise>"
+			+ 			"</xsl:choose>;"
+			+ 	"</xsl:template>"
 			+ "</xsl:stylesheet>";
 	}
 
@@ -484,6 +489,15 @@ public class XmlUtils {
 
 	public static void parseXml(String source, ContentHandler handler) throws IOException, SAXException {
 		parseXml(Message.asInputSource(source),handler);
+	}
+	
+	/**
+	 * like {@link #parseXml(String source, ContentHandler handler)}, but skips startDocument() and endDocument().
+	 * Can be used to parse a string and inject its events in an existing SAX event stream.
+	 */
+	public static void parseNodeSet(String source, ContentHandler handler) throws IOException, SAXException {
+		ContentHandler filter = new BodyOnlyFilter(handler);
+		parseXml("<nodesetRoot>"+source+"</nodesetRoot>", filter);
 	}
 
 	public static void parseXml(InputSource inputSource, ContentHandler handler) throws IOException, SAXException {
@@ -833,10 +847,6 @@ public class XmlUtils {
 
 		String namespaceClause = getNamespaceClause(namespaceDefs);
 
-		//xslt version 1 ignores namespaces by default, setting this to true will generate a different non-xslt1-parsable xslt
-		if(xsltVersion == 1 && ignoreNamespaces)
-			ignoreNamespaces = false;
-
 		final String copyMethod;
 		if (outputMethod == OutputType.XML) {
 			copyMethod = "copy-of";
@@ -855,6 +865,11 @@ public class XmlUtils {
 			separatorString = " separator=\"" + separator + "\"";
 		}
 		int version = (xsltVersion == 0) ? DEFAULT_XSLT_VERSION : xsltVersion;
+
+		//xslt version 1 ignores namespaces by default, setting this to true will generate a different non-xslt1-parsable xslt
+		if(version == 1 && ignoreNamespaces) {
+			ignoreNamespaces = false;
+		}
 
 		String xsl =
 			// "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +

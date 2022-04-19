@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package nl.nn.credentialprovider;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.LinkedList;
+import java.util.List;
 
 import nl.nn.credentialprovider.util.AppConstants;
 import nl.nn.credentialprovider.util.Misc;
@@ -27,7 +29,7 @@ public class FileSystemCredentialFactory implements ICredentialFactory {
 	public final String FILESYSTEM_ROOT_PROPERTY="credentialFactory.filesystem.root";
 	public final String USERNAME_FILE_PROPERTY="credentialFactory.filesystem.usernamefile";
 	public final String PASSWORD_FILE_PROPERTY="credentialFactory.filesystem.passwordfile";
-	
+
 	public final String FILESYSTEM_ROOT_DEFAULT="/etc/secrets";
 	public static final String USERNAME_FILE_DEFAULT="username";
 	public static final String PASSWORD_FILE_DEFAULT="password";
@@ -35,7 +37,7 @@ public class FileSystemCredentialFactory implements ICredentialFactory {
 	private Path root;
 	private String usernamefile;
 	private String passwordfile;
-	
+
 	@Override
 	public void initialize() {
 		AppConstants appConstants = AppConstants.getInstance();
@@ -44,11 +46,11 @@ public class FileSystemCredentialFactory implements ICredentialFactory {
 			throw new IllegalStateException("No property ["+FILESYSTEM_ROOT_PROPERTY+"] found");
 		}
 		this.root = Paths.get(fsroot);
-		
+
 		if (!Files.exists(root)) {
 			throw new IllegalArgumentException("Credential Filesystem ["+root+"] does not exist");
 		}
-		
+
 		usernamefile = appConstants.getProperty(USERNAME_FILE_PROPERTY, USERNAME_FILE_DEFAULT);
 		passwordfile = appConstants.getProperty(PASSWORD_FILE_PROPERTY, PASSWORD_FILE_DEFAULT);
 	}
@@ -63,5 +65,10 @@ public class FileSystemCredentialFactory implements ICredentialFactory {
 		return new FileSystemCredentials(alias, defaultUsername, defaultPassword, usernamefile, passwordfile, root);
 	}
 
-
+	@Override
+	public List<String> getConfiguredAliases() throws Exception{
+		List<String> aliases = new LinkedList<>();
+		Files.list(Paths.get(root.toString())).forEach(p->aliases.add(p.getFileName().toString()));
+		return aliases;
+	}
 }

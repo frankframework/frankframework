@@ -163,6 +163,30 @@ angular.module('iaf.beheerconsole')
 	}
 })
 
+.directive('flow', ['Misc', '$http', function(Misc, $http) {
+	return {
+		restrict: 'E',
+		transclude: true,
+		scope: {
+			adapter: '='
+		},
+		link: function(scope) {
+			let adapter = scope.adapter;
+			let uri = Misc.getServerPath() + 'iaf/api/adapters/' + Misc.escapeURL(adapter.name) + "/flow?"+adapter.upSince;
+			scope.flow = {};
+			$http.get(uri).then(function(data) {
+				let status = (data && data.status) ? data.status : 204;
+				if(status == 200) {
+					scope.flow.url = uri; //Display the flow url
+				} else {
+					scope.flow.url = 'images/no_image_available.svg'
+				}
+			});
+		},
+		template: '<a ng-href="{{flow.url}}" target="_blank"><img ng-src="{{flow.url}}" alt="Flow diagram"></a>'
+	}
+}])
+
 .directive('timeSince', ['appConstants', '$interval', function(appConstants, $interval) {
 	return {
 		restrict: 'A',

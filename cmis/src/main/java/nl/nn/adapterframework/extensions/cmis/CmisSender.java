@@ -245,8 +245,8 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 			ConfigurationWarnings.add(this, log, "the use of Base64 is deprecated. Please use attribute [fileSessionKey] or set property [CmisSender.Base64FileContent] to false");
 		}
 
-		if (getAction().equals("create") && StringUtils.isEmpty(getFileSessionKey())) {
-			throw new ConfigurationException("fileSessionKey should be specified");
+		if (getAction().equals("create")){
+			checkStringAttributeOrParameter("fileSessionKey", getFileSessionKey(), "fileSessionKey");
 		}
 
 		if (getAction().equals("get") && isGetProperties() && isGetDocumentContent() && StringUtils.isEmpty(getFileSessionKey())) {
@@ -361,7 +361,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 				case GET:
 					return sendMessageForActionGet(cmisSession, message, session, pvl);
 				case CREATE:
-					return sendMessageForActionCreate(cmisSession, message, session);
+					return sendMessageForActionCreate(cmisSession, message, session, pvl);
 				case DELETE:
 					return sendMessageForActionDelete(cmisSession, message, session);
 				case FIND:
@@ -481,10 +481,10 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		}
 	}
 
-	private Message sendMessageForActionCreate(Session cmisSession, Message message, PipeLineSession session) throws SenderException {
+	private Message sendMessageForActionCreate(Session cmisSession, Message message, PipeLineSession session, ParameterValueList pvl) throws SenderException {
 		String fileName = null;
 		try {
-			fileName = session.getMessage(getFilenameSessionKey()).asString();
+			fileName = session.getMessage( getParameterOverriddenAttributeValue(pvl, "filenameSessionKey", getFilenameSessionKey()) ).asString();
 		} catch (IOException e) {
 			throw new SenderException("Unable to get filename from session key ["+getFilenameSessionKey()+"]", e);
 		}
@@ -531,7 +531,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 
 		ContentStream contentStream;
 		try {
-			Message inputFromSessionKey = session.getMessage(getFileSessionKey());
+			Message inputFromSessionKey = session.getMessage( getParameterOverriddenAttributeValue(pvl, "fileSessionKey", getFileSessionKey()) );
 
 			if(convert2Base64 && inputFromSessionKey.asObject() instanceof String) {
 				inputFromSessionKey = new Message(Base64.decodeBase64(inputFromSessionKey.asByteArray()));

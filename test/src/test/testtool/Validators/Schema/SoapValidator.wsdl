@@ -574,7 +574,7 @@
 	<wsdl:binding name="Binding_SoapValidator" type="tns:PortType_SoapValidator">
 		<soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
 		<wsdl:operation name="Operation___wsdl.SoapValidator.listener_of__WebServiceListener_.soapAction_">
-			<soap:operation style="document" soapAction="${wsdl.SoapValidator.listener of [WebServiceListener].soapAction}"/>
+			<soap:operation style="document"/>
 			<wsdl:input>
 				<soap:body parts="Part_Item_Request" use="literal"/>
 			</wsdl:input>

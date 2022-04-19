@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@ public class MessageEncoder extends MessageEncoderImpl {
 						} catch (IOException e) {
 							return super.toString(e, null);
 						}
-					} 
+					}
 					StringWriter writer = new StringWriter();
 					try (Reader reader = m.asReader()){
 						m.toStringPrefix(writer);
@@ -83,17 +83,13 @@ public class MessageEncoder extends MessageEncoderImpl {
 
 	@Override
 	@SneakyThrows
-	@SuppressWarnings("unchecked")
 	public <T> T toObject(Checkpoint originalCheckpoint, T messageToStub) {
 		if (messageToStub instanceof Message) {
 			// In case a stream is stubbed the replaced stream needs to be closed as next pipe will read and close the
 			// stub which would leave the replaced stream unclosed
-			Object object = ((Message)messageToStub).asObject();
-			if (object instanceof AutoCloseable) {
-				((AutoCloseable)object).close();
-			}
+			((Message)messageToStub).close();
 		}
-		return (T)toObject(originalCheckpoint);
+		return super.toObject(originalCheckpoint, messageToStub);
 	}
 
 }

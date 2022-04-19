@@ -20,13 +20,13 @@ import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
 
-public class UrlMessage  extends Message {
+public class UrlMessage extends Message {
 
 	public UrlMessage(URL url) {
 		this(url, new MessageContext());
 	}
 
 	public UrlMessage(URL url, Map<String,Object> context) {
-		super(() -> url.openStream(),  new MessageContext(context).withName(FilenameUtils.getName(url.toString())).withLocation(url.toString()), url.getClass());
+		super(url::openStream, new MessageContext(context).withName(FilenameUtils.getName(url.toString())).withLocation(url.toString()), url.getClass());
 	}
 }

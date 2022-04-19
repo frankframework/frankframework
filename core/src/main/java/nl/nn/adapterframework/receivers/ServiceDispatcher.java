@@ -91,9 +91,9 @@ public class ServiceDispatcher  {
 	 */
 	public Iterator<String> getRegisteredListenerNames() {
 		SortedSet<String> sortedKeys = new TreeSet<String>(registeredListeners.keySet());
-		return sortedKeys.iterator(); 
+		return sortedKeys.iterator();
 	}
-	
+
 	/**
 	 * Check whether a serviceName is registered at the <code>ServiceDispatcher</code>.
 	 * @return true if the service is registered at this dispatcher, otherwise false

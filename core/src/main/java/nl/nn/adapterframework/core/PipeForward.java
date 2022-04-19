@@ -18,6 +18,7 @@ package nl.nn.adapterframework.core;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import lombok.Getter;
+import nl.nn.adapterframework.doc.Mandatory;
 
 /**
  * Bean that knows a functional name of a Forward, to be referred by
@@ -26,7 +27,8 @@ import lombok.Getter;
  * The <code>name</code> is the name which a Pipe may lookup to return
  * to the PipeLine, indicating the next pipe to be executed. (this is done
  * in the {@link nl.nn.adapterframework.pipes.AbstractPipe#findForward(String) findForward()}-method. The actual
- * pipeName is defined in the <code>path</code> property.<br/><br/>
+ * pipeName is defined in the <code>path</code> property. The <code>path</code> property
+ * can also reference an {@link PipeLineExit Exit} when no other pipe should execute.<br/><br/> 
  * In this manner it is possible to influence the flow through the pipeline
  * without affecting the Java-code. Simply change the forwarding-XML.<br/>
  *
@@ -54,13 +56,16 @@ public class PipeForward {
 	/**
 	 * the <code>name</code> is a symbolic reference to a <code>path</code>.<br/>
 	 */
+	@Mandatory
 	public void setName(String name) {
 		this.name = name;
 	}
 
 	/**
-	 * The path is the name of the Pipe to execute/store
+	 * The name of the next Pipe or Exit. When the Pipeline doesn't have an Exits element configured it will be
+	 * initialized with one Exit having name READY and state SUCCESS
 	 */
+	@Mandatory
 	public void setPath(String path) {
 		this.path = path;
 	}

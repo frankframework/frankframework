@@ -1,5 +1,6 @@
 package nl.nn.credentialprovider;
 
+import java.util.Collection;
 import java.util.HashMap;
 
 public class MockCredentialFactory extends HashMap<String,Credentials> implements ICredentialFactory {
@@ -22,5 +23,10 @@ public class MockCredentialFactory extends HashMap<String,Credentials> implement
 
 	public void add(String alias, String username, String password) {
 		put(alias, new Credentials(alias, username, password));
+	}
+
+	@Override
+	public Collection<String> getConfiguredAliases() throws Exception {
+		return keySet();
 	}
 }

@@ -31,6 +31,7 @@ import nl.nn.adapterframework.cache.ICache;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.pipes.AbstractPipe;
@@ -55,8 +56,8 @@ import nl.nn.adapterframework.util.Misc;
  * <br/>
  * In the AppConstants there may be a property named "log.logIntermediaryResults" (true/false)
  * which indicates whether the intermediary results (between calling pipes) have to be logged.
- * *
- * <p><b>Transaction control</b><br>
+ * <br/><br/>
+ * <b>Transaction control</b><br>
  * THE FOLLOWING TO BE UPDATED, attribute 'transacted' replaced by 'transactionAttribute'
  *
  * If {@link #setTransacted(boolean) transacted} is set to <code>true</code>, messages will be processed
@@ -91,6 +92,9 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	public final static String OUTPUT_VALIDATOR_NAME = "- pipeline outputValidator";
 	public final static String INPUT_WRAPPER_NAME    = "- pipeline inputWrapper";
 	public final static String OUTPUT_WRAPPER_NAME   = "- pipeline outputWrapper";
+
+	// If you edit this default exit, please update the JavaDoc of class PipeLineExits as well.
+	private final String DEFAULT_SUCCESS_EXIT_NAME = "READY";
 
 	private @Getter String firstPipe;
 	private @Getter int maxThreads = 0;
@@ -160,6 +164,14 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		if (cache != null) {
 			cache.configure(owner.getName() + "-Pipeline");
 		}
+		if (pipeLineExits.size() < 1) {
+			// if no Exits are configured, then insert a default one, named 'READY', with state 'SUCCESS'
+			PipeLineExit defaultExit = new PipeLineExit();
+			defaultExit.setName(DEFAULT_SUCCESS_EXIT_NAME);
+			defaultExit.setState(ExitState.SUCCESS);
+			registerPipeLineExit(defaultExit);
+			log.debug("Created default Exit named ["+defaultExit.getName()+"], state ["+defaultExit.getState()+"]");
+		}
 		for (int i=0; i < pipes.size(); i++) {
 			IPipe pipe = getPipe(i);
 
@@ -174,7 +186,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 			if (pipe instanceof FixedForwardPipe) {
 				FixedForwardPipe ffpipe = (FixedForwardPipe)pipe;
-				// getSuccessForward will return null since it has not been set. See below configure(pipe)
+				// getSuccessForward will return null if it has not been set. See below configure(pipe)
 				if (ffpipe.findForward(PipeForward.SUCCESS_FORWARD_NAME) == null) {
 					int i2 = i + 1;
 					if (i2 < pipes.size()) {
@@ -186,18 +198,19 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 					} else {
 						PipeLineExit plexit = findExitByState(ExitState.SUCCESS);
 						if (plexit != null) {
+							// if there is no success exit, then appearantly only error exits are configured; Just get the first configured one
+							plexit = pipeLineExits.values().iterator().next();
+						}
+						if (plexit != null) {
 							PipeForward pf = new PipeForward();
 							pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
-							pf.setPath(plexit.getPath());
+							pf.setPath(plexit.getName());
 							pipe.registerForward(pf);
 						}
 					}
 				}
 			}
 			configure(pipe);
-		}
-		if (pipeLineExits.size() < 1) {
-			throw new ConfigurationException("no PipeLine Exits specified");
 		}
 		if (pipes.isEmpty()) {
 			throw new ConfigurationException("no Pipes in PipeLine");
@@ -355,7 +368,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	}
 
 	@Override
-	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
+	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
 		Object pipeStatsData = hski.openGroup(data, null, "pipeStats");
 		handlePipeStat(getInputValidator(),pipeStatistics,pipeStatsData, hski, true, action);
 		handlePipeStat(getOutputValidator(),pipeStatistics,pipeStatsData, hski, true, action);
@@ -407,7 +420,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		hski.closeGroup(sizeStatsData);
 	}
 
-	private void handlePipeStat(INamedObject pipe, Map<String, StatisticsKeeper> pipelineStatistics, Object pipeStatsData, StatisticsKeeperIterationHandler handler, boolean deep, int action) throws SenderException {
+	private void handlePipeStat(INamedObject pipe, Map<String, StatisticsKeeper> pipelineStatistics, Object pipeStatsData, StatisticsKeeperIterationHandler handler, boolean deep, Action action) throws SenderException {
 		if (pipe == null) {
 			return;
 		}
@@ -612,9 +625,9 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		for (int i=0; i<pipes.size(); i++) {
 			result+="pipe"+i+"=["+getPipe(i).getName()+"]";
 		}
-		for (String exitPath : pipeLineExits.keySet()) {
-			PipeLineExit pe = pipeLineExits.get(exitPath);
-			result += "[path:" + pe.getPath() + " state:" + pe.getState() + "]";
+		for (String exitName : pipeLineExits.keySet()) {
+			PipeLineExit pe = pipeLineExits.get(exitName);
+			result += "[name:" + pe.getName() + " state:" + pe.getState() + "]";
 		}
 		return result;
 	}
@@ -640,10 +653,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		this.outputWrapper = outputWrapper;
 	}
 
-	/** 
-	 * PipeLine exits.
-	 * @ff.mandatory
-	 */
+	@IbisDoc({ "PipeLine exits. If no exits are specified, a default one is created with name=\""+DEFAULT_SUCCESS_EXIT_NAME+"\" and state=\"SUCCESS\""})
 	public void setPipeLineExits(PipeLineExits exits) {
 		for(PipeLineExit exit:exits.getExits()) {
 			registerPipeLineExit(exit);
@@ -652,11 +662,11 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	/** 
 	 * PipeLine exits.
-	 * @ff.deprecated
 	 */
+	@Deprecated
 	public void registerPipeLineExit(PipeLineExit exit) {
-		if (pipeLineExits.containsKey(exit.getPath())) {
-			ConfigurationWarnings.add(this, log, "exit named ["+exit.getPath()+"] already exists");
+		if (pipeLineExits.containsKey(exit.getName())) {
+			ConfigurationWarnings.add(this, log, "exit named ["+exit.getName()+"] already exists");
 		}
 		if (exit.getExitCode()>0) {
 			for(PipeLineExit item: pipeLineExits.values()) {
@@ -666,7 +676,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 				}
 			}
 		}
-		pipeLineExits.put(exit.getPath(), exit);
+		pipeLineExits.put(exit.getName(), exit);
 	}
 
 	/** Global forwards */
@@ -740,7 +750,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	/** 
 	 * Name of the first pipe to execute when a message is to be processed
-	 * @ff.default <first pipe of the pipeline>" })
+	 * @ff.default first pipe of the pipeline
 	 */
 	public void setFirstPipe(String pipeName) {
 		firstPipe = pipeName;

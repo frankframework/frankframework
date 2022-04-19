@@ -20,6 +20,7 @@ import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.jdbc.datasource.DelegatingDataSource;
 
 import bitronix.tm.resource.jdbc.PoolingDataSource;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
@@ -44,7 +45,20 @@ public class BtmDataSourceFactory extends JndiDataSourceFactory implements Dispo
 
 	@Override
 	// implementation is necessary, because PoolingDataSource does not implement AutoCloseable
-	public void destroy() throws Exception {
-		objects.values().stream().filter(ds -> ds instanceof PoolingDataSource).forEach(ds -> ((PoolingDataSource)ds).close());
+	public synchronized void destroy() throws Exception {
+		for (DataSource dataSource : objects.values()) {
+			DataSource originalDataSource = getOriginalDataSource(dataSource);
+			if(originalDataSource instanceof PoolingDataSource) {
+				((PoolingDataSource) originalDataSource).close();
+			}
+		}
+		super.destroy();
+	}
+
+	private DataSource getOriginalDataSource(DataSource dataSource) {
+		if(dataSource instanceof DelegatingDataSource) {
+			return getOriginalDataSource(((DelegatingDataSource) dataSource).getTargetDataSource());
+		}
+		return dataSource;
 	}
 }

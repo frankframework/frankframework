@@ -15,7 +15,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
 public class TransactionManagerTest extends TransactionManagerTestBase {
 
 	protected void checkNumberOfLines(int expected) throws JdbcException, SQLException {
-		checkNumberOfLines(expected, "select count(*) from TEMP where TKEY = 1");
+		checkNumberOfLines(expected, "select count(*) from "+TEST_TABLE+" where TKEY = 1");
 	}
 	private void checkNumberOfLines(int expected, String query) throws JdbcException, SQLException {
 		String preparedQuery = dbmsSupport.prepareQueryTextForNonLockingRead(query);
@@ -27,16 +27,14 @@ public class TransactionManagerTest extends TransactionManagerTestBase {
 
 	@Test
 	public void testCommit() throws Exception {
-		JdbcUtil.executeStatement(connection, "DELETE FROM TEMP where TKEY=1");
+		JdbcUtil.executeStatement(connection, "DELETE FROM "+TEST_TABLE+" where TKEY=1");
 
 		TransactionStatus txStatus = txManager.getTransaction(getTxDef(TransactionDefinition.PROPAGATION_REQUIRED));
 
 		try (Connection txManagedConnection = getConnection()) {
 			checkNumberOfLines(0);
-			JdbcUtil.executeStatement(txManagedConnection, "INSERT INTO TEMP (tkey) VALUES (1)");
-//			checkNumberOfLines(0);			
+			JdbcUtil.executeStatement(txManagedConnection, "INSERT INTO "+TEST_TABLE+" (tkey) VALUES (1)");
 		}
-//		checkNumberOfLines(0);
 
 		txManager.commit(txStatus);
 
@@ -45,13 +43,13 @@ public class TransactionManagerTest extends TransactionManagerTestBase {
 
 	@Test
 	public void testRollback() throws Exception {
-		JdbcUtil.executeStatement(connection, "DELETE FROM TEMP where TKEY=1");
+		JdbcUtil.executeStatement(connection, "DELETE FROM "+TEST_TABLE+" where TKEY=1");
 
 		TransactionStatus txStatus = txManager.getTransaction(getTxDef(TransactionDefinition.PROPAGATION_REQUIRED));
 
 		try (Connection txManagedConnection = getConnection()) {
 			checkNumberOfLines(0);
-			JdbcUtil.executeStatement(txManagedConnection, "INSERT INTO TEMP (tkey) VALUES (1)");
+			JdbcUtil.executeStatement(txManagedConnection, "INSERT INTO "+TEST_TABLE+" (tkey) VALUES (1)");
 //			checkNumberOfLines(0);
 		}
 //		checkNumberOfLines(0);
@@ -63,33 +61,33 @@ public class TransactionManagerTest extends TransactionManagerTestBase {
 
 	@Test
 	public void testRequiresNew() throws Exception {
-		JdbcUtil.executeStatement(connection, "DELETE FROM TEMP where TKEY=1");
+		JdbcUtil.executeStatement(connection, "DELETE FROM "+TEST_TABLE+" where TKEY=1");
 		try (Connection txManagedConnection = getConnection()) {
 			checkNumberOfLines(0);
-			JdbcUtil.executeStatement(txManagedConnection, "INSERT INTO TEMP (tkey) VALUES (1)");
+			JdbcUtil.executeStatement(txManagedConnection, "INSERT INTO "+TEST_TABLE+" (tkey) VALUES (1)");
 		}
 
 		TransactionStatus txStatus1 = txManager.getTransaction(getTxDef(TransactionDefinition.PROPAGATION_REQUIRED));
 
 		try (Connection txManagedConnection = getConnection()) {
 			checkNumberOfLines(1);
-			JdbcUtil.executeStatement(txManagedConnection, "UPDATE TEMP SET TVARCHAR='tralala' WHERE tkey=1");
+			JdbcUtil.executeStatement(txManagedConnection, "UPDATE "+TEST_TABLE+" SET TVARCHAR='tralala' WHERE tkey=1");
 		}
 
 		try (Connection txManagedConnection = getConnection()) {
-			JdbcUtil.executeStatement(txManagedConnection, "SELECT TVARCHAR FROM TEMP WHERE tkey=1");
+			JdbcUtil.executeStatement(txManagedConnection, "SELECT TVARCHAR FROM "+TEST_TABLE+" WHERE tkey=1");
 		}
 		checkNumberOfLines(1);
 
 		TransactionStatus txStatus2 = txManager.getTransaction(getTxDef(TransactionDefinition.PROPAGATION_REQUIRES_NEW));
 		try (Connection txManagedConnection = getConnection()) {
-			JdbcUtil.executeStatement(txManagedConnection, "INSERT INTO TEMP (tkey) VALUES (2)");
+			JdbcUtil.executeStatement(txManagedConnection, "INSERT INTO "+TEST_TABLE+" (tkey) VALUES (2)");
 		}
 
 		txManager.commit(txStatus2);
 		txManager.commit(txStatus1);
 
 		checkNumberOfLines(1);
-		checkNumberOfLines(1, "select count(*) from TEMP where TKEY = 2");
+		checkNumberOfLines(1, "select count(*) from "+TEST_TABLE+" where TKEY = 2");
 	}
 }

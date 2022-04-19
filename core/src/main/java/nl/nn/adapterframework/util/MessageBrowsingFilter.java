@@ -1,5 +1,5 @@
 /*
-Copyright 2021 WeAreFrank!
+Copyright 2021-2022 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -149,7 +149,7 @@ public class MessageBrowsingFilter {
 
 	public boolean matchMessage(IMessageBrowsingIteratorItem iterItem) throws ListenerException, IOException {
 		if(message != null) {
-			String msg = getRawMessage(storage, listener, iterItem.getId());
+			String msg = getMessageText(storage, listener, iterItem.getId());
 			if (!StringUtils.containsIgnoreCase(msg, message)) {
 				return false;
 			}
@@ -157,7 +157,7 @@ public class MessageBrowsingFilter {
 		return true;
 	}
 
-	private String getRawMessage(IMessageBrowser<?> messageBrowser, IListener listener, String messageId) throws IOException, ListenerException {
+	private String getMessageText(IMessageBrowser<?> messageBrowser, IListener listener, String messageId) throws IOException, ListenerException {
 		Object rawmsg = messageBrowser.browseMessage(messageId);
 
 		String msg = null;
@@ -167,7 +167,13 @@ public class MessageBrowsingFilter {
 					MessageWrapper<?> msgsgs = (MessageWrapper<?>) rawmsg;
 					msg = msgsgs.getMessage().asString();
 				} catch (IOException e) {
-					throw new ApiException(e, 500);
+					throw new ApiException(e);
+				}
+			} else if(rawmsg instanceof Message) { // For backwards compatibility: earlier MessageLog messages were stored as Message.
+				try {
+					msg = ((Message)rawmsg).asString();
+				} catch (IOException e) {
+					throw new ApiException(e);
 				}
 			} else {
 				if (listener!=null) {

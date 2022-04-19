@@ -1,5 +1,5 @@
 /*
-Copyright 2020, 2021 WeAreFrank!
+Copyright 2020-2022 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import java.sql.Types;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.apache.commons.codec.Charsets;
 import org.apache.commons.lang3.StringUtils;
 //import org.postgresql.largeobject.LargeObject;
 //import org.postgresql.largeobject.LargeObjectManager;
@@ -44,14 +43,14 @@ import nl.nn.adapterframework.util.StreamUtil;
 
 /**
 * Support for PostgreSQL.
-* 
+*
 * Limitations:
 *   PostgreSQL blobs and clobs are handled via byte arrays that are kept in memory. The maximum size of blobs and clobs is therefor limited by memory size.
 */
 public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 
 	private final boolean useLargeObjectFeature=false;
-	
+
 	@Override
 	public Dbms getDbms() {
 		return Dbms.POSTGRESQL;
@@ -86,11 +85,10 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 	}
 
 
-	
 //	private LargeObjectManager getLargeObjectManager(Statement stmt) throws SQLException {
 //		return stmt.getConnection().unwrap(org.postgresql.PGConnection.class).getLargeObjectAPI();
 //	}
-	
+
 	private Object createLob(Statement stmt) throws SQLException {
 		if (useLargeObjectFeature) {
 			throw new IllegalStateException("Handling BLOBs and CLOBs as LargeObjects not available");
@@ -111,7 +109,7 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 //		}
 		return (ByteArrayOutputStream)blobUpdateHandle;
 	}
-	
+
 	private void updateLob(ResultSet rs, int column, Object blobUpdateHandle, boolean binary) throws SQLException {
 		if (useLargeObjectFeature) {
 			rs.updateLong(column, (long)blobUpdateHandle);
@@ -120,7 +118,7 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 		if (binary) {
 			rs.updateBytes(column, (((ByteArrayOutputStream)blobUpdateHandle).toByteArray()));
 		} else {
-			rs.updateString(column, new String(((ByteArrayOutputStream)blobUpdateHandle).toByteArray(),Charsets.UTF_8));
+			rs.updateString(column, new String(((ByteArrayOutputStream)blobUpdateHandle).toByteArray(), StreamUtil.DEFAULT_CHARSET));
 		}
 	}
 	private void updateLob(ResultSet rs, String column, Object blobUpdateHandle, boolean binary) throws SQLException {
@@ -131,7 +129,7 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 		if (binary) {
 			rs.updateBytes(column, (((ByteArrayOutputStream)blobUpdateHandle).toByteArray()));
 		} else {
-			rs.updateString(column, new String(((ByteArrayOutputStream)blobUpdateHandle).toByteArray(),Charsets.UTF_8));
+			rs.updateString(column, new String(((ByteArrayOutputStream)blobUpdateHandle).toByteArray(), StreamUtil.DEFAULT_CHARSET));
 		}
 	}
 	private void updateLob(PreparedStatement stmt, int column, Object blobUpdateHandle, boolean binary) throws SQLException {
@@ -142,7 +140,7 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 		if (binary) {
 			stmt.setBytes(column, (((ByteArrayOutputStream)blobUpdateHandle).toByteArray()));
 		} else {
-			stmt.setString(column, new String(((ByteArrayOutputStream)blobUpdateHandle).toByteArray(),Charsets.UTF_8));
+			stmt.setString(column, new String(((ByteArrayOutputStream)blobUpdateHandle).toByteArray(), StreamUtil.DEFAULT_CHARSET));
 		}
 	}
 
@@ -155,7 +153,7 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 	public boolean isClobType(final ResultSetMetaData rsmeta, final int colNum) throws SQLException {
 		return rsmeta.getColumnType(colNum)==Types.VARCHAR && "text".equals(rsmeta.getColumnTypeName(colNum));
 	}
-	
+
 	@Override
 	public Reader getClobReader(ResultSet rs, int column) throws SQLException, JdbcException {
 		return rs.getCharacterStream(column);
@@ -220,7 +218,7 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 	public InputStream getBlobInputStream(ResultSet rs, String column) throws SQLException, JdbcException{
 		return rs.getBinaryStream(column);
 	}
-	
+
 	@Override
 	public Object getBlobHandle(ResultSet rs, int column) throws SQLException, JdbcException {
 		return createLob(rs.getStatement());
@@ -260,15 +258,24 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 		updateLob(stmt, column, blobHandle, true);
 	}
 
-	
 	@Override
-	public boolean isTablePresent(Connection conn, String tableName) throws JdbcException {
-		return doIsTablePresent(conn, "pg_catalog.pg_tables", "schemaname", "tablename", "public", tableName);
+	public String getSchema(Connection conn) throws JdbcException {
+		return JdbcUtil.executeStringQuery(conn, "SELECT CURRENT_SCHEMA()");
+	}
+
+	@Override
+	public ResultSet getTableColumns(Connection conn, String schemaName, String tableName, String columnNamePattern) throws JdbcException {
+		return super.getTableColumns(conn, schemaName, tableName.toLowerCase(), columnNamePattern!=null ? columnNamePattern.toLowerCase() : null);
+	}
+
+	@Override
+	public boolean isTablePresent(Connection conn, String schemaName, String tableName) throws JdbcException {
+		return super.isTablePresent(conn, schemaName, tableName.toLowerCase());
 	}
 
 	@Override
 	public boolean isColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException {
-		return doIsColumnPresent(conn, "information_schema.columns", "TABLE_SCHEMA", "TABLE_NAME", "COLUMN_NAME", schemaName!=null?schemaName:"public", tableName, columnName);
+		return super.isColumnPresent(conn, schemaName!=null?schemaName:"public", tableName.toLowerCase(), columnName.toLowerCase());
 	}
 
 	@Override
@@ -278,9 +285,8 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 		}
 		if (wait < 0) {
 			return selectQuery+(batchSize>0?" LIMIT "+batchSize:"")+" FOR UPDATE SKIP LOCKED";
-		} else {
-			throw new IllegalArgumentException(getDbms()+" does not support setting lock wait timeout in query");
 		}
+		throw new IllegalArgumentException(getDbms()+" does not support setting lock wait timeout in query");
 	}
 
 	@Override
@@ -290,9 +296,8 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 		}
 		if (wait < 0) {
 			return selectQuery+(batchSize>0?" LIMIT "+batchSize:"")+" FOR SHARE SKIP LOCKED"; // take shared lock, to be able to use 'skip locked'
-		} else {
-			throw new IllegalArgumentException(getDbms()+" does not support setting lock wait timeout in query");
 		}
+		throw new IllegalArgumentException(getDbms()+" does not support setting lock wait timeout in query");
 	}
 
 	// commented out prepareSessionForNonLockingRead(), see https://dev.mysql.com/doc/refman/8.0/en/innodb-consistent-read.html
@@ -306,7 +311,7 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 //			public void close() throws Exception {
 //				JdbcUtil.executeStatement(conn, "COMMIT");
 //			}
-//			
+//
 //		};
 //	}
 

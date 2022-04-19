@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021 WeAreFrank!
+   Copyright 2019, 2021-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import java.io.IOException;
 
 import org.apache.tika.Tika;
 import org.apache.tika.io.TikaInputStream;
-import org.apache.tika.mime.MediaType;
+import org.springframework.http.MediaType;
 
 import nl.nn.adapterframework.stream.Message;
 
@@ -48,7 +48,7 @@ class MediaTypeValidator {
 		message.preserve();
 		try (TikaInputStream tis = TikaInputStream.get(message.asInputStream())) {
 			String type = tika.detect(tis, filename);
-			return MediaType.parse(type);
+			return MediaType.valueOf(type);
 		}
 	}
 

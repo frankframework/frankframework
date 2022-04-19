@@ -486,10 +486,16 @@ public class ConfigurationUtilsTest extends Mockito {
 		String directory = STUB4TESTTOOL_DIRECTORY + "/Comments";
 		stub4testtoolTest(directory, false);
 	}
-	
+
 	@Test
 	public void stub4testtoolMultipleReceivers() throws Exception {
 		String directory = STUB4TESTTOOL_DIRECTORY + "/MultipleReceivers";
+		stub4testtoolTest(directory, false);
+	}
+
+	@Test
+	public void stub4testtoolReceiverTransactionAttribute() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/ReceiverTransactionAttribute";
 		stub4testtoolTest(directory, false);
 	}
 	
