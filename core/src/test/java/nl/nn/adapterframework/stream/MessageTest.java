@@ -42,6 +42,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.apache.commons.codec.binary.Hex;
+import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.w3c.dom.Document;
@@ -53,12 +54,14 @@ import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.SerializationTester;
 import nl.nn.adapterframework.testutil.TestAppender;
 import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.XmlWriter;
 import nl.nn.credentialprovider.util.Misc;
 
 public class MessageTest {
+	protected Logger log = LogUtil.getLogger(this);
 
 	private static final boolean TEST_CDATA = true;
 	private static final String CDATA_START = TEST_CDATA ? "<![CDATA[" : "";
@@ -89,7 +92,7 @@ public class MessageTest {
 			{ "7.7 2021-06-04", "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300044c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c00107265736f7572636573546f436c6f736574000f4c6a6176612f7574696c2f5365743b4c000e777261707065645265717565737471007e000278707400055554462d38757200025b42acf317f8060854e00200007870000000743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e707078" },
 			{ "7.7 2021-02-02", "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300024c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b78707400055554462d38757200025b42acf317f8060854e00200007870000000743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e78" },
 		};
-	
+
 	private SerializationTester<Message> serializationTester=new SerializationTester<Message>();
 
 	protected void testAsInputStream(Message message) throws IOException {
@@ -922,10 +925,10 @@ public class MessageTest {
 
 		for (int i=0; i< characterWires.length; i++) {
 			String label = characterWires[i][0];
-			System.out.println("testDeserializationCompatibilityWithString() "+label);
+			log.debug("testDeserializationCompatibilityWithString() "+label);
 			byte[] wire = Hex.decodeHex(characterWires[i][1]);
 			Message out = serializationTester.deserialize(wire);
-	
+
 			assertFalse(label, out.isBinary());
 			assertEquals(label, testString,out.asString());
 		}
@@ -936,18 +939,17 @@ public class MessageTest {
 
 		for (int i=0; i< binaryWires.length; i++) {
 			String label = binaryWires[i][0];
-			System.out.println("testDeserializationCompatibilityWithByteArray() "+label);
+			log.debug("testDeserializationCompatibilityWithByteArray() "+label);
 			byte[] wire = Hex.decodeHex(binaryWires[i][1]);
 			Message out = serializationTester.deserialize(wire);
-	
+
 			assertTrue(label, out.isBinary());
 			assertEquals(label, "UTF-8", out.getCharset());
 			assertEquals(label, testString,out.asString());
 		}
 	}
-	
-	
-	
+
+
 	@Test
 	public void testMessageSizeString() {
 		Message message = Message.asMessage("string");
