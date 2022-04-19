@@ -14,7 +14,7 @@
 		</xsl:variable>
 
 		<xsl:text>graph&#10;</xsl:text>
-		<xsl:text> classDef default fill:#fff,stroke:#1a9496,stroke-width:2px;&#10;</xsl:text>
+		<xsl:text>	classDef default fill:#fff,stroke:#1a9496,stroke-width:2px;&#10;</xsl:text>
 		<xsl:apply-templates select="$preproccessedConfiguration" mode="convertElements"/>
 		<xsl:apply-templates select="$preproccessedConfiguration//forward" mode="convertForwards"/>
 
