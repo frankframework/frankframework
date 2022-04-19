@@ -228,11 +228,7 @@ public class Message implements Serializable {
 	 */
 	@Deprecated
 	public Object asObject() {
-		try {
-			return (request instanceof ThrowingSupplier) ? asInputStream() : request;
-		} catch (IOException e) {
-			throw Lombok.sneakyThrow(e);
-		}
+		return request;
 	}
 
 	public boolean isBinary() {

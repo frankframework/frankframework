@@ -20,7 +20,6 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.credentialprovider.util.Misc;
 
 public class PartMessageTest {
 
@@ -81,7 +80,7 @@ public class PartMessageTest {
 		Message message = new Message("fakeMessage");
 
 		Object value = p.getValue(pvl, message, session, false);
-		assertTrue(value instanceof InputStream);
-		assertEquals("<file>in root of classpath</file>", Misc.streamToString((InputStream) value));
+		assertTrue(value instanceof Message);
+		assertEquals("<file>in root of classpath</file>", ((Message)value).asString());
 	}
 }
