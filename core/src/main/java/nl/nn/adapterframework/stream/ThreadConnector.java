@@ -24,7 +24,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.jta.IThreadConnectableTransactionManager;
 import nl.nn.adapterframework.jta.TransactionConnector;
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class ThreadConnector<T> implements AutoCloseable {
@@ -41,7 +40,7 @@ public class ThreadConnector<T> implements AutoCloseable {
 		CREATED,
 		FINISHED;
 	};
-	
+
 	private ThreadState threadState=ThreadState.ANNOUNCED;
 	private TransactionConnector<?,?> transactionConnector;
 
@@ -56,11 +55,8 @@ public class ThreadConnector<T> implements AutoCloseable {
 	}
 	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, PipeLineSession session) {
 		this(owner, threadLifeCycleEventListener, txManager, session==null?null:session.getMessageId());
-		if (session!=null) {
-			session.scheduleCloseOnSessionExit(this, ClassUtils.nameOf(owner));
-		} 
 	}
-	
+
 	public <R> R startThread(R input) {
 		childThread = Thread.currentThread();
 		if (transactionConnector!=null) {
@@ -132,7 +128,7 @@ public class ThreadConnector<T> implements AutoCloseable {
 		}
 		return result;
 	}
-	
+
 	@Override
 	public void close() throws IOException {
 		try {
@@ -151,11 +147,11 @@ public class ThreadConnector<T> implements AutoCloseable {
 					break;
 				case FINISHED:
 					break;
-				default: 
+				default:
 					throw new IllegalStateException("Unknown ThreadState ["+threadState+"]");
 				}
 			}
 		}
 	}
-	
+
 }
