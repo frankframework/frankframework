@@ -19,11 +19,20 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.xerces.xs.XSComplexTypeDefinition;
 import org.apache.xerces.xs.XSElementDeclaration;
+import org.apache.xerces.xs.XSModelGroup;
+import org.apache.xerces.xs.XSObjectList;
+import org.apache.xerces.xs.XSParticle;
+import org.apache.xerces.xs.XSTerm;
+import org.apache.xerces.xs.XSTypeDefinition;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.XMLFilterImpl;
+
+import nl.nn.adapterframework.xml.SaxException;
 
 public class NamespaceAligningFilter extends XMLFilterImpl {
 	
@@ -36,6 +45,7 @@ public class NamespaceAligningFilter extends XMLFilterImpl {
 		String namespacePrefix;
 		String namespaceUri;
 		boolean namespacePrefixCreated;
+		XSTypeDefinition type;
 	}
 	
 	public NamespaceAligningFilter(XmlAligner aligner, ContentHandler handler) {
@@ -43,24 +53,72 @@ public class NamespaceAligningFilter extends XMLFilterImpl {
 		this.aligner = aligner;
 		setContentHandler(handler);
 	}
-
+	
+	protected String findNamespaceOfChildElement(XSParticle particle, String localName) {
+		XSTerm term = particle.getTerm();
+		
+		System.out.println("--> pname "+particle.getName());
+		System.out.println("--> tname "+term.getName());
+		if (localName.equals(particle.getName())) {
+			System.out.println("--> found by pname "+particle.getName());
+			return particle.getNamespace();
+		}
+		if (localName.equals(term.getName())) {
+			System.out.println("--> found by tname "+term.getName());
+			return term.getNamespace();
+		}
+		
+		if (term instanceof XSModelGroup) {
+			XSModelGroup modelGroup = (XSModelGroup)term;
+			XSObjectList particles = modelGroup.getParticles();
+			for (int i=0;i<particles.getLength();i++) {
+				XSParticle childParticle = (XSParticle)particles.item(i);
+				String namespace = findNamespaceOfChildElement(childParticle, localName);
+				if (namespace!=null) {
+					return namespace;
+				}
+			}
+		}
+		return null;
+	}
+	
+	
 	@Override
 	public void startElement(String namespaceUri, String localName, String qName, Attributes attributes) throws SAXException {
-		XSElementDeclaration elementDeclaration = aligner.findElementDeclarationForName(namespaceUri, localName);
+		if (StringUtils.isEmpty(namespaceUri)) {
+			namespaceUri=null;
+		}
 		ElementInfo elementInfo = new ElementInfo();
-		elementInfo.namespaceUri = elementDeclaration.getNamespace();
-		elementInfo.namespacePrefix = findPrefix(elementInfo.namespaceUri);
-		if (elementInfo.namespacePrefix==null) {
-			createPrefix(elementInfo);
+		if (stack.isEmpty()) {
+			XSElementDeclaration elementDeclaration = aligner.findElementDeclarationForName(namespaceUri, localName);
+			elementInfo.namespaceUri = elementDeclaration.getNamespace();
+		} else {
+			XSTypeDefinition parentType = stack.peek().type;
+			if (parentType instanceof XSComplexTypeDefinition) {
+				XSComplexTypeDefinition complexType = (XSComplexTypeDefinition)parentType;
+				XSParticle particle = complexType.getParticle();
+				elementInfo.namespaceUri = findNamespaceOfChildElement(particle, localName);
+			} else {
+				throw new SaxException("parent ["+parentType.getName()+"] of ["+localName+"] is simple type, cannot have children");
+			}
+		}
+		if (namespaceUri!=null) {
+			elementInfo.namespacePrefix = findPrefix(elementInfo.namespaceUri);
+			if (elementInfo.namespacePrefix==null) {
+				createPrefix(elementInfo);
+			}
 		}
 		stack.push(elementInfo);
-		super.startElement(elementInfo.namespaceUri, localName, elementInfo.namespacePrefix+":"+localName, attributes);
+		String prefix = StringUtils.isEmpty(elementInfo.namespacePrefix) ? "" : elementInfo.namespacePrefix+":";
+		super.startElement(elementInfo.namespaceUri, localName, prefix+localName, attributes);
+		elementInfo.type = aligner.getTypeDefinition();
 	}
 
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
 		ElementInfo elementInfo = stack.pop();
-		super.endElement(elementInfo.namespaceUri, localName, elementInfo.namespacePrefix+":"+localName);
+		String prefix = StringUtils.isEmpty(elementInfo.namespacePrefix) ? "" : elementInfo.namespacePrefix+":";
+		super.endElement(elementInfo.namespaceUri, localName, prefix+localName);
 		if (elementInfo.namespacePrefixCreated) {
 			endPrefixMapping(elementInfo.namespacePrefix);
 		}
@@ -69,18 +127,22 @@ public class NamespaceAligningFilter extends XMLFilterImpl {
 	protected String findPrefix(String uri) {
 		return namespacePrefixes
 			.entrySet().stream()
-			.filter(e -> e.getValue().equals(uri))
+			.filter(e -> { System.out.println("e.getKey()="+e.getKey()+", e.getValue()="+e.getValue()); return uri.equals(e.getValue()); } )
 			.map(Map.Entry::getKey)
 			.findFirst()
 			.orElse(null);
 	}
 
 	protected void createPrefix(ElementInfo elementInfo) throws SAXException {
-		int i=1; 
-		while (namespacePrefixes.containsKey("ns"+i)) {
-			i++;
+		if (!namespacePrefixes.containsKey("")) {
+			elementInfo.namespacePrefix = "";
+		} else {
+			int i=1; 
+			while (namespacePrefixes.containsKey("ns"+i)) {
+				i++;
+			}
+			elementInfo.namespacePrefix = "ns"+i;
 		}
-		elementInfo.namespacePrefix = "ns"+i;
 		startPrefixMapping(elementInfo.namespacePrefix, elementInfo.namespaceUri);
 		elementInfo.namespacePrefixCreated=true;
 	}

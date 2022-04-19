@@ -431,8 +431,7 @@ public class XmlAligner extends XMLFilterImpl {
 	protected Set<XSElementDeclaration> findElementDeclarationsForName(String namespace, String name) {
 		Set<XSElementDeclaration> result=new LinkedHashSet<XSElementDeclaration>();
 		if (schemaInformation==null) {
-			log.warn("No SchemaInformation specified, cannot find namespaces for ["+namespace+"]:["+name+"]");
-			return null;
+			throw new IllegalStateException("No SchemaInformation specified, cannot find namespaces for ["+namespace+"]:["+name+"]");
 		}
 		for (XSModel model:schemaInformation) {
 			XSNamedMap components = model.getComponents(XSConstants.ELEMENT_DECLARATION);

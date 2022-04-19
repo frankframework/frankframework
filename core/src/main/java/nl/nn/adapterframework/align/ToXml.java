@@ -83,10 +83,6 @@ public abstract class ToXml<C,N> extends XmlAligner {
 	private Map<String,String>prefixMap=new HashMap<String,String>();
 
 
-	public ToXml(ValidatorHandler validatorHandler) {
-		super(validatorHandler);
-	}
-
 	public ToXml(ValidatorHandler validatorHandler, List<XSModel> schemaInformation) {
 		super(validatorHandler, schemaInformation);
 	}

@@ -29,7 +29,7 @@ import org.xml.sax.SAXException;
 
 /**
  * Base class for XML Schema guided Tree to XML conversion;
- * 
+ *
  * @author Gerrit van Brakel
  *
  * @param <C> Container of the root of the tree
@@ -38,10 +38,6 @@ import org.xml.sax.SAXException;
 public abstract class Tree2Xml<C,N> extends ToXml<C,N> {
 
 	SubstitutionProvider<?> sp;
-	
-	public Tree2Xml(ValidatorHandler validatorHandler) {
-		super(validatorHandler);
-	}
 
 	public Tree2Xml(ValidatorHandler validatorHandler, List<XSModel> schemaInformation) {
 		super(validatorHandler,schemaInformation);
@@ -53,7 +49,7 @@ public abstract class Tree2Xml<C,N> extends ToXml<C,N> {
 
 	@Override
 	public boolean hasChild(XSElementDeclaration elementDeclaration, N node, String childName) throws SAXException {
-		// should check for complex or simple type. 
+		// should check for complex or simple type.
 		// for complex, any path of a substitution is valid
 		// for simple, only when a valid substitution value is found, a hit should be present.
 		if (sp!=null && sp.hasSubstitutionsFor(getContext(), childName)) {
@@ -63,9 +59,9 @@ public abstract class Tree2Xml<C,N> extends ToXml<C,N> {
 		return allChildNames!=null && allChildNames.contains(childName);
 	}
 
-	
+
 	/**
-	 * Allows subclasses to provide a special way of substituting. 
+	 * Allows subclasses to provide a special way of substituting.
 	 * This is used by Json2Xml to insert a List of values as a JsonArray.
 	 */
 	protected N getSubstitutedChild(N node, String childName) {
