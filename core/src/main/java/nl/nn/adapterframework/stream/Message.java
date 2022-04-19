@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OptionalDataException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
@@ -721,7 +722,12 @@ public class Message implements Serializable {
 
 		String charset = (String)stream.readObject();
 		request = stream.readObject();
-		requestClass = (Class<?>)stream.readObject();
+		try {
+			requestClass = (Class<?>)stream.readObject();
+		} catch (OptionalDataException e) {
+			requestClass = request.getClass();
+			log.warn("Could not read requestClass, using request.getClass() ["+requestClass.getTypeName()+"]");
+		}
 
 		context = new MessageContext().withCharset(charset);
 	}
