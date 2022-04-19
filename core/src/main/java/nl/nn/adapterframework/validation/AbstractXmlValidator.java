@@ -223,7 +223,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 		return validate(is, handler, session, context);
 	}
 
-	private ValidationResult validate(InputSource inputSource, ContentHandler validatorHandler, PipeLineSession session, ValidationContext context) throws XmlValidatorException {
+	protected ValidationResult validate(InputSource inputSource, ContentHandler validatorHandler, PipeLineSession session, ValidationContext context) throws XmlValidatorException {
 		try {
 			XmlUtils.parseXml(inputSource, validatorHandler, context.getErrorHandler());
 		} catch (IOException | SAXException e) {
