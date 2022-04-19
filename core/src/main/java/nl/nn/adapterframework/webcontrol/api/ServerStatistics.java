@@ -292,13 +292,22 @@ public class ServerStatistics extends Base {
 		try {
 			getIbisManager();
 		}
-		catch(Exception e) {
-			Throwable c = e.getCause();
+		catch(ApiException e) {
 			response.put("status", Response.Status.INTERNAL_SERVER_ERROR);
-			response.put("error", c.getMessage());
-			response.put("stackTrace", c.getStackTrace());
+			response.put("error", e.getMessage());
+
+			Throwable cause = e.getCause();
+			if(cause != null && cause.getStackTrace() != null) {
+				String dtapStage = AppConstants.getInstance().getString("dtap.stage", null);
+				if((!"ACC".equals(dtapStage) && !"PRD".equals(dtapStage))) {
+					response.put("stackTrace", cause.getStackTrace());
+				}
+			}
 
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(response).build();
+		}
+		catch(Exception e) {
+			throw new ApiException(e);
 		}
 
 		Map<RunState, Integer> stateCount = new HashMap<>();

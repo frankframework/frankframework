@@ -80,10 +80,14 @@ public abstract class Base implements ApplicationContextAware {
 	 */
 	private void retrieveIbisContextFromServlet() {
 		if(servletConfig == null) {
-			throw new ApiException(new IllegalStateException("no ServletConfig found to retrieve IbisContext from"));
+			throw new ApiException("no ServletConfig found to retrieve IbisContext from");
 		}
 
-		ibisContext = IbisApplicationServlet.getIbisContext(servletConfig.getServletContext());
+		try {
+			ibisContext = IbisApplicationServlet.getIbisContext(servletConfig.getServletContext());
+		} catch (IllegalStateException e) {
+			throw new ApiException(e);
+		}
 	}
 
 	public IbisContext getIbisContext() {
@@ -105,7 +109,7 @@ public abstract class Base implements ApplicationContextAware {
 		IbisManager ibisManager = getIbisContext().getIbisManager();
 
 		if (ibisManager==null) {
-			throw new ApiException(new IllegalStateException("Could not retrieve ibisManager from context"));
+			throw new ApiException("Could not retrieve ibisManager from IbisContext");
 		}
 
 		return ibisManager;
