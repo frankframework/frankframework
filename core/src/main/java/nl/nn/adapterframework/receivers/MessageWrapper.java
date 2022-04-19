@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.receivers;
 
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -63,4 +65,23 @@ public class MessageWrapper<M> implements Serializable, IMessageWrapper {
 	public void setMessage(Message message) {
 		this.message = message;
 	}
-}
+
+
+	/*
+	 * this method is used by Serializable, to serialize objects to a stream.
+	 */
+	private void writeObject(ObjectOutputStream stream) throws IOException {
+		message.preserve();
+		if (message.isBinary()) {
+			if (!(message.asObject() instanceof byte[])) {
+				message = new Message(message.asByteArray(), message.getCharset());
+			}
+		} else {
+			if (!(message.asObject() instanceof String)) {
+				message = new Message(message.asString());
+			}
+		}
+		stream.writeObject(context);
+		stream.writeObject(id);
+		stream.writeObject(message);
+	}}
