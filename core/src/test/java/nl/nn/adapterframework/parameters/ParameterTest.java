@@ -294,7 +294,7 @@ public class ParameterTest {
 	}
 
 	@Test
-	public void testParameterValueMessageStream() throws Exception {
+	public void testParameterValueMessage() throws Exception {
 		String sessionKey = "mySessionKey";
 		String sessionMessage = "message goes here "+UUID.randomUUID();
 		ByteArrayInputStream is = new ByteArrayInputStream(sessionMessage.getBytes());
@@ -311,7 +311,7 @@ public class ParameterTest {
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, session, false);
-		assertTrue(result instanceof InputStream);
+		assertTrue(result instanceof Message);
 
 		assertEquals(sessionMessage, Message.asMessage(result).asString());
 	}
