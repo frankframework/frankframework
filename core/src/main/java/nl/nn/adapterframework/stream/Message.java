@@ -86,7 +86,10 @@ public class Message implements Serializable {
 			this.request = request;
 		}
 		this.context = context!=null ? context : new MessageContext();
-		this.requestClass = requestClass!=null ? requestClass.getTypeName() : ClassUtils.nameOf(request);
+		if (requestClass==null && request!=null) {
+			requestClass=request.getClass();
+		}
+		this.requestClass = requestClass!=null ? requestClass.getSimpleName() : "null";
 	}
 	private Message(Map<String,Object> context, Object request) {
 		this(context, request, request !=null ? request.getClass() : null);

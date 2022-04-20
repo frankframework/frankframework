@@ -156,11 +156,11 @@ public class MessageTest {
 		System.out.println("toString [" + actual + "] class typename [" + clazz.getSimpleName() + "]");
 		// remove the toStringPrefix(), if it is present
 		String valuePart = actual.contains("value:\n") ? actual.split("value:\n")[1] : actual;
-		assertEquals(clazz.getTypeName(), valuePart.substring(0, valuePart.indexOf(": ")));
+		assertEquals(clazz.getSimpleName(), valuePart.substring(0, valuePart.indexOf(": ")));
 		if (wrapperClass == null) {
-			assertEquals(clazz.getTypeName(), adapter.getRequestClass());
+			assertEquals(clazz.getSimpleName(), adapter.getRequestClass());
 		} else {
-			assertEquals(wrapperClass.getTypeName(), adapter.getRequestClass());
+			assertEquals(wrapperClass.getSimpleName(), adapter.getRequestClass());
 		}
 	}
 
