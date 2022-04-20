@@ -70,7 +70,7 @@ public class Message implements Serializable {
 	protected transient Logger log = LogUtil.getLogger(this);
 
 	private Object request;
-	private @Getter Class<?> requestClass;
+	private @Getter String requestClass;
 
 	private @Getter Map<String,Object> context;
 	private boolean failedToDetermineCharset = false;
@@ -86,7 +86,7 @@ public class Message implements Serializable {
 			this.request = request;
 		}
 		this.context = context!=null ? context : new MessageContext();
-		this.requestClass = requestClass;
+		this.requestClass = requestClass!=null ? requestClass.getTypeName() : ClassUtils.nameOf(request);
 	}
 	private Message(Map<String,Object> context, Object request) {
 		this(context, request, request !=null ? request.getClass() : null);
@@ -604,7 +604,7 @@ public class Message implements Serializable {
 			if (request==null) {
 				result.write("null");
 			} else {
-				result.write((getRequestClass()!=null?getRequestClass().getSimpleName():"?")+": "+request.toString());
+				result.write(getRequestClass()+": "+request.toString());
 			}
 		} catch (IOException e) {
 			result.write("cannot write toString: "+e.getMessage());
@@ -737,10 +737,19 @@ public class Message implements Serializable {
 		String charset = (String)stream.readObject();
 		request = stream.readObject();
 		try {
-			requestClass = (Class<?>)stream.readObject();
+			Object requestClass = stream.readObject();
+			if (requestClass != null) {
+				if (requestClass instanceof Class<?>) {
+					this.requestClass = ((Class<?>)requestClass).getTypeName();
+				} else {
+					this.requestClass = requestClass.toString();
+				}
+			} else {
+				this.requestClass = ClassUtils.nameOf(request);
+			}
 		} catch (Exception e) {
-			requestClass = request.getClass();
-			log.warn("Could not read requestClass, using request.getClass() ["+requestClass.getTypeName()+"] ("+ClassUtils.nameOf(e)+"): "+e.getMessage());
+			requestClass = ClassUtils.nameOf(request);
+			log.warn("Could not read requestClass, using ClassUtils.nameOf(request) ["+requestClass+"], ("+ClassUtils.nameOf(e)+"): "+e.getMessage());
 		}
 
 		context = new MessageContext().withCharset(charset);
