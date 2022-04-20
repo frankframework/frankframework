@@ -37,6 +37,7 @@ RUN apt-get update && apt-get install -y wget --no-install-recommends \
 	&& rm -rf /var/lib/apt/lists/*
 
 COPY ./docker-run.sh /
+RUN chmod +rx /*.sh
 
 # Expose some outstanding folders
 VOLUME ["/var/lib/artemis-instance"]
