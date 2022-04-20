@@ -17,9 +17,14 @@ package nl.nn.adapterframework.stream;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Map;
 
 public class FileMessage extends Message {
+
+	private static final long serialVersionUID = 5219660236736759665L;
 
 	private File file;
 
@@ -43,7 +48,24 @@ public class FileMessage extends Message {
 
 	@Override
 	public long size() {
-		return file.length();
+		if (file!=null) {
+			return file.length();
+		}
+		return super.size();
+	}
+
+	/*
+	 * this method is used by Serializable, to serialize objects to a stream.
+	 */
+	private void writeObject(ObjectOutputStream stream) throws IOException {
+		// only write contents of file via super's writeObject()
+	}
+
+	/*
+	 * this method is used by Serializable, to deserialize objects from a stream.
+	 */
+	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+		// only read contents of file via super's readObject()
 	}
 
 }

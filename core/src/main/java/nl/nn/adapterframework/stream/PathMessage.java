@@ -16,6 +16,8 @@
 package nl.nn.adapterframework.stream;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
@@ -24,6 +26,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 
 public class PathMessage extends Message {
 
+	private static final long serialVersionUID = -6810228164430433617L;
 	private Path path;
 
 	public PathMessage(Path path, Map<String,Object> context) {
@@ -42,12 +45,29 @@ public class PathMessage extends Message {
 
 	@Override
 	public long size() {
-		try {
-			return Files.size(path);
-		} catch (IOException e) {
-			log.debug("unable to determine size of stream ["+ClassUtils.nameOf(path)+"]", e);
-			return -1;
+		if (path!=null) {
+			try {
+				return Files.size(path);
+			} catch (IOException e) {
+				log.debug("unable to determine size of stream ["+ClassUtils.nameOf(path)+"]", e);
+				return -1;
+			}
 		}
+		return super.size();
+	}
+
+	/*
+	 * this method is used by Serializable, to serialize objects to a stream.
+	 */
+	private void writeObject(ObjectOutputStream stream) throws IOException {
+		// only write contents of file via super's writeObject()
+	}
+
+	/*
+	 * this method is used by Serializable, to deserialize objects from a stream.
+	 */
+	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+		// only read contents of file via super's readObject()
 	}
 
 
