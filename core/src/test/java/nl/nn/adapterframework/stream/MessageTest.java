@@ -135,9 +135,9 @@ public class MessageTest {
 		System.out.println("toString ["+actual+"] class typename ["+clazz.getSimpleName()+"]");
 		assertEquals(clazz.getSimpleName(), actual.substring(0, actual.indexOf(": ")));
 		if (wrapperClass == null) {
-			assertEquals(clazz.getTypeName(), adapter.getRequestClass());
+			assertEquals(clazz.getSimpleName(), adapter.getRequestClass());
 		} else {
-			assertEquals(wrapperClass.getTypeName(), adapter.getRequestClass());
+			assertEquals(wrapperClass.getSimpleName(), adapter.getRequestClass());
 		}
 	}
 
