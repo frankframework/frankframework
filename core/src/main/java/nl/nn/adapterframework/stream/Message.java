@@ -740,7 +740,7 @@ public class Message implements Serializable {
 			requestClass = (Class<?>)stream.readObject();
 		} catch (Exception e) {
 			requestClass = request.getClass();
-			log.warn("Could not read requestClass, using request.getClass() ["+requestClass.getTypeName()+"]");
+			log.warn("Could not read requestClass, using request.getClass() ["+requestClass.getTypeName()+"] ("+ClassUtils.nameOf(e)+"): "+e.getMessage());
 		}
 
 		context = new MessageContext().withCharset(charset);
