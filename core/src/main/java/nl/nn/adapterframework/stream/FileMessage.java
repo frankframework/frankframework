@@ -18,7 +18,6 @@ package nl.nn.adapterframework.stream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Map;
 
@@ -58,14 +57,10 @@ public class FileMessage extends Message {
 	 * this method is used by Serializable, to serialize objects to a stream.
 	 */
 	private void writeObject(ObjectOutputStream stream) throws IOException {
-		// only write contents of file via super's writeObject()
-	}
-
-	/*
-	 * this method is used by Serializable, to deserialize objects from a stream.
-	 */
-	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
-		// only read contents of file via super's readObject()
+		File curFile = file;
+		file = null; // avoid trying to write File, that might be not serializable, and is not guaranteed to be available at deserialization time
+		stream.defaultWriteObject();
+		file = curFile;
 	}
 
 }

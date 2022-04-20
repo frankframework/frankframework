@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.stream;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -60,15 +59,10 @@ public class PathMessage extends Message {
 	 * this method is used by Serializable, to serialize objects to a stream.
 	 */
 	private void writeObject(ObjectOutputStream stream) throws IOException {
-		// only write contents of file via super's writeObject()
+		Path curPath = path;
+		path = null; // avoid trying to write Path, that might be not serializable, and is not guaranteed to be available at deserialization time
+		stream.defaultWriteObject();
+		path = curPath;
 	}
-
-	/*
-	 * this method is used by Serializable, to deserialize objects from a stream.
-	 */
-	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
-		// only read contents of file via super's readObject()
-	}
-
 
 }
