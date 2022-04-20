@@ -27,13 +27,13 @@ The image contains an empty framework-instance that needs to be configured befor
 
 Whether using the container locally or building your own image for use on servers, refer to [Filesystem](#Filesystem) information on which directories and files to mount or copy.
 
-For a list of available tags, see <https://TBD>.
+For a list of available tags, see https://nexus.frankframework.org/#browse/search/docker.
 
 ## Local use
 
 To run the image, run the following command, adding environment variables and mounts as needed:
 
-`docker run --publish <hostport>:8080 [-e <name>=<value>] [--mount type=bind,source=<source>,target=<target>] --name <name> TBD/TBD/iaf-as-tomcat[:<tag>]`
+`docker run --publish <hostport>:8080 [-e <name>=<value>] [--mount type=bind,source=<source>,target=<target>] --name <name> nexus.frankframework.org/frank-framework[:<tag>]`
 
 ## Server use
 
@@ -41,7 +41,7 @@ Please read the [Considerations](#Considerations) before using the image on serv
 
 For use on servers, you need to build your own image that includes the required configuration files. To start building your own image, start your Dockerfile with:
 
-`FROM TBD/TBD/iaf-as-tomcat[:<tag>]`
+`FROM nexus.frankframework.org/frank-framework[:<tag>]`
 
 Dockerfiles based on our image use `root` during build. During startup we use `gosu` to step down to a more restricted `tomcat` user.
 
@@ -107,11 +107,12 @@ Note: The GUI will not load data if accessed via HTTP and `dtap.stage!=LOC`, HTT
 
 ## Secrets
 
-Special consideration should be taken with secrets. As described on the [Tomcat website](https://cwiki.apache.org/confluence/display/TOMCAT/Password), passwords are stored in plain text.
+Special consideration should be taken with secrets. As described on the [Tomcat website](https://cwiki.apache.org/confluence/display/TOMCAT/Password), passwords are stored in plain text. To use secrets in your Tomcat and Frank!Application configuration, you can take the following steps:
+- In your configuration, refer to the username as `${<secret-name>/username}` and password as `${<secret-name>/password}`
+- Mount the username in `/opt/frank/secrets/<secret-name>/username`
+- Mount the password in `/opt/frank/secrets/<secret-name>/password`
 
-We provide the following options to include secrets:
-- Via environment variables as described in the [Tomcat documentation](https://tomcat.apache.org/tomcat-8.5-doc/config/systemprops.html#Property_replacements). By default all environment variables and their values are visible on a number of pages in the console and in the log files, to hide those values `properties.hide` should include the environment variables to hide.
--
+See the [context.xml](test/src/main/webapp/META-INF/context.xml) of the test-project and corresponding [Dockerfile](docker/appserver/Tomcat/test/Dockerfile) for an example.
 
 ## Non-root
 
