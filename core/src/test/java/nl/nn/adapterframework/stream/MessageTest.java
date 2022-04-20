@@ -67,8 +67,8 @@ public class MessageTest {
 	private static final String CDATA_START = TEST_CDATA ? "<![CDATA[" : "";
 	private static final String CDATA_END = TEST_CDATA ? "]]>" : "";
 
-	protected String testString = "<root><sub>abc&amp;&lt;&gt;</sub><sub>" + CDATA_START + "<a>a&amp;b</a>" + CDATA_END + "</sub><data attr=\"één €\">één €</data></root>";
-	protected String testStringFile = "/Message/testString.txt";
+	protected static String testString = "<root><sub>abc&amp;&lt;&gt;</sub><sub>" + CDATA_START + "<a>a&amp;b</a>" + CDATA_END + "</sub><data attr=\"één €\">één €</data></root>";
+	protected static String testStringFile = "/Message/testString.txt";
 
 	private String characterWire76 = "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300034c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000e777261707065645265717565737471007e00027870707400743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e7078";
 	private String binaryWire76 =    "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300034c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000e777261707065645265717565737471007e000278707400055554462d38757200025b42acf317f8060854e00200007870000000743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e7078";
@@ -856,7 +856,7 @@ public class MessageTest {
 		assertEquals(testString, out.asString());
 	}
 
-	private void writeContentsToFile(File file, String contents) throws IOException {
+	protected static void writeContentsToFile(File file, String contents) throws IOException {
 		try (Writer fw = new OutputStreamWriter(new FileOutputStream(file), "utf-8")) {
 			fw.write(contents);
 		}
