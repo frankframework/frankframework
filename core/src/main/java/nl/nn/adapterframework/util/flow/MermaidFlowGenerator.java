@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2021 WeAreFrank!
+   Copyright 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,24 +30,19 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 
 /**
- * Flow generator to create DOT files
+ * Flow generator to create MERMAID files
  */
-public class DotFlowGenerator implements IFlowGenerator {
-	protected static Logger log = LogUtil.getLogger(DotFlowGenerator.class);
+public class MermaidFlowGenerator implements IFlowGenerator {
+	protected static Logger log = LogUtil.getLogger(MermaidFlowGenerator.class);
 
-	private static final String ADAPTER2DOT_XSLT = "/xml/xsl/adapter2dot.xsl";
-	private static final String CONFIGURATION2DOT_XSLT = "/xml/xsl/configuration2dot.xsl";
+	private static final String MERMAID_XSLT = "/xml/xsl/adapter2mermaid.xsl";
 
-	private TransformerPool transformerPoolAdapter;
-	private TransformerPool transformerPoolConfig;
+	private TransformerPool transformerPool;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		Resource xsltSourceConfig = Resource.getResource(ADAPTER2DOT_XSLT);
-		transformerPoolAdapter = TransformerPool.getInstance(xsltSourceConfig, 2);
-
-		Resource xsltSourceIbis = Resource.getResource(CONFIGURATION2DOT_XSLT);
-		transformerPoolConfig = TransformerPool.getInstance(xsltSourceIbis, 2);
+		Resource xsltSourceConfig = Resource.getResource(MERMAID_XSLT);
+		transformerPool = TransformerPool.getInstance(xsltSourceConfig, 2);
 	}
 
 	@Override
@@ -63,11 +58,7 @@ public class DotFlowGenerator implements IFlowGenerator {
 
 	protected String generateDot(String xml) throws FlowGenerationException {
 		try {
-			if(xml.startsWith("<adapter")) {
-				return transformerPoolAdapter.transform(xml, null);
-			} else {
-				return transformerPoolConfig.transform(xml, null);
-			}
+			return transformerPool.transform(xml, null);
 		} catch (IOException | TransformerException | SAXException e) {
 			throw new FlowGenerationException("error transforming [xml] to [dot]", e);
 		}
@@ -75,7 +66,7 @@ public class DotFlowGenerator implements IFlowGenerator {
 
 	@Override
 	public String getFileExtension() {
-		return "digraph";
+		return "mmd";
 	}
 
 	@Override
@@ -85,12 +76,8 @@ public class DotFlowGenerator implements IFlowGenerator {
 
 	@Override
 	public void destroy() {
-		if(transformerPoolAdapter != null) {
-			transformerPoolAdapter.close();
-		}
-
-		if(transformerPoolConfig != null) {
-			transformerPoolConfig.close();
+		if(transformerPool != null) {
+			transformerPool.close();
 		}
 	}
 }
