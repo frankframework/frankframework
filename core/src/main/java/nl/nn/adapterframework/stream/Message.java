@@ -66,7 +66,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class Message implements Serializable {
 
-	private static final long serialVersionUID = 437863352486501445L;
+	protected static final long serialVersionUID = 437863352486501445L;
 
 	protected transient Logger log = LogUtil.getLogger(this);
 
@@ -219,8 +219,13 @@ public class Message implements Serializable {
 		// if deepPreserve=true, File and URL are also preserved as byte array
 		// otherwise we rely on that File and URL can be repeatedly read
 		if (deepPreserve && !(request instanceof String || request instanceof byte[])) {
-			log.debug("deep preserving as byte[]");
-			request = StreamUtil.streamToByteArray(asInputStream(), false);
+			if (isBinary()) {
+				log.debug("deep preserving as byte[]");
+				request = asByteArray();
+			} else {
+				log.debug("deep preserving as String");
+				request = asString();
+			}
 		}
 	}
 
