@@ -65,9 +65,9 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class Message implements Serializable {
 
-	protected static final long serialVersionUID = 437863352486501445L;
-
 	protected transient Logger log = LogUtil.getLogger(this);
+
+	private static final long serialVersionUID = 437863352486501445L;
 
 	private Object request;
 	private @Getter String requestClass;
