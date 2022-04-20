@@ -11,7 +11,7 @@
 
 	<context:property-placeholder />
 
-	<context:component-scan base-package="nl.nn.adapterframework,nl.nn.ibistesttool.web">
+	<context:component-scan base-package="nl.nn.adapterframework,nl.nn.ibistesttool">
 		<context:include-filter type="annotation" expression="nl.nn.adapterframework.lifecycle.IbisInitializer"/>
 
 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Service"/>

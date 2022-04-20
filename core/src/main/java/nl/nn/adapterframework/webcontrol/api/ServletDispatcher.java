@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2021 WeAreFrank!
+   Copyright 2016-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -123,14 +123,14 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 			//Always add the cors headers when the origin has been set
 			if(allowedCorsDomains.contains(origin)) {
 				response.setHeader("Access-Control-Allow-Origin", origin);
-	
+
 				String requestHeaders = request.getHeader("Access-Control-Request-Headers");
 				if (requestHeaders != null)
 					response.setHeader("Access-Control-Allow-Headers", requestHeaders);
-	
+
 				response.setHeader("Access-Control-Expose-Headers", CORS_EXPOSE_HEADERS);
 				response.setHeader("Access-Control-Allow-Methods", CORS_ALLOW_METHODS);
-	
+
 				// Allow caching cross-domain permission
 				response.setHeader("Access-Control-Max-Age", "3600");
 			}
@@ -185,7 +185,7 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 
 	@Override
 	public String[] getRoles() {
-		return null;
+		return ALL_IBIS_USER_ROLES;
 	}
 
 	@Autowired

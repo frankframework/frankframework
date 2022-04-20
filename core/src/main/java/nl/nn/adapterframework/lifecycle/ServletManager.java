@@ -62,6 +62,8 @@ public class ServletManager {
 	private ServletContext servletContext = null;
 	private List<String> registeredRoles = new ArrayList<>();
 	private Logger log = LogUtil.getLogger(this);
+	private AppConstants appConstants;
+	private boolean webSecurityEnabled = true;
 
 	private ServletContext getServletContext() {
 		return servletContext;
@@ -72,6 +74,10 @@ public class ServletManager {
 
 		//Add the default IBIS roles
 		registeredRoles.addAll(Arrays.asList("IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester", "IbisWebService"));
+
+		appConstants = AppConstants.getInstance();
+		boolean isDtapStageLoc = "LOC".equalsIgnoreCase(appConstants.getString("dtap.stage", null));
+		webSecurityEnabled = appConstants.getBoolean("application.security.http.enabled", !isDtapStageLoc);
 	}
 
 	/**
@@ -94,11 +100,14 @@ public class ServletManager {
 	}
 
 	public void registerServlet(String servletName, Servlet servlet, String urlMapping, String[] roles, int loadOnStartup, Map<String, String> initParameters) {
+		if(servletName.contains(" ")) {
+			throw new IllegalArgumentException("unable to instantiate servlet, servlet name may not contain spaces");
+		}
+
 		log.info("instantiating IbisInitializer servlet name ["+servletName+"] servletClass ["+servlet+"] loadOnStartup ["+loadOnStartup+"]");
 		getServletContext().log("instantiating IbisInitializer servlet ["+servletName+"]");
 
 
-		AppConstants appConstants = AppConstants.getInstance();
 		String propertyPrefix = "servlet."+servletName+".";
 
 		if(!appConstants.getBoolean(propertyPrefix+"enabled", true))
@@ -107,10 +116,10 @@ public class ServletManager {
 		ServletRegistration.Dynamic serv = getServletContext().addServlet(servletName, servlet);
 		ServletSecurity.TransportGuarantee transportGuarantee = getTransportGuarantee(propertyPrefix+"transportGuarantee");
 
-		String stage = appConstants.getString("dtap.stage", null);
 		String[] rolesCopy = new String[0];
-		if(roles != null && stage != null && !stage.equalsIgnoreCase("LOC"))
+		if(roles != null && webSecurityEnabled) {
 			rolesCopy = roles;
+		}
 
 		String roleNames = appConstants.getString(propertyPrefix+"securityroles", null);
 		if(StringUtils.isNotEmpty(roleNames)) {

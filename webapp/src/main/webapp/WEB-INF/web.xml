@@ -2,12 +2,11 @@
 		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		 xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
 		 version="3.0">
-	<display-name>IBIS AdapterFramework</display-name>
+	<display-name>Frank!Framework</display-name>
 
-	<description>The IBIS AdapterFramework provides functionality to listen to some
-	event (e.g. a JMS message arrival) and perform some predefined actions. These actions
-	are configured in an XML file. On the event several actions, called pipes, grouped in
-	a pipeline, are fired.
+	<description>
+		The Frank!Framework provides functionality to listen to some event (e.g. a JMS message arrival) and perform some predefined actions.
+		These actions are configured in an XML file. On the event several actions, called pipes, grouped in a pipeline, are fired.
 	</description>
 
 	<context-param>
@@ -96,18 +95,7 @@
 	</servlet-mapping>
 	<!-- END Soap Router -->
 
-	<!-- Test Tool Servlet -->
-	<servlet>
-		<servlet-name>TestToolServlet</servlet-name>
-		<servlet-class>nl.nn.ibistesttool.Servlet</servlet-class>
-	</servlet>
-
 	<!-- AdapterFramework servlets -->
-	<servlet>
-		<display-name>HttpListener</display-name>
-		<servlet-name>HttpListener</servlet-name>
-		<servlet-class>nl.nn.adapterframework.http.HttpListenerServlet</servlet-class>
-	</servlet>
 	<servlet>
 		<display-name>RestListener</display-name>
 		<servlet-name>RestListener</servlet-name>
@@ -115,22 +103,12 @@
 	</servlet>
 
 	<servlet-mapping>
-		<servlet-name>HttpListener</servlet-name>
-		<url-pattern>/HttpListener</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
 		<servlet-name>RestListener</servlet-name>
 		<url-pattern>/rest/*</url-pattern>
 	</servlet-mapping>
 	<servlet-mapping>
 		<servlet-name>RestListener</servlet-name>
 		<url-pattern>/rest-public/*</url-pattern>
-	</servlet-mapping>
-
-	<!-- Test Tool Servlet Mapping -->
-	<servlet-mapping>
-		<servlet-name>TestToolServlet</servlet-name>
-		<url-pattern>/testtool</url-pattern>
 	</servlet-mapping>
 
 	<!-- Welcome File List -->

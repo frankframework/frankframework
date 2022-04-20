@@ -37,7 +37,7 @@ public class FrontendServlet extends nl.nn.testtool.web.FrontendServlet implemen
 
 	@Override
 	public String getName() {
-		return "Ladybug " + this.getClass().getSimpleName();
+		return "Ladybug-" + this.getClass().getSimpleName();
 	}
 
 	@Override

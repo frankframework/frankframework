@@ -44,7 +44,7 @@ public class ApiServlet extends nl.nn.testtool.web.ApiServlet implements Dynamic
 
 	@Override
 	public String getName() {
-		return "Ladybug " + this.getClass().getSimpleName();
+		return "Ladybug-" + this.getClass().getSimpleName();
 	}
 
 	@Override

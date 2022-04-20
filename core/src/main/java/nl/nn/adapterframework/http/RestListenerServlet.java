@@ -25,6 +25,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+
 import nl.nn.adapterframework.core.ISecurityHandler;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -32,22 +36,18 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
-
 /**
  * Servlet that listens for REST requests, and handles them over to the RestServiceDispatcher.
- * 
+ *
  * @author  Gerrit van Brakel
  */
 public class RestListenerServlet extends HttpServlet {
 	protected Logger log=LogUtil.getLogger(this);
 	private String CorsAllowOrigin = AppConstants.getInstance().getString("rest.cors.allowOrigin", "*"); //Defaults to everything
 	private String CorsExposeHeaders = AppConstants.getInstance().getString("rest.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
-	
+
 	private RestServiceDispatcher sd=null;
-	
+
 	@Override
 	public void init() throws ServletException {
 		super.init();
@@ -55,14 +55,14 @@ public class RestListenerServlet extends HttpServlet {
 			sd= RestServiceDispatcher.getInstance();
 		}
 	}
-	
+
 	@Override
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		
+
 		String path=request.getPathInfo();
 		String restPath=request.getServletPath();
 		String body = "";
-		
+
 		if(restPath.contains("rest-public")) {
 			response.setHeader("Access-Control-Allow-Origin", CorsAllowOrigin);
 			String headers = request.getHeader("Access-Control-Request-Headers");
@@ -96,11 +96,11 @@ public class RestListenerServlet extends HttpServlet {
 		String contentType=request.getHeader("accept");
 
 		if (log.isTraceEnabled()) log.trace("path ["+path+"] If-Match ["+ifMatch+"] If-None-Match ["+ifNoneMatch+"] contentType ["+contentType+"]");
-		
+
 		ISecurityHandler securityHandler = new HttpSecurityHandler(request);
 		try (PipeLineSession messageContext= new PipeLineSession()) {
 			messageContext.setSecurityHandler(securityHandler);
-	
+
 			Enumeration paramnames=request.getParameterNames();
 			while (paramnames.hasMoreElements()) {
 				String paramname = (String)paramnames.nextElement();
@@ -114,7 +114,7 @@ public class RestListenerServlet extends HttpServlet {
 			try {
 				log.trace("RestListenerServlet calling service ["+path+"]");
 				String result=sd.dispatchRequest(restPath, path, request, contentType, body, messageContext, response, getServletContext());
-	
+
 				if(result == null && messageContext.containsKey("exitcode") && messageContext.containsKey("validateEtag")) {
 					int status = Integer.parseInt( ""+ messageContext.get("exitcode"));
 					response.setStatus(status);
@@ -122,17 +122,17 @@ public class RestListenerServlet extends HttpServlet {
 					if(log.isDebugEnabled()) log.trace("aborted request with status ["+status+"]");
 					return;
 				}
-	
+
 				String etag=(String)messageContext.get("etag");
 				if (StringUtils.isNotEmpty(etag))
 					response.setHeader("etag", etag);
-	
+
 				int statusCode = 0;
 				if(messageContext.containsKey("exitcode"))
 					statusCode = Integer.parseInt( ""+ messageContext.get("exitcode"));
 				if(statusCode > 0)
 					response.setStatus(statusCode);
-	
+
 				if (StringUtils.isEmpty(result)) {
 					log.trace("RestListenerServlet finished with result set in pipeline");
 				} else {
