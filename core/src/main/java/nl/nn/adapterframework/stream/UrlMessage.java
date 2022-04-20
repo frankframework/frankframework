@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,11 +19,13 @@ import java.net.URL;
 
 public class UrlMessage  extends Message {
 
+	private static final long serialVersionUID = -8984775227930282095L;
+
 	public UrlMessage(URL url) {
 		this(url, null);
 	}
 
 	public UrlMessage(URL url, String charset) {
-		super(() -> url.openStream(), charset, url.getClass());
+		super(url::openStream, charset, url.getClass());
 	}
 }
