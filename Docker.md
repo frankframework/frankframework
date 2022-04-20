@@ -1,7 +1,7 @@
 Frank!Framework with Docker
 ===========================
 
-Docker images are provided, suitable both for local and server use. Images are provided from the registry located at https://nexus.frankframework.org/#browse/search/docker, the source is avalaible from the [docker-folder](docker/appserver/Tomcat) in this repository.
+Docker images are provided, suitable both for local and server use. Images are provided from the registry located at https://nexus.frankframework.org, the source is avalaible from the [docker-folder](docker/appserver/Tomcat) in this repository.
 
 # Contents
 
