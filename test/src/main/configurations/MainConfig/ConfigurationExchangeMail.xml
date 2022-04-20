@@ -14,7 +14,8 @@
 				processedFolder="${exchangemail.processedFolder}"
 				errorFolder="${exchangemail.errorFolder}"
 				createFolders="true"
-				disableFolderBrowsers="${exchangemail.disableFolderBrowsers}"
+				disableMessageBrowsers="${exchangemail.disableMessageBrowsers}"
+				messageType="contents"
 			/>
 		</receiver>
 		<receiver name="ImapMail" active="${imapmail.active}">
@@ -31,7 +32,8 @@
 				processedFolder="${imapmail.processedFolder}"
 				errorFolder="${imapmail.errorFolder}"
 				createFolders="true"
-				disableFolderBrowsers="${imapmail.disableFolderBrowsers}"
+				disableMessageBrowsers="${imapmail.disableMessageBrowsers}"
+				messageType="contents"
 			/>
 		</receiver>
 		<pipeline>

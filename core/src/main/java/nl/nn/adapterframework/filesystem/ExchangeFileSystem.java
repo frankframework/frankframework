@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2019-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,8 +31,9 @@ import java.util.stream.Collectors;
 
 import javax.mail.internet.InternetAddress;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import microsoft.exchange.webservices.data.autodiscover.IAutodiscoverRedirectionUrl;
 import microsoft.exchange.webservices.data.core.ExchangeService;
 import microsoft.exchange.webservices.data.core.PropertySet;
@@ -84,7 +85,7 @@ import nl.nn.adapterframework.xml.SaxElementBuilder;
 
 /**
  * Implementation of a {@link IBasicFileSystem} of an Exchange Mail Inbox.
- * 
+ *
  * To obtain an accessToken:
  * <ol>
  * 	<li>follow the steps in {@link "https://docs.microsoft.com/en-us/exchange/client-developer/exchange-web-services/how-to-authenticate-an-ews-application-by-using-oauth"}</li>
@@ -92,29 +93,29 @@ import nl.nn.adapterframework.xml.SaxElementBuilder;
  *  <li>exchange the Authorization-Code for an accessToken</li>
  *  <li>configure the accessToken directly, or as the password of a JAAS entry referred to by authAlias</li>
  * </ol>
- * 
+ *
  * N.B. MS Exchange is susceptible to problems with invalid XML characters, like &#x3;
- * To work around these problems, a special streaming XMLInputFactory is configured in 
+ * To work around these problems, a special streaming XMLInputFactory is configured in
  * METAINF/services/javax.xml.stream.XMLInputFactory as nl.nn.adapterframework.xml.StaxParserFactory
- * 
+ *
  * @author Peter Leeuwenburgh (as {@link ExchangeMailListener})
  * @author Gerrit van Brakel
  *
  */
 public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachment,ExchangeService> {
 
-	private String mailAddress;
-	private boolean validateAllRedirectUrls=true;
-	private String url;
-	private String accessToken;
-	private String filter;
+	private @Getter String mailAddress;
+	private @Getter boolean validateAllRedirectUrls=true;
+	private @Getter String url;
+	private @Getter String accessToken;
+	private @Getter String filter;
 
-	private String proxyHost = null;
-	private int proxyPort = 8080;
-	private String proxyUsername = null;
-	private String proxyPassword = null;
-	private String proxyAuthAlias = null;
-	private String proxyDomain = null;
+	private @Getter String proxyHost = null;
+	private @Getter int proxyPort = 8080;
+	private @Getter String proxyUsername = null;
+	private @Getter String proxyPassword = null;
+	private @Getter String proxyAuthAlias = null;
+	private @Getter String proxyDomain = null;
 
 	private FolderId basefolderId;
 
@@ -129,7 +130,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			throw new ConfigurationException("either url or mailAddress needs to be specified");
 		}
 	}
-	
+
 	@Override
 	public void open() throws FileSystemException {
 		super.open();
@@ -148,7 +149,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 				basefolderId=findFolder(inboxId,getBaseFolder());
 			} catch (Exception e) {
 				throw new FileSystemException("Could not find baseFolder ["+getBaseFolder()+"] as subfolder of ["+inboxId.getFolderName()+"]", e);
-			}	
+			}
 			if (basefolderId==null) {
 				log.debug("Could not get baseFolder ["+getBaseFolder()+"] as subfolder of ["+inboxId.getFolderName()+"]");
 				basefolderId=findFolder(null,getBaseFolder());
@@ -165,7 +166,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	@Override
 	protected ExchangeService createConnection() throws FileSystemException {
 		ExchangeService exchangeService = new ExchangeService(ExchangeVersion.Exchange2010_SP2);
-		
+
 		String defaultUsername = StringUtils.isEmpty(getAccessToken())? getUsername() : null;
 		String defaultPassword = StringUtils.isEmpty(getAccessToken())? getPassword() : getAccessToken();
 
@@ -180,8 +181,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			exchangeService.setCredentials(credentials);
 		}
 
-		
-		
+
+
 		if (StringUtils.isNotEmpty(getProxyHost()) && (StringUtils.isNotEmpty(getProxyAuthAlias()) || StringUtils.isNotEmpty(getProxyUsername()) || StringUtils.isNotEmpty(getProxyPassword()))) {
 			CredentialFactory proxyCf = new CredentialFactory(getProxyAuthAlias(), getProxyUsername(), getProxyPassword());
 			WebProxyCredentials webProxyCredentials = new WebProxyCredentials(proxyCf.getUsername(), proxyCf.getPassword(), getProxyDomain());
@@ -200,7 +201,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 				log.debug("did not validate redirection url ["+redirectionUrl+"]");
 				return super.autodiscoverRedirectionUrlValidationCallback(redirectionUrl);
 			}
-			
+
 		};
 
 		if (StringUtils.isEmpty(getUrl())) {
@@ -222,19 +223,19 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		return exchangeService;
 	}
 
-	
+
 	public FolderId findFolder(String folderName) throws Exception {
 		return findFolder(basefolderId, folderName);
 	}
-	
+
 	public FolderId findFolder(FolderId baseFolderId, String folderName) throws FileSystemException {
 		ExchangeService exchangeService = getConnection();
+		boolean invalidateConnectionOnRelease = false;
 		try {
 			FindFoldersResults findFoldersResultsIn;
 			FolderId result;
 			FolderView folderViewIn = new FolderView(10);
 			if (StringUtils.isNotEmpty(folderName)) {
-				log.debug("searching folder ["+folderName+"]");
 				SearchFilter searchFilterIn = new SearchFilter.IsEqualTo(FolderSchema.DisplayName, folderName);
 				if (baseFolderId==null) {
 					findFoldersResultsIn = exchangeService.findFolders(WellKnownFolderName.MsgFolderRoot, searchFilterIn, folderViewIn);
@@ -244,7 +245,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 				if (findFoldersResultsIn.getTotalCount() == 0) {
 					if(log.isDebugEnabled()) log.debug("no folder found with name [" + folderName + "] in basefolder ["+baseFolderId+"]");
 					return null;
-				} 
+				}
 				if (findFoldersResultsIn.getTotalCount() > 1) {
 					if (log.isDebugEnabled()) {
 						for (Folder folder:findFoldersResultsIn.getFolders()) {
@@ -264,10 +265,10 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			}
 			return result;
 		} catch (Exception e) {
-			invalidateConnection(exchangeService);
+			invalidateConnectionOnRelease = true;
 			throw new FileSystemException("Cannot find folder ["+folderName+"]", e);
 		} finally {
-			releaseConnection(exchangeService);
+			releaseConnection(exchangeService, invalidateConnectionOnRelease);
 		}
 	}
 
@@ -275,15 +276,15 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	@Override
 	public EmailMessage toFile(String filename) throws FileSystemException {
 		ExchangeService exchangeService = getConnection();
+		boolean invalidateConnectionOnRelease = false;
 		try {
 			ItemId itemId = ItemId.getItemIdFromString(filename);
-			EmailMessage item = EmailMessage.bind(exchangeService,itemId);
-			return item;
+			return EmailMessage.bind(exchangeService,itemId);
 		} catch (Exception e) {
-			invalidateConnection(exchangeService);
+			invalidateConnectionOnRelease = true;
 			throw new FileSystemException("Cannot convert filename ["+filename+"] into an ItemId", e);
 		} finally {
-			releaseConnection(exchangeService);
+			releaseConnection(exchangeService, invalidateConnectionOnRelease);
 		}
 	}
 
@@ -304,6 +305,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	@Override
 	public boolean exists(EmailMessage f) throws FileSystemException {
 		ExchangeService exchangeService = getConnection();
+		boolean invalidateConnectionOnRelease = false;
 		try {
 			EmailMessage emailMessage = EmailMessage.bind(exchangeService, f.getId());
 			return itemExistsInFolder(exchangeService, emailMessage.getParentFolderId(), f.getId().toString());
@@ -314,10 +316,10 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			}
 			throw new FileSystemException(e);
 		} catch (Exception e) {
-			invalidateConnection(exchangeService);
+			invalidateConnectionOnRelease = true;
 			throw new FileSystemException(e);
 		} finally {
-			releaseConnection(exchangeService);
+			releaseConnection(exchangeService, invalidateConnectionOnRelease);
 		}
 	}
 
@@ -329,6 +331,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			return null;
 		}
 		ExchangeService exchangeService = getConnection();
+		boolean invalidateConnectionOnRelease = false;
+		boolean closeConnectionOnExit = true;
 		try {
 			FolderId folderId = findFolder(basefolderId,folder);
 			ItemView view = new ItemView(getMaxNumberOfMessagesToList()<0?100:getMaxNumberOfMessagesToList());
@@ -341,32 +345,55 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 				findResults = exchangeService.findItems(folderId, view);
 			}
 			if (findResults.getTotalCount() == 0) {
-				releaseConnection(exchangeService);
-				return FileSystemUtils.getDirectoryStream((Iterator)null);
-			} else {
-				Iterator<Item> itemIterator = findResults.getItems().iterator();
-				return FileSystemUtils.getDirectoryStream(new Iterator<EmailMessage>() {
-
-					@Override
-					public boolean hasNext() {
-						return itemIterator.hasNext();
-					}
-
-					@Override
-					public EmailMessage next() {
-						// must cast <Items> to <EmailMessage> separately, cannot cast Iterator<Item> to Iterator<EmailMessage> 
-						return (EmailMessage)itemIterator.next();
-					}
-					
-				}, (Runnable)() -> { releaseConnection(exchangeService); });
+				return FileSystemUtils.getDirectoryStream((Iterator<EmailMessage>)null);
 			}
+			Iterator<Item> itemIterator = findResults.getItems().iterator();
+			DirectoryStream<EmailMessage> result = FileSystemUtils.getDirectoryStream(new Iterator<EmailMessage>() {
+
+				@Override
+				public boolean hasNext() {
+					return itemIterator.hasNext();
+				}
+
+				@Override
+				public EmailMessage next() {
+					// must cast <Items> to <EmailMessage> separately, cannot cast Iterator<Item> to Iterator<EmailMessage>
+					return (EmailMessage)itemIterator.next();
+				}
+
+			}, (Runnable)() -> { releaseConnection(exchangeService, false); });
+			closeConnectionOnExit = false;
+			return result;
 		} catch (Exception e) {
-			invalidateConnection(exchangeService);
+			invalidateConnectionOnRelease = true;
 			throw new FileSystemException("Cannot list messages in folder ["+folder+"]", e);
+		} finally {
+			if (closeConnectionOnExit) {
+				releaseConnection(exchangeService, invalidateConnectionOnRelease);
+			}
+		}
+	}
+	
+	@Override
+	public int getNumberOfFilesInFolder(String foldername) throws FileSystemException {
+		if (!isOpen()) {
+			return -1;
+		}
+		ExchangeService exchangeService = getConnection();
+		boolean invalidateConnectionOnRelease = false;
+		try {
+			FolderId folderId = findFolder(basefolderId,foldername);
+			Folder folder = Folder.bind(exchangeService,folderId);
+			return folder.getTotalCount();
+		} catch (Exception e) {
+			invalidateConnectionOnRelease = true;
+			throw new FileSystemException("Cannot list messages in folder ["+foldername+"]", e);
+		} finally {
+			releaseConnection(exchangeService, invalidateConnectionOnRelease);
 		}
 	}
 
-	
+
 	@Override
 	public boolean folderExists(String folder) throws FileSystemException {
 		FolderId folderId;
@@ -378,26 +405,26 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		return folderId!=null;
 	}
 
-	
+
 	@Override
 	public Message readFile(EmailMessage f, String charset) throws FileSystemException, IOException {
 		EmailMessage emailMessage;
-		PropertySet ps = new PropertySet(EmailMessageSchema.Subject);
-//		ps = new PropertySet(EmailMessageSchema.DateTimeReceived,
-//				EmailMessageSchema.From, EmailMessageSchema.Subject,
-//				EmailMessageSchema.Body,
-//				EmailMessageSchema.DateTimeSent);
-//		
+
 		ExchangeService exchangeService = getConnection();
+		boolean invalidateConnectionOnRelease = false;
 		try {
 			if (f.getId()!=null) {
-				emailMessage = EmailMessage.bind(exchangeService, f.getId(), ps);
+				PropertySet ps = new PropertySet(EmailMessageSchema.DateTimeReceived,
+						EmailMessageSchema.From, EmailMessageSchema.Subject,
+						EmailMessageSchema.DateTimeSent,
+						EmailMessageSchema.LastModifiedTime,
+						EmailMessageSchema.Size);
 				if (isReadMimeContents()) {
-					emailMessage.load(new PropertySet(ItemSchema.MimeContent));
+					ps.add(ItemSchema.MimeContent);
 				} else {
-					emailMessage.load(new PropertySet(ItemSchema.Body));
-					
+					ps.add(ItemSchema.Body);
 				}
+				emailMessage = EmailMessage.bind(exchangeService, f.getId(), ps);
 			} else {
 				emailMessage = f;
 			}
@@ -406,14 +433,17 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 				return new Message(mc.getContent(), charset);
 			}
 			return new Message(MessageBody.getStringFromMessageBody(emailMessage.getBody()));
+		} catch (FileSystemException e) {
+			invalidateConnectionOnRelease = true;
+			throw e;
 		} catch (Exception e) {
-			invalidateConnection(exchangeService);
+			invalidateConnectionOnRelease = true;
 			throw new FileSystemException(e);
 		} finally {
-			releaseConnection(exchangeService);
+			releaseConnection(exchangeService, invalidateConnectionOnRelease);
 		}
 	}
-	
+
 	@Override
 	public void deleteFile(EmailMessage f) throws FileSystemException {
 		 try {
@@ -425,28 +455,30 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	@Override
 	public EmailMessage moveFile(EmailMessage f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		ExchangeService exchangeService = getConnection();
+		boolean invalidateConnectionOnRelease = false;
 		try {
 			FolderId destinationFolderId = getFolderIdByFolderName(exchangeService, destinationFolder, createFolder);
 			return (EmailMessage)f.move(destinationFolderId);
 		} catch (Exception e) {
-			invalidateConnection(exchangeService);
+			invalidateConnectionOnRelease = true;
 			throw new FileSystemException(e);
 		} finally {
-			releaseConnection(exchangeService);
+			releaseConnection(exchangeService, invalidateConnectionOnRelease);
 		}
 	}
 
 	@Override
 	public EmailMessage copyFile(EmailMessage f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		ExchangeService exchangeService = getConnection();
+		boolean invalidateConnectionOnRelease = false;
 		try {
 			FolderId destinationFolderId = getFolderIdByFolderName(exchangeService, destinationFolder, createFolder);
 			return (EmailMessage)f.copy(destinationFolderId);
 		} catch (Exception e) {
-			invalidateConnection(exchangeService);
+			invalidateConnectionOnRelease = true;
 			throw new FileSystemException(e);
 		} finally {
-			releaseConnection(exchangeService);
+			releaseConnection(exchangeService, invalidateConnectionOnRelease);
 		}
 	}
 
@@ -461,6 +493,9 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	@Override
 	public String getName(EmailMessage f) {
 		try {
+			if (f.getId()==null) {
+				return null; // attachments don't have an id, but appear to be loaded at the same time as the main message
+			}
 			return f.getId().toString();
 		} catch (ServiceLocalException e) {
 			throw new RuntimeException("Could not determine Name",e);
@@ -469,11 +504,15 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	@Override
 	public String getCanonicalName(EmailMessage f) throws FileSystemException {
 		try {
+			if (f.getId()==null) {
+				return null; // attachments don't have an id, but appear to be loaded at the same time as the main message
+			}
 			return f.getId().getUniqueId();
 		} catch (ServiceLocalException e) {
 			throw new FileSystemException("Could not determine CanonicalName",e);
 		}
 	}
+
 	@Override
 	public Date getModificationTime(EmailMessage f) throws FileSystemException {
 		try {
@@ -482,8 +521,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			throw new FileSystemException("Could not determine modification time",e);
 		}
 	}
-	
-	
+
+
 	private String cleanAddress(EmailAddress address) {
 		String personal = address.getName();
 		String email = address.getAddress();
@@ -495,19 +534,20 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		}
 		return iaddress.toUnicodeString();
 	}
-	
+
 	private List<String> asList(EmailAddressCollection addressCollection) {
 		if (addressCollection==null) {
 			return Collections.emptyList();
 		}
 		return addressCollection.getItems().stream().map(this::cleanAddress).collect(Collectors.toList());
 	}
-	
-	
+
+
 	@Override
 	public Map<String, Object> getAdditionalFileProperties(EmailMessage f) throws FileSystemException {
 		EmailMessage emailMessage;
 		ExchangeService exchangeService = getConnection();
+		boolean invalidateConnectionOnRelease = false;
 		try {
 			if (f.getId()!=null) {
 				PropertySet ps=PropertySet.FirstClassProperties;
@@ -519,11 +559,11 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			result.put(IMailFileSystem.TO_RECEPIENTS_KEY, asList(emailMessage.getToRecipients()));
 			result.put(IMailFileSystem.CC_RECEPIENTS_KEY, asList(emailMessage.getCcRecipients()));
 			result.put(IMailFileSystem.BCC_RECEPIENTS_KEY, asList(emailMessage.getBccRecipients()));
-			result.put(IMailFileSystem.FROM_ADDRESS_KEY, getFrom(emailMessage)); 
-			result.put(IMailFileSystem.SENDER_ADDRESS_KEY, getSender(emailMessage)); 
-			result.put(IMailFileSystem.REPLY_TO_RECEPIENTS_KEY, getReplyTo(emailMessage)); 
-			result.put(IMailFileSystem.DATETIME_SENT_KEY, getDateTimeSent(emailMessage)); 
-			result.put(IMailFileSystem.DATETIME_RECEIVED_KEY, getDateTimeReceived(emailMessage)); 
+			result.put(IMailFileSystem.FROM_ADDRESS_KEY, getFrom(emailMessage));
+			result.put(IMailFileSystem.SENDER_ADDRESS_KEY, getSender(emailMessage));
+			result.put(IMailFileSystem.REPLY_TO_RECEPIENTS_KEY, getReplyTo(emailMessage));
+			result.put(IMailFileSystem.DATETIME_SENT_KEY, getDateTimeSent(emailMessage));
+			result.put(IMailFileSystem.DATETIME_RECEIVED_KEY, getDateTimeReceived(emailMessage));
 			try {
 				InternetMessageHeaderCollection internetMessageHeaders = emailMessage.getInternetMessageHeaders();
 				if (internetMessageHeaders!=null) {
@@ -547,27 +587,24 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			} catch (ServiceLocalException e) {
 				log.warn("Message ["+f.getId()+"] Cannot load message headers: "+ e.getMessage());
 			}
- 			result.put(IMailFileSystem.BEST_REPLY_ADDRESS_KEY, MailFileSystemUtils.findBestReplyAddress(result,getReplyAddressFields()));
+			result.put(IMailFileSystem.BEST_REPLY_ADDRESS_KEY, MailFileSystemUtils.findBestReplyAddress(result,getReplyAddressFields()));
 			return result;
 		} catch (Exception e) {
-			invalidateConnection(exchangeService);
-			exchangeService = null;
+			invalidateConnectionOnRelease = true;
 			throw new FileSystemException(e);
 		} finally {
-			if (exchangeService!=null) {
-				releaseConnection(exchangeService);
-			}
+			releaseConnection(exchangeService, invalidateConnectionOnRelease);
 		}
 	}
 
-	
+
 	@Override
 	public void forwardMail(EmailMessage emailMessage, String destination) throws FileSystemException {
 		try {
 			ResponseMessage forward = emailMessage.createForward();
 			forward.getToRecipients().clear();
 			forward.getToRecipients().add(destination);
-			
+
 //			if(forwardMessage != null){
 //				forward.setBodyPrefix(MessageBody.getMessageBodyFromText(forwardMessage));
 //			}
@@ -590,6 +627,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	public Iterator<Attachment> listAttachments(EmailMessage f) throws FileSystemException {
 		List<Attachment> result=new LinkedList<Attachment>();
 		ExchangeService exchangeService = getConnection();
+		boolean invalidateConnectionOnRelease = false;
 		try {
 			EmailMessage emailMessage;
 			if (f.getId()!=null) {
@@ -604,10 +642,10 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			}
 			return result.iterator();
 		} catch (Exception e) {
-			invalidateConnection(exchangeService);
+			invalidateConnectionOnRelease = true;
 			throw new FileSystemException("cannot read attachments",e);
 		} finally {
-			releaseConnection(exchangeService);
+			releaseConnection(exchangeService, invalidateConnectionOnRelease);
 		}
 	}
 
@@ -687,8 +725,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		return result;
 	}
 
-	
-	
+
+
 	public FolderId getFolderIdByFolderName(ExchangeService exchangeService, String folderName, boolean create) throws Exception{
 		FindFoldersResults findResults;
 		findResults = exchangeService.findFolders(basefolderId, new SearchFilter.IsEqualTo(FolderSchema.DisplayName, folderName), new FolderView(Integer.MAX_VALUE));
@@ -712,15 +750,16 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	@Override
 	public void createFolder(String folderName) throws FileSystemException {
 		ExchangeService exchangeService = getConnection();
+		boolean invalidateConnectionOnRelease = false;
 		try {
 			Folder folder = new Folder(exchangeService);
 			folder.setDisplayName(folderName);
 			folder.save(new FolderId(basefolderId.getUniqueId()));
 		} catch (Exception e) {
-			invalidateConnection(exchangeService);
+			invalidateConnectionOnRelease = true;
 			throw new FileSystemException("cannot create folder ["+folderName+"]", e);
 		} finally {
-			releaseConnection(exchangeService);
+			releaseConnection(exchangeService, invalidateConnectionOnRelease);
 		}
 	}
 
@@ -728,19 +767,21 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	@Override
 	public void removeFolder(String folderName) throws FileSystemException {
 		ExchangeService exchangeService = getConnection();
+		boolean invalidateConnectionOnRelease = false;
 		try {
 			FolderId folderId = getFolderIdByFolderName(exchangeService, folderName, false);
 			Folder folder = Folder.bind(exchangeService, folderId);
+			folder.empty(DeleteMode.HardDelete, true);
 			folder.delete(DeleteMode.HardDelete);
 		} catch (Exception e) {
-			invalidateConnection(exchangeService);
+			invalidateConnectionOnRelease = true;
 			throw new FileSystemException(e);
 		} finally {
-			releaseConnection(exchangeService);
+			releaseConnection(exchangeService, invalidateConnectionOnRelease);
 		}
 	}
 
-	
+
 	protected String getFrom(EmailMessage emailMessage) throws FileSystemException {
 		try {
 			return cleanAddress(emailMessage.getFrom());
@@ -749,7 +790,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			return null;
 		}
 	}
-	
+
 	protected String getSender(EmailMessage emailMessage) throws FileSystemException {
 		try {
 			EmailAddress sender = emailMessage.getSender();
@@ -768,7 +809,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			return null;
 		}
 	}
-	
+
 	protected Date getDateTimeSent(EmailMessage emailMessage) throws FileSystemException {
 		try {
 			return emailMessage.getDateTimeSent();
@@ -777,7 +818,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			return null;
 		}
 	}
-	
+
 	protected Date getDateTimeReceived(EmailMessage emailMessage) throws FileSystemException {
 		try {
 			return emailMessage.getDateTimeReceived();
@@ -786,16 +827,19 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			return null;
 		}
 	}
-	
+
 	@Override
 	public String getSubject(EmailMessage emailMessage) throws FileSystemException {
 		try {
+			if (emailMessage.getId()!=null) { // attachments don't have an id, but appear to be loaded at the same time as the main message
+				emailMessage.load(new PropertySet(ItemSchema.Subject)); 
+			}
 			return emailMessage.getSubject();
-		} catch (ServiceLocalException e) {
+		} catch (Exception e) {
 			throw new FileSystemException("Could not get Subject", e);
 		}
 	}
-	
+
 
 	@Override
 	public Message getMimeContent(EmailMessage emailMessage) throws FileSystemException {
@@ -806,19 +850,20 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		} catch (Exception e) {
 			throw new FileSystemException("Could not get MimeContent", e);
 		}
-		
 	}
-	
+
 	@Override
 	public void extractEmail(EmailMessage emailMessage, SaxElementBuilder emailXml) throws FileSystemException {
 		try {
 			if (emailMessage.getId()!=null) {
-				PropertySet ps = new PropertySet(EmailMessageSchema.DateTimeSent, EmailMessageSchema.DateTimeReceived, EmailMessageSchema.From, 
-						EmailMessageSchema.ToRecipients, EmailMessageSchema.CcRecipients, EmailMessageSchema.BccRecipients, EmailMessageSchema.Subject, 
+				PropertySet ps = new PropertySet(EmailMessageSchema.DateTimeSent, EmailMessageSchema.DateTimeReceived, EmailMessageSchema.From,
+						EmailMessageSchema.ToRecipients, EmailMessageSchema.CcRecipients, EmailMessageSchema.BccRecipients, EmailMessageSchema.Subject,
 						EmailMessageSchema.Body, EmailMessageSchema.Attachments);
 				emailMessage.load(ps);
 			}
 			MailFileSystemUtils.addEmailInfo(this, emailMessage, emailXml);
+		} catch (FileSystemException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new FileSystemException(e);
 		}
@@ -829,11 +874,13 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		try {
 			attachment.load();
 			MailFileSystemUtils.addAttachmentInfo(this, attachment, attachmentsXml);
+		} catch (FileSystemException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new FileSystemException(e);
 		}
 	}
-	
+
 
 
 	@Override
@@ -843,10 +890,11 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		try {
 			if (isOpen()) {
 				ExchangeService exchangeService = getConnection();
+				boolean invalidateConnectionOnRelease = false;
 				try {
 					url = exchangeService.getUrl().toString();
 				} finally {
-					releaseConnection(exchangeService);
+					releaseConnection(exchangeService, invalidateConnectionOnRelease);
 				}
 			}
 		} catch (Exception e) {
@@ -857,7 +905,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 
 	private static class RedirectionUrlCallback implements IAutodiscoverRedirectionUrl {
-		
+
 		@Override
 		public boolean autodiscoverRedirectionUrlValidationCallback(String redirectionUrl) {
 			return redirectionUrl.toLowerCase().startsWith("https://"); //TODO: provide better test on how to trust this url
@@ -868,14 +916,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	public void setMailAddress(String mailAddress) {
 		this.mailAddress = mailAddress;
 	}
-	public String getMailAddress() {
-		return mailAddress;
-	}
 
 	@IbisDoc({"2", "When <code>true</code>, all redirect uris are accepted when connecting to the server", "true"})
-	public boolean isValidateAllRedirectUrls() {
-		return validateAllRedirectUrls;
-	}
 	public void setValidateAllRedirectUrls(boolean validateAllRedirectUrls) {
 		this.validateAllRedirectUrls = validateAllRedirectUrls;
 	}
@@ -884,20 +926,14 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	public void setUrl(String url) {
 		this.url = url;
 	}
-	public String getUrl() {
-		return url;
-	}
 
 	@IbisDoc({"4", "AccessToken for authentication to Exchange mail server", ""})
 	public void setAccessToken(String accessToken) {
 		this.accessToken = accessToken;
 	}
-	public String getAccessToken() {
-		return accessToken;
-	}
 
-	@IbisDoc({"5", "Alias used to obtain accessToken or username and password for authentication to Exchange mail server. " + 
-			"If the alias refers to a combination of a username and a password, the deprecated Basic Authentication method is used. " + 
+	@IbisDoc({"5", "Alias used to obtain accessToken or username and password for authentication to Exchange mail server. " +
+			"If the alias refers to a combination of a username and a password, the deprecated Basic Authentication method is used. " +
 			"If the alias refers to a password without a username, the password is treated as the accessToken.", ""})
 	@Override
 	public void setAuthAlias(String authAlias) {
@@ -926,57 +962,36 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	public void setFilter(String filter) {
 		this.filter = filter;
 	}
-	public String getFilter() {
-		return filter;
-	}
 
 
 	@IbisDoc({"13", "proxy host", ""})
 	public void setProxyHost(String proxyHost) {
 		this.proxyHost = proxyHost;
 	}
-	public String getProxyHost() {
-		return proxyHost;
-	}
 
-	@IbisDoc({"14", "proxy port", ""})
+	@IbisDoc({"14", "proxy port", "8080"})
 	public void setProxyPort(int proxyPort) {
 		this.proxyPort = proxyPort;
-	}
-	public int getProxyPort() {
-		return proxyPort;
 	}
 
 	@IbisDoc({"15", "proxy username", ""})
 	public void setProxyUsername(String proxyUsername) {
 		this.proxyUsername = proxyUsername;
 	}
-	public String getProxyUsername() {
-		return proxyUsername;
-	}
 
 	@IbisDoc({"16", "proxy password", ""})
 	public void setProxyPassword(String proxyPassword) {
 		this.proxyPassword = proxyPassword;
-	}
-	public String getProxyPassword() {
-		return proxyPassword;
 	}
 
 	@IbisDoc({"17", "proxy authAlias", ""})
 	public void setProxyAuthAlias(String proxyAuthAlias) {
 		this.proxyAuthAlias = proxyAuthAlias;
 	}
-	public String getProxyAuthAlias() {
-		return proxyAuthAlias;
-	}
 
 	@IbisDoc({"18", "proxy domain", ""})
 	public void setProxyDomain(String proxyDomain) {
 		this.proxyDomain = proxyDomain;
 	}
-	public String getProxyDomain() {
-		return proxyDomain;
-	}
-	
+
 }
