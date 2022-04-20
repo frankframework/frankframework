@@ -31,11 +31,11 @@ createGenericJMSDestination('ActiveMQ', 'i4testiaf_ff-activemq', 'jms/i4testiaf_
 # Artemis
 createJMSProvider('Artemis', 'org.apache.activemq.artemis.jndi.ActiveMQInitialContextFactory', 'tcp://host.docker.internal:61615?type=XA_CF', 'classpath=/work/drivers/artemis-jms-client-all.jar')
 
-createGenericJMSCF('Artemis', 'qcf', 'jms/qcf-activemq-artemis', 'XAConnectionFactory')
+createGenericJMSCF('Artemis', 'qcf', 'jms/qcf-artemis', 'XAConnectionFactory')
 
-createGenericJMSDestination('Artemis', 'i4testiaf_in-activemq-artemis', 'jms/i4testiaf_in-activemq-artemis', 'dynamicQueues/Q.TEST.IN')
-createGenericJMSDestination('Artemis', 'i4testiaf_out-activemq-artemis', 'jms/i4testiaf_out-activemq-artemis', 'dynamicQueues/Q.TEST.OUT')
-createGenericJMSDestination('Artemis', 'i4testiaf_ff-activemq-artemis', 'jms/i4testiaf_ff-activemq-artemis', 'dynamicQueues/Q.TEST.FF')
+createGenericJMSDestination('Artemis', 'i4testiaf_in-artemis', 'jms/i4testiaf_in-artemis', 'dynamicQueues/Q.TEST.IN')
+createGenericJMSDestination('Artemis', 'i4testiaf_out-artemis', 'jms/i4testiaf_out-artemis', 'dynamicQueues/Q.TEST.OUT')
+createGenericJMSDestination('Artemis', 'i4testiaf_ff-artemis', 'jms/i4testiaf_ff-artemis', 'dynamicQueues/Q.TEST.FF')
 
 
 #p0 = AdminJMS.listJMSProviders()
