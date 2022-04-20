@@ -1,0 +1,11 @@
+<root>
+	<pipe name="Endpoint" style="endpoint" shape="endpoint" elementID="-endpoint"><sender className=""/><!--forward name="success" targetID="-validator"/--></pipe>
+	<pipe name="Validator" style="validator" shape="validator" elementID="-validator"><sender className=""/><!--forward name="success" targetID="-wrapper"/--></pipe>
+	<pipe name="Wrapper" style="wrapper" shape="wrapper" elementID="-wrapper"><sender className=""/><!--forward name="success" targetID="-translator"/--></pipe>
+	<pipe name="Translator" style="translator" shape="translator" elementID="-translator"><sender className=""/><!--forward name="success" targetID="-router"/--></pipe>
+	<pipe name="Router" style="router" shape="router" elementID="-router"><sender className=""/><!--forward name="success" targetID="-splitter"/--></pipe>
+	<pipe name="Splitter" style="splitter" shape="splitter" elementID="-splitter"><sender className=""/><!--forward name="success" targetID="-session"/--></pipe>
+	<pipe name="Session" style="session" shape="session" elementID="-session"><sender className=""/><!--forward name="success" targetID="-database"/--></pipe>
+	<pipe name="Database" style="endpoint" shape="database" elementID="-database"><sender className=""/><sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"/><!--forward name="success" targetID="-errorhandling"/--></pipe>
+	<pipe name="ErrorHandling" style="errorhandling" shape="errorhandling" elementID="-errorhandling" errorHandling="true"><sender className=""/></pipe>
+</root>
