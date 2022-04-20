@@ -11,8 +11,8 @@
 			<pipe name="Send2Jms"
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jms.JmsSender"
-					jmsRealm="qcf" destinationName="jms/i4testiaf_in" synchronous="true"
-					replyToName="jms/i4testiaf_out">
+					jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_in}" synchronous="true"
+					replyToName="${jms.destination.i4testiaf_out}">
 					<param name="SOURCE" value="I4TIAF3" />
 				</sender>
 				<forward name="success" path="EXIT" />
@@ -22,10 +22,10 @@
 	<adapter name="CompactMessage-JmsListener" active="${active.jms}">
 		<receiver chompCharSize="50" elementToMoveChain="AuditLog_Action;Message;Text">
 			<listener className="nl.nn.adapterframework.jms.JmsListener"
-				destinationName="jms/i4testiaf_in" useReplyTo="false" jmsRealm="qcf"
+				destinationName="${jms.destination.i4testiaf_in}" useReplyTo="false" jmsRealm="qcf"
 				forceMessageIdAsCorrelationId="true" messageSelector="SOURCE ='I4TIAF3'">
 				<sender className="nl.nn.adapterframework.jms.JmsSender"
-					destinationName="jms/i4testiaf_out" jmsRealm="qcf">
+					destinationName="${jms.destination.i4testiaf_out}" jmsRealm="qcf">
 					<param name="SOURCE" value="I4TIAF3" />
 				</sender>
 			</listener>
