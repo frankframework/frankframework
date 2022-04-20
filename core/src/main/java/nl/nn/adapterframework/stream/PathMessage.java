@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.stream;
 
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
@@ -26,7 +25,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 public class PathMessage extends Message {
 
 	private static final long serialVersionUID = -6810228164430433617L;
-	private Path path;
+	private transient Path path;
 
 	public PathMessage(Path path, Map<String,Object> context) {
 		super(() -> Files.newInputStream(path), new MessageContext(context)
@@ -53,16 +52,6 @@ public class PathMessage extends Message {
 			}
 		}
 		return super.size();
-	}
-
-	/*
-	 * this method is used by Serializable, to serialize objects to a stream.
-	 */
-	private void writeObject(ObjectOutputStream stream) throws IOException {
-		Path curPath = path;
-		path = null; // avoid trying to write Path, that might be not serializable, and is not guaranteed to be available at deserialization time
-		stream.defaultWriteObject();
-		path = curPath;
 	}
 
 }

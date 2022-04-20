@@ -17,15 +17,13 @@ package nl.nn.adapterframework.stream;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.Map;
 
 public class FileMessage extends Message {
 
 	private static final long serialVersionUID = 5219660236736759665L;
 
-	private File file;
+	private transient File file;
 
 	public FileMessage(File file, Map<String,Object> context) {
 		super(() -> new FileInputStream(file), new MessageContext(context)
@@ -51,16 +49,6 @@ public class FileMessage extends Message {
 			return file.length();
 		}
 		return super.size();
-	}
-
-	/*
-	 * this method is used by Serializable, to serialize objects to a stream.
-	 */
-	private void writeObject(ObjectOutputStream stream) throws IOException {
-		File curFile = file;
-		file = null; // avoid trying to write File, that might be not serializable, and is not guaranteed to be available at deserialization time
-		stream.defaultWriteObject();
-		file = curFile;
 	}
 
 }

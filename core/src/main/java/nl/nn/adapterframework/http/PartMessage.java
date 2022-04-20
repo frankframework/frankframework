@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.http;
 
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.Map;
 
 import javax.mail.MessagingException;
@@ -31,7 +29,7 @@ public class PartMessage extends Message {
 
 	private static final long serialVersionUID = 4740404985426114492L;
 
-	private Part part;
+	private transient Part part;
 
 	public PartMessage(Part part) throws MessagingException {
 		this(new MessageContext(), part);
@@ -69,16 +67,6 @@ public class PartMessage extends Message {
 			}
 		}
 		return super.size();
-	}
-
-	/*
-	 * this method is used by Serializable, to serialize objects to a stream.
-	 */
-	private void writeObject(ObjectOutputStream stream) throws IOException {
-		Part curPart = part;
-		part = null; // avoid trying to write Part, that might be not serializable, and is not guaranteed to be available at deserialization time
-		stream.defaultWriteObject();
-		part = curPart;
 	}
 
 }
