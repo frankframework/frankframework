@@ -96,13 +96,6 @@
 	</servlet-mapping>
 	<!-- END Soap Router -->
 
-	<!-- Index Servlet -->
-	<servlet>
-		<display-name>Webapp index redirect</display-name>
-		<servlet-name>IndexProxy</servlet-name>
-		<servlet-class>nl.nn.adapterframework.webcontrol.RedirectIndexProxy</servlet-class>
-	</servlet>
-
 	<!-- Test Tool Servlet -->
 	<servlet>
 		<servlet-name>TestToolServlet</servlet-name>
@@ -110,11 +103,6 @@
 	</servlet>
 
 	<!-- AdapterFramework servlets -->
-	<servlet>
-		<display-name>file viewer</display-name>
-		<servlet-name>FileViewerServlet</servlet-name>
-		<servlet-class>nl.nn.adapterframework.webcontrol.FileViewerServlet</servlet-class>
-	</servlet>
 	<servlet>
 		<display-name>HttpListener</display-name>
 		<servlet-name>HttpListener</servlet-name>
@@ -127,10 +115,6 @@
 	</servlet>
 
 	<servlet-mapping>
-		<servlet-name>FileViewerServlet</servlet-name>
-		<url-pattern>/FileViewerServlet</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
 		<servlet-name>HttpListener</servlet-name>
 		<url-pattern>/HttpListener</url-pattern>
 	</servlet-mapping>
@@ -141,11 +125,6 @@
 	<servlet-mapping>
 		<servlet-name>RestListener</servlet-name>
 		<url-pattern>/rest-public/*</url-pattern>
-	</servlet-mapping>
-
-	<servlet-mapping>
-		<servlet-name>IndexProxy</servlet-name>
-		<url-pattern>/index.jsp</url-pattern>
 	</servlet-mapping>
 
 	<!-- Test Tool Servlet Mapping -->

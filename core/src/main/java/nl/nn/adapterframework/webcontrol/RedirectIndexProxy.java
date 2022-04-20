@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 Nationale-Nederlanden
+   Copyright 2020 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,16 +16,19 @@
 package nl.nn.adapterframework.webcontrol;
 
 import java.io.IOException;
+
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 
+import nl.nn.adapterframework.http.HttpServletBase;
+import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.util.AppConstants;
 
-public class RedirectIndexProxy extends HttpServlet {
+@IbisInitializer
+public class RedirectIndexProxy extends HttpServletBase {
 
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
@@ -34,7 +37,12 @@ public class RedirectIndexProxy extends HttpServlet {
 			response.sendRedirect(consoleLocation);
 		}
 		else {
-			response.sendRedirect("rest/showConfigurationStatus");
+			response.sendRedirect("iaf/gui");
 		}
+	}
+
+	@Override
+	public String getUrlMapping() {
+		return "/index.jsp";
 	}
 }

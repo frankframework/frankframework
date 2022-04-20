@@ -31,7 +31,6 @@ import java.util.StringTokenizer;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.Source;
@@ -42,6 +41,8 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import nl.nn.adapterframework.http.HttpServletBase;
+import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.statistics.StatisticsUtil;
 import nl.nn.adapterframework.statistics.parser.StatisticsParser;
 import nl.nn.adapterframework.util.AppConstants;
@@ -82,8 +83,9 @@ import nl.nn.adapterframework.util.XmlUtils;
  	The last item specifies which stylesheet to use.
  * @author Johan Verrips 
  */
-public class FileViewerServlet extends HttpServlet  {
-	protected static Logger log = LogUtil.getLogger(FileViewerServlet.class);	
+@IbisInitializer
+public class FileViewerServlet extends HttpServletBase {
+	protected static Logger log = LogUtil.getLogger(FileViewerServlet.class);
 
 	// key that is looked up to retrieve texts to be signaled
 	private static final String fvConfigKey="FileViewerServlet.signal";
@@ -110,7 +112,7 @@ public class FileViewerServlet extends HttpServlet  {
 	}
 
 
-	public static void transformReader(Reader reader, String filename, Map<String, Object> parameters, HttpServletResponse response, String input_prefix, String input_postfix, String stylesheetUrl, String title) throws DomBuilderException, TransformerException, IOException { 
+	public static void transformReader(Reader reader, String filename, Map<String, Object> parameters, HttpServletResponse response, String input_prefix, String input_postfix, String stylesheetUrl, String title) throws DomBuilderException, TransformerException, IOException {
 		PrintWriter out = response.getWriter();
 		Reader fileReader = new EncapsulatingReader(reader, input_prefix, input_postfix, true);
 		URL xsltSource = ClassUtils.getResourceURL(stylesheetUrl);
@@ -126,7 +128,7 @@ public class FileViewerServlet extends HttpServlet  {
 		}
 	}
 
-	public static void transformSource(Source source, Map<String, Object> parameters, HttpServletResponse response, String stylesheetUrl, String title) throws TransformerException, IOException { 
+	public static void transformSource(Source source, Map<String, Object> parameters, HttpServletResponse response, String stylesheetUrl, String title) throws TransformerException, IOException {
 		PrintWriter out = response.getWriter();
 		URL xsltSource = ClassUtils.getResourceURL(stylesheetUrl);
 		Transformer transformer = XmlUtils.createTransformer(xsltSource);
@@ -154,7 +156,7 @@ public class FileViewerServlet extends HttpServlet  {
 			out.println("<link rel=\"stylesheet\" type=\"text/css\" href=\""+AppConstants.getInstance().getProperty(fvConfigKey+".css")+"\">");
 			out.println("</head>");
 			out.println("<body>");
-	
+
 			LineNumberReader lnr = new LineNumberReader(reader);
 			String line;
 			while ((line=lnr.readLine())!=null) {
@@ -228,7 +230,7 @@ public class FileViewerServlet extends HttpServlet  {
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		try {
-	
+
 			String type=(String)request.getAttribute("resultType");
 			if (type==null) { type=request.getParameter("resultType"); }
 			String fileName=(String)request.getAttribute("fileName");
@@ -281,7 +283,7 @@ public class FileViewerServlet extends HttpServlet  {
 
 					//log.debug("adapterName ["+adapterName+"]");
 					String extract;
-					
+
 					if (StringUtils.isEmpty(adapterName) || StringUtils.isEmpty(timestamp)) {
 						StatisticsParser sp = new StatisticsParser(adapterName,timestamp); // split by pipe not yet supported
 						sp.digestStatistics(fileName);
@@ -325,6 +327,16 @@ public class FileViewerServlet extends HttpServlet  {
 	@Override
 	public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		doGet(request, response);
+	}
+
+	@Override
+	public String[] getRoles() {
+		return new String[] {"IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester"};
+	}
+
+	@Override
+	public String getUrlMapping() {
+		return "/FileViewerServlet";
 	}
 
 }
