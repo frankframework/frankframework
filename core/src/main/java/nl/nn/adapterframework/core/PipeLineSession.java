@@ -26,6 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.Logger;
 
+import lombok.SneakyThrows;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
@@ -34,7 +35,7 @@ import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Basic implementation of <code>PipeLineSession</code>.
- * 
+ *
  * @author  Johan Verrips IOS
  * @since   version 3.2.2
  */
@@ -81,8 +82,9 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	}
 
 	//Shouldn't this be `id` ? See {#setListenerParameters(...)};
+	@SneakyThrows
 	public String getMessageId() {
-		return (String) Message.asObject(get(messageIdKey)); // Allow Ladybug to wrap it in a Message
+		return Message.asString(get(messageIdKey)); // Allow Ladybug to wrap it in a Message
 	}
 
 	public Message getMessage(String key) {
@@ -182,7 +184,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 */
 	public String get(String key, String defaultValue) {
 		String ob = this.getString(key);
-	
+
 		if (ob == null) return defaultValue;
 		return ob;
 	}
