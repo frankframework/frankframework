@@ -36,7 +36,7 @@ import lombok.Getter;
  *      &lt;Exit name="NotAllowed" state="ERROR" code="403" empty="true" /&gt;
  *      &lt;Exit name="Teapot" state="SUCCESS" code="418" /&gt;
  *      &lt;Exit name="ServerError" state="ERROR" code="500" /&gt;
- *   &lt;/exits&gt;
+ *   &lt;/Exits&gt;
  * </pre></code>
  */
 public class PipeLineExits {
