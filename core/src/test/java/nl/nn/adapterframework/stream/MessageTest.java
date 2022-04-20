@@ -1122,34 +1122,4 @@ public class MessageTest {
 		}
 	}
 
-	@Test
-	public void testHashCodes() {
-		String input = "test";
-		Message message = new Message(input);
-
-		assertEquals(input.hashCode(), message.hashCode());
-		assertEquals(0, Message.nullMessage().hashCode());
-	}
-
-	@Test
-	public void testEquals() {
-		String input = "test";
-		Message message1 = new Message(input);
-		Message message2 = new Message(input);
-		assertEquals(message1, message2);
-		assertTrue(message1.equals(message2));
-
-		Message message3 = new Message(new String(input));
-		assertEquals(message1, message3);
-		assertTrue(message1.equals(message3));
-
-		Message message4 = Message.nullMessage();
-		assertFalse(message1.equals(message4));
-		assertFalse(message4.equals(message1));
-
-		assertTrue(message4.equals(Message.nullMessage()));
-
-		assertFalse(message1.equals(input));
-		assertFalse(message1.equals(null));
-	}
 }

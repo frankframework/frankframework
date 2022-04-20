@@ -609,23 +609,6 @@ public class Message implements Serializable {
 		return result.toString();
 	}
 
-	@Override
-	//Effective Java, 2nd Edition (page 49): If the value of the field is null, return 0.
-	public int hashCode() {
-		return (request != null) ? request.hashCode() : 0;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if(obj instanceof Message) {
-			Message message2 = (Message) obj;
-			if(!isNull()) {
-				return request.equals(message2.asObject());
-			}
-			return message2.isNull();
-		}
-		return false;
-	}
 
 	public static Message asMessage(Object object) {
 		if (object instanceof Message) {
@@ -643,6 +626,7 @@ public class Message implements Serializable {
 		return new Message(null, object);
 	}
 
+	@Deprecated
 	public static Object asObject(Object object) {
 		if (object instanceof Message) {
 			return ((Message) object).asObject();
