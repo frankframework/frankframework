@@ -610,12 +610,6 @@ public class Message implements Serializable {
 	}
 
 	@Override
-	//Effective Java, 2nd Edition (page 49): If the value of the field is null, return 0.
-	public int hashCode() {
-		return (request != null) ? request.hashCode() : 0;
-	}
-
-	@Override
 	public boolean equals(Object obj) {
 		if(obj instanceof Message) {
 			Message message2 = (Message) obj;
