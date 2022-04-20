@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:element name="manageFileSystemREQ" type="manageFileSystemREQType"/>
+	<xsd:element name="manageFileSystemRLY" type="manageFileSystemRLYType"/>
+	<xsd:complexType name="manageFileSystemREQType">
+		<xsd:sequence>
+			<xsd:choice maxOccurs="unbounded">
+				<xsd:element name="list" type="listType"/>
+				<xsd:element name="info" type="infoType"/>
+				<xsd:element name="read" type="readType"/>
+				<xsd:element name="readDelete" type="readDeleteType"/>
+				<xsd:element name="move" type="moveType"/>
+				<xsd:element name="copy" type="copyType"/>
+				<xsd:element name="delete" type="deleteType"/>
+				<xsd:element name="mkdir" type="mkdirType"/>
+				<xsd:element name="rmdir" type="rmdirType"/>
+				<xsd:element name="write" type="writeType"/>
+				<xsd:element name="append" type="appendType"/>
+				<xsd:element name="rename" type="renameType"/>
+			</xsd:choice>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="manageFileSystemRLYType">
+		<xsd:sequence>
+			<xsd:element name="completionInformation" type="completionInformationType"/>
+			<xsd:element name="results" minOccurs="0">
+				<xsd:complexType>
+					<xsd:complexContent>
+						<xsd:extension base="resultsType">
+							<xsd:attribute name="count" use="optional"/>
+						</xsd:extension>
+					</xsd:complexContent>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="listType">
+		<xsd:sequence>
+			<xsd:element name="inputFolder" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="infoType">
+		<xsd:sequence>
+			<xsd:element name="filename" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="readType">
+		<xsd:sequence>
+			<xsd:element name="filename" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="readDeleteType">
+		<xsd:sequence>
+			<xsd:element name="filename" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="moveType">
+		<xsd:sequence>
+			<xsd:element name="filename" type="xsd:string"/>
+			<xsd:element name="destination" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="copyType">
+		<xsd:sequence>
+			<xsd:element name="filename" type="xsd:string"/>
+			<xsd:element name="destination" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="deleteType">
+		<xsd:sequence>
+			<xsd:element name="filename" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="mkdirType">
+		<xsd:sequence>
+			<xsd:element name="inputFolder" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="rmdirType">
+		<xsd:sequence>
+			<xsd:element name="inputFolder" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="writeType">
+		<xsd:sequence>
+			<xsd:element name="filename" type="xsd:string"/>
+			<xsd:element name="contents" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="appendType">
+		<xsd:sequence>
+			<xsd:element name="filename" type="xsd:string"/>
+			<xsd:element name="contents" type="xsd:string" minOccurs="0"/>
+			
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="renameType">
+		<xsd:sequence>
+			<xsd:element name="filename" type="xsd:string"/>
+			<xsd:element name="destination" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="completionInformationType">
+		<xsd:sequence>
+			<xsd:element name="returnCode" type="returnCodeType"/>
+			<xsd:element name="reasonCode" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="message" type="xsd:string" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="resultsType">
+		<xsd:sequence>
+			<xsd:element name="result" type="xsd:anyType" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="returnCodeType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="OK"/>
+			<xsd:enumeration value="NOT_OK"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>

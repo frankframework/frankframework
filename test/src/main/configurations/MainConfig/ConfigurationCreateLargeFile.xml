@@ -12,8 +12,7 @@
 <module>
 	<adapter name="CreateLargeFile" active="${CreateLargeFile.active}"
 		description="Creates a large file using a small by appending small file content multiple times">
-		<receiver name="Java Receiver for Starstar"
-			className="nl.nn.adapterframework.receivers.GenericReceiver">
+		<receiver>
 			<listener name="Starstar"
 				serviceName="ibis4test-CreateLargeFile"
 				className="nl.nn.adapterframework.receivers.JavaListener" />
@@ -23,20 +22,20 @@
 				<exit path="READY" state="success" />
 			</exits>
 			<pipe name="ReadFile"
-				className="nl.nn.adapterframework.pipes.FixedResult"
+				className="nl.nn.adapterframework.pipes.FixedResultPipe"
 				storeResultInSessionKey="fileContent"
-				fileName="CreateLargeFile/input_small.txt">
+				filename="CreateLargeFile/input_small.txt">
 				<forward name="success" path="CreateFile" />
 			</pipe>
 			<pipe name="CreateFile" actions="create"
 				className="nl.nn.adapterframework.pipes.FilePipe"
-				directory="${log.dir}" fileName="input_big.xml">
+				directory="${log.dir}" filename="input_big.xml">
 				<forward name="success" path="WriteFile" />
 			</pipe>
 			<pipe name="WriteFile" actions="write"
 				className="nl.nn.adapterframework.pipes.FilePipe"
 				directory="${log.dir}" getInputFromFixedValue="&lt;dummy&gt;"
-				fileName="input_big.xml">
+				filename="input_big.xml">
 				<forward name="success" path="SetStartIndex" />
 			</pipe>
 			<pipe name="SetStartIndex"
@@ -58,7 +57,7 @@
 			</pipe>
 			<pipe name="AppendFile" actions="write_append"
 				className="nl.nn.adapterframework.pipes.FilePipe"
-				directory="${log.dir}" fileName="input_big.xml"
+				directory="${log.dir}" filename="input_big.xml"
 				getInputFromSessionKey="fileContent">
 				<forward name="success" path="IncrementIndex" />
 			</pipe>
@@ -69,7 +68,7 @@
 			</pipe>
 			<pipe name="AppendTag" actions="write_append"
 				className="nl.nn.adapterframework.pipes.FilePipe"
-				directory="${log.dir}" fileName="input_big.xml"
+				directory="${log.dir}" filename="input_big.xml"
 				getInputFromFixedValue="&lt;/dummy&gt;">
 				<forward name="success" path="IncrementIndex" />
 			</pipe>
@@ -89,8 +88,7 @@
 	</adapter>
 	<adapter name="DeleteLargeFile"
 		description="Deletes the created large file">
-		<receiver name="Java Receiver for Starstar"
-			className="nl.nn.adapterframework.receivers.GenericReceiver">
+		<receiver>
 			<listener name="Starstar"
 				serviceName="ibis4test-DeleteLargeFile"
 				className="nl.nn.adapterframework.receivers.JavaListener" />
@@ -99,9 +97,9 @@
 			<exits>
 				<exit path="READY" state="success" />
 			</exits>
-			<pipe name="DeleteFile" actions="delete"
-				className="nl.nn.adapterframework.pipes.FilePipe"
-				directory="${log.dir}" fileName="input_big.xml">
+			<pipe name="DeleteFile" action="delete"
+				className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+				filename="${log.dir}/input_big.xml">
 				<forward name="success" path="READY" />
 			</pipe>
 		</pipeline>

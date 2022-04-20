@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2021-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,27 +21,30 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import com.sendgrid.Attachments;
-import com.sendgrid.Attachments.Builder;
 import com.sendgrid.Client;
-import com.sendgrid.Content;
-import com.sendgrid.Email;
-import com.sendgrid.Mail;
 import com.sendgrid.Method;
-import com.sendgrid.Personalization;
 import com.sendgrid.Request;
 import com.sendgrid.Response;
 import com.sendgrid.SendGrid;
+import com.sendgrid.helpers.mail.Mail;
+import com.sendgrid.helpers.mail.objects.Attachments;
+import com.sendgrid.helpers.mail.objects.Attachments.Builder;
+import com.sendgrid.helpers.mail.objects.Content;
+import com.sendgrid.helpers.mail.objects.Email;
+import com.sendgrid.helpers.mail.objects.Personalization;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDocRef;
+import nl.nn.adapterframework.encryption.HasKeystore;
+import nl.nn.adapterframework.encryption.HasTruststore;
+import nl.nn.adapterframework.encryption.KeystoreType;
 import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.http.HttpSenderBase;
 import nl.nn.adapterframework.util.DomBuilderException;
@@ -53,10 +56,13 @@ import nl.nn.adapterframework.util.XmlUtils;
  * Sample XML file can be found in the path: iaf-core/src/test/resources/emailSamplesXML/emailSample.xml
  * @author alisihab
  */
-public class SendGridSender extends MailSenderBase {
+public class SendGridSender extends MailSenderBase implements HasKeystore, HasTruststore {
 
+	private final String HTTPSENDERBASE = "nl.nn.adapterframework.http.HttpSenderBase";
+
+	private String url="http://smtp.sendgrid.net";
 	private SendGrid sendGrid;
-	private HttpSenderBase httpclient;
+	private HttpSenderBase httpSender;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -64,16 +70,17 @@ public class SendGridSender extends MailSenderBase {
 		if (StringUtils.isEmpty(getCredentialFactory().getPassword())) {
 			throw new ConfigurationException("Please provide an API key");
 		}
-		httpclient = new HttpSender();
-		httpclient.configure();
+		httpSender = new HttpSender();
+		httpSender.setUrl(url);
+		httpSender.configure();
 	}
 
 	@Override
 	public void open() throws SenderException {
 		super.open();
-		httpclient.open();
+		httpSender.open();
 
-		CloseableHttpClient httpClient = httpclient.getHttpClient();
+		CloseableHttpClient httpClient = httpSender.getHttpClient();
 		if(httpClient == null)
 			throw new SenderException("no HttpClient found, did it initialize properly?");
 
@@ -84,11 +91,11 @@ public class SendGridSender extends MailSenderBase {
 	@Override
 	public void close() throws SenderException {
 		super.close();
-		httpclient.close();
+		httpSender.close();
 	}
 
 	@Override
-	public void sendEmail(MailSession mailSession) throws SenderException {
+	public String sendEmail(MailSession mailSession) throws SenderException {
 		String result = null;
 
 		Mail mail = null;
@@ -107,6 +114,7 @@ public class SendGridSender extends MailSenderBase {
 			Response response = sendGrid.api(request);
 			result = response.getBody();
 			log.debug("Mail send result" + result);
+			return result;
 		} catch (Exception e) {
 			throw new SenderException(
 					getLogPrefix() + "exception sending mail with subject [" + mail.getSubject() + "]", e);
@@ -276,145 +284,262 @@ public class SendGridSender extends MailSenderBase {
 	//Properties inherited from HttpSenderBase
 
 	@Override
-	@IbisDoc({"10", "timeout in ms of obtaining a connection/result. 0 means no timeout", "10000"})
+	@IbisDocRef({HTTPSENDERBASE})
 	public void setTimeout(int i) {
 		super.setTimeout(i);
-		httpclient.setTimeout(i);
+		httpSender.setTimeout(i);
 	}
 
-	@IbisDoc({"11", "the maximum number of concurrent connections", "10"})
+	@IbisDocRef({HTTPSENDERBASE})
 	public void setMaxConnections(int i) {
-		httpclient.setMaxConnections(i);
+		httpSender.setMaxConnections(i);
 	}
 
-	@IbisDoc({"12", "the maximum number of times it the execution is retried", "1"})
+	@IbisDocRef({HTTPSENDERBASE})
 	public void setMaxExecuteRetries(int i) {
-		httpclient.setMaxExecuteRetries(i);
+		httpSender.setMaxExecuteRetries(i);
 	}
 
 
-	@IbisDoc({"20", "hostname of the proxy", ""})
+	@IbisDocRef({HTTPSENDERBASE})
 	public void setProxyHost(String string) {
-		httpclient.setProxyHost(string);
+		httpSender.setProxyHost(string);
 	}
 
-	@IbisDoc({"21", "port of the proxy", "80"})
+	@IbisDocRef({HTTPSENDERBASE})
 	public void setProxyPort(int i) {
-		httpclient.setProxyPort(i);
+		httpSender.setProxyPort(i);
 	}
 
-	@IbisDoc({"22", "alias used to obtain credentials for proxy authentication", ""})
+	@IbisDocRef({HTTPSENDERBASE})
 	public void setProxyAuthAlias(String string) {
-		httpclient.setProxyAuthAlias(string);
+		httpSender.setProxyAuthAlias(string);
 	}
 
-	@IbisDoc({"23", "username used to obtain credentials for proxy authentication", ""})
+	@IbisDocRef({HTTPSENDERBASE})
 	public void setProxyUsername(String string) {
-		httpclient.setProxyUsername(string);
+		httpSender.setProxyUsername(string);
 	}
 	@Deprecated
 	@ConfigurationWarning("Please use \"proxyUsername\" instead")
 	public void setProxyUserName(String string) {
 		setProxyUsername(string);
 	}
-	@IbisDoc({"24", "password used to obtain credentials for proxy authentication", ""})
+	@IbisDocRef({HTTPSENDERBASE})
 	public void setProxyPassword(String string) {
-		httpclient.setProxyPassword(string);
+		httpSender.setProxyPassword(string);
 	}
 
-	@IbisDoc({"35", "realm used for proxy authentication", ""})
+	@IbisDocRef({HTTPSENDERBASE})
 	public void setProxyRealm(String string) {
-		httpclient.setProxyRealm(string);
+		httpSender.setProxyRealm(string);
 	}
 
 
 
-
-
-	@IbisDoc({"40", "resource url to certificate to be used for authentication", ""})
+	@Deprecated
+	@ConfigurationWarning("Please use attribute keystore instead")
 	public void setCertificate(String string) {
-		httpclient.setCertificate(string);
+		setKeystore(string);
 	}
-
-	@IbisDoc({"41", "alias used to obtain truststore password", ""})
-	public void setTruststoreAuthAlias(String string) {
-		httpclient.setTruststoreAuthAlias(string);
+	@Deprecated
+	@ConfigurationWarning("has been replaced with keystoreType")
+	public void setCertificateType(KeystoreType value) {
+		setKeystoreType(value);
 	}
-
-	@IbisDoc({"42", "certificate password", " "})
-	public void setCertificatePassword(String string) {
-		httpclient.setCertificatePassword(string);
-	}
-
-	@IbisDoc({"", "pkcs12"})
-	public void setKeystoreType(String string) {
-		httpclient.setKeystoreType(string);
-	}
-
-	@IbisDoc({"43", "", "pkcs12"})
-	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
-		httpclient.setKeyManagerAlgorithm(keyManagerAlgorithm);
-	}
-
-	@IbisDoc({"50", "resource url to truststore to be used for authentication", ""})
-	public void setTruststore(String string) {
-		httpclient.setTruststore(string);
-	}
-
-	@IbisDoc({"51", "alias used to obtain truststore password", ""})
+	@Deprecated
+	@ConfigurationWarning("Please use attribute keystoreAuthAlias instead")
 	public void setCertificateAuthAlias(String string) {
-		httpclient.setCertificateAuthAlias(string);
+		setKeystoreAuthAlias(string);
+	}
+	@Deprecated
+	@ConfigurationWarning("Please use attribute keystorePassword instead")
+	public void setCertificatePassword(String string) {
+		setKeystorePassword(string);
 	}
 
-	@IbisDoc({"52", "truststore password", " "})
-	public void setTruststorePassword(String string) {
-		httpclient.setTruststorePassword(string);
+
+	@Override
+	@IbisDocRef({HTTPSENDERBASE})
+	public void setKeystore(String keystore) {
+		httpSender.setKeystore(keystore);
+	}
+	@Override
+	public String getKeystore() {
+		return httpSender.getKeystore();
 	}
 
-	@IbisDoc({"53", "type of truststore", "jks"})
-	public void setTruststoreType(String string) {
-		httpclient.setTruststoreType(string);
+	@Override
+	@IbisDocRef({HTTPSENDERBASE})
+	public void setKeystoreType(KeystoreType keystoreType) {
+		httpSender.setKeystoreType(keystoreType);
+	}
+	@Override
+	public KeystoreType getKeystoreType() {
+		return httpSender.getKeystoreType();
 	}
 
-	@IbisDoc({"54", "", " "})
+	@Override
+	@IbisDocRef({HTTPSENDERBASE})
+	public void setKeystoreAuthAlias(String keystoreAuthAlias) {
+		httpSender.setKeystoreAuthAlias(keystoreAuthAlias);
+	}
+	@Override
+	public String getKeystoreAuthAlias() {
+		return httpSender.getKeystoreAuthAlias();
+	}
+
+	@Override
+	@IbisDocRef({HTTPSENDERBASE})
+	public void setKeystorePassword(String keystorePassword) {
+		httpSender.setKeystorePassword(keystorePassword);
+	}
+	@Override
+	public String getKeystorePassword() {
+		return httpSender.getKeystorePassword();
+	}
+
+	@Override
+	@IbisDocRef({HTTPSENDERBASE})
+	public void setKeystoreAlias(String keystoreAlias) {
+		httpSender.setKeystoreAlias(keystoreAlias);
+	}
+	@Override
+	public String getKeystoreAlias() {
+		return httpSender.getKeystoreAlias();
+	}
+
+	@Override
+	@IbisDocRef({HTTPSENDERBASE})
+	public void setKeystoreAliasAuthAlias(String keystoreAliasAuthAlias) {
+		httpSender.setKeystoreAliasAuthAlias(keystoreAliasAuthAlias);
+	}
+	@Override
+	public String getKeystoreAliasAuthAlias() {
+		return httpSender.getKeystoreAliasAuthAlias();
+	}
+
+	@Override
+	@IbisDocRef({HTTPSENDERBASE})
+	public void setKeystoreAliasPassword(String keystoreAliasPassword) {
+		httpSender.setKeystoreAliasPassword(keystoreAliasPassword);
+	}
+	@Override
+	public String getKeystoreAliasPassword() {
+		return httpSender.getKeystoreAliasPassword();
+	}
+
+	@Override
+	@IbisDocRef({HTTPSENDERBASE})
+	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
+		httpSender.setKeyManagerAlgorithm(keyManagerAlgorithm);
+	}
+	@Override
+	public String getKeyManagerAlgorithm() {
+		return httpSender.getKeyManagerAlgorithm();
+	}
+
+	
+	@Override
+	@IbisDocRef({HTTPSENDERBASE})
+	public void setTruststore(String truststore) {
+		httpSender.setTruststore(truststore);
+	}
+	@Override
+	public String getTruststore() {
+		return httpSender.getTruststore();
+	}
+
+	@Override
+	@IbisDocRef({HTTPSENDERBASE})
+	public void setTruststoreType(KeystoreType truststoreType) {
+		httpSender.setTruststoreType(truststoreType);
+	}
+	@Override
+	public KeystoreType getTruststoreType() {
+		return httpSender.getTruststoreType();
+	}
+
+
+	@Override
+	@IbisDocRef({HTTPSENDERBASE})
+	public void setTruststoreAuthAlias(String truststoreAuthAlias) {
+		httpSender.setTruststoreAuthAlias(truststoreAuthAlias);
+	}
+	@Override
+	public String getTruststoreAuthAlias() {
+		return httpSender.getTruststoreAuthAlias();
+	}
+
+	@Override
+	@IbisDocRef({HTTPSENDERBASE})
+	public void setTruststorePassword(String truststorePassword) {
+		httpSender.setTruststorePassword(truststorePassword);
+	}
+	@Override
+	public String getTruststorePassword() {
+		return httpSender.getTruststorePassword();
+	}
+
+	@Override
+	@IbisDocRef({HTTPSENDERBASE})
 	public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
-		httpclient.setTrustManagerAlgorithm(trustManagerAlgorithm);
+		httpSender.setTrustManagerAlgorithm(trustManagerAlgorithm);
+	}
+	@Override
+	public String getTrustManagerAlgorithm() {
+		return httpSender.getTrustManagerAlgorithm();
 	}
 
-	@IbisDoc({"55", "when true, the hostname in the certificate will be checked against the actual hostname", "true"})
-	public void setVerifyHostname(boolean b) {
-		httpclient.setVerifyHostname(b);
+	@Override
+	@IbisDocRef({HTTPSENDERBASE})
+	public void setVerifyHostname(boolean verifyHostname) {
+		httpSender.setVerifyHostname(verifyHostname);
+	}
+	@Override
+	public boolean isVerifyHostname() {
+		return httpSender.isVerifyHostname();
 	}
 
-	@IbisDoc({"56", "when true, self signed certificates are accepted", "false"})
-	public void setAllowSelfSignedCertificates(boolean allowSelfSignedCertificates) {
-		httpclient.setAllowSelfSignedCertificates(allowSelfSignedCertificates);
+	@Override
+	@IbisDocRef({HTTPSENDERBASE})
+	public void setAllowSelfSignedCertificates(boolean testModeNoCertificatorCheck) {
+		httpSender.setAllowSelfSignedCertificates(testModeNoCertificatorCheck);
+	}
+	@Override
+	public boolean isAllowSelfSignedCertificates() {
+		return httpSender.isAllowSelfSignedCertificates();
 	}
 
-	@IbisDoc({"57", "when true, the certificateexpiredexception is ignored", "false"})
-	public void setIgnoreCertificateExpiredException(boolean b) {
-		httpclient.setIgnoreCertificateExpiredException(b);
+	@Override
+	@IbisDocRef({HTTPSENDERBASE})
+	public void setIgnoreCertificateExpiredException(boolean ignoreCertificateExpiredException) {
+		httpSender.setIgnoreCertificateExpiredException(ignoreCertificateExpiredException);
+	}
+	@Override
+	public boolean isIgnoreCertificateExpiredException() {
+		return httpSender.isIgnoreCertificateExpiredException();
 	}
 
 	
-	@IbisDoc({"61", "when true, a redirect request will be honoured, e.g. to switch to https", "true"})
+	@IbisDocRef({HTTPSENDERBASE})
 	public void setFollowRedirects(boolean b) {
-		httpclient.setFollowRedirects(b);
+		httpSender.setFollowRedirects(b);
 	}
 
-	@IbisDoc({"62", "controls whether connections checked to be stale, i.e. appear open, but are not.", "true"})
+	@IbisDocRef({HTTPSENDERBASE})
 	public void setStaleChecking(boolean b) {
-		httpclient.setStaleChecking(b);
+		httpSender.setStaleChecking(b);
 	}
 	
-	@IbisDoc({"63", "Used when StaleChecking=true. Timeout when stale connections should be closed.", "5000"})
+	@IbisDocRef({HTTPSENDERBASE})
 	public void setStaleTimeout(int timeout) {
-		httpclient.setStaleTimeout(timeout);
+		httpSender.setStaleTimeout(timeout);
 	}
 
 
-	@IbisDoc({"67", "Secure socket protocol (such as 'SSL' and 'TLS') to use when a SSLContext object is generated. If empty the protocol 'SSL' is used", "SSL"})
+	@IbisDocRef({HTTPSENDERBASE})
 	public void setProtocol(String protocol) {
-		httpclient.setProtocol(protocol);
+		httpSender.setProtocol(protocol);
 	}
 }

@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.extensions.sap.jco3;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.extensions.sap.jco3.tx.RollbackException;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -44,7 +44,7 @@ public class SapLUWHandle {
 		this.destination = sapSystem.getDestination();
 	}
 
-	public static SapLUWHandle createHandle(IPipeLineSession session, String sessionKey, SapSystem sapSystem, boolean useTid) throws JCoException {
+	public static SapLUWHandle createHandle(PipeLineSession session, String sessionKey, SapSystem sapSystem, boolean useTid) throws JCoException {
 		SapLUWHandle result=(SapLUWHandle)session.get(sessionKey);
 		if (result!=null) {
 			log.warn("LUWHandle already exists under key ["+sessionKey+"]");
@@ -55,12 +55,12 @@ public class SapLUWHandle {
 		return result;
 	}
 
-	public static SapLUWHandle retrieveHandle(IPipeLineSession session, String sessionKey) {
+	public static SapLUWHandle retrieveHandle(PipeLineSession session, String sessionKey) {
 		SapLUWHandle result=(SapLUWHandle)session.get(sessionKey);
 		return result;
 	}
 
-	public static SapLUWHandle retrieveHandle(IPipeLineSession session, String sessionKey, boolean create, SapSystem sapSystem, boolean useTid) throws JCoException {
+	public static SapLUWHandle retrieveHandle(PipeLineSession session, String sessionKey, boolean create, SapSystem sapSystem, boolean useTid) throws JCoException {
 		SapLUWHandle result=(SapLUWHandle)session.get(sessionKey);
 		if (result==null && create) {
 			return createHandle(session, sessionKey, sapSystem, useTid);
@@ -68,7 +68,7 @@ public class SapLUWHandle {
 		return result;
 	}
 
-	public static void releaseHandle(IPipeLineSession session, String sessionKey) throws JCoException {
+	public static void releaseHandle(PipeLineSession session, String sessionKey) throws JCoException {
 		SapLUWHandle handle=(SapLUWHandle)session.get(sessionKey);
 		if (handle==null) {
 			log.debug("no handle found under session key ["+sessionKey+"]");

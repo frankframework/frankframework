@@ -1,7 +1,6 @@
 <module>
 	<adapter name="WebServiceListener" description="Test the functioning of the WebServiceListener">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceListener">
+		<receiver>
 			<listener className="nl.nn.adapterframework.http.WebServiceListener"
 				name="urn:ws" />
 		</receiver>
@@ -16,8 +15,7 @@
 	</adapter>
 	<adapter name="WebServiceListenerError"
 		description="Test the functioning of the WebServiceListener (error)">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceListenerError">
+		<receiver>
 			<listener className="nl.nn.adapterframework.http.WebServiceListener"
 				name="urn:ws_error" />
 		</receiver>
@@ -32,8 +30,7 @@
 	</adapter>
 	<adapter name="WebServiceListenerTimeout"
 		description="Test the functioning of the WebServiceListener (timeout)">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceListenerTimeout">
+		<receiver>
 			<listener className="nl.nn.adapterframework.http.WebServiceListener"
 				name="urn:ws_timeout" />
 		</receiver>
@@ -48,8 +45,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="WebServiceSender" description="Test the functioning of the WebServiceSender">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceSender">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-WebServiceSender" />
 		</receiver>
@@ -57,7 +53,7 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="Send2WS">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws"
@@ -70,8 +66,7 @@
 	</adapter>
 	<adapter name="WebServiceSenderError"
 		description="Test the functioning of the WebServiceSender (error)">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceSenderError">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-WebServiceSenderError" />
 		</receiver>
@@ -79,7 +74,7 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="Send2WS">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_error"
@@ -91,8 +86,7 @@
 	</adapter>
 	<adapter name="WebServiceSenderTimeoutGlobalForward"
 		description="Test the functioning of the WebServiceSender in combination with global-forward">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceSenderTimeoutGlobalForward">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-WebServiceSenderTimeoutGlobalForward" />
 		</receiver>
@@ -106,7 +100,7 @@
 			<pipe name="SwitchAction" className="nl.nn.adapterframework.pipes.XmlSwitch"
 				xpathExpression="request/@action"></pipe>
 			<!-- send2ws_no_forwards -->
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="send2ws_no_forwards">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout"
@@ -116,7 +110,7 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- send2ws_forward_timeout -->
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="send2ws_forward_timeout">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout"
@@ -146,8 +140,7 @@
 	</adapter>
 	<adapter name="WebServiceSenderTimeout"
 		description="Test the functioning of the WebServiceSender (timeout)">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceSenderTimeout">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-WebServiceSenderTimeout" />
 		</receiver>
@@ -158,7 +151,7 @@
 			<pipe name="SwitchAction" className="nl.nn.adapterframework.pipes.XmlSwitch"
 				xpathExpression="request/@action"></pipe>
 			<!-- send2ws_no_forwards -->
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="send2ws_no_forwards">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout"
@@ -168,7 +161,7 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- send2ws_forward_timeout -->
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="send2ws_forward_timeout">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout"
@@ -179,7 +172,7 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- send2ws_forward_exception -->
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="send2ws_forward_exception">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout"
@@ -190,7 +183,7 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- send2ws_with_forwards -->
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="send2ws_with_forwards">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout"
@@ -214,7 +207,7 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- send2ws_no_forwards_resultOnTimeOut -->
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="send2ws_no_forwards_resultOnTimeOut" resultOnTimeOut="&lt;receiver_timed_out/&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout"
@@ -224,7 +217,7 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- send2ws_forward_timeout_resultOnTimeOut -->
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="send2ws_forward_timeout_resultOnTimeOut" resultOnTimeOut="&lt;receiver_timed_out/&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout"
@@ -235,7 +228,7 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- send2ws_forward_exception_resultOnTimeOut -->
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="send2ws_forward_exception_resultOnTimeOut" resultOnTimeOut="&lt;receiver_timed_out/&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout"
@@ -246,7 +239,7 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- send2ws_with_forwards_resultOnTimeOut -->
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="send2ws_with_forwards_resultOnTimeOut" resultOnTimeOut="&lt;receiver_timed_out/&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout"

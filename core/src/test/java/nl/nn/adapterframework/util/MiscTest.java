@@ -33,8 +33,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
@@ -50,8 +49,6 @@ public class MiscTest {
 	private static String sourceFolderPath;
 
 	private static File file;
-
-	private String pathSeperator = File.separator;
 
 	@BeforeClass
 	public static void setUp() throws IOException {
@@ -246,15 +243,6 @@ public class MiscTest {
 		assertEquals("test", writer.toString());
 	}
 
-	/**
-	 * Method: fileToString(String fileName)
-	 */
-	@Test
-	public void testFileToStringFileName() throws Exception {
-		// Misc.resourceToString()
-		assertEquals("inside the lebron file", Misc.fileToString(file.getName()));
-	}
-
 	@Test
 	public void testFileToStringFileNameEndLine() throws Exception {
 		// Misc.resourceToString()
@@ -305,6 +293,32 @@ public class MiscTest {
 		assertEquals("LeBron//James", res);
 	}
 
+	@Test
+	public void testConcatStringsFirstEmpty() throws Exception {
+		String a = "";
+		String b = "James";
+		String seperator = "//";
+		String res = Misc.concatStrings(a, seperator, b);
+		assertEquals("James", res);
+	}
+
+	@Test
+	public void testConcatStringsSecondEmpty() throws Exception {
+		String a = "LeBron";
+		String b = "";
+		String seperator = "//";
+		String res = Misc.concatStrings(a, seperator, b);
+		assertEquals("LeBron", res);
+	}
+	
+	@Test
+	public void testConcat() throws Exception {
+		String seperator = "|";
+		String res = Misc.concat(seperator, null, "a", "b", null, "c", null);
+		assertEquals("a|b|c", res);
+	}
+	
+	
 	/**
 	 * Method: hide(String string)
 	 */
@@ -393,11 +407,11 @@ public class MiscTest {
 	@Test
 	public void testCopyContext() throws Exception {
 		Map<String, Object> from = new HashMap<>();
-		IPipeLineSession to = new PipeLineSessionBase();
+		PipeLineSession to = new PipeLineSession();
 		String keys = "a,b";
 		from.put("a", 15);
 		from.put("b", 16);
-		Misc.copyContext(keys, from, to);
+		Misc.copyContext(keys, from, to, null);
 		assertTrue(from.equals(to));
 	}
 
@@ -443,7 +457,7 @@ public class MiscTest {
 
 	@Test
 	public void testListToStringWithStringList() {
-		List list = new ArrayList<Integer>();
+		List<String> list = new ArrayList<>();
 		list.add("bailar");
 		list.add("besos");
 		String res = Misc.listToString(list);
@@ -578,6 +592,69 @@ public class MiscTest {
 		URL resource = TestFileUtils.getTestFileURL("/Misc/test_file_for_resource_to_string_misc.txt");
 		String s1 = Misc.resourceToString(resource, " newly added string ");
 		assertEquals("<!doctype txt>this is a text file. newly added string new line in the text file.", s1);
+	}
+
+	@Test
+	public void testPrettyJson() throws IOException {
+		URL input = TestFileUtils.getTestFileURL("/Misc/minified.json");
+		String inputString = Misc.resourceToString(input);
+		URL expected = TestFileUtils.getTestFileURL("/Misc/prettified.json");
+		String expectedString = Misc.resourceToString(expected);
+		TestAssertions.assertEqualsIgnoreCRLF(expectedString, Misc.jsonPretty(inputString));
+	}
+	
+	@Test
+	public void testPrettyJsonArray() throws IOException {
+		URL input = TestFileUtils.getTestFileURL("/Misc/minifiedJsonArray.json");
+		String inputString = Misc.resourceToString(input);
+		URL expected = TestFileUtils.getTestFileURL("/Misc/prettifiedJsonArray.json");
+		String expectedString = Misc.resourceToString(expected);
+		TestAssertions.assertEqualsIgnoreCRLF(expectedString, Misc.jsonPretty(inputString));
+	}
+
+	@Test
+	public void testAuthorityInUrlString1() {
+		String username="user";
+		String password="password";
+		String url="http://aa:bb@host.nl";
+		String expected = "http://user:password@host.nl";
+		assertEquals(expected, Misc.insertAuthorityInUrlString(url, null, username, password));
+	}
+
+	@Test
+	public void testAuthorityInUrlString2() {
+		String username="user";
+		String password="password";
+		String url="http://host.nl";
+		String expected = "http://user:password@host.nl";
+		assertEquals(expected, Misc.insertAuthorityInUrlString(url, null, username, password));
+	}
+
+	@Test
+	public void testAuthorityInUrlString3() {
+		String username=null;
+		String password=null;
+		String url="http://aa:bb@host.nl";
+		String expected = "http://aa:bb@host.nl";
+		assertEquals(expected, Misc.insertAuthorityInUrlString(url, null, username, password));
+	}
+
+	@Test
+	public void testAuthorityInUrlString4() {
+		String username="user";
+		String password="password";
+		String url="aa:bb@host.nl";
+		String expected = "user:password@host.nl";
+		assertEquals(expected, Misc.insertAuthorityInUrlString(url, null, username, password));
+	}
+
+	@Test
+	public void testAuthorityInUrlString5() {
+		String username="user";
+		String password="password";
+		String url="host.nl";
+		String expected = "user:password@host.nl";
+		assertEquals(expected, Misc.insertAuthorityInUrlString(url, null, username, password));
 	}
 
 }

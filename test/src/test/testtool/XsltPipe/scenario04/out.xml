@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <root>
-  <request action="Saxon_XSLT2">
+  <request action="XSLT2">
     <PortalEmployment>
       <Id>1</Id>
       <PersonDataParticipant>

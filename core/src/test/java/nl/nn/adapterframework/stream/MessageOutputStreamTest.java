@@ -15,8 +15,8 @@
 */
 package nl.nn.adapterframework.stream;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -41,6 +41,7 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 
 import nl.nn.adapterframework.core.IForwardTarget;
+import nl.nn.adapterframework.stream.json.JsonUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -51,6 +52,7 @@ public class MessageOutputStreamTest {
 	private String CDATA_END=TEST_CDATA?"]]>":"";
 
 	protected String testString="<root><sub>abc&amp;&lt;&gt;</sub><sub>"+CDATA_START+"<a>a&amp;b</a>"+CDATA_END+"</sub></root>";
+	protected String testJson="{\"key1\":\"string\",\"key2\":12,\"key3\":[1,2,3]}";
 	
 	
 	@Test
@@ -105,6 +107,21 @@ public class MessageOutputStreamTest {
 		assertTrue(target.isCloseCalled());
 	}
 
+	@Test
+	public void test14StreamAsJson() throws Exception {
+		
+		CloseObservableOutputStream target = new CloseObservableOutputStream();
+
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
+
+			JsonEventHandler handler = stream.asJsonEventHandler();
+			JsonUtils.parseJson(testJson, handler);
+			
+		}
+		String actual = new String (target.toString());
+		assertEquals(testJson, actual);
+		assertTrue(target.isCloseCalled());
+	}
 
 	@Test
 	public void test21WriterAsStream() throws Exception {
@@ -161,6 +178,22 @@ public class MessageOutputStreamTest {
 	}
 
 	@Test
+	public void test24WriterAsJson() throws Exception {
+		
+		CloseObservableWriter target = new CloseObservableWriter();
+
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
+
+			JsonEventHandler handler = stream.asJsonEventHandler();
+			JsonUtils.parseJson(testJson, handler);
+			
+		}
+		String actual = new String (target.toString());
+		assertEquals(testJson, actual);
+		assertTrue(target.isCloseCalled());
+	}
+
+	@Test
 	public void testX21WriterAsStreamError() throws Exception {
 		
 		CloseObservableWriter target = new CloseObservableWriter() {
@@ -175,12 +208,8 @@ public class MessageOutputStreamTest {
 		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
 
 			try {
-				OutputStream outputstream=null;
-				try { 
-					outputstream = stream.asStream();
+				try (OutputStream outputstream = stream.asStream()) { 
 					outputstream.write(testString.getBytes());
-				} finally {
-					outputstream.close();
 				}
 				fail("exception should be thrown");
 			} catch (Exception e) {
@@ -197,7 +226,7 @@ public class MessageOutputStreamTest {
 		
 		CloseObservableXmlWriter target = new CloseObservableXmlWriter();
 
-		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null, null, null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(target)) {
 			try (OutputStream outputstream = stream.asStream()) {
 				outputstream.write(testString.getBytes());
 			}
@@ -213,7 +242,7 @@ public class MessageOutputStreamTest {
 		
 		CloseObservableXmlWriter target = new CloseObservableXmlWriter();
 
-		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null, null, null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(target)) {
 		
 			try (Writer writer = stream.asWriter()) {
 				writer.write(testString);
@@ -226,6 +255,39 @@ public class MessageOutputStreamTest {
 		assertTrue(target.isCloseCalled());
 	}
 
+	@Test
+	public void test41JsonAsStream() throws Exception {
+		
+		CloseObservableJsonWriter target = new CloseObservableJsonWriter();
+
+		try (MessageOutputStream stream = new MessageOutputStream(target)) {
+			try (OutputStream outputstream = stream.asStream()) {
+				outputstream.write(testJson.getBytes());
+			}
+		
+		}
+		String actual = new String (target.toString());
+		assertEquals(testJson, actual);
+		assertTrue(target.isCloseCalled());
+	}
+
+	@Test
+	public void test42JsonAsWriter() throws Exception {
+		
+		CloseObservableJsonWriter target = new CloseObservableJsonWriter();
+
+		try (MessageOutputStream stream = new MessageOutputStream(target)) {
+		
+			try (Writer writer = stream.asWriter()) {
+				writer.write(testJson);
+			}
+
+		}
+		String actual = new String (target.toString());
+		//assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"+testString, actual);
+		assertEquals(testJson, actual);
+		assertTrue(target.isCloseCalled());
+	}
 
 	@Test
 	public void testX12StreamAsWriterError() throws Exception {
@@ -271,7 +333,7 @@ public class MessageOutputStreamTest {
 		TransformerHandler transformerHandler = tf.newTransformerHandler();
 		transformerHandler.setResult(result);
 
-		try (MessageOutputStream stream = new MessageOutputStream(null, transformerHandler, (IForwardTarget)null, null, null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(transformerHandler)) {
 		
 			try {
 				try (Writer writer = stream.asWriter()) {
@@ -303,7 +365,7 @@ public class MessageOutputStreamTest {
 		TransformerHandler transformerHandler = tf.newTransformerHandler();
 		transformerHandler.setResult(result);
 
-		try (MessageOutputStream stream = new MessageOutputStream(null, transformerHandler, (IForwardTarget)null, null, null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(transformerHandler)) {
 
 			try {
 				try (Writer writer = stream.asWriter()) {
@@ -342,6 +404,39 @@ public class MessageOutputStreamTest {
 			try {
 				InputSource inputSource = new InputSource(new StringReader(testString)); 
 				XmlUtils.parseXml(inputSource, handler);
+				fail("exception should be thrown");
+			} catch (Exception e) {
+				assertThat(e.getMessage(),StringContains.containsString("fakeFailure"));
+			}
+
+		}
+		assertTrue(target.isCloseCalled());
+		
+	}
+
+	@Test
+	public void testX14StreamAsJsonError() throws Exception {
+		
+		CloseObservableOutputStream target = new CloseObservableOutputStream() {
+
+			@Override
+			public void write(byte[] arg0, int arg1, int arg2) {
+				throw new RuntimeException("fakeFailure 1");
+			}
+
+			@Override
+			public void write(byte[] b) throws IOException {
+				throw new RuntimeException("fakeFailure 2");
+			}
+			
+		};
+
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
+
+			JsonEventHandler handler = stream.asJsonEventHandler();
+	
+			try {
+				JsonUtils.parseJson(testJson, handler);
 				fail("exception should be thrown");
 			} catch (Exception e) {
 				assertThat(e.getMessage(),StringContains.containsString("fakeFailure"));
@@ -406,6 +501,58 @@ public class MessageOutputStreamTest {
 		
 	}
 
+	@Test
+	public void testX24WriterAsJsonError() throws Exception {
+		
+		CloseObservableWriter target = new CloseObservableWriter() {
+
+			@Override
+			public void write(char[] arg0, int arg1, int arg2) {
+				throw new RuntimeException("fakeFailure 1");
+			}
+
+			@Override
+			public StringWriter append(char arg0) {
+				throw new RuntimeException("fakeFailure 2");
+			}
+
+			@Override
+			public StringWriter append(CharSequence arg0, int arg1, int arg2) {
+				throw new RuntimeException("fakeFailure 3");
+			}
+
+			@Override
+			public StringWriter append(CharSequence arg0) {
+				throw new RuntimeException("fakeFailure 4");
+			}
+
+			@Override
+			public void write(String arg0, int arg1, int arg2) {
+				throw new RuntimeException("fakeFailure 5");
+			}
+
+			@Override
+			public void write(String arg0) {
+				throw new RuntimeException("fakeFailure 6");
+			}
+			
+		};
+
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
+
+			JsonEventHandler handler = stream.asJsonEventHandler();
+	
+			try {
+				JsonUtils.parseJson(testJson, handler);
+				fail("exception should be thrown");
+			} catch (Exception e) {
+				assertThat(e.getMessage(),StringContains.containsString("fakeFailure"));
+			}
+
+		}
+		assertTrue(target.isCloseCalled());
+		
+	}
 	
 	
 	

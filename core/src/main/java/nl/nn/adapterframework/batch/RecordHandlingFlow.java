@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,12 +17,14 @@ package nl.nn.adapterframework.batch;
 
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.LogUtil;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.Logger;
 
 /**
  * The flow contains the handlers to handle records of a specific type. 
@@ -31,50 +33,51 @@ import org.apache.logging.log4j.Logger;
  * 
  * @author  John Dekker
  */
+@FrankDocGroup(name = "Batch")
 public final class RecordHandlingFlow {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private String recordKey;
-	private String recordHandlerRef;
-	private String recordHandlerManagerRef;
-	private String nextRecordHandlerManagerRef;
-	private String resultHandlerRef;
+	private @Getter String recordKey;
+	private @Getter String recordHandlerRef;
+	private @Getter String recordHandlerManagerRef;
+	private @Getter String nextRecordHandlerManagerRef;
+	private @Getter String resultHandlerRef;
 	
-	private String openBlockBeforeLine=null;
-	private String closeBlockBeforeLine=null;
-	private String openBlockAfterLine=null;
-	private String closeBlockAfterLine=null;
-	private boolean autoCloseBlock=true;
-	private int openBlockBeforeLineNumber=0;
+	private @Getter String openBlockBeforeLine=null;
+	private @Getter String closeBlockBeforeLine=null;
+	private @Getter String openBlockAfterLine=null;
+	private @Getter String closeBlockAfterLine=null;
+	private @Getter boolean autoCloseBlock=true;
+	private @Getter int openBlockBeforeLineNumber=0;
 	
-	private IRecordHandler recordHandler;
-	private IRecordHandlerManager nextRecordHandlerManager;
-	private IResultHandler resultHandler;
+	private @Getter IRecordHandler recordHandler;
+	private @Getter IRecordHandlerManager nextRecordHandlerManager;
+	private @Getter IResultHandler resultHandler;
 	
-	public void configure(IRecordHandlerManager manager, Map registeredManagers, Map registeredRecordHandlers, Map registeredResultHandlers, IResultHandler defaultHandler) throws ConfigurationException {
+	public void configure(IRecordHandlerManager manager, Map<String,IRecordHandlerManager> registeredManagers, Map<String,IRecordHandler> registeredRecordHandlers, Map<String,IResultHandler> registeredResultHandlers, IResultHandler defaultHandler) throws ConfigurationException {
 		if (getOpenBlockBeforeLineNumber()>0 && StringUtils.isEmpty(getOpenBlockBeforeLine())) {
-			    	throw new ConfigurationException("openBlockBeforeLine must be set when openBlockBeforeLineNumber > 0");
+					throw new ConfigurationException("openBlockBeforeLine must be set when openBlockBeforeLineNumber > 0");
 			}
 
 		if (StringUtils.isNotEmpty(getRecordHandlerManagerRef()) &&
-		    !getRecordHandlerManagerRef().equals(manager.getName())) {
-		    	throw new ConfigurationException("recordHandlerManagerRef ["+getRecordHandlerManagerRef()+"] should be either equal to name of manager ["+manager.getName()+"], or left unspecified");
+			!getRecordHandlerManagerRef().equals(manager.getName())) {
+				throw new ConfigurationException("recordHandlerManagerRef ["+getRecordHandlerManagerRef()+"] should be either equal to name of manager ["+manager.getName()+"], or left unspecified");
 		}
 		// obtain the named manager that is to be used after a specified record  
 		IRecordHandlerManager nextManager = null;
 		if (StringUtils.isEmpty(getNextRecordHandlerManagerRef())) {
 			nextManager = manager; 
 		} else { 
-			nextManager = (IRecordHandlerManager)registeredManagers.get(getNextRecordHandlerManagerRef());
+			nextManager = registeredManagers.get(getNextRecordHandlerManagerRef());
 			if (nextManager == null) {
 				throw new ConfigurationException("cannot find nextRecordHandlerManager [" + getNextRecordHandlerManagerRef() + "] for flow of manager [" + getNextRecordHandlerManagerRef() + "], key ["+getRecordKey()+"]");
 			}
 		}
 		setNextRecordHandlerManager(nextManager);
 			
-		// obtain the recordhandler 
+		// obtain the recordHandler 
 		if (StringUtils.isNotEmpty(getRecordHandlerRef())) {
-			IRecordHandler recordHandler = (IRecordHandler)registeredRecordHandlers.get(getRecordHandlerRef());
+			IRecordHandler recordHandler = registeredRecordHandlers.get(getRecordHandlerRef());
 			if (recordHandler!=null) {
 				setRecordHandler(recordHandler);
 			} else {
@@ -84,8 +87,8 @@ public final class RecordHandlingFlow {
 			log.debug("no recordhandler defined for flow of manager [" + getNextRecordHandlerManagerRef() + "], key ["+getRecordKey()+"]");
 		}
 		
-		// obtain the named resulthandler
-		IResultHandler resultHandler = (IResultHandler)registeredResultHandlers.get(getResultHandlerRef());
+		// obtain the named resultHandler
+		IResultHandler resultHandler = registeredResultHandlers.get(getResultHandlerRef());
 		if (resultHandler == null) {
 			if (StringUtils.isEmpty(getResultHandlerRef())) {
 				resultHandler = defaultHandler;
@@ -100,114 +103,72 @@ public final class RecordHandlingFlow {
 	public void setRecordHandler(IRecordHandler handler) {
 		recordHandler = handler;
 	}
-	public IRecordHandler getRecordHandler() {
-		return recordHandler;
-	}
 
 	public void setResultHandler(IResultHandler handler) {
 		resultHandler = handler;
-	}
-	public IResultHandler getResultHandler() {
-		return resultHandler;
 	}
 
 	public void setNextRecordHandlerManager(IRecordHandlerManager manager) {
 		nextRecordHandlerManager = manager;
 	}
-	public IRecordHandlerManager getNextRecordHandlerManager() {
-		return nextRecordHandlerManager;
-	}
 
 	
-	@IbisDoc({"key under which this recordhandlingflow must be registered in the manager", ""})
+	@IbisDoc({"1", "Key under which this flow is registered in the manager", ""})
 	public void setRecordKey(String recordKey) {
 		this.recordKey = recordKey;
 	}
-	public String getRecordKey() {
-		return recordKey;
-	}
 	
-	@IbisDoc({"name of the manager to be used after handling this record", ""})
+	@IbisDoc({"2", "Name of the manager to be used after handling this record", ""})
 	public void setNextRecordHandlerManagerRef(String nextRecordHandlerManagerName) {
 		nextRecordHandlerManagerRef = nextRecordHandlerManagerName;
 	}
-	public String getNextRecordHandlerManagerRef() {
-		return nextRecordHandlerManagerRef;
-	}
 
-	@IbisDoc({"name of the recordhandler to be used to transform records of the type specified in the key (optional)", ""})
+	@IbisDoc({"3", "Name of the recordHandler to be used to transform records of the type specified in the key (optional)", ""})
 	public void setRecordHandlerRef(String recordHandlerName) {
 		recordHandlerRef = recordHandlerName;
 	}
-	public String getRecordHandlerRef() {
-		return recordHandlerRef;
-	}
 
-	@IbisDoc({"name of the manager to which this recordhandlingflow must be added", ""})
+	@IbisDoc({"4", "Name of the manager to which this flow must be added", ""})
 	public void setRecordHandlerManagerRef(String recordHandlerManagerName) {
 		recordHandlerManagerRef = recordHandlerManagerName;
 	}
-	public String getRecordHandlerManagerRef() {
-		return recordHandlerManagerRef;
-	}
 
-	@IbisDoc({"name of the resulthandler to be used to handle the transformed result", ""})
+	@IbisDoc({"5", "Name of the resultHandler to be used to handle the transformed result", ""})
 	public void setResultHandlerRef(String resultHandlerName) {
 		resultHandlerRef = resultHandlerName;
 	}
-	public String getResultHandlerRef() {
-		return resultHandlerRef;
-	}
 
 
-	@IbisDoc({"instructs the resulthandler to start a new block before the parsed line is processed", ""})
+	@IbisDoc({"6", "Instructs the resultHandler to start a new block before the parsed line is processed", ""})
 	public void setOpenBlockBeforeLine(String blockName) {
 		openBlockBeforeLine = blockName;
 	}
-	public String getOpenBlockBeforeLine() {
-		return openBlockBeforeLine;
-	}
 
-	@IbisDoc({"instructs the resulthandler to end the specified block before the parsed line is processed", ""})
+	@IbisDoc({"7", "Instructs the resultHandler to end the specified block before the parsed line is processed", ""})
 	public void setCloseBlockBeforeLine(String blockName) {
 		closeBlockBeforeLine = blockName;
 	}
-	public String getCloseBlockBeforeLine() {
-		return closeBlockBeforeLine;
-	}
 
 
-	@IbisDoc({"instructs the resulthandler to start a new block after the parsed line is processed", ""})
+	@IbisDoc({"8", "Instructs the resultHandler to start a new block after the parsed line is processed", ""})
 	public void setOpenBlockAfterLine(String blockName) {
 		openBlockAfterLine = blockName;
 	}
-	public String getOpenBlockAfterLine() {
-		return openBlockAfterLine;
-	}
 
-	@IbisDoc({"instructs the resulthandler to end the specified block after the parsed line is processed", ""})
+	@IbisDoc({"9", "Instructs the resultHandler to end the specified block after the parsed line is processed", ""})
 	public void setCloseBlockAfterLine(String blockName) {
 		closeBlockAfterLine = blockName;
 	}
-	public String getCloseBlockAfterLine() {
-		return closeBlockAfterLine;
-	}
 
 
-	@IbisDoc({"when <code>true</code>, any open block of this type (and other nested open 'autoclose' block) is closed before a new one of the same type is opened. at a forced close, nested blocks are closed too (since 4.9)", "<code>true</code>"})
+	@IbisDoc({"10", "If <code>true</code>, any open block of this type (and other nested open 'autoClose' block) is closed before a new one of the same type is opened. At a forced close, nested blocks are closed too (since 4.9)", "true"})
 	public void setAutoCloseBlock(boolean b) {
 		autoCloseBlock = b;
 	}
-	public boolean isAutoCloseBlock() {
-		return autoCloseBlock;
-	}
 
 
-	@IbisDoc({"when &gt;0 the <code>openblockbeforeline</code> instruction is only performed when the current line number is a multiple of this value", "0"})
+	@IbisDoc({"11", "If &gt;0 the <code>openBlockBeforeLine</code> instruction is only performed when the current line number is a multiple of this value", "0"})
 	public void setOpenBlockBeforeLineNumber(int i) {
 		openBlockBeforeLineNumber = i;
-	}
-	public int getOpenBlockBeforeLineNumber() {
-		return openBlockBeforeLineNumber;
 	}
 }

@@ -1,0 +1,103 @@
+/*
+   Copyright 2021 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+package nl.nn.credentialprovider;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
+
+import nl.nn.credentialprovider.util.AppConstants;
+import nl.nn.credentialprovider.util.ClassUtils;
+import nl.nn.credentialprovider.util.Misc;
+
+public abstract class MapCredentialFactory implements ICredentialFactory {
+
+	public final String USERNAME_SUFFIX_PROPERTY=getPropertyBase()+".usernameSuffix";
+	public final String PASSWORD_SUFFIX_PROPERTY=getPropertyBase()+".passwordSuffix";
+
+	public static final String USERNAME_SUFFIX_DEFAULT="/username";
+	public static final String PASSWORD_SUFFIX_DEFAULT="/password";
+
+	private String usernameSuffix;
+	private String passwordSuffix;
+
+	private Map<String,String> aliases;
+
+	@Override
+	public void initialize() throws IOException {
+		AppConstants appConstants = AppConstants.getInstance();
+
+		aliases = getCredentialMap(appConstants);
+		if (aliases == null) {
+			throw new IllegalArgumentException(this.getClass().getName()+" cannot get alias map");
+		}
+
+		usernameSuffix = appConstants.getProperty(USERNAME_SUFFIX_PROPERTY, USERNAME_SUFFIX_DEFAULT);
+		passwordSuffix = appConstants.getProperty(PASSWORD_SUFFIX_PROPERTY, PASSWORD_SUFFIX_DEFAULT);
+	}
+
+	protected abstract String getPropertyBase();
+
+	protected abstract Map<String,String> getCredentialMap(AppConstants appConstants) throws MalformedURLException, IOException;
+
+	protected InputStream getInputStream(AppConstants appConstants, String key, String defaultValue, String purpose) throws IOException {
+		String filename = appConstants.getProperty(key, defaultValue);
+		if (Misc.isEmpty(filename)) {
+			throw new IllegalStateException("No property ["+key+"] found for "+purpose);
+		}
+		try {
+			return new FileInputStream(filename);
+		} catch (Exception e) {
+			URL url = ClassUtils.getResourceURL(filename);
+			if (url == null) {
+				throw new FileNotFoundException("Cannot find resource ["+filename+"]");
+			}
+			return url.openStream();
+		}
+	}
+
+	@Override
+	public boolean hasCredentials(String alias) {
+		return aliases.containsKey(alias) || aliases.containsKey(alias+usernameSuffix) || aliases.containsKey(alias+passwordSuffix);
+	}
+
+	@Override
+	public ICredentials getCredentials(String alias, String defaultUsername, String defaultPassword) {
+		return new MapCredentials(alias, defaultUsername, defaultPassword, usernameSuffix, passwordSuffix, aliases);
+	}
+
+	@Override
+	public Set<String> getConfiguredAliases() throws Exception{
+		Set<String> aliasNames = new LinkedHashSet<>();
+		for (String name:aliases.keySet()) {
+			if (name.endsWith(usernameSuffix)) {
+				name = name.substring(0, name.length()-usernameSuffix.length());
+			}
+			if (name.endsWith(passwordSuffix)) {
+				name = name.substring(0, name.length()-passwordSuffix.length());
+			}
+			aliasNames.add(name);
+		}
+		return aliasNames;
+	}
+
+}

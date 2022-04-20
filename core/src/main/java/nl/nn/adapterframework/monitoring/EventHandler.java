@@ -22,7 +22,7 @@ package nl.nn.adapterframework.monitoring;
  * @since   4.9
  */
 public interface EventHandler {
-	
+
 	public void registerEvent(EventThrowing source, String eventCode);
 	public void fireEvent(EventThrowing source, String eventCode);
 

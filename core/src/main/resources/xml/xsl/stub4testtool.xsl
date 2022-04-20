@@ -6,7 +6,7 @@
 	<!--
 		This XSLT adjusts the IBIS configuration as follows:
 		- disable all receiver elements, except those with childs JdbcQueryListener, DirectoryListener, JavaListener, WebServiceListener and RestListener
-		- add a default receiver (name="testtool-[adapter name]") with a child JavaListener (serviceName="testtool-[adapter name]") to each adapter (and copy all attributes (except transactionAttribute), errorStorage and messageLog from disabled receiver when present)
+		- add a default receiver (name="testtool-[adapter name]") with a child JavaListener (serviceName="testtool-[adapter name]") to each adapter (and copy all attributes (except transactionAttribute=Mandatory, this is replaced with Required), errorStorage and messageLog from disabled receiver when present)
 		- disable all listener elements which have a parent pipe
 		- stub all sender elements, which have a parent pipe, by an IbisJavaSender (serviceName="testtool-[pipe name]"), except the ResultSet2FileSender, DirectQuerySender, FixedQuerySender, XmlQuerySender, DelaySender, EchoSender, IbisLocalSender, LogSender, ParallelSenders, SenderSeries, SenderWrapper, XsltSender, CommandSender, FixedResultSender, FileSender, JavascriptSender, MessageStoreSender and ZipWriterSender
 		- disable all elements sapSystems
@@ -17,8 +17,8 @@
 		- stub the pipe element GetPrincipalPipe by a pipe element FixedResultPipe with attribute returnString set to tst9
 		- stub the pipe element IsUserInRolePipe by a pipe element EchoPipe
 		- stub the pipe element UUIDGeneratorPipe by a pipe element FixedResultPipe with attribute returnString set to 1234567890123456789012345678901 if type='numeric' and 0a4544b6-37489ec0_15ad0f006ae_-7ff3 otherwise
-		- stub the pipe element FtpFileRetrieverPipe, LdapFindMemberPipe, LdapFindGroupMembershipsPipe and SendTibcoMessage by a pipe element GenericMessageSendingPipe (and copy the attributes name, storeResultInSessionKey, getInputFromSessionKey and getInputFromFixedValue) with a child Ibis4JavaSender (serviceName="testtool-[pipe name]")
-		- add the attribute timeOutOnResult with value '[timeout]' and attribute exceptionOnResult with value '[error]' to all pipe elements GenericMessageSendingPipe and ForEachChildElementPipe
+		- stub the pipe element FtpFileRetrieverPipe, LdapFindMemberPipe, LdapFindGroupMembershipsPipe and SendTibcoMessage by a pipe element SenderPipe (and copy the attributes name, storeResultInSessionKey, getInputFromSessionKey and getInputFromFixedValue) with a child Ibis4JavaSender (serviceName="testtool-[pipe name]")
+		- add the attribute timeOutOnResult with value '[timeout]' and attribute exceptionOnResult with value '[error]' to all pipe elements SenderPipe, GenericMessageSendingPipe and ForEachChildElementPipe
 		- add, if not available, the parameter destination with value 'P2P.Infrastructure.Ibis4TestTool.Stub.Request/Action' to all pipe and inputWrapper elements SoapWrapperPipe with attribute direction=wrap 
 		- add, if not available, the parameter destination with value 'P2P.Infrastructure.Ibis4TestTool.Stub.Response' to all outputWrapper elements SoapWrapperPipe with attribute direction=wrap 
 	-->
@@ -33,11 +33,7 @@
 	<xsl:template match="adapter">
 		<xsl:element name="adapter">
 			<xsl:apply-templates select="@*" />
-			<xsl:for-each select="receiver[1]">
-				<xsl:call-template name="stubReceiver">
-					<xsl:with-param name="isAdapterStub" select="true()"/>
-				</xsl:call-template>
-			</xsl:for-each>
+			<xsl:call-template name="stubAdapterReceiver"/>
 			<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
 		</xsl:element>
 	</xsl:template>
@@ -52,43 +48,57 @@
 										or @className='nl.nn.adapterframework.jdbc.MessageStoreListener'
 										or @className='nl.nn.adapterframework.http.rest.ApiListener']]">
 		<xsl:call-template name="copy" />
-		<xsl:call-template name="stubReceiver">
-			<xsl:with-param name="isAdapterStub" select="false()"/>
-		</xsl:call-template>
+		<xsl:call-template name="stubReceiver"/>
 	</xsl:template>
 	
 	<xsl:template match="receiver">
 		<xsl:call-template name="disable" />
-		<xsl:call-template name="stubReceiver">
-			<xsl:with-param name="isAdapterStub" select="false()"/>
-		</xsl:call-template>
+		<xsl:call-template name="stubReceiver"/>
 	</xsl:template>	
 	
-	<xsl:template name="stubReceiver">
-		<xsl:param name="isAdapterStub" as="xs:boolean"/>
-
-		<xsl:variable name="receiverName">
-			<xsl:choose>
-				<xsl:when test="$isAdapterStub">
-					<xsl:value-of select="parent::adapter/@name"/>
-				</xsl:when>
-				<xsl:otherwise>
-					<xsl:value-of select="string-join((parent::adapter/@name,xs:string(count(preceding-sibling::receiver)+1)),'-')"/>
-				</xsl:otherwise>
-			</xsl:choose>
-		</xsl:variable>
-		
+	<xsl:template name="stubAdapterReceiver">
+		<xsl:variable name="receiverName" select="concat('testtool-',@name)"/>
+		<xsl:variable name="baseReceiver" select="receiver[1]"/>
 		<xsl:element name="receiver">
 			<xsl:attribute name="name">
-				<xsl:value-of select="concat('testtool-',$receiverName)" />
+				<xsl:value-of select="$receiverName" />
 			</xsl:attribute>
-			<xsl:apply-templates select="@*[name()!='transactionAttribute' and name() !='name']" />
+			<xsl:apply-templates select="$baseReceiver/@transactionAttribute" mode="stub"/>
+			<xsl:apply-templates select="$baseReceiver/@*[local-name()!='transactionAttribute' and local-name()!='name']" />
 			<xsl:element name="listener">
 				<xsl:attribute name="className">nl.nn.adapterframework.receivers.JavaListener</xsl:attribute>
 				<xsl:attribute name="serviceName">
-					<xsl:value-of select="concat('testtool-',$receiverName)" />
+					<xsl:value-of select="$receiverName" />
 				</xsl:attribute>
-				<xsl:if test="parent::*[adapter]/errorMessageFormatter">
+				<xsl:if test="errorMessageFormatter">
+					<xsl:attribute name="throwException">false</xsl:attribute>
+				</xsl:if>
+			</xsl:element>
+			<xsl:call-template name="stubNameForStorage">
+				<xsl:with-param name="store" select="$baseReceiver/errorStorage[@className='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage' or @className='nl.nn.adapterframework.jdbc.DummyTransactionalStorage']"/>
+			</xsl:call-template>
+			<xsl:copy-of select="errorSender[@className='nl.nn.adapterframework.senders.IbisLocalSender']"/>
+			<xsl:call-template name="stubNameForStorage">
+				<xsl:with-param name="store" select="$baseReceiver/messageLog[@className='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage' or @className='nl.nn.adapterframework.jdbc.DummyTransactionalStorage']"/>
+			</xsl:call-template>
+		</xsl:element>
+	</xsl:template>
+	
+	<xsl:template name="stubReceiver">
+		<xsl:variable name="receiverName" select="string-join(('testtool',(parent::adapter/@name,xs:string(count(preceding-sibling::receiver)+1))),'-')"/>
+		
+		<xsl:element name="receiver">
+			<xsl:attribute name="name">
+				<xsl:value-of select="$receiverName" />
+			</xsl:attribute>
+			<xsl:apply-templates select="@transactionAttribute" mode="stub"/>
+			<xsl:apply-templates select="@*[name()!='transactionAttribute' and name()!='name']" />
+			<xsl:element name="listener">
+				<xsl:attribute name="className">nl.nn.adapterframework.receivers.JavaListener</xsl:attribute>
+				<xsl:attribute name="serviceName">
+					<xsl:value-of select="$receiverName" />
+				</xsl:attribute>
+				<xsl:if test="parent::adapter/errorMessageFormatter">
 					<xsl:attribute name="throwException">false</xsl:attribute>
 				</xsl:if>
 			</xsl:element>
@@ -120,6 +130,12 @@
 				</xsl:for-each>
 			</xsl:element>
 		</xsl:if>
+	</xsl:template>
+	
+	<xsl:template match="receiver/@transactionAttribute" mode="stub">
+		<xsl:attribute name="transactionAttribute">
+			<xsl:value-of select="if (.='Mandatory') then 'Required' else ."/>
+		</xsl:attribute>
 	</xsl:template>
 	
 	<!-- All senders are stubbed except those in the list below -->
@@ -322,7 +338,7 @@
 							or @className='nl.nn.adapterframework.ldap.LdapFindGroupMembershipsPipe']">
 		<xsl:element name="pipe">
 			<xsl:apply-templates select="@name|@storeResultInSessionKey|@getInputFromSessionKey|@getInputFromFixedValue" />
-			<xsl:attribute name="className">nl.nn.adapterframework.pipes.GenericMessageSendingPipe</xsl:attribute>
+			<xsl:attribute name="className">nl.nn.adapterframework.pipes.SenderPipe</xsl:attribute>
 			<xsl:element name="sender">
 				<xsl:attribute name="className">nl.nn.adapterframework.senders.IbisJavaSender</xsl:attribute>
 				<xsl:attribute name="serviceName">
@@ -334,7 +350,8 @@
 	</xsl:template>
 	
 	<xsl:template match="pipe[ @className='nl.nn.adapterframework.pipes.GenericMessageSendingPipe' 
-							or @className='nl.nn.adapterframework.pipes.ForEachChildElementPipe']">
+							or @className='nl.nn.adapterframework.pipes.ForEachChildElementPipe'
+							or @className='nl.nn.adapterframework.pipes.SenderPipe']">
 		<xsl:element name="pipe">
 			<xsl:apply-templates select="@*" />
 			<xsl:attribute name="timeOutOnResult">[timeout]</xsl:attribute>
@@ -343,8 +360,8 @@
 		</xsl:element>
 	</xsl:template>
 	
-	<xsl:template match="param/@pattern[contains(.,'{now,')]">
-		<xsl:attribute name="pattern"><xsl:value-of select="replace(.,'\{now,','{fixedDate,')"/></xsl:attribute>
+	<xsl:template match="param/@pattern[contains(.,'{now,') or contains(.,'{now}')]">
+		<xsl:attribute name="pattern"><xsl:value-of select="replace(.,'\{now','{fixedDate')"/></xsl:attribute>
 	</xsl:template>
 	
 	<xsl:template match="pipe/*[local-name()='errorStorage' or local-name()='messageLog'][@className!='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage' 
@@ -365,8 +382,14 @@
 	<xsl:template name="disable">
 		<xsl:text disable-output-escaping="yes">&lt;!--</xsl:text>
 		<xsl:copy>
-			<xsl:apply-templates select="*|@*|processing-instruction()|text()" />
+			<xsl:apply-templates select="*|@*|processing-instruction()|text()" mode="disable" />
 		</xsl:copy>
 		<xsl:text disable-output-escaping="yes">--&gt;</xsl:text>
+	</xsl:template>
+
+	<xsl:template match="*|@*|processing-instruction()|text()" mode="disable">
+		<xsl:copy>
+			<xsl:apply-templates select="*|@*|processing-instruction()|text()" mode="disable"/>
+		</xsl:copy>
 	</xsl:template>
 </xsl:stylesheet>

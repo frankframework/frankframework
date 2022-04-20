@@ -1,0 +1,29 @@
+<configuration>
+	  <adapter name="DelaySender">
+      <receiver name="testtool-DelaySender">
+         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   serviceName="testtool-DelaySender"/>
+      </receiver>
+		    <receiver name="DelaySender">
+			      <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   name="DelaySender"/>
+		    </receiver>
+      <receiver name="testtool-DelaySender-1">
+         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   serviceName="testtool-DelaySender-1"/>
+      </receiver>
+
+		    <pipeline>
+			      <exits>
+				        <exit path="READY" state="success"/>
+			      </exits>
+			      <pipe name="Call Sender"
+               className="nl.nn.adapterframework.pipes.SenderPipe"
+               timeOutOnResult="[timeout]"
+               exceptionOnResult="[error]">
+				        <sender className="nl.nn.adapterframework.senders.DelaySender" delayTime="5"/>
+				        <forward name="success" path="READY"/>
+			      </pipe>
+		    </pipeline>
+	  </adapter>
+</configuration>

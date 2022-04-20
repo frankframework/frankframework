@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,12 +20,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import nl.nn.adapterframework.extensions.aspose.services.util.StringsUtil;
+import org.apache.commons.lang3.StringUtils;
 
 /**
- * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der
- *         Hoorn</a> (d937275)
- *
+ * @author Gerard van der Hoorn
  */
 class UniqueFileGenerator {
 
@@ -45,7 +43,7 @@ class UniqueFileGenerator {
 		SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
 		int count = atomicCount.addAndGet(1);
 		String fileType;
-		if (StringsUtil.isBlank(extension)) {
+		if (StringUtils.isEmpty(extension)) {
 			fileType = "";
 		} else {
 			fileType = "." + extension;

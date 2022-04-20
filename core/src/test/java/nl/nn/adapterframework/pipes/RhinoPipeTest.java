@@ -24,7 +24,7 @@ public class RhinoPipeTest extends PipeTestBase<RhinoPipe> {
 
 
     /**
-     * Method: doPipe(Object input, IPipeLineSession session)
+     * Method: doPipe(Object input, PipeLineSession session)
      */
     @Test
     public void testDoPipe() throws Exception {

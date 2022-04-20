@@ -15,7 +15,7 @@ import org.xml.sax.SAXException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.FileMessage;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 @RunWith(Parameterized.class)
@@ -53,7 +53,7 @@ public class ToListOfMaps {
 		ObjectMapper mapper = new ObjectMapper();
 
 		QueryOutputToListOfMaps transformer = new QueryOutputToListOfMaps();
-		List<Map<String, String>> output = transformer.parseMessage(new Message(xmlFile));
+		List<Map<String, String>> output = transformer.parseMessage(new FileMessage(xmlFile));
 		String out = mapper.writeValueAsString(output);
 
 		Assert.assertEquals(expected, out);

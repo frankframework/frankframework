@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,12 +22,12 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -44,110 +44,101 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Provides an example of a pipe. It may return the contents of a file
- * (in the classpath) when <code>fileName</code> or <code>fileNameSessionKey</code> is specified, otherwise the
+ * (in the classpath) when <code>filename</code> or <code>filenameSessionKey</code> is specified, otherwise the
  * input of <code>returnString</code> is returned.
  *
- * <table border="1">
- * <p><b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr>
- *   <td><i>any</i></td><td><i>any</i></td>
- * 	 <td>Any parameters defined on the pipe will be used for replacements. Each occurrence
- * 		 of <code>${name-of-parameter}</code> in the file {@link #setFileName(String) fileName} 
- *       will be replaced by its corresponding <i>value-of-parameter</i>. <br>
- *       This works only with files, not with values supplied in attribute {@link #setReturnString(String) returnString}</td>
- * </tr>
- * </table>
- * </p>
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td>"filenotfound"</td><td>file not found (when this forward isn't specified an exception will be thrown)</td></tr>
- * </table>
- * </p>
+ * @ff.parameters Any parameters defined on the pipe will be used for replacements. Each occurrence of <code>${name-of-parameter}</code> in the file {@link #setFilename(String) filename} will be replaced by its corresponding <i>value-of-parameter</i>. This works only with files, not with values supplied in attribute {@link #setReturnString(String) returnString}
+ *
+ * @ff.forward filenotfound the configured file was not found (when this forward isn't specified an exception will be thrown)
+ *
+ *
  * @author Johan Verrips
  */
 public class FixedResultPipe extends FixedForwardPipe {
-	
+
 	private final static String FILE_NOT_FOUND_FORWARD = "filenotfound";
-	
+
 	AppConstants appConstants;
-    private String fileName;
-    private String fileNameSessionKey;
-    private String returnString;
-    private boolean substituteVars=false;
+	private String filename;
+	private String filenameSessionKey;
+	private String returnString;
+	private boolean substituteVars=false;
 	private String replaceFrom = null;
 	private String replaceTo = null;
 	private String styleSheetName = null;
 	private boolean lookupAtRuntime=false;
 	private boolean replaceFixedParams=false;
-	
-    /**
-     * checks for correct configuration, and translates the fileName to
-     * a file, to check existence. 
-     * If a fileName or fileNameSessionKey was specified, the contents of the file is put in the
-     * <code>returnString</code>, so that the <code>returnString</code>
-     * may always be returned.
-     * @throws ConfigurationException
-     */
-    @Override
+
+	/**
+	 * checks for correct configuration, and translates the filename to
+	 * a file, to check existence.
+	 * If a filename or filenameSessionKey was specified, the contents of the file is put in the
+	 * <code>returnString</code>, so that the <code>returnString</code>
+	 * may always be returned.
+	 * @throws ConfigurationException
+	 */
+	@Override
 	public void configure() throws ConfigurationException {
+		parameterNamesMustBeUnique = true;
 		super.configure();
 		appConstants = AppConstants.getInstance(getConfigurationClassLoader());
-		if (StringUtils.isNotEmpty(getFileName()) && !isLookupAtRuntime()) {
+		if (StringUtils.isNotEmpty(getFilename()) && !isLookupAtRuntime()) {
 			URL resource = null;
 			try {
-				resource = ClassUtils.getResourceURL(this, getFileName());
+				resource = ClassUtils.getResourceURL(this, getFilename());
 			} catch (Throwable e) {
-				throw new ConfigurationException("got exception searching for ["+getFileName()+"]", e);
+				throw new ConfigurationException("got exception searching for ["+getFilename()+"]", e);
 			}
 			if (resource==null) {
-				throw new ConfigurationException("cannot find resource ["+getFileName()+"]");
+				throw new ConfigurationException("cannot find resource ["+getFilename()+"]");
 			}
-            try {
-				returnString = Misc.resourceToString(resource, SystemUtils.LINE_SEPARATOR);
-            } catch (Throwable e) {
-                throw new ConfigurationException("got exception loading ["+getFileName()+"]", e);
-            }
-        }
-        if ((StringUtils.isEmpty(fileName)) && (StringUtils.isEmpty(fileNameSessionKey)) && returnString==null) {  // allow an empty returnString to be specified
-            throw new ConfigurationException("has neither fileName nor fileNameSessionKey nor returnString specified");
-        }
+			try {
+				returnString = Misc.resourceToString(resource, Misc.LINE_SEPARATOR);
+			} catch (Throwable e) {
+				throw new ConfigurationException("got exception loading ["+getFilename()+"]", e);
+			}
+		}
+		if ((StringUtils.isEmpty(getFilename())) && (StringUtils.isEmpty(getFilenameSessionKey())) && returnString==null) {  // allow an empty returnString to be specified
+			throw new ConfigurationException("has neither filename nor filenameSessionKey nor returnString specified");
+		}
 		if (StringUtils.isNotEmpty(replaceFrom)) {
 			returnString = replace(returnString, replaceFrom, replaceTo );
 		}
-    }
-    
+	}
+
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String result=returnString;
-		String fileName = null;
-		if (StringUtils.isNotEmpty(getFileNameSessionKey())) {
-			fileName = (String)session.get(fileNameSessionKey);
+		String filename = null;
+		if (StringUtils.isNotEmpty(getFilenameSessionKey())) {
+			try {
+				filename = session.getMessage(getFilenameSessionKey()).asString();
+			} catch (IOException e) {
+				throw new PipeRunException(this, getLogPrefix(session) + "unable to get filename from session key ["+getFilenameSessionKey()+"]", e);
+			}
 		}
-		if (fileName == null && StringUtils.isNotEmpty(getFileName()) && isLookupAtRuntime()) {
-			fileName = getFileName();
+		if (filename == null && StringUtils.isNotEmpty(getFilename()) && isLookupAtRuntime()) {
+			filename = getFilename();
 		}
-		if (StringUtils.isNotEmpty(fileName)) {
+		if (StringUtils.isNotEmpty(filename)) {
 			URL resource = null;
 			try {
-				resource = ClassUtils.getResourceURL(this, fileName);
+				resource = ClassUtils.getResourceURL(this, filename);
 			} catch (Throwable e) {
-				throw new PipeRunException(this,getLogPrefix(session)+"got exception searching for ["+fileName+"]", e);
+				throw new PipeRunException(this,getLogPrefix(session)+"got exception searching for ["+filename+"]", e);
 			}
 			if (resource == null) {
 				PipeForward fileNotFoundForward = findForward(FILE_NOT_FOUND_FORWARD);
 				if (fileNotFoundForward != null) {
 					return new PipeRunResult(fileNotFoundForward, message);
 				} else {
-					throw new PipeRunException(this,getLogPrefix(session)+"cannot find resource ["+fileName+"]");
+					throw new PipeRunException(this,getLogPrefix(session)+"cannot find resource ["+filename+"]");
 				}
 			}
 			try {
-				result = Misc.resourceToString(resource, SystemUtils.LINE_SEPARATOR);
+				result = Misc.resourceToString(resource, Misc.LINE_SEPARATOR);
 			} catch (Throwable e) {
-				throw new PipeRunException(this,getLogPrefix(session)+"got exception loading ["+fileName+"]", e);
+				throw new PipeRunException(this,getLogPrefix(session)+"got exception loading ["+filename+"]", e);
 			}
 		}
 		if (getParameterList()!=null) {
@@ -157,8 +148,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 			} catch (ParameterException e) {
 				throw new PipeRunException(this,getLogPrefix(session)+"exception extracting parameters",e);
 			}
-			for (int i=0; i<pvl.size(); i++) {
-				ParameterValue pv = pvl.getParameterValue(i);
+			for(ParameterValue pv : pvl) {
 				String replaceFrom;
 				if (isReplaceFixedParams()) {
 					replaceFrom=pv.getDefinition().getName();
@@ -169,7 +159,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 			}
 		}
 
-		message.closeOnCloseOf(session); // avoid connection leaking when the message itself is not consumed.
+		message.closeOnCloseOf(session, this); // avoid connection leaking when the message itself is not consumed.
 		if (getSubstituteVars()){
 			result=StringResolver.substVars(returnString, session, appConstants);
 		}
@@ -192,15 +182,15 @@ public class FixedResultPipe extends FixedForwardPipe {
 			}
 		}
 
-	    log.debug(getLogPrefix(session)+ " returning fixed result [" + result + "]");
+		log.debug(getLogPrefix(session)+ " returning fixed result [" + result + "]");
 
-   		return new PipeRunResult(getForward(), result);
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 
-	public static String replace (String target, String from, String to) {   
+	public static String replace (String target, String from, String to) {
 		// target is the original string
 		// from   is the string to be replaced
-		// to     is the string which will used to replace
+		// to	 is the string which will used to replace
 		int start = target.indexOf (from);
 		if (start==-1) return target;
 		int lf = from.length();
@@ -225,33 +215,45 @@ public class FixedResultPipe extends FixedForwardPipe {
 		return this.substituteVars;
 	}
 
-    /**
-     * Sets the name of the filename. The fileName should not be specified
-     * as an absolute path, but as a resource in the classpath.
-     */
-	@IbisDoc({"name of the file containing the resultmessage", ""})
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
-    }
-	public String getFileName() {
-		return fileName;
+	@Deprecated
+	@ConfigurationWarning("attribute 'fileName' is replaced with 'filename'")
+	public void setFileName(String fileName) {
+		setFilename(fileName);
 	}
-	
+
+	/**
+	 * Sets the name of the filename. The filename should not be specified
+	 * as an absolute path, but as a resource in the classpath.
+	 */
+	@IbisDoc({"name of the file containing the resultmessage", ""})
+	public void setFilename(String filename) {
+		this.filename = filename;
+	}
+	public String getFilename() {
+		return filename;
+	}
+
+	@Deprecated
+	@ConfigurationWarning("attribute 'fileNameSessionKey' is replaced with 'filenameSessionKey'")
+	public void setFileNameSessionKey(String fileNameSessionKey) {
+		setFilenameSessionKey(fileNameSessionKey);
+	}
+
 	/**
 	 * @param filenameSessionKey the session key that contains the name of the file
 	 */
 	@IbisDoc({"name of the session key containing the file name of the file containing the result message", ""})
-	public void setFileNameSessionKey(String filenameSessionKey) {
-		this.fileNameSessionKey = filenameSessionKey;
+	public void setFilenameSessionKey(String filenameSessionKey) {
+		this.filenameSessionKey = filenameSessionKey;
 	}
-	public String getFileNameSessionKey() {
-		return fileNameSessionKey;
+	public String getFilenameSessionKey() {
+		return filenameSessionKey;
 	}
 
 	@IbisDoc({"returned message", ""})
-    public void setReturnString(String returnString) {
-        this.returnString = returnString;
-    }
+	public void setReturnString(String returnString) {
+		this.returnString = returnString;
+	}
 	public String getReturnString() {
 		return returnString;
 	}

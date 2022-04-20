@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018-2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2018-2019 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,13 +23,13 @@ import java.util.StringTokenizer;
 import javax.xml.soap.SOAPConstants;
 import javax.xml.ws.soap.SOAPBinding;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.Bus;
 import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.cxf.jaxws.EndpointImpl;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
@@ -44,8 +44,13 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
- * Implementation of a {@link nl.nn.adapterframework.core.IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.Receiver}
- * to receive messages as a web-service.
+ * Listener that allows a {@link nl.nn.adapterframework.receivers.Receiver} to receive messages as a SOAP webservice.
+ * The structure of the SOAP messages is expressed in a WSDL (Web Services Description Language) document.
+ * The Frank!Framework generates a WSDL document for each adapter that contains WebServiceListener-s. You can
+ * find these documents in the Frank!Console under main menu item Webservices, heading Available WSDL's.
+ * The WSDL documents that we generate document how the SOAP services can be accessed. In particular, the
+ * URL of a SOAP service can be found in an XML element <code>&lt;soap:address&gt;</code> with
+ * <code>soap</code> pointing to namespace <code>http://schemas.xmlsoap.org/wsdl/soap/</code>.  
  * 
  * @author Gerrit van Brakel
  * @author Jaco de Groot
@@ -53,16 +58,17 @@ import nl.nn.adapterframework.util.XmlBuilder;
  */
 public class WebServiceListener extends PushingListenerAdapter implements HasPhysicalDestination, HasSpecialDefaultValues, ApplicationContextAware {
 
-	private boolean soap = true;
-	private String serviceNamespaceURI;
+	private final @Getter(onMethod = @__(@Override)) String domain = "Http";
+	private @Getter boolean soap = true;
+	private @Getter String serviceNamespaceURI;
 	private SoapWrapper soapWrapper = null;
 
 	/* CXF Implementation */
-	private String address;
-	private boolean mtomEnabled = false;
-	private String attachmentSessionKeys = "";
-	private String multipartXmlSessionKey = "multipartXml";
-	private List<String> attachmentSessionKeysList = new ArrayList<String>();
+	private @Getter String address;
+	private @Getter boolean mtomEnabled = false;
+	private @Getter String attachmentSessionKeys = "";
+	private @Getter String multipartXmlSessionKey = "multipartXml";
+	private List<String> attachmentSessionKeysList = new ArrayList<>();
 	private EndpointImpl endpoint = null;
 	private SpringBus cxfBus;
 
@@ -96,8 +102,16 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 			String msg = "calling webservices via de ServiceDispatcher_ServiceProxy is deprecated. Please specify an address or serviceNamespaceURI and modify the call accordingly";
 			ConfigurationWarnings.add(this, log, msg, SuppressKeys.DEPRECATION_SUPPRESS_KEY, null);
 		}
+		if (StringUtils.isNotEmpty(getServiceNamespaceURI()) && StringUtils.isNotEmpty(getAddress())) {
+			String msg = "Please specify either an address or serviceNamespaceURI but not both";
+			ConfigurationWarnings.add(this, log, msg);
+		}
 
-		if(cxfBus == null) {
+		Bus bus = getApplicationContext().getBean("cxf", Bus.class);
+		if(bus instanceof SpringBus) {
+			cxfBus = (SpringBus) bus;
+			log.debug("found CXF SpringBus id ["+bus.getId()+"]");
+		} else {
 			throw new ConfigurationException("unable to find SpringBus, cannot register "+this.getClass().getSimpleName());
 		}
 	}
@@ -116,16 +130,15 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 			} else {
 				log.error("unable to publish listener ["+getName()+"] on CXF endpoint ["+getAddress()+"]");
 			}
-		}
-
-		//Can bind on multiple endpoints
-		if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
-			log.debug("registering listener ["+getName()+"] with ServiceDispatcher by serviceNamespaceURI ["+getServiceNamespaceURI()+"]");
-			ServiceDispatcher.getInstance().registerServiceClient(getServiceNamespaceURI(), this);
-		}
-		else {
-			log.debug("registering listener ["+getName()+"] with ServiceDispatcher");
-			ServiceDispatcher.getInstance().registerServiceClient(getName(), this); //Backwards compatibility
+		} else {
+			if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
+				log.debug("registering listener ["+getName()+"] with ServiceDispatcher by serviceNamespaceURI ["+getServiceNamespaceURI()+"]");
+				ServiceDispatcher.getInstance().registerServiceClient(getServiceNamespaceURI(), this);
+			}
+			else {
+				log.debug("registering listener ["+getName()+"] with ServiceDispatcher");
+				ServiceDispatcher.getInstance().registerServiceClient(getName(), this); //Backwards compatibility
+			}
 		}
 
 		super.open();
@@ -135,16 +148,19 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	public void close() {
 		super.close();
 
-		if(endpoint != null && endpoint.isPublished())
+		if(endpoint != null && endpoint.isPublished()) {
 			endpoint.stop();
-
-		if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
-			log.debug("unregistering listener ["+getName()+"] from ServiceDispatcher by serviceNamespaceURI ["+getServiceNamespaceURI()+"]");
-			ServiceDispatcher.getInstance().unregisterServiceClient(getServiceNamespaceURI());
 		}
-		else {
-			log.debug("unregistering listener ["+getName()+"] from ServiceDispatcher");
-			ServiceDispatcher.getInstance().unregisterServiceClient(getName()); //Backwards compatibility
+
+		if (StringUtils.isEmpty(getAddress())) {
+			if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
+				log.debug("unregistering listener ["+getName()+"] from ServiceDispatcher by serviceNamespaceURI ["+getServiceNamespaceURI()+"]");
+				ServiceDispatcher.getInstance().unregisterServiceClient(getServiceNamespaceURI());
+			}
+			else {
+				log.debug("unregistering listener ["+getName()+"] from ServiceDispatcher");
+				ServiceDispatcher.getInstance().unregisterServiceClient(getName()); //Backwards compatibility
+			}
 		}
 	}
 
@@ -200,25 +216,14 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		return "name ["+getName()+"]";
 	}
 
-	@IbisDoc({"when <code>true</code> the soap envelope is removed from received messages and a soap envelope is added to returned messages (soap envelope will not be visible to the pipeline)", "<code>true</code>"})
+	@IbisDoc({"when <code>true</code> the soap envelope is removed from received messages and a soap envelope is added to returned messages (soap envelope will not be visible to the pipeline)", "true"})
 	public void setSoap(boolean b) {
 		soap = b;
-	}
-	public boolean isSoap() {
-		return soap;
-	}
-
-	public String getServiceNamespaceURI() {
-		return serviceNamespaceURI;
 	}
 
 	@IbisDoc({"namespace of the service that is provided by the adapter of this listener", ""})
 	public void setServiceNamespaceURI(String string) {
 		serviceNamespaceURI = string;
-	}
-
-	public boolean isApplicationFaultsAsSoapFaults() {
-		return isApplicationFaultsAsExceptions();
 	}
 	public void setApplicationFaultsAsSoapFaults(boolean b) {
 		setApplicationFaultsAsExceptions(b);
@@ -233,29 +238,17 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 				this.address = address;
 		}
 	}
-	public String getAddress() {
-		return address;
-	}
 
 	public void setMtomEnabled(boolean mtomEnabled) {
 		this.mtomEnabled = mtomEnabled;
-	}
-	public boolean isMtomEnabled() {
-		return mtomEnabled;
 	}
 
 	public void setAttachmentSessionKeys(String attachmentSessionKeys) {
 		this.attachmentSessionKeys = attachmentSessionKeys;
 	}
-	public String getAttachmentSessionKeys() {
-		return attachmentSessionKeys;
-	}
 
 	public void setMultipartXmlSessionKey(String multipartXmlSessionKey) {
 		this.multipartXmlSessionKey = multipartXmlSessionKey;
-	}
-	public String getMultipartXmlSessionKey() {
-		return multipartXmlSessionKey;
 	}
 
 	@Override
@@ -268,16 +261,5 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 
 	private static String getAddressDefaultValue(String name) {
 		return "/" + name;
-	}
-
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) {
-		Bus bus = applicationContext.getBean("cxf", Bus.class);
-		if(bus instanceof SpringBus) {
-			cxfBus = (SpringBus) bus;
-			log.info("found CXF SpringBus id ["+bus.getId()+"]");
-		} else {
-			throw new IllegalStateException("CXF bus ["+bus+"] not instance of [SpringBus]");
-		}
 	}
 }

@@ -37,9 +37,9 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 public class IbisApplicationServlet extends HttpServlet {
 	private static final long serialVersionUID = 2L;
 	private final Logger log = LogUtil.getLogger(this);
-	public static final String KEY_CONTEXT = "KEY_CONTEXT";
+	public static final String CONTEXT_KEY = "IbisContext";
 	private IbisContext ibisContext;
-	private static final String KEY_EXCEPTION = "KEY_EXCEPTION";
+	private static final String EXCEPTION_KEY = "StartupException";
 
 	@Override
 	public void init() throws ServletException {
@@ -68,7 +68,7 @@ public class IbisApplicationServlet extends HttpServlet {
 				throw new IllegalStateException("No IBIS WebApplicationInitializer found. Aborting launch...");
 			}
 		} catch (Throwable t) {
-			servletContext.setAttribute(KEY_EXCEPTION, t);
+			servletContext.setAttribute(EXCEPTION_KEY, t);
 			log.error("IBIS WebApplicationInitializer failed to initialize", t);
 			throw t; //If the IBIS WebApplicationInitializer can't be found or initialized, throw the exception
 		}
@@ -85,15 +85,13 @@ public class IbisApplicationServlet extends HttpServlet {
 
 			//We can't call servletContext.log(message, Exception) as it will prevent the servlet from starting up
 			servletContext.log(String.format("%s, check ibis logs for more information! (%s) %s", msg, startupException.getClass().getName(), startupException.getMessage()));
-
-			servletContext.setAttribute(KEY_EXCEPTION, startupException); //Instead of the IbisContext we store the Exception, see IbisApplicationServlet.getIbisContext(ServletContext)
-		} else { //Since Spring has started, save the IbisContext in the ServletContext
-			String attributeKey = appConstants.getResolvedProperty(KEY_CONTEXT);
-			servletContext.setAttribute(attributeKey, ibisContext);
-			log.debug("stored IbisContext [" + ClassUtils.nameOf(ibisContext) + "]["+ ibisContext + "] in ServletContext under key ["+ attributeKey + "]");
-
-			log.debug("Servlet init finished");
 		}
+
+		// save the IbisContext in the ServletContext
+		servletContext.setAttribute(CONTEXT_KEY, ibisContext);
+		log.debug("stored IbisContext [" + ClassUtils.nameOf(ibisContext) + "]["+ ibisContext + "] in ServletContext under key ["+ CONTEXT_KEY + "]");
+
+		log.debug("Servlet init finished");
 	}
 
 	/**
@@ -102,14 +100,16 @@ public class IbisApplicationServlet extends HttpServlet {
 	 * @return IbisContext or IllegalStateException when not found
 	 */
 	public static IbisContext getIbisContext(ServletContext servletContext) {
-		AppConstants appConstants = AppConstants.getInstance();
-		String ibisContextKey = appConstants.getResolvedProperty(KEY_CONTEXT);
-		IbisContext ibisContext = (IbisContext)servletContext.getAttribute(ibisContextKey);
-
-		if(ibisContext == null) {
-			Throwable t = (Throwable) servletContext.getAttribute(KEY_EXCEPTION);
-			throw new IllegalStateException("Unable to retrieve IbisContext from ServletContext attribute ["+KEY_CONTEXT+"]", t);
+		Throwable t = (Throwable) servletContext.getAttribute(EXCEPTION_KEY); // non-recoverable startup error
+		if(t != null) {
+			throw new IllegalStateException("Could not initialize IbisContext", t);
 		}
+
+		IbisContext ibisContext = (IbisContext)servletContext.getAttribute(CONTEXT_KEY);
+		if(ibisContext == null) {
+			throw new IllegalStateException("IbisContext not found in ServletContext");
+		}
+
 		return ibisContext;
 	}
 
@@ -117,7 +117,7 @@ public class IbisApplicationServlet extends HttpServlet {
 	public void destroy() {
 		getServletContext().log("Shutting down IbisContext");
 		if(ibisContext != null) {
-			ibisContext.destroy();
+			ibisContext.close();
 		}
 
 		super.destroy();

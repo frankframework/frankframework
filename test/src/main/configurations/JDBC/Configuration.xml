@@ -1,8 +1,10 @@
 <!DOCTYPE configuration [
 	<!ENTITY JdbcListener SYSTEM "./ConfigurationJdbcListener.xml">
 	<!ENTITY JdbcSenders SYSTEM "./ConfigurationJdbcSenders.xml">
+	<!ENTITY ConfigurationResultSetIteratingPipe SYSTEM "./ConfigurationResultSetIteratingPipe.xml">
 ]>
 <configuration name="JDBC">
 	&JdbcListener;
 	&JdbcSenders;
+	&ConfigurationResultSetIteratingPipe;
 </configuration>

@@ -1,7 +1,7 @@
 <module>
 	<adapter name="Ladybug" description="Runs reports saved in Ladybug's Test tab periodically through a CRON-job"
 	active="${ladybug.adapter.active}">
-		<receiver name="Ladybug" className="nl.nn.adapterframework.receivers.GenericReceiver">
+		<receiver>
 			<listener name="Ladybug" className="nl.nn.adapterframework.receivers.JavaListener" />
 		</receiver>
 
@@ -17,7 +17,7 @@
 	</adapter>
 
 	<scheduler>
-		<job name="Ladybug" adapterName="Ladybug" receiverName="Ladybug"
+		<job name="Ladybug" adapterName="Ladybug" javaListener="Ladybug"
 			cronExpression="${ladybug.adapter.scheduler.cron}" function="sendMessage"
 			active="${ladybug.adapter.scheduler.active}" />
 	</scheduler>

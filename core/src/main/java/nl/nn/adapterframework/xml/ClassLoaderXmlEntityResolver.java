@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.xml;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 import javax.xml.transform.TransformerException;
 
@@ -60,26 +59,26 @@ public class ClassLoaderXmlEntityResolver extends ClassLoaderURIResolver impleme
 			// /XmlValidator/import_include/root.xsd of Ibis4TestIAF. The
 			// default resolve entity implementation seems to ignore it, hence
 			// return null.
+			if (log.isTraceEnabled()) log.trace("all relevant Ids are null, returning null");
 			return null;
 		}
 
 		String base = resourceIdentifier.getBaseSystemId();
 		String href = resourceIdentifier.getLiteralSystemId();
 		if (href == null) {
-			// Ignore import with namespace but without schemaLocation
+			if (log.isTraceEnabled()) log.trace("Ignore import with namespace but without schemaLocation");
 			return null;
 		}
 
 		Resource resource;
 		try {
+			if (log.isTraceEnabled()) log.trace("call resolveToResource(href ["+href+"] base ["+base+"])");
 			resource = resolveToResource(href, base);
 		} catch (TransformerException e) {
 			throw new XNIException(e);
 		}
-	
-		
-		InputStream inputStream = resource.getURL().openStream();
-		return new XMLInputSource(null, resource.getSystemId(), null, inputStream, null);
+
+		return resource.asXMLInputSource();
 	}
 
 }

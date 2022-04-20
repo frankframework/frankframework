@@ -22,8 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.extensions.cmis.CmisUtils;
 import nl.nn.adapterframework.extensions.cmis.server.CmisEvent;
 import nl.nn.adapterframework.extensions.cmis.server.CmisEventDispatcher;
@@ -55,6 +54,11 @@ import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+/**
+ * Wrapper that delegates when a matching CmisEvent is present.
+ * 
+ * @author Niels
+ */
 public class IbisObjectService implements ObjectService {
 
 	private ObjectService objectService;
@@ -103,7 +107,7 @@ public class IbisObjectService implements ObjectService {
 			}
 			cmisXml.addSubElement(propertiesXml);
 
-			IPipeLineSession context = new PipeLineSessionBase();
+			PipeLineSession context = new PipeLineSession();
 			context.put("ContentStream", contentStream.getStream());
 			context.put(CmisUtils.CMIS_CALLCONTEXT_KEY, callContext);
 			Element result = eventDispatcher.trigger(CmisEvent.CREATE_DOCUMENT, cmisXml.toXML(), context);
@@ -112,18 +116,13 @@ public class IbisObjectService implements ObjectService {
 	}
 
 	@Override
-	public String createDocumentFromSource(String repositoryId,
-			String sourceId, Properties properties, String folderId,
-			VersioningState versioningState, List<String> policies,
-			Acl addAces, Acl removeAces, ExtensionsData extension) {
-		// TODO Auto-generated method stub
+	public String createDocumentFromSource(String repositoryId, String sourceId, Properties properties, String folderId, VersioningState versioningState, 
+			List<String> policies, Acl addAces, Acl removeAces, ExtensionsData extension) {
 		return objectService.createDocumentFromSource(repositoryId, sourceId, properties, folderId, versioningState, policies, addAces, removeAces, extension);
 	}
 
 	@Override
-	public String createFolder(String repositoryId, Properties properties,
-			String folderId, List<String> policies, Acl addAces,
-			Acl removeAces, ExtensionsData extension) {
+	public String createFolder(String repositoryId, Properties properties, String folderId, List<String> policies, Acl addAces, Acl removeAces, ExtensionsData extension) {
 
 		if(!eventDispatcher.contains(CmisEvent.CREATE_FOLDER)) {
 			return objectService.createFolder(repositoryId, properties, folderId, policies, addAces, removeAces, extension);
@@ -146,18 +145,13 @@ public class IbisObjectService implements ObjectService {
 	}
 
 	@Override
-	public String createRelationship(String repositoryId,
-			Properties properties, List<String> policies, Acl addAces,
-			Acl removeAces, ExtensionsData extension) {
-		// TODO Auto-generated method stub
+	public String createRelationship(String repositoryId, Properties properties, List<String> policies, Acl addAces, Acl removeAces, ExtensionsData extension) {
 		return objectService.createRelationship(repositoryId, properties, policies, addAces, removeAces, extension);
 	}
 
 	@Override
-	public String createPolicy(String repositoryId, Properties properties,
-			String folderId, List<String> policies, Acl addAces,
+	public String createPolicy(String repositoryId, Properties properties, String folderId, List<String> policies, Acl addAces,
 			Acl removeAces, ExtensionsData extension) {
-		// TODO Auto-generated method stub
 		return objectService.createPolicy(repositoryId, properties, folderId, policies, addAces, removeAces, extension);
 	}
 
@@ -216,11 +210,8 @@ public class IbisObjectService implements ObjectService {
 	}
 
 	@Override
-	public ObjectData getObject(String repositoryId, String objectId,
-			String filter, Boolean includeAllowableActions,
-			IncludeRelationships includeRelationships, String renditionFilter,
-			Boolean includePolicyIds, Boolean includeAcl,
-			ExtensionsData extensions) {
+	public ObjectData getObject(String repositoryId, String objectId, String filter, Boolean includeAllowableActions, IncludeRelationships includeRelationships, 
+			String renditionFilter, Boolean includePolicyIds, Boolean includeAcl, ExtensionsData extensions) {
 
 		if(!eventDispatcher.contains(CmisEvent.GET_OBJECT)) {
 			return objectService.getObject(repositoryId, objectId, filter, includeAllowableActions, includeRelationships, renditionFilter, includePolicyIds, includeAcl, extensions);
@@ -234,7 +225,7 @@ public class IbisObjectService implements ObjectService {
 			cmisXml.addSubElement(buildXml("includePolicies", includePolicyIds));
 			cmisXml.addSubElement(buildXml("includeAcl", includeAcl));
 
-			IPipeLineSession context = new PipeLineSessionBase();
+			PipeLineSession context = new PipeLineSession();
 			context.put(CmisUtils.CMIS_CALLCONTEXT_KEY, callContext);
 			Element cmisElement = eventDispatcher.trigger(CmisEvent.GET_OBJECT, cmisXml.toXML(), context);
 
@@ -267,10 +258,8 @@ public class IbisObjectService implements ObjectService {
 	}
 
 	@Override
-	public List<RenditionData> getRenditions(String repositoryId,
-			String objectId, String renditionFilter, BigInteger maxItems,
-			BigInteger skipCount, ExtensionsData extension) {
-		// TODO Auto-generated method stub
+	public List<RenditionData> getRenditions(String repositoryId, String objectId, String renditionFilter, BigInteger maxItems, BigInteger skipCount, 
+			ExtensionsData extension) {
 		return objectService.getRenditions(repositoryId, objectId, renditionFilter, maxItems, skipCount, extension);
 	}
 
@@ -295,7 +284,7 @@ public class IbisObjectService implements ObjectService {
 			cmisXml.addSubElement(buildXml("includePolicyIds", includePolicyIds));
 			cmisXml.addSubElement(buildXml("includeAcl", includeAcl));
 
-			IPipeLineSession context = new PipeLineSessionBase();
+			PipeLineSession context = new PipeLineSession();
 			context.put(CmisUtils.CMIS_CALLCONTEXT_KEY, callContext);
 			Element cmisElement = eventDispatcher.trigger(CmisEvent.GET_OBJECT_BY_PATH, cmisXml.toXML(), context);
 
@@ -304,9 +293,7 @@ public class IbisObjectService implements ObjectService {
 	}
 
 	@Override
-	public void updateProperties(String repositoryId, Holder<String> objectId,
-			Holder<String> changeToken, Properties properties,
-			ExtensionsData extension) {
+	public void updateProperties(String repositoryId, Holder<String> objectId, Holder<String> changeToken, Properties properties, ExtensionsData extension) {
 
 		if(!eventDispatcher.contains(CmisEvent.UPDATE_PROPERTIES)) {
 			objectService.updateProperties(repositoryId, objectId, changeToken, properties, extension);
@@ -330,19 +317,13 @@ public class IbisObjectService implements ObjectService {
 	}
 
 	@Override
-	public List<BulkUpdateObjectIdAndChangeToken> bulkUpdateProperties(
-			String repositoryId,
-			List<BulkUpdateObjectIdAndChangeToken> objectIdsAndChangeTokens,
-			Properties properties, List<String> addSecondaryTypeIds,
-			List<String> removeSecondaryTypeIds, ExtensionsData extension) {
-		// TODO Auto-generated method stub
+	public List<BulkUpdateObjectIdAndChangeToken> bulkUpdateProperties(String repositoryId, List<BulkUpdateObjectIdAndChangeToken> objectIdsAndChangeTokens,
+			Properties properties, List<String> addSecondaryTypeIds, List<String> removeSecondaryTypeIds, ExtensionsData extension) {
 		return objectService.bulkUpdateProperties(repositoryId, objectIdsAndChangeTokens, properties, addSecondaryTypeIds, removeSecondaryTypeIds, extension);
 	}
 
 	@Override
-	public void moveObject(String repositoryId, Holder<String> objectId,
-			String targetFolderId, String sourceFolderId,
-			ExtensionsData extension) {
+	public void moveObject(String repositoryId, Holder<String> objectId, String targetFolderId, String sourceFolderId, ExtensionsData extension) {
 
 		if(!eventDispatcher.contains(CmisEvent.MOVE_OBJECT)) {
 			objectService.moveObject(repositoryId, objectId, targetFolderId, sourceFolderId, extension);
@@ -376,10 +357,8 @@ public class IbisObjectService implements ObjectService {
 	}
 
 	@Override
-	public FailedToDeleteData deleteTree(String repositoryId, String folderId,
-			Boolean allVersions, UnfileObject unfileObjects,
+	public FailedToDeleteData deleteTree(String repositoryId, String folderId, Boolean allVersions, UnfileObject unfileObjects,
 			Boolean continueOnFailure, ExtensionsData extension) {
-		// TODO Auto-generated method stub
 		return objectService.deleteTree(repositoryId, folderId, allVersions, unfileObjects, continueOnFailure, extension);
 	}
 
@@ -398,7 +377,7 @@ public class IbisObjectService implements ObjectService {
 			cmisXml.addSubElement(buildXml("offset", offset));
 			cmisXml.addSubElement(buildXml("length", length));
 
-			IPipeLineSession context = new PipeLineSessionBase();
+			PipeLineSession context = new PipeLineSession();
 			context.put(CmisUtils.CMIS_CALLCONTEXT_KEY, callContext);
 			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_CONTENTSTREAM, cmisXml.toXML(), context);
 
@@ -414,27 +393,19 @@ public class IbisObjectService implements ObjectService {
 	}
 
 	@Override
-	public void setContentStream(String repositoryId, Holder<String> objectId,
-			Boolean overwriteFlag, Holder<String> changeToken,
+	public void setContentStream(String repositoryId, Holder<String> objectId, Boolean overwriteFlag, Holder<String> changeToken,
 			ContentStream contentStream, ExtensionsData extension) {
-		// TODO Auto-generated method stub
 		objectService.setContentStream(repositoryId, objectId, overwriteFlag, changeToken, contentStream, extension);
 	}
 
 	@Override
-	public void deleteContentStream(String repositoryId,
-			Holder<String> objectId, Holder<String> changeToken,
-			ExtensionsData extension) {
-		// TODO Auto-generated method stub
+	public void deleteContentStream(String repositoryId, Holder<String> objectId, Holder<String> changeToken, ExtensionsData extension) {
 		objectService.deleteContentStream(repositoryId, objectId, changeToken, extension);
 	}
 
 	@Override
-	public void appendContentStream(String repositoryId,
-			Holder<String> objectId, Holder<String> changeToken,
-			ContentStream contentStream, boolean isLastChunk,
-			ExtensionsData extension) {
-		// TODO Auto-generated method stub
+	public void appendContentStream(String repositoryId, Holder<String> objectId, Holder<String> changeToken,
+			ContentStream contentStream, boolean isLastChunk, ExtensionsData extension) {
 		objectService.appendContentStream(repositoryId, objectId, changeToken, contentStream, isLastChunk, extension);
 	}
 }

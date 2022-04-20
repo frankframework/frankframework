@@ -29,7 +29,7 @@ import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.jms.MessagingSource;
 import nl.nn.adapterframework.jms.MessagingSourceFactory;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import com.ing.ifsa.IFSAConstants;
 import com.ing.ifsa.IFSAContext;
@@ -51,6 +51,7 @@ public class IfsaMessagingSourceFactory extends MessagingSourceFactory {
 	
 	static private Map ifsaMessagingSourceMap = new HashMap();	
 
+	@Override
 	protected Map getMessagingSourceMap() {
 		return ifsaMessagingSourceMap;
 	}
@@ -60,6 +61,7 @@ public class IfsaMessagingSourceFactory extends MessagingSourceFactory {
 	private boolean preJms22Api=false; 
 	private boolean xaEnabled=false;
 
+	@Override
 	protected MessagingSource createMessagingSource(String id, String authAlias, boolean createDestination, boolean useJms102) throws IbisException {
 		IFSAContext context = (IFSAContext)getContext();
 		IFSAQueueConnectionFactory connectionFactory = (IFSAQueueConnectionFactory)getConnectionFactory(context, id, createDestination, useJms102); 
@@ -74,7 +76,7 @@ public class IfsaMessagingSourceFactory extends MessagingSourceFactory {
 		String purl = IFSAConstants.IFSA_BAICNF;
 		log.info("IFSA ProviderURL at time of compilation ["+purl+"]");
 		try {
-			Class clazz = Class.forName("com.ing.ifsa.IFSAConstants");
+			Class<?> clazz = Class.forName("com.ing.ifsa.IFSAConstants");
 			Field baicnfField;
 			try {
 				baicnfField = clazz.getField("IFSA_BAICNF");
@@ -93,6 +95,7 @@ public class IfsaMessagingSourceFactory extends MessagingSourceFactory {
 		return purl;
 	}
 
+	@Override
 	protected Context createContext() throws NamingException {
 		log.info("IFSA API installed version ["+IFSAConstants.getVersionInfo()+"]");	
 		Hashtable env = new Hashtable(11);
@@ -102,6 +105,7 @@ public class IfsaMessagingSourceFactory extends MessagingSourceFactory {
 		return new IFSAContext((Context) new InitialContext(env));
 	}
 
+	@Override
 	protected ConnectionFactory createConnectionFactory(Context context, String applicationId, boolean createDestination, boolean useJms102) throws IbisException, NamingException {
 		IFSAQueueConnectionFactory ifsaQueueConnectionFactory = (IFSAQueueConnectionFactory) ((IFSAContext)context).lookupBusConnection(applicationId);
 		if (log.isDebugEnabled()) {

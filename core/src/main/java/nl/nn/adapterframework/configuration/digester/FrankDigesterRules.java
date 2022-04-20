@@ -20,19 +20,26 @@ import java.io.IOException;
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.digester3.binder.RulesBinder;
 import org.apache.commons.digester3.binder.RulesModule;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.xml.sax.SAXException;
 
+import lombok.Setter;
 import nl.nn.adapterframework.core.Resource;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Custom implementation that replaces the old digester-rules.xml file.
  * Where previously you had to specify a 'create', 'set-properties' and a 'set-next-rule'
  * In this implementation you only have to call 'createRule(rulesBinder, PATTERN, NEXT-RULE')
- *
+ * 
+ * @author Niels Meijer
  */
-public class FrankDigesterRules implements RulesModule {
+public class FrankDigesterRules implements RulesModule, ApplicationContextAware {
 	public static final String DIGESTER_RULES_FILE = "digester-rules.xml";
+	private @Setter ApplicationContext applicationContext;
 
 	private Digester digester;
 	private Resource digesterRules = null;
@@ -51,14 +58,18 @@ public class FrankDigesterRules implements RulesModule {
 
 	@Override
 	public void configure(RulesBinder rulesBinder) {
+		if(applicationContext == null) {
+			throw new IllegalStateException("ApplicationContext not set, unable to initialize ["+ClassUtils.nameOf(this)+"]");
+		}
 		if(digester == null) {
-			throw new IllegalStateException("Digester not set, unable to initialize ["+this.getClass().getSimpleName()+"]");
+			throw new IllegalStateException("Digester not set, unable to initialize ["+ClassUtils.nameOf(this)+"]");
 		}
 		if(digesterRules == null) {
 			digesterRules = Resource.getResource(DIGESTER_RULES_FILE);
 		}
 
 		DigesterRulesHandler handler = new DigesterRulesParser(digester, rulesBinder);
+		SpringUtils.autowireByType(applicationContext, handler);
 		try {
 			XmlUtils.parseXml(digesterRules.asInputSource(), handler);
 		} catch (IOException e) {

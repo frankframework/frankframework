@@ -10,43 +10,21 @@
 	<parent>
 		<groupId>org.ibissource</groupId>
 		<artifactId>ibis-adapterframework-docker-as-tomcat</artifactId>
-		<version>7.6-SNAPSHOT</version>
+		<version>${revision}</version>
 	</parent>
+	
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-docker-as-tomcat</artifactId>
-			<version>${iaf.version}</version>
+			<version>${project.version}</version>
 			<type>pom</type>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-test</artifactId>
-			<version>${iaf.version}</version>
-			<classifier>context</classifier>
-		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-test</artifactId>
-			<version>${iaf.version}</version>
-			<classifier>resources</classifier>
-		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-test</artifactId>
-			<version>${iaf.version}</version>
-			<classifier>configurations</classifier>
-		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-test</artifactId>
-			<version>${iaf.version}</version>
-			<classifier>scenarios</classifier>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-all</artifactId>
-			<version>5.6.0</version>
+			<version>${project.version}</version>
+			<type>war</type>
 		</dependency>
 	</dependencies>
 
@@ -73,66 +51,6 @@
 							<excludeClassifiers>configurations,resources,scenarios</excludeClassifiers>
 						</configuration>
 					</execution>
-					<execution>
-						<id>copy-configuration</id>
-						<phase>package</phase>
-						<goals>
-							<goal>copy</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>org.ibissource</groupId>
-									<artifactId>ibis-adapterframework-test</artifactId>
-									<classifier>configurations</classifier>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.ibissource</groupId>
-									<artifactId>ibis-adapterframework-test</artifactId>
-									<classifier>resources</classifier>
-								</artifactItem>
-							</artifactItems>
-							<outputDirectory>${project.build.directory}/dependencies/frank/configuration</outputDirectory>
-							<stripVersion>true</stripVersion>
-							<excludeTransitive>true</excludeTransitive>
-						</configuration>
-					</execution>
-					<execution>
-						<id>unpack-context</id>
-						<phase>package</phase>
-						<goals>
-							<goal>unpack</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>org.ibissource</groupId>
-									<artifactId>ibis-adapterframework-test</artifactId>
-									<classifier>context</classifier>
-								</artifactItem>
-							</artifactItems>
-							<excludeTransitive>true</excludeTransitive>
-							<outputDirectory>${project.build.directory}/dependencies/frank/context</outputDirectory>
-						</configuration>
-					</execution>
-					<execution>
-						<id>unpack-tests</id>
-						<phase>package</phase>
-						<goals>
-							<goal>unpack</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>org.ibissource</groupId>
-									<artifactId>ibis-adapterframework-test</artifactId>
-									<classifier>scenarios</classifier>
-								</artifactItem>
-							</artifactItems>
-							<excludeTransitive>true</excludeTransitive>
-							<outputDirectory>${project.build.directory}/dependencies/frank/testtool</outputDirectory>
-						</configuration>
-					</execution>
 				</executions>
 			</plugin>
 			<plugin>
@@ -146,7 +64,7 @@
 						<inherited>false</inherited>
 						<configuration>
 							<target>
-								<exec executable="docker">
+								<exec executable="docker" failonerror="true">
 									<arg value="build"/>
 									<arg value="-t"/>
 									<arg value="iaf-test-tomcat"/>

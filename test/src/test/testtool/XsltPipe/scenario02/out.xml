@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <root>
-  <request action="Xalan">
+  <request action="XSLT1">
     <PortalEmployment>
       <Id>1</Id>
       <PersonDataParticipant>

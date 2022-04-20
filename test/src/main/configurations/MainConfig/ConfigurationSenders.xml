@@ -27,7 +27,7 @@
 			
 			<pipe
 				name="Call ExceptionPipe"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				>
 				<sender
 					className="nl.nn.adapterframework.senders.IbisLocalSender"
@@ -71,7 +71,7 @@
 
 			<pipe
 				name="Call ExceptionPipe"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				>
 				<sender
 					className="nl.nn.adapterframework.senders.IbisLocalSender"
@@ -181,15 +181,6 @@
 								className="nl.nn.adapterframework.senders.FixedResultSender"
 								returnString="&lt;email&gt;&lt;recipients&gt;&lt;recipient type='to'&gt;rfax@natned&lt;/recipient&gt;&lt;/recipients&gt;&lt;/email&gt;"
 							/>
-							<!-- sender
-								className="nl.nn.adapterframework.senders.MailSender"
-								smtpHost="test"
-								recipients="test@nn.nl"
-							/ -->
-							<!-- sender
-								className="nl.nn.adapterframework.senders.XmlValidatorSender"
-								schemaLocation="test test.xsd"
-							/-->
 							<sender
 								className="nl.nn.adapterframework.senders.EchoSender"
 							/>
@@ -233,7 +224,7 @@
 
 			<pipe
 				name="Call SendersException"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				>
 				<sender
 					className="nl.nn.adapterframework.senders.IbisLocalSender"

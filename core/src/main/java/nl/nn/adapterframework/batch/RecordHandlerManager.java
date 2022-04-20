@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,16 +16,16 @@
 package nl.nn.adapterframework.batch;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
+
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.LogUtil;
-
-import org.apache.logging.log4j.Logger;
 
 /**
  * Basic implementation of RecordHandlerManager, that allows only for a single flow.
@@ -37,51 +37,48 @@ import org.apache.logging.log4j.Logger;
 public class RecordHandlerManager implements IRecordHandlerManager {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private Map<String,RecordHandlingFlow> valueHandlersMap;
-	private String name;
-	private boolean initial;
+	private @Getter String name;
+	private @Getter boolean initial;
 
-	RecordHandlerManager() {
-		this.valueHandlersMap = new LinkedHashMap<>();
-	}
-	
+	private Map<String,RecordHandlingFlow> flowMap = new LinkedHashMap<>();
+
 	@Override
-	public IRecordHandlerManager getRecordFactoryUsingFilename(IPipeLineSession session, String inputFilename) {
+	public IRecordHandlerManager getRecordFactoryUsingFilename(PipeLineSession session, String inputFilename) {
 		return this;
 	}
 
 	@Override
 	public void configure(Map<String, IRecordHandlerManager> registeredManagers, Map<String, IRecordHandler> registeredRecordHandlers, Map<String, IResultHandler> registeredResultHandlers, IResultHandler defaultHandler) throws ConfigurationException {
-		for(Iterator<String> it=valueHandlersMap.keySet().iterator();it.hasNext();) {
-			String name=it.next();
-			RecordHandlingFlow flow = getFlowByName(name);
+		for(String flowName: flowMap.keySet()) {
+			RecordHandlingFlow flow = getFlowByName(flowName);
 			flow.configure(this, registeredManagers, registeredRecordHandlers, registeredResultHandlers, defaultHandler);
 		}
 	}
 
-	private RecordHandlingFlow getFlowByName(String name) {
-		return valueHandlersMap.get(name);
+	private RecordHandlingFlow getFlowByName(String flowName) {
+		return flowMap.get(flowName);
 	}
 	
+	@IbisDoc({"10", "Element that contains the handlers for a specific record type, to be assigned to the manager"})
 	@Override
 	public void addHandler(RecordHandlingFlow handlers) {
-		valueHandlersMap.put(handlers.getRecordKey(), handlers);
+		flowMap.put(handlers.getRecordKey(), handlers);
 		if (handlers.getNextRecordHandlerManager() == null) {
 			handlers.setNextRecordHandlerManager(this);
 		}
 	}
 
 	public Collection<RecordHandlingFlow> getRecordHandlers() {
-		return valueHandlersMap.values();	
+		return flowMap.values();	
 	}
 	
-	protected Map<String,RecordHandlingFlow> getValueHandlersMap() {
-		return valueHandlersMap;	
+	protected Map<String,RecordHandlingFlow> getFlowMap() {
+		return flowMap;	
 	}
 	
 	@Override
-	public RecordHandlingFlow getRecordHandler(IPipeLineSession session, String record) throws Exception {
-		return valueHandlersMap.get("*");
+	public RecordHandlingFlow getRecordHandler(PipeLineSession session, String record) throws Exception {
+		return flowMap.get("*");
 	}
 
 	/**
@@ -91,10 +88,10 @@ public class RecordHandlerManager implements IRecordHandlerManager {
 	 * @return RecordHandlingFlow element to be used for handling records of type recordkey
 	 */
 	public RecordHandlingFlow getRecordHandlerByKey(String recordKey) throws Exception {
-		RecordHandlingFlow rhf =valueHandlersMap.get(recordKey);
-		if  (rhf == null) {
-			rhf =valueHandlersMap.get("*");
-			if  (rhf == null) {
+		RecordHandlingFlow rhf =flowMap.get(recordKey);
+		if (rhf == null) {
+			rhf =flowMap.get("*");
+			if (rhf == null) {
 				throw new Exception("No handlers (flow) found for recordKey [" + recordKey + "]");
 			}
 		}
@@ -103,24 +100,15 @@ public class RecordHandlerManager implements IRecordHandlerManager {
 	}
 
 	@Override
-	@IbisDoc({"name of the manager", ""})
+	@IbisDoc({"1", "Name of the manager", ""})
 	public void setName(String string) {
 		name = string;
 	}
-	@Override
-	public String getName() {
-		return name;
-	}
 
 	@Override
-	@IbisDoc({"this manager is the initial manager, i.e. to be used for the first record", "false"})
+	@IbisDoc({"2", "This manager is the initial manager, i.e. to be used for the first record", "false"})
 	public void setInitial(boolean b) {
 		initial = b;
 	}
-	@Override
-	public boolean isInitial() {
-		return initial;
-	}
-
 
 }

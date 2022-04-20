@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:element name="note">
+		<xs:complexType>
+			<xs:attribute name="one" type="xs:string" default="1" />
+			<xs:attribute name="two" type="xs:string" fixed="2" />
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

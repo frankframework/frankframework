@@ -1,9 +1,6 @@
 <module>
 	<adapter name="read message of queue" active="${active.tibco}">
-		<receiver
-			name="test_esb_receiver"
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
-			>
+		<receiver>
 			<listener
 				name="test_esb_listener"
 				className="nl.nn.adapterframework.extensions.esb.EsbJmsListener"
@@ -35,10 +32,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="put message on queue" active="${active.tibco}">
-		<receiver
-			name="Put On"
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
-			>
+		<receiver>
 			<listener
 				name="Queue"
 				className="nl.nn.adapterframework.receivers.JavaListener"
@@ -52,7 +46,7 @@
 			</exits>
 
 			<pipe name="SendMessage"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				>
 				<sender
 					className="nl.nn.adapterframework.extensions.esb.EsbJmsSender"

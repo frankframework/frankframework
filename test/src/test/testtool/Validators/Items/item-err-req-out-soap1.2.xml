@@ -1,38 +1,34 @@
-<soapenv:Envelope xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope">
-	<soapenv:Body>
-		<Item_Response xmlns="urn:items">
-			<Result xmlns="http://nn.nl/XSD/Generic/MessageHeader/1">
-				<Status>ERROR</Status>
-				<ErrorList>
-					<Error>
-						<Code>ERR6003</Code>
-						<Reason>Invalid Request</Reason>
-						<Service>
-							<Name/>
-							<Context/>
-							<Action>
-								<Paradigm>Response</Paradigm>
-								<Name>Test/SoapValidator</Name>
-								<Version>1</Version>
-							</Action>
-						</Service>
-						<DetailList>
-							<Detail>
-								<Code>ORIGINAL_MESSAGE</Code>
-								<Text>&lt;soapenv:Envelope xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope"&gt; &lt;soapenv:Body&gt; &lt;Item_Request xmlns="urn:items"&gt; &lt;Status&gt;e&lt;/Status&gt; &lt;Item&gt; &lt;Id&gt;1&lt;/Id&gt; &lt;/Item&gt; &lt;/Item_Request&gt; &lt;/soapenv:Body&gt; &lt;/soapenv:Envelope&gt;</Text>
-							</Detail>
-							<Detail>
-								<Code>ERROR</Code>
-								<Text>/Envelope/Body/Item_Request/Status: at (4,22): cvc-enumeration-valid: Value 'e' is not facet-valid with respect to enumeration '[a, b, c, d]'. It must be a value from the enumeration.</Text>
-							</Detail>
-							<Detail>
-								<Code>ERROR</Code>
-								<Text>/Envelope/Body/Item_Request/Status: at (4,22): cvc-type.3.1.3: The value 'e' of element 'Status' is not valid.</Text>
-							</Detail>
-						</DetailList>
-					</Error>
-				</ErrorList>
-			</Result>
-		</Item_Response>
-	</soapenv:Body>
-</soapenv:Envelope>
+<soapenv:Envelope xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope"><soapenv:Body><InputValidationFailure xmlns="urn:items">
+	<Result xmlns="http://nn.nl/XSD/Generic/MessageHeader/1">
+		<Status>ERROR</Status>
+		<ErrorList>
+			<Error>
+				<Code>ERR6003</Code>
+				<Reason>Invalid Request</Reason>
+				<Service>
+					<Name/>
+					<Context/>
+					<Action>
+						<Paradigm>Response</Paradigm>
+						<Name>Test/Validator</Name>
+						<Version>1</Version>
+					</Action>
+				</Service>
+				<DetailList>
+					<Detail>
+						<Code>ORIGINAL_MESSAGE</Code>
+						<Text>&lt;soapenv:Envelope xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope"&gt; &lt;soapenv:Body&gt; &lt;Item_Request xmlns="urn:items"&gt; &lt;Status&gt;e&lt;/Status&gt; &lt;Item&gt; &lt;Id&gt;1&lt;/Id&gt; &lt;/Item&gt; &lt;/Item_Request&gt; &lt;/soapenv:Body&gt; &lt;/soapenv:Envelope&gt;</Text>
+					</Detail>
+					<Detail>
+						<Code>ERROR</Code>
+						<Text>/Envelope/Body/Item_Request/Status: at (4,22): cvc-enumeration-valid: Value 'e' is not facet-valid with respect to enumeration '[a, b, c, d]'. It must be a value from the enumeration.</Text>
+					</Detail>
+					<Detail>
+						<Code>ERROR</Code>
+						<Text>/Envelope/Body/Item_Request/Status: at (4,22): cvc-type.3.1.3: The value 'e' of element 'Status' is not valid.</Text>
+					</Detail>
+				</DetailList>
+			</Error>
+		</ErrorList>
+	</Result>
+</InputValidationFailure></soapenv:Body></soapenv:Envelope>

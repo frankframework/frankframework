@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,75 +15,143 @@
 */
 package nl.nn.adapterframework.stream;
 
-import nl.nn.adapterframework.util.LogUtil;
+import java.io.IOException;
+import java.util.Set;
+
 import org.apache.logging.log4j.Logger;
 
-import java.util.Set;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.jta.IThreadConnectableTransactionManager;
+import nl.nn.adapterframework.jta.TransactionConnector;
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
+import nl.nn.adapterframework.util.LogUtil;
 
-public class ThreadConnector {
+public class ThreadConnector<T> implements AutoCloseable {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
+	private ThreadLifeCycleEventListener<T> threadLifeCycleEventListener;
 	private Thread parentThread;
-	private Object threadInfo;
+	private Thread childThread;
+	private T threadInfo;
 	private Set<String> hideRegex;
-	
-	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, String correlationId) {
+
+	private enum ThreadState {
+		ANNOUNCED,
+		CREATED,
+		FINISHED;
+	};
+
+	private ThreadState threadState=ThreadState.ANNOUNCED;
+	private TransactionConnector<?,?> transactionConnector;
+
+
+	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, String correlationId) {
 		super();
 		this.threadLifeCycleEventListener=threadLifeCycleEventListener;
 		threadInfo=threadLifeCycleEventListener!=null?threadLifeCycleEventListener.announceChildThread(owner, correlationId):null;
 		parentThread=Thread.currentThread();
 		hideRegex= IbisMaskingLayout.getThreadLocalReplace();
+		transactionConnector = TransactionConnector.getInstance(txManager, owner);
 	}
-	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session) {
-		this(owner, threadLifeCycleEventListener, session==null?null:session.getMessageId());
+	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, PipeLineSession session) {
+		this(owner, threadLifeCycleEventListener, txManager, session==null?null:session.getMessageId());
 	}
-	
-	public Object startThread(Object input) {
-		Thread currentThread = Thread.currentThread();
-		if (currentThread!=parentThread) {
-			currentThread.setName(parentThread.getName()+"/"+currentThread.getName());
-			IbisMaskingLayout.addToThreadLocalReplace(hideRegex);
-			// Commented out code below. Do not set contextClassLoader, contextClassLoader is not reliable outside configure().
-			// if (currentThread.getContextClassLoader()!=parentThread.getContextClassLoader()) {
-			//	currentThread.setContextClassLoader(parentThread.getContextClassLoader());
-			// }
-		} else {
-			threadLifeCycleEventListener=null;
+
+	public <R> R startThread(R input) {
+		childThread = Thread.currentThread();
+		if (transactionConnector!=null) {
+			transactionConnector.beginChildThread();
 		}
-		if (threadLifeCycleEventListener!=null) {
-			return threadLifeCycleEventListener.threadCreated(threadInfo, input);
+		if (childThread!=parentThread) {
+			childThread.setName(parentThread.getName()+"/"+childThread.getName());
+			IbisMaskingLayout.addToThreadLocalReplace(hideRegex);
+			if (threadLifeCycleEventListener!=null) {
+				threadState = ThreadState.CREATED;
+				return threadLifeCycleEventListener.threadCreated(threadInfo, input);
+			}
+		} else {
+			if (threadLifeCycleEventListener!=null) {
+				threadLifeCycleEventListener.cancelChildThread(threadInfo);
+				threadLifeCycleEventListener=null;
+			}
 		}
 		return input;
 	}
 
-	public Object endThread(Object response) {
+	public <R> R endThread(R response) {
+		Thread currentThread = Thread.currentThread();
+		if (currentThread != childThread) {
+			throw new IllegalStateException("endThread() must be called from childThread");
+		}
+		R result;
 		try {
-			if (threadLifeCycleEventListener!=null) {
-				return threadLifeCycleEventListener.threadEnded(threadInfo, response);
+			try {
+				if (transactionConnector!=null) {
+					transactionConnector.endChildThread();
+				}
+			} finally {
+				if (threadLifeCycleEventListener!=null) {
+					threadState = ThreadState.FINISHED;
+					result = threadLifeCycleEventListener.threadEnded(threadInfo, response);
+				} else {
+					result = response;
+				}
 			}
-			return response;
 		} finally {
 			IbisMaskingLayout.removeThreadLocalReplace();
 		}
+		return result;
 	}
 
 	public Throwable abortThread(Throwable t) {
+		Thread currentThread = Thread.currentThread();
+		if (currentThread != childThread) {
+			throw new IllegalStateException("abortThread() must be called from childThread");
+		}
+		Throwable result = t;
 		try {
-			if (threadLifeCycleEventListener!=null) {
-				Throwable t2 = threadLifeCycleEventListener.threadAborted(threadInfo, t);
-				if (t2==null) {
-					log.warn("Exception ignored by threadLifeCycleEventListener ("+t.getClass().getName()+"): "+t.getMessage());
-				} else {
-					return t2;
+			try {
+				if (transactionConnector!=null) {
+					transactionConnector.endChildThread();
+				}
+			} finally {
+				if (threadLifeCycleEventListener!=null) {
+					threadState = ThreadState.FINISHED;
+					result = threadLifeCycleEventListener.threadAborted(threadInfo, t);
+					if (result==null) {
+						log.warn("Exception ignored by threadLifeCycleEventListener ("+t.getClass().getName()+"): "+t.getMessage());
+					}
 				}
 			}
-			return t;
 		} finally {
 			IbisMaskingLayout.removeThreadLocalReplace();
 		}
+		return result;
 	}
-	
+
+	@Override
+	public void close() throws IOException {
+		try {
+			if (transactionConnector!=null) {
+				transactionConnector.close();
+			}
+		} finally {
+			if (threadLifeCycleEventListener!=null) {
+				switch (threadState) {
+				case ANNOUNCED:
+					threadLifeCycleEventListener.cancelChildThread(threadInfo);
+					break;
+				case CREATED:
+					log.warn("thread was not properly closed");
+					threadLifeCycleEventListener.threadEnded(threadInfo, null);
+					break;
+				case FINISHED:
+					break;
+				default:
+					throw new IllegalStateException("Unknown ThreadState ["+threadState+"]");
+				}
+			}
+		}
+	}
+
 }

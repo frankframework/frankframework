@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,21 +21,21 @@ import java.util.Map;
 import javax.jms.Destination;
 import javax.jms.Session;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IKnowsDeliveryCount;
 import nl.nn.adapterframework.core.IListenerConnector;
 import nl.nn.adapterframework.core.IMessageHandler;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IPortConnectedListener;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.CredentialFactory;
@@ -60,7 +60,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
  *<p>
  * Setting {@link #setAcknowledgeMode(String) listener.acknowledgeMode} to "auto" means that messages are allways acknowledged (removed from
  * the queue, regardless of what the status of the Adapter is. "client" means that the message will only be removed from the queue
- * when the state of the Adapter equals the defined state for committing (specified by {@link #setCommitOnState(String) listener.commitOnState}).
+ * when the state of the Adapter equals the success state.
  * The "dups" mode instructs the session to lazily acknowledge the delivery of the messages. This is likely to result in the
  * delivery of duplicate messages if JMS fails. It should be used by consumers who are tolerant in processing duplicate messages.
  * In cases where the client is tolerant of duplicate messages, some enhancement in performance can be achieved using this mode,
@@ -125,7 +125,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 		}
 		try {
 			jmsConnector.configureEndpointConnection(this, getMessagingSource().getConnectionFactory(), credentialFactory,
-					destination, getExceptionListener(), getCacheMode(), getAckModeEnum().getAcknowledgeMode(),
+					destination, getExceptionListener(), getCacheMode(), getAcknowledgeModeEnum().getAcknowledgeMode(),
 					isJmsTransacted(), getMessageSelector(), getTimeOut(), getPollGuardInterval());
 		} catch (JmsException e) {
 			throw new ConfigurationException(e);
@@ -152,7 +152,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 
 	@Override
 	public void afterMessageProcessed(PipeLineResult plr, Object rawMessageOrWrapper, Map<String, Object> threadContext) throws ListenerException {
-		String cid     = (String) threadContext.get(IPipeLineSession.technicalCorrelationIdKey);
+		String cid     = (String) threadContext.get(PipeLineSession.technicalCorrelationIdKey);
 		Session session= (Session) threadContext.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY); // session is/must be saved in threadcontext by JmsConnector
 
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"in PushingJmsListener.afterMessageProcessed()");
@@ -186,7 +186,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 					}
 				}
 				Map<String, Object> properties = getMessageProperties(threadContext);
-				send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, getReplyDeliveryModeEnum().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException, properties);
+				send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, getReplyDeliveryMode().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException, properties);
 			} else {
 				if (getSender()==null) {
 					log.info("["+getName()+"] has no sender, not sending the result.");
@@ -194,8 +194,8 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 					if (log.isDebugEnabled()) {
 						log.debug("["+getName()+"] no replyTo address found or not configured to use replyTo, using default destination sending message with correlationID[" + cid + "] [" + plr.getResult() + "]");
 					}
-					PipeLineSessionBase pipeLineSession = new PipeLineSessionBase();
-					pipeLineSession.put(IPipeLineSession.messageIdKey,cid);
+					PipeLineSession pipeLineSession = new PipeLineSession();
+					pipeLineSession.put(PipeLineSession.messageIdKey,cid);
 					getSender().sendMessage(plr.getResult(), pipeLineSession);
 				}
 			}
@@ -203,9 +203,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 			// TODO Do we still need this? Should we commit too? See
 			// PullingJmsListener.afterMessageProcessed() too (which does a
 			// commit, but no rollback).
-			if (plr!=null && !isTransacted() && isJmsTransacted()
-					&& StringUtils.isNotEmpty(getCommitOnState())
-					&& !getCommitOnState().equals(plr.getState())) {
+			if (plr!=null && !isTransacted() && isJmsTransacted() && plr.getState()==ExitState.SUCCESS) {
 				if (session==null) {
 					log.error(getLogPrefix()+"session is null, cannot roll back session");
 				} else {
@@ -216,9 +214,8 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 		} catch (Exception e) {
 			if (e instanceof ListenerException) {
 				throw (ListenerException)e;
-			} else {
-				throw new ListenerException(e);
-			}
+			} 
+			throw new ListenerException(e);
 		}
 	}
 
@@ -375,13 +372,22 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 		}
 	}
 
-	@IbisDoc({"interval in milliseconds for the poll guard to check whether a successful poll was done by the receive (https://docs.oracle.com/javaee/7/api/javax/jms/messageconsumer.html#receive-long-) since last check. when polling has stopped this will be logged and the listener will be stopped and started in an attempt to workaround problems with polling. polling might stop due to bugs in the jms driver/implementation which should be fixed by the supplier. as the poll time includes reading and processing of the message no successful poll might be registered since the last check when message processing takes a long time, hence while messages are being processed the check on last successful poll will be skipped. set to -1 to disable", "ten times the specified timeout"})
+	@IbisDoc({"Interval <i>in milliseconds</i> for the poll guard to check whether a successful poll was done by the receive (https://docs.oracle.com/javaee/7/api/javax/jms/messageconsumer.html#receive-long-) since last check. when polling has stopped this will be logged and the listener will be stopped and started in an attempt to workaround problems with polling. polling might stop due to bugs in the jms driver/implementation which should be fixed by the supplier. as the poll time includes reading and processing of the message no successful poll might be registered since the last check when message processing takes a long time, hence while messages are being processed the check on last successful poll will be skipped. set to -1 to disable", "ten times the specified timeout"})
 	public void setPollGuardInterval(long pollGuardInterval) {
 		this.pollGuardInterval = pollGuardInterval;
 	}
 
 	public long getPollGuardInterval() {
 		return pollGuardInterval;
+	}
+
+	/**
+	 * The name of the destination to listen to, this may be a <code>queue</code> or <code>topic</code> name.
+	 * @ff.mandatory
+	 */
+	@Override
+	public void setDestinationName(String destinationName) {
+		super.setDestinationName(destinationName);
 	}
 
 }

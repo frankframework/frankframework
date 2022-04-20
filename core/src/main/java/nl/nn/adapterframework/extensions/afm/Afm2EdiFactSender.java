@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.extensions.afm;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.stream.Message;
@@ -23,11 +23,13 @@ import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import lombok.Getter;
+import lombok.Setter;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -36,22 +38,12 @@ import java.util.Date;
 /**
  * Domparser om AFM-XML berichten om te zetten in edifactberichten (voor de backoffice).
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.afm.Afm2EdiFactSender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the sender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDestination(String) destination}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPostbus(String) postbus}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTpnummer(String) tpnummer}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * </table>
- * </p>
- *  
  * @author Erik van de Wetering, fine tuned and wrapped for Ibis by Gerrit van Brakel
  */
 public class Afm2EdiFactSender implements ISender {
 	protected Logger logger = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
 
 	public final static String VERWERKTAG = "VRWRKCD";
 	public final static String TPNRTAG = "AL_RECCRT";
@@ -85,7 +77,7 @@ public class Afm2EdiFactSender implements ISender {
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException {
 		try {
 			return new Message(execute(message.asString()));
 		} catch (Exception e) {

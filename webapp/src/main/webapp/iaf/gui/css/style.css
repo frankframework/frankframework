@@ -1079,6 +1079,11 @@ button.dim:active:before {
 .btn:focus {
   outline: none !important;
 }
+button.btn-invisible {
+  padding: 0;
+  border: none;
+  background: none;
+}
 .label {
   background-color: #d1dade;
   color: #5e5e5e;
@@ -1147,8 +1152,10 @@ button.dim:active:before {
 .label-height-20 {
   line-height: 20px;
 }
-.label-height-30 {
-  line-height: 30px;
+@media (min-width: 768px) {
+  .label-height-30 {
+    line-height: 30px;
+  }
 }
 /* TOOGLE SWICH */
 .onoffswitch {
@@ -1224,6 +1231,23 @@ button.dim:active:before {
 }
 .onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
   right: 0;
+}
+
+/* PrismJS pre>code */
+.line-numbers .line-numbers-rows {
+  pointer-events: auto;
+  cursor: pointer;
+}
+pre[class*=language-] {
+  overflow-y: hidden;
+  margin-top: 2px;
+}
+span.line-selected {
+  background-color: #ccc;
+  text-shadow: none;
+}
+span.line-selected::before {
+  color: #333;
 }
 
 /* SCROLL TO TOP BUTTON */
@@ -1555,6 +1579,9 @@ a.list-group-item.active:focus {
   color: #8a6d3b;
   background-color: #fcf8e3;
   border-color: #faebcc;
+}
+.alert-warning > div.pointer:hover {
+  text-decoration: underline;
 }
 .alert-danger {
   color: #a94442;
@@ -3914,6 +3941,10 @@ code {
 .adapters .ibox {
   margin-bottom: 10px;
 }
+.row.form-group {
+  margin-left: 0px;
+  margin-right: 0px;
+}
 .row .ibox {
 	box-shadow: 2px 2px 1px 0px rgba(103,106,108,0.4);
 }
@@ -5867,6 +5898,9 @@ body.body-small .vote-icon {
 .metismenu .fa-info-circle {
   color: #fff;
 }
+.metismenu .fa-book {
+  color: #8bc34a;
+}
 .metismenu .fa-commenting-o {
   color: #00e5ff;
 }
@@ -5878,6 +5912,9 @@ body.body-small .vote-icon {
 }
 .metismenu .fa-backward {
   color: #fe41ff;
+}
+.metismenu .fa-sitemap {
+  color: #00abff;
 }
 /*
  *  Usage:

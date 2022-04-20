@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2021 WeAreFrank!
+   Copyright 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.jdbc;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -38,8 +37,10 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * JDBC implementation of {@link IMessageBrowser}.
@@ -66,7 +67,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	private @Getter @Setter String hideRegex = null;
 	private @Getter @Setter String hideMethod = "all";
 
-	private SortOrder sortOrder = null;
+	private @Getter SortOrder order = null;
 	private String messagesOrder = AppConstants.getInstance().getString("browse.messages.order", "DESC");
 	private String errorsOrder = AppConstants.getInstance().getString("browse.errors.order", "ASC");
 
@@ -110,6 +111,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 
 	public void copyFacadeSettings(JdbcFacade facade) throws JdbcException {
 		if (facade!=null) {
+			SpringUtils.autowireByName(facade.getApplicationContext(), this);
 			datasource=facade.getDatasource();
 			setAuthAlias(facade.getAuthAlias());
 			setUsername(facade.getUsername());
@@ -122,12 +124,18 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 		return datasource!=null ? datasource : super.getDatasource();
 	}
 
-	
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		setOperationControls();
 		selector = createSelector();
+		if(getOrder() == null) {
+			if (type.equalsIgnoreCase(StorageType.ERRORSTORAGE.getCode())) {
+				setOrder(EnumUtils.parse(SortOrder.class, errorsOrder)); //Defaults to ASC
+			} else {
+				setOrder(EnumUtils.parse(SortOrder.class, messagesOrder)); //Defaults to DESC
+			}
+		}
 	}
 
 
@@ -291,9 +299,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 		}
 	}
 
-	protected M retrieveObject(ResultSet rs, int columnIndex) throws ClassNotFoundException, JdbcException, IOException, SQLException {
-		return (M)rs.getString(columnIndex); //TODO shouldn't this be getObject(columnIndex, M)?
-	}
+	protected abstract M retrieveObject(ResultSet rs, int columnIndex) throws SQLException, JdbcException;
 
 	@Override
 	public int getMessageCount() throws ListenerException {
@@ -345,17 +351,18 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 
 	@Override
 	public IMessageBrowsingIteratorItem getContext(String storageKey) throws ListenerException {
-		try (Connection conn = getConnection()) {
-			try (PreparedStatement stmt = conn.prepareStatement(selectContextQuery)) {
-				applyStandardParameters(stmt, storageKey, true);
-				try (ResultSet rs =  stmt.executeQuery()) {
-	
-					if (!rs.next()) {
-						throw new ListenerException("could not retrieve context for storageKey ["+ storageKey+"]");
-					}
-					return new JdbcMessageBrowserIteratorItem(conn, rs,true);
-				}
+		// result set needs to stay open to access the fields of a record
+		// The caller may use try-with-resources to call the close method of IMessageBrowsingIteratorItem to close the open resources
+		try {
+			Connection conn = getConnection();
+			PreparedStatement stmt = conn.prepareStatement(selectContextQuery);
+			applyStandardParameters(stmt, storageKey, true);
+			ResultSet rs = stmt.executeQuery();
+			if (!rs.next()) {
+				throw new ListenerException("could not retrieve context for storageKey ["+ storageKey+"]");
 			}
+
+			return new JdbcMessageBrowserIteratorItem(conn, rs, true);
 		} catch (Exception e) {
 			throw new ListenerException("cannot read context",e);
 		}
@@ -371,7 +378,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 					if (!rs.next()) {
 						throw new ListenerException("could not retrieve message for storageKey ["+ storageKey+"]");
 					}
-					return retrieveObject(rs,1);
+					return retrieveObject(rs, 2);
 				}
 			}
 		} catch (ListenerException e) { //Don't catch ListenerExceptions, unnecessarily and ugly
@@ -460,42 +467,42 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	}
 
 
-	@IbisDoc({"1", "The name of the column that contains the primary key of the table", "messagekey"})
+	@IbisDoc({"1", "The name of the column that contains the primary key of the table", "MESSAGEKEY"})
 	public void setKeyField(String string) {
 		keyField = string;
 	}
 
-	@IbisDoc({"2", "The name of the column message themselves are stored in", "message"})
-	public void setMessageField(String messageField) {
-		this.messageField = messageField;
-	}
-
-	@IbisDoc({"3", "The name of the column messageIds are stored in", "messageid"})
+	@IbisDoc({"2", "The name of the column messageIds are stored in", "MESSAGEID"})
 	public void setIdField(String idField) {
 		this.idField = idField;
 	}
 
-	@IbisDoc({"4", "The name of the column correlation-ids are stored in", "correlationid"})
+	@IbisDoc({"3", "The name of the column correlation-ids are stored in", "CORRELATIONID"})
 	public void setCorrelationIdField(String string) {
 		correlationIdField = string;
 	}
 
-	@IbisDoc({"5", "The name of the column comments are stored in", "comments"})
-	public void setCommentField(String string) {
-		commentField = string;
+	@IbisDoc({"4", "The name of the column message themselves are stored in", "MESSAGE"})
+	public void setMessageField(String messageField) {
+		this.messageField = messageField;
 	}
 
-	@IbisDoc({"6", "The name of the column the timestamp is stored in", "messagedate"})
+	@IbisDoc({"5", "The name of the column the timestamp is stored in", "MESSAGEDATE"})
 	public void setDateField(String string) {
 		dateField = string;
 	}
 
-	@IbisDoc({"7", "The name of the column the timestamp for expiry is stored in", "expirydate"})
+	@IbisDoc({"6", "The name of the column comments are stored in", "COMMENTS"})
+	public void setCommentField(String string) {
+		commentField = string;
+	}
+
+	@IbisDoc({"7", "The name of the column the timestamp for expiry is stored in", "EXPIRYDATE"})
 	public void setExpiryDateField(String string) {
 		expiryDateField = string;
 	}
 
-	@IbisDoc({"8", "The name of the column labels are stored in", "label"})
+	@IbisDoc({"8", "The name of the column labels are stored in", "LABEL"})
 	public void setLabelField(String string) {
 		labelField = string;
 	}
@@ -511,7 +518,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 		this.hostField = hostField;
 	}
 
-	@IbisDoc({"9", "prefix to be prefixed on all database objects (tables, indices, sequences), e.q. to access a different oracle schema", ""})
+	@IbisDoc({"9", "prefix to be prefixed on all database objects (tables, indices, sequences), e.g. to access a different Oracle schema", ""})
 	public void setPrefix(String string) {
 		prefix = string;
 	}
@@ -524,27 +531,8 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 		this.type = type;
 	}
 
-
-
-
-	public void setOrder(String string) {
-		if(StringUtils.isNotEmpty(string)) {
-			sortOrder = SortOrder.valueOf(string.trim());
-		}
-	}
-	public String getOrder() {
-		return getOrderEnum().name();
-	}
-
-	public SortOrder getOrderEnum() {
-		if(sortOrder == null) {
-			if (type.equalsIgnoreCase(StorageType.ERRORSTORAGE.getCode())) {
-				setOrder(errorsOrder); //Defaults to ASC
-			} else {
-				setOrder(messagesOrder); //Defaults to DESC
-			}
-		}
-		return sortOrder;
+	public void setOrder(SortOrder value) {
+		order = value;
 	}
 
 }

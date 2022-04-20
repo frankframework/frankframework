@@ -31,7 +31,7 @@ import javax.xml.transform.TransformerException;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -44,18 +44,7 @@ import nl.nn.coolgen.proxy.XmlProxyException;
 
 /**
  * Perform the call to a CoolGen proxy with pre- and post transformations.
- *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setProxyClassName(String) proxyClassName}</td><td>classname of proxy-class to be used</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setClientId(String) clientId}</td><td>CICS userId of account perform operation</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setClientPassword(String) clientPassword}</td><td>password corresponding with userId</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPreProcStylesheetName(String) preProcStylesheetName}</td><td>optional URL of XSLT-stylesheet to apply to message before calling proxy</td><td>no transformation</td></tr>
- * <tr><td>{@link #setPostProcStylesheetName(String) postProcStylesheetName}</td><td>optional URL of XSLT-stylesheet to apply to result of proxy </td><td>no transformation</td></tr>
- * <tr><td>{@link #setProxyInputSchema(String) proxyInputSchema}</td><td>optional URL of XML-Schema of proxy input message. If specified it is used to validate the input message</td><td>no validation</td></tr>
- * </table>
- * </p>
+ * 
  * @author Johan Verrips
  */
 public class CoolGenWrapperPipe extends FixedForwardPipe {
@@ -197,7 +186,7 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
      * call the required proxy, transform the output (optionally)
      */
     @Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 
     Writer proxyResult;
     String proxypreProc = null;
@@ -307,24 +296,27 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
         throw new PipeRunException(this, getLogPrefix(session)+"TransformerException excecuting proxy", e);
 	}
 
-    return new PipeRunResult(getForward(),wrapperResult) ;
+    return new PipeRunResult(getSuccessForward(),wrapperResult) ;
 }
 
 
+	/** CICS userId of account perform operation */
 	public void setClientId(java.lang.String newClientId) {
 		clientId = newClientId;
 	}
 	public String getClientId() {
-	    return clientId;
+		return clientId;
 	}
 
+	/** Password corresponding with userId */
 	public void setClientPassword(java.lang.String newClientPassword) {
 		clientPassword = newClientPassword;
 	}
 	public String getClientPassword() {
-	    return clientPassword;
+		return clientPassword;
 	}
 
+	/** Optional URL of XSLT-stylesheet to apply to message before calling proxy */
 	public void setPreProcStylesheetName(String newPreProcStylesheetName) {
 		preProcStylesheetName = newPreProcStylesheetName;
 	}
@@ -332,24 +324,26 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
 		return preProcStylesheetName;
 	}
 
+	/** Optional URL of XSLT-stylesheet to apply to result of proxy */
 	public void setPostProcStylesheetName(String newPostProcStylesheetName) {
 		postProcStylesheetName = newPostProcStylesheetName;
 	}
 	public String getPostProcStylesheetName() {
-	    return postProcStylesheetName;
+		return postProcStylesheetName;
 	}
 
 	public String getProxyClassName() {
-	    return proxyClassName;
+		return proxyClassName;
 	}
 	public String getProxyInputSchema() {
-	    return proxyInputSchema;
+		return proxyInputSchema;
 	}
 
+	/** Optional URL of XML-Schema of proxy input message. If specified it is used to validate the input message */
 	public void setProxyInputSchema(String newProxyInputSchema) {
 		proxyInputSchema = newProxyInputSchema;
 	}
 	public void setProxyClassName(java.lang.String newProxyClassName) {
-	    proxyClassName = newProxyClassName;
+		proxyClassName = newProxyClassName;
 	}
 }

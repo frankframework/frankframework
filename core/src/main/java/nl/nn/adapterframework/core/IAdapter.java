@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.jmx.JmxAttribute;
 import nl.nn.adapterframework.receivers.Receiver;
-import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
+import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.MessageKeeper;
 
@@ -30,7 +30,7 @@ import nl.nn.adapterframework.util.MessageKeeper;
  * accessing/activating IReceivers, Pipelines, statistics etc.
  *
  **/
-public interface IAdapter extends IManagable {
+public interface IAdapter extends IManagable, HasStatistics {
 
 	/**
 	 * Instruct the adapter to configure itself. The adapter will call the pipeline
@@ -50,8 +50,8 @@ public interface IAdapter extends IManagable {
 	public MessageKeeper getMessageKeeper();
 	public Receiver<?> getReceiverByName(String receiverName);
 	public Iterable<Receiver<?>> getReceivers();
-	public PipeLineResult processMessage(String messageId, Message message, IPipeLineSession pipeLineSession);
-	public PipeLineResult processMessageWithExceptions(String messageId, Message message, IPipeLineSession pipeLineSession) throws ListenerException;
+	public PipeLineResult processMessage(String messageId, Message message, PipeLineSession pipeLineSession);
+	public PipeLineResult processMessageWithExceptions(String messageId, Message message, PipeLineSession pipeLineSession) throws ListenerException;
 
 	public void setPipeLine (PipeLine pipeline) throws ConfigurationException;
 	public PipeLine getPipeLine();
@@ -61,15 +61,6 @@ public interface IAdapter extends IManagable {
 
 	public Message formatErrorMessage(String errorMessage, Throwable t, Message originalMessage, String messageID, INamedObject objectInError, long receivedTime);
 
-	public void forEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException ;
-
-	/**
-	 * state to put in PipeLineResult when a PipeRunException occurs.
-	 */
-	public String getErrorState();
-
 	@JmxAttribute(description = "Return the Adapter description")
 	public String getDescription();
-
-	public String getAdapterConfigurationAsString();
 }

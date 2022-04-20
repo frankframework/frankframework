@@ -1,9 +1,6 @@
-<ibis>
+<module>
 	<adapter name="Javascript" description="Execute javascript using the JavascriptSender">
-		<receiver
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="Javascript"
-			>
+		<receiver>
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-Javascript"
@@ -14,7 +11,7 @@
 				<exit path="EXIT" state="success"/>
 			</exits>
 			<pipe name="Javascript"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 					<sender className="nl.nn.adapterframework.senders.JavascriptSender"
 						jsFileName="JavaScript/JavascriptTest.js"
 						jsFunctionName="f2"
@@ -28,10 +25,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="JavascriptDouble" description="Execute javascript using the JavascriptSender">
-		<receiver
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="JavascriptDouble"
-			>
+		<receiver>
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-JavascriptDouble"
@@ -42,7 +36,7 @@
 				<exit path="EXIT" state="success"/>
 			</exits>
 			<pipe name="Javascript"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				storeResultInSessionKey = "resultSessionKey">
 					<sender className="nl.nn.adapterframework.senders.JavascriptSender"
 						jsFileName="JavaScript/JavascriptTest.js"
@@ -55,7 +49,7 @@
 				<forward name="exception" path="EXIT" />
 			</pipe>
 			<pipe name="Javascript2"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 					<sender className="nl.nn.adapterframework.senders.JavascriptSender"
 						jsFileName="JavaScript/JavascriptTest.js"
 						jsFunctionName="f2"
@@ -69,10 +63,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="JavascriptCallback" description="Call a sender with javascript code">
-		<receiver
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="JavascriptCallback"
-			>
+		<receiver>
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-JavascriptCallback"
@@ -83,7 +74,7 @@
 				<exit path="EXIT" state="success"/>
 			</exits>
 			<pipe name="JavascriptCallback"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 					<sender className="nl.nn.adapterframework.senders.JavascriptSender"
 						jsFileName="JavaScript/JavascriptTest.js"
 						jsFunctionName="f5"
@@ -99,4 +90,4 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-</ibis>
+</module>

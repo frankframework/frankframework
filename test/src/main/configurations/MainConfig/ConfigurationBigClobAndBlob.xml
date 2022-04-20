@@ -1,7 +1,6 @@
 <module>
 	<adapter name="BigClobAndBlob">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="BigClobAndBlob">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				name="BigClobAndBlob" serviceName="ibis4test-BigClobAndBlob" />
 		</receiver>
@@ -21,26 +20,26 @@
 			</pipe>
 
 			<pipe name="encodeBigClobPdf" className="nl.nn.adapterframework.pipes.Base64Pipe"
-				convert2String="false" storeResultInSessionKey="base64">
+				storeResultInSessionKey="base64">
 				<forward name="success" path="insertBigClob1" />
 			</pipe>
 
 			<pipe name="insertBigClob1"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				getInputFromFixedValue="&lt;dummy/&gt;" storeResultInSessionKey="tKey">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
 					query="INSERT INTO IBISTEMP (TKEY, TCLOB) VALUES (SEQ_IBISTEMP.NEXTVAL, EMPTY_CLOB())"
 					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true"
-					queryType="insert" jmsRealm="jdbc" />
+					queryType="insert" />
 				<forward name="success" path="insertBigClob2" />
 			</pipe>
 
 			<pipe name="insertBigClob2"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				getInputFromSessionKey="base64">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
 					query="SELECT TCLOB FROM IBISTEMP WHERE TKEY=? FOR UPDATE"
-					queryType="updateClob" jmsRealm="jdbc">
+					queryType="updateClob">
 					<param name="tKey" sessionKey="tKey" />
 				</sender>
 				<forward name="success" path="readBigClob" />
@@ -49,7 +48,7 @@
 			<pipe name="readBigClob">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
 					query="SELECT TCLOB FROM IBISTEMP WHERE TKEY=?" queryType="select"
-					jmsRealm="jdbc" scalar="true">
+					scalar="true">
 					<param name="tKey" sessionKey="tKey" />
 				</sender>
 				<forward name="success" path="EXIT" />
@@ -63,26 +62,26 @@
 			</pipe>
 
 			<pipe name="encodeBigBlobPdf" className="nl.nn.adapterframework.pipes.Base64Pipe"
-				convert2String="false" storeResultInSessionKey="base64">
+				storeResultInSessionKey="base64">
 				<forward name="success" path="insertBigBlobText1" />
 			</pipe>
 
 			<pipe name="insertBigBlobText1"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				getInputFromFixedValue="&lt;dummy/&gt;" storeResultInSessionKey="tKey">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
-					query="INSERT INTO IBISTEMP (TKEY, TBLOB1) VALUES (SEQ_IBISTEMP.NEXTVAL, EMPTY_BLOB())"
+					query="INSERT INTO IBISTEMP (TKEY, TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL, EMPTY_BLOB())"
 					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true"
-					queryType="insert" jmsRealm="jdbc" />
+					queryType="insert" />
 				<forward name="success" path="insertBigBlobText2" />
 			</pipe>
 
 			<pipe name="insertBigBlobText2"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				getInputFromSessionKey="base64">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
-					query="SELECT TBLOB1 FROM IBISTEMP WHERE TKEY=? FOR UPDATE"
-					queryType="updateBlob" jmsRealm="jdbc">
+					query="SELECT TBLOB FROM IBISTEMP WHERE TKEY=? FOR UPDATE"
+					queryType="updateBlob">
 					<param name="tKey" sessionKey="tKey" />
 				</sender>
 				<forward name="success" path="readBigBlobText" />
@@ -90,8 +89,8 @@
 
 			<pipe name="readBigBlobText">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
-					query="SELECT TBLOB1 FROM IBISTEMP WHERE TKEY=?" queryType="select"
-					jmsRealm="jdbc" scalar="true">
+					query="SELECT TBLOB FROM IBISTEMP WHERE TKEY=?" queryType="select"
+					scalar="true">
 					<param name="tKey" sessionKey="tKey" />
 				</sender>
 				<forward name="success" path="EXIT" />
@@ -105,20 +104,20 @@
 			</pipe>
 
 			<pipe name="insertBigBlobBinary1"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				getInputFromFixedValue="&lt;dummy/&gt;" storeResultInSessionKey="tKey">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
-					query="INSERT INTO IBISTEMP (TKEY, TBLOB1) VALUES (SEQ_IBISTEMP.NEXTVAL, EMPTY_BLOB())"
+					query="INSERT INTO IBISTEMP (TKEY, TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL, EMPTY_BLOB())"
 					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true"
-					queryType="insert" jmsRealm="jdbc" />
+					queryType="insert" />
 				<forward name="success" path="insertBigBlobBinary2" />
 			</pipe>
 
 			<pipe name="insertBigBlobBinary2"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
-					query="SELECT TBLOB1 FROM IBISTEMP WHERE TKEY=? FOR UPDATE"
-					queryType="updateBlob" jmsRealm="jdbc" blobSessionKey="fileContent">
+					query="SELECT TBLOB FROM IBISTEMP WHERE TKEY=? FOR UPDATE"
+					queryType="updateBlob" blobSessionKey="fileContent">
 					<param name="tKey" sessionKey="tKey" />
 				</sender>
 				<forward name="success" path="readBigBlobBinary" />
@@ -126,8 +125,8 @@
 
 			<pipe name="readBigBlobBinary">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
-					query="SELECT TBLOB1 FROM IBISTEMP WHERE TKEY=?" queryType="select"
-					jmsRealm="jdbc" scalar="true" blobBase64Direction="encode">
+					query="SELECT TBLOB FROM IBISTEMP WHERE TKEY=?" queryType="select"
+					scalar="true" blobBase64Direction="encode">
 					<param name="tKey" sessionKey="tKey" />
 				</sender>
 				<forward name="success" path="EXIT" />

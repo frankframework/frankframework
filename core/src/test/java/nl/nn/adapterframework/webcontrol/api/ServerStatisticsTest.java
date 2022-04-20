@@ -15,24 +15,16 @@
 */
 package nl.nn.adapterframework.webcontrol.api;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.config.Configurator;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
-
-import nl.nn.adapterframework.logging.IbisMaskingLayout;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
 
 public class ServerStatisticsTest extends ApiTestBase<ServerStatistics> {
 
@@ -68,7 +60,8 @@ public class ServerStatisticsTest extends ApiTestBase<ServerStatistics> {
 		assertEquals(503, response.getStatus());
 		assertEquals(MediaType.APPLICATION_JSON, response.getMediaType().toString());
 
-		assertEquals("{\"errors\":[\"adapter[dummyAdapter] is in state[STOPPED]\"],\"status\":\"SERVICE_UNAVAILABLE\"}", response.getEntity());
+		//We never start the configuration, so it will always stay in state STARTING
+		assertEquals("{\"errors\":[\"configuration[TestConfiguration] is in state[STARTING]\",\"adapter[dummyAdapter] is in state[STOPPED]\"],\"status\":\"SERVICE_UNAVAILABLE\"}", response.getEntity());
 	}
 
 	@Test
@@ -77,62 +70,6 @@ public class ServerStatisticsTest extends ApiTestBase<ServerStatistics> {
 		assertEquals(200, response.getStatus());
 		assertEquals(MediaType.APPLICATION_JSON, response.getMediaType().toString());
 
-		assertEquals("{\"myConfiguration\":{\"errorStoreCount\":0,\"warnings\":[\"hello I am a configuration warning!\"]},\"totalErrorStoreCount\":0}", response.getEntity());
-	}
-
-	@Test
-	public void updateLogIntermediaryResults() {
-		boolean logIntermediary = AppConstants.getInstance().getBoolean("log.logIntermediaryResults", true);
-
-		Response response = dispatcher.dispatchRequest(HttpMethod.PUT, "/server/log", "{\"logIntermediaryResults\":\""+!logIntermediary+"\"}"); //Set it to false when true, or to true when false, either way, change the value!
-		assertEquals(204, response.getStatus());
-		assertEquals(MediaType.APPLICATION_JSON, response.getMediaType().toString());
-
-		Boolean logIntermediaryResult = Boolean.valueOf(AppConstants.getInstance().getResolvedProperty("log.logIntermediaryResults"));
-		assertNotNull(logIntermediaryResult);
-		assertEquals(!logIntermediary, logIntermediaryResult);
-
-		AppConstants.getInstance().setProperty("log.logIntermediaryResults", true);
-	}
-
-	@Test
-	public void updateMaxLength() {
-		assertEquals("maxLength should default to -1 (off)", -1, IbisMaskingLayout.getMaxLength());
-
-		Response response = dispatcher.dispatchRequest(HttpMethod.PUT, "/server/log", "{\"maxMessageLength\":\"50\"}");
-		assertEquals(204, response.getStatus());
-		assertEquals(MediaType.APPLICATION_JSON, response.getMediaType().toString());
-
-		assertEquals("maxLength should have been updated to 50", 50, IbisMaskingLayout.getMaxLength());
-
-		IbisMaskingLayout.setMaxLength(-1); //Reset max length
-	}
-
-	@Test
-	public void updateTesttoolEnabled() {
-		boolean testtoolEnabled = AppConstants.getInstance().getBoolean("testtool.enabled", true);
-		assertTrue(testtoolEnabled);
-
-		Response response = dispatcher.dispatchRequest(HttpMethod.PUT, "/server/log", "{\"enableDebugger\":\"false\"}");
-		assertEquals(204, response.getStatus());
-		assertEquals(MediaType.APPLICATION_JSON, response.getMediaType().toString());
-
-		Boolean testtoolEnabledResult = Boolean.valueOf(AppConstants.getInstance().getResolvedProperty("testtool.enabled"));
-		assertNotNull(testtoolEnabledResult);
-		assertEquals(!testtoolEnabled, testtoolEnabledResult);
-	}
-
-	@Test
-	public void updateLogLevel() {
-		Logger rootLogger = LogUtil.getRootLogger();
-		assertEquals("default loglevel should be INFO", Level.INFO, rootLogger.getLevel());
-
-		Response response = dispatcher.dispatchRequest(HttpMethod.PUT, "/server/log", "{\"loglevel\":\"ERROR\"}");
-		assertEquals(204, response.getStatus());
-		assertEquals(MediaType.APPLICATION_JSON, response.getMediaType().toString());
-
-		assertEquals("loglevel should have been changed to ERROR", Level.ERROR, rootLogger.getLevel());
-
-		Configurator.setLevel(rootLogger.getName(), Level.INFO); //Reset log level
+		assertEquals("{\"TestConfiguration\":{\"errorStoreCount\":0,\"warnings\":[\"hello I am a configuration warning!\"]},\"totalErrorStoreCount\":0}", response.getEntity());
 	}
 }

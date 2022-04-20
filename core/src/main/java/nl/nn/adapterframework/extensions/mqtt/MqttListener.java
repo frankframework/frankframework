@@ -30,7 +30,7 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.receivers.ReceiverAware;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.RunState;
 
 /**
  * MQTT listener which will connect to a broker and subscribe to a topic.
@@ -85,7 +85,7 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 	@Override
 	public void configure() throws ConfigurationException {
 		// See connectionLost(Throwable)
-		receiver.setOnErrorEnum(Receiver.OnError.RECOVER);
+		receiver.setOnError(Receiver.OnError.RECOVER);
 		// Recover will be triggered when connectionLost was called or listener 
 		// could not start in which case client is already disconnected.
 
@@ -108,7 +108,7 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 		String message = getLogPrefix() + "connection ";
 		if (reconnect) {
 			// Automatic reconnect by mqtt lib
-			receiver.setRunState(RunStateEnum.STARTED);
+			receiver.setRunState(RunState.STARTED);
 			message = message + "restored";
 		} else {
 			message = message + "established";

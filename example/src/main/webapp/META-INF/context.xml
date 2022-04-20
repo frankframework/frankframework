@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Context>
 
+	<!-- DB_CLOSE_ON_EXIT=FALSE keeps the in-memory H2 database active till the JVM terminates -->
 	<Resource
-		name="jdbc/ibis4example"
+		name="jdbc/frank2example"
 		type="javax.sql.DataSource"
 		driverClassName="org.h2.Driver"
-		url="jdbc:h2:mem:ibis4example;DB_CLOSE_ON_EXIT=FALSE"
+		url="jdbc:h2:mem:frank2example;DB_CLOSE_ON_EXIT=FALSE"
 		maxTotal="10"
 		maxIdle="2"
 		maxWaitMillis="5000"

@@ -18,7 +18,7 @@ package nl.nn.adapterframework.pipes;
 import java.io.IOException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -28,12 +28,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Pipe that performs translations between special characters and their xml equivalents.
  * <p>When direction=cdata2text all cdata nodes are converted to text nodes without any other translations.</p>
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * </table>
- * </p>
+ * 
  * @author Peter Leeuwenburgh
  */
 public class EscapePipe extends FixedForwardPipe {
@@ -66,7 +61,7 @@ public class EscapePipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 
 		String input;
 		try {
@@ -111,7 +106,7 @@ public class EscapePipe extends FixedForwardPipe {
 			}
 		}
 
-		return new PipeRunResult(getForward(), result);
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 
 	public String getSubstringStart() {

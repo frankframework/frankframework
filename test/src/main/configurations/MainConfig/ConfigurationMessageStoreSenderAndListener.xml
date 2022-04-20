@@ -1,42 +1,54 @@
-<ibis>
+<module>
 	<Adapter name="writeIbisstore">
 		<Receiver name="writeIbisstoreReceiver">
 			<JavaListener name="writeIbisstoreListener" serviceName="ibis4test-WriteToMessageStore"  />
 			<errorStorage
 				className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-				jmsRealm="jdbc" slotId="TestMessageStoreSenderAndListener-WriteErrors"/>
+				slotId="TestMessageStoreSenderAndListener-WriteErrors"/>
 		</Receiver>
-		<Pipeline firstPipe="sendMessagePipe">
+		<Pipeline>
+			<PutInSessionPipe name="prepareSessionKeys">
+				<Param name="key1" value="a,b,c"/>
+				<Param name="key2" value="double quote: [&quot;] single quote [']"/>
+			</PutInSessionPipe>
 			<SenderPipe name="sendMessagePipe">
 				<sender
 					className="nl.nn.adapterframework.jdbc.MessageStoreSender"
-					jmsRealm="jdbc" slotId="TestMessageStoreSenderAndListener-Queue"
+					slotId="TestMessageStoreSenderAndListener-Queue"
 					sessionKeys="key1,key2">
 					<param name="messageId"
 						xpathExpression="/Envelope/Header/MessageID" />
 				</sender>
 				<messageLog
 					className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-					jmsRealm="jdbc" slotId="TestMessageStoreSenderAndListener-WriteLog" />
+					slotId="TestMessageStoreSenderAndListener-WriteLog" />
 				<Forward name="success" path="EXIT" />
 			</SenderPipe>
 			<Exit path="EXIT" state="success" code="200"></Exit>
 		</Pipeline>
 	</Adapter>
 	<Adapter name="readIbisstore">
-		<Receiver name="readIbisstoreReceiver">
+		<Receiver name="readIbisstoreReceiver" pollInterval="1">
 			<listener name="MyListener"
 				className="nl.nn.adapterframework.jdbc.MessageStoreListener"
-				jmsRealm="jdbc" slotId="TestMessageStoreSenderAndListener-Queue"
+				slotId="TestMessageStoreSenderAndListener-Queue"
 				sessionKeys="key1,key2" />
 		</Receiver>
-		<Pipeline firstPipe="DoIt">
+		<Pipeline>
 			<Exit state="success" path="EXIT" code="200" />
-			<FixedResultPipe name="DoIt"
-				returnString="Hello World">
+			<inputValidator className="nl.nn.adapterframework.pipes.XmlValidator"
+				schema="xsd/any.xsd"
+				root="Envelope"
+				throwException="true">
+			</inputValidator>
+
+			<XsltPipe name="collectResults" xpathExpression="concat('original message [',$msg,'] key1 [',$k1,'] key2 [',$k2,']')" >
+				<Param name="msg" sessionKey="originalMessage" />
+				<Param name="k1" sessionKey="key1" />
+				<Param name="k2" sessionKey="key2" />
 				<Forward name="success" path="EXIT" />
-			</FixedResultPipe>
+			</XsltPipe>
 		</Pipeline>
 	</Adapter>
 	
-</ibis>
+</module>

@@ -1,6 +1,15 @@
 <module>
 	<adapter name="HelloWorlds" active="${HelloWorlds.active}">
 		<receiver name="HelloWorlds" >
+			<!-- This listener is used when the API is called as specified in OpenAPI 3.0 at the Webservices page -->
+			<listener
+				name="HelloWorlds"
+				className="nl.nn.adapterframework.http.rest.ApiListener"
+				uriPattern="hello-worlds"
+			/>
+		</receiver>
+		<receiver name="HelloWorlds">
+			<!-- This listener is used by the scheduler -->
 			<listener
 				name="HelloWorlds"
 				className="nl.nn.adapterframework.receivers.JavaListener"
@@ -14,43 +23,51 @@
 				name="CheckInputIsXml"
 				className="nl.nn.adapterframework.pipes.XmlWellFormedChecker"
 				>
-				<forward name="success" path="HelloWorlds"/>
-				<forward name="failure" path="Text2Xml"/>
+				<forward name="success" path="CallHelloWorld"/>
+				<forward name="failure" path="ConvertEmptyMessageToDummyMessage"/>
 			</pipe>
+			<!-- Input will be null when called using the ApiListener and empty string when called by scheduler -->
+			<pipe
+				name="ConvertEmptyMessageToDummyMessage"
+				className="nl.nn.adapterframework.pipes.EchoPipe"
+				emptyInputReplacement="Dummy"
+			/>
 			<pipe
 				name="Text2Xml"
 				className="nl.nn.adapterframework.pipes.Text2XmlPipe"
-				includeXmlDeclaration="false"
 				xmlTag="tests"
 				splitLines="true"
-				>
-				<forward name="success" path="RenameElementLineToTest"/>
-			</pipe>
+			/>
 			<pipe
 				name="RenameElementLineToTest"
 				className="nl.nn.adapterframework.pipes.XsltPipe"
 				styleSheetName="HelloWorlds/xsl/RenameElementLineToTest.xsl"
+			/>
+			<pipe
+				name="CheckDummyMessage"
+				className="nl.nn.adapterframework.pipes.XmlSwitch"
+				xpathExpression="/tests/test = 'Dummy'"
 				>
-				<forward name="success" path="CheckEmptyMessage"/>
+				<forward name="true" path="CreateExampleMessage"/>
+				<forward name="false" path="CallHelloWorld"/>
 			</pipe>
 			<pipe
-				name="CheckEmptyMessage"
-				className="nl.nn.adapterframework.pipes.CompareStringPipe"
+				name="CreateExampleMessage"
+				className="nl.nn.adapterframework.pipes.FixedResultPipe"
+				returnString="
+						First line
+						&#10;
+						Second line
+						&#10;
+						Third line
+						&#10;
+						Fourth line
+						"
 				>
-				<param name="operand1" value="&lt;tests/>"/>
-				<forward name="equals" path="CreateNewMessage"/>
-				<forward name="lessthan" path="HelloWorlds"/>
-				<forward name="greaterthan" path="HelloWorlds"/>
+				<forward name="success" path="Text2Xml"/>
 			</pipe>
 			<pipe
-				name="CreateNewMessage"
-				className="nl.nn.adapterframework.pipes.FixedResult"
-				returnString="&lt;tests>&lt;test>1&lt;/test>&lt;/tests>"
-				>
-				<forward name="success" path="HelloWorlds"/>
-			</pipe>
-			<pipe
-				name="HelloWorlds"
+				name="CallHelloWorld"
 				className="nl.nn.adapterframework.pipes.ForEachChildElementPipe"
 				blockSize="3"
 				blockPrefix="&lt;batch>"
@@ -68,9 +85,8 @@
 	<scheduler>
 		<job
 			name="HelloWorlds"
-			adapterName="HelloWorlds"
-			receiverName="HelloWorlds"
 			cronExpression="0 55 2 * * ?"
+			javaListener="HelloWorlds"
 			function="sendMessage"
 			active="${HelloWorlds.active}"
 		/>

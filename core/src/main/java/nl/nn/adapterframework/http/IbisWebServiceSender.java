@@ -21,11 +21,12 @@ import java.net.URL;
 
 import org.apache.soap.SOAPException;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.ServiceDispatcher_ServiceProxy;
 import nl.nn.adapterframework.senders.SenderBase;
@@ -40,6 +41,8 @@ import nl.nn.adapterframework.util.AppConstants;
  * @since 4.2
  */
 public class IbisWebServiceSender extends SenderBase implements HasPhysicalDestination {
+
+	private final @Getter(onMethod = @__(@Override)) String domain = "Local";
 
 	private String ibisHost = "localhost";
 	private String ibisInstance = null;
@@ -73,7 +76,7 @@ public class IbisWebServiceSender extends SenderBase implements HasPhysicalDesti
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		String correlationID = session==null ? null : session.getMessageId();
 		try {
 			//TODO: afvangen als server gestopt is, en timeout van maken ofzo.

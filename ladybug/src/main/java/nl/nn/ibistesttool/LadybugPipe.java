@@ -24,10 +24,10 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -48,12 +48,8 @@ import nl.nn.testtool.transform.ReportXmlTransformer;
 /**
  * Call Ladybug Test Tool to rerun the reports present in test storage (see Test tab in Ladybug)
  *
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>no errors and all tests passed</td></tr>
- * <tr><td>"failure"</td><td>errors or failed tests</td></tr>
- * </table>
+ * @ff.forward success no errors and all tests passed
+ * @ff.forward failure errors or failed tests
  * 
  * @author Jaco de Groot
  *
@@ -78,7 +74,7 @@ public class LadybugPipe extends FixedForwardPipe {
 		super.configure();
 		failureForward = findForward(FAILURE_FORWARD_NAME);
 		if (failureForward == null) {
-			failureForward = getForward();
+			failureForward = getSuccessForward();
 		}
 		if (StringUtils.isNotEmpty(exclude)) {
 			excludeRegexPattern = Pattern.compile(exclude);
@@ -87,7 +83,7 @@ public class LadybugPipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		XmlBuilder results = new XmlBuilder("Results");
 		int reportsPassed = 0;
 		
@@ -181,7 +177,7 @@ public class LadybugPipe extends FixedForwardPipe {
 					+ "TotalDuration=\"" + (endTime - startTime) + "\", "
 					+ "Equal=\"" + allReportsPassed + "\"");
 		}
-		PipeForward forward = allReportsPassed ? getForward() : failureForward;
+		PipeForward forward = allReportsPassed ? getSuccessForward() : failureForward;
 		return new PipeRunResult(forward, results.toXML());
 	}
 
@@ -251,10 +247,10 @@ public class LadybugPipe extends FixedForwardPipe {
 }
 
 class IbisSecurityContext implements SecurityContext {
-	private IPipeLineSession session;
+	private PipeLineSession session;
 	private boolean checkRoles;
 
-	IbisSecurityContext(IPipeLineSession session, boolean checkRoles) {
+	IbisSecurityContext(PipeLineSession session, boolean checkRoles) {
 		this.session = session;
 		this.checkRoles = checkRoles;
 	}

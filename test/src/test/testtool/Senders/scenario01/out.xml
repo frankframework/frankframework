@@ -1,5 +1,5 @@
 <errorMessage timestamp="Tue Mar 31 16:51:18 CEST 2020" originator="IAF_ss9 7.6-SNAPSHOT" message="Pipe [Call ExceptionPipe] msgId [Test Tool correlation id] : IbisLocalSender [Call ExceptionPipe-sender] exception calling JavaListener [ExceptionPipe]: &lt;test/&gt;">
-  <location class="nl.nn.adapterframework.pipes.GenericMessageSendingPipe" name="Call ExceptionPipe"/>
+  <location class="nl.nn.adapterframework.pipes.SenderPipe" name="Call ExceptionPipe"/>
   <details>nl.nn.adapterframework.core.SenderException: IbisLocalSender [Call ExceptionPipe-sender] exception calling JavaListener [ExceptionPipe]: &lt;test/&gt;&#xD;
 	at nl.nn.adapterframework.senders.IbisLocalSender.sendMessage(IbisLocalSender.java:231)&#xD;
 	at nl.nn.adapterframework.senders.IbisLocalSender$$FastClassBySpringCGLIB$$a6cd532c.invoke(&lt;generated&gt;)&#xD;
@@ -29,7 +29,7 @@
 	at org.springframework.aop.interceptor.ExposeInvocationInterceptor.invoke(ExposeInvocationInterceptor.java:92)&#xD;
 	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)&#xD;
 	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:671)&#xD;
-	at nl.nn.adapterframework.pipes.GenericMessageSendingPipe$$EnhancerBySpringCGLIB$$ca1d1841.doPipe(&lt;generated&gt;)&#xD;
+	at nl.nn.adapterframework.pipes.SenderPipe$$EnhancerBySpringCGLIB$$ca1d1841.doPipe(&lt;generated&gt;)&#xD;
 	at nl.nn.adapterframework.stream.StreamingPipe.doPipe(StreamingPipe.java:80)&#xD;
 	at nl.nn.adapterframework.processors.CorePipeProcessor.processPipe(CorePipeProcessor.java:32)&#xD;
 	at nl.nn.adapterframework.processors.CheckMessageSizePipeProcessor.processPipe(CheckMessageSizePipeProcessor.java:37)&#xD;

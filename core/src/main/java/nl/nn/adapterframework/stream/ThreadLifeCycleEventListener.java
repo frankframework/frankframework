@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,8 +18,9 @@ package nl.nn.adapterframework.stream;
 public interface ThreadLifeCycleEventListener<T> {
 
 	public T announceChildThread(Object owner, String correlationId);
-	public Object threadCreated(T ref, Object request);
-	public Object threadEnded(T ref, Object result);
+	public void cancelChildThread(T ref);
+	public <O> O threadCreated(T ref, O request);
+	public <O> O threadEnded(T ref, O result);
 	public Throwable threadAborted(T ref, Throwable t);
 	
 }

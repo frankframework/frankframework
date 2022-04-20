@@ -15,10 +15,12 @@
 */
 package nl.nn.adapterframework.logging;
 
-import java.io.BufferedReader;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URL;
@@ -35,7 +37,7 @@ import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.ConfigurationFactory;
 import org.apache.logging.log4j.core.config.ConfigurationSource;
 import org.apache.logging.log4j.core.config.xml.XmlConfiguration;
-import nl.nn.adapterframework.util.StreamUtil;
+
 import nl.nn.adapterframework.util.StringResolver;
 
 /**
@@ -51,6 +53,10 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 	public static final String LOG_PREFIX = "IbisLoggerConfigurationFactory class ";
 	private static final String LOG4J_PROPS_FILE = "log4j4ibis.properties";
 	private static final String DS_PROPERTIES_FILE = "DeploymentSpecifics.properties";
+
+	static {
+		System.setProperty("java.util.logging.manager", org.apache.logging.log4j.jul.LogManager.class.getCanonicalName());
+	}
 
 	/**
 	 * Hierarchy of log directories to search for. Strings will be split by "/".
@@ -153,8 +159,7 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 	public static String readLog4jConfiguration(InputStream stream) throws IOException {
 		char[] buff = new char[1024];
 		Writer stringWriter = new StringWriter();
-		try {
-			BufferedReader reader = new BufferedReader(StreamUtil.getCharsetDetectingInputStreamReader(stream));
+		try (Reader reader = new InputStreamReader(new BufferedInputStream(stream))) {
 			int n;
 			boolean checkVersionOnlyFirst1024Characters = true;
 			while ((n = reader.read(buff))!=-1) {

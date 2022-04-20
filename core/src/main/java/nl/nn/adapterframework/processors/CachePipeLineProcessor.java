@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,12 +17,14 @@ package nl.nn.adapterframework.processors;
 
 import java.io.IOException;
 
-import nl.nn.adapterframework.cache.ICacheAdapter;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.cache.ICache;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.EnumUtils;
 
 /**
  * PipelineProcessor that handles caching.
@@ -33,8 +35,8 @@ import nl.nn.adapterframework.stream.Message;
 public class CachePipeLineProcessor extends PipeLineProcessorBase {
 	
 	@Override
-	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, IPipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
-		ICacheAdapter<String,String> cache=pipeLine.getCache();
+	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
+		ICache<String,String> cache=pipeLine.getCache();
 		if (cache==null) {
 			return pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
 		}
@@ -59,20 +61,20 @@ public class CachePipeLineProcessor extends PipeLineProcessorBase {
 		}
 		if (result!=null && state!=null) {
 			if (log.isDebugEnabled()) log.debug("retrieved result from cache using key ["+key+"]");
-			PipeLineResult prr=new PipeLineResult();
-			prr.setState(state);
-			prr.setResult(result);
-			return prr;
+			PipeLineResult plr=new PipeLineResult();
+			plr.setState(EnumUtils.parse(ExitState.class, state));
+			plr.setResult(result);
+			return plr;
 		}
 		if (log.isDebugEnabled()) log.debug("no cached results found using key ["+key+"]");
-		PipeLineResult prr=pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
+		PipeLineResult plr=pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
 		if (log.isDebugEnabled()) log.debug("caching result using key ["+key+"]");
-		String cacheValue=cache.transformValue(prr.getResult(), pipeLineSession);
+		String cacheValue=cache.transformValue(plr.getResult(), pipeLineSession);
 		synchronized (cache) {
 			cache.put("r"+key, cacheValue);
-			cache.put("s"+key, prr.getState());
+			cache.put("s"+key, plr.getState().name());
 		}
-		return prr;
+		return plr;
 	}
 
 }

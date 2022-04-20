@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,11 +17,12 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -33,17 +34,10 @@ import nl.nn.adapterframework.stream.Message;
  * <p>
  * If the role is not specified by the role attribute, the input of
  * the pipe is used as role.
- * </p>
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>user may assume role</td></tr>
- * <tr><td>"notInRole" or value set by {@link #setNotInRoleForwardName(String) notInRoleForwardName}</td><td>user may not assume role</td></tr>
- * <tr><td><i></i></td><td>if specified</td></tr>
- * </table>
- * </p>
  * 
  * N.B. The role itself must be specified by hand in the deployement descriptors web.xml and application.xml.
+ * 
+ * @ff.forward notInRole user may not assume role
  * 
  * @author  Gerrit van Brakel
  * @since   4.4.3
@@ -51,7 +45,7 @@ import nl.nn.adapterframework.stream.Message;
 public class IsUserInRolePipe extends FixedForwardPipe {
 
 	private String role=null;
-	private String notInRoleForwardName="notInRole";
+	private @Getter String notInRoleForwardName="notInRole";
 	protected PipeForward notInRoleForward;
 	
 	@Override
@@ -65,14 +59,14 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 		}
 	}
 	
-	protected void assertUserIsInRole(IPipeLineSession session, String role) throws SecurityException {
+	protected void assertUserIsInRole(PipeLineSession session, String role) throws SecurityException {
 		if (!session.isUserInRole(role)) {
 			throw new SecurityException(getLogPrefix(session)+"user is not in role ["+role+"]");
 		}
 	}
 	
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
 			if (StringUtils.isEmpty(getRole())) {
 				String inputString;
@@ -91,11 +85,10 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 		} catch (SecurityException e) {
 			if (notInRoleForward!=null) {
 				return new PipeRunResult(notInRoleForward, message);
-			} else {
-				throw new PipeRunException(this,"",e);
-			}
+			} 
+			throw new PipeRunException(this,"",e);
 		}
-		return new PipeRunResult(getForward(),message);
+		return new PipeRunResult(getSuccessForward(),message);
 	}
 	
 	public String getRole() {
@@ -107,10 +100,7 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 		role = string;
 	}
 
-	public String getNotInRoleForwardName() {
-		return notInRoleForwardName;
-	}
-
+	@Deprecated
 	@IbisDoc({"name of forward returned if user is not allowed to assume the specified role", "notInRole"})
 	public void setNotInRoleForwardName(String string) {
 		notInRoleForwardName = string;

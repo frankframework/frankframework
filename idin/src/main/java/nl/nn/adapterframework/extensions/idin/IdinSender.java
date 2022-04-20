@@ -42,9 +42,9 @@ import net.bankid.merchant.library.StatusResponse;
 import net.bankid.merchant.library.internal.DirectoryResponseBase.Issuer;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
@@ -60,6 +60,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Niels Meijer
  */
 public class IdinSender extends SenderWithParametersBase implements HasPhysicalDestination {
+	private final String domain = "Idin";
 	private String merchantID = null;
 	private int merchantSubID = 0;
 	private String merchantReturnUrl = null;
@@ -155,7 +156,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 
 		Element queryElement = null;
 		try {
@@ -431,7 +432,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 
 
 	/**
-	 * @param acquirerDirectoryUrl The web address of the Acquirer’s Routing service platform from where the 
+	 * @param acquirerDirectoryUrl The web address of the Acquirer's Routing service platform from where the 
 	 * list of Issuers is retrieved (using a directory request).
 	 */
 	public void setAcquirerDirectoryUrl(String acquirerDirectoryUrl) {
@@ -442,7 +443,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 
 	/**
-	 * @param acquirerTransactionUrl The web address of the Acquirer’s Routing Service platform 
+	 * @param acquirerTransactionUrl The web address of the Acquirer's Routing Service platform 
 	 * where the transactions (authentication requests) are initiated.
 	 */
 	public void setAcquirerTransactionUrl(String acquirerTransactionUrl) {
@@ -453,7 +454,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 
 	/**
-	 * @param acquirerStatusUrl The web address of the Acquirer’s Routing Service platform to where 
+	 * @param acquirerStatusUrl The web address of the Acquirer's Routing Service platform to where 
 	 * the library sends status request messages.
 	 */
 	public void setAcquirerStatusUrl(String acquirerStatusUrl) {
@@ -500,7 +501,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 
 	/**
-	 * This is the certificate owned by the Merchant. It’s the private certificate
+	 * This is the certificate owned by the Merchant. It's the private certificate
 	 * used to sign messages sent by the Merchant to the Acquirer's Routing Service platform. Its public
 	 * key is also used by the Acquirer to authenticate incoming messages from the Merchant. The
 	 * Merchant certificate must be in PKCS#12 format which has the extension .p12 or .pfx
@@ -542,7 +543,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	 * only needs its public key. The public certificate must be in PEM format (base64 ASCII) and typically 
 	 * has the file extension .cer,.crt or .pem.
 	 * 
-	 * @param acquirerCertificateAlias : The alias assigned to the Acquirer’s certificate in the keystore.
+	 * @param acquirerCertificateAlias : The alias assigned to the Acquirer's certificate in the keystore.
 	 * This could be the alias you supplied explicitly when importing an existing certificate in the keystore, 
 	 * or it could be an alias automatically assigned by the keytool application.
 	 */
@@ -558,7 +559,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	 * only needs its public key. The public certificate must be in PEM format (base64 ASCII) and typically 
 	 * has the file extension .cer,.crt or .pem.
 	 * 
-	 * @param acquirerAlternativeCertificateAlias : The alias assigned to the Acquirer’s certificate in the keystore.
+	 * @param acquirerAlternativeCertificateAlias : The alias assigned to the Acquirer's certificate in the keystore.
 	 * This could be the alias you supplied explicitly when importing an existing certificate in the keystore, 
 	 * or it could be an alias automatically assigned by the keytool application.
 	 */
@@ -633,5 +634,10 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 	public String getServiceLogsPattern() {
 		return this.serviceLogsPattern;
+	}
+
+	@Override
+	public String getDomain() {
+		return domain;
 	}
 }

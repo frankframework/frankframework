@@ -16,12 +16,14 @@ import org.junit.Before;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
+import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestAssertions;
 
 public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, FS extends IWritableFileSystem<F>> extends HelperedFileSystemTestBase {
@@ -49,13 +51,13 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 
 	@Test
 	public void fileSystemPipeTestConfigure() throws Exception {
-		fileSystemPipe.setAction("list");
+		fileSystemPipe.setAction(FileSystemAction.LIST);
 		fileSystemPipe.configure();
 	}
 
 	@Test
 	public void fileSystemPipeTestOpen() throws Exception {
-		fileSystemPipe.setAction("list");
+		fileSystemPipe.setAction(FileSystemAction.LIST);
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 	}
@@ -69,15 +71,11 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 			_deleteFile(null, filename);
 		}
 
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		session.put("uploadActionTargetwString", contents.getBytes());
 
-		Parameter p = new Parameter();
-		p.setName("file");
-		p.setSessionKey("uploadActionTargetwString");
-
-		fileSystemPipe.addParameter(p);
-		fileSystemPipe.setAction("upload");
+		fileSystemPipe.addParameter(ParameterBuilder.create().withName("file").withSessionKey("uploadActionTargetwString"));
+		fileSystemPipe.setAction(FileSystemAction.UPLOAD);
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 
@@ -103,15 +101,11 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 			_deleteFile(null, filename);
 		}
 
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		session.put("uploadActionTargetwByteArray", contents.getBytes());
 
-		Parameter p = new Parameter();
-		p.setName("file");
-		p.setSessionKey("uploadActionTargetwByteArray");
-
-		fileSystemPipe.addParameter(p);
-		fileSystemPipe.setAction("upload");
+		fileSystemPipe.addParameter(ParameterBuilder.create().withName("file").withSessionKey("uploadActionTargetwByteArray"));
+		fileSystemPipe.setAction(FileSystemAction.UPLOAD);
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 
@@ -139,15 +133,11 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		}
 
 		InputStream stream = new ByteArrayInputStream(contents.getBytes("UTF-8"));
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		session.put("uploadActionTarget", stream);
 
-		Parameter p = new Parameter();
-		p.setName("file");
-		p.setSessionKey("uploadActionTarget");
-
-		fileSystemPipe.addParameter(p);
-		fileSystemPipe.setAction("upload");
+		fileSystemPipe.addParameter(ParameterBuilder.create().withName("file").withSessionKey("uploadActionTarget"));
+		fileSystemPipe.setAction(FileSystemAction.UPLOAD);
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 
@@ -174,18 +164,15 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		}
 
 		//InputStream stream = new ByteArrayInputStream(contents.getBytes("UTF-8"));
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		//session.put("uploadActionTarget", stream);
 
-		Parameter param = new Parameter();
-		param.setName("filename");
-		param.setValue(filename);
-		fileSystemPipe.addParameter(param);
-		fileSystemPipe.setAction("upload");
+		fileSystemPipe.addParameter(new Parameter("filename", filename));
+		fileSystemPipe.setAction(FileSystemAction.UPLOAD);
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 
-		assertTrue(fileSystemPipe.canProvideOutputStream());
+		//assertTrue(fileSystemPipe.canProvideOutputStream());
 
 		MessageOutputStream target = fileSystemPipe.provideOutputStream(session, null);
 
@@ -217,7 +204,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		createFile(null, filename, contents);
 		waitForActionToFinish();
 
-		fileSystemPipe.setAction("download");
+		fileSystemPipe.setAction(FileSystemAction.DOWNLOAD);
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 		
@@ -243,11 +230,8 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 //		deleteFile(folder2, filename);
 		waitForActionToFinish();
 
-		fileSystemPipe.setAction("move");
-		Parameter p = new Parameter();
-		p.setName("destination");
-		p.setValue(folder2);
-		fileSystemPipe.addParameter(p);
+		fileSystemPipe.setAction(FileSystemAction.MOVE);
+		fileSystemPipe.addParameter(new Parameter("destination", folder2));
 		if (setCreateFolderAttribute) {
 			fileSystemPipe.setCreateFolder(true);
 		}
@@ -279,7 +263,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 	}
 	@Test
 	public void fileSystemPipeMoveActionTestRootToFolderFailIfolderDoesNotExist() throws Exception {
-		thrown.expectMessage("unable to process [move] action for File [sendermovefile1.txt]: destination folder [folder] does not exist");
+		thrown.expectMessage("unable to process ["+FileSystemAction.MOVE+"] action for File [sendermovefile1.txt]: destination folder [folder] does not exist");
 		fileSystemPipeMoveActionTest(null,"folder",false,false);
 	}
 //	@Test
@@ -299,7 +283,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 			_deleteFolder(folder);
 		}
 
-		fileSystemPipe.setAction("mkdir");
+		fileSystemPipe.setAction(FileSystemAction.MKDIR);
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 		
@@ -324,7 +308,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 			_createFolder(folder);
 		}
 
-		fileSystemPipe.setAction("rmdir");
+		fileSystemPipe.setAction(FileSystemAction.RMDIR);
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 		
@@ -342,6 +326,41 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 	}
 
 	@Test
+	public void fileSystemPipeRmNonEmptyDirActionTest() throws Exception {
+		String folder = DIR1;
+		String innerFolder = DIR1+"/innerFolder";
+		if (!_folderExists(DIR1)) {
+			_createFolder(folder);
+		}
+		if (!_folderExists(innerFolder)) {
+			_createFolder(innerFolder);
+		}
+		
+		for (int i=0; i < 3; i++) {
+			String filename = "file"+i + FILE1;
+			createFile(folder, filename, "is not empty");
+			createFile(innerFolder, filename, "is not empty");
+		}
+		
+		fileSystemPipe.setRemoveNonEmptyFolder(true);
+		fileSystemPipe.setAction(FileSystemAction.RMDIR);
+		fileSystemPipe.configure();
+		fileSystemPipe.start();
+		
+		Message message= new Message(folder);
+		PipeRunResult prr = fileSystemPipe.doPipe(message, null);
+		String result=prr.getResult().asString();
+
+		// test
+		assertEquals("result of pipe should be name of removed folder",folder,result);
+		waitForActionToFinish();
+		
+		boolean actual = _fileExists(folder);
+		// test
+		assertFalse("Expected file [" + folder + "] " + "not to be present", actual);
+	}
+	
+	@Test
 	public void fileSystemPipeDeleteActionTest() throws Exception {
 		String filename = "tobedeleted" + FILE1;
 		
@@ -349,7 +368,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 			createFile(null, filename, "is not empty");
 		}
 
-		fileSystemPipe.setAction("delete");
+		fileSystemPipe.setAction(FileSystemAction.DELETE);
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 		
@@ -374,12 +393,8 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 			createFile(null, filename, "is not empty");
 		}
 
-		Parameter p = new Parameter();
-		p.setName("destination");
-		p.setValue(dest);
-
-		fileSystemPipe.addParameter(p);
-		fileSystemPipe.setAction("rename");
+		fileSystemPipe.addParameter(new Parameter("destination", dest));
+		fileSystemPipe.setAction(FileSystemAction.RENAME);
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 
@@ -412,7 +427,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 			}
 		}
 		
-		fileSystemPipe.setAction("list");
+		fileSystemPipe.setAction(FileSystemAction.LIST);
 		if (inputFolder!=null) {
 			fileSystemPipe.setInputFolder(inputFolder);
 		}
@@ -469,7 +484,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 	
 	@Test(expected = PipeStartException.class)
 	public void fileSystemPipeTestForFolderExistenceWithNonExistingFolder() throws Exception {
-		fileSystemPipe.setAction("list");
+		fileSystemPipe.setAction(FileSystemAction.LIST);
 		fileSystemPipe.setInputFolder("NonExistentFolder");
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
@@ -478,7 +493,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 	@Test
 	public void fileSystemPipeTestForFolderExistenceWithExistingFolder() throws Exception {
 		_createFolder("folder");
-		fileSystemPipe.setAction("list");
+		fileSystemPipe.setAction(FileSystemAction.LIST);
 		fileSystemPipe.setInputFolder("folder");
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
@@ -486,7 +501,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 
 	@Test()
 	public void fileSystemPipeTestForFolderExistenceWithRoot() throws Exception {
-		fileSystemPipe.setAction("list");
+		fileSystemPipe.setAction(FileSystemAction.LIST);
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 	}
@@ -506,12 +521,8 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		}
 		_createFolder(inputFolder);
 
-		Parameter p = new Parameter();
-		p.setName("inputFolder");
-		p.setValue(inputFolder);
-
-		fileSystemPipe.addParameter(p);
-		fileSystemPipe.setAction("list");
+		fileSystemPipe.addParameter(new Parameter("inputFolder", inputFolder));
+		fileSystemPipe.setAction(FileSystemAction.LIST);
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 		

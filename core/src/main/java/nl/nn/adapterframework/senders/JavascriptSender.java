@@ -17,18 +17,21 @@ package nl.nn.adapterframework.senders;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import lombok.Getter;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.javascript.J2V8;
 import nl.nn.adapterframework.extensions.javascript.JavascriptEngine;
+import nl.nn.adapterframework.extensions.javascript.JavascriptException;
+import nl.nn.adapterframework.extensions.javascript.Nashorn;
 import nl.nn.adapterframework.extensions.javascript.Rhino;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -52,11 +55,31 @@ import nl.nn.adapterframework.util.Misc;
 
 public class JavascriptSender extends SenderSeries {
 
+	private @Getter String jsFileName;
+	private @Getter String jsFunctionName = "main";
+	private @Getter JavaScriptEngines engine = JavaScriptEngines.J2V8;
+
+	/** ES6's let/const declaration Pattern. */
+	private Pattern es6VarPattern = Pattern.compile("(?:^|[\\s(;])(let|const)\\s+");
+
 	private String fileInput;
-	private String inputString;
-	private String jsFileName;
-	private String jsFunctionName = "main";
-	private String engine = "J2V8";
+
+	public enum JavaScriptEngines {
+		J2V8(J2V8.class), NASHORN(Nashorn.class), RHINO(Rhino.class);
+
+		private Class<? extends JavascriptEngine<?>> engine; //Enum cannot have parameters :(
+		private JavaScriptEngines(Class<? extends JavascriptEngine<?>> engine) {
+			this.engine = engine;
+		}
+
+		public JavascriptEngine<?> create() {
+			try {
+				return engine.newInstance();
+			} catch (InstantiationException | IllegalAccessException e) {
+				throw new IllegalStateException("Javascript engine [" + engine.getSimpleName() + "] could not be initialized.", e);
+			}
+		}
+	}
 
 	@Override
 	protected boolean isSenderConfigured() {
@@ -69,42 +92,37 @@ public class JavascriptSender extends SenderSeries {
 		super.open();
 
 		if (StringUtils.isNotEmpty(getJsFileName())) {
-			URL resource = null;
-			try {
-				resource = ClassUtils.getResourceURL(this, getJsFileName());
-			} catch (Throwable e) {
-				throw new SenderException(
-					getLogPrefix() + "got exception searching for [" + getJsFileName() + "]", e);
-			}
+			URL resource = ClassUtils.getResourceURL(this, getJsFileName());
 			if (resource == null) {
-				throw new SenderException(
-					getLogPrefix() + "cannot find resource [" + getJsFileName() + "]");
+				throw new SenderException(getLogPrefix() + "cannot find resource [" + getJsFileName() + "]");
 			}
 			try {
-				fileInput = Misc.resourceToString(resource, SystemUtils.LINE_SEPARATOR);
-			} catch (Throwable e) {
-				throw new SenderException(
-					getLogPrefix() + "got exception loading [" + getJsFileName() + "]", e);
+				fileInput = Misc.resourceToString(resource, Misc.LINE_SEPARATOR);
+			} catch (IOException e) {
+				throw new SenderException(getLogPrefix() + "got exception loading [" + getJsFileName() + "]", e);
 			}
 		}
-		if ((StringUtils.isEmpty(fileInput)) && inputString == null) { 
+		if (StringUtils.isEmpty(fileInput)) { 
 			// No input from file or input string. Only from session-keys?
-			throw new SenderException(
-				getLogPrefix() + "has neither fileName nor inputString specified");
+			throw new SenderException(getLogPrefix() + "has neither fileName nor inputString specified");
 		}
 		if (StringUtils.isEmpty(jsFunctionName)) { 
 			// Cannot run the code in factory without any function start point
-			throw new SenderException(
-				getLogPrefix() + "JavaScript FunctionName not specified!");
+			throw new SenderException(getLogPrefix() + "JavaScript FunctionName not specified!");
 		}
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException {
 
 		Object jsResult = "";
 		int numberOfParameters = 0;
-		JavascriptEngine<?> jsInstance;
+		JavascriptEngine<?> jsInstance = engine.create();
+		try {
+			jsInstance.startRuntime();
+		} catch (JavascriptException e) {
+			throw new SenderException("unable to start Javascript engine", e);
+		}
 
 		//Create a Parameter Value List
 		ParameterValueList pvl=null;
@@ -131,51 +149,59 @@ public class JavascriptSender extends SenderSeries {
 			}
 		}
 
-		//Start using an engine
-		if(engine.equalsIgnoreCase("Rhino")) {
-			jsInstance = new Rhino();
-			jsInstance.startRuntime();
-		} else {
-			jsInstance = new J2V8();
-			jsInstance.startRuntime();
-
-			for (ISender sender: getSenders()) {
-				jsInstance.registerCallback(sender, session);
-			} 
+		for (ISender sender: getSenders()) {
+			jsInstance.registerCallback(sender, session);
 		}
 
+		try {
 		//Compile the given Javascript and execute the given Javascript function
-		jsInstance.executeScript(fileInput);
-		jsResult = jsInstance.executeFunction(jsFunctionName, jsParameters);
-
-		jsInstance.closeRuntime();
+			jsInstance.executeScript(adaptES6Literals(fileInput));
+			jsResult = jsInstance.executeFunction(jsFunctionName, jsParameters);
+		} catch (JavascriptException e) {
+			throw new SenderException("unable to execute script/function", e);
+		} finally {
+			jsInstance.closeRuntime();
+		}
 
 		// Pass jsResult, the result of the Javascript function.
 		// It is recommended to have the result of the Javascript function be of type String, which will be the output of the sender
-		return new Message(jsResult.toString());
+		String result = String.valueOf(jsResult);
+		if(StringUtils.isEmpty(result) || "null".equals(result) || "undefined".equals(result)) {
+			return Message.nullMessage();
+		}
+		return new Message(result);
+	}
+
+	/**
+	 * Since neither engine supports the ES6's "const" or "let" literals. This method adapts the given 
+	 * helper source written in ES6 to work (by converting let/const to var).
+	 *
+	 * @param source the helper source.
+	 * @return the adapted helper source.
+	 **/
+	private String adaptES6Literals(final String source) {
+		Matcher m = es6VarPattern.matcher(source);
+		StringBuffer sb = new StringBuffer();
+		while(m.find()) {
+			StringBuffer buf = new StringBuffer(m.group());
+			buf.replace(m.start(1) - m.start(), m.end(1) - m.start(), "var");
+			m.appendReplacement(sb, buf.toString());
+		}
+		return m.appendTail(sb).toString();
 	}
 
 	@IbisDoc({"the name of the javascript file containing the functions to run", ""})
 	public void setJsFileName(String jsFileName) {
 		this.jsFileName = jsFileName;
 	}
-	public String getJsFileName() {
-		return jsFileName;
-	}
 
 	@IbisDoc({"the name of the javascript function that will be called (first)", "main"})
 	public void setJsFunctionName(String jsFunctionName) {
 		this.jsFunctionName = jsFunctionName;
 	}
-	public String getJsFunctionName() {
-		return jsFunctionName;
-	}
 
 	@IbisDoc({"the name of the javascript engine to be used", "J2V8"})
-	public void setEngineName(String engineName) {
+	public void setEngineName(JavaScriptEngines engineName) {
 		this.engine = engineName;
-	}
-	public String getEngine() {
-		return engine;
 	}
 }

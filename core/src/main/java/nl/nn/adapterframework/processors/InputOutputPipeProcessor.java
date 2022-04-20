@@ -22,29 +22,34 @@ import java.util.StringTokenizer;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.functional.ThrowingFunction;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CompactSaxHandler;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * @author Jaco de Groot
  */
 public class InputOutputPipeProcessor extends PipeProcessorBase {
+	protected Logger secLog = LogUtil.getLogger("SEC");
+	
 	private final static String ME_START = "{sessionKey:";
 	private final static String ME_END = "}";
 
 	@Override
-	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, IPipeLineSession pipeLineSession) throws PipeRunException {
+	protected PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		Object preservedObject = message;
 		PipeRunResult pipeRunResult = null;
 		INamedObject owner = pipeLine.getOwner();
@@ -58,12 +63,15 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 		if (pe!=null) {
 			if (StringUtils.isNotEmpty(pe.getGetInputFromSessionKey())) {
 				if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] replacing input for pipe ["+pe.getName()+"] with contents of sessionKey ["+pe.getGetInputFromSessionKey()+"]");
-				message.closeOnCloseOf(pipeLineSession);
+				message.closeOnCloseOf(pipeLineSession, owner);
+				if (!pipeLineSession.containsKey(pe.getGetInputFromSessionKey()) && StringUtils.isEmpty(pe.getEmptyInputReplacement())) {
+					throw new PipeRunException(pe, "getInputFromSessionKey ["+pe.getGetInputFromSessionKey()+"] is not present in session");
+				}
 				message=Message.asMessage(pipeLineSession.get(pe.getGetInputFromSessionKey()));
 			}
 			if (StringUtils.isNotEmpty(pe.getGetInputFromFixedValue())) {
 				if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] replacing input for pipe ["+pe.getName()+"] with fixed value ["+pe.getGetInputFromFixedValue()+"]");
-				message.closeOnCloseOf(pipeLineSession);
+				message.closeOnCloseOf(pipeLineSession, owner);
 				message=new Message(pe.getGetInputFromFixedValue());
 			}
 			if (Message.isEmpty(message) && StringUtils.isNotEmpty(pe.getEmptyInputReplacement())) {
@@ -78,7 +86,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 		}
 		
 		if (pipeRunResult==null){
-			pipeRunResult=pipeProcessor.processPipe(pipeLine, pipe, message, pipeLineSession);
+			pipeRunResult=chain.apply(message);
 		}
 		if (pipeRunResult==null){
 			throw new PipeRunException(pipe, "Pipeline of ["+pipeLine.getOwner().getName()+"] received null result from pipe ["+pipe.getName()+"]d");
@@ -132,10 +140,18 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 			if (StringUtils.isNotEmpty(pe.getStoreResultInSessionKey())) {
 				if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] storing result for pipe ["+pe.getName()+"] under sessionKey ["+pe.getStoreResultInSessionKey()+"]");
 				Message result = pipeRunResult.getResult();
-				pipeLineSession.put(pe.getStoreResultInSessionKey(),result.asObject());
+				pipeLineSession.put(pe.getStoreResultInSessionKey(),result);
+				if (!pe.isPreserveInput() && !result.isRepeatable()) {
+					// when there is a duplicate use of the result (in a sessionKey as well as as the result), then message must be repeatable
+					try {
+						result.preserve();
+					} catch (IOException e) {
+						throw new PipeRunException(pipe, "Pipeline of ["+pipeLine.getOwner().getName()+"] could not preserve output", e);
+					}
+				}
 			}
 			if (pe.isPreserveInput()) {
-				pipeRunResult.getResult().closeOnCloseOf(pipeLineSession);
+				pipeRunResult.getResult().closeOnCloseOf(pipeLineSession, owner);
 				pipeRunResult.setResult(preservedObject);
 			}
 		}
@@ -161,7 +177,13 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 		return pipeRunResult;
 	}
 
-	private String restoreMovedElements(String invoerString, IPipeLineSession pipeLineSession) {
+	// method needs to be overridden to enable AOP for debugger
+	@Override
+	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession) throws PipeRunException {
+		return super.processPipe(pipeLine, pipe, message, pipeLineSession);
+	}
+
+	private String restoreMovedElements(String invoerString, PipeLineSession pipeLineSession) throws IOException {
 		StringBuffer buffer = new StringBuffer();
 		int startPos = invoerString.indexOf(ME_START);
 		if (startPos == -1) {
@@ -183,7 +205,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 			} else {
 				String movedElementSessionKey = invoerString.substring(startPos + ME_START.length(),endPos);
 				if (pipeLineSession.containsKey(movedElementSessionKey)) {
-					String movedElementValue = (String) pipeLineSession.get(movedElementSessionKey);
+					String movedElementValue = pipeLineSession.getMessage(movedElementSessionKey).asString();
 					buffer.append(movedElementValue);
 					copyFrom = endPos + ME_END.length();
 				} else {
@@ -197,4 +219,5 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 		buffer.append(invoerChars, copyFrom, invoerChars.length - copyFrom);
 		return buffer.toString();
 	}
+	
 }

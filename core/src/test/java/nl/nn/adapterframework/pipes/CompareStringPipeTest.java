@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.pipes;
 
 import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -10,12 +11,19 @@ import nl.nn.adapterframework.parameters.Parameter;
 
 public class CompareStringPipeTest extends PipeTestBase<CompareStringPipe> {
 
-	String key1 = "key1";
-	String key2 = "key2";
+	private static final String GREATER_THAN = "greaterthan";
+	private static final String LESS_THAN = "lessthan";
+	private static final String EQUALS = "equals";
 
 	@Override
-	public CompareStringPipe createPipe() {
-		return new CompareStringPipe();
+	public CompareStringPipe createPipe() throws ConfigurationException {
+		CompareStringPipe pipe = new CompareStringPipe();
+
+		pipe.registerForward(new PipeForward(LESS_THAN, null));
+		pipe.registerForward(new PipeForward(GREATER_THAN, null));
+		pipe.registerForward(new PipeForward(EQUALS, null));
+
+		return pipe;
 	}
 
 	@Test(expected = ConfigurationException.class)
@@ -26,73 +34,89 @@ public class CompareStringPipeTest extends PipeTestBase<CompareStringPipe> {
 	}
 
 	@Test
-	public void setSessionKey1() {
-		String dummyKey = "kappa123";
-		pipe.setSessionKey1(dummyKey);
-		String retrievedKey = pipe.getSessionKey1();
-		assertEquals(dummyKey, retrievedKey);
-	}
-
-	@Test
-	public void setSessionKey2() {
-		String dummyKey = "Kappa123";
-		pipe.setSessionKey2(dummyKey);
-		String retrievedKey = pipe.getSessionKey2();
-		assertEquals(dummyKey, retrievedKey);
-	}
-	
-	@Test
 	public void testLessThan() throws Exception {
-		pipe.registerForward(new PipeForward("lessthan",null));
-		pipe.registerForward(new PipeForward("greaterthan",null));
-		pipe.registerForward(new PipeForward("equals",null));
-		Parameter param1 = new Parameter();
-		param1.setName("operand1");
-		param1.setValue("a");
-		Parameter param2 = new Parameter();
-		param2.setName("operand2");
-		param2.setValue("b");
-		pipe.addParameter(param1);
-		pipe.addParameter(param2);
+		pipe.addParameter(new Parameter("operand1", "a"));
+		pipe.addParameter(new Parameter("operand2", "b"));
+
 		pipe.configure();
 		pipe.start();
-		
+
 		PipeRunResult prr = doPipe(pipe, null, session);
-		
-		assertEquals("lessthan", prr.getPipeForward().getName());
+		assertEquals(LESS_THAN, prr.getPipeForward().getName());
 	}
 	
 	@Test
 	public void testEquals() throws Exception {
-		pipe.registerForward(new PipeForward("lessthan",null));
-		pipe.registerForward(new PipeForward("greaterthan",null));
-		pipe.registerForward(new PipeForward("equals",null));
-		Parameter param1 = new Parameter();
-		param1.setName("operand1");
-		param1.setValue("a");
-		pipe.addParameter(param1);
+		pipe.addParameter(new Parameter("operand1", "a"));
+
 		pipe.configure();
 		pipe.start();
-		
+
 		PipeRunResult prr = doPipe(pipe, "a", session);
-		
-		assertEquals("equals", prr.getPipeForward().getName());
+		assertEquals(EQUALS, prr.getPipeForward().getName());
 	}
 
 	@Test
 	public void testgreaterThan() throws Exception {
-		pipe.registerForward(new PipeForward("lessthan",null));
-		pipe.registerForward(new PipeForward("greaterthan",null));
-		pipe.registerForward(new PipeForward("equals",null));
-		Parameter param1 = new Parameter();
-		param1.setName("operand2");
-		param1.setValue("a");
-		pipe.addParameter(param1);
+		pipe.addParameter(new Parameter("operand2", "a"));
+
 		pipe.configure();
 		pipe.start();
-		
+
 		PipeRunResult prr = doPipe(pipe, "b", session);
-		
-		assertEquals("greaterthan", prr.getPipeForward().getName());
+		assertEquals(GREATER_THAN, prr.getPipeForward().getName());
+	}
+
+	@Test
+	public void textXmlCompareWithNewlines() throws Exception {
+		pipe.addParameter(new Parameter("operand1", "<test>\n<a>9</a>\n<b>2</b>\n<c>7</c>\n</test>\n"));
+		pipe.addParameter(new Parameter("operand2", "<test>\n<a>9</a>\n<b>2</b>\n<c>7</c>\n</test>\n"));
+
+		pipe.setXml(true);
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult prr = doPipe("<ignored/>");
+		assertEquals(EQUALS, prr.getPipeForward().getName());
+	}
+
+	@Test
+	public void textXmlCompareWithAttributes() throws Exception {
+		pipe.addParameter(new Parameter("operand1", "<test><a a=\"1\" b=\"2\">9</a><b>2</b><c>7</c></test>\n"));
+		pipe.addParameter(new Parameter("operand2", "<test><a b=\"2\" a=\"1\">9</a><b>2</b><c>7</c></test>"));
+
+		pipe.setXml(true);
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult prr = doPipe("<ignored/>");
+		assertEquals(EQUALS, prr.getPipeForward().getName());
+	}
+
+	@Test
+	public void textXmlCompareWithSpaces() throws Exception {
+		pipe.addParameter(new Parameter("operand1", "<test><a>9</a><b>2</b><c>7</c>    </test>\n"));
+		pipe.addParameter(new Parameter("operand2", "<test><a>9</a>    <b>2</b><c>7</c></test>"));
+
+		pipe.setXml(true);
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult prr = doPipe("<ignored/>");
+		assertEquals(EQUALS, prr.getPipeForward().getName());
+	}
+
+	@Test
+	public void testIgnorePatterns() throws Exception {
+		pipe.addParameter(new Parameter("operand1", "<test><a>tralalala</a><b>1</b><c>ignore me</c></test>"));
+		pipe.addParameter(new Parameter("operand2", "<test><a>9</a><b>2</b><c>7</c></test>"));
+
+		pipe.addParameter(new Parameter("ignorePatterns", "<ignores><ignore><after>&lt;a&gt;</after><before>&lt;/a&gt;</before></ignore><ignore><after>&lt;c&gt;</after><before>&lt;/c&gt;</before></ignore></ignores>"));
+
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult prr = doPipe("<ignored/>");
+		assertEquals(LESS_THAN, prr.getPipeForward().getName());
 	}
 }

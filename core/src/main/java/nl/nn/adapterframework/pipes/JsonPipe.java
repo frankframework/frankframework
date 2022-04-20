@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019, 2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2019, 2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,14 +15,14 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import org.apache.commons.lang.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.json.XML;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -31,36 +31,39 @@ import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
- * Perform an JSON to XML transformation
+ * JSON is not aware of the element order. This pipe performs a <strong>best effort</strong> JSON to XML transformation. 
+ * If you wish to validate or add structure to the converted (xml) file, please use the {@link Json2XmlValidator}.
  *
  * @author Martijn Onstwedder
  * @author Tom van der Heijden
  */
-
 public class JsonPipe extends FixedForwardPipe {
-	private String direction = "json2xml";
-	private String version = "1";
-	private boolean addXmlRootElement=true;
+	private @Getter Direction direction = Direction.JSON2XML;
+	private @Getter String version = "2";
+	private @Getter boolean addXmlRootElement=true;
 
 	private TransformerPool tpXml2Json;
+
+	public enum Direction {
+		JSON2XML,
+		XML2JSON;
+	}
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		String dir = getDirection();
+
+		Direction dir = getDirection();
 		if (dir == null) {
 			throw new ConfigurationException("direction must be set");
 		}
-		if (!"json2xml".equals(dir) && !"xml2json".equals(dir)) {
-			throw new ConfigurationException("illegal value for direction [" + dir + "], must be 'xml2json' or 'json2xml'");
-		}
-		if ("xml2json".equals(dir) && "2".equals(getVersion())) {
+		if (dir == Direction.XML2JSON && "2".equals(getVersion())) {
 			tpXml2Json = TransformerPool.configureStyleSheetTransformer(getLogPrefix(null), this, "/xml/xsl/xml2json.xsl", 0);
 		}
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 
 		if (message == null) {
 			throw new PipeRunException(this, getLogPrefix(session) + "got null input");
@@ -68,10 +71,9 @@ public class JsonPipe extends FixedForwardPipe {
 
 		try {
 			String stringResult=null;
-			String actualDirection = getDirection();
-			String actualVersion = getVersion();
-			
-			if ("json2xml".equalsIgnoreCase(actualDirection)) {
+
+			switch (getDirection()) {
+			case JSON2XML:
 				stringResult = message.asString();
 				JSONTokener jsonTokener = new JSONTokener(stringResult);
 				if (stringResult.startsWith("{")) {
@@ -83,51 +85,42 @@ public class JsonPipe extends FixedForwardPipe {
 					stringResult = XML.toString(jsonArray);
 				}
 
-				if(addXmlRootElement()) {
+				if(isAddXmlRootElement()) {
 					boolean isWellFormed = XmlUtils.isWellFormed(stringResult);
 					if (!isWellFormed) {
 						stringResult = "<root>" + stringResult + "</root>";
 					}
 				}
-			}
-
-			if ("xml2json".equalsIgnoreCase(actualDirection)) {
-				if ("2".equals(actualVersion)) {
+				break;
+			case XML2JSON:
+				if ("2".equals(getVersion())) {
 					stringResult = tpXml2Json.transform(message,null);
 				} else {
 					JSONObject jsonObject = XML.toJSONObject(message.asString());
 					stringResult = jsonObject.toString();
 				}
+				break;
+			default:
+				throw new IllegalStateException("unknown direction ["+getDirection()+"]");
 			}
-			return new PipeRunResult(getForward(), stringResult);
+
+			return new PipeRunResult(getSuccessForward(), stringResult);
 		} catch (Exception e) {
 			throw new PipeRunException(this, getLogPrefix(session) + " Exception on transforming input", e);
 		}
 	}
 
-	@IbisDoc({"Direction of the transformation. Either json2xml or xml2json", "json2xml"})
-	public void setDirection(String string) {
-		direction = string;
+	@IbisDoc({"Direction of the transformation.", "JSON2XML"})
+	public void setDirection(Direction value) {
+		direction = value;
 	}
 
-	public String getDirection() {
-		return StringUtils.lowerCase(direction);
-	}
-
-	@IbisDoc({"Version of the jsonpipe. Either 1 or 2.", "1"})
+	@IbisDoc({"Version of the JsonPipe. Either 1 or 2.", "2"})
 	public void setVersion(String version) {
 		this.version = version;
 	}
 
-	public String getVersion() {
-		return version;
-	}
-
-	public boolean addXmlRootElement() {
-		return addXmlRootElement;
-	}
-
-	@IbisDoc({"when true, and direction is json2xml, it wraps a root element around the converted message", "true"})
+	@IbisDoc({"When true, and direction is json2xml, it wraps a root element around the converted message", "true"})
 	public void setAddXmlRootElement(boolean addXmlRootElement) {
 		this.addXmlRootElement = addXmlRootElement;
 	}

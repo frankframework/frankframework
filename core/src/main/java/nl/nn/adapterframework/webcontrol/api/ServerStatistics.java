@@ -15,22 +15,15 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import java.security.Principal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.annotation.security.PermitAll;
-import javax.annotation.security.RolesAllowed;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
@@ -39,15 +32,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.SecurityContext;
 
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.config.Configurator;
-import org.springframework.context.ApplicationEventPublisher;
-
-import edu.emory.mathcs.backport.java.util.Collections;
-import nl.nn.adapterframework.configuration.BaseConfigurationWarnings;
+import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
@@ -55,15 +41,15 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.lifecycle.ApplicationMetrics;
-import nl.nn.adapterframework.logging.IbisMaskingLayout;
+import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle.BootState;
+import nl.nn.adapterframework.lifecycle.MessageEventListener;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.ProcessMetrics;
-import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.RunState;
 
 /**
  * Collection of server and application statistics and information.
@@ -75,7 +61,6 @@ import nl.nn.adapterframework.util.RunStateEnum;
 @Path("/")
 public class ServerStatistics extends Base {
 
-	@Context private SecurityContext securityContext;
 	@Context private Request rsRequest;
 	private static final int MAX_MESSAGE_SIZE = AppConstants.getInstance().getInt("adapter.message.max.size", 0);
 
@@ -84,16 +69,64 @@ public class ServerStatistics extends Base {
 	@Path("/server/info")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getServerInformation() throws ApiException {
-		Map<String, Object> returnMap = new HashMap<String, Object>();
-		List<Object> configurations = new ArrayList<Object>();
+		Map<String, Object> returnMap = new HashMap<>();
 
 		AppConstants appConstants = AppConstants.getInstance();
+		Map<String, Object> framework = new HashMap<>(2);
+		framework.put("name", "FF!");
+		framework.put("version", appConstants.getProperty("application.version"));
+		returnMap.put("framework", framework);
+
+		Map<String, Object> instance = new HashMap<>(2);
+		instance.put("version", appConstants.getProperty("instance.version"));
+		instance.put("name", getIbisContext().getApplicationName());
+		returnMap.put("instance", instance);
+
+		String dtapStage = appConstants.getProperty("dtap.stage");
+		returnMap.put("dtap.stage", dtapStage);
+		String dtapSide = appConstants.getProperty("dtap.side");
+		returnMap.put("dtap.side", dtapSide);
+
+		returnMap.put("configurations", getConfigurations());
+
+		String user = getUserPrincipalName();
+		if(user != null) {
+			returnMap.put("userName", user);
+		}
+
+		returnMap.put("applicationServer", servletConfig.getServletContext().getServerInfo());
+		returnMap.put("javaVersion", System.getProperty("java.runtime.name") + " (" + System.getProperty("java.runtime.version") + ")");
+		Map<String, Object> fileSystem = new HashMap<>(2);
+		fileSystem.put("totalSpace", Misc.getFileSystemTotalSpace());
+		fileSystem.put("freeSpace", Misc.getFileSystemFreeSpace());
+		returnMap.put("fileSystem", fileSystem);
+		returnMap.put("processMetrics", ProcessMetrics.toMap());
+		Date date = new Date();
+		returnMap.put("serverTime", date.getTime());
+		returnMap.put("machineName" , Misc.getHostname());
+		ApplicationMetrics metrics = getIbisContext().getBean("metrics", ApplicationMetrics.class);
+		returnMap.put("uptime", (metrics != null) ? metrics.getUptimeDate() : "");
+
+		return Response.status(Response.Status.OK).entity(returnMap).build();
+	}
+
+	@GET
+	@PermitAll
+	@Path("/server/configurations")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getAllConfigurations() throws ApiException {
+		return Response.status(Response.Status.OK).entity(getConfigurations()).build();
+	}
+
+	private List<Map<String, Object>> getConfigurations() {
+		List<Map<String, Object>> configurations = new ArrayList<>();
 
 		for (Configuration configuration : getIbisManager().getConfigurations()) {
-			Map<String, Object> cfg = new HashMap<String, Object>();
+			Map<String, Object> cfg = new HashMap<>();
 			cfg.put("name", configuration.getName());
 			cfg.put("version", configuration.getVersion());
 			cfg.put("stubbed", configuration.isStubbed());
+			cfg.put("state", configuration.getState());
 
 			cfg.put("type", configuration.getClassLoaderType());
 			if(configuration.getConfigurationException() != null) {
@@ -114,53 +147,20 @@ public class ServerStatistics extends Base {
 				configurations.add(cfg);
 		}
 
-		//TODO Replace this with java.util.Collections!
-		Collections.sort(configurations, new Comparator<Map<String, String>>() {
+		configurations.sort(new Comparator<Map<String, Object>>() {
 			@Override
-			public int compare(Map<String, String> lhs, Map<String, String> rhs) {
-				String name1 = lhs.get("name");
-				String name2 = rhs.get("name");
+			public int compare(Map<String, Object> lhs, Map<String, Object> rhs) {
+				String name1 = (String) lhs.get("name");
+				String name2 = (String) rhs.get("name");
+				if(name1 == null || name2 == null) return 0;
+
 				return name1.startsWith("IAF_") ? -1 : name2.startsWith("IAF_") ? 1 : name1.compareTo(name2);
 			}
 		});
 
-		returnMap.put("configurations", configurations);
-
-		Map<String, Object> framework = new HashMap<String, Object>(2);
-		framework.put("name", "FF!");
-		framework.put("version", appConstants.getProperty("application.version"));
-		returnMap.put("framework", framework);
-
-		Map<String, Object> instance = new HashMap<String, Object>(2);
-		instance.put("version", appConstants.getProperty("instance.version"));
-		instance.put("name", getIbisContext().getApplicationName());
-		returnMap.put("instance", instance);
-
-		String dtapStage = appConstants.getProperty("dtap.stage");
-		returnMap.put("dtap.stage", dtapStage);
-		String dtapSide = appConstants.getProperty("dtap.side");
-		returnMap.put("dtap.side", dtapSide);
-
-		Principal userPrincipal = securityContext.getUserPrincipal();
-		if(userPrincipal != null) {
-			returnMap.put("userName", userPrincipal.getName());
-		}
-
-		returnMap.put("applicationServer", servletConfig.getServletContext().getServerInfo());
-		returnMap.put("javaVersion", System.getProperty("java.runtime.name") + " (" + System.getProperty("java.runtime.version") + ")");
-		Map<String, Object> fileSystem = new HashMap<String, Object>(2);
-		fileSystem.put("totalSpace", Misc.getFileSystemTotalSpace());
-		fileSystem.put("freeSpace", Misc.getFileSystemFreeSpace());
-		returnMap.put("fileSystem", fileSystem);
-		returnMap.put("processMetrics", ProcessMetrics.toMap());
-		Date date = new Date();
-		returnMap.put("serverTime", date.getTime());
-		returnMap.put("machineName" , Misc.getHostname());
-		ApplicationMetrics metrics = getIbisContext().getBean("metrics", ApplicationMetrics.class);
-		returnMap.put("uptime", (metrics != null) ? metrics.getUptimeDate() : "");
-
-		return Response.status(Response.Status.OK).entity(returnMap).build();
+		return configurations;
 	}
+
 
 	@GET
 	@PermitAll
@@ -169,7 +169,8 @@ public class ServerStatistics extends Base {
 	public Response getServerConfiguration() throws ApiException {
 
 		Map<String, Object> returnMap = new HashMap<String, Object>();
-		ConfigurationWarnings globalConfigWarnings = ConfigurationWarnings.getInstance();
+		ApplicationWarnings globalConfigWarnings = getIbisContext().getBean("applicationWarnings", ApplicationWarnings.class);
+		MessageEventListener eventListener = getIbisContext().getBean("MessageEventListener", MessageEventListener.class);
 
 		long totalErrorStoreCount = 0;
 		boolean showCountErrorStore = AppConstants.getInstance().getBoolean("errorStore.count.show", true);
@@ -185,41 +186,41 @@ public class ServerStatistics extends Base {
 				configurationsMap.put("exception", message);
 			}
 
-			//ErrorStore count
-			if (showCountErrorStore) {
-				long esr = 0;
-				for (Adapter adapter : configuration.getAdapterService().getAdapters().values()) {
-					for (Receiver<?> receiver: adapter.getReceivers()) {
-						IMessageBrowser<?> errorStorage = receiver.getMessageBrowser(ProcessState.ERROR);
-						if (errorStorage != null) {
-							try {
-								esr += errorStorage.getMessageCount();
-							} catch (Exception e) {
-								//error("error occured on getting number of errorlog records for adapter ["+adapter.getName()+"]",e);
-								log.warn("Assuming there are no errorlog records for adapter ["+adapter.getName()+"]");
+			if (configuration.isActive()) {
+				//ErrorStore count
+				if (showCountErrorStore) {
+					long esr = 0;
+					for (Adapter adapter : configuration.getRegisteredAdapters()) {
+						for (Receiver<?> receiver: adapter.getReceivers()) {
+							IMessageBrowser<?> errorStorage = receiver.getMessageBrowser(ProcessState.ERROR);
+							if (errorStorage != null) {
+								try {
+									esr += errorStorage.getMessageCount();
+								} catch (Exception e) {
+									//error("error occured on getting number of errorlog records for adapter ["+adapter.getName()+"]",e);
+									log.warn("Assuming there are no errorlog records for adapter ["+adapter.getName()+"]");
+								}
 							}
 						}
 					}
+					totalErrorStoreCount += esr;
+					configurationsMap.put("errorStoreCount", esr);
 				}
-				totalErrorStoreCount += esr;
-				configurationsMap.put("errorStoreCount", esr);
-			}
 
-			//Configuration specific warnings
-			BaseConfigurationWarnings configWarns = configuration.getConfigurationWarnings();
-			List<Object> warnings = new ArrayList<Object>();
-			for (int j = 0; j < configWarns.size(); j++) {
-				warnings.add(configWarns.get(j));
-			}
-			if(warnings.size() > 0)
-				configurationsMap.put("warnings", warnings);
+				//Configuration specific warnings
+				ConfigurationWarnings configWarns = configuration.getConfigurationWarnings();
+				if(configWarns != null && configWarns.size() > 0) {
+					configurationsMap.put("warnings", configWarns.getWarnings());
+				}
 
-			//Configuration specific messages
-			MessageKeeper messageKeeper = getIbisContext().getMessageKeeper(configuration.getName());
-			if(messageKeeper != null) {
-				List<Object> messages = mapMessageKeeperMessages(messageKeeper);
-				if(messages.size() > 0)
-					configurationsMap.put("messages", messages);
+				//Configuration specific messages
+				MessageKeeper messageKeeper = eventListener.getMessageKeeper(configuration.getName());
+				if(messageKeeper != null) {
+					List<Object> messages = mapMessageKeeperMessages(messageKeeper);
+					if(!messages.isEmpty()) {
+						configurationsMap.put("messages", messages);
+					}
+				}
 			}
 
 			returnMap.put(configuration.getName(), configurationsMap);
@@ -230,7 +231,7 @@ public class ServerStatistics extends Base {
 
 		//Global warnings
 		if (globalConfigWarnings.size()>0) {
-			List<Object> warnings = new ArrayList<Object>();
+			List<Object> warnings = new ArrayList<>();
 			for (int j=0; j<globalConfigWarnings.size(); j++) {
 				warnings.add(globalConfigWarnings.get(j));
 			}
@@ -238,10 +239,11 @@ public class ServerStatistics extends Base {
 		}
 
 		//Global messages
-		MessageKeeper messageKeeper = getIbisContext().getMessageKeeper();
+		MessageKeeper messageKeeper = eventListener.getMessageKeeper();
 		List<Object> messages = mapMessageKeeperMessages(messageKeeper);
-		if(messages.size() > 0)
+		if(!messages.isEmpty()) {
 			returnMap.put("messages", messages);
+		}
 
 		Response.ResponseBuilder response = null;
 
@@ -281,110 +283,6 @@ public class ServerStatistics extends Base {
 
 	@GET
 	@PermitAll
-	@Path("/server/log")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getLogConfiguration() throws ApiException {
-
-		Map<String, Object> logSettings = new HashMap<String, Object>(3);
-		Logger rootLogger = LogUtil.getRootLogger();
-
-		logSettings.put("maxMessageLength", IbisMaskingLayout.getMaxLength());
-
-		List<String> errorLevels = new ArrayList<String>(Arrays.asList("DEBUG", "INFO", "WARN", "ERROR"));
-		logSettings.put("errorLevels", errorLevels);
-		logSettings.put("loglevel", rootLogger.getLevel().toString());
-
-		logSettings.put("logIntermediaryResults", AppConstants.getInstance().getBoolean("log.logIntermediaryResults", true));
-
-		logSettings.put("enableDebugger", AppConstants.getInstance().getBoolean("testtool.enabled", true));
-
-		return Response.status(Response.Status.CREATED).entity(logSettings).build();
-	}
-
-	@PUT
-	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/server/log")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response updateLogConfiguration(LinkedHashMap<String, Object> json) {
-
-		Boolean logIntermediaryResults = null;
-		int maxMessageLength = IbisMaskingLayout.getMaxLength();
-		Boolean enableDebugger = null;
-		StringBuilder msg = new StringBuilder();
-
-		for (Entry<String, Object> entry : json.entrySet()) {
-			String key = entry.getKey();
-			Object value = entry.getValue();
-			if(key.equalsIgnoreCase("loglevel")) {
-				Level loglevel = Level.toLevel(""+value, null);
-				Logger rootLogger = LogUtil.getRootLogger();
-				if(loglevel != null && rootLogger.getLevel() != loglevel) {
-					String changmsg = "LogLevel changed from [" + rootLogger.getLevel() + "] to [" + loglevel +"]";
-					Configurator.setLevel(rootLogger.getName(), loglevel);
-					msg.append(changmsg);
-				}
-			}
-			else if(key.equalsIgnoreCase("logIntermediaryResults")) {
-				logIntermediaryResults = Boolean.parseBoolean(""+value);
-			}
-			else if(key.equalsIgnoreCase("maxMessageLength")) {
-				maxMessageLength = Integer.parseInt(""+value);
-			}
-			else if(key.equalsIgnoreCase("enableDebugger")) {
-				enableDebugger = Boolean.parseBoolean(""+value);
-			}
-		}
-
-		if(logIntermediaryResults != null) {
-			boolean logIntermediary = AppConstants.getInstance().getBoolean("log.logIntermediaryResults", true);
-			if(logIntermediary != logIntermediaryResults) {
-				AppConstants.getInstance().put("log.logIntermediaryResults", "" + logIntermediaryResults);
-	
-				if(msg.length() > 0)
-					msg.append(", logIntermediaryResults from [" + logIntermediary+ "] to [" + logIntermediaryResults + "]");
-				else
-					msg.append("logIntermediaryResults changed from [" + logIntermediary+ "] to [" + logIntermediaryResults + "]");
-			}
-		}
-
-		if (maxMessageLength != IbisMaskingLayout.getMaxLength()) {
-			if(msg.length() > 0)
-				msg.append(", logMaxMessageLength from [" + IbisMaskingLayout.getMaxLength() + "] to [" + maxMessageLength + "]");
-			else
-				msg.append("logMaxMessageLength changed from [" + IbisMaskingLayout.getMaxLength() + "] to [" + maxMessageLength + "]");
-			IbisMaskingLayout.setMaxLength(maxMessageLength);
-		}
-
-		if (enableDebugger != null) {
-			boolean testtoolEnabled=AppConstants.getInstance().getBoolean("testtool.enabled", true);
-			if (testtoolEnabled!=enableDebugger) {
-				AppConstants.getInstance().put("testtool.enabled", "" + enableDebugger);
-				DebuggerStatusChangedEvent event = new DebuggerStatusChangedEvent(this, enableDebugger);
-				ApplicationEventPublisher applicationEventPublisher = getIbisManager().getApplicationEventPublisher();
-				if (applicationEventPublisher!=null) {
-					log.info("setting debugger enabled ["+enableDebugger+"]");
-					if(msg.length() > 0)
-						msg.append(", enableDebugger from [" + testtoolEnabled + "] to [" + enableDebugger + "]");
-					else
-						msg.append("enableDebugger changed from [" + testtoolEnabled + "] to [" + enableDebugger + "]");
-					applicationEventPublisher.publishEvent(event);
-				} else {
-					log.warn("no applicationEventPublisher, cannot set debugger enabled to ["+enableDebugger+"]");
-				}
-			}
- 		}
-
-		if(msg.length() > 0) {
-			log.warn(msg.toString());
-			LogUtil.getLogger("SEC").info(msg.toString());
-		}
-
-		return Response.status(Response.Status.NO_CONTENT).build();
-	}
-
-	@GET
-	@PermitAll
 	@Path("/server/health")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getIbisHealth() {
@@ -394,34 +292,55 @@ public class ServerStatistics extends Base {
 		try {
 			getIbisManager();
 		}
-		catch(Exception e) {
-			Throwable c = e.getCause();
+		catch(ApiException e) {
 			response.put("status", Response.Status.INTERNAL_SERVER_ERROR);
-			response.put("error", c.getMessage());
-			response.put("stackTrace", c.getStackTrace());
+			response.put("error", e.getMessage());
+
+			Throwable cause = e.getCause();
+			if(cause != null && cause.getStackTrace() != null) {
+				String dtapStage = AppConstants.getInstance().getString("dtap.stage", null);
+				if((!"ACC".equals(dtapStage) && !"PRD".equals(dtapStage))) {
+					response.put("stackTrace", cause.getStackTrace());
+				}
+			}
 
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(response).build();
 		}
+		catch(Exception e) {
+			throw new ApiException(e);
+		}
 
-		Map<RunStateEnum, Integer> stateCount = new HashMap<>();
+		Map<RunState, Integer> stateCount = new HashMap<>();
 		List<String> errors = new ArrayList<>();
 
-		for (Adapter adapter : getIbisManager().getRegisteredAdapters()) {
-			RunStateEnum state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
+		for(Configuration config : getIbisManager().getConfigurations()) {
+			BootState state = config.getState();
+			if(state != BootState.STARTED) {
+				if(config.getConfigurationException() != null) {
+					errors.add("configuration["+config.getName()+"] is in state[ERROR]");
+				} else {
+					errors.add("configuration["+config.getName()+"] is in state["+state+"]");
+				}
+				stateCount.put(RunState.ERROR, 1); //We're not really using stateCount other then to determine the HTTP response code.
+			}
+		}
 
-			if(state.equals(RunStateEnum.STARTED)) {
+		for (Adapter adapter : getIbisManager().getRegisteredAdapters()) {
+			RunState state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
+
+			if(state==RunState.STARTED) {
 				for (Receiver<?> receiver: adapter.getReceivers()) {
-					RunStateEnum rState = receiver.getRunState();
+					RunState rState = receiver.getRunState();
 	
-					if(!rState.equals(RunStateEnum.STARTED)) {
+					if(rState!=RunState.STARTED) {
 						errors.add("receiver["+receiver.getName()+"] of adapter["+adapter.getName()+"] is in state["+rState.toString()+"]");
-						state = RunStateEnum.ERROR;
+						state = RunState.ERROR;
 					}
 				}
 			}
 			else {
 				errors.add("adapter["+adapter.getName()+"] is in state["+state.toString()+"]");
-				state = RunStateEnum.ERROR;
+				state = RunState.ERROR;
 			}
 
 			int count;
@@ -434,7 +353,7 @@ public class ServerStatistics extends Base {
 		}
 
 		Status status = Response.Status.OK;
-		if(stateCount.containsKey(RunStateEnum.ERROR))
+		if(stateCount.containsKey(RunState.ERROR))
 			status = Response.Status.SERVICE_UNAVAILABLE;
 
 		if(!errors.isEmpty()) {

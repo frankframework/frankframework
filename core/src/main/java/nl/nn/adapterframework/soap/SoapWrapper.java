@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2015 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,34 +18,40 @@ package nl.nn.adapterframework.soap;
 import java.io.IOException;
 import java.util.StringTokenizer;
 
+import javax.xml.soap.MessageFactory;
+import javax.xml.soap.SOAPConstants;
+import javax.xml.soap.SOAPEnvelope;
+import javax.xml.soap.SOAPMessage;
+import javax.xml.soap.SOAPPart;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
+import javax.xml.transform.stream.StreamSource;
 
-import org.apache.axis.MessageContext;
-import org.apache.axis.client.AxisClient;
-import org.apache.axis.configuration.NullProvider;
-import org.apache.axis.message.SOAPEnvelope;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.apache.ws.security.WSConstants;
-import org.apache.ws.security.WSSConfig;
-import org.apache.ws.security.WSSecurityEngine;
-import org.apache.ws.security.message.WSSecHeader;
-import org.apache.ws.security.message.WSSecSignature;
-import org.apache.ws.security.message.WSSecTimestamp;
-import org.apache.ws.security.message.WSSecUsernameToken;
-import org.apache.ws.security.util.DOM2Writer;
-import org.apache.xml.security.signature.XMLSignature;
+import org.apache.wss4j.common.util.UsernameTokenUtil;
+import org.apache.wss4j.common.util.WSTimeSource;
+import org.apache.wss4j.dom.WSConstants;
+import org.apache.wss4j.dom.WsuIdAllocator;
+import org.apache.wss4j.dom.message.WSSecHeader;
+import org.apache.wss4j.dom.message.WSSecSignature;
+import org.apache.wss4j.dom.message.WSSecTimestamp;
+import org.apache.wss4j.dom.message.WSSecUsernameToken;
+import org.apache.xml.security.algorithms.JCEMapper;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -71,19 +77,22 @@ public class SoapWrapper {
 	private static final String EXTRACT_FAULTSTRING_XPATH = "/soapenv:Envelope/soapenv:Body/soapenv:Fault/faultstring";
 
 	private static SoapWrapper self = null;
+	private @Setter WsuIdAllocator idAllocator = null; //Only used for testing purposes
 
 	private SoapWrapper() {
 		super();
+
+		JCEMapper.registerDefaultAlgorithms();
 	}
 
 	private void init() throws ConfigurationException {
 		try {
-			extractBodySoap11  = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_BODY_XPATH, "xml", false, null, false));
-			extractBodySoap12  = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP12, EXTRACT_BODY_XPATH, "xml", false, null, false));
-			extractHeader      = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_HEADER_XPATH, "xml"));
-			extractFaultCount  = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_FAULTCOUNTER_XPATH, "text"));
-			extractFaultCode   = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_FAULTCODE_XPATH, "text"));
-			extractFaultString = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_FAULTSTRING_XPATH, "text"));
+			extractBodySoap11  = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_BODY_XPATH, OutputType.XML, false, null, false));
+			extractBodySoap12  = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP12, EXTRACT_BODY_XPATH, OutputType.XML, false, null, false));
+			extractHeader      = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_HEADER_XPATH, OutputType.XML));
+			extractFaultCount  = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_FAULTCOUNTER_XPATH, OutputType.TEXT));
+			extractFaultCode   = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_FAULTCODE_XPATH, OutputType.TEXT));
+			extractFaultString = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_FAULTSTRING_XPATH, OutputType.TEXT));
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException("cannot create SOAP transformer", e);
 		}
@@ -126,7 +135,7 @@ public class SoapWrapper {
 		return getBody(message, false, null, null);
 	}
 	
-	public Message getBody(Message message, boolean allowPlainXml, IPipeLineSession session, String soapNamespaceSessionKey) throws SAXException, TransformerException, IOException  {
+	public Message getBody(Message message, boolean allowPlainXml, PipeLineSession session, String soapNamespaceSessionKey) throws SAXException, TransformerException, IOException  {
 		message.preserve();
 		Message result = new Message(extractBodySoap11.transform(message.asSource()));
 		if (!Message.isEmpty(result)) {
@@ -249,55 +258,62 @@ public class SoapWrapper {
 
 	public Message signMessage(Message soapMessage, String user, String password, boolean passwordDigest) {
 		try {
-			WSSecurityEngine secEngine = WSSecurityEngine.getInstance();
-			WSSConfig config = secEngine.getWssConfig();
-			config.setPrecisionInMilliSeconds(false);
-
-			// create context
-			AxisClient tmpEngine = new AxisClient(new NullProvider());
-			MessageContext msgContext = new MessageContext(tmpEngine);
-
-			org.apache.axis.Message msg = new org.apache.axis.Message(soapMessage.asInputStream());
-			msg.setMessageContext(msgContext);
+			// We only support signing for soap1_1 ?
+			// Create an empty message and populate it later. createMessage(MimeHeaders, InputStream) requires proper headers to be set which we do not have...
+			MessageFactory factory = MessageFactory.newInstance(SOAPConstants.SOAP_1_1_PROTOCOL);
+			SOAPMessage msg = factory.createMessage();
+			SOAPPart part = msg.getSOAPPart();
+			part.setContent(new StreamSource(soapMessage.asInputStream()));
 
 			// create unsigned envelope
-			SOAPEnvelope unsignedEnvelope = msg.getSOAPEnvelope();
-			Document doc = unsignedEnvelope.getAsDocument();
+			SOAPEnvelope unsignedEnvelope = part.getEnvelope();
+			Document doc = unsignedEnvelope.getOwnerDocument();
 
 			// create security header and insert it into unsigned envelope
-			WSSecHeader secHeader = new WSSecHeader();
-			secHeader.insertSecurityHeader(doc);
+			WSSecHeader secHeader = new WSSecHeader(doc);
+			secHeader.insertSecurityHeader();
 
 			// add a UsernameToken
-			WSSecUsernameToken tokenBuilder = new WSSecUsernameToken();
+			WSSecUsernameToken tokenBuilder = new WSSecUsernameToken(secHeader);
+			tokenBuilder.setIdAllocator(idAllocator);
 			if (passwordDigest) {
 				tokenBuilder.setPasswordType(WSConstants.PASSWORD_DIGEST);
 			} else {
 				tokenBuilder.setPasswordType(WSConstants.PASSWORD_TEXT);
 			}
+			tokenBuilder.setPrecisionInMilliSeconds(false);
 			tokenBuilder.setUserInfo(user, password);
+			WSTimeSource timesource = tokenBuilder.getWsTimeSource();
 			tokenBuilder.addNonce();
 			tokenBuilder.addCreated();
-			tokenBuilder.prepare(doc);
+			tokenBuilder.prepare(null);
+			Element element = tokenBuilder.getUsernameTokenElement();
+			String nonce = XmlUtils.getChildTagAsString(element, "wsse:Nonce");
+			byte[] decodedNonce = org.apache.xml.security.utils.XMLUtils.decode(nonce);
+			String created = XmlUtils.getChildTagAsString(element, "wsu:Created");
 
-			WSSecSignature sign = new WSSecSignature();
-			sign.setUsernameToken(tokenBuilder);
-			sign.setKeyIdentifierType(WSConstants.UT_SIGNING);
-			sign.setSignatureAlgorithm(XMLSignature.ALGO_ID_MAC_HMAC_SHA1);
-			sign.build(doc, null, secHeader);
+			WSSecSignature sign = new WSSecSignature(secHeader);
+			sign.setIdAllocator(idAllocator);
+			sign.setCustomTokenValueType(WSConstants.WSS_USERNAME_TOKEN_VALUE_TYPE);
+			sign.setCustomTokenId(tokenBuilder.getId());
+			sign.setSigCanonicalization(WSConstants.C14N_EXCL_OMIT_COMMENTS);
+			sign.setAddInclusivePrefixes(false);
+			String signatureValue = UsernameTokenUtil.doPasswordDigest(decodedNonce, created, password); //conform WS-Trust spec
+			sign.setSecretKey(signatureValue.getBytes(StreamUtil.DEFAULT_CHARSET));
+			sign.setKeyIdentifierType(WSConstants.CUSTOM_SYMM_SIGNING); //UT_SIGNING no longer exists since v1.5.11
+			sign.setSignatureAlgorithm(WSConstants.HMAC_SHA1);
+			sign.build(null);
 
-			tokenBuilder.prependToHeader(secHeader);
+			tokenBuilder.prependToHeader();
 
 			// add a Timestamp
-			WSSecTimestamp timestampBuilder = new WSSecTimestamp();
+			WSSecTimestamp timestampBuilder = new WSSecTimestamp(secHeader);
+			timestampBuilder.setWsTimeSource(timesource);
 			timestampBuilder.setTimeToLive(300);
-			timestampBuilder.prepare(doc);
-			timestampBuilder.prependToHeader(secHeader);
+			timestampBuilder.setIdAllocator(idAllocator);
+			timestampBuilder.build();
 
-			Document signedDoc = doc;
-
-			return new Message(DOM2Writer.nodeToString(signedDoc));
-
+			return new Message(doc);
 		} catch (Exception e) {
 			throw new RuntimeException("Could not sign message", e);
 		}

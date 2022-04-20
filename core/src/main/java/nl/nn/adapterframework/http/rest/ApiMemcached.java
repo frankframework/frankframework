@@ -26,13 +26,13 @@ import org.apache.logging.log4j.Logger;
 
 import net.spy.memcached.AddrUtil;
 import net.spy.memcached.ConnectionFactory;
+import net.spy.memcached.ConnectionFactoryBuilder;
 import net.spy.memcached.ConnectionFactoryBuilder.Protocol;
 import net.spy.memcached.ConnectionObserver;
-import net.spy.memcached.ConnectionFactoryBuilder;
 import net.spy.memcached.FailureMode;
 import net.spy.memcached.MemcachedClient;
 import net.spy.memcached.auth.AuthDescriptor;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -87,7 +87,7 @@ public class ApiMemcached implements IApiCache {
 			Future<Object> future = client.asyncGet("test-connection");
 			future.get(timeout, TimeUnit.MILLISECONDS);
 		} catch (Exception e) {
-			ConfigurationWarnings.addGlobalWarning(log, "Unable to connect to one or more memcached servers.");
+			ApplicationWarnings.add(log, "Unable to connect to one or more memcached servers.");
 		}
 	}
 

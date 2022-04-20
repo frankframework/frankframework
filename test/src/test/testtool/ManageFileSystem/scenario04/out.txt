@@ -1,0 +1,10 @@
+<manageFileSystemRLY>
+	<completionInformation>
+		<returnCode>NOT_OK</returnCode>
+	</completionInformation>
+	<results>
+		<result item="1">
+			<exception>unable to process [null] action for File [null]: folder [TESTDATA_DIR/ManageFileSystem], does not exist</exception>
+		</result>
+	</results>
+</manageFileSystemRLY>

@@ -1,1 +1,1 @@
-[GREATER_THAN]
+[EQUALS]

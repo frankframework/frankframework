@@ -32,7 +32,7 @@ public class PasswordGeneratorPipeTest extends PipeTestBase<PasswordGeneratorPip
     }
 
     /**
-     * Method: doPipe(Object input, IPipeLineSession session)
+     * Method: doPipe(Object input, PipeLineSession session)
      */
     @Test
     public void testDoPipe() throws Exception {

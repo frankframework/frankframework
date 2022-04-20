@@ -1,0 +1,26 @@
+<configuration>
+	<adapter name="LocalFileSystemSender">
+		<receiver name="LocalFileSystemSender">
+			<listener
+				className="nl.nn.adapterframework.receivers.JavaListener"
+				name="LocalFileSystemSender"
+			/>
+		</receiver>
+
+		<pipeline>
+			<exits>
+				<exit path="READY" state="success"/>
+			</exits>
+			<pipe
+				name="Call Sender"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
+				>
+				<sender
+					className="nl.nn.adapterframework.senders.LocalFileSystemSender"
+					root="C:\"
+				/>
+				<forward name="success" path="READY"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+</configuration>

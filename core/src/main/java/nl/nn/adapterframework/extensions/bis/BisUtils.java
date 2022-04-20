@@ -18,6 +18,7 @@ package nl.nn.adapterframework.extensions.bis;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -37,6 +38,7 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
 /**
  * Some utilities for working with BIS. 
@@ -78,11 +80,11 @@ public class BisUtils {
 	private void init() throws ConfigurationException {
 		try {
 			// messageHeaderInSoapBody=true (old)
-			oldMessageHeaderConversationIdTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(soapNamespaceDefs + "\n" + bisNamespaceDefs, soapBodyXPath + "/" + messageHeaderConversationIdXPath, "text"));
-			oldMessageHeaderExternalRefToMessageIdTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(soapNamespaceDefs + "\n" + bisNamespaceDefs, soapBodyXPath + "/" + messageHeaderExternalRefToMessageIdXPath, "text"));
+			oldMessageHeaderConversationIdTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(soapNamespaceDefs + "\n" + bisNamespaceDefs, soapBodyXPath + "/" + messageHeaderConversationIdXPath, OutputType.TEXT));
+			oldMessageHeaderExternalRefToMessageIdTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(soapNamespaceDefs + "\n" + bisNamespaceDefs, soapBodyXPath + "/" + messageHeaderExternalRefToMessageIdXPath, OutputType.TEXT));
 			// messageHeaderInSoapBody=false
-			messageHeaderConversationIdTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(soapNamespaceDefs + "\n" + bisNamespaceDefs, soapHeaderXPath + "/" + messageHeaderConversationIdXPath, "text"));
-			messageHeaderExternalRefToMessageIdTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(soapNamespaceDefs + "\n" + bisNamespaceDefs, soapHeaderXPath + "/" + messageHeaderExternalRefToMessageIdXPath, "text"));
+			messageHeaderConversationIdTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(soapNamespaceDefs + "\n" + bisNamespaceDefs, soapHeaderXPath + "/" + messageHeaderConversationIdXPath, OutputType.TEXT));
+			messageHeaderExternalRefToMessageIdTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(soapNamespaceDefs + "\n" + bisNamespaceDefs, soapHeaderXPath + "/" + messageHeaderExternalRefToMessageIdXPath, OutputType.TEXT));
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException("cannot create SOAP transformer", e);
 		}
@@ -199,7 +201,7 @@ public class BisUtils {
 		return resultElement.toXML();
 	}
 	public Message prepareReply(Message rawReply, String messageHeader, String result, boolean resultInPayload) throws DomBuilderException, IOException, TransformerException {
-		ArrayList messages = new ArrayList();
+		List<String> messages = new ArrayList<>();
 		if (messageHeader != null) {
 			messages.add(messageHeader);
 		}

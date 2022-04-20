@@ -1,8 +1,6 @@
 <module>
 	<adapter name="UploadFiles-get">
-		<receiver name="UploadFiles-get"
-				className="nl.nn.adapterframework.receivers.GenericReceiver"
-				>
+		<receiver>
 				<listener name="UploadFiles-get" 
 					className="nl.nn.adapterframework.http.RestListener"
 					uriPattern="upload" 
@@ -17,7 +15,6 @@
 			<pipe name="uploadFiles" 
 				className="nl.nn.adapterframework.pipes.CreateRestViewPipe"
 				styleSheetName="UploadFiles/xsl/UploadFiles.xsl" 
-				xslt2="true"
 				getInputFromFixedValue="&lt;dummy/&gt;">
 				<param name="defaultDestination" value="${log.dir}" />
 				<forward name="success" path="EXIT" />
@@ -27,9 +24,7 @@
 	</adapter>
 	
 	<adapter name="UploadFiles-post">
-		<receiver name="UploadFiles-post" 
-				className="nl.nn.adapterframework.receivers.GenericReceiver"
-				>
+		<receiver>
 				<listener name="UploadFiles-post"
 					className="nl.nn.adapterframework.http.RestListener"
 					uriPattern="upload" 
@@ -44,7 +39,7 @@
 
 			<pipe name="switchCleanFilesystem" 
 				className="nl.nn.adapterframework.pipes.XmlSwitch"
-				sessionKey="cleanFilesystem" 
+				forwardNameSessionKey="cleanFilesystem" 
 				notFoundForwardName="uploadFiles">
 				<forward name="on" path="deleteFilesystem" />
 			</pipe>
@@ -71,7 +66,7 @@
 			</UnzipPipe>
 
 			<pipe name="showUploadedFiles" className="nl.nn.adapterframework.pipes.CreateRestViewPipe"
-				styleSheetName="UploadFiles/xsl/ShowUploadedFiles.xsl" xslt2="true"
+				styleSheetName="UploadFiles/xsl/ShowUploadedFiles.xsl"
 				getInputFromFixedValue="&lt;dummy/&gt;">
 				<forward name="success" path="EXIT" />
 			</pipe>

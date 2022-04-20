@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://dummy.nl/HelloWorld/wsdl/" xmlns:ns1="http://dummy.nl/HelloWorld" targetNamespace="http://dummy.nl/HelloWorld/wsdl/">
+	<wsdl:documentation>Generated as EchoPipe4WsdlGeneratorTest.wsdl on DATETIME.</wsdl:documentation>
+	<wsdl:types>
+		<xsd:schema xmlns="http://ibissource.org/HelloWorld" xmlns:ns1="http://ibissource.org/HelloWorld" xmlns:tns="http://ibissource.org/HelloWorld/wsdl/" elementFormDefault="qualified" targetNamespace="http://ibissource.org/HelloWorld">
+			<xsd:element name="HelloWorld_Request" type="xsd:anyType"/>
+			<xsd:element name="HelloWorld_Response" type="ResponseType"/>
+			<xsd:complexType name="ResponseType">
+				<xsd:sequence>
+					<xsd:element minOccurs="0" name="Body" type="xsd:anyType"/>
+				</xsd:sequence>
+			</xsd:complexType>
+		</xsd:schema>
+	</wsdl:types>
+	<wsdl:message name="Message_HelloWorld_Request">
+		<wsdl:part name="Part_HelloWorld_Request" element="ns1:HelloWorld_Request"/>
+	</wsdl:message>
+	<wsdl:message name="Message_HelloWorld_Response">
+		<wsdl:part name="Part_HelloWorld_Response" element="ns1:HelloWorld_Response"/>
+	</wsdl:message>
+	<wsdl:portType name="PortType_EchoPipe4WsdlGeneratorTest"></wsdl:portType>
+</wsdl:definitions>

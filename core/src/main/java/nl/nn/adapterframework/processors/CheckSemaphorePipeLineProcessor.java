@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -35,7 +35,7 @@ public class CheckSemaphorePipeLineProcessor extends PipeLineProcessorBase {
 	private Map<PipeLine,Semaphore> pipeLineThreadCounts=new ConcurrentHashMap<>();
 
 	@Override
-	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, IPipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
+	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
 		PipeLineResult pipeLineResult;
 		Semaphore s = getSemaphore(pipeLine);
 		if (s != null) {

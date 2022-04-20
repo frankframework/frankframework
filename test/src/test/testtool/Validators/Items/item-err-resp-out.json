@@ -10,7 +10,7 @@
           "Context": "",
           "Action": {
             "Paradigm": "Response",
-            "Name": "Test/SoapValidator",
+            "Name": "Test/Validator",
             "Version": "1"
           }
         },

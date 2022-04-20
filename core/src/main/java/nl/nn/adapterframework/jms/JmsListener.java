@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ package nl.nn.adapterframework.jms;
  *<p>
  * Setting {@link #setAcknowledgeMode(String) listener.acknowledgeMode} to "auto" means that messages are allways acknowledged (removed from
  * the queue, regardless of what the status of the Adapter is. "client" means that the message will only be removed from the queue
- * when the state of the Adapter equals the defined state for committing (specified by {@link #setCommitOnState(String) listener.commitOnState}).
+ * when the state of the Adapter equals the success state for committing.
  * The "dups" mode instructs the session to lazily acknowledge the delivery of the messages. This is likely to result in the
  * delivery of duplicate messages if JMS fails. It should be used by consumers who are tolerant in processing duplicate messages. 
  * In cases where the client is tolerant of duplicate messages, some enhancement in performance can be achieved using this mode, 

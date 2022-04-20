@@ -1,17 +1,17 @@
 /*
-Copyright 2016-2021 WeAreFrank!
+   Copyright 2016-2021 WeAreFrank!
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-	http://www.apache.org/licenses/LICENSE-2.0
+       http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
@@ -30,12 +30,16 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
 import nl.nn.adapterframework.jms.JmsSender;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -64,14 +68,28 @@ public final class SendJmsMessage extends Base {
 		}
 
 		String fileEncoding = resolveTypeFromMap(inputDataMap, "encoding", String.class, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-		String jmsRealm = resolveStringFromMap(inputDataMap, "realm");
+		String connectionFactory = resolveStringFromMap(inputDataMap, "connectionFactory");
 		String destinationName = resolveStringFromMap(inputDataMap, "destination");
 		String destinationType = resolveStringFromMap(inputDataMap, "type");
 		String replyTo = resolveTypeFromMap(inputDataMap, "replyTo", String.class, "");
 		boolean persistent = resolveTypeFromMap(inputDataMap, "persistent", boolean.class, false);
 		boolean synchronous = resolveTypeFromMap(inputDataMap, "synchronous", boolean.class, false);
+		boolean lookupDestination = resolveTypeFromMap(inputDataMap, "lookupDestination", boolean.class, false);
+		String messageProperty = resolveTypeFromMap(inputDataMap, "property", String.class, "");
 
-		JmsSender qms = jmsBuilder(jmsRealm, destinationName, persistent, destinationType, replyTo, synchronous);
+		JmsSender qms = jmsBuilder(connectionFactory, destinationName, persistent, destinationType, replyTo, synchronous, lookupDestination);
+
+		if(StringUtils.isNotEmpty(messageProperty)) {
+			String[] keypair = messageProperty.split(",");
+			Parameter p = new Parameter(keypair[0], keypair[1]);
+			try {
+				p.configure();
+			} catch (ConfigurationException e) {
+				throw new ApiException("Failed to configure message property ["+p.getName()+"]", e);
+			}
+			qms.addParameter(p);
+		}
+		
 		Attachment filePart = inputDataMap.getAttachment("file");
 		if(filePart != null) {
 			fileName = filePart.getContentDisposition().getParameter( "filename" );
@@ -107,17 +125,22 @@ public final class SendJmsMessage extends Base {
 		}
 	}
 
-	private JmsSender jmsBuilder(String realm, String destination, boolean persistent, String type, String replyTo, boolean synchronous) {
-		JmsSender qms = new JmsSender();
+	private JmsSender jmsBuilder(String connectionFactory, String destination, boolean persistent, String type, String replyTo, boolean synchronous, boolean lookupDestination) {
+		JmsSender qms = getIbisContext().createBeanAutowireByName(JmsSender.class);
 		qms.setName("SendJmsMessageAction");
-		qms.setJmsRealm(realm);
+		if(type.equals("QUEUE")) {
+			qms.setQueueConnectionFactoryName(connectionFactory);
+		} else {
+			qms.setTopicConnectionFactoryName(connectionFactory);
+		}
 		qms.setDestinationName(destination);
 		qms.setPersistent(persistent);
-		qms.setDestinationType(type);
+		qms.setDestinationType(EnumUtils.parse(DestinationType.class, type));
 		if (StringUtils.isNotEmpty(replyTo)) {
 			qms.setReplyToName(replyTo);
 		}
 		qms.setSynchronous(synchronous);
+		qms.setLookupDestination(lookupDestination);
 		return qms;
 	}
 

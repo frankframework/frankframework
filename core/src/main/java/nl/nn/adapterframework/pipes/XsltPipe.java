@@ -15,13 +15,14 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.InitializingBean;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IForwardTarget;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -31,41 +32,43 @@ import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.senders.XsltSender;
-import nl.nn.adapterframework.stream.IThreadCreator;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingPipe;
-import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
+import nl.nn.adapterframework.util.SpringUtils;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
 
 /**
  * Perform an XSLT transformation with a specified stylesheet.
  *
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link Parameter param}</td><td>any parameters defined on the pipe will be applied to the created transformer</td></tr>
- * </table>
- * </p>
+ * @ff.parameters any parameters defined on the pipe will be applied to the created transformer
+ * 
  * @author Johan Verrips
  */
 
-public class XsltPipe extends StreamingPipe implements IThreadCreator {
+public class XsltPipe extends StreamingPipe implements InitializingBean {
 
 	private String sessionKey=null;
-	
+
 	private XsltSender sender = createXsltSender();
-	
+
 	private final String XSLTSENDER = "nl.nn.adapterframework.senders.XsltSender";
 
 	{
 		setSizeStatistics(true);
 	}
-	
-	
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		SpringUtils.autowireByName(getApplicationContext(), sender);
+	}
+
 	protected XsltSender createXsltSender() {
 		return new XsltSender();
 	}
-	
+
 	/**
 	 * The <code>configure()</code> method instantiates a transformer for the specified
 	 * XSL. If the stylesheetname cannot be accessed, a ConfigurationException is thrown.
@@ -104,8 +107,13 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message input, IPipeLineSession session) throws PipeRunException {
-		if (input==null) {
+	protected boolean canProvideOutputStream() {
+		return super.canProvideOutputStream() && StringUtils.isEmpty(getSessionKey());
+	}
+
+	@Override
+	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
+		if (Message.isEmpty(input)) {
 			throw new PipeRunException(this, getLogPrefix(session)+"got null input");
 		}
 		try {
@@ -122,7 +130,7 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 			Message result = prr.getResult();
 			PipeForward forward = prr.getPipeForward();
 			if (nextPipe==null || forward.getPath()==null) {
-				forward=getForward();
+				forward=getSuccessForward();
 			}
 			if (StringUtils.isNotEmpty(getSessionKey())) {
 				session.put(getSessionKey(), result.asString());
@@ -141,7 +149,7 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 
 
 	@Override
-	public MessageOutputStream provideOutputStream(IPipeLineSession session) throws StreamingException {
+	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
 		return sender.provideOutputStream(session, getNextPipe());
 	}
 
@@ -185,6 +193,11 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 		sender.setOmitXmlDeclaration(b);
 	}
 	
+	@IbisDocRef({"5", XSLTSENDER})
+	public void setDisableOutputEscaping(boolean b) {
+		sender.setDisableOutputEscaping(b);
+	}
+
 	@IbisDocRef({"6", XSLTSENDER})
 	public void setNamespaceDefs(String namespaceDefs) {
 		sender.setNamespaceDefs(namespaceDefs);
@@ -194,8 +207,8 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 	}
 
 	@IbisDocRef({"7", XSLTSENDER})
-	public void setOutputType(String string) {
-		sender.setOutputType(string);
+	public void setOutputType(OutputType outputType) {
+		sender.setOutputType(outputType);
 	}
 
 	@IbisDocRef({"8", XSLTSENDER})
@@ -237,10 +250,13 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 		return sender.isNamespaceAware();
 	}
 
+	@Deprecated
+	@ConfigurationWarning("Please use 'storeResultInSessionKey' with preserveInput=true")
 	@IbisDoc({"15", "If set, then the XsltPipe stores it result in the session using the supplied sessionKey, and returns its input as result"})
 	public void setSessionKey(String newSessionKey) {
 		sessionKey = newSessionKey;
 	}
+	@Deprecated
 	public String getSessionKey() {
 		return sessionKey;
 	}
@@ -249,11 +265,6 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 	public void setName(String name) {
 		super.setName(name);
 		sender.setName("Sender of Pipe ["+name+"]");
-	}
-
-	@Override
-	public void setThreadLifeCycleEventListener(ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener) {
-		sender.setThreadLifeCycleEventListener(threadLifeCycleEventListener);
 	}
 
 	protected XsltSender getSender() {

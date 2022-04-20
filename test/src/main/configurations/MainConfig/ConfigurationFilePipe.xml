@@ -1,6 +1,6 @@
-<ibis>
+<module>
 	<adapter name="FilePipe" description="Test the functioning of the FilePipe">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="FilePipe">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-FilePipe" />
 		</receiver>
 		<pipeline firstPipe="setFilename">
@@ -14,7 +14,7 @@
 			</pipe>
 			
 			<!-- get file text from sample file -->
-			<pipe name="setFileData" className="nl.nn.adapterframework.pipes.FixedResult" fileName="/FilePipe/sample.txt">
+			<pipe name="setFileData" className="nl.nn.adapterframework.pipes.FixedResultPipe" filename="/FilePipe/sample.txt">
 			  <forward name="success" path="write file"/>
 			</pipe>
 			
@@ -23,7 +23,7 @@
 				name="write file"
 	        	className="nl.nn.adapterframework.pipes.FilePipe"
 	        	actions="write"
-	        	fileNameSessionKey="filename"
+	        	filenameSessionKey="filename"
 	        	createDirectory="true">
 	        	<forward name="success" path="switchAction"/>
 	        </pipe>
@@ -41,12 +41,12 @@
 	        	<forward name="success" path="EXIT"/>
 	        </pipe>
 
-			<!-- Read file / fileNameSessionKey -->
+			<!-- Read file / filenameSessionKey -->
 			<pipe
-				name="read file via fileNameSessionKey"
+				name="read file via filenameSessionKey"
 	        	className="nl.nn.adapterframework.pipes.FilePipe"
 	        	actions="read"
-	        	fileNameSessionKey="filename">
+	        	filenameSessionKey="filename">
 	        	<forward name="success" path="EXIT"/>
 	        </pipe>
 
@@ -102,7 +102,7 @@
 				name="delete file"
 	        	className="nl.nn.adapterframework.pipes.FilePipe"
 	        	actions="delete"
-	        	fileName="test.txt"
+	        	filename="test.txt"
 	        	directory="${testdata.dir}"
 	        	createDirectory="true"
 	        	testExists="false"
@@ -110,12 +110,12 @@
 	        	<forward name="success" path="EXIT"/>
 	        </pipe>
 
-			<!-- Delete file without use of directory and fileName (fileNameSessionKey) -->
+			<!-- Delete file without use of directory and filename (filenameSessionKey) -->
 			<pipe
 				name="delete file no directory specified"
 	        	className="nl.nn.adapterframework.pipes.FilePipe"
 	        	actions="delete"
-	        	fileNameSessionKey="filename"
+	        	filenameSessionKey="filename"
 	        >
 	        	<forward name="success" path="EXIT"/>
 	        </pipe>
@@ -135,7 +135,7 @@
 				name="delete file that does not exists"
 	        	className="nl.nn.adapterframework.pipes.FilePipe"
 	        	actions="delete"
-	        	fileName="none_existing_file.txt"
+	        	filename="none_existing_file.txt"
 	        	testExists="false"
 	        	directory="${testdata.dir}">
 	        	<forward name="success" path="EXIT"/>
@@ -146,7 +146,7 @@
 				name="list files"
 	        	className="nl.nn.adapterframework.pipes.FilePipe"
 	        	actions="list"
-	        	fileName="dummy*.txt"
+	        	filename="dummy*.txt"
 	        	testExists="false"
 	        	directory="${testdata.dir}">
 	        	<forward name="success" path="EXIT"/>
@@ -157,7 +157,7 @@
 				name="list files no directory specified"
 	        	className="nl.nn.adapterframework.pipes.FilePipe"
 	        	actions="list"
-	        	fileName="${testdata.dir}/dummy*.txt">
+	        	filename="${testdata.dir}/dummy*.txt">
 	        	<forward name="success" path="EXIT"/>
 	        </pipe>
 
@@ -174,4 +174,4 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-</ibis>
+</module>

@@ -17,10 +17,12 @@ package nl.nn.adapterframework.http;
 
 import java.util.Map;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IPushingListener;
@@ -39,9 +41,10 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author  Gerrit van Brakel 
  * @since   4.12
  */
-public class PushingListenerAdapter implements IPushingListener<Message>, ServiceClient {
+public abstract class PushingListenerAdapter implements IPushingListener<Message>, ServiceClient {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
 
 	private IMessageHandler<Message> handler;
 	private String name;
@@ -100,7 +103,8 @@ public class PushingListenerAdapter implements IPushingListener<Message>, Servic
 
 	@Override
 	public String toString() {
-		return ToStringBuilder.reflectionToString(this);
+		//Including the handler causes StackOverflowExceptions on Receiver.toString() which also prints the listener
+		return ReflectionToStringBuilder.toStringExclude(this, "handler");
 	}
 
 	@Override

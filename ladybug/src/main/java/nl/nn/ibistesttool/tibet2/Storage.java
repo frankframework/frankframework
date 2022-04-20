@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,16 +27,15 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
@@ -322,18 +321,6 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 	}
 
 	@Override
-	public List getTreeChildren(String path) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List getStorageIds(String path) throws StorageException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public Report getReport(Integer storageId) throws StorageException {
 		final Report report = new Report();
 		report.setTestTool(testTool);
@@ -357,11 +344,13 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 								throws SQLException {
 							for (int i = 0; i < reportColumnNames.size(); i++) {
 								String value = getValue(rs, i + 1);
-								checkpoints.add(new Checkpoint(report,
+								Checkpoint checkpoint = new Checkpoint(report,
 										Thread.currentThread().getName(),
 										Storage.class.getName(),
 										"Column " + reportColumnNames.get(i),
-										value, Checkpoint.TYPE_INPUTPOINT, 0));
+										Checkpoint.TYPE_INPUTPOINT, 0);
+								checkpoint.setMessage(value);
+								checkpoints.add(checkpoint);
 							}
 							return null;
 						}
@@ -488,7 +477,7 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 
 	private String getValue(ResultSet rs, int columnIndex) throws SQLException {
 		try {
-			return JdbcUtil.getValue(dbmsSupport, rs, columnIndex, rs.getMetaData(), Misc.DEFAULT_INPUT_STREAM_ENCODING, false, "", false, true, false);
+			return JdbcUtil.getValue(dbmsSupport, rs, columnIndex, rs.getMetaData(), Misc.DEFAULT_INPUT_STREAM_ENCODING, true, "", false, true, false);
 		} catch (JdbcException e) {
 			throw new SQLException("JdbcException reading value");
 		} catch (IOException e) {
@@ -562,11 +551,11 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 			Message message = Message.asMessage(checkpoint.getMessage());
 			IAdapter adapter = ibisManager.getRegisteredAdapter(DELETE_ADAPTER);
 			if (adapter != null) {
-				IPipeLineSession pipeLineSession = new PipeLineSessionBase();
+				PipeLineSession pipeLineSession = new PipeLineSession();
 				if(securityContext.getUserPrincipal() != null)
 					pipeLineSession.put("principal", securityContext.getUserPrincipal().getName());
 				PipeLineResult processResult = adapter.processMessage(TestTool.getCorrelationId(), message, pipeLineSession);
-				if (!(processResult.getState().equalsIgnoreCase("success"))) {
+				if (!processResult.isSuccessful()) {
 					errorMessage = "Delete failed (see logging for more details)";
 				} else {
 					try {
@@ -587,6 +576,11 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 		if (errorMessage != null) {
 			throw new StorageException(errorMessage);
 		}
+	}
+
+	@Override
+	public void clear() throws StorageException {
+		throw new StorageException("Clear method is not implemented");
 	}
 
 }

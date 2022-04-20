@@ -1,5 +1,5 @@
 /*
-   Copyright 2018, 2020 Nationale-Nederlanden
+   Copyright 2018, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -30,20 +30,15 @@ import nl.nn.adapterframework.stream.Message;
 /**
  *<code>Pipe</code> that checks the well-formedness of the input message.
  * 
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td>"failure"</td><td>if a validation error occurred, probably caused by non-well-formed JSON</td></tr>
- * </table>
- * <br>
+ * @ff.forward failure if a validation error occurred, probably caused by non-well-formed JSON
+ * 
  * @author  Tom van der Heijden
  */
-
 public class JsonWellFormedChecker extends FixedForwardPipe {
 	
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
-		PipeForward forward = findForward("success");
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+		PipeForward forward = getSuccessForward();
 
 		String input;
 		try {

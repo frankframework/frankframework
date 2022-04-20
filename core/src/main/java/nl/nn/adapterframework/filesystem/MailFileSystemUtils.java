@@ -99,7 +99,7 @@ public class MailFileSystemUtils {
 		addPropertyAsHeader(emailXml,IMailFileSystem.DATETIME_SENT_KEY, properties.get(IMailFileSystem.DATETIME_SENT_KEY));
 		addPropertyAsHeader(emailXml,IMailFileSystem.DATETIME_RECEIVED_KEY, properties.get(IMailFileSystem.DATETIME_RECEIVED_KEY));
 		try {
-			emailXml.addElement("message", fileSystem.readFile(emailMessage).asString());
+			emailXml.addElement("message", fileSystem.readFile(emailMessage, null).asString());
 		} catch (IOException e) {
 			throw new FileSystemException("Cannot read message body",e);
 		}

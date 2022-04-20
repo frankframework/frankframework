@@ -1,0 +1,6 @@
+<manageDatabaseREQ>
+	<delete>
+		<tableName>IBISTEMP</tableName>
+		<where>TNUMBER=${jdbc.receivertest.key}3</where>
+	</delete>
+</manageDatabaseREQ>

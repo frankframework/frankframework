@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,18 +21,23 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
 
 /**
  * Implementation of a {@link IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.Receiver}
- * to receive messages from HTTP requests.
- * </table>
+ * to receive messages from HTTP requests. If you are writing a new configuration, you are recommended to use
+ * an {@link nl.nn.adapterframework.http.rest.ApiListener} or a {@link nl.nn.adapterframework.http.WebServiceListener}
+ * instead.
+ *
  * @author  Gerrit van Brakel 
  * @since   4.4.x (still experimental)
  */
 public class HttpListener extends PushingListenerAdapter implements HasPhysicalDestination {
 
-	private String serviceName;
+	private final @Getter(onMethod = @__(@Override)) String domain = "Http";
+	private @Getter String serviceName;
 
 	@Override
 	public void open() throws ListenerException {
@@ -60,12 +65,9 @@ public class HttpListener extends PushingListenerAdapter implements HasPhysicalD
 		}
 	}
 
+	@Override
 	public String getPhysicalDestinationName() {
 		return "serviceName: "+getServiceName();
-	}
-
-	public String getServiceName() {
-		return serviceName;
 	}
 
 	@IbisDoc({"name of the service that is provided by the adapter of this listener", ""})

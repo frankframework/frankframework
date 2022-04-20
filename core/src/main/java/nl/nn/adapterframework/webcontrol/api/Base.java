@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2021 WeAreFrank!
+Copyright 2016-2022 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,10 +18,12 @@ package nl.nn.adapterframework.webcontrol.api;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.security.Principal;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.SecurityContext;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.JAXRSServiceFactoryBean;
@@ -54,6 +56,7 @@ import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 public abstract class Base implements ApplicationContextAware {
 	@Context protected ServletConfig servletConfig;
+	@Context protected SecurityContext securityContext;
 	@Context protected HttpServletRequest request;
 
 	private IbisContext ibisContext = null;
@@ -77,10 +80,14 @@ public abstract class Base implements ApplicationContextAware {
 	 */
 	private void retrieveIbisContextFromServlet() {
 		if(servletConfig == null) {
-			throw new ApiException(new IllegalStateException("no ServletConfig found to retrieve IbisContext from"));
+			throw new ApiException("no ServletConfig found to retrieve IbisContext from");
 		}
 
-		ibisContext = IbisApplicationServlet.getIbisContext(servletConfig.getServletContext());
+		try {
+			ibisContext = IbisApplicationServlet.getIbisContext(servletConfig.getServletContext());
+		} catch (IllegalStateException e) {
+			throw new ApiException(e);
+		}
 	}
 
 	public IbisContext getIbisContext() {
@@ -102,7 +109,7 @@ public abstract class Base implements ApplicationContextAware {
 		IbisManager ibisManager = getIbisContext().getIbisManager();
 
 		if (ibisManager==null) {
-			throw new ApiException(new IllegalStateException("Could not retrieve ibisManager from context"));
+			throw new ApiException("Could not retrieve ibisManager from IbisContext");
 		}
 
 		return ibisManager;
@@ -114,6 +121,14 @@ public abstract class Base implements ApplicationContextAware {
 		} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {
 			throw new ApiException("failed to initalize FlowDiagramManager", e);
 		}
+	}
+
+	protected String getUserPrincipalName() {
+		Principal principal = securityContext.getUserPrincipal();
+		if(principal != null && StringUtils.isNotEmpty(principal.getName())) {
+			return principal.getName();
+		}
+		return null;
 	}
 
 	protected String resolveStringFromMap(MultipartBody inputDataMap, String key) throws ApiException {
@@ -144,7 +159,8 @@ public abstract class Base implements ApplicationContextAware {
 			InputStream is = msg.getObject(InputStream.class);
 
 			try {
-				return Misc.streamToString(is, "\n", encoding, false);
+				String inputMessage = Misc.streamToString(is, "\n", encoding, false);
+				return StringUtils.isEmpty(inputMessage) ? null : inputMessage;
 			} catch (UnsupportedEncodingException e) {
 				throw new ApiException("unsupported file encoding ["+encoding+"]");
 			} catch (IOException e) {
@@ -156,8 +172,9 @@ public abstract class Base implements ApplicationContextAware {
 
 	protected <T> T resolveTypeFromMap(MultipartBody inputDataMap, String key, Class<T> clazz, T defaultValue) throws ApiException {
 		try {
-			if(inputDataMap.getAttachment(key) != null) {
-				return inputDataMap.getAttachment(key).getObject(clazz);
+			Attachment attachment = inputDataMap.getAttachment(key);
+			if(attachment != null) {
+				return convert(clazz, attachment.getObject(InputStream.class));
 			}
 		} catch (Exception e) {
 			log.debug("Failed to parse parameter ["+key+"]", e);
@@ -166,5 +183,24 @@ public abstract class Base implements ApplicationContextAware {
 			return defaultValue;
 		}
 		throw new ApiException("Key ["+key+"] not defined", 400);
+	}
+
+	@SuppressWarnings("unchecked")
+	protected static <T> T convert(Class<T> clazz, InputStream is) throws IOException {
+		if(clazz.isAssignableFrom(InputStream.class)) {
+			return (T) is;
+		}
+		String str = Misc.streamToString(is);
+		if(str == null) {
+			return null;
+		}
+		if(clazz.isAssignableFrom(boolean.class) || clazz.isAssignableFrom(Boolean.class)) {
+			return (T) Boolean.valueOf(str);
+		} else if(clazz.isAssignableFrom(int.class) || clazz.isAssignableFrom(Integer.class)) {
+			return (T) Integer.valueOf(str);
+		} else if(clazz.isAssignableFrom(String.class)) {
+			return (T) str;
+		}
+		throw new IllegalArgumentException("cannot convert to class ["+clazz+"]");
 	}
 }

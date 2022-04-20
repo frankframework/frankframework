@@ -17,7 +17,7 @@ package nl.nn.adapterframework.core;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 
-public interface IConfigurable extends INamedObject, IScopeProvider {
+public interface IConfigurable extends INamedObject, IConfigurationAware {
 
 	public void configure() throws ConfigurationException;
 }

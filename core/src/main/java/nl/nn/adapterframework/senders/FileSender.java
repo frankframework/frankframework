@@ -17,10 +17,10 @@ package nl.nn.adapterframework.senders;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
@@ -32,7 +32,7 @@ import nl.nn.adapterframework.util.FileHandler;
  * @author Jaco de Groot
  */
 @Deprecated
-@ConfigurationWarning("Please replace with LocalFileSystemSender")
+@ConfigurationWarning("Please use LocalFileSystemSender instead, or when retrieving files from the classpath use the FixedResultSender")
 public class FileSender extends FileHandler implements ISenderWithParameters {
 	private String name;
 	protected ParameterList paramList = null;
@@ -49,7 +49,7 @@ public class FileSender extends FileHandler implements ISenderWithParameters {
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		try {
 			return Message.asMessage(handle(message, session, getParameterList()));
 		} catch(Exception e) {

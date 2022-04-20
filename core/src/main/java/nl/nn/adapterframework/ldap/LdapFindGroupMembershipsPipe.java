@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 WeAreFrank!
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,10 +23,10 @@ import java.util.Set;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
-import nl.nn.adapterframework.cache.ICacheAdapter;
+import nl.nn.adapterframework.cache.ICache;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -41,16 +41,14 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * </pre></code> <br/>
  * Sample result:<br/><code><pre>
  *	&lt;ldap&gt;
- *	 &lt;entry name="CN=ni83nz,OU=Users,OU=PRD,OU=AB,OU=Tenants,DC=INSIM,DC=BIZ"&gt;
+ *	 &lt;entry name="CN=xxyyzz,OU=Users,DC=domain,DC=ext"&gt;
  *	   &lt;attributes&gt;
  *	    &lt;attribute&gt;
  *	    &lt;attribute name="memberOf" value="Extern"/&gt;
- *	    &lt;attribute name="roomNumber" value="DP 2.13.025"/&gt;
  *	    &lt;attribute name="departmentCode" value="358000"/&gt;
  *	    &lt;attribute name="organizationalHierarchy"&gt;
- *	        &lt;item value="ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
- *	        &lt;item value="ou=OPS&amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
- *	        &lt;item value="ou=000001,ou=OPS&amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
+ *	        &lt;item value="ou=zzyyxx"/&gt;
+ *	        &lt;item value="ou=OPS&amp;IT,ou=Group,ou=domain,o=ext"/&gt;
  *	    &lt;/attribute>
  *	    &lt;attribute name="givenName" value="Gerrit"/>
  *	   &lt;/attributes&gt;
@@ -59,7 +57,6 @@ import nl.nn.adapterframework.util.XmlBuilder;
  *   .....
  *	&lt;/ldap&gt;
  * </pre></code> <br/>
-
  * 
  * @author Gerrit van Brakel
  */
@@ -68,7 +65,7 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements I
 	private boolean recursiveSearch = true;
 	
 	private LdapClient ldapClient;
-	private ICacheAdapter<String, Set<String>> cache;
+	private ICache<String, Set<String>> cache;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -106,7 +103,7 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements I
 
 
 	@Override
-	public PipeRunResult doPipeWithException(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipeWithException(Message message, PipeLineSession session) throws PipeRunException {
 		if (message==null) {
 			throw new PipeRunException(this, getLogPrefix(session) + "input is null");
 		}
@@ -135,7 +132,7 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements I
 				attribute.setValue(membership,true);
 				attributes.addSubElement(attribute);
 			}
-			return new PipeRunResult(getForward(), result.toXML());
+			return new PipeRunResult(getSuccessForward(), result.toXML());
 		} catch (NamingException e) {
 			throw new PipeRunException(this, getLogPrefix(session) + "exception on ldap lookup", e);
 		}
@@ -143,11 +140,11 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements I
 
 
 	@Override
-	public void setCache(ICacheAdapter<String, Set<String>> cache) {
+	public void setCache(ICache<String, Set<String>> cache) {
 		this.cache=cache;
 	}
 	@Override
-	public ICacheAdapter<String, Set<String>> getCache() {
+	public ICache<String, Set<String>> getCache() {
 		return cache;
 	}
 

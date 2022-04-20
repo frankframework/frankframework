@@ -22,6 +22,7 @@ import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.statistics.HasStatistics.Action;
 
 /**
  * An IBIS Manager gives various methods for the control of an IBIS instance.
@@ -34,54 +35,59 @@ import nl.nn.adapterframework.core.Adapter;
  */
 public interface IbisManager extends ApplicationEventPublisherAware {
 
-    void setIbisContext(IbisContext ibisContext);
+	void setIbisContext(IbisContext ibisContext);
 
-    IbisContext getIbisContext();
+	IbisContext getIbisContext();
 
-    void addConfiguration(Configuration configuration);
+	void addConfiguration(Configuration configuration);
 
-    List<Configuration> getConfigurations();
+	List<Configuration> getConfigurations();
 
-    Configuration getConfiguration(String configurationName);
+	Configuration getConfiguration(String configurationName);
 
-    /**
-     * Issue a command/action on the named adapter/receiver.
-     * @param action
-     * @param adapterName
-     * @param receiverName
-     * @param commandIssuedBy
-     */
-    void handleAdapter(String action, String configurationName, String adapterName, String receiverName, String commandIssuedBy, boolean isAdmin);
-    /**
-     * Start an already configured Configuration
-     */
-    void startConfiguration(Configuration configuration);
-    /**
-     * Unload specified configuration.
-     */
-    void unload(String configurationName);
-    /**
-     * Shut down the IBIS instance. After execution of this method, the IBIS
-     * instance is not useable anymore: it will need to be recreated.
-     */
-    void shutdown();
+	public enum IbisAction {
+		STOPADAPTER, STARTADAPTER, STOPRECEIVER, STARTRECEIVER, RELOAD, FULLRELOAD, INCTHREADS, DECTHREADS
+	}
 
-    public Adapter getRegisteredAdapter(String name);
+	/**
+	 * Utility function to give commands to Adapters and Receivers
+	 * 
+	 * @param action
+	 * @param adapterName
+	 * @param receiverName
+	 * @param commandIssuedBy
+	 */
+	void handleAction(IbisAction action, String configurationName, String adapterName, String receiverName, String commandIssuedBy, boolean isAdmin);
 
-    public List<String> getSortedStartedAdapterNames();
+	/**
+	 * Start an already configured Configuration
+	 */
+	void startConfiguration(Configuration configuration);
 
-    public List<Adapter> getRegisteredAdapters();
+	/**
+	 * Unload specified configuration.
+	 */
+	void unload(String configurationName);
 
-    /**
-     * Get the Spring Platform Transaction Manager, for use by
-     * the Web Front End.
-     * 
-     * @return Instance of the Platform Transaction Manager.
-     */
-    PlatformTransactionManager getTransactionManager();
+	/**
+	 * Shut down the IBIS instance. After execution of this method, the IBIS
+	 * instance is not useable anymore: it will need to be recreated.
+	 */
+	void shutdown();
 
-    public void dumpStatistics(int action);
-    
-    public ApplicationEventPublisher getApplicationEventPublisher();
+	public Adapter getRegisteredAdapter(String name);
+
+	public List<Adapter> getRegisteredAdapters();
+
+	/**
+	 * Get the Spring Platform Transaction Manager, for use by the Web Front End.
+	 * 
+	 * @return Instance of the Platform Transaction Manager.
+	 */
+	PlatformTransactionManager getTransactionManager();
+
+	public void dumpStatistics(Action action);
+
+	public ApplicationEventPublisher getApplicationEventPublisher();
 
 }

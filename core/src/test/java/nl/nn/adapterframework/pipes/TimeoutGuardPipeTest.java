@@ -8,10 +8,10 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.stream.Message;
 
 public class TimeoutGuardPipeTest extends PipeTestBase<TimeoutGuardPipe> {
@@ -23,11 +23,11 @@ public class TimeoutGuardPipeTest extends PipeTestBase<TimeoutGuardPipe> {
 		}
 
 		@Override
-		public PipeRunResult doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
+		public PipeRunResult doPipeWithTimeoutGuarded(Message input, PipeLineSession session) throws PipeRunException {
 			try {
 				long timeout = Long.parseLong(input.asString());
 				Thread.sleep(timeout);
-				return new PipeRunResult(getForward(), new Message(SUCCESS_MESSAGE));
+				return new PipeRunResult(getSuccessForward(), new Message(SUCCESS_MESSAGE));
 			} catch (NumberFormatException | IOException e) {
 				throw new PipeRunException(this, "error parsing input", e);
 			} catch (InterruptedException e) {
@@ -62,7 +62,7 @@ public class TimeoutGuardPipeTest extends PipeTestBase<TimeoutGuardPipe> {
 
 			fail("an exception should occur!");
 		} catch(PipeRunException e) {
-			assertTrue(e.getCause() instanceof TimeOutException);
+			assertTrue(e.getCause() instanceof TimeoutException);
 		}
 	}
 

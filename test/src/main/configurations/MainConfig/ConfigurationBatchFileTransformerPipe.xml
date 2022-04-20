@@ -1,6 +1,6 @@
 <module>
 	<adapter name="BatchFileTransformerPipe" description="Test the functioning of the BatchFileTransformerPipe">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="BatchFileTransformerPipe">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-BatchFileTransformerPipe" />
 		</receiver>
 		<pipeline firstPipe="processFile" transactionAttribute="Required">
@@ -36,7 +36,7 @@
 	</adapter>
 
 	<adapter name="BatchFileTransformerPipe_Block">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="BatchFileTransformerPipe_Block">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="BatchFileTransformerPipe_Block" />
 		</receiver>
 		<pipeline firstPipe="InsertData1" transactionAttribute="Required">
@@ -47,24 +47,24 @@
 				INPUT (in de vorm van sessionKeys):
 				- originalBlock
 			-->
-			<pipe name="InsertData1" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe" storeResultInSessionKey="dataKey">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (TKEY, TCHAR, TBLOB1) VALUES (SEQ_IBISTEMP.NEXTVAL, 'B', EMPTY_BLOB())" resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" queryType="insert" jmsRealm="jdbc" />
+			<pipe name="InsertData1" className="nl.nn.adapterframework.pipes.SenderPipe" storeResultInSessionKey="dataKey">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (TKEY, TCHAR, TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL, 'B', EMPTY_BLOB())" resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" queryType="insert" />
 				<forward name="success" path="InsertData2" />
 			</pipe>
 
-			<pipe name="InsertData2" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe" getInputFromSessionKey="originalMessage">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TBLOB1 FROM IBISTEMP WHERE TKEY=? FOR UPDATE" queryType="updateBlob" jmsRealm="jdbc">
+			<pipe name="InsertData2" className="nl.nn.adapterframework.pipes.SenderPipe" getInputFromSessionKey="originalMessage">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE TKEY=? FOR UPDATE" queryType="updateBlob">
 					<param name="dataKey" sessionKey="dataKey" />
 				</sender>
 				<forward name="success" path="InsertData3" />
 			</pipe>
-			<pipe name="InsertData3" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe" storeResultInSessionKey="dataKey">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (TKEY, TCHAR, TBLOB1) VALUES (SEQ_IBISTEMP.NEXTVAL, 'B', EMPTY_BLOB())" resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" queryType="insert" jmsRealm="jdbc" />
+			<pipe name="InsertData3" className="nl.nn.adapterframework.pipes.SenderPipe" storeResultInSessionKey="dataKey">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (TKEY, TCHAR, TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL, 'B', EMPTY_BLOB())" resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" queryType="insert" />
 				<forward name="success" path="InsertData4" />
 			</pipe>
 
-			<pipe name="InsertData4" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe" getInputFromSessionKey="originalBlock">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TBLOB1 FROM IBISTEMP WHERE TKEY=? FOR UPDATE" queryType="updateBlob" jmsRealm="jdbc">
+			<pipe name="InsertData4" className="nl.nn.adapterframework.pipes.SenderPipe" getInputFromSessionKey="originalBlock">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE TKEY=? FOR UPDATE" queryType="updateBlob">
 					<param name="dataKey" sessionKey="dataKey" />
 				</sender>
 				<forward name="success" path="EXIT" />
@@ -73,7 +73,7 @@
 	</adapter>
 
 	<adapter name="BatchFileTransformerPipe2">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="BatchFileTransformerPipe2">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-BatchFileTransformerPipe2" />
 		</receiver>
 		<pipeline firstPipe="processFile">
@@ -94,7 +94,7 @@
 	</adapter>
 
 	<adapter name="BatchFileTransformerPipe2_Block">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="BatchFileTransformerPipe2_Block">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="BatchFileTransformerPipe2_Block" />
 		</receiver>
 		<pipeline firstPipe="echo" transactionAttribute="Required">

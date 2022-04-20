@@ -26,7 +26,7 @@ import java.security.cert.X509CRLEntry;
 import java.security.cert.X509Certificate;
 import java.util.Iterator;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -38,35 +38,35 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * The steam is closed after reading.
  * 
  * Example configuration:
- * <code><pre>
-		<pipe
-			name="Read issuer"
-			className="nl.nn.adapterframework.pipes.FilePipe"
-			actions="read"
-			fileName="dir/issuer.cer"
-			preserveInput="true"
-			outputType="stream"
-			storeResultInSessionKey="issuer"
-			>
-			<forward name="success" path="Read CRL" />
-		</pipe>
-		<pipe
-			name="Read CRL"
-			className="nl.nn.adapterframework.pipes.FilePipe"
-			actions="read"
-			fileName="dir/CRL.crl"
-			outputType="stream"
-			>
-			<forward name="success" path="Transform CRL" />
-		</pipe>
-		<pipe
-			name="Transform CRL"
-			className="nl.nn.adapterframework.pipes.CrlPipe"
-			issuerSessionKey="issuer"
-			>
-			<forward name="success" path="EXIT" />
-		</pipe>
- * </pre></code>
+ * <pre><code>
+	&lt;pipe
+		name="Read issuer"
+		className="nl.nn.adapterframework.pipes.FilePipe"
+		actions="read"
+		fileName="dir/issuer.cer"
+		preserveInput="true"
+		outputType="stream"
+		storeResultInSessionKey="issuer"
+		&gt;
+		&lt;forward name="success" path="Read CRL" /&gt;
+	&lt;/pipe&gt;
+	&lt;pipe
+		name="Read CRL"
+		className="nl.nn.adapterframework.pipes.FilePipe"
+		actions="read"
+		fileName="dir/CRL.crl"
+		outputType="stream"
+		&gt;
+		&lt;forward name="success" path="Transform CRL" /&gt;
+	&lt;/pipe&gt;
+	&lt;pipe
+		name="Transform CRL"
+		className="nl.nn.adapterframework.pipes.CrlPipe"
+		issuerSessionKey="issuer"
+		&gt;
+		&lt;forward name="success" path="EXIT" /&gt;
+	&lt;/pipe&gt;
+ * <code></pre>
  * 
  * 
  * @author Miel Hoppenbrouwers
@@ -77,7 +77,7 @@ public class CrlPipe extends FixedForwardPipe {
 	private String issuerSessionKey;
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		X509CRL crl;
 		try (InputStream inputStream = message.asInputStream()) {
 			CertificateFactory cf = CertificateFactory.getInstance("X.509");
@@ -97,7 +97,7 @@ public class CrlPipe extends FixedForwardPipe {
 			}
 			result = root.toXML();
 		}
-		return new PipeRunResult(getForward(), result);
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 
 	private boolean isCRLOK(X509CRL x509crl, InputStream issuer) throws PipeRunException {

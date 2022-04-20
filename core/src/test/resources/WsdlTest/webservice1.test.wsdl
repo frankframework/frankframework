@@ -2,7 +2,7 @@
 <wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="urn:webservice1/wsdl/" xmlns:ns1="urn:webservice1" targetNamespace="urn:webservice1/wsdl/">
 	<wsdl:documentation>test</wsdl:documentation>
 	<wsdl:types>
-		<xsd:schema xmlns="urn:webservice1" targetNamespace="urn:webservice1" elementFormDefault="qualified">
+		<xsd:schema xmlns="urn:webservice1" elementFormDefault="qualified" targetNamespace="urn:webservice1">
     <xsd:element name="a">
     </xsd:element>
     <xsd:element name="b">

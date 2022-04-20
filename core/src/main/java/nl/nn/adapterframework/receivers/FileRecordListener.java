@@ -23,20 +23,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
@@ -56,6 +57,7 @@ import nl.nn.adapterframework.util.WildCardFilter;
 public class FileRecordListener implements IPullingListener {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
 
 	private String name;
 	private String inputDirectory;
@@ -71,7 +73,7 @@ public class FileRecordListener implements IPullingListener {
 
 	@Override
 	public void afterMessageProcessed(PipeLineResult processResult,	Object rawMessage, Map threadContext) throws ListenerException {
-		String tcid = (String) threadContext.get(IPipeLineSession.technicalCorrelationIdKey);
+		String tcid = (String) threadContext.get(PipeLineSession.technicalCorrelationIdKey);
 		if (sender != null) {
 			if (processResult.isSuccessful()) {
 				try {
@@ -196,7 +198,7 @@ public class FileRecordListener implements IPullingListener {
 	@Override
 	public String getIdFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
 		String correlationId = inputFileName + "-" + recordNo;
-		PipeLineSessionBase.setListenerParameters(threadContext, correlationId, correlationId, null, null);
+		PipeLineSession.setListenerParameters(threadContext, correlationId, correlationId, null, null);
 		return correlationId;
 	}
 	/**
@@ -352,7 +354,7 @@ public class FileRecordListener implements IPullingListener {
 	/**
 	 * set the time to delay when no records are to be processed and this class has to look for the arrival of a new file
 	 */
-	@IbisDoc({"set the time to delay when no records are to be processed and this class has to look for the arrival of a new file", "1000 [ms]"})
+	@IbisDoc({"The time <i>in milliseconds</i> to delay when no records are to be processed, and this class has to look for the arrival of a new file", "1000"})
 	public void setResponseTime(long responseTime) {
 		this.responseTime = responseTime;
 	}

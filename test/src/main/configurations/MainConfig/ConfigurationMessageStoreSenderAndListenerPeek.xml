@@ -1,7 +1,7 @@
 <module>
 	<adapter name="MessageStoreListener">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="MessageStoreListener" transactionAttribute="Required" pollInterval="1">
-			<listener className="nl.nn.adapterframework.jdbc.MessageStoreListener" jmsRealm="jdbc" name="MessageStoreListener" slotId="${applicationId}/MessageStoreListener" peekUntransacted="true" />
+		<receiver transactionAttribute="Required" pollInterval="1">
+			<listener className="nl.nn.adapterframework.jdbc.MessageStoreListener" name="MessageStoreListener" slotId="${applicationId}/MessageStoreListener" />
 		</receiver>
 		<pipeline firstPipe="echoPipe">
 			<exits>
@@ -13,7 +13,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="MessageStoreSender">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="MessageStoreSender">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-MessageStoreSender" />
 		</receiver>
 		<pipeline firstPipe="switchAction">
@@ -21,17 +21,15 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe name="switchAction" className="nl.nn.adapterframework.pipes.XmlSwitch" xpathExpression="request/@action"></pipe>
-			<pipe name="store" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"> <!-- this message will be picked up by MessageStoreListener, and then turned into an 'A' record -->
-				<sender className="nl.nn.adapterframework.jdbc.MessageStoreSender" jmsRealm="jdbc" slotId="${applicationId}/MessageStoreListener" />
-				<messageLog className="nl.nn.adapterframework.jdbc.DummyTransactionalStorage" jmsRealm="jdbc" slotId="${applicationId}/MessageStoreListener" type="M" />
+			<pipe name="store" className="nl.nn.adapterframework.pipes.SenderPipe"> <!-- this message will be picked up by MessageStoreListener, and then turned into an 'A' record -->
+				<sender className="nl.nn.adapterframework.jdbc.MessageStoreSender" slotId="${applicationId}/MessageStoreListener" />
 				<forward name="success" path="okReply" />
 			</pipe>
-			<pipe name="store2" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"> <!-- this message will remain on this table -->
-				<sender className="nl.nn.adapterframework.jdbc.MessageStoreSender" jmsRealm="jdbc" slotId="${applicationId}/MessageStoreListener2" />
-				<messageLog className="nl.nn.adapterframework.jdbc.DummyTransactionalStorage" jmsRealm="jdbc" slotId="${applicationId}/MessageStoreListener2" type="M" />
+			<pipe name="store2" className="nl.nn.adapterframework.pipes.SenderPipe"> <!-- this message will remain on this table -->
+				<sender className="nl.nn.adapterframework.jdbc.MessageStoreSender" slotId="${applicationId}/MessageStoreListener2" />
 				<forward name="success" path="okReply" />
 			</pipe>
-			<pipe name="okReply" className="nl.nn.adapterframework.pipes.FixedResult" returnString="&lt;reply&gt;ok&lt;/reply&gt;">
+			<pipe name="okReply" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="&lt;reply&gt;ok&lt;/reply&gt;">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

@@ -19,7 +19,7 @@ import java.util.Iterator;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.BeanMap;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -123,7 +123,7 @@ public class JmsRealm {
 	/**
 	 * The <code>toString()</code> method retrieves its value by reflection.
 	 * 
-	 * @see org.apache.commons.lang.builder.ToStringBuilder#reflectionToString
+	 * @see org.apache.commons.lang3.builder.ToStringBuilder#reflectionToString
 	 *
 	 **/
 	@Override

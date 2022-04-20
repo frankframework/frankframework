@@ -18,8 +18,9 @@ package nl.nn.adapterframework.batch;
 import java.util.List;
 
 import nl.nn.adapterframework.core.IConfigurable;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 
 /**
@@ -27,6 +28,7 @@ import nl.nn.adapterframework.pipes.AbstractPipe;
  * 
  * @author  John Dekker
  */
+@FrankDocGroup(name = "Batch")
 public interface IResultHandler extends IConfigurable {
 
 	public void setPipe(AbstractPipe pipe);
@@ -38,8 +40,8 @@ public interface IResultHandler extends IConfigurable {
 	 * @param session  current PipeLineSession
 	 * @param streamId identification of the original file/stream/message
 	 */
-	void openDocument(IPipeLineSession session, String streamId) throws Exception;
-	void closeDocument(IPipeLineSession session, String streamId);
+	void openDocument(PipeLineSession session, String streamId) throws Exception;
+	void closeDocument(PipeLineSession session, String streamId);
 
 	/**
 	 * write a result record. 
@@ -48,7 +50,7 @@ public interface IResultHandler extends IConfigurable {
 	 * @param recordKey key of the record (describes the record type)
 	 * @param result transformed record
 	 */
-	void handleResult(IPipeLineSession session, String streamId, String recordKey, String result) throws Exception;
+	void handleResult(PipeLineSession session, String streamId, String recordKey, String result) throws Exception;
 	
 	/**
 	 * Called when all records in the original file are handled.
@@ -56,22 +58,22 @@ public interface IResultHandler extends IConfigurable {
 	 * @param streamId identification of the original file/stream/message containing the untransformed records
 	 * @return the name or names of the output files
 	 */
-	String finalizeResult(IPipeLineSession session, String streamId, boolean error) throws Exception;
+	String finalizeResult(PipeLineSession session, String streamId, boolean error) throws Exception;
 
 	/**
 	 * @param session  current PipeLineSession
 	 * @param streamId identification of the original file/stream/message containing the untransformed records
 	 */
-	void openRecordType(IPipeLineSession session, String streamId) throws Exception;
+	void openRecordType(PipeLineSession session, String streamId) throws Exception;
 	
 	/**
 	 * @param session  current PipeLineSession
 	 * @param streamId identification of the original file/stream/message containing the untransformed records
 	 */
-	void closeRecordType(IPipeLineSession session, String streamId) throws Exception;
+	void closeRecordType(PipeLineSession session, String streamId) throws Exception;
 	
-	void openBlock(IPipeLineSession session, String streamId, String blockName) throws Exception;
-	void closeBlock(IPipeLineSession session, String streamId, String blockName) throws Exception;
+	void openBlock(PipeLineSession session, String streamId, String blockName) throws Exception;
+	void closeBlock(PipeLineSession session, String streamId, String blockName) throws Exception;
 
 	/**
 	 * @return true if this resulthandler should be used for all flows if no resulthandler is specified for that flow 
@@ -82,7 +84,7 @@ public interface IResultHandler extends IConfigurable {
 	boolean hasPrefix();
 
 	/**
-	 * @return true causes groups of identical records, indicated by {@link IRecordHandler#isNewRecordType(IPipeLineSession, boolean, List, List) newRecordType} to appear in a block. 
+	 * @return true causes groups of identical records, indicated by {@link IRecordHandler#isNewRecordType(PipeLineSession, boolean, List, List) newRecordType} to appear in a block. 
 	 */
 	boolean isBlockByRecordType();
 	

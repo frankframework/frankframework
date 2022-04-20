@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,10 @@
 */
 package nl.nn.adapterframework.core;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
+import lombok.Getter;
+import nl.nn.adapterframework.doc.Mandatory;
 
 /**
  * Bean that knows a functional name of a Forward, to be referred by
@@ -24,7 +27,8 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * The <code>name</code> is the name which a Pipe may lookup to return
  * to the PipeLine, indicating the next pipe to be executed. (this is done
  * in the {@link nl.nn.adapterframework.pipes.AbstractPipe#findForward(String) findForward()}-method. The actual
- * pipeName is defined in the <code>path</code> property.<br/><br/>
+ * pipeName is defined in the <code>path</code> property. The <code>path</code> property
+ * can also reference an {@link PipeLineExit Exit} when no other pipe should execute.<br/><br/> 
  * In this manner it is possible to influence the flow through the pipeline
  * without affecting the Java-code. Simply change the forwarding-XML.<br/>
  *
@@ -34,46 +38,43 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  */
 public class PipeForward {
 
-    private String name;
-    private String path;
+	public final static String SUCCESS_FORWARD_NAME = "success";
+	public final static String EXCEPTION_FORWARD_NAME = "exception";
 
-    public PipeForward(String name, String path) {
-        this.name = name;
-        this.path = path;
-    }
-    public PipeForward() {
+	private @Getter String name;
+	private @Getter String path;
 
-    }
+	public PipeForward(String name, String path) {
+		this.name = name;
+		this.path = path;
+	}
+
+	public PipeForward() {
+
+	}
 
 	/**
 	 * the <code>name</code> is a symbolic reference to a <code>path</code>.<br/>
 	 */
-    public String getName() {
-        return name;
-    }
+	@Mandatory
+	public void setName(String name) {
+		this.name = name;
+	}
+
 	/**
-	 * The path is the name of the Pipe to execute/store
+	 * The name of the next Pipe or Exit. When the Pipeline doesn't have an Exits element configured it will be
+	 * initialized with one Exit having name READY and state SUCCESS
 	 */
-	public String getPath() {
-        return path;
-    }
-  	/**
-	 * the <code>name</code> is a symbolic reference to a <code>path</code>.<br/>
-	 */
-    public void setName(String name) {
-        this.name = name;
-    }
+	@Mandatory
+	public void setPath(String path) {
+		this.path = path;
+	}
+
 	/**
-	 * The path is the name of the Pipe to execute/store
+	 * uses reflection to return the value
 	 */
-    public void setPath(String path) {
-        this.path = path;
-    }
- 	/**
- 	 * uses reflection to return the value
- 	 */
 	@Override
-	public String toString(){
-      return ToStringBuilder.reflectionToString(this);
-    }
+	public String toString() {
+		return ToStringBuilder.reflectionToString(this);
+	}
 }

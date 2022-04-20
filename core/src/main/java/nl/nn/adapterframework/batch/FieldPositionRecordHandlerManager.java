@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,8 @@
 */
 package nl.nn.adapterframework.batch;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import lombok.Getter;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
 
 /**
@@ -28,11 +29,11 @@ import nl.nn.adapterframework.doc.IbisDoc;
  */
 public class FieldPositionRecordHandlerManager extends RecordHandlerManager {
 
-	private int fieldNr;
-	private String separator;
+	private @Getter int fieldNr;
+	private @Getter String separator;
 	
 	@Override
-	public RecordHandlingFlow getRecordHandler(IPipeLineSession session, String record) throws Exception {
+	public RecordHandlingFlow getRecordHandler(PipeLineSession session, String record) throws Exception {
 		int startNdx = -1, endNdx = -1;
 		int curField = 0;
 		while (curField++ != fieldNr) {
@@ -45,27 +46,19 @@ public class FieldPositionRecordHandlerManager extends RecordHandlerManager {
 		if (endNdx == -1) {
 			return getRecordHandlerByKey(record.substring(startNdx));
 		}
-		else {
-			return getRecordHandlerByKey(record.substring(startNdx, endNdx));
-		}
+		return getRecordHandlerByKey(record.substring(startNdx, endNdx));
 	}
 
 
 
-	@IbisDoc({"position of field that identifies the recordtype (position of first field is 1)", ""})
+	@IbisDoc({"position of field that identifies the recordtype (position of first field is 1)"})
 	public void setFieldNr(int i) {
 		fieldNr = i;
-	}
-	public int getFieldNr() {
-		return fieldNr;
 	}
 
 	@IbisDoc({"separator that separates the fields in the record", ""})
 	public void setSeparator(String string) {
 		separator = string;
-	}
-	public String getSeparator() {
-		return separator;
 	}
 
 }

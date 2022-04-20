@@ -14,54 +14,12 @@
    limitations under the License.
 */
 package nl.nn.adapterframework.monitoring;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.lang.enums.Enum;
 /**
  * Enumeration of Severities for monitoring.
  * 
  * @author  Gerrit van Brakel
  * @since   4.7
  */
-public class SeverityEnum extends Enum {
-
-	public static final SeverityEnum HARMLESS = new SeverityEnum("HARMLESS");
-	public static final SeverityEnum WARNING  = new SeverityEnum("WARNING");
-	public static final SeverityEnum CRITICAL = new SeverityEnum("CRITICAL");
-	public static final SeverityEnum FATAL    = new SeverityEnum("FATAL");
-
-	protected SeverityEnum(String stateDescriptor) {
-		super(stateDescriptor);
-	}
-	public static SeverityEnum getEnum(String stateDescriptor) {
-		return (SeverityEnum)getEnum(SeverityEnum.class, stateDescriptor);
-	}
-	public static List getEnumList() {
-		return getEnumList(SeverityEnum.class);
-	}
-	public static Map getEnumMap() {
-		return getEnumMap(SeverityEnum.class);
-	}
-	public static String[] getNames() {
-		List<String> list = new ArrayList<String>();
-		for (Iterator i = iterator(SeverityEnum.class); i.hasNext();) {
-			SeverityEnum c = (SeverityEnum) i.next();
-			list.add(c.getName());
-		}
-		String[] result=new String[list.size()];
-		return result=(String[])list.toArray(result);
-	}
-	public boolean isState(String state) {
-		return this.equals(getEnum(state.trim()));
-	}
-	public static Iterator iterator() {
-		return iterator(SeverityEnum.class);
-	}
-	public String toString() {
-		return getName().trim();
-	}
+public enum SeverityEnum {
+	HARMLESS, WARNING, CRITICAL, FATAL;
 }

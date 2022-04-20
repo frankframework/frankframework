@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 - 2020 WeAreFrank!
+   Copyright 2019-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,13 +17,12 @@ package nl.nn.adapterframework.xml;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.io.output.XmlStreamWriter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.Attributes;
@@ -31,6 +30,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.DefaultHandler;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -41,11 +42,12 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	public static final String DISABLE_OUTPUT_ESCAPING="javax.xml.transform.disable-output-escaping";
 	public static final String ENABLE_OUTPUT_ESCAPING="javax.xml.transform.enable-output-escaping";
 
-	private Writer writer;
-	private boolean includeXmlDeclaration=false;
-	private boolean newlineAfterXmlDeclaration=false;
-	private boolean includeComments=true;
-	private boolean textMode=false;
+	private @Getter Writer writer;
+	private @Setter boolean includeXmlDeclaration=false;
+	private @Setter boolean newlineAfterXmlDeclaration=false;
+	private @Setter boolean includeComments=true;
+	private @Setter boolean textMode=false;
+	private @Setter boolean closeWriterOnEndDocument=false;
 
 	private boolean outputEscaping=true;
 	private int elementLevel=0;
@@ -65,19 +67,24 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	}
 
 	public XmlWriter() {
-		writer=new StringWriter();
+		this(new StringWriter());
 	}
 
 	public XmlWriter(Writer writer) {
+		this(writer, false);
+	}
+
+	public XmlWriter(Writer writer, boolean closeWriterOnEndDocument) {
 		this.writer=writer;
+		this.closeWriterOnEndDocument = closeWriterOnEndDocument;
 	}
 
 	public XmlWriter(OutputStream stream) {
-		try {
-			this.writer=new OutputStreamWriter(stream,StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-		} catch (UnsupportedEncodingException e) {
-			log.error(e);
-		}
+		this(stream, false);
+	}
+
+	public XmlWriter(OutputStream stream, boolean closeStreamOnEndDocument) {
+		this(new XmlStreamWriter(stream), closeStreamOnEndDocument);
 	}
 
 	@Override
@@ -98,7 +105,11 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	@Override
 	public void endDocument() throws SAXException {
 		try {
-			writer.flush();
+			if (closeWriterOnEndDocument) {
+				writer.close();
+			} else {
+				writer.flush();
+			}
 		} catch (IOException e) {
 			throw new SaxException(e);
 		}
@@ -271,29 +282,9 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 //		System.out.println("endEntity ["+arg0+"]");
 	}
 
-	public Writer getWriter() {
-		return writer;
-	}
-
 	@Override
 	public String toString() {
 		return writer.toString();
-	}
-
-	public void setIncludeXmlDeclaration(boolean includeXmlDeclaration) {
-		this.includeXmlDeclaration = includeXmlDeclaration;
-	}
-
-	public void setNewlineAfterXmlDeclaration(boolean newlineAfterXmlDeclaration) {
-		this.newlineAfterXmlDeclaration = newlineAfterXmlDeclaration;
-	}
-
-	public void setIncludeComments(boolean includeComments) {
-		this.includeComments = includeComments;
-	}
-
-	public void setTextMode(boolean textMode) {
-		this.textMode = textMode;
 	}
 
 }

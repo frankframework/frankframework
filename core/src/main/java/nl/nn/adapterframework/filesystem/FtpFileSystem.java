@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 WeAreFrank!
+   Copyright 2019-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,12 +26,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
+import lombok.Getter;
+import nl.nn.adapterframework.ftp.FTPFileRef;
 import nl.nn.adapterframework.ftp.FtpConnectException;
 import nl.nn.adapterframework.ftp.FtpSession;
 import nl.nn.adapterframework.stream.Message;
@@ -43,15 +45,10 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTPFile> {
 
+	private final @Getter(onMethod = @__(@Override)) String domain = "FTP";
 	private String remoteDirectory = "";
 
 	private boolean open;
-
-
-	@Override
-	public void configure() throws ConfigurationException {
-		super.configure();
-	}
 
 	@Override
 	public void open() throws FileSystemException {
@@ -78,14 +75,15 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 
 	@Override
 	public FTPFile toFile(String filename) throws FileSystemException {
-		FTPFile ftpFile = new FTPFile();
-		ftpFile.setName(filename);
-		return ftpFile;
+		return toFile(null, filename);
 	}
 
 	@Override
 	public FTPFile toFile(String folder, String filename) throws FileSystemException {
-		return toFile(folder+"/"+filename);
+		FTPFileRef ftpFile = new FTPFileRef();
+		ftpFile.setName(filename);
+		ftpFile.setFolder(folder);
+		return ftpFile;
 	}
 
 	@Override
@@ -97,7 +95,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 			throw new FileSystemException(e);
 		}
 	}
-	
+
 	@Override
 	public DirectoryStream<FTPFile> listFiles(String folder) throws FileSystemException {
 		try {
@@ -108,29 +106,38 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
-	public boolean exists(FTPFile f) throws FileSystemException {
+	public boolean exists(FTPFile file) throws FileSystemException {
 		try {
-			FTPFile[] files = ftpClient.listFiles(f.getName());
-			if(files.length > 0) {
-				return true;
-			}
+			return findFile(file) != null;
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
-		return false;
+	}
+
+	private FTPFile findFile(FTPFile file) throws IOException {
+		FTPFile[] files = null;
+		if(file instanceof FTPFileRef) {
+			FTPFileRef fileRef = (FTPFileRef) file;
+			files = ftpClient.listFiles(fileRef.getFolder(), f -> f.getName().equals(fileRef.getFileName()));
+		} else {
+			files = ftpClient.listFiles(file.getName(), f -> f.getName().equals(file.getName()));
+		}
+		if(files != null && files.length > 0) {
+			return files[0];
+		}
+		return null;
 	}
 
 	private FilterOutputStream completePendingCommand(OutputStream os) {
-		FilterOutputStream fos = new FilterOutputStream(os) {
+		return new FilterOutputStream(os) {
 			@Override
 			public void close() throws IOException {
 				super.close();
-				if(ftpClient.getReplyCode() == FTPReply.CODE_150) {
+				if(ftpClient.getReplyCode() == FTPReply.FILE_STATUS_OK) {
 					ftpClient.completePendingCommand();
 				}
 			}
 		};
-		return fos;
 	}
 
 	@Override
@@ -146,34 +153,34 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
-	public Message readFile(FTPFile f) throws FileSystemException, IOException {
+	public Message readFile(FTPFile f, String charset) throws FileSystemException, IOException {
 		InputStream inputStream = ftpClient.retrieveFileStream(f.getName());
 		ftpClient.completePendingCommand();
-		return new Message(inputStream);
+		return new Message(inputStream, FileSystemUtils.getContext(this, f, charset));
 	}
 
 	@Override
 	public void deleteFile(FTPFile f) throws FileSystemException {
 		try {
-			ftpClient.deleteFile(f.getName());
+			ftpClient.deleteFile(getCanonicalName(f));
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
 	}
 
-	
 	@Override
 	public boolean folderExists(String folder) throws FileSystemException {
-		boolean isDirectory = false;
+		String pwd = null;
 		try {
-			FTPFile[] files = ftpClient.listFiles(folder);
-			if(files.length > 1) 
-				isDirectory = true;
+			pwd = ftpClient.printWorkingDirectory();
+			try {
+				return ftpClient.changeWorkingDirectory(pwd + "/" + folder);
+			} finally {
+				ftpClient.changeWorkingDirectory(pwd);
+			}
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
-		
-		return isDirectory;
 	}
 
 	@Override
@@ -189,21 +196,51 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
-	public void removeFolder(String folder) throws FileSystemException {
+	public void removeFolder(String folder, boolean removeNonEmptyFolder) throws FileSystemException {
 		if(!folderExists(folder)) {
 			throw new FileSystemException("Remove directory for [" + folder + "] has failed. Directory does not exist.");
 		}
 		try {
-			ftpClient.removeDirectory(folder);
+			if(removeNonEmptyFolder) {
+				removeDirectoryContent(folder);
+			} else {
+				ftpClient.removeDirectory(folder);
+			}
 		} catch (IOException e) {
 			throw new FileSystemException(e);
+		}
+	}
+
+	/**
+	 * Recursively remove directory
+	 * @param folder
+	 * @throws IOException
+	 * @throws FileSystemException
+	 */
+	private void removeDirectoryContent(String folder) throws IOException, FileSystemException {
+		String pwd = ftpClient.printWorkingDirectory();
+		if(ftpClient.changeWorkingDirectory(pwd+"/"+folder)) {
+			FTPFile[] files = ftpClient.listFiles();
+			for (FTPFile ftpFile : files) {
+				String fileName=ftpFile.getName();
+				if (fileName.equals(".") || fileName.equals("..")) {
+					continue;
+				}
+				if(ftpFile.isDirectory()) {
+					removeDirectoryContent(fileName);
+				} else {
+					deleteFile(ftpFile);
+				}
+			}
+			ftpClient.changeWorkingDirectory(pwd);
+			ftpClient.removeDirectory(pwd+"/"+folder);
 		}
 	}
 
 	@Override
 	public FTPFile renameFile(FTPFile source, FTPFile destination) throws FileSystemException {
 		try {
-			ftpClient.rename(source.getName(), destination.getName());
+			ftpClient.rename(getCanonicalName(source), getCanonicalName(destination));
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
@@ -212,13 +249,15 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 
 	@Override
 	public FTPFile moveFile(FTPFile f, String destinationFolder, boolean createFolder) throws FileSystemException {
-		String destinationFilename = destinationFolder+"/"+f.getName();
+		String destinationFilename = destinationFolder+"/"+getName(f);
 		try {
-			ftpClient.rename(f.getName(), destinationFilename);
+			if(ftpClient.rename(getCanonicalName(f), destinationFilename)) {
+				return toFile(destinationFilename);
+			}
+			return null;
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
-		return toFile(destinationFilename);
 	}
 	
 	@Override
@@ -232,21 +271,30 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
-	public String getName(FTPFile f) {
-		return f.getName();
+	public String getName(FTPFile file) {
+		if(file == null) {
+			return null;
+		}
+
+		if(file instanceof FTPFileRef) {
+			return ((FTPFileRef) file).getFileName();
+		}
+		return file.getName();
 	}
 
 	@Override
-	public String getCanonicalName(FTPFile f) throws FileSystemException {
-		return f.getName();
+	public String getCanonicalName(FTPFile f) {
+		return f.getName(); //Should include folder structure if known
 	}
 
 	@Override
 	public Date getModificationTime(FTPFile f) throws FileSystemException {
 		try {
-			return ftpClient.listFiles(f.getName())[0].getTimestamp().getTime();
-		} catch (IndexOutOfBoundsException oobe) {
-			throw new FileSystemException("File could not be found", oobe);
+			FTPFile file = findFile(f);
+			if(file != null) {
+				return file.getTimestamp().getTime();
+			}
+			throw new FileSystemException("File not found");
 		} catch (IOException e) {
 			throw new FileSystemException("Could not retrieve file", e);
 		}
@@ -270,6 +318,10 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 		return "remote directory ["+remoteDirectory+"]";
 	}
 
+	/**
+	 * pathname of the file or directory to list.
+	 * @ff.default Home folder of the ftp user
+	 */
 	public void setRemoteDirectory(String remoteDirectory) {
 		this.remoteDirectory = remoteDirectory;
 	}
@@ -277,16 +329,15 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	private class FTPFilePathIterator implements Iterator<FTPFile> {
 
 		private List<FTPFile> files;
-		private String prefix;
 		private int i = 0;
 
 		FTPFilePathIterator(String folder, FTPFile filesArr[]) {
-			prefix = folder != null ? folder + "/" : "";
-			files = new ArrayList<FTPFile>();
+			files = new ArrayList<>();
 			for (FTPFile ftpFile : filesArr) {
-				if(!ftpFile.isDirectory()) {
-					ftpFile.setName(prefix + ftpFile.getName());
-					files.add(ftpFile);
+				if(ftpFile.isFile()) {
+					FTPFileRef fileRef = FTPFileRef.fromFTPFile(ftpFile);
+					fileRef.setFolder(folder);
+					files.add(fileRef);
 				}
 			}
 		}
@@ -298,15 +349,20 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 
 		@Override
 		public FTPFile next() {
+			if(!hasNext()) {
+				throw new NoSuchElementException();
+			}
+
 			return files.get(i++);
 		}
 
 		@Override
 		public void remove() {
+			FTPFile file = files.get(i++);
 			try {
-				deleteFile(files.get(i++));
+				deleteFile(file);
 			} catch (FileSystemException e) {
-				log.warn(e);
+				log.warn("unable to remove file ["+getCanonicalName(file)+"]", e);
 			}
 		}
 	}

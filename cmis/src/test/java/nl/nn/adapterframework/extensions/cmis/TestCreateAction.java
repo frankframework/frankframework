@@ -1,189 +1,245 @@
 package nl.nn.adapterframework.extensions.cmis;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeTrue;
+
 import java.io.IOException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.chemistry.opencmis.client.api.CmisObject;
-import org.apache.chemistry.opencmis.client.api.Folder;
-import org.apache.chemistry.opencmis.client.api.ObjectFactory;
-import org.apache.chemistry.opencmis.client.api.ObjectId;
-import org.apache.chemistry.opencmis.client.api.OperationContext;
-import org.apache.chemistry.opencmis.client.api.Session;
-import org.apache.chemistry.opencmis.client.runtime.FolderImpl;
-import org.apache.chemistry.opencmis.client.runtime.ObjectIdImpl;
-import org.apache.chemistry.opencmis.client.runtime.repository.ObjectFactoryImpl;
-import org.apache.chemistry.opencmis.commons.enums.VersioningState;
-import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
 import org.apache.commons.codec.binary.Base64;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.UrlMessage;
+import nl.nn.adapterframework.testutil.TestAssertions;
+import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.util.Misc;
 
+@SuppressWarnings("deprecation")
 @RunWith(Parameterized.class)
-public class TestCreateAction extends SenderBase<CmisSender>{
-	
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
-	
-	private final static String EMPTY_INPUT = "";
-	private final static String INPUT = "<cmis><objectId>dummy</objectId><objectTypeId>cmis:document</objectTypeId><fileName>fileInput.txt</fileName>"
-			+ "<properties><property name=\"project:number\" type=\"integer\">123456789</property>"
-			+ "<property name=\"project:lastModified\" type=\"datetime\">2019-02-26T16:31:15</property>"
-			+ "<property name=\"project:onTime\" type=\"boolean\">true</property></properties></cmis>";
-	private final static String CREATE_RESULT = "dummy_id";
-	
-	@Parameters(name = "{0} - {1} - {2}")
+public class TestCreateAction extends CmisSenderTestBase {
+	private static final AtomicInteger atomicInt = new AtomicInteger();
+
+	private static final String EMPTY_INPUT = "";
+	private static final String EMPTY_RESULT = "[unknown]";
+
+	private static final String INPUT = "<cmis><objectId>random</objectId><objectTypeId>cmis:document</objectTypeId><fileName>${filename}</fileName>"
+			+ "<properties><property name=\"cmis:description\" type=\"string\">123456789</property>"
+			+ "<property name=\"cmis:lastModificationDate\" type=\"datetime\">2019-02-26T16:31:15</property>"
+			+ "<property name=\"cmis:creationDate\" type=\"boolean\">true</property></properties></cmis>";
+
+	private static final String FILE_INPUT = "/fileInput.txt";
+
+	@Parameters(name = "{0} - {1} - {index}")
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
-				{ "atompub", "create", EMPTY_INPUT, CREATE_RESULT },
-				{ "atompub", "create", INPUT, CREATE_RESULT },
+				{ "atompub", "create", EMPTY_INPUT },
+				{ "atompub", "create", INPUT },
 
-				{ "webservices", "create", EMPTY_INPUT, CREATE_RESULT },
-				{ "webservices", "create", INPUT, CREATE_RESULT },
+				{ "webservices", "create", EMPTY_INPUT },
+				{ "webservices", "create", INPUT },
 
-				{ "browser", "create", EMPTY_INPUT, CREATE_RESULT },
-				{ "browser", "create", INPUT, CREATE_RESULT },
+				{ "browser", "create", EMPTY_INPUT },
+				{ "browser", "create", INPUT },
 		});
 	}
-	
+
 	private String bindingType;
 	private String action;
 	private Message input;
 	private String expectedResult;
 
-	public TestCreateAction(String bindingType, String action, String input, String expected) {
-		this.bindingType = bindingType;
-		this.action = action;
-		this.input = new Message(input);
-		this.expectedResult = expected;
-	}
-	
-	@SuppressWarnings("unchecked")
-	@Override
-	public CmisSender createSender() throws ConfigurationException {
-		CmisSender sender = spy(new CmisSender());
-
-		sender.setUrl("http://dummy.url");
-		sender.setRepository("dummyRepository");
-		sender.setUsername("test");
-		sender.setPassword("test");
-		sender.setKeepSession(false);
-
-		Session cmisSession = mock(Session.class);
-		ObjectFactory objectFactory = mock(ObjectFactoryImpl.class);
-		doReturn(objectFactory).when(cmisSession).getObjectFactory();
-
-//			GENERIC cmis object
-		ObjectId objectId = mock(ObjectIdImpl.class);
-		doReturn(objectId).when(cmisSession).createObjectId(anyString());
-		CmisObject cmisObject = spy(new CmisTestObject());
-		doReturn(cmisObject).when(cmisSession).getObject(any(ObjectId.class));
-		doReturn(cmisObject).when(cmisSession).getObject(any(ObjectId.class), any(OperationContext.class));
-		
-//			CREATE
-		Folder folder = mock(FolderImpl.class);
-		doReturn(cmisObject).when(folder).createDocument(anyMap(), any(ContentStreamImpl.class), any(VersioningState.class));
-		doReturn(folder).when(cmisSession).getRootFolder();
-		doReturn(objectId).when(cmisSession).createDocument(anyMap(), any(ObjectId.class), any(ContentStreamImpl.class), any(VersioningState.class));
-		doReturn("dummy_id").when(objectId).getId();
-		
-		try {
-			doReturn(cmisSession).when(sender).createCmisSession(any(ParameterValueList.class));
-		} catch (SenderException e) {
-			//Since we stub the entire session it won't throw exceptions
+	public TestCreateAction(String bindingType, String action, String input) {
+		if(EMPTY_INPUT.equals(input)) {
+			assumeTrue(STUBBED); //Only test empty named objects when stubbed
+			this.expectedResult = EMPTY_RESULT;
+			this.input = new Message(EMPTY_INPUT);
+		} else {
+			String filename = "/fileInput-"+atomicInt.getAndIncrement()+".txt";
+			this.input = new Message(input.replace("${filename}", filename));
+			this.expectedResult = filename;
 		}
 
-		return sender;
+		this.bindingType = bindingType;
+		this.action = action;
 	}
 
-	
-	public void configure() throws ConfigurationException, SenderException, TimeOutException {
+	private void configure() throws Exception {
 		sender.setBindingType(bindingType);
 		sender.setAction(action);
 		sender.configure();
+
+		if(!STUBBED) {
+			sender.open();
+		}
+	}
+
+	private Message getTestFile(boolean base64Encoded) throws Exception {
+		URL testFile = TestFileUtils.getTestFileURL(FILE_INPUT);
+		assertNotNull(testFile);
+		byte[] bytes = Misc.streamToBytes(testFile.openStream());
+
+		return new Message(base64Encoded ? Base64.encodeBase64(bytes) : bytes);
+	}
+
+	private String base64Decode(Message message) throws IOException {
+		return new String(Base64.decodeBase64(message.asByteArray()));
 	}
 
 	@Test
-	public void fileContentFromSessionKeyAsString() throws Exception {
-		sender.setGetProperties(true);
-		session.put("fileContent", new String(Base64.encodeBase64("some content here for test FileContent as String".getBytes())));
-		sender.setFileContentSessionKey("fileContent");
-		sender.setUseRootFolder(false);
+	public void fileFromSessionKeyAsString() throws Exception {
+		session.put("fileContent", getTestFile(false).asString());
+		sender.setFileSessionKey("fileContent");
 		configure();
-		String actualResult = sender.sendMessage(input, session).asString();
-		assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
+
+		Message actualResult = sender.sendMessage(input, session);
+		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
 	}
-	
+
+	@Test
+	public void fileFromSessionKeyAsStringParameter() throws Exception {
+		session.put("fileContent", getTestFile(false).asString());
+		Parameter fileSessionKey = new Parameter("fileSessionKey", "fileContent");
+		sender.addParameter(fileSessionKey);
+		configure();
+
+		Message actualResult = sender.sendMessage(input, session);
+		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
+	}
+
+	@Test
+	public void fileFromSessionKeyAsByteArray() throws Exception {
+		session.put("fileContent", getTestFile(false).asByteArray());
+		sender.setFileSessionKey("fileContent");
+		configure();
+
+		Message actualResult = sender.sendMessage(input, session);
+		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
+	}
+
+	@Test
+	public void fileFromSessionKeyAsByteArrayParameter() throws Exception {
+		session.put("fileContent", getTestFile(false).asByteArray());
+		Parameter fileSessionKey = new Parameter("fileSessionKey", "fileContent");
+		sender.addParameter(fileSessionKey);
+		configure();
+
+		Message actualResult = sender.sendMessage(input, session);
+		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
+	}
+
+	@Test
+	public void fileFromSessionKeyAsInputStream() throws Exception {
+		URL testFile = TestFileUtils.getTestFileURL(FILE_INPUT);
+		assertNotNull(testFile);
+
+		session.put("fileContent", testFile.openStream());
+		sender.setFileSessionKey("fileContent");
+		configure();
+
+		Message actualResult = sender.sendMessage(input, session);
+		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
+	}
+
+	@Test
+	public void fileFromSessionKeyAsInputStreamParameter() throws Exception {
+		URL testFile = TestFileUtils.getTestFileURL(FILE_INPUT);
+		assertNotNull(testFile);
+
+		session.put("fileContent", testFile.openStream());
+		Parameter fileSessionKey = new Parameter("fileSessionKey", "fileContent");
+		sender.addParameter(fileSessionKey);
+		configure();
+
+		Message actualResult = sender.sendMessage(input, session);
+		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
+	}
+
+	@Test //should base64 decode the fileContent string
+	public void fileContentFromSessionKeyAsString() throws Exception {
+		session.put("fileContent", getTestFile(true).asString());
+		sender.setFileContentSessionKey("fileContent");
+		configure();
+
+		Message actualResult = sender.sendMessage(input, session);
+		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
+	}
+
 	@Test
 	public void fileContentFromSessionKeyAsByteArray() throws Exception {
-		sender.setGetProperties(true);
-		session.put("fileContent", "some content here for test fileContent as byte array".getBytes());
+		session.put("fileContent", getTestFile(false).asByteArray());
 		sender.setFileContentSessionKey("fileContent");
 		configure();
-		String actualResult = sender.sendMessage(input, session).asString();
-		assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
+
+		Message actualResult = sender.sendMessage(input, session);
+		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
 	}
-	
+
 	@Test
 	public void fileContentFromSessionKeyAsInputStream() throws Exception {
-		sender.setGetProperties(true);
-		session.put("fileContent", getClass().getResource("/fileInput.txt").openStream());
+		URL testFile = TestFileUtils.getTestFileURL(FILE_INPUT);
+		assertNotNull(testFile);
+
+		session.put("fileContent", testFile.openStream());
 		sender.setFileContentSessionKey("fileContent");
 		configure();
-		String actualResult = sender.sendMessage(input, session).asString();
-		assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
+
+		Message actualResult = sender.sendMessage(input, session);
+		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
 	}
-	
+
 	@Test
 	public void fileStreamFromSessionKeyAsString() throws Exception {
-		sender.setGetProperties(true);
-		session.put("fis", new String(Base64.encodeBase64("some content here for test FileStream as String".getBytes())));
+		session.put("fis", getTestFile(false).asString());
 		sender.setFileInputStreamSessionKey("fis");
 		configure();
-		String actualResult = sender.sendMessage(input, session).asString();
-		assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
+
+		Message actualResult = sender.sendMessage(input, session);
+		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
 	}
-	
+
 	@Test
 	public void fileStreamFromSessionKeyAsByteArray() throws Exception {
-		sender.setGetProperties(true);
-		session.put("fis", "some content here for test FileStream as byte array".getBytes());
+		session.put("fis", getTestFile(false).asByteArray());
 		sender.setFileInputStreamSessionKey("fis");
 		configure();
-		String actualResult = sender.sendMessage(input, session).asString();
-		assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
+
+		Message actualResult = sender.sendMessage(input, session);
+		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
 	}
-	
+
 	@Test
 	public void fileStreamFromSessionKeyAsInputStream() throws Exception {
-		sender.setGetProperties(true);
-		session.put("fis", getClass().getResource("/fileInput.txt").openStream());
+		URL testFile = TestFileUtils.getTestFileURL(FILE_INPUT);
+		assertNotNull(testFile);
+
+		session.put("fis", testFile.openStream());
 		sender.setFileInputStreamSessionKey("fis");
 		configure();
-		String actualResult = sender.sendMessage(input, session).asString();
-		assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
+
+		Message actualResult = sender.sendMessage(input, session);
+		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
 	}
-	
+
 	@Test
-	public void fileStreamFromSessionKeyWithIllegalType() throws ConfigurationException, SenderException, TimeOutException, IOException {
-		exception.expect(SenderException.class);
-		exception.expectMessage("expected InputStream, ByteArray or Base64-String but got");
-		sender.setGetProperties(true);
-		session.put("fis", 1);
+	public void fileStreamFromSessionKeyWithIllegalType() throws Exception {
+//		exception.expect(SenderException.class);
+//		exception.expectMessage("expected InputStream, ByteArray or Base64-String but got");
+		URL testFile = TestFileUtils.getTestFileURL(FILE_INPUT);
+		assertNotNull(testFile);
+		session.put("fis", new UrlMessage(testFile));
 		sender.setFileInputStreamSessionKey("fis");
 		configure();
-		String actualResult = sender.sendMessage(input, session).asString();
-		assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
+
+		Message actualResult = sender.sendMessage(input, session);
+		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
 	}
 
 }

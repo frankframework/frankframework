@@ -30,7 +30,7 @@ import javax.jms.QueueSession;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import com.ing.ifsa.IFSAHeader;
 import com.ing.ifsa.IFSAMessage;
@@ -42,11 +42,10 @@ import com.ing.ifsa.IFSATextMessage;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.extensions.ifsa.IfsaException;
 import nl.nn.adapterframework.extensions.ifsa.IfsaMessageProtocolEnum;
 import nl.nn.adapterframework.receivers.MessageWrapper;
@@ -56,7 +55,7 @@ import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.RunStateEnquirer;
 import nl.nn.adapterframework.util.RunStateEnquiring;
-import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.RunState;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -64,20 +63,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * 
  * There is no need or possibility to set the ServiceId as the Provider will receive all messages
  * for this Application on the same serviceQueue.
- *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.extensions.ifsa.IfsaProviderListener</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the object</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setApplicationId(String) applicationId}</td><td>the ApplicationID, in the form of "IFSA://<i>AppId</i>"</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMessageProtocol(String) messageProtocol}</td><td>protocol of IFSA-Service to be called. Possible values 
- * <ul>
- *   <li>"FF": Fire & Forget protocol</li>
- *   <li>"RR": Request-Reply protocol</li>
- * </ul></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTimeOut(long) timeOut}</td><td>receiver timeout, in milliseconds</td><td>3000</td></tr>
- * </table>
+ * 
  * The following session keys are set for each message:
  * <ul>
  *   <li>id (the message id)</li>
@@ -251,7 +237,7 @@ public class PullingIfsaProviderListener extends IfsaFacade implements IPullingL
 			log.error(getLogPrefix()+"exception in closing or releasing session", e);
 		}
 	    // on request-reply send the reply.
-	    if (getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.REQUEST_REPLY)) {
+	    if (getMessageProtocolEnum() == IfsaMessageProtocolEnum.REQUEST_REPLY) {
 			javax.jms.Message originalRawMessage;
 			if (rawMessage instanceof javax.jms.Message) { 
 				originalRawMessage = (javax.jms.Message)rawMessage;
@@ -259,8 +245,8 @@ public class PullingIfsaProviderListener extends IfsaFacade implements IPullingL
 				originalRawMessage = (javax.jms.Message)threadContext.get(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
 			}
 			if (originalRawMessage==null) {
-				String id = (String) threadContext.get(IPipeLineSession.messageIdKey);
-				String cid = (String) threadContext.get(IPipeLineSession.businessCorrelationIdKey);
+				String id = (String) threadContext.get(PipeLineSession.messageIdKey);
+				String cid = (String) threadContext.get(PipeLineSession.businessCorrelationIdKey);
 				log.warn(getLogPrefix()+"no original raw message found for messageId ["+id+"] correlationId ["+cid+"], cannot send result");
 			} else {
 				QueueSession session = getSession(threadContext);
@@ -426,7 +412,7 @@ public class PullingIfsaProviderListener extends IfsaFacade implements IPullingL
 					
 		}
 	
-		PipeLineSessionBase.setListenerParameters(threadContext, id, cid, null, tsSent);
+		PipeLineSession.setListenerParameters(threadContext, id, cid, null, tsSent);
 	    threadContext.put("timestamp", tsSent);
 	    threadContext.put("replyTo", ((replyTo == null) ? "none" : replyTo.toString()));
 	    threadContext.put("messageText", messageText);
@@ -591,7 +577,7 @@ public class PullingIfsaProviderListener extends IfsaFacade implements IPullingL
 	}
 
 	protected boolean canGoOn() {
-		return runStateEnquirer!=null && runStateEnquirer.isInState(RunStateEnum.STARTED);
+		return runStateEnquirer!=null && runStateEnquirer.getRunState() == RunState.STARTED;
 	}
 
 	@Override

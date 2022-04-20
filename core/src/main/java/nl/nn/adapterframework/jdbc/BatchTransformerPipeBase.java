@@ -24,8 +24,7 @@ import java.sql.ResultSet;
 
 import nl.nn.adapterframework.batch.StreamTransformerPipe;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
@@ -50,8 +49,7 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		IbisContext ibisContext = getAdapter().getConfiguration().getIbisManager().getIbisContext();
-		querySender = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+		querySender = createBean(FixedQuerySender.class);
 		querySender.setName("source of "+getName());
 		querySender.configure();
 	}
@@ -93,10 +91,10 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 		
 	}
 
-	protected abstract Reader getReader(ResultSet rs, String charset, String streamId, IPipeLineSession session) throws SenderException;
+	protected abstract Reader getReader(ResultSet rs, String charset, String streamId, PipeLineSession session) throws SenderException;
 
 	@Override
-	protected BufferedReader getReader(String streamId, Message message, IPipeLineSession session) throws PipeRunException {
+	protected BufferedReader getReader(String streamId, Message message, PipeLineSession session) throws PipeRunException {
 		Connection connection = null;
 		try {
 			connection = querySender.getConnection();

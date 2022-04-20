@@ -13,7 +13,7 @@ import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -30,13 +30,18 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineExit;
+import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.EchoPipe;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
 import nl.nn.adapterframework.receivers.Receiver;
+import nl.nn.adapterframework.testutil.TestConfiguration;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.MessageKeeper;
-import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.RunState;
 
 public class OpenApiTestBase extends Mockito {
 
@@ -51,14 +56,15 @@ public class OpenApiTestBase extends Mockito {
 
 	@Before
 	public void setUp() throws ServletException {
-		configuration = mock(Configuration.class);
+		configuration = new TestConfiguration();
+		AppConstants.getInstance().setProperty("hostname", "hostname");
 	}
 
 	@After
 	public void tearDown() {
 		servlets.remove();
 
-		configuration = null;
+		configuration.close();
 	}
 
 	@AfterClass
@@ -104,9 +110,17 @@ public class OpenApiTestBase extends Mockito {
 		return taskExecutor;
 	}
 
-	protected HttpServletRequest createRequest(String method, String uri) {
+	protected MockHttpServletRequest createRequest(String method, String uri) {
+		if(!uri.startsWith("/")) {
+			fail("uri must start with a '/'");
+		}
+
 		MockHttpServletRequest request = new MockHttpServletRequest(method.toUpperCase(), uri);
+		request.setServerName("mock-hostname");
 		request.setPathInfo(uri);
+		request.setContextPath("/mock-context-path");
+		request.setServletPath("/mock-servlet-path");
+		request.setRequestURI(request.getContextPath()+request.getServletPath()+uri);
 		return request;
 	}
 
@@ -122,7 +136,8 @@ public class OpenApiTestBase extends Mockito {
 
 			servlet.service(request, response);
 
-			return response.getContentAsString();
+			String res = response.getContentAsString();
+			return res.replaceFirst("auto-generated at .* for", "auto-generated at -timestamp- for");
 		} catch (Throwable t) {
 			//Silly hack to try and make the error visible in Travis.
 			assertTrue(ExceptionUtils.getStackTrace(t), false);
@@ -134,7 +149,8 @@ public class OpenApiTestBase extends Mockito {
 
 	public class AdapterBuilder {
 		private ApiListener listener;
-		private Json2XmlValidator validator;
+		private Json2XmlValidator inputValidator;
+		private Json2XmlValidator outputValidator;
 		private Adapter adapter;
 		private List<PipeLineExit> exits = new ArrayList<PipeLineExit>();
 
@@ -154,38 +170,63 @@ public class OpenApiTestBase extends Mockito {
 		}
 		public AdapterBuilder setListener(String uriPattern, String method, String produces, String operationId) {
 			listener = new ApiListener();
-			listener.setMethod(method);
+			if (method!=null) listener.setMethod(EnumUtils.parse(HttpMethod.class,method));
 			listener.setUriPattern(uriPattern);
-			listener.setProduces(produces);
+			if (produces!=null) listener.setProduces(EnumUtils.parse(MediaTypes.class,produces));
 			if(StringUtils.isNotEmpty(operationId)) {
 				listener.setOperationId(operationId);
+			}
+			return this;
+		}
+		public AdapterBuilder setHeaderParams(String headerParams) {
+			listener.setHeaderParams(headerParams);
+			return this;
+		}
+//		public AdapterBuilder setCookieParams(String cookieParams) {
+//			listener.setCookieParams(cookieParams);
+//			return this;
+//		}
+		public AdapterBuilder setMessageIdHeader(String messageIdHeader) {
+			listener.setMessageIdHeader(messageIdHeader);
+			return this;
+		}
+		
+		public AdapterBuilder setInputValidator(String xsdSchema, String requestRoot, String responseRoot, Parameter param) {
+			String ref = xsdSchema.substring(0, xsdSchema.indexOf("."))+"-"+responseRoot;
+			inputValidator = new Json2XmlValidator();
+			inputValidator.setName(ref);
+			String xsd = "/OpenApi/"+xsdSchema;
+			URL url = this.getClass().getResource(xsd);
+			assertNotNull("xsd ["+xsdSchema+"] not found", url);
+			inputValidator.setSchema(xsd);
+			if (requestRoot!=null) {
+				inputValidator.setRoot(requestRoot);
+			}
+			inputValidator.setResponseRoot(responseRoot);
+			inputValidator.setThrowException(true);
+			if(param != null) {
+				inputValidator.addParameter(param);
 			}
 
 			return this;
 		}
-		public AdapterBuilder setValidator(String xsdSchema, String requestRoot, String responseRoot, Parameter param) {
-			String ref = xsdSchema.substring(0, xsdSchema.indexOf("."))+"-"+responseRoot;
-			validator = new Json2XmlValidator();
-			validator.setName(ref);
+		protected AdapterBuilder setOutputValidator(String xsdSchema, String root) {
+			String ref = xsdSchema.substring(0, xsdSchema.indexOf("."))+"-"+root;
+			outputValidator = new Json2XmlValidator();
+			outputValidator.setName(ref);
 			String xsd = "/OpenApi/"+xsdSchema;
 			URL url = this.getClass().getResource(xsd);
 			assertNotNull("xsd ["+xsdSchema+"] not found", url);
-			validator.setSchema(xsd);
-			if (requestRoot!=null) {
-				validator.setRoot(requestRoot);
+			outputValidator.setSchema(xsd);
+			outputValidator.setThrowException(true);
+			if (root!=null) {
+				outputValidator.setRoot(root);
 			}
-			validator.setResponseRoot(responseRoot);
-			validator.setThrowException(true);
-			if(param != null) {
-				validator.addParameter(param);
-			}
-
 			return this;
 		}
 		public AdapterBuilder addExit(String exitCode) {
 			return addExit(exitCode, null, "false");
 		}
-		
 		public AdapterBuilder addExit(String exitCode, String responseRoot, String isEmpty) {
 			PipeLineExit ple = new PipeLineExit();
 			ple.setCode(exitCode);
@@ -193,13 +234,13 @@ public class OpenApiTestBase extends Mockito {
 			ple.setEmpty(isEmpty);
 			switch (exitCode) {
 				case "200":
-					ple.setState("success");
+					ple.setState(ExitState.SUCCESS);
 					break;
 				case "201":
-					ple.setState("success");
+					ple.setState(ExitState.SUCCESS);
 					break;
 				default:
-					ple.setState("error");
+					ple.setState(ExitState.ERROR);
 					break;
 			}
 			this.exits.add(ple);
@@ -217,7 +258,8 @@ public class OpenApiTestBase extends Mockito {
 			Receiver receiver = new Receiver();
 			receiver.setName("receiver");
 			receiver.setListener(listener);
-			pipeline.setInputValidator(validator);
+			pipeline.setInputValidator(inputValidator);
+			pipeline.setOutputValidator(outputValidator);
 			for (PipeLineExit exit : exits) {
 				exit.setPath("success"+exit.getExitCode());
 
@@ -247,7 +289,7 @@ public class OpenApiTestBase extends Mockito {
 				adapter.startRunning();
 			}
 			for (Adapter adapter : adapters) {
-				while (!adapter.getRunState().equals(RunStateEnum.STARTED)) {
+				while (adapter.getRunState()!=RunState.STARTED) {
 					System.out.println("Adapter RunState: " + adapter.getRunStateAsString());
 					try {
 						Thread.sleep(1000);

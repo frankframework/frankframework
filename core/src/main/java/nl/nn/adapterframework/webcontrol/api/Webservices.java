@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -27,8 +28,6 @@ import java.util.Set;
 import java.util.SortedMap;
 
 import javax.annotation.security.RolesAllowed;
-import javax.naming.NamingException;
-import javax.servlet.ServletConfig;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -36,23 +35,23 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
-import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.http.RestListener;
+import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.http.rest.ApiDispatchConfig;
 import nl.nn.adapterframework.http.rest.ApiListener;
+import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
 import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.soap.WsdlGenerator;
@@ -67,14 +66,13 @@ import nl.nn.adapterframework.soap.WsdlGeneratorUtils;
 
 @Path("/")
 public final class Webservices extends Base {
-	@Context ServletConfig servletConfig;
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/webservices")
 	@Relation("webservices")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getLogDirectory() throws ApiException {
+	public Response getWebServices() throws ApiException {
 
 		Map<String, Object> returnMap = new HashMap<String, Object>();
 
@@ -84,12 +82,12 @@ public final class Webservices extends Base {
 				IListener listener = receiver.getListener();
 				if (listener instanceof RestListener) {
 					RestListener rl = (RestListener) listener;
-					if (rl.getView()) {
-						Map<String, Object> service = new HashMap<String, Object>(2);
-						service.put("name", adapter.getName() + " "+  receiver.getName());
-						service.put("uriPattern", rl.getUriPattern());
-						webServices.add(service);
-					}
+					Map<String, Object> service = new HashMap<String, Object>();
+					service.put("name", adapter.getName() + " "+  receiver.getName());
+					service.put("method", rl.getMethod());
+					service.put("view", rl.isView());
+					service.put("uriPattern", rl.getUriPattern());
+					webServices.add(service);
 				}
 			}
 		}
@@ -99,7 +97,7 @@ public final class Webservices extends Base {
 		for (Adapter adapter : getIbisManager().getRegisteredAdapters()) {
 			Map<String, Object> wsdlMap = null;
 			try {
-				if(WsdlGeneratorUtils.canHaveWsdl(adapter)) { // check eligibility
+				if(WsdlGeneratorUtils.canProvideWSDL(adapter)) { // check eligibility
 					wsdlMap = new HashMap<String, Object>(2);
 					WsdlGenerator wsdl = new WsdlGenerator(adapter.getPipeLine());
 					wsdlMap.put("name", wsdl.getName());
@@ -126,8 +124,8 @@ public final class Webservices extends Base {
 		for (Entry<String, ApiDispatchConfig> client : patternClients.entrySet()) {
 			ApiDispatchConfig config = client.getValue();
 
-			Set<String> methods = config.getMethods();
-			for (String method : methods) {
+			Set<HttpMethod> methods = config.getMethods();
+			for (HttpMethod method : methods) {
 				ApiListener listener = config.getApiListener(method);
 				Receiver receiver = listener.getReceiver();
 				IAdapter adapter = receiver == null? null : receiver.getAdapter();
@@ -137,14 +135,10 @@ public final class Webservices extends Base {
 				endpoint.put("method", method);
 				if (adapter!=null) endpoint.put("adapter", adapter.getName());
 				if (receiver!=null) endpoint.put("receiver", receiver.getName());
-				PipeLine pipeline = adapter.getPipeLine();
-				if (ApiServiceDispatcher.getJsonValidator(pipeline)!=null || pipeline.getOutputValidator()!=null) {
-					String schemaResource = uriPattern.substring(1).replace("/", "_")+"_"+method+"_"+"openapi.json";
-					// N.B. OpenAPI 3.0 generation via ApiServiceDispatcher.mapResponses() is currently not based on explicit outputValidator. 
-					endpoint.put("schemaResource",schemaResource);
-				} else {
-					endpoint.put("error","Pipeline has no validator. Content in the response mappings will be empty in the generated schema.");
-				}
+
+				String schemaResource = uriPattern.substring(1).replace("/", "_")+"_"+method+"_"+"openapi.json";
+				endpoint.put("schemaResource",schemaResource);
+
 				apiListeners.add(endpoint);
 			}
 		}
@@ -153,7 +147,6 @@ public final class Webservices extends Base {
 		return Response.status(Response.Status.OK).entity(returnMap).build();
 	}
 
-	
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/webservices/{resourceName}")
@@ -183,9 +176,7 @@ public final class Webservices extends Base {
 			return Response.status(Response.Status.BAD_REQUEST).entity("<error>adapter not found</error>").build();
 		}
 		try {
-			// TODO: set proper servletName. This is used in Wsdl.service() set location of the service, when it cannot be found
-			// from the adapter itself, or from appconstant wsdl.<adapterName>.location or wsdl.location
-			String servletName = "external address of ibis"; 
+			String servletName = getServiceEndpoint(adapter); 
 			String generationInfo = "by FrankConsole";
 			WsdlGenerator wsdl = new WsdlGenerator(adapter.getPipeLine(), generationInfo);
 			wsdl.setIndent(indent);
@@ -200,7 +191,7 @@ public final class Webservices extends Base {
 						} else {
 							wsdl.wsdl(out, servletName);
 						}
-					} catch (ConfigurationException | XMLStreamException | NamingException e) {
+					} catch (ConfigurationException | XMLStreamException e) {
 						throw new WebApplicationException(e);
 					}
 				}
@@ -215,6 +206,28 @@ public final class Webservices extends Base {
 		} catch (Exception e) {
 			throw new ApiException("exception on retrieving wsdl", e);
 		}
+	}
+
+	private String getServiceEndpoint(IAdapter adapter) {
+		String endpoint = "external address of ibis";
+		Iterator it = adapter.getReceivers().iterator();
+		while(it.hasNext()) {
+			IListener listener = ((Receiver) it.next()).getListener();
+			if(listener instanceof WebServiceListener) {
+				String address = ((WebServiceListener) listener).getAddress();
+				if(StringUtils.isNotEmpty(address)) {
+					endpoint = address;
+				} else {
+					endpoint = "rpcrouter";
+				}
+				String protocol = request.isSecure() ? "https://" : "http://";
+				int port = request.getServerPort();
+				String restBaseUrl = protocol + request.getServerName() + (port != 0 ? ":" + port : "") + request.getContextPath() + "/services/";
+				endpoint = restBaseUrl + endpoint;
+				break;	//what if there are more than 1 WebServiceListener
+			}
+		}
+		return endpoint;
 	}
 
 	private String getWsdlExtension() {

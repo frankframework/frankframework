@@ -20,26 +20,13 @@ import java.io.Reader;
 import java.sql.ResultSet;
 
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.JdbcUtil;
 
 /**
- * Pipe that batch-transforms the lines in a CLOB.
- *
- * <table border="1">
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link nl.nn.adapterframework.batch.IInputStreamReaderFactory readerFactory}</td><td>Factory for reader of inputstream. Default implementation {@link nl.nn.adapterframework.batch.InputStreamReaderFactory} just converts using the specified characterset</td></tr>
- * <tr><td>{@link nl.nn.adapterframework.batch.IRecordHandlerManager manager}</td><td>Manager determines which handlers are to be used for the current line. 
- * 			If no manager is specified, a default manager and flow are created. The default manager 
- * 			always uses the default flow. The default flow always uses the first registered recordHandler 
- * 			(if available) and the first registered resultHandler (if available).</td></tr>
- * <tr><td>{@link nl.nn.adapterframework.batch.RecordHandlingFlow manager/flow}</td><td>Element that contains the handlers for a specific record type, to be assigned to the manager</td></tr>
- * <tr><td>{@link nl.nn.adapterframework.batch.IRecordHandler recordHandler}</td><td>Handler for transforming records of a specific type</td></tr>
- * <tr><td>{@link nl.nn.adapterframework.batch.IResultHandler resultHandler}</td><td>Handler for processing transformed records</td></tr>
- * </table>
- * </p>
+ * Pipe that batch-transforms the lines in a BLOB.
  * 
  * @author  Gerrit van Brakel
  * @since   4.7
@@ -47,7 +34,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
 public class BatchBlobTransformerPipe extends BatchTransformerPipeBase {
 
 	@Override
-	protected Reader getReader(ResultSet rs, String charset, String streamId, IPipeLineSession session) throws SenderException {
+	protected Reader getReader(ResultSet rs, String charset, String streamId, PipeLineSession session) throws SenderException {
 		try {
 			InputStream blobStream=JdbcUtil.getBlobInputStream(querySender.getDbmsSupport(), rs ,1 , querySender.isBlobsCompressed());
 			return getReaderFactory().getReader(blobStream, charset, streamId, session);

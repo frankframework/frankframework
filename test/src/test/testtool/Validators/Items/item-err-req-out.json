@@ -1,34 +1,34 @@
 {
-  "Result": {
-    "Status": "ERROR",
-    "ErrorList": [
-      {
-        "Code": "ERR6003",
-        "Reason": "Invalid Request",
-        "Service": {
-          "Name": "",
-          "Context": "",
-          "Action": {
-            "Paradigm": "Response",
-            "Name": "Test/SoapValidator",
-            "Version": "1"
-          }
-        },
-        "DetailList": [
-          {
-            "Code": "ORIGINAL_MESSAGE",
-            "Text": "{ \"Status\": \"e\", \"Item\": { \"Id\": 1 } }"
-          },
-          {
-            "Code": "ERROR",
-            "Text": "/: at (-1,-1): cvc-enumeration-valid: Value 'e' is not facet-valid with respect to enumeration '[a, b, c, d]'. It must be a value from the enumeration."
-          },
-          {
-            "Code": "ERROR",
-            "Text": "/: at (-1,-1): cvc-type.3.1.3: The value 'e' of element 'ns1:Status' is not valid."
-          }
+    "Result":{
+        "Status":"ERROR",
+        "ErrorList":[
+            {
+                "Code":"ERR6003",
+                "Reason":"Invalid Request",
+                "Service":{
+                    "Name":"",
+                    "Context":"",
+                    "Action":{
+                        "Paradigm":"Response",
+                        "Name":"Test/Validator",
+                        "Version":"1"
+                    }
+                },
+                "DetailList":[
+                    {
+                        "Code":"ORIGINAL_MESSAGE",
+                        "Text":"{ \"Status\": \"e\", \"Item\": { \"Id\": 1 } }"
+                    },
+                    {
+                        "Code":"ERROR",
+                        "Text":"/: cvc-enumeration-valid: Value 'e' is not facet-valid with respect to enumeration '[a, b, c, d]'. It must be a value from the enumeration."
+                    },
+                    {
+                        "Code":"ERROR",
+                        "Text":"/: cvc-type.3.1.3: The value 'e' of element 'ns1:Status' is not valid."
+                    }
+                ]
+            }
         ]
-      }
-    ]
-  }
+    }
 }

@@ -1,0 +1,10 @@
+<result>
+  <fielddefinition>
+    <field name="MSGCOUNT" type="NUMERIC" columnDisplaySize="39" precision="0" scale="0" isCurrency="true" columnTypeName="NUMBER" columnClassName="java.math.BigDecimal"/>
+  </fielddefinition>
+  <rowset>
+    <row number="0">
+      <field name="MSGCOUNT">0</field>
+    </row>
+  </rowset>
+</result>

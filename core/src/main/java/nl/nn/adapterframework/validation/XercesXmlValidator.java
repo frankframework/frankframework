@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2017 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013-2017 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -55,9 +55,11 @@ import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 
 import nl.nn.adapterframework.cache.EhCache;
+import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.IConfigurationAware;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
@@ -67,14 +69,6 @@ import nl.nn.adapterframework.xml.ClassLoaderXmlEntityResolver;
 /**
  * Xerces based XML validator.
  *
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td>"parserError"</td><td>a parser exception occurred, probably caused by non-well-formed XML. If not specified, "failure" is used in such a case</td></tr>
- * <tr><td>"illegalRoot"</td><td>if the required root element is not found. If not specified, "failure" is used in such a case</td></tr>
- * <tr><td>"notValid"</td><td>if a validation error occurred</td></tr>
- * </table>
- * <br>
  * N.B. noNamespaceSchemaLocation may contain spaces, but not if the schema is stored in a .jar or .zip file on the class path.
  * @author Johan Verrips IOS
  * @author Jaco de Groot
@@ -131,7 +125,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 				cache.open();
 			} catch (ConfigurationException e) {
 				cache = null;
-				ConfigurationWarnings.addGlobalWarning(log, "Could not configure EhCache for XercesXmlValidator (xmlValidator.maxInitialised will be ignored)", e);
+				ApplicationWarnings.add(log, "Could not configure EhCache for XercesXmlValidator (xmlValidator.maxInitialised will be ignored)", e);
 			}
 		}
 	}
@@ -157,7 +151,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		if (schemasProvider == null) throw new IllegalStateException("No schema provider");
 		String schemasId = schemasProvider.getSchemasId();
 		if (schemasId != null) {
-			PreparseResult preparseResult = preparse(schemasId, schemasProvider.getSchemas());
+			PreparseResult preparseResult = preparse();
 			if (cache == null || isIgnoreCaching()) {
 				this.preparseResult = preparseResult;
 			} else {
@@ -177,10 +171,15 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	private SymbolTable getSymbolTable() {
 		if (sharedSymbolTable) {
 			return getSymbolTableInstance();
-		} 
+		}
 		return new SymbolTable(BIG_PRIME);
 	}
-	
+
+	private PreparseResult preparse() throws ConfigurationException {
+		return preparse(schemasProvider.getSchemasId(), schemasProvider.getSchemas());
+	}
+
+
 	private synchronized PreparseResult preparse(String schemasId, List<Schema> schemas) throws ConfigurationException {
 		SymbolTable symbolTable = getSymbolTable();
 		XMLGrammarPool grammarPool = new XMLGrammarPoolImpl();
@@ -198,17 +197,18 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		} catch (NoSuchFieldError e) {
 			String msg="Cannot set property ["+XML_SCHEMA_VERSION_PROPERTY+"], requested xmlSchemaVersion ["+getXmlSchemaVersion()+"] xercesVersion ["+org.apache.xerces.impl.Version.getVersion()+"]";
 			if (isXmlSchema1_0()) {
-				log.warn(msg+", assuming XML-Schema version 1.0 will be supported", e);
+				log.warn(msg+", assuming XML Schema version 1.0 will be supported", e);
 			} else {
 				throw new ConfigurationException(msg, e);
 			}
 		}
-		MyErrorHandler errorHandler = new MyErrorHandler();
+		MyErrorHandler errorHandler = new MyErrorHandler(this);
 		errorHandler.warn = warn;
 		preparser.setErrorHandler(errorHandler);
+		Set<Grammar> namespaceRegisteredGrammars = new HashSet<>();
 		for (Schema schema : schemas) {
 			Grammar grammar = preparse(preparser, schemasId, schema);
-			registerNamespaces(grammar, namespaceSet);
+			registerNamespaces(grammar, namespaceSet, namespaceRegisteredGrammars);
 		}
 		grammarPool.lockPool();
 		PreparseResult preparseResult = new PreparseResult();
@@ -219,29 +219,31 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		return preparseResult;
 	}
 
-	private static Grammar preparse(XMLGrammarPreparser preparser,
-			String schemasId, Schema schema) throws ConfigurationException {
+	private static Grammar preparse(XMLGrammarPreparser preparser, String schemasId, Schema schema) throws ConfigurationException {
 		try {
-			return preparser.preparseGrammar(XMLGrammarDescription.XML_SCHEMA, stringToXMLInputSource(schema));
+			return preparser.preparseGrammar(XMLGrammarDescription.XML_SCHEMA, schemaToXMLInputSource(schema));
 		} catch (IOException e) {
 			throw new ConfigurationException("cannot compile schema's [" + schemasId + "]", e);
 		}
 	}
 
-	private static void registerNamespaces(Grammar grammar, Set<String> namespaces) {
+	private static void registerNamespaces(Grammar grammar, Set<String> namespaces, Set<Grammar> namespaceRegisteredGrammars) {
+		namespaceRegisteredGrammars.add(grammar);
 		namespaces.add(grammar.getGrammarDescription().getNamespace());
 		if (grammar instanceof SchemaGrammar) {
 			List<?> imported = ((SchemaGrammar)grammar).getImportedGrammars();
 			if (imported != null) {
 				for (Object g : imported) {
 					Grammar gr = (Grammar)g;
-					registerNamespaces(gr, namespaces);
+					if (!namespaceRegisteredGrammars.contains(gr)) {
+						registerNamespaces(gr, namespaces, namespaceRegisteredGrammars);
+					}
 				}
 			}
 		}
 	}
 
-	protected PreparseResult getPreparseResult(IPipeLineSession session) throws ConfigurationException, PipeRunException {
+	protected PreparseResult getPreparseResult(PipeLineSession session) throws ConfigurationException, PipeRunException {
 		PreparseResult preparseResult;
 		String schemasId = schemasProvider.getSchemasId();
 		if (schemasId == null) {
@@ -249,14 +251,11 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 			preparseResult = preparse(schemasId, schemasProvider.getSchemas(session));
 		} else {
 			if (cache == null || isIgnoreCaching()) {
-				preparseResult = this.preparseResult;
-				if (preparseResult == null) {
-					preparseResult = this.preparseResult;
-				}
+				preparseResult = this.preparseResult; // this.preparseResult is set at start();
 			} else {
 				preparseResult = cache.get(preparseResultId);
 				if (preparseResult == null) {
-					preparseResult = preparse(schemasId, schemasProvider.getSchemas());
+					preparseResult = preparse();
 					cache.put(preparseResultId, preparseResult);
 				}
 			}
@@ -265,7 +264,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	}
 
 	@Override
-	public XercesValidationContext createValidationContext(IPipeLineSession session, Set<List<String>> rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws ConfigurationException, PipeRunException {
+	public XercesValidationContext createValidationContext(PipeLineSession session, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws ConfigurationException, PipeRunException {
 		// clear session variables
 		super.createValidationContext(session, rootValidations, invalidRootNamespaces);
 
@@ -275,9 +274,9 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		result.init(schemasProvider, preparseResult.getSchemasId(), preparseResult.getNamespaceSet(), rootValidations, invalidRootNamespaces, ignoreUnknownNamespaces);
 		return result;
 	}
-	
+
 	@Override
-	public ValidatorHandler getValidatorHandler(IPipeLineSession session, ValidationContext context) throws ConfigurationException {
+	public ValidatorHandler getValidatorHandler(PipeLineSession session, ValidationContext context) throws ConfigurationException {
 		ValidatorHandler validatorHandler;
 
 		try {
@@ -315,7 +314,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		}
 		return validatorHandler;
 	}
-	public XMLReader createValidatingParser(IPipeLineSession session, ValidationContext context) throws XmlValidatorException, ConfigurationException, PipeRunException {
+	public XMLReader createValidatingParser(PipeLineSession session, ValidationContext context) throws XmlValidatorException, ConfigurationException, PipeRunException {
 		SymbolTable symbolTable = ((XercesValidationContext)context).getSymbolTable();
 		XMLGrammarPool grammarPool = ((XercesValidationContext)context).getGrammarPool();
 
@@ -342,7 +341,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	}
 
 
-	private static XMLInputSource stringToXMLInputSource(Schema schema) throws IOException, ConfigurationException {
+	private static XMLInputSource schemaToXMLInputSource(Schema schema) throws IOException, ConfigurationException {
 		// SystemId is needed in case the schema has an import. Maybe we should
 		// already resolve this at the SchemaProvider side (except when
 		// noNamespaceSchemaLocation is being used this is already done in
@@ -364,7 +363,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 class XercesValidationContext extends ValidationContext {
 
 	private PreparseResult preparseResult;
-	
+
 	XercesValidationContext(PreparseResult preparseResult) {
 		super();
 		this.preparseResult=preparseResult;
@@ -392,7 +391,7 @@ class XercesValidationContext extends ValidationContext {
 	public List<XSModel> getXsModels() {
 		return preparseResult.getXsModels();
 	}
-	
+
 }
 
 class PreparseResult {
@@ -443,7 +442,7 @@ class PreparseResult {
 		}
 		return xsModels;
 	}
-	
+
 	public void setXsModels(List<XSModel> xsModels) {
 		this.xsModels = xsModels;
 	}
@@ -452,11 +451,16 @@ class PreparseResult {
 class MyErrorHandler implements XMLErrorHandler {
 	protected Logger log = LogUtil.getLogger(this);
 	protected boolean warn = true;
+	private IConfigurationAware source;
+
+	public MyErrorHandler(IConfigurationAware source) {
+		this.source = source;
+	}
 
 	@Override
 	public void warning(String domain, String key, XMLParseException e) throws XNIException {
 		if (warn) {
-			ConfigurationWarnings.add(null, log, e.getMessage());
+			ConfigurationWarnings.add(source, log, e.getMessage());
 		}
 	}
 
@@ -468,14 +472,14 @@ class MyErrorHandler implements XMLErrorHandler {
 			throw e;
 		}
 		if (warn) {
-			ConfigurationWarnings.add(null, log, e.getMessage());
+			ConfigurationWarnings.add(source, log, e.getMessage());
 		}
 	}
 
 	@Override
 	public void fatalError(String domain, String key, XMLParseException e) throws XNIException {
 		if (warn) {
-			ConfigurationWarnings.add(null, log, e.getMessage());
+			ConfigurationWarnings.add(source, log, e.getMessage());
 		}
 		throw new XNIException(e);
 	}

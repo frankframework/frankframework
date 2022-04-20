@@ -15,17 +15,17 @@
  */
 package nl.nn.adapterframework.pipes;
 
+import java.io.IOException;
 import java.net.URL;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.EcmaError;
 import org.mozilla.javascript.Function;
 import org.mozilla.javascript.Scriptable;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -43,21 +43,8 @@ import nl.nn.adapterframework.util.Misc;
  * This pipe takes all input and pushes it into javascript runtime.
  * The invoke method is called to initialize the runtime
  * Afterward the results are evaluated.
- * <table border="1">
- * <p>
- * <b>Parameters:</b>
- * <tr>
- * <th>name</th>
- * <th>type</th>
- * <th>remarks</th>
- * </tr>
- * <tr>
- * <td><i>any</i></td>
- * <td><i>any</i></td>
- * <td>Any parameters defined on the pipe will be Concatenated into one string and added to input</td>
- * </tr>
- * </table>
- * </p>
+ * 
+ * @ff.parameters Any parameters defined on the pipe will be concatenated into one string and added to the input
  * 
  * @author Barry Jacobs
  * @deprecated Please use {@link JavascriptSender} instead
@@ -95,7 +82,7 @@ public class RhinoPipe extends FixedForwardPipe {
 				throw new ConfigurationException("cannot find resource [" + getFileName() + "]");
 			}
 			try {
-				fileInput = Misc.resourceToString(resource, SystemUtils.LINE_SEPARATOR);
+				fileInput = Misc.resourceToString(resource, Misc.LINE_SEPARATOR);
 			} catch (Throwable e) {
 				throw new ConfigurationException("got exception loading [" + getFileName() + "]", e);
 			}
@@ -111,7 +98,7 @@ public class RhinoPipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		//INIT
 		String eol = System.getProperty("line.separator");
 		if (message==null || message.isEmpty()) {
@@ -137,7 +124,7 @@ public class RhinoPipe extends FixedForwardPipe {
 				throw new PipeRunException(this,getLogPrefix(session)+"cannot find resource ["+getFileName()+"]");
 			}
 			try {
-				fileInput = Misc.resourceToString(resource, SystemUtils.LINE_SEPARATOR);
+				fileInput = Misc.resourceToString(resource, Misc.LINE_SEPARATOR);
 			} catch (Throwable e) {
 				throw new PipeRunException(this,getLogPrefix(session)+"got exception loading ["+getFileName()+"]", e);
 			}
@@ -150,8 +137,7 @@ public class RhinoPipe extends FixedForwardPipe {
 			} catch (ParameterException e) {
 				throw new PipeRunException(this,getLogPrefix(session)+"exception extracting parameters",e);
 			}
-			for (int i=0; i<pvl.size(); i++) {
-				ParameterValue pv = pvl.getParameterValue(i);
+			for(ParameterValue pv : pvl) {
 				paramsInput = pv.asStringValue("") + eol + paramsInput ;
 			}
 		}
@@ -183,7 +169,7 @@ public class RhinoPipe extends FixedForwardPipe {
 			Function fct = (Function) scope.get(jsfunctionName, scope);
 			// Object result = fct.call(cx, scope, scope, new
 			// Object[]{jsfunctionArguments});
-			Object result = fct.call(cx, scope, scope, new Object[] { message.asObject() });
+			Object result = fct.call(cx, scope, scope, new Object[] { message.asString() });
 
 			jsResult = (String) Context.jsToJava(result, String.class);
 			if (isDebug() && log.isDebugEnabled()) {
@@ -193,6 +179,8 @@ public class RhinoPipe extends FixedForwardPipe {
 
 		} catch (EcmaError ex) {
 			throw new PipeRunException(this, "org.mozilla.javascript.EcmaError -> ", ex);
+		} catch (IOException ex) {
+			throw new PipeRunException(this, "unable to convert input message to string", ex);
 		} finally {
 			Context.exit();
 		}
@@ -201,10 +189,10 @@ public class RhinoPipe extends FixedForwardPipe {
 			stringResult =jsResult;
 		}
 		if (StringUtils.isEmpty(getSessionKey())) {
-			return new PipeRunResult(getForward(), stringResult);
+			return new PipeRunResult(getSuccessForward(), stringResult);
 		} else {
 			session.put(getSessionKey(), stringResult);
-			return new PipeRunResult(getForward(), message);
+			return new PipeRunResult(getSuccessForward(), message);
 		}
 	}
 

@@ -1,12 +1,17 @@
 package nl.nn.adapterframework.util;
 
-import nl.nn.adapterframework.core.Resource;
-import org.apache.logging.log4j.Logger;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Map;
 
 import javax.xml.transform.Source;
 
-import static org.junit.Assert.assertEquals;
+import org.apache.logging.log4j.Logger;
+import org.junit.Test;
+
+import nl.nn.adapterframework.core.Resource;
 
 public class TransformerPoolTest {
 	protected Logger log = LogUtil.getLogger(this);
@@ -20,68 +25,39 @@ public class TransformerPoolTest {
 
 	@Test
 	public void plainXPath() throws Exception {
-		TransformerPool.clearTransformerPools();
 		String xpathEvaluatorSource = XmlUtils.createXPathEvaluatorSource(xpath);
 		TransformerPool transformerPool = TransformerPool.getInstance(xpathEvaluatorSource);
 		String result = transformerPool.transform(xml, null);
 		assertEquals(expectedXpath, result);
-		assertEquals(0, TransformerPool.getTransformerPoolsKeys().size());
 	}
 
 	@Test
 	public void plainXPathUsingMultiUseSource() throws Exception {
-		TransformerPool.clearTransformerPools();
 		String xpathEvaluatorSource = XmlUtils.createXPathEvaluatorSource(xpath);
 		TransformerPool transformerPool = TransformerPool.getInstance(xpathEvaluatorSource);
 		Source source = XmlUtils.stringToSource(xml);
 		String result = transformerPool.transform(source);
 		assertEquals(expectedXpath, result);
-		assertEquals(0, TransformerPool.getTransformerPoolsKeys().size());
 	}
 
 	@Test
 	public void plainViaUrl() throws Exception {
-		TransformerPool.clearTransformerPools();
 		Resource resource = Resource.getResource(stylesheetURL);
 		TransformerPool transformerPool = TransformerPool.getInstance(resource);
 		String result = transformerPool.transform(xml, null);
-		result=result.replaceAll("[\n\r]", "");		
+		result=result.replaceAll("[\n\r]", "");
 		assertEquals(expectedStylesheetURL, result);
-		assertEquals(0, TransformerPool.getTransformerPoolsKeys().size());
 	}
 
 	@Test
-	public void useCachingXpath() throws Exception {
-		TransformerPool.clearTransformerPools();
-		String xpath = "root/message";
-		String xpathEvaluatorSource = XmlUtils.createXPathEvaluatorSource(xpath);
-		TransformerPool.getInstance(xpathEvaluatorSource, null, 1, true);
-		assertEquals(1, TransformerPool.getTransformerPoolsKeys().size());
-		TransformerPool.getInstance(xpathEvaluatorSource, "xyz", 1, true);
-		assertEquals(2, TransformerPool.getTransformerPoolsKeys().size());
-		TransformerPool.getInstance(xpathEvaluatorSource, null, 2, true);
-		assertEquals(3, TransformerPool.getTransformerPoolsKeys().size());
-		TransformerPool.getInstance(xpathEvaluatorSource, null, 1, true);
-		assertEquals(3, TransformerPool.getTransformerPoolsKeys().size());
-		String xpath2 = "root/@message";
-		TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(xpath2), null, 1, true);
-		assertEquals(4, TransformerPool.getTransformerPoolsKeys().size());
-	}
+	public void testGetConfigMap() throws Exception {
+		Resource resource = Resource.getResource(stylesheetURL);
+		TransformerPool transformerPool = TransformerPool.getInstance(resource);
+		Map<String,String> configMap = transformerPool.getConfigMap();
 
-
-	@Test
-	public void useCachingUrl() throws Exception {
-		TransformerPool.clearTransformerPools();
-		Resource resource = Resource.getResource("xml/xsl/RemoveNamespaces.xsl");
-		TransformerPool.getInstance(resource, 1, true);
-		assertEquals(1, TransformerPool.getTransformerPoolsKeys().size());
-		TransformerPool.getInstance(resource, 2, true);
-		assertEquals(2, TransformerPool.getTransformerPoolsKeys().size());
-		TransformerPool.getInstance(resource, 1, true);
-		assertEquals(2, TransformerPool.getTransformerPoolsKeys().size());
-		Resource resource2 = Resource.getResource("xml/xsl/AttributesGetter.xsl");
-		TransformerPool.getInstance(resource2, 2, true);
-		assertEquals(3, TransformerPool.getTransformerPoolsKeys().size());
+		assertEquals("{stylesheet-version=2.0, output-method=xml, output-indent=yes, output-omit-xml-declaration=yes, disable-output-escaping=no}", configMap.toString());
+		assertFalse(transformerPool.getDisableOutputEscaping());
+		assertTrue(transformerPool.getIndent());
 	}
 
 }

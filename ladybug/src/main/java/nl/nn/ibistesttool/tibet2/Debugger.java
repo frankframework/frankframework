@@ -20,9 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
@@ -38,13 +37,13 @@ public class Debugger extends nl.nn.ibistesttool.Debugger {
 	@Override
 	public List<String> getStubStrategies() {
 		List<String> stubStrategies = new ArrayList<>();
-		stubStrategies.add(STUB_STRATEY_NEVER);
+		stubStrategies.add(STUB_STRATEGY_NEVER);
 		return stubStrategies;
 	}
 
 	@Override
 	public String getDefaultStubStrategy() {
-		return STUB_STRATEY_NEVER;
+		return STUB_STRATEGY_NEVER;
 	}
 
 	@Override
@@ -56,7 +55,7 @@ public class Debugger extends nl.nn.ibistesttool.Debugger {
 			String inputMessage = checkpoint.getMessageWithResolvedVariables(reportRunner);
 			IAdapter adapter = ibisManager.getRegisteredAdapter(RESEND_ADAPTER);
 			if (adapter != null) {
-				IPipeLineSession pipeLineSession = new PipeLineSessionBase();
+				PipeLineSession pipeLineSession = new PipeLineSession();
 				synchronized(inRerun) {
 					inRerun.add(correlationId);
 				}
@@ -64,7 +63,7 @@ public class Debugger extends nl.nn.ibistesttool.Debugger {
 					if(securityContext.getUserPrincipal() != null)
 						pipeLineSession.put("principal", securityContext.getUserPrincipal().getName());
 					PipeLineResult processResult = adapter.processMessage(correlationId, new Message(inputMessage), pipeLineSession);
-					if (!(processResult.getState().equalsIgnoreCase("success") && processResult.getResult().asString().equalsIgnoreCase("<ok/>"))) {
+					if (!(processResult.isSuccessful() && processResult.getResult().asString().equalsIgnoreCase("<ok/>"))) {
 						errorMessage = "Rerun failed. Result of adapter " + RESEND_ADAPTER + ": " + processResult.getResult().asString();
 					}
 				} catch (IOException e) {

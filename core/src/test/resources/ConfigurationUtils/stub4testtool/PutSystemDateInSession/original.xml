@@ -1,0 +1,23 @@
+<module>
+	<adapter name="PutSystemDateInSession">
+		<receiver>
+			<listener
+				className="nl.nn.adapterframework.receivers.JavaListener"
+				name="PutSystemDateInSession"
+			/>
+		</receiver>
+		<pipeline firstPipe="Generate timestamp">
+			<exits>
+				<exit path="READY" state="success"/>
+			</exits>
+			<pipe
+				name="Generate timestamp"
+				className="nl.nn.adapterframework.pipes.PutSystemDateInSession"
+				sessionKey="timestamp"
+				dateFormat="yyyyMMdd HH:mm:ss"
+				>
+				<forward name="success" path="READY"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+</module>

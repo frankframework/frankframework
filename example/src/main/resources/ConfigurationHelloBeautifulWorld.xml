@@ -5,7 +5,7 @@ better to refer to it using Eclipse, Window, Preferences, XML, XML Catalog,
 Add..., Location: path/to/ibisdoc.xsd, Key:
 http://schemas.ibissource.org/ibisdoc.xsd, OK
 -->
-<Configuration
+<Module
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:noNamespaceSchemaLocation="http://schemas.ibissource.org/ibisdoc.xsd"
 	name="My first beautiful configuration"
@@ -14,8 +14,9 @@ http://schemas.ibissource.org/ibisdoc.xsd, OK
 		<Receiver
 			name="HelloBeautifulWorld"
 			>
-			<JavaListener
+			<ApiListener
 				name="HelloBeautifulWorld"
+				uriPattern="hello-beautiful-world"
 			/>
 		</Receiver>
 		<Pipeline firstPipe="HelloBeautifulWorld">
@@ -25,7 +26,7 @@ http://schemas.ibissource.org/ibisdoc.xsd, OK
 				>
 				<Forward name="success" path="EXIT"/>
 			</FixedResultPipe>
-			<Exit path="EXIT" state="success"/>
+			<Exit name="EXIT" state="success"/>
 		</Pipeline>
 	</Adapter>
-</Configuration>
+</Module>

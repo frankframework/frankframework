@@ -305,6 +305,11 @@
     <ClassName>nl.nn.adapterframework.jdbc.MessageStoreSender</ClassName>
   </Element>
   <Element>
+    <Name>MongoDbSender</Name>
+    <Type>sender</Type>
+    <ClassName>nl.nn.adapterframework.mongodb.MongoDbSender</ClassName>
+  </Element>
+  <Element>
     <Name>MqttSender</Name>
     <Type>sender</Type>
     <ClassName>nl.nn.adapterframework.extensions.mqtt.MqttSender</ClassName>
@@ -543,6 +548,11 @@
     <Name>CrlPipe</Name>
     <Type>pipe</Type>
     <ClassName>nl.nn.adapterframework.pipes.CrlPipe</ClassName>
+  </Element>
+  <Element>
+    <Name>CsvParserPipe</Name>
+    <Type>pipe</Type>
+    <ClassName>nl.nn.adapterframework.pipes.CsvParserPipe</ClassName>
   </Element>
   <Element>
     <Name>DelayPipe</Name>
@@ -842,7 +852,7 @@
   <Element>
     <Name>SenderPipe</Name>
     <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.pipes.GenericMessageSendingPipe</ClassName>
+    <ClassName>nl.nn.adapterframework.pipes.SenderPipe</ClassName>
   </Element>
   <Element>
     <Name>SignaturePipe</Name>

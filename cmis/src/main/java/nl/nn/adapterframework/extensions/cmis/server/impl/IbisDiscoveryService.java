@@ -25,14 +25,18 @@ import org.apache.chemistry.opencmis.commons.spi.DiscoveryService;
 import org.apache.chemistry.opencmis.commons.spi.Holder;
 import org.w3c.dom.Element;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.extensions.cmis.CmisUtils;
 import nl.nn.adapterframework.extensions.cmis.server.CmisEvent;
 import nl.nn.adapterframework.extensions.cmis.server.CmisEventDispatcher;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
+/**
+ * Wrapper that delegates when a matching CmisEvent is present.
+ * 
+ * @author Niels
+ */
 public class IbisDiscoveryService implements DiscoveryService {
 
 	private DiscoveryService discoveryService;
@@ -73,7 +77,7 @@ public class IbisDiscoveryService implements DiscoveryService {
 			cmisXml.addSubElement(buildXml("maxItems", maxItems));
 			cmisXml.addSubElement(buildXml("skipCount", skipCount));
 
-			IPipeLineSession context = new PipeLineSessionBase();
+			PipeLineSession context = new PipeLineSession();
 			context.put(CmisUtils.CMIS_CALLCONTEXT_KEY, callContext);
 			Element cmisResult = eventDispatcher.trigger(CmisEvent.QUERY, cmisXml.toXML(), context);
 			Element typesXml = XmlUtils.getFirstChildTag(cmisResult, "objectList");
@@ -87,7 +91,6 @@ public class IbisDiscoveryService implements DiscoveryService {
 			Holder<String> changeLogToken, Boolean includeProperties,
 			String filter, Boolean includePolicyIds, Boolean includeAcl,
 			BigInteger maxItems, ExtensionsData extension) {
-		// TODO Auto-generated method stub
 		return discoveryService.getContentChanges(repositoryId, changeLogToken, includeProperties, filter, includePolicyIds, includeAcl, maxItems, extension);
 	}
 	

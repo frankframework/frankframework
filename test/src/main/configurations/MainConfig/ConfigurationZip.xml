@@ -40,7 +40,7 @@
 			
 			<pipe
 				name="ReCreateZip"
-				className="nl.nn.adapterframework.pipes.FixedResult" 
+				className="nl.nn.adapterframework.pipes.FixedResultPipe" 
 				returnString="${testdata.dir}/zip/recreated.zip"
 				>
 				<forward name="success" path="ReCreateZip2"/>
@@ -75,7 +75,7 @@
 
 			<pipe
 				name="SimpleZip"
-				className="nl.nn.adapterframework.pipes.FixedResult" 
+				className="nl.nn.adapterframework.pipes.FixedResultPipe" 
 				returnString="${testdata.dir}/zip/simple.zip"
 				>
 				<forward name="success" path="SimpleZip2"/>
@@ -106,7 +106,7 @@
 			
 			<pipe
 				name="SimpleZipX"
-				className="nl.nn.adapterframework.pipes.FixedResult" 
+				className="nl.nn.adapterframework.pipes.FixedResultPipe" 
 				returnString="${testdata.dir}/zip/simple.zip"
 				>
 				<forward name="success" path="SimpleZipX2"/>
@@ -136,7 +136,7 @@
 			</pipe>
 
 			<pipe name="RemoveRecreatedZipFile"
-				  className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				  className="nl.nn.adapterframework.pipes.SenderPipe"
 				  preserveInput="true"
 				  getInputFromFixedValue="zip/recreated.zip">
 				  <sender name="localfilesender"
@@ -148,7 +148,7 @@
 			</pipe>
 
 			<pipe name="RemoveSimpleZipFile"
-				  className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				  className="nl.nn.adapterframework.pipes.SenderPipe"
 				  preserveInput="true"
 				  getInputFromFixedValue="zip/simple.zip">
 				  <sender name="localfilesender"
@@ -160,7 +160,7 @@
 			</pipe>
 			
 			<pipe name="RemoveZipDirectory"
-				  className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				  className="nl.nn.adapterframework.pipes.SenderPipe"
 				  preserveInput="true"
 				  getInputFromFixedValue="zip">
 				  <sender name="localfilesender"
@@ -199,7 +199,7 @@
 				charset="ISO-8859-1"
 				>
 				<sender className="nl.nn.adapterframework.senders.FixedResultSender" 
-					fileName="zip/NameAndContents.txt"
+					filename="zip/NameAndContents.txt"
 				 >
 					<param name="name"  />
 					<param name="contents" sessionKey="nestedZipData" />

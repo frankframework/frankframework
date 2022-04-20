@@ -17,7 +17,7 @@ package nl.nn.adapterframework.core;
 
 import java.security.Principal;
 
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 
 /**
  * Security handler that declares that each role is valid. 
@@ -28,12 +28,12 @@ import org.apache.commons.lang.NotImplementedException;
 public class AllowAllSecurityHandler implements ISecurityHandler {
 
 	@Override
-	public boolean isUserInRole(String role, IPipeLineSession session) {
+	public boolean isUserInRole(String role, PipeLineSession session) {
 		return true;
 	}
 
 	@Override
-	public Principal getPrincipal(IPipeLineSession session) throws NotImplementedException {
+	public Principal getPrincipal(PipeLineSession session) throws NotImplementedException {
 		throw new NotImplementedException("no default user available");
 	}
 

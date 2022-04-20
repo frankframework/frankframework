@@ -3,9 +3,17 @@ package nl.nn.adapterframework.pipes;
 import static nl.nn.adapterframework.testutil.MatchUtils.assertXmlEquals;
 import static org.junit.Assert.assertEquals;
 
+import java.io.IOException;
+
 import org.junit.Test;
 
+import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.pipes.IteratingPipe.StopReason;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
@@ -35,7 +43,7 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String actual = Message.asString(prr.getResult());
 
-		assertEquals(expectedLog, resultLog.toString().trim());
+		assertEquals(expectedLogFile, expectedLog, resultLog.toString().trim());
 		assertEquals(expected, actual);
 	}
 
@@ -59,9 +67,9 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 	}
 
 
-	public void testFullBlocksWithCombine(boolean blockEnabled, boolean combinedBlocks, String expectedFile, String expectedLogFile) throws Exception {
+	public void testBlocksWithCombine(boolean blockEnabled, boolean combinedBlocks, int blockSize, String expectedFile, String expectedLogFile) throws Exception {
 		pipe.setSender(getElementRenderer(blockEnabled));
-		pipe.setBlockSize(5);
+		pipe.setBlockSize(blockSize);
 		pipe.setLinePrefix("{"); 
 		pipe.setLineSuffix("}");
 		pipe.setCombineBlocks(combinedBlocks);
@@ -75,25 +83,43 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String actual = Message.asString(prr.getResult());
 
-		assertEquals(expectedLog, resultLog.toString().trim());
-		assertEquals(expected, actual);
+		assertEquals(expectedLogFile, expectedLog, resultLog.toString().trim());
+		assertEquals(expectedFile, expected, actual);
 	}
 
 	@Test
 	public void testFullBlocksWithCombineOff() throws Exception {
-		testFullBlocksWithCombine(false, false, "/IteratingPipe/TenLinesResultWithLineFixes.xml", "/IteratingPipe/TenLinesLogPlainWithLineFixes.txt");
+		testBlocksWithCombine(false, false, 5, "/IteratingPipe/TenLinesResultWithLineFixes.xml", "/IteratingPipe/TenLinesLogPlainWithLineFixes.txt");
 	}
 	@Test
 	public void testFullBlocksWithCombineOn() throws Exception {
-		testFullBlocksWithCombine(false, true, "/IteratingPipe/TenLinesResultCombinedInBlocksOfFiveWithLineFixes.xml", "/IteratingPipe/TenLinesLogCombinedInBlocksOfFiveWithLineFixes.txt");
+		testBlocksWithCombine(false, true, 5, "/IteratingPipe/TenLinesResultCombinedInBlocksOfFiveWithLineFixes.xml", "/IteratingPipe/TenLinesLogCombinedInBlocksOfFiveWithLineFixes.txt");
 	}
 	@Test
 	public void testFullBlocksWithCombineOffBlockEnabled() throws Exception {
-		testFullBlocksWithCombine(true, false, "/IteratingPipe/TenLinesResultWithLineFixesBlockEnabled.xml", "/IteratingPipe/TenLinesLogInBlocksOfFiveWithLineFixesBlockEnabled.txt");
+		testBlocksWithCombine(true, false, 5, "/IteratingPipe/TenLinesResultWithLineFixesBlockEnabled.xml", "/IteratingPipe/TenLinesLogInBlocksOfFiveWithLineFixesBlockEnabled.txt");
 	}
 	@Test
 	public void testFullBlocksWithCombineOnBlockEnabled() throws Exception {
-		testFullBlocksWithCombine(true, true, "/IteratingPipe/TenLinesResultCombinedInBlocksOfFiveWithLineFixesBlockEnabled.xml", "/IteratingPipe/TenLinesLogCombinedInBlocksOfFiveWithLineFixesBlockEnabled.txt");
+		testBlocksWithCombine(true, true, 5, "/IteratingPipe/TenLinesResultCombinedInBlocksOfFiveWithLineFixesBlockEnabled.xml", "/IteratingPipe/TenLinesLogCombinedInBlocksOfFiveWithLineFixesBlockEnabled.txt");
+	}
+
+	@Test
+	public void testBlocksOf1WithCombineOff() throws Exception {
+		testBlocksWithCombine(false, false, 1, "/IteratingPipe/TenLinesResultWithLineFixes.xml", "/IteratingPipe/TenLinesLogPlainWithLineFixes.txt");
+	}
+	@Test
+	public void testBlocksOf1WithCombineOn() throws Exception {
+		testBlocksWithCombine(false, true, 1, "/IteratingPipe/TenLinesResultCombinedInBlocksOfOneWithLineFixes.xml", "/IteratingPipe/TenLinesLogCombinedInBlocksOfOneWithLineFixes.txt");
+	}
+
+	@Test
+	public void testBlocksOf1WithCombineOffBlockEnabled() throws Exception {
+		testBlocksWithCombine(true, false, 1, "/IteratingPipe/TenLinesResultWithLineFixesBlockEnabled.xml", "/IteratingPipe/TenLinesLogInBlocksOfOneWithLineFixesBlockEnabled.txt");
+	}
+	@Test
+	public void testBlocksOf1WithCombineOnBlockEnabled() throws Exception {
+		testBlocksWithCombine(true, true, 1, "/IteratingPipe/TenLinesResultCombinedInBlocksOfOneWithLineFixesBlockEnabled.xml", "/IteratingPipe/TenLinesLogCombinedInBlocksOfOneWithLineFixesBlockEnabled.txt");
 	}
 
 	@Test
@@ -136,6 +162,49 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 	}
 
 	@Test
+	public void testMaxItemsWithSpecialForward() throws Exception {
+		pipe.setSender(getElementRenderer(false));
+		pipe.setBlockSize(4);
+		pipe.setMaxItems(7);
+		pipe.setLinePrefix("{");
+		pipe.setLineSuffix("}");
+		pipe.setCombineBlocks(true);
+		pipe.registerForward(new PipeForward(StopReason.MAX_ITEMS_REACHED.getForwardName(),"dummy"));
+		configurePipe();
+		pipe.start();
+
+		Message input = TestFileUtils.getTestFileMessage("/IteratingPipe/TenLines.txt");
+		String expected = TestFileUtils.getTestFile("/IteratingPipe/SevenLinesResultInBlocksOfFour.xml");
+		
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String actual = Message.asString(prr.getResult());
+		
+		assertEquals(StopReason.MAX_ITEMS_REACHED.getForwardName(), prr.getPipeForward().getName());
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void testMaxItemsReachedWithoutSpecialForwardRegistered() throws Exception {
+		pipe.setSender(getElementRenderer(false));
+		pipe.setBlockSize(4);
+		pipe.setMaxItems(7);
+		pipe.setLinePrefix("{");
+		pipe.setLineSuffix("}");
+		pipe.setCombineBlocks(true);
+		configurePipe();
+		pipe.start();
+
+		Message input = TestFileUtils.getTestFileMessage("/IteratingPipe/TenLines.txt");
+		String expected = TestFileUtils.getTestFile("/IteratingPipe/SevenLinesResultInBlocksOfFour.xml");
+		
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String actual = Message.asString(prr.getResult());
+		
+		assertEquals(PipeForward.SUCCESS_FORWARD_NAME, prr.getPipeForward().getName());
+		assertEquals(expected, actual);
+	}
+
+	@Test
 	public void testBlocksByKey() throws Exception {
 		pipe.setSender(getElementRenderer(false));
 		pipe.setStartPosition(4);
@@ -154,6 +223,28 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 
 		assertEquals(expected, actual);
 	}
+	
+	@Test
+	public void testBlocksByKeyWithStopConditionXpath() throws Exception {
+		pipe.setSender(getElementRenderer());
+		pipe.setStartPosition(4);
+		pipe.setEndPosition(5);
+		pipe.registerForward(new PipeForward(StopReason.STOP_CONDITION_MET.getForwardName(), "dummy"));
+		pipe.setStopConditionXPathExpression("/block='key 4 nine'");
+		pipe.setCombineBlocks(true);
+		configurePipe();
+		pipe.start();
+
+		Message input = TestFileUtils.getTestFileMessage("/IteratingPipe/TenLines.txt");
+		String expected = TestFileUtils.getTestFile("/IteratingPipe/TenLinesResultStopConditionXpath.xml");
+
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String actual = Message.asString(prr.getResult());
+
+		assertEquals(expected, actual);
+		assertEquals(StopReason.STOP_CONDITION_MET.getForwardName(), prr.getPipeForward().getName());
+	}
+	
 
 	@Test
 	public void testBasicWithoutXmlEscaping() throws Exception {
@@ -217,5 +308,22 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 
 		assertXmlEquals(expected, actual);
 		
+	}
+	
+	private ISender getElementRenderer() {
+		resultLog = new StringBuffer();
+		// returns the renderer that does not surround the input with brackets
+		return new BlockEnabledRenderer() {
+			@Override
+			public Message sendMessage(String blockHandle, Message message, PipeLineSession session) throws SenderException, TimeoutException {
+				try {
+					String result = message.asString();
+					resultLog.append(result+"\n");
+					return new Message(result);
+				} catch (IOException e) {
+					throw new SenderException(e);
+				}
+			}
+		};
 	}
 }

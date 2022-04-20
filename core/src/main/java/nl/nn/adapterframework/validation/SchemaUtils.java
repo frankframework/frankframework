@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2015 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,8 +25,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,6 +42,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.EndElement;
+import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
@@ -76,30 +78,27 @@ public class SchemaUtils {
 	public static final QName NAMESPACE		 = new QName(null, "namespace");
 	public static final QName NAME			 = new QName(null, "name");
 
-	public static final javax.xml.namespace.QName WSDL_SCHEMA = new javax.xml.namespace.QName(XSD, "schema", "");
+	public static final QName WSDL_SCHEMA = new QName(XSD, "schema", "");
 
-	public static Set<XSD> getXsdsRecursive(Set<XSD> xsds)
-			throws ConfigurationException {
-		return getXsdsRecursive(xsds, true);
+	public static Set<XSD> getXsdsRecursive(Set<XSD> xsds) throws ConfigurationException {
+		return getXsdsRecursive(xsds, false);
 	}
-	
-	public static Set<XSD> getXsdsRecursive(Set<XSD> xsds, boolean ignoreRedefine)
-			throws ConfigurationException {
-		Set<XSD> xsdsRecursive = new HashSet<XSD>();
+
+	public static Set<XSD> getXsdsRecursive(Set<XSD> xsds, boolean supportRedefine) throws ConfigurationException {
+		Set<XSD> xsdsRecursive = new LinkedHashSet<XSD>();
 		xsdsRecursive.addAll(xsds);
 		for (XSD xsd : xsds) {
-			xsdsRecursive.addAll(xsd.getXsdsRecursive(ignoreRedefine));
+			xsdsRecursive.addAll(xsd.getXsdsRecursive(supportRedefine));
 		}
 		return xsdsRecursive;
 	}
 
-	public static Map<String, Set<XSD>> getXsdsGroupedByNamespace(Set<XSD> xsds,
-			boolean sort) throws XMLStreamException, IOException {
+	public static Map<String, Set<XSD>> getXsdsGroupedByNamespace(Set<XSD> xsds, boolean sort) {
 		Map<String, Set<XSD>> result;
 		if (sort) {
 			result = new TreeMap<String, Set<XSD>>();
 		} else {
-			result = new HashMap<String, Set<XSD>>();
+			result = new LinkedHashMap<String, Set<XSD>>();
 		}
 		for (XSD xsd : xsds) {
 			Set<XSD> set = result.get(xsd.getNamespace());
@@ -107,7 +106,7 @@ public class SchemaUtils {
 				if (sort) {
 					set = new TreeSet<XSD>();
 				} else {
-					set = new HashSet<XSD>();
+					set = new LinkedHashSet<XSD>();
 				}
 				result.put(xsd.getNamespace(), set);
 			}
@@ -116,41 +115,39 @@ public class SchemaUtils {
 		return result;
 	}
 
-	public static void
-			mergeRootXsdsGroupedByNamespaceToSchemasWithIncludes(
-			Map<String, Set<XSD>> rootXsdsGroupedByNamespace,
-			XMLStreamWriter xmlStreamWriter)
-			throws IOException, XMLStreamException {
-		// As the root XSD's are written as includes there's no need to change
-		// the imports and includes in the root XSD's.
+	public static void mergeRootXsdsGroupedByNamespaceToSchemasWithIncludes(Map<String, Set<XSD>> rootXsdsGroupedByNamespace, XMLStreamWriter xmlStreamWriter) throws XMLStreamException {
+		// As the root XSD's are written as includes there's no need to change the imports and includes in the root XSD's.
 		for (String namespace: rootXsdsGroupedByNamespace.keySet()) {
 			xmlStreamWriter.writeStartElement(XSD, "schema");
 			xmlStreamWriter.writeAttribute("targetNamespace", namespace);
 			for (XSD xsd : rootXsdsGroupedByNamespace.get(namespace)) {
 				xmlStreamWriter.writeEmptyElement(XSD, "include");
-				xmlStreamWriter.writeAttribute("schemaLocation",
-						xsd.getResourceTarget());
+				xmlStreamWriter.writeAttribute("schemaLocation", xsd.getResourceTarget());
 			}
 			xmlStreamWriter.writeEndElement();
 		}
 	}
 
-	
+	public static void addTargetNamespaceToXsds(Set<XSD> xsds) throws ConfigurationException {
+		for (XSD xsd:xsds) {
+			xsd.addTargetNamespace();
+		}
+	}
+
 	/**
-	 * @return XSD's when xmlStreamWriter is null, otherwise write to
-	 *		 xmlStreamWriter
+	 * @return XSD's when xmlStreamWriter is null, otherwise write to xmlStreamWriter
 	 */
 	public static Set<XSD> mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(IScopeProvider scopeProvider, Map<String, Set<XSD>> xsdsGroupedByNamespace, XMLStreamWriter xmlStreamWriter) throws XMLStreamException, IOException, ConfigurationException {
-		Set<XSD> resultXsds = new HashSet<XSD>();
+		Set<XSD> resultXsds = new LinkedHashSet<XSD>();
 		for (String namespace: xsdsGroupedByNamespace.keySet()) {
 			Set<XSD> xsds = xsdsGroupedByNamespace.get(namespace);
 			// Get attributes of root elements and get import elements from all XSD's
 			List<Attribute> rootAttributes = new ArrayList<Attribute>();
-			List<Attribute> rootNamespaceAttributes = new ArrayList<Attribute>();
+			List<Namespace> rootNamespaceAttributes = new ArrayList<Namespace>();
 			List<XMLEvent> imports = new ArrayList<XMLEvent>();
 			for (XSD xsd: xsds) {
 				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-				XMLStreamWriter w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(byteArrayOutputStream, XmlUtils.STREAM_FACTORY_ENCODING);
+				XMLStreamWriter w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(byteArrayOutputStream, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 				xsdToXmlStreamWriter(xsd, w, false, true, false, false, rootAttributes, rootNamespaceAttributes, imports, true);
 			}
 			// Write XSD's with merged root element
@@ -163,7 +160,7 @@ public class SchemaUtils {
 				//resultXsd.setNamespace(namespace);
 				resultXsd.setByteArrayOutputStream(byteArrayOutputStream);
 				//resultXsd.setSourceXsds(xsds);
-				w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(byteArrayOutputStream, XmlUtils.STREAM_FACTORY_ENCODING);
+				w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(byteArrayOutputStream, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 			} else {
 				w = xmlStreamWriter;
 			}
@@ -196,52 +193,30 @@ public class SchemaUtils {
 		return resultXsds;
 	}
 
-	public static void xsdToXmlStreamWriter(final XSD xsd,
-			XMLStreamWriter xmlStreamWriter)
-			throws IOException, ConfigurationException {
-		xsdToXmlStreamWriter(xsd, xmlStreamWriter, true, false, false, false,
-				null, null, null, false);
+	public static void xsdToXmlStreamWriter(final XSD xsd, XMLStreamWriter xmlStreamWriter) throws IOException, ConfigurationException {
+		xsdToXmlStreamWriter(xsd, xmlStreamWriter, true, false, false, false, null, null, null, false);
 	}
 
 	/**
-	 * Including a {@link nl.nn.adapterframework.validation.XSD} into an
-	 * {@link javax.xml.stream.XMLStreamWriter} while parsing it. It is parsed
-	 * (using a low level {@link javax.xml.stream.XMLEventReader} so that
-	 * certain things can be corrected on the fly.
+	 * Including a {@link nl.nn.adapterframework.validation.XSD} into an {@link javax.xml.stream.XMLStreamWriter} while parsing it. It is parsed
+	 * (using a low level {@link javax.xml.stream.XMLEventReader} so that certain things can be corrected on the fly.
+	 *
 	 * @param xsd
 	 * @param xmlStreamWriter
-	 * @param standalone
-	 * When standalone the start and end document contants are ignored, hence
-	 * the xml declaration is ignored.
-	 * @param stripSchemaLocationFromImport
-	 * Useful when generating a WSDL which should contain all XSD's inline
-	 * (without includes or imports). The XSD might have an import with
-	 * schemaLocation to make it valid on it's own, when
-	 * stripSchemaLocationFromImport is true it will be removed.
-	 * @throws java.io.IOException, XMLStreamException
+	 * @param standalone When standalone the start and end document contants are ignored, hence the xml declaration is ignored.
+	 * @param stripSchemaLocationFromImport Useful when generating a WSDL which should contain all XSD's inline (without includes or imports).
+	 *        The XSD might have an import with schemaLocation to make it valid on it's own, when stripSchemaLocationFromImport is true it will be removed.
 	 */
-	public static void xsdToXmlStreamWriter(final XSD xsd,
-			XMLStreamWriter xmlStreamWriter, boolean standalone,
-			boolean stripSchemaLocationFromImport, boolean skipRootStartElement,
-			boolean skipRootEndElement, List<Attribute> rootAttributes,
-			List<Attribute> rootNamespaceAttributes, List<XMLEvent> imports,
-			boolean noOutput) throws IOException, ConfigurationException {
+	public static void xsdToXmlStreamWriter(final XSD xsd, XMLStreamWriter xmlStreamWriter, boolean standalone, boolean stripSchemaLocationFromImport, boolean skipRootStartElement, boolean skipRootEndElement, List<Attribute> rootAttributes, List<Namespace> rootNamespaceAttributes, List<XMLEvent> imports, boolean noOutput) throws IOException, ConfigurationException {
 		Map<String, String> namespacesToCorrect = new HashMap<String, String>();
-		NamespaceCorrectingXMLStreamWriter namespaceCorrectingXMLStreamWriter =
-				new NamespaceCorrectingXMLStreamWriter(xmlStreamWriter,
-						namespacesToCorrect);
-		final XMLStreamEventWriter streamEventWriter = new XMLStreamEventWriter(
-				namespaceCorrectingXMLStreamWriter);
-		InputStream in = null;
-		in = xsd.getInputStream();
-		if (in == null) {
-			throw new IllegalStateException("" + xsd + " not found");
-		}
+		NamespaceCorrectingXMLStreamWriter namespaceCorrectingXMLStreamWriter = new NamespaceCorrectingXMLStreamWriter(xmlStreamWriter, namespacesToCorrect);
+		final XMLStreamEventWriter streamEventWriter = new XMLStreamEventWriter(namespaceCorrectingXMLStreamWriter);
 		XMLEvent event = null;
-		try {
-			XMLEventReader er =
-					XmlUtils.INPUT_FACTORY.createXMLEventReader(
-							in, XmlUtils.STREAM_FACTORY_ENCODING);
+		try (InputStream in = xsd.getInputStream()) {
+			if (in == null) {
+				throw new IllegalStateException("" + xsd + " not found");
+			}
+			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(in, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 			while (er.hasNext()) {
 				event = er.nextEvent();
 				switch (event.getEventType()) {
@@ -250,7 +225,7 @@ public class SchemaUtils {
 						if (! standalone) {
 							continue;
 						}
-						// fall through
+					//$FALL-THROUGH$
 					case XMLStreamConstants.SPACE:
 					case XMLStreamConstants.COMMENT:
 						break;
@@ -278,11 +253,11 @@ public class SchemaUtils {
 											rootAttributes.add(attribute);
 										}
 									}
-									iterator = startElement.getNamespaces();
-									while (iterator.hasNext()) {
-										Attribute attribute = iterator.next();
+									Iterator<Namespace> namespaceIterator = startElement.getNamespaces();
+									while (namespaceIterator.hasNext()) {
+										Namespace attribute = namespaceIterator.next();
 										boolean add = true;
-										for (Attribute attribute2 : rootNamespaceAttributes) {
+										for (Namespace attribute2 : rootNamespaceAttributes) {
 											if (XmlUtils.attributesEqual(attribute, attribute2)) {
 												add = false;
 											}
@@ -292,8 +267,7 @@ public class SchemaUtils {
 										}
 									}
 								} else {
-									// Second call to this method writing attributes
-									// from previous call.
+									// Second call to this method writing attributes from previous call.
 									startElement = XmlUtils.EVENT_FACTORY.createStartElement(
 											startElement.getName().getPrefix(),
 											startElement.getName().getNamespaceURI(),
@@ -303,21 +277,11 @@ public class SchemaUtils {
 											startElement.getNamespaceContext());
 								}
 							}
-							// Don't modify the reserved namespace
-							// http://www.w3.org/XML/1998/namespace
-							// which is by definition bound to the prefix xml
-							// (see http://www.w3.org/TR/xml-names/#ns-decl).
-							if (xsd.isAddNamespaceToSchema()
-									&& !xsd.getNamespace().equals("http://www.w3.org/XML/1998/namespace")
-									) {
+							// Don't modify the reserved namespace http://www.w3.org/XML/1998/namespace which is by definition bound to the prefix xml (see http://www.w3.org/TR/xml-names/#ns-decl).
+							if (xsd.isAddNamespaceToSchema() && !xsd.getNamespace().equals("http://www.w3.org/XML/1998/namespace")) {
 								event = XmlUtils.mergeAttributes(startElement,
-										Arrays.asList(
-											new AttributeEvent(TNS, xsd.getNamespace()),
-											new AttributeEvent(ELFORMDEFAULT, "qualified")
-										).iterator(),
-										Arrays.asList(
-											XmlUtils.EVENT_FACTORY.createNamespace(xsd.getNamespace())
-										).iterator(),
+										Arrays.asList(new AttributeEvent(TNS, xsd.getNamespace()), new AttributeEvent(ELFORMDEFAULT, "qualified")).iterator(),
+										Arrays.asList(XmlUtils.EVENT_FACTORY.createNamespace(xsd.getNamespace())).iterator(),
 										XmlUtils.EVENT_FACTORY
 									);
 								if (!event.equals(startElement)) {
@@ -333,19 +297,14 @@ public class SchemaUtils {
 								event = startElement;
 							}
 							if (imports != null && !noOutput) {
-								// Second call to this method writing imports
-								// collected in previous call.
-								// List contains start and end elements, hence add
-								// 2 on every iteration.
+								// Second call to this method writing imports collected in previous call.
+								// List contains start and end elements, hence add 2 on every iteration.
 								for (int i = 0; i < imports.size(); i = i + 2) {
 									boolean skip = false;
 									for (int j = 0; j < i; j = j + 2) {
-										Attribute attribute1 =
-												imports.get(i).asStartElement().getAttributeByName(NAMESPACE);
-										Attribute attribute2 =
-												imports.get(j).asStartElement().getAttributeByName(NAMESPACE);
-										if (attribute1 != null && attribute2 != null
-												&& attribute1.getValue().equals(attribute2.getValue())) {
+										Attribute attribute1 = imports.get(i).asStartElement().getAttributeByName(NAMESPACE);
+										Attribute attribute2 = imports.get(j).asStartElement().getAttributeByName(NAMESPACE);
+										if (attribute1 != null && attribute2 != null && attribute1.getValue().equals(attribute2.getValue())) {
 											skip = true;
 										}
 									}
@@ -388,9 +347,7 @@ public class SchemaUtils {
 										if (relativeTo.length() > 0 && location.startsWith(relativeTo)) {
 											location = location.substring(relativeTo.length());
 										}
-										event =
-											XMLStreamUtils.mergeAttributes(startElement,
-												Collections.singletonList(new AttributeEvent(SCHEMALOCATION, location)).iterator(), XmlUtils.EVENT_FACTORY);
+										event = XMLStreamUtils.mergeAttributes(startElement, Collections.singletonList(new AttributeEvent(SCHEMALOCATION, location)).iterator(), XmlUtils.EVENT_FACTORY);
 									}
 								}
 							}
@@ -433,9 +390,7 @@ public class SchemaUtils {
 			}
 			streamEventWriter.flush();
 		} catch (XMLStreamException e) {
-			throw new ConfigurationException(
-					xsd.toString() + " (" + event.getLocation() + "): "
-					+ e.getMessage(), e);
+			throw new ConfigurationException(xsd.toString() + " (" + event.getLocation() + ")", e);
 		}
 	}
 
@@ -444,10 +399,7 @@ public class SchemaUtils {
 		return new ByteArrayInputStream(toString(wsdlDefinition, wsdlSchema).getBytes(StreamUtil.DEFAULT_CHARSET));
 	}
 
-	public static String toString(
-			javax.wsdl.Definition wsdlDefinition,
-			javax.wsdl.extensions.schema.Schema wsdlSchema
-			) throws javax.wsdl.WSDLException {
+	public static String toString(javax.wsdl.Definition wsdlDefinition, javax.wsdl.extensions.schema.Schema wsdlSchema) throws javax.wsdl.WSDLException {
 		StringWriter w = new StringWriter();
 		PrintWriter res = new PrintWriter(w);
 		/*
@@ -455,31 +407,33 @@ public class SchemaUtils {
 		 * https://issues.apache.org/jira/browse/AXIS2-4517)
 		 */
 		synchronized (wsdlDefinition) {
-			com.ibm.wsdl.extensions.schema.SchemaSerializer schemaSerializer =
-					new com.ibm.wsdl.extensions.schema.SchemaSerializer();
-			schemaSerializer.marshall(Object.class, WSDL_SCHEMA, wsdlSchema, res,
-					wsdlDefinition, wsdlDefinition.getExtensionRegistry());
+			com.ibm.wsdl.extensions.schema.SchemaSerializer schemaSerializer = new com.ibm.wsdl.extensions.schema.SchemaSerializer();
+			schemaSerializer.marshall(Object.class, WSDL_SCHEMA, wsdlSchema, res, wsdlDefinition, wsdlDefinition.getExtensionRegistry());
 		}
 		return w.toString().trim();
 	}
 
 	public static void sortByDependencies(Set<XSD> xsds, List<Schema> schemas) throws ConfigurationException {
-		Set<XSD> xsdsWithDependencies = new HashSet<XSD>();
+		Set<XSD> xsdsWithDependencies = new LinkedHashSet<XSD>();
 		Iterator<XSD> iterator = xsds.iterator();
 		while (iterator.hasNext()) {
 			XSD xsd = iterator.next();
 			if (xsd.hasDependency(xsds)) {
 				xsdsWithDependencies.add(xsd);
 			} else {
-				schemas.add((Schema)xsd);
+				schemas.add(xsd);
 			}
 		}
 		if (xsds.size() == xsdsWithDependencies.size()) {
-			String message = "Circular dependencies between schemas:";
-			for (XSD xsd : xsdsWithDependencies) {
-				message = message + " [" + xsd.toString() + " with target namespace " + xsd.getTargetNamespace() + " and imported namespaces " + xsd.getImportedNamespaces() + "]";
+			if (LOG.isDebugEnabled()) {
+				String message = "Circular dependencies between schemas:";
+				for (XSD xsd : xsdsWithDependencies) {
+					message = message + " [" + xsd.toString() + " with target namespace " + xsd.getTargetNamespace() + " and imported namespaces " + xsd.getImportedNamespaces() + "]";
+				}
+				LOG.debug(message);
 			}
-			throw new ConfigurationException(message);
+			schemas.addAll(xsds);
+			return;
 		}
 		if (xsdsWithDependencies.size() > 0) {
 			sortByDependencies(xsdsWithDependencies, schemas);

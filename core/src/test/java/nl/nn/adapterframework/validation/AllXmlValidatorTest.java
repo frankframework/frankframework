@@ -12,7 +12,6 @@ public class AllXmlValidatorTest extends AbstractXmlValidatorTestBase {
 
 	public AllXmlValidatorTest(Class<AbstractXmlValidator> implementation) {
 		super(implementation);
-    }
-	
+	}
 
 }

@@ -14,7 +14,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.util.EntityResolvingTest;
 
 @RunWith(value = Parameterized.class)
@@ -49,13 +49,13 @@ public class ValidatorEntityExpansionTest extends EntityResolvingTest {
 //		return result;
 		AbstractXmlValidator instance = implementation.newInstance();
 		System.out.println("Created instance [" + instance.getClass().getName() + "]");
-		instance.setSchemasProvider(new SchemasProviderImpl(SCHEMA_NAMESPACE, xsd));
+		instance.setSchemasProvider(new DummySchemasProviderImpl(SCHEMA_NAMESPACE, xsd));
 		instance.setThrowException(true);
 		instance.setFullSchemaChecking(true);
 		instance.configure("init");
 		instance.start();
 
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		ValidationContext context = instance.createValidationContext(session, null, null);
 		ValidatorHandler validatorHandler = instance.getValidatorHandler(session, context);
 		StringReader sr = new StringReader(xmlIn);
@@ -116,7 +116,7 @@ public class ValidatorEntityExpansionTest extends EntityResolvingTest {
 		instance.validate(is, validatorHandler, session, context);
 
 		XmlValidatorErrorHandler errorHandler = context.getErrorHandler();
-		if (errorHandler.hasErrorOccured()) {
+		if (errorHandler.isErrorOccurred()) {
 			throw new SAXException(errorHandler.getReasons());
 		}
 		return sb.toString();

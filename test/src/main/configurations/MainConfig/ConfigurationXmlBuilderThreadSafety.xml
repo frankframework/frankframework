@@ -1,8 +1,6 @@
 <module>
 	<adapter name="XmlBuilderThreadSafety">
-		<receiver
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
-			>
+		<receiver>
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-XmlBuilderThreadSafety"
@@ -20,52 +18,42 @@
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						jmsRealm="jdbc"
 					/>
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						jmsRealm="jdbc"
 					/>
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						jmsRealm="jdbc"
 					/>
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						jmsRealm="jdbc"
 					/>
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						jmsRealm="jdbc"
 					/>
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						jmsRealm="jdbc"
 					/>
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						jmsRealm="jdbc"
 					/>
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						jmsRealm="jdbc"
 					/>
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						jmsRealm="jdbc"
 					/>
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						jmsRealm="jdbc"
 					/>
 				</sender>	
 	        	<forward name="success" path="Echo"/>

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,37 +18,62 @@ package nl.nn.adapterframework.jdbc.dbms;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
+import javax.sql.DataSource;
+
+import nl.nn.adapterframework.jndi.TransactionalDbmsSupportAwareDataSourceProxy;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 /**
  * @author  Gerrit van Brakel
- * @since  
  */
 public class DbmsSupportFactory implements IDbmsSupportFactory {
-	protected Logger log = LogUtil.getLogger(this.getClass());
+	private Logger log = LogUtil.getLogger(this.getClass());
 
+	private Map<DataSource, IDbmsSupport> dbmsSupport = new ConcurrentHashMap<>();
 
 	private Properties dbmsSupportMap; 
 
 	@Override
-	public IDbmsSupport getDbmsSupport(Connection conn) {
-		String product;
-		String productVersion;
+	public IDbmsSupport getDbmsSupport(DataSource datasource) {
+		return dbmsSupport.computeIfAbsent(datasource, this::compute);
+	}
+
+	private IDbmsSupport compute(DataSource datasource) {
 		try {
-			DatabaseMetaData md = conn.getMetaData();
-			product = md.getDatabaseProductName();
-			productVersion = md.getDatabaseProductVersion();
-			
-			log.debug("found product ["+product+"] productVersion ["+productVersion+"]");
+			if(datasource instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
+				Map<String, String> md = ((TransactionalDbmsSupportAwareDataSourceProxy) datasource).getMetaData();
+				return getDbmsSupport(md.get("product"), md.get("product-version"));
+			}
+
+			try(Connection connection = datasource.getConnection()) {
+				return getDbmsSupport(connection);
+			}
+		} catch (SQLException e) {
+			log.warn("SQL exception while trying to get a connection from datasource ["+datasource+"]", e);
+			return new GenericDbmsSupport();
+		}
+	}
+
+	public IDbmsSupport getDbmsSupport(Connection connection) throws SQLException {
+		try {
+			DatabaseMetaData md = connection.getMetaData();
+			String name = md.getDatabaseProductName();
+			String version = md.getDatabaseProductVersion();
+			return getDbmsSupport(name, version);
 		} catch (SQLException e1) {
 			throw new RuntimeException("cannot obtain product from connection metadata", e1);
 		}
+	}
+
+	private IDbmsSupport getDbmsSupport(String product, String productVersion) {
 		if (StringUtils.isEmpty(product)) {
 			log.warn("no product found from connection metadata");
 		} else {
@@ -68,7 +93,7 @@ public class DbmsSupportFactory implements IDbmsSupportFactory {
 							return (IDbmsSupport)ClassUtils.newInstance(dbmsSupportClass);
 						} catch (Exception e) {
 							throw new RuntimeException("Cannot create dbmsSupportClass ["+dbmsSupportClass+"] for product ["+product+"] productVersion ["+productVersion+"]",e);
-						} 
+						}
 					}
 				}
 			}

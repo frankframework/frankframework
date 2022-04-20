@@ -8,7 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.senders.EchoSender;
 import nl.nn.adapterframework.senders.SenderSeries;
@@ -31,7 +31,7 @@ public abstract class ForEachAttachmentPipeTest<P extends ForEachAttachmentPipe<
 		pipe = createForEachAttachmentPipe();
 		pipe.registerForward(new PipeForward("success",null));
 		SenderSeries series = new SenderSeries();
-		series.setSender(new EchoSender());
+		series.registerSender(new EchoSender());
 		pipe.setSender(series);
 	}
 
@@ -69,15 +69,15 @@ public abstract class ForEachAttachmentPipeTest<P extends ForEachAttachmentPipe<
 		String propvalue2="propvalue2";
 		
 		String expected="<results>\n"+
-           "<result item=\"1\">\n"+
-           "<attachment name=\"testAttachmentName\" filename=\"testAttachmentFileName\" contentType=\"testAttachmentContentType\" size=\"18\">\r\n"+
-           "  <properties>\r\n"+
-           "    <property name=\"propname1\">propvalue1</property>\r\n"+
-           "    <property name=\"propname2\">propvalue2</property>\r\n"+
-           "  </properties>\r\n"+
-           "</attachment>\r\n\n"+
-           "</result>\n"+
-           "</results>";
+							"<result item=\"1\">\n"+
+							"<attachment name=\"testAttachmentName\" filename=\"testAttachmentFileName\" contentType=\"testAttachmentContentType\" size=\"18\">\n"+
+							"	<properties>\n"+
+							"		<property name=\"propname1\">propvalue1</property>\n"+
+							"		<property name=\"propname2\">propvalue2</property>\n"+
+							"	</properties>\n"+
+							"</attachment>\n"+
+							"</result>\n"+
+						"</results>";
 		
 		pipe.configure();
 		pipe.start();
@@ -89,7 +89,7 @@ public abstract class ForEachAttachmentPipeTest<P extends ForEachAttachmentPipe<
 		getHelper().addAttachment(null, filename, attachment);
 		waitForActionToFinish();
 		
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 
 
 		// test

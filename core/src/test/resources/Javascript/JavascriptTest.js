@@ -21,8 +21,8 @@ function f3(x,y,z){
 }
 
 function f4(x,y) {
-	var a = x * 5;
-	var b = y * 2;
+	var a = x * 5 + ""; //ensure it's a string, else it cannot be parsed by nashorn
+	var b = y * 2 + "";
 
 	var c = myFunction(a);
 	var d = myFunction(b);
@@ -31,7 +31,7 @@ function f4(x,y) {
 }
 
 //Used to test the performance.
-function performance(x){
+function performance(x) {
 	var data = [];
 	for (var i = 0; i < x; i++) {
 		data[i] = i;
@@ -49,4 +49,9 @@ function performance(x){
 	return "1";
 }
 
-
+function promise() {
+	let p = Promise.resolve("success");
+	p.then(function(v) {
+		result(v);
+	});
+}

@@ -2,15 +2,13 @@
 	<adapter name="WsdlGenerator" active="${active.jms}">
 		<errorMessageFormatter
 			className="nl.nn.adapterframework.errormessageformatters.SoapErrorMessage" />
-		<receiver name="WsdlGenerator"
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
+		<receiver
 			numThreads="4">
 			<listener className="nl.nn.adapterframework.extensions.esb.EsbJmsListener"
-				destinationName="jms/i4testiaf_in" jmsRealm="qcf" messageProtocol="RR"
+				destinationName="${jms.destination.i4testiaf_in}" jmsRealm="qcf" messageProtocol="RR"
 				messageSelector="SOURCE ='I4TIAF2a'" />
 		</receiver>
-		<receiver name="WsdlGenerator-java"
-			className="nl.nn.adapterframework.receivers.GenericReceiver">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-WsdlGenerator" />
 		</receiver>
@@ -47,8 +45,8 @@
 					value="ESB.HumanResources.BS.AccessRightsManagement.AccessRightsManagement.1.GetUserAndOfficeDataIntermediary.1.Response" />
 			</outputWrapper>
 
-			<pipe name="FixedReply" className="nl.nn.adapterframework.pipes.FixedResult"
-				fileName="WsdlGenerator/xml/fixedReply.xml">
+			<pipe name="FixedReply" className="nl.nn.adapterframework.pipes.FixedResultPipe"
+				filename="WsdlGenerator/xml/fixedReply.xml">
 				<forward name="success" path="READY" />
 			</pipe>
 
@@ -57,11 +55,10 @@
 	<adapter name="WsdlGenerator2" active="${active.jms}">
 		<errorMessageFormatter
 			className="nl.nn.adapterframework.errormessageformatters.SoapErrorMessage" />
-		<receiver name="WsdlGenerator2"
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
+		<receiver
 			numThreads="4">
 			<listener className="nl.nn.adapterframework.extensions.esb.EsbJmsListener"
-				destinationName="jms/i4testiaf_in" jmsRealm="qcf" messageProtocol="RR"
+				destinationName="${jms.destination.i4testiaf_in}" jmsRealm="qcf" messageProtocol="RR"
 				messageSelector="SOURCE ='I4TIAF2b'" />
 		</receiver>
 		<pipeline firstPipe="FixedReply">
@@ -93,8 +90,8 @@
 				schemaLocation="http://nn.nl/XSD/PropertyAndCasualtyRetail/Vehicle/PropertyAndCasualtyRetailVehicle/1/FindVehicle/1 /WsdlGenerator/xsd/XSD_FindVehicleType_Reply.xsd"
 				soapBody="FindVehicleTypeRLY" throwException="true" />
 
-			<pipe name="FixedReply" className="nl.nn.adapterframework.pipes.FixedResult"
-				fileName="WsdlGenerator/xml/fixedReply2.xml">
+			<pipe name="FixedReply" className="nl.nn.adapterframework.pipes.FixedResultPipe"
+				filename="WsdlGenerator/xml/fixedReply2.xml">
 				<forward name="success" path="READY" />
 			</pipe>
 
@@ -103,15 +100,13 @@
 	<adapter name="WsdlGenerator3" active="${active.jms}">
 		<errorMessageFormatter
 			className="nl.nn.adapterframework.errormessageformatters.SoapErrorMessage" />
-		<receiver name="WsdlGenerator3"
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
+		<receiver
 			numThreads="4">
 			<listener className="nl.nn.adapterframework.extensions.esb.EsbJmsListener"
-				destinationName="jms/i4testiaf_in" jmsRealm="qcf" messageProtocol="RR"
+				destinationName="${jms.destination.i4testiaf_in}" jmsRealm="qcf" messageProtocol="RR"
 				messageSelector="SOURCE ='I4TIAF2c'" />
 		</receiver>
-		<receiver name="WsdlGenerator3-java"
-			className="nl.nn.adapterframework.receivers.GenericReceiver">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-WsdlGenerator3" />
 		</receiver>
@@ -141,8 +136,8 @@
 					value="ESB.CustomerAdministration.TS.Party.Party.1.FindBPPensions.1.Response" />
 			</outputWrapper>
 
-			<pipe name="FixedReply" className="nl.nn.adapterframework.pipes.FixedResult"
-				fileName="WsdlGenerator/xml/fixedReply3.xml">
+			<pipe name="FixedReply" className="nl.nn.adapterframework.pipes.FixedResultPipe"
+				filename="WsdlGenerator/xml/fixedReply3.xml">
 				<forward name="success" path="READY" />
 			</pipe>
 
@@ -151,15 +146,13 @@
 	<adapter name="WsdlGenerator4" active="${active.jms}">
 		<errorMessageFormatter
 			className="nl.nn.adapterframework.errormessageformatters.SoapErrorMessage" />
-		<receiver name="WsdlGenerator4"
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
+		<receiver
 			numThreads="4">
 			<listener className="nl.nn.adapterframework.extensions.esb.EsbJmsListener"
-				destinationName="jms/i4testiaf_in" jmsRealm="qcf" messageProtocol="RR"
+				destinationName="${jms.destination.i4testiaf_in}" jmsRealm="qcf" messageProtocol="RR"
 				messageSelector="SOURCE ='I4TIAF2d'" />
 		</receiver>
-		<receiver name="WsdlGenerator4-java"
-			className="nl.nn.adapterframework.receivers.GenericReceiver">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-WsdlGenerator4" />
 		</receiver>
@@ -197,8 +190,8 @@
 				<param name="destination" value="ESB.AccountInformation.BS.AccountInformation.1.GetPaymentReferenceAndPayLink.1.Response"/>
 			</outputWrapper>
 
-			<pipe name="FixedReply" className="nl.nn.adapterframework.pipes.FixedResult"
-				fileName="WsdlGenerator/xml/fixedReply4.xml">
+			<pipe name="FixedReply" className="nl.nn.adapterframework.pipes.FixedResultPipe"
+				filename="WsdlGenerator/xml/fixedReply4.xml">
 				<forward name="success" path="READY" />
 			</pipe>
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,18 +15,17 @@
  */
 package nl.nn.adapterframework.jms;
 
-import java.io.IOException;
-
 import org.w3c.dom.Element;
 
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -52,15 +51,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </code>
  * </p>
  * 
- * <p>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th></tr>
- * <tr><td>jmsRealm</td><td>when present will set jmsRealm from which to retrieve the JMS properties</td></tr>
- * <tr><td>queueConnectionFactoryName</td><td>when present will set queueConnectionFactoryName (when queueConnectionFactoryName was set by jmsRealm it will be overwritten)</td></tr>
- * <tr><td>destinationName</td><td>name of the JMS destination (queue or topic) to use</td></tr>
- * <tr><td>destinationType</td><td>either QUEUE or TOPIC</td></tr>
- * </table>
- * </p>
  * 
  * <p>
  * <b>example (browse output):</b>
@@ -101,26 +91,31 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class XmlJmsBrowserSender extends SenderWithParametersBase {
 
+	@SuppressWarnings("unchecked")
+	public JmsBrowser<javax.jms.Message> createJmsBrowser() {
+		return createBean(JmsBrowser.class);
+	}
+
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		Element queueBrowserElement;
 		String root = null;
 		String jmsRealm = null;
 		String queueConnectionFactoryName = null;
 		String destinationName = null;
-		String destinationType = null;
+		DestinationType destinationType = null;
 		try {
 			queueBrowserElement = XmlUtils.buildElement(message.asString());
 			root = queueBrowserElement.getTagName();
 			jmsRealm = XmlUtils.getChildTagAsString(queueBrowserElement, "jmsRealm");
 			queueConnectionFactoryName = XmlUtils.getChildTagAsString(queueBrowserElement, "queueConnectionFactoryName");
 			destinationName = XmlUtils.getChildTagAsString(queueBrowserElement, "destinationName");
-			destinationType = XmlUtils.getChildTagAsString(queueBrowserElement, "destinationType");
-		} catch (DomBuilderException | IOException e) {
+			destinationType = EnumUtils.parse(DestinationType.class,XmlUtils.getChildTagAsString(queueBrowserElement, "destinationType"));
+		} catch (Exception e) {
 			throw new SenderException(getLogPrefix() + "got exception parsing [" + message + "]", e);
 		}
 
-		JmsBrowser<javax.jms.Message> jmsBrowser = new JmsBrowser<>();
+		JmsBrowser<javax.jms.Message> jmsBrowser = createJmsBrowser();
 		jmsBrowser.setName("XmlQueueBrowserSender");
 		if (jmsRealm != null) {
 			jmsBrowser.setJmsRealm(jmsRealm);

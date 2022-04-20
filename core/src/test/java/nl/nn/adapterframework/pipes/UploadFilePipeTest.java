@@ -81,23 +81,7 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
 	}
 
 	/**
-	 * Method: doPipe(Object input, IPipeLineSession session)
-	 */
-	@Test
-	public void testDoPipeWrongInputFormat() throws Exception {
-		exception.expect(ClassCastException.class);
-		String key = "key";
-		pipe.setSessionKey(key);
-		pipe.setDirectory(sourceFolderPath);
-		session.put("key", "32434");
-		configureAndStartPipe();
-		doPipe(pipe, "dsfdfs", session);
-		fail("this is expected to fail");
-
-	}
-
-	/**
-	 * Method: doPipe(Object input, IPipeLineSession session)
+	 * Method: doPipe(Object input, PipeLineSession session)
 	 */
 	@Test
 	public void testDoPipeSuccess() throws Exception {
@@ -112,7 +96,7 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
 	}
 
 	/**
-	 * Method: doPipe(Object input, IPipeLineSession session)
+	 * Method: doPipe(Object input, PipeLineSession session)
 	 */
 	@Test
 	public void testDoPipeFailWrongExtension() throws Exception {
@@ -130,7 +114,7 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
 	}
 
 	/**
-	 * Method: doPipe(Object input, IPipeLineSession session)
+	 * Method: doPipe(Object input, PipeLineSession session)
 	 */
 	@Test
 	public void testDoPipeSuccessWithDirectorySessionKey() throws Exception {
@@ -146,7 +130,7 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
 	}
 
 	/**
-	 * Method: doPipe(Object input, IPipeLineSession session)
+	 * Method: doPipe(Object input, PipeLineSession session)
 	 */
 	@Test
 	public void testDoPipeSuccessWithoutDirectory() throws Exception {
@@ -163,7 +147,7 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
 	}
 
 	/**
-	 * Method: doPipe(Object input, IPipeLineSession session)
+	 * Method: doPipe(Object input, PipeLineSession session)
 	 */
 	@Test
 	public void testDoPipeCreateNonExistingDirectory() throws Exception {

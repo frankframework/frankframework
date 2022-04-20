@@ -30,7 +30,7 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Session;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
@@ -55,7 +55,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
-import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.RunState;
 
 /**
  * Configure a Spring JMS Container from a {@link nl.nn.adapterframework.jms.PushingJmsListener}.
@@ -276,7 +276,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 				IPortConnectedListener<Message> listener = getListener();
 				threadContext.put(THREAD_CONTEXT_SESSION_KEY,session);
 //				if (log.isDebugEnabled()) log.debug("transaction status before: "+JtaUtil.displayTransactionStatus());
-				getReceiver().processRawMessage(listener, message, threadContext);
+				getReceiver().processRawMessage(listener, message, threadContext, false);
 //				if (log.isDebugEnabled()) log.debug("transaction status after: "+JtaUtil.displayTransactionStatus());
 			} catch (ListenerException e) {
 				getReceiver().increaseRetryIntervalAndWait(e,getLogPrefix());
@@ -441,7 +441,7 @@ class PollGuard extends TimerTask {
 		if (lastPollFinishedTime < lastCheck) {
  			if (lastPollFinishedTime != previousLastPollFinishedTime
 				&& springJmsConnector.threadsProcessing.getValue() == 0
-				&& springJmsConnector.getReceiver().getRunState() == RunStateEnum.STARTED
+				&& springJmsConnector.getReceiver().getRunState() == RunState.STARTED
 				&& !springJmsConnector.getJmsContainer().isRecovering()) {
  				previousLastPollFinishedTime = lastPollFinishedTime;
  				timeoutDetected = true;

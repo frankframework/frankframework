@@ -1,0 +1,48 @@
+<configuration>
+	  <adapter name="JdbcTableListener">
+      <receiver name="testtool-JdbcTableListener"
+      			transactionAttribute="Required"
+                maxRetries="4"
+                pollInterval="1"
+                transactionTimeout="30">
+         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   serviceName="testtool-JdbcTableListener"/>
+      </receiver>
+		    <receiver name="JdbcTableListener"
+                maxRetries="4"
+                transactionAttribute="Required"
+                pollInterval="1"
+                transactionTimeout="30">
+			      <listener name="JdbcTableListener for ibis4test"
+                   className="nl.nn.adapterframework.jdbc.JdbcTableListener"
+                   tableName="IBISTEMP"
+                   statusField="TCHAR"
+                   timestampField="TTIMESTAMP"
+                   commentField="TVARCHAR"
+                   maxCommentLength="100"
+                   selectCondition="TNUMBER=${jdbc.querylistener.key}"
+                   statusValueAvailable="5"
+                   statusValueProcessed="6"
+                   statusValueError="7"
+                   statusValueInProcess="8"
+                   keyField="tkey"
+                   messageField="TCLOB"/>
+		    </receiver>
+      <receiver name="testtool-JdbcTableListener-1"
+      			transactionAttribute="Required"
+                maxRetries="4"
+                pollInterval="1"
+                transactionTimeout="30">
+         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   serviceName="testtool-JdbcTableListener-1"/>
+      </receiver>
+		    <pipeline firstPipe="EchoPipe">
+			      <exits>
+				        <exit path="EXIT" state="success"/>
+			      </exits>
+			      <pipe name="EchoPipe" className="nl.nn.adapterframework.pipes.EchoPipe">
+				        <forward name="success" path="EXIT"/>
+			      </pipe>
+		    </pipeline>
+	  </adapter>
+</configuration>

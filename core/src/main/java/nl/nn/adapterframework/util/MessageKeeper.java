@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import nl.nn.adapterframework.core.INamedObject;
  * @author  Johan Verrips IOS
  * @see MessageKeeperMessage
  */
-public class MessageKeeper extends SizeLimitedVector {
+public class MessageKeeper extends SizeLimitedVector<MessageKeeperMessage> {
 	protected Logger log = LogUtil.getLogger(this);
 
 	public enum MessageKeeperLevel {
@@ -41,7 +41,7 @@ public class MessageKeeper extends SizeLimitedVector {
 	public MessageKeeper(int maxSize) {
 		super(maxSize);
 	}
-	
+
 	public synchronized void add(String message) {
 		add(message, MessageKeeperLevel.INFO);
 	}
@@ -54,12 +54,13 @@ public class MessageKeeper extends SizeLimitedVector {
 	public synchronized void add(String message, Date date, MessageKeeperLevel level) {
 		super.add(new MessageKeeperMessage(message, date, level));
 	}
+
 	/**
 	 * Get a message by number
 	 * @see MessageKeeperMessage
 	 */
 	public MessageKeeperMessage getMessage(int i) {
-		return (MessageKeeperMessage)super.get(i);
+		return get(i);
 	}
 
 	/**
@@ -79,8 +80,7 @@ public class MessageKeeper extends SizeLimitedVector {
 	}
 
 	public void info(INamedObject namedObject, String msg) {
-		String prefix = ClassUtils.nameOf(namedObject) + " ["+namedObject.getName()+"] ";
-		info(prefix + msg);
+		info(ClassUtils.nameOf(namedObject) + ": " + msg);
 	}
 
 	public void warn(String msg) {
@@ -88,8 +88,7 @@ public class MessageKeeper extends SizeLimitedVector {
 	}
 
 	public void warn(INamedObject namedObject, String msg) {
-		String prefix = ClassUtils.nameOf(namedObject) + " ["+namedObject.getName()+"] ";
-		warn(prefix + msg);
+		warn(ClassUtils.nameOf(namedObject) + ": " + msg);
 	}
 
 	public void error(String msg) {
@@ -97,7 +96,6 @@ public class MessageKeeper extends SizeLimitedVector {
 	}
 
 	public void error(INamedObject namedObject, String msg) {
-		String prefix = ClassUtils.nameOf(namedObject) + " ["+namedObject.getName()+"] ";
-		error(prefix + msg);
+		error(ClassUtils.nameOf(namedObject) + ": " + msg);
 	}
 }

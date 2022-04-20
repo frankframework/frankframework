@@ -1,0 +1,28 @@
+<configuration>
+	  <adapter name="LdapFindMemberPipe">
+      <receiver name="testtool-LdapFindMemberPipe">
+         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   serviceName="testtool-LdapFindMemberPipe"/>
+      </receiver>
+		    <receiver>
+			      <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   name="LdapFindMemberPipe"/>
+		    </receiver>
+      <receiver name="testtool-LdapFindMemberPipe-1">
+         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   serviceName="testtool-LdapFindMemberPipe-1"/>
+      </receiver>
+		    <pipeline firstPipe="LdapFindMemberPipe">
+			      <exits>
+				        <exit path="EXIT" state="success"/>
+			      </exits>
+			      <pipe name="LdapFindMemberPipe"
+               className="nl.nn.adapterframework.pipes.SenderPipe">
+            <sender className="nl.nn.adapterframework.senders.IbisJavaSender"
+                    serviceName="testtool-LdapFindMemberPipe"/>
+				        <forward name="success" path="found"/>
+				        <forward name="notFound" path="notFound"/>
+			      </pipe>
+		    </pipeline>
+	  </adapter>
+</configuration>

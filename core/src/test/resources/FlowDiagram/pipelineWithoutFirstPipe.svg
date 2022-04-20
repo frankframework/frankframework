@@ -1,0 +1,122 @@
+<svg width="386pt" height="583pt"
+ viewBox="0.00 0.00 385.97 583.40" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 579.4)">
+<title>%0</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-579.4 381.9671,-579.4 381.9671,4 -4,4"/>
+<!-- START -->
+<g id="node1" class="node">
+<title>START</title>
+<ellipse fill="none" stroke="#000000" cx="140.3163" cy="-557.4" rx="41.7308" ry="18"/>
+<text text-anchor="middle" x="140.3163" y="-553.2" font-family="Times,serif" font-size="14.00" fill="#000000">START</text>
+</g>
+<!-- appending -->
+<g id="node2" class="node">
+<title>appending</title>
+<polygon fill="none" stroke="#000000" points="212.8991,-502.2019 67.7335,-502.2019 67.7335,-460.9981 212.8991,-460.9981 212.8991,-502.2019"/>
+<text text-anchor="middle" x="140.3163" y="-485.8" font-family="Times,serif" font-size="14.00" fill="#000000">appending</text>
+<text text-anchor="middle" x="140.3163" y="-469" font-family="Times,serif" font-size="14.00" fill="#000000">(LocalFileSystemPipe)</text>
+</g>
+<!-- START&#45;&gt;appending -->
+<g id="edge1" class="edge">
+<title>START&#45;&gt;appending</title>
+<path fill="none" stroke="#000000" d="M140.3163,-539.0509C140.3163,-531.115 140.3163,-521.6041 140.3163,-512.6258"/>
+<polygon fill="#000000" stroke="#000000" points="143.8164,-512.4568 140.3163,-502.4568 136.8164,-512.4569 143.8164,-512.4568"/>
+</g>
+<!-- echoSomethingError -->
+<g id="node3" class="node">
+<title>echoSomethingError</title>
+<polygon fill="none" stroke="#000000" points="132.4494,-407.8019 .1832,-407.8019 .1832,-366.5981 132.4494,-366.5981 132.4494,-407.8019"/>
+<text text-anchor="middle" x="66.3163" y="-391.4" font-family="Times,serif" font-size="14.00" fill="#000000">echoSomethingError</text>
+<text text-anchor="middle" x="66.3163" y="-374.6" font-family="Times,serif" font-size="14.00" fill="#000000">(EchoPipe)</text>
+</g>
+<!-- appending&#45;&gt;echoSomethingError -->
+<g id="edge2" class="edge">
+<title>appending&#45;&gt;echoSomethingError</title>
+<path fill="none" stroke="#000000" d="M123.8933,-460.6496C113.6421,-447.5724 100.3011,-430.5536 89.0425,-416.1913"/>
+<polygon fill="#000000" stroke="#000000" points="91.6174,-413.8027 82.6934,-408.0919 86.1083,-418.1213 91.6174,-413.8027"/>
+<text text-anchor="middle" x="135.5288" y="-430.2" font-family="Times,serif" font-size="14.00" fill="#000000">exception</text>
+</g>
+<!-- echoSomethingNext -->
+<g id="node4" class="node">
+<title>echoSomethingNext</title>
+<polygon fill="none" stroke="#000000" points="280.6267,-407.8019 150.0059,-407.8019 150.0059,-366.5981 280.6267,-366.5981 280.6267,-407.8019"/>
+<text text-anchor="middle" x="215.3163" y="-391.4" font-family="Times,serif" font-size="14.00" fill="#000000">echoSomethingNext</text>
+<text text-anchor="middle" x="215.3163" y="-374.6" font-family="Times,serif" font-size="14.00" fill="#000000">(EchoPipe)</text>
+</g>
+<!-- appending&#45;&gt;echoSomethingNext -->
+<g id="edge3" class="edge">
+<title>appending&#45;&gt;echoSomethingNext</title>
+<path fill="none" stroke="#000000" d="M156.9612,-460.6496C167.3509,-447.5724 180.8723,-430.5536 192.283,-416.1913"/>
+<polygon fill="#000000" stroke="#000000" points="195.2376,-418.0988 198.7179,-408.0919 189.7568,-413.7443 195.2376,-418.0988"/>
+<text text-anchor="middle" x="203.3051" y="-430.2" font-family="Times,serif" font-size="14.00" fill="#000000">success</text>
+</g>
+<!-- echoSomething1 -->
+<g id="node5" class="node">
+<title>echoSomething1</title>
+<polygon fill="none" stroke="#000000" points="195.4145,-313.4019 85.2181,-313.4019 85.2181,-272.1981 195.4145,-272.1981 195.4145,-313.4019"/>
+<text text-anchor="middle" x="140.3163" y="-297" font-family="Times,serif" font-size="14.00" fill="#000000">echoSomething1</text>
+<text text-anchor="middle" x="140.3163" y="-280.2" font-family="Times,serif" font-size="14.00" fill="#000000">(EchoPipe)</text>
+</g>
+<!-- echoSomethingError&#45;&gt;echoSomething1 -->
+<g id="edge5" class="edge">
+<title>echoSomethingError&#45;&gt;echoSomething1</title>
+<path fill="none" stroke="#000000" d="M82.7393,-366.2496C92.9905,-353.1724 106.3315,-336.1536 117.5901,-321.7913"/>
+<polygon fill="#000000" stroke="#000000" points="120.5243,-323.7213 123.9392,-313.6919 115.0152,-319.4027 120.5243,-323.7213"/>
+<text text-anchor="middle" x="129.3051" y="-335.8" font-family="Times,serif" font-size="14.00" fill="#000000">success</text>
+</g>
+<!-- echoSomethingNext&#45;&gt;echoSomething1 -->
+<g id="edge4" class="edge">
+<title>echoSomethingNext&#45;&gt;echoSomething1</title>
+<path fill="none" stroke="#000000" d="M198.6714,-366.2496C188.2817,-353.1724 174.7603,-336.1536 163.3496,-321.7913"/>
+<polygon fill="#000000" stroke="#000000" points="165.8758,-319.3443 156.9147,-313.6919 160.395,-323.6988 165.8758,-319.3443"/>
+<text text-anchor="middle" x="203.3051" y="-335.8" font-family="Times,serif" font-size="14.00" fill="#000000">success</text>
+</g>
+<!-- EXIT -->
+<g id="node6" class="node">
+<title>EXIT</title>
+<path fill="none" stroke="#000000" d="M155.3163,-124.8C155.3163,-124.8 125.3163,-124.8 125.3163,-124.8 119.3163,-124.8 113.3163,-118.8 113.3163,-112.8 113.3163,-112.8 113.3163,-100.8 113.3163,-100.8 113.3163,-94.8 119.3163,-88.8 125.3163,-88.8 125.3163,-88.8 155.3163,-88.8 155.3163,-88.8 161.3163,-88.8 167.3163,-94.8 167.3163,-100.8 167.3163,-100.8 167.3163,-112.8 167.3163,-112.8 167.3163,-118.8 161.3163,-124.8 155.3163,-124.8"/>
+<text text-anchor="middle" x="140.3163" y="-102.6" font-family="Times,serif" font-size="14.00" fill="#000000">EXIT</text>
+</g>
+<!-- echoSomething1&#45;&gt;EXIT -->
+<g id="edge6" class="edge">
+<title>echoSomething1&#45;&gt;EXIT</title>
+<path fill="none" stroke="#000000" d="M137.8043,-271.8992C136.1662,-257.1877 134.1816,-237.0208 133.3387,-219.2 132.4652,-200.7318 132.4309,-196.0666 133.3387,-177.6 134.0304,-163.5289 135.4909,-147.9415 136.8978,-134.9823"/>
+<polygon fill="#000000" stroke="#000000" points="140.4027,-135.1359 138.049,-124.8058 133.4471,-134.349 140.4027,-135.1359"/>
+<text text-anchor="middle" x="155.3051" y="-194.2" font-family="Times,serif" font-size="14.00" fill="#000000">success</text>
+</g>
+<!-- echoSomethingSomethingError -->
+<g id="node7" class="node">
+<title>echoSomethingSomethingError</title>
+<polygon fill="none" stroke="#000000" points="378.1181,-219.0019 184.5145,-219.0019 184.5145,-177.7981 378.1181,-177.7981 378.1181,-219.0019"/>
+<text text-anchor="middle" x="281.3163" y="-202.6" font-family="Times,serif" font-size="14.00" fill="#000000">echoSomethingSomethingError</text>
+<text text-anchor="middle" x="281.3163" y="-185.8" font-family="Times,serif" font-size="14.00" fill="#000000">(EchoPipe)</text>
+</g>
+<!-- echoSomething1&#45;&gt;echoSomethingSomethingError -->
+<g id="edge7" class="edge">
+<title>echoSomething1&#45;&gt;echoSomethingSomethingError</title>
+<path fill="none" stroke="#000000" d="M171.2593,-272.0835C192.0134,-258.1886 219.5298,-239.7663 241.8565,-224.8185"/>
+<polygon fill="#000000" stroke="#000000" points="244.083,-227.5399 250.4454,-219.0682 240.1886,-221.7231 244.083,-227.5399"/>
+<text text-anchor="middle" x="245.5288" y="-241.4" font-family="Times,serif" font-size="14.00" fill="#000000">exception</text>
+</g>
+<!-- END -->
+<g id="node8" class="node">
+<title>END</title>
+<ellipse fill="none" stroke="#000000" cx="140.3163" cy="-18" rx="30.7577" ry="18"/>
+<text text-anchor="middle" x="140.3163" y="-13.8" font-family="Times,serif" font-size="14.00" fill="#000000">END</text>
+</g>
+<!-- EXIT&#45;&gt;END -->
+<g id="edge9" class="edge">
+<title>EXIT&#45;&gt;END</title>
+<path fill="none" stroke="#000000" d="M140.3163,-88.4006C140.3163,-76.2949 140.3163,-60.2076 140.3163,-46.4674"/>
+<polygon fill="#000000" stroke="#000000" points="143.8164,-46.072 140.3163,-36.072 136.8164,-46.0721 143.8164,-46.072"/>
+<text text-anchor="middle" x="161.3051" y="-58.2" font-family="Times,serif" font-size="14.00" fill="#000000">success</text>
+</g>
+<!-- echoSomethingSomethingError&#45;&gt;EXIT -->
+<g id="edge8" class="edge">
+<title>echoSomethingSomethingError&#45;&gt;EXIT</title>
+<path fill="none" stroke="#000000" d="M249.3212,-177.6145C227.5153,-163.4484 198.6198,-144.6766 176.0583,-130.0197"/>
+<polygon fill="#000000" stroke="#000000" points="177.7325,-126.9335 167.4399,-124.4207 173.919,-132.8036 177.7325,-126.9335"/>
+<text text-anchor="middle" x="239.3051" y="-147" font-family="Times,serif" font-size="14.00" fill="#000000">success</text>
+</g>
+</g>
+</svg>

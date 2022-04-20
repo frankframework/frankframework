@@ -4,7 +4,6 @@
 		description="Adapter for testing transaction handling, multiple adapters are being called with different transaction attributes"
 	>
 		<receiver
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
 			transactionTimeout="2"
 			transactionAttribute="Required"
 		>
@@ -14,7 +13,6 @@
 				serviceName="ibis4test-TransactionHandlingMultiAdapter"
 			/>
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-				jmsRealm="jdbc" 
 				slotId="${applicationId}/GenericReceiverTransactionHandlingMultiAdapter"
 			/>
 		</receiver>
@@ -28,7 +26,7 @@
 			<!-- This subadapter throws an exception -->
 			<!-- The outcome of this pipe should not influence the pipeline in any way since its not transacted-->
 			<pipe name="Send transacted message to not supported subadapter with exception"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				getInputFromFixedValue="tralala"
 			>
 				<sender
@@ -39,8 +37,8 @@
 				<forward name="exception" path="fixedInsert"/>
 			</pipe>
 
-			<pipe name="fixedInsert" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe" transactionAttribute="Required">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('LASTNAME',?,NULL,NULL)" queryType="insert" jmsRealm="jdbc">
+			<pipe name="fixedInsert" className="nl.nn.adapterframework.pipes.SenderPipe" transactionAttribute="Required">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('LASTNAME',?,NULL,NULL)" queryType="insert">
 					<param name="value" value="test1" />
 				</sender>
 				<forward name="success" path="Send transacted message to required subadapter with exception" />
@@ -48,7 +46,7 @@
 
 			<!-- This subadapter throws an exception -->
 			<pipe name="Send transacted message to required subadapter with exception"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				getInputFromFixedValue="tralala"
 			>
 				<sender
@@ -59,8 +57,8 @@
 				<forward name="exception" path="fixedInsertRollback2"/>
 			</pipe>
 
-			<pipe name="fixedInsertRollback2" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('SURNAME',?,NULL,NULL)" queryType="insert" jmsRealm="jdbc" />
+			<pipe name="fixedInsertRollback2" className="nl.nn.adapterframework.pipes.SenderPipe">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('SURNAME',?,NULL,NULL)" queryType="insert" />
 				<forward name="success" path="this should fail because of a tx error" />
 			</pipe>
 
@@ -77,7 +75,6 @@
 		description="First SubAdapter for Transaction Handling">
 
 		<receiver
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
 			transactionAttribute="NotSupported"
 		>
 			<listener 
@@ -106,7 +103,6 @@
 		description="First SubAdapter for Transaction Handling">
 
 		<receiver
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
 			transactionAttribute="Required"
 		>
 			<listener 

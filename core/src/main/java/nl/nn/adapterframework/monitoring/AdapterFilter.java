@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,17 +18,20 @@ package nl.nn.adapterframework.monitoring;
 import java.util.ArrayList;
 import java.util.List;
 
+import nl.nn.adapterframework.doc.FrankDocGroup;
+
 /**
  * Filter on Adapters, used by Triggers.
  * 
  * @author  Gerrit van Brakel
  * @since   4.9.8
  */
+@FrankDocGroup(name = "Monitoring")
 public class AdapterFilter {
-	
+
 	private String adapter;
-	
-	private List<String> subObjectList=new ArrayList<String>();
+
+	private List<String> subObjectList=new ArrayList<>();
 
 	/**
 	 * Set the name of the Adapter that this AdapterFilter filters on.
@@ -40,10 +43,14 @@ public class AdapterFilter {
 		return adapter;
 	}
 
+	public boolean isFilteringToLowerLevelObjects() {
+		return !subObjectList.isEmpty();
+	}
+
 	/**
 	 * Register the name of a SubObject (such as a Pipe) to be included in the filter.
 	 */
-	public void registerSubOject(String name) {
+	public void registerSubObject(String name) {
 		subObjectList.add(name);
 	}
 	/**

@@ -132,25 +132,6 @@ public class DateUtilsTest {
 	}
 
 	@Test
-	public void testFormatOptimal() throws Exception {
-		String date = DateUtils.formatOptimal(getCorrectedDate(new Date(1386630000000L)));
-		assertEquals("2013-12-10", date);
-	}
-
-	@Test
-	public void testFormatOptimalWithTime() throws Exception {
-		String date = DateUtils.formatOptimal(getCorrectedDate(new Date(1500000000)));
-		assertEquals("1970-01-18 09:40", date);
-	}
-
-	@Test
-	public void testNextHigherValue() throws Exception {
-		Date d = new Date(1500000000);
-		Date date = DateUtils.nextHigherValue(d);
-		assertEquals(1500060000L, date.getTime());
-	}
-
-	@Test
 	public void testConvertDate() throws Exception {
 		String date = DateUtils.convertDate(DateUtils.FORMAT_DATE, DateUtils.FORMAT_FULL_GENERIC, "18-03-13");
 		assertEquals("2013-03-18 00:00:00.000", date);

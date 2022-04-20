@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,16 +17,17 @@ package nl.nn.adapterframework.validation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.DefaultHandler2;
+
+import nl.nn.adapterframework.validation.XmlValidatorErrorHandler.ReasonType;
 
 /**
  * SAX ContentHandler used during XML validation for some additional validation
@@ -43,9 +44,9 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 	private List<String> elements = new ArrayList<String>();
 
 	private final Set<String> validNamespaces;
-	private final Set<List<String>> rootValidations;
+	private final RootValidations rootValidations;
 	private final Map<List<String>, List<String>> invalidRootNamespaces;
-	private final Set<List<String>> rootElementsFound = new HashSet<List<String>>();
+	private final RootValidations rootElementsFound = new RootValidations();
 	private final boolean ignoreUnknownNamespaces;
 	private XmlValidatorErrorHandler xmlValidatorErrorHandler;
 	private int namespaceWarnings = 0;
@@ -59,7 +60,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 	 *         entire xml) to root elements which should be checked upon
 	 * @param ignoreUnknownNamespaces
 	 */
-	public XmlValidatorContentHandler(Set<String> validNamespaces, Set<List<String>> rootValidations, Map<List<String>, List<String>> invalidRootNamespaces, Boolean ignoreUnknownNamespaces) {
+	public XmlValidatorContentHandler(Set<String> validNamespaces, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces, Boolean ignoreUnknownNamespaces) {
 		this.validNamespaces = validNamespaces;
 		this.rootValidations = rootValidations;
 		this.invalidRootNamespaces = invalidRootNamespaces;
@@ -84,24 +85,25 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 		 * then they must match their last element too.
 		 */
 		if (rootValidations != null) {
-			for (List<String> path: rootValidations) {
+			for (RootValidation rootValidation: rootValidations) {
+				List<String> path = rootValidation.getPath();
 				int i = elements.size();
-				if (path.size() == i + 1 && elements.equals(path.subList(0, i))) { // if all the current elements match this valid path up to the one but last
-					String validElements = path.get(i);
+				if (rootValidation.getPathLength() == i + 1 && elements.equals(path.subList(0, i))) { // if all the current elements match this valid path up to the one but last
+					String validElements = rootValidation.getValidElementsAtLevel(i);
 					if (StringUtils.isEmpty(validElements)) {
 						String message = "Illegal element '" + lName + "'. No element expected.";
 						if (xmlValidatorErrorHandler != null) {
-							xmlValidatorErrorHandler.addReason(message, null, null);
+							xmlValidatorErrorHandler.addReason(message, null, null, ReasonType.ERROR);
 						} else {
 							throw new IllegalRootElementException(message);
 						}
 					} else {
 						List<String> validElementsAsList = listOf(validElements);
 						if (validElementsAsList.contains(lName)) {
-							if (rootElementsFound.contains(path)) {
+							if (rootElementsFound.contains(rootValidation)) {
 								String message = "Element(s) '" + lName + "' should occur only once.";
 								if (xmlValidatorErrorHandler != null) {
-									xmlValidatorErrorHandler.addReason(message, null, null);
+									xmlValidatorErrorHandler.addReason(message, null, null, ReasonType.ERROR);
 								} else {
 									throw new IllegalRootElementException(message);
 								}
@@ -112,18 +114,18 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 									if (invalidNamespaces != null && invalidNamespaces.contains(namespaceURI)) {
 										message = "Invalid namespace '" + namespaceURI + "' for element '" + lName + "'";
 										if (xmlValidatorErrorHandler != null) {
-											xmlValidatorErrorHandler.addReason(message, null, null);
+											xmlValidatorErrorHandler.addReason(message, null, null, ReasonType.ERROR);
 										} else {
 											throw new UnknownNamespaceException(message);
 										}
 									}
 								}
-								rootElementsFound.add(path);
+								rootElementsFound.add(rootValidation);
 							}
 						} else {
 							String message = "Illegal element '" + lName + "'. Element(s) '" + validElements + "' expected.";
 							if (xmlValidatorErrorHandler != null) {
-								xmlValidatorErrorHandler.addReason(message, null, null);
+								xmlValidatorErrorHandler.addReason(message, null, null, ReasonType.ERROR);
 							} else {
 								throw new IllegalRootElementException(message);
 							}
@@ -147,13 +149,14 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 	public void endDocument() throws SAXException {
 		// assert that all rootValidations are covered
 		if (rootValidations != null) {
-			for (List<String> path: rootValidations) {
-				String validLastElements = path.get(path.size() - 1);
+			for (RootValidation rootValidation: rootValidations) {
+				List<String> path = rootValidation.getPath();
+				String validLastElements = rootValidation.getValidLastElements();
 				List<String> validLastElementsAsList = listOf(validLastElements);
-				if (!validLastElementsAsList.contains("") && !rootElementsFound.contains(path)) {
+				if (!validLastElementsAsList.contains("") && !rootElementsFound.contains(rootValidation)) {
 					String message = "Element(s) '" + validLastElements + "' not found";
 					if (xmlValidatorErrorHandler != null) {
-						xmlValidatorErrorHandler.addReason(message, getXpath(path.subList(0, path.size() - 1)), null);
+						xmlValidatorErrorHandler.addReason(message, getXpath(path.subList(0, path.size() - 1)), null, ReasonType.ERROR);
 					} else {
 						throw new IllegalRootElementException(message);
 					}
@@ -165,7 +168,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 	private List<String> listOf(String validElements) {
 		return Arrays.asList(validElements.trim().split("\\s*\\,\\s*", -1));
 	}
-	
+
 	protected void checkNamespaceExistance(String namespace) throws UnknownNamespaceException {
 		if (!ignoreUnknownNamespaces && validNamespaces != null && namespaceWarnings <= MAX_NAMESPACE_WARNINGS) {
 			if (!validNamespaces.contains(namespace) && !("".equals(namespace) && validNamespaces.contains(null))) { 
@@ -177,7 +180,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 						message = message + " (maximum number of namespace warnings reached)";
 					}
 					if (xmlValidatorErrorHandler != null) {
-						xmlValidatorErrorHandler.addReason(message, null, null);
+						xmlValidatorErrorHandler.addReason(message, null, null, ReasonType.ERROR);
 					} else {
 						throw new UnknownNamespaceException(message);
 					}

@@ -17,7 +17,8 @@ package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
@@ -27,14 +28,6 @@ import nl.nn.adapterframework.util.FileHandler;
 /**
  * <p>See {@link FileHandler}</p>
  * 
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td>"exception"</td><td>if an error occurred</td></tr>
- * </table>
- * </p>
- * 
  * @author J. Dekker
  * @author Jaco de Groot (***@dynasol.nl)
  * 
@@ -42,7 +35,7 @@ import nl.nn.adapterframework.util.FileHandler;
  *
  */
 @Deprecated
-@ConfigurationWarning("Please use LocalFileSystemPipe instead")
+@ConfigurationWarning("Please use LocalFileSystemPipe instead, or when retrieving files from the classpath use the FixedResultPipe")
 public class FilePipe extends FixedForwardPipe {
 	FileHandler fileHandler;
 
@@ -61,16 +54,16 @@ public class FilePipe extends FixedForwardPipe {
 	}
 	
 	/** 
-	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Message, IPipeLineSession)
+	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Message, PipeLineSession)
 	 */
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
-			return new PipeRunResult(getForward(), fileHandler.handle(message, session, getParameterList()));
+			return new PipeRunResult(getSuccessForward(), fileHandler.handle(message, session, getParameterList()));
 		}
 		catch(Exception e) {
-			if (findForward("exception") != null) {
-				return new PipeRunResult(findForward("exception"), message);
+			if (findForward(PipeForward.EXCEPTION_FORWARD_NAME) != null) {
+				return new PipeRunResult(findForward(PipeForward.EXCEPTION_FORWARD_NAME), message);
 			} else {
 				throw new PipeRunException(this, getLogPrefix(session)+"Error while executing file action(s)", e);
 			}
@@ -101,12 +94,24 @@ public class FilePipe extends FixedForwardPipe {
 		fileHandler.setWriteSuffix(suffix);
 	}
 
+	@Deprecated
+	@ConfigurationWarning("attribute 'fileName' is replaced with 'filename'")
 	public void setFileName(String filename) {
-		fileHandler.setFileName(filename);
+		setFilename(filename);
 	}
 
+	public void setFilename(String filename) {
+		fileHandler.setFilename(filename);
+	}
+
+	@Deprecated
+	@ConfigurationWarning("attribute 'fileNameSessionKey' is replaced with 'filenameSessionKey'")
 	public void setFileNameSessionKey(String filenameSessionKey) {
-		fileHandler.setFileNameSessionKey(filenameSessionKey);
+		setFilenameSessionKey(filenameSessionKey);
+	}
+
+	public void setFilenameSessionKey(String filenameSessionKey) {
+		fileHandler.setFilenameSessionKey(filenameSessionKey);
 	}
 
 	public void setCreateDirectory(boolean b) {

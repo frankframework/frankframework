@@ -1,7 +1,6 @@
 <module>
 	<adapter name="FxF3InSender" active="${active.jms}">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="FxF3InSender">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-FxF3InSender" />
 		</receiver>
@@ -10,13 +9,13 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe name="Send2Jms"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jms.JmsSender"
-					jmsRealm="qcf" destinationName="jms/i4testiaf_in">
+					jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_in}">
 					<param name="SOURCE" value="${hostname}_I4TIAFFXF3" />
 				</sender>
 				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-					jmsRealm="jdbc" slotId="${applicationId}/FxF3InSender" />
+					slotId="${applicationId}/FxF3InSender" />
 				<forward name="success" path="echo" />
 			</pipe>
 			<pipe name="echo" className="nl.nn.adapterframework.pipes.EchoPipe"
@@ -26,13 +25,12 @@
 		</pipeline>
 	</adapter>
 	<adapter name="FxF3InListener" active="${active.jms}">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="FxF3InListener" transactionAttribute="Required">
+		<receiver transactionAttribute="Required">
 			<listener className="nl.nn.adapterframework.extensions.fxf.FxfListener"
-				destinationName="jms/i4testiaf_in" jmsRealm="qcf" messageSelector="SOURCE='${hostname}_I4TIAFFXF3'"
+				destinationName="${jms.destination.i4testiaf_in}" jmsRealm="qcf" messageSelector="SOURCE='${hostname}_I4TIAFFXF3'"
 				createProcessedDirectory="true" />
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-				jmsRealm="jdbc" slotId="${applicationId}/FxF3InListener" />
+				slotId="${applicationId}/FxF3InListener" />
 		</receiver>
 		<pipeline firstPipe="EchoPipe" transactionAttribute="Required">
 			<exits>

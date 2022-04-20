@@ -15,11 +15,14 @@
 */
 package nl.nn.adapterframework.util;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Provide functionality to resolve ${property.key} to the value of the property key, recursively.
@@ -30,14 +33,18 @@ public class StringResolver {
 	// Not allowed to use a static reference to the logger in this class.
 	// Log4j2 uses StringResolver during instantiation.
 
-	public static final String DELIM_START = "${";
-	public static final char DELIM_STOP = '}';
-	private static final int DELIM_START_LEN = 2;
-	private static final int DELIM_STOP_LEN = 1;
+	private static final String VALUE_SEPARATOR=":-";
 
-	public StringResolver() {
-		super();
-	}
+	public static final String DELIM_START = "${";
+	public static final String DELIM_STOP = "}";
+
+	public static final String CREDENTIAL_PREFIX="credential:";
+	public static final String USERNAME_PREFIX="username:"; // username and password prefixes must be of same length
+	public static final String PASSWORD_PREFIX="password:";
+
+	public static final String CREDENTIAL_EXPANSION_ALLOWING_PROPERTY="authAliases.expansion.allowed"; // refers to a comma separated list of aliases for which credential expansion is allowed
+
+	private static Set<String> authAliasesAllowedToExpand=null;
 
 	/**
 	 * Very similar to <code>System.getProperty</code> except that the
@@ -85,78 +92,155 @@ public class StringResolver {
 	 * 
 	 */
 	public static String substVars(String val, Map props1, Map props2, List<String> propsToHide) throws IllegalArgumentException {
+		return substVars(val, props1, props2, propsToHide, DELIM_START, DELIM_STOP, false);
+	}
 
-		StringBuffer sbuf = new StringBuffer();
+	public static String substVars(String val, Map props1, Map props2, List<String> propsToHide, String delimStart, String delimStop) throws IllegalArgumentException {
+		return substVars(val, props1, props2, propsToHide, delimStart, delimStop, false);
+	}
 
-		int i = 0;
-		int j, k;
+	public static String substVars(String val, Map props1, Map props2, List<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName) throws IllegalArgumentException {
+		StringBuilder sb = new StringBuilder();
+		String providedDefaultValue=null;
+		boolean containsDefault = false;
+		int head = 0;
+		int pointer, tail;
+		String propertyComposer = "";
 
 		while (true) {
-			j = val.indexOf(DELIM_START, i);
-			if (j == -1) {
+			pointer = val.indexOf(delimStart, head); // index delimiter
+			if (pointer == -1) { // no delimiter
 				// no more variables
-				if (i == 0) { // this is a simple string
+				if (head == 0) { // this is a simple string
 					return val;
-				} else { // add the tail string which contains no variables and return the result.
-					sbuf.append(val.substring(i, val.length()));
-					return sbuf.toString();
+				}
+				// add the tail string which contains no variables and return the result.
+				sb.append(val.substring(head, val.length()));
+				return sb.toString();
+			}
+			sb.append(val.substring(head, resolveWithPropertyName ? pointer + delimStart.length() : pointer));
+			if(val.indexOf(VALUE_SEPARATOR) != -1) {
+				tail = val.indexOf(VALUE_SEPARATOR);
+				providedDefaultValue = val.substring(tail+VALUE_SEPARATOR.length(), indexOfDelimStop(val, pointer, delimStart, delimStop));
+				containsDefault=true;
+			} else {
+				tail = indexOfDelimStop(val, pointer, delimStart, delimStop);
+			}
+			if (tail == -1) {
+				throw new IllegalArgumentException('[' + val + "] has no closing brace. Opening brace at position [" + pointer + "]");
+			}
+			String expression = val.substring(pointer, tail + delimStop.length());
+			pointer += delimStart.length();
+			String key = val.substring(pointer, tail);
+			propertyComposer = key;
+			if (key.contains(delimStart)) {
+				key = substVars(key, props1, props2, resolveWithPropertyName);
+				if(key.contains(VALUE_SEPARATOR) && resolveWithPropertyName) {
+					propertyComposer = key;
+					key = extractKeyValue(key, delimStart, delimStop, VALUE_SEPARATOR);
+				}
+			}
+
+			// first try in System properties
+			String replacement = getSystemProperty(key, null);
+
+			boolean mustHideCredential=false;
+			// then check if we search for a credential
+			if (replacement == null && key.startsWith(CREDENTIAL_PREFIX)) {
+				mustHideCredential=true;
+				key = key.substring(CREDENTIAL_PREFIX.length());
+				boolean username = key.startsWith(USERNAME_PREFIX);
+				boolean password = key.startsWith(PASSWORD_PREFIX);
+				if (username||password) {
+					key = key.substring(USERNAME_PREFIX.length()); // username and password prefixes must be of same length
+				}
+				if (username || mayExpandAuthAlias(key, props1)) {
+					String defaultValue = delimStart + key+ delimStop;
+					CredentialFactory cf = new CredentialFactory(key, defaultValue, defaultValue);
+					replacement = username ? cf.getUsername() : cf.getPassword();
+				} else {
+					replacement = "!!not allowed to expand credential of authAlias ["+key+"]!!";
+				}
+			}
+
+			// then try props parameter
+			if (replacement == null && props1 != null) {
+				if (props1 instanceof Properties) {
+					replacement = ((Properties) props1).getProperty(key);
+				} else {
+					Object replacementSource = props1.get(key);
+					if (replacementSource != null) {
+						replacement = replacementSource.toString();
+					}
+				}
+			}
+			if (replacement == null && props2 != null) {
+				if (props2 instanceof Properties) {
+					replacement = ((Properties) props2).getProperty(key);
+				} else {
+					Object replacementSource = props2.get(key);
+					if (replacementSource != null) {
+						replacement = replacementSource.toString();
+					}
+				}
+			}
+
+			if(resolveWithPropertyName) {
+				sb.append(propertyComposer + VALUE_SEPARATOR);
+			}
+
+			if (replacement != null) {
+				if (propsToHide != null && (propsToHide.contains(key) || mustHideCredential)) {
+					replacement = Misc.hide(replacement);
+				}
+				// Do variable substitution on the replacement string
+				// such that we can solve "Hello ${x1}" as "Hello p2"
+				// the where the properties are
+				// x1=${x2}
+				// x2=p2
+				if (!replacement.equals(expression) && !replacement.contains(delimStart + key + delimStop)) {
+					String recursiveReplacement = substVars(replacement, props1, props2, resolveWithPropertyName);
+					sb.append(recursiveReplacement);
+				} else {
+					sb.append(replacement);
 				}
 			} else {
-				sbuf.append(val.substring(i, j));
-				k = indexOfDelimStop(val, j);
-				if (k == -1) {
-					throw new IllegalArgumentException('[' + val + "] has no closing brace. Opening brace at position [" + j + "]");
-				} else {
-					String expression = val.substring(j, k + DELIM_STOP_LEN);
-					j += DELIM_START_LEN;
-					String key = val.substring(j, k);
-					if (key.contains(DELIM_START)) {
-						key = substVars(key, props1, props2);
-					}
-					// first try in System properties
-					String replacement = getSystemProperty(key, null);
-					// then try props parameter
-					if (replacement == null && props1 != null) {
-						if (props1 instanceof Properties) {
-							replacement = ((Properties) props1).getProperty(key);
-						} else {
-							Object replacementSource = props1.get(key);
-							if (replacementSource != null) {
-								replacement = replacementSource.toString();
-							}
-						}
-					}
-					if (replacement == null && props2 != null) {
-						if (props2 instanceof Properties) {
-							replacement = ((Properties) props2).getProperty(key);
-						} else {
-							Object replacementSource = props2.get(key);
-							if (replacementSource != null) {
-								replacement = replacementSource.toString();
-							}
-						}
-					}
+				if(providedDefaultValue != null) { // use default value of property if missing actual
+					sb.append(providedDefaultValue);
+				}
+			}
+			if(resolveWithPropertyName) {
+				sb.append(delimStop);
+			}
+			if(containsDefault) { // tail points to index of ':-' update tail to point delimStop 
+				tail = indexOfDelimStop(val, pointer, delimStart, delimStop);
+			}
+			head = tail + delimStop.length();
+		}
+	}
 
-					if (replacement != null) {
-						if (propsToHide != null && propsToHide.contains(key)) {
-							replacement = Misc.hide(replacement);
-						}
-						// Do variable substitution on the replacement string
-						// such that we can solve "Hello ${x1}" as "Hello p2"
-						// the where the properties are
-						// x1=${x2}
-						// x2=p2
-						if (!replacement.equals(expression) && !replacement.contains(DELIM_START + key + DELIM_STOP)) {
-							String recursiveReplacement = substVars(replacement, props1, props2);
-							sbuf.append(recursiveReplacement);
-						} else {
-							sbuf.append(replacement);
-						}
-					}
-					i = k + DELIM_STOP_LEN;
+	/**
+	 * Resolves just the values of the properties in case a property key depends on other keys
+	 * e.g System.getProperty("prefix_${key:-value}") will find no matching data, this method extracts the 'value' for property lookup prefix_value
+	 */
+	private static String extractKeyValue(String key, String delimStart, String delimStop, String defaultValueSeparator) {
+		StringBuilder sb = new StringBuilder();
+		int pointer = 0;
+		int delimStartIndex = key.indexOf(delimStart, pointer);
+		if(delimStartIndex != -1) {
+			sb.append(key.substring(pointer, delimStartIndex));
+			int valueSeparator = key.indexOf(defaultValueSeparator, delimStartIndex);
+			if(valueSeparator != -1) {
+				int delimStopIndex = indexOfDelimStop(key, delimStartIndex, delimStart, delimStop);
+				String valueOfKey = key.substring(valueSeparator+defaultValueSeparator.length(), delimStopIndex);
+				if(valueOfKey.contains(delimStart)) {
+					sb.append(extractKeyValue(valueOfKey, delimStart, delimStop, defaultValueSeparator));
+				} else {
+					sb.append(valueOfKey);
 				}
 			}
 		}
+		return sb.toString();
 	}
 
 	public static String substVars(String val, Map props1, Map props2) throws IllegalArgumentException {
@@ -167,34 +251,51 @@ public class StringResolver {
 		return substVars(val, props, null);
 	}
 
-	public static boolean needsResolution(String string) {
-		int j = string.indexOf(DELIM_START);
-		if (j == -1) {
-			return false;
-		} else {
-			int k = string.indexOf(DELIM_STOP, j);
-			if (k == -1) {
-				return false;
-			} else {
-				return true;
-			}
-		}
+	public static String substVars(String val, Map props, boolean resolveWithPropertyName) {
+		return substVars(val, props, null, resolveWithPropertyName);
 	}
 
-	private static int indexOfDelimStop(String val, int startPos) {
+	public static String substVars(String val, Map props1, Map props2, boolean resolveWithPropertyName) throws IllegalArgumentException {
+		return substVars(val, props1, props2, null, DELIM_START, DELIM_STOP, resolveWithPropertyName);
+	}
+
+	public static String substVars(String val, Map props1, Map props2, List<String> propsToHide, boolean resolveWithPropertyName) throws IllegalArgumentException {
+		return substVars(val, props1, props2, propsToHide, DELIM_START, DELIM_STOP, resolveWithPropertyName);
+	}
+
+	public static boolean needsResolution(String string) {
+		int j = string.indexOf(DELIM_START);
+		return j>=0 && string.indexOf(DELIM_START)>=0 && string.indexOf(DELIM_STOP, j) >= 0;
+	}
+
+	private static int indexOfDelimStop(String val, int startPos, String delimStart, String delimStop) {
 		// if variable in variable then find the correct stop delimiter
-		int stopPos = startPos - DELIM_STOP_LEN;
+		int stopPos = startPos - delimStop.length();
 		int numEmbeddedStart = 0;
 		int numEmbeddedStop = 0;
 		do {
-			startPos += DELIM_START_LEN;
-			stopPos = val.indexOf(DELIM_STOP, stopPos + DELIM_STOP_LEN);
+			startPos += delimStart.length();
+			stopPos = val.indexOf(delimStop, stopPos + delimStop.length());
 			if (stopPos > 0) {
 				String key = val.substring(startPos, stopPos);
-				numEmbeddedStart = StringUtils.countMatches(key, DELIM_START);
-				numEmbeddedStop = StringUtils.countMatches(key, "" + DELIM_STOP);
+				numEmbeddedStart = StringUtils.countMatches(key, delimStart);
+				numEmbeddedStop = StringUtils.countMatches(key, delimStop);
 			}
 		} while (stopPos > 0 && numEmbeddedStart != numEmbeddedStop);
 		return stopPos;
 	}
+
+	private static boolean mayExpandAuthAlias(String aliasName, Map props1) {
+		if (authAliasesAllowedToExpand==null) {
+			Set<String> aliases = new HashSet<>();
+			String property = System.getProperty(CREDENTIAL_EXPANSION_ALLOWING_PROPERTY,"").trim();
+			if(StringResolver.needsResolution(property)) {
+				property = StringResolver.substVars(property, props1);
+			}
+			aliases.addAll(Arrays.asList(property.split(",")));
+			authAliasesAllowedToExpand = aliases;
+		}
+		return authAliasesAllowedToExpand.contains(aliasName);
+	}
+
 }

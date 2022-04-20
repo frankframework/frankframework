@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2017 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,15 +32,15 @@ import java.util.Iterator;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import nl.nn.adapterframework.core.IForwardTarget;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
@@ -230,7 +230,7 @@ public class XmlQuerySender extends DirectQuerySender {
 	}
 
 	@Override
-	protected PipeRunResult sendMessageOnConnection(Connection connection, Message message, IPipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
+	protected PipeRunResult sendMessageOnConnection(Connection connection, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
 		Element queryElement;
 		String tableName = null;
 		Vector<Column> columns = null;
@@ -288,7 +288,7 @@ public class XmlQuerySender extends DirectQuerySender {
 		return result;
 	}
 
-	private PipeRunResult selectQuery(Connection connection, String tableName, Vector<Column> columns, String where, String order, IPipeLineSession session, IForwardTarget next) throws SenderException, JdbcException {
+	private PipeRunResult selectQuery(Connection connection, String tableName, Vector<Column> columns, String where, String order, PipeLineSession session, IForwardTarget next) throws SenderException, JdbcException {
 		String query = "SELECT ";
 		try {
 			if (columns != null) {
@@ -313,7 +313,7 @@ public class XmlQuerySender extends DirectQuerySender {
 			if (order != null) {
 				query = query + " ORDER BY " + order;
 			}
-			QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, "select", null);
+			QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, QueryType.SELECT, null);
 			PreparedStatement statement = getStatement(connection, queryExecutionContext);
 			statement.setQueryTimeout(getTimeout());
 			setBlobSmartGet(true);
@@ -357,7 +357,7 @@ public class XmlQuerySender extends DirectQuerySender {
 			if (where != null) {
 				query = query + " WHERE " + where;
 			}
-			QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, "delete", null);
+			QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, QueryType.OTHER, null);
 			PreparedStatement statement = getStatement(connection, queryExecutionContext);
 			statement.setQueryTimeout(getTimeout());
 			return executeOtherQuery(connection, statement, queryExecutionContext.getQuery(), null, null, null, null);
@@ -392,7 +392,7 @@ public class XmlQuerySender extends DirectQuerySender {
 
 	private Message sql(Connection connection, String query, String type) throws SenderException, JdbcException {
 		try {
-			QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, "other", null);
+			QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, QueryType.OTHER, null);
 			PreparedStatement statement = getStatement(connection, queryExecutionContext);
 			statement.setQueryTimeout(getTimeout());
 			setBlobSmartGet(true);
@@ -404,7 +404,7 @@ public class XmlQuerySender extends DirectQuerySender {
 				StringTokenizer stringTokenizer = new StringTokenizer(query, ";");
 				while (stringTokenizer.hasMoreTokens()) {
 					String q = stringTokenizer.nextToken();
-					queryExecutionContext = new QueryExecutionContext(q, "other", null);
+					queryExecutionContext = new QueryExecutionContext(q, QueryType.OTHER, null);
 					statement = getStatement(connection, queryExecutionContext);
 					if (q.trim().toLowerCase().startsWith("select")) {
 						result.append(executeSelectQuery(statement,null,null, null, null).getResult().asString());
@@ -440,9 +440,9 @@ public class XmlQuerySender extends DirectQuerySender {
 						query = "SELECT " + column.getName() + " FROM " + tableName + " WHERE ROWID=?" + " FOR UPDATE";
 						QueryExecutionContext queryExecutionContext;
 						if (column.getType().equalsIgnoreCase(TYPE_BLOB)) {
-							queryExecutionContext = new QueryExecutionContext(query, "updateBlob", null);
+							queryExecutionContext = new QueryExecutionContext(query, QueryType.UPDATEBLOB, null);
 						} else {
-							queryExecutionContext = new QueryExecutionContext(query, "updateClob", null);
+							queryExecutionContext = new QueryExecutionContext(query, QueryType.UPDATECLOB, null);
 						}
 						PreparedStatement statement = getStatement(connection, queryExecutionContext);
 						statement.setString(1, rowId);
@@ -456,7 +456,7 @@ public class XmlQuerySender extends DirectQuerySender {
 				}
 				return new Message("<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>");
 			}
-			QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, "other", null);
+			QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, QueryType.OTHER, null);
 			PreparedStatement statement = getStatement(connection, queryExecutionContext);
 			applyParameters(statement, columns);
 			statement.setQueryTimeout(getTimeout());

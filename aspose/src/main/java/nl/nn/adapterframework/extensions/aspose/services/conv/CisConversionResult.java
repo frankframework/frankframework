@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2021-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,20 +20,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.tika.mime.MediaType;
-
-import com.google.common.base.MoreObjects;
+import org.springframework.http.MediaType;
 
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.util.XmlBuilder;
-
 /**
- * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der
- *         Hoorn</a> (d937275)
+ * @author
+ * 	Gerard van der Hoorn
  */
 public class CisConversionResult {
 
-	private final static String PASSWORD_MESSAGE = "Omzetten naar PDF mislukt. Reden: bestand is beveiligd met een wachtwoord!";
+	private static final String PASSWORD_MESSAGE = "Omzetten naar PDF mislukt. Reden: bestand is beveiligd met een wachtwoord!";
 
 	private ConversionOption conversionOption;
 	private MediaType mediaType;
@@ -176,17 +173,25 @@ public class CisConversionResult {
 	}
 
 	@Override
-	public final String toString() {
-		return MoreObjects.toStringHelper(this).add("ConversionOption", getConversionOption())
-				.add("mediaType", getMediaType()).add("documentName", getDocumentName())
-				.add("pdfResultFile", getPdfResultFile() == null ? "null" : getPdfResultFile().getName())
-				.add("failureReason", getFailureReason()).add("attachments", getAttachments()).toString();
+	public final String toString() { //HIER
+		StringBuilder builder = new StringBuilder(super.toString());
+		builder.append(String.format("ConversionOption=[%s]", getConversionOption()));
+		builder.append(String.format("mediaType=[%s]", getMediaType()));
+		builder.append(String.format("documentName=[%s]", getDocumentName()));
+		builder.append(String.format("pdfResultFile=[%s]", getPdfResultFile() == null ? "null" : getPdfResultFile().getName()));
+		builder.append(String.format("failureReason=[%s]", getFailureReason()));
+		builder.append(String.format("attachments=[%s]", getAttachments()));
+
+		return builder.toString();
 	}
 
 	/**
 	 * Creates and xml containing conversion results both attachments and the main document.
 	 */
-	public void buildXmlFromResult(XmlBuilder main, CisConversionResult cisConversionResult, boolean isRoot) {
+	public void buildXmlFromResult(XmlBuilder main, boolean isRoot) {
+		buildXmlFromResult(main, this, isRoot);
+	}
+	private void buildXmlFromResult(XmlBuilder main, CisConversionResult cisConversionResult, boolean isRoot) {
 		if(isRoot) {
 			main.addAttribute("conversionOption", this.getConversionOption().getValue());
 			main.addAttribute("mediaType", this.getMediaType().toString());

@@ -22,9 +22,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
 
 
@@ -44,17 +44,17 @@ public abstract class ResultWriter extends AbstractResultHandler {
 	
 	private Map<String,Writer> openWriters = Collections.synchronizedMap(new HashMap<>());
 	
-	protected abstract Writer createWriter(IPipeLineSession session, String streamId) throws Exception;
+	protected abstract Writer createWriter(PipeLineSession session, String streamId) throws Exception;
 
 	@Override
-	public void openDocument(IPipeLineSession session, String streamId) throws Exception {
+	public void openDocument(PipeLineSession session, String streamId) throws Exception {
 		super.openDocument(session, streamId);
 		getWriter(session, streamId, true);
 		write(session,streamId,replacePattern(getOnOpenDocument(),streamId));
 	}
 
 	@Override
-	public void closeDocument(IPipeLineSession session, String streamId) {
+	public void closeDocument(PipeLineSession session, String streamId) {
 		try (Writer w = openWriters.remove(streamId)) {
 			// just close the writer
 		} catch (IOException e) {
@@ -64,7 +64,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 	}
 
 	@Override
-	public String finalizeResult(IPipeLineSession session, String streamId, boolean error) throws Exception {
+	public String finalizeResult(PipeLineSession session, String streamId, boolean error) throws Exception {
 		log.debug("finalizeResult ["+streamId+"]");
 		write(session,streamId,replacePattern(getOnCloseDocument(),streamId));
 		return null;
@@ -73,7 +73,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 
 	
 	@Override
-	public void handleResult(IPipeLineSession session, String streamId, String recordKey, String result) throws Exception {
+	public void handleResult(PipeLineSession session, String streamId, String recordKey, String result) throws Exception {
 		write(session, streamId, result);
 	}
 	
@@ -85,7 +85,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 		}
 	}
 	
-	private void write(IPipeLineSession session, String streamId, String line) throws Exception {
+	private void write(PipeLineSession session, String streamId, String line) throws Exception {
 		if (line!=null) {
 			Writer w = getWriter(session, streamId, false);
 			if (w==null) {
@@ -97,7 +97,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 	}
 
 	@Override
-	public void openRecordType(IPipeLineSession session, String streamId) throws Exception {
+	public void openRecordType(PipeLineSession session, String streamId) throws Exception {
 		Writer w = getWriter(session, streamId, false);
 		if (w != null && ! StringUtils.isEmpty(getPrefix())) {
 			write(session, streamId, getPrefix());
@@ -105,7 +105,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 	}
 
 	@Override
-	public void closeRecordType(IPipeLineSession session, String streamId) throws Exception {
+	public void closeRecordType(PipeLineSession session, String streamId) throws Exception {
 		Writer w = getWriter(session, streamId, false);
 		if (w != null && ! StringUtils.isEmpty(getSuffix())) {
 			write(session, streamId, getSuffix());
@@ -125,16 +125,16 @@ public abstract class ResultWriter extends AbstractResultHandler {
 	}
 
 	@Override
-	public void openBlock(IPipeLineSession session, String streamId, String blockName) throws Exception  {
+	public void openBlock(PipeLineSession session, String streamId, String blockName) throws Exception  {
 		write(session,streamId, replacePattern(getOnOpenBlock(),blockName));
 	}
 	@Override
-	public void closeBlock(IPipeLineSession session, String streamId, String blockName) throws Exception {
+	public void closeBlock(PipeLineSession session, String streamId, String blockName) throws Exception {
 		write(session,streamId, replacePattern(getOnCloseBlock(),blockName));
 	}
 
 
-	protected Writer getWriter(IPipeLineSession session, String streamId, boolean create) throws Exception {
+	protected Writer getWriter(PipeLineSession session, String streamId, boolean create) throws Exception {
 		//log.debug("getWriter ["+streamId+"], create ["+create+"]");
 		Writer writer;
 		writer = openWriters.get(streamId);

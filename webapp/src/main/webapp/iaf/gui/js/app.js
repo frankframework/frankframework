@@ -46,7 +46,7 @@
 
 		//These will automatically be updated.
 		"timeOffset": 0,
-		"init": 0,
+		"init": -1,
 		getString: function(variable) {
 			return this[variable];
 		},

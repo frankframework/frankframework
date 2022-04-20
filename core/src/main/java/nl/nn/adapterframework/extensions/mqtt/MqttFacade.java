@@ -22,7 +22,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -30,11 +30,15 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
+import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
+import lombok.Setter;
 
 public class MqttFacade implements HasPhysicalDestination, IConfigurable {
+	private final @Getter(onMethod = @__(@Override)) String domain = "MQTT";
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
 
 	protected Logger log = LogUtil.getLogger(this);
 	private String name;

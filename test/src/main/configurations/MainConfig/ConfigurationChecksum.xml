@@ -73,7 +73,7 @@
 			<pipe
 				name="selectSenderBasedOnTransferName"
 				className="nl.nn.adapterframework.pipes.XmlSwitch" 
-				sessionKey="FxfTransferName" >
+				getInputFromSessionKey="FxfTransferName" >
 			</pipe>
 
 
@@ -112,13 +112,13 @@
 		        name="ResponseSender" > 
 		        <sender 
 		                className="nl.nn.adapterframework.jms.JmsSender" 
-		                destinationName="jms/i4testiaf_out"
+		                destinationName="${jms.destination.i4testiaf_out}"
 		                deliveryMode="NON_PERSISTENT"
 		                jmsRealm="qcf"
 		        >
 		        	<param name="SOURCE" value="I4TESTGR"/>
 				</sender> 
-				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="${applicationId}/ChecksumTest-File" />
+				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" slotId="${applicationId}/ChecksumTest-File" />
 			  <forward name="success" path="READY" />
 			</pipe>	
 		</pipeline>

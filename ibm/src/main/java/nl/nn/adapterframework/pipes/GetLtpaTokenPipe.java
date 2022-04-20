@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
@@ -23,15 +23,6 @@ import nl.nn.adapterframework.util.SsoUtil;
 
 /**
  * Returns the LTPA token associated with the session.
- *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setStoreResultInSessionKey(String) storeResultInSessionKey}</td><td>when set, the result is stored under this session key</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPreserveInput(boolean) preserveInput}</td><td>when set <code>true</code>, the input of a pipe is restored before processing the next one</td><td>false</td></tr>
- * </table>
- * </p>
  * 
  * @author  Gerrit van Brakel
  * @since   4.8
@@ -39,9 +30,9 @@ import nl.nn.adapterframework.util.SsoUtil;
 public class GetLtpaTokenPipe extends FixedForwardPipe {
 	
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
-			return new PipeRunResult(getForward(),SsoUtil.getSsoToken());
+			return new PipeRunResult(getSuccessForward(), SsoUtil.getSsoToken());
 		} catch (Exception e) {
 			throw new PipeRunException(this, "Could not obtain LtpaToken",e);
 		}

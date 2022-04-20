@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2015, 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,15 @@
 */
 package nl.nn.adapterframework.jms;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.jms.BytesMessage;
 import javax.jms.Destination;
 import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
@@ -38,7 +42,7 @@ import javax.jms.TopicSubscriber;
 import javax.naming.NamingException;
 import javax.xml.transform.TransformerException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
 
 import lombok.Getter;
@@ -51,13 +55,16 @@ import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.DocumentedEnum;
+import nl.nn.adapterframework.doc.EnumLabel;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jndi.JndiBase;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.EnumUtils;
 
 
 /**
@@ -73,22 +80,23 @@ import nl.nn.adapterframework.util.Misc;
  */
 public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEnabled {
 
+	private final @Getter(onMethod = @__(@Override)) String domain = "JMS";
 	private boolean createDestination = AppConstants.getInstance().getBoolean("jms.createDestination", false);
 	private boolean useJms102 = AppConstants.getInstance().getBoolean("jms.useJms102", false);
 
-	private boolean transacted = false;
-	private boolean jmsTransacted = false;
-	private SubscriberType subscriberType = SubscriberType.DURABLE;
+	private @Getter boolean transacted = false;
+	private @Getter boolean jmsTransacted = false;
+	private @Getter SubscriberType subscriberType = SubscriberType.DURABLE;
 
-	private AcknowledgeMode ackMode = AcknowledgeMode.AUTO_ACKNOWLEDGE;
-	private boolean persistent;
-	private long messageTimeToLive = 0;
-	private String destinationName;
-	private boolean useTopicFunctions = false;
-	private String authAlias;
-	private boolean lookupDestination = true;
+	private AcknowledgeMode acknowledgeMode = AcknowledgeMode.AUTO_ACKNOWLEDGE;
+	private @Getter boolean persistent;
+	private @Getter long messageTimeToLive = 0;
+	private @Getter String destinationName;
+	private @Getter boolean useTopicFunctions = false;
+	private @Getter String authAlias;
+	private @Getter boolean lookupDestination = AppConstants.getInstance().getBoolean("jms.lookupDestination", true);
 
-	private DestinationType destinationType = DestinationType.QUEUE; // QUEUE or TOPIC
+	private @Getter DestinationType destinationType = DestinationType.QUEUE; // QUEUE or TOPIC
 
 	protected MessagingSource messagingSource;
 	private Map<String,Destination> destinations = new ConcurrentHashMap<>();
@@ -99,31 +107,39 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	// ---------------------------------------------------------------------
 	// Queue fields
 	// ---------------------------------------------------------------------
-	private String queueConnectionFactoryName;
+	private @Getter String queueConnectionFactoryName;
 	// ---------------------------------------------------------------------
 	// Topic fields
 	// ---------------------------------------------------------------------
-	private String topicConnectionFactoryName;
+	private @Getter String topicConnectionFactoryName;
 
 	// the MessageSelector will provide filter functionality, as specified
 	// javax.jms.Message.
-	private String messageSelector = null;
+	private @Getter String messageSelector = null;
 
-	private boolean correlationIdToHex = false;
-	private String correlationIdToHexPrefix = "ID:";
-	private int correlationIdMaxLength = -1;
+	private @Getter boolean correlationIdToHex = false;
+	private @Getter String correlationIdToHexPrefix = "ID:";
+	private @Getter int correlationIdMaxLength = -1;
 
-	public enum AcknowledgeMode {
-		NOT_SET(0, ""),
-		AUTO_ACKNOWLEDGE(Session.AUTO_ACKNOWLEDGE, "auto"),
-		CLIENT_ACKNOWLEDGE(Session.CLIENT_ACKNOWLEDGE, "client"),
-		DUPS_OK_ACKNOWLEDGE(Session.DUPS_OK_ACKNOWLEDGE, "dups");
+	public enum AcknowledgeMode implements DocumentedEnum {
+		@EnumLabel("none") NOT_SET(0),
 		
+		/** auto or auto_acknowledge: Specifies that the session is to automatically acknowledge consumer receipt of
+		  * messages when message processing is complete. */
+		@EnumLabel("auto") AUTO_ACKNOWLEDGE(Session.AUTO_ACKNOWLEDGE),
+
+		/** client or client_acknowledge: Specifies that the consumer is to acknowledge all messages delivered in this session. */
+		@EnumLabel("client") CLIENT_ACKNOWLEDGE(Session.CLIENT_ACKNOWLEDGE),
+
+		/** dups or dups_ok_acknowledge: Specifies that the session is to "lazily" acknowledge the 
+		  * delivery of messages to the consumer. "Lazy" means that the consumer can delay the acknowledgment
+		  * of messages to the server until a convenient time; meanwhile the server might redeliver messages.
+		  * This mode reduces the session overhead. If JMS fails, the consumer may receive duplicate messages. */
+		@EnumLabel("dups") DUPS_OK_ACKNOWLEDGE(Session.DUPS_OK_ACKNOWLEDGE);
 		private @Getter int acknowledgeMode;
-		private @Getter String shortName;
-		private AcknowledgeMode(int acknowledgeMode, String shortName) {
+
+		private AcknowledgeMode(int acknowledgeMode) {
 			this.acknowledgeMode = acknowledgeMode;
-			this.shortName=shortName;
 		}
 	}
 	
@@ -131,14 +147,14 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		NOT_SET(0),
 		PERSISTENT(javax.jms.DeliveryMode.PERSISTENT),
 		NON_PERSISTENT(javax.jms.DeliveryMode.NON_PERSISTENT);
-		
+
 		private @Getter int deliveryMode;
 		private DeliveryMode(int deliveryMode) {
 			this.deliveryMode = deliveryMode;
 		}
-		
+
 		public static DeliveryMode parse(int deliveryMode) {
-			return Misc.parseFromField(DeliveryMode.class, deliveryMode, d -> d.getDeliveryMode());
+			return EnumUtils.parseFromField(DeliveryMode.class, "DeliveryMode", deliveryMode, d -> d.getDeliveryMode());
 		}
 	}
 
@@ -219,7 +235,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 */
 	protected Session createSession() throws JmsException {
 		try {
-			return getMessagingSource().createSession(isJmsTransacted(), getAckModeEnum().getAcknowledgeMode());
+			return getMessagingSource().createSession(isJmsTransacted(), getAcknowledgeModeEnum().getAcknowledgeMode());
 		} catch (IbisException e) {
 			if (e instanceof JmsException) {
 				throw (JmsException)e;
@@ -327,7 +343,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			throw new NamingException("no destinationName specified");
 		}
 		if (isLookupDestination()) {
-			if (!useTopicFunctions || getPersistent()) {
+			if (!useTopicFunctions || isPersistent()) {
 				result = getJmsMessagingSource().lookupDestination(destinationName);
 			} else {
 				TopicSession session = null;
@@ -353,10 +369,10 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 * @return a MessageConsumer with the right filter (messageSelector)
 	 */
 	public MessageConsumer getMessageConsumerForCorrelationId(Session session, Destination destination, String correlationId) throws NamingException, JMSException {
-		if (correlationId==null)
+		if (correlationId==null) {
 			return getMessageConsumer(session, destination, null);
-		else
-			return getMessageConsumer(session, destination, "JMSCorrelationID='" + correlationId + "'");
+		}
+		return getMessageConsumer(session, destination, "JMSCorrelationID='" + correlationId + "'");
 	}
 
 	/**
@@ -374,16 +390,13 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		if (useTopicFunctions) {
 			if (useJms102()) {
 				return getTopicSubscriber((TopicSession)session, (Topic)destination, selector);
-			} else {
-				return getTopicSubscriber(session, (Topic)destination, selector);
 			}
-		} else {
-			if (useJms102()) {
-				return getQueueReceiver((QueueSession)session, (Queue)destination, selector);
-			} else {
-				return session.createConsumer(destination, selector);
-			}
+			return getTopicSubscriber(session, (Topic)destination, selector);
 		}
+		if (useJms102()) {
+			return getQueueReceiver((QueueSession)session, (Queue)destination, selector);
+		}
+		return session.createConsumer(destination, selector);
 	}
 	/**
 	 * Create a MessageConsumer, on a specific session and for a specific destination.
@@ -435,16 +448,15 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		} catch (Exception e) {
 			if (throwException) {
 				throw new JmsException(e);
-			} else {
-				log.warn("[" + getName() + "] got exception in getPhysicalDestinationShortName", e);
-			}
+			} 
+			log.warn("[" + getName() + "] got exception in getPhysicalDestinationShortName", e);
 		}
 		return result;
 	}
 
 	@Override
 	public String getPhysicalDestinationName() {
-		String result = getDestinationTypeEnum()+"("+getDestinationName()+") ["+getPhysicalDestinationShortName()+"]";
+		String result = getDestinationType()+"("+getDestinationName()+") ["+getPhysicalDestinationShortName()+"]";
 		if (StringUtils.isNotEmpty(getMessageSelector())) {
 			result+=" selector ["+getMessageSelector()+"]";
 		}
@@ -452,9 +464,9 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		if (getJmsRealmName()!=null) {
 			jmsRealm=JmsRealmFactory.getInstance().getJmsRealm(getJmsRealmName());
 		}
-	    if (jmsRealm==null) {
-	    	log.warn("Could not find jmsRealm ["+getJmsRealmName()+"]");
-	    } else {
+		if (jmsRealm==null) {
+			log.warn("Could not find jmsRealm ["+getJmsRealmName()+"]");
+		} else {
 			result+=" on ("+jmsRealm.retrieveConnectionFactoryName()+")";
 		}
 		return result;
@@ -464,7 +476,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 * Gets a queueReceiver value
 	 * @see QueueReceiver
 	 */
-	private QueueReceiver getQueueReceiver(QueueSession session, Queue destination, String selector) throws NamingException, JMSException {
+	private QueueReceiver getQueueReceiver(QueueSession session, Queue destination, String selector) throws JMSException {
 		QueueReceiver queueReceiver = session.createReceiver(destination, selector);
 		return queueReceiver;
 	}
@@ -474,17 +486,17 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	  * @see QueueSender
 	  * @return The queueReceiver value
 	  */
-	private QueueSender getQueueSender(QueueSession session, Queue destination) throws NamingException, JMSException {
+	private QueueSender getQueueSender(QueueSession session, Queue destination) throws JMSException {
 		return session.createSender(destination);
 	}
 
 	/**
 	 * Gets a topicPublisher for a specified topic
 	 */
-	private TopicPublisher getTopicPublisher(TopicSession session, Topic topic) throws NamingException, JMSException {
+	private TopicPublisher getTopicPublisher(TopicSession session, Topic topic) throws JMSException {
 		return session.createPublisher(topic);
 	}
-	private TopicSubscriber getTopicSubscriber(TopicSession session, Topic topic, String selector) throws NamingException, JMSException {
+	private TopicSubscriber getTopicSubscriber(TopicSession session, Topic topic, String selector) throws JMSException {
 
 		TopicSubscriber topicSubscriber;
 		switch (subscriberType) {
@@ -502,7 +514,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		return topicSubscriber;
 	}
 
-	private MessageConsumer getTopicSubscriber(Session session, Topic topic, String selector) throws NamingException, JMSException {
+	private MessageConsumer getTopicSubscriber(Session session, Topic topic, String selector) throws JMSException {
 		MessageConsumer messageConsumer;
 		switch (subscriberType) {
 		case DURABLE:
@@ -546,9 +558,8 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			if (ignoreInvalidDestinationException) {
 				log.warn("queue ["+dest+"] doesn't exist");
 				return null;
-			} else {
-				throw e;
-			}
+			} 
+			throw e;
 		}
 		if (messageType!=null) {
 			msg.setJMSType(messageType);
@@ -568,7 +579,9 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			for (Iterator<String> it = properties.keySet().iterator(); it.hasNext();) {
 				String key = it.next();
 				Object value = properties.get(key);
-				log.debug("setting property ["+getName()+"] to value ["+value+"]");
+				if (value instanceof Message) {
+					value = ((Message)value).asString();
+				}
 				msg.setObjectProperty(key, value);
 			}
 		}
@@ -606,17 +619,15 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 					((QueueSender) messageProducer).send(message);
 				}
 				return message.getJMSMessageID();
-			} else {
-				messageProducer.send(message);
-				return message.getJMSMessageID();
 			}
+			messageProducer.send(message);
+			return message.getJMSMessageID();
 		} catch (InvalidDestinationException e) {
 			if (ignoreInvalidDestinationException) {
 				log.warn("queue ["+messageProducer.getDestination()+"] doesn't exist");
 				return null;
-			} else {
-				throw e;
 			}
+			throw e;
 		}
 	}
 
@@ -636,22 +647,19 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			if (useJms102()) {
 				if (dest instanceof Topic) {
 					return sendByTopic((TopicSession)session, (Topic)dest, message);
-				} else {
-					return sendByQueue((QueueSession)session, (Queue)dest, message);
-				}
-			} else {
-				MessageProducer mp = session.createProducer(dest);
-				mp.send(message);
-				mp.close();
-				return message.getJMSMessageID();
-			}
+				} 
+				return sendByQueue((QueueSession)session, (Queue)dest, message);
+			} 
+			MessageProducer mp = session.createProducer(dest);
+			mp.send(message);
+			mp.close();
+			return message.getJMSMessageID();
 		} catch (InvalidDestinationException e) {
 			if (ignoreInvalidDestinationException) {
 				log.warn("queue ["+dest+"] doesn't exist");
 				return null;
-			} else {
-				throw e;
 			}
+			throw e;
 		}
 	}
 
@@ -678,10 +686,21 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		}
 	}
 
+	public MessageContext getContext(javax.jms.Message message) throws JMSException {
+		MessageContext result = new MessageContext();
+		result.withName(message.getJMSMessageID());
+		result.withModificationTime(message.getJMSTimestamp());
+		Enumeration<String> names=message.getPropertyNames();
+		while(names.hasMoreElements()) {
+			String name=names.nextElement();
+			result.put(name,message.getObjectProperty(name));
+		}
+		return result;
+	}
+
 	/**
 	 * Extracts string from message obtained from getRawMessage(Map). May also extract
 	 * other parameters from the message and put those in the threadContext.
-	 * @return String  input message for adapter.
 	 */
 	public Message extractMessage(Object rawMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException {
 //		TextMessage message = null;
@@ -698,9 +717,49 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		if (rawMessage instanceof IMessageWrapper) {
 			message = ((IMessageWrapper)rawMessage).getMessage();
 		} else if (rawMessage instanceof TextMessage) {
-			message = new Message(((TextMessage)rawMessage).getText());
+			message = new Message(((TextMessage)rawMessage).getText(),getContext((TextMessage)rawMessage));
+		} else if (rawMessage instanceof BytesMessage) {
+			BytesMessage bytesMsg = (BytesMessage)rawMessage;
+			InputStream input = new InputStream() {
+
+				@Override
+				public int read() throws IOException {
+					try {
+						return bytesMsg.readByte();
+					} catch (JMSException e) {
+						throw new IOException("Cannot read JMS message", e);
+					}
+				}
+
+				@Override
+				public int read(byte[] b) throws IOException {
+					try {
+						return bytesMsg.readBytes(b);
+					} catch (JMSException e) {
+						throw new IOException("Cannot read JMS message", e);
+					}
+				}
+
+				@Override
+				public int read(byte[] b, int off, int len) throws IOException {
+					try {
+						byte readbuf[] = new byte[len];
+						int result = bytesMsg.readBytes(readbuf);
+						if (result>0) {
+							System.arraycopy(readbuf, 0, b, off, result);
+						}
+						return result;
+					} catch (JMSException e) {
+						throw new IOException("Cannot read JMS message", e);
+					}
+				}
+				
+			};
+			message = new Message(new BufferedInputStream(input),getContext((BytesMessage)rawMessage));
+		} else if (rawMessage == null) {
+			message = Message.nullMessage();
 		} else {
-			message = new Message((String)rawMessage);
+			message = Message.asMessage(rawMessage);
 		}
 		if (!soap) {
 			return message;
@@ -719,22 +778,22 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	}
 
 	@Override
-    public String toString() {
-        StringBuffer sb = new StringBuffer();
-        sb.append(super.toString());
-        if (useTopicFunctions) {
-            sb.append("[topicName=" + destinationName + "]");
-	        sb.append("[topicConnectionFactoryName=" + topicConnectionFactoryName + "]");
-        } else {
-            sb.append("[queueName=" + destinationName + "]");
-	        sb.append("[queueConnectionFactoryName=" + queueConnectionFactoryName + "]");
-        }
-	//  sb.append("[physicalDestinationName="+getPhysicalDestinationName()+"]");
-        sb.append("[ackMode=" + ackMode + "]");
-        sb.append("[persistent=" + getPersistent() + "]");
-        sb.append("[transacted=" + transacted + "]");
-        return sb.toString();
-    }
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(super.toString());
+		if (useTopicFunctions) {
+			sb.append("[topicName=" + destinationName + "]");
+			sb.append("[topicConnectionFactoryName=" + topicConnectionFactoryName + "]");
+		} else {
+			sb.append("[queueName=" + destinationName + "]");
+			sb.append("[queueConnectionFactoryName=" + queueConnectionFactoryName + "]");
+		}
+		// sb.append("[physicalDestinationName="+getPhysicalDestinationName()+"]");
+		sb.append("[ackMode=" + getAcknowledgeModeEnum() + "]");
+		sb.append("[persistent=" + isPersistent() + "]");
+		sb.append("[transacted=" + transacted + "]");
+		return sb.toString();
+	}
 
 	/**
 	 * The name of the destination, this may be a <code>queue</code> or <code>topic</code> name.
@@ -743,29 +802,17 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	public void setDestinationName(String destinationName) {
 		this.destinationName = destinationName;
 	}
-	public String getDestinationName() {
-		return destinationName;
-	}
 
 	/**
 	 * should be <code>QUEUE</code> or <code>TOPIC</code><br/>
 	 * This function also sets the <code>useTopicFunctions</code> field,
 	 * that controls wether Topic functions are used or Queue functions.
 	 */
-	@IbisDoc({"2", "Either <code>queue</code> or <code>topic</code>", "<code>queue</code>"})
-	public void setDestinationType(String destinationType) {
-		this.destinationType = Misc.parse(DestinationType.class, "destinationType", destinationType);
-		useTopicFunctions = this.destinationType==DestinationType.TOPIC;
-	}
-	public void setDestinationTypeEnum(DestinationType destinationType) {
-		this.destinationType=destinationType;
-	}
-	public DestinationType getDestinationTypeEnum() {
-		return destinationType;
-	}
 
-	public boolean isUseTopicFunctions() {
-		return useTopicFunctions;
+	@IbisDoc({"2", "Type of the messageing destination", "QUEUE"})
+	public void setDestinationType(DestinationType destinationType) {
+		this.destinationType=destinationType;
+		useTopicFunctions = this.destinationType==DestinationType.TOPIC;
 	}
 
 	/**
@@ -775,29 +822,23 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	@Deprecated
 	@ConfigurationWarning("please use attribute acknowledgeMode instead")
 	public void setAckMode(int ackMode) {
-		this.ackMode = Misc.parseFromField(AcknowledgeMode.class, "ackMode", ackMode, a -> a.getAcknowledgeMode());
-	}
-
-	public AcknowledgeMode getAckModeEnum() {
-		return ackMode;
+		this.acknowledgeMode = EnumUtils.parseFromField(AcknowledgeMode.class, "ackMode", ackMode, a -> a.getAcknowledgeMode());
 	}
 
 
-	@IbisDoc({"3", "Acknowledge mode, can be one of ('auto' or 'auto_acknowledge'), ('dups' or 'dups_ok_acknowledge') or ('client' or 'client_acknowledge')", "auto_acknowledge",})
+	@IbisDoc({"3", "If not transacted, the way the application informs the JMS provider that it has successfully received a message.", "auto"})
 	public void setAcknowledgeMode(String acknowledgeMode) {
 		try {
-			ackMode = Misc.parseFromField(AcknowledgeMode.class, "acknowledgeMode", acknowledgeMode, a -> a.getShortName());
-		} catch (IllegalArgumentException e1) {
-			try {
-				ackMode = Misc.parse(AcknowledgeMode.class, "acknowledgeMode", acknowledgeMode);
-			} catch (IllegalArgumentException e2) {
-				e1.addSuppressed(e2);
-				ConfigurationWarnings.add(this, log, "invalid acknowledgemode:[" + acknowledgeMode + "] setting no acknowledge", e1);
-				ackMode = AcknowledgeMode.NOT_SET;
-			}
+			this.acknowledgeMode = EnumUtils.parse(AcknowledgeMode.class, acknowledgeMode, true);
+		} catch (IllegalArgumentException e) {
+			ConfigurationWarnings.add(this, log, "invalid acknowledgemode:[" + acknowledgeMode + "] setting no acknowledge", e);
+			this.acknowledgeMode = AcknowledgeMode.NOT_SET;
 		}
 	}
-
+	public AcknowledgeMode getAcknowledgeModeEnum() {
+		return acknowledgeMode;
+	}
+	
 	/**
 	 * Controls whether messages are processed persistently.
 	 *
@@ -808,16 +849,10 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	public void setPersistent(boolean value) {
 		persistent = value;
 	}
-	public boolean getPersistent() {
-		return persistent;
-	}
 
-	@IbisDoc({"5", "SubscriberType, should <b>DURABLE</b> or <b>TRANSIENT</b>. Only applicable for topics ", "DURABLE"})
-	public void setSubscriberType(String subscriberType) {
-		this.subscriberType = Misc.parse(SubscriberType.class, "subscriberType", subscriberType);
-	}
-	public SubscriberType getSubscriberTypeEnum() {
-		return subscriberType;
+	@IbisDoc({"5", "Only applicable for topics", "DURABLE"})
+	public void setSubscriberType(SubscriberType subscriberType) {
+		this.subscriberType = subscriberType;
 	}
 
 	/**
@@ -828,9 +863,6 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	public void setQueueConnectionFactoryName(String name) {
 		queueConnectionFactoryName=name;
 	}
-	public String getQueueConnectionFactoryName() {
-		return queueConnectionFactoryName;
-	}
 
 	/**
 	 * The JNDI-name of the connection factory to use to connect to a <i>topic</i> if {@link #isTransacted()} returns <code>false</code>.
@@ -839,9 +871,6 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	@IbisDoc({"7", "JNDI-name of the topicConnectionFactory, used when <code>destinationType<code>=</code>TOPIC</code>", ""})
 	public void setTopicConnectionFactoryName(String topicConnectionFactoryName) {
 		this.topicConnectionFactoryName = topicConnectionFactoryName;
-	}
-	public String getTopicConnectionFactoryName() {
-		return topicConnectionFactoryName;
 	}
 
 	/**
@@ -861,9 +890,6 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	public void setJmsTransacted(boolean jmsTransacted) {
 		this.jmsTransacted = jmsTransacted;
 	}
-	public boolean isJmsTransacted() {
-		return jmsTransacted;
-	}
 
 	/**
 	 * Controls whether messages are send under transaction control.
@@ -873,18 +899,11 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	public void setTransacted(boolean transacted) {
 		this.transacted = transacted;
 	}
-	@Override
-	public boolean isTransacted() {
-		return transacted;
-	}
 
 	@IbisDoc({"9", "Transform the value of the correlationid to a hexadecimal value if it starts with id: (preserving the id: part). "+ 
 			"Useful when sending messages to MQ which expects this value to be in hexadecimal format when it starts with id:, otherwise generating the error: MQJMS1044: String is not a valid hexadecimal number", "false"})
 	public void setCorrelationIdToHex(boolean correlationIdToHex) {
 		this.correlationIdToHex = correlationIdToHex;
-	}
-	public boolean isCorrelationIdToHex() {
-		return correlationIdToHex;
 	}
 
 
@@ -894,20 +913,14 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	}
 
 
-	@IbisDoc({"11", "The time (in milliseconds) it takes for the message to expire. If the message is not consumed before, it will be lost. Mmake sure to set it to a positive value for request/repy type of messages.", "0 (unlimited)"})
+	@IbisDoc({"11", "The time <i>in milliseconds</i> it takes for the message to expire. If the message is not consumed before, it will be lost. Must be a positive value for request/reply type of messages, 0 disables the expiry timeout ", "0"})
 	public void setMessageTimeToLive(long ttl){
 		this.messageTimeToLive=ttl;
-	}
-	public long getMessageTimeToLive(){
-		return this.messageTimeToLive;
 	}
 
 	@IbisDoc({"12", "If set (>=0) and the length of the correlationId exceeds this maximum length, the correlationId is trimmed from the left side of a string to this maximum length", "-1"})
 	public void setCorrelationIdMaxLength(int i) {
 		correlationIdMaxLength = i;
-	}
-	public int getCorrelationIdMaxLength() {
-		return correlationIdMaxLength;
 	}
 
 
@@ -915,23 +928,14 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	public void setMessageSelector(String newMessageSelector) {
 		this.messageSelector=newMessageSelector;
 	}
-	public String getMessageSelector() {
-		return messageSelector;
-	}
 
 	@IbisDoc({"14", "Alias used to obtain credentials for authentication to JMS server", ""})
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
-	public String getAuthAlias() {
-		return authAlias;
-	}
 
 	@IbisDoc({"15", "If set <code>false</code>, the destinationName is used directly instead of performing a JNDI lookup", "true"})
 	public void setLookupDestination(boolean b) {
 		lookupDestination = b;
-	}
-	public boolean isLookupDestination() {
-		return lookupDestination;
 	}
 }

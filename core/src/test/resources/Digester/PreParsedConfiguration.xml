@@ -1,0 +1,17 @@
+<Configuration
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="http://schemas.ibissource.org/ibisdoc.xsd"
+	name="My first beautiful configuration"
+	>
+	<Adapter name="HelloBeautifulWorld">
+		<Receiver name="HelloBeautifulWorld">
+			<JavaListener name="HelloBeautifulWorld" />
+		</Receiver>
+		<Pipeline firstPipe="HelloBeautifulWorld">
+			<Exit path="EXIT" state="success"/>
+			<FixedResultPipe name="HelloBeautifulWorld" returnString="Hello Beautiful World" >
+				<Forward name="success" path="EXIT"/>
+			</FixedResultPipe>
+		</Pipeline>
+	</Adapter>
+</Configuration>

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 WeAreFrank!
+   Copyright 2019-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ import javax.security.auth.Subject;
 import javax.security.auth.kerberos.KerberosPrincipal;
 import javax.security.auth.login.LoginContext;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
@@ -288,24 +288,34 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 	}
 
 	@Override
-	public Message readFile(String filename) throws FileSystemException, IOException {
-		final File file = getFile(filename, AccessMask.GENERIC_READ, SMB2CreateDisposition.FILE_OPEN);
-		InputStream is = file.getInputStream();
-		FilterInputStream fis = new FilterInputStream(is) {
-
-			boolean isOpen = true;
-			@Override
-			public void close() throws IOException {
-				if(isOpen) {
-					super.close();
-					isOpen=false;
-				}
-				file.close();
-			}
-		};
-		return new Message(fis);
+	public Message readFile(String filename, String charset) throws FileSystemException, IOException {
+		return new Samba2Message(getFile(filename, AccessMask.GENERIC_READ, SMB2CreateDisposition.FILE_OPEN), FileSystemUtils.getContext(this, filename, charset));
 	}
 
+	private class Samba2Message extends Message {
+		
+		public Samba2Message(File file, Map<String,Object> context) {
+			super(() -> {
+				InputStream is = file.getInputStream();
+				FilterInputStream fis = new FilterInputStream(is) {
+
+					boolean isOpen = true;
+					@Override
+					public void close() throws IOException {
+						if(isOpen) {
+							super.close();
+							isOpen=false;
+						}
+						file.close();
+					}
+				};
+				return fis;
+				
+			}, context, file.getClass());
+		}
+	}
+
+	
 	@Override
 	public void deleteFile(String f) throws FileSystemException {
 		diskShare.rm(f);
@@ -376,11 +386,15 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 	}
 
 	@Override
-	public void removeFolder(String folder) throws FileSystemException {
+	public void removeFolder(String folder, boolean removeNonEmptyFolder) throws FileSystemException {
 		if (!folderExists(folder)) {
 			throw new FileSystemException("Remove directory for [" + folder + "] has failed. Directory does not exist.");
 		} else {
-			diskShare.rmdir(folder, true);
+			try {
+				diskShare.rmdir(folder, removeNonEmptyFolder);
+			} catch(SMBApiException e) {
+				new FileSystemException("Remove directory for [" + folder + "] has failed.", e);
+			}
 		}
 	}
 

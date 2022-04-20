@@ -1,0 +1,27 @@
+<configuration>
+	  <adapter name="LdapFindGroupMembershipsPipe">
+      <receiver name="testtool-LdapFindGroupMembershipsPipe">
+         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   serviceName="testtool-LdapFindGroupMembershipsPipe"/>
+      </receiver>
+		    <receiver>
+			      <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   name="LdapFindGroupMembershipsPipe"/>
+		    </receiver>
+      <receiver name="testtool-LdapFindGroupMembershipsPipe-1">
+         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   serviceName="testtool-LdapFindGroupMembershipsPipe-1"/>
+      </receiver>
+		    <pipeline firstPipe="LdapFindGroupMembershipsPipe">
+			      <exits>
+				        <exit path="EXIT" state="success"/>
+			      </exits>
+			      <pipe name="LdapFindGroupMembershipsPipe"
+               className="nl.nn.adapterframework.pipes.SenderPipe">
+            <sender className="nl.nn.adapterframework.senders.IbisJavaSender"
+                    serviceName="testtool-LdapFindGroupMembershipsPipe"/>
+				        <forward name="success" path="EXIT"/>
+			      </pipe>
+		    </pipeline>
+	  </adapter>
+</configuration>

@@ -19,7 +19,7 @@ import java.security.Principal;
 
 import javax.servlet.http.HttpServletRequest;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISecurityHandler;
 
 /**
@@ -38,12 +38,12 @@ public class HttpSecurityHandler implements ISecurityHandler {
 	}
 
 	@Override
-	public boolean isUserInRole(String role, IPipeLineSession session) {
+	public boolean isUserInRole(String role, PipeLineSession session) {
 		return request.isUserInRole(role);
 	}
 
 	@Override
-	public Principal getPrincipal(IPipeLineSession session){
+	public Principal getPrincipal(PipeLineSession session){
 		return request.getUserPrincipal();
 	}
 

@@ -16,9 +16,9 @@
 package nl.nn.adapterframework.processors;
 
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -26,6 +26,6 @@ import nl.nn.adapterframework.stream.Message;
  */
 public interface ListenerProcessor<M> {
 
-	public Message getMessage(ICorrelatedPullingListener<M> listener, String correlationID, IPipeLineSession pipeLineSession) throws ListenerException, TimeOutException;
+	public Message getMessage(ICorrelatedPullingListener<M> listener, String correlationID, PipeLineSession pipeLineSession) throws ListenerException, TimeoutException;
 
 }

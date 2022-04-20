@@ -78,6 +78,11 @@ public class OverridesMap<V> extends SubstitutionNode<V> implements Substitution
 		}
 		return getMatchingValue(context, childName);
 	}
+
+	@Override
+	public boolean hasOverride(AlignmentContext context) {
+		return getOverride(context)!=null;
+	}
 	
 	@Override
 	public V getOverride(AlignmentContext context) {

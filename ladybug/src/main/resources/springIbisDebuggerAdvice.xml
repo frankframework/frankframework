@@ -5,13 +5,13 @@
 	xmlns:aop="http://www.springframework.org/schema/aop"
 	xsi:schemaLocation=
 		"
-		http://www.springframework.org/schema/beans classpath:xml/xsd/spring-beans-3.2.xsd
-		http://www.springframework.org/schema/aop classpath:xml/xsd/spring-aop-3.2.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
 		"
 	>
 
 	<bean
-		name="ibisDebuggerAdvice,threadLifeCycleEventListener"
+		name="ibisDebuggerAdvice,threadLifeCycleEventListener,xmlDebugger"
 		class="nl.nn.ibistesttool.IbisDebuggerAdvice"
 		autowire="byName"
 	/>
@@ -43,7 +43,7 @@
 							nl.nn.adapterframework.core.PipeLine,
 							nl.nn.adapterframework.core.IPipe, 
 							nl.nn.adapterframework.stream.Message,
-							nl.nn.adapterframework.core.IPipeLineSession
+							nl.nn.adapterframework.core.PipeLineSession
 						)
 					)
 					and
@@ -61,7 +61,7 @@
 							nl.nn.adapterframework.core.PipeLine,
 							nl.nn.adapterframework.core.IPipe, 
 							nl.nn.adapterframework.stream.Message,
-							nl.nn.adapterframework.core.IPipeLineSession
+							nl.nn.adapterframework.core.PipeLineSession
 						)
 					)
 					and
@@ -75,9 +75,28 @@
 					"
 					execution(
 						*
+						nl.nn.adapterframework.processors.CheckSemaphorePipeProcessor.validate(
+							nl.nn.adapterframework.core.PipeLine,
+							nl.nn.adapterframework.core.IValidator,
+							nl.nn.adapterframework.stream.Message,
+							nl.nn.adapterframework.core.PipeLineSession,
+							String
+						)
+					)
+					and
+					args(pipeLine, validator, message, pipeLineSession, messageRoot)
+					"
+				method="debugValidatorInputOutputAbort"
+				arg-names="pipeLine, validator, message, pipeLineSession, messageRoot"
+			/>
+			<aop:around
+				pointcut=
+					"
+					execution(
+						*
 						nl.nn.adapterframework.core.ISender.sendMessage(
 							nl.nn.adapterframework.stream.Message, 
-							nl.nn.adapterframework.core.IPipeLineSession
+							nl.nn.adapterframework.core.PipeLineSession
 						)
 					)
 					and
@@ -94,7 +113,7 @@
 						nl.nn.adapterframework.core.IBlockEnabledSender+.sendMessage(
 							*,
 							nl.nn.adapterframework.stream.Message, 
-							nl.nn.adapterframework.core.IPipeLineSession
+							nl.nn.adapterframework.core.PipeLineSession
 						)
 					)
 					and
@@ -106,28 +125,11 @@
 			<aop:around
 				pointcut=
 					"
-					execution(
-						*
-						nl.nn.adapterframework.stream.IStreamingSender.sendMessage(
-							nl.nn.adapterframework.stream.Message, 
-							nl.nn.adapterframework.core.IPipeLineSession, 
-							nl.nn.adapterframework.core.IForwardTarget
-						)
-					)
-					and
-					args(message, session, next)
-					"
-				method="debugStreamingSenderInputOutputAbort"
-				arg-names="blockHandle, message, session, next"
-			/>
-			<aop:around
-				pointcut=
-					"
 	 				execution(
 	 					*
 	 					nl.nn.adapterframework.stream.IOutputStreamingSupport.provideOutputStream(
-	 						nl.nn.adapterframework.core.IPipeLineSession, 
-	 						..
+	 						nl.nn.adapterframework.core.PipeLineSession, 
+	 						nl.nn.adapterframework.core.IForwardTarget
 	 					)
 	 				)
 	 				and
@@ -139,12 +141,44 @@
 			<aop:around
 				pointcut=
 					"
+	 				execution(
+	 					*
+	 					nl.nn.adapterframework.stream.StreamingPipe.provideOutputStream(
+	 						nl.nn.adapterframework.core.PipeLineSession
+	 					)
+	 				)
+	 				and
+	 				args(session)
+	 				"
+				method="debugProvideOutputStream"
+				arg-names="session"
+			/>
+			<aop:around
+				pointcut=
+					"
+					execution(
+						*
+						nl.nn.adapterframework.stream.IStreamingSender.sendMessage(
+							nl.nn.adapterframework.stream.Message, 
+							nl.nn.adapterframework.core.PipeLineSession, 
+							nl.nn.adapterframework.core.IForwardTarget
+						)
+					)
+					and
+					args(message, session, next)
+					"
+				method="debugStreamingSenderInputOutputAbort"
+				arg-names="message, session, next"
+			/>
+			<aop:around
+				pointcut=
+					"
 					execution(
 						*
 						nl.nn.adapterframework.processors.CacheSenderWrapperProcessor.sendMessage(
 							nl.nn.adapterframework.senders.SenderWrapperBase, 
 							nl.nn.adapterframework.stream.Message, 
-							nl.nn.adapterframework.core.IPipeLineSession
+							nl.nn.adapterframework.core.PipeLineSession
 						)
 					)
 					and
@@ -160,7 +194,7 @@
 						*
 						nl.nn.adapterframework.processors.CoreListenerProcessor.getMessage(
 							nl.nn.adapterframework.core.ICorrelatedPullingListener,
-							String, nl.nn.adapterframework.core.IPipeLineSession
+							String, nl.nn.adapterframework.core.PipeLineSession
 						)
 					)
 					and
@@ -192,7 +226,7 @@
 						nl.nn.adapterframework.parameters.Parameter.getValue(
 							nl.nn.adapterframework.parameters.ParameterValueList,
 							nl.nn.adapterframework.stream.Message,
-							nl.nn.adapterframework.core.IPipeLineSession,
+							nl.nn.adapterframework.core.PipeLineSession,
 							boolean
 						)
 					)

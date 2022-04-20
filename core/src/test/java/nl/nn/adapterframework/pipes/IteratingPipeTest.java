@@ -9,11 +9,11 @@ import org.junit.Test;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 
 import nl.nn.adapterframework.core.IDataIterator;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.senders.BlockEnabledSenderBase;
 import nl.nn.adapterframework.senders.EchoSender;
 import nl.nn.adapterframework.stream.Message;
@@ -28,7 +28,7 @@ public class IteratingPipeTest<P extends IteratingPipe<String>> extends PipeTest
 	private final class TestIteratingPipe extends IteratingPipe<String> {
 
 		@Override
-		protected IDataIterator<String> getIterator(Message input, IPipeLineSession session, Map<String, Object> threadContext) throws SenderException {
+		protected IDataIterator<String> getIterator(Message input, PipeLineSession session, Map<String, Object> threadContext) throws SenderException {
 			try {
 				if (input.isEmpty()) {
 					return null;
@@ -54,21 +54,21 @@ public class IteratingPipeTest<P extends IteratingPipe<String>> extends PipeTest
 		return getElementRenderer(null);
 	}
 
-	private class BlockEnabledRenderer extends BlockEnabledSenderBase<String> {
+	protected class BlockEnabledRenderer extends BlockEnabledSenderBase<String> {
 
 		@Override
-		public String openBlock(IPipeLineSession session) throws SenderException, TimeOutException {
+		public String openBlock(PipeLineSession session) throws SenderException, TimeoutException {
 			resultLog.append("openBlock\n");
 			return "";
 		}
 
 		@Override
-		public void closeBlock(String blockHandle, IPipeLineSession session) throws SenderException {
+		public void closeBlock(String blockHandle, PipeLineSession session) throws SenderException {
 			resultLog.append("closeBlock\n");
 		}
 
 		@Override
-		public Message sendMessage(String blockHandle, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+		public Message sendMessage(String blockHandle, Message message, PipeLineSession session) throws SenderException, TimeoutException {
 			try {
 				String result = "["+message.asString()+"]";
 				resultLog.append(result+"\n");
@@ -84,7 +84,7 @@ public class IteratingPipeTest<P extends IteratingPipe<String>> extends PipeTest
 		EchoSender sender = new EchoSender() {
 
 			@Override
-			public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+			public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 				try {
 					if (message.asString().contains("error")) {
 						throw new SenderException("Exception triggered", e);

@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.ibissource</groupId>
 		<artifactId>ibis-adapterframework-parent</artifactId>
-		<version>7.6-SNAPSHOT</version>
+		<version>${revision}</version>
 	</parent>
 
 	<artifactId>ibis-adapterframework-test</artifactId>
@@ -14,7 +14,6 @@
 	<properties>
 		<m2eclipse.wtp.contextRoot>iaf-test</m2eclipse.wtp.contextRoot>
 		<failOnMissingWebXml>false</failOnMissingWebXml>
-		<databaseHost>localhost</databaseHost>
 	</properties>
 
 	<dependencies>
@@ -33,15 +32,6 @@
 	<build>
 		<defaultGoal>package</defaultGoal>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.1</version>
-				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
-				</configuration>
-			</plugin>
 <!--
 			<plugin>
 				<groupId>org.ibissource</groupId>
@@ -59,11 +49,10 @@
 				</configuration>
 			</plugin>
 -->
+			<!-- use maven-jar-plugin to make separate artifacts of context, configurations, resources and testscenarios, to inject them into WebSphere Docker deployment -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.2.0</version>
-				<!-- make separate artifacts of context, configurations, resources and testscenarios, to inject them into deployments -->
 				<executions>
 					<execution>
 						<id>zip-context</id>
@@ -116,7 +105,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
-				<version>2.6</version>
 				<executions>
 					<execution>
 						<phase>package</phase>
@@ -128,8 +116,8 @@
 				<configuration>
 					<packagingExcludes>.gitignore</packagingExcludes>
 					<failOnMissingWebXml>false</failOnMissingWebXml>
-					<filteringDeploymentDescriptors>true</filteringDeploymentDescriptors>
-
+					<attachClasses>true</attachClasses>
+					<classesClassifier>full-configuration</classesClassifier>
 					<archive>
 						<manifestEntries>
 							<Ibis-Project>${project.name}</Ibis-Project>
@@ -156,11 +144,6 @@
 							<directory>src/test/testtool</directory>
 							<targetPath>testtool</targetPath>
 						</resource>
-						<webResource>
-							<directory>src/main/webapp/META-INF</directory>
-							<targetPath>META-INF</targetPath>
-							<filtering>true</filtering>
-						</webResource>
 					</webResources>
 				</configuration>
 			</plugin>

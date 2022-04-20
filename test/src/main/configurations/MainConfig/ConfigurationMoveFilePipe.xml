@@ -1,6 +1,6 @@
-<ibis>
+<module>
 	<adapter name="MoveFilePipe" description="Test the functioning of the MoveFilePipe">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="MoveFilePipe">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-MoveFilePipe" />
 		</receiver>
 		<pipeline firstPipe="cleanup dir">
@@ -23,7 +23,7 @@
 				name="write file"
 	        	className="nl.nn.adapterframework.pipes.FilePipe"
 	        	actions="write"
-	        	fileName="${testdata.dir}/mfp/test.txt"
+	        	filename="${testdata.dir}/mfp/test.txt"
 				getInputFromFixedValue="test"
 				createDirectory="true">
 	        	<forward name="success" path="write file2"/>
@@ -33,7 +33,7 @@
 				name="write file2"
 	        	className="nl.nn.adapterframework.pipes.FilePipe"
 	        	actions="write"
-	        	fileName="${testdata.dir}/mfp/test2.txt"
+	        	filename="${testdata.dir}/mfp/test2.txt"
 				getInputFromFixedValue="test2"
 				createDirectory="true">
 	        	<forward name="success" path="write file3"/>
@@ -43,7 +43,7 @@
 				name="write file3"
 	        	className="nl.nn.adapterframework.pipes.FilePipe"
 	        	actions="write"
-	        	fileName="${testdata.dir}/mfp/test3.abc"
+	        	filename="${testdata.dir}/mfp/test3.abc"
 				getInputFromFixedValue="test3"
 				createDirectory="true">
 	        	<forward name="success" path="write file4"/>
@@ -53,7 +53,7 @@
 				name="write file4"
 	        	className="nl.nn.adapterframework.pipes.FilePipe"
 	        	actions="write"
-	        	fileName="${testdata.dir}/mfp/sub/test4.txt"
+	        	filename="${testdata.dir}/mfp/sub/test4.txt"
 				getInputFromFixedValue="test4"
 				createDirectory="true">
 	        	<forward name="success" path="switchAction"/>
@@ -169,9 +169,9 @@
 	        </pipe>
 
 			<pipe name="list files" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="list" fileName="${testdata.dir}/mfp2/*.*">
+				actions="list" filename="${testdata.dir}/mfp2/*.*">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
 	</adapter>
-</ibis>
+</module>

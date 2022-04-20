@@ -10,13 +10,12 @@
 	<parent>
 		<groupId>org.ibissource</groupId>
 		<artifactId>ibis-adapterframework-docker-as</artifactId>
-		<version>7.6-SNAPSHOT</version>
+		<version>${revision}</version>
 	</parent>
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-webapp</artifactId>
-			<type>war</type>
+			<artifactId>credentialprovider</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>${oracle.driver.groupid}</groupId>
@@ -62,6 +61,28 @@
 			<artifactId>geronimo-jta_1.1_spec</artifactId>
 			<version>1.1.1</version>
 		</dependency>
+		<dependency>
+		    <groupId>org.apache.activemq</groupId>
+		    <artifactId>artemis-jms-client-all</artifactId>
+			<version>${artemis.driver.version}</version>
+		</dependency>
+		<!-- required for ActiveMQ classic-->
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-client</artifactId>
+			<version>${activemq.driver.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.7.31</version>
+		</dependency>
+		<dependency>
+			<groupId>org.fusesource.hawtbuf</groupId>
+			<artifactId>hawtbuf</artifactId>
+			<version>1.11</version>
+		</dependency>
+		
 	</dependencies>
 
 	<build>
@@ -99,7 +120,7 @@
 						<inherited>false</inherited>
 						<configuration>
 							<target>
-								<exec executable="docker">
+								<exec executable="docker" failonerror="true">
 									<arg value="build"/>
 									<arg value="-t"/>
 									<arg value="iaf-as-tomcat"/>
@@ -117,8 +138,9 @@
 	</build>
 	
 	<modules>
-		<module>example</module>
 		<module>test</module>
+		<module>webapp</module>
+		<module>example</module>
 	</modules>
 
 </project>

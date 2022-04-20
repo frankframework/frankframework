@@ -23,17 +23,20 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Properties;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader;
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.http.RestListenerUtils;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.receivers.Receiver;
@@ -44,25 +47,27 @@ import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
 public class WsdlGeneratorPipe extends FixedForwardPipe {
 
-	private String sessionKey = "file";
-	private String propertiesFileName = "wsdl.properties";
+	private @Getter @Setter String sessionKey = "file";
+	private @Getter @Setter String filenameSessionKey = "fileName";
+	private @Getter @Setter String propertiesFileName = "wsdl.properties";
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
-		InputStream inputStream = (InputStream) session.get("file");
-		if (inputStream == null) {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+		Message fileInSession = session.getMessage(getSessionKey());
+		if (fileInSession == null) {
 			throw new PipeRunException(this, getLogPrefix(session) + "got null value from session under key [" + getSessionKey() + "]");
 		}
 
 		File tempDir;
 		String fileName;
-		
-		try {
+
+		try (InputStream inputStream = fileInSession.asInputStream()){
 			tempDir = FileUtils.createTempDir(null, "WEB-INF" + File.separator + "classes");
-			fileName = (String) session.get("fileName");
+			fileName = session.getMessage(getFilenameSessionKey()).asString();
 			if (FileUtils.extensionEqualsIgnoreCase(fileName, "zip")) {
 				FileUtils.unzipStream(inputStream, tempDir);
 			} else {
@@ -78,9 +83,9 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		PipeLine pipeLine;
 		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
 		try {
-			// TODO why is this using a DirectoryClassloader?
-			// can't we use the current classloader? FixedForwardPipe#classLoader
-			// or even the configuration classloader? getAdapter().getConfiguration().getClassLoader()
+			// A DirectoryClassloader is used to create a new 'dummy' pipeline, see createPipeLineFromPropertiesFile(String)
+			// This method reads a properties file and xsd's (when present) to programmatically 'create' a pipeline.
+			// The pipeline will then be used to generate a new WSDL file.
 
 			DirectoryClassLoader directoryClassLoader = new DirectoryClassLoader(originalClassLoader);
 			directoryClassLoader.setDirectory(tempDir.getPath());
@@ -118,7 +123,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			esbJmsListener.setDestinationName("jms/dest_" + fileBaseName);
 			receiver.setListener(esbJmsListener);
 			adapter.registerReceiver(receiver);
-			pipeLine.setAdapter(adapter);
+			adapter.setPipeLine(pipeLine);
 			WsdlGenerator wsdl = null;
 			String generationInfo = "at " + RestListenerUtils.retrieveRequestURL(session);
 			wsdl = new WsdlGenerator(pipeLine, generationInfo);
@@ -155,11 +160,10 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 				log.warn("exception closing outputstream", e1);
 			}
 		}
-		return new PipeRunResult(getForward(), result);
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 
-	private PipeLine createPipeLineFromPropertiesFile(File propertiesFile)
-			throws IOException, ConfigurationException {
+	private PipeLine createPipeLineFromPropertiesFile(File propertiesFile) throws IOException, ConfigurationException {
 		Properties props = new Properties();
 		FileInputStream fis = null;
 		try {
@@ -185,7 +189,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			int inputCmh = Integer.parseInt(inputCmhString);
 			File inputXsdFile = new File(propertiesFile.getParent(), inputXsd);
 			EsbSoapValidator inputValidator = createValidator(inputXsdFile,
-					inputNamespace, inputRoot, 1, inputCmh);
+					inputNamespace, inputRoot, 1, inputCmh, pipeLine);
 			pipeLine.setInputValidator(inputValidator);
 		}
 		if (props.containsKey("output.xsd")) {
@@ -201,7 +205,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			} else {
 				rootPosition = 1;
 			}
-			EsbSoapValidator outputValidator = createValidator(outputXsdFile, outputNamespace, outputRoot, rootPosition, outputCmh);
+			EsbSoapValidator outputValidator = createValidator(outputXsdFile, outputNamespace, outputRoot, rootPosition, outputCmh, pipeLine);
 			pipeLine.setOutputValidator(outputValidator);
 		}
 		return pipeLine;
@@ -211,20 +215,21 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			throws ConfigurationException {
 		PipeLine pipeLine = new PipeLine();
 		EsbSoapValidator inputValidator;
-		inputValidator = createValidator(xsdFile, null, null, 1, 1);
+		inputValidator = createValidator(xsdFile, null, null, 1, 1, pipeLine);
 		pipeLine.setInputValidator(inputValidator);
 
 		String countRoot = null;
 		try {
 			String countRootXPath = "count(*/*[local-name()='element'])";
-			TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(countRootXPath, "text"));
-			countRoot = tp.transform(Misc.fileToString(xsdFile.getPath()), null);
+			TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(countRootXPath, OutputType.TEXT));
+			Resource xsdResource = Resource.getResource(xsdFile.getPath());
+			countRoot = tp.transform(xsdResource.asSource());
 			if (StringUtils.isNotEmpty(countRoot)) {
 				log.debug("counted [" + countRoot + "] root elements in xsd file [" + xsdFile.getName() + "]");
 				int cr = Integer.parseInt(countRoot);
 				if (cr > 1) {
 					EsbSoapValidator outputValidator;
-					outputValidator = createValidator(xsdFile, null, null, 2, 1);
+					outputValidator = createValidator(xsdFile, null, null, 2, 1, pipeLine);
 					pipeLine.setOutputValidator(outputValidator);
 				}
 			}
@@ -235,18 +240,18 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 	}
 
 	private EsbSoapValidator createValidator(File xsdFile, String namespace,
-			String root, int rootPosition, int cmhVersion) throws ConfigurationException {
+			String root, int rootPosition, int cmhVersion, PipeLine pipeLine) throws ConfigurationException {
 		if (xsdFile != null) {
 			EsbSoapValidator esbSoapValidator = new EsbSoapValidator();
 			esbSoapValidator.setWarn(false);
 			esbSoapValidator.setCmhVersion(cmhVersion);
 
+			Resource xsdResource = Resource.getResource(xsdFile.getPath());
 			if (StringUtils.isEmpty(namespace)) {
 				String xsdTargetNamespace = null;
 				try {
-					TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource("*/@targetNamespace", "text"));
-					xsdTargetNamespace = tp.transform(
-							Misc.fileToString(xsdFile.getPath()), null);
+					TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource("*/@targetNamespace", OutputType.TEXT));
+					xsdTargetNamespace = tp.transform(xsdResource.asSource());
 					if (StringUtils.isNotEmpty(xsdTargetNamespace)) {
 						log.debug("found target namespace [" + xsdTargetNamespace + "] in xsd file [" + xsdFile.getName() + "]");
 					} else {
@@ -275,8 +280,8 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 				String xsdRoot = null;
 				try {
 					String rootXPath = "*/*[local-name()='element'][" + rootPosition + "]/@name";
-					TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(rootXPath, "text"));
-					xsdRoot = tp.transform(Misc.fileToString(xsdFile.getPath()), null);
+					TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(rootXPath, OutputType.TEXT));
+					xsdRoot = tp.transform(xsdResource.asSource());
 					if (StringUtils.isNotEmpty(xsdRoot)) {
 						log.debug("found root element [" + xsdRoot + "] in xsd file [" + xsdFile.getName() + "]");
 						esbSoapValidator.setSoapBody(xsdRoot);
@@ -290,27 +295,12 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 
 			esbSoapValidator.setForwardFailureToSuccess(true);
 			PipeForward pf = new PipeForward();
-			pf.setName("success");
+			pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
 			esbSoapValidator.registerForward(pf);
+			esbSoapValidator.setPipeLine(pipeLine);
 			esbSoapValidator.configure();
 			return esbSoapValidator;
 		}
 		return null;
-	}
-
-	public String getSessionKey() {
-		return sessionKey;
-	}
-
-	public void setSessionKey(String string) {
-		sessionKey = string;
-	}
-
-	public String getPropertiesFileName() {
-		return propertiesFileName;
-	}
-
-	public void setPropertiesFileName(String string) {
-		propertiesFileName = string;
 	}
 }

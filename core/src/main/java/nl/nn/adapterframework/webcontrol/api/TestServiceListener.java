@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017, 2019-2020 WeAreFrank!
+Copyright 2016-2017, 2019-2020, 2022 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -117,7 +118,7 @@ public final class TestServiceListener extends Base {
 				return Response.status(Response.Status.BAD_REQUEST).build();
 			}
 
-			result.put("state", "success");
+			result.put("state", ExitState.SUCCESS);
 			result.put("result", dispatchResult);
 		} catch (IOException e) {
 			return Response.status(Response.Status.BAD_REQUEST).build();

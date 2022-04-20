@@ -20,7 +20,7 @@ import java.sql.Connection;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.util.JdbcUtil;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Support for DB2.

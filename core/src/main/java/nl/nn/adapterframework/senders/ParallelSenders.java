@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017-2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2017-2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,44 +16,38 @@
 package nl.nn.adapterframework.senders;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.util.ConcurrencyThrottleSupport;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Guard;
+import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Collection of Senders, that are executed all at the same time.
  * 
- * <table border="1">
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link ISender sender}</td><td>one or more specifications of senders. Each will receive the same input message, to be processed in parallel</td></tr>
- * </table>
- * </p>
-
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public class ParallelSenders extends SenderSeries implements ApplicationContextAware {
+public class ParallelSenders extends SenderSeries {
 
-	private int maxConcurrentThreads = 0;
-	private ApplicationContext applicationContext;
+	private @Getter int maxConcurrentThreads = 0;
+	private TaskExecutor executor;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -65,13 +59,13 @@ public class ParallelSenders extends SenderSeries implements ApplicationContextA
 			}
 			ConfigurationWarnings.add(this, log, "parameters ["+paramList+"] of ParallelSenders ["+getName()+"] are not available for use by nested Senders");
 		}
+		executor = createTaskExecutor();
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		Guard guard = new Guard();
-		Map<ISender, ParallelSenderExecutor> executorMap = new HashMap<ISender, ParallelSenderExecutor>();
-		TaskExecutor executor = createTaskExecutor();
+		Map<ISender, ParallelSenderExecutor> executorMap = new LinkedHashMap<>();
 
 		for (ISender sender: getSenders()) {
 			guard.addResource();
@@ -102,7 +96,7 @@ public class ParallelSenders extends SenderSeries implements ApplicationContextA
 		for (ISender sender: getSenders()) {
 			ParallelSenderExecutor pse = executorMap.get(sender);
 			XmlBuilder resultXml = new XmlBuilder("result");
-			resultXml.addAttribute("senderClass", ClassUtils.nameOf(sender));
+			resultXml.addAttribute("senderClass", org.springframework.util.ClassUtils.getUserClass(sender).getSimpleName());
 			resultXml.addAttribute("senderName", sender.getName());
 			Throwable throwable = pse.getThrowable();
 			if (throwable==null) {
@@ -111,7 +105,7 @@ public class ParallelSenders extends SenderSeries implements ApplicationContextA
 					resultXml.addAttribute("type", "null");
 				} else {
 					try {
-						resultXml.addAttribute("type", ClassUtils.nameOf(result.asObject()));
+						resultXml.addAttribute("type", ClassUtils.nameOf(result.getRequestClass()));
 						resultXml.setValue(XmlUtils.skipXmlDeclaration(result.asString()),false);
 					} catch (IOException e) {
 						throw new SenderException(getLogPrefix(),e);
@@ -134,31 +128,28 @@ public class ParallelSenders extends SenderSeries implements ApplicationContextA
 	}
 
 	protected TaskExecutor createTaskExecutor() {
-		ThreadPoolTaskExecutor executor = applicationContext.getBean("concurrentTaskExecutor", ThreadPoolTaskExecutor.class);
+		SimpleAsyncTaskExecutor executor = SpringUtils.createBean(getApplicationContext(), SimpleAsyncTaskExecutor.class);
 
-		if(getMaxConcurrentThreads() > 0) { //MaxPoolSize defaults to Integer.MAX_VALUE so only set this if a maximum has been set!
-			executor.setMaxPoolSize(getMaxConcurrentThreads());
-			executor.setCorePoolSize(getMaxConcurrentThreads());
+		if(getMaxConcurrentThreads() > 0) { //ConcurrencyLimit defaults to NONE so only this technically limits it!
+			executor.setConcurrencyLimit(getMaxConcurrentThreads());
 		} else {
-			executor.setCorePoolSize(Integer.MAX_VALUE); //initial pool size
+			executor.setConcurrencyLimit(ConcurrencyThrottleSupport.UNBOUNDED_CONCURRENCY);
 		}
 
 		return executor;
 	}
 
+	/** one or more specifications of senders. Each will receive the same input message, to be processed in parallel */
+	@Override
+	public void registerSender(ISender sender) {
+		super.registerSender(sender);
+	}
+	
 	@IbisDoc({"Set the upper limit to the amount of concurrent threads that can be run simultaneously. Use 0 to disable.", "0"})
 	public void setMaxConcurrentThreads(int maxThreads) {
 		if(maxThreads < 1)
 			maxThreads = 0;
 
 		this.maxConcurrentThreads = maxThreads;
-	}
-	public int getMaxConcurrentThreads() {
-		return maxConcurrentThreads;
-	}
-
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		this.applicationContext = applicationContext;
 	}
 }

@@ -1,0 +1,26 @@
+<configuration>
+	<adapter name="DelaySender">
+		<receiver name="DelaySender">
+			<listener
+				className="nl.nn.adapterframework.receivers.JavaListener"
+				name="DelaySender"
+			/>
+		</receiver>
+
+		<pipeline>
+			<exits>
+				<exit path="READY" state="success"/>
+			</exits>
+			<pipe
+				name="Call Sender"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
+				>
+				<sender
+					className="nl.nn.adapterframework.senders.DelaySender"
+					delayTime="5"
+				/>
+				<forward name="success" path="READY"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+</configuration>

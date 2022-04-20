@@ -22,7 +22,7 @@ public class ExceptionPipeTest extends PipeTestBase<ExceptionPipe> {
     }
 
     /**
-     * Method: doPipe(Object input, IPipeLineSession session)
+     * Method: doPipe(Object input, PipeLineSession session)
      */
     @Test
     public void testDoesntThrowException() throws Exception {

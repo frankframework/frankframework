@@ -1,0 +1,38 @@
+<configuration>
+	  <adapter name="SenderPipe">
+      <receiver name="testtool-SenderPipe">
+         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   serviceName="testtool-SenderPipe"/>
+      </receiver>
+		    <receiver name="SenderPipe">
+			      <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   name="SenderPipe"/>
+		    </receiver>
+      <receiver name="testtool-SenderPipe-1">
+         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   serviceName="testtool-SenderPipe-1"/>
+      </receiver>
+
+		    <pipeline>
+			      <exits>
+				        <exit path="READY" state="success"/>
+			      </exits>
+			      <pipe name="Call Sender"
+               className="nl.nn.adapterframework.pipes.SenderPipe"
+               timeOutOnResult="[timeout]"
+               exceptionOnResult="[error]">
+				        <sender className="nl.nn.adapterframework.senders.IbisLocalSender"
+                    javaListener="TEST"/>
+				        <errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"/>
+				        <errorStorage className="nl.nn.adapterframework.jdbc.DummyTransactionalStorage"/>
+				        <messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"/>
+				        <messageLog className="nl.nn.adapterframework.jdbc.DummyTransactionalStorage"/>
+				<!--<errorStorage className="nl.nn.adapterframework.jms.JmsTransactionalStorage"/>-->
+				<!--<errorStorage className="nl.nn.adapterframework.extensions.esb.EsbJmsTransactionalStorage"/>-->
+				<!--<messageLog className="nl.nn.adapterframework.jms.JmsTransactionalStorage"/>-->
+				<!--<messageLog className="nl.nn.adapterframework.extensions.esb.EsbJmsTransactionalStorage"/>-->
+				<forward name="success" path="READY"/>
+			      </pipe>
+		    </pipeline>
+	  </adapter>
+</configuration>

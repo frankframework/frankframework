@@ -1,0 +1,24 @@
+<configuration>
+	  <adapter name="JavaListener">
+      <receiver name="testtool-JavaListener">
+         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   serviceName="testtool-JavaListener"/>
+      </receiver>
+		    <receiver>
+			      <listener name="JavaListener"
+                   className="nl.nn.adapterframework.receivers.JavaListener"/>
+		    </receiver>
+      <receiver name="testtool-JavaListener-1">
+         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   serviceName="testtool-JavaListener-1"/>
+      </receiver>
+		    <pipeline firstPipe="EchoPipe">
+			      <exits>
+				        <exit path="EXIT" state="success"/>
+			      </exits>
+			      <pipe name="EchoPipe" className="nl.nn.adapterframework.pipes.EchoPipe">
+				        <forward name="success" path="EXIT"/>
+			      </pipe>
+		    </pipeline>
+	  </adapter>
+</configuration>

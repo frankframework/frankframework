@@ -18,7 +18,7 @@ package nl.nn.adapterframework.monitoring;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -26,6 +26,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
  * MonitorAdapter that creates log lines for the GALM log adapter.
@@ -54,6 +55,7 @@ public class GalmMonitorAdapter extends MonitorAdapterBase {
 		configure(); 
 	}
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		hostname=Misc.getHostname();
@@ -116,13 +118,26 @@ public class GalmMonitorAdapter extends MonitorAdapterBase {
 			hostname+" "+
 			sourceId+" "+
 			subSource+" "+
-			eventType.getName()+" "+
-			severity.getName()+" "+
+			eventType.name()+" "+
+			severity.name()+" "+
 			dtapStage+" "+
 			message;
 		return result;
 	}
 
+	@Override
+	public String makeXml(String eventSource, EventTypeEnum eventType, SeverityEnum severity, String message, Throwable t) {
+		XmlBuilder eventXml = new XmlBuilder("event");
+		eventXml.addAttribute("hostname", hostname);
+		eventXml.addAttribute("source",sourceId);
+		eventXml.addAttribute("subSource",eventSource);
+		eventXml.addAttribute("eventType",eventType.name());
+		eventXml.addAttribute("severity",severity.name());
+		eventXml.addAttribute("message",message);
+		return eventXml.toXML();
+	}
+
+	@Override
 	public void fireEvent(String subSource, EventTypeEnum eventType, SeverityEnum severity, String message, Throwable t) {
 		if (t!=null) {
 			if (StringUtils.isEmpty(message)) {

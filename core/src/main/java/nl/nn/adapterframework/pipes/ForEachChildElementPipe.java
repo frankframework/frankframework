@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,34 +24,40 @@ import java.util.Map;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.configuration.SuppressKeys;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.jta.IThreadConnectableTransactionManager;
 import nl.nn.adapterframework.stream.IThreadCreator;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.SaxAbortException;
 import nl.nn.adapterframework.stream.SaxTimeoutException;
 import nl.nn.adapterframework.stream.StreamingException;
+import nl.nn.adapterframework.stream.ThreadConnector;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerErrorListener;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.ExceptionCatchingFilter;
 import nl.nn.adapterframework.xml.FullXmlFilter;
+import nl.nn.adapterframework.xml.IXmlDebugger;
 import nl.nn.adapterframework.xml.NamespaceRemovingFilter;
 import nl.nn.adapterframework.xml.NodeSetFilter;
 import nl.nn.adapterframework.xml.SaxException;
@@ -61,27 +67,28 @@ import nl.nn.adapterframework.xml.XmlWriter;
 /**
  * Sends a message to a Sender for each child element of the input XML.
  * Input can be a String containing XML, a filename (set processFile true), an InputStream or a Reader.
- * 
+ *
  * @author Gerrit van Brakel
  * @since 4.6.1
  */
 public class ForEachChildElementPipe extends StringIteratorPipe implements IThreadCreator {
 
-	public final int DEFAULT_XSLT_VERSION=1; // currently only Xalan supports XSLT Streaming
-	
-	private boolean processFile=false;
-	private String containerElement;
-	private String targetElement;
-	private String elementXPathExpression=null;
-	private String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-	private int xsltVersion=DEFAULT_XSLT_VERSION; 
-	private boolean removeNamespaces=true;
+	public final int DEFAULT_XSLT_VERSION = 1; // currently only Xalan supports XSLT Streaming
+
+	private @Getter boolean processFile=false;
+	private @Getter String containerElement;
+	private @Getter String targetElement;
+	private @Getter String elementXPathExpression=null;
+	private @Getter int xsltVersion=DEFAULT_XSLT_VERSION;
+	private @Getter boolean removeNamespaces=true;
 	private boolean streamingXslt;
 
 	private TransformerPool extractElementsTp=null;
-	private ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
+	private @Setter ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
+	private @Setter IThreadConnectableTransactionManager<?,?> txManager;
+	private @Getter @Setter IXmlDebugger xmlDebugger;
 
-	{ 
+	{
 		setNamespaceAware(true);
 	}
 
@@ -94,8 +101,8 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 				if (getXsltVersion()==0) {
 					setXsltVersion(DEFAULT_XSLT_VERSION);
 				}
-				if (getXsltVersion()!=DEFAULT_XSLT_VERSION) {
-					ConfigurationWarnings.add(this, log, "XsltProcessor xsltVersion ["+getXsltVersion()+"] currently does not support streaming XSLT, might lead to memory problems for large messages");
+				if (streamingXslt && getXsltVersion() != DEFAULT_XSLT_VERSION) {
+					ConfigurationWarnings.add(this, log, "XsltProcessor xsltVersion ["+getXsltVersion()+"] currently does not support streaming XSLT, might lead to memory problems for large messages", SuppressKeys.XSLT_STREAMING_SUPRESS_KEY);
 				}
 				extractElementsTp=TransformerPool.getInstance(makeEncapsulatingXslt("root",getElementXPathExpression(), getXsltVersion(), getNamespaceDefs()));
 			}
@@ -130,9 +137,9 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		super.stop();
 	}
 
-	protected String makeEncapsulatingXslt(String rootElementname, String xpathExpression, int xsltVersion, String namespaceDefs) throws TransformerConfigurationException {
+	protected String makeEncapsulatingXslt(String rootElementname, String xpathExpression, int xsltVersion, String namespaceDefs) {
 		String namespaceClause = XmlUtils.getNamespaceClause(namespaceDefs);
-		return 
+		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\""+xsltVersion+".0\" xmlns:xalan=\"http://xml.apache.org/xslt\">" +
 		"<xsl:output method=\"xml\" omit-xml-declaration=\"yes\"/>" +
 		"<xsl:strip-space elements=\"*\"/>" +
@@ -144,14 +151,12 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		"</xsl:stylesheet>";
 	}
 
-	
 	private class ItemCallbackCallingHandler extends NodeSetFilter {
 		private ItemCallback callback;
-		
+
 		private XmlWriter xmlWriter;
 		private Exception rootException=null;
-		private boolean stopRequested;
-
+		private StopReason stopReason=null;
 
 		public ItemCallbackCallingHandler(ItemCallback callback) {
 			super(null, null, false, false, null);
@@ -163,20 +168,19 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		public void startDocument() throws SAXException {
 			try {
 				callback.startIterating();
-			} catch (SenderException | TimeOutException | IOException e) {
+			} catch (SenderException | TimeoutException | IOException e) {
 				throw new SaxException(e);
 			}
 			super.startDocument();
-			
-		}
 
+		}
 
 		@Override
 		public void endDocument() throws SAXException {
 			super.endDocument();
 			try {
 				callback.endIterating();
-			} catch (SenderException | TimeOutException | IOException e) {
+			} catch (SenderException | TimeoutException | IOException e) {
 				throw new SaxException(e);
 			}
 		}
@@ -196,16 +200,16 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		public void endNode(String uri, String localName, String qName) throws SAXException {
 			xmlWriter.endDocument();
 			try {
-				stopRequested = !callback.handleItem(xmlWriter.toString());
+				stopReason = callback.handleItem(xmlWriter.toString());
 			} catch (Exception e) {
-				if (e instanceof TimeOutException) {
+				if (e instanceof TimeoutException) {
 					throw new SaxTimeoutException(e);
 				}
 				throw new SaxException(e);
 			}
 			checkInterrupt();
 		}
-		
+
 		private void checkInterrupt() throws SAXException {
 			if (Thread.currentThread().isInterrupted()) {
 				rootException = new InterruptedException("Thread has been interrupted");
@@ -213,8 +217,6 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 				throw new SAXException("Thread has been interrupted");
 			}
 		}
-		
-
 
 		@Override
 		public void startElement(String uri, String localName, String qName, Attributes attributes)	throws SAXException {
@@ -260,17 +262,16 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 //			System.out.println("endEntity ["+arg0+"]");
 		}
 
-		
 		public boolean isStopRequested() {
-			return stopRequested;
+			return stopReason != null;
 		}
 
 	}
 
 	private class StopSensor extends FullXmlFilter {
-		
+
 		private ItemCallbackCallingHandler itemHandler;
-		
+
 		public StopSensor(ItemCallbackCallingHandler itemHandler, ContentHandler handler) {
 			super(handler);
 			this.itemHandler=itemHandler;
@@ -283,44 +284,53 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			}
 		}
 	}
-	
+
 	private class HandlerRecord {
+		private ItemCallbackCallingHandler itemHandler;
 		private ContentHandler inputHandler;
 		private String errorMessage="Could not parse input";
 		private TransformerErrorListener transformerErrorListener=null;
 	}
-	
-	protected void createHandler(HandlerRecord result, IPipeLineSession session, ItemCallback callback) throws TransformerConfigurationException {
-		ItemCallbackCallingHandler itemHandler = new ItemCallbackCallingHandler(callback);
-		result.inputHandler=itemHandler;
-		
+
+	protected void createHandler(HandlerRecord result, ThreadConnector<?> threadConnector, PipeLineSession session, ItemCallback callback) throws TransformerConfigurationException {
+		result.itemHandler = new ItemCallbackCallingHandler(callback);
+		result.inputHandler=result.itemHandler;
+
+		if (getXmlDebugger()!=null && (StringUtils.isNotEmpty(getContainerElement()) || StringUtils.isNotEmpty(getTargetElement()) || getExtractElementsTp()!=null)) {
+			String containerElementString = StringUtils.isNotEmpty(getContainerElement()) ? "filter to containerElement '"+getContainerElement()+"'" : null;
+			String targetElementString = StringUtils.isNotEmpty(getTargetElement()) ? "filter to targetElement '"+getTargetElement()+"'" :null;
+			String xpathString = getExtractElementsTp()!=null ? "filter XPath '"+getElementXPathExpression()+"'": null;
+			String label = "XML after preprocessing: " + Misc.concat(", ",containerElementString, targetElementString, xpathString);
+			result.inputHandler=getXmlDebugger().inspectXml(session, label, result.inputHandler);
+		}
+
 		if (isRemoveNamespaces()) {
 			result.inputHandler = new NamespaceRemovingFilter(result.inputHandler);
 		}
-		
+
 		if (getExtractElementsTp()!=null) {
 			if (log.isDebugEnabled()) log.debug("transforming input to obtain list of elements using xpath ["+getElementXPathExpression()+"]");
-			TransformerFilter transformerFilter = getExtractElementsTp().getTransformerFilter(this, threadLifeCycleEventListener, session, streamingXslt, result.inputHandler);
+			TransformerFilter transformerFilter = getExtractElementsTp().getTransformerFilter(threadConnector, result.inputHandler);
 			result.inputHandler=transformerFilter;
 			result.transformerErrorListener=(TransformerErrorListener)transformerFilter.getErrorListener();
 			result.errorMessage="Could not process list of elements using xpath ["+getElementXPathExpression()+"]";
-		} 
+		}
 		if (StringUtils.isNotEmpty(getTargetElement())) {
 			result.inputHandler = new NodeSetFilter(XmlUtils.getNamespaceMap(getNamespaceDefs()), getTargetElement(), true, true, result.inputHandler);
 		}
 		if (StringUtils.isNotEmpty(getContainerElement())) {
 			result.inputHandler = new NodeSetFilter(XmlUtils.getNamespaceMap(getNamespaceDefs()), getContainerElement(), false, true, result.inputHandler);
 		}
-		
-		result.inputHandler = new StopSensor(itemHandler, result.inputHandler);
-		
+
+		result.inputHandler = new StopSensor(result.itemHandler, result.inputHandler);
+
 		result.inputHandler = new ExceptionCatchingFilter(result.inputHandler) {
 			@Override
 			protected void handleException(Exception e) throws SAXException {
 				if (e instanceof SaxTimeoutException) {
 					throw (SaxTimeoutException)e;
 				}
-				if (itemHandler.isStopRequested()) {
+				if (result.itemHandler.isStopRequested()) {
 					if (e instanceof SaxAbortException) {
 						throw (SaxAbortException)e;
 					}
@@ -344,32 +354,27 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 	}
 
 	@Override
-	public boolean canProvideOutputStream() {
+	protected boolean canProvideOutputStream() {
 		return !isProcessFile() && super.canProvideOutputStream();
 	}
 
 	@Override
-	public MessageOutputStream provideOutputStream(IPipeLineSession session) throws StreamingException {
-		if (!canProvideOutputStream()) {
-			return null;
-		}
+	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
 		HandlerRecord handlerRecord = new HandlerRecord();
 		try {
+			ThreadConnector<?> threadConnector = streamingXslt ? new ThreadConnector<>(this, threadLifeCycleEventListener, txManager, session) : null;
 			MessageOutputStream target=getTargetStream(session);
 			Writer resultWriter = target.asWriter();
 			ItemCallback callback = createItemCallBack(session, getSender(), resultWriter);
-			createHandler(handlerRecord, session, callback);
-			return new MessageOutputStream(this, handlerRecord.inputHandler, target, threadLifeCycleEventListener, session);
+			createHandler(handlerRecord, threadConnector, session, callback);
+			return new MessageOutputStream(this, handlerRecord.inputHandler, target, threadLifeCycleEventListener, txManager, session, threadConnector);
 		} catch (TransformerException e) {
 			throw new StreamingException(handlerRecord.errorMessage, e);
 		}
 	}
 
-	
-	
-	
 	@Override
-	protected void iterateOverInput(Message input, IPipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException {
+	protected StopReason iterateOverInput(Message input, PipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeoutException {
 		InputSource src;
 		if (isProcessFile()) {
 			try {
@@ -391,54 +396,39 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			}
 		}
 		HandlerRecord handlerRecord = new HandlerRecord();
-		try {
-			createHandler(handlerRecord, session, callback);
-		} catch (TransformerException e) {
-			throw new SenderException(handlerRecord.errorMessage, e);
-		}
-
-		try {
-			XmlUtils.parseXml(src,handlerRecord.inputHandler);
-		} catch (Exception e) {
+		try (ThreadConnector<?> threadConnector = streamingXslt ? new ThreadConnector<>(this, threadLifeCycleEventListener, txManager, session) : null) {
 			try {
-				if (e instanceof SaxTimeoutException) {
-					if (e.getCause()!=null && e.getCause() instanceof TimeOutException) {
-						throw (TimeOutException)e.getCause();
-					}
-					throw new TimeOutException(e);
-				}
-				if (!(e instanceof SaxAbortException)) {
-					throw new SenderException(e);
-				}
-			} finally {
+				createHandler(handlerRecord, threadConnector, session, callback);
+			} catch (TransformerException e) {
+				throw new SenderException(handlerRecord.errorMessage, e);
+			}
+
+			try {
+				XmlUtils.parseXml(src,handlerRecord.inputHandler);
+			} catch (Exception e) {
 				try {
-					handlerRecord.inputHandler.endDocument();
-				} catch (Exception e2) {
-					log.warn("Exception in endDocument()",e2);
+					if (e instanceof SaxTimeoutException) {
+						if (e.getCause()!=null && e.getCause() instanceof TimeoutException) {
+							throw (TimeoutException)e.getCause();
+						}
+						throw new TimeoutException(e);
+					}
+					if (!(e instanceof SaxAbortException)) {
+						throw new SenderException(e);
+					}
+				} finally {
+					try {
+						handlerRecord.inputHandler.endDocument();
+					} catch (Exception e2) {
+						log.warn("Exception in endDocument()",e2);
+					}
 				}
 			}
+		} catch (IOException e) {
+			throw new SenderException(e);
 		}
-		// 2020-06-12 removing below 'rethrowTransformerException()', as it does not break the tests, and cannot be implemented when providing an OutputStream.
-		// However, if cases popup of errors not being signaled, this modification could be the cause.
-		//rethrowTransformerException(handlerRecord.transformerErrorListener, handlerRecord.errorMessage);
+		return handlerRecord.itemHandler.stopReason;
 	}
-
-	
-	
-	private void rethrowTransformerException(TransformerErrorListener transformerErrorListener, String errorMessage) throws SenderException {
-		if (transformerErrorListener!=null) {
-			TransformerException tex = transformerErrorListener.getFatalTransformerException();
-			if (tex!=null) {
-				throw new SenderException(errorMessage,tex);
-			}
-			IOException iox = transformerErrorListener.getFatalIOException();
-			if (iox!=null) {
-				throw new SenderException(errorMessage,iox);
-			}
-		}
-	}
-
-	
 
 	protected TransformerPool getExtractElementsTp() {
 		return extractElementsTp;
@@ -446,78 +436,45 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 
 
 
-	@IbisDoc({"1", "When set <code>true</code>, the input is assumed to be the name of a file to be processed. Otherwise, the input itself is transformed. The character encoding will be read from the XML declaration", "false"})
+	@IbisDoc({"When set <code>true</code>, the input is assumed to be the name of a file to be processed. Otherwise, the input itself is transformed. The character encoding will be read from the XML declaration", "false"})
+	@Deprecated
+	@ConfigurationWarning("Please add a LocalFileSystemPipe with action=read in front of this pipe instead")
 	public void setProcessFile(boolean b) {
 		processFile = b;
 	}
-	public boolean isProcessFile() {
-		return processFile;
-	}
 
-	@IbisDoc({"2", "Element name (not an XPath-expression), qualified via attribute <code>namespaceDefs</code>, used to determine the 'root' of elements to be iterated over, i.e. the root of the set of child elements. "
+	@IbisDoc({"Element name (not an XPath-expression), qualified via attribute <code>namespaceDefs</code>, used to determine the 'root' of elements to be iterated over, i.e. the root of the set of child elements. "
 			+ "When empty, the pipe will iterate over each direct child element of the root", ""})
 	public void setContainerElement(String containerElement) {
 		this.containerElement = containerElement;
 	}
-	public String getContainerElement() {
-		return containerElement;
-	}
 
-	@IbisDoc({"3", "Element name (not an XPath-expression), qualified via attribute <code>namespaceDefs</code>, used to determine the type of elements to be iterated over, i.e. the element name of each of the child elements. "
+	@IbisDoc({"Element name (not an XPath-expression), qualified via attribute <code>namespaceDefs</code>, used to determine the type of elements to be iterated over, i.e. the element name of each of the child elements. "
 			+ "When empty, the pipe will iterate over any direct child element of the root or specified containerElement", ""})
 	public void setTargetElement(String targetElement) {
 		this.targetElement = targetElement;
 	}
-	public String getTargetElement() {
-		return targetElement;
-	}
 
-	@IbisDoc({"4", "XPath-expression used to determine the set of elements to be iterated over, i.e. the set of child elements. When empty, the effective value is /*/*, i.e. the pipe will iterate over each direct child element of the root. "
+	@IbisDoc({"XPath-expression used to determine the set of elements to be iterated over, i.e. the set of child elements. When empty, the effective value is /*/*, i.e. the pipe will iterate over each direct child element of the root. "
 		+"Be aware that memory consumption appears to increase with file size when this attribute is used. When possible, use containerElement and/or targetElement instead.", ""})
 	public void setElementXPathExpression(String string) {
 		elementXPathExpression = string;
 	}
-	public String getElementXPathExpression() {
-		return elementXPathExpression;
-	}
 
-	@IbisDoc({"5", "Characterset used for reading file or inputstream, only used when {@link #setProcessFile(boolean) processFile} is <code>true</code>, or the input is of type InputStream", "utf-8"})
-	public void setCharset(String string) {
-		charset = string;
-	}
-	public String getCharset() {
-		return charset;
-	}
-
-	@IbisDoc({"6", "When set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, supporting XPath 2.0, otherwise xslt processor 1.0 (org.apache.xalan), supporting XPath 1.0. N.B. Be aware that setting this other than 1 might cause the input file being read as a whole in to memory, as Xslt Streaming is currently only supported by the XsltProcessor that is used for xsltVersion=1", "1"})
+	@IbisDoc({"If set to <code>2</code> a XSLT processor 2.0 (net.sf.saxon) will be used, supporting XPath 2.0, otherwise a XSLT processor 1.0 (org.apache.xalan), supporting XPath 1.0. N.B. Be aware that setting this other than 1 might cause the input file being read as a whole in to memory, as XSLT Streaming is currently only supported by the XSLT Processor that is used for xsltVersion=1", "1"})
 	public void setXsltVersion(int xsltVersion) {
 		this.xsltVersion=xsltVersion;
 	}
-	public int getXsltVersion() {
-		return xsltVersion;
-	}
 
-	@IbisDoc({"7", "when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
-	/**
-	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
-	 */
 	@Deprecated
 	@ConfigurationWarning("It's value is now auto detected. If necessary, replace with a setting of xsltVersion")
 	public void setXslt2(boolean b) {
-		xsltVersion=b?2:1;
-	}
-	
-	@IbisDoc({"8", "When set <code>true</code> namespaces (and prefixes) in the input message are removed before transformation", "true"})
-	public void setRemoveNamespaces(boolean b) {
-		removeNamespaces = b;
-	}
-	public boolean isRemoveNamespaces() {
-		return removeNamespaces;
+		setXsltVersion(b?2:1);
 	}
 
-	@Override
-	public void setThreadLifeCycleEventListener(ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener) {
-		this.threadLifeCycleEventListener=threadLifeCycleEventListener;
+	@IbisDoc({"If set <code>true</code> namespaces (and prefixes) are removed from the items just before forwarding them to the sender. N.B. This takes place <strong>after</strong> the transformation for <code>elementXPathExpression</code> if that is specified"})
+	public void setRemoveNamespaces(boolean b) {
+		removeNamespaces = b;
 	}
 
 }

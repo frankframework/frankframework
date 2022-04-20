@@ -28,14 +28,14 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.xpath.XPathExpressionException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
@@ -54,7 +54,7 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 	private int level = 0;
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		StringWriter stringWriter = new StringWriter();
 		XMLStreamWriter xmlStreamWriter;
 		try {
@@ -76,7 +76,7 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 			throw new PipeRunException(this, "XPathExpressionException", e);
 		}
 
-		return new PipeRunResult(getForward(), stringWriter.getBuffer().toString());
+		return new PipeRunResult(getSuccessForward(), stringWriter.getBuffer().toString());
 	}
 
 	public void process(XMLStreamWriter xmlStreamWriter, String cUrl, int cLevel) throws XMLStreamException, DomBuilderException, XPathExpressionException {
@@ -408,7 +408,7 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 		xmlStreamWriter.writeEndElement();
 	}
 
-	private String getHtml(String urlString) throws ConfigurationException, SenderException, TimeOutException, IOException {
+	private String getHtml(String urlString) throws ConfigurationException, SenderException, TimeoutException, IOException {
 		HttpSender httpSender = null;
 		try {
 			httpSender = new HttpSender();

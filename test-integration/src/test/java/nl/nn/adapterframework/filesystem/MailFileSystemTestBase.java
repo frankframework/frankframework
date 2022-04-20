@@ -85,7 +85,7 @@ public abstract class MailFileSystemTestBase<M,A,FS> extends SelfContainedBasicF
 	@Test
 	public void testNormalMessageContents() throws Exception {
 		M emailMessage = getFirstFileFromFolder(null);
-		Message content = fileSystem.readFile(emailMessage);
+		Message content = fileSystem.readFile(emailMessage, null);
 		String expected = TestFileUtils.getTestFile("/ExchangeMailNormalContents.txt");
 		assertEquals(expected.trim(), content.asString().replaceAll("\r\n", "\n").trim());
 	}
@@ -131,7 +131,7 @@ public abstract class MailFileSystemTestBase<M,A,FS> extends SelfContainedBasicF
 		M emailMessage = getFirstFileFromFolder("XmlProblem");
 		Map<String,Object> properties = fileSystem.getAdditionalFileProperties(emailMessage);
 		String bestReplyAddress = (String)properties.get(IMailFileSystem.BEST_REPLY_ADDRESS_KEY);
-		String expected = "\"Brakel, G. van (Gerrit)\" <Gerrit.van.Brakel@nn-group.com>";
+		String expected = "xyz";
 		assertEquals(expected, bestReplyAddress);
 	}
 

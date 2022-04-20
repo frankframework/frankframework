@@ -20,11 +20,11 @@ import java.net.URL;
 
 import javax.servlet.ServletContext;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.web.context.ServletContextAware;
 
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -52,10 +52,10 @@ public class DetermineApplicationServerBean implements ServletContextAware {
 				URL webXml = servletContext.getResource(web);
 				if(webXml != null) {
 					if(XmlUtils.buildDomDocument(webXml).getElementsByTagName("security-constraint").getLength() < 1)
-						ConfigurationWarnings.addGlobalWarning(log, "unsecure IBIS application, enable the security constraints section in the web.xml in order to secure the application!");
+						ApplicationWarnings.add(log, "unsecure IBIS application, enable the security constraints section in the web.xml in order to secure the application!");
 				}
 			} catch (Exception e) {
-				ConfigurationWarnings.addGlobalWarning(log, "unable to determine whether security constraints have been enabled, is there a web.xml present?", e);
+				ApplicationWarnings.add(log, "unable to determine whether security constraints have been enabled, is there a web.xml present?", e);
 			}
 		}
 	}

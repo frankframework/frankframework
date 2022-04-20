@@ -1,5 +1,5 @@
 /*
-   Copyright 2015 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2015 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,15 +18,18 @@ package nl.nn.adapterframework.jdbc;
 import java.io.Serializable;
 import java.util.Date;
 
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.SenderException;
 
 /**
  * Class for a messageLog element to be used in combination with a
- * {@link MessageStoreSender} who's messaged are processed by a
+ * {@link MessageStoreSender} who's messages are processed by a
  * {@link MessageStoreListener}.
  * 
  * @author Jaco de Groot
  */
+@Deprecated
+@ConfigurationWarning("It is no longer necessary to use the DummyTransactionalStorage")
 public class DummyTransactionalStorage<S extends Serializable> extends JdbcTransactionalStorage<S> {
 
 	@Override

@@ -1,0 +1,1 @@
+<test branch="XsltPipeBeforeUpdateBlob" select="selectBlob"><a/></test>

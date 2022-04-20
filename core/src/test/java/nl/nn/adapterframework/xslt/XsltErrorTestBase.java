@@ -3,7 +3,7 @@ package nl.nn.adapterframework.xslt;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyString;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
@@ -22,7 +22,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.testutil.TestAppender;
@@ -76,8 +76,9 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 		}
 	}
 
+	@Override
 	@After
-	public void finalChecks() {
+	public void tearDown() throws Exception {
 		TestAppender.removeAppender(testAppender);
 		Configurator.setLevel("nl.nn.adapterframework", Level.DEBUG);
 		if (testForEmptyOutputStream) {
@@ -86,11 +87,12 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 			System.err.println("ErrorStream:"+errorOutputStream);
 			assertThat(errorOutputStream.toString(), isEmptyString());
 		}
+		super.tearDown();
 	}
 
 	protected void checkTestAppender(int expectedSize, String expectedString) {
 		System.out.println("Log Appender:"+testAppender.toString());
-		assertThat("number of alerts in logging", testAppender.getNumberOfAlerts(), is(expectedSize));
+		assertThat("number of alerts in logging " + testAppender.getLogLines(), testAppender.getNumberOfAlerts(), is(expectedSize));
 		if (expectedString!=null) assertThat(testAppender.toString(),containsString(expectedString));
 	}
 
@@ -228,7 +230,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 	}
 
 	@Test
-	public void notifyXalanExtensionsIllegalForSaxon() throws SenderException, TimeOutException, ConfigurationException, IOException, PipeRunException, PipeStartException {
+	public void notifyXalanExtensionsIllegalForSaxon() throws SenderException, TimeoutException, ConfigurationException, IOException, PipeRunException, PipeStartException {
 		setStyleSheetName("/Xslt/XalanExtension/XalanExtension.xsl");
 		setXslt2(true);
 		String errorMessage = null;
@@ -240,7 +242,8 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 			errorMessage = e.getMessage();
 			assertThat(errorMessage,containsString("Cannot find a matching 2-argument function named {http://exslt.org/strings}tokenize()"));
 		}
-		assertThat(testAppender.getNumberOfAlerts(), is(2+EXPECTED_NUMBER_OF_DUPLICATE_LOGGINGS));
+
+		assertThat("number of alerts in logging " + testAppender.getLogLines(), testAppender.getNumberOfAlerts(), is(2+EXPECTED_NUMBER_OF_DUPLICATE_LOGGINGS));
 	}
 
 	@Test

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden
+   Copyright 2019 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,39 +17,34 @@ package nl.nn.adapterframework.http;
 
 import java.io.IOException;
 import java.io.InputStream;
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.stream.Message;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.entity.mime.FormBodyPart;
 import org.w3c.dom.Element;
 
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.stream.Message;
+
 public class MultipartHttpSender extends HttpSender {
 
-	@Override
-	public void configure() throws ConfigurationException {
-		setMethodType("POST");
-		setInputMessageParam("message");
-		setParamsInUrl(false);
-		setMultipart(true);
-
-		super.configure();
+	public MultipartHttpSender() {
+		setPostType(PostType.FORMDATA);
+		setMethodType(HttpMethod.POST);
+		setFirstBodyPartName("message");
 	}
 
 	@Override
-	protected FormBodyPart elementToFormBodyPart(Element element, IPipeLineSession session) {
+	protected FormBodyPart elementToFormBodyPart(Element element, PipeLineSession session) throws IOException {
 		String partType = element.getAttribute("type"); //File or otherwise
 		String partName = element.getAttribute("name"); //Name of the part
 		String fileName = (StringUtils.isNotEmpty(element.getAttribute("filename"))) ? element.getAttribute("filename") : element.getAttribute("fileName"); //Name of the file
 		String sessionKey = element.getAttribute("sessionKey"); //SessionKey to retrieve data from
 		String mimeType = element.getAttribute("mimeType"); //MimeType of the part
 		String partValue = element.getAttribute("value"); //Value when SessionKey is empty or not set
-		Object partObject = session.get(sessionKey);
+		Message partObject = session.getMessage(sessionKey);
 
-		if (partObject != null && partObject instanceof InputStream) {
-			InputStream fis = (InputStream) partObject;
+		if (partObject != null && partObject.isBinary()) {
+			InputStream fis = partObject.asInputStream();
 
 			if(StringUtils.isNotEmpty(fileName)) {
 				return createMultipartBodypart(partName, fis, fileName, mimeType);
@@ -61,23 +56,11 @@ public class MultipartHttpSender extends HttpSender {
 				return createMultipartBodypart(partName, fis, null, mimeType);
 			}
 		} else {
-			String value = (String) session.get(sessionKey);
+			String value = partObject.asString();
 			if(StringUtils.isEmpty(value))
 				value = partValue;
 
 			return createMultipartBodypart(partName, value, mimeType);
 		}
-	}
-
-	/**
-	 * Automatically detect if the response is a multipart response or not. (duh!)
-	 */
-	@Override
-	protected Message extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
-		String contentType = responseHandler.getHeader("content-type");
-		if(contentType != null)
-			setMultipartResponse(contentType.contains("multipart"));
-
-		return super.extractResult(responseHandler, session);
 	}
 }

@@ -18,9 +18,13 @@ package nl.nn.adapterframework.http;
 import java.io.IOException;
 import java.net.URI;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.client.methods.HttpRequestBase;
+
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -28,9 +32,6 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.http.client.methods.HttpRequestBase;
 
 /**
  * Sender that sends a message via a WebService.
@@ -43,18 +44,18 @@ import org.apache.http.client.methods.HttpRequestBase;
  */
 public class WebServiceSender extends HttpSender {
 
-	private boolean soap = true;
-	private String soapAction = "";
-	private String soapActionParam = "soapAction";
-	private String encodingStyle=null;
-	private String serviceNamespace=null;
-	private String serviceNamespaceParam="serviceNamespace";
-	private String namespaceDefs = null; 
-	private boolean throwApplicationFaults=true;
-	private String wssAuthAlias;
-	private String wssUserName;
-	private String wssPassword;
-	private boolean wssPasswordDigest = true;
+	private @Getter boolean soap = true;
+	private @Getter String soapAction = "";
+	private @Getter String soapActionParam = "soapAction";
+	private @Getter String encodingStyle=null;
+	private @Getter String serviceNamespace=null;
+	private @Getter String serviceNamespaceParam="serviceNamespace";
+	private @Getter String namespaceDefs = null; 
+	private @Getter boolean throwApplicationFaults=true;
+	private @Getter String wssAuthAlias;
+	private @Getter String wssUserName;
+	private @Getter String wssPassword;
+	private @Getter boolean wssPasswordDigest = true;
 
 	private SoapWrapper soapWrapper;
 	private CredentialFactory wsscf=null;
@@ -63,7 +64,7 @@ public class WebServiceSender extends HttpSender {
 
 	public WebServiceSender() {
 		super();
-		setMethodType("POST");
+		setMethodType(HttpMethod.POST);
 		setContentType("text/xml");
 	}
 
@@ -100,18 +101,18 @@ public class WebServiceSender extends HttpSender {
 	}
 
 	@Override
-	protected HttpRequestBase getMethod(URI uri, Message message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
+	protected HttpRequestBase getMethod(URI uri, Message message, ParameterValueList parameters, PipeLineSession session) throws SenderException {
 
 		String serviceNamespaceURI;
 		if (serviceNamespaceURIParameter!=null) {
-			serviceNamespaceURI=parameters.getParameterValue(getServiceNamespaceParam()).asStringValue(getServiceNamespace());
+			serviceNamespaceURI=parameters.get(getServiceNamespaceParam()).asStringValue(getServiceNamespace());
 		} else {
 			serviceNamespaceURI=getServiceNamespace();
 		}
 
 		String soapActionURI;
 		if (soapActionParameter!=null) {
-			soapActionURI=parameters.getParameterValue(getSoapActionParam()).asStringValue(getSoapAction());
+			soapActionURI=parameters.get(getSoapActionParam()).asStringValue(getSoapAction());
 		} else {
 			soapActionURI=getSoapAction();
 		}
@@ -139,7 +140,7 @@ public class WebServiceSender extends HttpSender {
 	}
 
 	@Override
-	protected Message extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
+	protected Message extractResult(HttpResponseHandler responseHandler, PipeLineSession session) throws SenderException, IOException {
 		Message httpResult = null;
 		try {
 			httpResult = super.extractResult(responseHandler, session);
@@ -155,20 +156,16 @@ public class WebServiceSender extends HttpSender {
 		try {
 			if (isSoap()) {
 				return soapWrapper.getBody(httpResult);
-			} else {
-				return httpResult;
 			}
+			return httpResult;
 		} catch (Exception e) {
 			throw new SenderException("cannot retrieve result message",e);
 		}
 	}
 
-	@IbisDoc({"when <code>true</code>, messages sent are put in a soap envelope and the soap envelope is removed from received messages (soap envelope will not be visible to the pipeline)", "<code>true</code>"})
+	@IbisDoc({"when <code>true</code>, messages sent are put in a soap envelope and the soap envelope is removed from received messages (soap envelope will not be visible to the pipeline)", "true"})
 	public void setSoap(boolean b) {
 		soap = b;
-	}
-	public boolean isSoap() {
-		return soap;
 	}
 
 	@Deprecated
@@ -183,17 +180,10 @@ public class WebServiceSender extends HttpSender {
 		setSoapActionParam(soapActionParam);
 	}
 
-	public String getSoapAction() {
-		return soapAction;
-	}
 
 	@IbisDoc({"the soapactionuri to be set in the requestheader", ""})
 	public void setSoapAction(String soapAction) {
 		this.soapAction = soapAction;
-	}
-
-	public String getSoapActionParam() {
-		return soapActionParam;
 	}
 
 	@IbisDoc({"parameter to obtain the soapactionuri", ""})
@@ -211,16 +201,10 @@ public class WebServiceSender extends HttpSender {
 	public void setEncodingStyle(String encodingStyle) {
 		this.encodingStyle = encodingStyle;
 	}
-	public String getEncodingStyle() {
-		return encodingStyle;
-	}
 
 	@IbisDoc({"controls whether soap faults generated by the application generate an exception, or are treated as 'normal' messages", "true"})
 	public void setThrowApplicationFaults(boolean b) {
 		throwApplicationFaults = b;
-	}
-	public boolean isThrowApplicationFaults() {
-		return throwApplicationFaults;
 	}
 
 	@Deprecated
@@ -233,9 +217,6 @@ public class WebServiceSender extends HttpSender {
 	public void setServiceNamespace(String serviceNamespace) {
 		this.serviceNamespace = serviceNamespace;
 	}
-	public String getServiceNamespace() {
-		return serviceNamespace;
-	}
 
 	@Deprecated
 	@ConfigurationWarning("the attribute 'serviceNamespaceURIParam' has been renamed to 'serviceNamespaceParam'")
@@ -247,47 +228,29 @@ public class WebServiceSender extends HttpSender {
 	public void setServiceNamespaceParam(String serviceNamespaceParam) {
 		this.serviceNamespaceParam = serviceNamespaceParam;
 	}
-	public String getServiceNamespaceParam() {
-		return serviceNamespaceParam;
-	}
 
 	@IbisDoc({"namespace defintions to be added in the soap envelope tag. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
 	public void setNamespaceDefs(String namespaceDefs) {
 		this.namespaceDefs = namespaceDefs;
-	}
-	public String getNamespaceDefs() {
-		return namespaceDefs;
 	}
 
 	@IbisDoc({"", " "})
 	public void setWssUserName(String string) {
 		wssUserName = string;
 	}
-	public String getWssUserName() {
-		return wssUserName;
-	}
 
 	@IbisDoc({"", " "})
 	public void setWssPassword(String string) {
 		wssPassword = string;
-	}
-	public String getWssPassword() {
-		return wssPassword;
 	}
 
 	@IbisDoc({"alias used to obtain credentials for authentication to web services security", ""})
 	public void setWssAuthAlias(String string) {
 		wssAuthAlias = string;
 	}
-	public String getWssAuthAlias() {
-		return wssAuthAlias;
-	}
 
 	@IbisDoc({"when true, the password is sent digested. otherwise it is sent in clear text", "true"})
 	public void setWssPasswordDigest(boolean b) {
 		wssPasswordDigest = b;
-	}
-	public boolean isWssPasswordDigest() {
-		return wssPasswordDigest;
 	}
 }

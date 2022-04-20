@@ -18,14 +18,13 @@ package nl.nn.adapterframework.jdbc;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IBlockEnabledSender;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -107,7 +106,7 @@ public abstract class JdbcSenderBase<H> extends JdbcFacade implements IBlockEnab
 	@Override
 	// implements ISender.sendMessage()
 	// can make this sendMessage() 'final', debugging handled by the newly implemented sendMessage() below, that includes the MessageOutputStream
-	public final Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public final Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		H blockHandle = openBlock(session);
 		try {
 			return sendMessage(blockHandle, message, session);

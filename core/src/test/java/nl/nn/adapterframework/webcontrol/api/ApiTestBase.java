@@ -23,6 +23,7 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.ws.rs.Consumes;
@@ -39,8 +40,12 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.apache.cxf.jaxrs.impl.MetadataMap;
 import org.apache.cxf.jaxrs.impl.ResponseImpl;
+import org.apache.logging.log4j.Logger;
+import org.junit.After;
 import org.junit.Before;
 import org.mockito.Mockito;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -49,12 +54,21 @@ import org.springframework.mock.web.MockServletContext;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.ApplicationWarnings;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
-import nl.nn.adapterframework.util.MessageKeeper;
+import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
+import nl.nn.adapterframework.core.PipeLineExit;
+import nl.nn.adapterframework.lifecycle.MessageEventListener;
+import nl.nn.adapterframework.pipes.EchoPipe;
+import nl.nn.adapterframework.testutil.TestConfiguration;
+import nl.nn.adapterframework.util.LogUtil;
 
 public abstract class ApiTestBase<M extends Base> extends Mockito {
+	private Logger log = LogUtil.getLogger(ApiTestBase.class);
 	public enum IbisRole {
 		IbisWebService, IbisObserver, IbisDataAdmin, IbisAdmin, IbisTester;
 	}
@@ -62,30 +76,64 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 	protected MockDispatcher dispatcher = new MockDispatcher();
 	private M jaxRsResource;
 	private SecurityContext securityContext = mock(SecurityContext.class);
+	private TestConfiguration configuration = null;
 
 	abstract public M createJaxRsResource();
 
 	@Before
-	public void setUp() {
+	public void setUp() throws Exception {
+		ApplicationWarnings.removeInstance(); //Remove old instance if present
 		M resource = createJaxRsResource();
 		checkContextFields(resource);
 		jaxRsResource = spy(resource);
 
-		ConfigurationWarnings globalConfigWarnings = ConfigurationWarnings.getInstance();
-		globalConfigWarnings.clear();
-
 		MockServletContext servletContext = new MockServletContext();
 		MockServletConfig servletConfig = new MockServletConfig(servletContext, "JAX-RS-MockDispatcher");
 		jaxRsResource.servletConfig = servletConfig;
+		jaxRsResource.securityContext = mock(SecurityContext.class);
 		IbisContext ibisContext = mock(IbisContext.class);
-		IbisManager ibisManager = new MockIbisManager();
+		configuration = new TestConfiguration();
+		IbisManager ibisManager = configuration.getIbisManager();
 		ibisManager.setIbisContext(ibisContext);
-		MessageKeeper messageKeeper = new MessageKeeper();
-		doReturn(messageKeeper).when(ibisContext).getMessageKeeper();
 		doReturn(ibisManager).when(ibisContext).getIbisManager();
 		doReturn(ibisContext).when(jaxRsResource).getIbisContext();
+		doReturn(configuration.getBean("applicationWarnings")).when(ibisContext).getBean(eq("applicationWarnings"), any());
+		doReturn(new MessageEventListener()).when(ibisContext).getBean(eq("MessageEventListener"), any()); //we don't test the messages
+		registerAdapter(configuration);
 
 		dispatcher.register(jaxRsResource);
+	}
+
+	@After
+	public final void tearDown() {
+		if(configuration != null) {
+			configuration.close();
+		}
+	}
+
+	public TestConfiguration getConfiguration() {
+		return configuration;
+	}
+
+	protected void registerAdapter(TestConfiguration configuration) throws Exception{
+		Adapter adapter = configuration.createBean(Adapter.class);
+		adapter.setName("dummyAdapter");
+		try {
+			PipeLine pipeline = new PipeLine();
+			PipeLineExit exit = new PipeLineExit();
+			exit.setPath("EXIT");
+			exit.setState(ExitState.SUCCESS);
+			pipeline.registerPipeLineExit(exit);
+			EchoPipe pipe = new EchoPipe();
+			pipe.setName("myPipe");
+			pipeline.addPipe(pipe);
+			adapter.setPipeLine(pipeline);
+			configuration.registerAdapter(adapter);
+		} catch (ConfigurationException e) {
+			e.printStackTrace();
+			fail("error registering adapter ["+adapter+"] " + e.getMessage());
+		}
+		configuration.getConfigurationWarnings().add((Object) null, log, "hello I am a configuration warning!");
 	}
 
 	//This has to happen before it's proxied by Mockito (spy method)
@@ -260,6 +308,12 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 
 							System.out.println("setting method argument ["+i+"] to value ["+value+"] with type ["+value.getClass().getSimpleName()+"]");
 							methodArguments[i] = value;
+						} else if(mediaType.equals(MediaType.MULTIPART_FORM_DATA)){
+							if(jsonOrFormdata instanceof List<?>) {
+								@SuppressWarnings("unchecked")
+								MultipartBody multipartBody = new MultipartBody((List<Attachment>) jsonOrFormdata);
+								methodArguments[i] = multipartBody;
+							}
 						} else {
 							fail("mediaType ["+mediaType+"] not yet implemented"); //TODO: figure out how to deal with MultipartRequests
 						}
@@ -288,7 +342,7 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 				return response;
 			} catch (Exception e) {
 				e.printStackTrace();
-				fail("error dispatching request ["+rsResourceKey+"]");
+				fail("error dispatching request ["+rsResourceKey+"] " + e.getMessage());
 				return null;
 			}
 		}

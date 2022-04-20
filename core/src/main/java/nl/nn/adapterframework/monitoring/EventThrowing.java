@@ -24,7 +24,6 @@ import nl.nn.adapterframework.core.Adapter;
  * @since   4.9
  */
 public interface EventThrowing {
-	
 	public String getEventSourceName();
 	public Adapter getAdapter();
 }

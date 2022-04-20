@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2017-2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,28 +21,22 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.entity.InputStreamEntity;
 import org.apache.logging.log4j.Logger;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.akamai.NetStorageCmsSigner.SignType;
 import nl.nn.adapterframework.http.HttpResponseHandler;
@@ -62,37 +56,38 @@ import nl.nn.adapterframework.util.XmlUtils;
  *
  * <p>See {@link nl.nn.adapterframework.http.HttpSenderBase} for more arguments and parameters!</p>
  *
- * <p><b>Parameters:</b></p>
- * <p>Some actions require specific parameters to be set. Optional parameters for the <code>upload</code> action are: md5, sha1, sha256 and mtime.</p>
  *
- * <p><b>AuthAlias: (WebSphere based application servers)</b></p>
+ * <p><b>AuthAlias:</b></p>
  * <p>If you do not want to specify the nonce and the accesstoken used to authenticate with Akamai, you can use the authalias property. The username represents the nonce and the password the accesstoken.</p>
  *
- * <br/>
- * <br/>
- * <br/>
- *
+ * @ff.parameters Some actions require specific parameters to be set. Optional parameters for the <code>upload</code> action are: md5, sha1, sha256 and mtime.
  *
  * @author	Niels Meijer
  * @since	7.0-B4
  */
 public class NetStorageSender extends HttpSenderBase {
 	private Logger log = LogUtil.getLogger(NetStorageSender.class);
-	private String URL_PARAM_KEY = "urlParameter";
+	private static final String URL_PARAM_KEY = "urlParameter";
+	public static final String DESTINATION_PARAM_KEY = "destination";
+	public static final String FILE_PARAM_KEY = "file";
+	public static final String MTIME_PARAM_KEY = "mtime";
+	public static final String HASHVALUE_PARAM_KEY = "hashValue";
 
-	private String action = null;
-	private List<String> actions = Arrays.asList("du", "dir", "delete", "upload", "mkdir", "rmdir", "rename", "mtime", "download");
-	private String url = null;
-	private String nonce = null;
-	private int signVersion = 5;
-	private int actionVersion = 1;
-	private String hashAlgorithm = null;
-	private List<String> hashAlgorithms = Arrays.asList("MD5", "SHA1", "SHA256");
-	private String rootDir = null;
+	private @Getter Action action = null;
+	public enum Action {
+		DU, DIR, DELETE, UPLOAD, MKDIR, RMDIR, RENAME, MTIME, DOWNLOAD;
+	}
 
-	private String authAlias;
-	private String cpCode = null;
-	private String accessToken = null;
+	private @Getter int signVersion = 5;
+	private @Getter int actionVersion = 1;
+	private @Getter String rootDir = null;
+
+	private HashAlgorithm hashAlgorithm = null;
+
+	private @Getter String cpCode = null;
+	private @Getter String authAlias = null;
+	private @Getter String nonce = null;
+	private @Getter String accessToken = null;
 	private CredentialFactory accessTokenCf = null;
 
 	@Override
@@ -109,28 +104,38 @@ public class NetStorageSender extends HttpSenderBase {
 		//Safety checks
 		if(getAction() == null)
 			throw new ConfigurationException(getLogPrefix()+"action must be specified");
-		if(!actions.contains(getAction()))
-			throw new ConfigurationException(getLogPrefix()+"unknown or invalid action ["+getAction()+"] supported actions are "+actions.toString()+"");
 
 		if(getCpCode() == null)
 			throw new ConfigurationException(getLogPrefix()+"cpCode must be specified");
 		if(!getUrl().startsWith("http"))
 			throw new ConfigurationException(getLogPrefix()+"url must be start with http(s)");
 
-		if(hashAlgorithm != null && !hashAlgorithms.contains(hashAlgorithm))
-			throw new ConfigurationException(getLogPrefix()+"unknown authenticationMethod ["+hashAlgorithm+"] supported methods are "+hashAlgorithms.toString()+"");
-
 		if(getSignVersion() < 3 || getSignVersion() > 5)
 			throw new ConfigurationException(getLogPrefix()+"signVersion must be either 3, 4 or 5");
 
 
 		ParameterList parameterList = getParameterList();
-		if(getAction().equals("upload") && parameterList.findParameter("file") == null)
+		if(getAction() == Action.UPLOAD && parameterList.findParameter(FILE_PARAM_KEY) == null) {
 			throw new ConfigurationException(getLogPrefix()+"the upload action requires a file parameter to be present");
-		if(getAction().equals("rename") && parameterList.findParameter("destination") == null)
+		}
+		if(getAction() == Action.RENAME && parameterList.findParameter(DESTINATION_PARAM_KEY) == null) {
 			throw new ConfigurationException(getLogPrefix()+"the rename action requires a destination parameter to be present");
-		if(getAction().equals("mtime") && parameterList.findParameter("mtime") == null)
+		}
+		if(getAction() == Action.MTIME && parameterList.findParameter(MTIME_PARAM_KEY) == null) {
 			throw new ConfigurationException(getLogPrefix()+"the mtime action requires a mtime parameter to be present");
+		}
+
+		//check if md5/sha1/sha256 -> geef deprecated warning + parse hashAlgorithme
+		//hashValue  parameterList
+		for(HashAlgorithm algorithm : HashAlgorithm.values()) {
+			String simpleName = algorithm.name().toLowerCase();
+			Parameter hashValue = parameterList.findParameter(simpleName);
+
+			if(hashValue != null) {
+				setHashAlgorithm(algorithm);
+				ConfigurationWarnings.add(this, log, "deprecated parameter ["+simpleName+"]: please use attribute [hashAlgorithm] in combination with parameter ["+HASHVALUE_PARAM_KEY+"]");
+			}
+		}
 
 		accessTokenCf = new CredentialFactory(getAuthAlias(), getNonce(), getAccessToken());
 	}
@@ -158,16 +163,16 @@ public class NetStorageSender extends HttpSenderBase {
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 
 		//The input of this sender is the path where to send or retrieve info from.
 		String path;
 		try {
 			path = message.asString();
 		} catch (IOException e) {
-			throw new SenderException(getLogPrefix(),e);
+			throw new SenderException(getLogPrefix(), e);
 		}
-		//Store the input in the IPipeLineSession, so it can be resolved as ParameterValue.
+		//Store the input in the PipeLineSession, so it can be resolved as ParameterValue.
 		//See {@link HttpSenderBase#getURI getURI(..)} how this is resolved
 		session.put(URL_PARAM_KEY, path);
 
@@ -176,75 +181,26 @@ public class NetStorageSender extends HttpSenderBase {
 	}
 
 	@Override
-	public HttpRequestBase getMethod(URI uri, Message message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
+	public HttpRequestBase getMethod(URI uri, Message message, ParameterValueList parameters, PipeLineSession session) throws SenderException {
+		NetStorageRequest request = new NetStorageRequest(uri, getAction());
+		request.setVersion(actionVersion);
+		request.setHashAlgorithm(hashAlgorithm);
 
-		NetStorageAction netStorageAction = new NetStorageAction(getAction());
-		netStorageAction.setVersion(actionVersion);
-		netStorageAction.setHashAlgorithm(hashAlgorithm);
-
-		if(parameters != null)
-			netStorageAction.mapParameters(parameters);
-
-		try {
-			setMethodType(netStorageAction.getMethod());
-			log.debug("opening ["+netStorageAction.getMethod()+"] connection to ["+url+"] with action ["+getAction()+"]");
-
-			NetStorageCmsSigner signer = new NetStorageCmsSigner(uri, accessTokenCf.getUsername(), accessTokenCf.getPassword(), netStorageAction, getSignType());
-			Map<String, String> headers = signer.computeHeaders();
-
-			if (getMethodType().equals("GET")) {
-				HttpGet method = new HttpGet(uri);
-				for (Map.Entry<String, String> entry : headers.entrySet()) {
-					log.debug("append header ["+ entry.getKey() +"] with value ["+  entry.getValue() +"]");
-
-					method.setHeader(entry.getKey(), entry.getValue());
-				}
-				log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+method.getURI()+"] query ["+method.getURI().getQuery()+"] ");
-
-				return method;
-			}
-			else if (getMethodType().equals("PUT")) {
-				HttpPut method = new HttpPut(uri);
-
-				for (Map.Entry<String, String> entry : headers.entrySet()) {
-					log.debug("append header ["+ entry.getKey() +"] with value ["+  entry.getValue() +"]");
-
-					method.setHeader(entry.getKey(), entry.getValue());
-				}
-				log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+method.getURI()+"] query ["+method.getURI().getQuery()+"] ");
-
-				if(netStorageAction.getFile() != null) {
-					HttpEntity entity = new InputStreamEntity(netStorageAction.getFile());
-					method.setEntity(entity);
-				}
-				return method;
-			}
-			else if (getMethodType().equals("POST")) {
-				HttpPost method = new HttpPost(uri);
-
-				for (Map.Entry<String, String> entry : headers.entrySet()) {
-					log.debug("append header ["+ entry.getKey() +"] with value ["+  entry.getValue() +"]");
-
-					method.setHeader(entry.getKey(), entry.getValue());
-				}
-				log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+method.getURI()+"] query ["+method.getURI().getQuery()+"] ");
-
-				if(netStorageAction.getFile() != null) {
-					HttpEntity entity = new InputStreamEntity(netStorageAction.getFile());
-					method.setEntity(entity);
-				}
-				return method;
-			}
-
+		if(parameters != null) {
+			request.mapParameters(parameters);
 		}
-		catch (Exception e) {
-			throw new SenderException(e);
-		}
-		return null;
+
+		setMethodType(request.getMethodType()); //For logging purposes
+		if(log.isDebugEnabled()) log.debug("opening ["+request.getMethodType()+"] connection to ["+uri+"] with action ["+getAction()+"]");
+
+		NetStorageCmsSigner signer = new NetStorageCmsSigner(uri, accessTokenCf, getSignType());
+		request.sign(signer);
+
+		return request.build();
 	}
 
 	@Override
-	public Message extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
+	public Message extractResult(HttpResponseHandler responseHandler, PipeLineSession session) throws SenderException, IOException {
 		int statusCode = responseHandler.getStatusLine().getStatusCode();
 
 		boolean ok = false;
@@ -270,7 +226,7 @@ public class NetStorageSender extends HttpSenderBase {
 
 		XmlBuilder result = new XmlBuilder("result");
 
-		HttpServletResponse response = (HttpServletResponse) session.get(IPipeLineSession.HTTP_RESPONSE_KEY);
+		HttpServletResponse response = (HttpServletResponse) session.get(PipeLineSession.HTTP_RESPONSE_KEY);
 		if(response == null) {
 			XmlBuilder statuscode = new XmlBuilder("statuscode");
 			statuscode.setValue(statusCode + "");
@@ -322,7 +278,7 @@ public class NetStorageSender extends HttpSenderBase {
 		String charset = responseHandler.getCharset();
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"response body uses charset ["+charset+"]");
 
-		Message response = new Message(responseHandler.getResponse(), charset);
+		Message response = responseHandler.getResponseMessage();
 
 		String responseBody = null;
 		try {
@@ -342,70 +298,32 @@ public class NetStorageSender extends HttpSenderBase {
 		return responseBody;
 	}
 
-	/**
-	 * Only works in combination with the UPLOAD action. If set, and not 
-	 * specified as parameter, the sender will sign the file to be uploaded. 
-	 * NOTE: if the file input is a Stream this will put the file in memory!
-	 * @param hashAlgorithm supports 3 types; md5, sha1, sha256
-	 */
-	@IbisDoc({"only works in combination with the <code>upload</code> action. if set, and not specified as parameter, the sender will sign the file to be uploaded. possible values: md5, sha1, sha256. <br/>note: if the file input is a stream this will put the file in memory!", ""})
-	public void setHashAlgorithm(String hashAlgorithm) {
-		this.hashAlgorithm = hashAlgorithm.toUpperCase();
+	/** Only works in combination with the UPLOAD action. If set, and not specified as parameter, the sender will sign the file to be uploaded.*/
+	public void setHashAlgorithm(HashAlgorithm hashAlgorithm) {
+		this.hashAlgorithm = hashAlgorithm;
 	}
 
-	/**
-	 * NetStorage action to be used
-	 * @param action delete, dir, download, du, mkdir, mtime, rename,
-	 * rmdir, upload
-	 * @IbisDoc.required
-	 */
-	@IbisDoc({"possible values: delete, dir, download, du, mkdir, mtime, rename, rmdir, upload", ""})
-	public void setAction(String action) {
-		this.action = action.toLowerCase();
+	/** NetStorage action to be used */
+	public void setAction(Action action) {
+		this.action = action;
 	}
 
-	public String getAction() {
-		return action;
-	}
-
-	/**
-	 * At the time of writing, NetStorage only supports version 1
-	 * @param actionVersion
-	 * @IbisDoc.default 1
-	 */
-	@IbisDoc({"akamai currently only supports action version 1!", "1"})
+	/** At the time of writing, NetStorage only supports version 1
+	 * @ff.default 1 */
 	public void setActionVersion(int actionVersion) {
 		this.actionVersion = actionVersion;
 	}
 
-	/**
-	 * NetStorage CP Code
-	 * @param cpCode of the storage group
-	 * @IbisDoc.optional
-	 */
-	@IbisDoc({"the cp code to be used", ""})
+	/** NetStorage CP Code of the storage group */
 	public void setCpCode(String cpCode) {
 		this.cpCode = cpCode;
 	}
 
-	public String getCpCode() {
-		return cpCode;
-	}
-
-	/**
-	 * @param url the base URL for NetStorage (without CpCode)
-	 * @IbisDoc.required
-	 */
-	@IbisDoc({"the destination, aka akamai host. only the hostname is allowed; eq. xyz-nsu.akamaihd.net", ""})
+	/** The destination URL for the Akamai NetStorage. (Only the hostname, without CpCode; eq. xyz-nsu.akamaihd.net) */
 	@Override
 	public void setUrl(String url) {
 		if(!url.endsWith("/")) url += "/";
-		this.url = url;
-	}
-
-	@Override
-	public String getUrl() {
-		return url;
+		super.setUrl(url);
 	}
 
 	/**
@@ -417,22 +335,13 @@ public class NetStorageSender extends HttpSenderBase {
 		this.nonce = nonce;
 	}
 
-	public String getNonce() {
-		return nonce;
-	}
-
 	/**
 	 * Version to validate queries made to NetStorage backend.
 	 * @param signVersion supports 3 types; 3:MD5, 4:SHA1, 5: SHA256
-	 * @IbisDoc.default 5 (SHA256)
 	 */
 	@IbisDoc({"the version used to sign the authentication headers. possible values: 3 (md5), 4 (sha1), 5 (sha256)", "5"})
 	public void setSignVersion(int signVersion) {
 		this.signVersion = signVersion;
-	}
-
-	public int getSignVersion() {
-		return signVersion;
 	}
 	public SignType getSignType() {
 		if(getSignVersion() == 3)
@@ -452,24 +361,12 @@ public class NetStorageSender extends HttpSenderBase {
 		this.accessToken = accessToken;
 	}
 
-	public String getAccessToken() {
-		return accessToken;
-	}
-
 	@Override
 	public String getPhysicalDestinationName() {
 		return "URL ["+getUrl()+"] cpCode ["+getCpCode()+"] action ["+getAction()+"]";
 	}
 
-	public String getRootDir() {
-		return rootDir;
-	}
-	/**
-	 * rootDirectory on top of the url + cpCode
-	 * @param rootDir
-	 * @IbisDoc.optional
-	 */
-	@IbisDoc({"<i>optional</i> root directory", ""})
+	/** Root directory (appended to the url + cpCode) */
 	public void setRootDir(String rootDir) {
 		if(!rootDir.startsWith("/")) rootDir = "/" + rootDir;
 		if(rootDir.endsWith("/"))
@@ -477,15 +374,8 @@ public class NetStorageSender extends HttpSenderBase {
 		this.rootDir = rootDir;
 	}
 
-	@Override
-	public String getAuthAlias() {
-		return authAlias;
-	}
-	/**
-	 * @param authAlias to contain the Nonce (username) and AccessToken (password)
-	 */
-	@IbisDoc({"alias used to obtain credentials for nonce (username) and accesstoken (password)", ""})
-	@Override
+	/** Alias used to obtain credentials for nonce (username) and accesstoken (password) */
+	@Override //Overridden to prevent the super class from setting credentials
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}

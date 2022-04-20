@@ -1,0 +1,16 @@
+<configuration>
+	<adapter name="ForEachChildElementPipe">
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-ForEachChildElementPipe" />
+		</receiver>
+		<pipeline firstPipe="ForEachChildElementPipe_Record">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<pipe className="nl.nn.adapterframework.pipes.ForEachChildElementPipe" name="ForEachChildElementPipe_Record" elementXPathExpression="requests/request">
+				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ForEachChildElementPipe_Record" />
+				<forward name="success" path="echo" />
+			</pipe>
+		</pipeline>
+	</adapter>
+</configuration>

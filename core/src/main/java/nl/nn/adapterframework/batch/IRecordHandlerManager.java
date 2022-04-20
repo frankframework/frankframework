@@ -19,7 +19,8 @@ import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.doc.IbisDoc;
 
 /**
@@ -32,6 +33,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
  * 
  * @author John Dekker
  */
+@FrankDocGroup(order = 70, name = "Batch")
 public interface IRecordHandlerManager extends INamedObject {
 
 	public void configure(Map<String, IRecordHandlerManager> registeredManagers, Map<String, IRecordHandler> registeredRecordHandlers, Map<String, IResultHandler> registeredResultHandlers, IResultHandler defaultHandler) throws ConfigurationException;
@@ -45,12 +47,12 @@ public interface IRecordHandlerManager extends INamedObject {
 	/**
 	 * @return the RecordHandlingFlow element to be used to handle the record
 	 */
-	RecordHandlingFlow getRecordHandler(IPipeLineSession session, String record) throws Exception;
+	RecordHandlingFlow getRecordHandler(PipeLineSession session, String record) throws Exception;
 	
 	/**
 	 * @return the IRecordHandlingManager to be used initially based on the name of the input file 
 	 */
-	IRecordHandlerManager getRecordFactoryUsingFilename(IPipeLineSession session, String filename);
+	IRecordHandlerManager getRecordFactoryUsingFilename(PipeLineSession session, String filename);
 	
 	/**
 	 * @param initialFactory indicates if this manager is the initial manager

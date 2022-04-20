@@ -35,6 +35,54 @@
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
+	<xsd:element name="SpecialResponse">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="Status" minOccurs="0">
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:string">
+							<xsd:enumeration value="a"/>
+							<xsd:enumeration value="b"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:element>
+				<xsd:element name="Item" type="ItemType" minOccurs="0"/>
+				<xsd:element ref="cmh:Result"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="InputValidationFailure">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="Status" minOccurs="0">
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:string">
+							<xsd:enumeration value="a"/>
+							<xsd:enumeration value="b"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:element>
+				<xsd:element name="Item" type="ItemType" minOccurs="0"/>
+				<xsd:element ref="cmh:Result"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="OutputValidationFailure">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="Status" minOccurs="0">
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:string">
+							<xsd:enumeration value="a"/>
+							<xsd:enumeration value="b"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:element>
+				<xsd:element name="Item" type="ItemType" minOccurs="0"/>
+				<xsd:element ref="cmh:Result"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
 	<xsd:complexType name="ItemType">
 		<xsd:sequence>
 			<xsd:element name="Id" type="xsd:string" minOccurs="0"/>

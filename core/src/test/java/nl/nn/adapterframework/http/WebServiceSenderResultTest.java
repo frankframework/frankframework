@@ -37,8 +37,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
@@ -108,7 +107,7 @@ public class WebServiceSenderResultTest extends Mockito {
 	public void simpleSoapMultiPartResponseMocked() throws Exception {
 		WebServiceSender sender = createWebServiceSenderFromFile("soapMultipart.txt", "multipart/form-data", 200);
 
-		IPipeLineSession pls = new PipeLineSessionBase();
+		PipeLineSession pls = new PipeLineSession();
 
 		sender.configure();
 		sender.open();
@@ -123,10 +122,10 @@ public class WebServiceSenderResultTest extends Mockito {
 		}
 		assertEquals(2, multipartAttachmentCount);
 
-		InputStream multipart1 = (InputStream)pls.get("multipart1");
+		InputStream multipart1 = pls.getMessage("multipart1").asInputStream();
 		assertEquals("Content of a txt file.", Misc.streamToString(multipart1).trim());
 
-		InputStream multipart2 = (InputStream)pls.get("multipart2");
+		InputStream multipart2 = pls.getMessage("multipart2").asInputStream();
 		assertEquals("<!DOCTYPE html><title>Content of a html file.</title>", Misc.streamToString(multipart2).trim());
 	}
 
@@ -135,7 +134,7 @@ public class WebServiceSenderResultTest extends Mockito {
 		thrown.expect(SenderException.class);
 		WebServiceSender sender = createWebServiceSenderFromFile("soapMultipart.txt", "multipart/form-data", 500);
 
-		IPipeLineSession pls = new PipeLineSessionBase();
+		PipeLineSession pls = new PipeLineSession();
 
 		sender.configure();
 		sender.open();
@@ -149,7 +148,7 @@ public class WebServiceSenderResultTest extends Mockito {
 
 		WebServiceSender sender = createWebServiceSenderFromFile("soapMultipart2.txt", "multipart/form-data", 200);
 
-		IPipeLineSession pls = new PipeLineSessionBase();
+		PipeLineSession pls = new PipeLineSession();
 
 		sender.configure();
 		sender.open();
@@ -164,7 +163,7 @@ public class WebServiceSenderResultTest extends Mockito {
 
 		WebServiceSender sender = createWebServiceSenderFromFile("soapFault.txt", "text/xml", 500);
 
-		IPipeLineSession pls = new PipeLineSessionBase();
+		PipeLineSession pls = new PipeLineSession();
 
 		sender.configure();
 		sender.open();
@@ -176,7 +175,7 @@ public class WebServiceSenderResultTest extends Mockito {
 	public void simpleMtomResponseMockedHttpGet() throws Exception {
 		WebServiceSender sender = createWebServiceSenderFromFile("mtom-multipart2.txt", "multipart/related", 200);
 
-		IPipeLineSession pls = new PipeLineSessionBase();
+		PipeLineSession pls = new PipeLineSession();
 
 		sender.configure();
 		sender.open();
@@ -191,7 +190,7 @@ public class WebServiceSenderResultTest extends Mockito {
 		}
 		assertEquals(1, multipartAttachmentCount);
 
-		InputStream multipart1 = (InputStream)pls.get("multipart1");
+		InputStream multipart1 = pls.getMessage("multipart1").asInputStream();
 		assertEquals("PDF-1.4 content", Misc.streamToString(multipart1).trim());
 	}
 }

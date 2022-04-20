@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,79 +19,71 @@ import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.configuration.Configuration;
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.senders.ConfigurationAware;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 
 /**
  * ResultHandler that collects a number of records and sends them together to a sender.
  * 
- * <table border="1">
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link ISender sender}</td><td>Sender to which each block of results is sent</td></tr>
- * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the resultHandler will be handed to the sender, if this is a {@link ISenderWithParameters ISenderWithParameters}</td></tr>
- * </table>
- * </p>
+ * @ff.parameters any parameters defined on the resultHandler will be handed to the sender, if this is a {@link ISenderWithParameters ISenderWithParameters}
  * 
  * @author  Gerrit van Brakel
  * @since   4.7  
  */
-public class ResultBlock2Sender extends Result2StringWriter implements ConfigurationAware {
+public class ResultBlock2Sender extends Result2StringWriter {
 
-	private ISender sender = null; 
-	private Map<String,Integer> counters = new HashMap<String,Integer>();
-	private Map<String,Integer> levels = new HashMap<String,Integer>();
-	private Configuration configuration;
-	
+	private @Getter ISender sender = null; 
+	private Map<String,Integer> counters = new HashMap<>();
+	private Map<String,Integer> levels = new HashMap<>();
+
 	public ResultBlock2Sender() {
 		super();
 		setOnOpenDocument(null);
 		setOnCloseDocument(null);
 	}
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
+
 		if (sender==null) {
-			throw new ConfigurationException(ClassUtils.nameOf(this)+" ["+getName()+"] has no sender");
+			throw new ConfigurationException(ClassUtils.nameOf(this)+" has no sender");
 		}
 		if (StringUtils.isEmpty(sender.getName())) {
 			sender.setName("sender of "+getName());
 		}
-		if (getSender() instanceof ConfigurationAware) {
-			((ConfigurationAware)getSender()).setConfiguration(getConfiguration());
-		}
-		sender.configure();		
+		sender.configure();
 	}
 	@Override
 	public void open() throws SenderException {
 		super.open();
-		sender.open();		
+		sender.open();
 	}
 	@Override
 	public void close() throws SenderException {
 		super.close();
-		sender.close();	
-		counters.clear();	
+		sender.close();
+		counters.clear();
 		levels.clear();
 	}
 
 	@Override
-	public void openDocument(IPipeLineSession session, String streamId) throws Exception {
+	public void openDocument(PipeLineSession session, String streamId) throws Exception {
 		counters.put(streamId,new Integer(0));
 		levels.put(streamId,new Integer(0));
 		super.openDocument(session, streamId);
 	}
 	@Override
-	public void closeDocument(IPipeLineSession session, String streamId) {
+	public void closeDocument(PipeLineSession session, String streamId) {
 		super.closeDocument(session,streamId);
 		counters.remove(streamId);
 		levels.remove(streamId);
@@ -144,12 +136,12 @@ public class ResultBlock2Sender extends Result2StringWriter implements Configura
 
 
 	@Override
-	public void openBlock(IPipeLineSession session, String streamId, String blockName) throws Exception {
+	public void openBlock(PipeLineSession session, String streamId, String blockName) throws Exception {
 		super.openBlock(session,streamId,blockName);
 		incLevel(streamId);
 	}
 	@Override
-	public void closeBlock(IPipeLineSession session, String streamId, String blockName) throws Exception {
+	public void closeBlock(PipeLineSession session, String streamId, String blockName) throws Exception {
 		super.closeBlock(session,streamId,blockName);
 		int level=decLevel(streamId);
 		if (level==0) {
@@ -169,21 +161,8 @@ public class ResultBlock2Sender extends Result2StringWriter implements Configura
 	}
 
 
+	@IbisDoc({"10", "Sender to which each block of results is sent"})
 	public void setSender(ISender sender) {
 		this.sender = sender;
 	}
-	public ISender getSender() {
-		return sender;
-	}
-
-	@Override
-	public void setConfiguration(Configuration configuration) {
-		this.configuration = configuration;
-	}
-	@Override
-	public Configuration getConfiguration() {
-		return configuration;
-	}
-
-
 }

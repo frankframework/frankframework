@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import com.sap.conn.idoc.IDocDocument;
 import com.sap.conn.idoc.IDocDocumentIterator;
@@ -50,11 +50,14 @@ import com.sap.conn.jco.server.JCoServerFactory;
 import com.sap.conn.jco.server.JCoServerFunctionHandler;
 import com.sap.conn.jco.server.JCoServerTIDHandler;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.doc.Mandatory;
 import nl.nn.adapterframework.extensions.sap.ISapListener;
 import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.stream.Message;
@@ -64,21 +67,7 @@ import nl.nn.adapterframework.stream.Message;
  * that enables a GenericReceiver to receive messages from SAP-systems. 
  * 
  * In SAP the function to be called is a RFC-function to the destination that is registered using <code>progid</code>.
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.extensions.sap.SapListener</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>Name of the Listener</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setProgid(String) progid}</td><td>Name of the RFC-destination to be registered in the SAP system</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setConnectionCount(String) connectionCount}</td><td>The number of connections that should be registered at the gateway</td><td>2</td></tr>
- * <tr><td>{@link #setSapSystemName(String) sapSystemName}</td><td>name of the SapSystem used by this object</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCorrelationIdFieldIndex(int) correlationIdFieldIndex}</td><td>Index of the field in the ImportParameterList of the RFC function that contains the correlationId</td><td>0</td></tr>
- * <tr><td>{@link #setCorrelationIdFieldName(String) correlationIdFieldName}</td><td>Name of the field in the ImportParameterList of the RFC function that contains the correlationId</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setRequestFieldIndex(int) requestFieldIndex}</td><td>Index of the field in the ImportParameterList of the RFC function that contains the whole request message contents</td><td>0</td></tr>
- * <tr><td>{@link #setRequestFieldName(String) requestFieldName}</td><td>Name of the field in the ImportParameterList of the RFC function that contains the whole request message contents</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setReplyFieldIndex(int) replyFieldIndex}</td><td>Index of the field in the ExportParameterList of the RFC function that contains the whole reply message contents</td><td>0</td></tr>
- * <tr><td>{@link #setReplyFieldName(String) replyFieldName}</td><td>Name of the field in the ExportParameterList of the RFC function that contains the whole reply message contents</td><td>&nbsp;</td></tr>
- * </table>
+ * </b>
  * N.B. If no requestFieldIndex or requestFieldName is specified, input is converted to xml;
  * If no replyFieldIndex or replyFieldName is specified, output is converted from xml. 
  * </p>
@@ -87,10 +76,12 @@ import nl.nn.adapterframework.stream.Message;
  * @since 5.0
  * @see "http://help.sap.com/saphelp_nw04/helpdata/en/09/c88442a07b0e53e10000000a155106/frameset.htm"
  */
+@Deprecated
+@ConfigurationWarning("Please do not specify jco version in package name")
 public class SapListener extends SapFunctionFacade implements ISapListener<JCoFunction>, JCoServerFunctionHandler, JCoServerTIDHandler, JCoIDocHandlerFactory, JCoIDocHandler, JCoQueuedIDocHandler, JCoServerExceptionListener, JCoServerErrorListener, ServerDataProvider {
 
-	private String progid;	 // progid of the RFC-destination
-	private String connectionCount = "2"; // used in SAP examples
+	private @Getter String progid;	 // progid of the RFC-destination
+	private @Getter String connectionCount = "2"; // used in SAP examples
 
 	private SapSystem sapSystem;
 	private IMessageHandler<JCoFunction> handler;
@@ -170,7 +161,7 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCoFu
 		serverProperties.setProperty(ServerDataProvider.JCO_REP_DEST, sapSystem.getName());
 		serverProperties.setProperty(ServerDataProvider.JCO_CONNECTION_COUNT, connectionCount);
 
-		if(sapSystem.isSncEncrypted()) {
+		if(sapSystem.isSncEnabled()) {
 			serverProperties.setProperty(ServerDataProvider.JCO_SNC_MODE, "1");
 			serverProperties.setProperty(ServerDataProvider.JCO_SNC_LIBRARY, sapSystem.getSncLibrary());
 			serverProperties.setProperty(ServerDataProvider.JCO_SNC_MYNAME, sapSystem.getMyName());
@@ -226,7 +217,7 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCoFu
 	@Override
 	public void handleRequest(JCoServerContext jcoServerContext, JCoFunction jcoFunction) throws AbapException, AbapClassException {
 		try {
-			handler.processRawMessage(this, jcoFunction, null);
+			handler.processRawMessage(this, jcoFunction, null, false);
 		} catch (Throwable t) {
 			log.warn(getLogPrefix()+"Exception caught and handed to SAP",t);
 			throw new AbapException("IbisException", t.getMessage());
@@ -243,7 +234,7 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCoFu
 			doc = iterator.next();
 			if(log.isTraceEnabled()) log.trace(getLogPrefix()+"Processing document no. [" + doc.getIDocNumber() + "] of type ["+doc.getIDocType()+"]");
 			try {
-				handler.processRequest(this, null, new Message(xmlProcessor.render(doc)));
+				handler.processRequest(this, null, null, new Message(xmlProcessor.render(doc)), null);
 			} catch (Throwable t) {
 				log.warn(getLogPrefix()+"Exception caught and handed to SAP",t);
 				throw new JCoRuntimeException(JCoException.JCO_ERROR_APPLICATION_EXCEPTION, "IbisException", t.getMessage());
@@ -259,7 +250,7 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCoFu
 	/**
 	 * The <code>toString()</code> method retrieves its value
   	 * by reflection.
-  	 * @see org.apache.commons.lang.builder.ToStringBuilder#reflectionToString
+  	 * @see org.apache.commons.lang3.builder.ToStringBuilder#reflectionToString
   	 *
   	 **/
 	@Override
@@ -267,19 +258,23 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCoFu
 		return ToStringBuilder.reflectionToString(this);
 	}
 
-	public String getProgid() {
-		return progid;
+	@Override
+	@Mandatory
+	public void setSapSystemName(String string) {
+		super.setSapSystemName(string);
 	}
 
+	/** Name of the RFC-destination to be registered in the SAP system */
 	@Override
+	@Mandatory
 	public void setProgid(String string) {
 		progid = string;
 	}
 
-	public String getConnectionCount() {
-		return connectionCount;
-	}
-
+	/** 
+	  * The number of connections that should be registered at the gateway
+	  * @ff.default 2
+	  */
 	@Override
 	public void setConnectionCount(String connectionCount) {
 		this.connectionCount = connectionCount;

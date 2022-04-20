@@ -17,7 +17,7 @@ package nl.nn.adapterframework.http;
 
 import java.util.Comparator;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author  Gerrit van Brakel

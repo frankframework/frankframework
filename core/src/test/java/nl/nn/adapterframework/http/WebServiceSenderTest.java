@@ -21,9 +21,9 @@ import java.io.ByteArrayInputStream;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 
@@ -42,7 +42,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 		Message input = new Message("<hallo/>");
 
 		try {
-			IPipeLineSession pls = new PipeLineSessionBase(session);
+			PipeLineSession pls = new PipeLineSession(session);
 
 			sender.configure();
 			sender.open();
@@ -60,7 +60,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 		Message input = new Message("<hallo/>");
 
 		try {
-			IPipeLineSession pls = new PipeLineSessionBase(session);
+			PipeLineSession pls = new PipeLineSession(session);
 
 			sender.setSoapAction(sender.getUrl());
 
@@ -80,9 +80,9 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 		Message input = new Message("<xml>input</xml>");
 
 		try {
-			IPipeLineSession pls = new PipeLineSessionBase(session);
+			PipeLineSession pls = new PipeLineSession(session);
 
-			sender.setMethodType("POST");
+			sender.setMethodType(HttpMethod.POST);
 			sender.setParamsInUrl(false);
 			sender.setInputMessageParam("request");
 
@@ -110,9 +110,9 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 		Message input = new Message("<xml>input</xml>");
 
 		try {
-			IPipeLineSession pls = new PipeLineSessionBase(session);
+			PipeLineSession pls = new PipeLineSession(session);
 
-			sender.setMethodType("POST");
+			sender.setMethodType(HttpMethod.POST);
 			sender.setParamsInUrl(false);
 			sender.setInputMessageParam("request");
 
@@ -142,9 +142,9 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 		Message input = new Message("<xml>input</xml>");
 
 		try {
-			IPipeLineSession pls = new PipeLineSessionBase(session);
+			PipeLineSession pls = new PipeLineSession(session);
 
-			sender.setMethodType("POST");
+			sender.setMethodType(HttpMethod.POST);
 			sender.setParamsInUrl(false);
 			sender.setInputMessageParam("request");
 
@@ -173,7 +173,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 		Message input = new Message("<xml>hello world</xml>");
 
 		try {
-			IPipeLineSession pls = new PipeLineSessionBase(session);
+			PipeLineSession pls = new PipeLineSession(session);
 
 			sender.setParamsInUrl(false);
 			sender.setInputMessageParam("file");
@@ -182,10 +182,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.setVerifyHostname(false);
 			sender.setMtomEnabled(true);
 	
-			Parameter param = new Parameter();
-			param.setName("file");
-			param.setValue("<xml>I just sent some text! :)</xml>");
-			sender.addParameter(param);
+			sender.addParameter(new Parameter("file", "<xml>I just sent some text! :)</xml>"));
 	
 			sender.configure();
 			sender.open();

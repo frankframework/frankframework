@@ -30,7 +30,7 @@ import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.jms.JmsMessagingSource;
 import nl.nn.adapterframework.jms.MessagingSource;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.tibco.tibjms.TibjmsConnectionFactory;
 
@@ -45,13 +45,14 @@ public class TibcoMessagingSource extends JmsMessagingSource {
 	private TibjmsConnectionFactory connectionFactory;
 	
 	public TibcoMessagingSource(String connectionFactoryName, Context context,
-			ConnectionFactory connectionFactory, Map messagingSourceMap,
+			ConnectionFactory connectionFactory, Map<String, MessagingSource> messagingSourceMap,
 			String authAlias) {
 		super(connectionFactoryName, "", context, connectionFactory,
 				messagingSourceMap, authAlias, false, null, true);
 		this.connectionFactory=(TibjmsConnectionFactory)connectionFactory;
 	}
 
+	@Override
 	protected Connection createConnection() throws JMSException {
 		if (StringUtils.isNotEmpty(getAuthAlias())) {
 			return super.createConnection();
@@ -62,8 +63,9 @@ public class TibcoMessagingSource extends JmsMessagingSource {
 	}
 
 
+	@Override
 	public Destination lookupDestination(String destinationName) throws JmsException {
-		Session session=null;		
+		Session session=null;
 		try {
 			session = createSession(false,Session.AUTO_ACKNOWLEDGE);
 			log.debug("Session class ["+session.getClass().getName()+"]");

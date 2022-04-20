@@ -20,10 +20,10 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
@@ -36,28 +36,8 @@ import nl.nn.adapterframework.util.Misc;
  * The inputmessage is written to a temporary file and passed as inputfile to the rekenbox. The contents of the outputfile of the
  * rekenbox is returned as output message. The name of the rekenbox, as determined from the inputfile, is optionally written to
  * the pipeLineSession.
- *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setRekenBoxName(String) rekenBoxName}</td><td>fixed name of the rekenbox (or wrapper) to be called. If empty, the name is determined from the request</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setRunPath(String) runPath}</td><td>directory on server where rekenbox-executable can be found</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTemplateDir(String) templateDir}</td><td>rekenbox template directory on server</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setInputOutputDirectory(String) inputOutputDirectory}</td><td>directory on server where input and output files are (temporarily) stored</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCommandLineType(String) commandLineType}</td><td>Format of commandline of rekenbox. Possible values 
- * <ul>
- *   <li>"straight": rekenbox is called like: rekenbox.exe inputFileName outputFileName templateDir</li>
- *   <li>"switches": rekenbox is called like: rekenbox.exe /IinputFileName /UoutputFileName /PtemplateDir</li>
- *   <li>"redirected": rekenbox is called like: rekenbox.exe inputFileName templateDir > outputFileName; (This method has not been fully tested)</li>
- * </ul></td><td>"straigth"</td></tr>
- * <tr><td>{@link #setExecutableExtension(String) executableExtension}</td><td>extension of rekenbox-executable</td><td>exe</td></tr>
- * <tr><td>{@link #setCleanup(boolean) cleanup}</td><td>if true, input and output files are removed after the call to the rekenbox is finished</td><td>true</td></tr>
- * <tr><td>{@link #setRekenboxSessionKey(String) rekenboxSessionKey}</td><td>key in {@link nl.nn.adapterframework.core.IPipeLineSession pipeLineSession} to store rekenbox name in</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDataFilenamePrefix(String) dataFilenamePrefix}</td><td>first part of filenames that communicate requests and replies to rekenbox</td><td>rb</td></tr>
- * <tr><td>{@link #setMaxRequestNumber(long) maxRequestNumber}</td><td>maximal number that will be concatenated to dataFilenamePrefix</td><td>1000</td></tr>
- * </table>
- * </p>
- *
+ * 
+ * 
  * <p><b>Note:</b><br>
  * The rekenbox-name is currently determined from the first 8 characters of the file, or up
  * to the first space (' ') or colon (':') character. Beware that if the first character of the
@@ -65,6 +45,7 @@ import nl.nn.adapterframework.util.Misc;
  * rekenbox-name on. Especially if the inputmessages are constructed by means of an XSLT-stylesheet,
  * messages often start with a newline character.
  * </p>
+ * 
  * @author Gerrit van Brakel
  */
 public class RekenBoxCaller extends FixedForwardPipe {
@@ -134,7 +115,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 	 * positie 1 t/m 8 bepalen de naam van de executable, of tot aan de ':' (wat het eerst komt)
 	 */
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String sInput;
 		try {
 			sInput = message.asString();
@@ -221,7 +202,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 	        
 			
 	//		log.debug("Pipe ["+name+"] retrieved result ["+result+"]");
-		    return new PipeRunResult(getForward(), result);
+		    return new PipeRunResult(getSuccessForward(), result);
 			
 	    } catch (Exception e) {
 		   	throw new PipeRunException(this, getLogPrefix(session)+"got Exception executing rekenbox", e);
@@ -235,6 +216,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 	    
 	}
 
+	/** Fixed name of the rekenbox (or wrapper) to be called. If empty, the name is determined from the request */
 	public void setRekenBoxName(String string) {
 		rekenBoxName = string;
 	}
@@ -242,6 +224,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 		return rekenBoxName;
 	}
 
+	/** Directory on server where rekenbox-executable can be found */
 	public void setRunPath(String newRunPath) {
 		runPath = newRunPath;
 	}
@@ -249,6 +232,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 		return runPath;
 	}
 
+	/** Rekenbox template directory on server */
 	public void setTemplateDir(String newTemplateDir) {
 		templateDir = newTemplateDir;
 	}
@@ -256,6 +240,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 		return templateDir;
 	}
 
+	/** Directory on server where input and output files are (temporarily) stored */
 	public void setInputOutputDirectory(String newInputOutputDirectory) {
 		inputOutputDirectory = newInputOutputDirectory;
 	}
@@ -263,13 +248,20 @@ public class RekenBoxCaller extends FixedForwardPipe {
 		return inputOutputDirectory;
 	}
 
+	/**
+	 * Format of commandline of rekenbox. Possible values
+	 * "straight": rekenbox is called like: rekenbox.exe inputFileName outputFileName templateDir
+	 * "switches": rekenbox is called like: rekenbox.exe /IinputFileName /UoutputFileName /PtemplateDir
+	 * "redirected": rekenbox is called like: rekenbox.exe inputFileName templateDir > outputFileName; (This method has not been fully tested)
+	 */
 	public void setCommandLineType(String newCommandLineType) {
 		commandLineType = newCommandLineType;
 	}
 	public String getCommandLineType() {
 		return commandLineType;
 	}
-	
+
+	/** Extension of rekenbox-executable */
 	public void setExecutableExtension(String newExecutableExtension) {
 		executableExtension = newExecutableExtension;
 	}
@@ -277,13 +269,15 @@ public class RekenBoxCaller extends FixedForwardPipe {
 		return executableExtension;
 	}
 
+	/** If <code>true</code>, input and output files are removed after the call to the rekenbox is finished */
 	public void setCleanup(boolean newCleanup) {
 		cleanup = newCleanup;
 	}
 	public boolean isCleanup() {
 		return cleanup;
 	}
-	
+
+	/** Key in pipeLineSession to store rekenbox name in */
 	public void setRekenboxSessionKey(String newRekenboxSessionKey) {
 		rekenboxSessionKey = newRekenboxSessionKey;
 	}
@@ -291,6 +285,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 		return rekenboxSessionKey;
 	}
 
+	/** First part of filenames that communicate requests and replies to rekenbox */
 	public void setDataFilenamePrefix(String string) {
 		dataFilenamePrefix = string;
 	}
@@ -298,6 +293,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 		return dataFilenamePrefix;
 	}
 
+	/** Maximal number that will be concatenated to dataFilenamePrefix */
 	public void setMaxRequestNumber(long l) {
 		maxRequestNumber = l;
 	}

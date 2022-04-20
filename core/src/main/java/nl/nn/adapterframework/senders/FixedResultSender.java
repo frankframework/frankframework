@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013-2016 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,15 +22,15 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -42,25 +42,15 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * FixedResultSender, same behaviour as {@link nl.nn.adapterframework.pipes.FixedResultPipe FixedResultPipe}, but now as a ISender.
- *
- * <table border="1">
- * <p><b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr>
- *   <td><i>any</i></td><td><i>any</i></td>
- * 	 <td>Any parameters defined on the sender will be used for replacements. Each occurrence
- * 		 of <code>${name-of-parameter}</code> in the file {@link #setFileName(String) fileName} 
- *       will be replaced by its corresponding <i>value-of-parameter</i>. <br>
- *       This works only with files, not with values supplied in attribute {@link #setReturnString(String) returnString}</td>
- * </tr>
- * </table>
- * </p>
+ * 
+ * @ff.parameters Any parameters defined on the sender will be used for replacements. Each occurrence of <code>${name-of-parameter}</code> in the file fileName will be replaced by its corresponding value-of-parameter. This works only with files, not with values supplied in attribute {@link #setReturnString(String) returnString}.
+ * 
  * @author  Gerrit van Brakel
  * @since   4.9
  */
 public class FixedResultSender extends SenderWithParametersBase {
 
-	private String fileName;
+	private String filename;
 	private String returnString;
 	private boolean substituteVars=false;
 	private String replaceFrom = null;
@@ -79,23 +69,23 @@ public class FixedResultSender extends SenderWithParametersBase {
 	public void configure() throws ConfigurationException {
 		super.configure();
 	    
-		if (StringUtils.isNotEmpty(fileName)) {
+		if (StringUtils.isNotEmpty(getFilename())) {
 			try {
-				returnString = Misc.resourceToString(ClassUtils.getResourceURL(this, fileName), SystemUtils.LINE_SEPARATOR);
+				returnString = Misc.resourceToString(ClassUtils.getResourceURL(this, getFilename()), Misc.LINE_SEPARATOR);
 			} catch (Throwable e) {
-				throw new ConfigurationException("Pipe [" + getName() + "] got exception loading ["+fileName+"]", e);
+				throw new ConfigurationException("Pipe [" + getName() + "] got exception loading ["+filename+"]", e);
 			}
 		}
-		if ((StringUtils.isEmpty(fileName)) && returnString==null) {  // allow an empty returnString to be specified
+		if ((StringUtils.isEmpty(getFilename())) && getReturnString()==null) {  // allow an empty returnString to be specified
 			throw new ConfigurationException("Pipe [" + getName() + "] has neither fileName nor returnString specified");
 		}
-		if (StringUtils.isNotEmpty(replaceFrom)) {
+		if (StringUtils.isNotEmpty(getReplaceFrom())) {
 			returnString = replace(returnString, replaceFrom, replaceTo );
 		}
 	}
  
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		String result=returnString;
 		if (paramList!=null) {
 			ParameterValueList pvl;
@@ -105,8 +95,7 @@ public class FixedResultSender extends SenderWithParametersBase {
 				throw new SenderException("exception extracting parameters",e);
 			}
 			if (pvl!=null) {
-				for (int i=0; i<pvl.size(); i++) {
-					ParameterValue pv = pvl.getParameterValue(i);
+				for(ParameterValue pv : pvl) {
 					result=replace(result,"${"+pv.getDefinition().getName()+"}",pv.asStringValue(""));
 				}
 			}
@@ -176,18 +165,24 @@ public class FixedResultSender extends SenderWithParametersBase {
 		return this.substituteVars;
 	}
 
+	@Deprecated
+	@ConfigurationWarning("attribute 'fileName' is replaced with 'filename'")
+	public void setFileName(String fileName) {
+		setFilename(fileName);
+	}
+
 	/**
 	 * Sets the name of the filename. The fileName should not be specified
 	 * as an absolute path, but as a resource in the classpath.
 	 *
-	 * @param fileName the name of the file to return the contents from
+	 * @param filename the name of the file to return the contents from
 	 */
 	@IbisDoc({"name of the file containing the resultmessage", ""})
-	public void setFileName(String fileName) {
-		this.fileName = fileName;
+	public void setFilename(String filename) {
+		this.filename = filename;
 	}
-	public String getFileName() {
-		return fileName;
+	public String getFilename() {
+		return filename;
 	}
 
 	@IbisDoc({"returned message", ""})

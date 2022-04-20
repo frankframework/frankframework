@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,10 +16,17 @@
 package nl.nn.adapterframework.ftp;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.encryption.HasKeystore;
+import nl.nn.adapterframework.encryption.HasTruststore;
+import nl.nn.adapterframework.encryption.KeystoreType;
+import nl.nn.adapterframework.ftp.FtpSession.FileType;
+import nl.nn.adapterframework.ftp.FtpSession.FtpType;
+import nl.nn.adapterframework.ftp.FtpSession.Prot;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
 import nl.nn.adapterframework.stream.Message;
 
@@ -29,7 +36,9 @@ import nl.nn.adapterframework.stream.Message;
  *  
  * @author John Dekker
  */
-public class FtpSender extends SenderWithParametersBase {
+@Deprecated
+@ConfigurationWarning("Please replace with FtpFileSystemSender")
+public class FtpSender extends SenderWithParametersBase implements HasKeystore, HasTruststore {
 
 	private FtpSession ftpSession;
 	
@@ -52,7 +61,7 @@ public class FtpSender extends SenderWithParametersBase {
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		try {
 			ftpSession.put(paramList, session, message.asString(), remoteDirectory, remoteFilenamePattern, true);
 		} catch(SenderException e) {
@@ -135,13 +144,20 @@ public class FtpSender extends SenderWithParametersBase {
 		ftpSession.setProxyPassword(proxyPassword);
 	}
 
-	@IbisDoc({"one of ftp, sftp, ftps(i) or ftpsi, ftpsx(ssl), ftpsx(tls)", "ftp"})
-	public void setFtpTypeDescription(String ftpTypeDescription) {
-		ftpSession.setFtpTypeDescription(ftpTypeDescription);
+	@Deprecated
+	@ConfigurationWarning("use attribute ftpType instead")
+	public void setFtpTypeDescription(FtpType value) {
+		setFtpType(value);
+	}
+	public void setFtpType(FtpType string) {
+		ftpSession.setFtpType(string);
+	}
+	public FtpType getFtpType() {
+		return ftpSession.getFtpType();
 	}
 
-	@IbisDoc({"file type, one of ascii, binary", ""})
-	public void setFileType(String fileType) {
+	@IbisDoc({"file type", ""})
+	public void setFileType(FileType fileType) {
 		ftpSession.setFileType(fileType);
 	}
 
@@ -197,82 +213,190 @@ public class FtpSender extends SenderWithParametersBase {
 	}
 
 
+	@Override
 	@IbisDoc({"(ftps) resource url to certificate to be used for authentication", ""})
-	public void setCertificate(String certificate) {
-		ftpSession.setCertificate(certificate);
+	public void setKeystore(String certificate) {
+		ftpSession.setKeystore(certificate);
 	}
-	public String getCertificate() {
-		return ftpSession.getCertificate();
+	@Override
+	public String getKeystore() {
+		return ftpSession.getKeystore();
 	}
 
+	@Override
 	@IbisDoc({"(ftps) ", "pkcs12"})
-	public void setCertificateType(String keystoreType) {
-		ftpSession.setCertificateType(keystoreType);
+	public void setKeystoreType(KeystoreType keystoreType) {
+		ftpSession.setKeystoreType(keystoreType);
 	}
-	public String getCertificateType() {
-		return ftpSession.getCertificateType();
+	@Override
+	public KeystoreType getKeystoreType() {
+		return ftpSession.getKeystoreType();
 	}
 
 	@IbisDoc({"selects the algorithm to generate keymanagers. can be left empty to use the servers default algorithm", "websphere: ibmx509"})
+	@Override
 	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
 		ftpSession.setKeyManagerAlgorithm(keyManagerAlgorithm);
 	}
+	@Override
+	public String getKeyManagerAlgorithm() {
+		return ftpSession.getKeyManagerAlgorithm();
+	}
 
+	@Override
 	@IbisDoc({"(ftps) alias used to obtain certificate password", ""})
-	public void setCertificateAuthAlias(String certificateAuthAlias) {
-		ftpSession.setCertificateAuthAlias(certificateAuthAlias);
+	public void setKeystoreAuthAlias(String keystoreAuthAlias) {
+		ftpSession.setKeystoreAuthAlias(keystoreAuthAlias);
 	}
-	public String getCertificateAuthAlias() {
-		return ftpSession.getCertificateAuthAlias();
+	@Override
+	public String getKeystoreAuthAlias() {
+		return ftpSession.getKeystoreAuthAlias();
 	}
 
+	@Override
 	@IbisDoc({"(ftps) ", " "})
-	public void setCertificatePassword(String certificatePassword) {
-		ftpSession.setCertificatePassword(certificatePassword);
+	public void setKeystorePassword(String keystorePassword) {
+		ftpSession.setKeystorePassword(keystorePassword);
 	}
-	public String getCertificatePassword() {
-		return ftpSession.getCertificatePassword();
+	@Override
+	public String getKeystorePassword() {
+		return ftpSession.getKeystorePassword();
 	}
+
+	@Override
+	@IbisDoc({"(ftps) resource url to certificate to be used for authentication", ""})
+	public void setKeystoreAlias(String alias) {
+		ftpSession.setKeystore(alias);
+	}
+	@Override
+	public String getKeystoreAlias() {
+		return ftpSession.getKeystoreAlias();
+	}
+	@Override
+	@IbisDoc({"(ftps) alias used to obtain certificate password", ""})
+	public void setKeystoreAliasAuthAlias(String keystoreAliasAuthAlias) {
+		ftpSession.setKeystoreAliasAuthAlias(keystoreAliasAuthAlias);
+	}
+	@Override
+	public String getKeystoreAliasAuthAlias() {
+		return ftpSession.getKeystoreAliasAuthAlias();
+	}
+
+	@Override
+	@IbisDoc({"(ftps) ", " "})
+	public void setKeystoreAliasPassword(String keystoreAliasPassword) {
+		ftpSession.setKeystoreAliasPassword(keystoreAliasPassword);
+	}
+	@Override
+	public String getKeystoreAliasPassword() {
+		return ftpSession.getKeystoreAliasPassword();
+	}
+
 
 
 	@IbisDoc({"(ftps) resource url to truststore to be used for authentication", ""})
+	@Override
 	public void setTruststore(String truststore) {
 		ftpSession.setTruststore(truststore);
 	}
-
-	@IbisDoc({"(ftps) ", "jks"})
-	public void setTruststoreType(String truststoreType) {
-		ftpSession.setTruststoreType(truststoreType);
+	@Override
+	public String getTruststore() {
+		return ftpSession.getTruststore();
 	}
 
+	@IbisDoc({"(ftps) ", "jks"})
+	@Override
+	public void setTruststoreType(KeystoreType truststoreType) {
+		ftpSession.setTruststoreType(truststoreType);
+	}
+	@Override
+	public KeystoreType getTruststoreType() {
+		return ftpSession.getTruststoreType();
+	}
+
+
 	@IbisDoc({"selects the algorithm to generate trustmanagers. can be left empty to use the servers default algorithm", "websphere: ibmx509"})
+	@Override
 	public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
 		ftpSession.setTrustManagerAlgorithm(trustManagerAlgorithm);
 	}
+	@Override
+	public String getTrustManagerAlgorithm() {
+		return ftpSession.getTrustManagerAlgorithm();
+	}
+
 
 	@IbisDoc({"(ftps) alias used to obtain truststore password", ""})
+	@Override
 	public void setTruststoreAuthAlias(String truststoreAuthAlias) {
 		ftpSession.setTruststoreAuthAlias(truststoreAuthAlias);
 	}
+	@Override
+	public String getTruststoreAuthAlias() {
+		return ftpSession.getTruststoreAuthAlias();
+	}
 
 	@IbisDoc({"(ftps) ", " "})
+	@Override
 	public void setTruststorePassword(String truststorePassword) {
 		ftpSession.setTruststorePassword(truststorePassword);
 	}
+	@Override
+	public String getTruststorePassword() {
+		return ftpSession.getTruststorePassword();
+	}
 
 	@IbisDoc({"(ftps) when true, the hostname in the certificate will be checked against the actual hostname", "true"})
+	@Override
 	public void setVerifyHostname(boolean verifyHostname) {
 		ftpSession.setVerifyHostname(verifyHostname);
 	}
+	@Override
+	public boolean isVerifyHostname() {
+		return ftpSession.isVerifyHostname();
+	}
 
 	@IbisDoc({"(ftps) if true, the server certificate can be self signed", "false"})
+	@Override
 	public void setAllowSelfSignedCertificates(boolean testModeNoCertificatorCheck) {
 		ftpSession.setAllowSelfSignedCertificates(testModeNoCertificatorCheck);
 	}
+	@Override
+	public boolean isAllowSelfSignedCertificates() {
+		return ftpSession.isAllowSelfSignedCertificates();
+	}
 
-	@IbisDoc({"(ftps) if true, the server returns data via another socket", "false"})
-	public void setProtP(boolean protP) {
-		ftpSession.setProtP(protP);
+	@Override
+	public void setIgnoreCertificateExpiredException(boolean ignoreCertificateExpiredException) {
+		ftpSession.setIgnoreCertificateExpiredException(ignoreCertificateExpiredException);
+	}
+	@Override
+	public boolean isIgnoreCertificateExpiredException() {
+		return ftpSession.isIgnoreCertificateExpiredException();
+	}
+
+	@IbisDoc({"(ftps) if true, the server returns data via a SSL socket", "false"})
+	@Deprecated
+	@ConfigurationWarning("use attribute prot=\"P\" instead")
+	public void setProtP(boolean b) {
+		ftpSession.setProt(Prot.P);
+	}
+
+	/**
+	 * <ul>
+	 * <li>C - Clear</li>
+	 * <li>S - Safe(SSL protocol only)</li>
+	 * <li>E - Confidential(SSL protocol only)</li>
+	 * <li>P - Private</li>
+	 * </ul>
+	 *
+	 */
+	@IbisDoc({"Sets the <code>Data Channel Protection Level</code>.", "C"})
+	public void setProt(Prot prot) {
+		ftpSession.setProt(prot);
+	}
+	public Prot getProt() {
+		return ftpSession.getProt();
 	}
 
 	@IbisDoc({"when true, keyboardinteractive is used to login", "false"})

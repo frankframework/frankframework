@@ -15,15 +15,20 @@
 */
 package nl.nn.adapterframework.lifecycle;
 
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.servlet.ServletContext;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.cxf.jaxws.EndpointImpl;
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.StandardEnvironment;
+import org.springframework.util.ResourceUtils;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.XmlWebApplicationContext;
@@ -52,15 +57,35 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 		determineApplicationServerType(servletContext);
 
 		XmlWebApplicationContext applicationContext = new XmlWebApplicationContext();
-		applicationContext.setConfigLocation(XmlWebApplicationContext.CLASSPATH_URL_PREFIX + "/webApplicationContext.xml");
+		applicationContext.setConfigLocations(getSpringConfigurationFiles());
 		applicationContext.setDisplayName("IbisApplicationInitializer");
 
 		MutablePropertySources propertySources = applicationContext.getEnvironment().getPropertySources();
 		propertySources.remove(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME);
 		propertySources.remove(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME);
-		propertySources.addFirst(new PropertiesPropertySource("ibis", AppConstants.getInstance()));
+		propertySources.addFirst(new PropertiesPropertySource(SpringContextScope.ENVIRONMENT.getFriendlyName(), AppConstants.getInstance()));
 
 		return applicationContext;
+	}
+
+	private String[] getSpringConfigurationFiles() {
+		List<String> springConfigurationFiles = new ArrayList<>();
+		springConfigurationFiles.add(SpringContextScope.ENVIRONMENT.getContextFile());
+
+		String file = AppConstants.getInstance().getProperty("ibistesttool.springConfigFile");
+		URL fileURL = this.getClass().getClassLoader().getResource(file);
+		if(fileURL == null) {
+			log.warn("unable to locate TestTool configuration ["+file+"]");
+		} else {
+			if(file.indexOf(":") == -1) {
+				file = ResourceUtils.CLASSPATH_URL_PREFIX+file;
+			}
+
+			log.info("loading TestTool configuration ["+file+"]");
+			springConfigurationFiles.add(file);
+		}
+
+		return springConfigurationFiles.toArray(new String[springConfigurationFiles.size()]);
 	}
 
 	@Override

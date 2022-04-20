@@ -1,18 +1,29 @@
 package nl.nn.adapterframework.util;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.StringReader;
+import java.util.HashMap;
+import java.util.Map;
 
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
 
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Resource;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestScopeProvider;
+import nl.nn.adapterframework.xml.StringBuilderContentHandler;
+import nl.nn.adapterframework.xml.XmlWriter;
 
 public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 
@@ -111,10 +122,90 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	public void testIdentityTransformWithDefaultEntityResolver() throws Exception { //External EntityResolving is still possible with the XMLEntityResolver
 		Resource resource = Resource.getResource(new TestScopeProvider(), "XmlUtils/EntityResolution/in-file-entity-c-temp.xml");
 		SAXException thrown = assertThrows(SAXException.class, () -> {
-			XmlUtils.identityTransform(resource);
+			XmlUtils.parseXml(resource, new XmlWriter());
 		});
 
-		String errorMessage = "Cannot get resource for publicId [null] with systemId [file:///c:/temp/test.xml] in scope [nl.nn.adapterframework.testutil.TestScopeProvider";
+		String errorMessage = "Cannot get resource for publicId [null] with systemId [file:///c:/temp/test.xml] in scope [URLResource ";
 		assertTrue("SaxParseException should start with [Cannot get resource ...] but is ["+thrown.getMessage()+"]", thrown.getMessage().startsWith(errorMessage));
 	}
+
+	@Test
+	public void testSettingTransformerParameters() throws IOException, TransformerConfigurationException {
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("stringParamKey", "stringParamValue");
+		parameters.put("byteArrayParamKey", "byteArrayParamValue".getBytes());
+		parameters.put("baisParamKey", new ByteArrayInputStream("baisParamValue".getBytes()));
+		parameters.put("readerParamKey", new StringReader("readerParamValue"));
+		parameters.put("nullParamKey", null);
+		parameters.put("messageParamKey", new Message("messageParamValue"));
+		parameters.put("integerParamKey", 3);
+		parameters.put("booleanParamKey", false);
+
+		Transformer transformer = TransformerFactory.newInstance().newTransformer();
+		XmlUtils.setTransformerParameters(transformer, parameters);
+
+		assertTrue(transformer.getParameter("stringParamKey") instanceof String);
+		assertTrue(transformer.getParameter("byteArrayParamKey") instanceof String);
+		assertTrue(transformer.getParameter("baisParamKey") instanceof String);
+		assertTrue(transformer.getParameter("readerParamKey") instanceof String);
+		assertTrue(transformer.getParameter("messageParamKey") instanceof String);
+
+		assertTrue(transformer.getParameter("integerParamKey") instanceof Integer);
+		assertTrue(transformer.getParameter("booleanParamKey") instanceof Boolean);
+	}
+
+	@Test
+	public void testCanonicalizeWithNewLinesAndSpaces() throws Exception {
+		String newLinesAndSpaces = XmlUtils.canonicalize("<test>\n<a>9</a>\n  <b>2</b>  \n<c>7</c>\n</test>\n");
+		assertEquals("<test>\n" + 
+				"	<a>9</a>\n" + 
+				"	<b>2</b>\n" + 
+				"	<c>7</c>\n" + 
+				"</test>", newLinesAndSpaces);
+	}
+
+	@Test
+	public void testCanonicalizeWithAttributes() throws Exception {
+		String attributes = XmlUtils.canonicalize("<test><a a=\"1\"   c=\"3\"	b=\"2\">9</a></test>");
+		assertEquals("<test>\n" + 
+				"	<a a=\"1\" b=\"2\" c=\"3\">9</a>\n" + 
+				"</test>", attributes);
+	}
+	
+	@Test
+	public void testParseXml() throws IOException, SAXException {
+		String source="<root><elem_a>val_a</elem_a><elem_b>val_b</elem_b></root>";
+		String expected="startDocument\n"
+						+ "startElement root\n"
+						+ "startElement elem_a\n"
+						+ "characters [val_a]\n"
+						+ "endElement elem_a\n"
+						+ "startElement elem_b\n"
+						+ "characters [val_b]\n"
+						+ "endElement elem_b\n"
+						+ "endElement root\n"
+						+ "endDocument\n";
+		StringBuilderContentHandler handler = new StringBuilderContentHandler();
+		
+		XmlUtils.parseXml(source, handler);
+		
+		assertEquals(expected, handler.toString());
+	}
+
+	@Test
+	public void testParseNodeSet() throws IOException, SAXException {
+		String source="<elem_a>val_a</elem_a><elem_b>val_b</elem_b>";
+		String expected="startElement elem_a\n"
+						+ "characters [val_a]\n"
+						+ "endElement elem_a\n"
+						+ "startElement elem_b\n"
+						+ "characters [val_b]\n"
+						+ "endElement elem_b\n";
+		StringBuilderContentHandler handler = new StringBuilderContentHandler();
+		
+		XmlUtils.parseNodeSet(source, handler);
+		
+		assertEquals(expected, handler.toString());
+	}
+
 }

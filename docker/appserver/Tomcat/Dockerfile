@@ -18,13 +18,13 @@ RUN set -eux \
 	&& groupadd -r tomcat -g ${TOMCAT_GROUPID} \
 	&& useradd -u ${TOMCAT_USERID} -g tomcat -d ${CATALINA_HOME} -s /usr/sbin/nologin tomcat \
 	# create default directory for configurations and properties
-	&& mkdir -p /opt/frank
+	&& mkdir -p /opt/frank \
+	# prepare root/mountpoint for credential filesystem
+	&& mkdir /opt/frank/secrets
 
 # Copy entrypoint script
 COPY src/scripts/*.sh /
-
-# copy the frank framework
-COPY target/dependencies/ibis-adapterframework-webapp.war /usr/local/tomcat/webapps/iaf.war
+RUN chmod +rx /*.sh
 
 # copy environment configuration
 COPY src/scripts/catalinaAdditional.properties /tmp

@@ -1,7 +1,6 @@
-<ibis>
+<module>
 	<adapter name="XsltPipe" description="Test the XsltPipe">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="GenericFunctions">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-XsltPipe" />
 		</receiver>
@@ -18,18 +17,13 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 
-			<pipe name="Xalan" className="nl.nn.adapterframework.pipes.XsltPipe"
+			<pipe name="XSLT1" className="nl.nn.adapterframework.pipes.XsltPipe"
 				styleSheetName="XsltPipe/TransformXSLT1.xsl">
 				<forward name="success" path="EXIT" />
 			</pipe>
 
-			<pipe name="Saxon_XSLT1" className="nl.nn.adapterframework.pipes.XsltPipe"
-				styleSheetName="XsltPipe/TransformXSLT1.xsl" xslt2="true">
-				<forward name="success" path="EXIT" />
-			</pipe>
-
-			<pipe name="Saxon_XSLT2" className="nl.nn.adapterframework.pipes.XsltPipe"
-				styleSheetName="XsltPipe/TransformXSLT2.xsl" xslt2="true">
+			<pipe name="XSLT2" className="nl.nn.adapterframework.pipes.XsltPipe"
+				styleSheetName="XsltPipe/TransformXSLT2.xsl">
 				<forward name="success" path="EXIT" />
 			</pipe>
 
@@ -73,6 +67,14 @@
 				styleSheetName="XsltPipe/TransformXSLT1.xsl">
 				<forward name="success" path="EXIT" />
 			</pipe>
+
+			<pipe name="DisableOutputEscaping" className="nl.nn.adapterframework.pipes.XsltPipe"
+				styleSheetName="XsltPipe/disableOutputEscaping/extract.xslt">
+			</pipe>
+			<pipe name="DisableOutputEscaping-second" className="nl.nn.adapterframework.pipes.XsltPipe"
+				styleSheetName="XsltPipe/disableOutputEscaping/map.xslt">
+				<forward name="success" path="EXIT" />
+			</pipe>
 		</pipeline>
 	</adapter>
-</ibis>
+</module>

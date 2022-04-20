@@ -21,13 +21,13 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISecurityHandler;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.util.LogUtil;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.soap.Constants;
 import org.apache.soap.Envelope;
@@ -97,7 +97,7 @@ public class SoapGenericProvider implements Provider {
 			HttpServletResponse httpResponse=(HttpServletResponse) reqContext.getProperty(Constants.BAG_HTTPSERVLETRESPONSE);
 			ISecurityHandler securityHandler = new HttpSecurityHandler(httpRequest);
 			Map<String,Object> messageContext= new HashMap<>();
-			messageContext.put(IPipeLineSession.securityHandlerKey, securityHandler);
+			messageContext.put(PipeLineSession.securityHandlerKey, securityHandler);
 			messageContext.put("httpListenerServletRequest", httpRequest);
 			messageContext.put("httpListenerServletResponse", httpResponse);
 			String result=sd.dispatchRequest(targetObjectURI, null, message, messageContext);

@@ -56,11 +56,6 @@ public class JmsRealmFactoryTest {
 		assertFalse(StringUtils.isNotEmpty(c.getDatasourceName()));
 		assertFalse(StringUtils.isNotEmpty(d.getDatasourceName()));
 	}
-		
-	@Test
-	public void firstDatasourceRealm() {
-		assertEquals("b",jmsRealmFactory.getFirstDatasourceJmsRealm());
-	}
 
 	@Test
 	public void readInOrderOfAppearance() {
@@ -70,22 +65,13 @@ public class JmsRealmFactoryTest {
 		assertFalse(it.hasNext());
 		
 	}
-	
+
 	@Test
 	public void readInOrderOfAppearanceViaList() {
 		List<String> list = jmsRealmFactory.getRegisteredRealmNamesAsList();
 		String sequence=list.get(0)+","+list.get(1)+","+list.get(2)+","+list.get(3);
 		assertEquals(4,  list.size());
 		assertEquals("c,b,d,a",sequence);
-		
-	}
-	
-	@Test
-	public void readDatabaseRealmsInOrderOfAppearance() {
-		List<String> list = jmsRealmFactory.getRegisteredDatasourceRealmNamesAsList();
-		assertEquals(2,list.size());
-		String sequence=list.get(0)+","+list.get(1);
-		assertEquals("b,a",sequence);
 		
 	}
 }

@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
@@ -37,16 +39,15 @@ import java.net.URLDecoder;
 import java.net.UnknownHostException;
 import java.rmi.server.UID;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.DataFormatException;
@@ -55,12 +56,20 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.Inflater;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.DurationFormatUtils;
-import org.apache.commons.lang3.EnumUtils;
-import org.apache.logging.log4j.Logger;
+import javax.json.Json;
+import javax.json.JsonReader;
+import javax.json.JsonStructure;
+import javax.json.JsonWriter;
+import javax.json.JsonWriterFactory;
+import javax.json.stream.JsonGenerator;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DurationFormatUtils;
+import org.apache.logging.log4j.Logger;
+import org.xml.sax.InputSource;
+
+import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 
 
@@ -74,12 +83,11 @@ public class Misc {
 	public static final String DEFAULT_INPUT_STREAM_ENCODING=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	public static final String MESSAGE_SIZE_WARN_BY_DEFAULT_KEY = "message.size.warn.default";
 	public static final String RESPONSE_BODY_SIZE_WARN_BY_DEFAULT_KEY = "response.body.size.warn.default";
-	public static final String FORCE_FIXED_FORWARDING_BY_DEFAULT_KEY = "force.fixed.forwarding.default";
 
 	private static Long messageSizeWarnByDefault = null;
 	private static Long responseBodySizeWarnByDefault = null;
-	private static Boolean forceFixedForwardingByDefault = null;
 	private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
+	public static final String LINE_SEPARATOR = System.lineSeparator();
 
 	/**
 	 * Creates a Universally Unique Identifier, via the java.rmi.server.UID class.
@@ -190,6 +198,28 @@ public class Misc {
 		return System.currentTimeMillis();
 	}
 
+	public static String insertAuthorityInUrlString(String url, String authAlias, String username, String password) {
+		if (StringUtils.isNotEmpty(authAlias) || StringUtils.isNotEmpty(username) || StringUtils.isNotEmpty(password)) {
+			CredentialFactory cf = new CredentialFactory(authAlias, username, password);
+			int posPrefixEnd;
+			String prefix;
+			String tail;
+			if ((posPrefixEnd=url.indexOf("://"))>0) {
+				prefix=url.substring(0, posPrefixEnd+3);
+				tail=url.substring(posPrefixEnd+3);
+			} else {
+				prefix="";
+				tail=url;
+			}
+			int posTail2Start;
+			if ((posTail2Start=tail.indexOf("@"))>0) {
+				tail=tail.substring(posTail2Start+1);
+			}
+			url=prefix+cf.getUsername()+":"+cf.getPassword()+"@"+tail;
+		}
+		return url;
+	}
+	
 	/**
 	 * Copies the content of the specified file to a writer.
 	 *
@@ -339,18 +369,20 @@ public class Misc {
 	/**
 	 * Please consider using resourceToString() instead of relying on files.
 	 */
-	public static String fileToString(String fileName) throws IOException {
+	private static String fileToString(String fileName) throws IOException {
 		return fileToString(fileName, null, false);
 	}
 	/**
 	 * Please consider using resourceToString() instead of relying on files.
 	 */
+	@Deprecated
 	public static String fileToString(String fileName, String endOfLineString) throws IOException {
 		return fileToString(fileName, endOfLineString, false);
 	}
 	/**
 	 * Please consider using resourceToString() instead of relying on files.
 	 */
+	@Deprecated
 	public static String fileToString(String fileName, String endOfLineString, boolean xmlEncode) throws IOException {
 		try (FileReader reader = new FileReader(fileName)) {
 			return readerToString(reader, endOfLineString, xmlEncode);
@@ -513,13 +545,24 @@ public class Misc {
 	 * @return the concatenated string
 	 */
 	public static String concatStrings(String part1, String separator, String part2) {
-		if (StringUtils.isEmpty(part1)) {
-			return part2;
+		return concat(separator, part1, part2);
+	}
+
+	public static String concat(String separator, String... parts) {
+		int i=0;
+		while(i<parts.length && StringUtils.isEmpty(parts[i])) {
+			i++;
 		}
-		if (StringUtils.isEmpty(part2)) {
-			return part1;
+		if (i>=parts.length) {
+			return null;
 		}
-		return part1+separator+part2;
+		String result=parts[i];
+		while(++i<parts.length) {
+			if (StringUtils.isNotEmpty(parts[i])) {
+				result += separator + parts[i];
+			}
+		}
+		return result;
 	}
 
 	/**
@@ -796,18 +839,19 @@ public class Misc {
 		return localHost;
 	}
 
-	public static void copyContext(String keys, Map<String,Object> from, IPipeLineSession to) {
+	public static void copyContext(String keys, Map<String,Object> from, PipeLineSession to, INamedObject requester) {
 		if (StringUtils.isNotEmpty(keys) && from!=null && to!=null) {
 			StringTokenizer st = new StringTokenizer(keys,",;");
 			while (st.hasMoreTokens()) {
 				String key=st.nextToken();
 				Object value=from.get(key);
-				Message.asMessage(value).closeOnCloseOf(to);
+				Message.asMessage(value).closeOnCloseOf(to, requester);
 				to.put(key,value);
 			}
 		}
 	}
 
+	// IBM specific methods using reflection so no dependency on the iaf-ibm module is required.
 	public static String getDeployedApplicationBindings() throws IOException {
 		String addp = getApplicationDeploymentDescriptorPath();
 		if (addp==null) {
@@ -819,6 +863,7 @@ public class Misc {
 		return fileToString(appBndFile);
 	}
 
+	// IBM specific methods using reflection so no dependency on the iaf-ibm module is required.
 	public static String getApplicationDeploymentDescriptorPath() throws IOException {
 		try {
 			return (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getApplicationDeploymentDescriptorPath").invoke(null);
@@ -831,7 +876,8 @@ public class Misc {
 		}
 	}
 
-	public static String getApplicationDeploymentDescriptor () throws IOException {
+	// IBM specific methods using reflection so no dependency on the iaf-ibm module is required.
+	public static String getApplicationDeploymentDescriptor() throws IOException {
 		String addp = getApplicationDeploymentDescriptorPath();
 		if (addp==null) {
 			log.debug("applicationDeploymentDescriptorPath not found");
@@ -842,18 +888,22 @@ public class Misc {
 		return fileToString(appFile);
 	}
 
+	// IBM specific methods using reflection so no dependency on the iaf-ibm module is required.
 	public static String getConfigurationResources() throws IOException {
 		try {
-			return (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getConfigurationResources").invoke(null);
+			String path = (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getConfigurationResourcePath").invoke(null);
+			return fileToString(path);
 		} catch (Exception e) {
 			log.debug("Caught NoClassDefFoundError for getConfigurationResources, just not on Websphere Application Server: " + e.getMessage());
 			return null;
 		}
 	}
 
+	// IBM specific methods using reflection so no dependency on the iaf-ibm module is required.
 	public static String getConfigurationServer() throws IOException {
 		try {
-			return (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getConfigurationServer").invoke(null);
+			String path = (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getConfigurationServerPath").invoke(null);
+			return fileToString(path);
 		} catch (Exception e) {
 			log.debug("Caught NoClassDefFoundError for getConfigurationServer, just not on Websphere Application Server: " + e.getMessage());
 			return null;
@@ -1009,27 +1059,19 @@ public class Misc {
 		return responseBodySizeWarnByDefault.longValue();
 	}
 
-	public static synchronized boolean isForceFixedForwardingByDefault() {
-		if (forceFixedForwardingByDefault==null) {
-			boolean force=AppConstants.getInstance().getBoolean(FORCE_FIXED_FORWARDING_BY_DEFAULT_KEY, false);
-			forceFixedForwardingByDefault = new Boolean(force);
-		}
-		return forceFixedForwardingByDefault.booleanValue();
-	}
-
 	/**
 	 * Converts the list to a string.
 	 * <pre>
-	 *      List list = new ArrayList<Integer>();
+	 *      List<String> list = new ArrayList<>();
 	 *      list.add("We Are");
 	 *      list.add(" Frank");
 	 *      String res = Misc.listToString(list); // res gives out "We Are Frank"
 	 * </pre>
 	 */
-	public static String listToString(List list) {
+	public static String listToString(List<String> list) {
 		StringBuilder sb = new StringBuilder();
-		for (Iterator it=list.iterator(); it.hasNext();) {
-			sb.append((String) it.next());
+		for (Iterator<String> it=list.iterator(); it.hasNext();) {
+			sb.append(it.next());
 		}
 		return sb.toString();
 	}
@@ -1352,9 +1394,9 @@ public class Misc {
 	
 	public static String urlDecode(String input) {
 		try {
-			return URLDecoder.decode(input,StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+			return URLDecoder.decode(input, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 		} catch (UnsupportedEncodingException e) {
-			log.warn(e);
+			log.warn("unable to parse input using charset ["+StreamUtil.DEFAULT_INPUT_STREAM_ENCODING+"]", e);
 			return null;
 		}
 	}
@@ -1379,48 +1421,26 @@ public class Misc {
 		}
 		return index;
 	}
-	
-	public static <E extends Enum<E>> E parse(Class<E> enumClass, String value) {
-		return parse(enumClass, null, value);
-	}
 
-	public static <E extends Enum<E>> E parse(Class<E> enumClass, String fieldName, String value) {
-		E result = EnumUtils.getEnumIgnoreCase(enumClass, value);
-		if (result==null) {
-			throw new IllegalArgumentException("unknown "+(fieldName!=null?fieldName:"")+" value ["+value+"]. Must be one of "+ EnumUtils.getEnumList(enumClass));
-		}
-		return result;
-	}
+	public static String jsonPretty(String json) {
+		StringWriter sw = new StringWriter();
+		try(JsonReader jr = Json.createReader(new StringReader(json))) {
+			JsonStructure jobj = jr.read();
 
-	public static <E extends Enum<E>> E parseFromField(Class<E> enumClass, String value, Function<E,String> field) {
-		return parseFromField(enumClass, null, value, field);
-	}
-	
-	public static <E extends Enum<E>> E parseFromField(Class<E> enumClass, String fieldName, String value, Function<E,String> field) {
-		List<String> fieldValues = new ArrayList<>();
-		for (E e:EnumUtils.getEnumList(enumClass)) {
-			String fieldValue = field.apply(e);
-			if (fieldValue.equalsIgnoreCase(value)) {
-				return e;
+			Map<String, Object> properties = new HashMap<>(1);
+			properties.put(JsonGenerator.PRETTY_PRINTING, true);
+
+			JsonWriterFactory writerFactory = Json.createWriterFactory(properties);
+			try (JsonWriter jsonWriter = writerFactory.createWriter(sw)) {
+				jsonWriter.write(jobj);
 			}
-			fieldValues.add(fieldValue);
 		}
-		throw new IllegalArgumentException("unknown "+(fieldName!=null?fieldName:"")+" value ["+value+"]. Must be one of "+ fieldValues);
+		return sw.toString().trim();
 	}
 
-	public static <E extends Enum<E>> E parseFromField(Class<E> enumClass, int value, Function<E,Integer> field) {
-		return parseFromField(enumClass, null, value, field);
-	}
-	
-	public static <E extends Enum<E>> E parseFromField(Class<E> enumClass, String fieldName, int value, Function<E,Integer> field) {
-		List<Integer> fieldValues = new ArrayList<>();
-		for (E e:EnumUtils.getEnumList(enumClass)) {
-			int fieldValue = field.apply(e);
-			if (fieldValue==value) {
-				return e;
-			}
-			fieldValues.add(fieldValue);
-		}
-		throw new IllegalArgumentException("unknown "+(fieldName!=null?fieldName:"")+" value ["+value+"]. Must be one of "+ fieldValues);
+	public static InputSource asInputSource(URL url) throws IOException {
+		InputSource inputSource = new InputSource(url.openStream());
+		inputSource.setSystemId(url.toExternalForm());
+		return inputSource;
 	}
 }

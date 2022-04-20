@@ -1,6 +1,6 @@
 <module>
 	<adapter name="ManageDatabase" description="Manage the database" active="${manageDatabase.active}">
-		<errorMessageFormatter className="nl.nn.adapterframework.errormessageformatters.FixedErrorMessage" fileName="/ManageDatabase/xml/ErrorMessage.xml" replaceFrom="%reasonCode" replaceTo="INTERNAL_ERROR" />
+		<errorMessageFormatter className="nl.nn.adapterframework.errormessageformatters.FixedErrorMessageFormatter" filename="/ManageDatabase/xml/ErrorMessage.xml" replaceFrom="%reasonCode" replaceTo="INTERNAL_ERROR" />
 		<receiver name="ManageDatabase">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="ManageDatabase" serviceName="${manageDatabase.serviceName}" />
 		</receiver>
@@ -17,10 +17,10 @@
 				<forward name="parserError" path="InternalXsdError" />
 			</outputValidator>
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe className="nl.nn.adapterframework.pipes.ForEachChildElementPipe" name="Query" elementXPathExpression="manageDatabaseREQ/*" ignoreExceptions="true">
-				<sender className="nl.nn.adapterframework.jdbc.XmlQuerySender" datasourceName="${jdbc.datasource.default}" />
+				<sender className="nl.nn.adapterframework.jdbc.XmlQuerySender" />
 				<forward name="success" path="ManageDatabaseRLY" />
 			</pipe>
 			<pipe className="nl.nn.adapterframework.pipes.XsltPipe" name="ManageDatabaseRLY" styleSheetName="/ManageDatabase/xsl/ManageDatabaseRLY.xsl">
@@ -28,7 +28,7 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- ERRORS -->
-			<pipe className="nl.nn.adapterframework.pipes.FixedResultPipe" name="InputValidateError" fileName="/ManageDatabase/xml/ErrorMessage.xml" replaceFrom="%reasonCode" replaceTo="NOT_WELL_FORMED_XML">
+			<pipe className="nl.nn.adapterframework.pipes.FixedResultPipe" name="InputValidateError" filename="/ManageDatabase/xml/ErrorMessage.xml" replaceFrom="%reasonCode" replaceTo="NOT_WELL_FORMED_XML">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<pipe className="nl.nn.adapterframework.pipes.XsltPipe" name="InputValidateFailure" styleSheetName="/ManageDatabase/xsl/ErrorMessage.xsl" getInputFromFixedValue="&lt;dummy/&gt;">

@@ -22,7 +22,7 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
@@ -79,7 +79,7 @@ public class LabelFormat extends FixedForwardPipe {
 	}	
 	
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
 			String result;
 			if (getDirection().equalsIgnoreCase(DIRECTION_XML2LABEL)) {
@@ -88,14 +88,14 @@ public class LabelFormat extends FixedForwardPipe {
 				Document document = documentBuilder.parse(message.asInputSource());
 
 				result = XmlToLabelFormat.doTransformation(document).toString();
-				return new PipeRunResult(getForward(), result);
+				return new PipeRunResult(getSuccessForward(), result);
 			}
 			else {
 				XMLReader reader = XMLReaderFactory.createXMLReader("nl.nn.adapterframework.extensions.rekenbox.CalcboxOutputReader");
 				CalcboxContentHandler handler = new CalcboxContentHandler(message.asString());
 				reader.setContentHandler(handler);
 				
-				return new PipeRunResult(getForward(), handler.getStringResult());
+				return new PipeRunResult(getSuccessForward(), handler.getStringResult());
 			}
 		}
 		catch (Exception e) {

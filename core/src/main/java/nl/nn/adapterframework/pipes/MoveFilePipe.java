@@ -18,11 +18,11 @@ package nl.nn.adapterframework.pipes;
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -74,7 +74,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 	
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		File srcFile=null;
 		File dstFile=null;
 
@@ -97,7 +97,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 					if (StringUtils.isEmpty(getMove2fileSessionKey())) {
 						dstFile = new File(getMove2dir(), retrieveDestinationChild(srcFile.getName()));
 					} else {
-						dstFile = new File(getMove2dir(), retrieveDestinationChild((String)session.get(getMove2fileSessionKey())));
+						dstFile = new File(getMove2dir(), retrieveDestinationChild(session.getMessage(getMove2fileSessionKey()).asString()));
 					}
 				} else {
 					dstFile = new File(getMove2dir(), retrieveDestinationChild(getMove2file()));
@@ -117,7 +117,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 				if (StringUtils.isEmpty(getWildcardSessionKey())) {
 					wc = getWildcard();
 				} else {
-					wc = (String)session.get(getWildcardSessionKey());
+					wc = session.getMessage(getWildcardSessionKey()).asString();
 				}
 				//WildCardFilter filter = new WildCardFilter(wc);
 				//File[] srcFiles = srcFile.listFiles(filter);
@@ -161,7 +161,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 			}
 		}
 		
-		return new PipeRunResult(getForward(), (dstFile==null?srcFile.getAbsolutePath():dstFile.getAbsolutePath()));
+		return new PipeRunResult(getSuccessForward(), (dstFile==null?srcFile.getAbsolutePath():dstFile.getAbsolutePath()));
 	}
 
 	private String retrieveDestinationChild(String child) {
@@ -178,7 +178,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return newChild;
 	}
 	
-	private void moveFile(IPipeLineSession session, File srcFile, File dstFile) throws PipeRunException {
+	private void moveFile(PipeLineSession session, File srcFile, File dstFile) throws PipeRunException {
 		try {
 			if (!dstFile.getParentFile().exists()) {
 				if (isCreateDirectory()) {
@@ -282,7 +282,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return numberOfAttempts;
 	}
 
-	@IbisDoc({"time between attempts", "1000 [ms]"})
+	@IbisDoc({"Time <i>in milliseconds</i> between attempts", "1000"})
 	public void setWaitBeforeRetry(long l) {
 		waitBeforeRetry = l;
 	}

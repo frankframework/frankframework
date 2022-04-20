@@ -5,10 +5,8 @@ Samba is the standard Windows interoperability suite of programs for Linux and U
 ## Run Samba Docker Compose File.
 docker-compose up -d --build
 
-## Set password for user wearefrank
-By default, we have created a user called wearefrank for samba container, now, we need to set the password.
-
-The password must be: **pass_123**
+## Change password for user wearefrank 
+By default, the password set to **pass_123** run below command to change it
 
 - docker exec -it samba smbpasswd -a wearefrank 
 

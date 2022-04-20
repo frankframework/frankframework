@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,30 +16,28 @@
 package nl.nn.adapterframework.core;
 
 import java.sql.SQLException;
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.mail.internet.AddressException;
 import javax.xml.transform.SourceLocator;
 import javax.xml.transform.TransformerException;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
-import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.commons.lang.exception.NestableException;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.xml.sax.SAXParseException;
+
+import nl.nn.adapterframework.util.Misc;
 
 /**
  * Base Exception with compact but informative getMessage().
  * 
  * @author Gerrit van Brakel
  */
-public class IbisException extends NestableException {
-//	private Logger log = LogUtil.getLogger(this);
-
-	static {
-		// add methodname to find cause of JMS-Exceptions
-		ExceptionUtils.addCauseMethodName("getLinkedException");
-	}
+public class IbisException extends Exception {
+	
+	private String expandedMessage = null;
 	
 	public IbisException() {
 		super();
@@ -53,32 +51,18 @@ public class IbisException extends NestableException {
 	public IbisException(Throwable cause) {
 		super(cause);
 	}
-	
-	public String getExceptionType(Throwable t) {
-		return t.getClass().getSimpleName();
-	}
-	
-	public String addPart(String part1, String separator, String part2) {
-		if (StringUtils.isEmpty(part1)) {
-			return part2;
-		}
-		if (StringUtils.isEmpty(part2)) {
-			return part1;
-		}
-		return part1+separator+part2;
-	}
-	
-	public String getExceptionSpecificDetails(Throwable t) {
+		
+	public static String getExceptionSpecificDetails(Throwable t) {
 		String result=null;
 		if (t instanceof AddressException) { 
 			AddressException ae = (AddressException)t;
 			String parsedString=ae.getRef();
 			if (StringUtils.isNotEmpty(parsedString)) {
-				result = addPart(result, " ", "["+parsedString+"]");
+				result = Misc.concatStrings(result, " ", "["+parsedString+"]");
 			}
 			int column = ae.getPos()+1;
 			if (column>0) {
-				result = addPart(result, " ", "at column ["+column+"]");
+				result = Misc.concatStrings(result, " ", "at column ["+column+"]");
 			}
 		}
 		if (t instanceof SAXParseException) {
@@ -89,15 +73,15 @@ public class IbisException extends NestableException {
 			
 			String locationInfo=null;
 			if (StringUtils.isNotEmpty(sysid)) {
-				locationInfo =  "SystemId ["+sysid+"]";
+				locationInfo = "SystemId ["+sysid+"]";
 			}
 			if (line>=0) {
-				locationInfo =  addPart(locationInfo, " ", "line ["+line+"]");
+				locationInfo = Misc.concatStrings(locationInfo, " ", "line ["+line+"]");
 			}
 			if (col>=0) {
-				locationInfo =  addPart(locationInfo, " ", "column ["+col+"]");
+				locationInfo = Misc.concatStrings(locationInfo, " ", "column ["+col+"]");
 			}
-			result = addPart(locationInfo, ": ", result);
+			result = Misc.concatStrings(locationInfo, ": ", result);
 		} 
 		if (t instanceof TransformerException) {
 			TransformerException te = (TransformerException)t;
@@ -109,15 +93,15 @@ public class IbisException extends NestableException {
 				
 				String locationInfo=null;
 				if (StringUtils.isNotEmpty(sysid)) {
-					locationInfo =  "SystemId ["+sysid+"]";
+					locationInfo = "SystemId ["+sysid+"]";
 				}
 				if (line>=0) {
-					locationInfo =  addPart(locationInfo, " ", "line ["+line+"]");
+					locationInfo = Misc.concatStrings(locationInfo, " ", "line ["+line+"]");
 				}
 				if (col>=0) {
-					locationInfo =  addPart(locationInfo, " ", "column ["+col+"]");
+					locationInfo = Misc.concatStrings(locationInfo, " ", "column ["+col+"]");
 				}
-				result = addPart(locationInfo, ": ", result);
+				result = Misc.concatStrings(locationInfo, ": ", result);
 			}
 		} 
 		if (t instanceof SQLException) {
@@ -125,17 +109,17 @@ public class IbisException extends NestableException {
 			int errorCode = sqle.getErrorCode();
 			String sqlState = sqle.getSQLState();
 			if (errorCode!=0) {
-				result =  addPart("errorCode ["+errorCode+"]", ", ", result);
+				result = Misc.concatStrings("errorCode ["+errorCode+"]", ", ", result);
 			}
 			if (StringUtils.isNotEmpty(sqlState)) {
-				result =  addPart("SQLState ["+sqlState+"]", ", ", result);
+				result = Misc.concatStrings("SQLState ["+sqlState+"]", ", ", result);
 			}
 		} 
 		if (t.getClass().getSimpleName().equals("OracleXAException")) { // do not use instanceof here, to avoid unnessecary dependency on Oracle class
 			oracle.jdbc.xa.OracleXAException oxae = (oracle.jdbc.xa.OracleXAException)t;
 			int xaError = oxae.getXAError();
 			if (xaError != 0) {
-				result =  addPart("xaError ["+xaError +"] xaErrorMessage ["+oracle.jdbc.xa.OracleXAException.getXAErrorMessage(xaError)+"]", ", ", result);
+				result = Misc.concatStrings("xaError ["+xaError +"] xaErrorMessage ["+oracle.jdbc.xa.OracleXAException.getXAErrorMessage(xaError)+"]", ", ", result);
 			}
 		} 
 		return result;
@@ -143,66 +127,95 @@ public class IbisException extends NestableException {
 
 	@Override
 	public String getMessage() {
-		Throwable throwables[]=getThrowables();
-		String result=null;
-		String prev_message=null;
-		Throwable prevThrowable=null;
-
-
-		for(int i=getThrowableCount()-1; i>=0; i--) {
-			
-			String cur_message=getMessage(i);
-			
-//			if (log.isDebugEnabled()) {
-//				log.debug("t["+i+"], ["+ClassUtils.nameOf(throwables[i])+"], cur ["+cur_message+"], prev ["+prev_message+"]");
-//			} 			
-			if (prevThrowable!=null && cur_message!=null && (cur_message.equals(prevThrowable.getMessage()) || cur_message.equals(prevThrowable.toString()))) {
-				cur_message=null;
+		if (expandedMessage == null) {
+			List<String> msgChain = getMessages(this, super.getMessage());
+			Throwable t = this;
+			for(String message:msgChain) {
+				String exceptionType = t instanceof IbisException ? "" : "("+t.getClass().getSimpleName()+")";
+				message = Misc.concatStrings(exceptionType, " ", message);
+				expandedMessage = Misc.concatStrings(expandedMessage, ": ", message);
+				t = getCause(t);
 			}
-			String newPart=null;
-			
-			// prefix the result with the message of this exception.
-			// if the new message ends with the previous, remove the part that is already known
-			if (StringUtils.isNotEmpty(cur_message)) {
-				newPart = addPart(cur_message, " ", newPart);
-				if (StringUtils.isNotEmpty(newPart) && StringUtils.isNotEmpty(prev_message) && newPart.endsWith(prev_message)) {
-					newPart=newPart.substring(0,newPart.length()-prev_message.length());
-				}
-				if (StringUtils.isNotEmpty(newPart) && newPart.endsWith(": ")) {
-					newPart=newPart.substring(0,newPart.length()-2);
-				}
-				prev_message=cur_message;
+			if (expandedMessage==null) {
+				// do not replace the following with toString(), this causes an endless loop. GvB
+				expandedMessage="no message, fields of this exception: "+ToStringBuilder.reflectionToString(this);
 			}
-			String specificDetails = getExceptionSpecificDetails(throwables[i]);
-			if (StringUtils.isNotEmpty(specificDetails) && (result==null || result.indexOf(specificDetails)<0)) {
-				newPart= addPart(specificDetails,": ",newPart);
-			}
-			
-			if (!(throwables[i] instanceof IbisException)) { 
-				String exceptionType = "("+getExceptionType(throwables[i])+")";
-				newPart = addPart(exceptionType, " ", newPart);
-			}
-			result = addPart(newPart, ": ", result);
-			prevThrowable=throwables[i];
 		}
-		
-		if (result==null) {
-//			log.debug("no message found, returning fields by inspection");
-			// do not replace the following with toString(), this causes an endless loop. GvB
-			result="no message, fields of this exception: "+ToStringBuilder.reflectionToString(this,ToStringStyle.MULTI_LINE_STYLE);
-		}
-		return result;
+		return expandedMessage;
 	}
 
-/*
-	public String toString() {
-		String result = super.toString();
-		Throwable t = getCause();
-		if (t != null && !(t instanceof IbisException)) {
-			t=ExceptionUtils.getRootCause(this);
-			result += "\nroot cause:\n"+ToStringBuilder.reflectionToString(t,ToStringStyle.MULTI_LINE_STYLE)+"\n";
+	/**
+     * <p>Introspects the {@code Throwable} to obtain the cause.</p>
+     *
+     * <p>The method searches for methods with specific names that return a
+     * {@code Throwable} object. This will pick up most wrapping exceptions,
+     * including those from JDK 1.4.
+     *
+     * <p>The default list searched for are:</p>
+     * <ul>
+     *  <li>{@code getCause()}</li>
+     *  <li>{@code getNextException()}</li>
+     *  <li>{@code getTargetException()}</li>
+     *  <li>{@code getException()}</li>
+     *  <li>{@code getSourceException()}</li>
+     *  <li>{@code getRootCause()}</li>
+     *  <li>{@code getCausedByException()}</li>
+     *  <li>{@code getNested()}</li>
+     *  <li>{@code getLinkedException()}</li>
+     *  <li>{@code getNestedException()}</li>
+     *  <li>{@code getLinkedCause()}</li>
+     *  <li>{@code getThrowable()}</li>
+     * </ul>
+     *
+     * <p>If none of the above is found, returns {@code null}.</p>
+	 */
+	private static Throwable getCause(Throwable t) {
+		return ExceptionUtils.getCause(t);
+	}
+
+	public static LinkedList<String> getMessages(Throwable t, String message) {
+		Throwable cause = getCause(t);
+		LinkedList<String> result;
+		if (cause !=null) {
+			String causeMessage = cause.getMessage();
+			String causeToString = cause.toString(); 
+
+			if (cause instanceof IbisException) {
+				// in case of an IbisException, the recursion already happened in cause.getMessage(), so do not call getMessages() here.
+				result = new LinkedList<>();
+				result.add(causeMessage);
+			} else {
+				result = getMessages(cause, causeMessage);
+			}
+			if (StringUtils.isNotEmpty(message) && (message.equals(causeMessage) || message.equals(causeToString))) {
+				message = null;
+			}
+			if (StringUtils.isNotEmpty(message) && StringUtils.isNotEmpty(causeToString) && (message.endsWith(causeToString))) {
+				message=message.substring(0,message.length()-causeToString.length());
+			}
+			if (StringUtils.isNotEmpty(message) && StringUtils.isNotEmpty(causeMessage)  && (message.endsWith(causeMessage))) {
+				message=message.substring(0,message.length()-causeMessage.length());
+			}
+		} else {
+			result = new LinkedList<>();
 		}
+		if (StringUtils.isNotEmpty(message) && (message.endsWith(": "))) {
+			message=message.substring(0,message.length()-2);
+		}
+		String specificDetails = getExceptionSpecificDetails(t);
+		if (StringUtils.isNotEmpty(specificDetails)) {
+			boolean tailContainsDetails=false;
+			for(String part:result) {
+				if (part!=null && part.indexOf(specificDetails)>=0) {
+					tailContainsDetails = true;
+					break;
+				}
+			}
+			if (!tailContainsDetails) {
+				message= Misc.concatStrings(specificDetails, ": ", message);
+			}
+		}
+		result.addFirst(message);
 		return result;
 	}
-	*/
 }

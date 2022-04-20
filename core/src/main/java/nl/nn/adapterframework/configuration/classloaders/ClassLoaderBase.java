@@ -24,9 +24,9 @@ import java.util.Vector;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ApplicationWarnings;
+import nl.nn.adapterframework.configuration.ClassLoaderException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -41,7 +41,6 @@ import nl.nn.adapterframework.util.Misc;
  * When a file with prepended BasePath cannot be found it will traverse through it's classpath to find it.
  * 
  * @author Niels Meijer
- *
  */
 public abstract class ClassLoaderBase extends ClassLoader implements IConfigurationClassLoader {
 
@@ -58,21 +57,21 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	private String basePath = null;
 	private boolean allowCustomClasses = AppConstants.getInstance().getBoolean("configurations.allowCustomClasses", false);
 
-	public ClassLoaderBase() {
+	protected ClassLoaderBase() {
 		this(Thread.currentThread().getContextClassLoader());
 	}
 
-	public ClassLoaderBase(ClassLoader parent) {
+	protected ClassLoaderBase(ClassLoader parent) {
 		super(parent);
 	}
 
 	@Override
-	public void configure(IbisContext ibisContext, String configurationName) throws ConfigurationException {
+	public void configure(IbisContext ibisContext, String configurationName) throws ClassLoaderException {
 		this.ibisContext = ibisContext;
 		this.configurationName = configurationName;
 
 		if(StringUtils.isEmpty(configurationFile)) {
-			throw new ConfigurationException("unable to determine configurationFile");
+			throw new ClassLoaderException("unable to determine configurationFile");
 		} else {
 			if(basePath == null && !getConfigurationName().equalsIgnoreCase(instanceName)) {
 				int i = configurationFile.lastIndexOf('/');
@@ -128,10 +127,10 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	}
 
 	/**
-	 * Only for internal use within classloaders
+	 * Only for internal use within ClassLoaders
+	 * Retrieve the IbisContext from the ClassLoader which is set when the {@link IConfigurationClassLoader#configure(IbisContext, String) configure} method is called
 	 */
-	@Override
-	public IbisContext getIbisContext() {
+	protected IbisContext getIbisContext() {
 		return ibisContext;
 	}
 
@@ -141,7 +140,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 			this.reportLevel = ReportLevel.valueOf(level.toUpperCase());
 		}
 		catch (IllegalArgumentException e) {
-			ConfigurationWarnings.addGlobalWarning(log, "invalid reportLevel ["+level+"], using default [ERROR]");
+			ApplicationWarnings.add(log, "invalid reportLevel ["+level+"], using default [ERROR]");
 		}
 	}
 
@@ -269,7 +268,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	}
 
 	@Override
-	public void reload() throws ConfigurationException {
+	public void reload() throws ClassLoaderException {
 		log.debug("reloading classloader ["+getConfigurationName()+"]");
 
 		AppConstants.removeInstance(this);

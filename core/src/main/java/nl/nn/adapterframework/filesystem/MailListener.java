@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,9 +18,11 @@ package nl.nn.adapterframework.filesystem;
 import java.io.IOException;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
 
+import lombok.Getter;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
@@ -34,7 +36,7 @@ import nl.nn.adapterframework.xml.XmlWriter;
  * for received mails. When a mail is found, it is moved to an output folder (or
  * it's deleted), so that it isn't found more then once. A xml string with
  * information about the mail is passed to the pipeline.
- * 
+ *
  * <p>
  * <b>example:</b> <code><pre>
  *   &lt;email&gt;
@@ -53,22 +55,22 @@ import nl.nn.adapterframework.xml.XmlWriter;
  *   &lt;/email&gt;
  * </pre></code>
  * </p>
- * 
+ *
  * @author Peter Leeuwenburgh, Gerrit van Brakel
  */
 public abstract class MailListener<M, A, S extends IMailFileSystem<M,A>> extends FileSystemListener<M,S> {
 
 	public final String EMAIL_MESSAGE_TYPE="email";
 	public final String MIME_MESSAGE_TYPE="mime";
-	
-	private String storeEmailAsStreamInSessionKey;
-	private boolean simple = false;
-	
+
+	private @Getter String storeEmailAsStreamInSessionKey;
+	private @Getter boolean simple = false;
+
 	{
 		setMessageType(EMAIL_MESSAGE_TYPE);
 		setMessageIdPropertyKey(IMailFileSystem.MAIL_MESSAGE_ID);
 	}
-	
+
 
 	@Override
 	public Message extractMessage(M rawMessage, Map<String,Object> threadContext) throws ListenerException {
@@ -99,20 +101,34 @@ public abstract class MailListener<M, A, S extends IMailFileSystem<M,A>> extends
 		return new Message(writer.toString());
 	}
 
-	@IbisDoc({"1", "when set to <code>true</code>, the xml string passed to the pipeline only contains the subject of the mail (to save memory)", ""})
+	@IbisDoc({"1", "when set to <code>true</code>, the xml string passed to the pipeline only contains the subject of the mail (to save memory)", "false"})
+	@Deprecated
+	@ConfigurationWarning("Please use <code>messageType</code> to control the message produced by the listener")
 	public void setSimple(boolean b) {
 		simple = b;
 	}
-	public boolean isSimple() {
-		return simple;
-	}
 
 	@Deprecated
+	@ConfigurationWarning("Please use <code>messageType=mime</code> and sessionKey originalMessage")
 	public void setStoreEmailAsStreamInSessionKey(String string) {
 		storeEmailAsStreamInSessionKey = string;
 	}
-	public String getStoreEmailAsStreamInSessionKey() {
-		return storeEmailAsStreamInSessionKey;
+
+	/**
+	 * Determines the contents of the message that is sent to the Pipeline. can be one of:
+	 * <ul>
+	 * <li><code>email</code>, for an XML containing most relevant information, except the body and the attachments</li>
+	 * <li><code>contents</code>, for the body of the message</li>
+	 * <li><code>mime</code>, for the MIME contents of the message</li>
+	 * <li><code>name</code> or <code>path</code>, for an internal handle of mail message, that can be used by a related MailFileSystemSender</li>
+	 * <li>the key of any header present in the message context</li>
+	 * </ul>
+	 *
+	 * @ff.default email
+	 */
+	@Override
+	public void setMessageType(String messageType) {
+		super.setMessageType(messageType);
 	}
 
 }

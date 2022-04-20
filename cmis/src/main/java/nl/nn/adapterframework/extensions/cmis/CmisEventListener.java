@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,15 +15,18 @@
  */
 package nl.nn.adapterframework.extensions.cmis;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.extensions.cmis.server.CmisEvent;
 import nl.nn.adapterframework.extensions.cmis.server.CmisEventDispatcher;
 import nl.nn.adapterframework.http.PushingListenerAdapter;
+import nl.nn.adapterframework.util.EnumUtils;
 
 public class CmisEventListener extends PushingListenerAdapter implements HasPhysicalDestination {
 
+	private final @Getter(onMethod = @__(@Override)) String domain = "CMIS Event";
 	private CmisEvent cmisEvent = null;
 
 	@Override
@@ -63,7 +66,7 @@ public class CmisEventListener extends PushingListenerAdapter implements HasPhys
 	}
 
 	public void setEventListener(String event) {
-		this.cmisEvent = CmisEvent.fromValue(event);
+		this.cmisEvent = EnumUtils.parse(CmisEvent.class, event);
 	}
 	public CmisEvent getEvent() {
 		return cmisEvent;

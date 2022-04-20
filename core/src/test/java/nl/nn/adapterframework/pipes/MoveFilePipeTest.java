@@ -222,7 +222,7 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
     @Order(11)
     public void nonExistingFileWithEverythingNull() throws ConfigurationException, PipeStartException, PipeRunException {
         exception.expect(ConfigurationException.class);
-        pipe.configure(pipeline);
+        pipe.configure();
         pipe.start();
         doPipe(pipe, "testdoc", session);
 

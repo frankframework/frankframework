@@ -5,16 +5,21 @@ FROM iaf-as-tomcat AS iaf-test-tomcat
 COPY src/scripts/catalinaAdditionalTest.properties /tmp
 RUN cat /tmp/catalinaAdditionalTest.properties >> /usr/local/tomcat/conf/catalina.properties  && rm -f /tmp/catalinaAdditionalTest.properties
 
+# copy war
+COPY target/dependencies/ibis-adapterframework-test.war /usr/local/tomcat/webapps/iaf-test.war
+
 # copy any additional drivers
 COPY target/dependencies/*.jar /usr/local/tomcat/lib/
 
-# copy database and jms configuration
-COPY target/dependencies/frank/context/context.xml /usr/local/tomcat/conf/Catalina/localhost/iaf.xml
+# provide database credentials
+RUN mkdir -p /opt/frank/secrets/testiaf_user \
+	&& echo "testiaf_user"   > /opt/frank/secrets/testiaf_user/username \
+	&& echo "testiaf_user00" > /opt/frank/secrets/testiaf_user/password
 
 # copy configuration, properties and testscenarios
-COPY target/dependencies/frank/configuration/*-resources.jar /opt/frank/resources/
-COPY target/dependencies/frank/configuration/*-configurations.jar /opt/frank/configurations/
-COPY target/dependencies/frank/testtool /opt/frank/testtool
+#COPY target/dependencies/frank/configuration/*-resources.jar /opt/frank/resources/
+#COPY target/dependencies/frank/configuration/*-configurations.jar /opt/frank/configurations/
+#COPY target/dependencies/frank/testtool /opt/frank/testtool
 
 # Set permissions after copy, to improve startup time
 RUN /setPermissions.sh

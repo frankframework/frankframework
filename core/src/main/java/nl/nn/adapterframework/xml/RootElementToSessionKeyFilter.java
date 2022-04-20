@@ -20,17 +20,17 @@ import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 
 public class RootElementToSessionKeyFilter extends FullXmlFilter {
 
-	private IPipeLineSession session;
+	private PipeLineSession session;
 	private String rootElementSessionKey;
 	private String rootNamespaceSessionKey;
 	
 	private boolean rootElementParsed;
 
-	public RootElementToSessionKeyFilter(IPipeLineSession session, String rootElementSessionKey, String rootNamespaceSessionKey, ContentHandler handler) {
+	public RootElementToSessionKeyFilter(PipeLineSession session, String rootElementSessionKey, String rootNamespaceSessionKey, ContentHandler handler) {
 		super(handler);
 		if (session!=null) {
 			this.session=session;

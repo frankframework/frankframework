@@ -172,6 +172,12 @@ function xmlFormat(elementId) {
 	$(elementId).value = value;
 }
 
+function jsonFormat(elementId) {
+	var value = $(elementId).value;
+	var jsonObject = JSON.parse(value);
+	$(elementId).value = JSON.stringify(jsonObject, null, 4); //indent with 4 spaces
+}
+
 /** Searches for the differences in Result and Expected.
     First it shows the result line and then the expected line with the difference colored.
 **/
@@ -263,6 +269,9 @@ function escapeChars(lineInput) {
 			break;
 		case "\n":
 			line += "";
+			break;
+		case ('&') :
+			line += "&amp;";
 			break;
 		default:
 			line += lineInput.charAt(i);
@@ -392,10 +401,23 @@ function copyContents(elementId)
 function indentCompare(sources, result)
 {
 	var s = eval(sources);
-	
-	for (var i = 0; i < s.length; i++)
-		xmlFormat(s[i]);
-		
+
+	for (var i = 0; i < s.length; i++){
+		var elementId = s[i];
+		var text = $(elementId).value;
+
+		try{
+			if(text.startsWith("<") || text.startsWith(escapeChars("<"))){ // if text is xml
+				xmlFormat(elementId);
+			} else if ((text.startsWith("{") && text.endsWith("}")) || (text.startsWith("[") && text.endsWith("]"))) { // TODO: something smarter for detecting json like text
+				jsonFormat(elementId);
+			}
+		} catch(error){
+			var message = "Formatting the content of element ["+elementId+"] is failed: "+error.message;
+			alert(message);
+		}
+	}
+
 	showDiffs(result, s[0], s[1]);
 	
 	if ($(result).nodeName.toLowerCase() == "pre")
@@ -438,6 +460,10 @@ function addCommands()
 			}
 		}
 	}
+}
+
+function updateScenarios() {
+	document.getElementById("submit").click();
 }
 
 function addSynchScrolling()

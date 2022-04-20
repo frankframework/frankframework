@@ -33,13 +33,13 @@
 	<scheduler>
 		<job name="jobLocker" function="sendMessage" adapterName="Locker"
 			receiverName="Locker" cronExpression="0 0/2 * * * ?" description="call Locker every 2 minutes">
-			<locker jmsRealm="jdbc" objectId="Locker" />
+			<locker objectId="Locker" />
 		</job>
 	</scheduler>
 	<scheduler>
 		<job name="jobLocker2" function="sendMessage" adapterName="Locker2"
 			receiverName="Locker2" cronExpression="0 0/2 * * * ?" description="call Locker2 every 2 minutes">
-			<locker jmsRealm="jdbc" objectId="Locker" />
+			<locker objectId="Locker" />
 		</job>
 	</scheduler>
  -->

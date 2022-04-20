@@ -1,0 +1,49 @@
+# This workflow will try to diff the current Frank!Doc XSD with the given target
+
+name: Compare FrankDoc
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'commit'
+        required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Retrieve target XSD from commit
+      uses: dawidd6/action-download-artifact@v2
+      with:
+        workflow: maven-build.yml
+        commit:  ${{ github.event.inputs.target }}
+        name: FrankDoc
+        path: ${{ github.workspace }}/target/frankdoc/xml/xsd/
+
+    - name: Retrieve base Frank!Doc XSD
+      uses: dawidd6/action-download-artifact@v2
+      with:
+        workflow: maven-build.yml
+        branch: master
+        name: FrankDoc
+        path: ${{ github.workspace }}/base/frankdoc/xml/xsd/
+
+    - name: Compare strict XSD with target
+      uses: LouisBrunner/diff-action@v0.1.0
+      with:
+        old: ${{ github.workspace }}/base/frankdoc/xml/xsd/FrankConfig-strict.xsd
+        new: ${{ github.workspace }}/target/frankdoc/xml/xsd/FrankConfig-strict.xsd
+        mode: addition
+        tolerance: better
+        output: FrankConfig-strict-compare.txt
+
+    - name: Compare compatibility XSD with target
+      uses: LouisBrunner/diff-action@v0.1.0
+      with:
+        old: ${{ github.workspace }}/base/frankdoc/xml/xsd/FrankConfig-compatibility.xsd
+        new: ${{ github.workspace }}/target/frankdoc/xml/xsd/FrankConfig-compatibility.xsd
+        mode: addition
+        tolerance: better
+        output: FrankConfig-compatibility-compare.txt

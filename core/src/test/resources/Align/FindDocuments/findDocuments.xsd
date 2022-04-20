@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2020 sp1 (x64) (http://www.altova.com) by  (Nationale Nederlanden) -->
+<!--#################################### version history ####################################### -->
+<!--Version Editor Comment -->
+<!--v1.0 RvdS New, copy from FindDocuments_4 -->
+<!--v1.1 RvdS Added annotation, remark -->
+<!--#################################### version history ####################################### -->
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xsd:element name="FindDocuments_Request">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="schemaName" minOccurs="0">
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:string">
+							<xsd:maxLength value="40"/>
+							<xsd:minLength value="1"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:element>
+				<xsd:element name="requestUserId">
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:string">
+							<xsd:minLength value="1"/>
+							<xsd:maxLength value="20"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:element>
+				<xsd:element name="SearchAttributes" minOccurs="0">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element name="addressedTo" minOccurs="0">
+								<xsd:simpleType>
+									<xsd:restriction base="xsd:string">
+										<xsd:maxLength value="40"/>
+									</xsd:restriction>
+								</xsd:simpleType>
+							</xsd:element>
+							<xsd:element name="agreementNumber" minOccurs="0" maxOccurs="unbounded">
+								<xsd:simpleType>
+									<xsd:restriction base="xsd:string">
+										<xsd:maxLength value="20"/>
+									</xsd:restriction>
+								</xsd:simpleType>
+							</xsd:element>
+							<xsd:element name="agreementNumberType" type="agreementNumberType" minOccurs="0" maxOccurs="1"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="FindDocuments_Response">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="Paging" minOccurs="0">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element name="foundItemCount" type="xsd:integer" minOccurs="0"/>
+							<xsd:element name="hasMoreItems" type="xsd:boolean" minOccurs="0"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+				<xsd:element name="SearchResult" minOccurs="0" maxOccurs="unbounded">
+					<xsd:complexType>
+						<xsd:all>
+							<xsd:element name="schemaName" type="xsd:string"/>
+							<xsd:element name="documentTitle" type="xsd:string" minOccurs="0"/>
+							<xsd:element name="agreementNumber" minOccurs="0"/>
+							<xsd:element name="agreementNumberType" minOccurs="0"/>
+						</xsd:all>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:simpleType name="agreementNumberType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="Polis"/>
+			<xsd:enumeration value="Lening"/>
+			<xsd:enumeration value="Rekening"/>
+			<xsd:enumeration value="Deposit"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,38 +25,24 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.SuppressKeys;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
-import nl.nn.adapterframework.senders.ConfigurationAware;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.FileUtils;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
- * Pipe for transforming a stream with records. Records in the stream must be separated
- * with new line characters.
- * <table border="1">
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link IInputStreamReaderFactory readerFactory}</td><td>Factory for reader of inputstream. Default implementation {@link InputStreamReaderFactory} just converts using the specified characterset</td></tr>
- * <tr><td>{@link IRecordHandlerManager manager}</td><td>Manager determines which handlers are to be used for the current line.
- * 			If no manager is specified, a default manager and flow are created. The default manager 
- * 			always uses the default flow. The default flow always uses the first registered recordHandler 
- * 			(if available) and the first registered resultHandler (if available).</td></tr>
- * <tr><td>{@link RecordHandlingFlow manager/flow}</td><td>Element that contains the handlers for a specific record type, to be assigned to the manager</td></tr>
- * <tr><td>{@link IRecordHandler recordHandler}</td><td>Handler for transforming records of a specific type</td></tr>
- * <tr><td>{@link IResultHandler resultHandler}</td><td>Handler for processing transformed records</td></tr>
- * </table>
- * </p>
+ * Pipe for transforming a stream with records. Records in the stream must be separated with new line characters.
  * 
  * For file containing only a single type of lines, a simpler configuration without managers and flows
  * can be specified. A single recordHandler with key="*" and (optional) a single resultHandler need to be specified.
@@ -69,9 +55,9 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 
 	public static final String originalBlockKey="originalBlock";
 
-	private boolean storeOriginalBlock=false;
-	private boolean closeInputstreamOnExit=true;
-	private String charset=Misc.DEFAULT_INPUT_STREAM_ENCODING;
+	private @Getter boolean storeOriginalBlock=false;
+	private @Getter boolean closeInputstreamOnExit=true;
+	private @Getter String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 
 	private IRecordHandlerManager initialManager=null;
 	private IResultHandler defaultHandler=null;
@@ -79,16 +65,16 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	private Map<String,IRecordHandler> registeredRecordHandlers= new HashMap<>();
 	private Map<String,IResultHandler> registeredResultHandlers= new LinkedHashMap<>();
 	
-	private IInputStreamReaderFactory readerFactory=new InputStreamReaderFactory();
+	private @Getter IReaderFactory readerFactory=new InputStreamReaderFactory();
 
-	protected String getStreamId(Message input, IPipeLineSession session) throws PipeRunException {
+	protected String getStreamId(Message input, PipeLineSession session) {
 		return session.getMessageId();
 	}
 	
 	/*
 	 * obtain data inputstream.
 	 */
-	protected InputStream getInputStream(String streamId, Message input, IPipeLineSession session) throws PipeRunException {
+	protected InputStream getInputStream(String streamId, Message input, PipeLineSession session) throws PipeRunException {
 		try {
 			return input.asInputStream();
 		} catch (IOException e) {
@@ -98,7 +84,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	/*
 	 * method called by doPipe to obtain reader.
 	 */
-	protected BufferedReader getReader(String streamId, Message input, IPipeLineSession session) throws PipeRunException {
+	protected BufferedReader getReader(String streamId, Message input, PipeLineSession session) throws PipeRunException {
 		try {
 			Reader reader=getReaderFactory().getReader(getInputStream(streamId, input,session),getCharset(),streamId,session);
 			if (reader instanceof BufferedReader) {
@@ -130,7 +116,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 			try {
 				registerManager(manager);
 			} catch (Exception e) {
-				throw new ConfigurationException("could not register default manager and flow");
+				throw new ConfigurationException("could not register default manager and flow", e);
 			}
 		}
 		if (initialManager==null) {
@@ -142,16 +128,10 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		}
 		for (String recordHandlerName: registeredRecordHandlers.keySet()) {
 			IRecordHandler handler = getRecordHandler(recordHandlerName);
-			if(handler instanceof ConfigurationAware) {
-				((ConfigurationAware)handler).setConfiguration(getAdapter().getConfiguration());
-			}
 			handler.configure();
 		}
 		for (String resultHandlerName: registeredResultHandlers.keySet()) {
 			IResultHandler handler = getResultHandler(resultHandlerName);
-			if (handler instanceof ConfigurationAware) {
-				((ConfigurationAware)handler).setConfiguration(getAdapter().getConfiguration());
-			}
 			handler.configure();
 		}
 	}
@@ -208,7 +188,12 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'manager'", SuppressKeys.DEPRECATION_SUPPRESS_KEY, getAdapter());
 		registerManager(manager);
 	}
-	@IbisDoc({"10", "A uniquely named manager"})
+	/**
+	 * Manager determines which handlers are to be used for the current line. If no manager is specified, a default manager and flow are created.
+	 * The default manager always uses the default flow. The default flow always uses the first registered recordHandler (if available)
+	 * and the first registered resultHandler (if available).
+	 * @ff.mandatory
+	 */
 	public void registerManager(IRecordHandlerManager manager) throws Exception {
 		registeredManagers.put(manager.getName(), manager);
 		if (manager.isInitial()) {
@@ -218,9 +203,8 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 			initialManager = manager;
 		}
 	}
-
 	public IRecordHandlerManager getManager(String name) {
-		return (IRecordHandlerManager)registeredManagers.get(name);
+		return registeredManagers.get(name);
 	}
 	
 	/**
@@ -230,7 +214,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	@Deprecated
 	public void registerChild(RecordHandlingFlow flowEl) throws Exception {
 		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'flow' nested in element 'manager'", SuppressKeys.DEPRECATION_SUPPRESS_KEY, getAdapter());
-		IRecordHandlerManager manager = (IRecordHandlerManager)registeredManagers.get(flowEl.getRecordHandlerManagerRef());
+		IRecordHandlerManager manager = registeredManagers.get(flowEl.getRecordHandlerManagerRef());
 		if (manager == null) {
 			throw new ConfigurationException("RecordHandlerManager [" + flowEl.getRecordHandlerManagerRef() + "] not found. Manager must be defined before the flows it contains");
 		}
@@ -247,12 +231,12 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'recordHandler'", SuppressKeys.DEPRECATION_SUPPRESS_KEY, getAdapter());
 		registerRecordHandler(handler);
 	}
-	@IbisDoc({"20", "A uniquely named record handler"})
+	/** Handler for transforming records of a specific type */
 	public void registerRecordHandler(IRecordHandler handler) throws Exception {
 		registeredRecordHandlers.put(handler.getName(), handler);
 	}
 	public IRecordHandler getRecordHandler(String name) {
-		return (IRecordHandler)registeredRecordHandlers.get(name);
+		return registeredRecordHandlers.get(name);
 	}
 
 
@@ -266,7 +250,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'resultHandler'", SuppressKeys.DEPRECATION_SUPPRESS_KEY, getAdapter());
 		registerResultHandler(handler);
 	}
-	@IbisDoc({"30", "A uniquely named result handler"})
+	/** Handler for processing transformed records */
 	public void registerResultHandler(IResultHandler handler) throws Exception {
 		handler.setPipe(this);
 		registeredResultHandlers.put(handler.getName(), handler);
@@ -275,7 +259,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		}
 	}
 	public IResultHandler getResultHandler(String name) {
-		return (IResultHandler)registeredResultHandlers.get(name);
+		return registeredResultHandlers.get(name);
 	}
 	
 	
@@ -285,10 +269,10 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 * Move the input file to a done directory when transformation is finished
 	 * and return the names of the generated files. 
 	 * 
-	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Message, IPipeLineSession)
+	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Message, PipeLineSession)
 	 */
 	@Override
-	public PipeRunResult doPipe(Message input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
 		String streamId = getStreamId(input, session);
 		BufferedReader reader = getReader(streamId, input,session);
 		if (reader==null) {
@@ -306,10 +290,10 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 				}
 			}
 		}
-		return new PipeRunResult(getForward(),transformationResult);
+		return new PipeRunResult(getSuccessForward(),transformationResult);
 	}
 
-	private List<String> getBlockStack(IPipeLineSession session, IResultHandler handler, String streamId, boolean create) {
+	private List<String> getBlockStack(PipeLineSession session, IResultHandler handler, String streamId, boolean create) {
 		String blockStackKey="blockStack for "+handler.getName();
 		List<String> list = (List<String>)session.get(blockStackKey);
 		if (list==null) {
@@ -321,11 +305,11 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		return list;
 	}
 
-	private List<String> getBlockStack(IPipeLineSession session, IResultHandler handler, String streamId) throws SenderException {
+	private List<String> getBlockStack(PipeLineSession session, IResultHandler handler, String streamId) {
 		return getBlockStack(session, handler, streamId, false);
 	}
 
-	private boolean autoCloseBlocks(IPipeLineSession session, IResultHandler handler, String streamId, RecordHandlingFlow flow, String blockName) throws Exception {
+	private boolean autoCloseBlocks(PipeLineSession session, IResultHandler handler, String streamId, RecordHandlingFlow flow, String blockName) throws Exception {
 		List<String> blockStack=getBlockStack(session,handler, streamId, true);
 		int blockLevel;
 		if (log.isTraceEnabled()) log.trace("searching block stack for open block ["+blockName+"] to perform autoclose");
@@ -343,13 +327,12 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 				closeBlock(session, handler, streamId,null,stackedBlock, "autoclose of previous blocks while opening block ["+blockName+"]");
 			}
 			return true;
-		} else {
-			if (log.isTraceEnabled()) log.trace("did not find open block ["+blockName+"] at block stack");
-			return false;
-		}
+		} 
+		if (log.isTraceEnabled()) log.trace("did not find open block ["+blockName+"] at block stack");
+		return false;
 	}
 
-	private void openBlock(IPipeLineSession session, IResultHandler handler, String streamId, RecordHandlingFlow flow, String blockName) throws Exception {
+	private void openBlock(PipeLineSession session, IResultHandler handler, String streamId, RecordHandlingFlow flow, String blockName) throws Exception {
 		if (StringUtils.isNotEmpty(blockName)) {
 			if (handler!=null) {
 				if (flow.isAutoCloseBlock()) {
@@ -365,7 +348,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 			}
 		}
 	}
-	private void closeBlock(IPipeLineSession session, IResultHandler handler, String streamId, RecordHandlingFlow flow, String blockName, String reason) throws Exception {
+	private void closeBlock(PipeLineSession session, IResultHandler handler, String streamId, RecordHandlingFlow flow, String blockName, String reason) throws Exception {
 		if (StringUtils.isNotEmpty(blockName)) {
 			if (handler!=null) {
 				if (flow!=null && flow.isAutoCloseBlock()) {
@@ -391,7 +374,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		}
 	}
 
-	protected void closeAllBlocks(IPipeLineSession session, String streamId, IResultHandler handler) throws Exception {
+	protected void closeAllBlocks(PipeLineSession session, String streamId, IResultHandler handler) throws Exception {
 		if (handler!=null) {
 			List<String> blockStack=getBlockStack(session, handler,streamId);
 			if (blockStack!=null) {
@@ -408,7 +391,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 * Read all lines from the reader, treat every line as a record and transform 
 	 * it using the registered managers, record- and result handlers.
 	 */	
-	private String transform(String streamId, BufferedReader reader, IPipeLineSession session) throws PipeRunException {
+	private String transform(String streamId, BufferedReader reader, PipeLineSession session) throws PipeRunException {
 		String rawRecord = null;
 		int linenumber = 0;
 		int counter = 0;
@@ -433,9 +416,8 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 				if (flow == null) {
 					log.debug("<no flow>: "+rawRecord);
 					continue; // ignore line for which no handlers are registered
-				} else {
-					//log.debug("flow ["+flow.getRecordKey()+"] openBlockBeforeLine ["+flow.getOpenBlockBeforeLine()+"]");
-				}
+				} 
+				//log.debug("flow ["+flow.getRecordKey()+"] openBlockBeforeLine ["+flow.getOpenBlockBeforeLine()+"]");
 				IResultHandler resultHandler = flow.getResultHandler();
 				closeBlock(session, resultHandler, streamId, flow, flow.getCloseBlockBeforeLine(),"closeBlockBeforeLine of flow ["+flow.getRecordKey()+"]");
 				String obbl = null;
@@ -521,12 +503,12 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		}
 	}
 
-	private void openDocument(IPipeLineSession session, String inputFilename) throws Exception {
+	private void openDocument(PipeLineSession session, String inputFilename) throws Exception {
 		for (IResultHandler resultHandler: registeredResultHandlers.values()) {
 			resultHandler.openDocument(session, inputFilename);
 		}
 	}
-	private void closeDocument(IPipeLineSession session, String inputFilename) {
+	private void closeDocument(PipeLineSession session, String inputFilename) {
 		for (IResultHandler resultHandler: registeredResultHandlers.values()) {
 			resultHandler.closeDocument(session, inputFilename);
 		}
@@ -536,7 +518,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 * finalizeResult is called when all records in the input file are handled
 	 * and gives the resulthandlers a chance to finalize.
 	 */	
-	private String finalizeResult(IPipeLineSession session, String inputFilename, boolean error) throws Exception {
+	private String finalizeResult(PipeLineSession session, String inputFilename, boolean error) throws Exception {
 		// finalize result
 		List<String> results = new ArrayList<>();
 		for (IResultHandler resultHandler: registeredResultHandlers.values()) {
@@ -551,34 +533,32 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		return FileUtils.getNamesFromList(results, ';');
 	}
 	
-	@IbisDoc({"1", "when set <code>true</code> the original block is stored under the session key originalblock", "false"})
+	/** 
+	 * If set <code>true</code> the original block is stored under the session key <code>originalBlock</code>.
+	 * @ff.default false
+	 */
 	public void setStoreOriginalBlock(boolean b) {
 		storeOriginalBlock = b;
 	}
-	public boolean isStoreOriginalBlock() {
-		return storeOriginalBlock;
-	}
 
-	@IbisDoc({"2", "when set to <code>false</code>, the inputstream is not closed after it has been used", "true"})
+	/** 
+	 * If set to <code>false</code>, the inputstream is not closed after it has been used.
+	 * @ff.default true
+	 */
 	public void setCloseInputstreamOnExit(boolean b) {
 		closeInputstreamOnExit = b;
 	}
-	public boolean isCloseInputstreamOnExit() {
-		return closeInputstreamOnExit;
-	}
 
-	@IbisDoc({"3", "characterset used for reading file or inputstream", "utf-8"})
+	/** 
+	 * Characterset used for reading file or inputstream"
+	 * @ff.default UTF-8
+	 */
 	public void setCharset(String string) {
 		charset = string;
 	}
-	public String getCharset() {
-		return charset;
-	}
 
-	public void setReaderFactory(IInputStreamReaderFactory factory) {
+	/** Factory for the <code>reader</code>. The default implementation {@link InputStreamReaderFactory} converts using the specified character set. */
+	public void setReaderFactory(IReaderFactory factory) {
 		readerFactory = factory;
-	}
-	public IInputStreamReaderFactory getReaderFactory() {
-		return readerFactory;
 	}
 }

@@ -18,7 +18,7 @@ import nl.nn.adapterframework.stream.Message;
 public class Stream2StringPipeTest extends PipeTestBase<Stream2StringPipe> {
 
     /**
-     * Method: doPipe(Object input, IPipeLineSession session)
+     * Method: doPipe(Object input, PipeLineSession session)
      */
     @Test
     public void testDoPipeSuccess() throws Exception {
@@ -30,7 +30,7 @@ public class Stream2StringPipeTest extends PipeTestBase<Stream2StringPipe> {
     }
   
     /**
-     * Method: doPipe(Object input, IPipeLineSession session)
+     * Method: doPipe(Object input, PipeLineSession session)
      */
     @Test
     public void testDoPipeFail() throws Exception {

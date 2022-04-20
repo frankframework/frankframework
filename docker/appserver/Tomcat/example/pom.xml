@@ -10,32 +10,27 @@
 	<parent>
 		<groupId>org.ibissource</groupId>
 		<artifactId>ibis-adapterframework-docker-as-tomcat</artifactId>
-		<version>7.6-SNAPSHOT</version>
+		<version>${revision}</version>
 	</parent>
+		
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-docker-as-tomcat</artifactId>
-			<version>${iaf.version}</version>
+			<artifactId>ibis-adapterframework-docker-as-tomcat-iaf-webapp</artifactId>
+			<version>${project.version}</version>
 			<type>pom</type>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-example</artifactId>
-			<version>${iaf.version}</version>
+			<version>${project.version}</version>
 			<classifier>resources</classifier>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-example</artifactId>
-			<version>${iaf.version}</version>
-			<classifier>configurations</classifier>
-		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-example</artifactId>
-			<version>${iaf.version}</version>
-			<classifier>scenarios</classifier>
+			<version>${project.version}</version>
+			<classifier>context</classifier>
 		</dependency>
 	</dependencies>
 
@@ -59,49 +54,36 @@
 							<overWriteSnapshots>true</overWriteSnapshots>
 							<excludeTransitive>true</excludeTransitive>
 							<stripVersion>true</stripVersion>
-							<excludeClassifiers>configurations,resources,scenarios</excludeClassifiers>
+							<excludeClassifiers>resources,context</excludeClassifiers>
 						</configuration>
 					</execution>
 					<execution>
-						<id>copy-configuration</id>
-						<phase>package</phase>
-						<goals>
-							<goal>copy</goal>
-						</goals>
+						<id>unpack</id>
+			            <phase>package</phase>
+			            <goals>
+			            	<goal>unpack</goal>
+			            </goals>
 						<configuration>
 							<artifactItems>
-								<artifactItem>
+				                <artifactItem>
 									<groupId>org.ibissource</groupId>
 									<artifactId>ibis-adapterframework-example</artifactId>
-									<classifier>configurations</classifier>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.ibissource</groupId>
-									<artifactId>ibis-adapterframework-example</artifactId>
+									<version>${project.version}</version>
 									<classifier>resources</classifier>
-								</artifactItem>
-							</artifactItems>
-							<outputDirectory>${project.build.directory}/dependencies/frank/configuration</outputDirectory>
-							<stripVersion>true</stripVersion>
-							<excludeTransitive>true</excludeTransitive>
-						</configuration>
-					</execution>
-					<execution>
-						<id>unpack-tests</id>
-						<phase>package</phase>
-						<goals>
-							<goal>unpack</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
+									<outputDirectory>${project.build.directory}/dependencies/resources</outputDirectory>
+				                </artifactItem>
+				                <artifactItem>
 									<groupId>org.ibissource</groupId>
 									<artifactId>ibis-adapterframework-example</artifactId>
-									<classifier>scenarios</classifier>
-								</artifactItem>
-							</artifactItems>
+									<version>${project.version}</version>
+									<classifier>context</classifier>
+									<outputDirectory>${project.build.directory}/dependencies</outputDirectory>
+				                </artifactItem>
+				            </artifactItems>
+			            	<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
 							<excludeTransitive>true</excludeTransitive>
-							<outputDirectory>${project.build.directory}/dependencies/frank/testtool</outputDirectory>
+							<stripVersion>true</stripVersion>
 						</configuration>
 					</execution>
 				</executions>
@@ -117,7 +99,7 @@
 						<inherited>false</inherited>
 						<configuration>
 							<target>
-								<exec executable="docker">
+								<exec executable="docker" failonerror="true">
 									<arg value="build"/>
 									<arg value="-t"/>
 									<arg value="iaf-example-tomcat"/>

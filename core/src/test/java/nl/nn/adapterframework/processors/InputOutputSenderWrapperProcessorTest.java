@@ -7,10 +7,9 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.senders.SenderBase;
 import nl.nn.adapterframework.senders.SenderSeries;
 import nl.nn.adapterframework.senders.SenderWrapperBase;
@@ -18,12 +17,12 @@ import nl.nn.adapterframework.stream.Message;
 
 public class InputOutputSenderWrapperProcessorTest {
 
-	private IPipeLineSession session; 
+	private PipeLineSession session; 
 	private String secondSenderOutput;
 	
 	@Before
 	public void setUp() {
-		session = new PipeLineSessionBase();
+		session = new PipeLineSession();
 		secondSenderOutput = null;
 	}
 	
@@ -33,7 +32,7 @@ public class InputOutputSenderWrapperProcessorTest {
 		SenderWrapperProcessor target = new SenderWrapperProcessor() {
 
 			@Override
-			public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+			public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeoutException {
 				return senderWrapperBase.sendMessage(message, session);
 			}
 		};
@@ -42,25 +41,25 @@ public class InputOutputSenderWrapperProcessorTest {
 
 		Message actual = processor.sendMessage(sender, new Message(input), session);
 		
-		assertEquals(expectedSecondSenderOutput, secondSenderOutput);
-		assertEquals(expectedWrapperOutput, actual.asString());
-		assertEquals(expectedSessionKeyValue, Message.asString(session.get("storedResult")));
+		assertEquals("unexpected output of last sender", expectedSecondSenderOutput, secondSenderOutput);
+		assertEquals("unexpected wrapper output", expectedWrapperOutput, actual.asString());
+		assertEquals("unexpected session variable value", expectedSessionKeyValue, Message.asString(session.get("storedResult")));
 	}
 	
 	public SenderWrapperBase getSenderWrapper() {
 		SenderSeries senderSeries = new SenderSeries();
-		senderSeries.setSender(new SenderBase() {
+		senderSeries.registerSender(new SenderBase() {
 			@Override
-			public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+			public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 				try {
 					return new Message("Sender 1: ["+message.asString()+"]");
 				} catch (IOException e) {
 					throw new SenderException(e);
 				}
 			}});
-		senderSeries.setSender(new SenderBase() {
+		senderSeries.registerSender(new SenderBase() {
 			@Override
-			public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+			public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 				try {
 					secondSenderOutput = "Sender 2: ["+message.asString()+"]";
 					return new Message(secondSenderOutput);
@@ -160,6 +159,19 @@ public class InputOutputSenderWrapperProcessorTest {
 		String expectedSecondSenderOutput = "Sender 2: [Sender 1: [abc]]";
 		String expectedWrapperOutput = "abc";
 		String expectedSessionKeyValue = expectedSecondSenderOutput;
+		
+		testInputOutputSenderWrapperProcessor(sender, input, expectedSecondSenderOutput, expectedWrapperOutput, expectedSessionKeyValue);
+	}
+	
+	@Test
+	public void testStoreInput() throws Exception {
+		SenderWrapperBase sender = getSenderWrapper();
+		sender.setStoreInputInSessionKey("storedResult");
+		
+		String input = "abc";
+		String expectedSecondSenderOutput = "Sender 2: [Sender 1: [abc]]";
+		String expectedWrapperOutput = expectedSecondSenderOutput;
+		String expectedSessionKeyValue = input;
 		
 		testInputOutputSenderWrapperProcessor(sender, input, expectedSecondSenderOutput, expectedWrapperOutput, expectedSessionKeyValue);
 	}

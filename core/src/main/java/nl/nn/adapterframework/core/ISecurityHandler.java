@@ -17,7 +17,7 @@ package nl.nn.adapterframework.core;
 
 import java.security.Principal;
 
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 
 /**
  * Defines behaviour that can be used to assert identity of callers of a pipeline.
@@ -27,7 +27,7 @@ import org.apache.commons.lang.NotImplementedException;
  */
 public interface ISecurityHandler {
 	
-	public boolean isUserInRole(String role, IPipeLineSession session) throws NotImplementedException;
-	public Principal getPrincipal(IPipeLineSession session) throws NotImplementedException;
+	public boolean isUserInRole(String role, PipeLineSession session) throws NotImplementedException;
+	public Principal getPrincipal(PipeLineSession session) throws NotImplementedException;
 
 }

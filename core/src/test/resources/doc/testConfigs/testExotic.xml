@@ -1,5 +1,0 @@
-<Master>
-  <Part className="nl.nn.adapterframework.doc.testtarget.exotic.Member1">
-    <Child className="nl.nn.adapterframework.doc.testtarget.exotic.Child1" />
-  </Part>
-</Master>

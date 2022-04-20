@@ -1,0 +1,16 @@
+<configuration>
+	<adapter name="WebServiceListener">
+		<receiver>
+			<listener className="nl.nn.adapterframework.http.WebServiceListener"
+				name="urn:ws" />
+		</receiver>
+		<pipeline firstPipe="EchoPipe">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<pipe name="EchoPipe" className="nl.nn.adapterframework.pipes.EchoPipe">
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+</configuration>

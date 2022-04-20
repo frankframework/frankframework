@@ -1,0 +1,10 @@
+<manageFileSystemRLY>
+	<completionInformation>
+		<returnCode>OK</returnCode>
+	</completionInformation>
+	<results>
+		<result item="1">
+TESTDATA_DIR/ManageFileSystem
+</result>
+	</results>
+</manageFileSystemRLY>

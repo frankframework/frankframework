@@ -18,34 +18,30 @@ package nl.nn.adapterframework.ftp;
 import java.io.IOException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.encryption.KeystoreType;
+import nl.nn.adapterframework.ftp.FtpSession.FileType;
+import nl.nn.adapterframework.ftp.FtpSession.FtpType;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
 
 /**
  * Pipe for retreiving files via (s)ftp. The path of the created local file is returned.
- *
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default when a file has been retrieved</td></tr>
- * <tr><td>"exception"</td><td>an exception was thrown retrieving the file. The result passed to the next pipe is the input of the pipe</td></tr>
- * </table>
- * </p>
  * 
  * @author John Dekker
  * @since   4.4
  */
+@Deprecated
+@ConfigurationWarning("Please replace with FtpFileSystemListener")
 public class FtpFileRetrieverPipe extends FixedForwardPipe {
 
 	private FtpSession ftpSession;
 
-	private final static String EXCEPTIONFORWARD = "exception";
-	
 	private String localFilenamePattern=null;
 	private String localDirectory=null;;
 	private String remoteDirectory=null;
@@ -55,7 +51,8 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 	public FtpFileRetrieverPipe() {
 		ftpSession = new FtpSession();
 	}
-	
+
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 //		PipeForward exceptionForward = findForward(EXCEPTIONFORWARD);
@@ -65,6 +62,7 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 		ftpSession.configure();
 	}
 	
+	@Override
 	public void stop() {
 		super.stop();
 		try {		
@@ -75,9 +73,10 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 	}
  
 	/** 
-* @see nl.nn.adapterframework.core.IPipe#doPipe(Message, IPipeLineSession)
+* @see nl.nn.adapterframework.core.IPipe#doPipe(Message, PipeLineSession)
 	 */
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String orgFilename;
 		try {
 			orgFilename = message.asString();
@@ -90,11 +89,11 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 			if (deleteAfterGet) {
 				ftpSession.deleteRemote(remoteDirectory, orgFilename, true);
 			} 
-			return new PipeRunResult(getForward(), localFilename);
+			return new PipeRunResult(getSuccessForward(), localFilename);
 		}
 		catch(Exception e) {
 			String msg="Error while getting file [" + remoteDirectory + "/" + orgFilename+"]";
-			PipeForward exceptionForward = findForward(EXCEPTIONFORWARD);
+			PipeForward exceptionForward = findForward(PipeForward.EXCEPTION_FORWARD_NAME);
 			if (exceptionForward!=null) {
 				log.warn(msg, e);
 				return new PipeRunResult(exceptionForward, message);
@@ -199,13 +198,12 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 		ftpSession.setProxyPassword(proxyPassword);
 	}
 
-	@IbisDoc({"one of ftp, sftp, ftps(i) or ftpsi, ftpsx(ssl), ftpsx(tls)", "ftp"})
-	public void setFtpTypeDescription(String ftpTypeDescription) {
+	public void setFtpTypeDescription(FtpType ftpTypeDescription) {
 		ftpSession.setFtpTypeDescription(ftpTypeDescription);
 	}
 
-	@IbisDoc({"file type, one of ascii, binary", ""})
-	public void setFileType(String fileType) {
+	@IbisDoc({"file type", ""})
+	public void setFileType(FileType fileType) {
 		ftpSession.setFileType(fileType);
 	}
 
@@ -262,13 +260,13 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 
 
 	@IbisDoc({"(ftps) resource url to certificate to be used for authentication", ""})
-	public void setCertificate(String certificate) {
-		ftpSession.setCertificate(certificate);
+	public void setKeystore(String certificate) {
+		ftpSession.setKeystore(certificate);
 	}
 
 	@IbisDoc({"(ftps) ", "pkcs12"})
-	public void setCertificateType(String keystoreType) {
-		ftpSession.setCertificateType(keystoreType);
+	public void setKeystoreType(KeystoreType keystoreType) {
+		ftpSession.setKeystoreType(keystoreType);
 	}
 
 	@IbisDoc({"selects the algorithm to generate keymanagers. can be left empty to use the servers default algorithm", "websphere: ibmx509"})
@@ -278,12 +276,12 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 
 	@IbisDoc({"(ftps) alias used to obtain certificate password", ""})
 	public void setCertificateAuthAlias(String certificateAuthAlias) {
-		ftpSession.setCertificateAuthAlias(certificateAuthAlias);
+		ftpSession.setKeystoreAuthAlias(certificateAuthAlias);
 	}
 
 	@IbisDoc({"(ftps) ", " "})
 	public void setCertificatePassword(String certificatePassword) {
-		ftpSession.setCertificatePassword(certificatePassword);
+		ftpSession.setKeystorePassword(certificatePassword);
 	}
 
 
@@ -293,7 +291,7 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 	}
 
 	@IbisDoc({"(ftps) ", "jks"})
-	public void setTruststoreType(String truststoreType) {
+	public void setTruststoreType(KeystoreType truststoreType) {
 		ftpSession.setTruststoreType(truststoreType);
 	}
 

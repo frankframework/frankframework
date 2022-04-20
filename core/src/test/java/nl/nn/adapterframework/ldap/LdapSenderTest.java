@@ -2,6 +2,8 @@ package nl.nn.adapterframework.ldap;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeNotNull;
 
 import java.io.IOException;
 import java.net.URL;
@@ -23,186 +25,158 @@ import com.unboundid.ldap.listener.InMemoryDirectoryServerConfig;
 import com.unboundid.ldap.sdk.LDAPConnection;
 import com.unboundid.ldap.sdk.LDAPException;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.ldap.LdapSender.Operation;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.senders.SenderTestBase;
+import nl.nn.adapterframework.testutil.ParameterBuilder;
+import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
 
-/**
- * @author Peter Leeuwenburgh
- */
-public class LdapSenderTest {
+public class LdapSenderTest extends SenderTestBase<LdapSender> {
 	InMemoryDirectoryServer inMemoryDirectoryServer = null;
 	String baseDNs = "dc=ibissource,dc=org";
 
+	@Override
+	public LdapSender createSender() throws Exception {
+		LDAPConnection connection = null;
+		try {
+			connection = inMemoryDirectoryServer.getConnection();
+		} catch (LDAPException e) {
+			if(!TestAssertions.isTestRunningOnGitHub()) {
+				fail(e.getMessage());
+			}
+		}
+
+		assumeNotNull(connection);
+		LdapSender ldapSender = new LdapSender();
+		ldapSender.setLdapProviderURL("ldap://localhost:" + connection.getConnectedPort());
+		return ldapSender;
+	}
+
+	@Override
 	@Before
-	public void startLdapServer() throws LDAPException, IOException {
+	public void setUp() throws Exception {
 		XMLUnit.setIgnoreWhitespace(true);
 		XMLUnit.setIgnoreAttributeOrder(true);
 
-		InMemoryDirectoryServerConfig config = new InMemoryDirectoryServerConfig(
-				baseDNs);
+		InMemoryDirectoryServerConfig config = new InMemoryDirectoryServerConfig(baseDNs);
 		config.setSchema(null);
 		inMemoryDirectoryServer = new InMemoryDirectoryServer(config);
 
 		String ldifDataFile = "Ldap/data.ldif";
 		URL ldifDataUrl = ClassUtils.getResourceURL(ldifDataFile);
 		if (ldifDataUrl == null) {
-			throw new IOException("cannot find resource [" + ldifDataFile + "]");
+			fail("cannot find resource [" + ldifDataFile + "]");
 		}
 		inMemoryDirectoryServer.importFromLDIF(true, ldifDataUrl.getPath());
 		inMemoryDirectoryServer.startListening();
+		super.setUp();
+	}
+
+	@After
+	@Override
+	public void tearDown() throws Exception {
+		if(inMemoryDirectoryServer != null) {
+			inMemoryDirectoryServer.shutDown(true);
+		}
+		super.tearDown();
 	}
 
 	@Test
-	public void init() throws SAXException, IOException,
-			ConfigurationException, SenderException, LDAPException, TimeOutException {
+	public void init() throws Exception {
 		compareXML("Ldap/expected/init.xml", getTree());
 	}
 
 	@Test
-	public void updateAttribute() throws SAXException, IOException,
-			ConfigurationException, SenderException, LDAPException, TimeOutException {
-		String result;
-		LDAPConnection connection = inMemoryDirectoryServer.getConnection();
-		LdapSender ldapSender = null;
-		try {
-			ldapSender = new LdapSender();
-			ldapSender.setLdapProviderURL("ldap://"
-					+ connection.getConnectedAddress() + ":"
-					+ connection.getConnectedPort());
-			ldapSender.setOperation("update");
-			Parameter parameter = new Parameter();
-			parameter.setName("entryName");
-			parameter.setValue("cn=LEA Administrator,ou=groups,ou=development,"
-					+ baseDNs);
-			ldapSender.addParameter(parameter);
-			ldapSender.configure();
-			ldapSender.open();
-			result = ldapSender.sendMessage(new Message("<attributes><attribute name=\"mail\"><value>info@ibissource.org</value></attribute></attributes>"),null).asString();
-		} finally {
-			if (ldapSender != null) {
-				ldapSender.close();
-			}
-			if (connection != null) {
-				connection.close();
-			}
-		}
-		assertEquals("<LdapResult>Success</LdapResult>", result);
+	public void readTwoAttributes() throws Exception {
+		sender.setOperation(Operation.READ);
+		sender.addParameter(ParameterBuilder.create().withName("entryName"));
+		sender.setAttributesToReturn("gidNumber,mail");
 
+		sender.configure();
+		sender.open();
+
+		String result = sendMessage("cn=LEA Administrator,ou=groups,ou=development," + baseDNs).asString();
+
+		TestAssertions.assertEqualsIgnoreCRLF("<attributes>\n\t<attribute name=\"mail\" value=\"leaadministrator@ibissource.org\"/>\n\t<attribute name=\"gidNumber\" value=\"505\"/>\n</attributes>\n", result);
+	}
+
+	@Test
+	public void readAllAttributes() throws Exception {
+		sender.setOperation(Operation.READ);
+		sender.addParameter(new Parameter("entryName", "cn=LEA Administrator,ou=groups,ou=development," + baseDNs));
+
+		sender.configure();
+		sender.open();
+
+		String result = sendMessage("<dummy/>").asString();
+
+		compareXML("Ldap/expected/read.xml", result);
+	}
+
+	@Test
+	public void updateAttribute() throws Exception {
+		sender.setOperation(Operation.UPDATE);
+		sender.addParameter(new Parameter("entryName", "cn=LEA Administrator,ou=groups,ou=development," + baseDNs));
+
+		sender.configure();
+		sender.open();
+
+		String result = sendMessage("<attributes><attribute name=\"mail\"><value>info@ibissource.org</value></attribute></attributes>").asString();
+
+		assertEquals("<LdapResult>Success</LdapResult>", result);
 		compareXML("Ldap/expected/updateAttribute.xml", getTree());
 	}
 
 	@Test
-	public void updateNewEntry() throws SAXException, IOException, ConfigurationException, SenderException, LDAPException, TimeOutException {
-		String result;
-		LDAPConnection connection = inMemoryDirectoryServer.getConnection();
-		LdapSender ldapSender = null;
-		try {
-			ldapSender = new LdapSender();
-			ldapSender.setLdapProviderURL("ldap://" + connection.getConnectedAddress() + ":" + connection.getConnectedPort());
-			ldapSender.setOperation("update");
-			Parameter parameter = new Parameter();
-			parameter.setName("entryName");
-			parameter.setValue("cn=LEA Administrator,ou=groups,ou=development," + baseDNs);
-			ldapSender.addParameter(parameter);
-			Parameter parameter2 = new Parameter();
-			parameter2.setName("newEntryName");
-			parameter2.setValue("cn=LEA Administrator,ou=people,ou=development," + baseDNs);
-			ldapSender.addParameter(parameter2);
-			ldapSender.configure();
-			ldapSender.open();
-			result = ldapSender.sendMessage(new Message("<dummy/>"), null).asString();
-		} finally {
-			if (ldapSender != null) {
-				ldapSender.close();
-			}
-			if (connection != null) {
-				connection.close();
-			}
-		}
-		assertEquals("<LdapResult>Success</LdapResult>", result);
+	public void updateNewEntry() throws Exception {
+		sender.setOperation(Operation.UPDATE);
+		sender.addParameter(new Parameter("entryName", "cn=LEA Administrator,ou=groups,ou=development," + baseDNs));
+		sender.addParameter(new Parameter("newEntryName", "cn=LEA Administrator,ou=people,ou=development," + baseDNs));
 
+		sender.configure();
+		sender.open();
+
+		String result = sendMessage("<dummy/>").asString();
+
+		assertEquals("<LdapResult>Success</LdapResult>", result);
 		compareXML("Ldap/expected/updateNewEntry.xml", getTree());
 	}
 
 	@Test
-	public void deleteAttribute() throws SAXException, IOException,
-			ConfigurationException, SenderException, LDAPException, TimeOutException {
-		String result;
-		LDAPConnection connection = inMemoryDirectoryServer.getConnection();
-		LdapSender ldapSender = null;
-		try {
-			ldapSender = new LdapSender();
-			ldapSender.setLdapProviderURL("ldap://"
-					+ connection.getConnectedAddress() + ":"
-					+ connection.getConnectedPort());
-			ldapSender.setOperation("delete");
-			Parameter parameter = new Parameter();
-			parameter.setName("entryName");
-			parameter.setValue("cn=LEA Administrator,ou=groups,ou=development,"
-					+ baseDNs);
-			ldapSender.addParameter(parameter);
-			ldapSender.configure();
-			ldapSender.open();
-			result = ldapSender.sendMessage(new Message("<attributes><attribute name=\"mail\"><value>leaadministrator@ibissource.org</value></attribute></attributes>"),
-							null).asString();
-		} finally {
-			if (ldapSender != null) {
-				ldapSender.close();
-			}
-			if (connection != null) {
-				connection.close();
-			}
-		}
-		assertEquals("<LdapResult>Success</LdapResult>", result);
+	public void deleteAttribute() throws Exception {
+		sender.setOperation(Operation.DELETE);
+		sender.addParameter(new Parameter("entryName", "cn=LEA Administrator,ou=groups,ou=development," + baseDNs));
 
+		sender.configure();
+		sender.open();
+
+		String result = sendMessage("<attributes><attribute name=\"mail\"><value>leaadministrator@ibissource.org</value></attribute></attributes>").asString();
+
+		assertEquals("<LdapResult>Success</LdapResult>", result);
 		compareXML("Ldap/expected/delete.xml", getTree());
 	}
 
-	@After
-	public void stopLdapServer() {
-		if (inMemoryDirectoryServer != null) {
-			inMemoryDirectoryServer.shutDown(true);
-		}
+	//Create a new sender and execute the TREE action to run a diff against that changes
+	private String getTree() throws Exception {
+		super.tearDown();
+		super.setUp();
+		sender.setOperation(Operation.GET_TREE);
+		sender.addParameter(new Parameter("entryName", baseDNs));
+
+		sender.configure();
+		sender.open();
+
+		return sendMessage("dummy").asString();
 	}
 
-	private String getTree() throws LDAPException, ConfigurationException,
-			SenderException, TimeOutException, IOException {
-		LDAPConnection connection = inMemoryDirectoryServer.getConnection();
-		LdapSender ldapSender = null;
-		try {
-			ldapSender = new LdapSender();
-			ldapSender.setLdapProviderURL("ldap://"
-					+ connection.getConnectedAddress() + ":"
-					+ connection.getConnectedPort());
-			ldapSender.setOperation("getTree");
-			Parameter parameter = new Parameter();
-			parameter.setName("entryName");
-			parameter.setValue(baseDNs);
-			ldapSender.addParameter(parameter);
-			ldapSender.configure();
-			ldapSender.open();
-			return ldapSender.sendMessage(new Message("dummy"), null).asString();
-		} finally {
-			if (ldapSender != null) {
-				ldapSender.close();
-			}
-			if (connection != null) {
-				connection.close();
-			}
-		}
-	}
-
-	private void compareXML(String expectedFile, String result)
-			throws SAXException, IOException {
+	private void compareXML(String expectedFile, String result) throws SAXException, IOException {
 		URL expectedUrl = ClassUtils.getResourceURL(expectedFile);
 		if (expectedUrl == null) {
 			throw new IOException("cannot find resource [" + expectedUrl + "]");
 		}
+
 		String expected = Misc.resourceToString(expectedUrl);
 		Diff diff = XMLUnit.compareXML(expected, result);
 		diff.overrideDifferenceListener(new DifferenceListener() {

@@ -1,0 +1,2 @@
+
+<root xmlns="urn:exits-soap" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" channel="soap" path="toExit"/>

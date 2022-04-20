@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.core;
 
+import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -24,6 +25,7 @@ import nl.nn.adapterframework.stream.Message;
  * 
  * @author Johan Verrips
  */
+@FrankDocGroup(order = 60, name = "ErrorMessageFormatters")
 public interface IErrorMessageFormatter {
 
 	public Message format(String errorMessage, Throwable t, INamedObject location, Message originalMessage, String messageId, long receivedTime);

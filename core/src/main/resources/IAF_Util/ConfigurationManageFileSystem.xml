@@ -1,0 +1,54 @@
+<Module>
+	<Adapter name="ManageFileSystem" description="Manage the file" active="${manageFileSystem.active}">
+		<Receiver name="ManageFileSystem">
+			<JavaListener name="ManageFileSystem" serviceName="${manageFileSystem.serviceName}" />
+		</Receiver>
+		
+		<Pipeline firstPipe="IterateActions">
+			<Exit name="EXIT" state="success" />
+			
+			<XmlInputValidator schema="ManageFileSystem/xsd/ManageFileSystem.xsd" root="manageFileSystemREQ">
+				<forward name="failure" path="InputValidateFailure" />
+				<forward name="parserError" path="InputValidateError" />
+			</XmlInputValidator>
+			<XmlOutputValidator schema="ManageFileSystem/xsd/ManageFileSystem.xsd" root="manageFileSystemRLY">
+				<forward name="failure" path="InternalXsdFailure" />
+				<forward name="parserError" path="InternalXsdError" />
+			</XmlOutputValidator>
+			<ForEachChildElementPipe name="IterateActions" ignoreExceptions="true" elementXPathExpression="manageFileSystemREQ/*">
+				<LocalFileSystemSender name="IterateInputAction">                    
+					<Param name="action" xpathExpression="local-name(*)" />
+					<Param name="inputFolder" xpathExpression="*/inputFolder" />
+					<Param name="destination" xpathExpression="*/destination" />
+					<Param name="filename" xpathExpression="*/filename" />
+					<Param name="contents" xpathExpression="*/contents" />
+					<Param name="file" xpathExpression="*/file" />
+				</LocalFileSystemSender>
+				<Forward name="success" path="ManageFileSystemRLY" />
+			</ForEachChildElementPipe>
+			<XsltPipe name="ManageFileSystemRLY" styleSheetName="ManageFileSystem/xsl/ManageFileSystemRLY.xsl">
+				<forward name="success" path="EXIT" />
+			</XsltPipe>
+			
+			<!-- ERRORS -->
+			<FixedResultPipe name="InputValidateError" filename="ManageFileSystem/xml/ErrorMessage.xml" replaceFrom="%reasonCode" replaceTo="NOT_WELL_FORMED_XML">
+				<forward name="success" path="EXIT" />
+			</FixedResultPipe>
+			<XsltPipe name="InputValidateFailure" styleSheetName="ManageFileSystem/xsl/ErrorMessage.xsl" getInputFromFixedValue="&lt;dummy/&gt;">
+				<param name="errorCode" value="INVALID_XML"/>
+				<param name="failureReason" sessionKey="failureReason" />
+				<forward name="success" path="EXIT" />
+			</XsltPipe>
+			<XsltPipe name="InternalXsdError" styleSheetName="ManageFileSystem/xsl/ErrorMessage.xsl" getInputFromFixedValue="&lt;dummy/&gt;">
+				<param name="errorCode" value="INTERNAL_XSD_ERROR" />
+				<param name="failureReason" value="NOT_WELL_FORMED_XML" />
+				<forward name="success" path="EXIT" />
+			</XsltPipe>
+			<XsltPipe name="InternalXsdFailure" styleSheetName="ManageFileSystem/xsl/ErrorMessage.xsl" getInputFromFixedValue="&lt;dummy/&gt;">
+				<param name="errorCode" value="INTERNAL_XSD_ERROR" />
+				<param name="failureReason" sessionKey="failureReason" />
+				<forward name="success" path="EXIT" />
+			</XsltPipe>
+		</Pipeline>
+	</Adapter>
+</Module>

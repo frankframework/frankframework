@@ -21,8 +21,6 @@ import static org.quartz.JobBuilder.newJob;
 
 import java.text.ParseException;
 
-import nl.nn.adapterframework.configuration.IbisManager;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.quartz.JobDataMap;
@@ -30,6 +28,8 @@ import org.quartz.JobDetail;
 import org.quartz.JobKey;
 import org.quartz.SchedulerException;
 import org.quartz.impl.StdSchedulerFactory;
+
+import nl.nn.adapterframework.scheduler.job.IJob;
 
 public abstract class SchedulerTestBase {
 
@@ -53,8 +53,7 @@ public abstract class SchedulerTestBase {
 
 	private JobDataMap createConfiguredJobDataMap() {
 		JobDataMap jobDataMap = new JobDataMap();
-		jobDataMap.put(ConfiguredJob.JOBDEF_KEY, (JobDef) null);
-		jobDataMap.put(ConfiguredJob.MANAGER_KEY, (IbisManager) null);
+		jobDataMap.put(ConfiguredJob.JOBDEF_KEY, (IJob) null);
 
 		return jobDataMap;
 	}
@@ -102,6 +101,6 @@ public abstract class SchedulerTestBase {
 		assertEquals("test2", details.getName());
 		assertEquals(SchedulerHelper.DEFAULT_GROUP, details.getGroup());
 
-		assertEquals(2, job.getJobDataMap().size());
+		assertEquals(1, job.getJobDataMap().size());
 	}
 }

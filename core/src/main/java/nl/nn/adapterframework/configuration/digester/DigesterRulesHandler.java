@@ -25,6 +25,9 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import nl.nn.adapterframework.util.LogUtil;
 
+/**
+ * @author Niels Meijer
+ */
 public abstract class DigesterRulesHandler extends DefaultHandler {
 	protected final Logger log = LogUtil.getLogger(this);
 

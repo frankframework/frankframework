@@ -5,23 +5,18 @@ import static org.junit.Assert.assertEquals;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.multipart.FilePart;
-import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
-import org.apache.commons.httpclient.methods.multipart.Part;
-import org.apache.commons.httpclient.methods.multipart.StringPart;
+import org.apache.http.HttpEntity;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.junit.Test;
 import org.springframework.mock.web.MockMultipartHttpServletRequest;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.util.ClassUtils;
 
 public class StreamPipeTest extends PipeTestBase<StreamPipe> {
@@ -33,9 +28,9 @@ public class StreamPipeTest extends PipeTestBase<StreamPipe> {
 	}
 
 	@Override
-	public void setup() throws ConfigurationException {
+	public void setup() throws Exception {
 		super.setup();
-		session = new PipeLineSessionBase();
+		session = new PipeLineSession();
 	}
 
 	@Test
@@ -48,8 +43,8 @@ public class StreamPipeTest extends PipeTestBase<StreamPipe> {
 		assertEquals("success", pipeRunResult.getPipeForward().getName());
 		String expectedResult = "<parts>"
 				+ "<part type=\"string\" name=\"string1\" sessionKey=\"part_string\" size=\"19\"/>"
-				+ "<part type=\"file\" name=\"doc001.pdf\" sessionKey=\"part_file\" size=\"26358\" mimeType=\"application/octet-stream; charset=ISO-8859-1\"/>"
-				+ "<part type=\"file\" name=\"doc002.pdf\" sessionKey=\"part_file2\" size=\"25879\" mimeType=\"application/octet-stream; charset=ISO-8859-1\"/>"
+				+ "<part type=\"file\" name=\"doc001.pdf\" sessionKey=\"part_file\" size=\"26358\" mimeType=\"application/octet-stream\"/>"
+				+ "<part type=\"file\" name=\"doc002.pdf\" sessionKey=\"part_file2\" size=\"25879\" mimeType=\"application/octet-stream\"/>"
 				+ "</parts>";
 		assertEquals(expectedResult, pipeRunResult.getResult().asString());
 	}
@@ -64,9 +59,9 @@ public class StreamPipeTest extends PipeTestBase<StreamPipe> {
 		assertEquals("success", pipeRunResult.getPipeForward().getName());
 		String expectedResult = "<parts>"
 				+ "<part type=\"string\" name=\"string1\" sessionKey=\"part_string\" size=\"19\"/>"
-				+ "<part type=\"file\" name=\"doc001.pdf\" sessionKey=\"part_file\" size=\"26358\" mimeType=\"application/octet-stream; charset=ISO-8859-1\"/>"
+				+ "<part type=\"file\" name=\"doc001.pdf\" sessionKey=\"part_file\" size=\"26358\" mimeType=\"application/octet-stream\"/>"
 				+ "<part type=\"string\" name=\"antivirus_rc\" sessionKey=\"part_string2\" size=\"4\"/>"
-				+ "<part type=\"file\" name=\"doc002.pdf\" sessionKey=\"part_file2\" size=\"25879\" mimeType=\"application/octet-stream; charset=ISO-8859-1\"/>"
+				+ "<part type=\"file\" name=\"doc002.pdf\" sessionKey=\"part_file2\" size=\"25879\" mimeType=\"application/octet-stream\"/>"
 				+ "<part type=\"string\" name=\"antivirus_rc\" sessionKey=\"part_string3\" size=\"4\"/>"
 				+ "</parts>";
 		assertEquals(expectedResult, pipeRunResult.getResult().asString());
@@ -83,8 +78,8 @@ public class StreamPipeTest extends PipeTestBase<StreamPipe> {
 		assertEquals("success", pipeRunResult.getPipeForward().getName());
 		String expectedResult = "<parts>"
 				+ "<part type=\"string\" name=\"string1\" sessionKey=\"part_string\" size=\"19\"/>"
-				+ "<part type=\"file\" name=\"doc001.pdf\" sessionKey=\"part_file\" size=\"26358\" mimeType=\"application/octet-stream; charset=ISO-8859-1\"/>"
-				+ "<part type=\"file\" name=\"doc002.pdf\" sessionKey=\"part_file2\" size=\"25879\" mimeType=\"application/octet-stream; charset=ISO-8859-1\"/>"
+				+ "<part type=\"file\" name=\"doc001.pdf\" sessionKey=\"part_file\" size=\"26358\" mimeType=\"application/octet-stream\"/>"
+				+ "<part type=\"file\" name=\"doc002.pdf\" sessionKey=\"part_file2\" size=\"25879\" mimeType=\"application/octet-stream\"/>"
 				+ "</parts>";
 		assertEquals(expectedResult, pipeRunResult.getResult().asString());
 	}
@@ -113,63 +108,47 @@ public class StreamPipeTest extends PipeTestBase<StreamPipe> {
 		return createMultipartHttpRequest(pipe, addAntiVirusParts, false);
 	}
 
-	private Parameter createHttpRequestParameter(MockMultipartHttpServletRequest request, IPipeLineSession session) {
+	private Parameter createHttpRequestParameter(MockMultipartHttpServletRequest request, PipeLineSession session) {
 		session.put("httpRequest", request);
-		Parameter parameter = new Parameter();
-		parameter.setName("httpRequest");
-		parameter.setSessionKey("httpRequest");
-		return parameter;
+		return ParameterBuilder.create().withName("httpRequest").withSessionKey("httpRequest");
 	}
 
 	private MockMultipartHttpServletRequest createMultipartHttpRequest(StreamPipe pipe, boolean addAntiVirusParts, boolean antiVirusLastPartFailed) throws Exception {
 		MockMultipartHttpServletRequest request = new MockMultipartHttpServletRequest();
-		request.setContentType("multipart/mixed;boundary=gc0p4Jq0M2Yt08jU534c0p");
-		List<Part> parts = new ArrayList<Part>();
-		String string = "<hello>test</hello>";
-		StringPart stringPart = new StringPart("string1", string);
-		parts.add(stringPart);
+		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+		builder.setBoundary("gc0p4Jq0M2Yt08jU534c0p");
+		builder.addTextBody("string1", "<hello>test</hello>");
+
 		URL url = ClassUtils.getResourceURL("/Documents/doc001.pdf");
 		File file = new File(url.toURI());
-		FilePart filePart = new FilePart("file1", file.getName(), file);
-		parts.add(filePart);
+		builder.addBinaryBody("file1", file, ContentType.APPLICATION_OCTET_STREAM, file.getName());
+
 		if (addAntiVirusParts) {
-			StringPart antiVirusPassedPart = new StringPart(
-					pipe.getAntiVirusPartName(),
-					pipe.getAntiVirusPassedMessage());
-			parts.add(antiVirusPassedPart);
+			builder.addTextBody(pipe.getAntiVirusPartName(), pipe.getAntiVirusPassedMessage());
 		}
+
 		URL url2 = ClassUtils.getResourceURL("/Documents/doc002.pdf");
 		File file2 = new File(url2.toURI());
-		FilePart filePart2 = new FilePart("file2", file2.getName(), file2);
-		parts.add(filePart2);
+		builder.addBinaryBody("file2", file2, ContentType.APPLICATION_OCTET_STREAM, file2.getName());
+
 		if (addAntiVirusParts) {
 			String antiVirusLastPartMessage;
 			if (antiVirusLastPartFailed) {
 				antiVirusLastPartMessage = "Fail";
-				if (antiVirusLastPartMessage.equalsIgnoreCase(
-						pipe.getAntiVirusPassedMessage())) {
-					throw new Exception("fail message ["
-							+ antiVirusLastPartMessage
-							+ "] must differ from pass message ["
-							+ pipe.getAntiVirusPassedMessage() + "]");
+				if (antiVirusLastPartMessage.equalsIgnoreCase(pipe.getAntiVirusPassedMessage())) {
+					throw new Exception("fail message ["+antiVirusLastPartMessage+"] must differ from pass message ["+pipe.getAntiVirusPassedMessage()+"]");
 				}
 			} else {
-				antiVirusLastPartMessage = pipe
-						.getAntiVirusPassedMessage();
+				antiVirusLastPartMessage = pipe.getAntiVirusPassedMessage();
 			}
-			StringPart antiVirusPassedPart2 = new StringPart(
-					pipe.getAntiVirusPartName(),
-					antiVirusLastPartMessage);
-			parts.add(antiVirusPassedPart2);
+			builder.addTextBody(pipe.getAntiVirusPartName(), antiVirusLastPartMessage);
 		}
-		Part allParts[] = new Part[parts.size()];
-		allParts = parts.toArray(allParts);
-		MultipartRequestEntity multipartRequestEntity = new MultipartRequestEntity(
-				allParts, new PostMethod().getParams());
+
 		ByteArrayOutputStream requestContent = new ByteArrayOutputStream();
-		multipartRequestEntity.writeRequest(requestContent);
+		HttpEntity entity = builder.build();
+		entity.writeTo(requestContent);
 		request.setContent(requestContent.toByteArray());
-		request.setContentType(multipartRequestEntity.getContentType());
+		request.setContentType(entity.getContentType().getValue());
 		return request;
 	}
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,14 +15,14 @@
 */
 package nl.nn.adapterframework.processors;
 
-import org.apache.commons.lang.StringUtils;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -35,7 +35,7 @@ public class TransactionAttributePipeLineProcessor extends PipeLineProcessorBase
 	private PlatformTransactionManager txManager;
 
 	@Override
-	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, IPipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
+	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
 		try {
 			//TransactionStatus txStatus = txManager.getTransaction(txDef);
 			IbisTransaction itx = new IbisTransaction(txManager, pipeLine.getTxDef(), "pipeline of adapter [" + pipeLine.getOwner().getName() + "]");
@@ -47,14 +47,14 @@ public class TransactionAttributePipeLineProcessor extends PipeLineProcessorBase
 					PipeLineResult pipeLineResult = pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
 
 					boolean mustRollback=false;
-				
+
 					if (pipeLineResult==null) {
 						mustRollback=true;
 						log.warn("Pipeline received null result for messageId ["+messageId+"], transaction (when present and active) will be rolled back");
 					} else {
-						if (StringUtils.isNotEmpty(pipeLine.getCommitOnState()) && !pipeLine.getCommitOnState().equalsIgnoreCase(pipeLineResult.getState())) {
+						if (!pipeLineResult.isSuccessful()) {
 							mustRollback=true;
-							log.warn("Pipeline result state ["+pipeLineResult.getState()+"] for messageId ["+messageId+"] is not equal to commitOnState ["+pipeLine.getCommitOnState()+"], transaction (when present and active) will be rolled back");
+							log.warn("Pipeline result state ["+pipeLineResult.getState()+"] for messageId ["+messageId+"] is not equal to ["+ExitState.SUCCESS+"], transaction (when present and active) will be rolled back");
 						}
 					}
 					if (mustRollback) {
@@ -73,9 +73,8 @@ public class TransactionAttributePipeLineProcessor extends PipeLineProcessorBase
 					if (tg.cancel()) {
 						if (tCaught==null) {
 							throw new InterruptedException(tg.getDescription()+" was interrupted");
-						} else {
-							log.warn("Thread interrupted, but propagating other caught exception of type ["+ClassUtils.nameOf(tCaught)+"]");
 						}
+						log.warn("Thread interrupted, but propagating other caught exception of type ["+ClassUtils.nameOf(tCaught)+"]");
 					}
 				}
 			} catch (Throwable t) {
@@ -99,7 +98,7 @@ public class TransactionAttributePipeLineProcessor extends PipeLineProcessorBase
 				+ pipeLine.getTransactionAttribute() + "]", e);
 		}
 	}
-	
+
 	public void setTxManager(PlatformTransactionManager txManager) {
 		this.txManager = txManager;
 	}

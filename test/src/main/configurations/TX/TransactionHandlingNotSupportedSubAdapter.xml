@@ -4,7 +4,6 @@
 		description="Adapter for testing transaction handling, multiple adapters are being called with different transaction attributes"
 	>
 		<receiver
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
 			transactionTimeout="2"
 			transactionAttribute="Required"
 		>
@@ -14,7 +13,6 @@
 				serviceName="ibis4test-TransactionHandlingNotSupported"
 			/>
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-				jmsRealm="jdbc" 
 				slotId="${applicationId}/GenericReceiverTransactionHandlingNotSupported"
 			/>
 		</receiver>
@@ -26,7 +24,7 @@
 
 			<!-- The pipeline should have a TX, this subadapter should removed it -->
 			<pipe name="Send transacted message to not supported subadapter"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				getInputFromFixedValue="tralala"
 			>
 				<sender
@@ -43,7 +41,6 @@
 		description="First SubAdapter for Transaction Handling">
 	
 		<receiver
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
 			transactionAttribute="NotSupported"
 		>
 			<listener 
@@ -59,7 +56,7 @@
 
 			<!-- Make sure there is no TX -->
 			<pipe name="Send transacted message to never subadapter"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				getInputFromFixedValue="tralala"
 			>
 				<sender
@@ -76,7 +73,6 @@
 		description="First SubAdapter for Transaction Handling">
 	
 		<receiver
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
 			transactionAttribute="NotSupported"
 		>
 			<listener 

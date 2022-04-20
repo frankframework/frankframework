@@ -21,14 +21,14 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.FileUtils;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Pipe for deleting files.
@@ -53,14 +53,14 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 		
 		
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
 			String filename;
 			if (StringUtils.isNotEmpty(getFilePattern())) {
 				filename = FileUtils.getFilename(getParameterList(), session, "", getFilePattern());
 			} else {
 				if (StringUtils.isNotEmpty(getFilePatternSessionKey())) {
-					filename = FileUtils.getFilename(getParameterList(), session, "", (String)session.get(getFilePatternSessionKey()));
+					filename = FileUtils.getFilename(getParameterList(), session, "", session.getMessage(getFilePatternSessionKey()).asString());
 				} else {
 					if (StringUtils.isEmpty(message.asString())) {
 						throw new PipeRunException(this, "input empty, but should contain filename to delete");
@@ -93,7 +93,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 				}
 			}
 			
-			return new PipeRunResult(getForward(), message);
+			return new PipeRunResult(getSuccessForward(), message);
 		}
 		catch(Exception e) {
 			throw new PipeRunException(this, "Error while deleting file(s)", e); 
@@ -235,7 +235,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 		return excludeWildcard;
 	}
 
-	@IbisDoc({"minimal age of file in milliseconds, to avoid deleting a file while it is still being written (only used when wildcard is set) (set to 0 or negative value to disable)", "1000 [ms]"})
+	@IbisDoc({"Minimal age of file <i>in milliseconds</i>, to avoid deleting a file while it is still being written (only used when wildcard is set) (set to 0 to disable)", "1000"})
 	public void setMinStableTime(long minStableTime) {
 		this.minStableTime = minStableTime;
 	}

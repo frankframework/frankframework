@@ -15,9 +15,9 @@
 */
 package nl.nn.adapterframework.processors;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.senders.SenderWrapperBase;
 import nl.nn.adapterframework.stream.Message;
 
@@ -28,7 +28,7 @@ import nl.nn.adapterframework.stream.Message;
 public class CoreSenderWrapperProcessor implements SenderWrapperProcessor {
 	
 	@Override
-	public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		return senderWrapperBase.doSendMessage(message, session);
 	}
 

@@ -1,14 +1,20 @@
 package nl.nn.adapterframework.http.rest;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import nl.nn.adapterframework.core.ListenerException;
-
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
+import nl.nn.adapterframework.http.rest.ApiListenerServletTest.Methods;
+import nl.nn.adapterframework.util.EnumUtils;
 
 public class ApiServiceDispatcherTest {
 
@@ -18,6 +24,11 @@ public class ApiServiceDispatcherTest {
 	@Before
 	public void setUp() {
 		dispatcher = new ApiServiceDispatcher();
+	}
+
+	@After
+	public void tearDown() {
+		dispatcher = null;
 	}
 
 	@Test
@@ -60,7 +71,7 @@ public class ApiServiceDispatcherTest {
 			}
 			ApiListener listener = new ApiListener();
 			listener.setName(name);
-			listener.setMethod("GET");
+			listener.setMethod(HttpMethod.GET);
 			listener.setUriPattern(name);
 			
 			try {
@@ -69,5 +80,34 @@ public class ApiServiceDispatcherTest {
 				throw new RuntimeException(e);
 			}
 		}
+	}
+
+	private ApiListener createServiceClient(Methods method, String uri) {
+		ApiListener listener = new ApiListener();
+		listener.setName("Listener4Uri["+uri+"]");
+		listener.setMethod(EnumUtils.parse(HttpMethod.class, method.name()));
+		listener.setUriPattern(uri);
+		return listener;
+	}
+
+	@Test
+	public void testMultipleMethodsSameEndpoint() throws Exception {
+		String uri = "testEndpoint1";
+		dispatcher.registerServiceClient(createServiceClient(Methods.GET, uri));
+		dispatcher.registerServiceClient(createServiceClient(Methods.POST, uri));
+		ApiDispatchConfig config = dispatcher.findConfigForUri("/"+uri);
+		assertNotNull(config);
+		assertEquals("[GET, POST]", config.getMethods().toString());
+
+		//Test what happens after we remove 1 ServiceClient
+		dispatcher.unregisterServiceClient(createServiceClient(Methods.POST, uri));
+		ApiDispatchConfig config2 = dispatcher.findConfigForUri("/"+uri);
+		assertNotNull(config2);
+		assertEquals("[GET]", config2.getMethods().toString());
+
+		//Test what happens after we remove both ServiceClient in the same DispatchConfig
+		dispatcher.unregisterServiceClient(createServiceClient(Methods.GET, uri));
+		ApiDispatchConfig config3 = dispatcher.findConfigForUri("/"+uri);
+		assertNull(config3);
 	}
 }

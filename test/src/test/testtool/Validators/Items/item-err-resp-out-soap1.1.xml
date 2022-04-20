@@ -1,4 +1,5 @@
-<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"><soapenv:Body><Item_Response xmlns="urn:items"><Result xmlns="http://nn.nl/XSD/Generic/MessageHeader/1">
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"><soapenv:Body><OutputValidationFailure xmlns="urn:items">
+	<Result xmlns="http://nn.nl/XSD/Generic/MessageHeader/1">
 		<Status>ERROR</Status>
 		<ErrorList>
 			<Error>
@@ -9,20 +10,21 @@
 					<Context/>
 					<Action>
 						<Paradigm>Response</Paradigm>
-						<Name>Test/SoapValidator</Name>
+						<Name>Test/Validator</Name>
 						<Version>1</Version>
 					</Action>
 				</Service>
 				<DetailList>
 					<Detail>
 						<Code>ERROR</Code>
-						<Text>/Envelope/Body/Item_Response/Status: at (1,142): cvc-enumeration-valid: Value 'c' is not facet-valid with respect to enumeration '[a, b]'. It must be a value from the enumeration.</Text>
+						<Text>/Envelope/Body/Item_Response/Status: at (2,20): cvc-enumeration-valid: Value 'c' is not facet-valid with respect to enumeration '[a, b]'. It must be a value from the enumeration.</Text>
 					</Detail>
 					<Detail>
 						<Code>ERROR</Code>
-						<Text>/Envelope/Body/Item_Response/Status: at (1,142): cvc-type.3.1.3: The value 'c' of element 'Status' is not valid.</Text>
+						<Text>/Envelope/Body/Item_Response/Status: at (2,20): cvc-type.3.1.3: The value 'c' of element 'Status' is not valid.</Text>
 					</Detail>
 				</DetailList>
 			</Error>
 		</ErrorList>
-	</Result></Item_Response></soapenv:Body></soapenv:Envelope>
+	</Result>
+</OutputValidationFailure></soapenv:Body></soapenv:Envelope>

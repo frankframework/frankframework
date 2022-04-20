@@ -17,7 +17,7 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -36,7 +36,7 @@ public class XmlBuilderPipe extends FixedForwardPipe {
 	private String substringEnd;
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String result;
 		try {
 			result = message.asString();
@@ -63,7 +63,7 @@ public class XmlBuilderPipe extends FixedForwardPipe {
 				}
 			}
 		}
-		return new PipeRunResult(getForward(), result);
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 
 	private String buildXml(String xml) {

@@ -1,10 +1,9 @@
-<ibis>
+<module>
 	<adapter name="InputOutputWrapper"
 		description="Test the functioning of the InputWrapper and OutputWrapper">
 		<errorMessageFormatter
-			className="nl.nn.adapterframework.errormessageformatters.SoapErrorMessage" />
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="InputOutputWrapper">
+			className="nl.nn.adapterframework.errormessageformatters.SoapErrorMessageFormatter" />
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-InputOutputWrapper" throwException="false" />
 		</receiver>
@@ -38,18 +37,18 @@
 			<pipe name="switchAction" className="nl.nn.adapterframework.pipes.XmlSwitch"
 				xpathExpression="Request/@action"></pipe>
 			<!-- sendMessage_invalidRequest -->
-			<pipe name="sendMessage_invalidRequest" className="nl.nn.adapterframework.pipes.FixedResult"
-				fileName="InputOutputWrapper/invalidRequest.xml">
+			<pipe name="sendMessage_invalidRequest" className="nl.nn.adapterframework.pipes.FixedResultPipe"
+				filename="InputOutputWrapper/invalidRequest.xml">
 				<forward name="success" path="sendMessage" />
 			</pipe>
 			<!-- sendMessage_notWellFormedRequest -->
-			<pipe name="sendMessage_notWellFormedRequest" className="nl.nn.adapterframework.pipes.FixedResult"
-				fileName="InputOutputWrapper/notWellFormedRequest.txt">
+			<pipe name="sendMessage_notWellFormedRequest" className="nl.nn.adapterframework.pipes.FixedResultPipe"
+				filename="InputOutputWrapper/notWellFormedRequest.txt">
 				<forward name="success" path="sendMessage" />
 			</pipe>
 			<!-- sendMessage -->
 			<pipe name="sendMessage"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<inputValidator className="nl.nn.adapterframework.pipes.XmlValidator"
 					schemaLocation="http://www.nn.nl/InputOutputWrapper InputOutputWrapper/rr.xsd"
 					root="Request">
@@ -72,12 +71,12 @@
 					direction="unwrap" soapHeaderSessionKey="soapHeader2">
 				</outputWrapper>
 				<sender className="nl.nn.adapterframework.senders.FixedResultSender"
-					fileName="InputOutputWrapper/soapResponse.xml" />
+					filename="InputOutputWrapper/soapResponse.xml" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- sendMessage_invalidResponse -->
 			<pipe name="sendMessage_invalidResponse"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<inputValidator className="nl.nn.adapterframework.pipes.XmlValidator"
 					schemaLocation="http://www.nn.nl/InputOutputWrapper InputOutputWrapper/rr.xsd"
 					root="Request">
@@ -100,12 +99,12 @@
 					direction="unwrap" soapHeaderSessionKey="soapHeader2">
 				</outputWrapper>
 				<sender className="nl.nn.adapterframework.senders.FixedResultSender"
-					fileName="InputOutputWrapper/invalidSoapResponse.xml" />
+					filename="InputOutputWrapper/invalidSoapResponse.xml" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- sendMessage_notWellFormedResponse -->
 			<pipe name="sendMessage_notWellFormedResponse"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<inputValidator className="nl.nn.adapterframework.pipes.XmlValidator"
 					schemaLocation="http://www.nn.nl/InputOutputWrapper InputOutputWrapper/rr.xsd"
 					root="Request">
@@ -128,57 +127,57 @@
 					direction="unwrap" soapHeaderSessionKey="soapHeader2">
 				</outputWrapper>
 				<sender className="nl.nn.adapterframework.senders.FixedResultSender"
-					fileName="InputOutputWrapper/notWellFormedSoapResponse.txt" />
+					filename="InputOutputWrapper/notWellFormedSoapResponse.txt" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- invalidResponse -->
-			<pipe name="invalidResponse" className="nl.nn.adapterframework.pipes.FixedResult"
-				fileName="InputOutputWrapper/invalidResponse.xml">
+			<pipe name="invalidResponse" className="nl.nn.adapterframework.pipes.FixedResultPipe"
+				filename="InputOutputWrapper/invalidResponse.xml">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- notWellFormedResponse -->
-			<pipe name="notWellFormedResponse" className="nl.nn.adapterframework.pipes.FixedResult"
-				fileName="InputOutputWrapper/notWellFormedResponse.txt">
+			<pipe name="notWellFormedResponse" className="nl.nn.adapterframework.pipes.FixedResultPipe"
+				filename="InputOutputWrapper/notWellFormedResponse.txt">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- ERRORS -->
-			<pipe name="InputValidateError" className="nl.nn.adapterframework.pipes.PutInSession"
-				sessionKey="errorCode" value="NOT_WELL_FORMED_XML">
+			<pipe name="InputValidateError" className="nl.nn.adapterframework.pipes.PutInSession">
+				<param name="errorCode" value="NOT_WELL_FORMED_XML"/>
 				<forward name="success" path="ErrorExit" />
 			</pipe>
 			<!-- -->
-			<pipe name="InputValidateFailure" className="nl.nn.adapterframework.pipes.PutParametersInSession">
+			<pipe name="InputValidateFailure" className="nl.nn.adapterframework.pipes.PutInSession">
 				<param name="errorCode" value="INVALID_XML" />
 				<param name="errorDetailCode" sessionKey="failureReason" />
 				<forward name="success" path="ErrorExit" />
 			</pipe>
 			<!-- -->
-			<pipe name="InternalXsdError" className="nl.nn.adapterframework.pipes.PutInSession"
-				sessionKey="errorCode" value="INTERNAL_XSD_ERROR:NOT_WELL_FORMED_XML">
+			<pipe name="InternalXsdError" className="nl.nn.adapterframework.pipes.PutInSession">
+				<param name="errorCode" value="INTERNAL_XSD_ERROR:NOT_WELL_FORMED_XML"/>
 				<forward name="success" path="ErrorExit" />
 			</pipe>
 			<!-- -->
-			<pipe name="InternalXsdFailure" className="nl.nn.adapterframework.pipes.PutParametersInSession">
+			<pipe name="InternalXsdFailure" className="nl.nn.adapterframework.pipes.PutInSession">
 				<param name="errorCode" value="INTERNAL_XSD_ERROR" />
 				<param name="errorDetailCode" sessionKey="failureReason" />
 				<forward name="success" path="ErrorExit" />
 			</pipe>
 			<!-- -->
-			<pipe name="SendXsdError" className="nl.nn.adapterframework.pipes.PutInSession"
-				sessionKey="errorCode" value="SEND_XSD_ERROR:NOT_WELL_FORMED_XML">
+			<pipe name="SendXsdError" className="nl.nn.adapterframework.pipes.PutInSession">
+				<param name="errorCode" value="SEND_XSD_ERROR:NOT_WELL_FORMED_XML"/>
 				<forward name="success" path="ErrorExit" />
 			</pipe>
 			<!-- -->
-			<pipe name="SendXsdFailure" className="nl.nn.adapterframework.pipes.PutParametersInSession">
+			<pipe name="SendXsdFailure" className="nl.nn.adapterframework.pipes.PutInSession">
 				<param name="errorCode" value="SEND_XSD_ERROR" />
 				<param name="errorDetailCode" sessionKey="failureReason" />
 				<forward name="success" path="ErrorExit" />
 			</pipe>
 			<!-- -->
-			<pipe name="ErrorExit" className="nl.nn.adapterframework.pipes.FixedResult"
-				fileName="InputOutputWrapper/emptyErrorResponse.xml">
+			<pipe name="ErrorExit" className="nl.nn.adapterframework.pipes.FixedResultPipe"
+				filename="InputOutputWrapper/emptyErrorResponse.xml">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
 	</adapter>
-</ibis>
+</module>

@@ -17,17 +17,18 @@ package nl.nn.adapterframework.ldap;
 
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.ldap.LdapSender.Operation;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.pipes.AbstractPipe;
+import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -54,7 +55,7 @@ import nl.nn.adapterframework.stream.Message;
  */
 @Deprecated
 @ConfigurationWarning("please use LdapSender with operation challenge and check for returned message <LdapResult>Success</LdapResult>")
-public class LdapChallengePipe extends AbstractPipe {
+public class LdapChallengePipe extends FixedForwardPipe {
 
 	private String ldapProviderURL=null;
 	private String initialContextFactoryName=null;
@@ -81,10 +82,10 @@ public class LdapChallengePipe extends AbstractPipe {
 
 	/** 
 	 * Checks to see if the supplied parameteres of the pipe can login to LDAP 
-	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Message, IPipeLineSession)
+	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Message, PipeLineSession)
 	 */
 	@Override
-	public PipeRunResult doPipe(Message msg, IPipeLineSession pls) throws PipeRunException {
+	public PipeRunResult doPipe(Message msg, PipeLineSession pls) throws PipeRunException {
 
 		LdapSender ldapSender = new LdapSender();
 		
@@ -121,10 +122,7 @@ public class LdapChallengePipe extends AbstractPipe {
 			return new PipeRunResult(findForward("invalid"), msg);
 		}
 			
-		Parameter dummyEntryName =  new Parameter();
-		dummyEntryName.setName("entryName");
-		dummyEntryName.setValue(principal);
-		ldapSender.addParameter(dummyEntryName);
+		ldapSender.addParameter(new Parameter("entryName", principal));
 			
 		ldapSender.setUsePooling(false);
 		ldapSender.setLdapProviderURL(ldapProviderURL);
@@ -133,7 +131,7 @@ public class LdapChallengePipe extends AbstractPipe {
 		}
 		ldapSender.setPrincipal(principal);
 		ldapSender.setCredentials(credentials);
-		ldapSender.setOperation(LdapSender.OPERATION_READ);
+		ldapSender.setOperation(Operation.READ);
 		try {
 			log.debug("Looking up context for principal ["+principal+"]");
 			ldapSender.configure();
@@ -147,10 +145,10 @@ public class LdapChallengePipe extends AbstractPipe {
 			return new PipeRunResult(findForward("invalid"), msg);
 		}
 						
-		return new PipeRunResult(findForward("success"), msg);
+		return new PipeRunResult(getSuccessForward(), msg);
 	}
 	
-	protected void handleError(LdapSender ldapSender, IPipeLineSession session, int code, String message) {
+	protected void handleError(LdapSender ldapSender, PipeLineSession session, int code, String message) {
 		Throwable t = new ConfigurationException(LdapSender.LDAP_ERROR_MAGIC_STRING+code+"-"+message+"]");
 		ldapSender.storeLdapException(t, session);
 	}

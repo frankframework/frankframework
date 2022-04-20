@@ -1,15 +1,15 @@
 <module>
 	<adapter name="LinkMethodMessageId" description="Test the functioning of the LinkMethodMessageId" active="${active.ifsa}">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="LinkMethodMessageId">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-LinkMethodMessageId" />
 		</receiver>
 		<pipeline firstPipe="sendMessage" transactionAttribute="Required">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="sendMessage" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe" transactionAttribute="NotSupported" linkMethod="MESSAGEID">
+			<pipe name="sendMessage" className="nl.nn.adapterframework.pipes.SenderPipe" transactionAttribute="NotSupported" linkMethod="MESSAGEID">
 				<sender className="nl.nn.adapterframework.extensions.ifsa.IfsaRequesterSender" applicationId="${applicationId}" messageProtocol="FF" serviceId="${SendUnstructuredEmail}" />
-				<listener className="nl.nn.adapterframework.jms.JmsListener" destinationName="jms/i4testiaf_in" timeOut="3000" jmsRealm="qcf" messageSelector="SOURCE ='I4TIAF?'"/>
+				<listener className="nl.nn.adapterframework.jms.JmsListener" destinationName="${jms.destination.i4testiaf_in}" timeOut="3000" jmsRealm="qcf" messageSelector="SOURCE ='I4TIAF?'"/>
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

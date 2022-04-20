@@ -1,0 +1,18 @@
+<configuration>
+	<adapter name="LdapFindGroupMembershipsPipe">
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="LdapFindGroupMembershipsPipe" />
+		</receiver>
+		<pipeline firstPipe="LdapFindGroupMembershipsPipe">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<pipe
+				name="LdapFindGroupMembershipsPipe"
+				className="nl.nn.adapterframework.ldap.LdapFindGroupMembershipsPipe"
+				useSsl="true">
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+</configuration>

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,13 +18,14 @@ package nl.nn.adapterframework.jdbc;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 
+import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.parameters.ParameterList;
 
 public class QueryExecutionContext {
 
 	private String query;
-	private String queryType;
+	private QueryType queryType;
 	private ParameterList parameterList;
 	private Connection connection; 
 	private PreparedStatement statement;
@@ -32,7 +33,7 @@ public class QueryExecutionContext {
 	private JdbcSession jdbcSession;
 	protected int iteration;
 
-	public QueryExecutionContext(String query, String queryType, ParameterList parameterList) {
+	public QueryExecutionContext(String query, QueryType queryType, ParameterList parameterList) {
 		this.query = query;
 		this.queryType = queryType;
 		this.parameterList = parameterList;
@@ -45,10 +46,10 @@ public class QueryExecutionContext {
 		this.query = query;
 	}
 
-	public String getQueryType() {
+	public QueryType getQueryType() {
 		return queryType;
 	}
-	public void setQueryType(String queryType) {
+	public void setQueryType(QueryType queryType) {
 		this.queryType = queryType;
 	}
 
@@ -56,7 +57,6 @@ public class QueryExecutionContext {
 		return parameterList;
 	}
 
-	
 	public Connection getConnection() {
 		return connection;
 	}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,53 +15,20 @@
 */
 package nl.nn.adapterframework.extensions.ifsa;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.List;
+import nl.nn.adapterframework.doc.DocumentedEnum;
+import nl.nn.adapterframework.doc.EnumLabel;
+import nl.nn.adapterframework.util.EnumUtils;
 
-import org.apache.commons.lang.enums.Enum;
-/**
- * Enumeration of IFSA message protocols.
- *
- * @author Johan Verrips IOS
- */
-public class IfsaMessageProtocolEnum extends Enum {
-	
-   public static final IfsaMessageProtocolEnum REQUEST_REPLY = new IfsaMessageProtocolEnum("RR");
-   public static final IfsaMessageProtocolEnum FIRE_AND_FORGET = new IfsaMessageProtocolEnum("FF");
+public enum IfsaMessageProtocolEnum implements DocumentedEnum {
 
-	protected IfsaMessageProtocolEnum(String arg1) {
-		super(arg1);
-	}
-	
+	@EnumLabel("RR") REQUEST_REPLY, 
+	@EnumLabel("FF") FIRE_AND_FORGET;
+
 	public static IfsaMessageProtocolEnum getEnum(String messageProtocol) {
-		return (IfsaMessageProtocolEnum)getEnum(
-			IfsaMessageProtocolEnum.class,
-			messageProtocol);
-	}
-	
-	public static List getEnumList() {
-		return getEnumList(IfsaMessageProtocolEnum.class);
-	}
-	
-	public static Map getEnumMap() {
-		return getEnumMap(IfsaMessageProtocolEnum.class);
-	}
-	
-	public static String getNames() {
-		String result = "[";
-		for (Iterator i = iterator(IfsaMessageProtocolEnum.class); i.hasNext();) {
-			IfsaMessageProtocolEnum c = (IfsaMessageProtocolEnum)i.next();
-			result += c.getName();
-			if (i.hasNext()) {
-				result += ",";
-			}
-		}
-		result += "]";
-		return result;
+		return EnumUtils.parse(IfsaMessageProtocolEnum.class, messageProtocol);
 	}
 
-	public static Iterator iterator() {
-		return iterator(IfsaMessageProtocolEnum.class);
+	public static String getNames() {
+		return "[RR,FF]";
 	}
 }

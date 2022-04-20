@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,158 +15,64 @@
 */
 package nl.nn.ibistesttool;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Reader;
-import java.io.Writer;
-import java.security.Principal;
-import java.util.Collection;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Map;
-import java.util.Set;
+import java.util.Map.Entry;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.ISecurityHandler;
-
-import org.apache.commons.lang.NotImplementedException;
+import javassist.util.proxy.MethodHandler;
+import javassist.util.proxy.ProxyFactory;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Wrapper class for PipeLineSession to be able to debug storing values in
  * session keys.
- * 
- * @author  Jaco de Groot (jaco@dynasol.nl)
  */
+public class PipeLineSessionDebugger implements MethodHandler {
 
-public class PipeLineSessionDebugger implements IPipeLineSession {
-	private IPipeLineSession pipeLineSession;
+	private PipeLineSession pipeLineSession;
 	private IbisDebugger ibisDebugger;
 
-	PipeLineSessionDebugger(IPipeLineSession pipeLineSession) {
+	private PipeLineSessionDebugger(PipeLineSession pipeLineSession, IbisDebugger ibisDebugger) {
 		this.pipeLineSession = pipeLineSession;
-	}
-
-	public void setIbisDebugger(IbisDebugger ibisDebugger) {
 		this.ibisDebugger = ibisDebugger;
 	}
-
-	// Methods implementing IPipeLineSession
-
-	public String getMessageId() {
-		return pipeLineSession.getMessageId();
-	}
-
-	public String getOriginalMessage() {
-		return pipeLineSession.getOriginalMessage();
-	}
-
-	public void setSecurityHandler(ISecurityHandler handler) {
-		pipeLineSession.setSecurityHandler(handler);
-	}
-
-	public ISecurityHandler getSecurityHandler() throws NotImplementedException {
-		return pipeLineSession.getSecurityHandler();
-	}
-
-	public boolean isUserInRole(String role) throws NotImplementedException {
-		return pipeLineSession.isUserInRole(role);
-	}
-
-	public Principal getPrincipal() throws NotImplementedException {
-		return pipeLineSession.getPrincipal();
-	}
-
-	// Methods implementing Map
-
-	public void clear() {
-		pipeLineSession.clear();
-	}
-
-	public boolean containsKey(Object arg0) {
-		return pipeLineSession.containsKey(arg0);
-	}
-
-	public boolean containsValue(Object arg0) {
-		return pipeLineSession.containsValue(arg0);
-	}
-
-	public Set<java.util.Map.Entry<String, Object>> entrySet() {
-		return pipeLineSession.entrySet();
-	}
-
-	public boolean equals(Object arg0) {
-		return pipeLineSession.equals(arg0);
-	}
-
-	public Object get(Object arg0) {
-		return pipeLineSession.get(arg0);
-	}
-
-	public int hashCode() {
-		return pipeLineSession.hashCode();
-	}
-
-	public boolean isEmpty() {
-		return pipeLineSession.isEmpty();
-	}
-
-	public Set keySet() {
-		return pipeLineSession.keySet();
-	}
-
-	public Object put(String arg0, Object arg1) {
-		arg1 = ibisDebugger.storeInSessionKey(getMessageId(), arg0, arg1);
-		return pipeLineSession.put(arg0, arg1);
-	}
-
-	public void putAll(Map arg0) {
-		pipeLineSession.putAll(arg0);
-	}
-
-	public Object remove(Object arg0) {
-		return pipeLineSession.remove(arg0);
-	}
-
-	public int size() {
-		return pipeLineSession.size();
-	}
-
-	public Collection<Object> values() {
-		return pipeLineSession.values();
+	
+	public static PipeLineSession newInstance(PipeLineSession pipeLineSession, IbisDebugger ibisDebugger) throws NoSuchMethodException, IllegalArgumentException, InstantiationException, IllegalAccessException, InvocationTargetException {
+		ProxyFactory factory = new ProxyFactory();
+		factory.setSuperclass(PipeLineSession.class);
+		PipeLineSessionDebugger handler = new PipeLineSessionDebugger(pipeLineSession, ibisDebugger);
+		return (PipeLineSession)factory.create(new Class[0], new Object[0], handler);
 	}
 
 	@Override
-	public InputStream scheduleCloseOnSessionExit(InputStream stream) {
-		return pipeLineSession.scheduleCloseOnSessionExit(stream);
+	public Object invoke(Object self, Method method, Method proceed, Object[] args) throws Throwable {
+		if (method.getName().equals("put")) {
+			return put((String)args[0], args[1]);
+		}
+		if (method.getName().equals("putAll")) {
+			putAll((Map<String,Object>)args[0]);
+			return null;
+		}
+		return method.invoke(pipeLineSession, args);
 	}
 
-	@Override
-	public OutputStream scheduleCloseOnSessionExit(OutputStream stream) {
-		return pipeLineSession.scheduleCloseOnSessionExit(stream);
+	private Object put(String name, Object value) {
+		Object oldValue = value;
+		value = ibisDebugger.storeInSessionKey(pipeLineSession.getMessageId(), name, value);
+		if (value != oldValue && value instanceof Message) {
+			// If a session key is stubbed with a stream and this session key is not used (stream is not read) it will
+			// keep the report in progress (waiting for the stream to be read, captured and closed).
+			((Message)value).closeOnCloseOf(pipeLineSession, this.getClass().getTypeName());
+		}
+		return pipeLineSession.put(name, value);
 	}
 
-	@Override
-	public Reader scheduleCloseOnSessionExit(Reader reader) {
-		return pipeLineSession.scheduleCloseOnSessionExit(reader);
-	}
-
-	@Override
-	public Writer scheduleCloseOnSessionExit(Writer writer) {
-		return pipeLineSession.scheduleCloseOnSessionExit(writer);
-	}
-
-	@Override
-	public void unscheduleCloseOnSessionExit(AutoCloseable resource) {
-		pipeLineSession.unscheduleCloseOnSessionExit(resource);
-	}
-
-	@Override
-	public void close() {
-		pipeLineSession.close();
-	}
-
-	// Remaining methods
-
-	public String toString() {
-		return pipeLineSession.toString();
+	private void putAll(Map<? extends String,? extends Object> entries) {
+		for(Entry<? extends String,? extends Object> entry: entries.entrySet()) {
+			put(entry.getKey(),entry.getValue());
+		}
 	}
 
 }

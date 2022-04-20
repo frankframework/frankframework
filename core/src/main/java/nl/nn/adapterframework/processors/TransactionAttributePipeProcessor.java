@@ -20,15 +20,16 @@ import org.springframework.transaction.TransactionDefinition;
 
 import nl.nn.adapterframework.core.HasTransactionAttribute;
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.functional.ThrowingFunction;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.SpringTxManagerProxy;
+import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 
 /**
  * @author Jaco de Groot
@@ -38,7 +39,7 @@ public class TransactionAttributePipeProcessor extends PipeProcessorBase {
 	private PlatformTransactionManager txManager;
 	
 	@Override
-	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, IPipeLineSession pipeLineSession) throws PipeRunException {
+	protected PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		PipeRunResult pipeRunResult;
 		TransactionDefinition txDef;
 		int txTimeout=0;
@@ -55,7 +56,7 @@ public class TransactionAttributePipeProcessor extends PipeProcessorBase {
 			Throwable tCaught=null;
 			try {
 				tg.activateGuard(txTimeout);
-				pipeRunResult = pipeProcessor.processPipe(pipeLine, pipe, message, pipeLineSession);
+				pipeRunResult = chain.apply(message);
 			} catch (Throwable t) {
 				tCaught=t;
 				throw tCaught;
@@ -63,9 +64,8 @@ public class TransactionAttributePipeProcessor extends PipeProcessorBase {
 				if (tg.cancel()) {
 					if (tCaught==null) {
 						throw new PipeRunException(pipe,tg.getDescription()+" was interrupted");
-					} else {
-						log.warn("Thread interrupted, but propagating other caught exception of type ["+ClassUtils.nameOf(tCaught)+"]");
-					}
+					} 
+					log.warn("Thread interrupted, but propagating other caught exception of type ["+ClassUtils.nameOf(tCaught)+"]");
 				}
 			}
 		} catch (Throwable t) {

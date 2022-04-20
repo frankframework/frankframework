@@ -3,19 +3,21 @@ package nl.nn.adapterframework.xslt;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.pipes.GenericMessageSendingPipe;
+import nl.nn.adapterframework.pipes.SenderPipe;
 import nl.nn.adapterframework.senders.XsltSender;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
-public class XsltSenderTest extends XsltErrorTestBase<GenericMessageSendingPipe> {
+public class XsltSenderTest extends XsltErrorTestBase<SenderPipe> {
 
 	protected XsltSender sender;
 	
 	@Override
-	public GenericMessageSendingPipe createPipe() {
-		GenericMessageSendingPipe pipe=new GenericMessageSendingPipe();
+	public SenderPipe createPipe() {
+		SenderPipe pipe=new SenderPipe();
 		sender = new XsltSender();
+		autowireByType(sender);
 		pipe.setSender(sender);
 		return pipe;
 	}
@@ -53,7 +55,7 @@ public class XsltSenderTest extends XsltErrorTestBase<GenericMessageSendingPipe>
 	}
 
 	@Override
-	protected void setOutputType(String outputType) {
+	protected void setOutputType(OutputType outputType) {
 		sender.setOutputType(outputType);
 	}
 

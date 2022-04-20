@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2016, 2020 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,16 +18,17 @@ package nl.nn.adapterframework.cache;
 import java.io.IOException;
 import java.io.Serializable;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import net.sf.ehcache.Cache;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
 /**
  * Remove specified cache key from cache with specified name.
@@ -51,7 +52,7 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
 			String cacheKey = keyTransformer.transformKey(message.asString(), session);
 			Cache cache = ibisCacheManager.getCache(cacheName);
@@ -60,7 +61,7 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 			} else {
 				log.warn("could not find cache key [" + cacheKey + "] to remove from cache ["+cacheName+"]");
 			}
-			return new PipeRunResult(getForward(), message);
+			return new PipeRunResult(getSuccessForward(), message);
 		} catch (IOException e) {
 			throw new PipeRunException(this, "cannot open stream", e);
 		}
@@ -84,10 +85,10 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 	}
 
 	@IbisDoc({"3", "Output type of xpath expression to extract cache key from request message, must be 'xml' or 'text'", "text"})
-	public void setKeyXPathOutputType(String keyXPathOutputType) {
+	public void setKeyXPathOutputType(OutputType keyXPathOutputType) {
 		keyTransformer.setKeyXPathOutputType(keyXPathOutputType);
 	}
-	public String getKeyXPathOutputType() {
+	public OutputType getKeyXPathOutputType() {
 		return keyTransformer.getKeyXPathOutputType();
 	}
 

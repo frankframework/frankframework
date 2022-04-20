@@ -2,6 +2,10 @@ cell = AdminControl.getCell()
 node = AdminControl.getNode()
 server = 'server1'
 
+#p0 = AdminConfig.listTemplates('JDBCProvider')
+#print 'JDBCProvider templates: ', p0
+#p1 = AdminConfig.listTemplates('DataSource')
+#print 'DataSource templates: ', p1
 
 def createAuthAlias( aliasName, username, password, description ):
 	print "Creating Auth Alias ", aliasName
@@ -41,21 +45,14 @@ def createDatasource(datasourceName, providerName, authAlias, properties):
 	datasourceId = AdminJDBC.createDataSource(node, server, providerName, datasourceName, attributes)
 	return(datasourceId)
 
-
-#p0 = AdminConfig.listTemplates('JDBCProvider')
-#print 'JDBCProvider templates: ', p0
-#p1 = AdminConfig.listTemplates('DataSource')
-#print 'DataSource templates: ', p1
-
-
-
-
 createTemplatedProvider('Oracle JDBC Driver (XA)', 		 'oracle.jdbc.xa.client.OracleXADataSource', 		'/work/drivers/ojdbc${oracle.driver.jdkversion}.jar')
 createTemplatedProvider('Microsoft SQL Server JDBC Driver (XA)', 'com.microsoft.sqlserver.jdbc.SQLServerXADataSource',  '/work/drivers/mssql-jdbc.jar')
 createProvider('H2 JDBC Driver (XA)', 'org.h2.jdbcx.JdbcDataSource', 'classpath=/work/drivers/h2.jar,xa=true')
+createProvider('MySQL JDBC Driver', 'com.mysql.cj.jdbc.MysqlXADataSource', 'classpath=/work/drivers/mysql-connector-java.jar')
+createProvider('PostgreSQL JDBC Driver', 'org.postgresql.xa.PGXADataSource', 'classpath=/work/drivers/postgresql.jar')
 
 createDatasource('ibis4test-h2', 'H2 JDBC Driver (XA)', [], [
-		[['name', 'URL'],['value', 'jdbc:h2:file:/work/ibis4test;MODE=Oracle;DB_CLOSE_ON_EXIT=FALSE;AUTO_SERVER=TRUE']]
+		[['name', 'URL'],['value', 'jdbc:h2:file:/work/ibis4test;NON_KEYWORDS=VALUE;DB_CLOSE_ON_EXIT=FALSE;AUTO_SERVER=TRUE']]
 	])
 
 authAliasName = 'jdbcTestIaf'
@@ -71,6 +68,30 @@ createTemplatedDatasource('ibis4test-mssql', 'Microsoft SQL Server JDBC Driver (
 	])
 
 
+createDatasource('ibis4test-mysql', 'MySQL JDBC Driver', authAliasName, [
+		[['name', 'URL'],  ['value', 'jdbc:mysql://host.docker.internal:3307/testiaf']],
+		[['name', 'sslMode'], ['value', 'DISABLED']],
+		[['name', 'serverTimezone'], ['value', 'Europe/Amsterdam']],
+		[['name', 'allowPublicKeyRetrieval'], ['value', 'true']],
+		[['name', 'pinGlobalTxToPhysicalConnection'], ['value', 'true']],
+		[['name', 'socketTimeout'], ['value', '5000']]
+	])
+	
+# MariaDB uses the same driver as MySQL for proper XA support
+createDatasource('ibis4test-mariadb', 'MySQL JDBC Driver', authAliasName, [
+		[['name', 'URL'],  ['value', 'jdbc:mysql://host.docker.internal:3306/testiaf']],
+		[['name', 'sslMode'], ['value', 'DISABLED']],
+		[['name', 'serverTimezone'], ['value', 'Europe/Amsterdam']],
+		[['name', 'allowPublicKeyRetrieval'], ['value', 'true']],
+		[['name', 'pinGlobalTxToPhysicalConnection'], ['value', 'true']],
+		[['name', 'socketTimeout'], ['value', '5000']]
+	])
+
+createDatasource('ibis4test-postgres-xa', 'PostgreSQL JDBC Driver', authAliasName, [
+		[['name', 'URL'],  ['value', 'jdbc:postgresql://host.docker.internal:5432/testiaf']]
+	])
+
+
 createAuthAlias( authAliasName, 'testiaf_user', 'testiaf_user00', 'alias for iaf-test datasources' )
 createAuthAlias( 'testAuthAlias', 'testUser', 'testPassword', 'alias for authentication tests' )
-
+createAuthAlias( 'mongodb', 'testiaf_user', 'testiaf_user00', 'alias for mongodb test database' )

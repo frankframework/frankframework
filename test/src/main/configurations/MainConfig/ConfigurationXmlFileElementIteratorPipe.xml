@@ -1,7 +1,6 @@
-<ibis>
+<module>
 	<adapter name="XmlFileElementIteratorPipe">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="XmlFileElementIteratorPipe">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-XmlFileElementIteratorPipe" />
 		</receiver>
@@ -11,7 +10,7 @@
 			</exits>
 
 			<pipe name="getRequest" className="nl.nn.adapterframework.pipes.XsltPipe"
-				xpathExpression="request" sessionKey="originalRequest">
+				xpathExpression="request" storeResultInSessionKey="originalRequest" preserveInput="true">
 				<forward name="success" path="switchMode" />
 			</pipe>
 
@@ -40,8 +39,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="XmlFileElementIteratorPipe_node">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="XmlFileElementIteratorPipe_node">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				name="XmlFileElementIteratorPipe_node" />
 		</receiver>
@@ -56,4 +54,4 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-</ibis>
+</module>

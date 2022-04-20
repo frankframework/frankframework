@@ -28,7 +28,6 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.digester.substitution.VariableExpander;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -49,13 +48,13 @@ import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoad
 public final class AppConstants extends Properties implements Serializable {
 	private Logger log = LogUtil.getLogger(this);
 
-	private final static String APP_CONSTANTS_PROPERTIES_FILE = "AppConstants.properties";
-	private final static String ADDITIONAL_PROPERTIES_FILE_KEY = "ADDITIONAL.PROPERTIES.FILE";
+	private static final String APP_CONSTANTS_PROPERTIES_FILE = "AppConstants.properties";
+	private static final String ADDITIONAL_PROPERTIES_FILE_KEY = "ADDITIONAL.PROPERTIES.FILE";
 	public static final String APPLICATION_SERVER_TYPE_PROPERTY = "application.server.type";
 	public static final String APPLICATION_SERVER_CUSTOMIZATION_PROPERTY = "application.server.type.custom";
-	public final static String JDBC_PROPERTIES_KEY = "AppConstants.properties.jdbc";
+	public static final String JDBC_PROPERTIES_KEY = "AppConstants.properties.jdbc";
+	public static final String ADDITIONAL_PROPERTIES_FILE_SUFFIX_KEY = ADDITIONAL_PROPERTIES_FILE_KEY+".SUFFIX"; //Can't be final because of tests
 
-	private VariableExpander variableExpander;
 	private static Properties additionalProperties = new Properties();
 
 	private static ConcurrentHashMap<ClassLoader, AppConstants> appConstantsMap = new ConcurrentHashMap<>();
@@ -310,7 +309,7 @@ public final class AppConstants extends Properties implements Serializable {
 				if (loadAdditionalPropertiesFiles && StringUtils.isNotEmpty(loadFile)) {
 					// Add properties after load(is) to prevent load(is)
 					// from overriding them
-					String loadFileSuffix = getProperty(ADDITIONAL_PROPERTIES_FILE_KEY + ".SUFFIX");
+					String loadFileSuffix = getProperty(ADDITIONAL_PROPERTIES_FILE_SUFFIX_KEY);
 					if (StringUtils.isNotEmpty(loadFileSuffix)){
 						load(classLoader, loadFile, loadFileSuffix, false);
 					} else {
@@ -476,15 +475,5 @@ public final class AppConstants extends Properties implements Serializable {
 		String ob = this.getResolvedProperty(key);
 		if (ob == null)return dfault;
 		return Double.parseDouble(ob);
-	}
-
-	/*
-	 *	The variableExpander is set from the SpringContext.
-	 */
-	public void setVariableExpander(VariableExpander expander) {
-		variableExpander = expander;
-	}
-	public VariableExpander getVariableExpander() {
-		return variableExpander;
 	}
 }

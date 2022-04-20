@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,16 +18,14 @@ package nl.nn.adapterframework.jdbc;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Map;
 
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IbisContext;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IDataIterator;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -37,6 +35,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.StringIteratorPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
+import nl.nn.adapterframework.util.SpringUtils;
 
 
 /**
@@ -47,17 +46,23 @@ import nl.nn.adapterframework.util.JdbcUtil;
  */
 public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implements HasPhysicalDestination {
 
+	private final @Getter(onMethod = @__(@Override)) String domain = "JDBC";
 	protected MixedQuerySender querySender = new MixedQuerySender();
 
 	private final String FIXEDQUERYSENDER = "nl.nn.adapterframework.jdbc.FixedQuerySender";
 
 	protected class MixedQuerySender extends DirectQuerySender {
-		
+
 		private String query;
 
 		@Override
 		public void configure() throws ConfigurationException {
-			super.configure(query!=null);
+			//In case a query is specified, pass true as argument to suppress the SQL Injection warning else pass the Adapter
+			if(query!=null) {
+				super.configure(true);
+			} else {
+				super.configure(getAdapter());
+			}
 		}
 
 		@Override
@@ -76,8 +81,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		IbisContext ibisContext = getAdapter().getConfiguration().getIbisManager().getIbisContext();
-		ibisContext.autowireBeanProperties(querySender, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+		SpringUtils.autowireByName(getApplicationContext(), querySender);
 		querySender.setName("source of "+getName());
 		querySender.configure();
 	}
@@ -100,9 +104,8 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 
 	protected abstract IDataIterator<String> getIterator(IDbmsSupport dbmsSupport, Connection conn, ResultSet rs) throws SenderException; 
 
-	@SuppressWarnings("finally")
 	@Override
-	protected IDataIterator<String> getIterator(Message message, IPipeLineSession session, Map<String,Object> threadContext) throws SenderException {
+	protected IDataIterator<String> getIterator(Message message, PipeLineSession session, Map<String,Object> threadContext) throws SenderException {
 		Connection connection = null;
 		PreparedStatement statement=null;
 		ResultSet rs=null;
@@ -125,21 +128,12 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 				if (rs!=null) {
 					JdbcUtil.fullClose(connection, rs);
 				} else {
-					if (statement!=null) {
-						JdbcUtil.fullClose(connection, statement);
-					} else {
-						if (connection!=null) {
-							try {
-								connection.close();
-							} catch (SQLException e1) {
-								log.debug(getLogPrefix(session) + "caught exception closing sender after exception",e1);
-							}
-						}
-					}
+					JdbcUtil.fullClose(connection, statement);
 				}
-			} finally {
-				throw new SenderException(getLogPrefix(session),t);
+			} catch (Throwable t2) {
+				t.addSuppressed(t2);
 			}
+			throw new SenderException(getLogPrefix(session), t);
 		}
 	}
 
@@ -153,6 +147,8 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 		return querySender.getPhysicalDestinationName();
 	}
 
+	@Deprecated
+	@ConfigurationWarning("We discourage the use of jmsRealms for datasources. To specify a datasource other then the default, use the datasourceName attribute directly, instead of referring to a realm")
 	public void setJmsRealm(String jmsRealmName) {
 		querySender.setJmsRealm(jmsRealmName);
 	}

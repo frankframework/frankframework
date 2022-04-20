@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <EXCEPTION>
   <errorMessage timestamp="Fri Jan 03 14:42:38 CET 2020" originator="IAF_ss9 7.5-SNAPSHOT" message="Pipe [send2ws_forward_exception] msgId [Test Tool correlation id] : (SocketTimeoutException) Read timed out">
-    <location class="nl.nn.adapterframework.pipes.GenericMessageSendingPipe" name="send2ws_forward_exception"/>
-    <details>nl.nn.adapterframework.core.TimeOutException: (SocketTimeoutException) Read timed out
+    <location class="nl.nn.adapterframework.pipes.SenderPipe" name="send2ws_forward_exception"/>
+    <details>nl.nn.adapterframework.core.TimeoutException: (SocketTimeoutException) Read timed out
 	at nl.nn.adapterframework.http.HttpSenderBase.sendMessage(HttpSenderBase.java:678)
 	at nl.nn.adapterframework.http.HttpSenderBase$$FastClassBySpringCGLIB$$f73d91f3.invoke(&lt;generated&gt;)
 	at org.springframework.cglib.proxy.MethodProxy.invoke(MethodProxy.java:204)

@@ -1,0 +1,41 @@
+<configuration>
+	  <adapter name="FullAdapter">
+      <receiver name="testtool-FullAdapter"
+      			transactionAttribute="Required">
+         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   serviceName="testtool-FullAdapter"/>
+         <messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
+                     jmsRealm="jdbc"
+                     slotId="stubbed-FullAdapter"
+                     retention="7"/>
+      </receiver>
+		<!--<receiver name="FullAdapter" transactionAttribute="Required">
+			      <listener name="FullAdapter"
+                   className="nl.nn.adapterframework.jms.JmsListener"
+                   lookupDestination="false"/>
+			      <messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
+                     jmsRealm="jdbc"
+                     slotId="FullAdapter"
+                     retention="7"/>
+		    </receiver>--><receiver name="testtool-FullAdapter-1" 
+		    	transactionAttribute="Required">
+         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   serviceName="testtool-FullAdapter-1"/>
+         <messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
+                     jmsRealm="jdbc"
+                     slotId="stubbed-FullAdapter"
+                     retention="7"/>
+      </receiver>
+		    <pipeline>
+			      <exits>
+				        <exit path="EXIT" state="success"/>
+			      </exits>
+			
+			      <pipe name="CreateResponse"
+               className="nl.nn.adapterframework.pipes.FixedResult"
+               returnString="Success ">
+				        <forward name="success" path="EXIT"/>
+			      </pipe>
+		    </pipeline>
+	  </adapter>
+</configuration>

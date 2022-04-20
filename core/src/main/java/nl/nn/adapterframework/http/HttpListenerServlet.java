@@ -22,10 +22,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISecurityHandler;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -57,8 +56,8 @@ public class HttpListenerServlet extends HttpServlet {
 
 	public void invoke(String message, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		ISecurityHandler securityHandler = new HttpSecurityHandler(request);
-		try (IPipeLineSession messageContext= new PipeLineSessionBase()) {
-			messageContext.put(IPipeLineSession.securityHandlerKey, securityHandler);
+		try (PipeLineSession messageContext= new PipeLineSession()) {
+			messageContext.setSecurityHandler(securityHandler);
 			messageContext.put("httpListenerServletRequest", request);
 			messageContext.put("httpListenerServletResponse", response);
 			String service=request.getParameter(SERVICE_ID_PARAM);

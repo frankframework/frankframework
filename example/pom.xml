@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.ibissource</groupId>
 		<artifactId>ibis-adapterframework-parent</artifactId>
-		<version>7.6-SNAPSHOT</version>
+		<version>${revision}</version>
 	</parent>
 
 	<artifactId>ibis-adapterframework-example</artifactId>
@@ -29,29 +29,13 @@
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
-			<version>1.4.199</version>
+			<version>${h2.version}</version>
 		</dependency>
-		<!-- Test scoped dependencies -->
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<!-- Add this dependency -->
+		<!-- Includes missing javax.jms.JMSExceptions class -->
 		<dependency>
 			<groupId>org.apache.geronimo.specs</groupId>
 			<artifactId>geronimo-jms_1.1_spec</artifactId>
 			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-ladybug</artifactId>
-			<scope>test</scope>
 		</dependency>
 	</dependencies>
 	<build>
@@ -86,12 +70,23 @@
 					</loginServices>
 				</configuration>
 			</plugin>
+			<!-- use maven-jar-plugin to make separate artifacts of context, configurations, resources and testscenarios, to inject them into deployments -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.2.0</version>
-				<!-- make separate artifacts of configurations, resources and testscenarios, to inject them into deployments -->
 				<executions>
+					<execution>
+						<id>zip-context</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<configuration>
+							<classifier>context</classifier>
+							<classesDirectory>src/main/webapp/META-INF</classesDirectory>
+							<includes>context.xml</includes>
+						</configuration>
+					</execution>
 					<execution>
 						<id>zip-configurations</id>
 						<phase>package</phase>

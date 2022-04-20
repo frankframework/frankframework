@@ -1,7 +1,6 @@
 <module>
 	<adapter name="HttpListener" description="Test the functioning of the HttpListener">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="HttpListener">
+		<receiver>
 			<listener className="nl.nn.adapterframework.http.HttpListener"
 				serviceName="LocalHttpListener" />
 		</receiver>
@@ -15,8 +14,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="HttpSender" description="Test the functioning of the HttpSender">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="HttpSender">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="${web.contextpath}-HttpSender" />
 		</receiver>
@@ -28,14 +26,17 @@
 				<sender className="nl.nn.adapterframework.http.HttpSender"
 					methodType="POST"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/HttpListener?service=LocalHttpListener"
-					inputMessageParam="request" />
+					firstBodyPartName="request"
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
+				/>
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
 	</adapter>
 	<adapter name="HttpListenerTimeout">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="HttpListenerTimeout">
+		<receiver>
 			<listener className="nl.nn.adapterframework.http.HttpListener"
 				serviceName="LocalHttpListenerTimeout" />
 		</receiver>
@@ -50,8 +51,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="HttpSenderTimeout">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="HttpSenderTimeout">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="${web.contextpath}-HttpSenderTimeout" />
 		</receiver>
@@ -63,7 +63,11 @@
 				<sender className="nl.nn.adapterframework.http.HttpSender"
 					methodType="POST"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/HttpListener?service=LocalHttpListenerTimeout"
-					timeout="1000" inputMessageParam="request" />
+					timeout="1000" firstBodyPartName="request"
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
+				/>
 				<forward name="timeout" path="error_timeout" />
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -74,16 +78,4 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-	<!--adapter description="Actuver Http" name="StartActuverHttp"> <receiver 
-		className="nl.nn.adapterframework.receivers.GenericReceiver" name="StartActuverHttp"> 
-		<listener className="nl.nn.adapterframework.receivers.JavaListener" name="StartActuverHttp"/> 
-		</receiver> <pipeline firstPipe="ActuverHttpSend"> <exits> <exit path="READY" 
-		state="success"/> </exits> <pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe" 
-		name="ActuverHttpSend"> <sender className="nl.nn.adapterframework.http.HttpSender" 
-		methodType="POST" paramsInUrl="false" ignoreRedirects="true" timeout="15000" 
-		url="http://rn0903r.itc.intranet/actuver/ActuverServlet"> <param name="datasource" 
-		value="java:comp/env/jdbc/ActuverDS"/> <param name="stand_soort" value="M"/> 
-		<param name="xml_input" value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;workload&gt;&lt;proces&gt;&lt;param 
-		waarde=&quot;M&quot; naam=&quot;stand_soort&quot;/&gt;&lt;/proces&gt;&lt;/workload&gt;"/> 
-		</sender> <forward name="success" path="READY"/> </pipe> </pipeline> </adapter -->
 </module>

@@ -1,0 +1,4 @@
+<request action="UpdateMany">
+	<filter>{ "student_id": "Klaas" }</filter>
+	<json>{"$set": {"seatno":"10"}}</json>
+</request>

@@ -7,7 +7,6 @@
 			function="cleanupDatabase"
 		>
 			<locker
-				datasourceName="${jdbc.datasource.default}"
 				objectId="CleanupDatabase"
 				ignoreTableNotExist="true"
 			/>

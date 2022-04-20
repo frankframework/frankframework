@@ -2,9 +2,6 @@ package nl.nn.adapterframework.filesystem;
 
 import org.apache.commons.net.ftp.FTPFile;
 
-import nl.nn.adapterframework.filesystem.FileSystemSenderTest;
-import nl.nn.adapterframework.filesystem.FtpFileSystem;
-import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
 import nl.nn.adapterframework.senders.FtpFileSystemSender;
 
 /**
@@ -14,10 +11,10 @@ import nl.nn.adapterframework.senders.FtpFileSystemSender;
  */
 public class FtpFileSystemSenderTest extends FileSystemSenderTest<FtpFileSystemSender, FTPFile, FtpFileSystem> {
 
-	private String username = "";
-	private String password = "";
-	private String host = "";
-	private String remoteDirectory = "";
+	private String username = "wearefrank";
+	private String password = "pass_123";
+	private String host = "localhost";
+	private String remoteDirectory = "/home/wearefrank/dir";
 	private int port = 21;
 
 	@Override

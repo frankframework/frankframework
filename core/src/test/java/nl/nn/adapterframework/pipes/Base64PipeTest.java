@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,19 +16,24 @@
 package nl.nn.adapterframework.pipes;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assume.assumeFalse;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 
+import org.apache.commons.codec.binary.Base64InputStream;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.pipes.Base64Pipe.Direction;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.stream.StreamingPipeTestBase;
 import nl.nn.adapterframework.util.Misc;
 
@@ -42,27 +47,14 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 		return new Base64Pipe();
 	}
 
-	@Test(expected = ConfigurationException.class)
-	public void noDirection() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
-		pipe.setDirection("");
-		pipe.configure();
-	}
-
-	@Test(expected = ConfigurationException.class)
-	public void wrongDirection() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
-		pipe.setDirection("not encode");
-		pipe.configure();
-	}
-
-	@Test(expected = ConfigurationException.class)
-	public void wrongOutputType() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	@Test(expected = IllegalArgumentException.class)
+	public void wrongOutputType() throws ConfigurationException {
 		pipe.setOutputType("not string or stream or bytes");
 		pipe.configure();
 	}
 
 	@Test(expected = PipeRunException.class)
-	public void wrongInputEncoding() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
-		assumeFalse(provideStreamForInput); // when providing an outputstream, the charset is not used for decoding the input
+	public void wrongInputEncoding() throws ConfigurationException, PipeStartException, PipeRunException {
 		pipe.setCharset("test123");
 		pipe.configure();
 		pipe.start();
@@ -70,33 +62,62 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 		doPipe(pipe,plainText, session);
 	}
 
-	@Test(expected = PipeRunException.class)
-	public void wrongOutputEncoding() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	@Test(expected = Exception.class)
+	public void wrongOutputEncoding() throws ConfigurationException, PipeStartException, PipeRunException, IOException {
 		pipe.setCharset("test123");
-		pipe.setDirection("decode");
+		pipe.setDirection(Direction.DECODE);
 		pipe.configure();
 		pipe.start();
 
-		doPipe(pipe, base64Encoded, session);
+		PipeRunResult decodeResult = doPipe(pipe, base64Encoded, session);
+		decodeResult.getResult().asString();
 	}
 
 	@Test
-	public void wrongEncoding() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	public void wrongCharsetEncoding() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		pipe.configure();
 		pipe.start();
 		byte[] inputString = "Më-×m👌‰Œœ‡TzdDEyMt120=".getBytes("WINDOWS-1252"); //String containing utf-8 characters
 		Message in = new Message(inputString); //Saving it with a different charset
-		System.out.println();
+
 		PipeRunResult encodeResult = doPipe(pipe, in, session); //Base64Pipe still works and does as told (convert a string with an incompatible charset)
 
 		assertEquals("Test120/iYych1R6ZERFeU10MTIwPQ==", encodeResult.getResult().asString().trim()); //Unreadable base64 string
+	}
 
-		pipe.setDirection("decode");
+	@Test
+	public void wrongCharsetShouldNotBeUsed() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+		pipe.setCharset("ISO-8859-1"); //Should be ignored
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult decodeResult = doPipe(pipe, encodeResult.getResult(), session);
-		assertEquals(new String(in.asByteArray(), "UTF-8"), decodeResult.getResult().asString());
+		String utf8Input = "Më-×m👌‰Œœ‡TzdDEyMt120=";
+		byte[] inputBytes = utf8Input.getBytes("UTF-8"); //String containing utf-8 characters
+		Message in = new Message(inputBytes, "auto"); //Saving it with a different charset
+
+		assertEquals(utf8Input, in.asString()); // read the message which should update the auto field in the MessageContext
+		assertEquals("UTF-8", in.getContext().get(MessageContext.METADATA_CHARSET)); //base64#charset attribute should be ignored because of explicit value in the MessageContext.
+
+		Message result = doPipe(pipe, in, session).getResult();
+
+		assertEquals("TcOrLcOXbfCfkYzigLDFksWT4oChVHpkREV5TXQxMjA9", result.asString().trim()); //validate and preserve the message
+
+		InputStream decodedResult = new Base64InputStream(result.asInputStream(), false);
+		assertEquals(utf8Input, Misc.streamToString(decodedResult));
+
+	}
+
+	@Test
+	public void wrongCharsetDecoding() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+		pipe.setDirection(Direction.DECODE);
+		pipe.configure();
+		pipe.start();
+
+		String encodedString = "Test120/iYych1R6ZERFeU10MTIwPQ==";
+		byte[] expected = "Më-×m👌‰Œœ‡TzdDEyMt120=".getBytes("WINDOWS-1252"); //String containing utf-8 characters
+
+		PipeRunResult decodeResult = doPipe(pipe, encodedString, session);
+		assertEquals(new String(expected, "UTF-8"), decodeResult.getResult().asString());
 	}
 
 	@Test
@@ -108,13 +129,21 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 		PipeRunResult encodeResult = doPipe(pipe, in, session);
 
 		assertEquals("TcOrLcOXbfCfkYzigLDFksWT4oChVHpkREV5TXQxMjA9", encodeResult.getResult().asString().trim());
+	}
 
-		pipe.setDirection("decode");
+	@Test
+	public void correctDecoding() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+		pipe.setDirection(Direction.DECODE);
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult decodeResult = doPipe(pipe, encodeResult.getResult(), session);
-		assertEquals(new String(inputString, "UTF-8"), decodeResult.getResult().asString());
+		String encodedString = "TcOrLcOXbfCfkYzigLDFksWT4oChVHpkREV5TXQxMjA9";
+		String decodedString = "Më-×m👌‰Œœ‡TzdDEyMt120=";
+
+		PipeRunResult decodeResult = doPipe(encodedString);
+		Message result = decodeResult.getResult();
+		assertTrue("Base64 decode defaults to binary data", result.isBinary());
+		assertEquals(decodedString, result.asString());
 	}
 
 	@Test
@@ -124,6 +153,7 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe,plainText, session);
+		assertFalse(prr.getResult().isBinary());
 		String result = prr.getResult().asString();
 		assertEquals(base64Encoded, result.trim());
 	}
@@ -135,6 +165,7 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, plainText.getBytes(), session);
+		assertFalse(prr.getResult().isBinary());
 		String result = prr.getResult().asString();
 		assertEquals(base64Encoded, result.trim());
 	}
@@ -142,11 +173,12 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 	@Test
 	public void decodeConvert2StringTrue() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		pipe.setConvert2String(true);
-		pipe.setDirection("decode");
+		pipe.setDirection(Direction.DECODE);
 		pipe.configure();
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe,base64Encoded, session);
+		assertFalse(prr.getResult().isBinary());
 		String result = prr.getResult().asString();
 		assertEquals(plainText, result.trim());
 	}
@@ -154,12 +186,13 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 	@Test
 	public void decodeConvert2StringFalse() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		pipe.setConvert2String(false);
-		pipe.setDirection("decode");
+		pipe.setDirection(Direction.DECODE);
 		pipe.configure();
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe,base64Encoded, session);
-		byte[] result = (byte[]) prr.getResult().asObject();
+		assertTrue(prr.getResult().isBinary());
+		byte[] result = prr.getResult().asByteArray();
 		assertEquals(plainText, new String(result).trim());
 	}
 
@@ -171,6 +204,7 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe,plainText, session);
+		assertFalse(prr.getResult().isBinary());
 		String result = prr.getResult().asString();
 		assertEquals(base64Encoded, result.trim());
 	}
@@ -182,19 +216,21 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe,plainText, session);
-		byte[] result = (byte[]) prr.getResult().asObject();
+		assertTrue(prr.getResult().isBinary());
+		byte[] result = prr.getResult().asByteArray();
 		assertEquals(base64Encoded, new String(result).trim());
 	}
 
 	@Test
-	public void inputStringOutputStream() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	public void inputStringOutputStreamEncode() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		pipe.setOutputType("stream");
 		pipe.configure();
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe,plainText, session);
-		InputStream result = provideStreamForInput ? prr.getResult().asInputStream() : (InputStream)prr.getResult().asObject();
-		assertEquals(base64Encoded, (Misc.streamToString(result)).trim());
+		assertFalse(prr.getResult().isBinary());
+		Reader result = provideStreamForInput ? prr.getResult().asReader() : (Reader)prr.getResult().asObject();
+		assertEquals(base64Encoded, (Misc.readerToString(result, null, false)).trim());
 	}
 
 	//String bytes encode
@@ -205,6 +241,7 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, plainText.getBytes(), session);
+		assertFalse(prr.getResult().isBinary());
 		String result = prr.getResult().asString();
 		assertEquals(base64Encoded, result.trim());
 	}
@@ -216,19 +253,21 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, plainText.getBytes(), session);
-		byte[] result = (byte[]) prr.getResult().asObject();
+		assertTrue(prr.getResult().isBinary());
+		byte[] result = prr.getResult().asByteArray();
 		assertEquals(base64Encoded, new String(result).trim());
 	}
 
 	@Test
-	public void inputBytesOutputStream() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	public void inputBytesOutputStreamEncode() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		pipe.setOutputType("stream");
 		pipe.configure();
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, plainText.getBytes(), session);
-		InputStream result = provideStreamForInput ? prr.getResult().asInputStream() : (InputStream)prr.getResult().asObject();
-		assertEquals(base64Encoded, (Misc.streamToString(result)).trim());
+		assertFalse(prr.getResult().isBinary());
+		Reader result = provideStreamForInput ? prr.getResult().asReader() : (Reader)prr.getResult().asObject();
+		assertEquals(base64Encoded, (Misc.readerToString(result, null, false)).trim());
 	}
 
 	//String stream encode
@@ -240,6 +279,7 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 
 		InputStream stream = new ByteArrayInputStream(plainText.getBytes());
 		PipeRunResult prr = doPipe(pipe, stream, session);
+		assertFalse(prr.getResult().isBinary());
 		String result = prr.getResult().asString();
 		assertEquals(base64Encoded, result.trim());
 	}
@@ -252,31 +292,34 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 
 		InputStream stream = new ByteArrayInputStream(plainText.getBytes());
 		PipeRunResult prr = doPipe(pipe, stream, session);
-		byte[] result = (byte[]) prr.getResult().asObject();
+		assertTrue(prr.getResult().isBinary());
+		byte[] result = prr.getResult().asByteArray();
 		assertEquals(base64Encoded, new String(result).trim());
 	}
 
 	@Test
-	public void inputStreamOutputStream() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	public void inputStreamOutputStreamEncode() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		pipe.setOutputType("stream");
 		pipe.configure();
 		pipe.start();
 
 		InputStream stream = new ByteArrayInputStream(plainText.getBytes());
 		PipeRunResult prr = doPipe(pipe, stream, session);
-		InputStream result = provideStreamForInput ? prr.getResult().asInputStream() : (InputStream)prr.getResult().asObject();
-		assertEquals(base64Encoded, (Misc.streamToString(result)).trim());
+		assertFalse(prr.getResult().isBinary());
+		Reader result = provideStreamForInput ? prr.getResult().asReader() : (Reader)prr.getResult().asObject();
+		assertEquals(base64Encoded, (Misc.readerToString(result, null, false)).trim());
 	}
 
 	//String input decode
 	@Test
 	public void inputStringOutputStringDecode() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		pipe.setOutputType("string");
-		pipe.setDirection("decode");
+		pipe.setDirection(Direction.DECODE);
 		pipe.configure();
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe,base64Encoded, session);
+		assertFalse(prr.getResult().isBinary());
 		String result = prr.getResult().asString();
 		assertEquals(plainText, result.trim());
 	}
@@ -284,19 +327,20 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 	@Test
 	public void inputStringOutputBytesDecode() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		pipe.setOutputType("bytes");
-		pipe.setDirection("decode");
+		pipe.setDirection(Direction.DECODE);
 		pipe.configure();
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe,base64Encoded, session);
-		byte[] result = (byte[]) prr.getResult().asObject();
+		assertTrue(prr.getResult().isBinary());
+		byte[] result = prr.getResult().asByteArray();
 		assertEquals(plainText, new String(result).trim());
 	}
 
 	@Test
 	public void inputStringOutputStreamDecode() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		pipe.setOutputType("stream");
-		pipe.setDirection("decode");
+		pipe.setDirection(Direction.DECODE);
 		pipe.configure();
 		pipe.start();
 
@@ -309,11 +353,12 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 	@Test
 	public void inputBytesOutputStringDecode() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		pipe.setOutputType("string");
-		pipe.setDirection("decode");
+		pipe.setDirection(Direction.DECODE);
 		pipe.configure();
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, base64Encoded.getBytes(), session);
+		assertFalse(prr.getResult().isBinary());
 		String result = prr.getResult().asString();
 		assertEquals(plainText, result.trim());
 	}
@@ -321,19 +366,20 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 	@Test
 	public void inputBytesOutputBytesDecode() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		pipe.setOutputType("bytes");
-		pipe.setDirection("decode");
+		pipe.setDirection(Direction.DECODE);
 		pipe.configure();
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, base64Encoded.getBytes(), session);
-		byte[] result = (byte[]) prr.getResult().asObject();
+		assertTrue(prr.getResult().isBinary());
+		byte[] result = prr.getResult().asByteArray();
 		assertEquals(plainText, new String(result).trim());
 	}
 
 	@Test
 	public void inputBytesOutputStreamDecode() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		pipe.setOutputType("stream");
-		pipe.setDirection("decode");
+		pipe.setDirection(Direction.DECODE);
 		pipe.configure();
 		pipe.start();
 
@@ -346,7 +392,7 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 	@Test
 	public void inputStreamOutputStringDecode() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		pipe.setOutputType("string");
-		pipe.setDirection("decode");
+		pipe.setDirection(Direction.DECODE);
 		pipe.configure();
 		pipe.start();
 
@@ -359,20 +405,21 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 	@Test
 	public void inputStreamOutputBytesDecode() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		pipe.setOutputType("bytes");
-		pipe.setDirection("decode");
+		pipe.setDirection(Direction.DECODE);
 		pipe.configure();
 		pipe.start();
 
 		InputStream stream = new ByteArrayInputStream(base64Encoded.getBytes());
 		PipeRunResult prr = doPipe(pipe, stream, session);
-		byte[] result = (byte[]) prr.getResult().asObject();
+		assertTrue(prr.getResult().isBinary());
+		byte[] result = prr.getResult().asByteArray();
 		assertEquals(plainText, new String(result).trim());
 	}
 
 	@Test
 	public void inputStreamOutputStreamDecode() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		pipe.setOutputType("stream");
-		pipe.setDirection("decode");
+		pipe.setDirection(Direction.DECODE);
 		pipe.configure();
 		pipe.start();
 

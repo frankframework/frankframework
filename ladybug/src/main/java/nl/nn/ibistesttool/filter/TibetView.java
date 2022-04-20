@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,14 +18,14 @@ package nl.nn.ibistesttool.filter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.ibistesttool.tibet2.Storage;
 import nl.nn.testtool.echo2.BeanParent;
 import nl.nn.testtool.echo2.Echo2Application;
+import nl.nn.testtool.echo2.reports.ReportsComponent;
 import nl.nn.testtool.filter.View;
 
 public class TibetView extends View {
@@ -65,14 +65,14 @@ public class TibetView extends View {
 		if(adapter == null) {
 			return "Not allowed. Could not find adapter " + AUTHORISATION_CHECK_ADAPTER;
 		} else {
-			IPipeLineSession pipeLineSession = new PipeLineSessionBase();
+			PipeLineSession pipeLineSession = new PipeLineSession();
 			if(app.getUserPrincipal() != null)
 				pipeLineSession.put("principal", app.getUserPrincipal().getName());
 			pipeLineSession.put("StorageId", StorageId);
 			pipeLineSession.put("View", getName());
 			PipeLineResult processResult = adapter.processMessage(null, new Message("<dummy/>"), pipeLineSession);
-			if ((processResult.getState().equalsIgnoreCase("success"))) {
-				return "Allowed";
+			if (processResult.isSuccessful()) {
+				return ReportsComponent.OPEN_REPORT_ALLOWED;
 			} else {
 				return "Not allowed. Result of adapter "
 						+ AUTHORISATION_CHECK_ADAPTER + ": "

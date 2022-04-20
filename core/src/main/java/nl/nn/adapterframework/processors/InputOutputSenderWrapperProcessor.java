@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,11 +17,11 @@ package nl.nn.adapterframework.processors;
 
 import java.io.IOException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.senders.SenderWrapperBase;
 import nl.nn.adapterframework.stream.Message;
 
@@ -32,10 +32,21 @@ import nl.nn.adapterframework.stream.Message;
 public class InputOutputSenderWrapperProcessor extends SenderWrapperProcessorBase {
 
 	@Override
-	public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		Message senderInput=message;
+		if (StringUtils.isNotEmpty(senderWrapperBase.getStoreInputInSessionKey())) {
+			try {
+				message.preserve();
+			} catch (IOException e) {
+				throw new SenderException("Could not preserve input",e);
+			}
+			session.put(senderWrapperBase.getStoreInputInSessionKey(), message);
+		}
 		if (StringUtils.isNotEmpty(senderWrapperBase.getGetInputFromSessionKey())) {
-			senderInput=Message.asMessage(session.get(senderWrapperBase.getGetInputFromSessionKey()));
+			if (!session.containsKey(senderWrapperBase.getGetInputFromSessionKey())) {
+				throw new SenderException("getInputFromSessionKey ["+senderWrapperBase.getGetInputFromSessionKey()+"] is not present in session");
+			}
+			senderInput=session.getMessage(senderWrapperBase.getGetInputFromSessionKey());
 			if (log.isDebugEnabled()) log.debug(senderWrapperBase.getLogPrefix()+"set contents of session variable ["+senderWrapperBase.getGetInputFromSessionKey()+"] as input ["+senderInput+"]");
 		} else {
 			if (StringUtils.isNotEmpty(senderWrapperBase.getGetInputFromFixedValue())) {
@@ -60,7 +71,7 @@ public class InputOutputSenderWrapperProcessor extends SenderWrapperProcessorBas
 				}
 			}
 			if (log.isDebugEnabled()) log.debug(senderWrapperBase.getLogPrefix()+"storing results in session variable ["+senderWrapperBase.getStoreResultInSessionKey()+"]");
-			session.put(senderWrapperBase.getStoreResultInSessionKey(), result.asObject());
+			session.put(senderWrapperBase.getStoreResultInSessionKey(), result);
 		}
 		return senderWrapperBase.isPreserveInput()?message:result;
 	}

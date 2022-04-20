@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021 WeAreFrank!
+   Copyright 2019-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.filesystem;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.DirectoryStream;
@@ -23,15 +24,18 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.PathMessage;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -41,6 +45,7 @@ import nl.nn.adapterframework.util.LogUtil;
  *
  */
 public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFileSystem<Path> {
+	private final @Getter(onMethod = @__(@Override)) String domain = "LocalFilesystem";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String root;
@@ -49,7 +54,6 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	public void configure() throws ConfigurationException {
 		// No Action is required
 	}
-
 
 	@Override
 	public Path toFile(String filename) {
@@ -79,6 +83,7 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 		final Path dir = toFile(folder);
 
 		DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<Path>() {
+			@Override
 			public boolean accept(Path file) throws IOException {
 				return !Files.isDirectory(file);
 			}
@@ -106,8 +111,8 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	}
 
 	@Override
-	public Message readFile(Path f) throws IOException {
-		return new Message(f);
+	public Message readFile(Path f, String charset) throws IOException, FileSystemException {
+		return new PathMessage(f, FileSystemUtils.getContext(this, f, charset));
 	}
 
 	@Override
@@ -141,10 +146,17 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	}
 
 	@Override
-	public void removeFolder(String folder) throws FileSystemException {
+	public void removeFolder(String folder, boolean removeNonEmptyFolder) throws FileSystemException {
 		if (folderExists(folder)) {
 			try {
-				Files.delete(toFile(folder));
+				if(removeNonEmptyFolder) {
+					Files.walk(toFile(folder))
+						.sorted(Comparator.reverseOrder())
+						.map(Path::toFile)
+						.forEach(File::delete);
+				} else {
+					Files.delete(toFile(folder));
+				}
 			} catch (IOException e) {
 				throw new FileSystemException("Cannot remove folder ["+ folder +"]",e);
 			}
@@ -164,6 +176,13 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	
 	@Override
 	public Path moveFile(Path f, String destinationFolder, boolean createFolder) throws FileSystemException {
+		if(createFolder && !folderExists(destinationFolder)) {
+			try {
+				Files.createDirectories(toFile(destinationFolder));
+			} catch (IOException e) {
+				throw new FileSystemException("Cannot create folder ["+ destinationFolder +"]", e);
+			}
+		}
 		try {
 			return Files.move(f, toFile(destinationFolder, getName(f)));
 		} catch (IOException e) {
@@ -172,6 +191,13 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	}
 	@Override
 	public Path copyFile(Path f, String destinationFolder, boolean createFolder) throws FileSystemException {
+		if(createFolder && !folderExists(destinationFolder)) {
+			try {
+				Files.createDirectories(toFile(destinationFolder));
+			} catch (IOException e) {
+				throw new FileSystemException("Cannot create folder ["+ destinationFolder +"]", e);
+			}
+		}
 		Path target = toFile(destinationFolder, getName(f));
 		try {
 			Files.copy(f, target);

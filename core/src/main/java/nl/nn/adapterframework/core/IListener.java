@@ -18,6 +18,7 @@ package nl.nn.adapterframework.core;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -27,6 +28,7 @@ import nl.nn.adapterframework.stream.Message;
  * @author  Gerrit van Brakel
  * @since   4.2
  */
+@FrankDocGroup(order = 30, name = "Listeners")
 public interface IListener<M> extends IConfigurable {
 
 	/**

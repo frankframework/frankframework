@@ -18,12 +18,12 @@ package nl.nn.adapterframework.validation;
 import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 
 /*
- * When getSchemasId() returns a value the schemas loaded at initialisation time
- * will be used to validate otherwise the run time schemas are loaded and used.
+ * When getSchemasId() returns a value, the schemas loaded at initialisation time
+ * will be used to validate, otherwise the run time schemas are loaded and used.
   */
 public interface SchemasProvider {
 
@@ -40,11 +40,11 @@ public interface SchemasProvider {
 	/*
 	 * Id of schemas to load at run time.
 	 */
-	String getSchemasId(IPipeLineSession session) throws PipeRunException;
+	String getSchemasId(PipeLineSession session) throws PipeRunException;
 
 	/*
 	 * Schemas to load at run time.
 	 */
-	List<Schema> getSchemas(IPipeLineSession session) throws PipeRunException;
+	List<Schema> getSchemas(PipeLineSession session) throws PipeRunException;
 
 }

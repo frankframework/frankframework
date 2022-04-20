@@ -1,10 +1,7 @@
 
 
-<xsl:stylesheet version="2.0" 
-	xmlns:xsl="http://www.w3.org/1999/XSL/Transform" 
-	xmlns:html="http://WEB-INF/struts-html.tld"
-	>
-	
+<xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
 <xsl:output method="html"
 		doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd" 
 		doctype-public="http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"
@@ -219,7 +216,7 @@
 								</a>
 							</td>
 							<td>
-								<a href="https://ibissource.org/" target="_blank">
+								<a href="https://frankframework.org/" target="_blank">
 									<img alt="Ibissource">
 										<xsl:attribute name="src"><xsl:value-of select="concat($srcPrefix,'./images/ibissource.png')"/></xsl:attribute>
 									</img>

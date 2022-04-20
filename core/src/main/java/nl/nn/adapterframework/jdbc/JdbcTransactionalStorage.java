@@ -15,12 +15,10 @@
 */
 package nl.nn.adapterframework.jdbc;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -32,21 +30,22 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.zip.DeflaterOutputStream;
 import java.util.zip.ZipException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TransactionAttribute;
 import nl.nn.adapterframework.core.TransactionAttributes;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
@@ -145,28 +144,27 @@ import nl.nn.adapterframework.util.Misc;
  */
 public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableMessageBrowser<S> implements ITransactionalStorage<S> {
 
-	boolean checkIfTableExists=true;
-	boolean forceCreateTable=false;
+	private @Getter boolean checkTable; 		// default set from appConstant jdbc.storage.checkTable
+	private @Getter boolean checkIndices;		// default set from appConstant jdbc.storage.checkIndices
+	private @Getter boolean createTable=false;
 
-	boolean createTable=false;
 	private String host;
-	private boolean active=true;
-	private boolean blobsCompressed=true;
-	private boolean storeFullMessage=true;
+	private @Getter boolean blobsCompressed=true;
+	private @Getter boolean storeFullMessage=true;
 
-	private int retention = 30;
-	private String schemaOwner4Check=null;
-	private boolean onlyStoreWhenMessageIdUnique=false;
+	private @Getter int retention = 30;
+	private @Getter String schemaOwner4Check=null;
+	private @Getter boolean onlyStoreWhenMessageIdUnique=false;
 
 	
 	protected static final int MAXIDLEN=100;
 	protected static final int MAXCIDLEN=256;
 	protected static final int MAXLABELLEN=1000;
 	// the following values are only used when the table is created. 
-	private String keyFieldType="";
-	private String dateFieldType="";
-	private String messageFieldType="";
-	private String textFieldType="";
+	private @Getter String keyFieldType="";
+	private @Getter String dateFieldType="";
+	private @Getter String messageFieldType="";
+	private @Getter String textFieldType="";
 
 
 
@@ -175,22 +173,20 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	protected String selectDataQuery2;
 	
 	// the following for Oracle
-	private String sequenceName="seq_ibisstore";
-	protected String updateBlobQuery;		
+	private @Getter String sequenceName="seq_ibisstore";
+	protected String updateBlobQuery;
 	
 	private static final String PROPERTY_CHECK_TABLE=CONTROL_PROPERTY_PREFIX+"checkTable";
 	private static final String PROPERTY_CHECK_INDICES=CONTROL_PROPERTY_PREFIX+"checkIndices";	
 	
 	private static final boolean documentQueries=false;
-	private boolean checkTable;
-	private boolean checkIndices;	
 
 	protected @Getter @Setter PlatformTransactionManager txManager;
 
 	private TransactionDefinition txDef;
 	
 	public JdbcTransactionalStorage() {
-		super();
+		super(null);
 		setTableName("IBISSTORE");
 		setKeyField("MESSAGEKEY");
 		setIdField("MESSAGEID");
@@ -318,13 +314,13 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 						} else {
 							throw new ConfigurationException("Attribute [sequenceName] is not set");
 						}
-						}
-						if (checkIndices) {
-							checkIndices(connection);
-						}
-					} else {
-						ConfigurationWarnings.add(this, log, "could not check database regarding table [" + getTableName() + "]: Schema owner is unknown");
 					}
+					if (checkIndices) {
+						checkIndices(connection);
+					}
+				} else {
+					ConfigurationWarnings.add(this, log, "could not check database regarding table [" + getTableName() + "]: Schema owner is unknown");
+				}
 			} catch (JdbcException e) {
 				ConfigurationWarnings.add(this, log, "could not check database regarding table [" + getTableName() + "]"+e.getMessage(), e);
 			} catch (SQLException e) {
@@ -351,7 +347,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		}
 		super.configure();
 		checkDatabase();
-		txDef = TransactionAttributes.configureTransactionAttributes(log, TransactionDefinition.PROPAGATION_REQUIRED, 0);
+		txDef = TransactionAttributes.configureTransactionAttributes(log, TransactionAttribute.REQUIRED, 0);
 	}
 
 	@Override
@@ -409,9 +405,9 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		selectKeyQuery = dbmsSupport.getInsertedAutoIncrementValueQuery(getPrefix()+getSequenceName());
 		selectKeyQueryIsDbmsSupported=StringUtils.isNotEmpty(selectKeyQuery);
 		if (!selectKeyQueryIsDbmsSupported) {
-			selectKeyQuery = "SELECT max("+getKeyField()+") FROM "+getPrefix()+getTableName()+ 
+			selectKeyQuery = "SELECT max("+getKeyField()+")"+getFromClause(false)+ 
 							getWhereClause(getIdField()+"=?"+
-										" AND " +getCorrelationIdField()+"=?"+
+										" AND "+getCorrelationIdField()+"=?"+
 										" AND "+getDateField()+"=?",false);
 		}
 		if (dbmsSupport.mustInsertEmptyBlobBeforeData()) {
@@ -454,7 +450,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		try (Connection conn = getConnection()) {
 			boolean tableMustBeCreated;
 
-			if (checkIfTableExists) {
+			if (isCheckTable()) {
 				try {
 					tableMustBeCreated = !getDbmsSupport().isTablePresent(conn, getPrefix()+getTableName());
 					if (!isCreateTable() && tableMustBeCreated) {
@@ -470,7 +466,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 				tableMustBeCreated = false;
 			}
 
-			if (isCreateTable() && tableMustBeCreated || forceCreateTable) {
+			if (isCreateTable() && tableMustBeCreated) {
 				log.info(getLogPrefix()+"creating table ["+getPrefix()+getTableName()+"] for transactional storage");
 				try (Statement stmt = conn.createStatement()) {
 					createStorage(conn, stmt, dbmsSupport);
@@ -599,13 +595,13 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 				return null;
 			}
 			if (!dbmsSupport.mustInsertEmptyBlobBeforeData()) {
-				ByteArrayOutputStream baos = new ByteArrayOutputStream(); // TODO replace this with BlobOutputStream
-				OutputStream out = isBlobsCompressed() ? new DeflaterOutputStream(baos) : baos;
-				try (ObjectOutputStream oos = new ObjectOutputStream(out)) {
+				int blobColumnIndex = ++parPos;
+				Object blobHandle=dbmsSupport.getBlobHandle(stmt, blobColumnIndex);
+				try (ObjectOutputStream oos = new ObjectOutputStream(JdbcUtil.getBlobOutputStream(dbmsSupport, blobHandle, stmt, blobColumnIndex, isBlobsCompressed()))) {
 					oos.writeObject(message);
 				}
-				
-				stmt.setBytes(++parPos, baos.toByteArray());
+				dbmsSupport.applyBlobParameter(stmt, blobColumnIndex, blobHandle);
+
 				if (isOnlyStoreWhenMessageIdUnique()) {
 					stmt.setString(++parPos, messageId);
 					stmt.setString(++parPos, getSlotId());
@@ -616,7 +612,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 						return "<id>" + rs.getString(1) + "</id>";
 					} 
 				}
-				
+
 				boolean isMessageDifferent = isMessageDifferent(conn, messageId, message);
 				String resultString = createResultString(isMessageDifferent);
 				log.warn("MessageID [" + messageId + "] already exists");
@@ -732,7 +728,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, S message) throws SenderException {
 		IbisTransaction itx = null;
 		if (txManager!=null) {
-			itx = new IbisTransaction(txManager, txDef, ClassUtils.nameOf(this)+ " ["+getName()+"]");
+			itx = new IbisTransaction(txManager, txDef, ClassUtils.nameOf(this));
 		}
 		try {
 			String result;
@@ -818,7 +814,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 	
 	@Override
-	protected S retrieveObject(ResultSet rs, int columnIndex) throws ClassNotFoundException, JdbcException, IOException, SQLException {
+	protected S retrieveObject(ResultSet rs, int columnIndex) throws JdbcException {
 		try {
 			if (isBlobsCompressed()) {
 				try {
@@ -854,205 +850,103 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	public void setSlotId(String string) {
 		super.setSlotId(string);
 	}
-	@Override
-	public String getSlotId() {
-		return super.getSlotId();
-	}
 
 	@Override
 	public void setType(String type) {
 		super.setType(type);
 	}
-	@Override
-	public String getType() {
-		return super.getType();
-	}
 
-
-
-	@IbisDoc({"the name of the sequence used to generate the primary key (only for oracle) n.b. the default name has been changed in version 4.6", "seq_ibisstore"})
-	public void setSequenceName(String string) {
-		sequenceName = string;
-	}
-	public String getSequenceName() {
-		return sequenceName;
-	}
-
-
-	/**
-	 * Sets the name of the table messages are stored in.
-	 */
-	@Override
-	@IbisDoc({"the name of the table messages are stored in", "IBISSTORE"})
-	public void setTableName(String tableName) {
-		super.setTableName(tableName);
-	}
-
-	@IbisDoc({"the name of the column messageids are stored in", "messageid"})
-	@Override
-	public void setIdField(String idField) {
-		super.setIdField(idField);
-	}
-
-	@IbisDoc({"the name of the column that contains the primary key of the table", "messagekey"})
-	@Override
-	public void setKeyField(String keyField) {
-		super.setKeyField(keyField);
-	}
-
-	@IbisDoc({"the name of the column message themselves are stored in", "message"})
-	@Override
-	public void setMessageField(String messageField) {
-		super.setMessageField(messageField);
-	}
-
-	@IbisDoc({"the name of the column comments are stored in", "comments"})
-	@Override
-	public void setCommentField(String commentField) {
-		super.setCommentField(commentField);
-	}
-
-	@IbisDoc({"the name of the column the timestamp is stored in", "messagedate"})
-	@Override
-	public void setDateField(String dateField) {
-		super.setDateField(dateField);
-	}
-
-	@IbisDoc({"the name of the column the timestamp for expiry is stored in", "expirydate"})
-	@Override
-	public void setExpiryDateField(String expiryDateField) {
-		super.setExpiryDateField(expiryDateField);
-	}
-
-	@IbisDoc({"the name of the column labels are stored in", "label"})
-	@Override
-	public void setLabelField(String labelField) {
-		super.setLabelField(labelField);
-	}
-
-	@IbisDoc({"the name of the column correlation-ids are stored in", "correlationid"})
-	@Override
-	public void setCorrelationIdField(String correlationIdField) {
-		super.setCorrelationIdField(correlationIdField);
-	}
-
-	@IbisDoc({"the type of the column message themselves are stored in", "long binary"})
-	public void setMessageFieldType(String string) {
-		messageFieldType = string;
-	}
-	public String getMessageFieldType() {
-		return messageFieldType;
-	}
-
-	@IbisDoc({"the type of the column that contains the primary key of the table", "int default autoincrement"})
-	public void setKeyFieldType(String string) {
-		keyFieldType = string;
-	}
-	public String getKeyFieldType() {
-		return keyFieldType;
-	}
-
-	@IbisDoc({"the type of the column the timestamps are stored in", "timestamp"})
-	public void setDateFieldType(String string) {
-		dateFieldType = string;
-	}
-	public String getDateFieldType() {
-		return dateFieldType;
-	}
-
-	@IbisDoc({"the type of the columns messageid and correlationid, slotid and comments are stored in. n.b. (100) is appended for id's, (1000) is appended for comments.", "varchar"})
-	public void setTextFieldType(String string) {
-		textFieldType = string;
-	}
-	public String getTextFieldType() {
-		return textFieldType;
-	}
 
 
 	@Override
-	@IbisDoc({"the name of the column slotids are stored in", "slotid"})
+	@IbisDoc({"1", "The name of the column slotids are stored in", "SLOTID"})
 	public void setSlotIdField(String string) {
 		super.setSlotIdField(string);
 	}
 
-
-
-
 	@Override
-	@IbisDoc({"the name of the column types are stored in", "type"})
+	@IbisDoc({"2", "The name of the column types are stored in", "TYPE"})
 	public void setTypeField(String typeField) {
 		super.setTypeField(typeField);
 	}
 
-
-	@IbisDoc({"when set to <code>true</code>, the table is created if it does not exist", "<code>false</code>"})
-	public void setCreateTable(boolean b) {
-		createTable = b;
-	}
-	public boolean isCreateTable() {
-		return createTable;
-	}
-
-	public void setActive(boolean b) {
-		active = b;
-	}
 	@Override
-	public boolean isActive() {
-		return active;
-	}
-
-	@Override
-	@IbisDoc({"the name of the column that stores the hostname of the server", "host"})
+	@IbisDoc({"3", "The name of the column that stores the hostname of the server", "HOST"})
 	public void setHostField(String hostField) {
 		super.setHostField(hostField);
 	}
 
 
-	@IbisDoc({"when set to <code>true</code>, the messages are stored compressed", "<code>true</code>"})
+	@IbisDoc({"4", "The name of the sequence used to generate the primary key, for DBMSes that use sequences, like Oracle", "seq_ibisstore"})
+	public void setSequenceName(String string) {
+		sequenceName = string;
+	}
+
+	@Deprecated
+	@ConfigurationWarning("Replaced with checkTable")
+	public void setCheckIfTableExists(boolean b) {
+		setCheckTable(b);
+	}
+
+	@IbisDoc({"5", "If set to <code>true</code>, checks are performed if the table exists and is properly created", "false"})
+	public void setCheckTable(boolean b) {
+		checkTable = b;
+	}
+	
+	@IbisDoc({"6", "If set to <code>true</code>, the table is created if it does not exist", "false"})
+	public void setCreateTable(boolean b) {
+		createTable = b;
+	}
+
+	@IbisDoc({"7", "The type of the column message themselves are stored in", ""})
+	public void setMessageFieldType(String string) {
+		messageFieldType = string;
+	}
+
+	@IbisDoc({"8", "The type of the column that contains the primary key of the table", ""})
+	public void setKeyFieldType(String string) {
+		keyFieldType = string;
+	}
+
+	@IbisDoc({"9", "The type of the column the timestamps are stored in", ""})
+	public void setDateFieldType(String string) {
+		dateFieldType = string;
+	}
+
+	@IbisDoc({"10", "The type of the columns messageId and correlationId, slotId and comments are stored in. N.B. <code>(100)</code> is appended for id's, <code>(1000)</code> is appended for comments.", ""})
+	public void setTextFieldType(String string) {
+		textFieldType = string;
+	}
+
+
+
+
+
+	@IbisDoc({"If set to <code>true</code>, the messages are stored compressed", "true"})
 	public void setBlobsCompressed(boolean b) {
 		blobsCompressed = b;
 	}
-	public boolean isBlobsCompressed() {
-		return blobsCompressed;
-	}
 
-	@IbisDoc({"the name of the index, to be used in hints for query optimizer too (only for oracle)", "ix_ibisstore"})
-	@Override
-	public void setIndexName(String indexName) {
-		super.setIndexName(indexName);
-	}
-
-	@IbisDoc({"the time (in days) to keep the record in the database before making it eligible for deletion by a cleanup process. when set to -1, the record will live on forever", "30"})
+	@IbisDoc({"The time (in days) to keep the record in the database before making it eligible for deletion by a cleanup process. when set to -1, the record will live on forever", "30"})
 	public void setRetention(int retention) {
 		this.retention = retention;
 	}
-	public int getRetention() {
-		return retention;
-	}
 
-	@IbisDoc({"schema owner to be used to check the database", "&lt;current_schema&gt; (only for oracle)"})
+	@IbisDoc({"Schema owner to be used to check the database", "&lt;current_schema&gt; (only for oracle)"})
 	public void setSchemaOwner4Check(String string) {
 		schemaOwner4Check = string;
 	}
-	public String getSchemaOwner4Check() {
-		return schemaOwner4Check;
-	}
 
 
 
-	@IbisDoc({"when set to <code>true</code>, the full message is stored with the log. can be set to <code>false</code> to reduce table size, by avoiding to store the full message", "<code>true</code>"})
+	@IbisDoc({"If set to <code>true</code>, the full message is stored with the log. Can be set to <code>false</code> to reduce table size, by avoiding to store the full message", "true"})
 	public void setStoreFullMessage(boolean storeFullMessage) {
 		this.storeFullMessage = storeFullMessage;
 	}
-	public boolean isStoreFullMessage() {
-		return storeFullMessage;
-	}
 
+	@IbisDoc({"If set to <code>true</code>, the message is stored only if the MessageId is not present in the store yet.", "false"})
 	public void setOnlyStoreWhenMessageIdUnique(boolean onlyStoreWhenMessageIdUnique) {
 		this.onlyStoreWhenMessageIdUnique = onlyStoreWhenMessageIdUnique;
 	}
-	public boolean isOnlyStoreWhenMessageIdUnique() {
-		return onlyStoreWhenMessageIdUnique;
-	}
-	
+
 }

@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2021 WeAreFrank!
+Copyright 2016-2022 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,27 +15,6 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import nl.nn.adapterframework.jdbc.DirectQuerySender;
-import nl.nn.adapterframework.jdbc.transformer.QueryOutputToListOfMaps;
-import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.DB2XMLWriter;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.XmlUtils;
-import org.xml.sax.SAXException;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
-import javax.annotation.security.RolesAllowed;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.xml.transform.Transformer;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.Connection;
@@ -47,14 +26,39 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.annotation.security.RolesAllowed;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.xml.transform.Transformer;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.xml.sax.SAXException;
+
+import nl.nn.adapterframework.jdbc.DirectQuerySender;
+import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
+import nl.nn.adapterframework.jdbc.transformer.QueryOutputToListOfMaps;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.DB2XMLWriter;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.XmlUtils;
+
 @Path("/")
 public final class BrowseJdbcTable extends Base {
 
 	private static final String DB2XML_XSLT = "xml/xsl/BrowseJdbcTableExecute.xsl";
 	private static final String permissionRules = AppConstants.getInstance().getResolvedProperty("browseJdbcTable.permission.rules");
-	private static final String COLUMN_NAME = "COLUMN_NAME"; 
-	private static final String DATA_TYPE = "DATA_TYPE"; 
-	private static final String COLUMN_SIZE = "COLUMN_SIZE"; 
+	private static final String COLUMN_NAME = "COLUMN_NAME";
+	private static final String DATA_TYPE = "DATA_TYPE";
+	private static final String COLUMN_SIZE = "COLUMN_SIZE";
 	private Logger log = LogUtil.getLogger(this);
 	private String countColumnName = "ROWCOUNTER";
 	private String rnumColumnName = "RNUM";
@@ -80,7 +84,7 @@ public final class BrowseJdbcTable extends Base {
 			if(key.equalsIgnoreCase("where")) {
 				where = entry.getValue().toString();
 			}
-			if(key.equalsIgnoreCase("order")) {
+			if(key.equalsIgnoreCase("order")) { // the form field named 'order' is only used for 'group by', when number of rows only is true.
 				order = entry.getValue().toString();
 			}
 			if(key.equalsIgnoreCase("numberOfRowsOnly")) {
@@ -95,7 +99,7 @@ public final class BrowseJdbcTable extends Base {
 			if(key.equalsIgnoreCase("maxRow")) {
 				if(entry.getValue() != "") {
 					maxRow = Integer.parseInt(entry.getValue().toString());
-					maxRow = Math.min(Math.max(maxRow, 1), 100);
+					maxRow = Math.max(maxRow, 1);
 				}
 			}
 		}
@@ -123,7 +127,7 @@ public final class BrowseJdbcTable extends Base {
 		} catch (Exception e) {
 			throw new ApiException("An error occured on creating or closing the connection!", e);
 		}
-		
+
 		try {
 			qs.setName("QuerySender");
 			qs.setDatasourceName(datasource);
@@ -135,87 +139,65 @@ public final class BrowseJdbcTable extends Base {
 			qs.configure(true);
 			qs.open();
 
-			try (Connection conn =qs.getConnection()) {
-				ResultSet rs = null;
-				try {
-					rs = conn.getMetaData().getColumns(null, null, tableName, null);
 
-					if (!rs.isBeforeFirst()) {
-						rs.close();
-						rs = conn.getMetaData().getColumns(null, null, tableName.toUpperCase(), null);
-					}
-	
-					StringBuilder fielddefinition = new StringBuilder("<fielddefinition>");
-					String field = null;
-					if(!numberOfRowsOnly) {
-						field = "<field name=\""+rnumColumnName+"\" type=\"INTEGER\" />";
-						fielddefinition.append(field);
-						fieldDef.put(rnumColumnName, "INTEGER");
+			StringBuilder fielddefinition = new StringBuilder("<fielddefinition>");
+			String firstColumnName = numberOfRowsOnly ? countColumnName : rnumColumnName;
+			String field = "<field name=\""+firstColumnName+"\" type=\"INTEGER\" />";
+			fielddefinition.append(field);
+			fieldDef.put(firstColumnName, "INTEGER");
+			IDbmsSupport dbmsSupport = qs.getDbmsSupport();
+			if(!numberOfRowsOnly || StringUtils.isNotEmpty(order)) {
+				try (Connection conn =qs.getConnection()) {
+					try (ResultSet rs = numberOfRowsOnly ? dbmsSupport.getTableColumns(conn, null, tableName, order) : dbmsSupport.getTableColumns(conn, tableName)) {
 						while(rs.next()) {
-							field = "<field name=\"" + rs.getString(COLUMN_NAME) + "\" type=\"" + DB2XMLWriter.getFieldType(rs.getInt(DATA_TYPE)) + "\" size=\"" + rs.getInt(COLUMN_SIZE) + "\"/>";
+							field = "<field name=\"" + rs.getString(COLUMN_NAME).toUpperCase() + "\" type=\"" + DB2XMLWriter.getFieldType(rs.getInt(DATA_TYPE)) + "\" size=\"" + rs.getInt(COLUMN_SIZE) + "\"/>";
 							fielddefinition.append(field);
-							fieldDef.put(rs.getString(COLUMN_NAME), DB2XMLWriter.getFieldType(rs.getInt(DATA_TYPE)) + "("+rs.getInt(COLUMN_SIZE)+")");
+							fieldDef.put(rs.getString(COLUMN_NAME).toUpperCase(), DB2XMLWriter.getFieldType(rs.getInt(DATA_TYPE)) + "("+rs.getInt(COLUMN_SIZE)+")");
 						}
-					} else {
-						field = "<field name=\""+countColumnName+"\" type=\"INTEGER\" />";
-						fielddefinition.append(field);
-						fieldDef.put(countColumnName, "INTEGER");
-						if(StringUtils.isNotEmpty(order)) {
-							rs = conn.getMetaData().getColumns(null, null, tableName, order);
-							while(rs.next()) {
-								field = "<field name=\"" + rs.getString(COLUMN_NAME) + "\" type=\"" + DB2XMLWriter.getFieldType(rs.getInt(DATA_TYPE)) + "\" size=\"" + rs.getInt(COLUMN_SIZE) + "\"/>";
-								fielddefinition.append(field);
-								fieldDef.put(rs.getString(COLUMN_NAME), DB2XMLWriter.getFieldType(rs.getInt(DATA_TYPE)) + "("+rs.getInt(COLUMN_SIZE)+")");
-							}
-						}
-					}
-
-					fielddefinition.append("</fielddefinition>");
-	
-					String browseJdbcTableExecuteREQ =
-						"<browseJdbcTableExecuteREQ>"
-							+ "<dbmsName>"
-							+ qs.getDbmsSupport().getDbmsName()
-							+ "</dbmsName>"
-							+ "<countColumnName>"
-							+ countColumnName
-							+ "</countColumnName>"
-							+ "<rnumColumnName>"
-							+ rnumColumnName
-							+ "</rnumColumnName>"
-							+ "<tableName>"
-							+ tableName
-							+ "</tableName>"
-							+ "<where>"
-							+ XmlUtils.encodeChars(where)
-							+ "</where>"
-							+ "<numberOfRowsOnly>"
-							+ numberOfRowsOnly
-							+ "</numberOfRowsOnly>"
-							+ "<order>"
-							+ order
-							+ "</order>"
-							+ "<rownumMin>"
-							+ minRow
-							+ "</rownumMin>"
-							+ "<rownumMax>"
-							+ maxRow
-							+ "</rownumMax>"
-							+ fielddefinition
-							+ "<maxColumnSize>1000</maxColumnSize>"
-							+ "</browseJdbcTableExecuteREQ>";
-					URL url = ClassUtils.getResourceURL(DB2XML_XSLT);
-					if (url != null) {
-						Transformer t = XmlUtils.createTransformer(url);
-						query = XmlUtils.transformXml(t, browseJdbcTableExecuteREQ);
-					}
-					result = qs.sendMessage(new Message(query), null).asString();
-				} finally {
-					if (rs!=null) {
-						rs.close();
 					}
 				}
 			}
+
+			fielddefinition.append("</fielddefinition>");
+
+			String browseJdbcTableExecuteREQ =
+				"<browseJdbcTableExecuteREQ>"
+					+ "<dbmsName>"
+					+ dbmsSupport.getDbmsName()
+					+ "</dbmsName>"
+					+ "<countColumnName>"
+					+ countColumnName
+					+ "</countColumnName>"
+					+ "<rnumColumnName>"
+					+ rnumColumnName
+					+ "</rnumColumnName>"
+					+ "<tableName>"
+					+ tableName
+					+ "</tableName>"
+					+ "<where>"
+					+ XmlUtils.encodeChars(where)
+					+ "</where>"
+					+ "<numberOfRowsOnly>"
+					+ numberOfRowsOnly
+					+ "</numberOfRowsOnly>"
+					+ "<order>"
+					+ order
+					+ "</order>"
+					+ "<rownumMin>"
+					+ minRow
+					+ "</rownumMin>"
+					+ "<rownumMax>"
+					+ maxRow
+					+ "</rownumMax>"
+					+ fielddefinition
+					+ "<maxColumnSize>1000</maxColumnSize>"
+					+ "</browseJdbcTableExecuteREQ>";
+			URL url = ClassUtils.getResourceURL(DB2XML_XSLT);
+			if (url != null) {
+				Transformer t = XmlUtils.createTransformer(url);
+				query = XmlUtils.transformXml(t, browseJdbcTableExecuteREQ);
+			}
+			result = qs.sendMessage(new Message(query), null).asString();
 		} catch (Throwable t) {
 			throw new ApiException("An error occured on executing jdbc query ["+query+"]", t);
 		} finally {

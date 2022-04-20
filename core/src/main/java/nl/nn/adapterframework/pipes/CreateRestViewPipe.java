@@ -21,18 +21,16 @@ import java.util.Map;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
+import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.lifecycle.ApplicationMetrics;
-import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
@@ -139,14 +137,13 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Peter Leeuwenburgh
  */
 
-public class CreateRestViewPipe extends XsltPipe implements ApplicationContextAware {
+public class CreateRestViewPipe extends XsltPipe {
 	private static final String CONTENTTYPE = "contentType";
 	private static final String SRCPREFIX = "srcPrefix";
+	private @Getter @Setter ApplicationMetrics metrics;
 
 	private String contentType = "text/html";
-	private ApplicationContext applicationContext;
-
-	AppConstants appConstants;
+	private AppConstants appConstants;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -162,8 +159,8 @@ public class CreateRestViewPipe extends XsltPipe implements ApplicationContextAw
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message input, IPipeLineSession session) throws PipeRunException {
-		HttpServletRequest httpServletRequest = (HttpServletRequest) session.get(IPipeLineSession.HTTP_REQUEST_KEY);
+	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
+		HttpServletRequest httpServletRequest = (HttpServletRequest) session.get(PipeLineSession.HTTP_REQUEST_KEY);
 		String requestURL = httpServletRequest.getRequestURL().toString();
 		String servletPath = httpServletRequest.getServletPath();
 		String uri = StringUtils.substringAfter(requestURL, servletPath);
@@ -178,7 +175,7 @@ public class CreateRestViewPipe extends XsltPipe implements ApplicationContextAw
 		log.debug("transforming page [" + result + "] to view");
 
 		String newResult = null;
-		ServletContext servletContext = (ServletContext) session.get(IPipeLineSession.SERVLET_CONTEXT_KEY);
+		ServletContext servletContext = (ServletContext) session.get(PipeLineSession.SERVLET_CONTEXT_KEY);
 
 		try {
 			Map<String,Object> parameters = retrieveParameters(httpServletRequest, servletContext, srcPrefix);
@@ -190,12 +187,11 @@ public class CreateRestViewPipe extends XsltPipe implements ApplicationContextAw
 		session.put(CONTENTTYPE, getContentType());
 		log.debug(getLogPrefix(session) + "stored [" + getContentType() + "] in pipeLineSession under key [" + CONTENTTYPE + "]");
 
-		return new PipeRunResult(getForward(), newResult);
+		return new PipeRunResult(getSuccessForward(), newResult);
 	}
 
 	private Map<String,Object> retrieveParameters(HttpServletRequest httpServletRequest, ServletContext servletContext, String srcPrefix) throws DomBuilderException {
-		ApplicationMetrics metrics = applicationContext.getBean("metrics", ApplicationMetrics.class);
-		Map<String,Object> parameters = new Hashtable<String,Object>();
+		Map<String,Object> parameters = new Hashtable<>();
 		String requestInfoXml = "<requestInfo>" + "<servletRequest>"
 				+ "<serverInfo><![CDATA[" + servletContext.getServerInfo()
 				+ "]]></serverInfo>" + "<serverName>"
@@ -203,8 +199,7 @@ public class CreateRestViewPipe extends XsltPipe implements ApplicationContextAw
 				+ "</servletRequest>" + "</requestInfo>";
 		parameters.put("requestInfo", XmlUtils.buildNode(requestInfoXml));
 		parameters.put("upTime", XmlUtils.buildNode("<upTime>" + (metrics==null?"null":metrics.getUptime()) + "</upTime>"));
-		String machineNameXml = "<machineName>" + Misc.getHostname()
-				+ "</machineName>";
+		String machineNameXml = "<machineName>" + Misc.getHostname() + "</machineName>";
 		parameters.put("machineName", XmlUtils.buildNode(machineNameXml));
 		String fileSystemXml = "<fileSystem>" + "<totalSpace>"
 				+ Misc.getFileSystemTotalSpace() + "</totalSpace>"
@@ -212,12 +207,10 @@ public class CreateRestViewPipe extends XsltPipe implements ApplicationContextAw
 				+ "</freeSpace>" + "</fileSystem>";
 		parameters.put("fileSystem", XmlUtils.buildNode(fileSystemXml));
 		String applicationConstantsXml = appConstants.toXml(true);
-		parameters.put("applicationConstants",
-				XmlUtils.buildNode(applicationConstantsXml));
+		parameters.put("applicationConstants", XmlUtils.buildNode(applicationConstantsXml));
 		String processMetricsXml = ProcessMetrics.toXml();
 		parameters.put("processMetrics", XmlUtils.buildNode(processMetricsXml));
-		parameters.put("menuBar",
-				XmlUtils.buildNode(retrieveMenuBarParameter(srcPrefix)));
+		parameters.put("menuBar", XmlUtils.buildNode(retrieveMenuBarParameter(srcPrefix)));
 		parameters.put(SRCPREFIX, srcPrefix);
 
 		return parameters;
@@ -226,69 +219,19 @@ public class CreateRestViewPipe extends XsltPipe implements ApplicationContextAw
 	private String retrieveMenuBarParameter(String srcPrefix) {
 		XmlBuilder menuBar = new XmlBuilder("menuBar");
 		XmlBuilder imagelinkMenu = new XmlBuilder("imagelinkMenu");
-		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
-				"rest/showConfigurationStatus", "configurationStatus",
-				"Show Configuration Status"));
-		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
-				"rest/showConfiguration", "configuration", "Show Configuration"));
-		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
-				"showLogging.do", "logging", "Show Logging"));
-		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
-				"sendJmsMessage.do", "jms-message", "Send a message with JMS"));
-		if (appConstants.getBoolean("active.ifsa", false)) {
-			imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
-					"rest/testIfsaService", "ifsa-message", "Call an IFSA Service"));
-		}
-		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
-				"browseQueue.do", "browsejms", "Browse a queue with JMS"));
-		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
-				"rest/testPipeLine", "testPipeLine",
-				"Test a PipeLine of an Adapter"));
-		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
-				"testService.do", "service", "Test a ServiceListener"));
-		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
-				"rest/webservices", "wsdl", "Webservices"));
-		imagelinkMenu
-				.addSubElement(createImagelinkElement(srcPrefix,
-						"showSchedulerStatus.do", "scheduler",
-						"Show Scheduler status"));
-		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
-				"rest/showEnvironmentVariables", "properties",
-				"Show Environment Variables"));
-		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
-				"executeJdbcQuery.do", "execquery", "Execute a Jdbc Query"));
-		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
-				"browseJdbcTable.do", "browsetable", "Browse a Jdbc Table"));
-		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
-				"DumpIbisConsole", "dump", "Dump Ibis Console"));
-		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
-				"showSecurityItems.do", "security", "Show Security Items"));
-		if (MonitorManager.getInstance().isEnabled()) {
-			imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
-					"showMonitors.do", "monitoring", "Show Monitors"));
-		}
-		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
-				"showIbisstoreSummary.do", "showsummary",
-				"Show Ibisstore Summary"));
-		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix, "larva",
-				"larva", "Larva Test Tool"));
-		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
-				"testtool", "ladybug", "Ladybug Test Tool"));
-		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
-				"javascript:void(0)", "info", "Information"));
+		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix, "larva", "larva", "Larva Test Tool"));
+		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix, "testtool", "ladybug", "Ladybug Test Tool"));
+		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix, "javascript:void(0)", "info", "Information"));
 		if (appConstants.getBoolean("console.active", false)) {
-			imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
-					"iaf/gui", "theme", "Try our new GUI 3.0 and leave feedback!"));
+			imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix, "iaf/gui", "theme", "Try our new GUI 3.0 and leave feedback!"));
 		}
 		menuBar.addSubElement(imagelinkMenu);
 		return menuBar.toXML();
 	}
 
-	private XmlBuilder createImagelinkElement(String srcPrefix, String href,
-			String type, String alt) {
+	private XmlBuilder createImagelinkElement(String srcPrefix, String href, String type, String alt) {
 		XmlBuilder imagelink = new XmlBuilder("imagelink");
-		if (StringUtils.startsWithIgnoreCase(href, "javascript:")
-				|| StringUtils.startsWithIgnoreCase(href, "?")) {
+		if (StringUtils.startsWithIgnoreCase(href, "javascript:") || StringUtils.startsWithIgnoreCase(href, "?")) {
 			imagelink.addAttribute("href", href);
 		} else {
 			imagelink.addAttribute("href", srcPrefix + href);
@@ -305,10 +248,5 @@ public class CreateRestViewPipe extends XsltPipe implements ApplicationContextAw
 
 	public String getContentType() {
 		return contentType;
-	}
-
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		this.applicationContext = applicationContext;
 	}
 }

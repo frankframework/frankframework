@@ -2,27 +2,16 @@
 <beans
 	xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans classpath:xml/xsd/spring-beans-3.2.xsd"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd"
 	>
 
-	<bean class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer">
-		<property name="locations">
-			<list>
-				<value>classpath:META-INF/maven/org.ibissource/ibis-adapterframework-ladybug/pom.properties</value>
-				<!-- Other properties like ibistesttool.* are provided by IAF (AppConstants is added as PropertySources to the Spring configuration) -->
-			</list>
-		</property>
-	</bean>
+	<bean
+		name="lowerCasePropertySourcePostProcessor"
+		class="nl.nn.adapterframework.configuration.LowerCasePropertySourcePostProcessor"
+		autowire="byName"
+	/>
 
 	<bean class="nl.nn.ibistesttool.DeploymentSpecificsBeanPostProcessor"/>
-
-	<bean name="configName" class="java.lang.String">
-		<constructor-arg value="Ibis Test Tool"/>
-	</bean>
-
-	<bean name="configVersion" class="java.lang.String">
-		<constructor-arg value="${version}"/>
-	</bean>
 
 	<bean name="maxCheckpoints" class="java.lang.Integer">
 		<constructor-arg value="${ibistesttool.maxCheckpoints}"/>
@@ -41,13 +30,15 @@
 	</bean>
 
 	<bean name="testTool" class="nl.nn.testtool.TestTool" autowire="byName">
-		<property name="configName"><ref bean="configName"/></property>
-		<property name="configVersion"><ref bean="configVersion"/></property>
 		<property name="maxCheckpoints"><ref bean="maxCheckpoints"/></property>
 		<property name="maxMemoryUsage"><ref bean="maxMemoryUsage"/></property>
 		<property name="maxMessageLength"><ref bean="maxMessageLength"/></property>
 		<property name="regexFilter"><ref bean="regexFilter"/></property>
 		<property name="securityLoggerName" value="SEC"/>
+		<!-- Prevent threads that didn't start and aren't cancelled to keep reports in progress. Most of the times (like when using ParallelSenders) the main thread will wait for child threads to return their result anyway -->
+		<property name="closeThreads" value="true"/>
+		<!-- Prevent streams for which close method isn't invoked to keep reports in progress. Most of the times streams will be processed during the lifetime of the main thread (which is executing the PipeLine) anyway -->
+		<property name="closeMessageCapturers" value="true"/>
 	</bean>
 
 	<bean name="metadataExtractor" class="nl.nn.testtool.MetadataExtractor">
@@ -77,12 +68,22 @@
 		</property>
 	</bean>
 
-	<bean name="testStorage,testStoragexxx,testStorageLOC" class="nl.nn.testtool.storage.xml.XmlStorage" autowire="byName" init-method="init">
+	<bean name="testStorageActive" class="java.lang.String">
+		<constructor-arg value="#{
+				'${dtap.stage}' == 'LOC' ||
+				'${dtap.stage}' == 'xxx' ||
+				'${dtap.stage}' == ''
+				?
+				'testStorageXml' : 'testStorageFile'
+				}"
+		/>
+	</bean>
+	<bean name="testStorageXml" class="nl.nn.testtool.storage.xml.XmlStorage" autowire="byName" init-method="init">
 		<property name="name" value="Test"/>
 		<property name="metadataFile" value="${log.dir}/testtool4${instance.name.lc}.metadata.xml"/>
 		<property name="reportsFolder" value="${ibistesttool.directory}"/>
 	</bean>
-	<bean name="testStorageDEV,testStorageTST,testStorageACC,testStoragePRD" class="nl.nn.testtool.storage.file.TestStorage" autowire="byName" init-method="init">
+	<bean name="testStorageFile" class="nl.nn.testtool.storage.file.TestStorage" autowire="byName" init-method="init">
 		<property name="name" value="Test"/>
 		<property name="reportsFilename" value="${log.dir}/testtool4${instance.name.lc}.tts"/>
 		<property name="metadataFilename" value="${log.dir}/testtool4${instance.name.lc}.ttm"/>
@@ -163,14 +164,18 @@
 
 	<bean name="treePane" class="nl.nn.testtool.echo2.reports.TreePane" autowire="byName" init-method="initBean" scope="prototype"/>
 
-	<bean name="reportsComponent" class="nl.nn.testtool.echo2.reports.ReportsComponent" autowire="byName" init-method="initBean" scope="prototype">
-		<property name="changeReportGeneratorEnabledRoles">
+	<bean name="changeReportGeneratorEnabledRoles" class="java.util.ArrayList">
+		<constructor-arg>
 			<list>
 				<value>IbisTester</value>
 				<value>IbisAdmin</value>
 				<value>IbisDataAdmin</value>
 			</list>
-		</property>
+		</constructor-arg>
+	</bean>
+
+	<bean name="reportsComponent" class="nl.nn.testtool.echo2.reports.ReportsComponent" autowire="byName" init-method="initBean" scope="prototype">
+		<property name="changeReportGeneratorEnabledRoles" ref="changeReportGeneratorEnabledRoles"/>
 		<property name="testTool">
 			<ref bean="testTool"/>
 		</property>
@@ -190,7 +195,7 @@
 			<ref bean="testTool"/>
 		</property>
 		<property name="testStorage">
-			<ref bean="testStorage${dtap.stage}"/>
+			<ref bean="#{testStorageActive}"/>
 		</property>
 		<property name="reportsComponent">
 			<ref bean="reportsComponent"/>
@@ -207,7 +212,7 @@
 		<property name="treePane">
 			<bean class="nl.nn.testtool.echo2.test.TreePane" autowire="byName" init-method="initBean" >
 				<property name="storage">
-					<ref bean="testStorage${dtap.stage}"/>
+					<ref bean="#{testStorageActive}"/>
 				</property>
 			</bean>
 		</property>
@@ -222,7 +227,7 @@
 							<ref bean="debugStorage"/>
 						</property>
 						<property name="testStorage">
-							<ref bean="testStorage${dtap.stage}"/>
+							<ref bean="#{testStorageActive}"/>
 						</property>
 						<property name="reportXmlTransformer">
 							<ref bean="reportXmlTransformer"/>
@@ -241,7 +246,7 @@
 			<ref bean="testTool"/>
 		</property>
 		<property name="testStorage">
-			<ref bean="testStorage${dtap.stage}"/>
+			<ref bean="#{testStorageActive}"/>
 		</property>
 		<property name="reportsComponent1">
 			<bean parent="reportsComponent">
@@ -288,6 +293,9 @@
 		<property name="tabs">
 			<ref bean="tabs"/>
 		</property>
+		<property name="testStorage">
+			<ref bean="#{testStorageActive}"/>
+		</property>
 	</bean>
 
 	<bean name="reportsTreeCellRenderer" class="nl.nn.testtool.echo2.reports.ReportsTreeCellRenderer"/>
@@ -304,8 +312,10 @@
 
 	<bean name="debugger,ibisDebugger" class="nl.nn.ibistesttool.Debugger" autowire="byName"/>
 
-	<bean name="messageTransformer" class="nl.nn.ibistesttool.transform.HideRegexMessageTransformer"/>
+	<bean name="messageEncoder" class="nl.nn.ibistesttool.MessageEncoder" autowire="byName"/>
 
-	<import resource="springIbisDebuggerAdvice.xml"/>
+	<bean name="messageCapturer" class="nl.nn.ibistesttool.MessageCapturer" autowire="byName"/>
+
+	<bean name="messageTransformer" class="nl.nn.ibistesttool.transform.HideRegexMessageTransformer"/>
 
 </beans>

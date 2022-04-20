@@ -23,15 +23,14 @@ import org.junit.Test;
 
 import com.sun.mail.smtp.SMTPMessage;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.senders.MailSender;
 import nl.nn.adapterframework.senders.MailSenderBase;
-import nl.nn.adapterframework.senders.MailSenderBase.MailSession;
 import nl.nn.adapterframework.senders.MailSenderBase.EMail;
+import nl.nn.adapterframework.senders.MailSenderBase.MailSession;
 import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestAssertions;
@@ -89,39 +88,17 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 
 	private void appendParameters(ISenderWithParameters sender) {
 
-		Parameter parameterFrom = new Parameter();
-		parameterFrom.setName("from");
-		parameterFrom.setValue("myself@address.org");
-		sender.addParameter(parameterFrom);
-
-		Parameter parameterSubject = new Parameter();
-		parameterSubject.setName("subject");
-		parameterSubject.setValue("My Subject");
-		sender.addParameter(parameterSubject);
-
-		Parameter parameterMessage = new Parameter();
-		parameterMessage.setName("message");
-		parameterMessage.setValue("My Message Goes Here");
-		sender.addParameter(parameterMessage);
-
-		Parameter parameterMessageBase64 = new Parameter();
-		parameterMessageBase64.setName("messageBase64");
-		parameterMessageBase64.setValue("false");
-		sender.addParameter(parameterMessageBase64);
-
 		String recipientsXml = "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
 				+ "<recipient type=\"to\" name=\"two\">me2@address.org</recipient>";
-		Parameter parameterRecipients = new Parameter();
-		parameterRecipients.setName("recipients");
-		parameterRecipients.setValue(recipientsXml);
-		sender.addParameter(parameterRecipients);
+		sender.addParameter(new Parameter("from", "myself@address.org"));
+		sender.addParameter(new Parameter("subject", "My Subject"));
+		sender.addParameter(new Parameter("message", "My Message Goes Here"));
+		sender.addParameter(new Parameter("messageBase64", "false"));
+		sender.addParameter(new Parameter("recipients", recipientsXml));
 	}
 
 	private void appendAttachmentParameter(ISenderWithParameters sender, String attachmentsXml) {
-		Parameter parameter = new Parameter();
-		parameter.setName("attachments");
-		parameter.setValue(attachmentsXml);
-		sender.addParameter(parameter);
+		sender.addParameter(new Parameter("attachments", attachmentsXml));
 	}
 
 	private void validateNDR(Session session, String ndr) {
@@ -589,12 +566,12 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 					sender2.configure();
 					sender2.open();
 
-					IPipeLineSession session1 = new PipeLineSessionBase();
+					PipeLineSession session1 = new PipeLineSession();
 					sender2.sendMessage(new Message(mailInput), session1);
 					Session mailSession1 = (Session) session1.get("mailSession");
 					mailSession1.getProperties().setProperty("bounce", bounce);
 
-					IPipeLineSession session2 = new PipeLineSessionBase();
+					PipeLineSession session2 = new PipeLineSession();
 					sender2.sendMessage(new Message(mailInput), session2);
 					Session mailSession2 = (Session) session2.get("mailSession");
 					assertEquals("same session should be used", mailSession1, mailSession2);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2015, 2020 Nationale-Nederlanden
+   Copyright 2015, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,10 @@
  */
 package nl.nn.adapterframework.extensions.esb;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -39,9 +38,7 @@ public class DirectWrapperPipe extends TimeoutGuardPipe {
 	protected final static String ADDOUTPUTNAMESPACE = "addOutputNamespace";
 
 	@Override
-	public PipeRunResult doPipeWithTimeoutGuarded(Message message, IPipeLineSession session) throws PipeRunException {
-		Message result;
-
+	public PipeRunResult doPipeWithTimeoutGuarded(Message message, PipeLineSession session) throws PipeRunException {
 		ParameterValueList pvl = null;
 		if (getParameterList() != null) {
 			try {
@@ -62,20 +59,15 @@ public class DirectWrapperPipe extends TimeoutGuardPipe {
 			}
 		}
 		if (destination != null) {
-			Parameter p = new Parameter();
-			p.setName(DESTINATION);
-			p.setValue(destination);
-			eswPipe.addParameter(p);
+			eswPipe.addParameter(new Parameter(DESTINATION, destination));
 		}
 		if (cmhVersion != null) {
 			if (StringUtils.isNumeric(cmhVersion)) {
 				eswPipe.setCmhVersion(Integer.parseInt(cmhVersion));
 			}
 		}
-		PipeForward pf = new PipeForward();
-		pf.setName("success");
-		eswPipe.registerForward(pf);
 		try {
+			eswPipe.registerForward(getSuccessForward());
 			eswPipe.configure();
 			return eswPipe.doPipe(message, session);
 		} catch (Exception e) {

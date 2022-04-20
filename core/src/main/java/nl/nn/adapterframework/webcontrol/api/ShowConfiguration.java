@@ -17,7 +17,6 @@ package nl.nn.adapterframework.webcontrol.api;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.Principal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -40,20 +39,17 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.SecurityContext;
-import javax.xml.transform.TransformerException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
-import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
+import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
@@ -62,7 +58,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.NameComparatorBase;
-import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.RunState;
 import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
@@ -74,7 +70,6 @@ import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 @Path("/")
 public final class ShowConfiguration extends Base {
-	@Context SecurityContext securityContext;
 
 	private String orderBy = AppConstants.getInstance().getProperty("iaf-api.configurations.orderby", "version").trim();
 
@@ -88,14 +83,15 @@ public final class ShowConfiguration extends Base {
 			FlowDiagramManager flowDiagramManager = getFlowDiagramManager();
 
 			try {
-				ResponseBuilder response = Response.status(Response.Status.OK);
-				if("dot".equalsIgnoreCase(flow)) {
-					response.entity(flowDiagramManager.generateDot(getIbisManager().getConfigurations())).type(MediaType.TEXT_PLAIN);
+				ResponseBuilder response;
+				InputStream configFlow = flowDiagramManager.get(getIbisManager().getConfigurations());
+				if(configFlow != null) {
+					response = Response.ok(configFlow, flowDiagramManager.getMediaType());
 				} else {
-					response.entity(flowDiagramManager.get(getIbisManager().getConfigurations())).type("image/svg+xml");
+					response = Response.noContent();
 				}
 				return response.build();
-			} catch (SAXException | TransformerException | IOException e) {
+			} catch (IOException e) {
 				throw new ApiException(e);
 			}
 		}
@@ -126,7 +122,7 @@ public final class ShowConfiguration extends Base {
 			Object value = entry.getValue();
 			if(key.equalsIgnoreCase("action")) {
 				if(value.equals("reload")) {
-					getIbisManager().handleAdapter("FULLRELOAD", "", "", "", null, true);
+					getIbisManager().handleAction(IbisAction.FULLRELOAD, "", "", "", getUserPrincipalName(), true);
 				}
 				response.entity("{\"status\":\"ok\"}");
 			}
@@ -166,30 +162,33 @@ public final class ShowConfiguration extends Base {
 
 		Configuration configuration = getIbisManager().getConfiguration(configurationName);
 
-		if(configuration == null){
+		if(configuration == null) {
 			throw new ApiException("Configuration not found!");
 		}
+		if(!configuration.isActive()) {
+			throw new ApiException("Configuration not active", configuration.getConfigurationException());
+		}
 
-		Map<String, Object> response = new HashMap<String, Object>();
-		Map<RunStateEnum, Integer> stateCount = new HashMap<RunStateEnum, Integer>();
-		List<String> errors = new ArrayList<String>();
+		Map<String, Object> response = new HashMap<>();
+		Map<RunState, Integer> stateCount = new HashMap<>();
+		List<String> errors = new ArrayList<>();
 
 		for (IAdapter adapter : configuration.getRegisteredAdapters()) {
-			RunStateEnum state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
+			RunState state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
 
-			if(state.equals(RunStateEnum.STARTED)) {
-				for (Receiver receiver: adapter.getReceivers()) {
-					RunStateEnum rState = receiver.getRunState();
+			if(state==RunState.STARTED) {
+				for (Receiver<?> receiver: adapter.getReceivers()) {
+					RunState rState = receiver.getRunState();
 	
-					if(!rState.equals(RunStateEnum.STARTED)) {
+					if(rState!=RunState.STARTED) {
 						errors.add("receiver["+receiver.getName()+"] of adapter["+adapter.getName()+"] is in state["+rState.toString()+"]");
-						state = RunStateEnum.ERROR;
+						state = RunState.ERROR;
 					}
 				}
 			}
 			else {
 				errors.add("adapter["+adapter.getName()+"] is in state["+state.toString()+"]");
-				state = RunStateEnum.ERROR;
+				state = RunState.ERROR;
 			}
 
 			int count;
@@ -202,7 +201,7 @@ public final class ShowConfiguration extends Base {
 		}
 
 		Status status = Response.Status.OK;
-		if(stateCount.containsKey(RunStateEnum.ERROR))
+		if(stateCount.containsKey(RunState.ERROR))
 			status = Response.Status.SERVICE_UNAVAILABLE;
 
 		if(!errors.isEmpty())
@@ -216,7 +215,7 @@ public final class ShowConfiguration extends Base {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/configurations/{configuration}/flow")
 	@Produces(MediaType.TEXT_PLAIN)
-	public Response getAdapterFlow(@PathParam("configuration") String configurationName, @QueryParam("dot") boolean dot) throws ApiException {
+	public Response getConfigurationFlow(@PathParam("configuration") String configurationName) throws ApiException {
 
 		Configuration configuration = getIbisManager().getConfiguration(configurationName);
 
@@ -227,14 +226,15 @@ public final class ShowConfiguration extends Base {
 		FlowDiagramManager flowDiagramManager = getFlowDiagramManager();
 
 		try {
-			ResponseBuilder response = Response.status(Response.Status.OK);
-			if(dot) {
-				response.entity(flowDiagramManager.generateDot(configuration)).type(MediaType.TEXT_PLAIN);
+			ResponseBuilder response;
+			InputStream flow = flowDiagramManager.get(configuration);
+			if(flow != null) {
+				response = Response.ok(flow, flowDiagramManager.getMediaType());
 			} else {
-				response.entity(flowDiagramManager.get(configuration)).type("image/svg+xml");
+				response = Response.noContent();
 			}
 			return response.build();
-		} catch (SAXException | TransformerException | IOException e) {
+		} catch (IOException e) {
 			throw new ApiException(e);
 		}
 	}
@@ -259,7 +259,7 @@ public final class ShowConfiguration extends Base {
 			Object value = entry.getValue();
 			if(key.equalsIgnoreCase("action")) {
 				if(value.equals("reload")) {
-					getIbisManager().handleAdapter("RELOAD", configurationName, "", "", null, false);
+					getIbisManager().handleAction(IbisAction.RELOAD, configurationName, "", "", getUserPrincipalName(), false);
 				}
 				response.entity("{\"status\":\"ok\"}");
 			}
@@ -352,30 +352,29 @@ public final class ShowConfiguration extends Base {
 			throw new ApiException("Missing post parameters");
 		}
 
-		String datasource = resolveStringFromMap(inputDataMap, "datasource");
-		boolean multiple_configs = resolveTypeFromMap(inputDataMap, "multiple_configs", boolean.class, false);
-		boolean activate_config  = resolveTypeFromMap(inputDataMap, "activate_config", boolean.class, true);
-		boolean automatic_reload = resolveTypeFromMap(inputDataMap, "automatic_reload", boolean.class, false);
+		String datasource = resolveStringFromMap(inputDataMap, "datasource", JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
+		boolean multipleConfigs = resolveTypeFromMap(inputDataMap, "multiple_configs", boolean.class, false);
+		boolean activateConfig  = resolveTypeFromMap(inputDataMap, "activate_config", boolean.class, true);
+		boolean automaticReload = resolveTypeFromMap(inputDataMap, "automatic_reload", boolean.class, false);
 		InputStream file = resolveTypeFromMap(inputDataMap, "file", InputStream.class, null);
 
-		String user = ""; //Should not be NULL as it's an optional field.
-		Principal principal = securityContext.getUserPrincipal();
-		if(principal != null)
-			user = principal.getName();
-		user = resolveTypeFromMap(inputDataMap, "user", String.class, user);
+		String user = resolveTypeFromMap(inputDataMap, "user", String.class, "");
+		if(StringUtils.isEmpty(user)) {
+			user = getUserPrincipalName();
+		}
 
 		fileName = inputDataMap.getAttachment("file").getContentDisposition().getParameter( "filename" );
 
 		Map<String, String> result = new LinkedHashMap<String, String>();
 		try {
-			if(multiple_configs) {
+			if(multipleConfigs) {
 				try {
-					result = ConfigurationUtils.processMultiConfigZipFile(getIbisContext(), datasource, activate_config, automatic_reload, file, user);
+					result = ConfigurationUtils.processMultiConfigZipFile(getIbisContext(), datasource, activateConfig, automaticReload, file, user);
 				} catch (IOException e) {
 					throw new ApiException(e);
 				}
 			} else {
-				String configName=ConfigurationUtils.addConfigToDatabase(getIbisContext(), datasource, activate_config, automatic_reload, fileName, file, user);
+				String configName=ConfigurationUtils.addConfigToDatabase(getIbisContext(), datasource, activateConfig, automaticReload, fileName, file, user);
 				if(configName != null) {
 					result.put(configName, "loaded");
 				}
@@ -390,15 +389,15 @@ public final class ShowConfiguration extends Base {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/configurations/{configuration}/versions/{version}/download")
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
-	public Response downloadConfiguration(@PathParam("configuration") String configurationName, @PathParam("version") String version, @QueryParam("realm") String jmsRealm) throws ApiException {
+	public Response downloadConfiguration(@PathParam("configuration") String configurationName, @PathParam("version") String version, @QueryParam("dataSourceName") String dataSourceName) throws ApiException {
 
 		if (StringUtils.isEmpty(version))
 			version = null;
-		if (StringUtils.isEmpty(jmsRealm))
-			jmsRealm = null;
+		if (StringUtils.isEmpty(dataSourceName))
+			dataSourceName = null;
 
 		try {
-			Map<String, Object> configuration = ConfigurationUtils.getConfigFromDatabase(getIbisContext(), configurationName, jmsRealm, version);
+			Map<String, Object> configuration = ConfigurationUtils.getConfigFromDatabase(getIbisContext(), configurationName, dataSourceName, version);
 			return Response
 					.status(Response.Status.OK)
 					.entity(configuration.get("CONFIG"))

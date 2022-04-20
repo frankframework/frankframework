@@ -21,7 +21,7 @@ services:
       restart: unless-stopped
       container_name: kerberos
       ports:
-      - "88:88"
+      - "88:88/udp"
       - "464:464"
       - "749:749"
       environment:

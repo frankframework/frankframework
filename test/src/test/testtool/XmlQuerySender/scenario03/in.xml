@@ -38,7 +38,7 @@
 				<type>function</type>
 			</column>
 			<column>
-				<name>tblob1</name>
+				<name>tblob</name>
 				<value>hallo---------1</value>
 				<type>blob</type>
 			</column>
@@ -46,11 +46,6 @@
 				<name>tclob</name>
 				<value>hallo---------2</value>
 				<type>clob</type>
-			</column>
-			<column>
-				<name>tblob2</name>
-				<value>hallo---------3</value>
-				<type>blob</type>
 			</column>
 		</columns>
 	</insert>

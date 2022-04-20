@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2021 WeAreFrank!
+Copyright 2016-2022 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -40,7 +40,9 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
 import nl.nn.adapterframework.jms.JmsException;
+import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -48,7 +50,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -57,7 +59,7 @@ import org.xml.sax.InputSource;
 
 /**
  * Shows the used certificate.
- * 
+ *
  * @since	7.0-B1
  * @author	Niels Meijer
  */
@@ -94,16 +96,24 @@ public final class ShowSecurityItems extends Base {
 
 		try {
 			appDDString = Misc.getApplicationDeploymentDescriptor();
-			appDDString = XmlUtils.skipXmlDeclaration(appDDString);
-			appDDString = XmlUtils.skipDocTypeDeclaration(appDDString);
-			appDDString = XmlUtils.removeNamespaces(appDDString);
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-			InputSource inputSource = new InputSource(new StringReader(appDDString));
-			xmlDoc = dBuilder.parse(inputSource);
-			xmlDoc.getDocumentElement().normalize();
+			if (appDDString !=null) {
+				appDDString = XmlUtils.skipXmlDeclaration(appDDString);
+				appDDString = XmlUtils.skipDocTypeDeclaration(appDDString);
+				appDDString = XmlUtils.removeNamespaces(appDDString);
+				DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+				DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+				InputSource inputSource = new InputSource(new StringReader(appDDString));
+				xmlDoc = dBuilder.parse(inputSource);
+				xmlDoc.getDocumentElement().normalize();
+			}
 		}
 		catch (Exception e) {
+			log.debug("cannot get deployment descriptor", e);
+			return null;
+		}
+
+		if (xmlDoc==null) {
+			log.debug("could get deployment descriptor");
 			return null;
 		}
 
@@ -147,14 +157,21 @@ public final class ShowSecurityItems extends Base {
 
 		try {
 			appBndString = Misc.getDeployedApplicationBindings();
-			appBndString = XmlUtils.removeNamespaces(appBndString);
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-			InputSource inputSource = new InputSource(new StringReader(appBndString));
-			xmlDoc = dBuilder.parse(inputSource);
-			xmlDoc.getDocumentElement().normalize();
+			if (StringUtils.isNotEmpty(appBndString)) {
+				appBndString = XmlUtils.removeNamespaces(appBndString);
+				DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+				DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+				InputSource inputSource = new InputSource(new StringReader(appBndString));
+				xmlDoc = dBuilder.parse(inputSource);
+				xmlDoc.getDocumentElement().normalize();
+			}
+		} catch (Exception e) {
+			log.debug("cannot get security role bindings", e);
+			return null;
 		}
-		catch (Exception e) {
+
+		if (xmlDoc==null) {
+			log.debug("could get security role bindings");
 			return null;
 		}
 
@@ -169,7 +186,7 @@ public final class ShowSecurityItems extends Base {
 				for (int j = 0; j < fieldsInRowset.getLength(); j++) {
 					if (fieldsInRowset.item(j).getNodeType() == Node.ELEMENT_NODE) {
 						Element field = (Element) fieldsInRowset.item(j);
-						
+
 						if("role".equals(field.getNodeName())) {
 							role = field.getAttribute("href");
 							if(role.indexOf("#") > -1)
@@ -196,7 +213,7 @@ public final class ShowSecurityItems extends Base {
 
 	private ArrayList<Object> addJmsRealms() {
 		List<String> jmsRealms = JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
-		ArrayList<Object> jmsRealmList = new ArrayList<Object>();
+		ArrayList<Object> jmsRealmList = new ArrayList<>();
 		String confResString;
 
 		try {
@@ -209,27 +226,26 @@ public final class ShowSecurityItems extends Base {
 			confResString = null;
 		}
 
-		for (int j = 0; j < jmsRealms.size(); j++) {
-			Map<String, Object> realm = new HashMap<String, Object>();
-			String jmsRealm = (String) jmsRealms.get(j);
+		for (String realmName : jmsRealms) {
+			Map<String, Object> realm = new HashMap<>();
+			JmsRealm jmsRealm = JmsRealmFactory.getInstance().getJmsRealm(realmName);
 
-			String dsName = null;
-			String qcfName = null;
-			String tcfName = null;
+			String dsName = jmsRealm.getDatasourceName();
+			String qcfName = jmsRealm.getQueueConnectionFactoryName();
+			String tcfName = jmsRealm.getTopicConnectionFactoryName();
 			String dsInfo = null;
-			String qcfInfo = null;
+			String cfInfo = null;
 
-			DirectQuerySender qs = (DirectQuerySender) getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
-			qs.setJmsRealm(jmsRealm);
-			try {
-				qs.configure();
-				dsName = qs.getDatasourceName();
-				dsInfo = qs.getDatasourceInfo();
-			} catch (JdbcException | ConfigurationException e) {
-				log.debug("no datasource ("+ClassUtils.nameOf(e)+"): "+e.getMessage());
-			}
-			if (StringUtils.isNotEmpty(dsName)) {
-				realm.put("name", jmsRealm);
+			if(StringUtils.isNotEmpty(dsName)) {
+				DirectQuerySender qs = getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
+				qs.setJmsRealm(realmName);
+				try {
+					qs.configure();
+					dsInfo = qs.getDatasourceInfo();
+				} catch (JdbcException | ConfigurationException e) {
+					log.debug("no datasource ("+ClassUtils.nameOf(e)+"): "+e.getMessage());
+				}
+				realm.put("name", realmName);
 				realm.put("datasourceName", dsName);
 				realm.put("info", dsInfo);
 
@@ -239,32 +255,33 @@ public final class ShowSecurityItems extends Base {
 						realm.put("connectionPoolProperties", connectionPoolProperties);
 					}
 				}
-			}
-
-			JmsSender js = new JmsSender();
-			js.setJmsRealm(jmsRealm);
-			try {
-				qcfName = js.getConnectionFactoryName();
-				qcfInfo = js.getConnectionFactoryInfo();
-			} catch (JmsException e) {
-				log.debug("no connectionFactory ("+ClassUtils.nameOf(e)+"): "+e.getMessage());
-			}
-			if (StringUtils.isNotEmpty(qcfName)) {
-				realm.put("name", jmsRealm);
-				realm.put("queueConnectionFactoryName", qcfName);
-				realm.put("info", qcfInfo);
-
-				if (confResString!=null) {
-					String connectionPoolProperties = Misc.getConnectionPoolProperties(confResString, "JMS", qcfName);
-					if (StringUtils.isNotEmpty(connectionPoolProperties)) {
-						realm.put("connectionPoolProperties", connectionPoolProperties);
-					}
+			} else {
+				JmsSender js = new JmsSender();
+				js.setJmsRealm(realmName);
+				if (StringUtils.isNotEmpty(tcfName)) {
+					js.setDestinationType(DestinationType.TOPIC);
 				}
-			}
-			tcfName = js.getTopicConnectionFactoryName();
-			if (StringUtils.isNotEmpty(tcfName)) {
-				realm.put("name", jmsRealm);
-				realm.put("topicConnectionFactoryName", tcfName);
+				try {
+					cfInfo = js.getConnectionFactoryInfo();
+				} catch (JmsException e) {
+					log.debug("no connectionFactory ("+ClassUtils.nameOf(e)+"): "+e.getMessage());
+				}
+				if (StringUtils.isNotEmpty(qcfName)) {
+					realm.put("name", realmName);
+					realm.put("queueConnectionFactoryName", qcfName);
+					realm.put("info", cfInfo);
+
+					if (confResString!=null) {
+						String connectionPoolProperties = Misc.getConnectionPoolProperties(confResString, "JMS", qcfName);
+						if (StringUtils.isNotEmpty(connectionPoolProperties)) {
+							realm.put("connectionPoolProperties", connectionPoolProperties);
+						}
+					}
+				} else if (StringUtils.isNotEmpty(tcfName)) {
+					realm.put("name", realmName);
+					realm.put("topicConnectionFactoryName", tcfName);
+					realm.put("info", cfInfo);
+				}
 			}
 			jmsRealmList.add(realm);
 		}
@@ -289,7 +306,7 @@ public final class ShowSecurityItems extends Base {
 		} catch (Throwable t) {
 			log.debug("Caught NoClassDefFoundError, just no sapSystem available: " + t.getMessage());
 		}
-		
+
 		if (sapSystems!=null) {
 			Iterator<String> iter = sapSystems.iterator();
 			while (iter.hasNext()) {
@@ -309,6 +326,15 @@ public final class ShowSecurityItems extends Base {
 
 	private List<String> getAuthEntries() {
 		List<String> entries = new ArrayList<String>();
+		try {
+			Collection<String> knownAliases = CredentialFactory.getConfiguredAliases();
+			if (knownAliases!=null) {
+				entries.addAll(knownAliases); // start with all aliases in the CredentialProvider
+			}
+		} catch (Exception e) {
+			log.warn("could not retrieve aliases from CredentialFactory", e);
+		}
+		// and add all aliases that are used in the configuration
 		for (Configuration configuration : getIbisManager().getConfigurations()) {
 			String configString = configuration.getLoadedConfiguration();
 			if(configString == null) continue; //If a configuration can't be found, continue...
@@ -323,8 +349,7 @@ public final class ShowSecurityItems extends Base {
 						}
 					}
 				}
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				log.warn("an error occurred while evaulating 'authAlias' xPathExpression", e);
 			}
 		}

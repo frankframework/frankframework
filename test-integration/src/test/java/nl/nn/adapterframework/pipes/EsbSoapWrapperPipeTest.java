@@ -2,7 +2,7 @@ package nl.nn.adapterframework.pipes;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -45,7 +45,7 @@ public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPi
 		
 		String input = "<GetDocumentAndAttributes_Response><attrib>1</attrib><attrib>2</attrib></GetDocumentAndAttributes_Response>";
 		
-		PipeRunResult prr = pipe.doPipe(new Message(input),new PipeLineSessionBase());
+		PipeRunResult prr = pipe.doPipe(new Message(input),new PipeLineSession());
 		
 		String result=prr.getResult().asString();
 		System.out.println("result ["+result+"]");
@@ -93,7 +93,7 @@ public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPi
 		
 		String input = "<"+rootElement+"><attrib>1</attrib><attrib>2</attrib></"+rootElement+">";
 		
-		PipeRunResult prr = pipe.doPipe(new Message(input),new PipeLineSessionBase());
+		PipeRunResult prr = pipe.doPipe(new Message(input),new PipeLineSession());
 		
 		String result=prr.getResult().asString();
 		System.out.println("result ["+result+"]");
@@ -149,7 +149,7 @@ public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPi
 		
 		String input = "<"+rootElement+"><attrib>1</attrib><attrib>2</attrib></"+rootElement+">";
 		
-		PipeRunResult prr = pipe.doPipe(new Message(input),new PipeLineSessionBase());
+		PipeRunResult prr = pipe.doPipe(new Message(input),new PipeLineSession());
 		
 		String result=prr.getResult().asString();
 		System.out.println("result ["+result+"]");
@@ -183,7 +183,7 @@ public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPi
 		
 		String input = "<GetDocumentAndAttributes_Response><attrib>1</attrib><attrib>2</attrib></GetDocumentAndAttributes_Response>";
 		
-		PipeRunResult prr = pipe.doPipe(new Message(input),new PipeLineSessionBase());
+		PipeRunResult prr = pipe.doPipe(new Message(input),new PipeLineSession());
 		
 		String result=prr.getResult().asString();
 		System.out.println("result ["+result+"]");

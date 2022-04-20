@@ -1,34 +1,34 @@
-<ibis>
+<module>
 	<adapter name="CorrelationMessageId">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="CorrelationMessageId">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-CorrelationMessageId" />
-			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="${applicationId}/CorrelationMessageId" />
+			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" slotId="${applicationId}/CorrelationMessageId" />
 		</receiver>
 		<pipeline firstPipe="ResolveString">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="ResolveString" className="nl.nn.adapterframework.pipes.FixedResult" fileName="CorrelationMessageId/result.xml" substituteVars="true">
+			<pipe name="ResolveString" className="nl.nn.adapterframework.pipes.FixedResultPipe" filename="CorrelationMessageId/result.xml" substituteVars="true">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
 	</adapter>
 	<adapter name="CorrelationMessageIdXPath">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="CorrelationMessageIdXPath" correlationIDXPath="request/@name">
+		<receiver correlationIDXPath="request/@name">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-CorrelationMessageIdXPath" />
-			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="${applicationId}/CorrelationMessageIdXPath" />
+			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" slotId="${applicationId}/CorrelationMessageIdXPath" />
 		</receiver>
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="CorrelationMessageIdXPath2" correlationIDXPath="request/@name">
-			<listener className="nl.nn.adapterframework.http.WebServiceListener" name="CorrelationMessageIdXPath2" />
-			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="${applicationId}/CorrelationMessageIdXPath2" />
+		<receiver correlationIDXPath="request/@name">
+			<listener className="nl.nn.adapterframework.http.WebServiceListener" name="CorrelationMessageIdXPath2" serviceNamespaceURI="CorrelationMessageIdXPath2" />
+			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" slotId="${applicationId}/CorrelationMessageIdXPath2" />
 		</receiver>
 		<pipeline firstPipe="ResolveString">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="ResolveString" className="nl.nn.adapterframework.pipes.FixedResult" fileName="CorrelationMessageId/result.xml" substituteVars="true">
+			<pipe name="ResolveString" className="nl.nn.adapterframework.pipes.FixedResultPipe" filename="CorrelationMessageId/result.xml" substituteVars="true">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
 	</adapter>
-</ibis>
+</module>

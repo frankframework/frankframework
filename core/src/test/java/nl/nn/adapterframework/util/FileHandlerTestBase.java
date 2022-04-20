@@ -20,8 +20,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.filesystem.IFileHandler;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -35,7 +34,7 @@ public abstract class FileHandlerTestBase {
 	public String TEST_TEMP_DIR="target";
 	
 	private IFileHandler handler;
-	private IPipeLineSession session=new PipeLineSessionBase();
+	private PipeLineSession session=new PipeLineSession();
 
 
     protected abstract IFileHandler createFileHandler() throws IllegalAccessException, InstantiationException;
@@ -143,10 +142,7 @@ public abstract class FileHandlerTestBase {
 		if (suffix!=null) {
 			if (suffixViaParam) {
 				paramList=new ParameterList();
-				Parameter param=new Parameter();
-				param.setName("writeSuffix");
-				param.setValue(suffix);
-				paramList.add(param);
+				paramList.add(new Parameter("writeSuffix", suffix));
 				paramList.configure();
 				handler.setWriteSuffix(".wsx");
 			} else {

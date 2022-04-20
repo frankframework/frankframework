@@ -19,21 +19,20 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.RunStateEnquirer;
 import nl.nn.adapterframework.util.RunStateEnquiring;
-import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.RunState;
 
 /**
  * Listener that polls a directory via FTP for files according to a wildcard. 
@@ -96,7 +95,7 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 	@Override
 	public String getIdFromRawMessage(String rawMessage, Map<String, Object> threadContext) throws ListenerException {
 		String correlationId = rawMessage.toString();
-		PipeLineSessionBase.setListenerParameters(threadContext, correlationId, correlationId, null, null);
+		PipeLineSession.setListenerParameters(threadContext, correlationId, correlationId, null, null);
 		return correlationId;
 	}
 
@@ -167,7 +166,7 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 	}
 
 	protected boolean canGoOn() {
-		return runStateEnquirer!=null && runStateEnquirer.isInState(RunStateEnum.STARTED);
+		return runStateEnquirer!=null && runStateEnquirer.getRunState()==RunState.STARTED;
 	}
 
 	@Override
@@ -175,7 +174,7 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 		runStateEnquirer=enquirer;
 	}
 
-	@IbisDoc({"time between pollings", "3600000 (one hour)"})
+	@IbisDoc({"Time <i>in milliseconds</i> between each poll interval", "3600000"})
 	public void setResponseTime(long responseTime) {
 		this.responseTime = responseTime;
 	}

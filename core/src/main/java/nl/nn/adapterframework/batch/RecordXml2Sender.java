@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,44 +17,37 @@ package nl.nn.adapterframework.batch;
 
 import java.util.List;
 
-import nl.nn.adapterframework.configuration.Configuration;
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.senders.ConfigurationAware;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 
 /**
  * Translate a record into XML, then send it using a sender.
  * 
- * <table border="1">
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link ISender sender}</td><td>Sender that needs to handle the (XML) record</td></tr>
- * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the recordHandler will be handed to the sender, if this is a {@link ISenderWithParameters ISenderWithParameters}</td></tr>
- * </table>
- * </p>
+ * @ff.parameters any parameters defined on the recordHandler will be handed to the sender, if this is a {@link ISenderWithParameters ISenderWithParameters}
  * 
  * @author  John Dekker
  */
-public class RecordXml2Sender extends RecordXmlTransformer implements ConfigurationAware {
+public class RecordXml2Sender extends RecordXmlTransformer {
 
-	private ISender sender = null;
-	private Configuration configuration; 
-	
+	private @Getter ISender sender = null;
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
+
 		if (sender==null) {
 			throw new ConfigurationException(ClassUtils.nameOf(this)+" has no sender");
 		}
-		if (sender instanceof ConfigurationAware) {
-			((ConfigurationAware)sender).setConfiguration(getConfiguration());
-		}
 		sender.configure();
 	}
+
 	@Override
 	public void open() throws SenderException {
 		super.open();
@@ -67,27 +60,14 @@ public class RecordXml2Sender extends RecordXmlTransformer implements Configurat
 	}
 
 	@Override
-	public String handleRecord(IPipeLineSession session, List<String> parsedRecord) throws Exception {
+	public String handleRecord(PipeLineSession session, List<String> parsedRecord) throws Exception {
 		String xml = super.handleRecord(session,parsedRecord);
 		return getSender().sendMessage(new Message(xml), session).asString(); 
 	}
-	
 
 
+	@IbisDoc({"10", "Sender that needs to handle the (XML) record"})
 	public void setSender(ISender sender) {
 		this.sender = sender;
 	}
-	public ISender getSender() {
-		return sender;
-	}
-
-	@Override
-	public void setConfiguration(Configuration configuration) {
-		this.configuration = configuration;
-	}
-	@Override
-	public Configuration getConfiguration() {
-		return configuration;
-	}
-
 }
