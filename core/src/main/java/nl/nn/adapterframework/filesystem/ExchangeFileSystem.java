@@ -275,8 +275,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		log.debug("using url ["+exchangeService.getUrl()+"]");
 
 		if(StringUtils.isNotEmpty(getMailAddress())){
-			exchangeService.setImpersonatedUserId(new ImpersonatedUserId(ConnectingIdType.SmtpAddress, getMailAddress()));
-			exchangeService.getHttpHeaders().put(ANCHOR_HEADER, getMailAddress());
+			setMailboxOnService(exchangeService, getMailAddress());
 		}
 
 		return exchangeService;
@@ -810,6 +809,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	private FolderId getFolderIdByFolderName(ExchangeService exchangeService, ExchangeFileSystemResolver resolver, boolean create, boolean skipCache) throws Exception {
 		FolderId folderId = skipCache ? null : cache.getFolderId(resolver);
+		setMailboxOnService(exchangeService, resolver.getMailbox());
 
 		if(folderId == null){
 			FindFoldersResults findResults;
@@ -1011,10 +1011,14 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		return new ExchangeFileSystemResolver(folderName, getMailAddress(), getMailboxFolderSeparator());
 	}
 
-	private ExchangeService getConnection(String mailbox) throws FileSystemException {
-		ExchangeService service = super.getConnection();
+	private void setMailboxOnService(ExchangeService service, String mailbox){
 		service.getHttpHeaders().put(ANCHOR_HEADER, mailbox);
 		service.setImpersonatedUserId(new ImpersonatedUserId(ConnectingIdType.SmtpAddress, mailbox));
+	}
+
+	private ExchangeService getConnection(String mailbox) throws FileSystemException {
+		ExchangeService service = super.getConnection();
+		setMailboxOnService(service, mailbox);
 
 		boolean invalidateConnectionOnRelease = false;
 
