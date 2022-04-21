@@ -34,10 +34,9 @@ import org.apache.logging.log4j.Logger;
  * @author	Niels Meijer
  */
 
-public class ApiException extends WebApplicationException implements Serializable
-{
+public class ApiException extends WebApplicationException implements Serializable {
 	private static final long serialVersionUID = 1L;
-	private Logger log = LogUtil.getLogger(this);
+	private transient Logger log = LogUtil.getLogger(this);
 
 	public ApiException() {
 		super();
@@ -48,39 +47,31 @@ public class ApiException extends WebApplicationException implements Serializabl
 	}
 
 	public ApiException(String msg, Throwable t) {
-		this(msg +": "+ t.getMessage(), t, Status.INTERNAL_SERVER_ERROR);
+		this(msg, t, Status.INTERNAL_SERVER_ERROR);
 	}
 
 	public ApiException(Throwable t, int status) {
 		this(t.getMessage(), t, Status.fromStatusCode(status));
 	}
 
-	public ApiException(String msg, Throwable t, Status status) {
-		super(t, formatException(msg, status, MediaType.APPLICATION_JSON));
+	private ApiException(String msg, Throwable t, Status status) {
+		super(msg, t, formatException(msg, status, MediaType.APPLICATION_JSON));
 
-		log.error(msg, t);
+		log.warn(msg, t);
 	}
 
 
 
 	public ApiException(String msg) {
-		super(formatException(msg, Status.INTERNAL_SERVER_ERROR, MediaType.APPLICATION_JSON));
+		this(msg, Status.INTERNAL_SERVER_ERROR);
 	}
 
 	public ApiException(String msg, int status) {
-		super(formatException(msg, Status.fromStatusCode(status), MediaType.APPLICATION_JSON));
+		this(msg, Status.fromStatusCode(status));
 	}
 
 	public ApiException(String msg, Status status) {
-		super(formatException(msg, status, MediaType.APPLICATION_JSON));
-	}
-
-	public ApiException(String msg, int status, String MediaType) {
-		super(formatException(msg, Status.fromStatusCode(status), MediaType));
-	}
-
-	public ApiException(String msg, Status status, String MediaType) {
-		super(formatException(msg, status, MediaType));
+		super(msg, formatException(msg, status, MediaType.APPLICATION_JSON));
 	}
 
 	private static Response formatException(String message, Status status, String mediaType) {
@@ -89,7 +80,7 @@ public class ApiException extends WebApplicationException implements Serializabl
 		if(message != null) {
 			message = message.replace("\"", "\\\"").replace("\n", " ").replace(System.getProperty("line.separator"), " ");
 
-			response.entity(("{\"status\":\"error\", \"error\":\"" + message + "\"}"));
+			response.entity(("{\"status\":\""+status.getReasonPhrase()+"\", \"error\":\"" + message + "\"}"));
 		}
 		return response.build();
 	}

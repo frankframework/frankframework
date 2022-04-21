@@ -167,13 +167,13 @@ public class MessageBrowsingFilter {
 					MessageWrapper<?> msgsgs = (MessageWrapper<?>) rawmsg;
 					msg = msgsgs.getMessage().asString();
 				} catch (IOException e) {
-					throw new ApiException(e, 500);
+					throw new ApiException(e);
 				}
 			} else if(rawmsg instanceof Message) { // For backwards compatibility: earlier MessageLog messages were stored as Message.
 				try {
 					msg = ((Message)rawmsg).asString();
 				} catch (IOException e) {
-					throw new ApiException(e, 500);
+					throw new ApiException(e);
 				}
 			} else {
 				if (listener!=null) {

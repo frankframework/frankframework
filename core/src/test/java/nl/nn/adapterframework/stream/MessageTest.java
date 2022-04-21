@@ -1121,4 +1121,5 @@ public class MessageTest {
 			TestAppender.removeAppender(appender);
 		}
 	}
+
 }

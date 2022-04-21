@@ -27,7 +27,8 @@ import nl.nn.adapterframework.doc.Mandatory;
  * The <code>name</code> is the name which a Pipe may lookup to return
  * to the PipeLine, indicating the next pipe to be executed. (this is done
  * in the {@link nl.nn.adapterframework.pipes.AbstractPipe#findForward(String) findForward()}-method. The actual
- * pipeName is defined in the <code>path</code> property.<br/><br/>
+ * pipeName is defined in the <code>path</code> property. The <code>path</code> property
+ * can also reference an {@link PipeLineExit Exit} when no other pipe should execute.<br/><br/> 
  * In this manner it is possible to influence the flow through the pipeline
  * without affecting the Java-code. Simply change the forwarding-XML.<br/>
  *

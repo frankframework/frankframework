@@ -30,8 +30,7 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 
 /**
- * Initialized through Spring. Uses @{link GraphvizEngine} to get an available 
- * JavaScriptEngine to generate the Flow images with.
+ * Flow generator to create DOT files
  */
 public class DotFlowGenerator implements IFlowGenerator {
 	protected static Logger log = LogUtil.getLogger(DotFlowGenerator.class);
@@ -44,8 +43,6 @@ public class DotFlowGenerator implements IFlowGenerator {
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		if(log.isTraceEnabled()) log.trace("creating JavaScriptFlowGenerator");
-
 		Resource xsltSourceConfig = Resource.getResource(ADAPTER2DOT_XSLT);
 		transformerPoolAdapter = TransformerPool.getInstance(xsltSourceConfig, 2);
 

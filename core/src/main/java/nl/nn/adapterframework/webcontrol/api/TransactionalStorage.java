@@ -633,7 +633,7 @@ public class TransactionalStorage extends Base {
 			rawmsg = messageBrowser.browseMessage(messageId);
 		}
 		catch(ListenerException e) {
-			throw new ApiException(e, 404);
+			throw new ApiException(e, 404);//why 404 when there clearly is something else going on?
 		}
 
 		String msg = null;
@@ -643,13 +643,13 @@ public class TransactionalStorage extends Base {
 					MessageWrapper<?> msgsgs = (MessageWrapper<?>) rawmsg;
 					msg = msgsgs.getMessage().asString();
 				} catch (IOException e) {
-					throw new ApiException(e, 500);
+					throw new ApiException(e);
 				}
 			} else if(rawmsg instanceof Message) { // For backwards compatibility: earlier MessageLog messages were stored as Message.
 				try {
 					msg = ((Message)rawmsg).asString();
 				} catch (IOException e) {
-					throw new ApiException(e, 500);
+					throw new ApiException(e);
 				}
 			} else {
 				try {

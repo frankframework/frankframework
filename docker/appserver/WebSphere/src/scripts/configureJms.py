@@ -3,13 +3,40 @@ cell = AdminControl.getCell()
 node = AdminControl.getNode()
 server = 'server1'
 
-AdminJMS.createJMSProvider(node, server, 'ActiveMQ', 'org.apache.activemq.jndi.ActiveMQInitialContextFactory', 'tcp://host.docker.internal:61616', 'classpath=/work/drivers/activemq-client.jar;/work/drivers/hawtbuf.jar;/work/drivers/slf4j-api.jar')
+def createJMSProvider(name, extContextFactory, extProviderURL, attributes):
+	print "Creating JMS Provider: ", name
+	jmsProviderId = AdminJMS.createJMSProvider(node, server, name, extContextFactory, extProviderURL, attributes)
+	return(jmsProviderId)
+	
+def createGenericJMSCF(jmsProviderName, name, jndiName, extJndiName):
+	print "Creating Generic JMS Connection Factory: ", name
+	attributes = [['connectionPool',[['agedTimeout','100'],['connectionTimeout','1000'],['freePoolDistributionTableSize',10],['maxConnections','12'],['minConnections','5'],['numberOfFreePoolPartitions','3'],['numberOfSharedPoolPartitions','6'],['numberOfUnsharedPoolPartitions','3'],['purgePolicy','EntirePool'],['reapTime','10000'],['surgeCreationInterval','10'],['surgeThreshold','10'],['testConnection','true'],['testConnectionInterval','10'],['unusedTimeout','10000']]]]
+	jmsCFId = AdminJMS.createGenericJMSConnectionFactory(node, server, jmsProviderName, name, jndiName, extJndiName, attributes)
+	return(jmsCFId)
 
-AdminJMS.createGenericJMSConnectionFactory(node, server, 'ActiveMQ', 'qcf', 'jms/qcf-activemq', 'XAConnectionFactory', [['connectionPool',[['agedTimeout','100'],['connectionTimeout','1000'],['freePoolDistributionTableSize',10],['maxConnections','12'],['minConnections','5'],['numberOfFreePoolPartitions','3'],['numberOfSharedPoolPartitions','6'],['numberOfUnsharedPoolPartitions','3'],['purgePolicy','EntirePool'],['reapTime','10000'],['surgeCreationInterval','10'],['surgeThreshold','10'],['testConnection','true'],['testConnectionInterval','10'],['unusedTimeout','10000']]]])
+def createGenericJMSDestination(jmsProviderName, name, jndiName, extJndiName):
+	print "Creating Generic JMS Destination: ", name
+	jmsDestinationId = AdminJMS.createGenericJMSDestination(node, server, jmsProviderName, name, jndiName, extJndiName)
+	return(jmsDestinationId)
 
-AdminJMS.createGenericJMSDestination(node, server, 'ActiveMQ', 'i4testiaf_in', 'jms/i4testiaf_in', 'dynamicQueues/Q.TEST.IN')
-AdminJMS.createGenericJMSDestination(node, server, 'ActiveMQ', 'i4testiaf_out', 'jms/i4testiaf_out', 'dynamicQueues/Q.TEST.OUT')
-AdminJMS.createGenericJMSDestination(node, server, 'ActiveMQ', 'i4testiaf_ff', 'jms/i4testiaf_ff', 'dynamicQueues/Q.TEST.FF')
+# ActiveMQ
+createJMSProvider('ActiveMQ', 'org.apache.activemq.jndi.ActiveMQInitialContextFactory', 'tcp://host.docker.internal:61616', 'classpath=/work/drivers/activemq-client.jar;/work/drivers/hawtbuf.jar;/work/drivers/slf4j-api.jar')
+
+createGenericJMSCF('ActiveMQ', 'qcf', 'jms/qcf-activemq', 'XAConnectionFactory')
+
+createGenericJMSDestination('ActiveMQ', 'i4testiaf_in-activemq', 'jms/i4testiaf_in-activemq', 'dynamicQueues/Q.TEST.IN')
+createGenericJMSDestination('ActiveMQ', 'i4testiaf_out-activemq', 'jms/i4testiaf_out-activemq', 'dynamicQueues/Q.TEST.OUT')
+createGenericJMSDestination('ActiveMQ', 'i4testiaf_ff-activemq', 'jms/i4testiaf_ff-activemq', 'dynamicQueues/Q.TEST.FF')
+
+# Artemis
+createJMSProvider('Artemis', 'org.apache.activemq.artemis.jndi.ActiveMQInitialContextFactory', 'tcp://host.docker.internal:61615?type=XA_CF', 'classpath=/work/drivers/artemis-jms-client-all.jar')
+
+createGenericJMSCF('Artemis', 'qcf', 'jms/qcf-artemis', 'XAConnectionFactory')
+
+createGenericJMSDestination('Artemis', 'i4testiaf_in-artemis', 'jms/i4testiaf_in-artemis', 'dynamicQueues/Q.TEST.IN')
+createGenericJMSDestination('Artemis', 'i4testiaf_out-artemis', 'jms/i4testiaf_out-artemis', 'dynamicQueues/Q.TEST.OUT')
+createGenericJMSDestination('Artemis', 'i4testiaf_ff-artemis', 'jms/i4testiaf_ff-artemis', 'dynamicQueues/Q.TEST.FF')
+
 
 #p0 = AdminJMS.listJMSProviders()
 #print 'JMS Provider templates: ', p0

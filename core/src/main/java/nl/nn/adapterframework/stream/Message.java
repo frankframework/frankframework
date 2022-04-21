@@ -66,7 +66,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class Message implements Serializable {
 
-	private static final long serialVersionUID = 437863352486501445L;
+	protected static final long serialVersionUID = 437863352486501445L;
 
 	protected transient Logger log = LogUtil.getLogger(this);
 
@@ -219,8 +219,13 @@ public class Message implements Serializable {
 		// if deepPreserve=true, File and URL are also preserved as byte array
 		// otherwise we rely on that File and URL can be repeatedly read
 		if (deepPreserve && !(request instanceof String || request instanceof byte[])) {
-			log.debug("deep preserving as byte[]");
-			request = StreamUtil.streamToByteArray(asInputStream(), false);
+			if (isBinary()) {
+				log.debug("deep preserving as byte[]");
+				request = asByteArray();
+			} else {
+				log.debug("deep preserving as String");
+				request = asString();
+			}
 		}
 	}
 
@@ -560,8 +565,12 @@ public class Message implements Serializable {
 		return result;
 	}
 
+	public boolean isNull() {
+		return request == null;
+	}
+
 	public boolean isEmpty() {
-		return request == null || request instanceof String && ((String)request).isEmpty();
+		return isNull() || request instanceof String && ((String)request).isEmpty();
 	}
 
 	public void toStringPrefix(Writer writer) throws IOException {
@@ -605,6 +614,7 @@ public class Message implements Serializable {
 		return result.toString();
 	}
 
+
 	public static Message asMessage(Object object) {
 		if (object instanceof Message) {
 			return (Message) object;
@@ -621,6 +631,7 @@ public class Message implements Serializable {
 		return new Message(null, object);
 	}
 
+	@Deprecated
 	public static Object asObject(Object object) {
 		if (object instanceof Message) {
 			return ((Message) object).asObject();
@@ -702,6 +713,10 @@ public class Message implements Serializable {
 
 	public static boolean isEmpty(Message message) {
 		return (message == null || message.isEmpty());
+	}
+
+	public static boolean isNull(Message message) {
+		return (message == null || message.isNull());
 	}
 
 	/*
