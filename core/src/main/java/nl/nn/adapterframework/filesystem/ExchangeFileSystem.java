@@ -192,13 +192,13 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 		if (StringUtils.isNotEmpty(baseFolderName)) {
 			try {
-				basefolderId=findFolder(inboxId,baseFolderName);
+				basefolderId=findFolder(emailAddress, inboxId, baseFolderName);
 			} catch (Exception e) {
 				throw new FileSystemException("Could not find baseFolder ["+baseFolderName+"] as subfolder of ["+inboxId.getFolderName()+"]", e);
 			}
 			if (basefolderId==null) {
 				log.debug("Could not get baseFolder ["+baseFolderName+"] as subfolder of ["+inboxId.getFolderName()+"]");
-				basefolderId=findFolder(null,baseFolderName);
+				basefolderId=findFolder(emailAddress,null, baseFolderName);
 			}
 			if (basefolderId==null) {
 				throw new FileSystemException("Could not find baseFolder ["+baseFolderName+"]");
@@ -281,8 +281,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		return exchangeService;
 	}
 
-	public FolderId findFolder(FolderId baseFolderId, String folderName) throws FileSystemException {
-		ExchangeService exchangeService = getConnection();
+	public FolderId findFolder(String mailbox, FolderId baseFolderId, String folderName) throws FileSystemException {
+		ExchangeService exchangeService = getConnection(mailbox);
 		boolean invalidateConnectionOnRelease = false;
 		try {
 			FindFoldersResults findFoldersResultsIn;
@@ -1018,7 +1018,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	private ExchangeService getConnection(String mailbox) throws FileSystemException {
 		ExchangeService service = super.getConnection();
-		setMailboxOnService(service, mailbox);
 
 		boolean invalidateConnectionOnRelease = false;
 
@@ -1033,6 +1032,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 					releaseConnection(service, invalidateConnectionOnRelease);
 				}
 			}
+		} else {
+			setMailboxOnService(service, mailbox);
 		}
 
 		return service;
@@ -1047,8 +1048,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	private void registerMailbox(String mailbox) throws FileSystemException {
 		if(!cache.isMailboxRegistered(mailbox)){
 			ExchangeService service = super.getConnection();
-			boolean invalidateConnectionOnRelease = false;
 
+			boolean invalidateConnectionOnRelease = false;
 			try {
 				registerMailbox(mailbox, service);
 			} catch (Exception e) {
@@ -1061,6 +1062,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	}
 
 	private void registerMailbox(String mailbox, ExchangeService service) throws Exception {
+		setMailboxOnService(service, mailbox);
 		FolderId baseFolderId = getBaseFolderId(mailbox, getBaseFolder());
 		List<Folder> folders = findFolders(service, baseFolderId, Integer.MAX_VALUE);
 
