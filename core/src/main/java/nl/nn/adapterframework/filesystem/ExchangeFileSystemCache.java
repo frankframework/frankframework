@@ -37,8 +37,8 @@ public class ExchangeFileSystemCache {
 	private final Map<String, FolderId> baseFolders = new ConcurrentHashMap<>(); // <Mailbox, FolderId>
 	private final Map<String, FolderId> folders = new ConcurrentHashMap<>(); // <Mailbox+FolderName, FolderId>
 
-	public FolderId getFolder(ExchangeFileSystemResolver resolver){
-		return getFolder(resolver.getMailbox(), resolver.getFolderName());
+	public FolderId getFolderId(ExchangeFileSystemResolver resolver){
+		return getFolderId(resolver.getMailbox(), resolver.getFolderName());
 	}
 
 	/**
@@ -49,7 +49,7 @@ public class ExchangeFileSystemCache {
 	 *
 	 * @return Folder - The EWS Folder object that matches parameters.
 	 */
-	public FolderId getFolder(String mailbox, String folderName) {
+	public FolderId getFolderId(String mailbox, String folderName) {
 		log.debug("Looking for folder ["+folderName+"] in ["+mailbox+"]");
 
 		FolderId result = folders.get(constructKey(mailbox, folderName));
@@ -89,7 +89,7 @@ public class ExchangeFileSystemCache {
 	 */
 	public void registerMailbox(String mailbox, FolderId baseFolderId, List<Folder> folders) throws ServiceLocalException {
 		if(!isMailboxRegistered(mailbox)){
-			log.debug("Creating a local cache of folders for ["+mailbox+"].");
+			log.debug("Creating a local cache of folderIds for ["+mailbox+"] with baseFolderId ["+baseFolderId+"].");
 
 			baseFolders.putIfAbsent(mailbox, baseFolderId);
 
@@ -115,7 +115,7 @@ public class ExchangeFileSystemCache {
 		}
 	}
 
-	public void registerFolder(ExchangeFileSystemResolver resolver, FolderId folderId)  {
+	public void registerResolversFolder(ExchangeFileSystemResolver resolver, FolderId folderId)  {
 		String key = resolver.getMailbox() + resolver.getFolderName();
 
 		if(!folders.containsKey(key)){
@@ -125,7 +125,7 @@ public class ExchangeFileSystemCache {
 		}
 	}
 
-	public void removeFolder(String mailbox, Folder folder) throws ServiceLocalException {
+	public void deregisterFolder(String mailbox, Folder folder) throws ServiceLocalException {
 		String folderName = folder.getDisplayName();
 		String key = constructKey(mailbox, folderName);
 		if(folders.containsKey(key)){

@@ -809,7 +809,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	}
 
 	private FolderId getFolderIdByFolderName(ExchangeService exchangeService, ExchangeFileSystemResolver resolver, boolean create, boolean skipCache) throws Exception {
-		FolderId folderId = skipCache ? null : cache.getFolder(resolver);
+		FolderId folderId = skipCache ? null : cache.getFolderId(resolver);
 
 		if(folderId == null){
 			FindFoldersResults findResults;
@@ -834,7 +834,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			}
 			folderId = findResults.getFolders().get(0).getId();
 
-			cache.registerFolder(resolver, folderId);
+			cache.registerResolversFolder(resolver, folderId);
 		}
 
 		return folderId;
@@ -876,7 +876,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 				folder.empty(DeleteMode.HardDelete, true);
 			}
 			folder.delete(DeleteMode.HardDelete);
-			cache.removeFolder(resolver.getMailbox(), folder);
+			cache.deregisterFolder(resolver.getMailbox(), folder);
 		} catch (Exception e) {
 			invalidateConnectionOnRelease = true;
 			throw new FileSystemException(e);
