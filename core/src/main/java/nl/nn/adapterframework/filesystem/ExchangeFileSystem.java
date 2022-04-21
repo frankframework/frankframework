@@ -141,6 +141,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	private ConfidentialClientApplication client;
 
 	private final String ANCHOR_HEADER = "X-AnchorMailbox";
+	private CredentialFactory cf;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -157,8 +158,10 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	@Override
 	public void open() throws FileSystemException {
 		super.open();
+		if(cf == null){
+			cf = new CredentialFactory(getAuthAlias(), getClientId(), getClientSecret());
+		}
 		if( StringUtils.isNotEmpty(getTenantId()) ){
-			CredentialFactory cf = getCredentials();
 			try {
 				client = ConfidentialClientApplication.builder(
 						cf.getUsername(),
@@ -226,7 +229,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 				throw new FileSystemException("Could not generate access token!", e);
 			}
 		} else {
-			CredentialFactory cf = getCredentials();
 			// use deprecated Basic Authentication. Support will end 2021-Q3!
 			log.warn("Using deprecated Basic Authentication method for authentication to Exchange Web Services");
 			ExchangeCredentials credentials = new WebCredentials(cf.getUsername(), cf.getPassword());
@@ -1071,10 +1073,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	 */
 	private List<Folder> findFolders(ExchangeService service, FolderId parentFolderId, int folderViewCount) throws Exception {
 		return service.findFolders(parentFolderId, new FolderView(folderViewCount)).getFolders();
-	}
-
-	private CredentialFactory getCredentials(){
-		return new CredentialFactory(getAuthAlias(), getClientId(), getClientSecret());
 	}
 
 	private static class RedirectionUrlCallback implements IAutodiscoverRedirectionUrl {
