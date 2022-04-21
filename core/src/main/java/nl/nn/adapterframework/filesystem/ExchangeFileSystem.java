@@ -523,9 +523,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 		try {
 			FolderId destinationFolderId = getFolderIdByFolderName(exchangeService, resolver, createFolder, false);
-			Item destinationItem = f.move(destinationFolderId);
-
-			return (EmailMessage) destinationItem;
+			return (EmailMessage)f.move(destinationFolderId);
 		} catch (Exception e) {
 			invalidateConnectionOnRelease = true;
 			throw new FileSystemException(e);
