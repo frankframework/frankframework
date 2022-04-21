@@ -126,4 +126,9 @@ public class ExchangeFolderSender extends FileSystemSender<EmailMessage,Exchange
 		getFileSystem().setProxyDomain(domain);
 	}
 
+	@IbisDocRef({EXCHANGE_FILE_SYSTEM})
+	public void setMailboxFolderSeparator(String separator) {
+		getFileSystem().setMailboxFolderSeparator(separator);
+	}
+
 }
