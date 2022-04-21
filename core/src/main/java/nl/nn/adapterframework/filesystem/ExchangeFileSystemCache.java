@@ -27,7 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Acts as a cache for EWS components.
- * Stores Folder objects in memory for quick access.
+ * Stores FolderIds in memory for quick access.
  *
  * @author Laurens Mäkel.
  */
