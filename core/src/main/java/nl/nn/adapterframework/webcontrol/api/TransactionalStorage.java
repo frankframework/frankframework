@@ -18,7 +18,6 @@ package nl.nn.adapterframework.webcontrol.api;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -95,7 +94,7 @@ public class TransactionalStorage extends Base {
 				@PathParam("storageSourceName") String storageSourceName,
 				@PathParam("processState") String processState,
 				@PathParam("messageId") String messageId
-			) throws ApiException {
+			) throws ApiException, IOException {
 
 		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
 
@@ -113,7 +112,7 @@ public class TransactionalStorage extends Base {
 			if(pipe == null) {
 				throw new ApiException("Pipe ["+storageSourceName+"] not found!");
 			}
-			storage = getPipeMessageLog(pipe); 
+			storage = getPipeMessageLog(pipe);
 			message = getMessage(storage, messageId);
 		} else {
 			Receiver<?> receiver = adapter.getReceiverByName(storageSourceName);
@@ -192,7 +191,7 @@ public class TransactionalStorage extends Base {
 			@PathParam("storageSourceName") String storageSourceName,
 			@PathParam("processState") String processState,
 			@PathParam("messageId") String messageId
-		) throws ApiException {
+		) throws ApiException, IOException {
 
 		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
 
@@ -410,11 +409,7 @@ public class TransactionalStorage extends Base {
 
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
 		messageId = Misc.urlDecode(messageId);
-		try {
-			resendMessage(receiver, messageId);
-		} catch(ApiException e) {
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(Arrays.asList(e.getCause().getMessage())).build();
-		}
+		resendMessage(receiver, messageId);
 
 		return Response.status(Response.Status.OK).build();
 	}
@@ -619,32 +614,28 @@ public class TransactionalStorage extends Base {
 		}
 	}
 
-	private String getMessage(IMessageBrowser<?> messageBrowser, String messageId) {
+	private String getMessage(IMessageBrowser<?> messageBrowser, String messageId) throws IOException {
 		return getMessage(messageBrowser, null, messageId);
 	}
 
-	private String getMessage(IMessageBrowser<?> messageBrowser, IListener<?> listener, String messageId) {
+	private String getMessage(IMessageBrowser<?> messageBrowser, IListener<?> listener, String messageId) throws IOException {
 		return getMessageText(messageBrowser, listener, messageId);
 	}
 
-	private String getMessageText(IMessageBrowser<?> messageBrowser, IListener listener, String messageId) {
+	private String getMessageText(IMessageBrowser<?> messageBrowser, IListener listener, String messageId) throws IOException {
 		Object rawmsg = null;
 		try {
 			rawmsg = messageBrowser.browseMessage(messageId);
 		}
 		catch(ListenerException e) {
-			throw new ApiException(e, 404);//why 404 when there clearly is something else going on?
+			throw new ApiException("unable to find or read message ["+messageId+"]", e);
 		}
 
 		String msg = null;
 		if (rawmsg != null) {
 			if(rawmsg instanceof MessageWrapper) {
-				try {
 					MessageWrapper<?> msgsgs = (MessageWrapper<?>) rawmsg;
 					msg = msgsgs.getMessage().asString();
-				} catch (IOException e) {
-					throw new ApiException(e);
-				}
 			} else if(rawmsg instanceof Message) { // For backwards compatibility: earlier MessageLog messages were stored as Message.
 				try {
 					msg = ((Message)rawmsg).asString();

@@ -1345,6 +1345,7 @@ angular.module('iaf.beheerconsole')
 			$scope.updateTable();
 		}, function(data) {
 			message.resending = false;
+			data = (data.error) ? data.error : data;
 			$scope.addNote("danger", "Unable to resend message ["+messageId+"]. "+data);
 			$scope.updateTable();
 		}, false);
