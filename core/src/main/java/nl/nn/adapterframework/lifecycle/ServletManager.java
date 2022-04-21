@@ -68,10 +68,10 @@ public class ServletManager {
 	private boolean webSecurityEnabled = true;
 	private static TransportGuarantee defaultTransportGuarantee = TransportGuarantee.CONFIDENTIAL;
 
-	private static final String AUTH_ENABLED_KEY = "application.security.http.authentication";
-	private static final String HTTPS_ENABLED_KEY = "application.security.http.transportGuarantee";
+	protected static final String AUTH_ENABLED_KEY = "application.security.http.authentication";
+	protected static final String HTTPS_ENABLED_KEY = "application.security.http.transportGuarantee";
 
-	private ServletContext getServletContext() {
+	protected ServletContext getServletContext() {
 		return servletContext;
 	}
 
@@ -111,11 +111,23 @@ public class ServletManager {
 		}
 	}
 
-	public void registerServlet(String servletName, Servlet servletClass, String urlMapping) {
-		registerServlet(servletName, servletClass, urlMapping, new String[0], -1, null);
+	public void register(DynamicRegistration.Servlet servlet) {
+		Map<String, String> parameters = null;
+		if(servlet instanceof DynamicRegistration.ServletWithParameters)
+			parameters = ((DynamicRegistration.ServletWithParameters) servlet).getParameters();
+
+		registerServlet(servlet, parameters);
 	}
 
-	public void registerServlet(String servletName, Servlet servlet, String urlMapping, String[] roles, int loadOnStartup, Map<String, String> initParameters) {
+	public void register(Servlet servletClass, String servletName, String urlMapping) {
+		registerServlet(servletClass, servletName, urlMapping, new String[0], -1, null);
+	}
+
+	private void registerServlet(DynamicRegistration.Servlet servlet, Map<String, String> parameters) {
+		registerServlet(servlet, servlet.getName(), servlet.getUrlMapping(), servlet.getRoles(), servlet.loadOnStartUp(), parameters);
+	}
+
+	private void registerServlet(Servlet servlet, String servletName, String urlMapping, String[] roles, int loadOnStartup, Map<String, String> initParameters) {
 		if(servletName.contains(" ")) {
 			throw new IllegalArgumentException("unable to instantiate servlet, servlet name may not contain spaces");
 		}
@@ -125,16 +137,53 @@ public class ServletManager {
 
 
 		String propertyPrefix = "servlet."+servletName+".";
-
 		if(!appConstants.getBoolean(propertyPrefix+"enabled", true))
 			return;
 
 		ServletRegistration.Dynamic serv = getServletContext().addServlet(servletName, servlet);
-		ServletSecurity.TransportGuarantee transportGuarantee = getTransportGuarantee(propertyPrefix+"transportGuarantee");
 
+		serv.addMapping(getUrlMapping(propertyPrefix, urlMapping));
+
+		int loadOnStartupCopy = appConstants.getInt(propertyPrefix+"loadOnStartup", loadOnStartup);
+		serv.setLoadOnStartup(loadOnStartupCopy);
+		serv.setServletSecurity(getServletSecurity(propertyPrefix, roles));
+
+		if(initParameters != null && !initParameters.isEmpty()) {
+			//Manually loop through the map as serv.setInitParameters will fail all parameters even if only 1 fails...
+			for (String key : initParameters.keySet()) {
+				String value = initParameters.get(key);
+				if(!serv.setInitParameter(key, value)) {
+					log("unable to set init-parameter ["+key+"] with value ["+value+"] for servlet ["+servletName+"]", Level.ERROR);
+				}
+			}
+		}
+
+		if(log.isDebugEnabled()) log.debug("registered servlet ["+servletName+"] class ["+servlet+"] url(s) ["+urlMapping+"] loadOnStartup ["+loadOnStartup+"]");
+	}
+
+	private String[] getUrlMapping(String propertyPrefix, String defaultUrlMappings) {
+		String[] urlMappingsCopy = defaultUrlMappings.split(",");
+		String urlMappingOverride = appConstants.getString(propertyPrefix+"urlMapping", null);
+		if(StringUtils.isNotEmpty(urlMappingOverride)) {
+			urlMappingsCopy = urlMappingOverride.split(",");
+		}
+
+		List<String> mappings = new ArrayList<>();
+		for(String urlMapping : urlMappingsCopy) {
+			String mapping = urlMapping.trim();
+			if(!mapping.startsWith("/") && !mapping.startsWith("*")) {
+				mapping = "/"+mapping;
+			}
+			mappings.add(mapping);
+		}
+
+		return mappings.toArray(new String[0]);
+	}
+
+	private ServletSecurityElement getServletSecurity(String propertyPrefix, String[] defaultRoles) {
 		String[] rolesCopy = new String[0];
-		if(roles != null && webSecurityEnabled) {
-			rolesCopy = roles;
+		if(defaultRoles != null && webSecurityEnabled) {
+			rolesCopy = defaultRoles;
 		}
 
 		String roleNames = appConstants.getString(propertyPrefix+"securityroles", null);
@@ -147,30 +196,9 @@ public class ServletManager {
 			rolesCopy = roleNames.split(",");
 		declareRoles(rolesCopy);
 
+		TransportGuarantee transportGuarantee = getTransportGuarantee(propertyPrefix+"transportGuarantee");
 		HttpConstraintElement httpConstraintElement = new HttpConstraintElement(transportGuarantee, rolesCopy);
-		ServletSecurityElement constraint = new ServletSecurityElement(httpConstraintElement);
-
-		String urlMappingCopy = appConstants.getString(propertyPrefix+"urlMapping", urlMapping);
-		if(!urlMappingCopy.startsWith("/") && !urlMappingCopy.startsWith("*")) {
-			urlMappingCopy = "/"+urlMappingCopy;
-		}
-		serv.addMapping(urlMappingCopy);
-
-		int loadOnStartupCopy = appConstants.getInt(propertyPrefix+"loadOnStartup", loadOnStartup);
-		serv.setLoadOnStartup(loadOnStartupCopy);
-		serv.setServletSecurity(constraint);
-
-		if(initParameters != null && !initParameters.isEmpty()) {
-			//Manually loop through the map as serv.setInitParameters will fail all parameters even if only 1 fails...
-			for (String key : initParameters.keySet()) {
-				String value = initParameters.get(key);
-				if(!serv.setInitParameter(key, value)) {
-					log("unable to set init-parameter ["+key+"] with value ["+value+"] for servlet ["+servletName+"]", Level.ERROR);
-				}
-			}
-		}
-
-		if(log.isDebugEnabled()) log.debug("registered servlet ["+servletName+"] class ["+servlet+"] url ["+urlMapping+"] loadOnStartup ["+loadOnStartup+"]");
+		return new ServletSecurityElement(httpConstraintElement);
 	}
 
 	private void log(String msg, Level level) {
@@ -178,14 +206,6 @@ public class ServletManager {
 			getServletContext().log(msg);
 
 		log.log(level, msg);
-	}
-
-	public void register(DynamicRegistration.Servlet servlet) {
-		Map<String, String> parameters = null;
-		if(servlet instanceof DynamicRegistration.ServletWithParameters)
-			parameters = ((DynamicRegistration.ServletWithParameters) servlet).getParameters();
-
-		registerServlet(servlet.getName(), servlet.getServlet(), servlet.getUrlMapping(), servlet.getRoles(), servlet.loadOnStartUp(), parameters);
 	}
 
 	public static ServletSecurity.TransportGuarantee getTransportGuarantee(String propertyName) {
