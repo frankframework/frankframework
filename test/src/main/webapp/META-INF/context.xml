@@ -115,7 +115,7 @@
 		type="javax.sql.DataSource" 
 		driverClassName="org.postgresql.Driver"
 		url="jdbc:postgresql://host.docker.internal:5432/testiaf"
-		user="${testiaf_user/username:-testiaf_user}"
+		username="${testiaf_user/username:-testiaf_user}"
 		password="${testiaf_user/password:-testiaf_user00}"
 		maxTotal="10"
 		maxWaitMillis="5000"
@@ -180,5 +180,13 @@
 		factory="org.apache.naming.factory.BeanFactory"
 		type="org.apache.activemq.ActiveMQXAConnectionFactory"
 		brokerURL="tcp://host.docker.internal:61616"
-	/>	
+	/>
+
+	<!-- Activemq-artemis resource configuration -->
+	<Resource name="jms/qcf-artemis"
+		factory="org.apache.naming.factory.BeanFactory"
+		type="org.apache.activemq.artemis.jms.client.ActiveMQXAConnectionFactory"
+		brokerURL="tcp://host.docker.internal:61615"
+	/>
+
 </Context>

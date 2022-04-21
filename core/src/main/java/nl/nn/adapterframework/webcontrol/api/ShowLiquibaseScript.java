@@ -136,12 +136,12 @@ public final class ShowLiquibaseScript extends Base {
 				String filename = inputDataMap.getAttachment("file").getContentDisposition().getParameter( "filename" );
 
 				if (filename.endsWith(".xml")) {
-					databaseMigrator.update(writer, new BytesResource(file, filename));
+					databaseMigrator.update(writer, new BytesResource(file, filename, config));
 				} else {
 					try(ZipInputStream stream = new ZipInputStream(file)){
 						ZipEntry entry;
 						while((entry = stream.getNextEntry()) != null) {
-							databaseMigrator.update(writer, new BytesResource(StreamUtil.dontClose(stream), entry.getName()));
+							databaseMigrator.update(writer, new BytesResource(StreamUtil.dontClose(stream), entry.getName(), config));
 						}
 					}
 				}

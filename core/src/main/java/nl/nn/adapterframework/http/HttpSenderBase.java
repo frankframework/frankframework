@@ -1,4 +1,5 @@
 /*
+
    Copyright 2017-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,9 +26,7 @@ import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -39,7 +38,6 @@ import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.MethodNotSupportedException;
 import org.apache.http.StatusLine;
-import org.apache.http.auth.AuthOption;
 import org.apache.http.auth.AuthProtocolState;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.AuthState;
@@ -69,10 +67,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.htmlcleaner.CleanerProperties;
-import org.htmlcleaner.HtmlCleaner;
-import org.htmlcleaner.SimpleXmlSerializer;
-import org.htmlcleaner.TagNode;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -177,6 +171,8 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public abstract class HttpSenderBase extends SenderWithParametersBase implements HasPhysicalDestination, HasKeystore, HasTruststore {
 
+	private final @Getter(onMethod = @__(@Override)) String domain = "Http";
+	
 	private @Getter String url;
 	private @Getter String urlParam = "url";
 
@@ -203,6 +199,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private @Getter String password;
 	private @Getter String authDomain;
 	private @Getter String tokenEndpoint;
+	private @Getter int tokenExpiry=-1;
 	private @Getter String clientAuthAlias;
 	private @Getter String clientId;
 	private @Getter String clientSecret;
@@ -243,7 +240,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private @Getter String styleSheetName=null;
 	private @Getter String protocol=null;
 	private @Getter String resultStatusCodeSessionKey;
-	
+
 	private final boolean APPEND_MESSAGEID_HEADER = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("http.headers.messageid", true);
 	private boolean disableCookies = false;
 
@@ -301,7 +298,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				log.debug(getLogPrefix()+"looked up protocol for scheme ["+uri.getScheme()+"] to be port ["+port+"]");
 			} catch (Exception e) {
 				log.debug(getLogPrefix()+"protocol for scheme ["+uri.getScheme()+"] not found, setting port to 80",e);
-				port=80; 
+				port=80;
 			}
 		}
 		return port;
@@ -347,6 +344,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		if (getMaxConnections() <= 0) {
 			throw new ConfigurationException(getLogPrefix()+"maxConnections is set to ["+getMaxConnections()+"], which is not enough for adequate operation");
 		}
+
 		try {
 			if (urlParameter == null) {
 				if (StringUtils.isEmpty(getUrl())) {
@@ -354,30 +352,30 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				}
 				staticUri = getURI(getUrl());
 			}
-
-			AuthSSLContextFactory.verifyKeystoreConfiguration(this, this);
-
-			if (StringUtils.isNotEmpty(getAuthAlias()) || StringUtils.isNotEmpty(getUsername())) {
-				credentials = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
-			} else {
-				credentials = new CredentialFactory(getClientAuthAlias(), getClientId(), getClientSecret());
-			}
-			if (StringUtils.isNotEmpty(getTokenEndpoint()) && StringUtils.isEmpty(getClientAuthAlias()) && StringUtils.isEmpty(getClientId())) {
-				throw new ConfigurationException("To obtain accessToken at tokenEndpoint ["+getTokenEndpoint()+"] a clientAuthAlias or ClientId and ClientSecret must be specified");
-			}
-			HttpHost proxy = null;
-			CredentialFactory pcf = null;
-			if (StringUtils.isNotEmpty(getProxyHost())) {
-				proxy = new HttpHost(getProxyHost(), getProxyPort());
-				pcf = new CredentialFactory(getProxyAuthAlias(), getProxyUsername(), getProxyPassword());
-				requestConfigBuilder.setProxy(proxy);
-				httpClientBuilder.setProxy(proxy);
-			}
-
-			setupAuthentication(credentials, pcf, proxy, requestConfigBuilder);
 		} catch (URISyntaxException e) {
-			throw new ConfigurationException(getLogPrefix()+"cannot interpret uri ["+getUrl()+"]", e);
+			throw new ConfigurationException(getLogPrefix()+"cannot interpret url ["+getUrl()+"]", e);
 		}
+
+		AuthSSLContextFactory.verifyKeystoreConfiguration(this, this);
+
+		if (StringUtils.isNotEmpty(getAuthAlias()) || StringUtils.isNotEmpty(getUsername())) {
+			credentials = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
+		} else {
+			credentials = new CredentialFactory(getClientAuthAlias(), getClientId(), getClientSecret());
+		}
+		if (StringUtils.isNotEmpty(getTokenEndpoint()) && StringUtils.isEmpty(getClientAuthAlias()) && StringUtils.isEmpty(getClientId())) {
+			throw new ConfigurationException("To obtain accessToken at tokenEndpoint ["+getTokenEndpoint()+"] a clientAuthAlias or ClientId and ClientSecret must be specified");
+		}
+		HttpHost proxy = null;
+		CredentialFactory pcf = null;
+		if (StringUtils.isNotEmpty(getProxyHost())) {
+			proxy = new HttpHost(getProxyHost(), getProxyPort());
+			pcf = new CredentialFactory(getProxyAuthAlias(), getProxyUsername(), getProxyPassword());
+			requestConfigBuilder.setProxy(proxy);
+			httpClientBuilder.setProxy(proxy);
+		}
+
+		setupAuthentication(credentials, pcf, proxy, requestConfigBuilder);
 
 		if (StringUtils.isNotEmpty(getStyleSheetName())) {
 			try {
@@ -478,7 +476,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 			if (preferredAuthenticationScheme == AuthenticationScheme.OAUTH) {
 				CredentialFactory client_cf = new CredentialFactory(getClientAuthAlias(), getClientId(), getClientSecret());
-				OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(getTokenEndpoint(), getScope(), client_cf, StringUtils.isEmpty(user_cf.getUsername()), this);
+				OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(getTokenEndpoint(), getScope(), client_cf, StringUtils.isEmpty(user_cf.getUsername()), this, getTokenExpiry());
 				httpClientContext.setAttribute(OAuthAuthenticationScheme.ACCESSTOKEN_MANAGER_KEY, accessTokenManager);
 				httpClientBuilder.setTargetAuthenticationStrategy(new OAuthPreferringAuthenticationStrategy());
 			}
@@ -507,7 +505,6 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		}
 
 		httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
-		
 	}
 
 	private void preAuthenticate() {
@@ -515,16 +512,13 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			AuthState authState = httpClientContext.getTargetAuthState();
 			if (authState==null) {
 				authState = new AuthState();
-				httpClientContext.setAttribute(httpClientContext.TARGET_AUTH_STATE, authState);
+				httpClientContext.setAttribute(HttpClientContext.TARGET_AUTH_STATE, authState);
 			}
 			authState.setState(AuthProtocolState.CHALLENGED);
-			AuthOption authOption = new AuthOption(getPreferredAuthenticationScheme().createScheme(), getCredentials());
-			Queue<AuthOption> authOptionQueue = new LinkedList<>();
-			authOptionQueue.add(authOption);
-			authState.update(authOptionQueue);
+			authState.update(getPreferredAuthenticationScheme().createScheme(), getCredentials());
 		}
 	}
-	
+
 	private Credentials getCredentials() {
 		String uname;
 		if (StringUtils.isNotEmpty(getAuthDomain())) {
@@ -535,7 +529,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 		return new UsernamePasswordCredentials(uname, credentials.getPassword());
 	}
-	
+
 	private AuthenticationScheme getPreferredAuthenticationScheme() {
 		return StringUtils.isNotEmpty(getTokenEndpoint()) ? AuthenticationScheme.OAUTH : AuthenticationScheme.BASIC;
 	}
@@ -557,7 +551,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		}
 		return sslSocketFactory;
 	}
-	
+
 	protected boolean appendParameters(boolean parametersAppended, StringBuffer path, ParameterValueList parameters) throws SenderException {
 		if (parameters != null) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appending ["+parameters.size()+"] parameters");
@@ -573,7 +567,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 						path.append("?");
 						parametersAppended = true;
 					}
-	
+
 					String parameterToAppend = pv.getDefinition().getName() +"="+ URLEncoder.encode(pv.asStringValue(""), getCharSet());
 					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appending parameter ["+parameterToAppend+"]");
 					path.append(parameterToAppend);
@@ -621,20 +615,20 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		final HttpRequestBase httpRequestBase;
 		try {
 			if (urlParameter != null) {
-				String url = pvl.getParameterValue(getUrlParam()).asStringValue();
+				String url = pvl.get(getUrlParam()).asStringValue();
 				targetUri = getURI(url);
 			} else {
 				targetUri = staticUri;
 			}
 
 			// Resolve HeaderParameters
-			Map<String, String> headersParamsMap = new HashMap<String, String>();
+			Map<String, String> headersParamsMap = new HashMap<>();
 			if (headersParams != null && pvl!=null) {
 				log.debug("appending header parameters "+headersParams);
 				StringTokenizer st = new StringTokenizer(getHeadersParams(), ",");
 				while (st.hasMoreElements()) {
 					String paramName = st.nextToken();
-					ParameterValue paramValue = pvl.getParameterValue(paramName);
+					ParameterValue paramValue = pvl.get(paramName);
 					if(paramValue != null)
 						headersParamsMap.put(paramName, paramValue.asStringValue(null));
 				}
@@ -718,7 +712,6 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				}
 				throw new SenderException(e);
 			} finally {
-				
 				// By forcing the use of the HttpResponseHandler the resultStream 
 				// will automatically be closed when it has been read.
 				// See HttpResponseHandler and ReleaseConnectionAfterReadInputStream.
@@ -728,7 +721,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				// IMPORTANT: It is possible that poorly written implementations
 				// wont read or close the response.
 				// This will cause the connection to become stale..
-				
+
 				if (tg.cancel()) {
 					throw new TimeoutException(getLogPrefix()+"timeout of ["+getTimeout()+"] ms exceeded");
 				}
@@ -751,22 +744,17 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				throw new SenderException("error reading http response as String", e);
 			}
 
-			String xhtml = XmlUtils.skipDocTypeDeclaration(resultString.trim());
-			if (xhtml.startsWith("<html>") || xhtml.startsWith("<html ")) {
-				CleanerProperties props = new CleanerProperties();
-				HtmlCleaner cleaner = new HtmlCleaner(props);
-				TagNode tagNode = cleaner.clean(xhtml);
-				xhtml = new SimpleXmlSerializer(props).getAsString(tagNode);
+			String xhtml = XmlUtils.toXhtml(resultString);
 
-				if (transformerPool != null) {
-					log.debug(getLogPrefix() + " transforming result [" + xhtml + "]");
-					try {
-						xhtml = transformerPool.transform(Message.asSource(xhtml));
-					} catch (Exception e) {
-						throw new SenderException("Exception on transforming input", e);
-					}
+			if (transformerPool != null && xhtml != null) {
+				log.debug(getLogPrefix() + " transforming result [" + xhtml + "]");
+				try {
+					xhtml = transformerPool.transform(Message.asSource(xhtml));
+				} catch (Exception e) {
+					throw new SenderException("Exception on transforming input", e);
 				}
 			}
+
 			result = Message.asMessage(xhtml);
 		}
 
@@ -780,7 +768,6 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		}
 		return getUrl();
 	}
-
 
 	@IbisDoc({"URL or base of URL to be used", ""})
 	public void setUrl(String string) {
@@ -825,12 +812,12 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		maxExecuteRetries = i;
 	}
 
-	@IbisDoc({"alias used to obtain credentials for authentication to host", ""})
+	/** Authentication Alias used for authentication to the host */
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
 
-	@IbisDoc({"username used in authentication to host", ""})
+	/** Username used for authentication to the host */
 	public void setUsername(String username) {
 		this.username = username;
 	}
@@ -840,22 +827,43 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		setUsername(username);
 	}
 
-	@IbisDoc({"password used in authentication to host", " "})
+	/** Password used for authentication to the host */
 	public void setPassword(String string) {
 		password = string;
 	}
 
-	@IbisDoc({"domain used in authentication to host", " "})
+	/**
+	 * Corporate domain name. Should only be used in combination with sAMAccountName, never with an UPN.<br/>
+	 * <br/>
+	 * Assuming the following user:<br/>
+	 * UPN: john.doe@CorpDomain.biz<br/>
+	 * sAMAccountName: CORPDOMAIN\john.doe<br/>
+	 * <br/>
+	 * The username attribute may be set to <code>john.doe</code><br/>
+	 * The AuthDomain attribute may be set to <code>CORPDOMAIN</code><br/>
+	 */
+	@Deprecated
+	@ConfigurationWarning("Please use the UPN or the full sAM-AccountName instead")
 	public void setAuthDomain(String string) {
 		authDomain = string;
 	}
 
 	/** 
 	 * Endpoint to obtain OAuth accessToken. If <code>authAlias</code> or <code>username</code>( and <code>password</code>) are specified, 
-	 * then a PasswordGrant is used, otherwise a ClientCredentials grant.
+	 * then a PasswordGrant is used, otherwise a ClientCredentials grant. The obtained accessToken will be added to the regular requests
+	 * in an HTTP Header 'Authorization' with a 'Bearer' prefix. 
 	 */
 	public void setTokenEndpoint(String string) {
 		tokenEndpoint = string;
+	}
+	/**
+	 * If set to a non-negative value, then determines the time (in seconds) after which the token will be refreshed. Otherwise the token 
+	 * will be refreshed when it is half way its lifetime as defined by the <code>expires_in</code> clause of the token response, 
+	 * or when the regular server returns a 401 status with a challenge.
+	 * @ff.default -1
+	 */
+	public void setTokenExpiry(int value) {
+		tokenExpiry = value;
 	}
 	/** Alias used to obtain client_id and client_secret for authentication to <code>tokenEndpoint</code> */
 	public void setClientAlias(String clientAuthAlias) {

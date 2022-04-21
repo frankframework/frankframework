@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @author  Gerrit van Brakel
  * @since   4.9.9
  */
-public class Basics implements ItemList {
+public class Basics implements IBasics<Basics> {
 
 	public static final int NUM_BASIC_ITEMS=6;   
 
@@ -51,6 +51,17 @@ public class Basics implements ItemList {
 	protected long sum = 0;
 	protected long sumOfSquares=0;
 	
+	public Basics() {
+		super();
+	}
+
+	protected Basics(long count, long sum, long sumOfSquares) {
+		this();
+		this.count = count;
+		this.sum = sum;
+		this.sumOfSquares = sumOfSquares;
+	}
+	
 	public void reset() {
 		count = 0;
 		min = Long.MAX_VALUE;
@@ -59,21 +70,20 @@ public class Basics implements ItemList {
 		sumOfSquares=0;
 	}
 
-	public void mark(Basics other) {
-		min = Long.MAX_VALUE;
-		max = 0;
-		count = other.count;
-		sum = other.sum;
-		sumOfSquares=other.sumOfSquares;
+	@Override
+	public Basics takeSnapshot() {
+		return new Basics(count, sum, sumOfSquares);
 	}
 	
+	@Override
 	public void addValue(long value) {
 		++count;
 		checkMinMax(value);
 		addSums(value);
 	}
 	
-	protected void checkMinMax(long value) {
+	@Override
+	public void checkMinMax(long value) {
 		if (value < min) {
 			min = value;
 		}
@@ -108,10 +118,12 @@ public class Basics implements ItemList {
 	}
 
 
+	@Override
 	public int getItemCount() {
 		return NUM_BASIC_ITEMS;
 	}
 
+	@Override
 	public String getItemName(int index) {
 		switch (index) {
 			case 0: return ITEM_NAME_COUNT;
@@ -124,18 +136,20 @@ public class Basics implements ItemList {
 		}
 	}
 
-	public int getItemType(int index) {
+	@Override
+	public Type getItemType(int index) {
 		switch (index) {
-			case 0: return ITEM_TYPE_INTEGER;
-			case 1: return ITEM_TYPE_TIME;
-			case 2: return ITEM_TYPE_TIME;
-			case 3: return ITEM_TYPE_TIME;
-			case 4: return ITEM_TYPE_TIME;
-			case 5: return ITEM_TYPE_TIME;
+			case 0: return Type.INTEGER;
+			case 1: return Type.TIME;
+			case 2: return Type.TIME;
+			case 3: return Type.TIME;
+			case 4: return Type.TIME;
+			case 5: return Type.TIME;
 			default : throw new IllegalArgumentException("item index ["+index+"] outside allowed range [0,"+(NUM_BASIC_ITEMS-1)+"]");
 		}
 	}
 
+	@Override
 	public Object getItemValue(int index) {
 		switch (index) {
 			case 0: return new Long(getCount());
@@ -154,41 +168,65 @@ public class Basics implements ItemList {
 
 
 	
+	@Override
 	public long getCount() {
 		return count;
 	}
+	@Override
 	public long getIntervalCount(Basics mark) {
 		return count-mark.getCount();
 	}
 
+	@Override
 	public long getMax() {
 		return max;
 	}
 
+	@Override
 	public long getMin() {
 		return min;
 	}
 
+	@Override
 	public long getSum() {
 		return sum;
 	}
+	@Override
 	public long getSumOfSquares() {
 		return sumOfSquares;
 	}
 
+	@Override
 	public long getIntervalSum(Basics mark) {
 		return sum-mark.getSum();
 	}
+	@Override
 	public long getIntervalSumOfSquares(Basics mark) {
 		return sumOfSquares-mark.getSumOfSquares();
 	}
+	@Override
+	public long getIntervalMin(Basics mark) {
+		return mark.getMin();
+	}
 
+	@Override
+	public long getIntervalMax(Basics mark) {
+		return mark.getMax();
+	}
+
+	@Override
+	public void updateIntervalMinMax(Basics mark, long value) {
+		mark.checkMinMax(value);
+	}
+
+	@Override
 	public double getAverage() {
 		if (count == 0) {
 			return 0;
 		}
 		return (sum / (double)count);
 	}
+	@Override
 	public double getIntervalAverage(Basics mark) {
 		long intervalCount=getIntervalCount(mark);
 		if (intervalCount==0) {
@@ -197,13 +235,16 @@ public class Basics implements ItemList {
 		return getIntervalSum(mark)/(double)(intervalCount);
 	}
 
+	@Override
 	public double getVariance() {
 		return calculateVariance(count, sum, sumOfSquares);
 	}
+	@Override
 	public double getIntervalVariance(Basics mark) {
 		return calculateVariance(count-mark.getCount(), sum-mark.getSum(), sumOfSquares-mark.getSumOfSquares());
 	}
 
+	@Override
 	public double getStdDev() {
 		return Math.sqrt(getVariance());
 	}

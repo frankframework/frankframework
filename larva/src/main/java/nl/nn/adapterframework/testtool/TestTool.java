@@ -17,12 +17,11 @@ package nl.nn.adapterframework.testtool;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -53,22 +52,16 @@ import java.util.zip.ZipInputStream;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.multipart.FilePart;
-import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
-import org.apache.commons.httpclient.methods.multipart.Part;
-import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockMultipartHttpServletRequest;
-
-import com.sun.syndication.io.XmlReader;
 
 import nl.nn.adapterframework.configuration.ClassLoaderException;
 import nl.nn.adapterframework.configuration.Configuration;
@@ -96,6 +89,7 @@ import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.senders.DelaySender;
 import nl.nn.adapterframework.senders.IbisJavaSender;
+import nl.nn.adapterframework.stream.FileMessage;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CaseInsensitiveComparator;
@@ -127,19 +121,25 @@ public class TestTool {
 	private static String zeefVijlNeem = "";
 	private static Writer silentOut = null;
 	private static boolean autoSaveDiffs = false;
-	
+
 	/*
 	 * if allowReadlineSteps is set to true, actual results can be compared in line by using .readline steps.
 	 * Those results cannot be saved to the inline expected value, however.
 	 */
-	private static final boolean allowReadlineSteps = false; 
+	private static final boolean allowReadlineSteps = false;
 	protected static int globalTimeout=DEFAULT_TIMEOUT;
+
+	private static final String TR_STARTING_TAG="<tr>";
+	private static final String TR_CLOSING_TAG="</tr>";
+	private static final String TD_STARTING_TAG="<td>";
+	private static final String TD_CLOSING_TAG="</td>";
+	private static final String TABLE_CLOSING_TAG="</table>";
 
 	public static void setTimeout(int newTimeout) {
 		globalTimeout=newTimeout;
 	}
-	
-	public static IbisContext getIbisContext(ServletContext application) {
+
+	private static IbisContext getIbisContext(ServletContext application) {
 		return IbisApplicationServlet.getIbisContext(application);
 	}
 
@@ -150,8 +150,7 @@ public class TestTool {
 		// See IbisContext.setDefaultApplicationServerType() and userstory
 		// 'Refactor ConfigurationServlet en AppConstants' too.
 		Configuration configuration = ibisContext.getIbisManager().getConfigurations().get(0);
-		AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
-		return appConstants;
+		return AppConstants.getInstance(configuration.getClassLoader());
 	}
 
 	public static void runScenarios(ServletContext application, HttpServletRequest request, Writer out) {
@@ -184,7 +183,7 @@ public class TestTool {
 
 	public static final int ERROR_NO_SCENARIO_DIRECTORIES_FOUND=-1;
 	/**
-	 * 
+	 *
 	 * @return negative: error condition
 	 * 		   0: all scenarios passed
 	 * 		   positive: number of scenarios that failed
@@ -293,7 +292,7 @@ public class TestTool {
 				while (scenarioFilesIterator.hasNext()) {
 					int scenarioPassed = RESULT_ERROR;
 					File scenarioFile = (File)scenarioFilesIterator.next();
-			
+
 					String scenarioDirectory = scenarioFile.getParentFile().getAbsolutePath() + File.separator;
 					String longName = scenarioFile.getAbsolutePath();
 					String shortName = longName.substring(currentScenariosRootDirectory.length() - 1, longName.length() - ".properties".length());
@@ -395,7 +394,7 @@ public class TestTool {
 							}
 						}
 					}
-					
+
 					writeHtml("</div>", writers, false);
 				}
 				long executeTime = System.currentTimeMillis() - startTime;
@@ -469,18 +468,112 @@ public class TestTool {
 		if (writers!=null) {
 			writeHtml("<form action=\"index.jsp\" method=\"post\">", writers, false);
 
-			writeHtml("<table>", writers, false);
-			writeHtml("<tr>", writers, false);
+			// scenario root directory drop down
+			writeHtml("<table style=\"float:left;height:50px\">", writers, false);
+			writeHtml(TR_STARTING_TAG, writers, false);
+			writeHtml("<td>Scenarios root directory</td>", writers, false);
+			writeHtml(TR_CLOSING_TAG, writers, false);
+			writeHtml(TR_STARTING_TAG, writers, false);
+			writeHtml(TD_STARTING_TAG, writers, false);
+			writeHtml("<select name=\"scenariosrootdirectory\" onchange=\"updateScenarios()\">", writers, false);
+			Iterator<String> scenariosRootDirectoriesIterator = scenariosRootDirectories.iterator();
+			Iterator<String> scenariosRootDescriptionsIterator = scenariosRootDescriptions.iterator();
+			while (scenariosRootDirectoriesIterator.hasNext()) {
+				String directory = (String)scenariosRootDirectoriesIterator.next();
+				String description = (String)scenariosRootDescriptionsIterator.next();
+				String option = "<option value=\"" + XmlUtils.encodeChars(directory) + "\"";
+				if (scenariosRootDirectory.equals(directory)) {
+					option = option + " selected";
+				}
+				option = option + ">" + XmlUtils.encodeChars(description) + "</option>";
+				writeHtml(option, writers, false);
+			}
+			writeHtml("</select>", writers, false);
+			writeHtml(TD_CLOSING_TAG, writers, false);
+			writeHtml(TR_CLOSING_TAG, writers, false);
+			writeHtml(TABLE_CLOSING_TAG, writers, false);
+
+			// Use a span to make IE put table on next line with a smaller window width
+			writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
+			writeHtml("<table style=\"float:left;height:50px\">", writers, false);
+			writeHtml(TR_STARTING_TAG, writers, false);
+			writeHtml("<td>Wait before clean up (ms)</td>", writers, false);
+			writeHtml(TR_CLOSING_TAG, writers, false);
+			writeHtml(TR_STARTING_TAG, writers, false);
+			writeHtml(TD_STARTING_TAG, writers, false);
+			writeHtml("<input type=\"text\" name=\"waitbeforecleanup\" value=\"" + waitBeforeCleanUp + "\">", writers, false);
+			writeHtml(TD_CLOSING_TAG, writers, false);
+			writeHtml(TR_CLOSING_TAG, writers, false);
+			writeHtml(TABLE_CLOSING_TAG, writers, false);
+
+			writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
+			// timeout box
+			writeHtml("<table style=\"float:left;height:50px\">", writers, false);
+			writeHtml(TR_STARTING_TAG, writers, false);
+			writeHtml("<td>Default timeout (ms)</td>", writers, false);
+			writeHtml(TR_CLOSING_TAG, writers, false);
+			writeHtml(TR_STARTING_TAG, writers, false);
+			writeHtml(TD_STARTING_TAG, writers, false);
+			writeHtml("<input type=\"text\" name=\"timeout\" value=\"" + (timeout != globalTimeout ? timeout : globalTimeout) + "\" title=\"Global timeout for larva scenarios.\">", writers, false);
+			writeHtml(TD_CLOSING_TAG, writers, false);
+			writeHtml(TR_CLOSING_TAG, writers, false);
+			writeHtml(TABLE_CLOSING_TAG, writers, false);
+
+			// log level dropdown
+			writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
+			writeHtml("<table style=\"float:left;height:50px\">", writers, false);
+			writeHtml(TR_STARTING_TAG, writers, false);
+			writeHtml("<td>Log level</td>", writers, false);
+			writeHtml(TR_CLOSING_TAG, writers, false);
+			writeHtml(TR_STARTING_TAG, writers, false);
+			writeHtml(TD_STARTING_TAG, writers, false);
+			writeHtml("<select name=\"loglevel\">", writers, false);
+			StringTokenizer tokenizer = new StringTokenizer(LOG_LEVEL_ORDER, ",");
+			while (tokenizer.hasMoreTokens()) {
+				String level = tokenizer.nextToken().trim();
+				level = level.substring(1, level.length() - 1);
+				String option = "<option value=\"" + XmlUtils.encodeChars(level) + "\"";
+				if (((String)writers.get("loglevel")).equals(level)) {
+					option = option + " selected";
+				}
+				option = option + ">" + XmlUtils.encodeChars(level) + "</option>";
+				writeHtml(option, writers, false);
+			}
+			writeHtml("</select>", writers, false);
+			writeHtml(TD_CLOSING_TAG, writers, false);
+			writeHtml(TR_CLOSING_TAG, writers, false);
+			writeHtml(TABLE_CLOSING_TAG, writers, false);
+
+			// Auto scroll checkbox
+			writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
+			writeHtml("<table style=\"float:left;height:50px\">", writers, false);
+			writeHtml(TR_STARTING_TAG, writers, false);
+			writeHtml("<td>Auto scroll</td>", writers, false);
+			writeHtml(TR_CLOSING_TAG, writers, false);
+			writeHtml(TR_STARTING_TAG, writers, false);
+			writeHtml(TD_STARTING_TAG, writers, false);
+			writeHtml("<input type=\"checkbox\" name=\"autoscroll\" value=\"true\"", writers, false);
+			if (autoScroll.equals("true")) {
+				writeHtml(" checked", writers, false);
+			}
+			writeHtml(">", writers, false);
+			writeHtml(TD_CLOSING_TAG, writers, false);
+			writeHtml(TR_CLOSING_TAG, writers, false);
+			writeHtml(TABLE_CLOSING_TAG, writers, false);
+
+			// Scenario(s)
+			writeHtml("<table style=\"clear:both;float:left;height:50px\">", writers, false);
+			writeHtml(TR_STARTING_TAG, writers, false);
 			writeHtml("<td>Scenario(s)</td>", writers, false);
-			writeHtml("</tr>", writers, false);
-			writeHtml("<tr>", writers, false);
-			writeHtml("<td>", writers, false);
+			writeHtml(TR_CLOSING_TAG, writers, false);
+			writeHtml(TR_STARTING_TAG, writers, false);
+			writeHtml(TD_STARTING_TAG, writers, false);
 			writeHtml("<select name=\"execute\">", writers, false);
 			debugMessage("Fill execute select box.", writers);
-			Set<String> addedDirectories = new HashSet<String>();
+			Set<String> addedDirectories = new HashSet<>();
 			Iterator<File> scenarioFilesIterator = scenarioFiles.iterator();
 			while (scenarioFilesIterator.hasNext()) {
-				File scenarioFile = (File)scenarioFilesIterator.next();
+				File scenarioFile = scenarioFilesIterator.next();
 				String scenarioDirectory = scenarioFile.getParentFile().getAbsolutePath() + File.separator;
 				Properties properties = readProperties(appConstants, scenarioFile, writers);
 				debugMessage("Add parent directories of '" + scenarioDirectory + "'", writers);
@@ -525,112 +618,22 @@ public class TestTool {
 				}
 			}
 			writeHtml("</select>", writers, false);
-			writeHtml("</td>", writers, false);
-			writeHtml("</tr>", writers, false);
-			writeHtml("</table>", writers, false);
-
-			writeHtml("<table align=\"left\">", writers, false);
-			writeHtml("<tr>", writers, false);
-			writeHtml("<td>Scenarios root directory</td>", writers, false);
-			writeHtml("</tr>", writers, false);
-			writeHtml("<tr>", writers, false);
-			writeHtml("<td>", writers, false);
-			writeHtml("<select name=\"scenariosrootdirectory\">", writers, false);
-			Iterator<String> scenariosRootDirectoriesIterator = scenariosRootDirectories.iterator();
-			Iterator<String> scenariosRootDescriptionsIterator = scenariosRootDescriptions.iterator();
-			while (scenariosRootDirectoriesIterator.hasNext()) {
-				String directory = (String)scenariosRootDirectoriesIterator.next();
-				String description = (String)scenariosRootDescriptionsIterator.next();
-				String option = "<option value=\"" + XmlUtils.encodeChars(directory) + "\"";
-				if (scenariosRootDirectory.equals(directory)) {
-					option = option + " selected";
-				}
-				option = option + ">" + XmlUtils.encodeChars(description) + "</option>";
-				writeHtml(option, writers, false);
-			}
-			writeHtml("</select>", writers, false);
-			writeHtml("</td>", writers, false);
-			writeHtml("</tr>", writers, false);
-			writeHtml("</table>", writers, false);
-
-			// Use a span to make IE put table on next line with a smaller window width
-			writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
-			writeHtml("<table align=\"left\">", writers, false);
-			writeHtml("<tr>", writers, false);
-			writeHtml("<td>Wait before clean up (ms)</td>", writers, false);
-			writeHtml("</tr>", writers, false);
-			writeHtml("<tr>", writers, false);
-			writeHtml("<td>", writers, false);
-			writeHtml("<input type=\"text\" name=\"waitbeforecleanup\" value=\"" + waitBeforeCleanUp + "\">", writers, false);
-			writeHtml("</td>", writers, false);
-			writeHtml("</tr>", writers, false);
-			writeHtml("</table>", writers, false);
-
-			writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
-			// timeout box
-			writeHtml("<table align=\"left\">", writers, false);
-			writeHtml("<tr>", writers, false);
-			writeHtml("<td>Default timeout (ms)</td>", writers, false);
-			writeHtml("</tr>", writers, false);
-			writeHtml("<tr>", writers, false);
-			writeHtml("<td>", writers, false);
-			writeHtml("<input type=\"text\" name=\"timeout\" value=\"" + (timeout != globalTimeout ? timeout : globalTimeout) + "\" title=\"Global timeout for larva scenarios.\">", writers, false);
-			writeHtml("</td>", writers, false);
-			writeHtml("</tr>", writers, false);
-			writeHtml("</table>", writers, false);
-
-			writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
-			writeHtml("<table align=\"left\">", writers, false);
-			writeHtml("<tr>", writers, false);
-			writeHtml("<td>Log level</td>", writers, false);
-			writeHtml("</tr>", writers, false);
-			writeHtml("<tr>", writers, false);
-			writeHtml("<td>", writers, false);
-			writeHtml("<select name=\"loglevel\">", writers, false);
-			StringTokenizer tokenizer = new StringTokenizer(LOG_LEVEL_ORDER, ",");
-			while (tokenizer.hasMoreTokens()) {
-				String level = tokenizer.nextToken().trim();
-				level = level.substring(1, level.length() - 1);
-				String option = "<option value=\"" + XmlUtils.encodeChars(level) + "\"";
-				if (((String)writers.get("loglevel")).equals(level)) {
-					option = option + " selected";
-				}
-				option = option + ">" + XmlUtils.encodeChars(level) + "</option>";
-				writeHtml(option, writers, false);
-			}
-			writeHtml("</select>", writers, false);
-			writeHtml("</td>", writers, false);
-			writeHtml("</tr>", writers, false);
-			writeHtml("</table>", writers, false);
-
-			writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
-			writeHtml("<table align=\"left\">", writers, false);
-			writeHtml("<tr>", writers, false);
-			writeHtml("<td>Auto scroll</td>", writers, false);
-			writeHtml("</tr>", writers, false);
-			writeHtml("<tr>", writers, false);
-			writeHtml("<td>", writers, false);
-			writeHtml("<input type=\"checkbox\" name=\"autoscroll\" value=\"true\"", writers, false);
-			if (autoScroll.equals("true")) {
-				writeHtml(" checked", writers, false);
-			}
-			writeHtml(">", writers, false);
-			writeHtml("</td>", writers, false);
-			writeHtml("</tr>", writers, false);
-			writeHtml("</table>", writers, false);
+			writeHtml(TD_CLOSING_TAG, writers, false);
+			writeHtml(TR_CLOSING_TAG, writers, false);
+			writeHtml(TABLE_CLOSING_TAG, writers, false);
 
 			writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
 			// submit button
-			writeHtml("<table align=\"left\">", writers, false);
-			writeHtml("<tr>", writers, false);
+			writeHtml("<table style=\"float:left;height:50px\">", writers, false);
+			writeHtml(TR_STARTING_TAG, writers, false);
 			writeHtml("<td>&nbsp;</td>", writers, false);
-			writeHtml("</tr>", writers, false);
-			writeHtml("<tr>", writers, false);
+			writeHtml(TR_CLOSING_TAG, writers, false);
+			writeHtml(TR_STARTING_TAG, writers, false);
 			writeHtml("<td align=\"right\">", writers, false);
-			writeHtml("<input type=\"submit\" name=\"submit\" value=\"start\">", writers, false);
-			writeHtml("</td>", writers, false);
-			writeHtml("</tr>", writers, false);
-			writeHtml("</table>", writers, false);
+			writeHtml("<input type=\"submit\" name=\"submit\" value=\"start\" id=\"submit\">", writers, false);
+			writeHtml(TD_CLOSING_TAG, writers, false);
+			writeHtml(TR_CLOSING_TAG, writers, false);
+			writeHtml(TABLE_CLOSING_TAG, writers, false);
 
 			writeHtml("</form>", writers, false);
 			writeHtml("<br clear=\"all\"/>", writers, false);
@@ -693,14 +696,14 @@ public class TestTool {
 			String method = "pipeline messages";
 			int messageCounter = ((Integer)writers.get("messagecounter")).intValue();
 			messageCounter ++;
-			
+
 			writeLog("<div class='message container'>", method, writers, false);
 			writeLog("<h4>Step '" + stepDisplayName + "'</h4>", method, writers, false);
 			writeLog(writeCommands("messagebox" + messageCounter, true, null), method, writers, false);
 			writeLog("<h5>" + XmlUtils.encodeChars(message) + "</h5>", method, writers, false);
 			writeLog("<textarea cols='100' rows='10' id='messagebox" + messageCounter + "'>" + XmlUtils.encodeChars(XmlUtils.replaceNonValidXmlCharacters(pipelineMessage)) + "</textarea>", method, writers, false);
 			writeLog("</div>", method, writers, false);
-			
+
 			writers.put("messagecounter", new Integer(messageCounter));
 		}
 	}
@@ -727,7 +730,7 @@ public class TestTool {
 			String method = "wrong pipeline messages";
 			int messageCounter = ((Integer)writers.get("messagecounter")).intValue();
 			messageCounter ++;
-			
+
 			writeLog("<div class='message container'>", method, writers, false);
 			writeLog(writeCommands("messagebox" + messageCounter, true, null), method, writers, false);
 			writeLog("<h5>" + XmlUtils.encodeChars(message) + "</h5>", method, writers, false);
@@ -751,7 +754,7 @@ public class TestTool {
 			writeLog("<form name='"+formName+"' action='saveResultToFile.jsp' method='post' target='saveResultWindow' accept-charset='UTF-8'>", method, writers, false);
 			writeLog("<input type='hidden' name='iehack' value='&#9760;' />", method, writers, false); // http://stackoverflow.com/questions/153527/setting-the-character-encoding-in-form-submit-for-internet-explorer
 			writeLog("<h4>Step '" + stepDisplayName + "'</h4>", method, writers, false);
-			
+
 			writeLog("<hr/>", method, writers, false);
 
 			writeLog("<div class='resultContainer'>", method, writers, false);
@@ -767,7 +770,7 @@ public class TestTool {
 			writeLog("<h5>Expected (raw):</h5>", method, writers, false);
 			writeLog("<textarea name='expectedBox' id='"+expectedBoxId+"'>" + XmlUtils.encodeChars(pipelineMessageExpected) + "</textarea>", method, writers, false);
 			writeLog("</div>", method, writers, false);
-			
+
 			writeLog("<hr/>", method, writers, false);
 
 			writeLog("<div class='differenceContainer'>", method, writers, false);
@@ -796,7 +799,7 @@ public class TestTool {
 				writeLog("</form>", method, writers, false);
 				writeLog("</div>", method, writers, false);
 			}
-			
+
 			scenarioCounter++;
 			writers.put("scenariocounter", new Integer(scenarioCounter));
 		} else {
@@ -824,15 +827,15 @@ public class TestTool {
 			writeLog("<input type='hidden' name='iehack' value='&#9760;' />", method, writers, false); // http://stackoverflow.com/questions/153527/setting-the-character-encoding-in-form-submit-for-internet-explorer
 			writeLog("<h4>Step '" + stepDisplayName + "'</h4>", method, writers, false);
 			messageCounter ++;
-			
+
 			writeLog("<hr/>", method, writers, false);
-			
+
 			writeLog("<div class='resultContainer'>", method, writers, false);
 			writeLog(writeCommands(resultBoxId, true, null), method, writers, false);
 			writeLog("<h5>Result (prepared for diff):</h5>", method, writers, false);
 			writeLog("<textarea name='resultBox' id='"+resultBoxId+"'>" + XmlUtils.encodeChars(pipelineMessagePreparedForDiff) + "</textarea>", method, writers, false);
-			writeLog("</div>", method, writers, false);		
-			
+			writeLog("</div>", method, writers, false);
+
 			messageCounter++;
 			writeLog("<div class='expectedContainer'>", method, writers, false);
 			writeLog(writeCommands(expectedBoxId, true, null), method, writers, false);
@@ -841,7 +844,7 @@ public class TestTool {
 			writeLog("<h5>Expected (prepared for diff):</h5>", method, writers, false);
 			writeLog("<textarea name='expectedBox' id='" + expectedBoxId + "'>" + XmlUtils.encodeChars(pipelineMessageExpectedPreparedForDiff) + "</textarea>", method, writers, false);
 			writeLog("</div>", method, writers, false);
-			
+
 			writeLog("<hr/>", method, writers, false);
 
 			messageCounter++;
@@ -853,17 +856,17 @@ public class TestTool {
 			writeLog("<h5>Differences:</h5>", method, writers, false);
 			writeLog("<pre id='"+diffBoxId+"' class='diffBox'></pre>", method, writers, false);
 			writeLog("</div>", method, writers, false);
-			
+
 			writeLog("</form>", method, writers, false);
 			writeLog("</div>", method, writers, false);
 
 			writers.put("messagecounter", new Integer(messageCounter));
 		}
 	}
-	
+
 	private static String writeCommands(String target, boolean textArea, String customCommand) {
 		String commands = "";
-		
+
 		commands += "<div class='commands'>";
 		commands += "<span class='widthCommands'><a href='javascript:void(0);' class='" + target + "|widthDown'>-</a><a href='javascript:void(0);' class='" + target + "|widthExact'>width</a><a href='javascript:void(0);' class='" + target + "|widthUp'>+</a></span>";
 		commands += "<span class='heightCommands'><a href='javascript:void(0);' class='" + target + "|heightDown'>-</a><a href='javascript:void(0);' class='" + target + "|heightExact'>height</a><a href='javascript:void(0);' class='" + target + "|heightUp'>+</a></span>";
@@ -875,8 +878,8 @@ public class TestTool {
 			commands += " " + customCommand;
 		}
 		commands += "</div>";
-		
-		
+
+
 		return commands;
 	}
 
@@ -1159,7 +1162,7 @@ public class TestTool {
 	/**
 	 * Returns the absolute pathname for the child pathname. The parent pathname
 	 * is used as a prefix when the child pathname is an not absolute.
-	 *  
+	 *
 	 * @param parent  the parent pathname to use
 	 * @param child   the child pathname to convert to a absolute pathname
 	 */
@@ -1249,7 +1252,7 @@ public class TestTool {
 		List<String> fileSenders = new ArrayList<String>();
 		List<String> fileListeners = new ArrayList<String>();
 		List<String> xsltProviderListeners = new ArrayList<String>();
-				
+
 		Iterator iterator = properties.keySet().iterator();
 		while (iterator.hasNext()) {
 			String key = (String)iterator.next();
@@ -1450,7 +1453,7 @@ public class TestTool {
 			String username = (String)properties.get(name + ".username");
 			String password = (String)properties.get(name + ".password");
 			boolean allFound = false;
-			String preDelete = ""; 
+			String preDelete = "";
 			int preDeleteIndex = 1;
 			String queryType = (String)properties.get(name + ".queryType");
 			String getBlobSmartString = (String)properties.get(name + ".getBlobSmart");
@@ -1473,8 +1476,8 @@ public class TestTool {
 						deleteQuerySender.setQueryType("delete");
 						deleteQuerySender.setQuery("delete from " + preDelete);
 						try {
-							deleteQuerySender.configure();				 		
-							deleteQuerySender.open(); 						
+							deleteQuerySender.configure();
+							deleteQuerySender.open();
 							deleteQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, null);
 							deleteQuerySender.close();
 						} catch(ConfigurationException e) {
@@ -1493,7 +1496,7 @@ public class TestTool {
 						preDeleteIndex++;
 					} else {
 						allFound = true;
-					}	
+					}
 				}
 				if (queues != null) {
 					String prePostQuery = (String)properties.get(name + ".prePostQuery");
@@ -1548,13 +1551,13 @@ public class TestTool {
 						readQueryFixedQuerySender.setDatasourceName(datasourceName);
 						//readQueryFixedQuerySender.setUsername(username);
 						//readQueryFixedQuerySender.setPassword(password);
-						
+
 						if ((queryType != null) && (! queryType.equals(""))) {
-							readQueryFixedQuerySender.setQueryType(queryType);	
+							readQueryFixedQuerySender.setQueryType(queryType);
 						} else {
-							readQueryFixedQuerySender.setQueryType("select");	
+							readQueryFixedQuerySender.setQueryType("select");
 						}
-						
+
 						readQueryFixedQuerySender.setQuery(readQuery);
 						readQueryFixedQuerySender.setBlobSmartGet(getBlobSmart);
 						try {
@@ -1595,7 +1598,7 @@ public class TestTool {
 		iterator = ibisWebServiceSenders.iterator();
 		while (queues != null && iterator.hasNext()) {
 			String name = (String)iterator.next();
-	
+
 			String ibisHost = (String)properties.get(name + ".ibisHost");
 			String ibisInstance = (String)properties.get(name + ".ibisInstance");
 			String serviceName = (String)properties.get(name + ".serviceName");
@@ -1769,6 +1772,7 @@ public class TestTool {
 			String xhtmlString = (String)properties.get(name + ".xhtml");
 			String methodtype = (String)properties.get(name + ".methodType");
 			String paramsInUrlString = (String)properties.get(name + ".paramsInUrl");
+			Boolean treatInputMessageAsParameters = new Boolean((String)properties.get(name + ".treatInputMessageAsParameters"));
 			String inputMessageParam = (String)properties.get(name + ".inputMessageParam");
 			String multipartString = (String)properties.get(name + ".multipart");
  			String styleSheetName = (String)properties.get(name + ".styleSheetName");
@@ -1798,6 +1802,7 @@ public class TestTool {
 					httpSender.setPassword(password);
 					httpSender.setAuthAlias(authAlias);
 					httpSender.setHeadersParams(headerParams);
+					httpSender.setTreatInputMessageAsParameters(treatInputMessageAsParameters);
 					if (StringUtils.isNotEmpty(xhtmlString)) {
 						httpSender.setXhtml(Boolean.valueOf(xhtmlString).booleanValue());
 					}
@@ -1927,7 +1932,7 @@ public class TestTool {
 			queues.put(name, delaySenderInfo);
 			debugMessage("Opened delay sender '" + name + "'", writers);
 		}
-		
+
 		debugMessage("Initialize java listeners", writers);
 		iterator = javaListeners.iterator();
 		while (queues != null && iterator.hasNext()) {
@@ -2215,7 +2220,7 @@ public class TestTool {
 						session.put(PipeLineSession.businessCorrelationIdKey, TestTool.TESTTOOL_CORRELATIONID);
 						String postResult = prePostFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, session).asString();
 						if (!preResult.equals(postResult)) {
-							
+
 							String message = null;
 							FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)querySendersInfo.get("readQueryQueryFixedQuerySender");
 							try {
@@ -2230,7 +2235,7 @@ public class TestTool {
 							}
 
 							remainingMessagesFound = true;
-							
+
 						}
 						prePostFixedQuerySender.close();
 					} catch(TimeoutException e) {
@@ -2279,7 +2284,7 @@ public class TestTool {
 				}
 			}
 		}
-		
+
 		debugMessage("Close web service senders", writers);
 		iterator = queues.keySet().iterator();
 		while (iterator.hasNext()) {
@@ -2389,7 +2394,7 @@ public class TestTool {
 				}
 			}
 		}
-		
+
 		debugMessage("Close java listeners", writers);
 		iterator = queues.keySet().iterator();
 		while (iterator.hasNext()) {
@@ -2524,10 +2529,10 @@ public class TestTool {
 		}
 		return remainingMessagesFound;
 	}
-	
+
 	private static int executeJmsSenderWrite(String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileContent) {
 		int result = RESULT_ERROR;
-		
+
 		Map<?, ?> jmsSenderInfo = (Map<?, ?>)queues.get(queueName);
 		JmsSender jmsSender = (JmsSender)jmsSenderInfo.get("jmsSender");
 		try {
@@ -2558,7 +2563,7 @@ public class TestTool {
 		} catch(SenderException e) {
 			errorMessage("Could not send jms message to '" + queueName + "': " + e.getMessage(), e, writers);
 		}
-		
+
 		return result;
 	}
 
@@ -2576,7 +2581,7 @@ public class TestTool {
 		result = RESULT_OK;
 		return result;
 	}
-	
+
 	private static int executeJavaOrWebServiceListenerWrite(String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileContent) {
 		int result = RESULT_ERROR;
 
@@ -2601,7 +2606,7 @@ public class TestTool {
 
 		return result;
 	}
-	
+
 	private static int executeFileSenderWrite(String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileContent) {
 		int result = RESULT_ERROR;
 		Map<?, ?> fileSenderInfo = (Map<?, ?>)queues.get(queueName);
@@ -2646,7 +2651,7 @@ public class TestTool {
 		}
 		return result;
 	}
-	
+
 	private static int executeJmsListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent) {
 		int result = RESULT_ERROR;
 
@@ -2675,7 +2680,7 @@ public class TestTool {
 				}
 			}
 		}
-		
+
 		if (message == null || message.isEmpty()) {
 			if ("".equals(fileName)) {
 				result = RESULT_OK;
@@ -2690,12 +2695,12 @@ public class TestTool {
 			}
 		}
 
-		return result;	
+		return result;
 	}
 
 	private static int executeSenderRead(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String senderType, String fileName, String fileContent) {
 		int result = RESULT_ERROR;
-	
+
 		Map<?, ?> senderInfo = (Map<?, ?>)queues.get(queueName);
 		SenderThread senderThread = (SenderThread)senderInfo.remove(senderType + "SenderThread");
 		if (senderThread == null) {
@@ -2731,7 +2736,7 @@ public class TestTool {
 				errorMessage("Could not read " + senderType + "Sender message (SenderException): " + senderException.getMessage(), senderException, writers);
 			}
 		}
-		
+
 		return result;
 	}
 
@@ -2784,13 +2789,13 @@ public class TestTool {
 				}
 			}
 		}
-		
+
 		return result;
 	}
 
 	private static int executeFixedQuerySenderRead(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent) {
 		int result = RESULT_ERROR;
-		
+
 		Map querySendersInfo = (Map)queues.get(queueName);
 		Integer waitBeforeRead = (Integer)querySendersInfo.get("readQueryWaitBeforeRead");
 
@@ -2874,7 +2879,7 @@ public class TestTool {
 		} else {
 			result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName);
 		}
-		return result;	
+		return result;
 	}
 
 	private static int executeFileSenderRead(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent) {
@@ -2898,7 +2903,7 @@ public class TestTool {
 		} else {
 			result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName);
 		}
-		return result;	
+		return result;
 	}
 
 	private static int executeXsltProviderListenerRead(String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileContent, Map<String, Object> xsltParameters) {
@@ -2920,7 +2925,7 @@ public class TestTool {
 				debugPipelineMessage(stepDisplayName, "Result:", fileContent, writers);
 			}
 		}
-		return result;	
+		return result;
 	}
 
 	public static int executeStep(String step, Properties properties, String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers, int parameterTimeout) {
@@ -2932,7 +2937,7 @@ public class TestTool {
 		String fileContent;
 		// vul globale var
 		zeefVijlNeem = fileNameAbsolutePath;
-		
+
 		//inlezen file voor deze stap
 		if ("".equals(fileName)) {
 			errorMessage("No file specified for step '" + step + "'", writers);
@@ -2954,7 +2959,7 @@ public class TestTool {
 				queueName = step.substring(i + 1, step.lastIndexOf("."));
 				if (step.endsWith(".read") || (allowReadlineSteps && step.endsWith(".readline"))) {
 					if ("nl.nn.adapterframework.jms.JmsListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeJmsListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);	
+						stepPassed = executeJmsListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
 					} else 	if ("nl.nn.adapterframework.jdbc.FixedQuerySender".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeFixedQuerySenderRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
 					} else if ("nl.nn.adapterframework.http.IbisWebServiceSender".equals(properties.get(queueName + ".className"))) {
@@ -3026,14 +3031,12 @@ public class TestTool {
 			// not present in the file. For example, when using a
 			// WebServiceSender to send a message to a WebServiceListener the
 			// xml message must not contain an xml declaration.
-			// AFAIK the Java 1.4 standard XML api doesn't provide a method
-			// to determine the encoding used by an XML file, thus use the
-			// XmlReader from ROME (https://rome.dev.java.net/).
-			try {
-				XmlReader xmlReader = new XmlReader(new File(fileName));
-				encoding = xmlReader.getEncoding();
-				xmlReader.close();
-			} catch (IOException e) {
+			try (InputStream in = new FileInputStream(fileName)) {
+				XMLInputFactory factory = XMLInputFactory.newInstance();
+				XMLStreamReader parser = factory.createXMLStreamReader(in);
+				encoding = parser.getEncoding();
+				parser.close();
+			} catch (IOException | XMLStreamException e) {
 				errorMessage("Could not determine encoding for file '" + fileName + "': " + e.getMessage(), e, writers);
 			}
 		} else if (fileName.endsWith(".utf8")) {
@@ -3174,7 +3177,7 @@ public class TestTool {
 			printableExpectedResult = XmlUtils.replaceNonValidXmlCharacters(expectedResult);
 			printableActualResult = XmlUtils.replaceNonValidXmlCharacters(actualResult);
 		}
-		
+
 		String preparedExpectedResult = printableExpectedResult;
 		String preparedActualResult = printableActualResult;
 
@@ -3204,7 +3207,7 @@ public class TestTool {
 
 		/* identifier based decodeUnzipContentBetweenKeys */
 		HashMap<String, HashMap<String, String>> decodeUnzipContentBetweenKeys = ignoreMap.get("decodeUnzipContentBetweenKeys");
-		
+
 		if (decodeUnzipContentBetweenKeys!=null) {
 			Iterator decodeUnzipContentBetweenKeysIt = decodeUnzipContentBetweenKeys.entrySet().iterator();
 			while (decodeUnzipContentBetweenKeysIt.hasNext()) {
@@ -3213,7 +3216,7 @@ public class TestTool {
 				String key1 = decodeUnzipContentBetweenKeysPair.get("key1");
 				String key2 = decodeUnzipContentBetweenKeysPair.get("key2");
 				boolean replaceNewlines = false;
-	
+
 				if ("true".equals(decodeUnzipContentBetweenKeysPair.get("replaceNewlines"))) {
 					replaceNewlines = true;
 				}
@@ -3225,8 +3228,8 @@ public class TestTool {
 				} else {
 					decodeUnzipContentBetweenKeysProcessed = true;
 				}
-	
-				decodeUnzipContentBetweenKeysIt.remove(); 
+
+				decodeUnzipContentBetweenKeysIt.remove();
 			}
 		}
 
@@ -3248,21 +3251,21 @@ public class TestTool {
 		}
 
 		/* identifier based canonicaliseFilePathContentBetweenKeys */
-		HashMap<String, HashMap<String, String>> canonicaliseFilePathContentBetweenKeys = ignoreMap.get("canonicaliseFilePathContentBetweenKeys"); 
+		HashMap<String, HashMap<String, String>> canonicaliseFilePathContentBetweenKeys = ignoreMap.get("canonicaliseFilePathContentBetweenKeys");
 		if (canonicaliseFilePathContentBetweenKeys!=null) {
 			Iterator canonicaliseFilePathContentBetweenKeysIt = canonicaliseFilePathContentBetweenKeys.entrySet().iterator();
 			while (canonicaliseFilePathContentBetweenKeysIt.hasNext()) {
 				Map.Entry canonicaliseFilePathContentBetweenKeysEntry = (Map.Entry) canonicaliseFilePathContentBetweenKeysIt.next();
 				HashMap<String, String> canonicaliseFilePathContentBetweenKeysPair = (HashMap<String, String>) canonicaliseFilePathContentBetweenKeysEntry.getValue();
-				
+
 				String key1 = canonicaliseFilePathContentBetweenKeysPair.get("key1");
 				String key2 = canonicaliseFilePathContentBetweenKeysPair.get("key2");
-				
+
 				debugMessage("Canonicalise filepath content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
 				preparedExpectedResult = canonicaliseFilePathContentBetweenKeys(preparedExpectedResult, key1, key2, writers);
 				preparedActualResult = canonicaliseFilePathContentBetweenKeys(preparedActualResult, key1, key2, writers);
 
-				canonicaliseFilePathContentBetweenKeysIt.remove(); 
+				canonicaliseFilePathContentBetweenKeysIt.remove();
 			}
 		}
 
@@ -3284,7 +3287,7 @@ public class TestTool {
 		}
 
 		/* identifier based formatDecimalContentBetweenKeys */
-		HashMap<String, HashMap<String, String>> formatDecimalContentBetweenKeys = ignoreMap.get("formatDecimalContentBetweenKeys"); 
+		HashMap<String, HashMap<String, String>> formatDecimalContentBetweenKeys = ignoreMap.get("formatDecimalContentBetweenKeys");
 		if (formatDecimalContentBetweenKeys!=null) {
 			Iterator formatDecimalContentBetweenKeysIt = formatDecimalContentBetweenKeys.entrySet().iterator();
 			while (formatDecimalContentBetweenKeysIt.hasNext()) {
@@ -3293,12 +3296,12 @@ public class TestTool {
 
 				String key1 = formatDecimalContentBetweenKeysPair.get("key1");
 				String key2 = formatDecimalContentBetweenKeysPair.get("key2");
-				
+
 				debugMessage("Format decimal content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
 					preparedExpectedResult = formatDecimalContentBetweenKeys(preparedExpectedResult, key1, key2, writers);
 					preparedActualResult = formatDecimalContentBetweenKeys(preparedActualResult, key1, key2, writers);
 
-				formatDecimalContentBetweenKeysIt.remove(); 
+				formatDecimalContentBetweenKeysIt.remove();
 			}
 		}
 
@@ -3325,17 +3328,17 @@ public class TestTool {
 			while (ignoreRegularExpressionKeyIt.hasNext()) {
 				Map.Entry ignoreRegularExpressionKeyEntry = (Map.Entry) ignoreRegularExpressionKeyIt.next();
 				HashMap<String, String> ignoreRegularExpressionKeyItPair = (HashMap<String, String>) ignoreRegularExpressionKeyEntry.getValue();
-				
+
 				String key = ignoreRegularExpressionKeyItPair.get("key");
-				
+
 				debugMessage("Ignore regular expression key '" + key + "'", writers);
 				preparedExpectedResult = ignoreRegularExpression(preparedExpectedResult, key);
 				preparedActualResult = ignoreRegularExpression(preparedActualResult, key);
 
-				ignoreRegularExpressionKeyIt.remove(); 
+				ignoreRegularExpressionKeyIt.remove();
 			}
 		}
-		
+
 		/* numeric removeRegularExpressionKey */
 		debugMessage("Check removeRegularExpressionKey properties", writers);
 		boolean removeRegularExpressionKeyProcessed = false;
@@ -3365,10 +3368,10 @@ public class TestTool {
 				preparedExpectedResult = removeRegularExpression(preparedExpectedResult, key);
 				preparedActualResult = removeRegularExpression(preparedActualResult, key);
 
-				removeRegularExpressionKeyIt.remove(); 
+				removeRegularExpressionKeyIt.remove();
 			}
 		}
-		
+
 		/* numeric replaceRegularExpressionKeys */
 		debugMessage("Check replaceRegularExpressionKeys properties", writers);
 		boolean replaceRegularExpressionKeysProcessed = false;
@@ -3400,10 +3403,10 @@ public class TestTool {
 				preparedExpectedResult = replaceRegularExpression(preparedExpectedResult, key1, key2);
 				preparedActualResult = replaceRegularExpression(preparedActualResult, key1, key2);
 
-				replaceRegularExpressionKeysIt.remove(); 
+				replaceRegularExpressionKeysIt.remove();
 			}
 		}
-		
+
 		/* numeric ignoreContentBetweenKeys */
 		debugMessage("Check ignoreContentBetweenKeys properties", writers);
 		boolean ignoreContentBetweenKeysProcessed = false;
@@ -3435,10 +3438,10 @@ public class TestTool {
 				preparedExpectedResult = ignoreContentBetweenKeys(preparedExpectedResult, key1, key2);
 				preparedActualResult = ignoreContentBetweenKeys(preparedActualResult, key1, key2);
 
-				ignoreContentBetweenKeysIt.remove(); 
+				ignoreContentBetweenKeysIt.remove();
 			}
 		}
-		
+
 		/* numeric ignoreKeysAndContentBetweenKeys */
 		debugMessage("Check ignoreKeysAndContentBetweenKeys properties", writers);
 		boolean ignoreKeysAndContentBetweenKeysProcessed = false;
@@ -3470,10 +3473,10 @@ public class TestTool {
 				preparedExpectedResult = ignoreKeysAndContentBetweenKeys(preparedExpectedResult, key1, key2);
 				preparedActualResult = ignoreKeysAndContentBetweenKeys(preparedActualResult, key1, key2);
 
-				ignoreKeysAndContentBetweenKeysIt.remove(); 
+				ignoreKeysAndContentBetweenKeysIt.remove();
 			}
 		}
-		
+
 		/* numeric removeKeysAndContentBetweenKeys */
 		debugMessage("Check removeKeysAndContentBetweenKeys properties", writers);
 		boolean removeKeysAndContentBetweenKeysProcessed = false;
@@ -3500,12 +3503,12 @@ public class TestTool {
 				HashMap<String, String> removeKeysAndContentBetweenKeysPair = (HashMap<String, String>) removeKeysAndContentBetweenKeysEntry.getValue();
 				String key1 = removeKeysAndContentBetweenKeysPair.get("key1");
 				String key2 = removeKeysAndContentBetweenKeysPair.get("key2");
-	
+
 				debugMessage("Remove keys and content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
 				preparedExpectedResult = removeKeysAndContentBetweenKeys(preparedExpectedResult, key1, key2);
 				preparedActualResult = removeKeysAndContentBetweenKeys(preparedActualResult, key1, key2);
 
-				removeKeysAndContentBetweenKeysIt.remove(); 
+				removeKeysAndContentBetweenKeysIt.remove();
 			}
 		}
 
@@ -3533,12 +3536,12 @@ public class TestTool {
 				Map.Entry ignoreKeyEntry = (Map.Entry) ignoreKeyIt.next();
 				HashMap<String, String> ignoreKeyPair = (HashMap<String, String>) ignoreKeyEntry.getValue();
 				String key = ignoreKeyPair.get("value");
-				
+
 				debugMessage("Ignore key '" + key + "'", writers);
 				preparedExpectedResult = ignoreKey(preparedExpectedResult, key);
 				preparedActualResult = ignoreKey(preparedActualResult, key);
-	
-				ignoreKeyIt.remove(); 
+
+				ignoreKeyIt.remove();
 			}
 		}
 
@@ -3566,12 +3569,12 @@ public class TestTool {
 				Map.Entry removeKeyEntry = (Map.Entry) removeKeyIt.next();
 				HashMap<String, String> removeKeyPair = (HashMap<String, String>) removeKeyEntry.getValue();
 				String key = removeKeyPair.get("value");
-				
+
 				debugMessage("Remove key '" + key + "'", writers);
 				preparedExpectedResult = removeKey(preparedExpectedResult, key);
 				preparedActualResult = removeKey(preparedActualResult, key);
 
-				removeKeyIt.remove(); 
+				removeKeyIt.remove();
 			}
 		}
 
@@ -3601,15 +3604,15 @@ public class TestTool {
 				HashMap<String, String> replaceKeyPair = (HashMap<String, String>) replaceKeyEntry.getValue();
 				String key1 = replaceKeyPair.get("key1");
 				String key2 = replaceKeyPair.get("key2");
-				
+
 				debugMessage("Replace key from '" + key1 + "' to '" + key2 + "'", writers);
 				preparedExpectedResult = replaceKey(preparedExpectedResult, key1, key2);
 				preparedActualResult = replaceKey(preparedActualResult, key1, key2);
-	
-				replaceKeyIt.remove(); 
+
+				replaceKeyIt.remove();
 			}
 		}
-		
+
 		/* numeric replaceEverywhereKey */
 		debugMessage("Check replaceEverywhereKey properties", writers);
 		boolean replaceEverywhereKeyProcessed = false;
@@ -3641,7 +3644,7 @@ public class TestTool {
 				preparedExpectedResult = replaceKey(preparedExpectedResult, key1, key2);
 				preparedActualResult = replaceKey(preparedActualResult, key1, key2);
 
-				replaceEverywhereKeyIt.remove(); 
+				replaceEverywhereKeyIt.remove();
 			}
 		}
 
@@ -3692,11 +3695,11 @@ public class TestTool {
 				preparedActualResult = ignoreCurrentTimeBetweenKeys(preparedActualResult, key1, key2, pattern, margin, errorMessageOnRemainingString, false, writers);
 				debugMessage("For expected string", writers);
 				preparedExpectedResult = ignoreCurrentTimeBetweenKeys(preparedExpectedResult, key1, key2, pattern, margin, errorMessageOnRemainingString, true, writers);
-				
-				ignoreCurrentTimeBetweenKeysIt.remove(); 
+
+				ignoreCurrentTimeBetweenKeysIt.remove();
 			}
 		}
-		
+
 		/* numeric ignoreContentBeforeKey */
 		debugMessage("Check ignoreContentBeforeKey properties", writers);
 		boolean ignoreContentBeforeKeyProcessed = false;
@@ -3727,16 +3730,16 @@ public class TestTool {
 				Map.Entry ignoreContentBeforeKeyEntry = (Map.Entry) ignoreContentBeforeKeyIt.next();
 				HashMap<String, String> ignoreContentBeforeKeyPair = (HashMap<String, String>) ignoreContentBeforeKeyEntry.getValue();
 				String key = ignoreContentBeforeKeyPair.get("key");
-	
+
 				if (key == null) {
 					key = ignoreContentBeforeKeyPair.get("value");
 				}
-	
+
 				debugMessage("Ignore content before key '" + key + "'", writers);
 				preparedExpectedResult = ignoreContentBeforeKey(preparedExpectedResult, key);
 				preparedActualResult = ignoreContentBeforeKey(preparedActualResult, key);
-				
-				ignoreContentBeforeKeyIt.remove(); 
+
+				ignoreContentBeforeKeyIt.remove();
 			}
 		}
 
@@ -3778,11 +3781,11 @@ public class TestTool {
 				debugMessage("Ignore content before key '" + key + "'", writers);
 				preparedExpectedResult = ignoreContentBeforeKey(preparedExpectedResult, key);
 				preparedActualResult = ignoreContentBeforeKey(preparedActualResult, key);
-				
-				ignoreContentAfterKeyIt.remove(); 
+
+				ignoreContentAfterKeyIt.remove();
 			}
 		}
-		
+
 		debugMessage("Check ignoreContentAfterKey properties", writers);
 		if ((diffType != null && (diffType.equals(".xml") || diffType.equals(".wsdl")))
 				|| (diffType == null && (fileName.endsWith(".xml") || fileName.endsWith(".wsdl")))) {
@@ -4040,7 +4043,7 @@ public class TestTool {
 		}
 		return result;
 	}
-	
+
 	public static String ignoreCurrentTimeBetweenKeys(String string, String key1, String key2, String pattern, String margin, boolean errorMessageOnRemainingString, boolean isControlString, Map<String, Object> writers) {
 		String result = string;
 		String ignoreText = "IGNORE_CURRENT_TIME";
@@ -4188,143 +4191,130 @@ public class TestTool {
 	 * @param property
 	 * @param writers
 	 * @param session TODO
-	 *  
+	 *
 	 * @return A map with parameters
 	 */
 	private static Map<String, Object> createParametersMapFromParamProperties(Properties properties, String property, Map<String, Object> writers, boolean createParameterObjects, PipeLineSession session) {
 		debugMessage("Search parameters for property '" + property + "'", writers);
-		Map<String, Object> result = new HashMap<String, Object>();
+		final String _name = ".name";
+		final String _param = ".param";
+		final String _type = ".type";
+		Map<String, Object> result = new HashMap<>();
 		boolean processed = false;
 		int i = 1;
 		while (!processed) {
-			String name = properties.getProperty(property + ".param" + i + ".name");
+			String name = properties.getProperty(property + _param + i + _name);
 			if (name != null) {
 				Object value;
-				String type = properties.getProperty(property + ".param" + i + ".type");
+				String type = properties.getProperty(property + _param + i + _type);
 				if ("httpResponse".equals(type)) {
 					String outputFile;
-					String filename = properties.getProperty(property + ".param" + i + ".filename");
+					String filename = properties.getProperty(property + _param + i + ".filename");
 					if (filename != null) {
-						outputFile = properties.getProperty(property + ".param" + i + ".filename.absolutepath");
+						outputFile = properties.getProperty(property + _param + i + ".filename.absolutepath");
 					} else {
-						outputFile = properties.getProperty(property + ".param" + i + ".outputfile");
+						outputFile = properties.getProperty(property + _param + i + ".outputfile");
 					}
 					HttpServletResponseMock httpServletResponseMock = new HttpServletResponseMock();
 					httpServletResponseMock.setOutputFile(outputFile);
 					value = httpServletResponseMock;
-				} else if ("httpRequest".equals(type)) {
-					value = properties.getProperty(property + ".param" + i + ".value");
+				}
+				/** Support for httpRequest parameterType is removed because it depends on Spring and Http-client libraries that contain CVEs. Upgrading these libraries requires some work.
+				On the other hand, httpRequest parameter is only used in CreateRestViewPipe. It is unlikely to create a larva test for this pipe.
+				Therefore, it is decided to stop supporting it. */
+				/* else if ("httpRequest".equals(type)) {
+					value = properties.getProperty(property + _param + i + ".value");
 					if("multipart".equals(value)){
 						MockMultipartHttpServletRequest request = new MockMultipartHttpServletRequest();
 						// following line is required to avoid
 						// "(FileUploadException) the request was rejected because
 						// no multipart boundary was found"
-						request.setContentType(
-								"multipart/mixed;boundary=gc0p4Jq0M2Yt08jU534c0p");
-						List<Part> parts = new ArrayList<Part>();
+						request.setContentType("multipart/mixed;boundary=gc0p4Jq0M2Yt08jU534c0p");
+						List<Part> parts = new ArrayList<>();
 						boolean partsProcessed = false;
 						int j = 1;
 						while (!partsProcessed) {
-							String filename = properties.getProperty(property
-									+ ".param" + i + ".part" + j + ".filename");
+							String filename = properties.getProperty(property + _param + i + ".part" + j + ".filename");
 							if (filename == null) {
 								partsProcessed = true;
 							} else {
-								String partFile = properties.getProperty(property
-										+ ".param" + i + ".part" + j + ".filename.absolutepath");
-								String partType = properties.getProperty(property
-										+ ".param" + i + ".part" + j + ".type");
-								String partName = properties.getProperty(property
-										+ ".param" + i + ".part" + j + ".name");
+								String partFile = properties.getProperty(property + _param + i + ".part" + j + ".filename.absolutepath");
+								String partType = properties.getProperty(property + _param + i + ".part" + j + _type);
+								String partName = properties.getProperty(property + _param + i + ".part" + j + _name);
 								if ("file".equalsIgnoreCase(partType)) {
 									File file = new File(partFile);
 									try {
-										FilePart filePart = new FilePart(
-												"file" + j,
-												(partName == null
-														? file.getName()
-														: partName),
-												file);
+										FilePart filePart = new FilePart( "file" + j, (partName == null ? file.getName() : partName), file);
 										parts.add(filePart);
 									} catch (FileNotFoundException e) {
-										errorMessage(
-												"Could not read file '" + partFile
-														+ "': " + e.getMessage(),
-												e, writers);
+										errorMessage("Could not read file '" + partFile+ "': " + e.getMessage(), e, writers);
 									}
 								} else {
 									String string = readFile(partFile, writers);
-									StringPart stringPart = new StringPart(
-											(partName == null ? "string" + j
-													: partName),
-											string);
+									StringPart stringPart = new StringPart((partName == null ? "string" + j : partName), string);
 									parts.add(stringPart);
 								}
 								j++;
 							}
 						}
-						Part allParts[] = new Part[parts.size()];
+						Part[] allParts = new Part[parts.size()];
 						allParts = parts.toArray(allParts);
-						MultipartRequestEntity multipartRequestEntity = new MultipartRequestEntity(
-								allParts, new PostMethod().getParams());
+						MultipartRequestEntity multipartRequestEntity = new MultipartRequestEntity(allParts, new PostMethod().getParams());
 						ByteArrayOutputStream requestContent = new ByteArrayOutputStream();
 						try {
 							multipartRequestEntity.writeRequest(requestContent);
 						} catch (IOException e) {
-							errorMessage(
-									"Could not create multipart: " + e.getMessage(),
-									e, writers);
+							errorMessage("Could not create multipart: " + e.getMessage(), e, writers);
 						}
 						request.setContent(requestContent.toByteArray());
-						request.setContentType(
-								multipartRequestEntity.getContentType());
+						request.setContentType(multipartRequestEntity.getContentType());
 						value = request;
 					}
 					else{
-						MockHttpServletRequest request = new MockHttpServletRequest();
-						value = request;
+						value = new MockHttpServletRequest();
 					}
-				} else {
-					value = properties.getProperty(property + ".param" + i + ".value");
+				} */
+				else {
+					value = properties.getProperty(property + _param + i + ".value");
 					if (value == null) {
-						String filename = properties.getProperty(property + ".param" + i + ".valuefile.absolutepath");
+						String filename = properties.getProperty(property + _param + i + ".valuefile.absolutepath");
 						if (filename != null) {
-							value = readFile(filename, writers);
+							value = new FileMessage(new File(filename));
 						} else {
-							String inputStreamFilename = properties.getProperty(property + ".param" + i + ".valuefileinputstream.absolutepath");
+							String inputStreamFilename = properties.getProperty(property + _param + i + ".valuefileinputstream.absolutepath");
 							if (inputStreamFilename != null) {
-								try {
-									value = new FileInputStream(inputStreamFilename);
-								} catch(FileNotFoundException e) {
-									errorMessage("Could not read file '" + inputStreamFilename + "': " + e.getMessage(), e, writers);
-								}
+								errorMessage("valuefileinputstream is no longer supported use valuefile instead", writers);
 							}
 						}
 					}
 				}
-				if (value != null && value instanceof String) {
-					if ("node".equals(properties.getProperty(property + ".param" + i + ".type"))) {
-						try {
-							value = XmlUtils.buildNode((String)value, true);
-						} catch (DomBuilderException e) {
-							errorMessage("Could not build node for parameter '" + name + "' with value: " + value, e, writers);
-						}
-					} else if ("domdoc".equals(properties.getProperty(property + ".param" + i + ".type"))) {
-						try {
-							value = XmlUtils.buildDomDocument((String)value, true);
-						} catch (DomBuilderException e) {
-							errorMessage("Could not build node for parameter '" + name + "' with value: " + value, e, writers);
-						}
-					} else if ("list".equals(properties.getProperty(property + ".param" + i + ".type"))) {
-						List<String> parts = new ArrayList<String>(Arrays.asList(((String)value).split("\\s*(,\\s*)+")));
-						List<String> list = new LinkedList<String>();
+				if ("node".equals(type)) {
+					try {
+						value = XmlUtils.buildNode(Message.asString(value), true);
+					} catch (DomBuilderException | IOException e) {
+						errorMessage("Could not build node for parameter '" + name + "' with value: " + value, e, writers);
+					}
+				} else if ("domdoc".equals(type)) {
+					try {
+						value = XmlUtils.buildDomDocument(Message.asString(value), true);
+					} catch (DomBuilderException | IOException e) {
+						errorMessage("Could not build node for parameter '" + name + "' with value: " + value, e, writers);
+					}
+				} else if ("list".equals(type)) {
+					try {
+						List<String> parts = new ArrayList<>(Arrays.asList(Message.asString(value).split("\\s*(,\\s*)+")));
+						List<String> list = new LinkedList<>();
 						for (String part : parts) {
 							list.add(part);
 						}
 						value = list;
-					} else if ("map".equals(properties.getProperty(property + ".param" + i + ".type"))) {
-						List<String> parts = new ArrayList<String>(Arrays.asList(((String)value).split("\\s*(,\\s*)+")));
-						Map<String, String> map = new LinkedHashMap<String, String>();
+					} catch (IOException e) {
+						errorMessage("Could not build a list for parameter '" + name + "' with value: " + value, e, writers);
+					}
+				} else if ("map".equals(type)) {
+					try {
+						List<String> parts = new ArrayList<>(Arrays.asList(Message.asString(value).split("\\s*(,\\s*)+")));
+						Map<String, String> map = new LinkedHashMap<>();
 						for (String part : parts) {
 							String[] splitted = part.split("\\s*(=\\s*)+", 2);
 							if (splitted.length==2) {
@@ -4334,12 +4324,14 @@ public class TestTool {
 							}
 						}
 						value = map;
+					} catch (IOException e) {
+						errorMessage("Could not build a map for parameter '" + name + "' with value: " + value, e, writers);
 					}
 				}
 				if (createParameterObjects) {
-					String  pattern = properties.getProperty(property + ".param" + i + ".pattern");
+					String  pattern = properties.getProperty(property + _param + i + ".pattern");
 					if (value == null && pattern == null) {
-						errorMessage("Property '" + property + ".param" + i + " doesn't have a value or pattern", writers);
+						errorMessage("Property '" + property + _param + i + " doesn't have a value or pattern", writers);
 					} else {
 						try {
 							Parameter parameter = new Parameter();
@@ -4360,7 +4352,7 @@ public class TestTool {
 					}
 				} else {
 					if (value == null) {
-						errorMessage("Property '" + property + ".param" + i + ".value' or '" + property + ".param" + i + ".valuefile' or '" + property + ".param" + i + ".valuefileinputstream' not found while property '" + property + ".param" + i + ".name' exist", writers);
+						errorMessage("Property '" + property + _param + i + ".value' or '" + property + _param + i + ".valuefile' not found while property '" + property + _param + i + ".name' exist", writers);
 					} else {
 						result.put(name, value);
 						debugMessage("Add param with name '" + name + "' and value '" + value + "' for property '" + property + "'", writers);
@@ -4396,19 +4388,19 @@ public class TestTool {
 
 	/**
 	 * This method is used to provide a way to implement ignores based on an identifier.
-	 * For example: 
+	 * For example:
 	 * ignoreContentBetweenKeys.fieldA.key1=<field name="A">
 	 * ignoreContentBetweenKeys.fieldA.key2=</field>
-	 * 
+	 *
 	 * @param properties Properties to be checked
-	 * 
-	 * @return HashMap<String, HashMap<String, HashMap<String, String>>> as HashMap<'ignoreContentBetweenKeys', Hashmap<'fieldA', HashMap<'key1', '<field name="A">'> 
+	 *
+	 * @return HashMap<String, HashMap<String, HashMap<String, String>>> as HashMap<'ignoreContentBetweenKeys', Hashmap<'fieldA', HashMap<'key1', '<field name="A">'>
 	*/
 
 	public static HashMap<String, HashMap<String, HashMap<String, String>>> mapPropertiesToIgnores(Properties properties){
 		HashMap<String, HashMap<String, HashMap<String, String>>> returnMap = new HashMap<String, HashMap<String, HashMap<String, String>>>();
 		Enumeration<String> enums = (Enumeration<String>) properties.propertyNames();
-		
+
 		// Loop through all properties
 		while (enums.hasMoreElements()) {
 			// Extract key
@@ -4440,10 +4432,10 @@ public class TestTool {
 					ignoreMap.put(id, idMap);
 				}
 
-				// Check attributes are provided 
+				// Check attributes are provided
 				if(!attributes.isEmpty()){
 					// Loop through attributes to be searched for
-					for (String attribute : attributes) { 		      
+					for (String attribute : attributes) {
 						if(key.endsWith("." + attribute)){
 							idMap.put(attribute, properties.getProperty(key));
 						}
@@ -4456,16 +4448,16 @@ public class TestTool {
 				}
 			}
 		}
-		
-		return returnMap; 
+
+		return returnMap;
 	}
 
 	/**
 	 * This method is used to de-couple the need of providing a set of attributes when calling mapPropertiesByIdentifier().
 	 * Caller of mapPropertiesByIdentifier() should not necescarrily know about all attributes related to an ignore.
-	 * 
+	 *
 	 * @param propertyName The name of the ignore we are checking, in the example 'ignoreContentBetweenKeys'
-	 * 
+	 *
 	 * @return ArrayList<String> attributes
 	*/
 	public static ArrayList<String> findAttributesForIgnore(String propertyName) {

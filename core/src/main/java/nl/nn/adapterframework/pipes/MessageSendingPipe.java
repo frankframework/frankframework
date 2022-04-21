@@ -50,7 +50,6 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
-import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -66,6 +65,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.processors.ListenerProcessor;
 import nl.nn.adapterframework.processors.PipeProcessor;
+import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -394,48 +394,12 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		}
 	}
 
-	@IbisDoc({"name of the pipe", ""})
 	@Override
 	public void setName(String name) {
 		super.setName(name);
 		propagateName();
 	}
 
-//	/**
-//	 * When true, the streaming capability of the nested sender is taken into account to determine if the pipe can provide an OutputStream.
-//	 * Descender classes may override this method when necessary.
-//	 */
-//	protected boolean senderAffectsStreamProvidingCapability() {
-//		return true;
-//	}
-//	/**
-//	 * When true, the ability of the nested sender to write to is taken into account to determine if the pipe can stream its output.
-//	 * Descender classes may override this method when necessary.
-//	 */
-//	protected boolean senderAffectsStreamWritingCapability() {
-//		return true;
-//	}
-//	
-//	@Override
-//	public protected canProvideOutputStream() {
-//		return super.canProvideOutputStream() 
-//				&& (!senderAffectsStreamProvidingCapability() || 
-//					sender instanceof IOutputStreamingSupport && ((IOutputStreamingSupport)sender).canProvideOutputStream()
-//				   )
-//				&& getInputWrapper()==null
-//				&& getInputValidator()==null;
-//	}
-//
-//	@Override
-//	public boolean requiresOutputStream() {
-//		return super.requiresOutputStream() 
-//				&& (!senderAffectsStreamWritingCapability() || 
-//					sender instanceof IOutputStreamingSupport && ((IOutputStreamingSupport)sender).requiresOutputStream()
-//				   )
-//				&& getOutputWrapper()==null
-//				&& getOutputValidator()==null
-//				&& !isStreamResultToServlet();
-//	}
 
 	@Override
 	public boolean supportsOutputStreamPassThrough() {
@@ -510,6 +474,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			if (validationResult!=null && !validationResult.isSuccessful()) {
 				return validationResult;
 			}
+			input = validationResult.getResult();
 		}
 
 		if (StringUtils.isNotEmpty(getStubFilename())) {
@@ -655,7 +620,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 							label=labelTp.transform(input,null);
 						}
 					}
-					messageLog.storeMessage(storedMessageID,correlationID,new Date(),messageTrail,label, input);
+					messageLog.storeMessage(storedMessageID,correlationID,new Date(),messageTrail,label, new MessageWrapper(input, correlationID));
 
 					long messageLogEndTime = System.currentTimeMillis();
 					long messageLogDuration = messageLogEndTime - messageLogStartTime;
@@ -668,14 +633,14 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				} else {
 					result = sendResult.getResult(); // is this correct? result was already set at line 634!
 				}
-				if (result == null || result.asObject()==null) {
+				if (Message.isNull(result)) {
 					result = new Message("");
 				}
 				if (timeoutPending) {
 					timeoutPending=false;
 					throwEvent(PIPE_CLEAR_TIMEOUT_MONITOR_EVENT);
 				}
-		
+
 			} catch (TimeoutException toe) {
 				throwEvent(PIPE_TIMEOUT_MONITOR_EVENT);
 				if (!timeoutPending) {
@@ -725,8 +690,11 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			log.debug(getLogPrefix(session)+"validating response");
 			PipeRunResult validationResult;
 			validationResult = pipeProcessor.processPipe(getPipeLine(), outputValidator, Message.asMessage(result), session);
-			if (validationResult!=null && !validationResult.isSuccessful()) {
-				return validationResult;
+			if (validationResult!=null) {
+				if (!validationResult.isSuccessful()) {
+					return validationResult;
+				}
+				result = validationResult.getResult();
 			}
 		}
 		if (getOutputWrapper()!=null) {
@@ -824,10 +792,10 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			}
 		} finally {
 			if (exitState==null) {
-				exitState = PipeLineExit.EXIT_STATE_SUCCESS;
+				exitState = PipeForward.SUCCESS_FORWARD_NAME;
 			}
 			PipeLine pipeline = getPipeLine();
-			if  (pipeline!=null) {
+			if (pipeline!=null) {
 				Adapter adapter = pipeline.getAdapter();
 				if (adapter!=null) {
 					if (getPresumedTimeOutInterval()>=0 && !ConfigurationUtils.isConfigurationStubbed(getConfigurationClassLoader())) {
@@ -955,7 +923,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	}
 
 	@Override
-	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
+	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
 		if (sender instanceof HasStatistics) {
 			((HasStatistics)sender).iterateOverStatistics(hski,data,action);
 		}

@@ -28,7 +28,7 @@ public class ThreadConnectableJtaTransactionManager extends JtaTransactionManage
 	}
 
 	public ThreadConnectableJtaTransactionManager(JtaTransactionManager transactionManager) {
-		this(transactionManager.getTransactionManager());
+		this(transactionManager.getUserTransaction(), transactionManager.getTransactionManager());
 	}
 
 	public ThreadConnectableJtaTransactionManager(TransactionManager transactionManager) {

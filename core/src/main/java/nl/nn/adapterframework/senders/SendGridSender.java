@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021 WeAreFrank!
+   Copyright 2019, 2021-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,17 +26,17 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import com.sendgrid.Attachments;
-import com.sendgrid.Attachments.Builder;
 import com.sendgrid.Client;
-import com.sendgrid.Content;
-import com.sendgrid.Email;
-import com.sendgrid.Mail;
 import com.sendgrid.Method;
-import com.sendgrid.Personalization;
 import com.sendgrid.Request;
 import com.sendgrid.Response;
 import com.sendgrid.SendGrid;
+import com.sendgrid.helpers.mail.Mail;
+import com.sendgrid.helpers.mail.objects.Attachments;
+import com.sendgrid.helpers.mail.objects.Attachments.Builder;
+import com.sendgrid.helpers.mail.objects.Content;
+import com.sendgrid.helpers.mail.objects.Email;
+import com.sendgrid.helpers.mail.objects.Personalization;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;

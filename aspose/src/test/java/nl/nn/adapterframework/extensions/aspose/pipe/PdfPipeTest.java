@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2021 WeAreFrank!
+   Copyright 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,16 +22,17 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.testautomationguru.utility.PDFUtil;
@@ -43,6 +44,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.extensions.aspose.pipe.PdfPipe.DocumentAction;
 import nl.nn.adapterframework.pipes.PipeTestBase;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.UrlMessage;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
@@ -57,26 +59,41 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	private static final String REGEX_PATH_IGNORE = "(?<=convertedDocument=\").*(?=\")";
 	private static final String REGEX_TIJDSTIP_IGNORE = "(?<=Tijdstip:).*(?=\" n)";
 	private static final String[] REGEX_IGNORES = {REGEX_PATH_IGNORE, REGEX_TIJDSTIP_IGNORE};
-	private String pdfOutputLocation;
-	
+	private Path pdfOutputLocation;
+
 	@Override
 	public PdfPipe createPipe() {
 		return new PdfPipe();
 	}
-	
+
 	@Override
 	public void setup() throws Exception {
 		super.setup();
-		pdfOutputLocation = Files.createTempDirectory("Pdf").toString();
+		pdfOutputLocation = Files.createTempDirectory("Pdf");
+		pipe.setPdfOutputLocation(pdfOutputLocation.toString());
+		pipe.setUnpackCommonFontsArchive(true);
 	}
-	
+
 	@Override
 	public void tearDown() throws Exception {
-		Files.walk(Paths.get(pdfOutputLocation))
-			.map(Path::toFile)
-			.forEach(File::delete);
-		Files.deleteIfExists(Paths.get(pdfOutputLocation));
+		synchronized(pdfOutputLocation) {
+			Files.walk(pdfOutputLocation).forEach(PdfPipeTest::removeFile); //Remove each individual file
+
+			Files.deleteIfExists(pdfOutputLocation); //Remove root folder
+		}
+
 		super.tearDown();
+	}
+
+	private static void removeFile(Path file) {
+		if(Files.isRegularFile(file)) {
+			try {
+				Files.delete(file);
+			} catch (IOException e) {
+				e.printStackTrace();
+				Assert.fail("unable to delete: "+ e.getMessage());
+			}
+		}
 	}
 
 	public void expectSuccessfullConversion(String pipeName, String fileToConvert, String metadataXml, String expectedFile) throws Exception {
@@ -91,13 +108,13 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 		if(convertedDocumentMatcher.find()) { //Find converted document location
 			String convertedFilePath = convertedDocumentMatcher.group();
-			System.out.println("found converted file ["+convertedFilePath+"]");
+			log.debug("found converted file ["+convertedFilePath+"]");
 
 			URL expectedFileUrl = TestFileUtils.getTestFileURL(expectedFile);
 			assertNotNull("cannot find expected file ["+expectedFile+"]", expectedFileUrl);
 			File file = new File(expectedFileUrl.toURI());
 			String expectedFilePath = file.getPath();
-			System.out.println("converted relative path ["+expectedFile+"] to absolute file ["+expectedFilePath+"]");
+			log.debug("converted relative path ["+expectedFile+"] to absolute file ["+expectedFilePath+"]");
 
 			PDFUtil pdfUtil = new PDFUtil();
 			//remove Aspose evaluation copy information
@@ -121,13 +138,12 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	public String executeConversion(String pipeName, String fileToConvert) throws Exception {
 		pipe.setName(pipeName);
 		pipe.setAction(DocumentAction.CONVERT);
-		pipe.setPdfOutputLocation(pdfOutputLocation);
 		pipe.configure();
 		pipe.start();
 
 		PipeLineSession session = new PipeLineSession();
 		URL input = TestFileUtils.getTestFileURL(fileToConvert);
-		pipe.doPipe(Message.asMessage(new File(input.toURI())), session);
+		pipe.doPipe(new UrlMessage(input), session);
 
 		//returns <main conversionOption="0" mediaType="xxx/xxx" documentName="filename" numberOfPages="1" convertedDocument="xxx.pdf" />
 		return session.getMessage("documents").asString();
@@ -277,14 +293,12 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	public void mailWithWordAttachment() throws Exception {
 		expectSuccessfullConversion("mailWithWordAttachment", "/PdfPipe/MailWithAttachments/mailWithWordAttachment.msg", "/PdfPipe/xml-results/mailWithWordAttachment.xml", "/PdfPipe/results/mailWithWordAttachment.pdf");
 	}
-	
+
 	@Test
 	public void multiThreadedMailWithWordAttachment() throws Exception {
-		pipe=createPipe();
 		pipe.setName("multiThreadedmailWithWordAttachment");
 		pipe.setAction(DocumentAction.CONVERT);
 		pipe.registerForward(new PipeForward("success", "dummy"));
-		pipe.setPdfOutputLocation(pdfOutputLocation);
 		pipe.configure();
 		pipe.start();
 
@@ -298,9 +312,9 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 			try {
 				PipeRunResult prr = pipe.doPipe(Message.asMessage(new File(item.toURI())), session);
 				Message result = prr.getResult();
-				MatchUtils.assertXmlEquals("Conversion XML does not match", applyIgnores(result.asString()), applyIgnores(expected), true);
+				MatchUtils.assertXmlEquals("Conversion XML does not match", applyIgnores(expected), applyIgnores(result.asString()), true);
 			} catch (Exception e) {
-				fail("Failed to execute test " + e.getMessage());
+				fail("Failed to execute test ("+e.getClass()+"): " + e.getMessage());
 			}
 		});
 	}

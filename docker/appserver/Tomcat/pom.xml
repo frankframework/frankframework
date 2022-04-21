@@ -16,7 +16,6 @@
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>credentialprovider</artifactId>
-			<version>${revision}</version> <!-- Make the version overridable -->
 		</dependency>
 		<dependency>
 			<groupId>${oracle.driver.groupid}</groupId>
@@ -62,8 +61,12 @@
 			<artifactId>geronimo-jta_1.1_spec</artifactId>
 			<version>1.1.1</version>
 		</dependency>
-
-		<!-- required for ActiveMQ -->
+		<dependency>
+		    <groupId>org.apache.activemq</groupId>
+		    <artifactId>artemis-jms-client-all</artifactId>
+			<version>${artemis.driver.version}</version>
+		</dependency>
+		<!-- required for ActiveMQ classic-->
 		<dependency>
 			<groupId>org.apache.activemq</groupId>
 			<artifactId>activemq-client</artifactId>
@@ -80,13 +83,6 @@
 			<version>1.11</version>
 		</dependency>
 		
-		<!-- Required for NARAYANA -->
-		<dependency>
-			<groupId>org.jboss.logging</groupId>
-			<artifactId>jboss-logging</artifactId>
-			<version>3.4.2.Final</version>
-		</dependency>
-
 	</dependencies>
 
 	<build>
@@ -142,8 +138,9 @@
 	</build>
 	
 	<modules>
-		<module>example</module>
 		<module>test</module>
+		<module>webapp</module>
+		<module>example</module>
 	</modules>
 
 </project>

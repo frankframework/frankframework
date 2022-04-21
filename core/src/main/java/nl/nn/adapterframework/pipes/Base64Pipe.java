@@ -18,8 +18,6 @@ package nl.nn.adapterframework.pipes;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.codec.binary.Base64InputStream;
@@ -55,12 +53,12 @@ public class Base64Pipe extends StreamingPipe {
 	private @Getter String charset = null;
 	private @Getter String lineSeparator = "auto";
 	private @Getter int lineLength = 76;
-	
+
 	private OutputTypes outputType = null;
 	private Boolean convertToString = false;
 
 	private byte lineSeparatorArray[];
-	
+
 	public enum Direction {
 		ENCODE,
 		DECODE;
@@ -87,11 +85,11 @@ public class Base64Pipe extends StreamingPipe {
 				setLineSeparatorArray(getLineSeparator());
 			}
 		}
-		
+
 		if (dir==Direction.DECODE && convertToString) {
 			setOutputType("string");
 		}
-		
+
 		if (getOutputTypeEnum()==null) {
 			setOutputType(dir==Direction.DECODE ? "bytes" : "string");
 		}
@@ -115,7 +113,7 @@ public class Base64Pipe extends StreamingPipe {
 
 		InputStream base64 = new Base64InputStream(binaryInputStream, directionEncode, getLineLength(), lineSeparatorArray);
 
-		Message result = new Message(base64, directionEncode ? StandardCharsets.US_ASCII.name() : getCharset());
+		Message result = new Message(base64, message.copyContext().withoutSize().withCharset(directionEncode ? StandardCharsets.US_ASCII.name() : getCharset()));
 		if (getOutputTypeEnum()==OutputTypes.STRING) {
 			try {
 				result = new Message(result.asReader());
@@ -138,15 +136,9 @@ public class Base64Pipe extends StreamingPipe {
 		} else {
 			targetStream = target.asStream(outputCharset);
 		}
+
 		OutputStream base64 = new Base64OutputStream(targetStream, directionEncode, getLineLength(), lineSeparatorArray);
-		if (directionEncode && StringUtils.isNotEmpty(getCharset())) {
-			try {
-				return new MessageOutputStream(this, new OutputStreamWriter(base64, getCharset()), target);
-			} catch (UnsupportedEncodingException e) {
-				throw new StreamingException("cannot open OutputStreamWriter", e);
-			}
-		}
-		return new MessageOutputStream(this, base64, target);
+		return new MessageOutputStream(this, base64, target, directionEncode ? getCharset() : null);
 	}
 
 	/** @ff.default ENCODE */

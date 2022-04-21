@@ -1,16 +1,23 @@
 package nl.nn.adapterframework.parameters;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -19,8 +26,10 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -29,8 +38,12 @@ import nl.nn.adapterframework.pipes.PutInSession;
 import nl.nn.adapterframework.processors.CorePipeLineProcessor;
 import nl.nn.adapterframework.processors.CorePipeProcessor;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageContext;
+import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.XmlUtils;
 
 public class ParameterTest {
 
@@ -44,10 +57,10 @@ public class ParameterTest {
 		p.setPattern("{username}");
 		p.setUsername("fakeUsername");
 		p.configure();
-		
+
 		PipeLineSession session = new PipeLineSession();
 		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
-		
+
 		assertEquals("fakeUsername", p.getValue(alreadyResolvedParameters, null, session, false));
 	}
 
@@ -58,10 +71,10 @@ public class ParameterTest {
 		p.setPattern("{password}");
 		p.setPassword("fakePassword");
 		p.configure();
-		
+
 		PipeLineSession session = new PipeLineSession();
 		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
-		
+
 		assertEquals("fakePassword", p.getValue(alreadyResolvedParameters, null, session, false));
 	}
 
@@ -71,12 +84,12 @@ public class ParameterTest {
 		p.setName("dummy");
 		p.setPattern("{sessionKey}");
 		p.configure();
-		
+
 		PipeLineSession session = new PipeLineSession();
 		session.put("sessionKey", "fakeSessionVariable");
-		
+
 		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
-		
+
 		assertEquals("fakeSessionVariable", p.getValue(alreadyResolvedParameters, null, session, false));
 	}
 
@@ -86,7 +99,7 @@ public class ParameterTest {
 		p.setName("dummy");
 		p.setPattern("{siblingParameter}");
 		p.configure();
-		
+
 		PipeLineSession session = new PipeLineSession();
 
 		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
@@ -95,7 +108,7 @@ public class ParameterTest {
 		siblingParameter.setValue("fakeParameterValue");
 		siblingParameter.configure();
 		alreadyResolvedParameters.add(new ParameterValue(siblingParameter, siblingParameter.getValue(alreadyResolvedParameters, null, session, false)));
-		
+
 		assertEquals("fakeParameterValue", p.getValue(alreadyResolvedParameters, null, session, false));
 	}
 
@@ -107,18 +120,17 @@ public class ParameterTest {
 		p.setUsername("fakeUsername");
 		p.setPassword("fakePassword");
 		p.configure();
-		
-		
+
 		PipeLineSession session = new PipeLineSession();
 		session.put("sessionKey", "fakeSessionVariable");
-		
+
 		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
 		Parameter siblingParameter = new Parameter();
 		siblingParameter.setName("siblingParameter");
 		siblingParameter.setValue("fakeParameterValue");
 		siblingParameter.configure();
 		alreadyResolvedParameters.add(new ParameterValue(siblingParameter, siblingParameter.getValue(alreadyResolvedParameters, null, session, false)));
-		
+
 		assertEquals("param [fakeParameterValue] sessionKey [fakeSessionVariable] username [fakeUsername] password [fakePassword]", p.getValue(alreadyResolvedParameters, null, session, false));
 	}
 
@@ -130,11 +142,10 @@ public class ParameterTest {
 		p.setXpathExpression("root/username");
 		p.setUsername("fakeUsername");
 		p.configure();
-		
-		
+
 		PipeLineSession session = new PipeLineSession();
 		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
-		
+
 		assertEquals("fakeUsername", p.getValue(alreadyResolvedParameters, null, session, false));
 	}
 
@@ -146,11 +157,10 @@ public class ParameterTest {
 		p.setXpathExpression("root/username");
 		p.setDefaultValue("fakeDefault");
 		p.configure();
-		
-		
+
 		PipeLineSession session = new PipeLineSession();
 		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
-		
+
 		assertEquals("fakeDefault", p.getValue(alreadyResolvedParameters, null, session, false));
 	}
 
@@ -170,16 +180,80 @@ public class ParameterTest {
 	}
 
 	@Test
+	public void testContextKey() throws ConfigurationException, ParameterException {
+		Parameter p = new Parameter();
+		p.setName("dummy");
+		p.setContextKey("fakeContextKey");
+		p.configure();
+
+		Message input = new Message("fakeMessage", new MessageContext().with("fakeContextKey", "fakeContextValue"));
+		PipeLineSession session = new PipeLineSession();
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+
+		assertEquals("fakeContextValue", p.getValue(alreadyResolvedParameters, input, session, false));
+	}
+
+	@Test
+	public void testContextKeyWithSessionKey() throws ConfigurationException, ParameterException {
+		Parameter p = new Parameter();
+		p.setName("dummy");
+		p.setSessionKey("fakeSessionKey");
+		p.setContextKey("fakeContextKey");
+		p.configure();
+
+		Message input = new Message("fakeMessage1", new MessageContext().with("fakeContextKey", "fakeContextValue1"));
+		Message sessionValue = new Message("fakeMessage2", new MessageContext().with("fakeContextKey", "fakeContextValue2"));
+
+		PipeLineSession session = new PipeLineSession();
+		session.put("fakeSessionKey", sessionValue);
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+
+		assertEquals("fakeContextValue2", p.getValue(alreadyResolvedParameters, input, session, false));
+	}
+	@Test
+	public void testContextKeyWithXPath() throws ConfigurationException, ParameterException {
+		Parameter p = new Parameter();
+		p.setName("dummy");
+		p.setContextKey("fakeContextKey");
+		p.setXpathExpression("count(root/a)");
+		p.configure();
+
+		Message input = new Message("fakeMessage", new MessageContext().with("fakeContextKey", "<root><a/><a/></root>"));
+		PipeLineSession session = new PipeLineSession();
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+
+		assertEquals("2", p.getValue(alreadyResolvedParameters, input, session, false));
+	}
+	@Test
+	public void testContextKeyWithSessionKeyAndXPath() throws ConfigurationException, ParameterException {
+		Parameter p = new Parameter();
+		p.setName("dummy");
+		p.setSessionKey("fakeSessionKey");
+		p.setContextKey("fakeContextKey");
+		p.setXpathExpression("count(root/a)");
+		p.configure();
+
+		Message input = new Message("fakeMessage1", new MessageContext().with("fakeContextKey", "<root><a/><a/></root>"));
+		Message sessionValue = new Message("fakeMessage2", new MessageContext().with("fakeContextKey", "<root><a/><a/><a/></root>"));
+
+		PipeLineSession session = new PipeLineSession();
+		session.put("fakeSessionKey", sessionValue);
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+
+		assertEquals("3", p.getValue(alreadyResolvedParameters, input, session, false));
+	}
+
+	@Test
 	public void testEmptyParameterResolvesToMessage() throws ConfigurationException, ParameterException {
 		Parameter p = new Parameter();
 		p.setName("dummy");
 		p.configure();
-		
+
 		PipeLineSession session = new PipeLineSession();
 		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
-		
+
 		Message message = new Message("fakeMessage");
-		
+
 		assertEquals("fakeMessage", p.getValue(alreadyResolvedParameters, message, session, false));
 	}
 
@@ -190,12 +264,12 @@ public class ParameterTest {
 		p.setSessionKey("dummy");
 		p.setDefaultValue("");
 		p.configure();
-		
+
 		PipeLineSession session = new PipeLineSession();
 		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
-		
+
 		Message message = new Message("fakeMessage");
-		
+
 		assertEquals("", p.getValue(alreadyResolvedParameters, message, session, false));
 	}
 
@@ -219,7 +293,7 @@ public class ParameterTest {
 	}
 
 	@Test
-	public void testParameterValueMessageStream() throws Exception {
+	public void testParameterValueMessage() throws Exception {
 		String sessionKey = "mySessionKey";
 		String sessionMessage = "message goes here "+UUID.randomUUID();
 		ByteArrayInputStream is = new ByteArrayInputStream(sessionMessage.getBytes());
@@ -236,7 +310,7 @@ public class ParameterTest {
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, session, false);
-		assertTrue(result instanceof InputStream);
+		assertTrue(result instanceof Message);
 
 		assertEquals(sessionMessage, Message.asMessage(result).asString());
 	}
@@ -264,7 +338,7 @@ public class ParameterTest {
 		String stringResult = Message.asMessage(result).asString();
 		assertEquals("fiets bel appel", stringResult);
 	}
-	
+
 	@Test
 	public void testParameterXPathToValue() throws Exception {
 		Parameter p = new Parameter();
@@ -323,7 +397,7 @@ public class ParameterTest {
 
 		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
 		Message message = new Message("fakeMessage");
-		
+
 		PipeLineSession session = new PipeLineSession();
 		session.put("emptySessionKey", "");
 
@@ -360,10 +434,10 @@ public class ParameterTest {
 		map.put("item2", "value2");
 		map.put("item3", "value3");
 		map.put("item4", "value4");
-		
+
 		PipeLineSession session = new PipeLineSession();
 		session.put("sessionKey", map);
-		
+
 		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
@@ -481,7 +555,7 @@ public class ParameterTest {
 		assertTrue(result instanceof String);
 		assertEquals("0000000005", (String) result);
 	}
-	
+
 	@Test
 	public void testNumberWithLeftPaddingAndMaxExclusive() throws Exception {
 		Parameter p = new Parameter();
@@ -499,7 +573,7 @@ public class ParameterTest {
 		assertTrue(result instanceof String);
 		assertEquals("0000000005", (String) result);
 	}
-	
+
 	@Test
 	public void testNumberWithLeftPaddingAndMaxExclusiveNotExceeding() throws Exception {
 		Parameter p = new Parameter();
@@ -534,6 +608,38 @@ public class ParameterTest {
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
 		assertTrue(result instanceof String);
 		assertEquals("0000000005", (String) result);
+	}
+
+	@Test
+	public void testStringWithMaxLength() throws Exception {
+		Parameter p = new Parameter();
+		p.setName("string");
+		p.setValue("1234567890");
+		p.setMaxLength(5);
+		p.configure();
+
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
+		assertTrue(result instanceof String);
+		assertEquals("12345", (String) result);
+	}
+
+	@Test
+	public void testStringWithMinLength() throws Exception {
+		Parameter p = new Parameter();
+		p.setName("string");
+		p.setValue("1234567890");
+		p.setMinLength(15);
+		p.configure();
+
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
+		assertTrue(result instanceof String);
+		assertEquals("1234567890     ", (String) result);
 	}
 
 	@Test
@@ -575,44 +681,291 @@ public class ParameterTest {
 	@Test
 	public void testParameterFromURLToDomdocWithXpath() throws Exception {
 		URL originalMessage = TestFileUtils.getTestFileURL("/Xslt/MultiNamespace/in.xml");
-
+		String expectedResultContents = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><block><XDOC><REF_ID>0</REF_ID><XX>0</XX></XDOC><XDOC><REF_ID>1</REF_ID></XDOC><XDOC><REF_ID>2</REF_ID></XDOC></block>";
 		PipeLineSession session = new PipeLineSession();
 		session.put("originalMessage", Message.asMessage(originalMessage));
 
-		Parameter inputMessage = new Parameter();
-		inputMessage.setName("InputMessage");
-		inputMessage.setSessionKey("originalMessage");
-		inputMessage.setType(ParameterType.DOMDOC);
-		inputMessage.setRemoveNamespaces(true);
-		inputMessage.setXpathExpression("block/XDOC[1]");
-		inputMessage.configure();
+		Parameter parameter = new Parameter();
+		parameter.setName("InputMessage");
+		parameter.setSessionKey("originalMessage");
+		parameter.setType(ParameterType.DOMDOC);
+		parameter.setRemoveNamespaces(true);
+		parameter.setXpathExpression("*");
+		parameter.configure();
 
 		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = inputMessage.getValue(alreadyResolvedParameters, message, session, true);
-		assertTrue(result instanceof Document);
+		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+		assertThat(result,instanceOf(Document.class));
+
+		String contents = XmlUtils.transformXml(TransformerFactory.newInstance().newTransformer(), new DOMSource((Document)result));
+		assertEquals(expectedResultContents,contents);
 	}
 
 	@Test
-	public void testParameterFrombytesToDomdoc() throws Exception {
+	public void testParameterFromURLToNodeWithXpath() throws Exception {
+		URL originalMessage = TestFileUtils.getTestFileURL("/Xslt/MultiNamespace/in.xml");
+		String expectedResultContents = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><block><XDOC><REF_ID>0</REF_ID><XX>0</XX></XDOC><XDOC><REF_ID>1</REF_ID></XDOC><XDOC><REF_ID>2</REF_ID></XDOC></block>";
 		PipeLineSession session = new PipeLineSession();
-		session.put("originalMessage", "<someValue/>".getBytes());
+		session.put("originalMessage", Message.asMessage(originalMessage));
 
-		Parameter inputMessage = new Parameter();
-		inputMessage.setName("InputMessage");
-		inputMessage.setSessionKey("originalMessage");
-		inputMessage.setType(ParameterType.DOMDOC);
-		inputMessage.configure();
+		Parameter parameter = new Parameter();
+		parameter.setName("InputMessage");
+		parameter.setSessionKey("originalMessage");
+		parameter.setType(ParameterType.NODE);
+		parameter.setRemoveNamespaces(true);
+		parameter.setXpathExpression("*");
+		parameter.configure();
 
 		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = inputMessage.getValue(alreadyResolvedParameters, message, session, false);
+		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+		assertThat(result,instanceOf(Node.class));
+		assertThat(result,not(instanceOf(Document.class)));
 
-		assertTrue(result instanceof Document);
+		String contents = XmlUtils.transformXml(TransformerFactory.newInstance().newTransformer(), new DOMSource((Node)result));
+		assertEquals(expectedResultContents,contents);
+	}
+
+	@Test
+	public void testParameterFromBytesToDomdoc() throws Exception {
+		PipeLineSession session = new PipeLineSession();
+		session.put("originalMessage", "<someValue/>".getBytes());
+		String expectedResultContents = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><someValue/>";
+
+		Parameter parameter = new Parameter();
+		parameter.setName("InputMessage");
+		parameter.setSessionKey("originalMessage");
+		parameter.setType(ParameterType.DOMDOC);
+		parameter.configure();
+
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+		assertThat(result,instanceOf(Document.class));
+
+		String contents = XmlUtils.transformXml(TransformerFactory.newInstance().newTransformer(), new DOMSource((Document)result));
+		assertEquals(expectedResultContents,contents);
+	}
+
+	@Test
+	public void testParameterFromBytesToNode() throws Exception {
+		PipeLineSession session = new PipeLineSession();
+		session.put("originalMessage", "<someValue/>".getBytes());
+		String expectedResultContents = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><someValue/>";
+
+		Parameter parameter = new Parameter();
+		parameter.setName("InputMessage");
+		parameter.setSessionKey("originalMessage");
+		parameter.setType(ParameterType.NODE);
+		parameter.configure();
+
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+		assertThat(result,instanceOf(Node.class));
+		assertThat(result,not(instanceOf(Document.class)));
+
+		String contents = XmlUtils.transformXml(TransformerFactory.newInstance().newTransformer(), new DOMSource((Node)result));
+		assertEquals(expectedResultContents,contents);
+	}
+
+	@Test
+	public void testParameterFromDomToDomdoc() throws Exception {
+		Document domdoc = XmlUtils.buildDomDocument("<someValue/>");
+		String expectedResultContents = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><someValue/>";
+
+		PipeLineSession session = new PipeLineSession();
+		session.put("originalMessage", domdoc);
+
+		Parameter parameter = new Parameter();
+		parameter.setName("InputMessage");
+		parameter.setSessionKey("originalMessage");
+		parameter.setType(ParameterType.DOMDOC);
+		parameter.configure();
+
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+		assertThat(result,instanceOf(Document.class));
+
+		String contents = XmlUtils.transformXml(TransformerFactory.newInstance().newTransformer(), new DOMSource((Document)result));
+		assertEquals(expectedResultContents,contents);
+	}
+
+	@Test
+	public void testParameterFromDomToNode() throws Exception {
+		Document domdoc = XmlUtils.buildDomDocument("<someValue/>");
+		String expectedResultContents = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><someValue/>";
+
+		PipeLineSession session = new PipeLineSession();
+		session.put("originalMessage", domdoc);
+
+		Parameter parameter = new Parameter();
+		parameter.setName("InputMessage");
+		parameter.setSessionKey("originalMessage");
+		parameter.setType(ParameterType.NODE);
+		parameter.configure();
+
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+		assertThat(result,instanceOf(Node.class));
+		assertThat(result,not(instanceOf(Document.class)));
+
+		String contents = XmlUtils.transformXml(TransformerFactory.newInstance().newTransformer(), new DOMSource((Node)result));
+		assertEquals(expectedResultContents,contents);
+	}
+
+	@Test
+	public void testParameterFromNodeToDomdoc() throws Exception {
+		Node node = XmlUtils.buildDomDocument("<someValue/>").getFirstChild();
+		String expectedResultContents = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><someValue/>";
+
+		PipeLineSession session = new PipeLineSession();
+		session.put("originalMessage", node);
+
+		Parameter parameter = new Parameter();
+		parameter.setName("InputMessage");
+		parameter.setSessionKey("originalMessage");
+		parameter.setType(ParameterType.DOMDOC);
+		parameter.configure();
+
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+		assertThat(result,instanceOf(Document.class));
+
+		String contents = XmlUtils.transformXml(TransformerFactory.newInstance().newTransformer(), new DOMSource((Document)result));
+		assertEquals(expectedResultContents,contents);
+	}
+
+	@Test
+	public void testParameterFromNodeToNode() throws Exception {
+		Node node = XmlUtils.buildDomDocument("<someValue/>").getFirstChild();
+		String expectedResultContents = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><someValue/>";
+
+		PipeLineSession session = new PipeLineSession();
+		session.put("originalMessage", node);
+
+		Parameter parameter = new Parameter();
+		parameter.setName("InputMessage");
+		parameter.setSessionKey("originalMessage");
+		parameter.setType(ParameterType.NODE);
+		parameter.configure();
+
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+		assertThat(result,instanceOf(Node.class));
+		assertThat(result,not(instanceOf(Document.class)));
+
+		String contents = XmlUtils.transformXml(TransformerFactory.newInstance().newTransformer(), new DOMSource((Node)result));
+		assertEquals(expectedResultContents,contents);
+	}
+
+
+
+	@Test
+	public void testParameterFromDateToDate() throws Exception {
+		Date date = new Date();
+
+		PipeLineSession session = new PipeLineSession();
+		session.put("originalMessage", date);
+
+		Parameter parameter = new Parameter();
+		parameter.setName("InputMessage");
+		parameter.setSessionKey("originalMessage");
+		parameter.setType(ParameterType.DATE);
+		parameter.configure();
+
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+		assertThat(result,instanceOf(Date.class));
+
+		assertEquals(date,result);
+	}
+
+	protected void testFromStringToDateType(String input, String expected, ParameterType type) throws ConfigurationException, ParameterException {
+
+		Parameter parameter = new Parameter();
+		parameter.setName("InputMessage");
+		parameter.setValue(input);
+		parameter.setType(type);
+		parameter.configure();
+
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		Object result = parameter.getValue(alreadyResolvedParameters, message, null, true);
+		assertThat(result,instanceOf(Date.class));
+
+		assertEquals(expected,DateUtils.format((Date)result));
 
 	}
+	@Test
+	public void testParameterFromStringToDate() throws Exception {
+		String input = "2022-01-23";
+		String expected = "2022-01-23 00:00:00.000";
+		testFromStringToDateType(input, expected, ParameterType.DATE);
+	}
+	@Test
+	public void testParameterFromStringToDateTime() throws Exception {
+		String input = "2022-01-23 11:14:17";
+		String expected = "2022-01-23 11:14:17.000";
+		testFromStringToDateType(input, expected, ParameterType.DATETIME);
+	}
+	@Test
+	public void testParameterFromStringToTimestamp() throws Exception {
+		String input = "2022-01-23 11:14:17.123";
+		String expected = "2022-01-23 11:14:17.123";
+		testFromStringToDateType(input, expected, ParameterType.TIMESTAMP);
+	}
+	@Test
+	public void testParameterFromStringToTime() throws Exception {
+		String input = "11:14:17";
+		String expected = "1970-01-01 11:14:17.000";
+		testFromStringToDateType(input, expected, ParameterType.TIME);
+	}
+	@Test
+	public void testParameterFromStringToXmlDateTime() throws Exception {
+		String input = "2022-01-23T11:14:17";
+		String expected = "2022-01-23 11:14:17.000";
+		testFromStringToDateType(input, expected, ParameterType.XMLDATETIME);
+	}
+
+	@Test
+	public void testParameterFromDateToXmlDateTime() throws Exception {
+		Date date = new Date();
+
+		PipeLineSession session = new PipeLineSession();
+		session.put("originalMessage", date);
+
+		Parameter parameter = new Parameter();
+		parameter.setName("InputMessage");
+		parameter.setSessionKey("originalMessage");
+		parameter.setType(ParameterType.XMLDATETIME);
+		parameter.configure();
+
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+		assertThat(result,instanceOf(Date.class));
+
+		assertEquals(date,result);
+	}
+
 
 	@Test
 	// Test for #2256 PutParametersInSession with xpathExpression with type=domdoc results in "Content is not allowed in prolog"
@@ -621,11 +974,11 @@ public class ParameterTest {
 			PipeLine pipeline = configuration.createBean(PipeLine.class);
 			String firstPipe = "PutInSession under test";
 			String secondPipe = "PutInSession next pipe";
-			
-			String testMessage = "<Test>\n" + 
-					"	<Child><name>X</name></Child>\n" + 
-					"	<Child><name>Y</name></Child>\n" + 
-					"	<Child><name>Z</name></Child>\n" + 
+
+			String testMessage = "<Test>\n" +
+					"	<Child><name>X</name></Child>\n" +
+					"	<Child><name>Y</name></Child>\n" +
+					"	<Child><name>Z</name></Child>\n" +
 					"</Test>";
 
 			String testMessageChild1 = "<Child><name>X</name></Child>";
@@ -639,7 +992,7 @@ public class ParameterTest {
 			p.setType(ParameterType.DOMDOC);
 			pipe.addParameter(p);
 			pipeline.addPipe(pipe);
-	
+
 			PutInSession pipe2 = configuration.createBean(PutInSession.class);
 			pipe2.setName(secondPipe);
 			pipe2.setPipeLine(pipeline);
@@ -649,26 +1002,423 @@ public class ParameterTest {
 			p2.setXpathExpression("Child/name/text()");
 			pipe2.addParameter(p2);
 			pipeline.addPipe(pipe2);
-	
+
 			PipeLineExit exit = new PipeLineExit();
 			exit.setPath("exit");
-			exit.setState("success");
+			exit.setState(ExitState.SUCCESS);
 			pipeline.registerPipeLineExit(exit);
 			pipeline.configure();
-	
+
 			CorePipeLineProcessor cpp = configuration.createBean(CorePipeLineProcessor.class);
 			CorePipeProcessor pipeProcessor = configuration.createBean(CorePipeProcessor.class);
 			cpp.setPipeProcessor(pipeProcessor);
 			PipeLineSession session = configuration.createBean(PipeLineSession.class);
 			pipeline.setOwner(pipe);
 			PipeLineResult pipeRunResult=cpp.processPipeLine(pipeline, "messageId", new Message(testMessage), session, firstPipe);
-	
-			assertEquals("success", pipeRunResult.getState());
+
+			assertEquals(ExitState.SUCCESS, pipeRunResult.getState());
 			assertEquals(testMessage, pipeRunResult.getResult().asString());
-			
-			assertEquals(testMessageChild1, session.getMessage("xmlMessageChild").asString());
+
+			MatchUtils.assertXmlEquals(testMessageChild1, session.getMessage("xmlMessageChild").asString());
 			assertEquals("X", session.getMessage("xmlMessageChild2").asString());
 		}
 	}
-	
+
+	@Test
+	public void testFixedDate() throws Exception {
+		Parameter p = new Parameter();
+		System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		try {
+			p.setName("date");
+			p.setPattern("{fixedDate}");
+			p.setType(ParameterType.DATE);
+			p.configure();
+			PipeLineSession session = new PipeLineSession();
+
+			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+			Message message = new Message("fakeMessage");
+
+			Object result = p.getValue(alreadyResolvedParameters, message, session, false); //Should return PutSystemDateInSession.FIXEDDATETIME
+			assertTrue(result instanceof Date);
+
+			Date resultDate = (Date) result;
+			SimpleDateFormat sdf = new SimpleDateFormat(Parameter.TYPE_DATE_PATTERN);
+			String formattedDate = sdf.format(resultDate);
+			assertEquals("2001-12-17", formattedDate);
+
+		} finally {
+			System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
+		}
+	}
+
+	@Test
+	public void testFixedDateWithSession() throws Exception {
+		Parameter p = new Parameter();
+		p.setName("date");
+		p.setPattern("{fixedDate}");
+		p.setType(ParameterType.DATE);
+		p.configure();
+		PipeLineSession session = new PipeLineSession();
+		session.put("fixedDate", "1995-01-23");
+		session.put("stub4testtool.fixeddate", "1996-02-24");
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+		assertTrue(result instanceof Date);
+
+		Date resultDate = (Date) result;
+		SimpleDateFormat sdf = new SimpleDateFormat(Parameter.TYPE_DATE_PATTERN);
+		String formattedDate = sdf.format(resultDate);
+		assertEquals("1995-01-23", formattedDate);
+	}
+
+	@Test
+	public void testFixedDateWithSessionFromTesttool() throws Exception {
+		Parameter p = new Parameter();
+		p.setName("date");
+		p.setPattern("{fixedDate}");
+		p.setType(ParameterType.DATE);
+		p.configure();
+		PipeLineSession session = new PipeLineSession();
+		session.put("stub4testtool.fixeddate", "1996-02-24");
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		try {
+			System.setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY,"true");
+			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+			assertTrue(result instanceof Date);
+			Date resultDate = (Date) result;
+			SimpleDateFormat sdf = new SimpleDateFormat(Parameter.TYPE_DATE_PATTERN);
+			String formattedDate = sdf.format(resultDate);
+			assertEquals("1996-02-24", formattedDate);
+		} finally {
+			System.setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY,"false");
+		}
+	}
+
+	@Test
+	public void testFixedDateWithDateInSessionFromTesttool() throws Exception {
+		Parameter p = new Parameter();
+		p.setName("date");
+		p.setPattern("{fixedDate}");
+		p.setType(ParameterType.DATE);
+		p.configure();
+		PipeLineSession session = new PipeLineSession();
+		Date date = new Date();
+		session.put("stub4testtool.fixeddate", date);
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		try {
+			System.setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY,"true");
+			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+			assertTrue(result instanceof Date);
+			Date resultDate = (Date) result;
+			SimpleDateFormat sdf = new SimpleDateFormat(Parameter.TYPE_DATE_PATTERN);
+			String formattedDate = sdf.format(resultDate);
+			String formattedExpected = sdf.format(date);
+			assertEquals(formattedExpected, formattedDate);
+		} finally {
+			System.setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY,"false");
+		}
+	}
+
+	@Test
+	public void testFixedDateWithDateObjectInSession() throws Exception {
+		Parameter p = new Parameter();
+		p.setName("date");
+		p.setPattern("{fixedDate}");
+		p.setType(ParameterType.DATE);
+		p.configure();
+		PipeLineSession session = new PipeLineSession();
+		SimpleDateFormat sdf = new SimpleDateFormat(Parameter.TYPE_DATE_PATTERN);
+		session.put("fixedDate",sdf.parse("1995-01-23"));
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+		assertTrue(result instanceof Date);
+
+		Date resultDate = (Date) result;
+		String formattedDate = sdf.format(resultDate);
+		assertEquals("1995-01-23", formattedDate);
+	}
+
+	@Test
+	public void testPatternNowWithDateType() throws Exception {
+		Parameter p = new Parameter();
+		System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		try {
+			p.setName("date");
+			p.setPattern("{now}");
+			p.setType(ParameterType.DATE);
+			p.configure();
+			PipeLineSession session = new PipeLineSession();
+
+			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+			Message message = new Message("fakeMessage");
+
+			Object result = p.getValue(alreadyResolvedParameters, message, session, false); //Should return PutSystemDateInSession.FIXEDDATETIME
+			assertTrue(result instanceof Date);
+
+			Date resultDate = (Date) result;
+			SimpleDateFormat sdf = new SimpleDateFormat(Parameter.TYPE_DATE_PATTERN);
+			String formattedDate = sdf.format(resultDate);
+			String expectedDate = sdf.format(new Date()); // dit gaat echt meestal wel goed
+			assertEquals(expectedDate, formattedDate);
+
+		} finally {
+			System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
+		}
+	}
+
+	@Test
+	public void testPatternNowWithStringType() throws Exception {
+		Parameter p = new Parameter();
+		System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		try {
+			p.setName("date");
+			p.setPattern("{now}");
+			p.configure();
+			PipeLineSession session = new PipeLineSession();
+
+			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+			Message message = new Message("fakeMessage");
+
+			Object result = p.getValue(alreadyResolvedParameters, message, session, false); //Should return PutSystemDateInSession.FIXEDDATETIME
+			assertTrue(result instanceof String);
+
+			SimpleDateFormat sdf = new SimpleDateFormat(DateUtils.FORMAT_FULL_GENERIC);
+			String expectedDate = sdf.format(new Date()); // dit gaat echt meestal wel goed
+			assertEquals(expectedDate.substring(0, 10), ((String)result).substring(0, 10));
+
+		} finally {
+			System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
+		}
+	}
+
+	@Test
+	public void testPatternNowWithDateFormatType() throws Exception {
+		Parameter p = new Parameter();
+		System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		try {
+			p.setName("EsbSoapWrapperPipeTimestamp");
+			p.setPattern("{now,date,yyyy-MM-dd'T'HH:mm:ss}");
+			p.configure();
+			PipeLineSession session = new PipeLineSession();
+
+			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+			Message message = new Message("fakeMessage");
+
+			Object result = p.getValue(alreadyResolvedParameters, message, session, false); //Should return PutSystemDateInSession.FIXEDDATETIME
+			assertTrue(result instanceof String);
+
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+			String expectedDate = sdf.format(new Date()); // dit gaat echt meestal wel goed
+			assertEquals(expectedDate.substring(0, 10), ((String)result).substring(0, 10));
+
+		} finally {
+			System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
+		}
+	}
+
+	@Test
+	public void testPatternFixedDateWithDateFormatType() throws Exception {
+		String expectedDate = "2001-12-17T09:30:47";
+		Parameter p = new Parameter();
+		System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		try {
+			p.setName("EsbSoapWrapperPipeTimestamp");
+			p.setPattern("{fixeddate,date,yyyy-MM-dd'T'HH:mm:ss}");
+			p.configure();
+			PipeLineSession session = new PipeLineSession();
+
+			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+			Message message = new Message("fakeMessage");
+
+			Object result = p.getValue(alreadyResolvedParameters, message, session, false); //Should return PutSystemDateInSession.FIXEDDATETIME
+			assertTrue(result instanceof String);
+
+			SimpleDateFormat sdf = new SimpleDateFormat(DateUtils.FORMAT_FULL_GENERIC);
+			assertEquals(expectedDate, result);
+
+		} finally {
+			System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
+		}
+	}
+
+
+
+	@Test
+	public void testDefaultValueMethodDefaultNoDefaultValue() throws Exception {
+		Parameter p = new Parameter();
+		p.setXpathExpression("*/*");
+		p.setValue("<doc/>");
+		p.configure();
+		PipeLineSession session = new PipeLineSession();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		String result = (String)p.getValue(alreadyResolvedParameters, message, session, false);
+
+		assertEquals(null, result);
+	}
+
+	@Test
+	public void testDefaultValueMethodDefault() throws Exception {
+		Parameter p = new Parameter();
+		p.setXpathExpression("*/*");
+		p.setValue("<doc/>");
+		p.setDefaultValue("fakeDefaultValue");
+		p.setSessionKey("sessionKeyForDefaultValue");
+		p.setPattern("{sessionKeyForPattern}");
+		p.configure();
+		PipeLineSession session = new PipeLineSession();
+
+		session.put("sessionKeyForDefaultValue", "fakeDefaultValueSessionKey");
+		session.put("sessionKeyForPattern", "fakePatternSessionKey");
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		String result = (String)p.getValue(alreadyResolvedParameters, message, session, false);
+
+		assertEquals("fakeDefaultValue", result);
+	}
+
+	@Test
+	public void testDefaultValueMethodSessionKey() throws Exception {
+		Parameter p = new Parameter();
+		p.setXpathExpression("*/*");
+		p.setValue("<doc/>");
+		p.setDefaultValue("fakeDefaultValue");
+		p.setSessionKey("sessionKeyForDefaultValue");
+		p.setPattern("{sessionKeyForPattern}");
+		p.setDefaultValueMethods("sessionKey");
+		p.configure();
+		PipeLineSession session = new PipeLineSession();
+
+		session.put("sessionKeyForDefaultValue", "fakeDefaultValueSessionKey");
+		session.put("sessionKeyForPattern", "fakePatternSessionKey");
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		String result = (String)p.getValue(alreadyResolvedParameters, message, session, false);
+
+		assertEquals("fakeDefaultValueSessionKey", result);
+	}
+
+	@Test
+	public void testDefaultValueMethodPattern() throws Exception {
+		Parameter p = new Parameter();
+		p.setXpathExpression("*/*");
+		p.setValue("<doc/>");
+		p.setDefaultValue("fakeDefaultValue");
+		p.setSessionKey("sessionKeyForDefaultValue");
+		p.setPattern("{sessionKeyForPattern}");
+		p.setDefaultValueMethods("pattern");
+		p.configure();
+		PipeLineSession session = new PipeLineSession();
+
+		session.put("sessionKeyForDefaultValue", "fakeDefaultValueSessionKey");
+		session.put("sessionKeyForPattern", "fakePatternSessionKey");
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		String result = (String)p.getValue(alreadyResolvedParameters, message, session, false);
+
+		assertEquals("fakePatternSessionKey", result);
+	}
+
+	@Test
+	public void testDefaultValueMethodValue() throws Exception {
+		Parameter p = new Parameter();
+		p.setXpathExpression("*/*");
+		p.setValue("<doc/>");
+		p.setDefaultValue("fakeDefaultValue");
+		p.setSessionKey("sessionKeyForDefaultValue");
+		p.setPattern("{sessionKeyForPattern}");
+		p.setDefaultValueMethods("value");
+		p.configure();
+		PipeLineSession session = new PipeLineSession();
+
+		session.put("sessionKeyForDefaultValue", "fakeDefaultValueSessionKey");
+		session.put("sessionKeyForPattern", "fakePatternSessionKey");
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		String result = (String)p.getValue(alreadyResolvedParameters, message, session, false);
+
+		assertEquals("<doc/>", result);
+	}
+
+	@Test
+	public void testDefaultValueMethodInput() throws Exception {
+		Parameter p = new Parameter();
+		p.setXpathExpression("*/*");
+		p.setValue("<doc/>");
+		p.setDefaultValue("fakeDefaultValue");
+		p.setSessionKey("sessionKeyForDefaultValue");
+		p.setPattern("{sessionKeyForPattern}");
+		p.setDefaultValueMethods("input");
+		p.configure();
+		PipeLineSession session = new PipeLineSession();
+
+		session.put("sessionKeyForDefaultValue", "fakeDefaultValueSessionKey");
+		session.put("sessionKeyForPattern", "fakePatternSessionKey");
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		String result = (String)p.getValue(alreadyResolvedParameters, message, session, false);
+
+		assertEquals("fakeMessage", result);
+	}
+
+	@Test
+	public void testDefaultValueMethodMulti() throws Exception {
+		Parameter p = new Parameter();
+		p.setXpathExpression("*/*");
+		p.setValue("<doc/>");
+		p.setDefaultValue("fakeDefaultValue");
+		p.setPattern("{sessionKeyForPattern}");
+		p.setDefaultValueMethods("sessionKey,value,pattern");
+		p.configure();
+		PipeLineSession session = new PipeLineSession();
+
+		session.put("sessionKeyForDefaultValue", "fakeDefaultValueSessionKey");
+		session.put("sessionKeyForPattern", "fakePatternSessionKey");
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		String result = (String)p.getValue(alreadyResolvedParameters, message, session, false);
+
+		assertEquals("<doc/>", result);
+	}
+
+	@Test
+	public void testDefaultValueMethodMultiLoose() throws Exception {
+		Parameter p = new Parameter();
+		p.setXpathExpression("*/*");
+		p.setValue("<doc/>");
+		p.setDefaultValue("fakeDefaultValue");
+		p.setPattern("{sessionKeyForPattern}");
+		p.setDefaultValueMethods("SessionKey, VALUE, Pattern");
+		p.configure();
+		PipeLineSession session = new PipeLineSession();
+
+		session.put("sessionKeyForDefaultValue", "fakeDefaultValueSessionKey");
+		session.put("sessionKeyForPattern", "fakePatternSessionKey");
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		String result = (String)p.getValue(alreadyResolvedParameters, message, session, false);
+
+		assertEquals("<doc/>", result);
+	}
 }

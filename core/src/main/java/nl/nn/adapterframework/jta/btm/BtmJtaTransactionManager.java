@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import bitronix.tm.TransactionManagerServices;
 import nl.nn.adapterframework.jta.StatusRecordingTransactionManager;
 
 public class BtmJtaTransactionManager extends StatusRecordingTransactionManager {
-	
+
 	private static final long serialVersionUID = 1L;
 
 	@Override
@@ -43,8 +43,13 @@ public class BtmJtaTransactionManager extends StatusRecordingTransactionManager 
 	@Override
 	protected boolean shutdownTransactionManager() {
 		BitronixTransactionManager transactionManager = (BitronixTransactionManager)getTransactionManager();
+		if(transactionManager == null) { //TM was never created?
+			return true;
+		}
+
 		transactionManager.shutdown();
+
 		int inflightCount = transactionManager.getInFlightTransactionCount();
-		return inflightCount>0;
+		return inflightCount == 0;
 	}
 }

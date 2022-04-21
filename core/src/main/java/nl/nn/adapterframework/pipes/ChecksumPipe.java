@@ -16,6 +16,9 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -23,14 +26,15 @@ import java.util.zip.Adler32;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.stream.MessageOutputStream;
+import nl.nn.adapterframework.stream.StreamingException;
+import nl.nn.adapterframework.stream.StreamingPipe;
 
 /**
  * Pipe to calculate checksum on input.
@@ -39,13 +43,12 @@ import nl.nn.adapterframework.util.Misc;
  * @author  Gerrit van Brakel
  * @since   4.9  
  */
-public class ChecksumPipe extends FixedForwardPipe {
-	
-	
-	private @Getter String charset=Misc.DEFAULT_INPUT_STREAM_ENCODING;
+public class ChecksumPipe extends StreamingPipe {
+
+	private @Getter String charset;
 	private @Getter ChecksumType type=ChecksumType.MD5;
-	private @Getter boolean inputIsFile=false;
-	
+	private @Getter boolean inputIsFile;
+
 	public enum ChecksumType {
 		MD5,
 		SHA,
@@ -54,7 +57,8 @@ public class ChecksumPipe extends FixedForwardPipe {
 	}
 
 	protected interface ChecksumGenerator {
-		public void update(byte b[], int length);
+		public void update(int b);
+		public void update(byte[] b, int offset, int length);
 		public String getResult();
 	}
 
@@ -73,7 +77,7 @@ public class ChecksumPipe extends FixedForwardPipe {
 	}
 
 	protected class ZipChecksumGenerator implements ChecksumGenerator {	
-		
+
 		private Checksum checksum;
 
 		ZipChecksumGenerator(Checksum checksum) {
@@ -83,19 +87,23 @@ public class ChecksumPipe extends FixedForwardPipe {
 		}
 
 		@Override
-		public void update(byte b[],int length){
-			checksum.update(b,0,length);
+		public void update(int b){
+			checksum.update(b);
+		}
+
+		@Override
+		public void update(byte[] b, int offset, int length){
+			checksum.update(b,offset,length);
 		}
 
 		@Override
 		public String getResult(){
-			String result=Long.toHexString(checksum.getValue());
-			return result;
+			return Long.toHexString(checksum.getValue());
 		}
 	}
 
-	protected class MessageDigestChecksumGenerator implements ChecksumGenerator {	
-		
+	protected class MessageDigestChecksumGenerator implements ChecksumGenerator {
+
 		private MessageDigest messageDigest;
 
 		MessageDigestChecksumGenerator(ChecksumType type) throws NoSuchAlgorithmException {
@@ -104,49 +112,76 @@ public class ChecksumPipe extends FixedForwardPipe {
 		}
 
 		@Override
-		public void update(byte b[],int length){
-			messageDigest.update(b,0,length);
+		public void update(int b){
+			messageDigest.update((byte)b);
 		}
+
+		@Override
+		public void update(byte[] b, int offset, int length){
+			messageDigest.update(b,offset,length);
+		}
+
 		@Override
 		public String getResult(){
-			String result=new BigInteger(1,messageDigest.digest()).toString(16);
-			return result;
+			return new BigInteger(1,messageDigest.digest()).toString(16);
 		}
 	}
 
-
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		String result;
 		try {
 			ChecksumGenerator cg=createChecksumGenerator();
-			if (isInputIsFile()) {
-				byte barr[]=new byte[1000];
-				FileInputStream fis=new FileInputStream(message.asString());
+			byte[] barr=new byte[1000];
+			try (InputStream fis = isInputIsFile() ? new FileInputStream(message.asString()) : message.asInputStream(getCharset())){
 				int c;
 				while ((c=fis.read(barr))>=0) {
-					cg.update(barr,c);
+					cg.update(barr, 0, c);
 				}
-			} else {
-				byte barr[];
-				if (StringUtils.isEmpty(getCharset())) {
-					barr=message.asByteArray();
-				} else {
-					barr=message.asByteArray(getCharset());
-				}
-				cg.update(barr,barr.length);
 			}
-			result=cg.getResult();
-			return new PipeRunResult(getSuccessForward(),result);
+			return new PipeRunResult(getSuccessForward(), cg.getResult());
 		} catch (Exception e) {
 			throw new PipeRunException(this,"cannot calculate ["+getType()+"]"+(isInputIsFile()?" on file ["+message+"]":" using charset ["+getCharset()+"]"),e);
 		}
 	}
+	
+	@Override
+	protected boolean canProvideOutputStream() {
+		return !isInputIsFile() && super.canProvideOutputStream();
+	}
 
+	@Override
+	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
+		ChecksumGenerator cg;
+		try {
+			cg = createChecksumGenerator();
+		} catch (NoSuchAlgorithmException e) {
+			throw new StreamingException("Cannot create ChecksumGenerator", e);
+		}
+		OutputStream targetStream = new OutputStream() {
 
+			@Override
+			public void write(int b) throws IOException {
+				cg.update(b);
+			}
+
+			@Override
+			public void write(byte[] buf, int offset, int length) throws IOException {
+				cg.update(buf, offset, length);
+			}
+		};
+		return new MessageOutputStream(this, targetStream, getNextPipe(), getCharset()) {
+
+			@Override
+			public Message getResponse() {
+				return new Message(cg.getResult());
+			}
+			
+		};
+	}
+
+	
 	/**
 	 * Character encoding to be used to encode message before calculating checksum.
-	 * @ff.default UTF-8
 	 */
 	public void setCharset(String string) {
 		charset = string;
@@ -164,6 +199,8 @@ public class ChecksumPipe extends FixedForwardPipe {
 	 * If set <code>true</code>, the input is assumed to be a filename; otherwise the input itself is used in the calculations.
 	 * @ff.default false
 	 */
+	@Deprecated
+	@ConfigurationWarning("Please use fileSystemPipe to read the file first.")
 	public void setInputIsFile(boolean b) {
 		inputIsFile = b;
 	}

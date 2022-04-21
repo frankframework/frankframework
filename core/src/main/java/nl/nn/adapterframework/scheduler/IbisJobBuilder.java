@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.scheduler;
 
-import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.scheduler.IbisJobDetail.JobType;
 import nl.nn.adapterframework.scheduler.job.DatabaseJob;
 
@@ -88,11 +87,6 @@ public class IbisJobBuilder {
 
 	public IbisJobBuilder setJobType(JobType jobType) {
 		this.jobType = jobType;
-		return this;
-	}
-
-	public IbisJobBuilder setIbisManager(IbisManager ibisManager) {
-		jobDataMap.put(ConfiguredJob.MANAGER_KEY, ibisManager);
 		return this;
 	}
 }

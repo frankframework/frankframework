@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import lombok.Setter;
+
 public class PrettyPrintFilter extends FullXmlFilter {
 
 	private String indent="\t";
@@ -26,28 +28,37 @@ public class PrettyPrintFilter extends FullXmlFilter {
 	private boolean charactersSeen;
 	private boolean elementsSeen;
 	private boolean elementContentSeen;
-	
+	private @Setter boolean sortAttributes;
+
 	public PrettyPrintFilter(ContentHandler handler) {
 		super(handler);
+	}
+
+	public PrettyPrintFilter(ContentHandler handler, boolean sortAttributes) {
+		this(handler);
+		this.sortAttributes = sortAttributes;
 	}
 
 	private void write(String string) throws SAXException {
 		super.characters(string.toCharArray(), 0, string.length());
 	}
-	
+
 	private void indent() throws SAXException  {
 		write("\n");
 		for(int i=0; i<indentLevel; i++) {
 			write(indent);
 		}
 	}
-	
+
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
 		if (elementsSeen) {
 			indent();
 		} else {
 			elementsSeen=true;
+		}
+		if (sortAttributes) {
+			atts =new AttributesWrapper(atts, true);
 		}
 		super.startElement(uri, localName, qName, atts);
 		indentLevel++;
@@ -84,5 +95,5 @@ public class PrettyPrintFilter extends FullXmlFilter {
 		this.indent = indent;
 	}
 
-	
+
 }

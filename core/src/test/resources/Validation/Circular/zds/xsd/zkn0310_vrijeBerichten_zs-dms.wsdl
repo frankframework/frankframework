@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2013 (http://www.altova.com) by Robert Melskens (Kwaliteits Instituut Nederlandse Gemeenten) -->
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:ZKN="http://www.egem.nl/StUF/sector/zkn/0310" xmlns:StUF="http://www.egem.nl/StUF/StUF0301" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:wsi="http://ws-i.org/schemas/conformanceClaim/" xmlns:xs="http://www.w3.org/2001/XMLSchema" name="StUF-BG0310" targetNamespace="http://www.egem.nl/StUF/sector/zkn/0310">
+	<import namespace="http://www.egem.nl/StUF/StUF0301" location="stuf0301_types.wsdl"/>
+	<documentation>
+		<xs:documentation>
+			   Dit document definieert de webservices voor het portType VrijeBerichten voor het ZS-DMS koppelvlak.
+		
+			   Versie 031000
+			
+			   Versie 031001, wijzigingen t.b.v. patch 21 (1-4-2015) vergeleken met versie 031000 zijn de volgende wijzigingen doorgevoerd:			
+			   - ERR0353: Het documentation element is voorzien van een standaard 'appinfo' structuur met daarin informatie over het schema.
+			
+		</xs:documentation>
+		<xs:appinfo>
+			<StUF:onderdeel>http://www.egem.nl/StUF/sector/zkn/0310</StUF:onderdeel>
+			<StUF:patch>27</StUF:patch>
+			<StUF:patchdatum>20170701</StUF:patchdatum>
+			<StUF:schemaversie>1</StUF:schemaversie>
+		</xs:appinfo>
+	</documentation>
+	<types>
+		<xs:schema>
+			<xs:import namespace="http://www.egem.nl/StUF/sector/zkn/0310" schemaLocation="zkn0310_msg_zs-dms_resolved2017.xsd"/>
+		</xs:schema>
+	</types>
+	<message name="genereerDocumentIdentificatie_Di02">
+		<part name="body" element="ZKN:genereerDocumentIdentificatie_Di02"/>
+	</message>
+	<message name="genereerDocumentIdentificatie_Du02">
+		<part name="body" element="ZKN:genereerDocumentIdentificatie_Du02"/>
+	</message>
+	<message name="genereerZaakIdentificatie_Di02">
+		<part name="body" element="ZKN:genereerZaakIdentificatie_Di02"/>
+	</message>
+	<message name="genereerZaakIdentificatie_Du02">
+		<part name="body" element="ZKN:genereerZaakIdentificatie_Du02"/>
+	</message>
+	<message name="geefZaakdocumentbewerken_Di02">
+		<part name="body" element="ZKN:geefZaakdocumentbewerken_Di02"/>
+	</message>
+	<message name="geefZaakdocumentbewerken_Du02">
+		<part name="body" element="ZKN:geefZaakdocumentbewerken_Du02"/>
+	</message>
+	<message name="updateZaakdocument_Di02">
+		<part name="body" element="ZKN:updateZaakdocument_Di02"/>
+	</message>
+	<message name="cancelCheckout_Di02">
+		<part name="body" element="ZKN:cancelCheckout_Di02"/>
+	</message>
+	<portType name="VrijeBerichten">
+		<documentation>
+		Dit portType ondersteunt als operaties alle synchrone vrije berichten gedefinieerd binnen het sectormodel.
+	</documentation>
+		<operation name="genereerDocumentIdentificatie_Di02">
+			<input message="ZKN:genereerDocumentIdentificatie_Di02"/>
+			<output message="ZKN:genereerDocumentIdentificatie_Du02"/>
+			<fault name="fout" message="StUF:Fo02"/>
+		</operation>
+		<operation name="genereerZaakIdentificatie_Di02">
+			<input message="ZKN:genereerZaakIdentificatie_Di02"/>
+			<output message="ZKN:genereerZaakIdentificatie_Du02"/>
+			<fault name="fout" message="StUF:Fo02"/>
+		</operation>
+		<operation name="geefZaakdocumentbewerken_Di02">
+			<input message="ZKN:geefZaakdocumentbewerken_Di02"/>
+			<output message="ZKN:geefZaakdocumentbewerken_Du02"/>
+			<fault name="fout" message="StUF:Fo02"/>
+		</operation>
+		<operation name="updateZaakdocument_Di02">
+			<input message="ZKN:updateZaakdocument_Di02"/>
+			<output message="StUF:Bv02"/>
+			<fault name="fout" message="StUF:Fo02"/>
+		</operation>
+		<operation name="cancelCheckout_Di02">
+			<input message="ZKN:cancelCheckout_Di02"/>
+			<output message="StUF:Bv02"/>
+			<fault name="fout" message="StUF:Fo02"/>
+		</operation>
+	</portType>
+	<binding name="SOAPVrijeBerichten" type="ZKN:VrijeBerichten">
+		<documentation>
+			Omdat de uit te wisselen berichten volledig gedefinieerd zijn in het sectormodel cq de StUF-standaard, kunnen we ze zonder verdere encoding (“literal”) opnemen in de body.
+Niet ondersteunde berichten kunnen uit de binding en portType worden verwijderd.
+		</documentation>
+		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+		<operation name="genereerDocumentIdentificatie_Di02">
+			<soap:operation soapAction="http://www.egem.nl/StUF/sector/zkn/0310/genereerDocumentIdentificatie_Di02"/>
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+			<fault name="fout">
+				<soap:fault name="fout" use="literal"/>
+			</fault>
+		</operation>
+		<operation name="genereerZaakIdentificatie_Di02">
+			<soap:operation soapAction="http://www.egem.nl/StUF/sector/zkn/0310/genereerZaakIdentificatie_Di02"/>
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+			<fault name="fout">
+				<soap:fault name="fout" use="literal"/>
+			</fault>
+		</operation>
+		<operation name="geefZaakdocumentbewerken_Di02">
+			<soap:operation soapAction="http://www.egem.nl/StUF/sector/zkn/0310/geefZaakdocumentbewerken_Di02"/>
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+			<fault name="fout">
+				<soap:fault name="fout" use="literal"/>
+			</fault>
+		</operation>
+		<operation name="updateZaakdocument_Di02">
+			<soap:operation soapAction="http://www.egem.nl/StUF/sector/zkn/0310/updateZaakdocument_Di02"/>
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+			<fault name="fout">
+				<soap:fault name="fout" use="literal"/>
+			</fault>
+		</operation>
+		<operation name="cancelCheckout_Di02">
+			<soap:operation soapAction="http://www.egem.nl/StUF/sector/zkn/0310/cancelCheckout_Di02"/>
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+			<fault name="fout">
+				<soap:fault name="fout" use="literal"/>
+			</fault>
+		</operation>
+	</binding>
+	<service name="VrijeBerichten">
+		<documentation>
+	Hieronder wordt de concreet aan te roepen service voor het ontvangen van synchrone ZKN0310-vrijeBerichten gedefinieerd. 
+		</documentation>
+		<port name="VrijeBerichten" binding="ZKN:SOAPVrijeBerichten">
+			<documentation>
+				<wsi:Claim conformsTo="http://ws-i.org/profiles/basic/1.1"/>
+			</documentation>
+			<soap:address location="http://example.com/VrijeBerichten"/>
+		</port>
+	</service>
+</definitions>

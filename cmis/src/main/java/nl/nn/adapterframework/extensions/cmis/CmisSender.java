@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2019 Nationale-Nederlanden, 2020-2021 WeAreFrank
+   Copyright 2016-2019 Nationale-Nederlanden, 2020-2022 WeAreFrank
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -75,6 +75,7 @@ import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DomBuilderException;
@@ -244,8 +245,8 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 			ConfigurationWarnings.add(this, log, "the use of Base64 is deprecated. Please use attribute [fileSessionKey] or set property [CmisSender.Base64FileContent] to false");
 		}
 
-		if (getAction().equals("create") && StringUtils.isEmpty(getFileSessionKey())) {
-			throw new ConfigurationException("fileSessionKey should be specified");
+		if (getAction().equals("create")){
+			checkStringAttributeOrParameter("fileSessionKey", getFileSessionKey(), "fileSessionKey");
 		}
 
 		if (getAction().equals("get") && isGetProperties() && isGetDocumentContent() && StringUtils.isEmpty(getFileSessionKey())) {
@@ -276,18 +277,18 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		String password_work = null;
 
 		if (pvl != null) {
-			ParameterValue pv = pvl.getParameterValue("authAlias");
+			ParameterValue pv = pvl.get("authAlias");
 			if (pv != null) {
 				authAlias_work = pv.asStringValue();
 			}
-			pv = pvl.getParameterValue("username");
+			pv = pvl.get("username");
 			if (pv == null) {
-				pv = pvl.getParameterValue("userName");
+				pv = pvl.get("userName");
 			}
 			if (pv != null) {
 				username_work = pv.asStringValue();
 			}
-			pv = pvl.getParameterValue("password");
+			pv = pvl.get("password");
 			if (pv != null) {
 				password_work = pv.asStringValue();
 			}
@@ -360,7 +361,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 				case GET:
 					return sendMessageForActionGet(cmisSession, message, session, pvl);
 				case CREATE:
-					return sendMessageForActionCreate(cmisSession, message, session);
+					return sendMessageForActionCreate(cmisSession, message, session, pvl);
 				case DELETE:
 					return sendMessageForActionDelete(cmisSession, message, session);
 				case FIND:
@@ -406,9 +407,9 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 			boolean getDocumentContent = isGetDocumentContent();
 			if (pvl != null) {
 				if(pvl.contains("getProperties"))
-					getProperties = pvl.getParameterValue("getProperties").asBooleanValue(isGetProperties());
+					getProperties = pvl.get("getProperties").asBooleanValue(isGetProperties());
 				if(pvl.contains("getDocumentContent"))
-					getDocumentContent = pvl.getParameterValue("getDocumentContent").asBooleanValue(isGetDocumentContent());
+					getDocumentContent = pvl.get("getDocumentContent").asBooleanValue(isGetDocumentContent());
 			}
 
 			if (isStreamResultToServlet()) {
@@ -470,17 +471,20 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 				}
 				session.put("contentStream:MimeType", contentStream.getMimeType());
 				session.put("contentStream:Filename", contentStream.getFileName());
-				return new Message(inputStream);
+
+				MessageContext context = new MessageContext();
+				context.withName(contentStream.getFileName()).withMimeType(contentStream.getMimeType());
+				return new Message(inputStream, context);
 			}
 		} catch (IOException e) {
 			throw new SenderException(e);
 		}
 	}
 
-	private Message sendMessageForActionCreate(Session cmisSession, Message message, PipeLineSession session) throws SenderException {
+	private Message sendMessageForActionCreate(Session cmisSession, Message message, PipeLineSession session, ParameterValueList pvl) throws SenderException {
 		String fileName = null;
 		try {
-			fileName = session.getMessage(getFilenameSessionKey()).asString();
+			fileName = session.getMessage( getParameterOverriddenAttributeValue(pvl, "filenameSessionKey", getFilenameSessionKey()) ).asString();
 		} catch (IOException e) {
 			throw new SenderException("Unable to get filename from session key ["+getFilenameSessionKey()+"]", e);
 		}
@@ -527,7 +531,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 
 		ContentStream contentStream;
 		try {
-			Message inputFromSessionKey = session.getMessage(getFileSessionKey());
+			Message inputFromSessionKey = session.getMessage( getParameterOverriddenAttributeValue(pvl, "fileSessionKey", getFileSessionKey()) );
 
 			if(convert2Base64 && inputFromSessionKey.asObject() instanceof String) {
 				inputFromSessionKey = new Message(Base64.decodeBase64(inputFromSessionKey.asByteArray()));

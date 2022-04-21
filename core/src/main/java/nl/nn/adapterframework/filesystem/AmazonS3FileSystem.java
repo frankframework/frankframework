@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2021 WeAreFrank!
+   Copyright 2018-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -48,12 +48,13 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 
 public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWritableFileSystem<S3Object> {
-
+	private final @Getter(onMethod = @__(@Override)) String domain = "Amazon";
 	public static final List<String> AVAILABLE_REGIONS = getAvailableRegions();
 //	public static final List<String> STORAGE_CLASSES = getStorageClasses();
 //	public static final List<String> TIERS = getTiers();
@@ -223,7 +224,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	public Message readFile(S3Object f, String charset) throws FileSystemException, IOException {
 		try {
-			return new S3Message(s3Client.getObject(bucketName, f.getKey()), charset);
+			return new S3Message(s3Client.getObject(bucketName, f.getKey()), FileSystemUtils.getContext(this, f, charset));
 		} catch (AmazonServiceException e) {
 			throw new FileSystemException(e);
 		}
@@ -233,8 +234,8 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		
 		private S3Object file;
 		
-		public S3Message(S3Object file, String charset) {
-			super(() -> file.getObjectContent(), charset, file.getClass());
+		public S3Message(S3Object file, Map<String,Object> context) {
+			super(() -> file.getObjectContent(), context, file.getClass());
 			this.file = file;
 		}
 

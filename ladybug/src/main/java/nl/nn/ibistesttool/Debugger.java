@@ -23,8 +23,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.context.ApplicationListener;
 
 import nl.nn.adapterframework.configuration.IbisManager;
@@ -225,7 +223,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 
 	@Override
 	public <T> T showValue(String correlationId, String label, T value) {
-		return testTool.outputpoint(correlationId, null, label, value);
+		return testTool.inputpoint(correlationId, null, label, value);
 	}
 
 	

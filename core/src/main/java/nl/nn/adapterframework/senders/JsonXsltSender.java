@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2019-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.senders;
 
+import java.io.IOException;
+
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -27,6 +29,7 @@ import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.JsonEventHandler;
 import nl.nn.adapterframework.stream.Message;
@@ -35,6 +38,7 @@ import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.ThreadConnector;
 import nl.nn.adapterframework.stream.xml.JsonXslt3XmlHandler;
 import nl.nn.adapterframework.stream.xml.JsonXslt3XmlReader;
+import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlJsonWriter;
 import nl.nn.adapterframework.xml.IXmlDebugger;
 
@@ -63,21 +67,30 @@ public class JsonXsltSender extends XsltSender {
 
 	@Override
 	public MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
+		if (!canProvideOutputStream()) {
+			log.debug("sender [{}] cannot provide outputstream", () -> getName());
+			return null;
+		}
 		ThreadConnector threadConnector = isStreamingXslt() ? new ThreadConnector(this, threadLifeCycleEventListener, txManager, session) : null; 
 		MessageOutputStream target = MessageOutputStream.getTargetStream(this, session, next);
-		ContentHandler handler = createHandler(null, threadConnector, session, target);
-		JsonEventHandler jsonEventHandler = new JsonXslt3XmlHandler(handler);
-		return new MessageOutputStream(this, jsonEventHandler, target, threadLifeCycleEventListener, txManager, session, threadConnector);
+		try {
+			TransformerPool poolToUse = getTransformerPoolToUse(session);
+			ContentHandler handler = createHandler(null, threadConnector, session, poolToUse, target);
+			JsonEventHandler jsonEventHandler = new JsonXslt3XmlHandler(handler);
+			return new MessageOutputStream(this, jsonEventHandler, target, threadLifeCycleEventListener, txManager, session, threadConnector);
+		} catch (SenderException | ConfigurationException | IOException e) {
+			throw new StreamingException(e);
+		}
 	}
 
 	@Override
-	protected ContentHandler createHandler(Message input, ThreadConnector threadConnector, PipeLineSession session, MessageOutputStream target) throws StreamingException {
+	protected ContentHandler createHandler(Message input, ThreadConnector threadConnector, PipeLineSession session, TransformerPool poolToUse, MessageOutputStream target) throws StreamingException {
 		if (!isJsonResult()) {
-			return super.createHandler(input, threadConnector, session, target);
+			return super.createHandler(input, threadConnector, session, poolToUse, target);
 		}
 		XmlJsonWriter xjw = new XmlJsonWriter(target.asWriter());
 		MessageOutputStream prev = new MessageOutputStream(this,xjw,target,threadLifeCycleEventListener, txManager, session, null);
-		ContentHandler handler = super.createHandler(input, threadConnector, session, prev);
+		ContentHandler handler = super.createHandler(input, threadConnector, session, poolToUse, prev);
 		if (getXmlDebugger()!=null) {
 			handler = getXmlDebugger().inspectXml(session, "XML to be converted to JSON", handler);
 		}

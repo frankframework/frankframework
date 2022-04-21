@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,15 +20,22 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.xml.sax.Attributes;
 
+/**
+ * Base class for transforming SAX Attributes-lists.
+ * 
+ * @author Gerrit van Brakel
+ *
+ */
 public class AttributesWrapper implements Attributes {
-	
+
 	private Map<String,Integer> indexByQName=new LinkedHashMap<String,Integer>();
 	private Map<String,Integer> indexByUriAndLocalName=new LinkedHashMap<String,Integer>();
 	private List<Attribute> attributes = new ArrayList<Attribute>();
-	
+
 	private class Attribute {
 		public String uri;
 		public String localName;
@@ -37,26 +44,36 @@ public class AttributesWrapper implements Attributes {
 		public String value;
 	}
 
+	public AttributesWrapper(Attributes source) {
+		this(source,(String)null);
+	}
+
 	public AttributesWrapper(Attributes source, String localNameToSkip) {
-		this(source, localNameToSkip, false);
+		this(source, i->localNameToSkip==null || !localNameToSkip.equals(source.getLocalName(i)), false, null);
 	}
 
 	public AttributesWrapper(Attributes source, boolean sortAttributeOrder) {
-		this(source, null, sortAttributeOrder);
+		this(source, null, sortAttributeOrder, null);
 	}
 
-	private AttributesWrapper(Attributes source, String localNameToSkip, boolean sortAttributeOrder) {
+	public AttributesWrapper(Attributes source, Function<String,String> valueTransformer) {
+		this(source, null, false, valueTransformer);
+	}
+
+	protected AttributesWrapper(Attributes source, Function<Integer,Boolean> filter, boolean sortAttributeOrder, Function<String,String> valueTransformer) {
+		int indexPos=0;
 		for(int i=0;i<source.getLength();i++) {
-			if (localNameToSkip==null || !localNameToSkip.equals(source.getLocalName(i))) {
+			if (filter==null || filter.apply(i)) {
 				Attribute a = new Attribute();
 				a.uri=source.getURI(i);
 				a.localName=source.getLocalName(i);
 				a.qName=source.getQName(i);
 				a.type=source.getType(i);
-				a.value=source.getValue(i);
-				indexByQName.put(a.qName, i);
-				indexByUriAndLocalName.put(a.uri+":"+a.localName, i);
+				a.value=valueTransformer!=null ? valueTransformer.apply(source.getValue(i)) : source.getValue(i);
+				indexByQName.put(a.qName, indexPos);
+				indexByUriAndLocalName.put(a.uri+":"+a.localName, indexPos);
 				attributes.add(a);
+				indexPos++;
 			}
 		}
 
@@ -68,7 +85,7 @@ public class AttributesWrapper implements Attributes {
 					if ("".equals(o1Name)) {
 						o1Name = o1.uri;
 					}
-	
+
 					String o2Name = o2.localName;
 					if ("".equals(o2Name)) {
 						o2Name = o2.uri;
@@ -77,10 +94,6 @@ public class AttributesWrapper implements Attributes {
 				}
 			});
 		}
-	}
-
-	public AttributesWrapper(Attributes source) {
-		this(source,null);
 	}
 
 	@Override

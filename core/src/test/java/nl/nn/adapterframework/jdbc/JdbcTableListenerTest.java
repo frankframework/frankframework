@@ -1,32 +1,39 @@
 package nl.nn.adapterframework.jdbc;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeThat;
 import static org.junit.Assume.assumeTrue;
+import static org.mockito.Mockito.doAnswer;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.Date;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.dbms.ConcurrentJdbcActionTester;
+import nl.nn.adapterframework.jdbc.dbms.Dbms;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Semaphore;
 
 public class JdbcTableListenerTest extends JdbcTestBase {
 
 	private JdbcTableListener listener;
-	
+
 	/*
 	 * set testNegativePeekWhileGet=true to test that peek does not see new records when there is a record in process.
 	 * This test fails currently for Oracle and MsSqlServer. It can be fixed by adding 'FOR UPDATE SKIP LOCKED' or 'WITH(updlock)' respectively.
@@ -42,7 +49,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 
 		listener = new JdbcTableListener();
 		autowire(listener);
-		listener.setTableName("TEMP");
+		listener.setTableName(TEST_TABLE);
 		listener.setKeyField("TKEY");
 		listener.setStatusField("TINT");
 		listener.setStatusValueAvailable("1");
@@ -59,17 +66,115 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		super.teardown();
 	}
 
+	public JdbcTableMessageBrowser getMessageBrowser(ProcessState state) throws JdbcException, ConfigurationException {
+		JdbcTableMessageBrowser browser = Mockito.spy((JdbcTableMessageBrowser)listener.getMessageBrowser(state));
+		doAnswer(arg -> {
+			autowire(browser);
+			return null;
+		}).when(browser).copyFacadeSettings(listener);
+		browser.configure();
+		return browser;
+	}
+
 	@Test
 	public void testSetup() throws ConfigurationException, ListenerException {
 		listener.configure();
 		listener.open();
 	}
 
+	@Test
+	public void testSelectQuery() throws ConfigurationException {
+		listener.setOrderField("ORDRFLD");
+		listener.configure();
+
+		String expected = "SELECT TKEY FROM "+TEST_TABLE+" t WHERE TINT='1' ORDER BY ORDRFLD";
+
+		assertEquals(expected, listener.getSelectQuery());
+	}
+
+	@Test
+	public void testSelectQueryNoAvailable() throws ConfigurationException {
+		listener.setStatusValueAvailable(null);
+		listener.configure();
+
+		String expected = "SELECT TKEY FROM "+TEST_TABLE+" t WHERE TINT NOT IN ('3','2')";
+
+		assertEquals(expected, listener.getSelectQuery());
+	}
+
+	@Test
+	public void testSelectQueryWithSelectCondition() throws ConfigurationException {
+		listener.setSelectCondition("t.TVARCHAR='x'");
+		listener.configure();
+
+		String expected = "SELECT TKEY FROM "+TEST_TABLE+" t WHERE TINT='1' AND (t.TVARCHAR='x')";
+
+		assertEquals(expected, listener.getSelectQuery());
+	}
+	@Test
+	public void testUpdateStatusQuery() throws ConfigurationException {
+		listener.configure();
+
+		String expected = "UPDATE "+TEST_TABLE+" SET TINT='3' WHERE TINT!='3' AND TKEY=?";
+
+		assertEquals(expected, listener.getUpdateStatusQuery(ProcessState.ERROR));
+	}
+
+	@Test
+	public void testGetMessageCountQueryAvailable() throws Exception {
+		assumeThat(dbmsSupport.getDbms(),equalTo(Dbms.H2));
+		listener.configure();
+
+		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
+
+		String expected = "SELECT COUNT(*) FROM "+TEST_TABLE+" t WHERE (TINT='1')";
+
+		assertEquals(expected, browser.getMessageCountQuery);
+	}
+
+	@Test
+	public void testGetMessageCountQueryError() throws Exception {
+		assumeThat(dbmsSupport.getDbms(),equalTo(Dbms.H2));
+		listener.configure();
+
+		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.ERROR);
+
+		String expected = "SELECT COUNT(*) FROM "+TEST_TABLE+" t WHERE (TINT='3')";
+
+		assertEquals(expected, browser.getMessageCountQuery);
+	}
+
+	@Test
+	public void testGetMessageCountQueryAvailableWithSelectCondition() throws Exception {
+		listener.setSelectCondition("t.VARCHAR='A'");
+		assumeThat(dbmsSupport.getDbms(),equalTo(Dbms.H2));
+		listener.configure();
+
+		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
+
+		String expected = "SELECT COUNT(*) FROM "+TEST_TABLE+" t WHERE (TINT='1' AND (t.VARCHAR='A'))";
+
+		assertEquals(expected, browser.getMessageCountQuery);
+	}
+
+	@Test
+	public void testGetMessageCountQueryErrorSelectCondition() throws Exception {
+		assumeThat(dbmsSupport.getDbms(),equalTo(Dbms.H2));
+		listener.setSelectCondition("t.VARCHAR='A'");
+		listener.configure();
+
+		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.ERROR);
+
+		String expected = "SELECT COUNT(*) FROM "+TEST_TABLE+" t WHERE (TINT='3' AND (t.VARCHAR='A'))";
+
+		assertEquals(expected, browser.getMessageCountQuery);
+	}
+
 	public void testGetRawMessage(String status, boolean expectMessage) throws Exception {
 		listener.configure();
 		listener.open();
-		
-		JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO TEMP (TKEY,TINT) VALUES (10,"+status+")", null);
+
+		JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (10,"+status+")", null);
 		Object rawMessage = listener.getRawMessage(null);
 		if (expectMessage) {
 			assertEquals("10",rawMessage);
@@ -91,7 +196,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 	public void testGetRawMessageSkipStatusError() throws Exception {
 		testGetRawMessage("3",false);
 	}
-	
+
 	@Test
 	public void testGetRawMessageSkipOtherStatusvalue() throws Exception {
 		testGetRawMessage("4",false);
@@ -102,11 +207,144 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		testGetRawMessage("NULL",false);
 	}
 
+	@Test
+	public void testGetRawMessageWithSelectConditionTrue() throws Exception {
+		listener.setSelectCondition("1=1");
+		testGetRawMessage("1",true);
+	}
+
+	@Test
+	public void testGetRawMessageWithSelectConditionFalse() throws Exception {
+		listener.setSelectCondition("1=0");
+		testGetRawMessage("1",false);
+	}
+
+	@Test
+	public void testGetRawMessageWithSelectConditionComplex() throws Exception {
+		listener.setSelectCondition("TKEY=(SELECT r.TKEY FROM "+TEST_TABLE+" r WHERE r.TINT = t.TINT)");
+		testGetRawMessage("1",true);
+	}
+
+
+	@Test
+	public void testCreateQueryTexts() throws Exception {
+		assumeThat(dbmsSupport.getDbms(),equalTo(Dbms.H2));
+		listener.setMessageField("MSGFLD");
+		listener.setSelectCondition("fakeSelectCondition");
+		listener.configure();
+
+		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
+		browser.setCorrelationIdField("CIDFLD");
+		browser.setIdField("IDFLD");
+
+		browser.createQueryTexts(dbmsSupport);
+
+		assertEquals("DELETE FROM "+TEST_TABLE+" WHERE TKEY=?", browser.deleteQuery);
+		assertEquals("SELECT TKEY,IDFLD,CIDFLD FROM "+TEST_TABLE+" WHERE TKEY=?", browser.selectContextQuery);
+		assertEquals("SELECT TKEY,MSGFLD FROM "+TEST_TABLE+" WHERE TKEY=?", browser.selectDataQuery);
+		assertEquals("SELECT IDFLD FROM "+TEST_TABLE+" t WHERE (TINT='1' AND (fakeSelectCondition)) AND IDFLD=?", browser.checkMessageIdQuery);
+		assertEquals("SELECT CIDFLD FROM "+TEST_TABLE+" t WHERE (TINT='1' AND (fakeSelectCondition)) AND CIDFLD=?", browser.checkCorrelationIdQuery);
+		assertEquals("SELECT COUNT(*) FROM "+TEST_TABLE+" t WHERE (TINT='1' AND (fakeSelectCondition))", browser.getMessageCountQuery);
+	}
+
+	@Test
+	public void testGetSelectListQuery() throws Exception {
+		assumeThat(dbmsSupport.getDbms(),equalTo(Dbms.H2));
+		listener.setMessageField("MSGFLD");
+		listener.setTimestampField("TMFLD");
+		listener.setSelectCondition("fakeSelectCondition");
+		listener.setCommentField("CMTFLD");
+		listener.configure();
+
+		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
+		browser.setCorrelationIdField("CIDFLD");
+		browser.setIdField("IDFLD");
+
+		Date start = new Date();
+		Date end = new Date();
+
+		//assertEquals("SELECT TKEY,IDFLD,CIDFLD FROM "+TEST_TABLE+" t WHERE (TINT='1' AND (fakeSelectCondition))", browser.getSelectListQuery(dbmsSupport, null, null, null));
+		assertEquals("SELECT TKEY,IDFLD,CIDFLD,TMFLD,CMTFLD FROM "+TEST_TABLE+" t WHERE (TINT='1' AND (fakeSelectCondition)) AND TMFLD>=? ORDER BY TMFLD DESC", browser.getSelectListQuery(dbmsSupport, start , null, SortOrder.NONE));
+		assertEquals("SELECT TKEY,IDFLD,CIDFLD,TMFLD,CMTFLD FROM "+TEST_TABLE+" t WHERE (TINT='1' AND (fakeSelectCondition)) AND TMFLD<? ORDER BY TMFLD ASC", browser.getSelectListQuery(dbmsSupport, null , end, SortOrder.ASC));
+		assertEquals("SELECT TKEY,IDFLD,CIDFLD,TMFLD,CMTFLD FROM "+TEST_TABLE+" t WHERE (TINT='1' AND (fakeSelectCondition)) AND TMFLD>=? AND TMFLD<? ORDER BY TMFLD DESC", browser.getSelectListQuery(dbmsSupport, start , end, SortOrder.DESC));
+	}
+
+	@Test
+	public void testCreateUpdateStatusQuery() throws Exception {
+		assumeThat(dbmsSupport.getDbms(),equalTo(Dbms.H2));
+		listener.setMessageField("MSGFLD");
+		listener.setTimestampField("TMFLD");
+		listener.setCommentField("CMTFLD");
+		listener.setSelectCondition("fakeSelectCondition");
+		listener.configure();
+
+		assertEquals("UPDATE "+TEST_TABLE+" SET TINT='fakeValue',TMFLD=NOW(),CMTFLD=?,fakeAdditionalClause WHERE TINT!='fakeValue' AND TKEY=?", listener.createUpdateStatusQuery("fakeValue", "fakeAdditionalClause"));
+		assertEquals("UPDATE "+TEST_TABLE+" SET TINT='fakeValue',TMFLD=NOW(),CMTFLD=? WHERE TINT!='fakeValue' AND TKEY=?", listener.createUpdateStatusQuery("fakeValue", null));
+
+	}
+
+	@Test
+	public void testCreateUpdateStatusQueryLessFields() throws Exception {
+		listener.configure();
+
+		assertEquals("UPDATE "+TEST_TABLE+" SET TINT='fakeValue',fakeAdditionalClause WHERE TINT!='fakeValue' AND TKEY=?", listener.createUpdateStatusQuery("fakeValue", "fakeAdditionalClause"));
+		assertEquals("UPDATE "+TEST_TABLE+" SET TINT='fakeValue' WHERE TINT!='fakeValue' AND TKEY=?", listener.createUpdateStatusQuery("fakeValue", null));
+
+	}
+
+	public void testGetMessageCount(String status, ProcessState state, int expectedCount) throws Exception {
+		listener.configure();
+		listener.open();
+
+		JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO "+TEST_TABLE+" (TKEY,TINT,TVARCHAR) VALUES (10,"+status+",'A')", null);
+
+		JdbcTableMessageBrowser browser = getMessageBrowser(state);
+
+		assertEquals(expectedCount, browser.getMessageCount());
+	}
+
+	@Test
+	public void testGetMessageCount() throws Exception {
+		testGetMessageCount("1",ProcessState.AVAILABLE, 1);
+	}
+
+	@Test
+	public void testGetMessageCountAvailableWithWithTableAliasSelected() throws Exception {
+		listener.setSelectCondition("t.TVARCHAR='A'");
+		testGetMessageCount("1",ProcessState.AVAILABLE, 1);
+	}
+
+	@Test
+	public void testGetMessageCountAvailableWithWithTableAliasUnselected() throws Exception {
+		listener.setSelectCondition("t.TVARCHAR!='A'");
+		testGetMessageCount("1",ProcessState.AVAILABLE, 0);
+	}
+
+	@Test
+	public void testGetMessageCountAvailableWithWithOrClauseUnselected() throws Exception {
+		listener.setSelectCondition("TVARCHAR!='A' OR 1=1");
+		// a record for state done is inserted, so there should be no record in state available.
+		// Missing parentheses would cause the OR to select one
+		testGetMessageCount("2",ProcessState.AVAILABLE, 0);
+	}
+
+	@Test
+	public void testGetMessageCountDoneWithWithTableAliasSelected() throws Exception {
+		listener.setSelectCondition("t.TVARCHAR='A'");
+		testGetMessageCount("2",ProcessState.DONE, 1);
+	}
+
+	@Test
+	public void testGetMessageCountDoneWithWithTableAliasUnselected() throws Exception {
+		listener.setSelectCondition("t.TVARCHAR!='A'");
+		testGetMessageCount("2",ProcessState.DONE, 0);
+	}
+
 	public void testPeekMessage(String status, boolean expectMessage) throws Exception {
 		listener.configure();
 		listener.open();
-		
-		JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO TEMP (TKEY,TINT) VALUES (10,"+status+")", null);
+
+		JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (10,"+status+")", null);
 		boolean actual = listener.hasRawMessageAvailable();
 		assertEquals(expectMessage,actual);
 	}
@@ -124,7 +362,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 	public void testPeekMessageSkipStatusError() throws Exception {
 		testPeekMessage("3",false);
 	}
-	
+
 	@Test
 	public void testPeekMessageSkipOtherStatusvalue() throws Exception {
 		testPeekMessage("4",false);
@@ -142,8 +380,8 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		}
 		listener.configure();
 		listener.open();
-		
-		JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO TEMP (TKEY,TINT) VALUES (10,1)", null);
+
+		JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (10,1)", null);
 		try (Connection connection1 = getConnection()) {
 			connection1.setAutoCommit(false);
 			Object rawMessage1 = listener.getRawMessage(connection1,null);
@@ -152,19 +390,19 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 				connection1.commit();
 			}
 
-			JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO TEMP (TKEY,TINT) VALUES (11,1)", null);
+			JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (11,1)", null);
 			Object rawMessage2 = listener.getRawMessage(null);
 			assertEquals("11",rawMessage2);
-			
+
 		}
 	}
 
 	public void testParallelChangeProcessState(boolean mainThreadFirst) throws Exception {
 		listener.configure();
 		listener.open();
-		
-		JdbcUtil.executeStatement(dbmsSupport,connection, "DELETE FROM TEMP WHERE TKEY=10", null);
-		JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO TEMP (TKEY,TINT) VALUES (10,1)", null);
+
+		JdbcUtil.executeStatement(dbmsSupport,connection, "DELETE FROM "+TEST_TABLE+" WHERE TKEY=10", null);
+		JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (10,1)", null);
 		ChangeProcessStateTester changeProcessStateTester = new ChangeProcessStateTester(() -> getConnection());
 		Object rawMessage1;
 		Semaphore waitBeforeUpdate = new Semaphore();
@@ -207,12 +445,12 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 	public void testParallelChangeProcessStateMainThreadFirst() throws Exception {
 		testParallelChangeProcessState(true);
 	}
-	
+
 	@Test
 	public void testParallelChangeProcessStateMainThreadSecond() throws Exception {
 		testParallelChangeProcessState(false);
 	}
-	
+
 	private class ChangeProcessStateTester extends ConcurrentJdbcActionTester {
 
 		private @Getter int numRowsUpdated=-1;
@@ -221,10 +459,10 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		public ChangeProcessStateTester(ConnectionSupplier connectionSupplier) {
 			super(connectionSupplier);
 		}
-		
+
 		@Override
 		public void initAction(Connection conn) throws Exception {
-			context = new QueryExecutionContext("UPDATE TEMP SET TINT=3 WHERE TINT!=3 AND TKEY=10", QueryType.OTHER, null);
+			context = new QueryExecutionContext("UPDATE "+TEST_TABLE+" SET TINT=3 WHERE TINT!=3 AND TKEY=10", QueryType.OTHER, null);
 			dbmsSupport.convertQuery(context, "Oracle");
 			connection.setAutoCommit(false);
 		}
@@ -251,8 +489,8 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		}
 		listener.configure();
 		listener.open();
-		
-		JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO TEMP (TKEY,TINT) VALUES (10,1)", null);
+
+		JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (10,1)", null);
 		try (Connection connection1 = getConnection()) {
 			connection1.setAutoCommit(false);
 			Object rawMessage1 = listener.getRawMessage(connection1, null);
@@ -262,7 +500,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 			}
 
 			assertFalse("Should not peek message when there is none", listener.hasRawMessageAvailable());
-			
+
 		}
 	}
 	@Test
@@ -272,8 +510,8 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		}
 		listener.configure();
 		listener.open();
-		
-		JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO TEMP (TKEY,TINT) VALUES (10,1)", null);
+
+		JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (10,1)", null);
 		try (Connection connection1 = getConnection()) {
 			connection1.setAutoCommit(false);
 			Object rawMessage1 = listener.getRawMessage(connection1, null);
@@ -282,12 +520,12 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 				connection1.commit();
 			}
 
-			JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO TEMP (TKEY,TINT) VALUES (11,1)", null);
+			JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (11,1)", null);
 			assertTrue("Should peek message when there is one", listener.hasRawMessageAvailable());
-			
+
 		}
 	}
-	
+
 	@Test
 	public void testRollback() throws Exception {
 		if (!dbmsSupport.hasSkipLockedFunctionality()) {
@@ -297,8 +535,8 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		listener.open();
 		boolean useStatusInProcess;
 		Object rawMessage;
-		
-		JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO TEMP (TKEY,TINT) VALUES (10,1)", null);
+
+		JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (10,1)", null);
 		try (Connection connection1 = getConnection()) {
 			connection1.setAutoCommit(false);
 			rawMessage = listener.getRawMessage(connection1,null);
@@ -313,7 +551,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		if (useStatusInProcess) {
 			listener.changeProcessState(connection, rawMessage, ProcessState.AVAILABLE, "test");
 		}
-		String status = JdbcUtil.executeStringQuery(connection, "SELECT TINT FROM TEMP WHERE TKEY=10");
+		String status = JdbcUtil.executeStringQuery(connection, "SELECT TINT FROM "+TEST_TABLE+" WHERE TKEY=10");
 		assertEquals("status should be returned to available, to be able to try again", "1", status);
 	}
 
@@ -326,10 +564,10 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 			return false;
 		}
 		assertEquals("10", key);
-		JdbcUtil.executeStatement(dbmsSupport,connection, "UPDATE TEMP SET TINT=4 WHERE TKEY=10", null);
+		JdbcUtil.executeStatement(dbmsSupport,connection, "UPDATE "+TEST_TABLE+" SET TINT=4 WHERE TKEY=10", null);
 		return true;
 	}
-	
+
 	/*
 	 * if two getMessage attempts run in parallel, they should:
 	 * - not both get the message
@@ -340,27 +578,27 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		listener.setStatusValueInProcess("4");
 		listener.configure();
 		listener.open();
-		
+
 		boolean useUpdateRow=false;
-		
+
 		boolean primaryRead = false;
 		boolean secondaryRead = false;
-		
-		JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO TEMP (TKEY,TINT) VALUES (10,1)", null);
-		
+
+		JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (10,1)", null);
+
 		try (Connection connection = getConnection()) {
 			connection.setAutoCommit(false);
-			
+
 			if (checkpoint==1) secondaryRead = getMessageInParallel();
-			
-			String query = dbmsSupport.prepareQueryTextForWorkQueueReading(1, "SELECT TKEY,TINT FROM TEMP WHERE TINT='1'");
+
+			String query = dbmsSupport.prepareQueryTextForWorkQueueReading(1, "SELECT TKEY,TINT FROM "+TEST_TABLE+" WHERE TINT='1'");
 			log.debug("prepare query ["+query+"]");
 			try (PreparedStatement stmt = connection.prepareStatement(query, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
 
 				if (checkpoint==2) secondaryRead = getMessageInParallel();
 
 				try (ResultSet rs = stmt.executeQuery()) {
-					
+
 					if (checkpoint==3) secondaryRead = getMessageInParallel();
 
 					if (rs.next()) {
@@ -373,7 +611,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 							rs.updateRow();
 						} else {
 							int key = rs.getInt(1);
-							try (PreparedStatement stmt2 = connection.prepareStatement("UPDATE TEMP SET TINT='4' WHERE TKEY=?")) {
+							try (PreparedStatement stmt2 = connection.prepareStatement("UPDATE "+TEST_TABLE+" SET TINT='4' WHERE TKEY=?")) {
 								stmt2.setInt(1, key);
 								if (checkpoint==5) secondaryRead = getMessageInParallel();
 								stmt2.execute();
@@ -392,12 +630,12 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		assertFalse("At most one attempt should have passed",primaryRead && secondaryRead);
 		assertTrue("At least one attempt should have passed",primaryRead || secondaryRead);
 	}
-	
+
 	@Test
 	public void testForRaceConditionHandlingOnParallelGet1() throws Exception {
 		testForRaceConditionHandlingOnParallelGet(1);
 	}
-	
+
 	@Test
 	public void testForRaceConditionHandlingOnParallelGet2() throws Exception {
 		testForRaceConditionHandlingOnParallelGet(2);

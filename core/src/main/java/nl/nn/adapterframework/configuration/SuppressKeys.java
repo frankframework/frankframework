@@ -33,7 +33,8 @@ public enum SuppressKeys {
 	RESULT_SET_HOLDABILITY("warnings.suppress.resultSetHoldability", true),
 	CONFIGURATION_VALIDATION("warnings.suppress.configurations.validation", false), 
 	FLOW_GENERATION_ERROR("warnings.suppress.flow.generation", true), 
-	MULTIPASSWORD_KEYSTORE_SUPPRESS_KEY("warnings.suppress.multiPasswordKeystore", true);
+	MULTIPASSWORD_KEYSTORE_SUPPRESS_KEY("warnings.suppress.multiPasswordKeystore", true),
+	XSLT_STREAMING_SUPRESS_KEY("warnings.suppress.xslt.streaming", true);
 
 	private @Getter String key;
 	private @Getter boolean allowGlobalSuppression = false;

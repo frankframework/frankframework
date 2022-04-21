@@ -182,10 +182,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.setVerifyHostname(false);
 			sender.setMtomEnabled(true);
 	
-			Parameter param = new Parameter();
-			param.setName("file");
-			param.setValue("<xml>I just sent some text! :)</xml>");
-			sender.addParameter(param);
+			sender.addParameter(new Parameter("file", "<xml>I just sent some text! :)</xml>"));
 	
 			sender.configure();
 			sender.open();

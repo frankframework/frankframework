@@ -936,7 +936,7 @@
         <soap:binding style="document" transport="http://www.tibco.com/namespaces/ws/2004/soap/binding/JMS"/>
         <jms:binding messageFormat="Text"/>
         <wsdl:operation name="GetPartyBasicDataBanking_1">
-            <soap:operation style="document" soapAction="GetPartyBasicDataBanking_1"/>
+            <soap:operation style="document"/>
             <wsdl:input>
                 <soap:body use="literal" parts="request"/>
                 <soap:header use="literal" message="tns:MessageHeader" part="header"/>

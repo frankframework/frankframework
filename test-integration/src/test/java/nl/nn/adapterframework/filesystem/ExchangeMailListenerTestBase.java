@@ -1,10 +1,14 @@
 package nl.nn.adapterframework.filesystem;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -13,11 +17,17 @@ import org.junit.Test;
 
 import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IMessageBrowser;
+import nl.nn.adapterframework.core.IMessageBrowsingIterator;
+import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.receivers.ExchangeMailListener;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.PropertyUtil;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.MessageBrowsingFilter;
 
 public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTestBase {
 	private String PROPERTY_FILE = "ExchangeMailListener.properties";
@@ -75,7 +85,6 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		super.setUp();
 		mailListener=createExchangeMailListener();
 		mailListener.setMailAddress(mailaddress);
-		mailListener.setAccessToken(accessToken);
 		mailListener.setUsername(username);
 		mailListener.setPassword(password);
 		mailListener.setUrl(baseurl);
@@ -89,13 +98,13 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		}
 		super.tearDown();
 	}
-	
-	
+
+
 	public void configureAndOpen(String folder, String filter) throws ConfigurationException, ListenerException {
 		if (folder!=null) mailListener.setInputFolder(folder);
 		if (filter!=null) mailListener.setFilter(filter);
 		mailListener.configure();
-		mailListener.open();	
+		mailListener.open();
 	}
 
 	protected abstract ExchangeMailListener createExchangeMailListener();
@@ -120,17 +129,17 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 			throw new FileSystemException(e);
 		}
 	}
-	
+
 //	public boolean folderContainsMessages(String subfolder) throws FileSystemException {
 //		Iterator<Item> fileIt = fileSystem.listFiles(subfolder);
 //		return fileIt!=null && fileIt.hasNext();
 //	}
-//	
+//
 //	public void displayItemSummary(Item item) throws FileSystemException, IOException {
 //		Map<String,Object> properties=fileSystem.getAdditionalFileProperties(item);
 //		System.out.println("from ["+properties.get("from")+"] subject ["+properties.get("subject")+"]");
 //	}
-//	
+//
 //	public void displayItem(Item item) throws FileSystemException, IOException {
 //		System.out.println("item ["+ToStringBuilder.reflectionToString(item,ToStringStyle.MULTI_LINE_STYLE)+"]");
 //		String contents = Misc.streamToString(fileSystem.readFile(item));
@@ -144,16 +153,16 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 //				Object value=entry.getValue();
 //				if (value instanceof Map) {
 //					for(Entry<String,Object> subentry:((Map<String,Object>)value).entrySet()) {
-//						System.out.println("property Map ["+entry.getKey()+"] ["+subentry.getKey()+"]=["+subentry.getValue()+"]");				
+//						System.out.println("property Map ["+entry.getKey()+"] ["+subentry.getKey()+"]=["+subentry.getValue()+"]");
 //					}
 //				} else {
-//					System.out.println("property ["+entry.getValue().getClass().getName()+"] ["+entry.getKey()+"]=["+entry.getValue()+"]");				
+//					System.out.println("property ["+entry.getValue().getClass().getName()+"] ["+entry.getKey()+"]=["+entry.getValue()+"]");
 //				}
 //			}
 //		}
-//		
+//
 //	}
-//	
+//
 //	public void displayAttachment(Attachment attachment) throws Exception {
 //		Map<String,Object> properties=fileSystem.getAdditionalAttachmentProperties(attachment);
 //		System.out.println("-- attachment ("+attachment.getClass().getName()+") --:");
@@ -165,10 +174,10 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 //				Object value=entry.getValue();
 //				if (value instanceof Map) {
 //					for(Entry<String,Object> subentry:((Map<String,Object>)value).entrySet()) {
-//						System.out.println("property Map ["+entry.getKey()+"] ["+subentry.getKey()+"]=["+subentry.getValue()+"]");				
+//						System.out.println("property Map ["+entry.getKey()+"] ["+subentry.getKey()+"]=["+subentry.getValue()+"]");
 //					}
 //				} else {
-//					System.out.println("property ["+(entry.getValue()==null?"null":entry.getValue().getClass().getName())+"] ["+entry.getKey()+"]=["+entry.getValue()+"]");				
+//					System.out.println("property ["+(entry.getValue()==null?"null":entry.getValue().getClass().getName())+"] ["+entry.getKey()+"]=["+entry.getValue()+"]");
 //				}
 //			}
 //		}
@@ -178,13 +187,13 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 //			itemAttachment.load();
 //			Item attachmentItem = itemAttachment.getItem();
 //			System.out.println("ItemAttachment.item ["+ToStringBuilder.reflectionToString(attachmentItem,ToStringStyle.MULTI_LINE_STYLE)+"]");
-//			
+//
 //			ExtendedPropertyCollection extendedProperties =attachmentItem.getExtendedProperties();
 //			for (Iterator<ExtendedProperty> it=extendedProperties.iterator();it.hasNext();) {
 //				ExtendedProperty ep = it.next();
 //				System.out.println("ExtendedProperty ["+ToStringBuilder.reflectionToString(ep,ToStringStyle.MULTI_LINE_STYLE)+"]");
 //			}
-//			
+//
 ////			InternetMessageHeaderCollection internetMessageHeaders =attachmentItem.getInternetMessageHeaders();
 ////			for (Iterator<InternetMessageHeader> it=internetMessageHeaders.iterator();it.hasNext();) {
 ////				InternetMessageHeader imh = it.next();
@@ -194,14 +203,14 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 //			String body =MessageBody.getStringFromMessageBody(attachmentItem.getBody());
 //			System.out.println("ItemAttachment.item.body ["+body+"]");
 //			System.out.println("attachmentItem.getHasAttachments ["+attachmentItem.getHasAttachments()+"]");
-//			
+//
 //			AttachmentCollection attachments = attachmentItem.getAttachments();
 //			if (attachments!=null) {
 //				for (Iterator<Attachment> it=attachments.iterator(); it.hasNext();) {
 //					Attachment subAttachment = it.next();
 //					displayAttachment(subAttachment);
 //				}
-//					
+//
 //			}
 //		}
 //		if (attachment instanceof FileAttachment) {
@@ -211,13 +220,13 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 //			System.out.println("fileAttachment.name ["+fileAttachment.getName()+"]");
 //			System.out.println("fileAttachment.filename ["+fileAttachment.getFileName()+"]");
 //			//System.out.println("fileAttachment ["+ToStringBuilder.reflectionToString(fileAttachment,ToStringStyle.MULTI_LINE_STYLE)+"]");
-//			
+//
 //			System.out.println(new String(fileAttachment.getContent(),"UTF-8"));
 //		}
 //
 ////		System.out.println(Misc.streamToString(fileSystem.readAttachment(attachment)));
 ////		System.out.println(ToStringBuilder.reflectionToString(attachment));
-//		
+//
 //	}
 
 //	@Test
@@ -234,7 +243,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 //			displayItemSummary(item);
 //		}
 //	}
-//	
+//
 //	public Item findMessageBySubject(String folder, String targetSubject) throws FileSystemException, IOException {
 //		log.debug("searching in folder ["+folder+"] for message with subject ["+targetSubject+"]");
 //		Iterator<Item> fileIt = fileSystem.listFiles(folder);
@@ -268,7 +277,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		int    originalAttachmentCount=1;
 
 		String mainRecipient=originalRecipient;
-		String mainSubject="Onbestelbaar: "+originalSubject;	
+		String mainSubject="Onbestelbaar: "+originalSubject;
 		String expectedAttachmentName="onbestelbaar met attachments";
 
 		mailListener.setFilter("NDR");
@@ -364,7 +373,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		String originalAttachmentName="Invoice_1800000078.pdf";
 
 		String mainRecipient=originalRecipient;
-		String mainSubject="Onbestelbaar: "+originalSubject;	
+		String mainSubject="Onbestelbaar: "+originalSubject;
 		String expectedAttachmentName="Undelivered Message";
 
 		mailListener.setFilter("NDR");
@@ -469,7 +478,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 //		String targetFolder="Bounce";
 //		String targetSubject="Onbestelbaar: onbestelbaar met attachments";
 //		configureAndOpen(basefolder2,"NDR");
-//		
+//
 //		Item item = findMessageBySubject(targetFolder,targetSubject);
 //		assertNotNull(item);
 //		displayItemSummary(item);
@@ -477,7 +486,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 //		Iterator<Attachment> attachments = fileSystem.listAttachments(item);
 //		assertNotNull(attachments);
 //		assertTrue("Expected message to contain attachment",attachments.hasNext());
-//		
+//
 //		while(attachments.hasNext()) {
 //			Attachment a = attachments.next();
 //			displayAttachment(a);
@@ -490,23 +499,23 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 //		String filename = "readFile";
 //		String contents = "Tekst om te lezen";
 //		configureAndOpen(basefolder2,null);
-//		
+//
 ////		if (!folderContainsMessages(subfolder)) {
 ////			createFile(null, filename, contents);
 ////			waitForActionToFinish();
 ////		}
-//		
+//
 //		Iterator<Item> fileIt = fileSystem.listFiles(subfolder);
 //		assertNotNull(fileIt);
 //		assertTrue(fileIt.hasNext());
-//		
+//
 //		Item file = fileIt.next();
 //		displayItem(file);
-//		
+//
 //		Iterator<Attachment> attachments = fileSystem.listAttachments(file);
 //		assertNotNull(attachments);
 //		assertTrue("Expected message to contain attachment",attachments.hasNext());
-//		
+//
 //		Attachment a = attachments.next();
 //
 //		assertNotNull(a);
@@ -514,13 +523,13 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 ////		assertEquals("text/plain",fileSystem.getAttachmentContentType(a));
 //		//assertEquals("x",fileSystem.getAttachmentFileName(a));
 ////		assertEquals(320,fileSystem.getAttachmentSize(a));
-//		
+//
 //		displayAttachment(a);
-//		
+//
 //		String attachmentContents=Misc.streamToString(fileSystem.readAttachment(a));
 //		System.out.println("attachmentContents ["+attachmentContents+"]");
-//		
-//		
+//
+//
 //	}
 
 
@@ -556,5 +565,91 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 //		fileSystemTestRandomFileShouldNotExist(nonExistingFileName);
 //	}
 
+	@Test
+	public void testMessageBrowserOpen() throws Exception {
+		mailListener.setProcessedFolder("Done");
+		mailListener.configure();
+		mailListener.open();
+
+		IMessageBrowser<EmailMessage> browser = mailListener.getMessageBrowser(ProcessState.DONE);
+		assertNotNull(browser);
+
+		int messageCount = browser.getMessageCount();
+		assertThat(messageCount, greaterThanOrEqualTo(0));
+
+		List<String> itemIds = new ArrayList<>();
+		try (IMessageBrowsingIterator iterator = browser.getIterator()) {
+
+			while (iterator.hasNext()) {
+				try (IMessageBrowsingIteratorItem item = iterator.next()) {
+
+					String id = item.getId();
+					log.debug("ID ["+id+"]");
+					itemIds.add(id);
+				}
+			}
+		}
+		for (String id:itemIds) {
+			EmailMessage email = browser.browseMessage(id);
+			Message message = mailListener.getFileSystem().readFile(email, null);
+			log.debug("Id: "+id+"\nEmail: "+message.asString());
+		}
+		assertEquals(itemIds.size(), messageCount);
+	}
+
+	@Test // this happens when the receiver/listener is closed, but its storages are browsed
+	public void testMessageBrowserClosed() throws Exception {
+		mailListener.setProcessedFolder("Done");
+		mailListener.configure();
+		mailListener.open();
+		mailListener.close();
+
+		IMessageBrowser<EmailMessage> browser = mailListener.getMessageBrowser(ProcessState.DONE);
+		assertNotNull(browser);
+
+		assertEquals(-1, browser.getMessageCount());
+
+		List<String> itemIds = new ArrayList<>();
+		try (IMessageBrowsingIterator iterator = browser.getIterator()) {
+
+			while (iterator.hasNext()) {
+				try (IMessageBrowsingIteratorItem item = iterator.next()) {
+
+					String id = item.getId();
+					log.debug("ID ["+id+"]");
+					itemIds.add(id);
+				}
+			}
+		}
+		for (String id:itemIds) {
+			EmailMessage email = browser.browseMessage(id);
+			Message message = mailListener.getFileSystem().readFile(email, null);
+			log.debug("Id: "+id+"\nEmail: "+message.asString());
+		}
+	}
+
+	@Test
+	public void testMessageBrowserFilterTest() throws Exception {
+		mailListener.setProcessedFolder("Done");
+		mailListener.configure();
+		mailListener.open();
+
+		IMessageBrowser<EmailMessage> browser = mailListener.getMessageBrowser(ProcessState.DONE);
+		assertNotNull(browser);
+
+		MessageBrowsingFilter filter = new MessageBrowsingFilter();
+		filter.setMessageMask("aaa", browser, mailListener);
+
+		try (IMessageBrowsingIterator iterator = browser.getIterator()) {
+
+			while (iterator.hasNext()) {
+				try (IMessageBrowsingIteratorItem item = iterator.next()) {
+
+					boolean filterResult = filter.matchAny(item);
+					log.debug("ID ["+item.getId()+"] match ["+filterResult+"]");
+				}
+			}
+		}
+	}
 
 }

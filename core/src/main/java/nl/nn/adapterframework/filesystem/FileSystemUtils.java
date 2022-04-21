@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2021 WeAreFrank!
+   Copyright 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.apache.logging.log4j.Logger;
 
 import lombok.Lombok;
 import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
+import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -117,6 +118,17 @@ public class FileSystemUtils {
 		return newFile;
 	}
 
+	public static <F> MessageContext getContext(IBasicFileSystem<F> fileSystem, F file) throws FileSystemException {
+		return  new MessageContext(fileSystem.getAdditionalFileProperties(file))
+					.withName(fileSystem.getName(file))
+					.withLocation(fileSystem.getCanonicalName(file))
+					.withModificationTime(fileSystem.getModificationTime(file))
+					.withSize(fileSystem.getFileSize(file));
+	}
+
+	public static <F> MessageContext getContext(IBasicFileSystem<F> fileSystem, F file, String charset) throws FileSystemException {
+		return getContext(fileSystem, file).withCharset(charset);
+	}
 	
 	public static <F> void rolloverByNumber(IWritableFileSystem<F> fileSystem, F file, int numberOfBackups) throws FileSystemException {
 		if (!fileSystem.exists(file)) {
@@ -253,7 +265,7 @@ public class FileSystemUtils {
 		String srcFilename = fileSystem.getCanonicalName(file);
 		F tgtFilename = fileSystem.toFile(srcFilename+"."+DateUtils.format(lastModified, DateUtils.shortIsoFormat));
 		fileSystem.renameFile(file, tgtFilename);
-		
+
 		if (log.isDebugEnabled()) log.debug("Deleting files in folder ["+folder+"] that have a name starting with ["+srcFilename+"] and are older than ["+rotateDays+"] days");
 		long threshold = sysTime.getTime()- rotateDays*millisPerDay;
 		try(DirectoryStream<F> ds = fileSystem.listFiles(folder)) {

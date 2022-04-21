@@ -20,6 +20,7 @@ import nl.nn.adapterframework.pipes.SenderPipe;
 import nl.nn.adapterframework.senders.ParallelSenders;
 import nl.nn.adapterframework.senders.SenderSeries;
 import nl.nn.adapterframework.senders.XsltSender;
+import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
@@ -60,26 +61,17 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 			//sender.setSessionKey("out"+i);
 			sender.setOmitXmlDeclaration(true);
 			
-			Parameter param1 = new Parameter();
-			param1.setName("header");
-			param1.setValue("header"+i);			
-			sender.addParameter(param1);
+			sender.addParameter(new Parameter("header", "header"+i));
 			
-			Parameter param2 = new Parameter();
-			param2.setName("sessionKey");
-			param2.setSessionKey("sessionKey"+i);
 			session.put("sessionKey"+i,"sessionKeyValue"+i);
-			sender.addParameter(param2);
+			sender.addParameter(ParameterBuilder.create().withName("sessionKey").withSessionKey("sessionKey"+i));
 
 			autowireByType(sender);
 			psenders.registerSender(sender);
 			xsltSenders.add(sender);
 		}
-		Parameter param = new Parameter();
-		param.setName("sessionKeyGlobal");
-		param.setSessionKey("sessionKeyGlobal");
 		session.put("sessionKeyGlobal","sessionKeyGlobalValue");
-		psenders.addParameter(param);
+		psenders.addParameter(ParameterBuilder.create().withName("sessionKeyGlobal").withSessionKey("sessionKeyGlobal"));
 		pipe.setSender(psenders);
 		return pipe;
 	}

@@ -15,6 +15,7 @@
  */
 package nl.nn.adapterframework.pipes;
 
+import java.io.IOException;
 import java.net.URL;
 
 import org.apache.commons.lang3.StringUtils;
@@ -168,7 +169,7 @@ public class RhinoPipe extends FixedForwardPipe {
 			Function fct = (Function) scope.get(jsfunctionName, scope);
 			// Object result = fct.call(cx, scope, scope, new
 			// Object[]{jsfunctionArguments});
-			Object result = fct.call(cx, scope, scope, new Object[] { message.asObject() });
+			Object result = fct.call(cx, scope, scope, new Object[] { message.asString() });
 
 			jsResult = (String) Context.jsToJava(result, String.class);
 			if (isDebug() && log.isDebugEnabled()) {
@@ -178,6 +179,8 @@ public class RhinoPipe extends FixedForwardPipe {
 
 		} catch (EcmaError ex) {
 			throw new PipeRunException(this, "org.mozilla.javascript.EcmaError -> ", ex);
+		} catch (IOException ex) {
+			throw new PipeRunException(this, "unable to convert input message to string", ex);
 		} finally {
 			Context.exit();
 		}

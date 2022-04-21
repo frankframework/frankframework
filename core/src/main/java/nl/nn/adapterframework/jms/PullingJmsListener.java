@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.util.RunStateEnquirer;
 import nl.nn.adapterframework.util.RunStateEnquiring;
 import nl.nn.adapterframework.util.RunState;
@@ -59,7 +60,7 @@ import nl.nn.adapterframework.util.RunState;
  *<p>
  * Setting {@link #setAcknowledgeMode(String) listener.acknowledgeMode} to "auto" means that messages are allways acknowledged (removed from
  * the queue, regardless of what the status of the Adapter is. "client" means that the message will only be removed from the queue
- * when the state of the Adapter equals the defined state for committing (specified by {@link #setCommitOnState(String) listener.commitOnState}).
+ * when the state of the Adapter equals the success state.
  * The "dups" mode instructs the session to lazily acknowledge the delivery of the messages. This is likely to result in the
  * delivery of duplicate messages if JMS fails. It should be used by consumers who are tolerant in processing duplicate messages. 
  * In cases where the client is tolerant of duplicate messages, some enhancement in performance can be achieved using this mode, 
@@ -241,8 +242,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 					if (session == null) {
 						log.warn("Listener ["+getName()+"] message ["+ (String)threadContext.get(PipeLineSession.originalMessageIdKey) +"] has no session to commit or rollback");
 					} else {
-						String successState = getCommitOnState();
-						if (successState!=null && successState.equalsIgnoreCase(plr.getState())) {
+						if (plr.getState()==ExitState.SUCCESS) {
 							session.commit();
 						} else {
 							log.warn("Listener ["+getName()+"] message ["+ (String)threadContext.get(PipeLineSession.originalMessageIdKey) +"] not committed nor rolled back either");

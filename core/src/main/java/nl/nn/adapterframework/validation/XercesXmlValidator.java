@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2017 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013-2017 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -151,7 +151,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		if (schemasProvider == null) throw new IllegalStateException("No schema provider");
 		String schemasId = schemasProvider.getSchemasId();
 		if (schemasId != null) {
-			PreparseResult preparseResult = preparse(schemasId, schemasProvider.getSchemas());
+			PreparseResult preparseResult = preparse();
 			if (cache == null || isIgnoreCaching()) {
 				this.preparseResult = preparseResult;
 			} else {
@@ -171,10 +171,15 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	private SymbolTable getSymbolTable() {
 		if (sharedSymbolTable) {
 			return getSymbolTableInstance();
-		} 
+		}
 		return new SymbolTable(BIG_PRIME);
 	}
-	
+
+	private PreparseResult preparse() throws ConfigurationException {
+		return preparse(schemasProvider.getSchemasId(), schemasProvider.getSchemas());
+	}
+
+
 	private synchronized PreparseResult preparse(String schemasId, List<Schema> schemas) throws ConfigurationException {
 		SymbolTable symbolTable = getSymbolTable();
 		XMLGrammarPool grammarPool = new XMLGrammarPoolImpl();
@@ -192,7 +197,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		} catch (NoSuchFieldError e) {
 			String msg="Cannot set property ["+XML_SCHEMA_VERSION_PROPERTY+"], requested xmlSchemaVersion ["+getXmlSchemaVersion()+"] xercesVersion ["+org.apache.xerces.impl.Version.getVersion()+"]";
 			if (isXmlSchema1_0()) {
-				log.warn(msg+", assuming XML-Schema version 1.0 will be supported", e);
+				log.warn(msg+", assuming XML Schema version 1.0 will be supported", e);
 			} else {
 				throw new ConfigurationException(msg, e);
 			}
@@ -200,9 +205,10 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		MyErrorHandler errorHandler = new MyErrorHandler(this);
 		errorHandler.warn = warn;
 		preparser.setErrorHandler(errorHandler);
+		Set<Grammar> namespaceRegisteredGrammars = new HashSet<>();
 		for (Schema schema : schemas) {
 			Grammar grammar = preparse(preparser, schemasId, schema);
-			registerNamespaces(grammar, namespaceSet);
+			registerNamespaces(grammar, namespaceSet, namespaceRegisteredGrammars);
 		}
 		grammarPool.lockPool();
 		PreparseResult preparseResult = new PreparseResult();
@@ -213,23 +219,25 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		return preparseResult;
 	}
 
-	private static Grammar preparse(XMLGrammarPreparser preparser,
-			String schemasId, Schema schema) throws ConfigurationException {
+	private static Grammar preparse(XMLGrammarPreparser preparser, String schemasId, Schema schema) throws ConfigurationException {
 		try {
-			return preparser.preparseGrammar(XMLGrammarDescription.XML_SCHEMA, stringToXMLInputSource(schema));
+			return preparser.preparseGrammar(XMLGrammarDescription.XML_SCHEMA, schemaToXMLInputSource(schema));
 		} catch (IOException e) {
 			throw new ConfigurationException("cannot compile schema's [" + schemasId + "]", e);
 		}
 	}
 
-	private static void registerNamespaces(Grammar grammar, Set<String> namespaces) {
+	private static void registerNamespaces(Grammar grammar, Set<String> namespaces, Set<Grammar> namespaceRegisteredGrammars) {
+		namespaceRegisteredGrammars.add(grammar);
 		namespaces.add(grammar.getGrammarDescription().getNamespace());
 		if (grammar instanceof SchemaGrammar) {
 			List<?> imported = ((SchemaGrammar)grammar).getImportedGrammars();
 			if (imported != null) {
 				for (Object g : imported) {
 					Grammar gr = (Grammar)g;
-					registerNamespaces(gr, namespaces);
+					if (!namespaceRegisteredGrammars.contains(gr)) {
+						registerNamespaces(gr, namespaces, namespaceRegisteredGrammars);
+					}
 				}
 			}
 		}
@@ -243,14 +251,11 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 			preparseResult = preparse(schemasId, schemasProvider.getSchemas(session));
 		} else {
 			if (cache == null || isIgnoreCaching()) {
-				preparseResult = this.preparseResult;
-				if (preparseResult == null) {
-					preparseResult = this.preparseResult;
-				}
+				preparseResult = this.preparseResult; // this.preparseResult is set at start();
 			} else {
 				preparseResult = cache.get(preparseResultId);
 				if (preparseResult == null) {
-					preparseResult = preparse(schemasId, schemasProvider.getSchemas());
+					preparseResult = preparse();
 					cache.put(preparseResultId, preparseResult);
 				}
 			}
@@ -269,7 +274,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		result.init(schemasProvider, preparseResult.getSchemasId(), preparseResult.getNamespaceSet(), rootValidations, invalidRootNamespaces, ignoreUnknownNamespaces);
 		return result;
 	}
-	
+
 	@Override
 	public ValidatorHandler getValidatorHandler(PipeLineSession session, ValidationContext context) throws ConfigurationException {
 		ValidatorHandler validatorHandler;
@@ -336,7 +341,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	}
 
 
-	private static XMLInputSource stringToXMLInputSource(Schema schema) throws IOException, ConfigurationException {
+	private static XMLInputSource schemaToXMLInputSource(Schema schema) throws IOException, ConfigurationException {
 		// SystemId is needed in case the schema has an import. Maybe we should
 		// already resolve this at the SchemaProvider side (except when
 		// noNamespaceSchemaLocation is being used this is already done in
@@ -358,7 +363,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 class XercesValidationContext extends ValidationContext {
 
 	private PreparseResult preparseResult;
-	
+
 	XercesValidationContext(PreparseResult preparseResult) {
 		super();
 		this.preparseResult=preparseResult;
@@ -386,7 +391,7 @@ class XercesValidationContext extends ValidationContext {
 	public List<XSModel> getXsModels() {
 		return preparseResult.getXsModels();
 	}
-	
+
 }
 
 class PreparseResult {
@@ -437,7 +442,7 @@ class PreparseResult {
 		}
 		return xsModels;
 	}
-	
+
 	public void setXsModels(List<XSModel> xsModels) {
 		this.xsModels = xsModels;
 	}

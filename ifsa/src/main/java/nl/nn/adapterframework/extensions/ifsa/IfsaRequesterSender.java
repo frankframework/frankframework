@@ -229,11 +229,11 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 			IFSAQueue queue;
 			if (params != null && params.size() > 0) {
 				// Use first param as serviceId
-				String serviceId = (String)params.get("serviceId");
+				String serviceId = params.get("serviceId");
 				if (serviceId == null) {
 					serviceId = getServiceId();
 				}
-				String occurrence = (String)params.get("occurrence");
+				String occurrence = params.get("occurrence");
 				if (occurrence != null) {
 					int i = serviceId.indexOf('/', serviceId.indexOf('/', serviceId.indexOf('/', serviceId.indexOf('/') + 1) + 1) + 1);
 					int j = serviceId.indexOf('/', i + 1);
@@ -356,7 +356,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 	}
 
 	@Override
-	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
+	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
 		if (businessProcessTimes!=null) {
 			hski.handleStatisticsKeeper(data,businessProcessTimes);
 			businessProcessTimes.performAction(action);

@@ -34,7 +34,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.IteratingPipe;
-import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -70,16 +69,16 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 				throw new ConfigurationException("attribute contentsKey must be specified");
 			}
 	}
-	
+
 	private class ZipStreamIterator implements IDataIterator<String> {
-		
-		ZipInputStream source; 
+
+		ZipInputStream source;
 		PipeLineSession session;
 
 		boolean nextRead=false;
 		boolean currentOpen=false;
 		ZipEntry current;
-		
+
 		ZipStreamIterator(ZipInputStream source, PipeLineSession session) {
 			super();
 			this.source=source;
@@ -122,11 +121,11 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 				if (isStreamingContents()) {
 					if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"storing stream to contents of zip entries under session key ["+getContentsSessionKey()+"]");
 					session.put(getContentsSessionKey(),StreamUtil.dontClose(source)); // do this each time, to allow reuse of the session key when an item is optionally encoded
-				} else { 
+				} else {
 					if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"storing contents of zip entry under session key ["+getContentsSessionKey()+"]");
 					String content;
 					if (isSkipBOM()) {
-						byte contentBytes[] = StreamUtil.streamToByteArray(StreamUtil.dontClose(source), true);
+						byte[] contentBytes = StreamUtil.streamToByteArray(StreamUtil.dontClose(source), true);
 						content = Misc.byteArrayToString(contentBytes, null, false);
 					} else {
 						content = StreamUtil.streamToString(StreamUtil.dontClose(source),null,getCharset());
@@ -151,7 +150,7 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 			}
 		}
 	}
-	
+
 	protected ZipInputStream getZipInputStream(Message input, PipeLineSession session, Map<String,Object> threadContext) throws SenderException {
 		if (input==null) {
 			throw new SenderException("input is null. Must supply String (Filename), File or InputStream as input");
@@ -174,10 +173,10 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 		if (!(source instanceof BufferedInputStream)) {
 			source=new BufferedInputStream(source);
 		}
-		ZipInputStream zipstream=new ZipInputStream(source);
-		return zipstream;
+
+		return new ZipInputStream(source);
 	}
-	
+
 	@Override
 	protected IDataIterator<String> getIterator(Message input, PipeLineSession session, Map<String,Object> threadContext) throws SenderException {
 		ZipInputStream source=getZipInputStream(input, session, threadContext);

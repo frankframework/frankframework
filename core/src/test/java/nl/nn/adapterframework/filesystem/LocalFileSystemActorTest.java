@@ -57,10 +57,7 @@ public class LocalFileSystemActorTest extends FileSystemActorTest<Path, LocalFil
 
 		actor.setAction(FileSystemAction.MOVE);
 		ParameterList params = new ParameterList();
-		Parameter p = new Parameter();
-		p.setName("destination");
-		p.setValue(srcFolder+"/"+destFolder);
-		params.add(p);
+		params.add(new Parameter("destination", srcFolder+"/"+destFolder));
 		if (setCreateFolderAttribute) {
 			actor.setCreateFolder(true);
 		}

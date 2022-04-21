@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,18 +16,20 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.Reader;
 
 import org.apache.commons.lang3.StringUtils;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.ext.LexicalHandler;
+import org.xml.sax.helpers.AttributesImpl;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.EncapsulatingReader;
+import nl.nn.adapterframework.stream.MessageOutputStream;
+import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -36,110 +38,104 @@ import nl.nn.adapterframework.util.XmlUtils;
  * 
  * @author J. Dekker
  */
-public class Text2XmlPipe extends FixedForwardPipe {
-	private String xmlTag;
-	private boolean includeXmlDeclaration = true;
-	private boolean splitLines = false;
-	private boolean replaceNonXmlChars = true;
-	private boolean useCdataSection = true;
-	
+public class Text2XmlPipe extends StreamingPipe {
+	private @Getter String xmlTag;
+	private @Getter boolean includeXmlDeclaration = true;
+	private @Getter boolean splitLines = false;
+	private @Getter boolean replaceNonXmlChars = true;
+	private @Getter boolean useCdataSection = true;
+
+	protected static final String SPLITTED_LINE_TAG="line";
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 
 		if (StringUtils.isEmpty(getXmlTag())) {
-			throw new ConfigurationException("You have not defined xmlTag");
+			throw new ConfigurationException("Attribute [xmlTag] must be specified");
 		}
 	}
-	
-	
+
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		String result;
-		try {
-			if (isSplitLines() && message != null) {
-				Reader reader = message.asReader();
-				if (replaceNonXmlChars) {
-					reader = new EncapsulatingReader(reader, "", "", true);
+		if(Message.isNull(message)) {
+			return new PipeRunResult(getSuccessForward(), new Message("<"+getXmlTag()+" nil=\"true\" />"));
+		} else if(message.isEmpty() && isUseCdataSection()) {
+			return new PipeRunResult(getSuccessForward(), new Message("<"+getXmlTag()+"><![CDATA[]]></"+getXmlTag()+">"));
+		}
+		try (MessageOutputStream target = getTargetStream(session)) {
+			ContentHandler handler = target.asContentHandler();
+			try {
+				handler.startDocument();
+				handler.startElement("", getXmlTag(), getXmlTag(), new AttributesImpl());
+				try (BufferedReader reader = new BufferedReader(message.asReader())) {
+					String line;
+					boolean lineWritten=false;
+					while ((line = reader.readLine()) != null) {
+						if(lineWritten) {
+							handler.characters("\n".toCharArray(), 0, "\n".length());
+						}
+						if (isSplitLines()) {
+							handler.startElement("", SPLITTED_LINE_TAG, SPLITTED_LINE_TAG, new AttributesImpl());
+						}
+						if(isUseCdataSection()) {
+							((LexicalHandler) handler).startCDATA();
+						}
+						line = isReplaceNonXmlChars() ? XmlUtils.encodeCdataString(line) : line;
+						handler.characters(line.toCharArray(), 0, line.length());
+						lineWritten=true;
+						if(isUseCdataSection()) {
+							((LexicalHandler) handler).endCDATA();
+						}
+						if (isSplitLines()) {
+							handler.endElement("", SPLITTED_LINE_TAG, SPLITTED_LINE_TAG);
+						}
+					}
 				}
-				BufferedReader br = new BufferedReader(reader);
-
-				String l;
-				StringBuffer buffer = new StringBuffer();
-
-				while ((l = br.readLine()) != null) {
-					buffer.append("<line>"+addCdataSection(l)+"</line>");
-				}
-					
-				result = buffer.toString();
-				br.close();
-			} else if (replaceNonXmlChars && message != null) {
-				result = addCdataSection(XmlUtils.encodeCdataString(message.asString()));
-			} else {
-				result = addCdataSection((message == null ? null : message.asString()));
+				handler.endElement("", getXmlTag(), getXmlTag());
+			} finally {
+				handler.endDocument();
 			}
-		} catch (IOException e) {
-			throw new PipeRunException(this, "Unexpected exception during splitting", e); 
+			return target.getPipeRunResult();
+		} catch(Exception e) {
+			throw new PipeRunException(this, "Unexpected exception during splitting", e);
 		}
-		
-			
-		String resultString = (isIncludeXmlDeclaration()?"<?xml version=\"1.0\" encoding=\"UTF-8\"?>":"") +
-		"<" + getXmlTag() + ">"+result+"</" + xmlTag + ">";	
-		return new PipeRunResult(getSuccessForward(), resultString);
 	}
 
-	private String addCdataSection(String input) {
-		if (isUseCdataSection()) {
-			return "<![CDATA["+ input +"]]>";
-		} else {
-			return input;
-		}
-	}
-	
-	/**
-	 * Returns the xmltag to encapsulate the text in.
-	 */
-	public String getXmlTag() {
-		return xmlTag;
+	@Override
+	protected boolean canProvideOutputStream() {
+		return false;
 	}
 
 	/**
-	 * Sets the xmltag
+	 * The xml tag to encapsulate the text in
+	 * @ff.mandatory
 	 */
-	@IbisDoc({"the xml tag to encapsulate the text in", ""})
 	public void setXmlTag(String xmlTag) {
 		this.xmlTag = xmlTag;
 	}
 
-	public boolean isIncludeXmlDeclaration() {
-		return includeXmlDeclaration;
-	}
-
-	@IbisDoc({"controls whether a declation is included above the xml text", "true"})
-	public void setIncludeXmlDeclaration(boolean b) {
-		includeXmlDeclaration = b;
-	}
-
-	public boolean isSplitLines() {
-		return splitLines;
-	}
-
-	@IbisDoc({"controls whether the lines of the input are places in separated &lt;line&gt; tags", "false"})
+	/**
+	 * Controls whether the lines of the input are places in separated &lt;line&gt; tags
+	 * @ff.default false
+	 */
 	public void setSplitLines(boolean b) {
 		splitLines = b;
 	}
 
-	@IbisDoc({"replace all non xml chars (not in the <a href=\"http://www.w3.org/tr/2006/rec-xml-20060816/#nt-char\">character range as specified by the xml specification</a>) with the inverted question mark (0x00bf)", "true"})
+	/**
+	 * Replace all non xml chars (not in the <a href=\"http://www.w3.org/tr/2006/rec-xml-20060816/#nt-char\">character range as specified by the xml specification</a>) 
+	 * with the inverted question mark (0x00bf)
+	 * @ff.default true
+	 */
 	public void setReplaceNonXmlChars(boolean b) {
 		replaceNonXmlChars = b;
 	}
 
-	public boolean isUseCdataSection() {
-		return useCdataSection;
-	}
-
-	@IbisDoc({"controls whether the text to encapsulate should be put in a cdata section", "true"})
+	/**
+	 * Controls whether the text to encapsulate should be put in a cdata section
+	 * @ff.default true
+	 */
 	public void setUseCdataSection(boolean b) {
 		useCdataSection = b;
 	}

@@ -405,9 +405,9 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		selectKeyQuery = dbmsSupport.getInsertedAutoIncrementValueQuery(getPrefix()+getSequenceName());
 		selectKeyQueryIsDbmsSupported=StringUtils.isNotEmpty(selectKeyQuery);
 		if (!selectKeyQueryIsDbmsSupported) {
-			selectKeyQuery = "SELECT max("+getKeyField()+") FROM "+getPrefix()+getTableName()+ 
+			selectKeyQuery = "SELECT max("+getKeyField()+")"+getFromClause(false)+ 
 							getWhereClause(getIdField()+"=?"+
-										" AND " +getCorrelationIdField()+"=?"+
+										" AND "+getCorrelationIdField()+"=?"+
 										" AND "+getDateField()+"=?",false);
 		}
 		if (dbmsSupport.mustInsertEmptyBlobBeforeData()) {
@@ -847,7 +847,6 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 
 	@Override
-	@IbisDoc({"1", "The name of the column slotids are stored in", "SLOTID"})
 	public void setSlotId(String string) {
 		super.setSlotId(string);
 	}
@@ -878,7 +877,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	}
 
 
-	@IbisDoc({"4", "The name of the sequence used to generate the primary key, for DBMSes that use sequences, like Oracle)", "seq_ibisstore"})
+	@IbisDoc({"4", "The name of the sequence used to generate the primary key, for DBMSes that use sequences, like Oracle", "seq_ibisstore"})
 	public void setSequenceName(String string) {
 		sequenceName = string;
 	}
@@ -914,7 +913,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		dateFieldType = string;
 	}
 
-	@IbisDoc({"10", "The type of the columns messageId and correlationId, slotId and comments are stored in. N.B. (100) is appended for id's, (1000) is appended for comments.", ""})
+	@IbisDoc({"10", "The type of the columns messageId and correlationId, slotId and comments are stored in. N.B. <code>(100)</code> is appended for id's, <code>(1000)</code> is appended for comments.", ""})
 	public void setTextFieldType(String string) {
 		textFieldType = string;
 	}

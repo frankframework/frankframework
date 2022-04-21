@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -132,7 +132,7 @@ public class ScheduleManager extends ConfigurableLifecyleBase implements Applica
 		}
 	}
 
-	public void register(IJob job) {
+	public void registerScheduledJob(IJob job) {
 		if(!inState(BootState.STOPPED)) {
 			log.warn("cannot add JobDefinition, manager in state ["+getState()+"]");
 		}

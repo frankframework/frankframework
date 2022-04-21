@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2019-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.stream;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -23,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OptionalDataException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
@@ -31,8 +33,12 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.xml.transform.Source;
@@ -47,29 +53,32 @@ import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Lombok;
-import lombok.Setter;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.MessageUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public class Message implements Serializable {
 
+	protected static final long serialVersionUID = 437863352486501445L;
+
 	protected transient Logger log = LogUtil.getLogger(this);
 
 	private Object request;
 	private @Getter Class<?> requestClass;
-	private @Getter @Setter(AccessLevel.PROTECTED) String charset; // representing a charset of byte typed requests
-	
+
+	private @Getter Map<String,Object> context;
+	private boolean failedToDetermineCharset = false;
+
 	private Set<AutoCloseable> resourcesToClose;
 
-	private Message(Object request, String charset, Class<?> requestClass) {
+	private Message(Map<String,Object> context, Object request, Class<?> requestClass) {
 		if (request instanceof Message) {
 			// this code could be reached when this constructor was public and the actual type of the parameter was not known at compile time.
 			// e.g. new Message(pipeRunResult.getResult());
@@ -77,55 +86,118 @@ public class Message implements Serializable {
 		} else {
 			this.request = request;
 		}
-		this.charset = charset;
+		this.context = context!=null ? context : new MessageContext();
 		this.requestClass = requestClass;
 	}
-	private Message(Object request, String charset) {
-		this(request, charset, request !=null ? request.getClass() : null);
+	private Message(Map<String,Object> context, Object request) {
+		this(context, request, request !=null ? request.getClass() : null);
 	}
 
+	public Message(String request, Map<String,Object> context) {
+		this(context, request);
+	}
 	public Message(String request) {
 		this(request, null);
 	}
 
 	public Message(byte[] request, String charset) {
-		this((Object)request, charset);
+		this(new MessageContext(charset), request);
+	}
+	public Message(byte[] request, Map<String,Object> context) {
+		this(context, request);
 	}
 	public Message(byte[] request) {
-		this((Object)request, null);
+		this(null, request);
 	}
 
+	public Message(Reader request, Map<String,Object> context) {
+		this(context, request);
+	}
 	public Message(Reader request) {
-		this(request, null);
+		this(null, request);
 	}
 
 	/**
 	 * Constructor for Message using InputStream supplier. It is assumed the InputStream can be supplied multiple times.
 	 */
-	protected Message(ThrowingSupplier<InputStream,Exception> request, String charset, Class<?> requestClass) {
-		this((Object)request, charset, requestClass);
-	}
-	
-	public Message(InputStream request, String charset) {
-		this((Object)request, charset);
-	}
-	public Message(InputStream request) {
-		this((Object)request, null);
+	protected Message(ThrowingSupplier<InputStream,Exception> request, Map<String,Object> context, Class<?> requestClass) {
+		this(context, request, requestClass);
 	}
 
+	public Message(InputStream request, String charset) {
+		this(new MessageContext(charset), request);
+	}
+	public Message(InputStream request, Map<String,Object> context) {
+		this(context, request);
+	}
+	public Message(InputStream request) {
+		this(null, request);
+	}
+
+	public Message(Node request, Map<String,Object> context) {
+		this(context, request);
+	}
 	public Message(Node request) {
-		this((Object)request, null);
+		this(null, request);
 	}
 
 	public static Message nullMessage() {
-		return new Message((Object)null, null);
+		return new Message(null, (Object)null);
 	}
+
+	public MessageContext copyContext() {
+		return new MessageContext(getContext());
+	}
+
+	/**
+	 * Representing a charset of binary requests
+	 * @return the charset provided when the message was created
+	 */
+	public String getCharset() {
+		return (String)context.get(MessageContext.METADATA_CHARSET);
+	}
+
+	/**
+	 * If no charset was provided and the requested charset is <code>auto</auto>, try to parse the charset.
+	 * If unsuccessful return the default; <code>UTF-8</code>.
+	 */
+	protected String computeDecodingCharset(String defaultDecodingCharset) throws IOException {
+		String decodingCharset = getCharset();
+
+		if (StringUtils.isEmpty(decodingCharset)) {
+			decodingCharset = StringUtils.isNotEmpty(defaultDecodingCharset)?defaultDecodingCharset:StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+		}
+
+		if (StreamUtil.AUTO_DETECT_CHARSET.equalsIgnoreCase(decodingCharset)) {
+			Charset charset = null;
+			if(!failedToDetermineCharset) {
+				charset = MessageUtils.computeDecodingCharset(this);
+			}
+
+			if (charset == null) {
+				failedToDetermineCharset = true;
+				if(StringUtils.isNotEmpty(defaultDecodingCharset) && !StreamUtil.AUTO_DETECT_CHARSET.equalsIgnoreCase(defaultDecodingCharset)) {
+					return defaultDecodingCharset;
+				}
+				return StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+			}
+			return charset.name();
+		}
+
+		return decodingCharset;
+	}
+
+	private String computeEncodingCharset(String defaultEncodingCharset) {
+		if (StringUtils.isEmpty(defaultEncodingCharset)) {
+			defaultEncodingCharset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+		}
+		return defaultEncodingCharset;
+	}
+
 	/**
 	 * Notify the message object that the request object will be used multiple times.
-	 * If the request object can only be read one time, it can turn it into a less volatile representation. 
+	 * If the request object can only be read one time, it can turn it into a less volatile representation.
 	 * For instance, it could replace an InputStream with a byte array or String.
-	 * 
-	 * @throws IOException
 	 */
 	public void preserve() throws IOException {
 		preserve(false);
@@ -147,8 +219,13 @@ public class Message implements Serializable {
 		// if deepPreserve=true, File and URL are also preserved as byte array
 		// otherwise we rely on that File and URL can be repeatedly read
 		if (deepPreserve && !(request instanceof String || request instanceof byte[])) {
-			log.debug("deep preserving as byte[]");
-			request = StreamUtil.streamToByteArray(asInputStream(), false);
+			if (isBinary()) {
+				log.debug("deep preserving as byte[]");
+				request = asByteArray();
+			} else {
+				log.debug("deep preserving as String");
+				request = asString();
+			}
 		}
 	}
 
@@ -163,7 +240,7 @@ public class Message implements Serializable {
 	public boolean isBinary() {
 		return request instanceof InputStream || request instanceof ThrowingSupplier || request instanceof byte[];
 	}
-	
+
 	public boolean isRepeatable() {
 		return request instanceof String || request instanceof ThrowingSupplier || request instanceof byte[] || request instanceof Node;
 	}
@@ -174,8 +251,7 @@ public class Message implements Serializable {
 	public boolean requiresStream() {
 		return request instanceof InputStream || request instanceof ThrowingSupplier || request instanceof Reader;
 	}
-	
-	
+
 	/*
 	 * provide close(), but do not implement AutoCloseable, to avoid having to enclose all messages in try-with-resource clauses.
 	 */
@@ -197,18 +273,18 @@ public class Message implements Serializable {
 			}
 		}
 	}
-	
+
 	public void closeOnClose(AutoCloseable resource) {
 		if (resourcesToClose==null) {
 			resourcesToClose = new LinkedHashSet<>();
 		}
 		resourcesToClose.add(resource);
 	}
-	
+
 	public void closeOnCloseOf(PipeLineSession session, INamedObject requester) {
 		closeOnCloseOf(session, ClassUtils.nameOf(requester));
 	}
-	
+
 	public void closeOnCloseOf(PipeLineSession session, String requester) {
 		if (!(request instanceof InputStream || request instanceof Reader) || isScheduledForCloseOnExitOf(session)) {
 			return;
@@ -228,7 +304,7 @@ public class Message implements Serializable {
 		}
 		session.scheduleCloseOnSessionExit(this, request.toString()+" requested by "+requester);
 	}
-	
+
 	public boolean isScheduledForCloseOnExitOf(PipeLineSession session) {
 		return session.isScheduledForCloseOnExit(this);
 	}
@@ -251,7 +327,7 @@ public class Message implements Serializable {
 	public Reader asReader() throws IOException {
 		return asReader(null);
 	}
-	public Reader asReader(String defaultCharset) throws IOException {
+	public Reader asReader(String defaultDecodingCharset) throws IOException {
 		if (request == null) {
 			return null;
 		}
@@ -260,10 +336,8 @@ public class Message implements Serializable {
 			return (Reader) request;
 		}
 		if (isBinary()) {
-			String readerCharset = charset; //Don't overwrite the Message's charset
-			if (StringUtils.isEmpty(readerCharset)) {
-				readerCharset=StringUtils.isNotEmpty(defaultCharset)?defaultCharset:StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-			}
+			String readerCharset = computeDecodingCharset(defaultDecodingCharset); //Don't overwrite the Message's charset unless it's set to AUTO
+
 			log.debug("returning InputStream as Reader");
 			InputStream inputStream = asInputStream();
 			try {
@@ -292,9 +366,9 @@ public class Message implements Serializable {
 	}
 
 	/**
-	 * @param defaultCharset is only used when the Message object is of character type (String)
+	 * @param defaultEncodingCharset is only used when the Message object is of character type (String)
 	 */
-	public InputStream asInputStream(String defaultCharset) throws IOException {
+	public InputStream asInputStream(String defaultEncodingCharset) throws IOException {
 		try {
 			if (request == null) {
 				return null;
@@ -307,13 +381,6 @@ public class Message implements Serializable {
 				log.debug("returning InputStream from supplier");
 				return ((ThrowingSupplier<InputStream,Exception>) request).get();
 			}
-			if (StringUtils.isEmpty(defaultCharset)) {
-				defaultCharset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-			}
-			if (request instanceof Reader) {
-				log.debug("returning Reader as InputStream");
-				return new ReaderInputStream((Reader) request, defaultCharset);
-			}
 			if (request instanceof byte[]) {
 				log.debug("returning byte[] as InputStream");
 				return new ByteArrayInputStream((byte[]) request);
@@ -322,8 +389,13 @@ public class Message implements Serializable {
 				log.debug("returning Node as InputStream");
 				return new ByteArrayInputStream(asByteArray());
 			}
+			String charset = computeEncodingCharset(defaultEncodingCharset);
+			if (request instanceof Reader) {
+				log.debug("returning Reader as InputStream");
+				return new ReaderInputStream((Reader) request, charset);
+			}
 			log.debug("returning String as InputStream");
-			return new ByteArrayInputStream(request.toString().getBytes(defaultCharset));
+			return new ByteArrayInputStream(request.toString().getBytes(charset));
 		} catch (IOException e) {
 			onExceptionClose(e);
 			throw e;
@@ -331,6 +403,61 @@ public class Message implements Serializable {
 			onExceptionClose(e);
 			throw Lombok.sneakyThrow(e);
 		}
+	}
+
+	/**
+	 * Reads the first 10k of a binary message. If the message does not support markSupported it is wrapped in a buffer.
+	 * Only works for binary messages
+	 */
+	public byte[] getMagic() throws IOException {
+		return getMagic(10*1024);
+	}
+
+	/**
+	 * Reads the first 10k of a binary message. If the message does not support markSupported it is wrapped in a buffer.
+	 * Only works for binary messages
+	 * @param readLimit amount of bytes to read.
+	 */
+	public byte[] getMagic(int readLimit) throws IOException {
+		if(!isBinary()) {
+			return null;
+		}
+
+		if (request instanceof InputStream) {
+			if(!((InputStream) request).markSupported()) {
+				request = new BufferedInputStream((InputStream) request, readLimit);
+			}
+			InputStream stream = (InputStream) request;
+			stream.mark(readLimit);
+			try {
+				return readBytesFromInputStream(stream, readLimit);
+			} finally {
+				stream.reset();
+			}
+		}
+		if(request instanceof byte[]) { //copy of, else we can bump into buffer overflow exceptions
+			return Arrays.copyOf((byte[]) request, readLimit);
+		}
+		if (isRepeatable()) {
+			try (InputStream stream = asInputStream()) { //Message is repeatable, close the stream after it's been (partially) read.
+				return readBytesFromInputStream(stream, readLimit);
+			}
+		}
+
+		return null;
+	}
+
+	private byte[] readBytesFromInputStream(InputStream stream, int readLimit) throws IOException {
+		byte[] bytes = new byte[readLimit];
+		int numRead = stream.read(bytes);
+		if (numRead < 0) {
+			return null;
+		}
+		if (numRead < readLimit) {
+			// move the bytes into a smaller array
+			bytes = Arrays.copyOf(bytes, numRead);
+		}
+		return bytes;
 	}
 
 	/**
@@ -346,11 +473,11 @@ public class Message implements Serializable {
 		}
 		if (request instanceof Reader) {
 			log.debug("returning Reader as InputSource");
-			return (new InputSource((Reader) request));
+			return new InputSource((Reader) request);
 		}
 		if (request instanceof String) {
 			log.debug("returning String as InputSource");
-			return (new InputSource(new StringReader((String) request)));
+			return new InputSource(new StringReader((String) request));
 		}
 		log.debug("returning as InputSource");
 		if (isBinary()) {
@@ -384,18 +511,12 @@ public class Message implements Serializable {
 	public byte[] asByteArray() throws IOException {
 		return asByteArray(null);
 	}
-	public byte[] asByteArray(String defaultCharset) throws IOException {
+	public byte[] asByteArray(String defaultEncodingCharset) throws IOException {
 		if (request == null) {
 			return null;
 		}
 		if (request instanceof byte[]) {
 			return (byte[])request;
-		}
-		if (StringUtils.isEmpty(defaultCharset)) {
-			defaultCharset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-		}
-		if (request instanceof String) {
-			return ((String)request).getBytes(defaultCharset);
 		}
 		if (request instanceof Node) {
 			try {
@@ -404,10 +525,13 @@ public class Message implements Serializable {
 			} catch (TransformerException e) {
 				throw new IOException("Could not convert Node to byte[]", e);
 			}
-			
+		}
+		String charset = computeEncodingCharset(defaultEncodingCharset);
+		if (request instanceof String) {
+			return ((String)request).getBytes(charset);
 		}
 		// save the generated byte array as the request before returning it
-		request = StreamUtil.streamToByteArray(asInputStream(defaultCharset), false);
+		request = StreamUtil.streamToByteArray(asInputStream(charset), false);
 		return (byte[]) request;
 	}
 
@@ -417,7 +541,7 @@ public class Message implements Serializable {
 	public String asString() throws IOException {
 		return asString(null);
 	}
-	public String asString(String defaultCharset) throws IOException {
+	public String asString(String decodingCharset) throws IOException {
 		if (request == null) {
 			return null;
 		}
@@ -427,47 +551,87 @@ public class Message implements Serializable {
 		if(request instanceof Node) {
 			try {
 				log.warn("returning Node as String; consider to avoid using Node or Document here to reduce memory footprint");
-				return XmlUtils.nodeToString((Node)request, true);
+				return XmlUtils.nodeToString((Node)request);
 			} catch (TransformerException e) {
 				throw new IOException("Could not convert type Node to String", e);
 			}
 		}
+
 		// save the generated String as the request before returning it
-		request = StreamUtil.readerToString(asReader(defaultCharset), null);
-		return (String) request;
+		String result = StreamUtil.readerToString(asReader(decodingCharset), null);
+		if(!isBinary() || !isRepeatable()) {
+			request = result;
+		}
+		return result;
+	}
+
+	public boolean isNull() {
+		return request == null;
 	}
 
 	public boolean isEmpty() {
-		return request == null || request instanceof String && ((String)request).isEmpty();
+		return isNull() || request instanceof String && ((String)request).isEmpty();
 	}
-	
+
+	public void toStringPrefix(Writer writer) throws IOException {
+		if (context==null || context.isEmpty()) {
+			return;
+		}
+		writer.write("context:\n");
+		for(Entry<String,Object> entry:context.entrySet()) {
+			writer.write(entry.getKey()+": "+entry.getValue()+"\n");
+		}
+		writer.write("value:\n");
+	}
+	public String toStringPrefix() {
+		StringWriter result = new StringWriter();
+		try {
+			toStringPrefix(result);
+		} catch (IOException e) {
+			result.write("cannot write toStringPrefix: "+e.getMessage());
+		}
+		return result.toString();
+	}
+
 	/**
-	 * toString can be used to inspect the message. It does not convert the 'request' to a string. 
+	 * toString can be used to inspect the message. It does not convert the 'request' to a string.
 	 */
 	@Override
 	public String toString() {
-		if (request==null) {
-			return "null";
+		StringWriter result = new StringWriter();
+
+		try {
+			toStringPrefix(result);
+			if (request==null) {
+				result.write("null");
+			} else {
+				result.write((getRequestClass()!=null?getRequestClass().getSimpleName():"?")+": "+request.toString());
+			}
+		} catch (IOException e) {
+			result.write("cannot write toString: "+e.getMessage());
 		}
-		return (getRequestClass()!=null?getRequestClass().getSimpleName():"?")+": "+request.toString();
+
+		return result.toString();
 	}
+
 
 	public static Message asMessage(Object object) {
 		if (object instanceof Message) {
 			return (Message) object;
 		}
 		if (object instanceof URL) {
-			return new UrlMessage((URL)object, null);
+			return new UrlMessage((URL)object);
 		}
 		if (object instanceof File) {
 			return new FileMessage((File)object);
 		}
 		if (object instanceof Path) {
-			return new PathMessage((Path)object, null);
+			return new PathMessage((Path)object);
 		}
-		return new Message(object, null);
+		return new Message(null, object);
 	}
 
+	@Deprecated
 	public static Object asObject(Object object) {
 		if (object instanceof Message) {
 			return ((Message) object).asObject();
@@ -551,12 +715,18 @@ public class Message implements Serializable {
 		return (message == null || message.isEmpty());
 	}
 
+	public static boolean isNull(Message message) {
+		return (message == null || message.isNull());
+	}
+
 	/*
 	 * this method is used by Serializable, to serialize objects to a stream.
 	 */
 	private void writeObject(ObjectOutputStream stream) throws IOException {
 		preserve(true);
-		stream.defaultWriteObject();
+		stream.writeObject(getCharset());
+		stream.writeObject(request);
+		stream.writeObject(requestClass);
 	}
 
 	/*
@@ -564,7 +734,17 @@ public class Message implements Serializable {
 	 */
 	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
 		log = LogUtil.getLogger(this);
-		stream.defaultReadObject();
+
+		String charset = (String)stream.readObject();
+		request = stream.readObject();
+		try {
+			requestClass = (Class<?>)stream.readObject();
+		} catch (OptionalDataException e) {
+			requestClass = request.getClass();
+			log.warn("Could not read requestClass, using request.getClass() ["+requestClass.getTypeName()+"]");
+		}
+
+		context = new MessageContext().withCharset(charset);
 	}
 
 	/**
@@ -591,14 +771,18 @@ public class Message implements Serializable {
 			return ((byte[]) request).length;
 		}
 
+		if(context.containsKey(MessageContext.METADATA_SIZE)) {
+			return (long) context.get(MessageContext.METADATA_SIZE);
+		}
+
 		if(!(request instanceof InputStream || request instanceof Reader)) {
 			//Unable to determine the size of a Stream
 			log.debug("unable to determine size of Message ["+ClassUtils.nameOf(request)+"]");
 		}
-		
+
 		return -1;
 	}
-	
+
 	/**
 	 * Can be called when {@link #requiresStream()} is true to retrieve a copy of (part of) the stream that is in this
 	 * message, after the stream has been closed. Primarily for debugging purposes.
@@ -623,11 +807,11 @@ public class Message implements Serializable {
 		}
 		closeOnClose(outputStream);
 	}
-	
+
 	/**
 	 * Can be called when {@link #requiresStream()} is true to retrieve a copy of (part of) the stream that is in this
 	 * message, after the stream has been closed. Primarily for debugging purposes.
-	 * 
+	 *
 	 * When isBinary() is true the Message's charset is used when present to create a Reader that reads the InputStream.
 	 * When charset not present {@link StreamUtil#DEFAULT_INPUT_STREAM_ENCODING} is used.
 	 */

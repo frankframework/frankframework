@@ -59,6 +59,7 @@ import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.Base64Pipe;
+import nl.nn.adapterframework.pipes.Base64Pipe.Direction;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
@@ -75,7 +76,7 @@ import nl.nn.adapterframework.xml.PrettyPrintFilter;
 /**
  * This executes the query that is obtained from the (here still abstract) method getStatement.
  * Descendent classes can override getStatement to provide meaningful statements.
- * If used with parameters, the values of the parameters will be applied to the statement. 
+ * If used with parameters, the values of the parameters will be applied to the statement.
  * Each occurrence of a questionmark ('?') will be replaced by a parameter value. Parameters are applied
  * in order: The n-th questionmark is replaced by the value of the n-th parameter.
  *
@@ -88,11 +89,11 @@ import nl.nn.adapterframework.xml.PrettyPrintFilter;
  *   <li>all other elements are assumed to be integers</li>
  * </ul>
  * </p>
- * 
+ *
  * Queries that return no data (queryType 'other') return a message indicating the number of rows processed
- * 
+ *
  * @ff.parameters all parameters present are applied to the statement to be executed
- * 
+ *
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
@@ -136,7 +137,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	private @Getter int lockWait=-1;
 	private @Getter boolean avoidLocking=false;
 	private @Getter boolean prettyPrint=false;
-	
+
 	private String convertedResultQuery;
 
 	public enum QueryType {
@@ -154,8 +155,12 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 
 	@Override
 	public void configure() throws ConfigurationException {
+		if (!BooleanUtils.isFalse(getUseNamedParams())) { // only allow duplicate parameter names if useNamedParams is set explicitly to false.
+			if (getParameterList()!=null) {
+				getParameterList().setNamesMustBeUnique(true);
+			}
+		}
 		super.configure();
-
 		if (StringUtils.isNotEmpty(getColumnsReturned())) {
 			List<String> tempList = new ArrayList<String>();
 			StringTokenizer st = new StringTokenizer(getColumnsReturned(),",");
@@ -278,7 +283,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			}
 		}
 	}
-	
+
 	protected QueryExecutionContext prepareStatementSet(H blockHandle, Connection connection, Message message, PipeLineSession session) throws SenderException {
 		try {
 			QueryExecutionContext result = getQueryExecutionContext(connection, message, session);
@@ -304,7 +309,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			log.warn(new SenderException(getLogPrefix() + "got exception closing result SQL statement",e ));
 		}
 	}
-	
+
 
 	protected PipeRunResult sendMessageOnConnection(Connection connection, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
 		try (JdbcSession jdbcSession = isAvoidLocking()?getDbmsSupport().prepareSessionForNonLockingRead(connection):null) {
@@ -320,7 +325,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			throw new SenderException(e);
 		}
 	}
-	
+
 
 	protected PipeRunResult executeStatementSet(QueryExecutionContext queryExecutionContext, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
 		try {
@@ -347,12 +352,12 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				case UPDATEBLOB:
 					if (StringUtils.isNotEmpty(getBlobSessionKey())) {
 						return new PipeRunResult(null, executeUpdateBlobQuery(statement,session==null?null:session.getMessage(getBlobSessionKey())));
-					} 
+					}
 					return new PipeRunResult(null, executeUpdateBlobQuery(statement, message));
 				case UPDATECLOB:
 					if (StringUtils.isNotEmpty(getClobSessionKey())) {
 						return new PipeRunResult(null, executeUpdateClobQuery(statement,session==null?null:session.getMessage(getClobSessionKey())));
-					} 
+					}
 					return new PipeRunResult(null, executeUpdateClobQuery(statement, message));
 				case PACKAGE:
 					return new PipeRunResult(null, executePackageQuery(queryExecutionContext));
@@ -411,14 +416,13 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			log.debug(getLogPrefix() + "Adjusting list of parameters ["	+ parameterListToString(parameterList) + "]");
 		}
 
-		StringBuffer buffer = new StringBuffer();
+		StringBuilder buffer = new StringBuilder();
 		int startPos = query.indexOf(UNP_START);
 		if (startPos == -1)
 			return query;
 		char[] messageChars = query.toCharArray();
 		int copyFrom = 0;
-		ParameterList oldParameterList = new ParameterList();
-		oldParameterList = (ParameterList) parameterList.clone();
+		ParameterList oldParameterList = (ParameterList) parameterList.clone();
 		parameterList.clear();
 		while (startPos != -1) {
 			buffer.append(messageChars, copyFrom, startPos - copyFrom);
@@ -450,7 +454,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		buffer.append(messageChars, copyFrom, messageChars.length - copyFrom);
 
 		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix() + "Adjusted list of parameters ["	+ parameterListToString(parameterList) + "]");
+			log.debug(getLogPrefix() + "Adjusted list of parameters [" + parameterListToString(parameterList) + "]");
 		}
 
 		return buffer.toString();
@@ -490,10 +494,10 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				if (getDbmsSupport().isBlobType(rsmeta, 1)) {
 					if (response!=null) {
 						if (StringUtils.isNotEmpty(contentType)) {
-							response.setHeader("Content-Type", contentType); 
+							response.setHeader("Content-Type", contentType);
 						}
 						if (StringUtils.isNotEmpty(contentDisposition)) {
-							response.setHeader("Content-Disposition", contentDisposition); 
+							response.setHeader("Content-Disposition", contentDisposition);
 						}
 						JdbcUtil.streamBlob(getDbmsSupport(), resultset, 1, getBlobCharset(), isBlobsCompressed(), getBlobBase64Direction(), response.getOutputStream(), isCloseOutputstreamOnExit());
 						return new PipeRunResult(null, Message.nullMessage());
@@ -507,7 +511,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 							if (StringUtils.isNotEmpty(getBlobCharset())) {
 								JdbcUtil.streamBlob(getDbmsSupport(), resultset, 1, getBlobCharset(), isBlobsCompressed(), getBlobBase64Direction(), target.asWriter(), isCloseOutputstreamOnExit());
 							} else {
-								JdbcUtil.streamBlob(getDbmsSupport(), resultset, 1, null,             isBlobsCompressed(), getBlobBase64Direction(), target.asStream(), isCloseOutputstreamOnExit());
+								JdbcUtil.streamBlob(getDbmsSupport(), resultset, 1, null, isBlobsCompressed(), getBlobBase64Direction(), target.asStream(), isCloseOutputstreamOnExit());
 							}
 							return target.getPipeRunResult();
 						} catch (Exception e) {
@@ -527,7 +531,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 						throw new JdbcException(e);
 					}
 				}
-				result = JdbcUtil.getValue(getDbmsSupport(), resultset, 1, rsmeta, getBlobCharset(), isBlobsCompressed(), getNullValue(), isTrimSpaces(), isBlobSmartGet(), "encode".equals(getBlobBase64Direction()));
+				result = JdbcUtil.getValue(getDbmsSupport(), resultset, 1, rsmeta, getBlobCharset(), isBlobsCompressed(), getNullValue(), isTrimSpaces(), isBlobSmartGet(), getBlobBase64Direction() == Direction.ENCODE);
 				if (resultset.wasNull()) {
 					if (isScalarExtended()) {
 						result = "[null]";
@@ -535,19 +539,15 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 						result = null;
 					}
 				} else {
-					if (result.length()==0) {
-						if (isScalarExtended()) {
-							result="[empty]";
-						}
+					if (result.length()==0 && isScalarExtended()) {
+						result="[empty]";
 					}
 				}
 				if (resultset.next()) {
 					log.warn(getLogPrefix() + "has set scalar=true but the query returned more than 1 row. Consider optimizing the query.");
 				}
-			} else {
-				if (isScalarExtended()) {
+			} else if (isScalarExtended()) {
 					result="[absent]";
-				}
 			}
 			return new PipeRunResult(null, new Message(result));
 		}
@@ -569,7 +569,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			throw new JdbcException(e);
 		}
 	}
-	
+
 
 	private BlobOutputStream getBlobOutputStream(PreparedStatement statement, int blobColumn, boolean compressBlob) throws SQLException, JdbcException, IOException {
 		log.debug(getLogPrefix() + "executing an update BLOB command");
@@ -673,7 +673,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				if (queryExecutionContext.getQueryType()==QueryType.UPDATEBLOB) {
 					BlobOutputStream blobOutputStream = getBlobOutputStream(statement, blobColumn, isBlobsCompressed());
 					TransactionConnectorCoordinator.onEndChildThread(()-> {
-						blobOutputStream.close(); 
+						blobOutputStream.close();
 						connection.close();
 						log.warn(getLogPrefix()+"warnings: "+blobOutputStream.getWarnings().toXML());
 					});
@@ -705,7 +705,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 							log.warn(getLogPrefix()+"warnings: "+clobWriter.getWarnings().toXML());
 						}
 					};
-				} 
+				}
 				throw new IllegalArgumentException(getLogPrefix()+"illegal queryType ["+queryExecutionContext.getQueryType()+"], must be 'updateBlob' or 'updateClob'");
 			} catch (JdbcException | SQLException | IOException | ParameterException e) {
 				throw new StreamingException(getLogPrefix() + "cannot update CLOB or BLOB",e);
@@ -729,7 +729,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				if (getStartRow()>1) {
 					resultset.absolute(getStartRow()-1);
 					log.debug(getLogPrefix() + "Index set at position: " +  resultset.getRow() );
-				}				
+				}
 				return getResult(resultset,blobSessionVar,clobSessionVar, response, contentType, contentDisposition, session, next);
 			}
 		} catch (SQLException|JdbcException|IOException e) {
@@ -742,9 +742,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		String query = queryExecutionContext.getQuery();
 		Object[] paramArray = new Object[10];
 		String callMessage = fillParamArray(paramArray, query);
-		ResultSet resultset = null;
-		try {
-			CallableStatement pstmt = connection.prepareCall(callMessage);
+		try (CallableStatement pstmt = connection.prepareCall(callMessage)) {
 			if (getMaxRows() > 0) {
 				pstmt.setMaxRows(
 					getMaxRows() + (getStartRow() > 1 ? getStartRow() - 1 : 0));
@@ -782,7 +780,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				pstmt.executeUpdate();
 				String pUitvoer = pstmt.getString(var);
 				return new Message(pUitvoer);
-			} 
+			}
 			log.debug(getLogPrefix() + "executing a package SQL command");
 			int numRowsAffected = pstmt.executeUpdate();
 			if (convertedResultQuery!=null) {
@@ -799,46 +797,36 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			}
 			return new Message("<result><rowsupdated>"+ numRowsAffected	+ "</rowsupdated></result>");
 		} catch (SQLException sqle) {
-			throw new SenderException(
-				getLogPrefix() + "got exception executing a package SQL command",
-				sqle);
-		} finally {
-			try {
-				if (resultset != null) {
-					resultset.close();
-				}
-			} catch (SQLException e) {
-				log.warn(
-					new SenderException(getLogPrefix() + "got exception closing resultset", e));
-			}
+			throw new SenderException(getLogPrefix() + "got exception executing a package SQL command", sqle);
 		}
 	}
 
 	protected Message executeOtherQuery(QueryExecutionContext queryExecutionContext, Message message, PipeLineSession session) throws SenderException {
-		Connection connection = queryExecutionContext.getConnection(); 
-		PreparedStatement statement = queryExecutionContext.getStatement(); 
+		Connection connection = queryExecutionContext.getConnection();
+		PreparedStatement statement = queryExecutionContext.getStatement();
 		String query = queryExecutionContext.getQuery();
 		ParameterList parameterList = queryExecutionContext.getParameterList();
 		PreparedStatement resStmt = queryExecutionContext.getResultQueryStatement();
 		return executeOtherQuery(connection, statement, query, resStmt, message, session, parameterList);
 	}
-	
+
 	protected Message executeOtherQuery(Connection connection, PreparedStatement statement, String query, PreparedStatement resStmt, Message message, PipeLineSession session, ParameterList parameterList) throws SenderException {
 		try {
 			int numRowsAffected = 0;
 			if (StringUtils.isNotEmpty(getRowIdSessionKey())) {
-				CallableStatement cstmt = getCallWithRowIdReturned(connection, query);
-				int ri = 1;
-				if (parameterList != null) {
-					ParameterValueList parameters = parameterList.getValues(message, session);
-					JdbcUtil.applyParameters(getDbmsSupport(), cstmt, parameters);
-					ri = parameters.size() + 1;
+				try (CallableStatement cstmt = getCallWithRowIdReturned(connection, query)) {
+					int ri = 1;
+					if (parameterList != null) {
+						ParameterValueList parameters = parameterList.getValues(message, session);
+						JdbcUtil.applyParameters(getDbmsSupport(), cstmt, parameters);
+						ri = parameters.size() + 1;
+					}
+					cstmt.registerOutParameter(ri, Types.VARCHAR);
+					log.debug(getLogPrefix() + "executing a SQL command");
+					numRowsAffected = cstmt.executeUpdate();
+					String rowId = cstmt.getString(ri);
+					if (session!=null) session.put(getRowIdSessionKey(), rowId);
 				}
-				cstmt.registerOutParameter(ri, Types.VARCHAR);
-				log.debug(getLogPrefix() + "executing a SQL command");
-				numRowsAffected = cstmt.executeUpdate();
-				String rowId = cstmt.getString(ri);
-				if (session!=null) session.put(getRowIdSessionKey(), rowId);
 			} else {
 				log.debug(getLogPrefix() + "executing a SQL command");
 				if (getBatchSize()>0) {
@@ -869,17 +857,15 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		}
 	}
 
-	protected String fillParamArray(Object[] paramArray, String message) throws SenderException {		
+	protected String fillParamArray(Object[] paramArray, String message) throws SenderException {
 		int lengthMessage = message.length();
 		int startHaakje = message.indexOf('(');
 		int eindHaakje	= message.indexOf(')');
 		int beginOutput = message.indexOf('?');
-		if (startHaakje < 1) 
+		if (startHaakje < 1)
 			return message;
 		if (beginOutput < 0)
 			beginOutput = eindHaakje;
-		// Watch out, this cannot handle nested parentheses
-//		String packageCall = message.substring(startHaakje, eindHaakje + 1);
 		String packageInput = message.substring(startHaakje + 1, beginOutput);
 		int idx = 0;
 		if (message.indexOf(',') == -1) {
@@ -891,14 +877,14 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		}
 		int ix  = 1;
 		String element=null;
-		try {		
+		try {
 			if (packageInput.lastIndexOf(',') > 0) {
 				while ((packageInput.charAt(packageInput.length() - ix) != ',')	&& (ix < packageInput.length())) {
 					ix++;
 				}
 				int eindInputs = beginOutput - ix;
 				packageInput = message.substring(startHaakje + 1, eindInputs);
-				StringTokenizer st2 = new StringTokenizer(packageInput, ",");		
+				StringTokenizer st2 = new StringTokenizer(packageInput, ",");
 				if (idx != 1) {
 					while (st2.hasMoreTokens()) {
 						element = st2.nextToken().trim();
@@ -911,20 +897,20 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 								if (element.length() > 10) {
 									String pattern = "yyyy-MM-dd HH:mm:ss";
 									SimpleDateFormat sdf = new SimpleDateFormat(pattern);
-									java.util.Date nDate = (java.util.Date)sdf.parseObject(element.toString());
+									java.util.Date nDate = (java.util.Date)sdf.parseObject(element);
 									Timestamp sqlTimestamp = new Timestamp(nDate.getTime());
 									paramArray[idx] = sqlTimestamp;
-									 
+
 								} else {
 									String pattern = "yyyy-MM-dd";
 									SimpleDateFormat sdf = new SimpleDateFormat(pattern);
 									java.util.Date nDate;
-									nDate = sdf.parse(element.toString());
+									nDate = sdf.parse(element);
 									java.sql.Date sDate = new java.sql.Date(nDate.getTime());
-									paramArray[idx] = sDate;								
-								}	
+									paramArray[idx] = sDate;
+								}
 							} else {
-								if (element.indexOf('.') >= 0) {					
+								if (element.indexOf('.') >= 0) {
 									paramArray[idx] = new Float(element);
 								} else {
 									paramArray[idx] = new Integer(element);
@@ -935,7 +921,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					}
 				}
 			}
-			StringBuffer newMessage = new StringBuffer(message.substring(0, startHaakje + 1));
+			StringBuilder newMessage = new StringBuilder(message.substring(0, startHaakje + 1));
 			if (idx > 0) {
 				newMessage.append("?");
 			}
@@ -964,8 +950,8 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 
 	/**
-	 * Controls wheter the returned package content is db2 format or xml format. 
-	 * Possible values: 
+	 * Controls wheter the returned package content is db2 format or xml format.
+	 * Possible values:
 	 * <ul>
 	 * <li>select:</li> xml content s expected
 	 * <li><i>anything else</i>:</li> db2 content is expected
@@ -975,6 +961,10 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		this.packageContent = packageContent;
 	}
 
+	/**
+	 * Type of query to be executed
+	 * @ff.default OTHER
+	 */
 	public void setQueryType(String queryType) {
 		if ("insert".equalsIgnoreCase(queryType) || "delete".equalsIgnoreCase(queryType) || "update".equalsIgnoreCase(queryType)) {
 			this.queryType=QueryType.OTHER;
@@ -991,10 +981,10 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		scalar = b;
 	}
 
-	@IbisDoc({"3", "When <code>true</code> and <code>scalar</code> is also <code>true</code>, but returns no value, one of the following is returned: <ul>" 
-				+ "<li>'[absent]' no row is found</li>" 
-				+ "<li>'[null]' a row is found, but the value is a SQL-NULL</li>" 
-				+ "<li>'[empty]' a row is found, but the value is a empty string</li>" 
+	@IbisDoc({"3", "When <code>true</code> and <code>scalar</code> is also <code>true</code>, but returns no value, one of the following is returned: <ul>"
+				+ "<li>'[absent]' no row is found</li>"
+				+ "<li>'[null]' a row is found, but the value is a SQL-NULL</li>"
+				+ "<li>'[empty]' a row is found, but the value is a empty string</li>"
 				+ "</ul>", "false"})
 	public void setScalarExtended(boolean b) {
 		scalarExtended = b;
@@ -1020,7 +1010,11 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		resultQuery = string;
 	}
 
-	@IbisDoc({"8", "Comma separated list of columns whose values are to be returned. Works only if the driver implements jdbc 3.0 getGeneratedKeys(). Note: not all drivers support multiple values and returned field names may vary between drivers", ""})
+	/** 
+	 * Comma separated list of columns whose values are to be returned. Works only if the driver implements jdbc 3.0 getGeneratedKeys(). 
+	 * Note: not all drivers support multiple values and returned field names may vary between drivers.
+	 * Works for H2 and Oracle. Could work for MS_SQL with a single identity column, with name GENERATED_KEYS, if a identity has been generated. Not supported for other DBMSes.
+	 */
 	public void setColumnsReturned(String string) {
 		columnsReturned = string;
 	}
@@ -1070,18 +1064,10 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		lockWait = i;
 	}
 
-
-
-
-
 	@IbisDoc({ "", "true" })
 	public void setSynchronous(boolean synchronous) {
 		this.synchronous = synchronous;
 	}
-
-
-
-
 
 	@IbisDoc({"20", "Only for querytype 'updateBlob': column that contains the BLOB to be updated", "1"})
 	public void setBlobColumn(int i) {
@@ -1103,8 +1089,8 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	public void setBlobBase64Direction(Base64Pipe.Direction value) {
 		blobBase64Direction = value;
 	}
-	
-	@IbisDoc({"24", "Charset that is used to read and write BLOBs. This assumes the blob contains character data. " + 
+
+	@IbisDoc({"24", "Charset that is used to read and write BLOBs. This assumes the blob contains character data. " +
 				"If blobCharset and blobSmartGet are not set, BLOBs are returned as bytes. Before version 7.6, blobs were base64 encoded after being read to accommodate for the fact that senders need to return a String. This is no longer the case", ""})
 	public void setBlobCharset(String string) {
 		if (StringUtils.isEmpty(string)) {
@@ -1151,7 +1137,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	public void setAvoidLocking(boolean avoidLocking) {
 		this.avoidLocking = avoidLocking;
 	}
-	
+
 	@IbisDoc({"44", "If true and scalar=false, multiline indented XML is produced", "false"})
 	public void setPrettyPrint(boolean prettyPrint) {
 		this.prettyPrint = prettyPrint;

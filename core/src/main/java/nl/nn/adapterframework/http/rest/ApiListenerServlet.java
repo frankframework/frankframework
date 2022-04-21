@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2021 WeAreFrank!
+   Copyright 2017-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
 package nl.nn.adapterframework.http.rest;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -39,7 +37,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.entity.ContentType;
 import org.apache.logging.log4j.Logger;
 
 import com.nimbusds.jose.util.JSONObjectUtils;
@@ -60,6 +57,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CookieUtil;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.MessageUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -113,7 +111,7 @@ public class ApiListenerServlet extends HttpServletBase {
 			jsonWriter.write(json);
 		}
 	}
-	
+
 	@Override
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
@@ -139,9 +137,10 @@ public class ApiListenerServlet extends HttpServletBase {
 			log.warn(createAbortingMessage(remoteUser,400) + "empty uri");
 			return;
 		}
-		if(uri.endsWith("/"))
+		if(uri.endsWith("/")) {
 			uri = uri.substring(0, uri.length()-1);
-		
+		}
+
 		/**
 		 * Generate an OpenApi json file
 		 */
@@ -180,7 +179,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					log.warn(createAbortingMessage(remoteUser,404) + "no ApiListener configured for ["+uri+"]");
 					return;
 				}
-	
+
 				/**
 				 * Handle Cross-Origin Resource Sharing
 				 * TODO make this work behind loadbalancers/reverse proxies
@@ -193,13 +192,13 @@ public class ApiListenerServlet extends HttpServletBase {
 					if (headers != null)
 						response.setHeader("Access-Control-Allow-Headers", headers);
 					response.setHeader("Access-Control-Expose-Headers", CorsExposeHeaders);
-		
+
 					StringBuilder methods = new StringBuilder();
 					for (HttpMethod mtd : config.getMethods()) {
 						methods.append(", ").append(mtd);
 					}
 					response.setHeader("Access-Control-Allow-Methods", methods.toString());
-	
+
 					//Only cut off OPTIONS (aka preflight) requests
 					if(method == HttpMethod.OPTIONS) {
 						response.setStatus(200);
@@ -207,7 +206,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						return;
 					}
 				}
-	
+
 				/**
 				 * Get serviceClient
 				 */
@@ -219,16 +218,16 @@ public class ApiListenerServlet extends HttpServletBase {
 				}
 
 				if(log.isTraceEnabled()) log.trace("ApiListenerServlet calling service ["+listener.getName()+"]");
-	
+
 				/**
 				 * Check authentication
 				 */
 				ApiPrincipal userPrincipal = null;
-	
+
 				if(listener.getAuthenticationMethod() != AuthenticationMethods.NONE) {
 					String authorizationToken = null;
 					Cookie authorizationCookie = null;
-	
+
 					switch (listener.getAuthenticationMethod()) {
 					case COOKIE:
 						authorizationCookie = CookieUtil.getCookie(request, AUTHENTICATION_COOKIE_NAME);
@@ -296,25 +295,25 @@ public class ApiListenerServlet extends HttpServletBase {
 					default:
 						break;
 					}
-	
+
 					if(authorizationToken != null && cache.containsKey(authorizationToken))
 						userPrincipal = (ApiPrincipal) cache.get(authorizationToken);
-	
+
 					if(userPrincipal == null || !userPrincipal.isLoggedIn()) {
 						cache.remove(authorizationToken);
 						if(authorizationCookie != null) {
 							CookieUtil.addCookie(request, response, authorizationCookie, 0);
 						}
-	
+
 						response.setStatus(401);
 						log.warn(createAbortingMessage(remoteUser,401) + "no (valid) credentials supplied");
 						return;
 					}
-	
+
 					if(authorizationCookie != null) {
 						CookieUtil.addCookie(request, response, authorizationCookie, authTTL);
 					}
-	
+
 					if(authorizationToken != null) {
 						userPrincipal.updateExpiry();
 						userPrincipal.setToken(authorizationToken);
@@ -327,7 +326,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				if(userPrincipal != null)
 					messageContext.put(PipeLineSession.API_PRINCIPAL_KEY, userPrincipal);
 				messageContext.put("uri", uri);
-	
+
 				/**
 				 * Evaluate preconditions
 				 */
@@ -346,13 +345,13 @@ public class ApiListenerServlet extends HttpServletBase {
 					log.warn(createAbortingMessage(remoteUser,415) + "did not match consumes ["+listener.getConsumes()+"] got ["+request.getContentType()+"] instead");
 					return;
 				}
-	
+
 				String etagCacheKey = ApiCacheManager.buildCacheKey(uri);
 				log.debug("Evaluating preconditions for listener["+listener.getName()+"] etagKey["+etagCacheKey+"]");
 				if(cache.containsKey(etagCacheKey)) {
 					String cachedEtag = (String) cache.get(etagCacheKey);
 					log.debug("found etag value["+cachedEtag+"] for key["+etagCacheKey+"]");
-	
+
 					if(method == HttpMethod.GET) {
 						String ifNoneMatch = request.getHeader("If-None-Match");
 						if(ifNoneMatch != null && ifNoneMatch.equals(cachedEtag)) {
@@ -371,36 +370,36 @@ public class ApiListenerServlet extends HttpServletBase {
 					}
 				}
 				messageContext.put("updateEtag", listener.isUpdateEtag());
-	
+
 				/**
 				 * Check authorization
 				 */
 				//TODO: authentication implementation
-	
+
 				/**
 				 * Map uriIdentifiers into messageContext 
 				 */
-				String patternSegments[] = listener.getUriPattern().split("/");
-				String uriSegments[] = uri.split("/");
+				String[] patternSegments = listener.getUriPattern().split("/");
+				String[] uriSegments = uri.split("/");
 				int uriIdentifier = 0;
 				for (int i = 0; i < patternSegments.length; i++) {
 					String segment = patternSegments[i];
 					String name = null;
-	
+
 					if("*".equals(segment)) {
 						name = "uriIdentifier_"+uriIdentifier;
 					}
 					else if(segment.startsWith("{") && segment.endsWith("}")) {
 						name = segment.substring(1, segment.length()-1);
 					}
-	
+
 					if(name != null) {
 						uriIdentifier++;
 						if(log.isTraceEnabled()) log.trace("setting uriSegment ["+name+"] to ["+uriSegments[i]+"]");
 						messageContext.put(name, uriSegments[i]);
 					}
 				}
-	
+
 				/**
 				 * Map queryParameters into messageContext
 				 */
@@ -419,7 +418,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						messageContext.put(paramname, paramvalue);
 					}
 				}
-	
+
 				/**
 				 * Map headers into messageContext
 				 */
@@ -461,7 +460,7 @@ public class ApiListenerServlet extends HttpServletBase {
 							BodyPart bodyPart = mimeMultipart.getBodyPart(i);
 							String fieldName = MultipartUtils.getFieldName(bodyPart);
 							if((i == 0 && multipartBodyName == null) || (fieldName != null && fieldName.equalsIgnoreCase(multipartBodyName))) {
-								body = new PartMessage(bodyPart);
+								body = new PartMessage(bodyPart, MessageUtils.getContext(request));
 							}
 
 							XmlBuilder attachment = new XmlBuilder("part");
@@ -476,12 +475,12 @@ public class ApiListenerServlet extends HttpServletBase {
 							} else {
 								// Process form file field (input type="file").
 								String fieldNameName = fieldName + "Name";
-								String fileName = bodyPart.getFileName();
+								String fileName = MultipartUtils.getFileName(bodyPart);
 								if(log.isTraceEnabled()) log.trace("setting multipart formFile ["+fieldNameName+"] to ["+fileName+"]");
 								messageContext.put(fieldNameName, fileName);
 								if(log.isTraceEnabled()) log.trace("setting parameter ["+fieldName+"] to input stream of file ["+fileName+"]");
 								messageContext.put(fieldName, message);
-		
+
 								attachment.addAttribute("type", "file");
 								attachment.addAttribute("filename", fileName);
 								attachment.addAttribute("size", message.size());
@@ -502,12 +501,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						throw new IOException("Could not read mime multipart response", e);
 					}
 				} else {
-					//If content is present (POST/PUT) one of these headers must be set (see https://www.rfc-editor.org/rfc/rfc7230#section-3.3)
-					if(request.getContentLength() > -1 || request.getHeader("transfer-encoding") != null) {
-						body = parseContentAsMessage(request.getInputStream(), request.getContentType());
-					} else {
-						body = Message.nullMessage();
-					}
+					body = MessageUtils.parseContentAsMessage(request);
 				}
 
 				/**
@@ -537,7 +531,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					log.debug("calculating etags over processed result");
 					String cleanPattern = listener.getCleanPattern();
 					if(!Message.isEmpty(result) && method == HttpMethod.GET && cleanPattern != null) { //If the data has changed, generate a new eTag
-						String eTag = ApiCacheManager.buildEtag(cleanPattern, result.asObject().hashCode()); //The eTag has nothing to do with the content and can be a random string.
+						String eTag = ApiCacheManager.buildEtag(cleanPattern, result.hashCode()); //The eTag has nothing to do with the content and can be a random string.
 						log.debug("adding/overwriting etag with key["+etagCacheKey+"] value["+eTag+"]");
 						cache.put(etagCacheKey, eTag);
 						response.addHeader("etag", eTag);
@@ -560,7 +554,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				 */
 				response.addHeader("Allow", (String) messageContext.get("allowedMethods"));
 
-				nl.nn.adapterframework.http.rest.ContentType mimeType = listener.getContentType();
+				ContentType mimeType = listener.getContentType();
 				if(!Message.isEmpty(result) && StringUtils.isNotEmpty(result.getCharset())) {
 					try {
 						mimeType.setCharset(result.getCharset());
@@ -573,6 +567,11 @@ public class ApiListenerServlet extends HttpServletBase {
 					Message parsedContentType = messageContext.getMessage("contentType");
 					if(!Message.isEmpty(parsedContentType)) {
 						contentType = parsedContentType.asString();
+					} else {
+						String computedContentType = MessageUtils.computeContentType(result); //if produces=ANY and no sessionkey override
+						if(StringUtils.isNotEmpty(computedContentType)) {
+							contentType = computedContentType;
+						}
 					}
 				}
 				response.setHeader("Content-Type", contentType);
@@ -609,23 +608,6 @@ public class ApiListenerServlet extends HttpServletBase {
 				}
 			}
 		}
-	}
-
-	private Message parseContentAsMessage(InputStream inputStream, String contentType) {
-		String charset = null;
-		if(StringUtils.isNotEmpty(contentType)) {
-			try {
-				ContentType parsedContentType = ContentType.parse(contentType);
-				Charset parsedCharset = parsedContentType.getCharset();
-				if(parsedCharset != null) {
-					charset = parsedCharset.displayName();
-				}
-			} catch (Exception e) {
-				//For now just log when we cannot parse, perhaps we should abort the request?
-				log.warn("unable to parse charset from contentType [{}]", contentType, e);
-			}
-		}
-		return new Message(inputStream, charset);
 	}
 
 	@Override

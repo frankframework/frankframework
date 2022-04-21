@@ -49,6 +49,7 @@ createTemplatedProvider('Oracle JDBC Driver (XA)', 		 'oracle.jdbc.xa.client.Ora
 createTemplatedProvider('Microsoft SQL Server JDBC Driver (XA)', 'com.microsoft.sqlserver.jdbc.SQLServerXADataSource',  '/work/drivers/mssql-jdbc.jar')
 createProvider('H2 JDBC Driver (XA)', 'org.h2.jdbcx.JdbcDataSource', 'classpath=/work/drivers/h2.jar,xa=true')
 createProvider('MySQL JDBC Driver', 'com.mysql.cj.jdbc.MysqlXADataSource', 'classpath=/work/drivers/mysql-connector-java.jar')
+createProvider('PostgreSQL JDBC Driver', 'org.postgresql.xa.PGXADataSource', 'classpath=/work/drivers/postgresql.jar')
 
 createDatasource('ibis4test-h2', 'H2 JDBC Driver (XA)', [], [
 		[['name', 'URL'],['value', 'jdbc:h2:file:/work/ibis4test;NON_KEYWORDS=VALUE;DB_CLOSE_ON_EXIT=FALSE;AUTO_SERVER=TRUE']]
@@ -85,6 +86,11 @@ createDatasource('ibis4test-mariadb', 'MySQL JDBC Driver', authAliasName, [
 		[['name', 'pinGlobalTxToPhysicalConnection'], ['value', 'true']],
 		[['name', 'socketTimeout'], ['value', '5000']]
 	])
+
+createDatasource('ibis4test-postgres-xa', 'PostgreSQL JDBC Driver', authAliasName, [
+		[['name', 'URL'],  ['value', 'jdbc:postgresql://host.docker.internal:5432/testiaf']]
+	])
+
 
 createAuthAlias( authAliasName, 'testiaf_user', 'testiaf_user00', 'alias for iaf-test datasources' )
 createAuthAlias( 'testAuthAlias', 'testUser', 'testPassword', 'alias for authentication tests' )

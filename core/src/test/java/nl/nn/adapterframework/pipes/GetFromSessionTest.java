@@ -1,6 +1,8 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -10,6 +12,9 @@ import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.Before;
+import org.junit.Test;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -17,8 +22,6 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.util.Misc;
-import org.junit.Before;
-import org.junit.Test;
 
 public class GetFromSessionTest extends PipeTestBase<GetFromSession> {
 
@@ -108,7 +111,7 @@ public class GetFromSessionTest extends PipeTestBase<GetFromSession> {
 
 		PipeRunResult prr = doPipe(pipe, "ingored", session);
 		String result = (String) prr.getResult().asObject();
-		assertEquals("<items />", result.trim());
+		assertEquals("<items/>", result.trim());
 	}
 
 	@Test

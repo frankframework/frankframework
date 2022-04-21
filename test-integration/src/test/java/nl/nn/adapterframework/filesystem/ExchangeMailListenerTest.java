@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
 import microsoft.exchange.webservices.data.core.service.item.Item;
-import nl.nn.adapterframework.core.PipeLineExit;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.receivers.ExchangeMailListener;
 import nl.nn.adapterframework.stream.Message;
@@ -98,7 +98,7 @@ public class ExchangeMailListenerTest extends ExchangeMailListenerTestBase {
 		assertNotNull("no message found", rawMessage);
 
 		PipeLineResult plr = new PipeLineResult();
-		plr.setState(PipeLineExit.EXIT_STATE_SUCCESS);
+		plr.setState(ExitState.SUCCESS);
 		plr.setResult(new Message("ResultOfPipeline"));
 		plr.setExitCode(200);
 		

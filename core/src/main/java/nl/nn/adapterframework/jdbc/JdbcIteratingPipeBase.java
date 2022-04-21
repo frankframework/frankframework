@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Map;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -45,6 +46,7 @@ import nl.nn.adapterframework.util.SpringUtils;
  */
 public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implements HasPhysicalDestination {
 
+	private final @Getter(onMethod = @__(@Override)) String domain = "JDBC";
 	protected MixedQuerySender querySender = new MixedQuerySender();
 
 	private final String FIXEDQUERYSENDER = "nl.nn.adapterframework.jdbc.FixedQuerySender";
@@ -55,11 +57,11 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 
 		@Override
 		public void configure() throws ConfigurationException {
-			//In case a query is specified, return the Adapter, else return true to suppress the SQL Injection warning
+			//In case a query is specified, pass true as argument to suppress the SQL Injection warning else pass the Adapter
 			if(query!=null) {
-				super.configure(getAdapter());
-			} else {
 				super.configure(true);
+			} else {
+				super.configure(getAdapter());
 			}
 		}
 

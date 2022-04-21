@@ -2,12 +2,21 @@ Ibis AdapterFramework release notes
 ===================================
 
 [Tags](https://github.com/ibissource/iaf/releases)
-[JavaDocs](https://javadoc.ibissource.org/latest/)
+[JavaDocs](https://javadoc.frankframework.org/)
+
+Upcoming (7.8)
+--------------
+
+### Non backwards compatible changes
+
+- HttpSender no longer treats input message as parameters by default. For 7.7 compatibility, set attribute treatInputMessageAsParameters=true
+- WebServiceListener does no longer (simultaneously) bind to the listener-name AND address attribute.
+- Larva httpRequest parameter is no longer supported
+- Json2XmlValidator input format session key prefix changed from "Json2XmlValidator.inputformat " to "Json2XmlValidator.inputFormat " (capital F)
 
 
-
-Upcoming (7.7)
---------
+7.7
+---
 
 [Commits](https://github.com/ibissource/iaf/compare/v7.6-RC1...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
@@ -77,6 +86,8 @@ Upcoming (7.7)
 - Remove Struts management console (including the IAF-WebControl Configuration)
 - Server healthcheck at /iaf/api/server/health is now publicly accessible. 
   It will return 200 when all adapters are up, 503 when one or more are stopped. Previously, 401 was returned in all cases when called unauthenticated
+- Property references like `${property}` in configuration files are now resolved *after* the XML is parsed, and should therefor no longer contain characters that 
+  are invalid in XML encoded as entities. So characters like '<', '>' and '"' should appear 'as is' in properties, not as '&lt;', '&gt' and '&quot'.
 
 
 

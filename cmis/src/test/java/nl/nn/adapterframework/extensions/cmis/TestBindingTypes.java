@@ -57,25 +57,28 @@ public class TestBindingTypes extends CmisSenderTestBase {
 			+ "<relationships>    <relation>dummy</relation>  </relationships>"
 			+ "</cmis>";
 
+	private static String createActionExpectedBase64 = "ZmlsZUlucHV0LnR4dA==";
+	private static String updateActionExpectedBase64 = "aWQ=";
+
 	@Parameters(name = "{0} - {1}")
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
-				{ "atompub", "create", INPUT, "fileInput.txt" },
+				{ "atompub", "create", INPUT, createActionExpectedBase64 },
 				{ "atompub", "get", INPUT, "dummy_stream" },
 				{ "atompub", "find", FIND_INPUT, FIND_RESULT },
-				{ "atompub", "update", INPUT, "id" },
+				{ "atompub", "update", INPUT, updateActionExpectedBase64 },
 				{ "atompub", "fetch", INPUT, FETCH_RESULT },
 
-				{ "webservices", "create", INPUT, "fileInput.txt" },
+				{ "webservices", "create", INPUT, createActionExpectedBase64 },
 				{ "webservices", "get", INPUT, "dummy_stream" },
 				{ "webservices", "find", FIND_INPUT, FIND_RESULT },
-				{ "webservices", "update", INPUT, "id" },
+				{ "webservices", "update", INPUT, updateActionExpectedBase64 },
 				{ "webservices", "fetch", INPUT, FETCH_RESULT },
 
-				{ "browser", "create", INPUT, "fileInput.txt" },
+				{ "browser", "create", INPUT, createActionExpectedBase64 },
 				{ "browser", "get", INPUT, "dummy_stream" },
 				{ "browser", "find", FIND_INPUT, FIND_RESULT },
-				{ "browser", "update", INPUT, "id" },
+				{ "browser", "update", INPUT, updateActionExpectedBase64 },
 				{ "browser", "fetch", INPUT, FETCH_RESULT },
 		});
 	}
@@ -107,7 +110,7 @@ public class TestBindingTypes extends CmisSenderTestBase {
 	}
 
 	@Test
-	public void configure() throws ConfigurationException, SenderException, TimeoutException {
+	public void configure() throws ConfigurationException {
 		sender.setBindingType(bindingType);
 		sender.setAction(action);
 		sender.configure();

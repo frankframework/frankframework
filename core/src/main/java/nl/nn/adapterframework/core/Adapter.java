@@ -38,19 +38,19 @@ import nl.nn.adapterframework.cache.ICache;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
 import nl.nn.adapterframework.jmx.JmxAttribute;
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.receivers.Receiver;
+import nl.nn.adapterframework.statistics.CounterStatistic;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.CounterStatistic;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
@@ -58,7 +58,6 @@ import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunState;
 import nl.nn.adapterframework.util.RunStateManager;
-import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * The Adapter is the central manager in the IBIS Adapterframework, that has knowledge
@@ -106,7 +105,6 @@ public class Adapter implements IAdapter, NamedBean {
 	private @Getter String description;
 	private @Getter boolean autoStart = APP_CONSTANTS.getBoolean("adapters.autoStart", true);
 	private @Getter boolean replaceNullMessage = false;
-	private @Getter String errorState = "ERROR";
 	private @Getter int messageKeeperSize = 10; //default length of MessageKeeper
 	private Level msgLogLevel = Level.toLevel(APP_CONSTANTS.getProperty("msg.log.level.default", "BASIC"));
 	private @Getter boolean msgLogHidden = APP_CONSTANTS.getBoolean("msg.log.hidden.default", true);
@@ -117,7 +115,7 @@ public class Adapter implements IAdapter, NamedBean {
 	private ArrayList<Receiver<?>> receivers = new ArrayList<>();
 	private long lastMessageDate = 0;
 	private @Getter String lastMessageProcessingState; //"OK" or "ERROR"
-	private @Getter PipeLine pipeline;
+	private PipeLine pipeline;
 
 	private Map<String, SenderLastExitState> sendersLastExitState = new HashMap<String, SenderLastExitState>();
 
@@ -394,25 +392,40 @@ public class Adapter implements IAdapter, NamedBean {
 		return messageKeeper;
 	}
 	
-	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski, Date now, Date mainMark, Date detailMark, int action) throws SenderException {
-		Object root=hski.start(now,mainMark,detailMark);
-		try {
-			forEachStatisticsKeeperBody(hski,root,action);
-		} finally {
-			hski.end(root);
-		}
-	}
+//	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski, Date now, Date mainMark, Date detailMark, Action action) throws SenderException {
+//		Object root=hski.start(now,mainMark,detailMark);
+//		try {
+//			iterateOverStatistics(hski,root,action);
+//		} finally {
+//			hski.end(root);
+//		}
+//	}
 	
-	private void doForEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object adapterData, int action) throws SenderException {
+	@Override
+	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
+		Object adapterData=hski.openGroup(data,getName(),"adapter");
+		hski.handleScalar(adapterData,"upSince", getStatsUpSinceDate());
+		hski.handleScalar(adapterData,"lastMessageDate", getLastMessageDateDate());
+
+		if (action!=Action.FULL &&
+			action!=Action.SUMMARY) {
+			synchronized (statsMessageProcessingDuration) {
+				iterateOverStatisticsBody(hski,adapterData,action);
+			}
+		} else {
+			iterateOverStatisticsBody(hski,adapterData,action);
+		}
+		hski.closeGroup(adapterData);
+	}
+
+	private void iterateOverStatisticsBody(StatisticsKeeperIterationHandler hski, Object adapterData, Action action) throws SenderException {
 		hski.handleScalar(adapterData,"messagesInProcess", getNumOfMessagesInProcess());
-		hski.handleScalar(adapterData,"messagesProcessed", getNumOfMessagesProcessed());
-		hski.handleScalar(adapterData,"messagesInError", getNumOfMessagesInError());
+		hski.handleScalar(adapterData,"messagesProcessed", numOfMessagesProcessed);
+		hski.handleScalar(adapterData,"messagesInError", numOfMessagesInError);
 		hski.handleScalar(adapterData,"messagesProcessedThisInterval", numOfMessagesProcessed.getIntervalValue());
 		hski.handleScalar(adapterData,"messagesInErrorThisInterval", numOfMessagesInError.getIntervalValue());
 		hski.handleStatisticsKeeper(adapterData, statsMessageProcessingDuration);
 		statsMessageProcessingDuration.performAction(action);
-		numOfMessagesProcessed.performAction(action);
-		numOfMessagesInError.performAction(action);
 
 		Object hourData=hski.openGroup(adapterData,getName(),"processing by hour");
 		for (int i=0; i<getNumOfMessagesStartProcessingByHour().length; i++) {
@@ -426,10 +439,7 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 		hski.closeGroup(hourData);
 
-		boolean showDetails = action == HasStatistics.STATISTICS_ACTION_FULL
-				|| action == HasStatistics.STATISTICS_ACTION_MARK_FULL
-				|| action == HasStatistics.STATISTICS_ACTION_RESET;
-		if (showDetails) {
+		if (action == Action.FULL || action == Action.MARK_FULL) {
 			Object recsData=hski.openGroup(adapterData,null,"receivers");
 			for (Receiver<?> receiver: receivers) {
 				receiver.iterateOverStatistics(hski,recsData,action);
@@ -445,23 +455,6 @@ public class Adapter implements IAdapter, NamedBean {
 			getPipeLine().iterateOverStatistics(hski, pipelineData, action);
 			hski.closeGroup(pipelineData);
 		}
-	}
-
-	@Override
-	public void forEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
-		Object adapterData=hski.openGroup(data,getName(),"adapter");
-		hski.handleScalar(adapterData,"upSince", getStatsUpSinceDate());
-		hski.handleScalar(adapterData,"lastMessageDate", getLastMessageDateDate());
-
-		if (action!=HasStatistics.STATISTICS_ACTION_FULL &&
-			action!=HasStatistics.STATISTICS_ACTION_SUMMARY) {
-			synchronized (statsMessageProcessingDuration) {
-				doForEachStatisticsKeeperBody(hski,adapterData,action);
-			}
-		} else {
-			doForEachStatisticsKeeperBody(hski,adapterData,action);
-		}
-		hski.closeGroup(adapterData);
 	}
 
 
@@ -565,7 +558,7 @@ public class Adapter implements IAdapter, NamedBean {
 			return processMessageWithExceptions(messageId, message, pipeLineSession);
 		} catch (Throwable t) {
 			PipeLineResult result = new PipeLineResult();
-			result.setState(getErrorState());
+			result.setState(ExitState.ERROR);
 			String msg = "Illegal exception ["+t.getClass().getName()+"]";
 			INamedObject objectInError = null;
 			if (t instanceof ListenerException) {
@@ -709,9 +702,10 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 	}
 
+	// technically, a Receiver is not mandatory, but no useful adapter can do without it.
 	/**
 	 * Register a receiver for this Adapter
-	 * @see Receiver
+	 * @ff.mandatory
 	 */
 	public void registerReceiver(Receiver<?> receiver) {
 		receivers.add(receiver);
@@ -949,15 +943,6 @@ public class Adapter implements IAdapter, NamedBean {
 		return Misc.toFileSize(message.size());
 	}
 
-	@Override
-	public String getAdapterConfigurationAsString() {
-		String loadedConfig = getConfiguration().getLoadedConfiguration();
-		String encodedName = StringUtils.replace(getName(), "'", "''");
-		String xpath = "//adapter[@name='" + encodedName + "']";
-
-		return XmlUtils.copyOfSelect(loadedConfig, xpath);
-	}
-
 	public void waitForNoMessagesInProcess() throws InterruptedException {
 		synchronized (statsMessageProcessingDuration) {
 			while (getNumOfMessagesInProcess() > 0) {
@@ -965,7 +950,6 @@ public class Adapter implements IAdapter, NamedBean {
 			}
 		}
 	}
-
 
 	/* (non-Javadoc)
 	 * @see org.springframework.beans.factory.NamedBean#getBeanName()
@@ -975,7 +959,10 @@ public class Adapter implements IAdapter, NamedBean {
 		return name;
 	}
 
-	@IbisDoc({"name of the adapter", ""})
+	/** 
+	 * name of the adapter
+	 * @ff.mandatory
+	 */
 	@Override
 	public void setName(String name) {
 		this.name = name;
@@ -1001,14 +988,12 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 	
 
-	@IbisDoc({"when <code>true</code> a null message is replaced by an empty message", "false"})
+	/**
+	 * If <code>true</code> a null message is replaced by an empty message
+	 * @ff.default <code>false</code>
+	 */
 	public void setReplaceNullMessage(boolean b) {
 		replaceNullMessage = b;
-	}
-
-	/** state to put in {@link PipeLineResult} when a PipeRunException occurs */
-	public void setErrorState(String newErrorState) {
-		errorState = newErrorState;
 	}
 
 	/**
@@ -1019,12 +1004,15 @@ public class Adapter implements IAdapter, NamedBean {
 		this.messageKeeperSize = size;
 	}
 
-	@IbisDoc({"defines behaviour for logging messages. Configuration is done in the MSG appender in log4j4ibis.properties. " +
-			"Possible values are: <table border='1'><tr><th>msgLogLevel</th><th>messages which are logged</th></tr>" +
-			"<tr><td colspan='1'>Off</td> <td>No logging</td></tr>" +
-			"<tr><td colspan='1'>Basic</td><td>Logs information from adapter level messages </td></tr>" +
-			"<tr><td colspan='1'>Terse</td><td>Logs information from pipe messages.</td></tr>" +
-			"<tr><td colspan='1'>All</td> <td>Logs all messages.</td></tr></table>", "BASIC"})
+	/**
+	 * Defines behaviour for logging messages. Configuration is done in the MSG appender in log4j4ibis.properties.
+	 * Possible values are: <table border='1'><tr><th>msgLogLevel</th><th>messages which are logged</th></tr>
+	 * <tr><td colspan='1'>Off</td> <td>No logging</td></tr>
+	 * <tr><td colspan='1'>Basic</td><td>Logs information from adapter level messages </td></tr>
+	 * <tr><td colspan='1'>Terse</td><td>Logs information from pipe messages.</td></tr>
+	 * <tr><td colspan='1'>All</td> <td>Logs all messages.</td></tr></table>
+	 * @ff.default <code>BASIC</code>
+	 */
 	public void setMsgLogLevel(String level) throws ConfigurationException {
 		Level toSet = Level.toLevel(level);
 		if (toSet.name().equalsIgnoreCase(level)) //toLevel falls back to DEBUG, so to make sure the level has been changed this explicity check is used.
@@ -1045,7 +1033,10 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 
-	@IbisDoc({"if set to <code>true</code>, the length of the message is shown in the msg log instead of the content of the message", "false"})
+	/**
+	 * If set to <code>true</code>, the length of the message is shown in the msg log instead of the content of the message
+	 * @ff.default <code>false</code>
+	 */
 	public void setMsgLogHidden(boolean b) {
 		msgLogHidden = b;
 	}

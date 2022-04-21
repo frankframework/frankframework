@@ -22,8 +22,8 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 
 /*
- * When getSchemasId() returns a value the schemas loaded at initialisation time
- * will be used to validate otherwise the run time schemas are loaded and used.
+ * When getSchemasId() returns a value, the schemas loaded at initialisation time
+ * will be used to validate, otherwise the run time schemas are loaded and used.
   */
 public interface SchemasProvider {
 

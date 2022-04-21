@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2019-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 
+import lombok.Getter;
 import nl.nn.adapterframework.ftp.FTPFileRef;
 import nl.nn.adapterframework.ftp.FtpConnectException;
 import nl.nn.adapterframework.ftp.FtpSession;
@@ -44,6 +45,7 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTPFile> {
 
+	private final @Getter(onMethod = @__(@Override)) String domain = "FTP";
 	private String remoteDirectory = "";
 
 	private boolean open;
@@ -154,7 +156,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	public Message readFile(FTPFile f, String charset) throws FileSystemException, IOException {
 		InputStream inputStream = ftpClient.retrieveFileStream(f.getName());
 		ftpClient.completePendingCommand();
-		return new Message(inputStream, charset);
+		return new Message(inputStream, FileSystemUtils.getContext(this, f, charset));
 	}
 
 	@Override

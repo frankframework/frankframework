@@ -51,12 +51,11 @@ import nl.nn.adapterframework.stream.StreamingPipe;
  * 
  * @author Gerrit van Brakel
  */
-public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends StreamingPipe implements HasPhysicalDestination {
-	
+public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends StreamingPipe implements HasPhysicalDestination {
+
 	private FileSystemActor<F, FS> actor = new FileSystemActor<F, FS>();
 	private FS fileSystem;
 	private final String FILESYSTEMACTOR = "nl.nn.adapterframework.filesystem.FileSystemActor";
-
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -68,7 +67,7 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 			throw new ConfigurationException(getLogPrefix(null),e);
 		}
 	}
-	
+
 	@Override
 	public void start() throws PipeStartException {
 		super.start();
@@ -80,7 +79,7 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 			throw new PipeStartException("Cannot open fileSystem",e);
 		}
 	}
-	
+
 	@Override
 	public void stop() {
 		try {
@@ -96,12 +95,11 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	public boolean supportsOutputStreamPassThrough() {
 		return false;
 	}
-	
+
 	@Override
 	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
 		return actor.provideOutputStream(session, getNextPipe());
 	}
-
 
 	@Override
 	public PipeRunResult doPipe (Message message, PipeLineSession session) throws PipeRunException {
@@ -134,6 +132,11 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	@Override
 	public String getPhysicalDestinationName() {
 		return getFileSystem().getPhysicalDestinationName();
+	}
+
+	@Override
+	public String getDomain() {
+		return getFileSystem().getDomain();
 	}
 
 	public FS getFileSystem() {
@@ -170,7 +173,7 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	public void setInputFolder(String inputFolder) {
 		actor.setInputFolder(inputFolder);
 	}
-	
+
 	@IbisDocRef({"4", FILESYSTEMACTOR})
 	public void setCreateFolder(boolean createFolder) {
 		actor.setCreateFolder(createFolder);
@@ -195,7 +198,7 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	public void setNumberOfBackups(int numberOfBackups) {
 		actor.setNumberOfBackups(numberOfBackups);
 	}
-	
+
 	@IbisDocRef({"9", FILESYSTEMACTOR})
 	@Deprecated
 	public void setBase64(Base64Pipe.Direction base64) {

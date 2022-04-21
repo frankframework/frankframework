@@ -50,10 +50,11 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.w3c.dom.Element;
 
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.stream.Message;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SoapProviderTest {
@@ -64,7 +65,7 @@ public class SoapProviderTest {
 		String vendor = prop.getProperty("java.vendor");
 		System.out.println("JVM Vendor : " + vendor);
 		assumeThat(vendor, not(equalTo("IBM Corporation")));
-		
+
 	/*
 	 * The above exclusion of IBM JDK to work around the below error, seen when executing these tests with an IBM JDK:
 	 * 
@@ -86,27 +87,28 @@ public class SoapProviderTest {
 			at nl.nn.adapterframework.extensions.cxf.SoapProviderTest.createMessage(SoapProviderTest.java:98)
 			at nl.nn.adapterframework.extensions.cxf.SoapProviderTest.createMessage(SoapProviderTest.java:94)
 			at nl.nn.adapterframework.extensions.cxf.SoapProviderTest.sendMessageWithInputStreamAttachmentsTest(SoapProviderTest.java:228)
-	*/	
+	*/
 
 	}
-	
+
 	@Spy
 	WebServiceContext webServiceContext = new WebServiceContextStub();
 
 	@InjectMocks
 	private SoapProviderStub SOAPProvider = new SoapProviderStub();
 
-	private final String ATTACHMENT_CONTENT = "<dummy/>";
-	private final String ATTACHMENT_MIMETYPE = "plain/text";
+	private static final String ATTACHMENT_CONTENT = "<dummy/>";
+	private static final String ATTACHMENT_MIMETYPE = "plain/text";
 
-	private final String ATTACHMENT2_CONTENT = "<I'm a pdf file/>";
-	private final String ATTACHMENT2_NAME = "document.pdf";
-	private final String ATTACHMENT2_MIMETYPE = "application/pdf";
-	private final String MULTIPART_XML = "<parts><part type=\"file\" name=\""+ATTACHMENT2_NAME+"\" "
+	private static final String ATTACHMENT2_CONTENT = "<I'm a pdf file/>";
+	private static final String ATTACHMENT2_NAME = "document.pdf";
+	private static final String ATTACHMENT2_MIMETYPE = "application/pdf";
+	private static final String MULTIPART_XML = "<parts><part type=\"file\" name=\""+ATTACHMENT2_NAME+"\" "
 			+ "sessionKey=\"part_file\" size=\"72833\" "
 			+ "mimeType=\""+ATTACHMENT2_MIMETYPE+"\"/></parts>";
 
-	private final String BASEDIR = "/Soap/";
+	private static final String BASEDIR = "/Soap/";
+
 	protected InputStream getFile(String file) throws IOException {
 		URL url = this.getClass().getResource(BASEDIR+file);
 		if (url == null) {
@@ -128,7 +130,7 @@ public class SoapProviderTest {
 		if(addAttachment) {
 			InputStream fis = new ByteArrayInputStream(ATTACHMENT_CONTENT.getBytes());
 			DataHandler dataHander = new DataHandler(new ByteArrayDataSource(fis, ATTACHMENT_MIMETYPE));
-	
+
 			AttachmentPart part = soapMessage.createAttachmentPart(dataHander);
 			soapMessage.addAttachmentPart(part);
 		}
@@ -150,6 +152,7 @@ public class SoapProviderTest {
 
 		//Verify that the attachment sent, was received properly
 		assertEquals(ATTACHMENT_CONTENT, attachmentMessage.asString());
+		assertEquals(ATTACHMENT_MIMETYPE, attachmentMessage.getContext().get(MessageContext.METADATA_MIMETYPE).toString());
 
 		//Verify the content type
 		Element mimeTypes = XmlUtils.getFirstChildTag(attachment, "mimeHeaders");
@@ -202,7 +205,7 @@ public class SoapProviderTest {
 		assertNotNull(session.get("mimeHeaders"));
 
 		assertNotNull(session.get("attachments"));
-		assertEquals("<attachments />", session.get("attachments").toString().trim());
+		assertEquals("<attachments/>", session.get("attachments").toString().trim());
 	}
 
 	@Test
@@ -364,16 +367,6 @@ public class SoapProviderTest {
 	}
 
 	@Test
-	public void soapActionInSessionKeySOAP1_2ActionIsAtTheBeginning() throws Throwable {
-		SOAPMessage request = createMessage("soapmsg1_2.xml");
-		String value = "SOAP1_2ActionIsAtTheBeginning";
-		webServiceContext.getMessageContext().put("Content-Type", "action="+value+";application/soap+xml; somethingelse");
-		SOAPProvider.invoke(request);
-		webServiceContext.getMessageContext().clear();
-		assertEquals(value, SOAPProvider.getSession().get("SOAPAction"));
-	}
-
-	@Test
 	public void noSoapActionInSessionKey1_2() throws Throwable {
 		SOAPMessage request = createMessage("soapmsg1_2.xml");
 		webServiceContext.getMessageContext().put("Content-Type", "application/soap+xml; somethingelse");
@@ -381,11 +374,11 @@ public class SoapProviderTest {
 		webServiceContext.getMessageContext().clear();
 		assertNull(SOAPProvider.getSession().get("SOAPAction"));
 	}
-	
+
 	@Test
 	public void emptySoapActionInSessionKey1_2() throws Throwable {
 		SOAPMessage request = createMessage("soapmsg1_2.xml");
-		webServiceContext.getMessageContext().put("Content-Type", "application/soap+xml; action=; somethingelse");
+		webServiceContext.getMessageContext().put("Content-Type", "application/soap+xml; action; somethingelse");
 		SOAPProvider.invoke(request);
 		webServiceContext.getMessageContext().clear();
 		assertNull(SOAPProvider.getSession().get("SOAPAction"));

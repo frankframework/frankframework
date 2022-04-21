@@ -81,9 +81,7 @@ public final class SendJmsMessage extends Base {
 
 		if(StringUtils.isNotEmpty(messageProperty)) {
 			String[] keypair = messageProperty.split(",");
-			Parameter p = new Parameter();
-			p.setName(keypair[0]);
-			p.setValue(keypair[1]);
+			Parameter p = new Parameter(keypair[0], keypair[1]);
 			try {
 				p.configure();
 			} catch (ConfigurationException e) {

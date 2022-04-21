@@ -56,12 +56,12 @@ import nl.nn.adapterframework.xml.XmlWriter;
  * @author Jaco de Groot (jaco@dynasol.nl)
  */
 public class PipeDescriptionProvider {
-	private Map<Configuration, Map<String, PipeDescription>> pipeDescriptionCaches = new WeakHashMap<Configuration, Map<String, PipeDescription>>();
-	private Map<Configuration, Document> documents = new WeakHashMap<Configuration, Document>();
-	private final static String INPUT_VALIDATOR_CHECKPOINT_NAME = "InputValidator";
-	private final static String OUTPUT_VALIDATOR_CHECKPOINT_NAME = "OutputValidator";
-	private final static String INPUT_WRAPPER_CHECKPOINT_NAME = "InputWrapper";
-	private final static String OUTPUT_WRAPPER_CHECKPOINT_NAME = "OutputWrapper";
+	private Map<Configuration, Map<String, PipeDescription>> pipeDescriptionCaches = new WeakHashMap<>();
+	private Map<Configuration, Document> documents = new WeakHashMap<>();
+	private static final String INPUT_VALIDATOR_CHECKPOINT_NAME = "InputValidator";
+	private static final String OUTPUT_VALIDATOR_CHECKPOINT_NAME = "OutputValidator";
+	private static final String INPUT_WRAPPER_CHECKPOINT_NAME = "InputWrapper";
+	private static final String OUTPUT_WRAPPER_CHECKPOINT_NAME = "OutputWrapper";
 
 	/**
 	 * Get a PipeDescription object for the specified pipe. The returned object
@@ -134,7 +134,7 @@ public class PipeDescriptionProvider {
 			Configuration configuration = (Configuration) pipeLine.getApplicationContext();
 			Map<String, PipeDescription> pipeDescriptionCache = pipeDescriptionCaches.get(configuration);
 			if (pipeDescriptionCache == null) {
-				pipeDescriptionCache = new HashMap<String, PipeDescription>();
+				pipeDescriptionCache = new HashMap<>();
 				pipeDescriptionCaches.put(configuration, pipeDescriptionCache);
 			}
 			pipeDescription = pipeDescriptionCache.get(xpathExpression);
@@ -148,7 +148,8 @@ public class PipeDescriptionProvider {
 					Document document = documents.get(configuration);
 					if (document == null) {
 						try {
-							document = XmlUtils.buildDomDocument(configuration.getLoadedConfiguration());
+							String config = configuration.getLoadedConfiguration();
+							document = XmlUtils.buildDomDocument(config);
 							documents.put(configuration, document);
 						} catch (DomBuilderException e) {
 							pipeDescription = new PipeDescription();

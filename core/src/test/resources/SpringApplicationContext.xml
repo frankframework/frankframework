@@ -23,7 +23,6 @@
 	<bean name="schedulerHelper" class="nl.nn.adapterframework.testutil.SchedulerHelperMock" />
 
 	<bean name="flowDiagramManager" class="nl.nn.adapterframework.util.flow.FlowDiagramManager" autowire="no" scope="singleton" lazy-init="true" />
-	<bean name="flowGenerator" class="nl.nn.adapterframework.testutil.DummyFlowGenerator" scope="prototype" lazy-init="true" />
 
 	<bean id="MessageEventListener" class="nl.nn.adapterframework.lifecycle.MessageEventListener" scope="singleton" />
 	<bean id="jndiContextPrefixFactory" class="nl.nn.adapterframework.core.JndiContextPrefixFactory" />

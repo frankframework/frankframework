@@ -9,12 +9,12 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.testutil.TestConfiguration;
 
 public abstract class JdbcEnabledPipeTestBase<P extends IPipe> extends JdbcTestBase {
 
@@ -23,14 +23,6 @@ public abstract class JdbcEnabledPipeTestBase<P extends IPipe> extends JdbcTestB
 	protected P pipe;
 	protected PipeLine pipeline;
 	protected Adapter adapter;
-	private static TestConfiguration configuration;
-
-	private TestConfiguration getConfiguration() {
-		if(configuration == null) {
-			configuration = new TestConfiguration();
-		}
-		return configuration;
-	}
 
 	public abstract P createPipe();
 
@@ -46,7 +38,7 @@ public abstract class JdbcEnabledPipeTestBase<P extends IPipe> extends JdbcTestB
 		pipeline.addPipe(pipe);
 		PipeLineExit exit = new PipeLineExit();
 		exit.setPath("exit");
-		exit.setState("success");
+		exit.setState(ExitState.SUCCESS);
 		pipeline.registerPipeLineExit(exit);
 		adapter = getConfiguration().createBean(Adapter.class);
 		adapter.setName("TestAdapter-for-".concat(pipe.getClass().getSimpleName()));

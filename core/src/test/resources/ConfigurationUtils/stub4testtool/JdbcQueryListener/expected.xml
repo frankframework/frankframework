@@ -1,6 +1,7 @@
 <configuration>
 	  <adapter name="JdbcQueryListener">
       <receiver name="testtool-JdbcQueryListener"
+      			transactionAttribute="Required"
                 maxRetries="4"
                 pollInterval="1"
                 transactionTimeout="30">
@@ -31,6 +32,7 @@
                      retention="-1"/>
 		    </receiver>
       <receiver name="testtool-JdbcQueryListener-1"
+      			transactionAttribute="Required"
                 maxRetries="4"
                 pollInterval="1"
                 transactionTimeout="30">

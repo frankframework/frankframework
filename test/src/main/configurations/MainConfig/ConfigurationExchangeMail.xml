@@ -13,8 +13,10 @@
 				inProcessFolder="${exchangemail.inProcessFolder}"
 				processedFolder="${exchangemail.processedFolder}"
 				errorFolder="${exchangemail.errorFolder}"
+				logFolder="${exchangemail.logFolder}"
 				createFolders="true"
-				disableFolderBrowsers="${exchangemail.disableFolderBrowsers}"
+				disableMessageBrowsers="${exchangemail.disableMessageBrowsers}"
+				messageType="contents"
 			/>
 		</receiver>
 		<receiver name="ImapMail" active="${imapmail.active}">
@@ -30,8 +32,10 @@
 				inProcessFolder="${imapmail.inProcessFolder}"
 				processedFolder="${imapmail.processedFolder}"
 				errorFolder="${imapmail.errorFolder}"
+				logFolder="${imapmail.logFolder}"
 				createFolders="true"
-				disableFolderBrowsers="${imapmail.disableFolderBrowsers}"
+				disableMessageBrowsers="${imapmail.disableMessageBrowsers}"
+				messageType="contents"
 			/>
 		</receiver>
 		<pipeline>

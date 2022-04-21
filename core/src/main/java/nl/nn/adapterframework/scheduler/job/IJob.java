@@ -17,7 +17,6 @@ package nl.nn.adapterframework.scheduler.job;
 
 import org.quartz.JobDetail;
 
-import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.FrankDocGroup;
@@ -35,7 +34,7 @@ public interface IJob extends IConfigurable {
 	 * @exception TimeoutException when the TransactionTimeout has been reached
 	 * @exception JobExecutionException when the implementation fails to execute
 	 */
-	public void execute(IbisManager ibisManager) throws JobExecutionException, TimeoutException;
+	public void execute() throws JobExecutionException, TimeoutException;
 
 	/**
 	 * Triggers the Job at the specified number of milliseconds. Keep cronExpression empty in order to use interval.
@@ -69,12 +68,12 @@ public interface IJob extends IConfigurable {
 	public MessageKeeper getMessageKeeper();
 
 	/**
-	 * Optional attribute to avoid parallel execution of the Job, by multiple threads or servers. The Job is NOT executed when the lock cannot be obtained!
+	 * Optional element to avoid parallel execution of the Job, by multiple threads or servers. The Job is NOT executed when the lock cannot be obtained!
 	 * In case another thread, potentially on another server, holds the lock and does not release it in a timely manner, it will not trigger the job.
 	 */
 	public void setLocker(Locker locker);
 	public Locker getLocker();
 
 	/** Called from {@link ConfiguredJob} which should trigger this job definition. */
-	public void executeJob(IbisManager ibisManager);
+	public void executeJob();
 }

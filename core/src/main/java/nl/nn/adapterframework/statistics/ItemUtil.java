@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ public class ItemUtil {
 	public static void addItem(XmlBuilder xml, String name, Long value) {
 		addItem(xml,name,""+value);
 	}
-	
+
 	public static XmlBuilder getSummaryContainer(XmlBuilder parent, String name) {
 		if (parent==null) {
 			throw new NullPointerException("parent XmlBuilder cannot be null");
@@ -64,17 +64,17 @@ public class ItemUtil {
 			} else {
 				String value = "";
 				switch (il.getItemType(i)) {
-					case ItemList.ITEM_TYPE_INTEGER: 
+					case INTEGER:
 						if (countFormat==null) {
 							value = ""+ (Long)item;
 						} else {
-							value = countFormat.format((Long)item);
+							value = countFormat.format(item);
 						}
 						break;
-					case ItemList.ITEM_TYPE_TIME: 
+					case TIME:
 						value = timeFormat.format(item);
 						break;
-					case ItemList.ITEM_TYPE_FRACTION:
+					case FRACTION:
 						value = percentageFormat.format(((Double)item).doubleValue()*100)+ "%";
 						break;
 				}
@@ -88,21 +88,19 @@ public class ItemUtil {
 		Object item = il.getItemValue(index);
 		if (item==null) {
 			return ItemList.ITEM_VALUE_NAN;
-		} else {
-			switch (il.getItemType(index)) {
-				case StatisticsKeeper.ITEM_TYPE_INTEGER: 
-					return ""+ (Long)item;
-				case StatisticsKeeper.ITEM_TYPE_TIME: 
-					DecimalFormat df=new DecimalFormat(ItemList.ITEM_FORMAT_TIME);
-					return df.format(item);
-				case StatisticsKeeper.ITEM_TYPE_FRACTION:
-					DecimalFormat pf=new DecimalFormat(ItemList.ITEM_FORMAT_PERC);
-					return ""+pf.format(((Double)item).doubleValue()*100);
-				default:
-					return item.toString();
-			}
+		}
+		switch (il.getItemType(index)) {
+			case INTEGER:
+				return ""+ (Long)item;
+			case TIME:
+				DecimalFormat df=new DecimalFormat(ItemList.ITEM_FORMAT_TIME);
+				return df.format(item);
+			case FRACTION:
+				DecimalFormat pf=new DecimalFormat(ItemList.ITEM_FORMAT_PERC);
+				return ""+pf.format(((Double)item).doubleValue()*100);
+			default:
+				return item.toString();
 		}
 	}
-    
 
 }

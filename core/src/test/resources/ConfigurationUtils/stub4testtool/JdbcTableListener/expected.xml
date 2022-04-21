@@ -1,6 +1,7 @@
 <configuration>
 	  <adapter name="JdbcTableListener">
       <receiver name="testtool-JdbcTableListener"
+      			transactionAttribute="Required"
                 maxRetries="4"
                 pollInterval="1"
                 transactionTimeout="30">
@@ -28,6 +29,7 @@
                    messageField="TCLOB"/>
 		    </receiver>
       <receiver name="testtool-JdbcTableListener-1"
+      			transactionAttribute="Required"
                 maxRetries="4"
                 pollInterval="1"
                 transactionTimeout="30">

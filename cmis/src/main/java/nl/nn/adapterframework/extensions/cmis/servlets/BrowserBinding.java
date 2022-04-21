@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2020 Nationale-Nederlanden
+   Copyright 2019-2020 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -43,16 +43,6 @@ public class BrowserBinding extends CmisBrowserBindingServlet implements Dynamic
 		returnMap.put(PARAM_CALL_CONTEXT_HANDLER, "org.apache.chemistry.opencmis.server.shared.BasicAuthCallContextHandler");
 
 		return returnMap;
-	}
-
-	@Override
-	public String getName() {
-		return this.getClass().getSimpleName();
-	}
-
-	@Override
-	public int loadOnStartUp() {
-		return -1;
 	}
 
 	@Override

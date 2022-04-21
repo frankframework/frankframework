@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -145,14 +145,14 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	}
 
 	@Override
-	public Message readFile(SmbFile f, String charset) throws IOException {
-		return new Samba1Message(f, charset);
+	public Message readFile(SmbFile f, String charset) throws IOException, FileSystemException {
+		return new Samba1Message(f, FileSystemUtils.getContext(this, f, charset));
 	}
 
 	private class Samba1Message extends Message {
 		
-		public Samba1Message(SmbFile f, String charset) {
-			super(() -> new SmbFileInputStream(f), charset, f.getClass());
+		public Samba1Message(SmbFile f, Map<String,Object> context) {
+			super(() -> new SmbFileInputStream(f), context, f.getClass());
 		}
 	}
 

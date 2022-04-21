@@ -15,8 +15,8 @@
 */
 package nl.nn.adapterframework.http;
 
-import static org.junit.Assert.fail;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 
@@ -55,10 +55,7 @@ public abstract class HttpSenderTestBase<S extends HttpSenderBase> extends Sende
 
 		if(addCustomHeader) {
 			sender.setHeadersParams("custom-header");
-			Parameter headerParameter = new Parameter();
-			headerParameter.setName("custom-header");
-			headerParameter.setValue("value");
-			sender.addParameter(headerParameter);
+			sender.addParameter(new Parameter("custom-header", "value"));
 		}
 
 		return sender;

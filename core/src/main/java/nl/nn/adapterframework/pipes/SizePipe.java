@@ -34,16 +34,9 @@ public class SizePipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
-			int size = -1;
-			Object input = message.asObject();
-			if (input instanceof String) {
-				size = ((String)input).length();
-			} else if (input instanceof byte[]) {
-				size = ((byte[])input).length;
-			}
-			return new PipeRunResult(getSuccessForward(), "" + size);
+			return new PipeRunResult(getSuccessForward(), "" + message.size());
 		} catch(Exception e) {
-			throw new PipeRunException(this, "Error while transforming input", e);
+			throw new PipeRunException(this, "unable to determine size", e);
 		}
 	}
 

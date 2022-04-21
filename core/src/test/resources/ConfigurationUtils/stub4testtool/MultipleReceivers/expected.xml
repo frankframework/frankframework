@@ -1,6 +1,7 @@
 <configuration>
 	  <adapter name="MultipleReceivers">
-      <receiver name="testtool-MultipleReceivers">
+      <receiver name="testtool-MultipleReceivers"
+         	transactionAttribute="Required">
          <listener className="nl.nn.adapterframework.receivers.JavaListener"
                    serviceName="testtool-MultipleReceivers"/>
       </receiver>
@@ -8,7 +9,8 @@
 			      <listener name="JmsListener"
                    className="nl.nn.adapterframework.jms.JmsListener"
                    lookupDestination="false"/>
-		    </receiver>--><receiver name="testtool-MultipleReceivers-1">
+		    </receiver>--><receiver name="testtool-MultipleReceivers-1"
+		    	transactionAttribute="Required">
          <listener className="nl.nn.adapterframework.receivers.JavaListener"
                    serviceName="testtool-MultipleReceivers-1"/>
       </receiver>

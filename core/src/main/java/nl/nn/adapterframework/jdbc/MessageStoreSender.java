@@ -1,5 +1,5 @@
 /*
-   Copyright 2015 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2015 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.util.StringTokenizer;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.text.TextStringBuilder;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
@@ -31,7 +32,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.FrankDocGroup;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
@@ -45,13 +45,7 @@ import nl.nn.adapterframework.stream.Message;
  * the sender of the message can retry sending the message until a valid reply
  * is received in which case it can be certain that the message is stored in the
  * ibisstore.
- * 
- * Add a messageLog element with class {@link DummyTransactionalStorage} to
- * prevent the warning "... has no messageLog..." and enable the message
- * browser in the console. Set it's type to A to view the messages moved to the
- * messageLog by the {@link MessageStoreListener} or M to view the messages in
- * the messageStore which still need to be processed.
- * 
+ *
  * Example configuration:
  * <code><pre>
 		&lt;sender
@@ -62,17 +56,10 @@ import nl.nn.adapterframework.stream.Message;
 			>
 			&lt;param name="messageId" xpathExpression="/Envelope/Header/MessageID"/>
 		&lt;/sender>
-		&lt;!-- DummyTransactionalStorage to enable messagestore browser in the console (JdbcTransactionalStorage would store an extra record in the ibisstore) -->
-		&lt;messageLog
-			className="nl.nn.adapterframework.jdbc.DummyTransactionalStorage"
-			datasourceName="${jdbc.datasource.default}"
-			slotId="${instance.name}/ServiceName"
-			type="M"
-		/>
 </pre></code>
- * 
+ *
  * @ff.parameter messageId messageId to check for duplicates, when this parameter isn't present the messageId is read from sessionKey messageId
- * 
+ *
  * @author Jaco de Groot
  */
 @FrankDocGroup(name = "Senders")
@@ -80,12 +67,12 @@ public class MessageStoreSender extends JdbcTransactionalStorage<String> impleme
 	public static final String PARAM_MESSAGEID = "messageId";
 
 	private ParameterList paramList = null;
-	private String sessionKeys = null;
+	private @Getter String sessionKeys = null;
 
-	{ 
+	{
 		setOnlyStoreWhenMessageIdUnique(true);
 	}
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		if (paramList != null) {
@@ -116,24 +103,22 @@ public class MessageStoreSender extends JdbcTransactionalStorage<String> impleme
 	@Override
 	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		try {
-			Message messageToStore=message;
+			String messageToStore = message.asString(); // if no session keys are specified, message is stored without escaping, for compatibility with normal messagestore operation.
 			if (sessionKeys != null) {
 				List<String> list = new ArrayList<>();
-				list.add(StringEscapeUtils.escapeCsv(message.asString()));
+				list.add(StringEscapeUtils.escapeCsv(messageToStore));
 				StringTokenizer tokenizer = new StringTokenizer(sessionKeys, ",");
 				while (tokenizer.hasMoreElements()) {
 					String sessionKey = (String)tokenizer.nextElement();
 					Message msg = session.getMessage(sessionKey);
-					if(!msg.isEmpty()) {
-						list.add(StringEscapeUtils.escapeCsv(msg.asString()));
-					}
+					list.add(StringEscapeUtils.escapeCsv(msg.asString()));
 				}
 				TextStringBuilder sb = new TextStringBuilder();
 				sb.appendWithSeparators(list, ",");
-				messageToStore = Message.asMessage(sb.toString());
+				messageToStore = sb.toString();
 			}
 			// the messageId to be inserted in the messageStore defaults to the messageId of the session
-			String messageId = session.getMessageId(); 
+			String messageId = session.getMessageId();
 			String correlationID = messageId;
 			if (paramList != null && paramList.findParameter(PARAM_MESSAGEID) != null) {
 				try {
@@ -143,22 +128,24 @@ public class MessageStoreSender extends JdbcTransactionalStorage<String> impleme
 					throw new SenderException("Could not resolve parameter messageId", e);
 				}
 			}
-			return new Message(storeMessage(messageId, correlationID, new Date(), null, null, messageToStore.asString()));
+			return new Message(storeMessage(messageId, correlationID, new Date(), null, null, messageToStore));
 		} catch (IOException e) {
 			throw new SenderException(getLogPrefix(),e);
 		}
 	}
 
-	@IbisDoc({"1", "Comma separated list of sessionKey's to be stored together with the message. Please note: corresponding MessagestoreListener must have the same value for this attribute", ""})
+	/**
+	 * Comma separated list of sessionKey's to be stored together with the message. Please note: corresponding {@link MessageStoreListener} must have the same value for this attribute.
+	 */
 	public void setSessionKeys(String sessionKeys) {
 		this.sessionKeys = sessionKeys;
 	}
 
-	public String getSessionKeys() {
-		return sessionKeys;
-	}
-
-	@IbisDoc({"2", "If set to <code>true</code>, the message is stored only if the MessageId is not present in the store yet.", "true"})
+	/**
+	 * If set to <code>true</code>, the message is stored only if the MessageId is not present in the store yet.
+	 *
+	 * @ff.default <code>true</code>
+	 */
 	@Override
 	public void setOnlyStoreWhenMessageIdUnique(boolean onlyStoreWhenMessageIdUnique) {
 		super.setOnlyStoreWhenMessageIdUnique(onlyStoreWhenMessageIdUnique);

@@ -17,7 +17,6 @@ http://schemas.ibissource.org/ibisdoc.xsd, OK
 			<ApiListener
 				name="HelloBeautifulWorld"
 				uriPattern="hello-beautiful-world"
-				method="GET"
 			/>
 		</Receiver>
 		<Pipeline firstPipe="HelloBeautifulWorld">
@@ -27,7 +26,7 @@ http://schemas.ibissource.org/ibisdoc.xsd, OK
 				>
 				<Forward name="success" path="EXIT"/>
 			</FixedResultPipe>
-			<Exit path="EXIT" state="success"/>
+			<Exit name="EXIT" state="success"/>
 		</Pipeline>
 	</Adapter>
 </Module>

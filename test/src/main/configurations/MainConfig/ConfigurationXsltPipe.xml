@@ -67,6 +67,14 @@
 				styleSheetName="XsltPipe/TransformXSLT1.xsl">
 				<forward name="success" path="EXIT" />
 			</pipe>
+
+			<pipe name="DisableOutputEscaping" className="nl.nn.adapterframework.pipes.XsltPipe"
+				styleSheetName="XsltPipe/disableOutputEscaping/extract.xslt">
+			</pipe>
+			<pipe name="DisableOutputEscaping-second" className="nl.nn.adapterframework.pipes.XsltPipe"
+				styleSheetName="XsltPipe/disableOutputEscaping/map.xslt">
+				<forward name="success" path="EXIT" />
+			</pipe>
 		</pipeline>
 	</adapter>
 </module>

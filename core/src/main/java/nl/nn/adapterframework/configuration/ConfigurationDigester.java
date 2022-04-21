@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2018, 2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2016, 2018, 2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.configuration;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,10 +52,12 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.SpringUtils;
-import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.xml.AttributePropertyResolver;
 import nl.nn.adapterframework.xml.ElementPropertyResolver;
+import nl.nn.adapterframework.xml.NamespacedContentsRemovingFilter;
+import nl.nn.adapterframework.xml.PrettyPrintFilter;
 import nl.nn.adapterframework.xml.SaxException;
 import nl.nn.adapterframework.xml.TransformerFilter;
 import nl.nn.adapterframework.xml.XmlWriter;
@@ -96,9 +97,8 @@ public class ConfigurationDigester implements ApplicationContextAware {
 
 	private static final String CONFIGURATION_VALIDATION_SCHEMA = "FrankFrameworkCanonical.xsd";
 
-	private String digesterRulesFile = FrankDigesterRules.DIGESTER_RULES_FILE;
+	private @Getter @Setter String digesterRules = FrankDigesterRules.DIGESTER_RULES_FILE;
 
-	private boolean schemaBasedParsing = AppConstants.getInstance().getBoolean("configurations.digester.schemaBasedParsing", true);
 	private boolean suppressValidationWarnings = AppConstants.getInstance().getBoolean(SuppressKeys.CONFIGURATION_VALIDATION.getKey(), false);
 	private boolean validation = AppConstants.getInstance().getBoolean("configurations.validation", true);
 
@@ -198,10 +198,9 @@ public class ConfigurationDigester implements ApplicationContextAware {
 			if (log.isDebugEnabled()) log.debug("digesting configuration ["+configuration.getName()+"] configurationFile ["+configurationFile+"]");
 
 			AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
-			String loaded = resolveEntitiesAndProperties(configuration, configurationResource, appConstants);
+			parseAndResolveEntitiesAndProperties(digester, configuration, configurationResource, appConstants);
 
 			configLogger.info(configuration.getLoadedConfiguration());
-			digester.parse(new StringReader(loaded));
 		} catch (Throwable t) {
 			// wrap exception to be sure it gets rendered via the IbisException-renderer
 			String currentElementName = null;
@@ -213,57 +212,35 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		}
 	}
 
-	private String resolveEntitiesAndProperties(Configuration configuration, Resource resource, Properties appConstants) throws IOException, SAXException, ConfigurationException, TransformerConfigurationException {
-		return resolveEntitiesAndProperties(configuration, resource, appConstants, schemaBasedParsing);
-	}
-
 	/**
 	 * Performs an Identity-transform, which resolves entities with content from files found on the ClassPath.
 	 * Resolve all non-attribute properties
 	 */
-	public String resolveEntitiesAndProperties(Configuration configuration, Resource resource, Properties appConstants, boolean schemaBasedParsing) throws IOException, SAXException, ConfigurationException, TransformerConfigurationException {
-		XmlWriter writer;
+	public void parseAndResolveEntitiesAndProperties(ContentHandler digester, Configuration configuration, Resource resource, Properties appConstants) throws IOException, SAXException, TransformerConfigurationException {
 		ContentHandler handler;
-		if(schemaBasedParsing) {
-			writer = new ElementPropertyResolver(appConstants);
-			handler = getStub4TesttoolContentHandler(writer, appConstants);
-			handler = getCanonicalizedConfiguration(handler);
-			handler = new OnlyActiveFilter(handler, appConstants);
-		} else {
-			writer = new XmlWriter();
-			handler = writer;
-		}
+		
+		XmlWriter loadedHiddenWriter = new XmlWriter();
+		handler = new PrettyPrintFilter(loadedHiddenWriter);
+		handler = new AttributePropertyResolver(handler, appConstants, getPropsToHide(appConstants));
+		handler = new XmlTee(digester, handler);
+
+		handler = getStub4TesttoolContentHandler(handler, appConstants);
+		handler = getConfigurationCanonicalizer(handler);
+		handler = new OnlyActiveFilter(handler, appConstants);
+		handler = new ElementPropertyResolver(handler, appConstants);
 
 		XmlWriter originalConfigWriter = new XmlWriter();
 		handler = new XmlTee(handler, originalConfigWriter);
 
 		XmlUtils.parseXml(resource, handler);
 		configuration.setOriginalConfiguration(originalConfigWriter.toString());
-		String loaded = writer.toString();
-
-		if(schemaBasedParsing) {
-			String loadedHide = StringResolver.substVars(loaded, appConstants, null, getPropsToHide(appConstants));
-			configuration.setLoadedConfiguration(loadedHide);
-		} else {
-			String loadedHide = StringResolver.substVars(configuration.getOriginalConfiguration(), appConstants, null, getPropsToHide(appConstants));
-			loadedHide = processCanonicalizedActivatedStubbedXslts(loadedHide, configuration.getClassLoader());
-			configuration.setLoadedConfiguration(loadedHide);
-
-			loaded = StringResolver.substVars(loaded, appConstants);
-			loaded = processCanonicalizedActivatedStubbedXslts(loaded, configuration.getClassLoader());
-		}
-
-		return loaded;
+		configuration.setLoadedConfiguration(loadedHiddenWriter.toString());
 	}
 
-	private String processCanonicalizedActivatedStubbedXslts(String configuration, ClassLoader classLoader) throws ConfigurationException {
-		configuration = ConfigurationUtils.getCanonicalizedConfiguration(configuration);
-		configuration = ConfigurationUtils.getActivatedConfiguration(configuration);
 
-		if (ConfigurationUtils.isConfigurationStubbed(classLoader)) {
-			configuration = ConfigurationUtils.getStubbedConfiguration(classLoader, configuration);
-		}
-		return configuration;
+	//Fixes ConfigurationDigesterTest#testOldSchoolConfigurationParser test
+	protected boolean isConfigurationStubbed(ClassLoader classLoader) {
+		return ConfigurationUtils.isConfigurationStubbed(classLoader);
 	}
 
 	private List<String> getPropsToHide(Properties appConstants) {
@@ -275,12 +252,12 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		return propsToHide;
 	}
 
-	public ContentHandler getCanonicalizedConfiguration(ContentHandler writer) throws IOException, SAXException {
+	public ContentHandler getConfigurationCanonicalizer(ContentHandler writer) throws IOException {
 		String frankConfigXSD = ConfigurationUtils.FRANK_CONFIG_XSD;
-		return getCanonicalizedConfiguration(writer, frankConfigXSD, new XmlErrorHandler(frankConfigXSD));
+		return getConfigurationCanonicalizer(writer, frankConfigXSD, new XmlErrorHandler(frankConfigXSD));
 	}
 
-	public ContentHandler getCanonicalizedConfiguration(ContentHandler handler, String frankConfigXSD, ErrorHandler errorHandler) throws IOException, SAXException {
+	public ContentHandler getConfigurationCanonicalizer(ContentHandler handler, String frankConfigXSD, ErrorHandler errorHandler) throws IOException {
 		try {
 			ElementRoleFilter elementRoleFilter = new ElementRoleFilter(handler);
 			ValidatorHandler validatorHandler = XmlUtils.getValidatorHandler(ClassUtils.getResourceURL(frankConfigXSD));
@@ -288,13 +265,14 @@ public class ConfigurationDigester implements ApplicationContextAware {
 			if (errorHandler != null) {
 				validatorHandler.setErrorHandler(errorHandler);
 			}
-			SkipContainersFilter skipContainersFilter = new SkipContainersFilter(validatorHandler);
+			NamespacedContentsRemovingFilter namespacedContentsRemovingFilter = new NamespacedContentsRemovingFilter(validatorHandler);
+			SkipContainersFilter skipContainersFilter = new SkipContainersFilter(namespacedContentsRemovingFilter);
 			return new InitialCapsFilter(skipContainersFilter);
 		} catch (SAXException e) {
 			throw new IOException("Cannot get canonicalizer using ["+ConfigurationUtils.FRANK_CONFIG_XSD+"]", e);
 		}
-	}	
-	
+	}
+
 	/**
 	 * Get the contenthandler to stub configurations
 	 * If stubbing is disabled, the input ContentHandler is returned as-is
@@ -316,11 +294,4 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		return handler;
 	}
 
-	public void setDigesterRules(String string) {
-		digesterRulesFile = string;
-	}
-
-	public String getDigesterRules() {
-		return digesterRulesFile;
-	}
 }

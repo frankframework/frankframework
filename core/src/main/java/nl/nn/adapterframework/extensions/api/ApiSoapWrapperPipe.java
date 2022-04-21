@@ -95,10 +95,7 @@ public class ApiSoapWrapperPipe extends SoapWrapperPipe {
 			addParameter(p);
 		}
 
-		p = new Parameter();
-		p.setName(FROM_OUT);
-		p.setValue(AppConstants.getInstance().getProperty("instance.name", ""));
-		addParameter(p);
+		addParameter(new Parameter(FROM_OUT, AppConstants.getInstance().getProperty("instance.name", "")));
 
 	}
 }
