@@ -1012,6 +1012,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	private ExchangeService getConnection(String mailbox) throws FileSystemException {
 		ExchangeService service = super.getConnection();
 		service.getHttpHeaders().put(ANCHOR_HEADER, mailbox);
+		service.setImpersonatedUserId(new ImpersonatedUserId(ConnectingIdType.SmtpAddress, mailbox));
+
 		boolean invalidateConnectionOnRelease = false;
 
 		if(!cache.isMailboxRegistered(mailbox)) {
