@@ -80,10 +80,8 @@ public class Message implements Serializable {
 			this.request = request;
 		}
 		this.charset = charset;
-		if (requestClass==null && request!=null) {
-			requestClass=request.getClass();
-		}
-		this.requestClass = requestClass!=null ? requestClass.getSimpleName() : "null";	}
+		this.requestClass = requestClass!=null ? ClassUtils.nameOf(requestClass) : ClassUtils.nameOf(request);
+	}
 	private Message(Object request, String charset) {
 		this(request, charset, request !=null ? request.getClass() : null);
 	}
