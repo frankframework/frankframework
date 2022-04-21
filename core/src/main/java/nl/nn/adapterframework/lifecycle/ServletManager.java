@@ -27,12 +27,14 @@ import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRegistration;
 import javax.servlet.ServletSecurityElement;
 import javax.servlet.annotation.ServletSecurity;
+import javax.servlet.annotation.ServletSecurity.TransportGuarantee;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -64,6 +66,10 @@ public class ServletManager {
 	private Logger log = LogUtil.getLogger(this);
 	private AppConstants appConstants;
 	private boolean webSecurityEnabled = true;
+	private static TransportGuarantee defaultTransportGuarantee = TransportGuarantee.CONFIDENTIAL;
+
+	private static final String AUTH_ENABLED_KEY = "application.security.http.authentication";
+	private static final String HTTPS_ENABLED_KEY = "application.security.http.transportGuarantee";
 
 	private ServletContext getServletContext() {
 		return servletContext;
@@ -77,7 +83,17 @@ public class ServletManager {
 
 		appConstants = AppConstants.getInstance();
 		boolean isDtapStageLoc = "LOC".equalsIgnoreCase(appConstants.getString("dtap.stage", null));
-		webSecurityEnabled = appConstants.getBoolean("application.security.http.enabled", !isDtapStageLoc);
+		webSecurityEnabled = appConstants.getBoolean(AUTH_ENABLED_KEY, !isDtapStageLoc);
+		String constraintType = appConstants.getString(HTTPS_ENABLED_KEY, null);
+		if (StringUtils.isNotEmpty(constraintType)) {
+			try {
+				defaultTransportGuarantee = EnumUtils.parse(TransportGuarantee.class, constraintType);
+			} catch(IllegalArgumentException e) {
+				log.error("unable to set TransportGuarantee", e);
+			}
+		} else if(isDtapStageLoc) {
+			defaultTransportGuarantee = TransportGuarantee.NONE;
+		}
 	}
 
 	/**
@@ -175,14 +191,9 @@ public class ServletManager {
 	public static ServletSecurity.TransportGuarantee getTransportGuarantee(String propertyName) {
 		AppConstants appConstants = AppConstants.getInstance();
 		String constraintType = appConstants.getString(propertyName, null);
-		if (StringUtils.isNotEmpty(constraintType))
+		if (StringUtils.isNotEmpty(constraintType)) {
 			return ServletSecurity.TransportGuarantee.valueOf(constraintType);
-
-		String stage = appConstants.getString("dtap.stage", null);
-		if (StringUtils.isNotEmpty(stage) && stage.equalsIgnoreCase("LOC")) {
-			return ServletSecurity.TransportGuarantee.NONE;
 		}
-		return ServletSecurity.TransportGuarantee.CONFIDENTIAL;
-
+		return defaultTransportGuarantee;
 	}
 }
