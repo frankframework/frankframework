@@ -25,14 +25,16 @@ import nl.nn.adapterframework.stream.Message;
 
 public class PartMessage extends Message {
 
-	private Part part;
+	private static final long serialVersionUID = 4740404985426114492L;
+
+	private transient Part part;
 
 	public PartMessage(Part part) {
 		this(part, null);
 	}
 
 	public PartMessage(Part part, String charset) {
-		super(() -> part.getInputStream(), charset, part.getClass());
+		super(part::getInputStream, charset, part.getClass());
 		this.part = part;
 
 		if (StringUtils.isEmpty(charset)) {
@@ -49,12 +51,15 @@ public class PartMessage extends Message {
 
 	@Override
 	public long size() {
-		try {
-			return part.getSize();
-		} catch (MessagingException e) {
-			log.warn("Cannot get size", e);
-			return -1;
+		if (part!=null) {
+			try {
+				return part.getSize();
+			} catch (MessagingException e) {
+				log.warn("Cannot get size", e);
+				return -1;
+			}
 		}
+		return super.size();
 	}
 
 }

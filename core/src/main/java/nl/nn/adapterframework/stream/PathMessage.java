@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,9 +22,10 @@ import java.nio.file.Path;
 import nl.nn.adapterframework.util.ClassUtils;
 
 public class PathMessage extends Message {
-	
-	private Path path;
-	
+
+	private static final long serialVersionUID = -6810228164430433617L;
+	private transient Path path;
+
 	public PathMessage(Path path, String charset) {
 		super(() -> Files.newInputStream(path), charset, path.getClass());
 		this.path = path;
@@ -33,15 +34,18 @@ public class PathMessage extends Message {
 	public PathMessage(Path path) {
 		this(path, null);
 	}
-	
+
 	@Override
 	public long size() {
-		try {
-			return Files.size(path);
-		} catch (IOException e) {
-			log.debug("unable to determine size of stream ["+ClassUtils.nameOf(path)+"]", e);
-			return -1;
+		if (path!=null) {
+			try {
+				return Files.size(path);
+			} catch (IOException e) {
+				log.debug("unable to determine size of stream ["+ClassUtils.nameOf(path)+"]", e);
+				return -1;
+			}
 		}
+		return super.size();
 	}
 
 

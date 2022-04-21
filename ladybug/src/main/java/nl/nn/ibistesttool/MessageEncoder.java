@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ public class MessageEncoder extends MessageEncoderImpl {
 						try (InputStream inputStream = m.asInputStream()) {
 							IOUtils.copy(new BoundedInputStream(inputStream, testTool.getMaxMessageLength()), baos, testTool.getMaxMessageLength());
 							ToStringResult result = super.toString(baos.toByteArray(), charset);
-							result.setMessageClassName(m.getRequestClass().getTypeName());
+							result.setMessageClassName(m.getRequestClass());
 							return result;
 						} catch (IOException e) {
 							return super.toString(e, null);
@@ -63,9 +63,9 @@ public class MessageEncoder extends MessageEncoderImpl {
 					} catch (IOException e) {
 						return super.toString(e, null);
 					}
-					return new ToStringResult(writer.toString(), null, m.getRequestClass().getTypeName());
+					return new ToStringResult(writer.toString(), null, m.getRequestClass());
 				}
-				return new ToStringResult(WAITING_FOR_STREAM_MESSAGE, null, m.getRequestClass().getTypeName());
+				return new ToStringResult(WAITING_FOR_STREAM_MESSAGE, null, m.getRequestClass());
 			}
 			return super.toString(m.asObject(), charset);
 		}
