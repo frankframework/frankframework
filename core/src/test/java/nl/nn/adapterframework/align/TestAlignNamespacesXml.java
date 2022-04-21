@@ -1,13 +1,20 @@
 package nl.nn.adapterframework.align;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
+import javax.xml.transform.TransformerException;
 import javax.xml.validation.ValidatorHandler;
 
 import org.apache.xerces.xs.XSModel;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.testutil.MatchUtils;
+import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.XmlWriter;
 
@@ -18,25 +25,59 @@ public class TestAlignNamespacesXml extends AlignTestBase {
 
 	@Override
 	public void testFiles(String schemaFile, String namespace, String rootElement, String inputFile, boolean potentialCompactionProblems, String expectedFailureReason) throws Exception {
-		
+
 		URL schemaUrl=getSchemaURL(schemaFile);
 		String xmlString=getTestFile(inputFile+".xml");
-		
-		String xmlNoNamespace = XmlUtils.removeNamespaces(xmlString);
-		
+
+		String xmlNoNamespace = removeNamespacesExceptAttributes(xmlString);
+
 		ValidatorHandler validatorHandler = XmlAligner.getValidatorHandler(schemaUrl);
 		List<XSModel> schemaInformation = XmlAligner.getSchemaInformation(schemaUrl);
-		
+
 		XmlAligner aligner = new XmlAligner(validatorHandler, schemaInformation);
-		
+
 		NamespaceAligningFilter namespaceAligningFilter = new NamespaceAligningFilter(aligner, validatorHandler);
 
 		XmlWriter writer = new XmlWriter();
 		aligner.setContentHandler(writer);
-		
+
 		XmlUtils.parseXml(xmlNoNamespace, namespaceAligningFilter);
 
 		MatchUtils.assertXmlEquals("", xmlString, writer.toString(), true);
 	}
 
+	@Override
+	@Test
+	@Ignore("only json input")
+	public void testMixedContentUnknown() throws Exception {
+		super.testMixedContentUnknown();
+	}
+
+	private String removeNamespacesExceptAttributes(String xmlString) throws ConfigurationException, TransformerException, IOException, SAXException {
+
+		String template = "<xsl:template match=\"*\">"
+				+ "<xsl:element name=\"{local-name()}\">"
+				+ "<xsl:for-each select=\"@*\">"
+				+ "<xsl:copy/>"
+				+ "</xsl:for-each>"
+				+ "<xsl:apply-templates/>"
+				+ "</xsl:element>"
+				+ "</xsl:template>"
+				+ "<xsl:template match=\"comment() | processing-instruction() | text()\">"
+				+ "<xsl:copy>"
+				+ "<xsl:apply-templates/>"
+				+ "</xsl:copy>"
+			+ "</xsl:template>";
+
+		String stylesheet = "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
+		+ "<xsl:output method=\"xml\" />"
+		+ template
+		+ "</xsl:stylesheet>";
+
+		TransformerPool tp = TransformerPool.getInstance(stylesheet, 2);
+		tp.open();
+		String result = tp.transform(xmlString, null);
+		tp.close();
+		return result;
+	}
 }
