@@ -546,8 +546,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 		if (result instanceof Message) { //we just need to check if the message is null or not!
 			if(Message.isNull((Message)result)) {
 				result = null;
-			}
-			if(((Message)result).asObject() instanceof String) { //Used by getMinLength and getMaxLength
+			} else if(((Message)result).asObject() instanceof String) { //Used by getMinLength and getMaxLength
 				result = (String) ((Message) result).asObject();
 			}
 		}
