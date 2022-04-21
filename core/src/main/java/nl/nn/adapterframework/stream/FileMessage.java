@@ -21,7 +21,9 @@ import java.util.Map;
 
 public class FileMessage extends Message {
 
-	private File file;
+	private static final long serialVersionUID = 5219660236736759665L;
+
+	private transient File file;
 
 	public FileMessage(File file, Map<String,Object> context) {
 		super(() -> new FileInputStream(file), new MessageContext(context)
@@ -43,7 +45,10 @@ public class FileMessage extends Message {
 
 	@Override
 	public long size() {
-		return file.length();
+		if (file!=null) {
+			return file.length();
+		}
+		return super.size();
 	}
 
 }
