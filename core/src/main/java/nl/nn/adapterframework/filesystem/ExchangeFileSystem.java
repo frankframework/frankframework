@@ -225,10 +225,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			} catch (Exception e){
 				throw new FileSystemException("Could not generate access token!", e);
 			}
-			if(StringUtils.isNotEmpty(getMailAddress())){
-				exchangeService.setImpersonatedUserId(new ImpersonatedUserId(ConnectingIdType.SmtpAddress, getMailAddress()));
-				exchangeService.getHttpHeaders().put("X-AnchorMailbox", getMailAddress());
-			}
 		} else {
 			CredentialFactory cf = getCredentials();
 			// use deprecated Basic Authentication. Support will end 2021-Q3!
@@ -275,6 +271,12 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			}
 		}
 		log.debug("using url ["+exchangeService.getUrl()+"]");
+
+		if(StringUtils.isNotEmpty(getMailAddress())){
+			exchangeService.setImpersonatedUserId(new ImpersonatedUserId(ConnectingIdType.SmtpAddress, getMailAddress()));
+			exchangeService.getHttpHeaders().put(ANCHOR_HEADER, getMailAddress());
+		}
+
 		return exchangeService;
 	}
 
