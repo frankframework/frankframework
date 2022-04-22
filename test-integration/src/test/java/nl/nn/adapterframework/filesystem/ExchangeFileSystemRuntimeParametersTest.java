@@ -35,7 +35,6 @@ public class ExchangeFileSystemRuntimeParametersTest  extends MailFileSystemTest
 	protected ExchangeFileSystem createFileSystem() throws ConfigurationException {
 		ExchangeFileSystem fileSystem = new ExchangeFileSystem();
 		if (StringUtils.isNotEmpty(url)) fileSystem.setUrl(url);
-		fileSystem.setAccessToken(accessToken);
 		fileSystem.setUsername(username);
 		fileSystem.setPassword(password);
 		return fileSystem;
@@ -52,6 +51,9 @@ public class ExchangeFileSystemRuntimeParametersTest  extends MailFileSystemTest
 			constructFolderName(mailaddress, "Test folder B"), constructFolderName(mailaddress,"messageFolder"));
 	}
 
+
+	// When using .setImpersonatedUser, it throws:
+	// Caused by: microsoft.exchange.webservices.data.core.exception.service.remote.ServiceResponseException: The account does not have permission to impersonate the requested user.
 	@Test
 	public void testCopyFileAcrossMailboxes() throws Exception {
 		String folderNameA = constructFolderName(mailaddress, "messageFolder");
