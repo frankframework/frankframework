@@ -56,7 +56,7 @@ public class ExchangeFileSystemRuntimeParametersTest  extends MailFileSystemTest
 	}
 
 
-	// When using .setImpersonatedUser, it throws:
+	// When using basic auth and .setImpersonatedUser, it throws:
 	// Caused by: microsoft.exchange.webservices.data.core.exception.service.remote.ServiceResponseException: The account does not have permission to impersonate the requested user.
 	@Test
 	public void testCopyFileAcrossMailboxes() throws Exception {
