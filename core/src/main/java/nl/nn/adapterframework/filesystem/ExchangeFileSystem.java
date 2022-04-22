@@ -160,14 +160,12 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		if (StringUtils.isEmpty(getUrl()) && StringUtils.isEmpty(getMailAddress())) {
 			throw new ConfigurationException("either url or mailAddress needs to be specified");
 		}
+		cf = new CredentialFactory(getAuthAlias(), getClientId(), getClientSecret());
 	}
 
 	@Override
 	public void open() throws FileSystemException {
 		super.open();
-		if(cf == null){
-			cf = new CredentialFactory(getAuthAlias(), getClientId(), getClientSecret());
-		}
 		if( StringUtils.isNotEmpty(getTenantId()) ){
 			try {
 				client = ConfidentialClientApplication.builder(
