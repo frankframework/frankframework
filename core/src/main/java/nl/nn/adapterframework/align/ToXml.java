@@ -18,6 +18,7 @@ package nl.nn.adapterframework.align;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,7 @@ import javax.xml.validation.ValidatorHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.xs.XSAttributeDeclaration;
 import org.apache.xerces.xs.XSAttributeUse;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
@@ -321,7 +323,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 		Set<String> unProcessedChildren = getUnprocessedChildElementNames(elementDeclaration, node, processedChildren);
 
 		if (unProcessedChildren!=null && !unProcessedChildren.isEmpty()) {
-			Set<String> unProcessedChildrenWorkingCopy=new HashSet<String>(unProcessedChildren);
+			Set<String> unProcessedChildrenWorkingCopy=new LinkedHashSet<String>(unProcessedChildren);
 			log.warn("processing ["+unProcessedChildren.size()+"] unprocessed child elements"+(unProcessedChildren.size()>0?", first ["+unProcessedChildren.iterator().next()+"]":""));
 			// this loop is required to handle for mixed content element containing globally defined elements
 			for (String childName:unProcessedChildrenWorkingCopy) {
@@ -329,8 +331,14 @@ public abstract class ToXml<C,N> extends XmlAligner {
 				XSElementDeclaration childElementDeclaration = findElementDeclarationForName(null,childName);
 				if (childElementDeclaration==null) {
 					// this clause is hit for mixed content element containing elements that are not defined
-					handleRecoverableError(MSG_CANNOT_NOT_FIND_ELEMENT_DECLARATION+" ["+childName+"]", isIgnoreUndeclaredElements());
-					continue;
+					if (isTypeContainsWildcard()) {
+						XSElementDecl elementDeclarationStub = new XSElementDecl();
+						elementDeclarationStub.fName=childName;
+						childElementDeclaration = elementDeclarationStub;
+					} else {
+						handleRecoverableError(MSG_CANNOT_NOT_FIND_ELEMENT_DECLARATION+" ["+childName+"]", isIgnoreUndeclaredElements());
+						continue;
+					}
 				}
 				processChildElement(node, name, childElementDeclaration, false, processedChildren);
 			}

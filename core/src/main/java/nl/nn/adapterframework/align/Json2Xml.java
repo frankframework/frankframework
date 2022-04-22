@@ -17,8 +17,8 @@ package nl.nn.adapterframework.align;
 
 import java.io.StringReader;
 import java.net.URL;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +41,9 @@ import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSModel;
 import org.xml.sax.SAXException;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * XML Schema guided JSON to XML converter;
  *
@@ -53,20 +56,9 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 
 	private boolean insertElementContainerElements;
 	private boolean strictSyntax;
-	private boolean readAttributes=true;
+	private @Getter @Setter boolean readAttributes=true;
 	private String attributePrefix="@";
 	private String mixedContentLabel="#text";
-
-//	public Json2Xml(ValidatorHandler validatorHandler, boolean insertElementContainerElements, String rootElement) {
-//		this(validatorHandler, insertElementContainerElements, rootElement, false);
-//	}
-//
-//	public Json2Xml(ValidatorHandler validatorHandler, boolean insertElementContainerElements, String rootElement, boolean strictSyntax) {
-//		super(validatorHandler);
-//		this.insertElementContainerElements=insertElementContainerElements;
-//		this.strictSyntax=strictSyntax;
-//		setRootElement(rootElement);
-//	}
 
 	public Json2Xml(ValidatorHandler validatorHandler, List<XSModel> schemaInformation, boolean insertElementContainerElements, String rootElement) {
 		this(validatorHandler, schemaInformation, insertElementContainerElements, rootElement, false);
@@ -207,7 +199,7 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 			if (isParentOfSingleMultipleOccurringChildElement()) {
 				if ((insertElementContainerElements || !strictSyntax) && node instanceof JsonArray) {
 					if (log.isTraceEnabled()) log.trace("parentOfSingleMultipleOccurringChildElement,JsonArray,(insertElementContainerElements || !strictSyntax)");
-					Set<String> result = new HashSet<String>();
+					Set<String> result = new LinkedHashSet<String>();
 					result.addAll(getMultipleOccurringChildElements());
 					if (log.isTraceEnabled()) log.trace("isParentOfSingleMultipleOccurringChildElement, result ["+result+"]");
 					return result;
@@ -224,9 +216,9 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 			JsonObject o = (JsonObject)node;
 			if (o.isEmpty()) {
 				if (log.isTraceEnabled()) log.trace("no children");
-				return new HashSet<String>();
+				return new LinkedHashSet<String>();
 			}
-			Set<String> result = new HashSet<String>();
+			Set<String> result = new LinkedHashSet<String>();
 			for (String key:o.keySet()) {
 				if (!readAttributes || !key.startsWith(attributePrefix)) {
 					result.add(key);
@@ -371,13 +363,6 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 		j2x.setDeepSearch(deepSearch);
 
 		return j2x;
-	}
-
-	public boolean isReadAttributes() {
-		return readAttributes;
-	}
-	public void setReadAttributes(boolean readAttributes) {
-		this.readAttributes = readAttributes;
 	}
 
 }

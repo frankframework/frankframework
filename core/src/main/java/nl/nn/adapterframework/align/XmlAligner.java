@@ -68,9 +68,9 @@ public class XmlAligner extends XMLFilterImpl {
 	public final String FEATURE_NAMESPACE_PREFIXES="http://xml.org/sax/features/namespace-prefixes";
 
 	private @Setter PSVIProvider psviProvider;
-	protected ValidatorHandler validatorHandler;
 	private boolean indent=true;
 	private @Getter @Setter boolean ignoreUndeclaredElements=false;
+	protected ValidatorHandler validatorHandler;
 	private @Getter @Setter List<XSModel> schemaInformation;
 
 	private @Getter AlignmentContext context;
@@ -83,6 +83,8 @@ public class XmlAligner extends XMLFilterImpl {
 	private @Getter Set<String> multipleOccurringChildElements=null;
 	private Stack<Boolean> parentOfSingleMultipleOccurringChildElements=new Stack<Boolean>();
 	private @Getter boolean parentOfSingleMultipleOccurringChildElement=false;
+	private Stack<Boolean> typeContainsWildcards=new Stack<Boolean>();
+	private @Getter boolean typeContainsWildcard=false;
 
 	private final char[] INDENTOR="\n                                                                                         ".toCharArray();
 	private final int MAX_INDENT=INDENTOR.length/2;
@@ -131,21 +133,30 @@ public class XmlAligner extends XMLFilterImpl {
 		if (log.isTraceEnabled()) log.trace("startElement() uri ["+namespaceUri+"] localName ["+localName+"] qName ["+qName+"]");
 		// call getChildElementDeclarations with in startElement, to obtain all child elements of the current node
 		typeDefinition=getTypeDefinition(psviProvider);
-		if (typeDefinition==null) {
+		if (typeDefinition==null && !isTypeContainsWildcard()) {
 			handleRecoverableError("No typeDefinition found for element ["+localName+"] in namespace ["+namespaceUri+"] qName ["+qName+"]", isIgnoreUndeclaredElements());
 		} else {
 			multipleOccurringElements.push(multipleOccurringChildElements);
 			parentOfSingleMultipleOccurringChildElements.push(parentOfSingleMultipleOccurringChildElement);
+			typeContainsWildcards.push(typeContainsWildcard);
 			// call findMultipleOccurringChildElements, to obtain all child elements that could be part of an array
 			if (typeDefinition instanceof XSComplexTypeDefinition) {
 				XSComplexTypeDefinition complexTypeDefinition = (XSComplexTypeDefinition)typeDefinition;
 				multipleOccurringChildElements=findMultipleOccurringChildElements(complexTypeDefinition.getParticle());
 				parentOfSingleMultipleOccurringChildElement=(ChildOccurrence.ONE_MULTIPLE_OCCURRING_ELEMENT==determineIsParentOfSingleMultipleOccurringChildElement(complexTypeDefinition.getParticle()));
+				typeContainsWildcard=typeContainsWildcard(complexTypeDefinition.getParticle());
 				if (log.isTraceEnabled()) log.trace("element ["+localName+"] is parentOfSingleMultipleOccurringChildElement ["+parentOfSingleMultipleOccurringChildElement+"]");
 			} else {
 				multipleOccurringChildElements=null;
 				parentOfSingleMultipleOccurringChildElement=false;
-				if (log.isTraceEnabled()) log.trace("element ["+localName+"] is a SimpleType, and therefor not multiple");
+				typeContainsWildcard=!typeContainsWildcards.isEmpty() && typeContainsWildcards.peek();
+				if (log.isTraceEnabled()) {
+					if (typeDefinition==null) {
+						log.trace("element ["+localName+"] is a SimpleType, and therefor not multiple");
+					} else {
+						log.trace("no type definition found for element ["+localName+"], assuming not multiple");
+					}
+				}
 			}
 			super.startElement(namespaceUri, localName, qName, attributes);
 		}
@@ -158,11 +169,12 @@ public class XmlAligner extends XMLFilterImpl {
 		boolean knownElement = context.getTypeDefinition()!=null;
 		context = context.getParent();
 		indentLevel--;
-		if (knownElement) {
+		if (knownElement|| isTypeContainsWildcard()) {
 			typeDefinition=null;
 			super.endElement(uri, localName, qName);
 			multipleOccurringChildElements=multipleOccurringElements.pop();
 			parentOfSingleMultipleOccurringChildElement=parentOfSingleMultipleOccurringChildElements.pop();
+			typeContainsWildcards.pop();
 		}
 	}
 
@@ -266,6 +278,35 @@ public class XmlAligner extends XMLFilterImpl {
 			return ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
 		}
 		throw new IllegalStateException("determineIsParentOfSingleMultipleOccurringChildElement unknown Term type ["+term.getClass().getName()+"]");
+	}
+
+	protected boolean typeContainsWildcard(XSParticle particle) {
+		if (particle==null) {
+			return false;
+		}
+		XSTerm term = particle.getTerm();
+		if (term==null) {
+			throw new IllegalStateException("checkIfTypeIsWildcard particle.term is null");
+
+		}
+		if (term instanceof XSWildcard) {
+			return true;
+		}
+		if (term instanceof XSElementDeclaration) {
+			return false;
+		}
+		if (term instanceof XSModelGroup) {
+			XSModelGroup modelGroup = (XSModelGroup)term;
+			short compositor = modelGroup.getCompositor();
+			XSObjectList particles = modelGroup.getParticles();
+			for (int i=0;i<particles.getLength();i++) {
+				if (typeContainsWildcard((XSParticle)particles.item(i))) {
+					return true;
+				}
+			}
+			return false;
+		}
+		throw new IllegalStateException("typeIsWildcard unknown Term type ["+term.getClass().getName()+"]");
 	}
 
 

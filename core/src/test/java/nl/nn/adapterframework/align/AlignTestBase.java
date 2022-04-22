@@ -46,7 +46,7 @@ public abstract class AlignTestBase {
 	}
 
 
-	
+
 	@Test
 	public void testArrays() throws Exception {
 		// straight test
@@ -78,7 +78,7 @@ public abstract class AlignTestBase {
 	}
 
 
-	
+
 	@Test
 	public void testAttributes() throws Exception {
 		testFiles("DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/Attributes");
@@ -93,7 +93,7 @@ public abstract class AlignTestBase {
 	public void testDateTime() throws Exception {
 		testFiles("DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/DateTime");
 	}
-	
+
 	@Test
 	public void testDiacritics() throws Exception {
 		testFiles("DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/Diacritics",true);
@@ -135,6 +135,11 @@ public abstract class AlignTestBase {
 	}
 
 	@Test
+	public void testAnyElement() throws Exception {
+		testFiles("Any/AnyElement.xsd", "urn:anyElement", "root", "Any/anyElement", false, null);
+	}
+
+	@Test
 	public void testLabelValue() throws Exception {
 		testFiles("Any/LabelValue.xsd", "urn:labelValue", "root", "Any/labelValue", true);
 	}
@@ -148,7 +153,7 @@ public abstract class AlignTestBase {
 
 	@Test
 	public void testMixedContentUnknown() throws Exception {
-		testFiles("Mixed/mixed.xsd","urn:mixed","root","Mixed/mixed-unknown","Cannot find the declaration of element");
+		testFiles("Mixed/mixed.xsd","urn:mixed","root","Mixed/mixed-unknown");
 	}
 
 

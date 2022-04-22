@@ -33,7 +33,7 @@ public class TestXml2Json extends AlignTestBase {
 
 		// check the validity of the input XML
 		if (expectValid) {
-			assertEquals("valid XML", expectValid, Utils.validate(schemaUrl, xmlString));
+			assertEquals("XML invalid", expectValid, Utils.validate(schemaUrl, xmlString));
 		}
 
 		System.out.println("input xml:"+xmlString);
