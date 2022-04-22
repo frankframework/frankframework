@@ -12,7 +12,7 @@
     "definitions":{
         "root":{
             "type":"object",
-            "additionalProperties":false,
+            "additionalProperties":true,
             "properties":{
             }
         }

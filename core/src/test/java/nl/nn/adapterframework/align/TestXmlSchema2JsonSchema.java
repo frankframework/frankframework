@@ -9,8 +9,6 @@ import java.util.Set;
 import javax.json.JsonStructure;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Ignore;
-import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -113,12 +111,6 @@ public class TestXmlSchema2JsonSchema extends AlignTestBase {
 			}
 		}
 
-	}
-
-	@Test
-	@Ignore("AnyElement not yet supported for JSON Schema generation")
-	public void testAnyElement() throws Exception {
-		super.testAnyElement();
 	}
 
 }
