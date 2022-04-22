@@ -1814,11 +1814,24 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('AddScheduleCtrl', ['$scope', 'Api', 'Misc', function($scope, Api, Misc) {
+.controller('AddScheduleCtrl', ['$scope', 'Api', function($scope, Api) {
 	$scope.state = [];
 	$scope.addLocalAlert = function(type, message) {
 		$scope.state.push({type:type, message: message});
 	};
+
+	let adapters = $scope.adapters;
+	let schedulerEligibleAdapters={};
+	for(adapter in adapters) {
+		let receivers = adapters[adapter].receivers;
+		for(r in receivers) {
+			let receiver=receivers[r];
+			if(receiver.listener.class.startsWith('JavaListener')){
+				schedulerEligibleAdapters[adapter] = adapters[adapter];
+			}
+		}
+	}
+	$scope.schedulerEligibleAdapters = schedulerEligibleAdapters;
 
 	$scope.form = {
 			name:"",
