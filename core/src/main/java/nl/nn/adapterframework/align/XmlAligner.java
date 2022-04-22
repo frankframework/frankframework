@@ -297,7 +297,6 @@ public class XmlAligner extends XMLFilterImpl {
 		}
 		if (term instanceof XSModelGroup) {
 			XSModelGroup modelGroup = (XSModelGroup)term;
-			short compositor = modelGroup.getCompositor();
 			XSObjectList particles = modelGroup.getParticles();
 			for (int i=0;i<particles.getLength();i++) {
 				if (typeContainsWildcard((XSParticle)particles.item(i))) {

@@ -79,7 +79,7 @@ public class NamespaceAligningFilter extends XMLFilterImpl {
 			XSWildcard wildcard = (XSWildcard)term;
 			if (StringUtils.isNotEmpty(wildcard.getNamespace())) {
 				return wildcard.getNamespace();
-			};
+			}
 			XSElementDeclaration elementDeclaration = aligner.findElementDeclarationForName(null, localName);
 			if (elementDeclaration!=null) {
 				return elementDeclaration.getNamespace();
@@ -135,7 +135,7 @@ public class NamespaceAligningFilter extends XMLFilterImpl {
 	protected String findPrefix(String uri) {
 		return namespacePrefixes
 			.entrySet().stream()
-			.filter(e -> { System.out.println("e.getKey()="+e.getKey()+", e.getValue()="+e.getValue()); return uri.equals(e.getValue()); } )
+			.filter(e -> uri.equals(e.getValue()) )
 			.map(Map.Entry::getKey)
 			.findFirst()
 			.orElse(null);
