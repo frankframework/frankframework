@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.filesystem;
 
 import microsoft.exchange.webservices.data.core.enumeration.service.ConflictResolutionMode;
+import microsoft.exchange.webservices.data.core.exception.service.local.ServiceLocalException;
 import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
 import microsoft.exchange.webservices.data.property.complex.Attachment;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -14,6 +15,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.StreamSupport;
 
 import static org.junit.Assert.*;
 
@@ -99,14 +101,16 @@ public class ExchangeFileSystemRuntimeParametersTest  extends MailFileSystemTest
 			// When f is moved from mailbox A to mailbox B, null will be returned.
 			assertNull("Destination file is expected as empty when moved across mailboxes", destFile1);
 
-			EmailMessage foundInDestFile = null;
-			for(EmailMessage message : fileSystem.listFiles(folderNameB)){
-				String references = message.getReferences();
-				if(StringUtils.isNotEmpty(references) && references.equals(id)){
-					foundInDestFile = message;
-				}
-			}
-			assertNotNull("Destination file should be found when listing files in destination folder.", foundInDestFile);
+			assertNotNull("Destination file should be found when listing files in destination folder.",
+				StreamSupport.stream(fileSystem.listFiles(folderNameB).spliterator(), false)
+					.anyMatch(emailMessage -> {
+						try {
+							return id.equals(emailMessage.getReferences());
+						} catch (ServiceLocalException e) {
+							throw new RuntimeException(e);
+						}
+					})
+			);
 
 //			assertTrue("destination file should exist after copy", fileSystem.exists(destFile1));
 		}
