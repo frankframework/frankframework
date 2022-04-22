@@ -107,6 +107,12 @@ import nl.nn.adapterframework.xml.SaxElementBuilder;
  * 		<li>Make sure your application is able to reach <code>https://login.microsoftonline.com</code>. Required for token retrieval. </li>
  * </ol>
  *
+ * To make use of a multi-mailbox situation:
+ * Specify the target mailbox in front of your folder name, separated by 'mailboxFolderSeparator' which defaults to '|', for example <code>"example@domain.com|My folder"</code>
+ * Please consider the following behavioural differences when making using:
+ *
+ * - copyFile - When copying an email message from mailbox A to mailbox B an expensive call to service.bind() is done to retrieve the newly created object in mailbox B.
+ * - moveFile - When moving an email message from mailbox A to mailbox B, null will be returned
  *
  * N.B. MS Exchange is susceptible to problems with invalid XML characters, like &amp;#x3;.
  * To work around these problems, a special streaming XMLInputFactory is configured in
