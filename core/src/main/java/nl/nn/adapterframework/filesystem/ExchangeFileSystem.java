@@ -543,6 +543,9 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			FolderId destinationFolderId = getFolderIdByFolderName(exchangeService, resolver, createFolder, false);
 			Item destinationItem = f.copy(destinationFolderId);
 
+			// When f is copied from mailbox A to mailbox B, a class cast exception occurs:
+			// (ClassCastException) microsoft.exchange.webservices.data.core.service.item.Item cannot be cast to microsoft.exchange.webservices.data.core.service.item.EmailMessage
+			// Work-around is to use .bind() (expensive) method to retrieve the copied instance of f as an EmailMessage.
 			if(destinationItem instanceof EmailMessage){
 				if(log.isDebugEnabled()) log.debug("Attempting to cast to EmailMessage");
 				return (EmailMessage) destinationItem;
