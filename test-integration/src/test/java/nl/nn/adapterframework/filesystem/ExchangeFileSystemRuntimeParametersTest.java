@@ -90,7 +90,7 @@ public class ExchangeFileSystemRuntimeParametersTest  extends MailFileSystemTest
 
 			EmailMessage sourceFile = it.next();
 			String id =  UUID.randomUUID().toString();
-			sourceFile.setSubject(id);
+			sourceFile.setReferences(id);
 			sourceFile.update(ConflictResolutionMode.AlwaysOverwrite);
 			assertTrue("file retrieved from folder should exist", fileSystem.exists(sourceFile));
 
@@ -101,8 +101,8 @@ public class ExchangeFileSystemRuntimeParametersTest  extends MailFileSystemTest
 
 			EmailMessage foundInDestFile = null;
 			for(EmailMessage message : fileSystem.listFiles(folderNameB)){
-				String subject = message.getSubject();
-				if(StringUtils.isNotEmpty(subject) && subject.equals(id)){
+				String references = message.getReferences();
+				if(StringUtils.isNotEmpty(references) && references.equals(id)){
 					foundInDestFile = message;
 				}
 			}
