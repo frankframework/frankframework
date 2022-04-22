@@ -510,6 +510,7 @@ public final class ShowConfigurationStatus extends Base {
 				} else if(sender instanceof ITransactionalStorage) { // in case no message log specified
 					ITransactionalStorage<?> store = (ITransactionalStorage<?>) sender;
 					mapPipeMessageLog(store, pipesInfo);
+					pipesInfo.put("messageStoreSender", true);
 				}
 			}
 			pipes.add(pipesInfo);
