@@ -523,6 +523,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		boolean invalidateConnectionOnRelease = false;
 
 		try {
+			// When f is moved from mailbox A to mailbox B, null will be returned.
 			FolderId destinationFolderId = getFolderIdByFolderName(exchangeService, resolver, createFolder, false);
 			return (EmailMessage)f.move(destinationFolderId);
 		} catch (Exception e) {
