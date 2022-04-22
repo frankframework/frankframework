@@ -109,7 +109,7 @@ import nl.nn.adapterframework.xml.SaxElementBuilder;
  *
  * To make use of a multi-mailbox situation:
  * Specify the target mailbox in front of your folder name, separated by 'mailboxFolderSeparator' which defaults to '|', for example <code>"example@domain.com|My folder"</code>
- * Please consider the following behavioural differences when making using:
+ * Please consider the following behavioural differences when using multiple mailboxes:
  *
  * - copyFile - When copying an email message from mailbox A to mailbox B an expensive call to service.bind() is done to retrieve the newly created object in mailbox B.
  * - moveFile - When moving an email message from mailbox A to mailbox B, null will be returned
