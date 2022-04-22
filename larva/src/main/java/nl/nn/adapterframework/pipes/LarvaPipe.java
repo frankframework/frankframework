@@ -23,7 +23,10 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
@@ -51,24 +54,24 @@ import nl.nn.adapterframework.util.AppConstants;
  * </p>
  * 
  * @ff.forward success no errors and all tests passed
- * @ff.forward fail errors or failed tests
+ * @ff.forward failure errors or failed tests
  * 
  * @author Jaco de Groot
  *
  */
 public class LarvaPipe extends FixedForwardPipe {
-	
-	public final String DEFAULT_LOG_LEVEL = "wrong pipeline messages";
-	public final String FORWARD_FAIL="fail";
-	
-	private boolean writeToLog = false;
-	private boolean writeToSystemOut = false;
-	private String execute;
-	private String logLevel=DEFAULT_LOG_LEVEL;
-	private String waitBeforeCleanup="100";
-	private int timeout=30000;
-	
-	private PipeForward failForward;
+
+	public static final String DEFAULT_LOG_LEVEL = "wrong pipeline messages";
+	public static final String FORWARD_FAILURE="failure";
+
+	private @Getter boolean writeToLog = false;
+	private @Getter boolean writeToSystemOut = false;
+	private @Getter String execute;
+	private @Getter String logLevel=DEFAULT_LOG_LEVEL;
+	private @Getter String waitBeforeCleanup="100";
+	private @Getter int timeout=30000;
+
+	private PipeForward failureForward;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -77,14 +80,17 @@ public class LarvaPipe extends FixedForwardPipe {
 			log.warn("no log level specified, setting to default ["+DEFAULT_LOG_LEVEL+"]");
 			setLogLevel(DEFAULT_LOG_LEVEL);
 		} else {
-			String[] LOG_LEVELS = TestTool.LOG_LEVEL_ORDER.split(",\\s*");
-			if (!Arrays.asList(LOG_LEVELS).contains("["+getLogLevel()+"]")) {
+			String[] logLevels = TestTool.LOG_LEVEL_ORDER.split(",\\s*");
+			if (!Arrays.asList(logLevels).contains("["+getLogLevel()+"]")) {
 				throw new ConfigurationException("illegal log level ["+getLogLevel()+"]");
 			}
 		}
-		failForward=findForward(FORWARD_FAIL);
-		if (failForward==null) {
-			failForward=getSuccessForward();
+		failureForward=findForward(FORWARD_FAILURE);
+		if(failureForward == null && (failureForward = findForward("fail")) != null) {
+			ConfigurationWarnings.add(this, log, "forward 'fail' is deprecated use 'failure' instead!");
+		}
+		if (failureForward==null) {
+			failureForward=getSuccessForward();
 		}
 	}
 
@@ -96,24 +102,21 @@ public class LarvaPipe extends FixedForwardPipe {
 		// created with AppConstants.getInstance(ClassLoader classLoader), this
 		// should be fixed but for now use AppConstants.getInstance().
 		String realPath = AppConstants.getInstance().getResolvedProperty("webapp.realpath") + "larva/";
-		List<String> scenariosRootDirectories = new ArrayList<String>();
-		List<String> scenariosRootDescriptions = new ArrayList<String>();
+		List<String> scenariosRootDirectories = new ArrayList<>();
+		List<String> scenariosRootDescriptions = new ArrayList<>();
 		String currentScenariosRootDirectory = TestTool.initScenariosRootDirectories(
 				appConstants, realPath,
 				null, scenariosRootDirectories,
 				scenariosRootDescriptions, null);
 		String paramScenariosRootDirectory = currentScenariosRootDirectory;
 		String paramExecute = currentScenariosRootDirectory;
-		if (StringUtils.isNotEmpty(execute)) {
-			paramExecute = paramExecute + execute;
+		if (StringUtils.isNotEmpty(getExecute())) {
+			paramExecute = paramExecute + getExecute();
 		}
 		String paramLogLevel = getLogLevel();
 		String paramAutoScroll = "true";
 		String paramWaitBeforeCleanUp = getWaitBeforeCleanup();
-		LogWriter out = new LogWriter();
-		out.setLogger(log);
-		out.setWriteToLog(writeToLog);
-		out.setWriteToSystemOut(writeToSystemOut);
+		LogWriter out = new LogWriter(log, isWriteToLog(), isWriteToSystemOut());
 		boolean silent = true;
 		TestTool.setTimeout(getTimeout());
 		int numScenariosFailed=TestTool.runScenarios(ibisContext, appConstants, paramLogLevel,
@@ -121,7 +124,7 @@ public class LarvaPipe extends FixedForwardPipe {
 								paramWaitBeforeCleanUp, getTimeout(), realPath,
 								paramScenariosRootDirectory,
 								out, silent);
-		PipeForward forward=numScenariosFailed==0? getSuccessForward(): failForward;
+		PipeForward forward = numScenariosFailed==0 ? getSuccessForward() : failureForward;
 		return new PipeRunResult(forward, out.toString());
 	}
 
@@ -138,47 +141,24 @@ public class LarvaPipe extends FixedForwardPipe {
 		this.execute = execute;
 	}
 
-	public String getLogLevel() {
-		return logLevel;
-	}
 	public void setLogLevel(String logLevel) {
 		this.logLevel = logLevel;
 	}
 
-
-	public String getWaitBeforeCleanup() {
-		return waitBeforeCleanup;
-	}
 	public void setWaitBeforeCleanup(String waitBeforeCleanup) {
 		this.waitBeforeCleanup = waitBeforeCleanup;
 	}
 
-
-	public int getTimeout() {
-		return timeout;
-	}
 	public void setTimeout(int timeout) {
 		this.timeout = timeout;
 	}
-
 }
 
+@AllArgsConstructor
 class LogWriter extends StringWriter {
 	private Logger log;
 	private boolean writeToLog = false;
 	private boolean writeToSystemOut = false;
-
-	public void setLogger(Logger log) {
-		this.log = log;
-	}
-
-	public void setWriteToLog(boolean writeToLog) {
-		this.writeToLog = writeToLog;
-	}
-
-	public void setWriteToSystemOut(boolean writeToSystemOut) {
-		this.writeToSystemOut = writeToSystemOut;
-	}
 
 	@Override
 	public void write(String str) {
