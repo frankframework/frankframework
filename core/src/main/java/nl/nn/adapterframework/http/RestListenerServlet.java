@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2015 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013-2015 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -32,6 +31,7 @@ import org.apache.logging.log4j.Logger;
 import nl.nn.adapterframework.core.ISecurityHandler;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -41,7 +41,8 @@ import nl.nn.adapterframework.util.Misc;
  *
  * @author  Gerrit van Brakel
  */
-public class RestListenerServlet extends HttpServlet {
+@IbisInitializer
+public class RestListenerServlet extends HttpServletBase {
 	protected Logger log=LogUtil.getLogger(this);
 	private String CorsAllowOrigin = AppConstants.getInstance().getString("rest.cors.allowOrigin", "*"); //Defaults to everything
 	private String CorsExposeHeaders = AppConstants.getInstance().getString("rest.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
@@ -161,5 +162,15 @@ public class RestListenerServlet extends HttpServlet {
 				}
 			}
 		}
+	}
+
+	@Override
+	public String getUrlMapping() {
+		return "/rest/*";
+	}
+
+	@Override
+	public String[] getRoles() {
+		return ALL_IBIS_USER_ROLES;
 	}
 }

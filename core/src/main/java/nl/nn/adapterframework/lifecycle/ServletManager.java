@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.servlet.HttpConstraintElement;
 import javax.servlet.Servlet;
@@ -65,7 +66,7 @@ public class ServletManager {
 	private List<String> registeredRoles = new ArrayList<>();
 	private Logger log = LogUtil.getLogger(this);
 	private AppConstants appConstants;
-	private boolean webSecurityEnabled = true;
+	private static boolean webSecurityEnabled = true;
 	private static TransportGuarantee defaultTransportGuarantee = TransportGuarantee.CONFIDENTIAL;
 
 	protected static final String AUTH_ENABLED_KEY = "application.security.http.authentication";
@@ -82,14 +83,20 @@ public class ServletManager {
 		registeredRoles.addAll(Arrays.asList("IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester", "IbisWebService"));
 
 		appConstants = AppConstants.getInstance();
-		boolean isDtapStageLoc = "LOC".equalsIgnoreCase(appConstants.getString("dtap.stage", null));
-		webSecurityEnabled = appConstants.getBoolean(AUTH_ENABLED_KEY, !isDtapStageLoc);
-		String constraintType = appConstants.getString(HTTPS_ENABLED_KEY, null);
+		setupDefaultSecuritySettings(appConstants);
+	}
+
+	protected static void setupDefaultSecuritySettings(Properties properties) {
+		boolean isDtapStageLoc = "LOC".equalsIgnoreCase(properties.getProperty("dtap.stage"));
+		String isAuthEnabled = properties.getProperty(AUTH_ENABLED_KEY);
+		webSecurityEnabled = (isAuthEnabled != null) ? Boolean.parseBoolean(isAuthEnabled) : !isDtapStageLoc;
+
+		String constraintType = properties.getProperty(HTTPS_ENABLED_KEY);
 		if (StringUtils.isNotEmpty(constraintType)) {
 			try {
 				defaultTransportGuarantee = EnumUtils.parse(TransportGuarantee.class, constraintType);
 			} catch(IllegalArgumentException e) {
-				log.error("unable to set TransportGuarantee", e);
+				LogUtil.getLogger(ServletManager.class).error("unable to set TransportGuarantee", e);
 			}
 		} else if(isDtapStageLoc) {
 			defaultTransportGuarantee = TransportGuarantee.NONE;
@@ -192,8 +199,9 @@ public class ServletManager {
 		}
 		roleNames = appConstants.getString(propertyPrefix+"securityRoles", roleNames);
 
-		if(StringUtils.isNotEmpty(roleNames))
+		if(StringUtils.isNotEmpty(roleNames)) {
 			rolesCopy = roleNames.split(",");
+		}
 		declareRoles(rolesCopy);
 
 		TransportGuarantee transportGuarantee = getTransportGuarantee(propertyPrefix+"transportGuarantee");
@@ -212,7 +220,7 @@ public class ServletManager {
 		AppConstants appConstants = AppConstants.getInstance();
 		String constraintType = appConstants.getString(propertyName, null);
 		if (StringUtils.isNotEmpty(constraintType)) {
-			return ServletSecurity.TransportGuarantee.valueOf(constraintType);
+			return EnumUtils.parse(TransportGuarantee.class, constraintType);
 		}
 		return defaultTransportGuarantee;
 	}

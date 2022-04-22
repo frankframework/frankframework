@@ -6,6 +6,7 @@ import static org.junit.Assert.assertThrows;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -14,10 +15,12 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletRegistration;
 import javax.servlet.ServletRegistration.Dynamic;
 import javax.servlet.ServletSecurityElement;
+import javax.servlet.annotation.ServletSecurity.TransportGuarantee;
 import javax.servlet.http.HttpServlet;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.hamcrest.CoreMatchers;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.mock.web.MockServletContext;
@@ -32,7 +35,7 @@ public class ServletManagerTest {
 	private static ServletManager manager;
 
 	@BeforeClass
-	public static void setUp() {
+	public static void prepare() {
 		ServletContext context = new MockServletContext() {
 			private Map<String, Dynamic> dynamic = new HashMap<>();
 			@Override
@@ -45,6 +48,15 @@ public class ServletManagerTest {
 			}
 		};
 		manager = new ServletManager(context);
+	}
+
+	@Before
+	public void setUp() {
+		Properties properties = new Properties();
+		properties.setProperty("dtap.stage", "ACC");
+		properties.setProperty(ServletManager.HTTPS_ENABLED_KEY, "confidential");
+
+		ServletManager.setupDefaultSecuritySettings(properties);
 	}
 
 	@Test
@@ -91,7 +103,7 @@ public class ServletManagerTest {
 	@Test
 	public void testUrlMultipleMappingsOverride() {
 		String name = Misc.createNumericUUID();
-		AppConstants.getInstance().setProperty("servlet."+name+".urlMapping", "  test2 , /test3");
+		AppConstants.getInstance().setProperty("servlet."+name+".urlMapping", "  test2 , /test3"); //contains spaces ;)
 
 		DummyServletImpl servlet = new DummyServletImpl();
 		servlet.setUrlMapping(new String[] {"mapping1", "mapping2"});
@@ -99,6 +111,84 @@ public class ServletManagerTest {
 		DynamicServletRegistration sdr = createAndRegister(name, servlet);
 
 		assertEquals("[/test2, /test3]", sdr.getMappings().toString());
+	}
+
+	@Test
+	public void testDefaultTransportGuarantee() {
+		DummyServletImpl servlet = new DummyServletImpl();
+		servlet.setUrlMapping("/test4");
+
+		DynamicServletRegistration sdr = createAndRegister(servlet);
+
+		assertEquals("[/test4]", sdr.getMappings().toString());
+		assertEquals(TransportGuarantee.CONFIDENTIAL, sdr.getServletSecurity().getTransportGuarantee());
+	}
+
+	@Test
+	public void testTransportGuaranteeOverride() {
+		String name = Misc.createNumericUUID();
+		AppConstants.getInstance().setProperty("servlet."+name+".transportGuarantee", "none");
+
+		DummyServletImpl servlet = new DummyServletImpl();
+		servlet.setUrlMapping("/test5");
+
+		DynamicServletRegistration sdr = createAndRegister(name, servlet);
+
+		assertEquals("[/test5]", sdr.getMappings().toString());
+		assertEquals(TransportGuarantee.NONE, sdr.getServletSecurity().getTransportGuarantee());
+	}
+
+	@Test
+	public void testTransportGuaranteeGlobal1() {
+		Properties properties = new Properties();
+		properties.setProperty(ServletManager.HTTPS_ENABLED_KEY, "none");
+		ServletManager.setupDefaultSecuritySettings(properties);
+
+		String name = Misc.createNumericUUID();
+
+		DummyServletImpl servlet = new DummyServletImpl();
+		servlet.setUrlMapping(name);
+		DynamicServletRegistration sdr = createAndRegister(name, servlet);
+
+		assertEquals("[/"+name+"]", sdr.getMappings().toString());
+		assertEquals(TransportGuarantee.NONE, sdr.getServletSecurity().getTransportGuarantee());
+	}
+
+	@Test
+	public void testTransportGuaranteeGlobal2() {
+		Properties properties = new Properties();
+		properties.setProperty(ServletManager.HTTPS_ENABLED_KEY, "confidential");
+		ServletManager.setupDefaultSecuritySettings(properties);
+
+		DummyServletImpl servlet = new DummyServletImpl();
+		DynamicServletRegistration sdr = createAndRegister(servlet);
+
+		assertEquals(TransportGuarantee.CONFIDENTIAL, sdr.getServletSecurity().getTransportGuarantee());
+	}
+
+	@Test
+	public void testTransportGuaranteeGlobalLOC1() {
+		Properties properties = new Properties();
+		properties.setProperty("dtap.stage", "LOC");
+		ServletManager.setupDefaultSecuritySettings(properties);
+
+		DummyServletImpl servlet = new DummyServletImpl();
+		DynamicServletRegistration sdr = createAndRegister(servlet);
+
+		assertEquals(TransportGuarantee.NONE, sdr.getServletSecurity().getTransportGuarantee());
+	}
+
+	@Test
+	public void testTransportGuaranteeGlobalLOC2() {
+		Properties properties = new Properties();
+		properties.setProperty("dtap.stage", "LOC");
+		properties.setProperty(ServletManager.HTTPS_ENABLED_KEY, "confidential");
+		ServletManager.setupDefaultSecuritySettings(properties);
+
+		DummyServletImpl servlet = new DummyServletImpl();
+		DynamicServletRegistration sdr = createAndRegister(servlet);
+
+		assertEquals(TransportGuarantee.CONFIDENTIAL, sdr.getServletSecurity().getTransportGuarantee());
 	}
 
 
@@ -117,7 +207,7 @@ public class ServletManagerTest {
 
 	private static class DummyServletImpl extends HttpServlet implements DynamicRegistration.Servlet {
 		private @Getter @Setter String name;
-		private @Getter String[] urlMappings;
+		private @Getter String[] urlMappings = new String[] {"dummy-path"};
 		private @Getter @Setter String[] roles;
 		public void setUrlMapping(String urlMapping) {
 			setUrlMapping(new String[] {urlMapping} );
@@ -133,7 +223,7 @@ public class ServletManagerTest {
 
 		@Override
 		public String getUrlMapping() {
-			return urlMappings != null ? String.join(",", urlMappings) : null;
+			return String.join(",", urlMappings);
 		}
 	}
 
@@ -145,6 +235,7 @@ public class ServletManagerTest {
 		private @Getter Set<String> mappings = new TreeSet<>();
 		private @Getter String runAsRole = null;
 		private @Getter DummyServletImpl servlet;
+		private @Getter ServletSecurityElement servletSecurity;
 
 		public DynamicServletRegistration(String servletName, javax.servlet.Servlet servlet) {
 			this.name = servletName;
@@ -183,6 +274,7 @@ public class ServletManagerTest {
 
 		@Override
 		public Set<String> setServletSecurity(ServletSecurityElement constraint) {
+			this.servletSecurity = constraint;
 			return null;
 		}
 

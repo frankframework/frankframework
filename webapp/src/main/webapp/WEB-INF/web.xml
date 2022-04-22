@@ -9,11 +9,6 @@
 		These actions are configured in an XML file. On the event several actions, called pipes, grouped in a pipeline, are fired.
 	</description>
 
-	<context-param>
-		<param-name>restListenerPathPrefix</param-name>
-		<param-value>rest</param-value>
-	</context-param>
-
 	<filter>
 		<filter-name>LoginFilter</filter-name>
 		<filter-class>nl.nn.adapterframework.webcontrol.LoginFilter</filter-class>
@@ -94,22 +89,6 @@
 		<url-pattern>/servlet/*</url-pattern>
 	</servlet-mapping>
 	<!-- END Soap Router -->
-
-	<!-- AdapterFramework servlets -->
-	<servlet>
-		<display-name>RestListener</display-name>
-		<servlet-name>RestListener</servlet-name>
-		<servlet-class>nl.nn.adapterframework.http.RestListenerServlet</servlet-class>
-	</servlet>
-
-	<servlet-mapping>
-		<servlet-name>RestListener</servlet-name>
-		<url-pattern>/rest/*</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>RestListener</servlet-name>
-		<url-pattern>/rest-public/*</url-pattern>
-	</servlet-mapping>
 
 	<!-- Welcome File List -->
 	<mime-mapping>
