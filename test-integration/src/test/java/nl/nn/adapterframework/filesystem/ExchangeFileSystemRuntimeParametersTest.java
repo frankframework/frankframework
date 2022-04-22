@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.filesystem;
 
+import microsoft.exchange.webservices.data.core.enumeration.service.ConflictResolutionMode;
 import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
 import microsoft.exchange.webservices.data.property.complex.Attachment;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -12,6 +13,7 @@ import java.nio.file.DirectoryStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.junit.Assert.*;
 
@@ -74,6 +76,39 @@ public class ExchangeFileSystemRuntimeParametersTest  extends MailFileSystemTest
 			assertNotNull("destination file should be not null after copy", destFile1);
 			assertTrue("destination file should exist after copy", fileSystem.exists(destFile1));
 			//assertTrue("name of destination file should exist in folder after copy", fileSystem.filenameExistsInFolder(folderName, fileSystem.getName(destFile1)));
+		}
+	}
+
+	@Test
+	public void testMoveFileAcrossMailboxes() throws Exception {
+		String folderNameA = constructFolderName(mailaddress, "messageFolder");
+		String folderNameB = constructFolderName(mailaddress2, "Infected Items");
+
+		try(DirectoryStream<EmailMessage> ds = fileSystem.listFiles(folderNameA)) {
+			Iterator<EmailMessage> it = ds.iterator();
+			assertTrue("there must be at least one messsage in the sourceOfMessages_folder ["+folderNameA+"]", it!=null && it.hasNext());
+
+			EmailMessage sourceFile = it.next();
+			String id =  UUID.randomUUID().toString();
+			sourceFile.setSubject(id);
+			sourceFile.update(ConflictResolutionMode.AlwaysOverwrite);
+			assertTrue("file retrieved from folder should exist", fileSystem.exists(sourceFile));
+
+			EmailMessage destFile1 = fileSystem.moveFile(sourceFile, folderNameB, true);
+			assertFalse("source file should still not exist after move", fileSystem.exists(sourceFile));
+			// When f is moved from mailbox A to mailbox B, null will be returned.
+			assertNull("Destination file is expected as empty when moved across mailboxes", destFile1);
+
+			EmailMessage foundInDestFile = null;
+			for(EmailMessage message : fileSystem.listFiles(folderNameB)){
+				String subject = message.getSubject();
+				if(StringUtils.isNotEmpty(subject) && subject.equals(id)){
+					foundInDestFile = message;
+				}
+			}
+			assertNotNull("Destination file should be found when listing files in destination folder.", foundInDestFile);
+
+//			assertTrue("destination file should exist after copy", fileSystem.exists(destFile1));
 		}
 	}
 
