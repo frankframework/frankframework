@@ -148,21 +148,21 @@ public class XmlTypeToJsonSchemaConverter  {
 			XSNamedMap elements = model.getComponents(XSConstants.ELEMENT_DECLARATION);
 			for (int i=0; i<elements.getLength(); i++) {
 				XSElementDeclaration elementDecl = (XSElementDeclaration)elements.item(i);
-				handleElementDeclaration(definitionsBuilder, elementDecl, false, false, null);
+				handleElementDeclaration(definitionsBuilder, elementDecl, false, false);
 			}
 			XSNamedMap types = model.getComponents(XSConstants.TYPE_DEFINITION);
 			for (int i=0; i<types.getLength(); i++) {
 				XSTypeDefinition typeDefinition = (XSTypeDefinition)types.item(i);
 				String typeNamespace = typeDefinition.getNamespace();
 				if (typeNamespace==null || !typeDefinition.getNamespace().equals(XML_SCHEMA_NS)) {
-					definitionsBuilder.add(typeDefinition.getName(), getDefinition(typeDefinition, false, null));
+					definitionsBuilder.add(typeDefinition.getName(), getDefinition(typeDefinition, false));
 				}
 			}
 		}
 		return definitionsBuilder.build();
 	}
 
-	public JsonObject getDefinition(XSTypeDefinition typeDefinition, boolean shouldCreateReferences, Runnable onWildcard) {
+	public JsonObject getDefinition(XSTypeDefinition typeDefinition, boolean shouldCreateReferences) {
 		JsonObjectBuilder builder = Json.createObjectBuilder();
 
 		switch (typeDefinition.getTypeCategory()) {
@@ -178,7 +178,7 @@ public class XmlTypeToJsonSchemaConverter  {
 				break;
 			case XSComplexTypeDefinition.CONTENTTYPE_ELEMENT:
 				if (log.isTraceEnabled()) log.trace("getDefinition complexTypeDefinition.contentType is Element, complexTypeDefinition ["+ToStringBuilder.reflectionToString(complexTypeDefinition,ToStringStyle.MULTI_LINE_STYLE)+"]");
-				handleComplexTypeDefinitionOfElementContentType(complexTypeDefinition, shouldCreateReferences, builder, onWildcard);
+				handleComplexTypeDefinitionOfElementContentType(complexTypeDefinition, shouldCreateReferences, builder);
 				break;
 			case XSComplexTypeDefinition.CONTENTTYPE_MIXED:
 				if (log.isTraceEnabled()) log.trace("getDefinition complexTypeDefinition.contentType is Mixed");
@@ -234,7 +234,7 @@ public class XmlTypeToJsonSchemaConverter  {
 		}
 	}
 
-	private void handleComplexTypeDefinitionOfElementContentType(XSComplexTypeDefinition complexTypeDefinition, boolean shouldCreateReferences, JsonObjectBuilder builder, Runnable onWildcard){
+	private void handleComplexTypeDefinitionOfElementContentType(XSComplexTypeDefinition complexTypeDefinition, boolean shouldCreateReferences, JsonObjectBuilder builder){
 		if(shouldCreateReferences){
 			String complexTypeDefinitionName = complexTypeDefinition.getName();
 
@@ -253,7 +253,7 @@ public class XmlTypeToJsonSchemaConverter  {
 		XSObjectList attributeUses = complexTypeDefinition.getAttributeUses();
 
 		XSParticle particle = complexTypeDefinition.getParticle();
-		handleParticle(builder, particle, attributeUses, false, onWildcard);
+		handleParticle(builder, particle, attributeUses, false);
 	}
 
 
@@ -279,7 +279,7 @@ public class XmlTypeToJsonSchemaConverter  {
 
 		buildObject(builder, null, attributeUses, mixedContentLabel, complexTypeDefinition.getBaseType());
 	}
-	public void handleParticle(JsonObjectBuilder builder, XSParticle particle, XSObjectList attributeUses, boolean forProperties, Runnable onWildcard) {
+	public void handleParticle(JsonObjectBuilder builder, XSParticle particle, XSObjectList attributeUses, boolean forProperties) {
 		if (particle==null) {
 			throw new NullPointerException("particle is null");
 		}
@@ -287,12 +287,12 @@ public class XmlTypeToJsonSchemaConverter  {
 		if (term==null) {
 			throw new NullPointerException("particle.term is null");
 		}
-		handleTerm(builder,term,attributeUses, particle.getMaxOccursUnbounded() || particle.getMaxOccurs()>1, forProperties, onWildcard);
+		handleTerm(builder,term,attributeUses, particle.getMaxOccursUnbounded() || particle.getMaxOccurs()>1, forProperties);
 	}
 
-	public void handleTerm(JsonObjectBuilder builder, XSTerm term, XSObjectList attributeUses, boolean multiOccurring, boolean forProperties, Runnable onWildcard) {
+	public void handleTerm(JsonObjectBuilder builder, XSTerm term, XSObjectList attributeUses, boolean multiOccurring, boolean forProperties) {
 		if (term instanceof XSModelGroup) {
-			handleModelGroup(builder, (XSModelGroup)term, attributeUses, forProperties, onWildcard);
+			handleModelGroup(builder, (XSModelGroup)term, attributeUses, forProperties);
 			return;
 		}
 		if (term instanceof XSElementDeclaration) {
@@ -309,18 +309,18 @@ public class XmlTypeToJsonSchemaConverter  {
 					builder.add(elementDeclaration.getName(), typeDefininition);
 				}
 			} else {
-				handleElementDeclaration(builder, elementDeclaration, multiOccurring, true, onWildcard);
+				handleElementDeclaration(builder, elementDeclaration, multiOccurring, true);
 			}
 			return;
 		}
 		if (term instanceof XSWildcard) {
-			handleWildcard((XSWildcard)term, onWildcard);
+			handleWildcard((XSWildcard)term);
 			return;
 		}
 		throw new IllegalStateException("handleTerm unknown Term type ["+term.getClass().getName()+"]");
 	}
 
-	private void handleModelGroup(JsonObjectBuilder builder, XSModelGroup modelGroup, XSObjectList attributeUses, boolean forProperties, Runnable onWildcard){
+	private void handleModelGroup(JsonObjectBuilder builder, XSModelGroup modelGroup, XSObjectList attributeUses, boolean forProperties){
 		short compositor = modelGroup.getCompositor();
 		XSObjectList particles = modelGroup.getParticles();
 		if (log.isTraceEnabled()) log.trace("modelGroup ["+ToStringBuilder.reflectionToString(modelGroup,ToStringStyle.MULTI_LINE_STYLE)+"]");
@@ -328,36 +328,36 @@ public class XmlTypeToJsonSchemaConverter  {
 		switch (compositor) {
 		case XSModelGroup.COMPOSITOR_SEQUENCE:
 		case XSModelGroup.COMPOSITOR_ALL:
-			handleCompositorsAllAndSequence(builder, particles, attributeUses, onWildcard);
+			handleCompositorsAllAndSequence(builder, particles, attributeUses);
 			return;
 		case XSModelGroup.COMPOSITOR_CHOICE:
-			handleCompositorChoice(builder, particles, forProperties, onWildcard);
+			handleCompositorChoice(builder, particles, forProperties);
 			return;
 		default:
 			throw new IllegalStateException("handleModelGroup modelGroup.compositor is not COMPOSITOR_SEQUENCE, COMPOSITOR_ALL or COMPOSITOR_CHOICE, but ["+compositor+"]");
 		}
 	}
 
-	private void handleCompositorsAllAndSequence(JsonObjectBuilder builder, XSObjectList particles, XSObjectList attributeUses, Runnable onWildcard){
+	private void handleCompositorsAllAndSequence(JsonObjectBuilder builder, XSObjectList particles, XSObjectList attributeUses){
 		if (log.isTraceEnabled()) log.trace("modelGroup COMPOSITOR_SEQUENCE or COMPOSITOR_ALL");
 		if (skipArrayElementContainers && particles.getLength()==1) {
 			XSParticle childParticle = (XSParticle)particles.item(0);
 			if (childParticle.getMaxOccursUnbounded() || childParticle.getMaxOccurs()>1) {
 				if (log.isTraceEnabled()) log.trace("skippable array element childParticle ["+ToStringBuilder.reflectionToString(particles.item(0),ToStringStyle.MULTI_LINE_STYLE)+"]");
-				buildSkippableArrayContainer(childParticle, builder, onWildcard);
+				buildSkippableArrayContainer(childParticle, builder);
 				return;
 			}
 		}
 		buildObject(builder, particles, attributeUses, null, null);
 	}
 
-	private void handleCompositorChoice(JsonObjectBuilder builder, XSObjectList particles, boolean forProperties, Runnable onWildcard){
+	private void handleCompositorChoice(JsonObjectBuilder builder, XSObjectList particles, boolean forProperties){
 		if (log.isTraceEnabled()) log.trace("modelGroup COMPOSITOR_CHOICE forProperties ["+forProperties+"]");
 		if (forProperties) {
 			for (int i=0;i<particles.getLength();i++) {
 				XSParticle childParticle = (XSParticle)particles.item(i);
 				if (log.isTraceEnabled()) log.trace("childParticle ["+i+"]["+ToStringBuilder.reflectionToString(childParticle,ToStringStyle.MULTI_LINE_STYLE)+"] for properties");
-				handleParticle(builder,childParticle,null, false, onWildcard);
+				handleParticle(builder,childParticle,null, false);
 			}
 		} else {
 			JsonArrayBuilder oneOfBuilder = Json.createArrayBuilder();
@@ -365,14 +365,14 @@ public class XmlTypeToJsonSchemaConverter  {
 				XSParticle childParticle = (XSParticle)particles.item(i);
 				if (log.isTraceEnabled()) log.trace("childParticle ["+i+"]["+ToStringBuilder.reflectionToString(childParticle,ToStringStyle.MULTI_LINE_STYLE)+"]");
 				JsonObjectBuilder typeBuilder = Json.createObjectBuilder();
-				handleParticle(typeBuilder,childParticle,null, false, onWildcard);
+				handleParticle(typeBuilder,childParticle,null, false);
 				oneOfBuilder.add(typeBuilder.build());
 			}
 			builder.add("oneOf", oneOfBuilder.build());
 		}
 	}
 
-	private void handleElementDeclaration(JsonObjectBuilder builder, XSElementDeclaration elementDeclaration, boolean multiOccurring, boolean shouldCreateReferences, Runnable onWildcard){
+	private void handleElementDeclaration(JsonObjectBuilder builder, XSElementDeclaration elementDeclaration, boolean multiOccurring, boolean shouldCreateReferences){
 		String elementName=elementDeclaration.getName();
 		//if (log.isTraceEnabled()) log.trace("XSElementDeclaration name ["+elementName+"]");
 		if (log.isTraceEnabled()) log.trace("XSElementDeclaration element ["+elementName+"]["+ToStringBuilder.reflectionToString(elementDeclaration,ToStringStyle.MULTI_LINE_STYLE)+"]");
@@ -380,7 +380,7 @@ public class XmlTypeToJsonSchemaConverter  {
 		XSTypeDefinition elementTypeDefinition = elementDeclaration.getTypeDefinition();
 		JsonStructure definition;
 		if (elementTypeDefinition.getAnonymous() || XML_SCHEMA_NS.equals(elementTypeDefinition.getNamespace())) {
-			definition =getDefinition(elementTypeDefinition, shouldCreateReferences, onWildcard);
+			definition =getDefinition(elementTypeDefinition, shouldCreateReferences);
 		} else {
 			definition = Json.createObjectBuilder().add("$ref",definitionsPath+elementTypeDefinition.getName()).build();
 		}
@@ -403,7 +403,7 @@ public class XmlTypeToJsonSchemaConverter  {
 
 	// Currently commented out because builder param isnt used
 	// private void buildWildcard(JsonObjectBuilder builder, XSTerm term){
-	private void handleWildcard(XSWildcard wildcard, Runnable onWildcard){
+	private void handleWildcard(XSWildcard wildcard){
 		String processContents;
 		switch (wildcard.getProcessContents()) {
 		case XSWildcard.PC_LAX: processContents="LAX"; break;
@@ -420,18 +420,10 @@ public class XmlTypeToJsonSchemaConverter  {
 		default:
 				throw new IllegalStateException("handleWildcard wildcard.namespaceConstraint is not ANY, LIST or NOT, but ["+wildcard.getConstraintType()+"]");
 		}
-		if (onWildcard!=null) {
-			onWildcard.run();
-		}
-	}
-
-	private class BooleanRecord {
-		boolean value=false;
 	}
 
 	private void buildObject(JsonObjectBuilder builder, XSObjectList particles, XSObjectList attributeUses, String textAttribute, XSTypeDefinition baseType){
 		builder.add("type", "object");
-		BooleanRecord wildcardsFound = new BooleanRecord();
 		JsonObjectBuilder propertiesBuilder = Json.createObjectBuilder();
 		List<String> requiredProperties = new ArrayList<String>();
 
@@ -439,13 +431,14 @@ public class XmlTypeToJsonSchemaConverter  {
 			for (int i=0; i< attributeUses.getLength(); i++) {
 				XSAttributeUse attributeUse = (XSAttributeUse)attributeUses.get(i);
 				XSAttributeDeclaration attributeDecl = attributeUse.getAttrDeclaration();
-				propertiesBuilder.add(attributePrefix+attributeDecl.getName(), getDefinition(attributeDecl.getTypeDefinition(), true, ()->wildcardsFound.value=true));
+				propertiesBuilder.add(attributePrefix+attributeDecl.getName(), getDefinition(attributeDecl.getTypeDefinition(), true));
 			}
 		}
 		if (textAttribute!=null && ((attributeUses!=null && attributeUses.getLength()>0) || (particles!=null && particles.getLength()>0))) {
-			JsonObject elementType = baseType!=null ? getDefinition(baseType, true, ()->wildcardsFound.value=true) : Json.createObjectBuilder().add("type", "string").build();
+			JsonObject elementType = baseType!=null ? getDefinition(baseType, true) : Json.createObjectBuilder().add("type", "string").build();
 			propertiesBuilder.add(textAttribute, elementType);
 		}
+		boolean wildcardFound = false;
 		if (particles!=null) {
 			for (int i=0;i<particles.getLength();i++) {
 				XSParticle childParticle = (XSParticle)particles.item(i);
@@ -460,11 +453,13 @@ public class XmlTypeToJsonSchemaConverter  {
 						requiredProperties.add(elementName);
 					}
 				}
-
-				handleParticle(propertiesBuilder, childParticle, null, true, ()->wildcardsFound.value=true);
+				if (XmlAligner.typeContainsWildcard(childParticle)) {
+					wildcardFound=true;
+				}
+				handleParticle(propertiesBuilder, childParticle, null, true);
 			}
 		}
-		builder.add("additionalProperties", wildcardsFound.value);
+		builder.add("additionalProperties", wildcardFound);
 		builder.add("properties", propertiesBuilder.build());
 		if(requiredProperties.size() > 0){
 			JsonArrayBuilder requiredPropertiesBuilder = Json.createArrayBuilder();
@@ -476,15 +471,15 @@ public class XmlTypeToJsonSchemaConverter  {
 	}
 
 
-	private void buildSkippableArrayContainer(XSParticle childParticle, JsonObjectBuilder builder, Runnable onWildcard){
+	private void buildSkippableArrayContainer(XSParticle childParticle, JsonObjectBuilder builder){
 		JsonObjectBuilder refBuilder = Json.createObjectBuilder();
-		handleParticle(refBuilder,childParticle,null, false, onWildcard);
+		handleParticle(refBuilder,childParticle,null, false);
 
 		XSTerm childTerm = childParticle.getTerm();
 		if( childTerm instanceof XSElementDeclaration ){
 			XSElementDeclaration elementDeclaration=(XSElementDeclaration) childTerm;
 			XSTypeDefinition elementTypeDefinition = elementDeclaration.getTypeDefinition();
-			JsonStructure definition =getDefinition(elementTypeDefinition, true, onWildcard);
+			JsonStructure definition =getDefinition(elementTypeDefinition, true);
 
 			builder.add("type", "array");
 			if (elementDeclaration.getNillable()) {

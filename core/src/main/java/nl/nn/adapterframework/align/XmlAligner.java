@@ -280,7 +280,7 @@ public class XmlAligner extends XMLFilterImpl {
 		throw new IllegalStateException("determineIsParentOfSingleMultipleOccurringChildElement unknown Term type ["+term.getClass().getName()+"]");
 	}
 
-	protected boolean typeContainsWildcard(XSParticle particle) {
+	public static boolean typeContainsWildcard(XSParticle particle) {
 		if (particle==null) {
 			return false;
 		}
