@@ -50,10 +50,10 @@ public class CheckReloadJob extends JobDef {
 				}
 			}
 		} else {
-			getMessageKeeper().add("job execution is skipped since autoload is disabled!");
+			getMessageKeeper().add("skipped job execution: autoload is disabled");
 		}
 		if(!atLeastOneConfigrationHasDBClassLoader) {
-			getMessageKeeper().add("job execution is skipped since there is no database configuration!");
+			getMessageKeeper().add("skipped job execution: no database configurations found");
 		}
 		return atLeastOneConfigrationHasDBClassLoader;
 	}
