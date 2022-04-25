@@ -48,6 +48,6 @@ public class CheckReloadJobTest extends JdbcTestBase {
 		assertFalse(jobDef.beforeExecuteJob());
 
 		assertEquals(2, jobDef.getMessageKeeper().size());
-		assertEquals("job execution is skipped since there is no database configuration!", jobDef.getMessageKeeper().getMessage(1).getMessageText());
+		assertEquals("skipped job execution: no database configurations found", jobDef.getMessageKeeper().getMessage(1).getMessageText());
 	}
 }
