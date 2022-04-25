@@ -165,7 +165,7 @@ public class TestMap2Xml extends AlignTestBase {
 
 	@Override
 	@Test
-	@Ignore("cannot decide where to insert an unknown element")
+	@Ignore("cannot decide what elements should be inserted at wildcard position")
 	public void testAnyElement() throws Exception {
 		super.testAnyElement();
 	}
