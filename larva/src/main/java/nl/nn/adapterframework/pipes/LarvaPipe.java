@@ -87,7 +87,7 @@ public class LarvaPipe extends FixedForwardPipe {
 		}
 		failureForward=findForward(FORWARD_FAILURE);
 		if(failureForward == null && (failureForward = findForward("fail")) != null) {
-			ConfigurationWarnings.add(this, log, "forward 'fail' is deprecated use 'failure' instead!");
+			ConfigurationWarnings.add(this, log, "forward 'fail' has been deprecated, use forward 'failure' instead");
 		}
 		if (failureForward==null) {
 			failureForward=getSuccessForward();
