@@ -1,5 +1,5 @@
 <browse delay='true'>
 	<jmsRealm>qcf</jmsRealm>
-	<destinationName>jms/i4testiaf_in</destinationName>
+	<destinationName>${jms.destination.i4testiaf_in}</destinationName>
 	<destinationType>QUEUE</destinationType>
 </browse>
