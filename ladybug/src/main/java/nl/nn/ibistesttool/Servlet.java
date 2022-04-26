@@ -15,8 +15,6 @@
 */
 package nl.nn.ibistesttool;
 
-import javax.servlet.http.HttpServlet;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
