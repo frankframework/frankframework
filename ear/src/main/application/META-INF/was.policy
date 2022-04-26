@@ -197,6 +197,9 @@ permission java.io.FilePermission "/Library/Fonts", "read";
 // required for ladybug retrieving userprincipal
 permission java.security.SecurityPermission "printIdentity";
 
+// required for soapwrapper ws-security signing
+permission java.security.SecurityPermission "org.apache.xml.security.register";
+
 // required for Log4J stacktrace rendering and JavaAssist PipeLineSessionDebugger proxying
 permission java.lang.RuntimePermission "createSecurityManager";
 // required for Log4J
