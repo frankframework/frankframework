@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.http;
 
-import java.io.IOException;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -103,9 +102,10 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		RestServiceDispatcher.getInstance().unregisterServiceClient(getUriPattern(), getMethod());
 	}
 
-	public String processRequest(String correlationId, String message, PipeLineSession requestContext) throws ListenerException {
+	@Override
+	public Message processRequest(String correlationId, Message message, Map<String, Object> requestContext) throws ListenerException {
 		HttpServletRequest httpServletRequest = (HttpServletRequest) requestContext.get(PipeLineSession.HTTP_REQUEST_KEY);
-		String response;
+		Message response;
 		String contentType = (String) requestContext.get("contentType");
 
 		//Check if valid path
@@ -139,12 +139,8 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 				default:
 					throw new IllegalStateException("Unknown mediatype ["+getProduces()+"]");
 			}
-			
-			try {
-				response = super.processRequest(correlationId, new Message(message), requestContext).asString();
-			} catch (IOException e) {
-				throw new ListenerException("Failed to read result", e);
-			}
+
+			response = super.processRequest(correlationId, message, requestContext);
 			if(response != null && !response.isEmpty())
 				eTag = response.hashCode();
 
@@ -157,11 +153,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 			}
 		}
 		else {
-			try {
-				response = super.processRequest(correlationId, new Message(message), requestContext).asString();
-			} catch (IOException e) {
-				throw new ListenerException("Failed to read result", e);
-			}
+			response = super.processRequest(correlationId, message, requestContext);
 			if(response != null && !response.isEmpty())
 				eTag = response.hashCode();
 		}
@@ -173,25 +165,17 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		return response;
 	}
 
-	public String transformToJson(String message) throws PipeRunException {
+	public Message transformToJson(Message message) throws PipeRunException {
 		JsonPipe pipe = new JsonPipe();
 		pipe.setDirection(Direction.XML2JSON);
-		PipeRunResult pipeResult = pipe.doPipe(new Message(message), new PipeLineSession());
-		try {
-			return pipeResult.getResult().asString();
-		} catch (IOException e) {
-			throw new PipeRunException(null,"cannot transform result",e);
-		}
+		PipeRunResult pipeResult = pipe.doPipe(message, new PipeLineSession());
+		return pipeResult.getResult();
 	}
 
-	public String transformToXml(String message) throws PipeRunException {
+	public Message transformToXml(Message message) throws PipeRunException {
 		JsonPipe pipe = new JsonPipe();
-		PipeRunResult pipeResult = pipe.doPipe(new Message(message), new PipeLineSession());
-		try {
-			return pipeResult.getResult().asString();
-		} catch (IOException e) {
-			throw new PipeRunException(null,"cannot transform result",e);
-		}
+		PipeRunResult pipeResult = pipe.doPipe(message, new PipeLineSession());
+		return pipeResult.getResult();
 	}
 
 	@Override
