@@ -1,4 +1,4 @@
-<arrays xmlns="urn:arrays" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:arrays file:///C:/Gerrit/Workspaces/neon/XmlAligner/src/test/resources/arrays.xsd">
+<arrays xmlns="urn:arrays">
 	<intElem>1</intElem>
 	<stringElem>abcd</stringElem>
 	<array1/>
