@@ -234,7 +234,7 @@ public class ServletManagerTest {
 
 		public DynamicServletRegistration(String servletName, javax.servlet.Servlet servlet) {
 			this.name = servletName;
-			servlet = (DummyServletImpl) servlet;
+			this.servlet = (DummyServletImpl) servlet;
 		}
 
 		@Override
