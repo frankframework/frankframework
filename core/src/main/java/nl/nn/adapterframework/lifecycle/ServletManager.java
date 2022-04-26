@@ -117,7 +117,7 @@ public class ServletManager {
 				registeredRoles.add(role);
 
 				getServletContext().declareRoles(role);
-				log.info("declared role ["+role+"]");
+				log.info("declared role [{}]", role);
 			}
 		}
 	}
@@ -142,21 +142,23 @@ public class ServletManager {
 		if(servletName.contains(" ")) {
 			throw new IllegalArgumentException("unable to instantiate servlet, servlet name may not contain spaces");
 		}
+		if(servlets.contains(servletName)) {
+			throw new IllegalArgumentException("unable to instantiate servlet, servlet name must be unique");
+		}
 
-		log.info("instantiating IbisInitializer servlet name ["+servletName+"] servletClass ["+servlet+"]");
-		getServletContext().log("instantiating IbisInitializer servlet ["+servletName+"]");
-
+		log.info("instantiating IbisInitializer servlet name [{}] servletClass [{}]", servletName, servlet);
 
 		String propertyPrefix = "servlet."+servletName+".";
 		if(!appConstants.getBoolean(propertyPrefix+"enabled", true))
 			return;
 
-		ServletRegistration.Dynamic serv = getServletContext().addServlet(servletName, servlet);
+		getServletContext().log("instantiating IbisInitializer servlet ["+servletName+"]");
 
-		serv.addMapping(getUrlMapping(propertyPrefix, urlMapping));
+		ServletRegistration.Dynamic serv = getServletContext().addServlet(servletName, servlet);
 
 		int loadOnStartupCopy = appConstants.getInt(propertyPrefix+"loadOnStartup", loadOnStartup);
 		serv.setLoadOnStartup(loadOnStartupCopy);
+		serv.addMapping(getUrlMapping(propertyPrefix, urlMapping));
 		serv.setServletSecurity(getServletSecurity(propertyPrefix, roles));
 
 		if(initParameters != null && !initParameters.isEmpty()) {
@@ -178,7 +180,7 @@ public class ServletManager {
 		StringBuilder builder = new StringBuilder("registered");
 		builder.append(" servlet ["+serv.getName()+"]");
 		builder.append(" class ["+serv.getClassName()+"]");
-		builder.append(" url(s) ["+serv.getMappings()+"]");
+		builder.append(" url(s) "+serv.getMappings());
 		builder.append(" loadOnStartup ["+loadOnStartupCopy+"]");
 		log.debug(builder.toString());
 	}
