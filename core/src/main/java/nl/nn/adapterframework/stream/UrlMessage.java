@@ -22,6 +22,8 @@ import org.apache.commons.io.FilenameUtils;
 
 public class UrlMessage extends Message {
 
+	private static final long serialVersionUID = -8984775227930282095L;
+
 	public UrlMessage(URL url) {
 		this(url, new MessageContext());
 	}

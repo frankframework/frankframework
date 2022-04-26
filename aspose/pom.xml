@@ -187,6 +187,10 @@
 					<artifactId>metadata-extractor</artifactId>
 					<groupId>com.drewnoakes</groupId>
 				</exclusion>
+				<exclusion>
+					<groupId>xerces</groupId>
+					<artifactId>xercesImpl</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 

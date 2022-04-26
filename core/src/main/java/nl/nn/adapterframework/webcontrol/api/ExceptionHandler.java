@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017, 2020-2022 WeAreFrank!
+Copyright 2022 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.ExceptionMapper;
@@ -26,25 +25,19 @@ import org.apache.logging.log4j.Logger;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * Custom errorHandler for the FF!API to unpack and re-pack {@link WebApplicationException}s.
- * Has to be explicitly configured to override the CXF default {@link WebApplicationException}Listener.
+ * Custom errorHandler for the FF!API to catch all unhandled exceptions.
  * 
  * @author	Niels Meijer
  */
 
 @Provider
-public class ApiExceptionHandler implements ExceptionMapper<WebApplicationException> {
+public class ExceptionHandler implements ExceptionMapper<Exception> {
 
 	private Logger log = LogUtil.getLogger(this);
 
 	@Override
-	public Response toResponse(WebApplicationException exception) {
-		//If the message has already been wrapped in an exception we don't need to `convert` it!
-		if(exception instanceof ApiException) {
-			return ((ApiException) exception).getResponse();
-		}
-
-		log.warn("Caught unhandled WebApplicationException while executing FF!API call", exception);
+	public Response toResponse(Exception exception) {
+		log.warn("Caught unhandled Exception while executing FF!API call", exception);
 
 		return ApiException.formatException(exception.getMessage(), Status.INTERNAL_SERVER_ERROR);
 	}

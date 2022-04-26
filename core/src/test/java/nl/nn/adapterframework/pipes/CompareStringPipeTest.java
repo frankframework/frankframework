@@ -8,6 +8,8 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.ParameterBuilder;
 
 public class CompareStringPipeTest extends PipeTestBase<CompareStringPipe> {
 
@@ -117,6 +119,30 @@ public class CompareStringPipeTest extends PipeTestBase<CompareStringPipe> {
 		pipe.start();
 
 		PipeRunResult prr = doPipe("<ignored/>");
+		assertEquals(LESS_THAN, prr.getPipeForward().getName());
+	}
+
+	@Test
+	public void testNullOperands() throws Exception {
+		pipe.addParameter(ParameterBuilder.create().withName("operand1"));
+		pipe.addParameter(ParameterBuilder.create().withName("operand2"));
+
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult prr = doPipe(Message.nullMessage());
+		assertEquals(EQUALS, prr.getPipeForward().getName());
+	}
+
+	@Test
+	public void testNullOperandIsLessThan() throws Exception {
+		pipe.addParameter(ParameterBuilder.create().withName("operand1"));
+		pipe.addParameter(ParameterBuilder.create().withName("operand2").withValue("something"));
+
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult prr = doPipe(Message.nullMessage());
 		assertEquals(LESS_THAN, prr.getPipeForward().getName());
 	}
 }

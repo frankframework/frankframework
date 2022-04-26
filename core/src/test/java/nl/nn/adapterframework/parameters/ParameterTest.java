@@ -40,6 +40,7 @@ import nl.nn.adapterframework.processors.CorePipeProcessor;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.testutil.MatchUtils;
+import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.DateUtils;
@@ -1420,5 +1421,17 @@ public class ParameterTest {
 		String result = (String)p.getValue(alreadyResolvedParameters, message, session, false);
 
 		assertEquals("<doc/>", result);
+	}
+
+	@Test
+	public void testParameterFromNullMessage() throws Exception {
+		Parameter p = ParameterBuilder.create().withName("parameter");
+		p.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+
+		String result = (String)p.getValue(alreadyResolvedParameters, Message.nullMessage(), null, false);
+
+		assertEquals(null, result);
 	}
 }
