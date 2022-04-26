@@ -434,15 +434,14 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 			}
 			else if (getProperties) {
 				if(getDocumentContent) {
-					ContentStream contentStream = document.getContentStream();
-					InputStream inputStream = contentStream.getStream();
+					Message content = getMessageFromContentStream(document.getContentStream());
 
 					if(convert2Base64) {
-						byte[] bytes = Misc.streamToBytes(inputStream);
-						session.put(getFileSessionKey(), Base64.encodeBase64String(bytes));
+						session.put(getFileSessionKey(), Base64.encodeBase64String(content.asByteArray()));
 					}
 					else {
-						session.put(getFileSessionKey(), inputStream);
+						content.closeOnCloseOf(session, this);
+						session.put(getFileSessionKey(), content);
 					}
 				}
 
@@ -457,28 +456,30 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 				return new Message(cmisXml.toXML());
 			}
 			else {
-				ContentStream contentStream = document.getContentStream();
-				InputStream inputStream = contentStream.getStream();
+				Message content = getMessageFromContentStream(document.getContentStream());
+				content.closeOnCloseOf(session, this);
 
 				if (StringUtils.isNotEmpty(getFileSessionKey())) {
 					if(convert2Base64) {
-						byte[] bytes = Misc.streamToBytes(inputStream);
-						session.put(getFileSessionKey(), Base64.encodeBase64String(bytes));
+						session.put(getFileSessionKey(), Base64.encodeBase64String(content.asByteArray()));
 					} else {
-						session.put(getFileSessionKey(), inputStream);
+						session.put(getFileSessionKey(), content);
 					}
 					return Message.nullMessage();
 				}
-				session.put("contentStream:MimeType", contentStream.getMimeType());
-				session.put("contentStream:Filename", contentStream.getFileName());
 
-				MessageContext context = new MessageContext();
-				context.withName(contentStream.getFileName()).withMimeType(contentStream.getMimeType());
-				return new Message(inputStream, context);
+				return content;
 			}
 		} catch (IOException e) {
 			throw new SenderException(e);
 		}
+	}
+
+	private Message getMessageFromContentStream(ContentStream contentStream) {
+		InputStream inputStream = contentStream.getStream();
+		MessageContext context = new MessageContext();
+		context.withName(contentStream.getFileName()).withMimeType(contentStream.getMimeType());
+		return new Message(inputStream, context);
 	}
 
 	private Message sendMessageForActionCreate(Session cmisSession, Message message, PipeLineSession session, ParameterValueList pvl) throws SenderException {
