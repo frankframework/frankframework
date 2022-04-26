@@ -70,6 +70,6 @@ public interface DynamicRegistration {
 	 * @return <code>0</code> to let the application server determine, <code>-1</code> to disable
 	 */
 	public default int loadOnStartUp() {
-		return 1;
+		return -1;
 	}
 }

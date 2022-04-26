@@ -55,6 +55,11 @@ public class Servlet extends WebContainerServlet implements DynamicRegistration.
 	}
 
 	@Override
+	public String getName() {
+		return "TestTool";
+	}
+
+	@Override
 	public String[] getRoles() {
 		return ALL_IBIS_USER_ROLES;
 	}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2020 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2019-2020 Nationale-Nederlanden, 2021-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,12 +20,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.servlet.HttpConstraintElement;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRegistration;
+import javax.servlet.ServletRegistration.Dynamic;
 import javax.servlet.ServletSecurityElement;
 import javax.servlet.annotation.ServletSecurity;
 import javax.servlet.annotation.ServletSecurity.TransportGuarantee;
@@ -66,6 +69,7 @@ public class ServletManager {
 	private List<String> registeredRoles = new ArrayList<>();
 	private Logger log = LogUtil.getLogger(this);
 	private AppConstants appConstants;
+	private Set<String> servlets = new TreeSet<>();
 	private static boolean webSecurityEnabled = true;
 	private static TransportGuarantee defaultTransportGuarantee = TransportGuarantee.CONFIDENTIAL;
 
@@ -139,7 +143,7 @@ public class ServletManager {
 			throw new IllegalArgumentException("unable to instantiate servlet, servlet name may not contain spaces");
 		}
 
-		log.info("instantiating IbisInitializer servlet name ["+servletName+"] servletClass ["+servlet+"] loadOnStartup ["+loadOnStartup+"]");
+		log.info("instantiating IbisInitializer servlet name ["+servletName+"] servletClass ["+servlet+"]");
 		getServletContext().log("instantiating IbisInitializer servlet ["+servletName+"]");
 
 
@@ -165,7 +169,18 @@ public class ServletManager {
 			}
 		}
 
-		if(log.isDebugEnabled()) log.debug("registered servlet ["+servletName+"] class ["+servlet+"] url(s) ["+urlMapping+"] loadOnStartup ["+loadOnStartup+"]");
+		servlets.add(servletName);
+
+		if(log.isDebugEnabled()) logServletInfo(serv, loadOnStartupCopy);
+	}
+
+	private void logServletInfo(Dynamic serv, int loadOnStartupCopy) {
+		StringBuilder builder = new StringBuilder("registered");
+		builder.append(" servlet ["+serv.getName()+"]");
+		builder.append(" class ["+serv.getClassName()+"]");
+		builder.append(" url(s) ["+serv.getMappings()+"]");
+		builder.append(" loadOnStartup ["+loadOnStartupCopy+"]");
+		log.debug(builder.toString());
 	}
 
 	private String[] getUrlMapping(String propertyPrefix, String defaultUrlMappings) {

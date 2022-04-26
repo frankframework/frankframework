@@ -154,8 +154,9 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 	@Override
 	public void setBus(Bus bus) {
 		if(bus != null) {
-			log.debug("Successfully created IAF-API with SpringBus ["+bus.getId()+"]");
-			getServletContext().log("Successfully created IAF-API with SpringBus ["+bus.getId()+"]");
+			String busInfo = String.format("Successfully created %s with SpringBus [%s]", getName(), bus.getId());
+			log.info(busInfo);
+			getServletContext().log(busInfo);
 		}
 
 		super.setBus(bus);
