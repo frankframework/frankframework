@@ -38,16 +38,6 @@ public abstract class HttpServletBase extends HttpServlet implements DynamicRegi
 	}
 
 	@Override
-	public int loadOnStartUp() {
-		return -1;
-	}
-
-	@Override
-	public HttpServlet getServlet() {
-		return this;
-	}
-
-	@Override
 	public String[] getRoles() {
 		return null;
 	}

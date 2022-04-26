@@ -217,11 +217,6 @@ public class ServletManagerTest {
 		}
 
 		@Override
-		public HttpServlet getServlet() {
-			return this;
-		}
-
-		@Override
 		public String getUrlMapping() {
 			return String.join(",", urlMappings);
 		}

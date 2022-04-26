@@ -18,13 +18,11 @@ package nl.nn.adapterframework.extensions.cmis.servlets;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpServlet;
+import org.apache.chemistry.opencmis.server.impl.atompub.CmisAtomPubServlet;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import nl.nn.adapterframework.lifecycle.DynamicRegistration;
 import nl.nn.adapterframework.lifecycle.ServletManager;
-
-import org.apache.chemistry.opencmis.server.impl.atompub.CmisAtomPubServlet;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * It is important that we register the correct (CMIS) CXF bus, or else 
@@ -44,11 +42,6 @@ public abstract class AtomPubServletBase extends CmisAtomPubServlet implements D
 		returnMap.put(PARAM_CALL_CONTEXT_HANDLER, "org.apache.chemistry.opencmis.server.shared.BasicAuthCallContextHandler");
 
 		return returnMap;
-	}
-
-	@Override
-	public HttpServlet getServlet() {
-		return this;
 	}
 
 	@Override

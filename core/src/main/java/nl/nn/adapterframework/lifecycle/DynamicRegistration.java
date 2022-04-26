@@ -17,8 +17,6 @@ package nl.nn.adapterframework.lifecycle;
 
 import java.util.Map;
 
-import javax.servlet.http.HttpServlet;
-
 /**
  * Interface to use in combination with the {@link IbisInitializer} annotation.
  * Classes that implement the annotation are automatically picked up by Spring, and allow you to use:
@@ -37,9 +35,6 @@ public interface DynamicRegistration {
 
 		public static final String[] ALL_IBIS_ROLES = {"IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester", "IbisWebService"};
 		public static final String[] ALL_IBIS_USER_ROLES = {"IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester"};
-
-		/** @return The {@link javax.servlet.http.HttpServlet Servlet} to register using the {@link ServletManager} */
-		public HttpServlet getServlet();
 
 		/** @return The URL the {@link javax.servlet.http.HttpServlet Servlet} should be mapped to. */
 		public String getUrlMapping();

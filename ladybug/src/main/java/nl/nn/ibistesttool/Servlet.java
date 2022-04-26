@@ -45,11 +45,6 @@ public class Servlet extends WebContainerServlet implements DynamicRegistration.
 	}
 
 	@Override
-	public HttpServlet getServlet() {
-		return this;
-	}
-
-	@Override
 	public String getUrlMapping() {
 		return "/testtool";
 	}

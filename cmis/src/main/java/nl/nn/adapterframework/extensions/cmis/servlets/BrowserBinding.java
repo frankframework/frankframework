@@ -18,8 +18,6 @@ package nl.nn.adapterframework.extensions.cmis.servlets;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpServlet;
-
 import org.apache.chemistry.opencmis.server.impl.browser.CmisBrowserBindingServlet;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -43,11 +41,6 @@ public class BrowserBinding extends CmisBrowserBindingServlet implements Dynamic
 		returnMap.put(PARAM_CALL_CONTEXT_HANDLER, "org.apache.chemistry.opencmis.server.shared.BasicAuthCallContextHandler");
 
 		return returnMap;
-	}
-
-	@Override
-	public HttpServlet getServlet() {
-		return this;
 	}
 
 	@Override
