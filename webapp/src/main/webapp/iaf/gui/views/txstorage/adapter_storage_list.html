@@ -105,6 +105,7 @@
 				</div>
 				<div class="ibox-content">
 					<div class="pull-right" >
+						<button title="{{truncateButtonText}}" ng-click="truncate()" ng-class="truncated ? 'btn btn-info btn-sm' : 'btn btn-default btn-sm'" type="button">{{truncateButtonText}}</button>
 						<button title="Select All Messages" ng-click="selectAll()" class="btn btn-default btn-sm" type="button">Select All</button>
 						<button title="Unselect All Messages" ng-click="unselectAll()" class="btn btn-default btn-sm" type="button">Unselect All</button>
 						<span ng-repeat="targetState in targetStates">
