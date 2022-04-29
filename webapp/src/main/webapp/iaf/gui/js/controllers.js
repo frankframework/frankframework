@@ -1401,6 +1401,18 @@ angular.module('iaf.beheerconsole')
 		$scope.updateTable();
 	};
 
+	$scope.truncated = false;
+	$scope.truncateButtonText = "Truncate displayed data";
+	$scope.truncate = function() {
+		$scope.truncated = !$scope.truncated;
+		if($scope.truncated) {
+			$scope.truncateButtonText="Show original";
+		} else {
+			$scope.truncateButtonText="Truncate displayed data";
+		}
+		$scope.updateTable();
+	};
+
 	$scope.dtOptions = {
 		stateSave: true,
 		stateSaveCallback: function(settings, data) {
@@ -1450,8 +1462,9 @@ angular.module('iaf.beheerconsole')
 					for(let i in data) {
 						if(i == "id") continue;
 						var columnData = data[i];
-						if(typeof columnData == 'string' && columnData.length > 30)
+						if(typeof columnData == 'string' && columnData.length > 30 && $scope.truncated) {
 							data[i] = '<span title="'+columnData.replace(/"/g, '&quot;')+'">'+columnData.substr(0, 15)+' &#8230; '+columnData.substr(-15)+'</span>';
+						}
 					}
 				}
 				return data;
