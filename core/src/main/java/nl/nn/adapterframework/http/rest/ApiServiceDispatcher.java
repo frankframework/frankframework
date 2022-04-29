@@ -88,13 +88,13 @@ public class ApiServiceDispatcher {
 	private List<ApiDispatchConfig>  findMatchingConfigsForUri(String uri, boolean exactMatch) {
 		List<ApiDispatchConfig> results = new ArrayList<>();
 
-		String uriSegments[] = uri.split("/");
+		String[] uriSegments = uri.split("/");
 
 		for (Iterator<String> it = patternClients.keySet().iterator(); it.hasNext();) {
 			String uriPattern = it.next();
 			if(log.isTraceEnabled()) log.trace("comparing uri ["+uri+"] to pattern ["+uriPattern+"]");
 
-			String patternSegments[] = uriPattern.split("/");
+			String[] patternSegments = uriPattern.split("/");
 			if (exactMatch && patternSegments.length != uriSegments.length || patternSegments.length < uriSegments.length) {
 				continue;
 			}
@@ -103,8 +103,6 @@ public class ApiServiceDispatcher {
 			for (int i = 0; i < uriSegments.length; i++) {
 				if(patternSegments[i].equals(uriSegments[i]) || patternSegments[i].equals("*")) {
 					matches++;
-				} else {
-					continue;
 				}
 			}
 			if(matches == uriSegments.length) {
@@ -284,7 +282,7 @@ public class ApiServiceDispatcher {
 		List<String> paramsFromHeaderAndCookie = new ArrayList<String>();
 		// header parameters
 		if(StringUtils.isNotEmpty(listener.getHeaderParams())) {
-			String params[] = listener.getHeaderParams().split(",");
+			String[] params = listener.getHeaderParams().split(",");
 			for (String parameter : params) {
 				paramBuilder.add(addParameterToSchema(parameter, "header", false, Json.createObjectBuilder().add("type", "string")));
 				paramsFromHeaderAndCookie.add(parameter);
@@ -342,7 +340,7 @@ public class ApiServiceDispatcher {
 
 		JsonObjectBuilder schema = null;
 		String schemaReferenceElement = null;
-		List<XSModel> models = new ArrayList<XSModel>();
+		List<XSModel> models = new ArrayList<>();
 		if(inputValidator != null) {
 			models.addAll(inputValidator.getXSModels());
 			schemaReferenceElement = inputValidator.getMessageRoot(true);
