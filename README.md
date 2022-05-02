@@ -22,7 +22,7 @@ The application may be managed and monitored through a web interface or REST API
 See it in action: https://frank2example.frankframework.org
 
 ## Rebranding
-The Ibis Adapter Framework has been renamed to "Frank!Framework". The migration is a work in progress, which is why you may encounter some old(er) names throughout our source code. Don't worry, everything will remail fully backwards compatible!
+The Ibis Adapter Framework has been renamed to "Frank!Framework". The migration is a work in progress, which is why you may encounter some old(er) names throughout our source code. Don't worry, everything will remain fully backwards compatible!
 
 ## Releases
 All our releases can be found on Maven central. Individual builds can be found on our Nexus repository [here](https://nexus.frankframework.org).
