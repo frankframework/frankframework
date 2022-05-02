@@ -34,8 +34,7 @@ Frank!Framework is developed and maintained by [WeAreFrank!](https://wearefrank.
 <https://wearefrank.nl/en/contact/> or send an email to info@wearefrank.nl.
 
 ## Frank!Manual
-In need of help? Our manual can be found at <http://frank-manual.readthedocs.io>. If you cannot find an answer to your question (feel free to contact us at)
-[https://wearefrank.nl/en/contact/]. If you want to contribute to our manual, the sources can be found [here](https://github.com/ibissource/frank-manual).
+In need of help? Our manual can be found at <http://frank-manual.readthedocs.io>. If you cannot find an answer to your question [feel free to contact us](https://wearefrank.nl/en/contact/). If you want to contribute to our manual, the sources can be found [here](https://github.com/ibissource/frank-manual).
 
 ## Contributing
 Eager to help us expand or enhance our framework? 
