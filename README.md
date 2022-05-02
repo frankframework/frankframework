@@ -2,7 +2,7 @@ Frank!Framework
 ===============
 **Exchange, modify and aggregate messages between systems!**
 
-![frank-framework-github-banner](https://user-images.githubusercontent.com/4375703/166240670-da6cd560-0595-420c-8619-bcd2ac91de49.png)
+![frank-framework-github-banner](frank-framework-github-banner.png)
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/ibissource/iaf/blob/master/LICENSE)
 [![Build Status](https://api.travis-ci.org/ibissource/iaf.svg?branch=master)](https://travis-ci.org/ibissource/iaf)
