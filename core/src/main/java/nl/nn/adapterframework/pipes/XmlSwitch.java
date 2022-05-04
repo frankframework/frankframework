@@ -162,7 +162,7 @@ public class XmlSwitch extends AbstractPipe {
 					forward = transformerPool.transform(session.getMessage(getSessionKey()), parametervalues);
 				} else {
 					message.preserve();
-					forward = transformerPool.transform(message, parametervalues);
+					forward = transformerPool.transform(XmlUtils.inputSourceToSAXSource(message.asInputSource(), isNamespaceAware()), parametervalues);
 				}
 			} catch (Throwable e) {
 				throw new PipeRunException(this, getLogPrefix(session) + "got exception on transformation", e);

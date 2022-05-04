@@ -265,7 +265,55 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		session.put("input", input);
 		testSwitch(input,"dummy");
 	}
-	
+
+	public void testNamespaceAwarenessWithStylesheetHelper(int xsltVersion, boolean awareness, String forwardName) throws Exception {
+		pipe.registerForward(new PipeForward("1","FixedResult1"));
+		pipe.registerForward(new PipeForward("NF","FixedResultNF"));
+		pipe.setStyleSheetName("/XmlSwitch/Switch.xsl");
+		pipe.setNotFoundForwardName("NF");
+		pipe.setXsltVersion(xsltVersion);
+		pipe.setNamespaceAware(awareness);
+		Message input=new Message("<test xmlns=\"http://dummy\"><innerTest>1</innerTest></test>");
+		session.put("input", input);
+		testSwitch(input,forwardName);
+	}
+
+	public void testNamespaceAwarenessWithXpathHelper(int xsltVersion, boolean awareness, String forwardName) throws Exception {
+		pipe.registerForward(new PipeForward("1","FixedResult1"));
+		pipe.registerForward(new PipeForward("NF","FixedResultNF"));
+		pipe.setXpathExpression("/test/innerTest");
+		pipe.setNotFoundForwardName("NF");
+		pipe.setXsltVersion(xsltVersion);
+		pipe.setNamespaceAware(awareness);
+		Message input=new Message("<test xmlns=\"http://dummy\"><innerTest>1</innerTest></test>");
+		session.put("input", input);
+		testSwitch(input,forwardName);
+	}
+
+	@Test
+	public void testNamespaceAwarenessWithStylesheetXslt2() throws Exception {
+		testNamespaceAwarenessWithStylesheetHelper(2, true, "NF");
+		testNamespaceAwarenessWithStylesheetHelper(2, false, "1");
+		testNamespaceAwarenessWithXpathHelper(2, true, "NF");
+		testNamespaceAwarenessWithXpathHelper(2, false, "1");
+	}
+
+	@Test
+	public void testNamespaceAwarenessWithStylesheetXslt1() throws Exception {
+		testNamespaceAwarenessWithStylesheetHelper(1, true, "NF");
+		testNamespaceAwarenessWithStylesheetHelper(1, false, "1");
+		testNamespaceAwarenessWithXpathHelper(1, true, "NF");
+		testNamespaceAwarenessWithXpathHelper(1, false, "1");
+	}
+
+	@Test
+	public void testNamespaceAwarenessWithStylesheetXsltVersionAutoDetect() throws Exception {
+		testNamespaceAwarenessWithStylesheetHelper(0, true, "NF");
+		testNamespaceAwarenessWithStylesheetHelper(0, false, "1");
+		testNamespaceAwarenessWithXpathHelper(0, true, "NF");
+		testNamespaceAwarenessWithXpathHelper(0, false, "1");
+	}
+
 	@Test
 	public void configureNotFoundForwardNotRegistered() throws Exception {
 		pipe.setXpathExpression("name(/node()[position()=last()])");

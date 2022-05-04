@@ -107,6 +107,7 @@ import nl.nn.adapterframework.validation.XmlValidatorErrorHandler;
 import nl.nn.adapterframework.xml.BodyOnlyFilter;
 import nl.nn.adapterframework.xml.CanonicalizeFilter;
 import nl.nn.adapterframework.xml.ClassLoaderEntityResolver;
+import nl.nn.adapterframework.xml.NamespaceRemovingFilter;
 import nl.nn.adapterframework.xml.NonResolvingExternalEntityResolver;
 import nl.nn.adapterframework.xml.PrettyPrintFilter;
 import nl.nn.adapterframework.xml.SaxException;
@@ -252,7 +253,7 @@ public class XmlUtils {
 		}
 		return result;
 	}
-	
+
 	protected static String makeRemoveNamespacesXsltTemplates() {
 		return
 		"<xsl:template match=\"*\">"
@@ -440,8 +441,6 @@ public class XmlUtils {
 		return getUtilityTransformerPool(IDENTITY_TRANSFORM,"Identity",true,true);
 	}
 
-	
-
 	public static synchronized boolean isNamespaceAwareByDefault() {
 		if (namespaceAwareByDefault==null) {
 			namespaceAwareByDefault=AppConstants.getInstance().getBoolean(NAMESPACE_AWARE_BY_DEFAULT_KEY, false);
@@ -490,7 +489,7 @@ public class XmlUtils {
 	public static void parseXml(String source, ContentHandler handler) throws IOException, SAXException {
 		parseXml(Message.asInputSource(source),handler);
 	}
-	
+
 	/**
 	 * like {@link #parseXml(String source, ContentHandler handler)}, but skips startDocument() and endDocument().
 	 * Can be used to parse a string and inject its events in an existing SAX event stream.
@@ -525,7 +524,6 @@ public class XmlUtils {
 		return getXMLReader(true, scopeProvider);
 	}
 
-	
 	private static XMLReader getXMLReader(Resource resource, ContentHandler handler) throws ParserConfigurationException, SAXException {
 		XMLReader xmlReader = getXMLReader(true, resource);
 		xmlReader.setContentHandler(handler);
@@ -652,7 +650,6 @@ public class XmlUtils {
 		return buildElement(s,isNamespaceAwareByDefault());
 	}
 
-
 	/**
 	 * Convert an XML string to a Document, then return the root-element.
 	 * (namespace aware)
@@ -668,7 +665,7 @@ public class XmlUtils {
 			throw new DomBuilderException(e);
 		}
 	}
-	
+
 	public static String skipXmlDeclaration(String xmlString) {
 		if (xmlString != null && xmlString.startsWith("<?xml")) {
 			int endPos = xmlString.indexOf("?>")+2;
@@ -792,7 +789,6 @@ public class XmlUtils {
 		}
 	}
 
-
 	public static String createXPathEvaluatorSource(String XPathExpression)	throws TransformerConfigurationException {
 		return createXPathEvaluatorSource(XPathExpression, OutputType.TEXT);
 	}
@@ -812,7 +808,6 @@ public class XmlUtils {
 		return createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod, includeXmlDeclaration, paramNames, stripSpace, false, null, 0);
 	}
 
-	
 	public static String getNamespaceClause(String namespaceDefs) {
 		String namespaceClause = "";
 		for (Entry<String,String> namespaceDef:getNamespaceMap(namespaceDefs).entrySet()) {
@@ -821,7 +816,7 @@ public class XmlUtils {
 		}
 		return namespaceClause;
 	}
-	
+
 	public static Map<String,String> getNamespaceMap(String namespaceDefs) {
 		Map<String,String> namespaceMap=new LinkedHashMap<String,String>();
 		if (namespaceDefs != null) {
@@ -946,15 +941,15 @@ public class XmlUtils {
 		InputSource is = new InputSource(reader);
 		return inputSourceToSAXSource(is, namespaceAware, null);
 	}	
-	
+
 	public static SAXSource inputSourceToSAXSource(Resource resource) throws SAXException, IOException {
 		return inputSourceToSAXSource(resource.asInputSource(), true, resource);
 	}
-	
+
 	public static SAXSource inputSourceToSAXSource(InputSource is) throws SAXException {
 		return inputSourceToSAXSource(is, true, null);
 	}
-	
+
 	private static SAXSource inputSourceToSAXSource(InputSource is, boolean namespaceAware, Resource scopeProvider) throws SAXException {
 		try {
 			return new SAXSource(getXMLReader(namespaceAware, scopeProvider), is);
@@ -963,8 +958,20 @@ public class XmlUtils {
 		}
 	}
 
-	
-	public static int interpretXsltVersion(String xsltVersion) throws TransformerException, IOException {
+	public static SAXSource inputSourceToSAXSource(InputSource is, boolean namespaceAware) throws SAXException {
+		SAXSource source = inputSourceToSAXSource(is, true, null);
+		if(!namespaceAware) {
+			XMLReader reader = source.getXMLReader();
+			/* Saxon always overwrites the feature "http://xml.org/sax/features/namespaces" to true for SAXSource
+			 * Therefore namespaceRemovingFilter is required to support namespaceAwareness */
+			NamespaceRemovingFilter filter = new NamespaceRemovingFilter(reader.getContentHandler());
+			filter.setParent(reader);
+			source.setXMLReader(filter);
+		}
+		return source;
+	}
+
+	public static int interpretXsltVersion(String xsltVersion) {
 		if (StringUtils.isEmpty(xsltVersion)) {
 			return 0;
 		}
@@ -977,6 +984,7 @@ public class XmlUtils {
 		}
 		return Integer.parseInt(xsltVersion);
 	}
+
 	public static int detectXsltVersion(String xsltString) throws TransformerConfigurationException {
 		try {
 			TransformerPool tpVersion = XmlUtils.getDetectXsltVersionTransformerPool();
@@ -987,19 +995,18 @@ public class XmlUtils {
 			throw new TransformerConfigurationException(e);
 		}
 	}
+
 	public static int detectXsltVersion(URL xsltUrl) throws TransformerConfigurationException {
 		try {
 			TransformerPool tpVersion = XmlUtils.getDetectXsltVersionTransformerPool();
 			StreamSource stylesource = new StreamSource(xsltUrl.openStream());
 			stylesource.setSystemId(ClassUtils.getCleanedFilePath(xsltUrl.toExternalForm()));
-			
+
 			return interpretXsltVersion(tpVersion.transform(stylesource));
 		} catch (Exception e) {
 			throw new TransformerConfigurationException(e);
 		}
 	}
-
-
 
 	public static Transformer createTransformer(String xsltString) throws TransformerConfigurationException {
 		try {
@@ -1016,7 +1023,7 @@ public class XmlUtils {
 		StreamSource stylesource = new StreamSource(sr);
 		return createTransformer(stylesource, xsltVersion);
 	}
-	
+
 	public static Transformer createTransformer(URL url) throws TransformerConfigurationException, IOException {
 		try {
 			return createTransformer(url, detectXsltVersion(url));
@@ -1026,19 +1033,17 @@ public class XmlUtils {
 	}
 
 	public static Transformer createTransformer(URL url, int xsltVersion) throws TransformerConfigurationException, IOException {
-
 		StreamSource stylesource = new StreamSource(url.openStream());
 		stylesource.setSystemId(ClassUtils.getCleanedFilePath(url.toExternalForm()));
-		
+
 		return createTransformer(stylesource, xsltVersion);
 	}
-	
+
 	public static Transformer createTransformer(Source source) throws TransformerConfigurationException {
-			return createTransformer(source, 0);
+		return createTransformer(source, 0);
 	}
 
 	public static Transformer createTransformer(Source source, int xsltVersion) throws TransformerConfigurationException {
-
 		TransformerFactory tFactory = getTransformerFactory(xsltVersion);
 		Transformer result = tFactory.newTransformer(source);
 
@@ -1091,7 +1096,6 @@ public class XmlUtils {
 		return factory;
 	}
 
-	
 	public static String encodeChars(String string) {
 		return encodeChars(string, false);
 	}
@@ -1858,7 +1862,7 @@ public class XmlUtils {
 	 */
 	public static StartElement mergeAttributes(StartElement tag, Iterator<? extends Attribute> attrs, Iterator<? extends Namespace> nsps, XMLEventFactory factory) {
 		// create Attribute map
-		Map<QName, Attribute> attributes = new HashMap<QName, Attribute>();
+		Map<QName, Attribute> attributes = new HashMap<>();
 
 		// iterate through start tag's attributes
 		for (Iterator<Attribute> i = tag.getAttributes(); i.hasNext();) {
@@ -1873,7 +1877,7 @@ public class XmlUtils {
 			}
 		}
 
-		Map<QName, Namespace> namespaces = new HashMap<QName, Namespace>();
+		Map<QName, Namespace> namespaces = new HashMap<>();
 		for (Iterator<Namespace> i = tag.getNamespaces(); i.hasNext();) {
 			Namespace ns = i.next();
 			namespaces.put(ns.getName(), ns);
@@ -1916,7 +1920,7 @@ public class XmlUtils {
 	public static Collection<String> evaluateXPathNodeSet(String input, String xpathExpr) throws DomBuilderException, XPathExpressionException {
 		String msg = XmlUtils.removeNamespaces(input);
 
-		Collection<String> c = new LinkedList<String>();
+		Collection<String> c = new LinkedList<>();
 		Document doc = buildDomDocument(msg, true, true);
 		XPath xPath = getXPathFactory().newXPath();
 		XPathExpression xPathExpression = xPath.compile(xpathExpr);
@@ -1930,7 +1934,7 @@ public class XmlUtils {
 				c.add(nodes.item(i).getFirstChild().getNodeValue());
 			}
 		}
-		if (c != null && c.size() > 0) {
+		if (!c.isEmpty()) {
 			return c;
 		}
 		return null;
@@ -1957,7 +1961,7 @@ public class XmlUtils {
 	public static Map<String, String> evaluateXPathNodeSet(String input, String xpathExpr, String keyElement, String valueElement) throws DomBuilderException, XPathExpressionException {
 		String msg = XmlUtils.removeNamespaces(input);
 
-		Map<String, String> m = new HashMap<String, String>();
+		Map<String, String> m = new HashMap<>();
 		Document doc = buildDomDocument(msg, true, true);
 		XPath xPath = getXPathFactory().newXPath();
 		XPathExpression xPathExpression = xPath.compile(xpathExpr);
@@ -1972,7 +1976,7 @@ public class XmlUtils {
 				m.put(key, value);
 			}
 		}
-		if (m != null && m.size() > 0) {
+		if (!m.isEmpty()) {
 			return m;
 		}
 		return null;
@@ -1981,7 +1985,7 @@ public class XmlUtils {
 	public static Collection<String> evaluateXPathNodeSet(String input, String xpathExpr, String xpathExpr2) throws DomBuilderException, XPathExpressionException {
 		String msg = XmlUtils.removeNamespaces(input);
 
-		Collection<String> c = new LinkedList<String>();
+		Collection<String> c = new LinkedList<>();
 		Document doc = buildDomDocument(msg, true, true);
 		XPath xPath = getXPathFactory().newXPath();
 		XPathExpression xPathExpression = xPath.compile(xpathExpr);
@@ -1996,7 +2000,7 @@ public class XmlUtils {
 				c.add((String) result2);
 			}
 		}
-		if (c != null && c.size() > 0) {
+		if (!c.isEmpty()) {
 			return c;
 		}
 		return null;
