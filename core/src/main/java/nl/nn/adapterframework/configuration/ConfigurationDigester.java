@@ -31,6 +31,7 @@ import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.digester3.binder.DigesterLoader;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -203,7 +204,9 @@ public class ConfigurationDigester implements ApplicationContextAware {
 			String loaded = resolveEntitiesAndProperties(configuration, configurationResource, appConstants);
 
 			configLogger.info(configuration.getLoadedConfiguration());
-			digester.parse(new StringReader(loaded));
+			if(StringUtils.isNotEmpty(loaded)) { // configuration might be inactive
+				digester.parse(new StringReader(loaded));
+			}
 		} catch (Throwable t) {
 			// wrap exception to be sure it gets rendered via the IbisException-renderer
 			String currentElementName = null;
