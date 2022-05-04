@@ -88,7 +88,7 @@ public class MessageEncoder extends MessageEncoderImpl {
 			// stub which would leave the replaced stream unclosed
 			((Message)messageToStub).close();
 		}
-		return super.toObject(originalCheckpoint, messageToStub);
+		return (T)Message.asMessage(super.toObject(originalCheckpoint, messageToStub));
 	}
 
 }
