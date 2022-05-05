@@ -6,7 +6,7 @@
 		name="jdbc/frank2example"
 		type="javax.sql.DataSource"
 		driverClassName="org.h2.Driver"
-		url="jdbc:h2:mem:frank2example;DB_CLOSE_ON_EXIT=FALSE"
+		url="jdbc:h2:mem:frank2example;NON_KEYWORDS=VALUE;DB_CLOSE_ON_EXIT=FALSE"
 		maxTotal="10"
 		maxIdle="2"
 		maxWaitMillis="5000"
