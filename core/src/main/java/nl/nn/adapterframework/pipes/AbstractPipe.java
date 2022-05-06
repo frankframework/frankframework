@@ -320,7 +320,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 
 
 	/**
-	 * The functional name of this pipe
+	 * The functional name of this pipe. Can be referenced by the <code>path</code> attribute of a {@link PipeForward}.
 	 */
 	@Override
 	@Mandatory
