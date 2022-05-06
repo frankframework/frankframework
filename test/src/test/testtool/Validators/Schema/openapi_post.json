@@ -2,7 +2,7 @@
     "openapi":"3.0.0",
     "info":{
         "title":"Ibis4Test",
-        "description":"OpenApi auto-generated at IGNORE-TIMESTAMP for Ibis4Test (IGNORE-STAGE)",
+        "description":"OpenApi auto-generated at 2022-05-06 09:05:42 for Ibis4Test (LOC)",
         "version":"unknown"
     },
     "servers":[
@@ -183,18 +183,21 @@
             },
             "TraceHeaderListType":{
                 "type":"array",
+                "minItems":1,
                 "items":{
                     "$ref":"#/components/schemas/TraceHeaderType"
                 }
             },
             "DetailListType":{
                 "type":"array",
+                "minItems":1,
                 "items":{
                     "$ref":"#/components/schemas/DetailType"
                 }
             },
             "ErrorListType":{
                 "type":"array",
+                "minItems":1,
                 "items":{
                     "$ref":"#/components/schemas/ErrorType"
                 }
@@ -282,11 +285,13 @@
             },
             "PropertiesType":{
                 "type":"array",
+                "minItems":1,
                 "items":{
                 }
             },
             "TransactionListType":{
                 "type":"array",
+                "minItems":1,
                 "items":{
                     "$ref":"#/components/schemas/TransactionType"
                 }
@@ -570,6 +575,8 @@
                     },
                     "Attributes":{
                         "type":"array",
+                        "minItems":0,
+                        "maxItems":10,
                         "items":{
                             "type":"object",
                             "additionalProperties":false,

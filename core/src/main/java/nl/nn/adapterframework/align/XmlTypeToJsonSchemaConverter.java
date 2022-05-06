@@ -17,7 +17,6 @@ package nl.nn.adapterframework.align;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.json.Json;
@@ -29,8 +28,6 @@ import javax.json.JsonStructure;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.logging.log4j.Logger;
-import org.apache.xerces.impl.xs.XSModelGroupImpl;
-import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSAttributeDeclaration;
 import org.apache.xerces.xs.XSAttributeUse;
@@ -48,6 +45,7 @@ import org.apache.xerces.xs.XSTerm;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.xs.XSWildcard;
 
+import lombok.Getter;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class XmlTypeToJsonSchemaConverter  {
@@ -55,6 +53,8 @@ public class XmlTypeToJsonSchemaConverter  {
 
 	private final String JSON_SCHEMA = "http://json-schema.org/draft-04/schema#";
 	private final String XML_SCHEMA_NS = "http://www.w3.org/2001/XMLSchema";
+	private static final String DEFINITIONS_PATH = "#/definitions/";
+	public static final String SCHEMA_DEFINITION_PATH = "#/components/schemas/";
 
 	private List<XSModel> models;
 	private boolean skipArrayElementContainers;
@@ -63,6 +63,7 @@ public class XmlTypeToJsonSchemaConverter  {
 	private String definitionsPath;
 	private String attributePrefix="@";
 	private String mixedContentLabel="#text";
+	private @Getter boolean openApi;
 
 	private enum SimpleType {
 		STRING("string"),
@@ -72,19 +73,16 @@ public class XmlTypeToJsonSchemaConverter  {
 		DATE_TIME("date-time"),
 		BOOLEAN("boolean");
 
-		private String type;
+		private @Getter String type;
 
-		SimpleType(String type) {
+		private SimpleType(String type) {
 			this.type = type;
 		}
 
-		public String getType() {
-			return type;
-		}
 	}
 
 	public XmlTypeToJsonSchemaConverter(List<XSModel> models, boolean skipArrayElementContainers, boolean skipRootElement, String schemaLocation) {
-		this(models, skipArrayElementContainers, skipRootElement, schemaLocation, "#/definitions/");
+		this(models, skipArrayElementContainers, skipRootElement, schemaLocation, DEFINITIONS_PATH);
 	}
 
 	public XmlTypeToJsonSchemaConverter(List<XSModel> models, boolean skipArrayElementContainers, boolean skipRootElement, String schemaLocation, String definitionsPath) {
@@ -93,6 +91,9 @@ public class XmlTypeToJsonSchemaConverter  {
 		this.skipRootElement=skipRootElement;
 		this.schemaLocation=schemaLocation;
 		this.definitionsPath=definitionsPath;
+		if(definitionsPath.startsWith(SCHEMA_DEFINITION_PATH)) {
+			openApi = true;
+		}
 	}
 
 	public XmlTypeToJsonSchemaConverter(List<XSModel> models, boolean skipArrayElementContainers, String definitionsPath) {
@@ -330,18 +331,21 @@ public class XmlTypeToJsonSchemaConverter  {
 		if (term instanceof XSElementDeclaration) {
 			XSElementDeclaration elementDeclaration = (XSElementDeclaration)term;
 			if (elementDeclaration.getScope()==XSConstants.SCOPE_GLOBAL) {
+				String elementName = elementDeclaration.getName();
 				if(forOneOf) {
-					builder.add("$ref", definitionsPath+elementDeclaration.getName());
+					addType(builder, "object");
+					JsonObjectBuilder propertiesBuilder = Json.createObjectBuilder().add(elementName, Json.createObjectBuilder().add("$ref", definitionsPath+elementName));
+					builder.add("properties", propertiesBuilder);
 				} else {
-					JsonObject typeDefininition = Json.createObjectBuilder().add("$ref", definitionsPath+elementDeclaration.getName()).build();
+					JsonObject typeDefininition = Json.createObjectBuilder().add("$ref", definitionsPath+elementName).build();
 					if (multiOccurring) {
 						JsonObjectBuilder arrayBuilder = Json.createObjectBuilder();
 						addType(arrayBuilder, "array", particle);
 						arrayBuilder.add("items", typeDefininition);
 
-						builder.add(elementDeclaration.getName(), arrayBuilder.build());
+						builder.add(elementName, arrayBuilder.build());
 					} else {
-						builder.add(elementDeclaration.getName(), typeDefininition);
+						builder.add(elementName, typeDefininition);
 					}
 				}
 			} else {
@@ -393,15 +397,16 @@ public class XmlTypeToJsonSchemaConverter  {
 			for (int i=0;i<particles.getLength();i++) {
 				XSParticle childParticle = (XSParticle)particles.item(i);
 				if (log.isTraceEnabled()) log.trace("childParticle ["+i+"]["+ToStringBuilder.reflectionToString(childParticle,ToStringStyle.MULTI_LINE_STYLE)+"] for properties");
-				handleParticle(builder,childParticle,null, false);
+				handleParticle(builder, childParticle, null, false);
 			}
 		} else {
 			JsonArrayBuilder oneOfBuilder = Json.createArrayBuilder();
+			// oneOf is only supported for openApi schema for now
 			for (int i=0;i<particles.getLength();i++) {
 				XSParticle childParticle = (XSParticle)particles.item(i);
 				if (log.isTraceEnabled()) log.trace("childParticle ["+i+"]["+ToStringBuilder.reflectionToString(childParticle,ToStringStyle.MULTI_LINE_STYLE)+"]");
 				JsonObjectBuilder typeBuilder = Json.createObjectBuilder();
-				handleParticle(typeBuilder,childParticle,null, false, true);
+				handleParticle(typeBuilder, childParticle, null, false, isOpenApi());
 				oneOfBuilder.add(typeBuilder.build());
 			}
 			builder.add("oneOf", oneOfBuilder.build());
@@ -418,11 +423,20 @@ public class XmlTypeToJsonSchemaConverter  {
 		if (log.isTraceEnabled()) log.trace("XSElementDeclaration element ["+elementName+"]["+ToStringBuilder.reflectionToString(elementDeclaration,ToStringStyle.MULTI_LINE_STYLE)+"]");
 
 		XSTypeDefinition elementTypeDefinition = elementDeclaration.getTypeDefinition();
-		JsonStructure definition = null;
+		JsonObject definition = null;
 		if (elementTypeDefinition.getAnonymous() || XML_SCHEMA_NS.equals(elementTypeDefinition.getNamespace())) {
 			definition = getDefinition(elementTypeDefinition, shouldCreateReferences);
-		} else if(forOneOf){
-			builder.add("$ref", definitionsPath+elementTypeDefinition.getName());
+			if(!definition.isEmpty() && forOneOf) {
+				addType(builder, "object");
+				JsonObjectBuilder propertiesBuilder = Json.createObjectBuilder().add(elementName, Json.createObjectBuilder().add("type", definition.getString("type")));
+				builder.add("properties", propertiesBuilder);
+				return;
+			}
+		} else if(forOneOf) {
+			addType(builder, "object");
+			JsonObjectBuilder propertiesBuilder = Json.createObjectBuilder().add(elementName, Json.createObjectBuilder().add("$ref", definitionsPath+elementTypeDefinition.getName()));
+			builder.add("properties", propertiesBuilder);
+			return;
 		} else {
 			definition = Json.createObjectBuilder().add("$ref", definitionsPath+elementTypeDefinition.getName()).build();
 		}
@@ -430,11 +444,16 @@ public class XmlTypeToJsonSchemaConverter  {
 			definition=nillable(definition);
 		}
 		if (multiOccurring) {
-			JsonObjectBuilder arrayBuilder = Json.createObjectBuilder();
-			addType(arrayBuilder, "array");
-			arrayBuilder.add("items", definition);
-
-			builder.add(elementName, arrayBuilder.build());
+			JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+			addType(objectBuilder, "array");
+			if(definition!=null && !definition.isEmpty()) {
+				objectBuilder.add("items", definition);
+			}
+			if(forOneOf) {
+				builder.add("type", "array");
+			} else {
+				builder.add(elementName, objectBuilder.build());
+			}
 		} else {
 			if (definition!=null) {
 				builder.add(elementName, definition);
@@ -485,30 +504,29 @@ public class XmlTypeToJsonSchemaConverter  {
 			for (int i=0;i<particles.getLength();i++) {
 				XSParticle childParticle = (XSParticle)particles.item(i);
 				if (log.isTraceEnabled()) log.trace("childParticle ["+i+"]["+ToStringBuilder.reflectionToString(childParticle,ToStringStyle.MULTI_LINE_STYLE)+"]");
-				if(childParticle.getType() == XSParticleDecl.PARTICLE_MODELGROUP) {
-					handleModelGroup(builder, (XSModelGroup) childParticle, null, false);
-				} else {
-					XSTerm childTerm = childParticle.getTerm();
-					if(childTerm instanceof XSModelGroup) {
-						handleModelGroup(builder, (XSModelGroup) childTerm, null, false);
-						continue;
-					} else if(childTerm instanceof XSElementDeclaration) {
-						XSElementDeclaration elementDeclaration = (XSElementDeclaration) childTerm;
-						String elementName = elementDeclaration.getName();
+				XSTerm childTerm = childParticle.getTerm();
+				if(childTerm instanceof XSModelGroup && isOpenApi()) {
+					handleModelGroup(builder, (XSModelGroup) childTerm, null, false);
+					continue;
+				} else if(childTerm instanceof XSElementDeclaration) {
+					XSElementDeclaration elementDeclaration = (XSElementDeclaration) childTerm;
+					String elementName = elementDeclaration.getName();
 
-						if(elementName != null && childParticle.getMinOccurs() != 0){
-							requiredProperties.add(elementName);
-						}
+					if(elementName != null && childParticle.getMinOccurs() != 0){
+						requiredProperties.add(elementName);
 					}
-					if (XmlAligner.typeContainsWildcard(childParticle)) {
-						wildcardFound=true;
-					}
-					handleParticle(propertiesBuilder, childParticle, null, true);
 				}
+				if (XmlAligner.typeContainsWildcard(childParticle)) {
+					wildcardFound=true;
+				}
+				handleParticle(propertiesBuilder, childParticle, null, true);
 			}
 		}
 		builder.add("additionalProperties", wildcardFound);
-		builder.add("properties", propertiesBuilder.build());
+		JsonObject propertiesObject = propertiesBuilder.build();
+		if(!propertiesObject.isEmpty()) {
+			builder.add("properties", propertiesObject);
+		}
 		if(!requiredProperties.isEmpty()){
 			JsonArrayBuilder requiredPropertiesBuilder = Json.createArrayBuilder();
 			for (String requiredProperty : requiredProperties) {
@@ -527,7 +545,7 @@ public class XmlTypeToJsonSchemaConverter  {
 		if( childTerm instanceof XSElementDeclaration ){
 			XSElementDeclaration elementDeclaration=(XSElementDeclaration) childTerm;
 			XSTypeDefinition elementTypeDefinition = elementDeclaration.getTypeDefinition();
-			JsonStructure definition =getDefinition(elementTypeDefinition, true);
+			JsonStructure definition = getDefinition(elementTypeDefinition, true);
 
 			addType(builder, "array", childParticle);
 			if (elementDeclaration.getNillable()) {
@@ -537,7 +555,7 @@ public class XmlTypeToJsonSchemaConverter  {
 		}
 	}
 
-	private JsonStructure nillable(JsonStructure type) {
+	private JsonObject nillable(JsonStructure type) {
 		JsonObjectBuilder typeBuilder = Json.createObjectBuilder();
 		JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
 		arrayBuilder.add(type);
@@ -646,10 +664,10 @@ public class XmlTypeToJsonSchemaConverter  {
 	private JsonObjectBuilder addType(JsonObjectBuilder builder, String type, XSParticle particle) {
 		builder.add("type", type);
 		if(particle != null) {
-			if(particle.getMinOccurs() > 0) {
+			if(particle.getMinOccurs() >= 0) {
 				builder.add("minItems", particle.getMinOccurs());
 			}
-			if(particle.getMaxOccurs() > 0 && !particle.getMaxOccursUnbounded()) {
+			if(particle.getMaxOccurs() >= 0 && !particle.getMaxOccursUnbounded()) {
 				builder.add("maxItems", particle.getMaxOccurs());
 			}
 		}

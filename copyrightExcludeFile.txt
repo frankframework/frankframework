@@ -22,6 +22,7 @@ LICENSE
 .project
 .classpath
 org.eclipse.
+org.hibernate.
 .gitignore
 .cvsignore
 .gif

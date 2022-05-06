@@ -8,21 +8,15 @@
         },
         "EmbeddedChoiceType":{
             "type":"object",
-            "oneOf":[
-                {
-                    "BusinessPartnerId":{
-                        "type":"string"
-                    }
-                },
-                {
-                    "Qualifier":{
-                        "type":"string"
-                    }
-                }
-            ],
             "additionalProperties":false,
             "properties":{
                 "EnableFuzzySearch":{
+                    "type":"string"
+                },
+                "BusinessPartnerId":{
+                    "type":"string"
+                },
+                "Qualifier":{
                     "type":"string"
                 },
                 "IgnoreFilter":{

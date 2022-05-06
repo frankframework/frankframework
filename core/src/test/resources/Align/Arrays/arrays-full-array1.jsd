@@ -43,6 +43,7 @@
             "properties":{
                 "stringElem":{
                     "type":"array",
+                    "minItems":0,
                     "items":{
                         "$ref":"#/definitions/stringElem"
                     }
@@ -58,6 +59,7 @@
             "properties":{
                 "arrayElement":{
                     "type":"array",
+                    "minItems":0,
                     "items":{
                         "$ref":"#/definitions/arrayElement"
                     }
@@ -140,6 +142,7 @@
             "properties":{
                 "repeatedElem":{
                     "type":"array",
+                    "minItems":0,
                     "items":{
                         "$ref":"#/definitions/repeatedElem"
                     }
