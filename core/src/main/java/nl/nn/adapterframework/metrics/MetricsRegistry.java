@@ -1,5 +1,5 @@
 /*
-   Copyright 2020,2022 WeAreFrank!
+   Copyright 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,11 +13,10 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.lifecycle;
+package nl.nn.adapterframework.metrics;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -35,41 +34,26 @@ import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.prometheus.PrometheusConfig;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import lombok.Getter;
-import nl.nn.adapterframework.metrics.FrankStatisticsRegistry;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.Misc;
 
 /**
  * Singleton bean that keeps track of a Spring Application's uptime.
  *
  */
-public class ApplicationMetrics {
+public class MetricsRegistry {
 
 	private @Getter MeterRegistry registry;
 
-	private final long uptime = System.currentTimeMillis();
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 
-	public ApplicationMetrics() {
+	public MetricsRegistry() {
 		CompositeMeterRegistry compositeRegistry = new CompositeMeterRegistry();
 		compositeRegistry.add(new PrometheusMeterRegistry(PrometheusConfig.DEFAULT));
 		compositeRegistry.add(new FrankStatisticsRegistry());
 
 		this.registry = compositeRegistry;
 		configureRegistry();
-	}
-
-	public Date getUptimeDate() {
-		return new Date(uptime);
-	}
-
-	public String getUptime() {
-		return getUptime(DateUtils.FORMAT_GENERICDATETIME);
-	}
-
-	public String getUptime(String dateFormat) {
-		return DateUtils.format(getUptimeDate(), dateFormat);
 	}
 
 	private void configureRegistry() {

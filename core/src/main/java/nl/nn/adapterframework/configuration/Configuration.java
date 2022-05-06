@@ -34,7 +34,6 @@ import org.springframework.context.LifecycleProcessor;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import io.micrometer.core.instrument.MeterRegistry;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.cache.IbisCacheManager;
@@ -145,10 +144,9 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	public void initMetrics() throws ConfigurationException {
-		MeterRegistry meterRegistry = getIbisManager().getIbisContext().getMeterRegistry();
-		StatisticsKeeperIterationHandler metricsInitializer = new MetricsInitializer(meterRegistry);
+		StatisticsKeeperIterationHandler metricsInitializer = getBean(MetricsInitializer.class);
 		try {
-			forEachStatisticsKeeper(metricsInitializer, new Date(), statisticsMarkDateMain, statisticsMarkDateDetails, Action.FULL, getName(), "configuration");
+			forEachStatisticsKeeper(metricsInitializer, new Date(), statisticsMarkDateMain, statisticsMarkDateDetails, Action.FULL, null, null);
 		} catch (SenderException e) {
 			throw new ConfigurationException("Cannot initialize metrics", e);
 		}
