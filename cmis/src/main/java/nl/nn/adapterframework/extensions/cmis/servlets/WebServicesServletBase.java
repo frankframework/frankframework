@@ -46,7 +46,7 @@ public abstract class WebServicesServletBase extends CmisWebServicesServlet impl
 
 	@Override
 	public String[] getAccessGrantingRoles() {
-		return "IbisWebService,IbisTester".split(",");
+		return IBIS_FULL_SERVICE_ACCESS_ROLES;
 	}
 
 	@Autowired

@@ -54,7 +54,7 @@ public class SoapProviderServlet extends CXFServlet implements DynamicRegistrati
 
 	@Override
 	public String[] getAccessGrantingRoles() {
-		return "IbisWebService,IbisTester".split(",");
+		return IBIS_FULL_SERVICE_ACCESS_ROLES;
 	}
 
 	@Autowired

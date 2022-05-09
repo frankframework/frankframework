@@ -96,7 +96,7 @@ public class HttpListenerServlet extends HttpServletBase {
 
 	@Override
 	public String[] getAccessGrantingRoles() {
-		return new String[] {"IbisWebService", "IbisTester"};
+		return IBIS_FULL_SERVICE_ACCESS_ROLES;
 	}
 
 	@Override

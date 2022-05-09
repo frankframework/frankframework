@@ -33,6 +33,7 @@ public interface DynamicRegistration {
 
 	public static final String[] ALL_IBIS_ROLES = {"IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester", "IbisWebService"};
 	public static final String[] ALL_IBIS_USER_ROLES = {"IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester"};
+	public static final String[] IBIS_FULL_SERVICE_ACCESS_ROLES = {"IbisTester", "IbisWebService"};
 
 	public interface Servlet extends DynamicRegistration, javax.servlet.Servlet {
 
