@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018, 2020 Nationale-Nederlanden
+   Copyright 2013, 2018, 2020 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,6 +21,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.StringTokenizer;
 
+import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -51,20 +54,21 @@ import nl.nn.adapterframework.util.JdbcUtil;
 
 public class DomainTransformerPipe extends FixedForwardPipe {
 
-	private final static String DT_START = "%![DT{";
-	private final static String DT_SEPARATOR = ",";
-	private final static String DT_END = "}]";
-	private final static String TYPE_NUMBER = "number";
-	private final static String TYPE_STRING = "string";
+	private static final String DT_START = "%![DT{";
+	private static final String DT_SEPARATOR = ",";
+	private static final String DT_END = "}]";
+	private static final String TYPE_NUMBER = "number";
+	private static final String TYPE_STRING = "string";
 
-	private String tableName = "mapping";
-	private String labelField = "label";
-	private String valueInField = "valueIn";
-	private String valueOutField = "valueOut";
+	private @Getter String tableName = "mapping";
+	private @Getter String labelField = "label";
+	private @Getter String valueInField = "valueIn";
+	private @Getter String valueOutField = "valueOut";
 
 	private FixedQuerySender qs;
-	private String query;
-	private String jmsRealm;
+	private @Getter String query;
+	private @Getter String jmsRealm;
+	private @Getter String datasourceName;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -72,7 +76,11 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 
 		qs = createBean(FixedQuerySender.class);
 
-		qs.setJmsRealm(jmsRealm);
+		if(StringUtils.isNotEmpty(getDatasourceName())) {
+			qs.setDatasourceName(getDatasourceName());
+		} else {
+			qs.setJmsRealm(getJmsRealm());
+		}
 
 		//dummy query required
 		qs.setQuery("SELECT count(*) FROM ALL_TABLES");
@@ -103,14 +111,9 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message invoer, PipeLineSession session) throws PipeRunException {
-		Connection conn = null;
-		PreparedStatement stmt = null;
-		StringBuffer buffer = new StringBuffer();
+		StringBuilder builder = new StringBuilder();
 
-		try {
-			conn = qs.getConnection();
-			stmt = conn.prepareStatement(query);
-
+		try(Connection conn = qs.getConnection(); PreparedStatement stmt = conn.prepareStatement(getQuery())) {
 			String invoerString = invoer.asString();
 			int startPos = invoerString.indexOf(DT_START);
 			if (startPos == -1)
@@ -118,7 +121,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 			char[] invoerChars = invoerString.toCharArray();
 			int copyFrom = 0;
 			while (startPos != -1) {
-				buffer.append(invoerChars, copyFrom, startPos - copyFrom);
+				builder.append(invoerChars, copyFrom, startPos - copyFrom);
 				int nextStartPos =
 					invoerString.indexOf(DT_START, startPos + DT_START.length());
 				if (nextStartPos == -1) {
@@ -128,7 +131,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 					invoerString.indexOf(DT_END, startPos + DT_START.length());
 				if (endPos == -1 || endPos > nextStartPos) {
 					log.warn(getLogPrefix(session) + "Found a start delimiter without an end delimiter at position [" + startPos + "] in ["+ invoerString+ "]");
-					buffer.append(invoerChars, startPos, nextStartPos - startPos);
+					builder.append(invoerChars, startPos, nextStartPos - startPos);
 					copyFrom = nextStartPos;
 				} else {
 					String invoerSubstring = invoerString.substring(startPos + DT_START.length(),endPos);
@@ -136,7 +139,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 					int aantalTokens = st.countTokens();
 					if (aantalTokens < 2 || aantalTokens > 3) {
 						log.warn(getLogPrefix(session)	+ "Only 2 or 3 tokens are allowed in [" + invoerSubstring + "]");
-						buffer.append(invoerChars, startPos, endPos - startPos + DT_END.length());
+						builder.append(invoerChars, startPos, endPos - startPos + DT_END.length());
 						copyFrom = endPos + DT_END.length();
 					} else {
 						String label = st.nextToken();
@@ -148,13 +151,13 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 						if (!type.equals(TYPE_STRING)
 							&& !type.equals(TYPE_NUMBER)) {
 							log.warn(getLogPrefix(session) + "Only types ["+ TYPE_STRING+ ","+ TYPE_NUMBER+ "] are allowed in ["+ invoerSubstring+ "]");
-							buffer.append(invoerChars, startPos, endPos - startPos + DT_END.length());
+							builder.append(invoerChars, startPos, endPos - startPos + DT_END.length());
 							copyFrom = endPos + DT_END.length();
 						} else {
 							String valueOut = null;
 							valueOut = getValueOut(label, valueIn, type, stmt);
 							if (valueOut != null) {
-								buffer.append(valueOut);
+								builder.append(valueOut);
 							}
 							copyFrom = endPos + DT_END.length();
 						}
@@ -162,21 +165,19 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 				}
 				startPos = invoerString.indexOf(DT_START, copyFrom);
 			}
-			buffer.append(invoerChars, copyFrom, invoerChars.length - copyFrom);
+			builder.append(invoerChars, copyFrom, invoerChars.length - copyFrom);
 
 		} catch (Throwable t) {
 			throw new PipeRunException(this, getLogPrefix(session) + " Exception on transforming domain", t);
-		} finally {
-			JdbcUtil.fullClose(conn, stmt);
 		}
 
-		return new PipeRunResult(getSuccessForward(), buffer.toString());
+		return new PipeRunResult(getSuccessForward(), builder.toString());
 	}
 
-	public String getValueOut(String label, String valueIn, String type, PreparedStatement stmt) throws JdbcException, SQLException {
+	public String getValueOut(String label, String valueIn, String type, PreparedStatement stmt) throws SQLException {
 		stmt.setString(1, label);
 		if (type.equals(TYPE_NUMBER)) {
-			double d = Double.valueOf(valueIn.toString()).doubleValue();
+			double d = Double.parseDouble(valueIn);
 			stmt.setDouble(2, d);
 		} else {
 			stmt.setString(2, valueIn);
@@ -207,8 +208,13 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 		qs.close();
 	}
 
+	@Deprecated
 	public void setJmsRealm(String jmsRealm) {
 		this.jmsRealm = jmsRealm;
+	}
+
+	public void setDatasourceName(String datasourceName) {
+		this.datasourceName = datasourceName;
 	}
 
 	@IbisDoc({"the name of the table that contains the mapping", "mapping"})
@@ -216,17 +222,9 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 		this.tableName = tableName;
 	}
 
-	public String getTableName() {
-		return tableName;
-	}
-
 	@IbisDoc({"the name of the column labels are stored in", "label"})
 	public void setLabelField(String labelField) {
 		this.labelField = labelField;
-	}
-
-	public String getLabelField() {
-		return labelField;
 	}
 
 	@IbisDoc({"the name of the column source values are stored in", "valuein"})
@@ -234,16 +232,8 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 		this.valueInField = valueInField;
 	}
 
-	public String getValueInField() {
-		return valueInField;
-	}
-
 	@IbisDoc({"the name of the column destination values are stored in", "valueout"})
 	public void setValueOutField(String valueOutField) {
 		this.valueOutField = valueOutField;
-	}
-
-	public String getValueOutField() {
-		return valueOutField;
 	}
 }
