@@ -1,5 +1,5 @@
 /*
-   Copyright 2020,2022 WeAreFrank!
+   Copyright 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,30 +15,9 @@
 */
 package nl.nn.adapterframework.lifecycle;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
-
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Tag;
-import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
-import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
-import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
-import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
-import io.micrometer.core.instrument.binder.logging.Log4j2Metrics;
-import io.micrometer.core.instrument.binder.system.DiskSpaceMetrics;
-import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
-import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
-import io.micrometer.prometheus.PrometheusConfig;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
-import lombok.Getter;
-import nl.nn.adapterframework.metrics.FrankStatisticsRegistry;
-import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.Misc;
 
 /**
  * Singleton bean that keeps track of a Spring Application's uptime.
@@ -46,19 +25,7 @@ import nl.nn.adapterframework.util.Misc;
  */
 public class ApplicationMetrics {
 
-	private @Getter MeterRegistry registry;
-
 	private final long uptime = System.currentTimeMillis();
-	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
-
-	public ApplicationMetrics() {
-		CompositeMeterRegistry compositeRegistry = new CompositeMeterRegistry();
-		compositeRegistry.add(new PrometheusMeterRegistry(PrometheusConfig.DEFAULT));
-		compositeRegistry.add(new FrankStatisticsRegistry());
-
-		this.registry = compositeRegistry;
-		configureRegistry();
-	}
 
 	public Date getUptimeDate() {
 		return new Date(uptime);
@@ -70,29 +37,5 @@ public class ApplicationMetrics {
 
 	public String getUptime(String dateFormat) {
 		return DateUtils.format(getUptimeDate(), dateFormat);
-	}
-
-	private void configureRegistry() {
-		registry.config().commonTags(
-			"instance", APP_CONSTANTS.getString("instance.name",""),
-//			"ff_version", APP_CONSTANTS.getString("application.version", "unknown"),
-			"hostname" , Misc.getHostname(),
-			"dtap_stage" , APP_CONSTANTS.getProperty("dtap.stage")
-		);
-
-		List<Tag> tags = new ArrayList<>();
-		tags.add(Tag.of("type", "system"));
-		// These classes are for exposing JVM specific metrics
-		new ClassLoaderMetrics(tags).bindTo(registry);
-		new JvmMemoryMetrics(tags).bindTo(registry);
-		new JvmGcMetrics(tags).bindTo(registry);
-		new ProcessorMetrics(tags).bindTo(registry);
-		new JvmThreadMetrics(tags).bindTo(registry);
-		String logDir = APP_CONSTANTS.get("log.dir");
-		if(StringUtils.isNotEmpty(logDir)) {
-			File f = new File(logDir);
-			new DiskSpaceMetrics(f, tags).bindTo(registry);
-		}
-		new Log4j2Metrics(tags).bindTo(registry);
 	}
 }

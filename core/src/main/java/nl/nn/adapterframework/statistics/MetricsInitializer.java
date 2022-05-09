@@ -35,6 +35,7 @@ import net.sf.ehcache.Ehcache;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.lifecycle.ApplicationMetrics;
+import nl.nn.adapterframework.metrics.MetricsRegistry;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class MetricsInitializer implements StatisticsKeeperIterationHandler<MetricsInitializer.NodeConfig>, InitializingBean, DisposableBean, ApplicationContextAware {
@@ -56,15 +57,14 @@ public class MetricsInitializer implements StatisticsKeeperIterationHandler<Metr
 		}
 	}
 
-	public void setMetrics(ApplicationMetrics metrics) {
-		this.registry = metrics.getRegistry();
-	}
-
 	@Override
 	public void afterPropertiesSet() throws Exception {
+		MetricsRegistry metrics = applicationContext.getBean("metricsRegistry", MetricsRegistry.class);
+		registry = metrics.getRegistry();
 		if(registry == null) {
 			throw new IllegalStateException("unable to initialize MetricsInitializer, no registry set!");
 		}
+
 		List<Tag> tags = new LinkedList<>();
 		tags.add(Tag.of("type", "application"));
 		tags.add(Tag.of("configuration", applicationContext.getId()));

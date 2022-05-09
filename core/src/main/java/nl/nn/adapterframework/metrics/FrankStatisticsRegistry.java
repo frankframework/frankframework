@@ -80,7 +80,12 @@ public class FrankStatisticsRegistry extends SimpleMeterRegistry {
 //		frank.receivers.messagesRejected
 //		frank.receivers.messagesRetried
 
-		root.put("totalMessageProccessingTime", getDistributionSummary(search, "frank").get(0));
+		List adapterStats = getDistributionSummary(search, "frank");
+		if(adapterStats.isEmpty()) {
+			return null;
+		}
+
+		root.put("totalMessageProccessingTime", adapterStats.get(0));
 //		root.put("receivers", getReceivers(search, "frank.receivers.messagesReceived"));
 		root.put("durationPerPipe", getDistributionSummary(search, "frank.pipeline.duration"));
 		root.put("sizePerPipe", getDistributionSummary(search, "frank.pipeline.size"));

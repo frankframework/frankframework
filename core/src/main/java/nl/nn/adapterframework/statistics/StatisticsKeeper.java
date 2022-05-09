@@ -100,7 +100,7 @@ public class StatisticsKeeper<B extends IBasics<S>, S> implements ItemList {
 				.baseUnit(getUnits())
 				.tags(tags)
 				.tag("name", getName())
-//				.percentilePrecision(2)
+				.percentilePrecision(2)
 				.serviceLevelObjectives(serviceLevelObjectives)
 				.publishPercentiles(percentiles)
 //				.publishPercentileHistogram()
