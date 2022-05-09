@@ -274,7 +274,6 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		pipe.setXsltVersion(xsltVersion);
 		pipe.setNamespaceAware(awareness);
 		Message input=new Message("<test xmlns=\"http://dummy\"><innerTest>1</innerTest></test>");
-		session.put("input", input);
 		testSwitch(input,forwardName);
 	}
 
@@ -286,7 +285,6 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		pipe.setXsltVersion(xsltVersion);
 		pipe.setNamespaceAware(awareness);
 		Message input=new Message("<test xmlns=\"http://dummy\"><innerTest>1</innerTest></test>");
-		session.put("input", input);
 		testSwitch(input,forwardName);
 	}
 

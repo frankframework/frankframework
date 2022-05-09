@@ -285,4 +285,48 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 //		assertTrue(diff.toString(), diff.similar());
 	}
 
+	@Test
+	public void testNamespaceAwareWithXpath() throws Exception {
+		testNamespaceAwarenessHelper(true, "", "test");
+	}
+
+	@Test
+	public void testNotNamespaceAwareWithXpath() throws Exception {
+		// I want to keep the namespaces in the result xml
+		testNamespaceAwarenessHelper(false, "<test xmlns=\"http://dummy\">\n"
+				+ "	<innerTest xmlns=\"urn\">1</innerTest>\n"
+				+ "</test>", "test");
+	}
+
+	@Test
+	public void testNamespaceAwareWithStyleSheet() throws Exception {
+		testNamespaceAwarenessHelper(true, "", null);
+	}
+
+	@Test
+	public void testNotNamespaceAwareWithStyleSheet() throws Exception {
+		testNamespaceAwarenessHelper(false, "<test xmlns=\"http://dummy\">\n"
+				+ "	<innerTest xmlns=\"urn\">1</innerTest>\n"
+				+ "</test>", null);
+	}
+
+	public void testNamespaceAwarenessHelper(boolean namespaceAware, String expected, String xpath) throws Exception {
+		if(xpath != null) {
+			sender.setXpathExpression(xpath);
+		} else {
+			sender.setStyleSheetName("/XmlSwitch/selection.xsl");
+		}
+		sender.setIndentXml(true);
+		sender.setOutputType(OutputType.XML);
+		sender.setOmitXmlDeclaration(true);
+		sender.setNamespaceAware(namespaceAware);
+		sender.configure();
+		sender.open();
+		Message input=new Message("<test xmlns=\"http://dummy\"><innerTest xmlns=\"urn\">1</innerTest></test>");
+
+		String actual = sender.sendMessage(input, session).asString();
+
+		assertEquals(expected, actual);
+	}
+
 }
