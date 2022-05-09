@@ -17,6 +17,7 @@ package nl.nn.adapterframework.filesystem;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.DirectoryStream;
@@ -27,17 +28,24 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import javax.mail.internet.InternetAddress;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.microsoft.aad.msal4j.ClientCredentialFactory;
+import com.microsoft.aad.msal4j.ClientCredentialParameters;
+import com.microsoft.aad.msal4j.ConfidentialClientApplication;
+import com.microsoft.aad.msal4j.IAuthenticationResult;
+
 import lombok.Getter;
 import microsoft.exchange.webservices.data.autodiscover.IAutodiscoverRedirectionUrl;
 import microsoft.exchange.webservices.data.core.ExchangeService;
 import microsoft.exchange.webservices.data.core.PropertySet;
 import microsoft.exchange.webservices.data.core.WebProxy;
+import microsoft.exchange.webservices.data.core.enumeration.misc.ConnectingIdType;
 import microsoft.exchange.webservices.data.core.enumeration.misc.ExchangeVersion;
 import microsoft.exchange.webservices.data.core.enumeration.misc.error.ServiceError;
 import microsoft.exchange.webservices.data.core.enumeration.property.WellKnownFolderName;
@@ -56,6 +64,7 @@ import microsoft.exchange.webservices.data.core.service.schema.ItemSchema;
 import microsoft.exchange.webservices.data.credential.ExchangeCredentials;
 import microsoft.exchange.webservices.data.credential.WebCredentials;
 import microsoft.exchange.webservices.data.credential.WebProxyCredentials;
+import microsoft.exchange.webservices.data.misc.ImpersonatedUserId;
 import microsoft.exchange.webservices.data.property.complex.Attachment;
 import microsoft.exchange.webservices.data.property.complex.AttachmentCollection;
 import microsoft.exchange.webservices.data.property.complex.EmailAddress;
@@ -85,16 +94,20 @@ import nl.nn.adapterframework.xml.SaxElementBuilder;
 
 /**
  * Implementation of a {@link IBasicFileSystem} of an Exchange Mail Inbox.
- *
- * To obtain an accessToken:
+ * <br/>
+ * To make use of modern authentication:
  * <ol>
- * 	<li>follow the steps in {@link "https://docs.microsoft.com/en-us/exchange/client-developer/exchange-web-services/how-to-authenticate-an-ews-application-by-using-oauth"}</li>
- *  <li>request an Authorization-Code for scope https://outlook.office.com/EWS.AccessAsUser.All</li>
- *  <li>exchange the Authorization-Code for an accessToken</li>
- *  <li>configure the accessToken directly, or as the password of a JAAS entry referred to by authAlias</li>
+ *     	<li>Create an application in Azure AD -> App Registrations. For more information please read {@link "https://docs.microsoft.com/en-us/exchange/client-developer/exchange-web-services/how-to-authenticate-an-ews-application-by-using-oauth"}</li>
+ *     	<li>Request the required API permissions within desired scope <code>https://outlook.office365.com/</code> in Azure AD -> App Registrations -> MyApp -> API Permissions.</li>
+ *     	<li>Create a secret for your application in Azure AD -> App Registrations -> MyApp -> Certificates and Secrets</li>
+ *     	<li>Configure the clientSecret directly as password or as the password of a JAAS entry referred to by authAlias. Only available upon creation of your secret in the previous step.</li>
+ *     	<li>Configure the clientId directly as username or as the username of a JAAS entry referred to by authAlias which could be retrieved from Azure AD -> App Registrations -> MyApp -> Overview</li>
+ *     	<li>Configure the tenantId which could be retrieved from Azure AD -> App Registrations -> MyApp -> Overview</li>
+ * 		<li>Make sure your application is able to reach <code>https://login.microsoftonline.com</code>. Required for token retrieval. </li>
  * </ol>
  *
- * N.B. MS Exchange is susceptible to problems with invalid XML characters, like &#x3;
+ *
+ * N.B. MS Exchange is susceptible to problems with invalid XML characters, like &amp;#x3;.
  * To work around these problems, a special streaming XMLInputFactory is configured in
  * METAINF/services/javax.xml.stream.XMLInputFactory as nl.nn.adapterframework.xml.StaxParserFactory
  *
@@ -107,7 +120,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	private @Getter String mailAddress;
 	private @Getter boolean validateAllRedirectUrls=true;
 	private @Getter String url;
-	private @Getter String accessToken;
 	private @Getter String filter;
 
 	private @Getter String proxyHost = null;
@@ -117,7 +129,15 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	private @Getter String proxyAuthAlias = null;
 	private @Getter String proxyDomain = null;
 
+	private final String AUTHORITY = "https://login.microsoftonline.com/";
+	private final String SCOPE = "https://outlook.office365.com/.default";
+	private @Getter String clientId = null;
+	private @Getter String clientSecret = null;
+	private @Getter String tenantId = null;
+	private ConfidentialClientApplication client;
+
 	private FolderId basefolderId;
+	private CredentialFactory cf;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -129,37 +149,56 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		if (StringUtils.isEmpty(getUrl()) && StringUtils.isEmpty(getMailAddress())) {
 			throw new ConfigurationException("either url or mailAddress needs to be specified");
 		}
+		cf = new CredentialFactory(getAuthAlias(), getClientId(), getClientSecret());
 	}
 
 	@Override
 	public void open() throws FileSystemException {
 		super.open();
-		log.debug("searching inbox");
+		if( StringUtils.isNotEmpty(getTenantId()) ){
+			try {
+				client = ConfidentialClientApplication.builder(
+						cf.getUsername(),
+						ClientCredentialFactory.createFromSecret(cf.getPassword()))
+					.authority(AUTHORITY + getTenantId())
+					.build();
+			} catch (MalformedURLException e){
+				throw new FileSystemException("Failed to initialize MSAL ConfidentialClientApplication.", e);
+			}
+		}
+		basefolderId = getBaseFolderId(getMailAddress(),getBaseFolder());
+	}
+
+	public FolderId getBaseFolderId(String emailAddress, String baseFolderName) throws FileSystemException {
+		FolderId basefolderId;
+
+		log.debug("searching inbox ");
 		FolderId inboxId;
-		if (StringUtils.isNotEmpty(getMailAddress())) {
-			Mailbox mailbox = new Mailbox(getMailAddress());
+		if (StringUtils.isNotEmpty(emailAddress)) {
+			Mailbox mailbox = new Mailbox(emailAddress);
 			inboxId = new FolderId(WellKnownFolderName.Inbox, mailbox);
 		} else {
 			inboxId = new FolderId(WellKnownFolderName.Inbox);
 		}
 		log.debug("determined inbox ["+inboxId+"] foldername ["+inboxId.getFolderName()+"]");
 
-		if (StringUtils.isNotEmpty(getBaseFolder())) {
+		if (StringUtils.isNotEmpty(baseFolderName)) {
 			try {
-				basefolderId=findFolder(inboxId,getBaseFolder());
+				basefolderId=findFolder(inboxId,baseFolderName);
 			} catch (Exception e) {
-				throw new FileSystemException("Could not find baseFolder ["+getBaseFolder()+"] as subfolder of ["+inboxId.getFolderName()+"]", e);
+				throw new FileSystemException("Could not find baseFolder ["+baseFolderName+"] as subfolder of ["+inboxId.getFolderName()+"]", e);
 			}
 			if (basefolderId==null) {
-				log.debug("Could not get baseFolder ["+getBaseFolder()+"] as subfolder of ["+inboxId.getFolderName()+"]");
-				basefolderId=findFolder(null,getBaseFolder());
+				log.debug("Could not get baseFolder ["+baseFolderName+"] as subfolder of ["+inboxId.getFolderName()+"]");
+				basefolderId=findFolder(null,baseFolderName);
 			}
 			if (basefolderId==null) {
-				throw new FileSystemException("Could not find baseFolder ["+getBaseFolder()+"]");
+				throw new FileSystemException("Could not find baseFolder ["+baseFolderName+"]");
 			}
 		} else {
 			basefolderId=inboxId;
 		}
+		return basefolderId;
 	}
 
 
@@ -167,13 +206,21 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	protected ExchangeService createConnection() throws FileSystemException {
 		ExchangeService exchangeService = new ExchangeService(ExchangeVersion.Exchange2010_SP2);
 
-		String defaultUsername = StringUtils.isEmpty(getAccessToken())? getUsername() : null;
-		String defaultPassword = StringUtils.isEmpty(getAccessToken())? getPassword() : getAccessToken();
+		if (client != null) {
+			ClientCredentialParameters clientCredentialParam = ClientCredentialParameters.builder(
+				Collections.singleton(SCOPE)
+			).build();
 
-		CredentialFactory cf = new CredentialFactory(getAuthAlias(), defaultUsername, defaultPassword);
-		if (StringUtils.isEmpty(cf.getUsername())) {
-			// use OAuth Bearer token authentication
-			exchangeService.getHttpHeaders().put("Authorization", "Bearer "+cf.getPassword());
+			CompletableFuture<IAuthenticationResult> future = client.acquireToken(clientCredentialParam);
+			try {
+				String token = future.get().accessToken();
+				// use OAuth Bearer token authentication
+				exchangeService.getHttpHeaders().put("Authorization", "Bearer "+token);
+			} catch (Exception e){
+				throw new FileSystemException("Could not generate access token!", e);
+			}
+			exchangeService.setImpersonatedUserId(new ImpersonatedUserId(ConnectingIdType.SmtpAddress, getMailAddress()));
+			exchangeService.getHttpHeaders().put("X-AnchorMailbox", getMailAddress());
 		} else {
 			// use deprecated Basic Authentication. Support will end 2021-Q3!
 			log.warn("Using deprecated Basic Authentication method for authentication to Exchange Web Services");
@@ -373,7 +420,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			}
 		}
 	}
-	
+
 	@Override
 	public int getNumberOfFilesInFolder(String foldername) throws FileSystemException {
 		if (!isOpen()) {
@@ -834,7 +881,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	public String getSubject(EmailMessage emailMessage) throws FileSystemException {
 		try {
 			if (emailMessage.getId()!=null) { // attachments don't have an id, but appear to be loaded at the same time as the main message
-				emailMessage.load(new PropertySet(ItemSchema.Subject)); 
+				emailMessage.load(new PropertySet(ItemSchema.Subject));
 			}
 			return emailMessage.getSubject();
 		} catch (Exception e) {
@@ -905,7 +952,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		return Misc.concatStrings("url [" + url + "] mailAddress [" + (getMailAddress() == null ? "" : getMailAddress()) + "]", " ", result);
 	}
 
-
 	private static class RedirectionUrlCallback implements IAutodiscoverRedirectionUrl {
 
 		@Override
@@ -929,38 +975,49 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		this.url = url;
 	}
 
-	@IbisDoc({"4", "AccessToken for authentication to Exchange mail server", ""})
-	public void setAccessToken(String accessToken) {
-		this.accessToken = accessToken;
+
+	@IbisDoc({"4", "Client ID that represents a registered application in Azure AD which could be found at Azure AD -> App Registrations -> MyApp -> Overview.", ""})
+	public void setClientId(String clientId) {
+		this.clientId = clientId;
 	}
 
-	@IbisDoc({"5", "Alias used to obtain accessToken or username and password for authentication to Exchange mail server. " +
-			"If the alias refers to a combination of a username and a password, the deprecated Basic Authentication method is used. " +
-			"If the alias refers to a password without a username, the password is treated as the accessToken.", ""})
+	@IbisDoc({"5", "Client secret that belongs to registered application in Azure AD which could be found at Azure AD -> App Registrations -> MyApp -> Certificates and Secrets", ""})
+	public void setClientSecret(String clientSecret) {
+		this.clientSecret = clientSecret;
+	}
+
+	@IbisDoc({"6", "Tenant ID that represents the tenant in which the registered application exists within Azure AD which could be found at Azure AD -> App Registrations -> MyApp -> Overview.", ""})
+	public void setTenantId(String tenantId) {
+		this.tenantId = tenantId;
+	}
+
+	@IbisDoc({"7", "Alias used to obtain client ID and secret or username and password for authentication to Exchange mail server. " +
+			"If the attribute tenantId is empty, the deprecated Basic Authentication method is used. " +
+			"If the attribute tenantId is not empty, the username and password are treated as the client ID and secret.", ""})
 	@Override
 	public void setAuthAlias(String authAlias) {
 		super.setAuthAlias(authAlias);
 	}
 
-	@IbisDoc({"6", "Username for authentication to Exchange mail server. Ignored when accessToken is also specified", ""})
+	@IbisDoc({"8", "Username for authentication to Exchange mail server. Ignored when tenantId is also specified", ""})
 	@Deprecated
-	@ConfigurationWarning("Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to authentication using an accessToken. N.B. username no longer defaults to mailaddress")
+	@ConfigurationWarning("Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to modern authentication using clientId and clientSecret!")
 	@Override
 	public void setUsername(String username) {
 		super.setUsername(username);
+		setClientId(username);
 	}
 
-	@IbisDoc({"7", "Password for authentication to Exchange mail server. Ignored when accessToken is also specified", ""})
+	@IbisDoc({"9", "Password for authentication to Exchange mail server. Ignored when tenantId is also specified", ""})
 	@Deprecated
-	@ConfigurationWarning("Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to authentication using an accessToken")
+	@ConfigurationWarning("Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to modern authentication using clientId and clientSecret!")
 	@Override
 	public void setPassword(String password) {
 		super.setPassword(password);
+		setClientSecret(password);
 	}
 
-
-
-	@IbisDoc({"9", "If empty, all mails are retrieved. If set to <code>NDR</code> only Non-Delivery Report mails ('bounces') are retrieved", ""})
+	@IbisDoc({"10", "If empty, all mails are retrieved. If set to <code>NDR</code> only Non-Delivery Report mails ('bounces') are retrieved", ""})
 	public void setFilter(String filter) {
 		this.filter = filter;
 	}

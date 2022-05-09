@@ -85,7 +85,6 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		super.setUp();
 		mailListener=createExchangeMailListener();
 		mailListener.setMailAddress(mailaddress);
-		mailListener.setAccessToken(accessToken);
 		mailListener.setUsername(username);
 		mailListener.setPassword(password);
 		mailListener.setUrl(baseurl);
