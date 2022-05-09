@@ -137,6 +137,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	private ConfidentialClientApplication client;
 
 	private FolderId basefolderId;
+	private CredentialFactory cf;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -148,13 +149,13 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		if (StringUtils.isEmpty(getUrl()) && StringUtils.isEmpty(getMailAddress())) {
 			throw new ConfigurationException("either url or mailAddress needs to be specified");
 		}
+		cf = new CredentialFactory(getAuthAlias(), getClientId(), getClientSecret());
 	}
 
 	@Override
 	public void open() throws FileSystemException {
 		super.open();
 		if( StringUtils.isNotEmpty(getTenantId()) ){
-			CredentialFactory cf = getCredentials();
 			try {
 				client = ConfidentialClientApplication.builder(
 						cf.getUsername(),
@@ -221,7 +222,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			exchangeService.setImpersonatedUserId(new ImpersonatedUserId(ConnectingIdType.SmtpAddress, getMailAddress()));
 			exchangeService.getHttpHeaders().put("X-AnchorMailbox", getMailAddress());
 		} else {
-			CredentialFactory cf = getCredentials();
 			// use deprecated Basic Authentication. Support will end 2021-Q3!
 			log.warn("Using deprecated Basic Authentication method for authentication to Exchange Web Services");
 			ExchangeCredentials credentials = new WebCredentials(cf.getUsername(), cf.getPassword());
@@ -950,10 +950,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			log.warn("Could not get url", e);
 		}
 		return Misc.concatStrings("url [" + url + "] mailAddress [" + (getMailAddress() == null ? "" : getMailAddress()) + "]", " ", result);
-	}
-
-	private CredentialFactory getCredentials(){
-		return new CredentialFactory(getAuthAlias(), getClientId(), getClientSecret());
 	}
 
 	private static class RedirectionUrlCallback implements IAutodiscoverRedirectionUrl {
