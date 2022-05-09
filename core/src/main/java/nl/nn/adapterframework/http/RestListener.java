@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.http;
 
-import java.io.IOException;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -41,7 +40,7 @@ import nl.nn.adapterframework.stream.Message;
  * Prepends the configured URI pattern with <code>rest/</code>. When you are writing a new Frank config, you are recommended
  * to use an {@link nl.nn.adapterframework.http.rest.ApiListener} instead. You can find all serviced URI patterns
  * in the Frank!Console: main menu item Webservice, heading Available REST Services.
- * 
+ *
  * <p>
  * Note:
  * Servlets' multipart configuration expects a Content-Type of <code>multipart/form-data</code> (see http://docs.oracle.com/javaee/6/api/javax/servlet/annotation/MultipartConfig.html).
@@ -104,9 +103,10 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		RestServiceDispatcher.getInstance().unregisterServiceClient(getUriPattern(), getMethod());
 	}
 
-	public String processRequest(String correlationId, String message, PipeLineSession requestContext) throws ListenerException {
+	@Override
+	public Message processRequest(String correlationId, Message message, Map<String, Object> requestContext) throws ListenerException {
 		HttpServletRequest httpServletRequest = (HttpServletRequest) requestContext.get(PipeLineSession.HTTP_REQUEST_KEY);
-		String response;
+		Message response;
 		String contentType = (String) requestContext.get("contentType");
 
 		//Check if valid path
@@ -140,12 +140,8 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 				default:
 					throw new IllegalStateException("Unknown mediatype ["+getProduces()+"]");
 			}
-			
-			try {
-				response = super.processRequest(correlationId, new Message(message), requestContext).asString();
-			} catch (IOException e) {
-				throw new ListenerException("Failed to read result", e);
-			}
+
+			response = super.processRequest(correlationId, message, requestContext);
 			if(response != null && !response.isEmpty())
 				eTag = response.hashCode();
 
@@ -158,11 +154,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 			}
 		}
 		else {
-			try {
-				response = super.processRequest(correlationId, new Message(message), requestContext).asString();
-			} catch (IOException e) {
-				throw new ListenerException("Failed to read result", e);
-			}
+			response = super.processRequest(correlationId, message, requestContext);
 			if(response != null && !response.isEmpty())
 				eTag = response.hashCode();
 		}
@@ -174,25 +166,17 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		return response;
 	}
 
-	public String transformToJson(String message) throws PipeRunException {
+	public Message transformToJson(Message message) throws PipeRunException {
 		JsonPipe pipe = new JsonPipe();
 		pipe.setDirection(Direction.XML2JSON);
-		PipeRunResult pipeResult = pipe.doPipe(new Message(message), new PipeLineSession());
-		try {
-			return pipeResult.getResult().asString();
-		} catch (IOException e) {
-			throw new PipeRunException(null,"cannot transform result",e);
-		}
+		PipeRunResult pipeResult = pipe.doPipe(message, new PipeLineSession());
+		return pipeResult.getResult();
 	}
 
-	public String transformToXml(String message) throws PipeRunException {
+	public Message transformToXml(Message message) throws PipeRunException {
 		JsonPipe pipe = new JsonPipe();
-		PipeRunResult pipeResult = pipe.doPipe(new Message(message), new PipeLineSession());
-		try {
-			return pipeResult.getResult().asString();
-		} catch (IOException e) {
-			throw new PipeRunException(null,"cannot transform result",e);
-		}
+		PipeRunResult pipeResult = pipe.doPipe(message, new PipeLineSession());
+		return pipeResult.getResult();
 	}
 
 	@Override
@@ -214,7 +198,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	public String getRestUriPattern() {
 		return getRestPath().substring(1) + "/" + getUriPattern();
 	}
-	
+
 
 	@IbisDoc({"Uri pattern to match, the {uri} part in https://mydomain.com/ibis4something/rest/{uri}, where mydomain.com and ibis4something refer to 'your ibis'. ", ""})
 	public void setUriPattern(String uriPattern) {
