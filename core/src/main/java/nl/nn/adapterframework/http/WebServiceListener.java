@@ -197,8 +197,8 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 				throw new ListenerException(e);
 			}
 		}
-		else
-			return super.processRequest(correlationId, message, requestContext);
+
+		return super.processRequest(correlationId, message, requestContext);
 	}
 
 	public String getLogPrefix() {

@@ -17,8 +17,6 @@ package nl.nn.ibistesttool.web;
 
 import java.util.Map;
 
-import javax.servlet.http.HttpServlet;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
 import nl.nn.adapterframework.lifecycle.DynamicRegistration;
@@ -44,21 +42,11 @@ public class ApiServlet extends nl.nn.testtool.web.ApiServlet implements Dynamic
 
 	@Override
 	public String getName() {
-		return "Ladybug " + this.getClass().getSimpleName();
+		return "Ladybug-" + this.getClass().getSimpleName();
 	}
 
 	@Override
-	public int loadOnStartUp() {
-		return -1;
-	}
-
-	@Override
-	public HttpServlet getServlet() {
-		return this;
-	}
-
-	@Override
-	public String[] getRoles() {
+	public String[] getAccessGrantingRoles() {
 		return DynamicRegistration.Servlet.ALL_IBIS_USER_ROLES;
 	}
 

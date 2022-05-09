@@ -56,10 +56,10 @@ import nl.nn.adapterframework.util.LogUtil;
  * This class is exposed as a webservice, to be able to provide a single point
  * of entry to all adapters that have a ServiceListener as a IReceiver.
  */
-public class RestServiceDispatcher  {
+public class RestServiceDispatcher {
 	protected Logger log = LogUtil.getLogger(this);
 	protected Logger secLog = LogUtil.getLogger("SEC");
-	
+
 	private final String WILDCARD="*";
 	private final String KEY_LISTENER="listener";
 	private final String KEY_ETAG_KEY="etagKey";
@@ -101,18 +101,18 @@ public class RestServiceDispatcher  {
 		}
 		return matchingPattern;
 	}
-	
+
 	public Map<String,Object> getMethodConfig(String matchingPattern, String method) {
 		Map<String,Object> methodConfig;
 		Map<String,Map<String,Object>> patternEntry=patternClients.get(matchingPattern);
-		
+
 		methodConfig = patternEntry.get(method);
 		if (methodConfig==null) {
 			methodConfig = patternEntry.get(WILDCARD);
 		}
 		return methodConfig;
 	}
-	
+
 	public List<String> getAvailableMethods(String matchingPattern) {
 		Map<String,Map<String,Object>> patternEntry=patternClients.get(matchingPattern);
 		Iterator<Entry<String,Map<String,Object>>> it = patternEntry.entrySet().iterator();
@@ -133,14 +133,14 @@ public class RestServiceDispatcher  {
 	public String dispatchRequest(String restPath, String uri, HttpServletRequest httpServletRequest, String contentType, String request, PipeLineSession context, HttpServletResponse httpServletResponse, ServletContext servletContext) throws ListenerException {
 		String method = httpServletRequest.getMethod();
 		if (log.isTraceEnabled()) log.trace("searching listener for uri ["+uri+"] method ["+method+"]");
-		
+
 		String matchingPattern = findMatchingPattern(uri);
 		if (matchingPattern==null) {
 			throw new ListenerException("no REST listener configured for uri ["+uri+"]");
 		}
-		
+
 		Map<String,Object> methodConfig = getMethodConfig(matchingPattern, method);
-		
+
 		if (methodConfig==null) {
 			throw new ListenerException("No REST listener specified for uri ["+uri+"] method ["+method+"]");
 		}
@@ -173,7 +173,7 @@ public class RestServiceDispatcher  {
 				context.put("principal", principal.getName());
 			}
 		}
-		
+
 		String ctName = Thread.currentThread().getName();
 		try {
 			boolean writeToSecLog = false;
@@ -240,7 +240,7 @@ public class RestServiceDispatcher  {
 				}
 				Thread.currentThread().setName(restListener.getName() + "["+ctName+"]");
 			}
-	
+
 			if (etagKey!=null) context.put(etagKey,etag);
 			if (contentTypeKey!=null) context.put(contentTypeKey,contentType);
 			if (log.isTraceEnabled()) log.trace("dispatching request, uri ["+uri+"] listener pattern ["+matchingPattern+"] method ["+method+"] etag ["+etag+"] contentType ["+contentType+"]");
@@ -297,7 +297,7 @@ public class RestServiceDispatcher  {
 			}
 		}
 	}
-	
+
 	public void registerServiceClient(ServiceClient listener, String uriPattern,
 			String method, String etagSessionKey, String contentTypeSessionKey, boolean validateEtag) throws ConfigurationException {
 		uriPattern = unifyUriPattern(uriPattern);

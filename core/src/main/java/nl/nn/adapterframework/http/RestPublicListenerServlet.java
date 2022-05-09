@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,39 +13,20 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.ibistesttool.web;
+package nl.nn.adapterframework.http;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
-import nl.nn.adapterframework.lifecycle.DynamicRegistration;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
-import nl.nn.adapterframework.lifecycle.ServletManager;
 
-/**
- * @author Jaco de Groot
- */
 @IbisInitializer
-public class FrontendServlet extends nl.nn.testtool.web.FrontendServlet implements DynamicRegistration.Servlet {
-	private static final long serialVersionUID = 1L;
+public class RestPublicListenerServlet extends RestListenerServlet {
 
 	@Override
 	public String getUrlMapping() {
-		return getDefaultMapping();
-	}
-
-	@Override
-	public String getName() {
-		return "Ladybug-" + this.getClass().getSimpleName();
+		return "/rest-public/*";
 	}
 
 	@Override
 	public String[] getAccessGrantingRoles() {
-		return DynamicRegistration.Servlet.ALL_IBIS_USER_ROLES;
+		return null;
 	}
-
-	@Autowired
-	public void setServletManager(ServletManager servletManager) {
-		servletManager.register(this);
-	}
-
 }
