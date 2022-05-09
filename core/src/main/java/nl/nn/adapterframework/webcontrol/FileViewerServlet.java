@@ -330,7 +330,7 @@ public class FileViewerServlet extends HttpServletBase {
 	}
 
 	@Override
-	public String[] getRoles() {
+	public String[] getAccessGrantingRoles() {
 		return ALL_IBIS_USER_ROLES;
 	}
 

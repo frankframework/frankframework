@@ -26,7 +26,7 @@ public class RestPublicListenerServlet extends RestListenerServlet {
 	}
 
 	@Override
-	public String[] getRoles() {
+	public String[] getAccessGrantingRoles() {
 		return null;
 	}
 }

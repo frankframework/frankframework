@@ -208,7 +208,7 @@ public class ServletManagerTest {
 	private static class DummyServletImpl extends HttpServlet implements DynamicRegistration.Servlet {
 		private @Getter @Setter String name;
 		private @Getter String[] urlMappings = new String[] {"dummy-path"};
-		private @Getter @Setter String[] roles;
+		private @Getter @Setter String[] accessGrantingRoles;
 		public void setUrlMapping(String urlMapping) {
 			setUrlMapping(new String[] {urlMapping} );
 		}

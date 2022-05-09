@@ -53,7 +53,7 @@ public class Servlet extends WebContainerServlet implements DynamicRegistration.
 	}
 
 	@Override
-	public String[] getRoles() {
+	public String[] getAccessGrantingRoles() {
 		return ALL_IBIS_USER_ROLES;
 	}
 

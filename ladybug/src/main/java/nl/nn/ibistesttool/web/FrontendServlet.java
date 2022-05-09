@@ -39,7 +39,7 @@ public class FrontendServlet extends nl.nn.testtool.web.FrontendServlet implemen
 	}
 
 	@Override
-	public String[] getRoles() {
+	public String[] getAccessGrantingRoles() {
 		return DynamicRegistration.Servlet.ALL_IBIS_USER_ROLES;
 	}
 

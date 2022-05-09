@@ -45,7 +45,7 @@ public abstract class AtomPubServletBase extends CmisAtomPubServlet implements D
 	}
 
 	@Override
-	public String[] getRoles() {
+	public String[] getAccessGrantingRoles() {
 		return "IbisWebService,IbisTester".split(",");
 	}
 

@@ -44,7 +44,7 @@ public class BrowserBinding extends CmisBrowserBindingServlet implements Dynamic
 	}
 
 	@Override
-	public String[] getRoles() {
+	public String[] getAccessGrantingRoles() {
 		return "IbisWebService,IbisTester".split(",");
 	}
 

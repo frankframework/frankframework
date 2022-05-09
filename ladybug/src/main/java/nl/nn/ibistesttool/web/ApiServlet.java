@@ -46,7 +46,7 @@ public class ApiServlet extends nl.nn.testtool.web.ApiServlet implements Dynamic
 	}
 
 	@Override
-	public String[] getRoles() {
+	public String[] getAccessGrantingRoles() {
 		return DynamicRegistration.Servlet.ALL_IBIS_USER_ROLES;
 	}
 

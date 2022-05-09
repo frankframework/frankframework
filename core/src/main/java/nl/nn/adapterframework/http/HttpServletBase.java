@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2020 Nationale-Nederlanden
+   Copyright 2019-2020 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ public abstract class HttpServletBase extends HttpServlet implements DynamicRegi
 	}
 
 	@Override
-	public String[] getRoles() {
+	public String[] getAccessGrantingRoles() {
 		return null;
 	}
 

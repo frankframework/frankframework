@@ -135,7 +135,7 @@ public class ServletManager {
 	}
 
 	private void registerServlet(DynamicRegistration.Servlet servlet, Map<String, String> parameters) {
-		registerServlet(servlet, servlet.getName(), servlet.getUrlMapping(), servlet.getRoles(), servlet.loadOnStartUp(), parameters);
+		registerServlet(servlet, servlet.getName(), servlet.getUrlMapping(), servlet.getAccessGrantingRoles(), servlet.loadOnStartUp(), parameters);
 	}
 
 	private void registerServlet(Servlet servlet, String servletName, String urlMapping, String[] roles, int loadOnStartup, Map<String, String> initParameters) {
