@@ -102,6 +102,26 @@ public class OpenApiTest extends OpenApiTestBase {
 
 	@Test
 	@IsolatedThread
+	public void testNestedChoices() throws Exception {
+		String uri="/nestedChoices";
+		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
+		assertEquals("there are still registered patterns! Threading issue?", 0, dispatcher.findMatchingConfigsForUri(uri).size());
+
+		new AdapterBuilder("myAdapterName", "description4simple-get")
+			.setListener(uri, "post", null)
+			.setInputValidator("nestedChoices.xsd", "EmbeddedChoice", null, null)
+			.addExit("200")
+			.build(true);
+
+		assertEquals("more then 1 registered pattern found!", 1, dispatcher.findMatchingConfigsForUri(uri).size());
+		String result = callOpenApi(uri);
+
+		String expected = TestFileUtils.getTestFile("/OpenApi/nestedChoices.json");
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+	}
+
+	@Test
+	@IsolatedThread
 	public void simpleEndpointPostWithEmptyExitTest() throws Exception {
 		String uri="/simpleEndpointPostWithEmptyExitTest";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();

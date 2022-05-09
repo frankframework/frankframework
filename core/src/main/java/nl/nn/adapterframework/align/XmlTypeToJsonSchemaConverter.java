@@ -63,7 +63,6 @@ public class XmlTypeToJsonSchemaConverter  {
 	private String definitionsPath;
 	private String attributePrefix="@";
 	private String mixedContentLabel="#text";
-	private @Getter boolean openApi;
 
 	private enum SimpleType {
 		STRING("string"),
@@ -91,9 +90,6 @@ public class XmlTypeToJsonSchemaConverter  {
 		this.skipRootElement=skipRootElement;
 		this.schemaLocation=schemaLocation;
 		this.definitionsPath=definitionsPath;
-		if(definitionsPath.startsWith(SCHEMA_DEFINITION_PATH)) {
-			openApi = true;
-		}
 	}
 
 	public XmlTypeToJsonSchemaConverter(List<XSModel> models, boolean skipArrayElementContainers, String definitionsPath) {
@@ -333,9 +329,9 @@ public class XmlTypeToJsonSchemaConverter  {
 			if (elementDeclaration.getScope()==XSConstants.SCOPE_GLOBAL) {
 				String elementName = elementDeclaration.getName();
 				if(forOneOf) {
-					addType(builder, "object");
-					JsonObjectBuilder propertiesBuilder = Json.createObjectBuilder().add(elementName, Json.createObjectBuilder().add("$ref", definitionsPath+elementName));
-					builder.add("properties", propertiesBuilder);
+					JsonArrayBuilder requiredArrayBuilder = Json.createArrayBuilder();
+					requiredArrayBuilder.add(elementName);
+					builder.add("required", requiredArrayBuilder);
 				} else {
 					JsonObject typeDefininition = Json.createObjectBuilder().add("$ref", definitionsPath+elementName).build();
 					if (multiOccurring) {
@@ -391,25 +387,35 @@ public class XmlTypeToJsonSchemaConverter  {
 		buildObject(builder, particles, attributeUses, null, null);
 	}
 
-	private void handleCompositorChoice(JsonObjectBuilder builder, XSObjectList particles, boolean forProperties){
+	private void handleCompositorChoice(JsonObjectBuilder builder, XSObjectList particles, boolean forProperties) {
 		if (log.isTraceEnabled()) log.trace("modelGroup COMPOSITOR_CHOICE forProperties ["+forProperties+"]");
 		if (forProperties) {
 			for (int i=0;i<particles.getLength();i++) {
 				XSParticle childParticle = (XSParticle)particles.item(i);
 				if (log.isTraceEnabled()) log.trace("childParticle ["+i+"]["+ToStringBuilder.reflectionToString(childParticle,ToStringStyle.MULTI_LINE_STYLE)+"] for properties");
-				handleParticle(builder, childParticle, null, false);
+				handleParticle(builder, childParticle, null, true);
 			}
 		} else {
 			JsonArrayBuilder oneOfBuilder = Json.createArrayBuilder();
-			// oneOf is only supported for openApi schema for now
+			boolean minOccursZeroForAtLeastOneChoice = false;
 			for (int i=0;i<particles.getLength();i++) {
 				XSParticle childParticle = (XSParticle)particles.item(i);
 				if (log.isTraceEnabled()) log.trace("childParticle ["+i+"]["+ToStringBuilder.reflectionToString(childParticle,ToStringStyle.MULTI_LINE_STYLE)+"]");
 				JsonObjectBuilder typeBuilder = Json.createObjectBuilder();
-				handleParticle(typeBuilder, childParticle, null, false, isOpenApi());
+				handleParticle(typeBuilder, childParticle, null, false, true);
 				oneOfBuilder.add(typeBuilder.build());
+				if(childParticle.getMinOccurs() == 0) {
+					minOccursZeroForAtLeastOneChoice=true;
+				}
 			}
-			builder.add("oneOf", oneOfBuilder.build());
+			if(minOccursZeroForAtLeastOneChoice) {
+				JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+				arrayBuilder.add(Json.createObjectBuilder());
+				arrayBuilder.add(Json.createObjectBuilder().add("oneOf", oneOfBuilder));
+				builder.add("anyOf", arrayBuilder);
+			} else {
+				builder.add("oneOf", oneOfBuilder.build());
+			}
 		}
 	}
 
@@ -427,15 +433,15 @@ public class XmlTypeToJsonSchemaConverter  {
 		if (elementTypeDefinition.getAnonymous() || XML_SCHEMA_NS.equals(elementTypeDefinition.getNamespace())) {
 			definition = getDefinition(elementTypeDefinition, shouldCreateReferences);
 			if(!definition.isEmpty() && forOneOf) {
-				addType(builder, "object");
-				JsonObjectBuilder propertiesBuilder = Json.createObjectBuilder().add(elementName, Json.createObjectBuilder().add("type", definition.getString("type")));
-				builder.add("properties", propertiesBuilder);
+				JsonArrayBuilder requiredArrayBuilder = Json.createArrayBuilder();
+				requiredArrayBuilder.add(elementName);
+				builder.add("required", requiredArrayBuilder);
 				return;
 			}
 		} else if(forOneOf) {
-			addType(builder, "object");
-			JsonObjectBuilder propertiesBuilder = Json.createObjectBuilder().add(elementName, Json.createObjectBuilder().add("$ref", definitionsPath+elementTypeDefinition.getName()));
-			builder.add("properties", propertiesBuilder);
+			JsonArrayBuilder requiredArrayBuilder = Json.createArrayBuilder();
+			requiredArrayBuilder.add(elementName);
+			builder.add("required", requiredArrayBuilder);
 			return;
 		} else {
 			definition = Json.createObjectBuilder().add("$ref", definitionsPath+elementTypeDefinition.getName()).build();
@@ -449,11 +455,9 @@ public class XmlTypeToJsonSchemaConverter  {
 			if(definition!=null && !definition.isEmpty()) {
 				objectBuilder.add("items", definition);
 			}
-			if(forOneOf) {
-				builder.add("type", "array");
-			} else {
-				builder.add(elementName, objectBuilder.build());
-			}
+
+			builder.add(elementName, objectBuilder.build());
+
 		} else {
 			if (definition!=null) {
 				builder.add(elementName, definition);
@@ -505,9 +509,8 @@ public class XmlTypeToJsonSchemaConverter  {
 				XSParticle childParticle = (XSParticle)particles.item(i);
 				if (log.isTraceEnabled()) log.trace("childParticle ["+i+"]["+ToStringBuilder.reflectionToString(childParticle,ToStringStyle.MULTI_LINE_STYLE)+"]");
 				XSTerm childTerm = childParticle.getTerm();
-				if(childTerm instanceof XSModelGroup && isOpenApi()) {
+				if(childTerm instanceof XSModelGroup) {
 					handleModelGroup(builder, (XSModelGroup) childTerm, null, false);
-					continue;
 				} else if(childTerm instanceof XSElementDeclaration) {
 					XSElementDeclaration elementDeclaration = (XSElementDeclaration) childTerm;
 					String elementName = elementDeclaration.getName();
@@ -664,7 +667,7 @@ public class XmlTypeToJsonSchemaConverter  {
 	private JsonObjectBuilder addType(JsonObjectBuilder builder, String type, XSParticle particle) {
 		builder.add("type", type);
 		if(particle != null) {
-			if(particle.getMinOccurs() >= 0) {
+			if(particle.getMinOccurs() > 0) {
 				builder.add("minItems", particle.getMinOccurs());
 			}
 			if(particle.getMaxOccurs() >= 0 && !particle.getMaxOccursUnbounded()) {

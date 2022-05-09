@@ -8,6 +8,24 @@
         },
         "EmbeddedChoiceType":{
             "type":"object",
+            "anyOf":[
+                {
+                },
+                {
+                    "oneOf":[
+                        {
+                            "required":[
+                                "BusinessPartnerId"
+                            ]
+                        },
+                        {
+                            "required":[
+                                "Qualifier"
+                            ]
+                        }
+                    ]
+                }
+            ],
             "additionalProperties":false,
             "properties":{
                 "EnableFuzzySearch":{

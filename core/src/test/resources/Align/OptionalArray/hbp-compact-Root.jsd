@@ -19,7 +19,6 @@
             "properties":{
                 "EmployeeDisability":{
                     "type":"array",
-                    "minItems":0,
                     "items":{
                         "type":"object",
                         "additionalProperties":false,

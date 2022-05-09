@@ -33,7 +33,6 @@
         },
         "singleSimpleRepeatedElement":{
             "type":"array",
-            "minItems":0,
             "items":{
                 "type":"string"
             }
@@ -43,7 +42,6 @@
         },
         "array1":{
             "type":"array",
-            "minItems":0,
             "items":{
                 "anyOf":[
                     {
@@ -131,7 +129,6 @@
             "properties":{
                 "repeatedElem":{
                     "type":"array",
-                    "minItems":0,
                     "items":{
                         "$ref":"#/definitions/repeatedElem"
                     }

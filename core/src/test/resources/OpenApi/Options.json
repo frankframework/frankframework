@@ -39,23 +39,25 @@
                 "type":"object",
                 "oneOf":[
                     {
-                        "type":"object",
-                        "properties":{
-                            "Organisation":{
-                                "type":"string"
-                            }
-                        }
+                        "required":[
+                            "Organisation"
+                        ]
                     },
                     {
-                        "type":"object",
-                        "properties":{
-                            "Person":{
-                                "$ref":"#/components/schemas/PersonType"
-                            }
-                        }
+                        "required":[
+                            "Person"
+                        ]
                     }
                 ],
-                "additionalProperties":false
+                "additionalProperties":false,
+                "properties":{
+                    "Organisation":{
+                        "type":"string"
+                    },
+                    "Person":{
+                        "$ref":"#/components/schemas/PersonType"
+                    }
+                }
             },
             "PersonDemographicsType":{
                 "type":"object",

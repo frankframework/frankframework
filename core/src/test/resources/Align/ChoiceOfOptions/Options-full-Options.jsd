@@ -11,6 +11,18 @@
     "definitions":{
         "Options":{
             "type":"object",
+            "oneOf":[
+                {
+                    "required":[
+                        "Organisation"
+                    ]
+                },
+                {
+                    "required":[
+                        "Person"
+                    ]
+                }
+            ],
             "additionalProperties":false,
             "properties":{
                 "Organisation":{
