@@ -56,12 +56,9 @@ public class XmlIf extends AbstractPipe {
 	private @Getter String elseForwardName = "else";
 	private @Getter String regex = null;
 	private @Getter int xsltVersion = XmlUtils.DEFAULT_XSLT_VERSION;
+	private @Getter boolean removeNamespaces=false;
 
 	private TransformerPool tp = null;
-
-	{
-		setNamespaceAware(true);
-	}
 
 	protected String makeStylesheet(String xpathExpression, String resultVal) {
 		String nameSpaceClause = XmlUtils.getNamespaceClause(getNamespaceDefs());
@@ -131,9 +128,9 @@ public class XmlIf extends AbstractPipe {
 				Map<String,Object> parametervalues = null;
 				ParameterList parameterList = getParameterList();
 				if (!parameterList.isEmpty()) {
-					parametervalues = parameterList.getValues(message, session, isNamespaceAware()).getValueMap();
+					parametervalues = parameterList.getValues(message, session, !isRemoveNamespaces()).getValueMap();
 				}
-				forward = tp.transform(sInput, parametervalues, isNamespaceAware());
+				forward = tp.transform(sInput, parametervalues, !isRemoveNamespaces());
 			} catch (Exception e) {
 				throw new PipeRunException(this,getLogPrefix(session)+"cannot evaluate expression",e);
 			}
@@ -204,4 +201,17 @@ public class XmlIf extends AbstractPipe {
 	public void setNamespaceDefs(String namespaceDefs) {
 		this.namespaceDefs = namespaceDefs;
 	}
+
+	@IbisDoc({"controls namespace-awareness of XSLT transformation", "true"})
+	@Deprecated
+	@ConfigurationWarning("please use attribute 'removeNamespaces' instead to enable namespace insensitive behaviour")
+	public void setNamespaceAware(boolean b) {
+		setRemoveNamespaces(!b);
+	}
+
+	@IbisDoc({"If <code>true</code> namespaces will be removed before XSLT transformation", "false"})
+	public void setRemoveNamespaces(boolean b) {
+		removeNamespaces = b;
+	}
+
 }

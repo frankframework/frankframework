@@ -43,11 +43,11 @@ import org.w3c.dom.Document;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IConfigurationAware;
 import nl.nn.adapterframework.core.IScopeProvider;
-import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -70,7 +70,7 @@ public class TransformerPool {
 
 	private Templates templates;
 	private Resource reloadResource=null;
-	private int xsltVersion;
+	private @Getter int xsltVersion;
 
 	private Source configSource;
 	private Map<String,String> configMap;
@@ -195,7 +195,7 @@ public class TransformerPool {
 		}
 	}
 
-	private void reloadTransformerPool() throws TransformerConfigurationException, IOException {
+	private void reloadTransformerPool() throws TransformerConfigurationException {
 		if (reloadResource!=null) {
 			try {
 				initTransformerPool(reloadResource.asSource(), reloadResource.getSystemId());
@@ -313,7 +313,7 @@ public class TransformerPool {
 
 		try {
 			reloadTransformerPool();
-			return (Transformer)pool.borrowObject();
+			return pool.borrowObject();
 		} catch (Exception e) {
 			throw new TransformerConfigurationException(e);
 		}
@@ -361,6 +361,10 @@ public class TransformerPool {
 		return transform(m.asSource(),parameters);
 	}
 
+	public String transform(Message m, Map<String,Object> parameters, boolean namespaceAware) throws TransformerException, IOException, SAXException {
+		return transform(XmlUtils.inputSourceToSAXSource(m.asInputSource(),namespaceAware, null), parameters);
+	}
+
 	public String transform(String s, Map<String,Object> parameters) throws TransformerException, IOException, SAXException {
 		return transform(XmlUtils.stringToSourceForSingleUse(s),parameters);
 	}
@@ -373,7 +377,7 @@ public class TransformerPool {
 		return transform(s,(Map<String,Object>)null);
 	}
 	
-	public String transform(Source s, ParameterValueList pvl) throws TransformerException, IOException, ParameterException {
+	public String transform(Source s, ParameterValueList pvl) throws TransformerException, IOException {
 		return transform(s, null, pvl==null? (Map<String,Object>)null : pvl.getValueMap());
 	}
 	
@@ -384,7 +388,7 @@ public class TransformerPool {
 	public String transform(Source s, Result r) throws TransformerException, IOException {
 		return transform(s, r, (Map<String,Object>)null);
 	}
-	public String transform(Source s, Result r, ParameterValueList pvl) throws TransformerException, IOException, ParameterException {
+	public String transform(Source s, Result r, ParameterValueList pvl) throws TransformerException, IOException {
 		return transform(s, r, pvl==null? (Map<String,Object>)null : pvl.getValueMap());
 	}
 	public String transform(Source s, Result r, Map<String,Object> parameters) throws TransformerException, IOException {
@@ -432,7 +436,7 @@ public class TransformerPool {
 	      return handler;
 	}
 
-	public TransformerFilter getTransformerFilter(ThreadConnector threadConnector, ContentHandler handler) throws TransformerConfigurationException {
+	public TransformerFilter getTransformerFilter(ThreadConnector<?> threadConnector, ContentHandler handler) throws TransformerConfigurationException {
 		return new TransformerFilter(threadConnector, getTransformerHandler(), handler);
 	}
 
@@ -443,13 +447,8 @@ public class TransformerPool {
 		return configMap;
 	}
 
-	public int getXsltVersion() throws TransformerException, IOException, SAXException {
-		return xsltVersion;
-	}
-
 	public Boolean getOmitXmlDeclaration() throws TransformerException, IOException, SAXException {
-		Map<String,String> configMap=getConfigMap();
-		String setting=configMap.get("output-omit-xml-declaration");
+		String setting=getConfigMap().get("output-omit-xml-declaration");
 		if (setting==null) {
 			return null;
 		}
@@ -457,8 +456,7 @@ public class TransformerPool {
 	}
 
 	public Boolean getIndent() throws TransformerException, IOException, SAXException {
-		Map<String,String> configMap=getConfigMap();
-		String setting=configMap.get("output-indent");
+		String setting=getConfigMap().get("output-indent");
 		if (setting==null) {
 			return null;
 		}
@@ -466,13 +464,11 @@ public class TransformerPool {
 	}
 
 	public String getOutputMethod() throws TransformerException, IOException, SAXException {
-		Map<String,String> configMap=getConfigMap();
-		return configMap.get("output-method");
+		return getConfigMap().get("output-method");
 	}
 
 	public Boolean getDisableOutputEscaping() throws TransformerException, IOException, SAXException {
-		Map<String,String> configMap=getConfigMap();
-		String setting=configMap.get("disable-output-escaping");
+		String setting=getConfigMap().get("disable-output-escaping");
 		if (setting==null) {
 			return null;
 		}

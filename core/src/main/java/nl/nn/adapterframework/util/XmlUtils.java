@@ -443,7 +443,7 @@ public class XmlUtils {
 
 	public static synchronized boolean isNamespaceAwareByDefault() {
 		if (namespaceAwareByDefault==null) {
-			namespaceAwareByDefault=AppConstants.getInstance().getBoolean(NAMESPACE_AWARE_BY_DEFAULT_KEY, false);
+			namespaceAwareByDefault=AppConstants.getInstance().getBoolean(NAMESPACE_AWARE_BY_DEFAULT_KEY, true);
 		}
 		return namespaceAwareByDefault;
 	}
@@ -950,25 +950,21 @@ public class XmlUtils {
 		return inputSourceToSAXSource(is, true, null);
 	}
 
-	private static SAXSource inputSourceToSAXSource(InputSource is, boolean namespaceAware, Resource scopeProvider) throws SAXException {
+	public static SAXSource inputSourceToSAXSource(InputSource is, boolean namespaceAware, Resource scopeProvider) throws SAXException {
 		try {
-			return new SAXSource(getXMLReader(namespaceAware, scopeProvider), is);
+			SAXSource source = new SAXSource(getXMLReader(namespaceAware, scopeProvider), is);
+			if(!namespaceAware) {
+				XMLReader reader = source.getXMLReader();
+				/* Saxon always overwrites the feature "http://xml.org/sax/features/namespaces" to true for SAXSource
+				 * Therefore namespaceRemovingFilter is required to support namespaceAwarene==false */
+				NamespaceRemovingFilter filter = new NamespaceRemovingFilter(reader.getContentHandler());
+				filter.setParent(reader);
+				source.setXMLReader(filter);
+			}
+			return source;
 		} catch (ParserConfigurationException e) {
 			throw new SaxException(e);
 		}
-	}
-
-	public static SAXSource inputSourceToSAXSource(InputSource is, boolean namespaceAware) throws SAXException {
-		SAXSource source = inputSourceToSAXSource(is, true, null);
-		if(!namespaceAware) {
-			XMLReader reader = source.getXMLReader();
-			/* Saxon always overwrites the feature "http://xml.org/sax/features/namespaces" to true for SAXSource
-			 * Therefore namespaceRemovingFilter is required to support namespaceAwareness */
-			NamespaceRemovingFilter filter = new NamespaceRemovingFilter(reader.getContentHandler());
-			filter.setParent(reader);
-			source.setXMLReader(filter);
-		}
-		return source;
 	}
 
 	public static int interpretXsltVersion(String xsltVersion) {

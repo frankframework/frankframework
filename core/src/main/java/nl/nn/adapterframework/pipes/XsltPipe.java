@@ -18,6 +18,7 @@ package nl.nn.adapterframework.pipes;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IForwardTarget;
@@ -52,7 +53,7 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 
 	private String sessionKey=null;
 
-	private XsltSender sender = createXsltSender();
+	private @Getter XsltSender sender = createXsltSender();
 
 	private final String XSLTSENDER = "nl.nn.adapterframework.senders.XsltSender";
 
@@ -241,13 +242,8 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 	}
 	
 	@IbisDocRef({"14", XSLTSENDER})
-	@Override
 	public void setNamespaceAware(boolean b) {
 		sender.setNamespaceAware(b);
-	}
-	@Override
-	public boolean isNamespaceAware() {
-		return sender.isNamespaceAware();
 	}
 
 	@Deprecated
@@ -265,10 +261,6 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 	public void setName(String name) {
 		super.setName(name);
 		sender.setName("Sender of Pipe ["+name+"]");
-	}
-
-	protected XsltSender getSender() {
-		return sender;
 	}
 
 }

@@ -123,9 +123,6 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	protected ConfigurationException configurationException;
 
 	protected final String ABSTRACTXMLVALIDATOR="nl.nn.adapterframework.validation.AbstractXmlValidator";
-	{
-		setNamespaceAware(true);
-	}
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
