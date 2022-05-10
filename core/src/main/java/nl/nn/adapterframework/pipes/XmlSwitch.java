@@ -64,7 +64,7 @@ public class XmlSwitch extends AbstractPipe {
 	private @Getter String emptyForwardName = null;
 	private @Getter int xsltVersion = 0; // set to 0 for auto detect.
 	private @Getter String forwardNameSessionKey = null;
-	private @Getter boolean removeNamespaces=false;
+	private @Getter boolean namespaceAware=true;
 
 	private TransformerPool transformerPool = null;
 
@@ -157,13 +157,13 @@ public class XmlSwitch extends AbstractPipe {
 				Map<String,Object> parametervalues = null;
 				ParameterList parameterList = getParameterList();
 				if (!parameterList.isEmpty()) {
-					parametervalues = parameterList.getValues(message, session, !isRemoveNamespaces()).getValueMap();
+					parametervalues = parameterList.getValues(message, session, isNamespaceAware()).getValueMap();
 				}
 				if(StringUtils.isNotEmpty(getSessionKey())) {
-					forward = transformerPool.transform(session.getMessage(getSessionKey()), parametervalues, !isRemoveNamespaces());
+					forward = transformerPool.transform(session.getMessage(getSessionKey()), parametervalues, isNamespaceAware());
 				} else {
 					message.preserve();
-					forward = transformerPool.transform(message, parametervalues, !isRemoveNamespaces());
+					forward = transformerPool.transform(message, parametervalues, isNamespaceAware());
 				}
 			} catch (Throwable e) {
 				throw new PipeRunException(this, getLogPrefix(session) + "got exception on transformation", e);
@@ -277,15 +277,8 @@ public class XmlSwitch extends AbstractPipe {
 	}
 
 	@IbisDoc({"controls namespace-awareness of XSLT transformation", "true"})
-	@Deprecated
-	@ConfigurationWarning("please use attribute 'removeNamespaces' instead to enable namespace insensitive behaviour")
 	public void setNamespaceAware(boolean b) {
-		setRemoveNamespaces(!b);
-	}
-
-	@IbisDoc({"If <code>true</code> namespaces will be removed before XSLT transformation", "false"})
-	public void setRemoveNamespaces(boolean b) {
-		removeNamespaces = b;
+		namespaceAware = b;
 	}
 
 }

@@ -266,50 +266,86 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		testSwitch(input,"dummy");
 	}
 
-	public void testNamespaceAwarenessWithStylesheetHelper(int xsltVersion, boolean awareness, String forwardName) throws Exception {
+	public void testNamespaceAwarenessWithStylesheet(int xsltVersion, boolean namespaceAware, String expectedForwardName) throws Exception {
 		pipe.registerForward(new PipeForward("1","FixedResult1"));
 		pipe.registerForward(new PipeForward("NF","FixedResultNF"));
 		pipe.setStyleSheetName("/XmlSwitch/Switch.xsl");
 		pipe.setNotFoundForwardName("NF");
 		pipe.setXsltVersion(xsltVersion);
-		pipe.setNamespaceAware(awareness);
+		pipe.setNamespaceAware(namespaceAware);
 		Message input=new Message("<test xmlns=\"http://dummy\"><innerTest>1</innerTest></test>");
-		testSwitch(input,forwardName);
+		testSwitch(input,expectedForwardName);
 	}
 
-	public void testNamespaceAwarenessWithXpathHelper(int xsltVersion, boolean awareness, String forwardName) throws Exception {
+	public void testNamespaceAwarenessWithXpath(int xsltVersion, boolean namespaceAware, String expectedForwardName) throws Exception {
 		pipe.registerForward(new PipeForward("1","FixedResult1"));
 		pipe.registerForward(new PipeForward("NF","FixedResultNF"));
 		pipe.setXpathExpression("/test/innerTest");
 		pipe.setNotFoundForwardName("NF");
 		pipe.setXsltVersion(xsltVersion);
-		pipe.setNamespaceAware(awareness);
+		pipe.setNamespaceAware(namespaceAware);
 		Message input=new Message("<test xmlns=\"http://dummy\"><innerTest>1</innerTest></test>");
-		testSwitch(input,forwardName);
+		testSwitch(input,expectedForwardName);
 	}
 
 	@Test
-	public void testNamespaceAwarenessWithStylesheetXslt2() throws Exception {
-		testNamespaceAwarenessWithStylesheetHelper(2, true, "NF");
-		testNamespaceAwarenessWithStylesheetHelper(2, false, "1");
-		testNamespaceAwarenessWithXpathHelper(2, true, "NF");
-		testNamespaceAwarenessWithXpathHelper(2, false, "1");
+	public void testNamespaceAwareWithStylesheetXslt2() throws Exception {
+		testNamespaceAwarenessWithStylesheet(2, true, "NF");
 	}
 
 	@Test
-	public void testNamespaceAwarenessWithStylesheetXslt1() throws Exception {
-		testNamespaceAwarenessWithStylesheetHelper(1, true, "NF");
-		testNamespaceAwarenessWithStylesheetHelper(1, false, "1");
-		testNamespaceAwarenessWithXpathHelper(1, true, "NF");
-		testNamespaceAwarenessWithXpathHelper(1, false, "1");
+	public void testNamespaceAwareWithXPathXslt2() throws Exception {
+		testNamespaceAwarenessWithXpath(2, true, "1"); // Will return 1, as Xslt 2.0 stylesheet generated from XPath will ignore namespaces in input, as no namespaceDefs were specified
 	}
 
 	@Test
-	public void testNamespaceAwarenessWithStylesheetXsltVersionAutoDetect() throws Exception {
-		testNamespaceAwarenessWithStylesheetHelper(0, true, "NF");
-		testNamespaceAwarenessWithStylesheetHelper(0, false, "1");
-		testNamespaceAwarenessWithXpathHelper(0, true, "NF");
-		testNamespaceAwarenessWithXpathHelper(0, false, "1");
+	public void testNamespaceUnawareWithStylesheetXslt2() throws Exception {
+		testNamespaceAwarenessWithStylesheet(2, false, "1");
+	}
+
+	@Test
+	public void testNamespaceUnawareWithXPathXslt2() throws Exception {
+		testNamespaceAwarenessWithXpath(2, false, "1");
+	}
+
+	@Test
+	public void testNamespaceAwareWithStylesheetXslt1() throws Exception {
+		testNamespaceAwarenessWithStylesheet(1, true, "NF");
+	}
+
+	@Test
+	public void testNamespaceAwareWithXPathXslt1() throws Exception {
+		testNamespaceAwarenessWithXpath(1, true, "NF");
+	}
+
+	@Test
+	public void testNamespaceUnawareWithStylesheetXslt1() throws Exception {
+		testNamespaceAwarenessWithStylesheet(1, false, "1");
+	}
+
+	@Test
+	public void testNamespaceUnawareWithXPathXslt1() throws Exception {
+		testNamespaceAwarenessWithXpath(1, false, "1");
+	}
+
+	@Test
+	public void testNamespaceAwareWithStylesheetXsltVersionAutoDetect() throws Exception {
+		testNamespaceAwarenessWithStylesheet(0, true, "NF");
+	}
+
+	@Test
+	public void testNamespaceAwareWithXPathXsltVersionAutoDetect() throws Exception {
+		testNamespaceAwarenessWithXpath(0, true, "1");  // Will return 1, as Xslt 2.0 stylesheet generated from XPath will ignore namespaces in input, as no namespaceDefs were specified
+	}
+
+	@Test
+	public void testNamespaceUnawareWithStylesheetXsltVersionAutoDetect() throws Exception {
+		testNamespaceAwarenessWithStylesheet(0, false, "1");
+	}
+
+	@Test
+	public void testNamespaceUnawareWithXPathXsltVersionAutoDetect() throws Exception {
+		testNamespaceAwarenessWithXpath(0, false, "1");
 	}
 
 	@Test
