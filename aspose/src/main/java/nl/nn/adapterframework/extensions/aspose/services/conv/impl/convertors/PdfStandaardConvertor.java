@@ -31,12 +31,12 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class PdfStandaardConvertor extends AbstractConvertor {
 
-	protected PdfStandaardConvertor(String pdfOutputLocation) {
-		super(pdfOutputLocation, new MediaType("application", "pdf"));
+	protected PdfStandaardConvertor(String pdfOutputLocation, boolean loadExternalResources) {
+		super(pdfOutputLocation, loadExternalResources, new MediaType("application", "pdf"));
 	}
 
 	@Override
-	public void convert(MediaType mediaType, Message message, CisConversionResult result, String charset, boolean loadExternalResources) throws Exception {
+	public void convert(MediaType mediaType, Message message, CisConversionResult result, String charset) throws Exception {
 		Files.copy(message.asInputStream(charset), Paths.get(result.getPdfResultFile().getCanonicalPath()));
 		result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
 	}

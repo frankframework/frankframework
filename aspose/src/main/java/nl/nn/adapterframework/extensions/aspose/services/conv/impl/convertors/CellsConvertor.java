@@ -46,12 +46,12 @@ class CellsConvertor extends AbstractConvertor {
 		FILE_TYPE_MAP.put(XLSX_MEDIA_TYPE, "xlsx");
 	}
 
-	protected CellsConvertor(String pdfOutputLocation) {
-		super(pdfOutputLocation, XLS_MEDIA_TYPE, XLS_MEDIA_TYPE_MACRO_ENABLED, XLSX_MEDIA_TYPE);
+	protected CellsConvertor(String pdfOutputLocation, boolean loadExternalResources) {
+		super(pdfOutputLocation, loadExternalResources, XLS_MEDIA_TYPE, XLS_MEDIA_TYPE_MACRO_ENABLED, XLSX_MEDIA_TYPE);
 	}
 
 	@Override
-	public void convert(MediaType mediaType, Message message, CisConversionResult result, String charset, boolean loadExternalResources) throws Exception {
+	public void convert(MediaType mediaType, Message message, CisConversionResult result, String charset) throws Exception {
 		// Convert Excel to pdf and store in result
 		try (InputStream inputStream = message.asInputStream(charset)) {
 			Workbook workbook = new Workbook(inputStream);

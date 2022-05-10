@@ -26,7 +26,7 @@ import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Convertor factory instantiates all convertor types and keeps them in a map.
- * 
+ *
  * @author Gerard van der Hoorn
  *
  */
@@ -36,14 +36,14 @@ public class ConvertorFactory {
 
 	private Map<MediaType, Convertor> convertorLookupMap = new HashMap<>();
 
-	public ConvertorFactory(CisConversionService cisConversionService, String pdfOutputlocation) {
-		addToConvertorLookupMap(new MailConvertor(cisConversionService, pdfOutputlocation));
-		addToConvertorLookupMap(new PdfStandaardConvertor(pdfOutputlocation));
-		addToConvertorLookupMap(new PdfConvertor(pdfOutputlocation));
-		addToConvertorLookupMap(new PdfImageConvertor(pdfOutputlocation));
-		addToConvertorLookupMap(new WordConvertor(cisConversionService, pdfOutputlocation));
-		addToConvertorLookupMap(new CellsConvertor(pdfOutputlocation));
-		addToConvertorLookupMap(new SlidesConvertor(pdfOutputlocation));
+	public ConvertorFactory(CisConversionService cisConversionService, String pdfOutputlocation, boolean loadExternalResources) {
+		addToConvertorLookupMap(new MailConvertor(cisConversionService, pdfOutputlocation, loadExternalResources));
+		addToConvertorLookupMap(new PdfStandaardConvertor(pdfOutputlocation, loadExternalResources));
+		addToConvertorLookupMap(new PdfConvertor(pdfOutputlocation, loadExternalResources));
+		addToConvertorLookupMap(new PdfImageConvertor(pdfOutputlocation, loadExternalResources));
+		addToConvertorLookupMap(new WordConvertor(cisConversionService, pdfOutputlocation, loadExternalResources));
+		addToConvertorLookupMap(new CellsConvertor(pdfOutputlocation, loadExternalResources));
+		addToConvertorLookupMap(new SlidesConvertor(pdfOutputlocation, loadExternalResources));
 	}
 
 	private void addToConvertorLookupMap(Convertor convertor) {

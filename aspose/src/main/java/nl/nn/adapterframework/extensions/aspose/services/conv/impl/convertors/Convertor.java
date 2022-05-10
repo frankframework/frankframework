@@ -37,6 +37,6 @@ public interface Convertor {
 	 * @param charset
 	 *
 	 */
-	CisConversionResult convertToPdf(MediaType mediaType, String filename, Message message, ConversionOption conversionOption, String charset, boolean loadExternalResources);
+	CisConversionResult convertToPdf(MediaType mediaType, String filename, Message message, ConversionOption conversionOption, String charset);
 
 }

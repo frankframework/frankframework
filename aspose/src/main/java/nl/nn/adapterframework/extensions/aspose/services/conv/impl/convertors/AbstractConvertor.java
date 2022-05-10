@@ -25,6 +25,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
 
@@ -41,19 +43,18 @@ import nl.nn.adapterframework.util.LogUtil;
 abstract class AbstractConvertor implements Convertor {
 
 	private static final Logger LOGGER = LogUtil.getLogger(AbstractConvertor.class);
-
 	private List<MediaType> supportedMediaTypes;
-
 	private String pdfOutputlocation;
-
 	private static AtomicInteger atomicCount = new AtomicInteger(1);
+	protected @Setter @Getter boolean loadExternalResources;
 
-	protected AbstractConvertor(String pdfOutputlocation, MediaType... args) {
+	protected AbstractConvertor(String pdfOutputlocation, boolean loadExternalResources, MediaType... args) {
 		this.pdfOutputlocation = pdfOutputlocation;
+		this.loadExternalResources = loadExternalResources;
 		supportedMediaTypes = Arrays.asList(args);
 	}
 
-	protected abstract void convert(MediaType mediaType, Message file, CisConversionResult builder, String charset, boolean loadExternalResources) throws Exception;
+	protected abstract void convert(MediaType mediaType, Message file, CisConversionResult builder, String charset) throws Exception;
 
 	@Override
 	public List<MediaType> getSupportedMediaTypes() {
@@ -98,7 +99,7 @@ abstract class AbstractConvertor implements Convertor {
 	 * Should not be overloaded by the concrete classes.
 	 */
 	@Override
-	public final CisConversionResult convertToPdf(MediaType mediaType, String filename, Message message, ConversionOption conversionOption, String charset, boolean loadExternalResources) {
+	public final CisConversionResult convertToPdf(MediaType mediaType, String filename, Message message, ConversionOption conversionOption, String charset) {
 
 		checkForSupportedMediaType(mediaType);
 
@@ -113,7 +114,7 @@ abstract class AbstractConvertor implements Convertor {
 			result.setResultFilePath(resultFile.getAbsolutePath());
 
 			LOGGER.debug("Convert to file... " + filename);
-			convert(mediaType, message, result, charset, loadExternalResources);
+			convert(mediaType, message, result, charset);
 			LOGGER.debug("Convert to file finished. " + filename);
 
 		} catch (Exception e) {
