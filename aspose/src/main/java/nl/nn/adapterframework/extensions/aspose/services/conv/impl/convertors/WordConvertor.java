@@ -40,7 +40,7 @@ import nl.nn.adapterframework.util.LogUtil;
 /**
  * Converts the files which are required and supported by the aspose words
  * library.
- * 
+ *
  */
 class WordConvertor extends AbstractConvertor {
 
@@ -77,14 +77,19 @@ class WordConvertor extends AbstractConvertor {
 	}
 
 	@Override
-	public void convert(MediaType mediaType, Message message, CisConversionResult result, String charset) throws Exception {
+	public void convert(MediaType mediaType, Message message, CisConversionResult result, String charset, boolean loadExternalResources) throws Exception {
 
 		if (!MEDIA_TYPE_LOAD_FORMAT_MAPPING.containsKey(mediaType)) {
 			throw new IllegalArgumentException("Unsupported mediaType " + mediaType + " should never happen here!");
 		}
 
 		try (InputStream inputStream = message.asInputStream(charset)) {
-			Document doc = new Document(inputStream, MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType));
+			HtmlLoadOptions loadOptions = (HtmlLoadOptions) MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType);
+			if(!loadExternalResources){
+				loadOptions.setResourceLoadingCallback(new OfflineResourceLoader());
+			}
+
+			Document doc = new Document(inputStream, loadOptions);
 			new Fontsetter(cisConversionService.getFontsDirectory()).setFontSettings(doc);
 			SaveOptions saveOptions = SaveOptions.createSaveOptions(SaveFormat.PDF);
 			saveOptions.setMemoryOptimization(true);

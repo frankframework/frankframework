@@ -33,7 +33,7 @@ import nl.nn.adapterframework.stream.Message;
 
 /**
  * Converts the files which are required and supported by the Aspose pdf library.
- * 
+ *
  * @author Gerard van der Hoorn
  */
 public class PdfConvertor extends AbstractConvertor {
@@ -54,7 +54,7 @@ public class PdfConvertor extends AbstractConvertor {
 	}
 
 	@Override
-	public void convert(MediaType mediaType, Message message, CisConversionResult result, String charset) throws Exception {
+	public void convert(MediaType mediaType, Message message, CisConversionResult result, String charset, boolean loadExternalResources) throws Exception {
 		if (!MEDIA_TYPE_LOAD_FORMAT_MAPPING.containsKey(mediaType)) {
 			throw new IllegalArgumentException("Unsupported mediaType " + mediaType + " should never happen here!");
 		}

@@ -29,12 +29,12 @@ public interface CisConversionService {
 	 * This will try to convert the given inputStream to a pdf.
 	 * <p>
 	 * The given document stream is <em>not</em> closed by this method.
-	 * 
+	 *
 	 * @param input
 	 * @param filename
 	 *            (without the path). Is used to detect mediatype and inform the
 	 *            user of the name of the file. Is allowed to be null.
-	 * @throws IOException 
+	 * @throws IOException
 	 * @throws CisConversionException
 	 *             when a failure occurs.
 	 */

@@ -81,7 +81,7 @@ class MailConvertor extends AbstractConvertor {
 	}
 
 	@Override
-	public void convert(MediaType mediaType, Message message, CisConversionResult result, String charset) throws Exception {
+	public void convert(MediaType mediaType, Message message, CisConversionResult result, String charset, boolean loadExternalResources) throws Exception {
 		MailMessage eml = null;
 
 		try (InputStream inputStream = message.asInputStream(charset)) {
@@ -98,9 +98,9 @@ class MailConvertor extends AbstractConvertor {
 			LOGGER.debug("subject : " + eml.getSubject());
 
 			MhtSaveOptions options = MhtSaveOptions.getDefaultMhtml();
-			options.setMhtFormatOptions(MhtFormatOptions.HideExtraPrintHeader | MhtFormatOptions.WriteHeader | 
-					MhtFormatOptions.WriteCompleteBccEmailAddress | MhtFormatOptions.WriteCompleteCcEmailAddress | 
-					MhtFormatOptions.WriteCompleteEmailAddress | MhtFormatOptions.WriteCompleteFromEmailAddress | 
+			options.setMhtFormatOptions(MhtFormatOptions.HideExtraPrintHeader | MhtFormatOptions.WriteHeader |
+					MhtFormatOptions.WriteCompleteBccEmailAddress | MhtFormatOptions.WriteCompleteCcEmailAddress |
+					MhtFormatOptions.WriteCompleteEmailAddress | MhtFormatOptions.WriteCompleteFromEmailAddress |
 					MhtFormatOptions.WriteCompleteToEmailAddress);
 			options.setPreserveOriginalDate(true);
 			// Overrules the default documentname.
@@ -144,11 +144,11 @@ class MailConvertor extends AbstractConvertor {
 						pdfAttachmentUtil.addAttachmentInSinglePdf();
 					} finally {
 						deleteFile(cisConversionResultAttachment.getPdfResultFile());
-						// Clear the file because it is now incorporated in the file it self. 
+						// Clear the file because it is now incorporated in the file it self.
 						cisConversionResultAttachment.setPdfResultFile(null);
 						cisConversionResultAttachment.setResultFilePath(null);
 					}
-					
+
 				}
 				result.addAttachment(cisConversionResultAttachment);
 			}

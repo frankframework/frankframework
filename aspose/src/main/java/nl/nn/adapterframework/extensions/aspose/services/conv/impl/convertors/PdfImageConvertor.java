@@ -78,7 +78,7 @@ public class PdfImageConvertor extends AbstractConvertor {
 	}
 
 	@Override
-	public void convert(MediaType mediaType, Message message, CisConversionResult result, String charset) throws Exception {
+	public void convert(MediaType mediaType, Message message, CisConversionResult result, String charset, boolean loadExternalResources) throws Exception {
 		if (!MEDIA_TYPE_LOAD_FORMAT_MAPPING.containsKey(mediaType)) {
 			throw new IllegalArgumentException("Unsupported mediaType " + mediaType + " should never happen here!");
 		}
@@ -95,7 +95,7 @@ public class PdfImageConvertor extends AbstractConvertor {
 			page.getPageInfo().getMargin().setLeft(PageConvertUtil.convertCmToPoints(marginInCm));
 			page.getPageInfo().getMargin().setRight(PageConvertUtil.convertCmToPoints(marginInCm));
 
-			// Temporary file (because first we need to get image information (the size) and than load it into 
+			// Temporary file (because first we need to get image information (the size) and than load it into
 			// the pdf. The image itself can not be loaded into the pdf because it will be blured with orange.
 			tmpImageFile = UniqueFileGenerator.getUniqueFile(getPdfOutputlocation(), this.getClass().getSimpleName(), mediaType.getSubtype());
 			image =  com.aspose.imaging.Image.load(message.asInputStream());
@@ -126,7 +126,7 @@ public class PdfImageConvertor extends AbstractConvertor {
 				}
 				Image pdfImage = new Image();
 				pdfImage.setFile(tmpImageFile.getAbsolutePath());
-				
+
 				// do not set scale if the image type is tiff
 				if (!mediaType.getSubtype().equalsIgnoreCase(TIFF)) {
 					pdfImage.setImageScale(scaleFactor);

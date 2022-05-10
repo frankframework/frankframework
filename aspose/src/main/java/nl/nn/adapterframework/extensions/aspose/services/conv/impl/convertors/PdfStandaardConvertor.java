@@ -36,7 +36,7 @@ public class PdfStandaardConvertor extends AbstractConvertor {
 	}
 
 	@Override
-	public void convert(MediaType mediaType, Message message, CisConversionResult result, String charset) throws Exception {
+	public void convert(MediaType mediaType, Message message, CisConversionResult result, String charset, boolean loadExternalResources) throws Exception {
 		Files.copy(message.asInputStream(charset), Paths.get(result.getPdfResultFile().getCanonicalPath()));
 		result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
 	}

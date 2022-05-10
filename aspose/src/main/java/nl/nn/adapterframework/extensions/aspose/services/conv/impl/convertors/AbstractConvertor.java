@@ -53,7 +53,7 @@ abstract class AbstractConvertor implements Convertor {
 		supportedMediaTypes = Arrays.asList(args);
 	}
 
-	protected abstract void convert(MediaType mediaType, Message file, CisConversionResult builder, String charset) throws Exception;
+	protected abstract void convert(MediaType mediaType, Message file, CisConversionResult builder, String charset, boolean loadExternalResources) throws Exception;
 
 	@Override
 	public List<MediaType> getSupportedMediaTypes() {
@@ -98,7 +98,7 @@ abstract class AbstractConvertor implements Convertor {
 	 * Should not be overloaded by the concrete classes.
 	 */
 	@Override
-	public final CisConversionResult convertToPdf(MediaType mediaType, String filename, Message message, ConversionOption conversionOption, String charset) {
+	public final CisConversionResult convertToPdf(MediaType mediaType, String filename, Message message, ConversionOption conversionOption, String charset, boolean loadExternalResources) {
 
 		checkForSupportedMediaType(mediaType);
 
@@ -113,7 +113,7 @@ abstract class AbstractConvertor implements Convertor {
 			result.setResultFilePath(resultFile.getAbsolutePath());
 
 			LOGGER.debug("Convert to file... " + filename);
-			convert(mediaType, message, result, charset);
+			convert(mediaType, message, result, charset, loadExternalResources);
 			LOGGER.debug("Convert to file finished. " + filename);
 
 		} catch (Exception e) {
@@ -131,7 +131,7 @@ abstract class AbstractConvertor implements Convertor {
 	protected String getPdfOutputlocation() {
 		return pdfOutputlocation;
 	}
-	
+
 	protected int getNumberOfPages(File file) throws IOException {
 		int result = 0;
 		if(file != null) {
@@ -142,7 +142,7 @@ abstract class AbstractConvertor implements Convertor {
 				throw e;
 			}
 		}
-		
+
 		return result;
 	}
 

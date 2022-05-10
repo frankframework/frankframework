@@ -34,9 +34,9 @@ public interface Convertor {
 	 * Converts the given file to a pdf. MediaType is the detected media type of the
 	 * file. The convertor should support the given mediatype (otherwise it gives
 	 * programming error).
-	 * @param charset 
-	 * 
+	 * @param charset
+	 *
 	 */
-	CisConversionResult convertToPdf(MediaType mediaType, String filename, Message message, ConversionOption conversionOption, String charset);
+	CisConversionResult convertToPdf(MediaType mediaType, String filename, Message message, ConversionOption conversionOption, String charset, boolean loadExternalResources);
 
 }

@@ -51,7 +51,7 @@ class CellsConvertor extends AbstractConvertor {
 	}
 
 	@Override
-	public void convert(MediaType mediaType, Message message, CisConversionResult result, String charset) throws Exception {
+	public void convert(MediaType mediaType, Message message, CisConversionResult result, String charset, boolean loadExternalResources) throws Exception {
 		// Convert Excel to pdf and store in result
 		try (InputStream inputStream = message.asInputStream(charset)) {
 			Workbook workbook = new Workbook(inputStream);

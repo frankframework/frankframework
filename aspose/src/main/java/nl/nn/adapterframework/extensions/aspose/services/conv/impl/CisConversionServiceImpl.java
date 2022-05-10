@@ -17,6 +17,8 @@ package nl.nn.adapterframework.extensions.aspose.services.conv.impl;
 
 import java.io.IOException;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
@@ -42,13 +44,15 @@ public class CisConversionServiceImpl implements CisConversionService {
 	private MediaTypeValidator mediaTypeValidator;
 	private String fontsDirectory;
 	private String charset;
+	private @Setter @Getter boolean loadExternalResources;
 
-	public CisConversionServiceImpl(String pdfOutputLocation, String fontsDirectory, String charset) {
+	public CisConversionServiceImpl(String pdfOutputLocation, String fontsDirectory, String charset, boolean loadExternalResources) {
 		this.pdfOutputlocation = pdfOutputLocation;
 		this.setFontsDirectory(fontsDirectory);
 		convertorFactory = new ConvertorFactory(this, pdfOutputlocation);
 		mediaTypeValidator = new MediaTypeValidator();
 		this.charset=charset;
+		this.loadExternalResources = loadExternalResources;
 	}
 
 	@Override
@@ -75,7 +79,7 @@ public class CisConversionServiceImpl implements CisConversionService {
 			} else {
 				long startTime = System.currentTimeMillis();
 				// Convertor found, convert the file
-				result = convertor.convertToPdf(mediaType, filename, message, conversionOption, charset);
+				result = convertor.convertToPdf(mediaType, filename, message, conversionOption, charset, loadExternalResources);
 				if(LOGGER.isDebugEnabled()) LOGGER.debug(String.format("Convert (in %d msec): mediatype: %s, filename: %s, attachmentoptions: %s", System.currentTimeMillis() - startTime, mediaType, filename, conversionOption));
 			}
 		}
