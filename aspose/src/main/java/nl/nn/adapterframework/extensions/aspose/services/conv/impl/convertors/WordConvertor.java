@@ -84,7 +84,7 @@ class WordConvertor extends AbstractConvertor {
 		}
 
 		try (InputStream inputStream = message.asInputStream(charset)) {
-			HtmlLoadOptions loadOptions = (HtmlLoadOptions) MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType);
+			LoadOptions loadOptions = MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType);
 			if(!loadExternalResources){
 				loadOptions.setResourceLoadingCallback(new OfflineResourceLoader());
 			}
