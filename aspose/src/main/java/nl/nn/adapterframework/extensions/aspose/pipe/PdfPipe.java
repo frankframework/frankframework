@@ -65,7 +65,7 @@ public class PdfPipe extends FixedForwardPipe {
 	private @Getter String charset = null;
 	private AsposeFontManager fontManager;
 	private @Getter boolean unpackDefaultFonts = false;
-	private @Getter boolean loadExternalResources = true;
+	private @Getter boolean loadExternalResources = false;
 
 	private CisConversionService cisConversionService;
 
@@ -211,7 +211,7 @@ public class PdfPipe extends FixedForwardPipe {
 		this.pdfOutputLocation = pdfOutputLocation;
 	}
 
-	@IbisDoc({ "when set to true, external resources, such as stylesheets and images found in HTML pages, will be loaded from the internet", "true" })
+	@IbisDoc({ "when set to true, external resources, such as stylesheets and images found in HTML pages, will be loaded from the internet", "false" })
 	public void setLoadExternalResources(boolean loadExternalResources) {
 		this.loadExternalResources = loadExternalResources;
 	}
