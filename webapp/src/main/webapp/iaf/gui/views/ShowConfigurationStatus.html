@@ -242,8 +242,8 @@
                                    	<span ng-if="adapter.sendersMessageLogCount > 0" class="text-success" title="Total # of messages processed by senders that have a messagelog">
                                     &nbsp<i class="fa fa-database"></i> ({{adapter.sendersMessageLogCount}})
                                    </span>
-                                   	<span ng-if="adapter.messageStoreSenderCount > 0" class="text-primary" title="Total # of messages in messageStoreSenders">
-                                    &nbsp<i class="fa fa-sign-out"></i> ({{adapter.messageStoreSenderCount}})
+                                   	<span ng-if="adapter.senderTransactionalStorageMessageCount > 0" class="text-primary" title="Total # of messages in messageStoreSenders">
+                                    &nbsp<i class="fa fa-sign-out"></i> ({{adapter.senderTransactionalStorageMessageCount}})
                                    </span>
                                 </div>
                             </div>
@@ -394,9 +394,9 @@
                                             <td>{{::pipes.sender}}<span ng-if="pipes.destination" title="{{::pipes.destination}"> ({{::pipes.destination|truncate:150}})</span></td>
                                             <td>
                                                 <span class="pull-right">
-                                                    <span ng-class="pipes.messageStoreSender ? 'text-primary' : 'text-success'">
+                                                    <span ng-class="pipes.isSenderTransactionalStorage ? 'text-primary' : 'text-success'">
                                                         <button ng-show="{{pipes.hasMessageLog}}" ui-lref="pages.storage.list({adapter: adapter.name, storageSource: 'pipes', storageSourceName: pipes.name, processState: 'Done'})" class="btn btn-xs btn-default m-l-xs" type="button">
-                                                            <i ng-class="pipes.messageStoreSender ? 'fa fa-sign-out' : 'fa fa-database'"></i> ({{::pipes.messageLogCount}})
+                                                            <i ng-class="pipes.isSenderTransactionalStorage ? 'fa fa-sign-out' : 'fa fa-database'"></i> ({{::pipes.messageLogCount}})
                                                         </button>
                                                     </span>
                                                 </span>

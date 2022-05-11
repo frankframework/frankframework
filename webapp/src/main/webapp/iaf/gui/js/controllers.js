@@ -271,7 +271,7 @@ angular.module('iaf.beheerconsole')
 					}
 					adapter.hasSender = false;
 					adapter.sendersMessageLogCount=0;
-					adapter.messageStoreSenderCount=0;
+					adapter.senderTransactionalStorageMessageCount=0;
 					for(x in adapter.pipes) {
 						let pipe = adapter.pipes[x];
 						if(pipe.sender) {
@@ -279,8 +279,8 @@ angular.module('iaf.beheerconsole')
 							if(pipe.hasMessageLog) {
 								let count = parseInt(pipe.messageLogCount);
 								if (!Number.isNaN(count)){
-									if(pipe.messageStoreSender) {
-										adapter.messageStoreSenderCount += count;
+									if(pipe.isSenderTransactionalStorage) {
+										adapter.senderTransactionalStorageMessageCount += count;
 									} else {
 										adapter.sendersMessageLogCount += count;
 									}
