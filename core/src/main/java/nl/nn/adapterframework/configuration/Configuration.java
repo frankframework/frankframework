@@ -177,9 +177,9 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 		setVersion(ConfigurationUtils.getConfigurationVersion(getClassLoader()));
 		if(StringUtils.isEmpty(getVersion())) {
-			log.info("unable to determine [configuration.version] for configuration [{}]", ()-> getName());
+			log.info("unable to determine [configuration.version] for configuration [{}]", this::getName);
 		} else {
-			log.debug("configuration [{}] found currentConfigurationVersion [{}]", ()-> getName(), ()-> getVersion());
+			log.debug("configuration [{}] found currentConfigurationVersion [{}]", this::getName, this::getVersion);
 		}
 
 		super.afterPropertiesSet(); //Triggers a context refresh
@@ -193,7 +193,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		}
 
 		ibisManager.addConfiguration(this); //Only if successfully refreshed, add the configuration
-		log.info("initialized Configuration [{}] with ClassLoader [{}]", ()-> toString(), ()-> getClassLoader());
+		log.info("initialized Configuration [{}] with ClassLoader [{}]", this::toString, this::getClassLoader);
 	}
 
 	/**
@@ -220,7 +220,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		if(type.isAssignableFrom(ApplicationListener.class)) {
 			List<String> blacklist = Arrays.asList(super.getBeanNamesForType(LazyLoadingEventListener.class, includeNonSingletons, allowEagerInit));
 			List<String> beanNames = Arrays.asList(super.getBeanNamesForType(type, includeNonSingletons, allowEagerInit));
-			log.info("removing LazyLoadingEventListeners "+blacklist+" from Spring auto-magic event-based initialization");
+			log.info("removing LazyLoadingEventListeners {} from Spring auto-magic event-based initialization", blacklist);
 
 			return beanNames.stream().filter(str -> !blacklist.contains(str)).toArray(String[]::new);
 		}
@@ -247,7 +247,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
-		log.info("configuring configuration ["+getId()+"]");
+		log.info("configuring configuration [{}]", this::getId);
 		state = BootState.STARTING;
 		long start = System.currentTimeMillis();
 
@@ -419,7 +419,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		adapter.setConfiguration(this);
 		adapterManager.registerAdapter(adapter);
 
-		log.debug("Configuration [" + getName() + "] registered adapter [" + adapter.toString() + "]");
+		log.debug("Configuration [{}] registered adapter [{}]", this::getName, adapter::toString);
 	}
 
 	// explicitly in this position, to have the right location in the XSD
@@ -444,7 +444,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	public void registerStatisticsHandler(StatisticsKeeperIterationHandler handler) throws ConfigurationException {
-		log.debug("registerStatisticsHandler() registering ["+ClassUtils.nameOf(handler)+"]");
+		log.debug("registerStatisticsHandler() registering [{}]", ()->ClassUtils.nameOf(handler));
 		statisticsHandler=handler;
 		handler.configure();
 	}
@@ -462,7 +462,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	public void setName(String name) {
 		if(StringUtils.isNotEmpty(name)) {
 			if(state == BootState.STARTING && !getName().equals(name)) {
-				publishEvent(new ConfigurationMessageEvent(this, "configuration name ["+getName()+"] does not match XML name attribute ["+name+"]", MessageKeeperLevel.WARN));
+				publishEvent(new ConfigurationMessageEvent(this, "name ["+getName()+"] does not match XML name attribute ["+name+"]", MessageKeeperLevel.WARN));
 			}
 			setBeanName(name);
 		}
@@ -476,7 +476,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	public void setVersion(String version) {
 		if(StringUtils.isNotEmpty(version)) {
 			if(state == BootState.STARTING && this.version != null && !this.version.equals(version)) {
-				publishEvent(new ConfigurationMessageEvent(this, "configuration version ["+this.version+"] does not match XML version attribute ["+version+"]", MessageKeeperLevel.WARN));
+				publishEvent(new ConfigurationMessageEvent(this, "version ["+this.version+"] does not match XML version attribute ["+version+"]", MessageKeeperLevel.WARN));
 			}
 
 			this.version = version;

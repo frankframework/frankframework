@@ -30,7 +30,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.http.rest.ApiCacheManager;
 import nl.nn.adapterframework.pipes.JsonPipe;
 import nl.nn.adapterframework.pipes.JsonPipe.Direction;
 import nl.nn.adapterframework.stream.Message;
@@ -160,7 +159,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		}
 
 		if(!requestContext.containsKey("etag") && isGenerateEtag() && eTag != 0) { //The etag can be a negative integer...
-			requestContext.put("etag", ApiCacheManager.buildEtag(getRestPath()+"/"+getUriPattern(), eTag));
+			requestContext.put("etag", "rest_"+eTag);
 		}
 
 		return response;
