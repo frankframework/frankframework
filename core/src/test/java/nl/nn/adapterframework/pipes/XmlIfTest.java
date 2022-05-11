@@ -3,7 +3,6 @@ package nl.nn.adapterframework.pipes;
 
 import static org.junit.Assert.assertEquals;
 
-
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -15,8 +14,12 @@ import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.util.TransformerPoolTest;
 
 public class XmlIfTest extends PipeTestBase<XmlIf>{
+
+	private String NAMESPACE_UNAWARENESS_XPATH = TransformerPoolTest.NAMESPACELESS_XPATH;
+	private String NAMESPACE_UNAWARENESS_INPUT = TransformerPoolTest.NAMESPACED_INPUT_MESSAGE;
 
 	private String pipeForwardThen = "then";
 	private String pipeForwardElse = "else";
@@ -471,4 +474,24 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		PipeRunResult prr = doPipe(pipe, TestFileUtils.getTestFileURL("/Xslt/AnyXml/in.xml").openStream(), session);
 		assertEquals(thenPipeName, prr.getPipeForward().getName());
 	}
+	
+	@Test
+	public void testNamespaceAwareWithXpath() throws Exception {
+		testNamespaceUnawareness(true, pipeForwardThen);
+	}
+
+	@Test
+	public void testNotNamespaceAwareWithXpath() throws Exception {
+		testNamespaceUnawareness(false, pipeForwardThen);
+	}
+
+
+	public void testNamespaceUnawareness(boolean namespaceAware, String expectedForward) throws Exception {
+		pipe.setXpathExpression(NAMESPACE_UNAWARENESS_XPATH);
+		configureAndStartPipe();
+		
+		PipeRunResult prr = doPipe(NAMESPACE_UNAWARENESS_INPUT);
+		assertEquals(expectedForward, prr.getPipeForward().getName());
+	}
+
 }
