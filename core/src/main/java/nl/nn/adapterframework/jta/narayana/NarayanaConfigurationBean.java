@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.jta.narayana;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
@@ -34,10 +36,28 @@ public class NarayanaConfigurationBean implements InitializingBean {
 	private class NarayanaPropertiesFactory extends PropertiesFactoryStax {
 		@Override
 		public Properties getPropertiesFromFile(String propertyFileName, ClassLoader classLoader) {
-			Properties properties = super.getPropertiesFromFile(propertyFileName, classLoader); //Loads the default narayana-jta.jar/jbossts-properties.xml properties.
+			Properties properties;
+			try {
+				properties = super.getPropertiesFromFile(propertyFileName, classLoader); //Loads the default narayana-jta.jar/jbossts-properties.xml properties.
+			} catch (Throwable t) {
+				log.warn("unable to load properties file, manually trying to set default values", t);
+				properties = readXmlFile(propertyFileName);
+			}
 			properties.putAll(AppConstants.getInstance()); //Override with properties set in the Ibis
 			properties.putAll(customProperties); //Override with spring configured properties
 			return properties;
+		}
+
+		private Properties readXmlFile(String propertyFileName) {
+			Properties outputProperties = new Properties();
+			Properties tempProperties = new Properties();
+			try (InputStream is = NarayanaConfigurationBean.class.getClassLoader().getResourceAsStream(propertyFileName)) {
+				loadFromXML(tempProperties, is);
+			} catch (IOException e) {
+				log.error("unable to read XML file ["+propertyFileName+"]", e);
+			}
+			tempProperties.forEach((k, v) -> outputProperties.put(k, ((String)v).trim()));
+			return outputProperties;
 		}
 	}
 

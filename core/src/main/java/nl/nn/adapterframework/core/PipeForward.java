@@ -19,23 +19,30 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import lombok.Getter;
 import nl.nn.adapterframework.doc.Mandatory;
+import nl.nn.adapterframework.pipes.AbstractPipe;
+import nl.nn.adapterframework.pipes.FixedResultPipe;
 
 /**
- * Bean that knows a functional name of a Forward, to be referred by
- * other Pipes and the PipeLine.
- * <br/>
- * The <code>name</code> is the name which a Pipe may lookup to return
- * to the PipeLine, indicating the next pipe to be executed. (this is done
- * in the {@link nl.nn.adapterframework.pipes.AbstractPipe#findForward(String) findForward()}-method. The actual
- * pipeName is defined in the <code>path</code> property. The <code>path</code> property
- * can also reference an {@link PipeLineExit Exit} when no other pipe should execute.<br/><br/> 
- * In this manner it is possible to influence the flow through the pipeline
- * without affecting the Java-code. Simply change the forwarding-XML.<br/>
+ * Appears inside a pipe and defines what pipe or exit to execute next. When the
+ * execution of a pipe is done, the pipe looks up the next pipe or exit to execute.
+ * This pipe or exit is searched based on a key that describes what happened during
+ * pipe execution. For example a {@link FixedResultPipe} searches for key
+ * <code>filenotfound</code> if it tried to read a file that did not exist,
+ * preventing it from producing the desired output message. If there was
+ * no error, the {@link FixedResultPipe} searches for key <code>success</code>.
+ * <br/><br/>
+ * Each <code>&lt;Forward&gt;</code> tag is used to link a search key (<code>name</code> attribute)
+ * to a pipe or exit to execute next (<code>path</code> attribute). The forward's <code>path</code>
+ * attribute references the target pipe or exit by its <code>name</code> attribute, see
+ * {@link AbstractPipe} and {@link PipeLineExit}. For most pipes and most keys, the next
+ * pipe is executed if no forward is found. By default, the pipes in a pipeline are executed consecutively.
  *
  * @author Johan Verrips
  * @see PipeLine
  * @see nl.nn.adapterframework.pipes.AbstractPipe#findForward
+ *
  */
+// Looking up the next pipe or exit is done by method AbstractPipe.findForward(String)
 public class PipeForward {
 
 	public final static String SUCCESS_FORWARD_NAME = "success";
