@@ -60,7 +60,7 @@ public class XmlSwitch extends AbstractPipe {
 	private @Getter String emptyForwardName = null;
 	private @Getter int xsltVersion = 0; // set to 0 for auto detect.
 	private @Getter String forwardNameSessionKey = null;
-	private @Getter boolean namespaceAware=true;
+	private @Getter boolean namespaceAware = XmlUtils.isNamespaceAwareByDefault();
 
 	private TransformerPool transformerPool = null;
 

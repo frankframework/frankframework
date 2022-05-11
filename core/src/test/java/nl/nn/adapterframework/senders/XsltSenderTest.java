@@ -24,6 +24,14 @@ import nl.nn.adapterframework.util.TransformerPoolTest;
 
 public class XsltSenderTest extends SenderTestBase<XsltSender> {
 
+	String NAMESPACE_UNAWARENESS_STYLESHEET = TransformerPoolTest.NAMESPACELESS_STYLESHEET;
+	String NAMESPACE_UNAWARENESS_XPATH = TransformerPoolTest.NAMESPACELESS_XPATH;
+	String NAMESPACE_UNAWARENESS_INPUT = TransformerPoolTest.NAMESPACED_INPUT_MESSAGE;
+	String NAMESPACE_UNAWARE_EXPECTED_RESULT = TransformerPoolTest.NAMESPACE_INSENSITIVE_RESULT;
+	String NAMESPACE_COMPLIANT_RESULT = TransformerPoolTest.NAMESPACE_COMPLIANT_RESULT;
+	String NAMESPACE_UNAWARE_EXPECTED_FIRST_RESULT = TransformerPoolTest.NAMESPACE_INSENSITIVE_FIRST_RESULT;
+
+
 	@Override
 	public XsltSender createSender() {
 		return new XsltSender();
@@ -285,13 +293,6 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 //		Diff diff = XMLUnit.compareXML(expected, actual);
 //		assertTrue(diff.toString(), diff.similar());
 	}
-
-	String NAMESPACE_UNAWARENESS_STYLESHEET = TransformerPoolTest.NAMESPACELESS_STYLESHEET;
-	String NAMESPACE_UNAWARENESS_XPATH = TransformerPoolTest.NAMESPACELESS_XPATH;
-	String NAMESPACE_UNAWARENESS_INPUT = TransformerPoolTest.NAMESPACED_INPUT_MESSAGE;
-	String NAMESPACE_UNAWARE_EXPECTED_RESULT = TransformerPoolTest.NAMESPACE_INSENSITIVE_RESULT;
-	String NAMESPACE_COMPLIANT_RESULT = TransformerPoolTest.NAMESPACE_COMPLIANT_RESULT;
-	String NAMESPACE_UNAWARE_EXPECTED_FIRST_RESULT = TransformerPoolTest.NAMESPACE_INSENSITIVE_FIRST_RESULT;
 
 	@Test
 	public void testNamespaceAwareWithXpath() throws Exception {
