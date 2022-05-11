@@ -249,9 +249,9 @@ public class ParameterTest {
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, session, false);
-		assertTrue(result instanceof InputStream);
+		assertTrue(result instanceof Message);
 
-		assertEquals(sessionMessage, Message.asMessage(result).asString());
+		assertEquals(sessionMessage, ((Message) result).asString());
 	}
 
 	@Test
