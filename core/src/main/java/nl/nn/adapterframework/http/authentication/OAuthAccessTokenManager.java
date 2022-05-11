@@ -36,6 +36,7 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 
 import com.nimbusds.oauth2.sdk.AccessTokenResponse;
 import com.nimbusds.oauth2.sdk.AuthorizationGrant;
@@ -149,7 +150,7 @@ public class OAuthAccessTokenManager {
 			// accessToken will be refreshed when it is half way expiration
 			accessTokenRefreshTime = System.currentTimeMillis() + expiryMs<0 ? 500 * accessToken.getLifetime() : expiryMs;
 		} catch (ParseException e) {
-			throw new HttpAuthenticationException("Could not parse TokenResponse: "+httpResponse, e);
+			throw new HttpAuthenticationException("Could not parse TokenResponse: "+httpResponse.getContent(), e);
 		}
 	}
 
@@ -188,8 +189,15 @@ public class OAuthAccessTokenManager {
 	private HTTPResponse convertFromApacheHttpResponse(CloseableHttpResponse apacheHttpResponse) throws HttpAuthenticationException, UnsupportedOperationException, IOException {
 		StatusLine statusLine = apacheHttpResponse.getStatusLine();
 
+		String responseBody = null;
+		HttpEntity entity = apacheHttpResponse.getEntity();
+		if(entity != null) {
+			responseBody = StreamUtil.streamToString(entity.getContent(), null, null);
+			EntityUtils.consume(entity);
+		}
+
 		if (statusLine.getStatusCode()!=200) {
-			throw new HttpAuthenticationException("Could not retrieve token: ("+statusLine.getStatusCode()+") "+statusLine.getReasonPhrase());
+			throw new HttpAuthenticationException("Could not retrieve token: ("+statusLine.getStatusCode()+") "+statusLine.getReasonPhrase()+": "+responseBody);
 		}
 
 		HTTPResponse httpResponse = new HTTPResponse(statusLine.getStatusCode());
@@ -198,9 +206,7 @@ public class OAuthAccessTokenManager {
 			httpResponse.setHeader(header.getName(), header.getValue());
 		}
 
-		HttpEntity entity = apacheHttpResponse.getEntity();
-		if(entity != null) {
-			String responseBody = StreamUtil.streamToString(entity.getContent(), null, null);
+		if(responseBody != null) {
 			httpResponse.setContent(responseBody);
 		}
 		return httpResponse;
