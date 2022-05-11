@@ -11,7 +11,7 @@
         }
     ],
     "paths":{
-        "/nestedChoices":{
+        "/multipleChoices":{
             "post":{
                 "summary":"description4simple-get",
                 "requestBody":{
@@ -40,23 +40,17 @@
             },
             "EmbeddedChoiceType":{
                 "type":"object",
-                "oneOf":[
+                "allOf":[
                     {
-                        "anyOf":[
+                        "oneOf":[
                             {
+                                "required":[
+                                    "BusinessPartnerId"
+                                ]
                             },
                             {
-                                "oneOf":[
-                                    {
-                                        "required":[
-                                            "BusinessPartnerId"
-                                        ]
-                                    },
-                                    {
-                                        "required":[
-                                            "Qualifier"
-                                        ]
-                                    }
+                                "required":[
+                                    "Qualifier"
                                 ]
                             }
                         ]

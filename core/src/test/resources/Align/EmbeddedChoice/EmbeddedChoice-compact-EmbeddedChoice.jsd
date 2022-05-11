@@ -8,21 +8,15 @@
         },
         "EmbeddedChoiceType":{
             "type":"object",
-            "anyOf":[
+            "oneOf":[
                 {
+                    "required":[
+                        "BusinessPartnerId"
+                    ]
                 },
                 {
-                    "oneOf":[
-                        {
-                            "required":[
-                                "BusinessPartnerId"
-                            ]
-                        },
-                        {
-                            "required":[
-                                "Qualifier"
-                            ]
-                        }
+                    "required":[
+                        "Qualifier"
                     ]
                 }
             ],
