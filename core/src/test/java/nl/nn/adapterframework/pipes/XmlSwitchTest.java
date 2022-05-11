@@ -75,7 +75,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		inputParameter.setName("source");
 		inputParameter.setType(ParameterType.DOMDOC);
 		inputParameter.setRemoveNamespaces(true);
-		
+
 		pipe.addParameter(inputParameter);
 		pipe.setXsltVersion(1);
 		pipe.setXpathExpression("$source/Envelope/Body/SetRequest/CaseData/CASE_ID");
@@ -131,7 +131,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 
 		testSwitch(new Message("<dummy/>"),"true");
 	}
-	
+
 	@Test
 	public void testXsltVersionAutoDetect() throws Exception {
 		String message = "<root>2</root>";
@@ -182,7 +182,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		Message input=TestFileUtils.getTestFileMessage("/XmlSwitch/in.xml");
 		testSwitch(input,"selectValue");
 	}
-	
+
 	@Test
 	public void storeForwardInSessionKey() throws Exception {
 		pipe.registerForward(new PipeForward("Envelope","Envelope-Path"));
@@ -300,7 +300,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 
 	@Test
 	public void testNamespaceUnawareWithStylesheetXslt2() throws Exception {
-		testNamespaceAwarenessWithStylesheet(2, false, "1");
+		testNamespaceAwarenessWithStylesheet(2, false, "NF"); // should not set XsltVersion=2 explicitly if you want a namespace unaware XSLT 1.0 stylesheet transformation.
 	}
 
 	@Test

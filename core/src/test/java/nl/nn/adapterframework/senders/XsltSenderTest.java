@@ -20,6 +20,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
+import nl.nn.adapterframework.util.TransformerPoolTest;
 
 public class XsltSenderTest extends SenderTestBase<XsltSender> {
 
@@ -285,44 +286,47 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 //		assertTrue(diff.toString(), diff.similar());
 	}
 
+	String NAMESPACE_UNAWARENESS_STYLESHEET = TransformerPoolTest.NAMESPACELESS_STYLESHEET;
+	String NAMESPACE_UNAWARENESS_XPATH = TransformerPoolTest.NAMESPACELESS_XPATH;
+	String NAMESPACE_UNAWARENESS_INPUT = TransformerPoolTest.NAMESPACED_INPUT_MESSAGE;
+	String NAMESPACE_UNAWARE_EXPECTED_RESULT = TransformerPoolTest.NAMESPACE_INSENSITIVE_RESULT;
+	String NAMESPACE_COMPLIANT_RESULT = TransformerPoolTest.NAMESPACE_COMPLIANT_RESULT;
+	String NAMESPACE_UNAWARE_EXPECTED_FIRST_RESULT = TransformerPoolTest.NAMESPACE_INSENSITIVE_FIRST_RESULT;
+
 	@Test
 	public void testNamespaceAwareWithXpath() throws Exception {
-		testNamespaceAwarenessHelper(true, "", "test");
+		testNamespaceUnawareness(true, NAMESPACE_UNAWARE_EXPECTED_RESULT, true);
 	}
 
 	@Test
 	public void testNotNamespaceAwareWithXpath() throws Exception {
-		// I want to keep the namespaces in the result xml
-		testNamespaceAwarenessHelper(false, "<test xmlns=\"http://dummy\">\n"
-				+ "	<innerTest xmlns=\"urn\">1</innerTest>\n"
-				+ "</test>", "test");
+		// I would like to keep the namespaces in the result xml, but that is not possible anymore.
+		testNamespaceUnawareness(false, NAMESPACE_UNAWARE_EXPECTED_RESULT, true);
 	}
 
 	@Test
 	public void testNamespaceAwareWithStyleSheet() throws Exception {
-		testNamespaceAwarenessHelper(true, "", null);
+		testNamespaceUnawareness(true, NAMESPACE_COMPLIANT_RESULT, false);
 	}
 
 	@Test
 	public void testNotNamespaceAwareWithStyleSheet() throws Exception {
-		testNamespaceAwarenessHelper(false, "<test xmlns=\"http://dummy\">\n"
-				+ "	<innerTest xmlns=\"urn\">1</innerTest>\n"
-				+ "</test>", null);
+		testNamespaceUnawareness(false, NAMESPACE_UNAWARE_EXPECTED_FIRST_RESULT, false);
 	}
 
-	public void testNamespaceAwarenessHelper(boolean namespaceAware, String expected, String xpath) throws Exception {
-		if(xpath != null) {
-			sender.setXpathExpression(xpath);
+	public void testNamespaceUnawareness(boolean namespaceAware, String expected, boolean usingXpath) throws Exception {
+		if(usingXpath) {
+			sender.setXpathExpression(NAMESPACE_UNAWARENESS_XPATH);
 		} else {
-			sender.setStyleSheetName("/XmlSwitch/selection.xsl");
+			sender.setStyleSheetName(NAMESPACE_UNAWARENESS_STYLESHEET);
 		}
 		sender.setIndentXml(true);
-		sender.setOutputType(OutputType.XML);
+		sender.setOutputType(OutputType.TEXT);
 		sender.setOmitXmlDeclaration(true);
 		sender.setNamespaceAware(namespaceAware);
 		sender.configure();
 		sender.open();
-		Message input=new Message("<test xmlns=\"http://dummy\"><innerTest xmlns=\"urn\">1</innerTest></test>");
+		Message input=new Message(NAMESPACE_UNAWARENESS_INPUT);
 
 		String actual = sender.sendMessage(input, session).asString();
 

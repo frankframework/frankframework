@@ -362,7 +362,14 @@ public class TransformerPool {
 	}
 
 	public String transform(Message m, Map<String,Object> parameters, boolean namespaceAware) throws TransformerException, IOException, SAXException {
-		return transform(XmlUtils.inputSourceToSAXSource(m.asInputSource(),namespaceAware, null), parameters);
+		if (namespaceAware) {
+			return transform(XmlUtils.inputSourceToSAXSource(m.asInputSource(),namespaceAware, null), parameters);
+		}
+		try {
+			return transform(XmlUtils.stringToSource(m.asString(),namespaceAware), parameters);
+		} catch (DomBuilderException e) {
+			throw new TransformerException(e);
+		}
 	}
 
 	public String transform(String s, Map<String,Object> parameters) throws TransformerException, IOException, SAXException {
@@ -426,18 +433,22 @@ public class TransformerPool {
 	}
 	
 	public TransformerHandler getTransformerHandler() throws TransformerConfigurationException {
-	      TransformerHandler handler = ((SAXTransformerFactory)tFactory).newTransformerHandler(templates);
-	      Transformer transformer = handler.getTransformer();
-	      transformer.setErrorListener(new TransformerErrorListener());
+		TransformerHandler handler = ((SAXTransformerFactory)tFactory).newTransformerHandler(templates);
+		Transformer transformer = handler.getTransformer();
+		transformer.setErrorListener(new TransformerErrorListener());
 			// Set URIResolver on transformer for Xalan. Setting it on the factory
 			// doesn't work for Xalan. See
 			// https://www.oxygenxml.com/archives/xsl-list/200306/msg00021.html
-	      transformer.setURIResolver(classLoaderURIResolver);
-	      return handler;
+		transformer.setURIResolver(classLoaderURIResolver);
+		return handler;
 	}
 
 	public TransformerFilter getTransformerFilter(ThreadConnector<?> threadConnector, ContentHandler handler) throws TransformerConfigurationException {
-		return new TransformerFilter(threadConnector, getTransformerHandler(), handler);
+		return getTransformerFilter(threadConnector, handler, false);
+	}
+	
+	public TransformerFilter getTransformerFilter(ThreadConnector<?> threadConnector, ContentHandler handler, boolean removeNamespacesFromInput) throws TransformerConfigurationException {
+		return new TransformerFilter(threadConnector, getTransformerHandler(), handler, removeNamespacesFromInput);
 	}
 
 	public Map<String,String> getConfigMap() throws TransformerException, IOException, SAXException {
