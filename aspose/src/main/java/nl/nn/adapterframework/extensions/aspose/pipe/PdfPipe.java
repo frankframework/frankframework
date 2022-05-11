@@ -21,6 +21,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionOptions;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -124,7 +125,8 @@ public class PdfPipe extends FixedForwardPipe {
 			throw new ConfigurationException("an error occured while loading fonts", e);
 		}
 
-		cisConversionService = new CisConversionServiceImpl(getPdfOutputLocation(), fontManager.getFontsPath(), getCharset(), loadExternalResources);
+		CisConversionOptions options = new CisConversionOptions(loadExternalResources, getPdfOutputLocation(), getCharset(), fontManager.getFontsPath());
+		cisConversionService = new CisConversionServiceImpl(options);
 	}
 
 	@Override

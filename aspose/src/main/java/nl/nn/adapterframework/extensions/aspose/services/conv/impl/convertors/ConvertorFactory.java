@@ -18,6 +18,7 @@ package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 import java.util.HashMap;
 import java.util.Map;
 
+import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionOptions;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
 
@@ -36,14 +37,14 @@ public class ConvertorFactory {
 
 	private Map<MediaType, Convertor> convertorLookupMap = new HashMap<>();
 
-	public ConvertorFactory(CisConversionService cisConversionService, String pdfOutputlocation, boolean loadExternalResources) {
-		addToConvertorLookupMap(new MailConvertor(cisConversionService, pdfOutputlocation, loadExternalResources));
-		addToConvertorLookupMap(new PdfStandaardConvertor(pdfOutputlocation, loadExternalResources));
-		addToConvertorLookupMap(new PdfConvertor(pdfOutputlocation, loadExternalResources));
-		addToConvertorLookupMap(new PdfImageConvertor(pdfOutputlocation, loadExternalResources));
-		addToConvertorLookupMap(new WordConvertor(cisConversionService, pdfOutputlocation, loadExternalResources));
-		addToConvertorLookupMap(new CellsConvertor(pdfOutputlocation, loadExternalResources));
-		addToConvertorLookupMap(new SlidesConvertor(pdfOutputlocation, loadExternalResources));
+	public ConvertorFactory(CisConversionService cisConversionService, CisConversionOptions options) {
+		addToConvertorLookupMap(new MailConvertor(cisConversionService, options));
+		addToConvertorLookupMap(new PdfStandaardConvertor(options));
+		addToConvertorLookupMap(new PdfConvertor(options));
+		addToConvertorLookupMap(new PdfImageConvertor(options));
+		addToConvertorLookupMap(new WordConvertor(cisConversionService, options));
+		addToConvertorLookupMap(new CellsConvertor(options));
+		addToConvertorLookupMap(new SlidesConvertor(options));
 	}
 
 	private void addToConvertorLookupMap(Convertor convertor) {

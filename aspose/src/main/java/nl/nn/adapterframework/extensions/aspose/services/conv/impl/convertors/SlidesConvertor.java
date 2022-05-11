@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionOptions;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
 
@@ -51,8 +52,8 @@ public class SlidesConvertor extends AbstractConvertor {
 		MEDIA_TYPE_LOAD_FORMAT_MAPPING = Collections.unmodifiableMap(map);
 	}
 
-	protected SlidesConvertor(String pdfOutputLocation, boolean loadExternalResources) {
-		super(pdfOutputLocation, loadExternalResources, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[MEDIA_TYPE_LOAD_FORMAT_MAPPING.size()]));
+	protected SlidesConvertor(CisConversionOptions options) {
+		super(options, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[MEDIA_TYPE_LOAD_FORMAT_MAPPING.size()]));
 	}
 
 	@Override

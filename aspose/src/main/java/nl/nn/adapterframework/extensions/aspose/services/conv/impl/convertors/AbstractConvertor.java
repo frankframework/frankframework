@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionOptions;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
 
@@ -44,13 +45,11 @@ abstract class AbstractConvertor implements Convertor {
 
 	private static final Logger LOGGER = LogUtil.getLogger(AbstractConvertor.class);
 	private List<MediaType> supportedMediaTypes;
-	private String pdfOutputlocation;
+	protected CisConversionOptions options;
 	private static AtomicInteger atomicCount = new AtomicInteger(1);
-	protected @Setter @Getter boolean loadExternalResources;
 
-	protected AbstractConvertor(String pdfOutputlocation, boolean loadExternalResources, MediaType... args) {
-		this.pdfOutputlocation = pdfOutputlocation;
-		this.loadExternalResources = loadExternalResources;
+	protected AbstractConvertor(CisConversionOptions options, MediaType... args) {
+		this.options = options;
 		supportedMediaTypes = Arrays.asList(args);
 	}
 
@@ -106,7 +105,7 @@ abstract class AbstractConvertor implements Convertor {
 		CisConversionResult result = new CisConversionResult();
 		File resultFile = null;
 		try {
-			resultFile = UniqueFileGenerator.getUniqueFile(pdfOutputlocation, this.getClass().getSimpleName(), "pdf");
+			resultFile = UniqueFileGenerator.getUniqueFile(getPdfOutputlocation(), this.getClass().getSimpleName(), "pdf");
 			result.setConversionOption(conversionOption);
 			result.setMediaType(mediaType);
 			result.setDocumentName(ConvertorUtil.createTidyNameWithoutExtension(filename));
@@ -130,7 +129,7 @@ abstract class AbstractConvertor implements Convertor {
 	}
 
 	protected String getPdfOutputlocation() {
-		return pdfOutputlocation;
+		return options.getPdfOutputlocation();
 	}
 
 	protected int getNumberOfPages(File file) throws IOException {
@@ -172,7 +171,7 @@ abstract class AbstractConvertor implements Convertor {
 
 		String fileNamePdf = String.format("conv_%s_%s_%05d%s", this.getClass().getSimpleName(),
 				format.format(new Date()), count, ".bin");
-		return new File(pdfOutputlocation, fileNamePdf);
+		return new File(getPdfOutputlocation(), fileNamePdf);
 	}
 
 	protected abstract boolean isPasswordException(Exception e);

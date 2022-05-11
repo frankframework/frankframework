@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionOptions;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
 
@@ -71,8 +72,8 @@ class WordConvertor extends AbstractConvertor {
 		MEDIA_TYPE_LOAD_FORMAT_MAPPING = Collections.unmodifiableMap(map);
 	}
 
-	protected WordConvertor(CisConversionService cisConversionService, String pdfOutputLocation, boolean loadExternalResources) {
-		super(pdfOutputLocation, loadExternalResources, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[MEDIA_TYPE_LOAD_FORMAT_MAPPING.size()]));
+	protected WordConvertor(CisConversionService cisConversionService, CisConversionOptions options) {
+		super(options, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[MEDIA_TYPE_LOAD_FORMAT_MAPPING.size()]));
 		this.cisConversionService = cisConversionService;
 	}
 
@@ -85,7 +86,7 @@ class WordConvertor extends AbstractConvertor {
 
 		try (InputStream inputStream = message.asInputStream(charset)) {
 			LoadOptions loadOptions = MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType);
-			if(!loadExternalResources){
+			if(!options.isLoadExternalResources()){
 				loadOptions.setResourceLoadingCallback(new OfflineResourceLoader());
 			}
 
