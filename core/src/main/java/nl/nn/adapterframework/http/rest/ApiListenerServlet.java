@@ -78,6 +78,7 @@ public class ApiListenerServlet extends HttpServletBase {
 	private int authTTL = AppConstants.getInstance().getInt("api.auth.token-ttl", 60 * 60 * 24 * 7); //Defaults to 7 days
 	private String CorsAllowOrigin = AppConstants.getInstance().getString("api.auth.cors.allowOrigin", "*"); //Defaults to everything
 	private String CorsExposeHeaders = AppConstants.getInstance().getString("api.auth.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
+	private static final String UPDATE_ETAG_CONTEXT_KEY = "updateEtag";
 
 	private ApiServiceDispatcher dispatcher = null;
 	private IApiCache cache = null;
@@ -369,7 +370,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						}
 					}
 				}
-				messageContext.put("updateEtag", listener.isUpdateEtag());
+				messageContext.put(UPDATE_ETAG_CONTEXT_KEY, listener.isUpdateEtag());
 
 				/**
 				 * Check authorization
@@ -527,23 +528,27 @@ public class ApiListenerServlet extends HttpServletBase {
 				/**
 				 * Calculate an eTag over the processed result and store in cache
 				 */
-				if(messageContext.get("updateEtag", true)) {
+				if(messageContext.get(UPDATE_ETAG_CONTEXT_KEY, true)) {
 					log.debug("calculating etags over processed result");
 					String cleanPattern = listener.getCleanPattern();
 					if(!Message.isEmpty(result) && method == HttpMethod.GET && cleanPattern != null) { //If the data has changed, generate a new eTag
-						String eTag = ApiCacheManager.buildEtag(cleanPattern, result.hashCode()); //The eTag has nothing to do with the content and can be a random string.
-						log.debug("adding/overwriting etag with key["+etagCacheKey+"] value["+eTag+"]");
-						cache.put(etagCacheKey, eTag);
-						response.addHeader("etag", eTag);
+						String eTag = MessageUtils.generateMD5Hash(result);
+						if(eTag != null) {
+							log.debug("adding/overwriting etag with key[{}] value[{}]", etagCacheKey, eTag);
+							cache.put(etagCacheKey, eTag);
+							response.addHeader("etag", eTag);
+						} else {
+							log.debug("skipping etag with key[{}] computed value is null", etagCacheKey);
+						}
 					}
 					else {
-						log.debug("removing etag with key["+etagCacheKey+"]");
+						log.debug("removing etag with key[{}]", etagCacheKey);
 						cache.remove(etagCacheKey);
 
 						// Not only remove the eTag for the selected resources but also the collection
 						String key = ApiCacheManager.getParentCacheKey(listener, uri);
 						if(key != null) {
-							log.debug("removing parent etag with key["+key+"]");
+							log.debug("removing parent etag with key[{}]", key);
 							cache.remove(key);
 						}
 					}
