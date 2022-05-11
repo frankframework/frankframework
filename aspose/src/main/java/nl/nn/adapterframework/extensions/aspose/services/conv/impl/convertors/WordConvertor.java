@@ -75,6 +75,12 @@ class WordConvertor extends AbstractConvertor {
 	protected WordConvertor(CisConversionService cisConversionService, CisConversionOptions options) {
 		super(options, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[MEDIA_TYPE_LOAD_FORMAT_MAPPING.size()]));
 		this.cisConversionService = cisConversionService;
+		if(!options.isLoadExternalResources()){
+			OfflineResourceLoader resourceLoader = new OfflineResourceLoader();
+			for(LoadOptions loadOptions : MEDIA_TYPE_LOAD_FORMAT_MAPPING.values()){
+				loadOptions.setResourceLoadingCallback(resourceLoader);
+			}
+		}
 	}
 
 	@Override
@@ -86,9 +92,6 @@ class WordConvertor extends AbstractConvertor {
 
 		try (InputStream inputStream = message.asInputStream(charset)) {
 			LoadOptions loadOptions = MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType);
-			if(!options.isLoadExternalResources()){
-				loadOptions.setResourceLoadingCallback(new OfflineResourceLoader());
-			}
 
 			Document doc = new Document(inputStream, loadOptions);
 			new Fontsetter(cisConversionService.getFontsDirectory()).setFontSettings(doc);
