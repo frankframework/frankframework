@@ -16,7 +16,9 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.xml.transform.TransformerConfigurationException;
 
@@ -25,27 +27,25 @@ import org.apache.commons.lang3.StringUtils;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
- * Selects an exitState, based on xpath evaluation
- * 
+ * Selects an forward, based on XPath evaluation
+ *
  * @ff.forward then The configured condition is met
  * @ff.forward else The configured condition is not met
  *
  * @author  Peter Leeuwenburgh
  * @since   4.3
  */
-
 public class XmlIf extends AbstractPipe {
 
 	private @Getter String namespaceDefs = null;
@@ -56,34 +56,14 @@ public class XmlIf extends AbstractPipe {
 	private @Getter String elseForwardName = "else";
 	private @Getter String regex = null;
 	private @Getter int xsltVersion = XmlUtils.DEFAULT_XSLT_VERSION;
-	private @Getter boolean removeNamespaces=false;
+	private @Getter boolean namespaceAware = XmlUtils.isNamespaceAwareByDefault();
 
 	private TransformerPool tp = null;
 
 	protected String makeStylesheet(String xpathExpression, String resultVal) {
-		String nameSpaceClause = XmlUtils.getNamespaceClause(getNamespaceDefs());
-		StringBuilder parameters = new StringBuilder("");
-		for(Parameter parameter : getParameterList()) {
-				parameters.append("<xsl:param name=\"" + parameter.getName() + "\"/>");
-		}
-
-		String result = 
-			// "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-			"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\""+getXsltVersion()+".0\">" +
-			"<xsl:output method=\"text\" omit-xml-declaration=\"yes\"/>" +
-			"<xsl:strip-space elements=\"*\"/>" +
-			parameters.toString()+
-			"<xsl:template match=\"/\">" +
-			"<xsl:choose>" +
-			"<xsl:when "+nameSpaceClause+" test=\"" +xpathExpression + 
-				(StringUtils.isEmpty(resultVal)?"":"='"+resultVal+"'")+
-			"\">" +getThenForwardName()+"</xsl:when>"+
-			"<xsl:otherwise>" +getElseForwardName()+"</xsl:otherwise>" +
-			"</xsl:choose>" +
-			"</xsl:template>" +
-			"</xsl:stylesheet>";
-			log.debug(getLogPrefix(null)+"created stylesheet ["+result+"]");
-			return result;
+		return XmlUtils.createXmlIfEvaluatorSource(getNamespaceDefs(), xpathExpression+(StringUtils.isEmpty(resultVal)?"":"='"+resultVal+"'"),
+				getParameterList().stream().map(p -> p.getName()).collect(Collectors.toCollection(ArrayList<String>::new)), !isNamespaceAware(),
+				xsltVersion, getThenForwardName(), getElseForwardName());
 	}
 
 	@Override
@@ -128,9 +108,9 @@ public class XmlIf extends AbstractPipe {
 				Map<String,Object> parametervalues = null;
 				ParameterList parameterList = getParameterList();
 				if (!parameterList.isEmpty()) {
-					parametervalues = parameterList.getValues(message, session, !isRemoveNamespaces()).getValueMap();
+					parametervalues = parameterList.getValues(message, session, isNamespaceAware()).getValueMap();
 				}
-				forward = tp.transform(sInput, parametervalues, !isRemoveNamespaces());
+				forward = tp.transform(sInput, parametervalues, isNamespaceAware());
 			} catch (Exception e) {
 				throw new PipeRunException(this,getLogPrefix(session)+"cannot evaluate expression",e);
 			}
@@ -147,7 +127,7 @@ public class XmlIf extends AbstractPipe {
 		log.debug(getLogPrefix(session)+ "determined forward [" + forward + "]");
 
 		pipeForward=findForward(forward);
-		
+
 		if (pipeForward == null) {
 			  throw new PipeRunException (this, getLogPrefix(null)+"cannot find forward or pipe named [" + forward + "]");
 		}
@@ -202,16 +182,9 @@ public class XmlIf extends AbstractPipe {
 		this.namespaceDefs = namespaceDefs;
 	}
 
+
 	@IbisDoc({"controls namespace-awareness of XSLT transformation", "true"})
-	@Deprecated
-	@ConfigurationWarning("please use attribute 'removeNamespaces' instead to enable namespace insensitive behaviour")
 	public void setNamespaceAware(boolean b) {
-		setRemoveNamespaces(!b);
+		namespaceAware = b;
 	}
-
-	@IbisDoc({"If <code>true</code> namespaces will be removed before XSLT transformation", "false"})
-	public void setRemoveNamespaces(boolean b) {
-		removeNamespaces = b;
-	}
-
 }

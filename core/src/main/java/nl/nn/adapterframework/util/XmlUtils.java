@@ -25,7 +25,6 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -36,6 +35,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javax.xml.XMLConstants;
@@ -98,8 +98,6 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.Resource;
-import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
 import nl.nn.adapterframework.validation.RootValidations;
@@ -762,25 +760,6 @@ public class XmlUtils {
 		return new String(source,offset,length,charset);
 	}
 
-	public static TransformerPool getXPathTransformerPool(String namespaceDefs, String xPathExpression, OutputType outputType, boolean includeXmlDeclaration, ParameterList params) throws ConfigurationException {
-		return getXPathTransformerPool(namespaceDefs, xPathExpression, outputType, includeXmlDeclaration, params, 0);
-	}
-
-	public static TransformerPool getXPathTransformerPool(String namespaceDefs, String xPathExpression, OutputType outputType, boolean includeXmlDeclaration, ParameterList params, int xsltVersion) throws ConfigurationException {
-		List<String> paramNames = null;
-		if (params!=null) {
-			paramNames = new ArrayList<String>();
-			Iterator<Parameter> iterator = params.iterator();
-			while (iterator.hasNext()) {
-				paramNames.add(iterator.next().getName());
-			}
-		}
-		String xslt;
-		xslt = createXPathEvaluatorSource(namespaceDefs,xPathExpression, outputType, includeXmlDeclaration, paramNames, true, StringUtils.isEmpty(namespaceDefs), null, xsltVersion);
-		if (log.isDebugEnabled()) log.debug("xpath ["+xPathExpression+"] resulted in xslt ["+xslt+"]");
-		// TODO: this should probably not be a utility transformerPool
-		return getUtilityTransformerPool(()->xslt,"XPath:"+xPathExpression+"|"+outputType+"|"+namespaceDefs+"|"+xsltVersion,!includeXmlDeclaration,false,xsltVersion);
-	}
 
 	public static String createXPathEvaluatorSource(String XPathExpression)	throws TransformerConfigurationException {
 		return createXPathEvaluatorSource(XPathExpression, OutputType.TEXT);
@@ -829,12 +808,7 @@ public class XmlUtils {
 	 * version of createXPathEvaluator that allows to set outputMethod, and uses copy-of instead of value-of, and enables use of parameters.
 	 * TODO when xslt version equals 1, namespaces are ignored by default, setting 'ignoreNamespaces' to true will generate a non-xslt1-parsable xslt
 	 */
-	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, OutputType outputMethod, boolean includeXmlDeclaration, List<String> paramNames, boolean stripSpace, boolean ignoreNamespaces, String separator, int xsltVersion) {
-		if (StringUtils.isEmpty(XPathExpression))
-			throw new IllegalArgumentException("XPathExpression must be filled");
-
-		String namespaceClause = getNamespaceClause(namespaceDefs);
-
+	public static String createXPathEvaluatorSource(String namespaceDefs, String xpathExpression, OutputType outputMethod, boolean includeXmlDeclaration, List<String> paramNames, boolean stripSpace, boolean ignoreNamespaces, String separator, int xsltVersion) {
 		final String copyMethod;
 		if (outputMethod == OutputType.XML) {
 			copyMethod = "copy-of";
@@ -842,15 +816,33 @@ public class XmlUtils {
 			copyMethod = "value-of";
 		}
 
+		String namespaceClause = getNamespaceClause(namespaceDefs);
+
+		final String separatorString = separator != null ? " separator=\"" + separator + "\"" : "";
+
+		return createXPathEvaluatorSource(namespaceDefs, xpathExpression, x -> "<xsl:"+copyMethod+" "+namespaceClause+" select=\"" + XmlUtils.encodeChars(xpathExpression) + "\"" + separatorString + "/>", outputMethod, includeXmlDeclaration, paramNames, stripSpace, ignoreNamespaces, xsltVersion);
+	}
+
+	public static String createXmlIfEvaluatorSource(String namespaceDefs, String xpathExpression, List<String> paramNames, boolean ignoreNamespaces, int xsltVersion, String thenResult, String elseResult) {
+		String namespaceClause = getNamespaceClause(namespaceDefs);
+
+		return createXPathEvaluatorSource(namespaceDefs, xpathExpression, x -> "<xsl:choose>" +
+																					"<xsl:when "+namespaceClause+" test=\"" + XmlUtils.encodeChars(xpathExpression) + "\">" +thenResult+"</xsl:when>"+
+																					"<xsl:otherwise>" +elseResult+"</xsl:otherwise>" +
+																				"</xsl:choose>", 
+																				OutputType.TEXT, false, paramNames, true, ignoreNamespaces, xsltVersion);
+	}
+
+	public static String createXPathEvaluatorSource(String namespaceDefs, String xpathExpression, Function<String,String> xpathContainerSupplier, OutputType outputMethod, boolean includeXmlDeclaration, List<String> paramNames, boolean stripSpace, boolean ignoreNamespaces, int xsltVersion) {
+		if (StringUtils.isEmpty(xpathExpression)) {
+			throw new IllegalArgumentException("XPathExpression must be filled");
+		}
+		
 		String paramsString = "";
 		if (paramNames != null) {
 			for (String paramName: paramNames) {
 				paramsString = paramsString + "<xsl:param name=\"" + paramName + "\"/>";
 			}
-		}
-		String separatorString = "";
-		if (separator != null) {
-			separatorString = " separator=\"" + separator + "\"";
 		}
 		int version = (xsltVersion == 0) ? DEFAULT_XSLT_VERSION : xsltVersion;
 
@@ -877,12 +869,12 @@ public class XmlUtils {
 				"<xsl:template name=\"expression\">" +
 					"<xsl:param name=\"root\" />" +
 					"<xsl:for-each select=\"$root\">" +
-						"<xsl:"+copyMethod+" "+namespaceClause+" select=\"" + XmlUtils.encodeChars(XPathExpression) + "\"" + separatorString + "/>" +
+						xpathContainerSupplier.apply(xpathExpression) +
 					"</xsl:for-each>" +
 				"</xsl:template>" 
 			:
 			"<xsl:template match=\"/\">" +
-			"<xsl:"+copyMethod+" "+namespaceClause+" select=\"" + XmlUtils.encodeChars(XPathExpression) + "\"" + separatorString + "/>" +
+				xpathContainerSupplier.apply(xpathExpression) +
 			"</xsl:template>" )+
 			"</xsl:stylesheet>";
 

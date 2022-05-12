@@ -35,7 +35,6 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
 import nl.nn.adapterframework.util.XmlBuilder;
-import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * FxF wrapper to be used with FxF3. When receiving files (direction=unwrap)
@@ -124,9 +123,9 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 			if(!new File(fxfDir).isDirectory()) {
 				throw new ConfigurationException("fxf.dir [" + fxfDir + "] doesn't exist or is not a directory");
 			}
-			transferFlowIdTp = XmlUtils.getXPathTransformerPool(null, TRANSFORMER_FLOW_ID_XPATH, OutputType.TEXT, false, getParameterList());
+			transferFlowIdTp = TransformerPool.getXPathTransformerPool(null, TRANSFORMER_FLOW_ID_XPATH, OutputType.TEXT, false, getParameterList());
 			String xpathFilename = isUseServerFilename() ? SERVER_FILENAME_XPATH : CLIENT_FILENAME_XPATH;
-			clientFilenameTp = XmlUtils.getXPathTransformerPool(null, xpathFilename, OutputType.TEXT, false, getParameterList());
+			clientFilenameTp = TransformerPool.getXPathTransformerPool(null, xpathFilename, OutputType.TEXT, false, getParameterList());
 		}
 		if (StringUtils.isNotEmpty(getFlowOutFolder()) && !getFlowOutFolder().endsWith("/")) {
 			setFlowOutFolder(getFlowOutFolder()+"/");

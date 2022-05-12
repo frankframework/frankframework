@@ -17,6 +17,9 @@ package nl.nn.adapterframework.util;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.transform.Result;
@@ -49,6 +52,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IConfigurationAware;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.Resource;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -126,13 +130,9 @@ public class TransformerPool {
 		this(resource.asSource(),resource.getSystemId(),xsltVersion,resource.asSource(), resource);
 	}
 
-	//TODO Fix this, Thread.currentThread().getContextClassLoader() should not be used and causes memory leaks upon reloading configurations!!!
 	private TransformerPool(String xsltString, String sysId, int xsltVersion) throws TransformerConfigurationException {
 		this(xsltString, sysId, xsltVersion, new IScopeProvider() {
-			@Override
-			public ClassLoader getConfigurationClassLoader() {
-				return Thread.currentThread().getContextClassLoader();
-			}
+			private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 		});
 	}
 
@@ -225,7 +225,7 @@ public class TransformerPool {
 			if (StringUtils.isNotEmpty(styleSheetName)) {
 				throw new ConfigurationException(logPrefix+" cannot have both an xpathExpression and a styleSheetName specified");
 			}
-			return XmlUtils.getXPathTransformerPool(namespaceDefs, xPathExpression, outputType, includeXmlDeclaration, params, xsltVersion);
+			return getXPathTransformerPool(namespaceDefs, xPathExpression, outputType, includeXmlDeclaration, params, xsltVersion);
 		} 
 		if (!StringUtils.isEmpty(styleSheetName)) {
 			if (StringUtils.isNotEmpty(namespaceDefs)) {
@@ -270,6 +270,30 @@ public class TransformerPool {
 			throw new ConfigurationException(logPrefix+" either xpathExpression or styleSheetName must be specified");
 		}
 		return result;
+	}
+	
+	public static TransformerPool getXPathTransformerPool(String namespaceDefs, String xPathExpression, OutputType outputType, boolean includeXmlDeclaration, ParameterList params) throws ConfigurationException {
+		return getXPathTransformerPool(namespaceDefs, xPathExpression, outputType, includeXmlDeclaration, params, 0);
+	}
+
+	public static TransformerPool getXPathTransformerPool(String namespaceDefs, String xPathExpression, OutputType outputType, boolean includeXmlDeclaration, ParameterList params, int xsltVersion) throws ConfigurationException {
+		List<String> paramNames = null;
+		if (params!=null) {
+			paramNames = new ArrayList<String>();
+			Iterator<Parameter> iterator = params.iterator();
+			while (iterator.hasNext()) {
+				paramNames.add(iterator.next().getName());
+			}
+		}
+		String xslt;
+		xslt = XmlUtils.createXPathEvaluatorSource(namespaceDefs,xPathExpression, outputType, includeXmlDeclaration, paramNames, true, StringUtils.isEmpty(namespaceDefs), null, xsltVersion);
+		if (log.isDebugEnabled()) log.debug("xpath ["+xPathExpression+"] resulted in xslt ["+xslt+"]");
+		
+		try {
+			return new TransformerPool(xslt, "XPath "+xPathExpression, xsltVersion);
+		} catch (TransformerConfigurationException e) {
+			throw new ConfigurationException("Cannot create TransformerPool for XPath expression ["+xPathExpression+"]", e);
+		}
 	}
 
 	public void open() {

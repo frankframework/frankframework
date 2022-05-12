@@ -64,7 +64,7 @@ public class XpathTest extends FunctionalTransformerPoolTestBase {
 		boolean includeXmlDeclaration=false;
 		boolean namespaceAware=true;
 		ParameterList formalParams=null;
-		TransformerPool tp= XmlUtils.getXPathTransformerPool(namespaceDefs, xpath, outputType, includeXmlDeclaration, formalParams);
+		TransformerPool tp= TransformerPool.getXPathTransformerPool(namespaceDefs, xpath, outputType, includeXmlDeclaration, formalParams);
 		testTransformerPool(tp, input, expected, namespaceAware, "viaString");
 		Source source = XmlUtils.stringToSource(input,namespaceAware);
 		testTransformerPool(tp, source, expected, namespaceAware, "viaSource");
