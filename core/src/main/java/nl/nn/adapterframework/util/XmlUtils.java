@@ -186,7 +186,7 @@ public class XmlUtils {
 		}
 		return result;
 	}
-	
+
 	protected static String makeDetectXsltVersionXslt() {
 		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
@@ -803,7 +803,7 @@ public class XmlUtils {
 		}
 		return namespaceMap;
 	}
-	
+
 	/*
 	 * version of createXPathEvaluator that allows to set outputMethod, and uses copy-of instead of value-of, and enables use of parameters.
 	 * TODO when xslt version equals 1, namespaces are ignored by default, setting 'ignoreNamespaces' to true will generate a non-xslt1-parsable xslt
@@ -829,7 +829,7 @@ public class XmlUtils {
 		return createXPathEvaluatorSource(namespaceDefs, xpathExpression, x -> "<xsl:choose>" +
 																					"<xsl:when "+namespaceClause+" test=\"" + XmlUtils.encodeChars(xpathExpression) + "\">" +thenResult+"</xsl:when>"+
 																					"<xsl:otherwise>" +elseResult+"</xsl:otherwise>" +
-																				"</xsl:choose>", 
+																				"</xsl:choose>",
 																				OutputType.TEXT, false, paramNames, true, ignoreNamespaces, xsltVersion);
 	}
 
@@ -837,7 +837,7 @@ public class XmlUtils {
 		if (StringUtils.isEmpty(xpathExpression)) {
 			throw new IllegalArgumentException("XPathExpression must be filled");
 		}
-		
+
 		String paramsString = "";
 		if (paramNames != null) {
 			for (String paramName: paramNames) {
@@ -863,15 +863,15 @@ public class XmlUtils {
 					"<xsl:call-template name=\"expression\">" +
 						"<xsl:with-param name=\"root\" select=\"$prep\"/>" +
 					"</xsl:call-template>" +
-				"</xsl:template>" + 
+				"</xsl:template>" +
 				makeRemoveNamespacesXsltTemplates()+
-					
+
 				"<xsl:template name=\"expression\">" +
 					"<xsl:param name=\"root\" />" +
 					"<xsl:for-each select=\"$root\">" +
 						xpathContainerSupplier.apply(xpathExpression) +
 					"</xsl:for-each>" +
-				"</xsl:template>" 
+				"</xsl:template>"
 			:
 			"<xsl:template match=\"/\">" +
 				xpathContainerSupplier.apply(xpathExpression) +
@@ -920,7 +920,7 @@ public class XmlUtils {
 	public static Source stringToSourceForSingleUse(String xmlString) throws SAXException {
 		return stringToSourceForSingleUse(xmlString, isNamespaceAwareByDefault());
 	}
-	
+
 	public static Source stringToSourceForSingleUse(String xmlString, boolean namespaceAware) throws SAXException {
 		if (namespaceAware) {
 			StringReader reader = new StringReader(xmlString);
@@ -932,7 +932,7 @@ public class XmlUtils {
 		} catch (DomBuilderException e) {
 			throw new SaxException(e);
 		}
-	}	
+	}
 
 	public static SAXSource inputSourceToSAXSource(Resource resource) throws SAXException, IOException {
 		return inputSourceToSAXSource(resource.asInputSource(), true, resource);
@@ -1512,7 +1512,7 @@ public class XmlUtils {
 					encoded.appendCodePoint(c);
 				} else {
 					if (appendCharNum) {
-						encoded.append(to + "#" + c + ";"); 
+						encoded.append(to + "#" + c + ";");
 					} else {
 						encoded.append(to);
 					}
@@ -1561,7 +1561,7 @@ public class XmlUtils {
 
 	/**
 	 * sets all the parameters of the transformer using a Map with parameter values.
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public static void setTransformerParameters(Transformer t, Map<String,Object> parameters) throws IOException {
 		t.clearParameters();
@@ -1719,8 +1719,8 @@ public class XmlUtils {
 			} catch (Exception e) {
 				throw new TransformerException(e);
 			}
-		} 
-		
+		}
+
 		StringWriter writer = new StringWriter();
 		StreamResult result = new StreamResult(writer);
 		TransformerFactory tf = XmlUtils.getTransformerFactory(2); // set xslt2=true to avoid problems with diacritics
@@ -2014,13 +2014,13 @@ public class XmlUtils {
 
 	public static ValidatorHandler getValidatorHandler(URL schemaURL) throws SAXException {
 		SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-		Schema schema = sf.newSchema(schemaURL); 
+		Schema schema = sf.newSchema(schemaURL);
 		return schema.newValidatorHandler();
 	}
 
 	public static ValidatorHandler getValidatorHandler(Source schemaSource) throws SAXException {
 		SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-		Schema schema = sf.newSchema(schemaSource); 
+		Schema schema = sf.newSchema(schemaSource);
 		return schema.newValidatorHandler();
 	}
 

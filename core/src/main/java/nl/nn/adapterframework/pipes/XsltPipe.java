@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ import nl.nn.adapterframework.util.TransformerPool.OutputType;
  * Perform an XSLT transformation with a specified stylesheet.
  *
  * @ff.parameters any parameters defined on the pipe will be applied to the created transformer
- * 
+ *
  * @author Johan Verrips
  */
 
@@ -90,7 +90,7 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 			throw new PipeStartException(e);
 		}
 	}
-	
+
 	@Override
 	public void stop() {
 		try {
@@ -101,7 +101,7 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 		super.stop();
 	}
 
-	
+
 	@Override
 	public boolean canStreamToNextPipe() {
 		return super.canStreamToNextPipe() && StringUtils.isEmpty(getSessionKey());
@@ -193,7 +193,7 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 	public void setOmitXmlDeclaration(boolean b) {
 		sender.setOmitXmlDeclaration(b);
 	}
-	
+
 	@IbisDocRef({"5", XSLTSENDER})
 	public void setDisableOutputEscaping(boolean b) {
 		sender.setDisableOutputEscaping(b);
@@ -240,7 +240,7 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 	public void setXslt2(boolean b) {
 		sender.setXslt2(b);
 	}
-	
+
 	@IbisDocRef({"14", XSLTSENDER})
 	public void setNamespaceAware(boolean b) {
 		sender.setNamespaceAware(b);

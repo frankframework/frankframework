@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ import nl.nn.adapterframework.xml.TransformerFilter;
 /**
  * Pool of transformers. As of IBIS 4.2.e the Templates object is used to
  * improve performance and work around threading problems with the api.
- * 
+ *
  * @author Gerrit van Brakel
  */
 public class TransformerPool {
@@ -122,7 +122,7 @@ public class TransformerPool {
 		open();
 		// check if a transformer can be initiated
 		Transformer t = getTransformer();
-		
+
 		releaseTransformer(t);
 	}
 
@@ -209,7 +209,7 @@ public class TransformerPool {
 	public static TransformerPool configureTransformer(String logPrefix, IConfigurationAware scopeProvider, String namespaceDefs, String xPathExpression, String styleSheetName, OutputType outputType, boolean includeXmlDeclaration, ParameterList params, boolean mandatory) throws ConfigurationException {
 		if (mandatory || StringUtils.isNotEmpty(xPathExpression) || StringUtils.isNotEmpty(styleSheetName)) {
 			return configureTransformer(logPrefix,scopeProvider,namespaceDefs,xPathExpression,styleSheetName, outputType, includeXmlDeclaration, params);
-		} 
+		}
 		return null;
 	}
 
@@ -226,7 +226,7 @@ public class TransformerPool {
 				throw new ConfigurationException(logPrefix+" cannot have both an xpathExpression and a styleSheetName specified");
 			}
 			return getXPathTransformerPool(namespaceDefs, xPathExpression, outputType, includeXmlDeclaration, params, xsltVersion);
-		} 
+		}
 		if (!StringUtils.isEmpty(styleSheetName)) {
 			if (StringUtils.isNotEmpty(namespaceDefs)) {
 				throw new ConfigurationException(logPrefix+" cannot have namespaceDefs specified for a styleSheetName");
@@ -246,7 +246,7 @@ public class TransformerPool {
 			try {
 				styleSheet = Resource.getResource(scopeProvider, styleSheetName);
 				if (styleSheet==null) {
-					throw new ConfigurationException(logPrefix+" cannot find ["+ styleSheetName + "] in scope ["+scopeProvider+"]"); 
+					throw new ConfigurationException(logPrefix+" cannot find ["+ styleSheetName + "] in scope ["+scopeProvider+"]");
 				}
 				if (log.isDebugEnabled()) log.debug(logPrefix+"configuring stylesheet ["+styleSheetName+"] resource ["+styleSheet+"]");
 				result = TransformerPool.getInstance(styleSheet, xsltVersion);
@@ -271,7 +271,7 @@ public class TransformerPool {
 		}
 		return result;
 	}
-	
+
 	public static TransformerPool getXPathTransformerPool(String namespaceDefs, String xPathExpression, OutputType outputType, boolean includeXmlDeclaration, ParameterList params) throws ConfigurationException {
 		return getXPathTransformerPool(namespaceDefs, xPathExpression, outputType, includeXmlDeclaration, params, 0);
 	}
@@ -288,7 +288,7 @@ public class TransformerPool {
 		String xslt;
 		xslt = XmlUtils.createXPathEvaluatorSource(namespaceDefs,xPathExpression, outputType, includeXmlDeclaration, paramNames, true, StringUtils.isEmpty(namespaceDefs), null, xsltVersion);
 		if (log.isDebugEnabled()) log.debug("xpath ["+xPathExpression+"] resulted in xslt ["+xslt+"]");
-		
+
 		try {
 			return new TransformerPool(xslt, "XPath "+xPathExpression, xsltVersion);
 		} catch (TransformerConfigurationException e) {
@@ -310,7 +310,7 @@ public class TransformerPool {
 					return new DefaultPooledObject<Transformer>(transformer);
 				}
 
-			}); 
+			});
 		}
 	}
 
@@ -407,11 +407,11 @@ public class TransformerPool {
 	public String transform(Source s) throws TransformerException, IOException {
 		return transform(s,(Map<String,Object>)null);
 	}
-	
+
 	public String transform(Source s, ParameterValueList pvl) throws TransformerException, IOException {
 		return transform(s, null, pvl==null? (Map<String,Object>)null : pvl.getValueMap());
 	}
-	
+
 	public String transform(Source s, Map<String,Object> parameters) throws TransformerException, IOException {
 		return transform(s, null, parameters);
 	}
@@ -428,13 +428,13 @@ public class TransformerPool {
 			XmlUtils.setTransformerParameters(transformer, parameters);
 			if (r == null) {
 				return XmlUtils.transformXml(transformer, s);
-			} 
+			}
 			transformer.transform(s,r);
 		} catch (TransformerException te) {
 			((TransformerErrorListener)transformer.getErrorListener()).setFatalTransformerException(te);
 		} catch (IOException ioe) {
 			((TransformerErrorListener)transformer.getErrorListener()).setFatalIOException(ioe);
-		} 
+		}
 		finally {
 			if (transformer != null) {
 				TransformerErrorListener transformerErrorListener = (TransformerErrorListener)transformer.getErrorListener();
@@ -455,7 +455,7 @@ public class TransformerPool {
 		}
 		return null;
 	}
-	
+
 	public TransformerHandler getTransformerHandler() throws TransformerConfigurationException {
 		TransformerHandler handler = ((SAXTransformerFactory)tFactory).newTransformerHandler(templates);
 		Transformer transformer = handler.getTransformer();
@@ -470,7 +470,7 @@ public class TransformerPool {
 	public TransformerFilter getTransformerFilter(ThreadConnector<?> threadConnector, ContentHandler handler) throws TransformerConfigurationException {
 		return getTransformerFilter(threadConnector, handler, false);
 	}
-	
+
 	public TransformerFilter getTransformerFilter(ThreadConnector<?> threadConnector, ContentHandler handler, boolean removeNamespacesFromInput) throws TransformerConfigurationException {
 		return new TransformerFilter(threadConnector, getTransformerHandler(), handler, removeNamespacesFromInput);
 	}

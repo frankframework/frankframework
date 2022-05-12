@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * only). Replace NNX00000 with the specific flowId and generate a unique
  * filename (files will automatically be cleaned after 30 days or any other
  * value specified by ${fxf.retention}).
- * 
+ *
  * @author Jaco de Groot
  */
 public class FxfWrapperPipe extends EsbSoapWrapperPipe {
