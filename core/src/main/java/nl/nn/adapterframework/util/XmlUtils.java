@@ -823,16 +823,6 @@ public class XmlUtils {
 		return createXPathEvaluatorSource(xpathExpression, x -> "<xsl:"+copyMethod+" "+namespaceClause+" select=\"" + XmlUtils.encodeChars(xpathExpression) + "\"" + separatorString + "/>", outputMethod, includeXmlDeclaration, paramNames, stripSpace, ignoreNamespaces, xsltVersion);
 	}
 
-	public static String createXmlIfEvaluatorSource(String namespaceDefs, String xpathExpression, List<String> paramNames, boolean ignoreNamespaces, int xsltVersion, String thenResult, String elseResult) {
-		String namespaceClause = getNamespaceClause(namespaceDefs);
-
-		return createXPathEvaluatorSource(xpathExpression, x -> "<xsl:choose>" +
-																	"<xsl:when "+namespaceClause+" test=\"" + XmlUtils.encodeChars(xpathExpression) + "\">" +thenResult+"</xsl:when>"+
-																	"<xsl:otherwise>" +elseResult+"</xsl:otherwise>" +
-																"</xsl:choose>", OutputType.TEXT,
-																false, paramNames, true, ignoreNamespaces, xsltVersion);
-	}
-
 	public static String createXPathEvaluatorSource(String xpathExpression, Function<String,String> xpathContainerSupplier, OutputType outputMethod, boolean includeXmlDeclaration, List<String> paramNames, boolean stripSpace, boolean ignoreNamespaces, int xsltVersion) {
 		if (StringUtils.isEmpty(xpathExpression)) {
 			throw new IllegalArgumentException("XPathExpression must be filled");
