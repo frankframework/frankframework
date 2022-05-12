@@ -17,6 +17,7 @@ import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.util.TransformerPoolTest;
 
 public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 
@@ -269,22 +270,22 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 	public void testNamespaceAwarenessWithStylesheet(int xsltVersion, boolean namespaceAware, String expectedForwardName) throws Exception {
 		pipe.registerForward(new PipeForward("1","FixedResult1"));
 		pipe.registerForward(new PipeForward("NF","FixedResultNF"));
-		pipe.setStyleSheetName("/XmlSwitch/Switch.xsl");
+		pipe.setStyleSheetName(TransformerPoolTest.NAMESPACELESS_STYLESHEET);
 		pipe.setNotFoundForwardName("NF");
 		pipe.setXsltVersion(xsltVersion);
 		pipe.setNamespaceAware(namespaceAware);
-		Message input=new Message("<test xmlns=\"http://dummy\"><innerTest>1</innerTest></test>");
+		Message input=new Message("<root xmlns=\"http://dummy\"><sub>1</sub></root>");
 		testSwitch(input,expectedForwardName);
 	}
 
 	public void testNamespaceAwarenessWithXpath(int xsltVersion, boolean namespaceAware, String expectedForwardName) throws Exception {
 		pipe.registerForward(new PipeForward("1","FixedResult1"));
 		pipe.registerForward(new PipeForward("NF","FixedResultNF"));
-		pipe.setXpathExpression("/test/innerTest");
+		pipe.setXpathExpression("/root/sub");
 		pipe.setNotFoundForwardName("NF");
 		pipe.setXsltVersion(xsltVersion);
 		pipe.setNamespaceAware(namespaceAware);
-		Message input=new Message("<test xmlns=\"http://dummy\"><innerTest>1</innerTest></test>");
+		Message input=new Message("<root xmlns=\"http://dummy\"><sub>1</sub></root>");
 		testSwitch(input,expectedForwardName);
 	}
 
