@@ -111,6 +111,7 @@ public class Message implements Serializable {
 	public Message(InputStream request, String charset) {
 		this((Object)request, charset);
 	}
+
 	public Message(InputStream request) {
 		this((Object)request, null);
 	}
