@@ -809,14 +809,14 @@ public class XmlUtils {
 	 * TODO when xslt version equals 1, namespaces are ignored by default, setting 'ignoreNamespaces' to true will generate a non-xslt1-parsable xslt
 	 */
 	public static String createXPathEvaluatorSource(String namespaceDefs, String xpathExpression, OutputType outputMethod, boolean includeXmlDeclaration, List<String> paramNames, boolean stripSpace, boolean ignoreNamespaces, String separator, int xsltVersion) {
+		String namespaceClause = getNamespaceClause(namespaceDefs);
+
 		final String copyMethod;
 		if (outputMethod == OutputType.XML) {
 			copyMethod = "copy-of";
 		} else {
 			copyMethod = "value-of";
 		}
-
-		String namespaceClause = getNamespaceClause(namespaceDefs);
 
 		final String separatorString = separator != null ? " separator=\"" + separator + "\"" : "";
 
