@@ -39,7 +39,7 @@ public class IfMultipart extends AbstractPipe {
 		String forward;
 		PipeForward pipeForward = null;
 
-		if (message == null || message.asObject() == null) {
+		if (Message.isNull(message)) {
 			forward = elseForwardName;
 		} else {
 			if (!(message.asObject() instanceof HttpServletRequest)) {

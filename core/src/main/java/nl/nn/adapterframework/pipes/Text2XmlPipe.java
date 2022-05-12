@@ -58,7 +58,7 @@ public class Text2XmlPipe extends StreamingPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		if(message.asObject() == null) {
+		if(Message.isNull(message)) {
 			return new PipeRunResult(getSuccessForward(), new Message("<"+getXmlTag()+" nil=\"true\" />"));
 		} else if(message.isEmpty() && isUseCdataSection()) {
 			return new PipeRunResult(getSuccessForward(), new Message("<"+getXmlTag()+"><![CDATA[]]></"+getXmlTag()+">"));

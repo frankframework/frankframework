@@ -142,7 +142,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	public PipeRunResult doPipe(Message input, PipeLineSession session, boolean responseMode, String messageRoot) throws PipeRunException {
 		String messageToValidate;
 		try {
-			messageToValidate=input==null || input.asObject()==null?"{}":input.asString();
+			messageToValidate = Message.isNull(input) ? "{}" : input.asString();
 		} catch (IOException e) {
 			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
 		}
