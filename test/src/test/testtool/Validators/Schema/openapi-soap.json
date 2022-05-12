@@ -2,7 +2,7 @@
     "openapi":"3.0.0",
     "info":{
         "title":"Ibis4Test",
-        "description":"OpenApi auto-generated at 2022-05-11 08:36:06 for Ibis4Test (LOC)",
+        "description":"OpenApi auto-generated at IGNORE-TIMESTAMP for Ibis4Test (IGNORE-STAGE)",
         "version":"unknown"
     },
     "servers":[
