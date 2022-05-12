@@ -24,7 +24,7 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 
 	private static final Object[][] TEST_DATASOURCES = {
 			// ProductName, Url, user, password, testPeekDoesntFindRecordsAlreadyLocked
-			{ "H2",         "jdbc:h2:mem:test;LOCK_TIMEOUT=1000;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1;", null, null, false, "org.h2.jdbcx.JdbcDataSource" },
+			{ "H2",         "jdbc:h2:mem:test;LOCK_TIMEOUT=1000;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1", null, null, false, "org.h2.jdbcx.JdbcDataSource" },
 			{ "Oracle",     "jdbc:oracle:thin:@localhost:1521:ORCLCDB", 			"testiaf_user", "testiaf_user00", false, "oracle.jdbc.xa.client.OracleXADataSource" }, 
 			{ "MS_SQL",     "jdbc:sqlserver://localhost:1433;database=testiaf", 	"testiaf_user", "testiaf_user00", false, "com.microsoft.sqlserver.jdbc.SQLServerXADataSource" }, 
 			{ "MySQL",      "jdbc:mysql://localhost:3307/testiaf?sslMode=DISABLED&disableMariaDbDriver=1&pinGlobalTxToPhysicalConnection=true&serverTimezone=Europe/Amsterdam", "testiaf_user", "testiaf_user00", true, "com.mysql.cj.jdbc.MysqlXADataSource" }, 
