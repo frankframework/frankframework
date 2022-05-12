@@ -15,10 +15,10 @@ import nl.nn.adapterframework.util.TransformerPoolNamespaceUnawarenessTest;
 public class XmlSwitchNamespaceUnawarenessTest extends PipeTestBase<XmlSwitch> {
 
 	public String NAMESPACE_UNAWARE_XSLT1_RESULT_7_0= "1";
-	public String NAMESPACE_UNAWARE_XSLT1_RESULT_7_5678= "1"; 
+	public String NAMESPACE_UNAWARE_XSLT1_RESULT_7_5678= "1";
 
 	private String namespaceUnaware_Xslt1_result = NAMESPACE_UNAWARE_XSLT1_RESULT_7_5678;
-	
+
 	public String XSLT2_XPATH_RESULT_7_0= "NF";
 	public String XSLT2_XPATH_RESULT_7_5678= "1";
 
@@ -27,7 +27,7 @@ public class XmlSwitchNamespaceUnawarenessTest extends PipeTestBase<XmlSwitch> {
 	@Override
 	public XmlSwitch createPipe() {
 		return new XmlSwitch();
-		
+
 	}
 
 	@Test
