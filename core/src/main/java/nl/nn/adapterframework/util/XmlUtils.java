@@ -872,10 +872,6 @@ public class XmlUtils {
 
 		String namespaceClause = getNamespaceClause(namespaceDefs);
 
-		//xslt version 1 ignores namespaces by default, setting this to true will generate a different non-xslt1-parsable xslt
-		if(xsltVersion == 1 && ignoreNamespaces)
-			ignoreNamespaces = false;
-
 		final String copyMethod;
 		if ("xml".equals(outputMethod)) {
 			copyMethod = "copy-of";
@@ -894,6 +890,11 @@ public class XmlUtils {
 			separatorString = " separator=\"" + separator + "\"";
 		}
 		int version = (xsltVersion == 0) ? DEFAULT_XSLT_VERSION : xsltVersion;
+
+		//xslt version 1 ignores namespaces by default, setting this to true will generate a different non-xslt1-parsable xslt: xslt1 'Can not convert #RTREEFRAG to a NodeList'
+		if(version == 1 && ignoreNamespaces) {
+			ignoreNamespaces = false;
+		}
 
 		String xsl =
 			// "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
@@ -966,9 +967,16 @@ public class XmlUtils {
 	}
 	
 	public static Source stringToSourceForSingleUse(String xmlString, boolean namespaceAware) throws SAXException {
-		StringReader reader = new StringReader(xmlString);
-		InputSource is = new InputSource(reader);
-		return inputSourceToSAXSource(is, namespaceAware, null);
+		if (namespaceAware) {
+			StringReader reader = new StringReader(xmlString);
+			InputSource is = new InputSource(reader);
+			return inputSourceToSAXSource(is, namespaceAware, null);
+		}
+		try {
+			return stringToSource(xmlString, namespaceAware);
+		} catch (DomBuilderException e) {
+			throw new SaxException(e);
+		}
 	}	
 	
 	public static SAXSource inputSourceToSAXSource(Resource resource) throws SAXException, IOException {
