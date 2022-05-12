@@ -17,7 +17,7 @@ import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.adapterframework.util.TransformerPoolTest;
+import nl.nn.adapterframework.util.TransformerPoolNamespaceUnawarenessTest;
 
 public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 
@@ -270,7 +270,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 	public void testNamespaceAwarenessWithStylesheet(int xsltVersion, boolean namespaceAware, String expectedForwardName) throws Exception {
 		pipe.registerForward(new PipeForward("1","FixedResult1"));
 		pipe.registerForward(new PipeForward("NF","FixedResultNF"));
-		pipe.setStyleSheetName(TransformerPoolTest.NAMESPACELESS_STYLESHEET);
+		pipe.setStyleSheetName(TransformerPoolNamespaceUnawarenessTest.NAMESPACELESS_STYLESHEET);
 		pipe.setNotFoundForwardName("NF");
 		pipe.setXsltVersion(xsltVersion);
 		pipe.setNamespaceAware(namespaceAware);

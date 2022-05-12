@@ -14,12 +14,12 @@ import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.adapterframework.util.TransformerPoolTest;
+import nl.nn.adapterframework.util.TransformerPoolNamespaceUnawarenessTest;
 
 public class XmlIfTest extends PipeTestBase<XmlIf>{
 
-	private String NAMESPACE_UNAWARENESS_XPATH = TransformerPoolTest.NAMESPACELESS_XPATH;
-	private String NAMESPACE_UNAWARENESS_INPUT = TransformerPoolTest.NAMESPACED_INPUT_MESSAGE;
+	private String NAMESPACE_UNAWARENESS_XPATH = TransformerPoolNamespaceUnawarenessTest.NAMESPACELESS_XPATH;
+	private String NAMESPACE_UNAWARENESS_INPUT = TransformerPoolNamespaceUnawarenessTest.NAMESPACED_INPUT_MESSAGE;
 
 	private String pipeForwardThen = "then";
 	private String pipeForwardElse = "else";
