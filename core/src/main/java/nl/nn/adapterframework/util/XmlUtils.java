@@ -963,9 +963,16 @@ public class XmlUtils {
 	}
 	
 	public static Source stringToSourceForSingleUse(String xmlString, boolean namespaceAware) throws SAXException {
-		StringReader reader = new StringReader(xmlString);
-		InputSource is = new InputSource(reader);
-		return inputSourceToSAXSource(is, namespaceAware, null);
+		if (namespaceAware) {
+			StringReader reader = new StringReader(xmlString);
+			InputSource is = new InputSource(reader);
+			return inputSourceToSAXSource(is, namespaceAware, null);
+		}
+		try {
+			return stringToSource(xmlString, namespaceAware);
+		} catch (DomBuilderException e) {
+			throw new SaxException(e);
+		}
 	}	
 	
 	public static SAXSource inputSourceToSAXSource(Resource resource) throws SAXException, IOException {
