@@ -7,9 +7,10 @@ import org.xml.sax.ContentHandler;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 import nl.nn.adapterframework.xml.XmlWriter;
 
-public abstract class TransformerPoolNamespaceUnawarenessTest {
+public class TransformerPoolNamespaceUnawarenessTest {
 
 	public static String NAMESPACED_INPUT_MESSAGE="<root><sub xmlns=\"http://dummy\">+</sub><sub>-</sub></root>";
 	public static String NAMESPACELESS_XPATH="/root/sub";
@@ -21,26 +22,25 @@ public abstract class TransformerPoolNamespaceUnawarenessTest {
 	
 	
 	public String XPATH_0_AND_2_RESULT_7_0 = NAMESPACE_COMPLIANT_RESULT;
-	public String XPATH_0_AND_2_RESULT_7_567 = NAMESPACE_INSENSITIVE_RESULT;
-	public String XPATH_0_AND_2_RESULT_7_8 = NAMESPACE_INSENSITIVE_RESULT;
+	public String XPATH_0_AND_2_RESULT_7_5678 = NAMESPACE_INSENSITIVE_RESULT;
 
-	public String xpath_0_and_2_result;
+	public String xpath_0_and_2_result = XPATH_0_AND_2_RESULT_7_5678;
 
 	
 	public String STYLESHEET_AUTO_UNAWARE_RESULT_7_0= NAMESPACE_COMPLIANT_RESULT;
-	public String STYLESHEET_AUTO_UNAWARE_RESULT_7_567= NO_MATCH_AT_ALL;
-	public String STYLESHEET_AUTO_UNAWARE_RESULT_7_8= NAMESPACE_INSENSITIVE_FIRST_RESULT;
+	public String STYLESHEET_AUTO_UNAWARE_RESULT_7_5678= NAMESPACE_INSENSITIVE_FIRST_RESULT;
 
-	public String stylesheet_auto_unaware_result;
+	public String stylesheet_auto_unaware_result = STYLESHEET_AUTO_UNAWARE_RESULT_7_5678;
 	
 	
 	public String XSLT1_UNAWARE_RESULT_7_0= NAMESPACE_INSENSITIVE_FIRST_RESULT;
-	public String XSLT1_UNAWARE_RESULT_7_567= NO_MATCH_AT_ALL;
-	public String XSLT1_UNAWARE_RESULT_7_8= NAMESPACE_INSENSITIVE_FIRST_RESULT;
+	public String XSLT1_UNAWARE_RESULT_7_5678= NAMESPACE_INSENSITIVE_FIRST_RESULT;
 	
-	public String xslt1_unaware_result;
+	public String xslt1_unaware_result = XSLT1_UNAWARE_RESULT_7_5678;
 
-	public abstract TransformerPool getTransformerPool(String xpath, String stylesheet, int xsltVersion) throws ConfigurationException;
+	public TransformerPool getTransformerPool(String xpath, String stylesheet, int xsltVersion) throws ConfigurationException { 
+		return TransformerPool.configureTransformer0("transformerpool test", null, null, xpath, stylesheet, OutputType.TEXT, false, null, xsltVersion);
+	}
 	
 	public void testNamespaceInsensitiveTransformation(String xpath, String stylesheet, int xsltVersion, boolean namespaceAware, String expectedResult) throws Exception {
 		TransformerPool tp = getTransformerPool(xpath, stylesheet, xsltVersion);

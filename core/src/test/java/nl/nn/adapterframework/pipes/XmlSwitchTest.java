@@ -17,7 +17,6 @@ import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.adapterframework.util.TransformerPoolNamespaceUnawarenessTest;
 
 public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 
@@ -76,7 +75,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		inputParameter.setName("source");
 		inputParameter.setType(ParameterType.DOMDOC);
 		inputParameter.setRemoveNamespaces(true);
-
+		
 		pipe.addParameter(inputParameter);
 		pipe.setXsltVersion(1);
 		pipe.setXpathExpression("$source/Envelope/Body/SetRequest/CaseData/CASE_ID");
@@ -132,7 +131,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 
 		testSwitch(new Message("<dummy/>"),"true");
 	}
-
+	
 	@Test
 	public void testXsltVersionAutoDetect() throws Exception {
 		String message = "<root>2</root>";
@@ -183,7 +182,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		Message input=TestFileUtils.getTestFileMessage("/XmlSwitch/in.xml");
 		testSwitch(input,"selectValue");
 	}
-
+	
 	@Test
 	public void storeForwardInSessionKey() throws Exception {
 		pipe.registerForward(new PipeForward("Envelope","Envelope-Path"));
@@ -266,89 +265,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		session.put("input", input);
 		testSwitch(input,"dummy");
 	}
-
-	public void testNamespaceAwarenessWithStylesheet(int xsltVersion, boolean namespaceAware, String expectedForwardName) throws Exception {
-		pipe.registerForward(new PipeForward("1","FixedResult1"));
-		pipe.registerForward(new PipeForward("NF","FixedResultNF"));
-		pipe.setStyleSheetName(TransformerPoolNamespaceUnawarenessTest.NAMESPACELESS_STYLESHEET);
-		pipe.setNotFoundForwardName("NF");
-		pipe.setXsltVersion(xsltVersion);
-		pipe.setNamespaceAware(namespaceAware);
-		Message input=new Message("<root xmlns=\"http://dummy\"><sub>1</sub></root>");
-		testSwitch(input,expectedForwardName);
-	}
-
-	public void testNamespaceAwarenessWithXpath(int xsltVersion, boolean namespaceAware, String expectedForwardName) throws Exception {
-		pipe.registerForward(new PipeForward("1","FixedResult1"));
-		pipe.registerForward(new PipeForward("NF","FixedResultNF"));
-		pipe.setXpathExpression("/root/sub");
-		pipe.setNotFoundForwardName("NF");
-		pipe.setXsltVersion(xsltVersion);
-		pipe.setNamespaceAware(namespaceAware);
-		Message input=new Message("<root xmlns=\"http://dummy\"><sub>1</sub></root>");
-		testSwitch(input,expectedForwardName);
-	}
-
-	@Test
-	public void testNamespaceAwareWithStylesheetXslt2() throws Exception {
-		testNamespaceAwarenessWithStylesheet(2, true, "NF");
-	}
-
-	@Test
-	public void testNamespaceAwareWithXPathXslt2() throws Exception {
-		testNamespaceAwarenessWithXpath(2, true, "1"); // Will return 1, as Xslt 2.0 stylesheet generated from XPath will ignore namespaces in input, as no namespaceDefs were specified
-	}
-
-	@Test
-	public void testNamespaceUnawareWithStylesheetXslt2() throws Exception {
-		testNamespaceAwarenessWithStylesheet(2, false, "NF"); // should not set XsltVersion=2 explicitly if you want a namespace unaware XSLT 1.0 stylesheet transformation.
-	}
-
-	@Test
-	public void testNamespaceUnawareWithXPathXslt2() throws Exception {
-		testNamespaceAwarenessWithXpath(2, false, "1");
-	}
-
-	@Test
-	public void testNamespaceAwareWithStylesheetXslt1() throws Exception {
-		testNamespaceAwarenessWithStylesheet(1, true, "NF");
-	}
-
-	@Test
-	public void testNamespaceAwareWithXPathXslt1() throws Exception {
-		testNamespaceAwarenessWithXpath(1, true, "NF");
-	}
-
-	@Test
-	public void testNamespaceUnawareWithStylesheetXslt1() throws Exception {
-		testNamespaceAwarenessWithStylesheet(1, false, "1");
-	}
-
-	@Test
-	public void testNamespaceUnawareWithXPathXslt1() throws Exception {
-		testNamespaceAwarenessWithXpath(1, false, "1");
-	}
-
-	@Test
-	public void testNamespaceAwareWithStylesheetXsltVersionAutoDetect() throws Exception {
-		testNamespaceAwarenessWithStylesheet(0, true, "NF");
-	}
-
-	@Test
-	public void testNamespaceAwareWithXPathXsltVersionAutoDetect() throws Exception {
-		testNamespaceAwarenessWithXpath(0, true, "1");  // Will return 1, as Xslt 2.0 stylesheet generated from XPath will ignore namespaces in input, as no namespaceDefs were specified
-	}
-
-	@Test
-	public void testNamespaceUnawareWithStylesheetXsltVersionAutoDetect() throws Exception {
-		testNamespaceAwarenessWithStylesheet(0, false, "1");
-	}
-
-	@Test
-	public void testNamespaceUnawareWithXPathXsltVersionAutoDetect() throws Exception {
-		testNamespaceAwarenessWithXpath(0, false, "1");
-	}
-
+	
 	@Test
 	public void configureNotFoundForwardNotRegistered() throws Exception {
 		pipe.setXpathExpression("name(/node()[position()=last()])");

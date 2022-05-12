@@ -3,6 +3,7 @@ package nl.nn.adapterframework.pipes;
 
 import static org.junit.Assert.assertEquals;
 
+
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -14,12 +15,8 @@ import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.adapterframework.util.TransformerPoolNamespaceUnawarenessTest;
 
 public class XmlIfTest extends PipeTestBase<XmlIf>{
-
-	private String NAMESPACE_UNAWARENESS_XPATH = TransformerPoolNamespaceUnawarenessTest.NAMESPACELESS_XPATH;
-	private String NAMESPACE_UNAWARENESS_INPUT = TransformerPoolNamespaceUnawarenessTest.NAMESPACED_INPUT_MESSAGE;
 
 	private String pipeForwardThen = "then";
 	private String pipeForwardElse = "else";
@@ -78,18 +75,18 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	public void emptySessionKeyNullInputTest() throws Exception {
 		pipe.setSessionKey("");
 		configureAndStartPipe();
-
+		
 		PipeRunResult pipeRunResult = doPipe(pipe, null, session);
 		assertEquals(pipeForwardElse, pipeRunResult.getPipeForward().getName());
 	}
 
 	@Test
-	public void invalidInputXmlTest() throws Exception {
+	public void invalidXPathExpressionTest() throws Exception {
 		exception.expect(PipeRunException.class);
 
 		pipe.setXpathExpression("someexpression");
 		configureAndStartPipe();
-
+		
 		PipeRunResult pipeRunResult = doPipe(pipe, "test", session);
 		assertEquals(pipeForwardElse, pipeRunResult.getPipeForward().getName());
 	}
@@ -117,7 +114,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	public void emptyXPathExpressionTest() throws Exception {
 		pipe.setXpathExpression("");
 		configureAndStartPipe();
-
+		
 		PipeRunResult pipeRunResult = doPipe(pipe, "<test", session);
 		assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
 	}
@@ -127,7 +124,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		pipe.setXpathExpression("");
 		pipe.setExpressionValue("");
 		configureAndStartPipe();
-
+		
 		PipeRunResult pipeRunResult = doPipe(pipe, "<test", session);
 		assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
 	}
@@ -187,7 +184,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		pipe.setExpressionValue("");
 		pipe.configure();
 		pipe.start();
-
+		
 		PipeRunResult pipeRunResult = doPipe(pipe, "<root>test</root>", session);
 		assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
 	}
@@ -197,7 +194,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		pipe.setXpathExpression("/root");
 		pipe.setExpressionValue("test");
 		configureAndStartPipe();
-
+		
 		PipeRunResult pipeRunResult = doPipe(pipe, "<root>test</root>", session);
 		assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
 	}
@@ -207,7 +204,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		pipe.setXpathExpression("/root");
 		pipe.setExpressionValue("test");
 		configureAndStartPipe();
-
+		
 		PipeRunResult pipeRunResult = doPipe(pipe, "<root>test123</root>", session);
 		assertEquals(pipeForwardElse, pipeRunResult.getPipeForward().getName());
 	}
@@ -217,7 +214,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		pipe.setXpathExpression("/root");
 		pipe.setExpressionValue("");
 		configureAndStartPipe();
-
+		
 		PipeRunResult pipeRunResult = doPipe(pipe, "<root/>", session);
 		assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
 	}
@@ -227,7 +224,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		pipe.setXpathExpression("/test");
 		pipe.setExpressionValue("");
 		configureAndStartPipe();
-
+		
 		PipeRunResult pipeRunResult = doPipe(pipe, "<root>test123</root>", session);
 		assertEquals(pipeForwardElse, pipeRunResult.getPipeForward().getName());
 	}
@@ -325,9 +322,9 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	@Test
 	public void emptyNamespaceDefsTest() throws Exception {
 		exception.expectMessage("Undeclared namespace prefix");
-		String input = "&lt;root&gt;\n" +
-				"&lt;dummy&gt;true&lt;/dummy&gt;\n" +
-				"&lt;dummy&gt;true&lt;/dummy&gt;\n" +
+		String input = "&lt;root&gt;\n" + 
+				"&lt;dummy&gt;true&lt;/dummy&gt;\n" + 
+				"&lt;dummy&gt;true&lt;/dummy&gt;\n" + 
 				"&lt;/root&gt;";
 		String pipeName = "test1";
 		pipe.setThenForwardName(pipeName);
@@ -474,36 +471,4 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		PipeRunResult prr = doPipe(pipe, TestFileUtils.getTestFileURL("/Xslt/AnyXml/in.xml").openStream(), session);
 		assertEquals(thenPipeName, prr.getPipeForward().getName());
 	}
-
-	@Test
-	public void testNamespaceAwareWithXpath() throws Exception {
-		testNamespaceUnawareness(true, pipeForwardThen);
-	}
-
-	@Test
-	public void testNotNamespaceAwareWithXpath() throws Exception {
-		testNamespaceUnawareness(false, pipeForwardThen);
-	}
-
-
-	public void testNamespaceUnawareness(boolean namespaceAware, String expectedForward) throws Exception {
-		pipe.setXpathExpression(NAMESPACE_UNAWARENESS_XPATH);
-		configureAndStartPipe();
-
-		PipeRunResult prr = doPipe(NAMESPACE_UNAWARENESS_INPUT);
-		assertEquals(expectedForward, prr.getPipeForward().getName());
-	}
-
-	@Test
-	public void test3156() throws Exception {
-		pipe.setXpathExpression("root/code = 'OK'");
-		pipe.setNamespaceAware(false);
-		configureAndStartPipe();
-
-		String input = "<root xmlns=\"urn:something\"><code>OK</code><body>xxx</body></root>";
-
-		PipeRunResult prr = doPipe(input);
-		assertEquals(pipeForwardThen, prr.getPipeForward().getName());
-	}
-
 }
