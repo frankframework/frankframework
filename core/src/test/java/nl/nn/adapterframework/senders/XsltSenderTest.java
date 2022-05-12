@@ -20,16 +20,16 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
-import nl.nn.adapterframework.util.TransformerPoolTest;
+import nl.nn.adapterframework.util.TransformerPoolNamespaceUnawarenessTest;
 
 public class XsltSenderTest extends SenderTestBase<XsltSender> {
 
-	private String NAMESPACE_UNAWARENESS_STYLESHEET = TransformerPoolTest.NAMESPACELESS_STYLESHEET;
-	private String NAMESPACE_UNAWARENESS_XPATH = TransformerPoolTest.NAMESPACELESS_XPATH;
-	private String NAMESPACE_UNAWARENESS_INPUT = TransformerPoolTest.NAMESPACED_INPUT_MESSAGE;
-	private String NAMESPACE_UNAWARE_EXPECTED_RESULT = TransformerPoolTest.NAMESPACE_INSENSITIVE_RESULT;
-	private String NAMESPACE_COMPLIANT_RESULT = TransformerPoolTest.NAMESPACE_COMPLIANT_RESULT;
-	private String NAMESPACE_UNAWARE_EXPECTED_FIRST_RESULT = TransformerPoolTest.NAMESPACE_INSENSITIVE_FIRST_RESULT;
+	private String NAMESPACE_UNAWARENESS_STYLESHEET = TransformerPoolNamespaceUnawarenessTest.NAMESPACELESS_STYLESHEET;
+	private String NAMESPACE_UNAWARENESS_XPATH = TransformerPoolNamespaceUnawarenessTest.NAMESPACELESS_XPATH;
+	private String NAMESPACE_UNAWARENESS_INPUT = TransformerPoolNamespaceUnawarenessTest.NAMESPACED_INPUT_MESSAGE;
+	private String NAMESPACE_UNAWARE_EXPECTED_RESULT = TransformerPoolNamespaceUnawarenessTest.NAMESPACE_INSENSITIVE_RESULT;
+	private String NAMESPACE_COMPLIANT_RESULT = TransformerPoolNamespaceUnawarenessTest.NAMESPACE_COMPLIANT_RESULT;
+	private String NAMESPACE_UNAWARE_EXPECTED_FIRST_RESULT = TransformerPoolNamespaceUnawarenessTest.NAMESPACE_INSENSITIVE_FIRST_RESULT;
 
 
 	@Override
