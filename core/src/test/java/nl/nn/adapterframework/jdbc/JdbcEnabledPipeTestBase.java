@@ -15,7 +15,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.testutil.TestConfiguration;
 
 public abstract class JdbcEnabledPipeTestBase<P extends IPipe> extends JdbcTestBase {
 
@@ -24,14 +23,6 @@ public abstract class JdbcEnabledPipeTestBase<P extends IPipe> extends JdbcTestB
 	protected P pipe;
 	protected PipeLine pipeline;
 	protected Adapter adapter;
-	private static TestConfiguration configuration;
-
-	private TestConfiguration getConfiguration() {
-		if(configuration == null) {
-			configuration = new TestConfiguration();
-		}
-		return configuration;
-	}
 
 	public abstract P createPipe();
 
