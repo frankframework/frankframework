@@ -30,7 +30,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
@@ -98,6 +97,8 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.Resource;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
 import nl.nn.adapterframework.validation.RootValidations;
@@ -761,25 +762,6 @@ public class XmlUtils {
 	}
 
 
-	public static String createXPathEvaluatorSource(String XPathExpression)	throws TransformerConfigurationException {
-		return createXPathEvaluatorSource(XPathExpression, OutputType.TEXT);
-	}
-
-	/*
-	 * version of createXPathEvaluator that allows to set outputMethod, and uses copy-of instead of value-of
-	 */
-	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, OutputType outputMethod, boolean includeXmlDeclaration) {
-		return createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod, includeXmlDeclaration, null);
-	}
-
-	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, OutputType outputMethod, boolean includeXmlDeclaration, List<String> paramNames) {
-		return createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod, includeXmlDeclaration, paramNames, true);
-	}
-
-	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, OutputType outputMethod, boolean includeXmlDeclaration, List<String> paramNames, boolean stripSpace) {
-		return createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod, includeXmlDeclaration, paramNames, stripSpace, false, null, 0);
-	}
-
 	public static String getNamespaceClause(String namespaceDefs) {
 		String namespaceClause = "";
 		for (Entry<String,String> namespaceDef:getNamespaceMap(namespaceDefs).entrySet()) {
@@ -804,11 +786,34 @@ public class XmlUtils {
 		return namespaceMap;
 	}
 
+	public static String createXPathEvaluatorSource(String XPathExpression)	throws TransformerConfigurationException {
+		return createXPathEvaluatorSource(XPathExpression, OutputType.TEXT);
+	}
+
+	public static String createXPathEvaluatorSource(String xPathExpression, OutputType outputMethod) {
+		return createXPathEvaluatorSource(null, xPathExpression, outputMethod);
+	}
+
+	public static String createXPathEvaluatorSource(String namespaceDefs, String xPathExpression, OutputType outputMethod) {
+		return createXPathEvaluatorSource(namespaceDefs, xPathExpression, outputMethod, false);
+	}
+
+	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, OutputType outputMethod, boolean includeXmlDeclaration) {
+		return createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod, includeXmlDeclaration, null);
+	}
+
+	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, OutputType outputMethod, boolean includeXmlDeclaration, ParameterList params) {
+		return createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod, includeXmlDeclaration, params, true);
+	}
+
+	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, OutputType outputMethod, boolean includeXmlDeclaration, ParameterList params, boolean stripSpace) {
+		return createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod, includeXmlDeclaration, params, stripSpace, false, null, 0);
+	}
+
 	/*
 	 * version of createXPathEvaluator that allows to set outputMethod, and uses copy-of instead of value-of, and enables use of parameters.
-	 * TODO when xslt version equals 1, namespaces are ignored by default, setting 'ignoreNamespaces' to true will generate a non-xslt1-parsable xslt
 	 */
-	public static String createXPathEvaluatorSource(String namespaceDefs, String xpathExpression, OutputType outputMethod, boolean includeXmlDeclaration, List<String> paramNames, boolean stripSpace, boolean ignoreNamespaces, String separator, int xsltVersion) {
+	public static String createXPathEvaluatorSource(String namespaceDefs, String xpathExpression, OutputType outputMethod, boolean includeXmlDeclaration, ParameterList params, boolean stripSpace, boolean ignoreNamespaces, String separator, int xsltVersion) {
 		String namespaceClause = getNamespaceClause(namespaceDefs);
 
 		final String copyMethod;
@@ -820,18 +825,18 @@ public class XmlUtils {
 
 		final String separatorString = separator != null ? " separator=\"" + separator + "\"" : "";
 
-		return createXPathEvaluatorSource(xpathExpression, x -> "<xsl:"+copyMethod+" "+namespaceClause+" select=\"" + XmlUtils.encodeChars(xpathExpression) + "\"" + separatorString + "/>", outputMethod, includeXmlDeclaration, paramNames, stripSpace, ignoreNamespaces, xsltVersion);
+		return createXPathEvaluatorSource(x -> "<xsl:"+copyMethod+" "+namespaceClause+" select=\"" + XmlUtils.encodeChars(xpathExpression) + "\"" + separatorString + "/>", xpathExpression, outputMethod, includeXmlDeclaration, params, stripSpace, ignoreNamespaces, xsltVersion);
 	}
 
-	public static String createXPathEvaluatorSource(String xpathExpression, Function<String,String> xpathContainerSupplier, OutputType outputMethod, boolean includeXmlDeclaration, List<String> paramNames, boolean stripSpace, boolean ignoreNamespaces, int xsltVersion) {
+	public static String createXPathEvaluatorSource(Function<String,String> xpathContainerSupplier, String xpathExpression, OutputType outputMethod, boolean includeXmlDeclaration, ParameterList params, boolean stripSpace, boolean ignoreNamespaces, int xsltVersion) {
 		if (StringUtils.isEmpty(xpathExpression)) {
 			throw new IllegalArgumentException("XPathExpression must be filled");
 		}
 
 		String paramsString = "";
-		if (paramNames != null) {
-			for (String paramName: paramNames) {
-				paramsString = paramsString + "<xsl:param name=\"" + paramName + "\"/>";
+		if (params != null) {
+			for (Parameter param: params) {
+				paramsString = paramsString + "<xsl:param name=\"" + param.getName() + "\"/>";
 			}
 		}
 		int version = (xsltVersion == 0) ? DEFAULT_XSLT_VERSION : xsltVersion;
@@ -871,13 +876,6 @@ public class XmlUtils {
 		return xsl;
 	}
 
-	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, OutputType outputMethod) {
-		return createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod, false);
-	}
-
-	public static String createXPathEvaluatorSource(String XPathExpression, OutputType outputMethod) {
-		return createXPathEvaluatorSource(null, XPathExpression, outputMethod);
-	}
 
 
 	public static Transformer createXPathEvaluator(String XPathExpression)

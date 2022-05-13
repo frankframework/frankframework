@@ -16,9 +16,7 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import javax.xml.transform.TransformerConfigurationException;
 
@@ -35,8 +33,8 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.TransformerPool;
-import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Selects an forward, based on XPath evaluation
@@ -63,11 +61,11 @@ public class XmlIf extends AbstractPipe {
 
 	protected String makeStylesheet(String xpathExpression, String resultVal) {
 		String namespaceClause = XmlUtils.getNamespaceClause(getNamespaceDefs());
-		return XmlUtils.createXPathEvaluatorSource(xpathExpression, x -> "<xsl:choose>" +
-				"<xsl:when "+namespaceClause+" test=\"" + XmlUtils.encodeChars(x) + "\">" +getThenForwardName()+"</xsl:when>"+
-				"<xsl:otherwise>" +getElseForwardName()+"</xsl:otherwise>" +
-			"</xsl:choose>", OutputType.TEXT,
-			false, getParameterList().stream().map(p -> p.getName()).collect(Collectors.toCollection(ArrayList<String>::new)), true, !isNamespaceAware(), xsltVersion);
+		return XmlUtils.createXPathEvaluatorSource(x -> "<xsl:choose>" +
+															"<xsl:when "+namespaceClause+" test=\"" + XmlUtils.encodeChars(x) + "\">" +getThenForwardName()+"</xsl:when>"+
+															"<xsl:otherwise>" +getElseForwardName()+"</xsl:otherwise>" +
+														"</xsl:choose>",
+													xpathExpression, OutputType.TEXT, false, getParameterList(), true, !isNamespaceAware(), xsltVersion);
 	}
 
 	@Override
