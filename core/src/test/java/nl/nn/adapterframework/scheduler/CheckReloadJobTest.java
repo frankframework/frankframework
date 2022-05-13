@@ -31,7 +31,6 @@ public class CheckReloadJobTest extends JdbcTestBase {
 		};
 		jobDef.setName("CheckReloadJob");
 		configuration.autowireByName(jobDef);
-		configuration.configure();
 	}
 
 	@Test
