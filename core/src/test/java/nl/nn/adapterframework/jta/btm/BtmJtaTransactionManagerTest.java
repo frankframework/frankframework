@@ -28,6 +28,7 @@ import bitronix.tm.BitronixTransactionManager;
 import bitronix.tm.TransactionManagerServices;
 import nl.nn.adapterframework.testutil.BTMXADataSourceFactory;
 
+@Ignore
 public class BtmJtaTransactionManagerTest {
 
 	public String STATUS_FILE = "status.txt";
