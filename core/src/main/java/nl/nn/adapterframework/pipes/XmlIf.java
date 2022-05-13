@@ -65,7 +65,8 @@ public class XmlIf extends AbstractPipe {
 															"<xsl:when "+namespaceClause+" test=\"" + XmlUtils.encodeChars(x) + "\">" +getThenForwardName()+"</xsl:when>"+
 															"<xsl:otherwise>" +getElseForwardName()+"</xsl:otherwise>" +
 														"</xsl:choose>",
-													xpathExpression, OutputType.TEXT, false, getParameterList(), true, !isNamespaceAware(), xsltVersion);
+													xpathExpression + (StringUtils.isEmpty(resultVal)?"":"='"+resultVal+"'"), 
+													OutputType.TEXT, false, getParameterList(), true, !isNamespaceAware(), xsltVersion);
 	}
 
 	@Override
