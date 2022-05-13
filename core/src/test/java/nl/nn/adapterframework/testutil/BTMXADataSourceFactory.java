@@ -3,6 +3,8 @@ package nl.nn.adapterframework.testutil;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
+import org.springframework.jdbc.datasource.DelegatingDataSource;
+
 import bitronix.tm.Configuration;
 import bitronix.tm.TransactionManagerServices;
 import bitronix.tm.resource.jdbc.PoolingDataSource;
@@ -42,8 +44,21 @@ public class BTMXADataSourceFactory extends URLXADataSourceFactory {
 	}
 
 	@Override
-	public void destroy() throws Exception {
-		objects.values().stream().filter(ds -> ds instanceof PoolingDataSource).forEach(ds -> ((PoolingDataSource)ds).close());
+	public synchronized void destroy() throws Exception {
+		for (DataSource dataSource : objects.values()) {
+			DataSource originalDataSource = getOriginalDataSource(dataSource);
+			if(originalDataSource instanceof PoolingDataSource) {
+				((PoolingDataSource) originalDataSource).close();
+			}
+		}
+		super.destroy();
+	}
+
+	private DataSource getOriginalDataSource(DataSource dataSource) {
+		if(dataSource instanceof DelegatingDataSource) {
+			return getOriginalDataSource(((DelegatingDataSource) dataSource).getTargetDataSource());
+		}
+		return dataSource;
 	}
 
 }
