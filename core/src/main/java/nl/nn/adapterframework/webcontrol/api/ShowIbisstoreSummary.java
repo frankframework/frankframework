@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -41,6 +40,7 @@ import org.apache.commons.lang3.StringUtils;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.IPipe;
+import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.PipeLine;
@@ -59,7 +59,7 @@ public final class ShowIbisstoreSummary extends Base {
 	@Path("/jdbc/summary")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response execute(LinkedHashMap<String, Object> json) throws ApiException {
+	public Response execute(Map<String, Object> json) throws ApiException {
 
 		Response.ResponseBuilder response = Response.noContent(); //PUT defaults to no content
 
@@ -82,7 +82,7 @@ public final class ShowIbisstoreSummary extends Base {
 		String result = "";
 		try {
 			IbisstoreSummaryQuerySender qs;
-			qs = (IbisstoreSummaryQuerySender) getIbisContext().createBeanAutowireByName(IbisstoreSummaryQuerySender.class);
+			qs = getIbisContext().createBeanAutowireByName(IbisstoreSummaryQuerySender.class);
 			qs.setSlotmap(getSlotmap());
 			try {
 				qs.setName("QuerySender");
@@ -103,12 +103,12 @@ public final class ShowIbisstoreSummary extends Base {
 		}
 
 		String resultObject = "{ \"result\":"+result+"}";
-		
+
 		return Response.status(Response.Status.CREATED).entity(resultObject).build();
 	}
 
 	private Map<String, SlotIdRecord> getSlotmap() {
-		Map<String, SlotIdRecord> slotmap = new HashMap<String, SlotIdRecord>();
+		Map<String, SlotIdRecord> slotmap = new HashMap<>();
 
 		for(Adapter adapter: getIbisManager().getRegisteredAdapters()) {
 			for (Receiver receiver: adapter.getReceivers()) {
@@ -146,6 +146,18 @@ public final class ShowIbisstoreSummary extends Base {
 								slotmap.put(type+"/"+slotId,sir);
 								slotmap.put(slotId,sir);
 							}
+						} else {
+							ISender sender = msp.getSender();
+							if(sender instanceof ITransactionalStorage) {
+								ITransactionalStorage transactionalStorage = (ITransactionalStorage) sender;
+								String slotId=transactionalStorage.getSlotId();
+								if (StringUtils.isNotEmpty(slotId)) {
+									SlotIdRecord sir=new SlotIdRecord(adapter.getName(),null,msp.getName());
+									String type = transactionalStorage.getType();
+									slotmap.put(type+"/"+slotId,sir);
+									slotmap.put(slotId,sir);
+								}
+							}
 						}
 					}
 				}
@@ -156,8 +168,8 @@ public final class ShowIbisstoreSummary extends Base {
 }
 
 class IbisstoreSummaryQuerySender extends DirectQuerySender {
-	private Map<String, SlotIdRecord> slotmap = new HashMap<String, SlotIdRecord>();
-	
+	private Map<String, SlotIdRecord> slotmap = new HashMap<>();
+
 	public void setSlotmap(Map<String, SlotIdRecord> slotmap) {
 		this.slotmap = slotmap;
 	}
@@ -181,14 +193,14 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 			String slotid = resultset.getString("slotid");
 			String date =  resultset.getString("msgdate");
 			int count =    resultset.getInt("msgcount");
-			
+
 			if (type==null) {
 				type="";
 			}
 			if (slotid==null) {
 				slotid="";
 			}
-		
+
 			if (!type.equals(previousType)) {
 				if (typeBuilder!=null) {
 					slotBuilder.add("datecount",slotdatecount);
@@ -231,7 +243,7 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 				datesBuilder = Json.createArrayBuilder();
 				slotBuilder.add("id",slotid);
 				if (StringUtils.isNotEmpty(slotid)) {
-					SlotIdRecord sir=(SlotIdRecord)slotmap.get(type+"/"+slotid);
+					SlotIdRecord sir=slotmap.get(type+"/"+slotid);
 					if (sir!=null) {
 						slotBuilder.add("adapter",sir.adapterName);
 						if (StringUtils.isNotEmpty(sir.receiverName) ) {
@@ -249,7 +261,7 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 			typedatecount++;
 			slotmsgcount+=count;
 			slotdatecount++;
-			
+
 			datesBuilder.add(Json.createObjectBuilder().add("id",date).add("count",count).build());
 		}
 
@@ -259,7 +271,7 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 			slotBuilder.add("dates", datesBuilder.build());
 			slotsBuilder.add(slotBuilder.build());
 		}
-		
+
 		if (typeBuilder!=null) {
 			typeBuilder.add("slotcount",typeslotcount);
 			typeBuilder.add("datecount",typedatecount);
@@ -267,7 +279,7 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 			typeBuilder.add("slots", slotsBuilder.build());
 			types.add(typeBuilder.build());
 		}
-		
+
 		JsonStructure result = types.build();
 		return new PipeRunResult(null, new Message(result.toString()));
 	}
@@ -277,7 +289,7 @@ class SlotIdRecord {
 	public String adapterName;
 	public String receiverName;
 	public String pipeName;
-	
+
 	SlotIdRecord(String adapterName, String receiverName, String pipeName) {
 		super();
 		this.adapterName=adapterName;

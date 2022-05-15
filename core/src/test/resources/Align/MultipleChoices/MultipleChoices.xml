@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ns1:EmbeddedChoice xmlns:ns1="urn:fbp">
+	<ns1:Qualifier>xx</ns1:Qualifier>
+	<ns1:IgnoreFilter>SWITCH</ns1:IgnoreFilter>
+</ns1:EmbeddedChoice>

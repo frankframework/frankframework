@@ -25,7 +25,7 @@ import nl.nn.adapterframework.util.LogUtil;
 public enum AuthenticationScheme {
 	OAUTH(OAuthAuthenticationScheme.class),
 	BASIC(BasicScheme.class);
-	
+
 	protected Logger log = LogUtil.getLogger(this);
 
 	private @Getter String schemeName;

@@ -212,6 +212,11 @@ public abstract class AlignTestBase {
 		testFiles("TextAndAttributes/schema.xsd", "", "Root", "TextAndAttributes/input", true);
 	}
 
+	@Test
+	public void testMultipleChoices() throws Exception {
+		testFiles("MultipleChoices/MultipleChoices.xsd", "", "EmbeddedChoice", "MultipleChoices/MultipleChoices");
+	}
+
 //	@Test
 //	public void testPetstorePets() throws Exception {
 //		testFiles("Petstore/petstore.xsd", "", "Pets", "Petstore/petstore", true);
