@@ -14,27 +14,45 @@
         },
         "EmbeddedChoiceType":{
             "type":"object",
-            "oneOf":[
+            "allOf":[
                 {
-                    "required":[
-                        "BusinessPartnerId"
+                    "oneOf":[
+                        {
+                            "required":[
+                                "BusinessPartnerId"
+                            ]
+                        },
+                        {
+                            "required":[
+                                "Qualifier"
+                            ]
+                        }
                     ]
                 },
                 {
-                    "required":[
-                        "Qualifier"
+                    "oneOf":[
+                        {
+                            "required":[
+                                "EnableFuzzySearch"
+                            ]
+                        },
+                        {
+                            "required":[
+                                "IgnoreFilter"
+                            ]
+                        }
                     ]
                 }
             ],
             "additionalProperties":false,
             "properties":{
-                "EnableFuzzySearch":{
-                    "type":"string"
-                },
                 "BusinessPartnerId":{
                     "type":"string"
                 },
                 "Qualifier":{
+                    "type":"string"
+                },
+                "EnableFuzzySearch":{
                     "type":"string"
                 },
                 "IgnoreFilter":{
