@@ -37,6 +37,8 @@ import io.micrometer.core.instrument.distribution.ValueAtPercentile;
 import io.micrometer.core.instrument.search.Search;
 import io.micrometer.core.instrument.simple.SimpleConfig;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IPipe;
 
 public class FrankStatisticsRegistry extends SimpleMeterRegistry {
 	private static final NumberFormat keyFormat = new DecimalFormat("#");
@@ -48,21 +50,19 @@ public class FrankStatisticsRegistry extends SimpleMeterRegistry {
 	@Override
 	protected DistributionSummary newDistributionSummary(Id id, DistributionStatisticConfig distributionStatisticConfig, double scale) {
 		DistributionStatisticConfig merged = distributionStatisticConfig.merge(DistributionStatisticConfig.builder().expiry(Duration.ofHours(1)).build());
-
-		DistributionSummary summary = new FrankCumulativeDistributionSummary(id, clock, merged, scale, false);
+		DistributionSummary summary = new FrankDistributionSummary(id, clock, merged, scale, false);
 
 		HistogramGauges.registerWithCommonFormat(summary, this);
-//		DistributionSummary summary = super.newDistributionSummary(id, distributionStatisticConfig, scale);
 
 		return summary;
 	}
 
-	public Map<String, Object> doSomething() {
-		String adapter = "ApiListener_SimpleInsert";
-
+	public Map<String, Object> doSomething(IAdapter adapter) {
 		List<Tag> searchTags = new ArrayList<>();
-		searchTags.add(Tag.of("type", "application"));//system
-		searchTags.add(Tag.of("adapter", adapter));
+		searchTags.add(Tag.of("type", "application"));
+		if(adapter != null) {
+			searchTags.add(Tag.of("adapter", adapter.getName()));
+		}
 
 //		JsonObjectBuilder root = Json.createObjectBuilder();
 //		JsonObjectBuilder pipeline = Json.createObjectBuilder();
@@ -94,6 +94,10 @@ public class FrankStatisticsRegistry extends SimpleMeterRegistry {
 //		frank.receivers.messagesReceived
 //		frank.receivers.messagesRejected
 //		frank.receivers.messagesRetried
+		
+		for(IPipe pipe : adapter.getPipeLine().getPipes()) {
+			System.out.println(pipe.getName());
+		}
 
 		List adapterStats = getDistributionSummary(search, "frank");
 		if(adapterStats.isEmpty()) {
@@ -116,7 +120,7 @@ public class FrankStatisticsRegistry extends SimpleMeterRegistry {
 //		Map<String, Map<String, Object>> root = new ConcurrentSkipListMap<>();
 		List<Map<String, Object>> root = new LinkedList<>();
 		for(DistributionSummary distSum : search.name(summaryName).summaries()) { //n -> true
-			FrankCumulativeDistributionSummary summary = (FrankCumulativeDistributionSummary) distSum;
+			FrankDistributionSummary summary = (FrankDistributionSummary) distSum;
 			String name = summary.getId().getTag("name");
 //			Map<String, Object> values = root.computeIfAbsent(name, e -> new LinkedHashMap<>());
 			Map<String, Object> values = new LinkedHashMap<>();
@@ -137,8 +141,7 @@ public class FrankStatisticsRegistry extends SimpleMeterRegistry {
 			//le tags, 100/1000/2000/10000
 			for (CountAtBucket bucket : snapshot.histogramCounts()) {
 				String key = keyFormat.format(bucket.bucket()) + unit;
-				System.out.println("bucket="+bucket.count() +",total="+ total);
-				values.put(key, format(bucket.count() * 100));
+				values.put(key, bucket.count());
 			}
 
 			//phi tags, 50/90/95/98
@@ -157,33 +160,4 @@ public class FrankStatisticsRegistry extends SimpleMeterRegistry {
 		}
 		return new BigDecimal(val).setScale(1, BigDecimal.ROUND_HALF_EVEN);
 	}
-/*
-	private void getMeters(Map<String, Map<String, Double>> root, Collection<Meter> meters) {
-		for(Meter meter : meters) {
-			String name = meter.getId().getTag("name");
-			Map<String, Double> values = root.computeIfAbsent(name, e -> new ConcurrentSkipListMap<>());
-			EnumMap<Statistic, Double> measurements = new EnumMap<>(Statistic.class);
-			for(Measurement measurement : meter.measure()) {
-				Statistic type = measurement.getStatistic();
-				values.put(type.name(), measurement.getValue());
-			}
-		}
-	}
-
-	private void doHistogram(Map<String, Map<String, Double>> root, Collection<Gauge> gauges, String tagName) {
-		for(Meter meter : gauges) {
-			EnumMap<Statistic, Double> measurements = new EnumMap<>(Statistic.class);
-			for(Measurement measurement : meter.measure()) {
-				Statistic type = measurement.getStatistic();
-				measurements.put(type, measurement.getValue());
-			}
-			String name = meter.getId().getTag("name");
-			Map<String, Double> values = root.computeIfAbsent(name, e -> new ConcurrentSkipListMap<>());
-			String key = meter.getId().getTag(tagName);
-			if(key != null) {
-				values.put(key, measurements.get(Statistic.VALUE));
-			}
-		}
-	}
-*/
 }

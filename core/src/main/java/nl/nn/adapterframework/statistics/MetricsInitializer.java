@@ -34,7 +34,6 @@ import lombok.Setter;
 import net.sf.ehcache.Ehcache;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.lifecycle.ApplicationMetrics;
 import nl.nn.adapterframework.metrics.MetricsRegistry;
 import nl.nn.adapterframework.util.LogUtil;
 

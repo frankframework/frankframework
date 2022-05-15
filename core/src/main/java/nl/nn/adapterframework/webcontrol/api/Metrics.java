@@ -17,6 +17,7 @@ package nl.nn.adapterframework.webcontrol.api;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -27,6 +28,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.prometheus.client.exporter.common.TextFormat;
+import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.metrics.FrankStatisticsRegistry;
 import nl.nn.adapterframework.metrics.MetricsRegistry;
 
@@ -65,9 +67,15 @@ public class Metrics extends Base implements InitializingBean {
 	}
 
 	@GET
-	@Path("/metrics/micrometer")
+	@Path("/metrics/micrometer/{adapterName}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response view() throws ApiException {
-		return Response.status(Response.Status.OK).entity(frankRegistry.doSomething()).build();
+	public Response view(@PathParam("adapterName") String adapterName) throws ApiException {
+		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
+
+		if(adapter == null){
+			throw new ApiException("Adapter not found!");
+		}
+
+		return Response.status(Response.Status.OK).entity(frankRegistry.doSomething(adapter)).build();
 	}
 }
