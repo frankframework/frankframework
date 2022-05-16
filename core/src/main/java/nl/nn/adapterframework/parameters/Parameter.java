@@ -516,9 +516,13 @@ public class Parameter implements IConfigurable, IWithParameters {
 				}
 			}
 		}
-		
-		if (result !=null && result instanceof Message) {
-			result = ((Message)result).asObject(); // avoid the IOException thrown by asString()
+
+		if (result instanceof Message) { //we just need to check if the message is null or not!
+			if(Message.isNull((Message)result)) {
+				result = null;
+			} else if(((Message)result).asObject() instanceof String) { //Used by getMinLength and getMaxLength
+				result = ((Message) result).asObject();
+			}
 		}
 		if (result != null) {
 			if (log.isDebugEnabled()) log.debug("Parameter ["+getName()+"] resolved to ["+(isHidden()?hide(result.toString()):result)+"]");
@@ -557,7 +561,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 				log.debug("Parameter ["+getName()+"] resolved to defaultvalue ["+(isHidden()?hide(result.toString()):result)+"]");
 			}
 		}
-		if (result !=null && result instanceof String) {
+		if (result instanceof String) {
 			if (getMinLength()>=0 && getType()!=ParameterType.NUMBER) {
 				if (((String)result).length()<getMinLength()) {
 					log.debug("Padding parameter ["+getName()+"] because length ["+((String)result).length()+"] falls short of minLength ["+getMinLength()+"]" );
@@ -574,7 +578,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 		if(result !=null && getType().requiresTypeConversion) {
 			result = getValueAsType(result, namespaceAware);
 		}
-		if (result !=null && result instanceof Number) {
+		if (result instanceof Number) {
 			if (getMinInclusiveString()!=null && ((Number)result).floatValue() < minInclusive.floatValue()) {
 				log.debug("Replacing parameter ["+getName()+"] because value ["+result+"] falls short of minInclusive ["+getMinInclusiveString()+"]" );
 				result = minInclusive;

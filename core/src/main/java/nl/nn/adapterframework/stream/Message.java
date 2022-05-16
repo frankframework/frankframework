@@ -159,6 +159,10 @@ public class Message implements Serializable {
 		}
 	}
 
+	public boolean isNull() {
+		return request == null;
+	}
+
 	/**
 	 * @deprecated Please avoid the use of the raw object.
 	 */
@@ -564,6 +568,10 @@ public class Message implements Serializable {
 
 	public static boolean isEmpty(Message message) {
 		return (message == null || message.isEmpty());
+	}
+
+	public static boolean isNull(Message message) {
+		return (message == null || message.isNull());
 	}
 
 	/*
