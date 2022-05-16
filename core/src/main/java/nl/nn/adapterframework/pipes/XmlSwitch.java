@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -163,10 +163,12 @@ public class XmlSwitch extends AbstractPipe {
 					parametervalues = parameterList.getValues(message, session, isNamespaceAware()).getValueMap();
 				}
 				if (StringUtils.isNotEmpty(getSessionKey())) {
-					forward = transformerPool.transform(Message.asMessage(session.get(sessionKey)), parametervalues);
+					//forward = transformerPool.transform(Message.asMessage(session.get(sessionKey)), parametervalues);
+					forward = transformerPool.transform(Message.asString(session.get(sessionKey)), parametervalues, isNamespaceAware());
 				} else {
-					message.preserve();
-					forward = transformerPool.transform(message, parametervalues);
+					//message.preserve();
+					//forward = transformerPool.transform(message, parametervalues);
+					forward = transformerPool.transform(message.asString(), parametervalues, isNamespaceAware());
 				}
 			} catch (Throwable e) {
 				throw new PipeRunException(this, getLogPrefix(session) + "got exception on transformation", e);
