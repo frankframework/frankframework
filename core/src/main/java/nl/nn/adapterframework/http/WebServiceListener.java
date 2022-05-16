@@ -208,7 +208,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	@Override
 	public String getPhysicalDestinationName() {
 		if(StringUtils.isNotEmpty(getAddress())) {
-			return "address ["+getAddress()+"]";
+			return "address [/services/"+getAddress()+"]";
 		}
 		else if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
 			return "serviceNamespaceURI ["+getServiceNamespaceURI()+"]";
