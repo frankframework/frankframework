@@ -50,7 +50,6 @@ public class MetricsRegistry {
 	public MetricsRegistry() {
 		CompositeMeterRegistry compositeRegistry = new CompositeMeterRegistry();
 		compositeRegistry.add(new PrometheusMeterRegistry(PrometheusConfig.DEFAULT));
-		compositeRegistry.add(new FrankStatisticsRegistry());
 
 		this.registry = compositeRegistry;
 		configureRegistry();
