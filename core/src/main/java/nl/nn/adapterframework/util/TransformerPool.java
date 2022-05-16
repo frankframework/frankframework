@@ -17,6 +17,9 @@ package nl.nn.adapterframework.util;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.transform.Result;
@@ -49,6 +52,7 @@ import nl.nn.adapterframework.core.IConfigurationAware;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.Resource;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -60,7 +64,7 @@ import nl.nn.adapterframework.xml.TransformerFilter;
 /**
  * Pool of transformers. As of IBIS 4.2.e the Templates object is used to
  * improve performance and work around threading problems with the api.
- * 
+ *
  * @author Gerrit van Brakel
  */
 public class TransformerPool {
@@ -118,7 +122,7 @@ public class TransformerPool {
 		open();
 		// check if a transformer can be initiated
 		Transformer t = getTransformer();
-		
+
 		releaseTransformer(t);
 	}
 
@@ -209,7 +213,7 @@ public class TransformerPool {
 	public static TransformerPool configureTransformer(String logPrefix, IConfigurationAware scopeProvider, String namespaceDefs, String xPathExpression, String styleSheetName, OutputType outputType, boolean includeXmlDeclaration, ParameterList params, boolean mandatory) throws ConfigurationException {
 		if (mandatory || StringUtils.isNotEmpty(xPathExpression) || StringUtils.isNotEmpty(styleSheetName)) {
 			return configureTransformer(logPrefix,scopeProvider,namespaceDefs,xPathExpression,styleSheetName, outputType, includeXmlDeclaration, params);
-		} 
+		}
 		return null;
 	}
 
@@ -225,8 +229,8 @@ public class TransformerPool {
 			if (StringUtils.isNotEmpty(styleSheetName)) {
 				throw new ConfigurationException(logPrefix+" cannot have both an xpathExpression and a styleSheetName specified");
 			}
-			return XmlUtils.getXPathTransformerPool(namespaceDefs, xPathExpression, outputType, includeXmlDeclaration, params, xsltVersion);
-		} 
+			return getXPathTransformerPool(namespaceDefs, xPathExpression, outputType, includeXmlDeclaration, params, xsltVersion);
+		}
 		if (!StringUtils.isEmpty(styleSheetName)) {
 			if (StringUtils.isNotEmpty(namespaceDefs)) {
 				throw new ConfigurationException(logPrefix+" cannot have namespaceDefs specified for a styleSheetName");
@@ -246,7 +250,7 @@ public class TransformerPool {
 			try {
 				styleSheet = Resource.getResource(scopeProvider, styleSheetName);
 				if (styleSheet==null) {
-					throw new ConfigurationException(logPrefix+" cannot find ["+ styleSheetName + "] in scope ["+scopeProvider+"]"); 
+					throw new ConfigurationException(logPrefix+" cannot find ["+ styleSheetName + "] in scope ["+scopeProvider+"]");
 				}
 				if (log.isDebugEnabled()) log.debug(logPrefix+"configuring stylesheet ["+styleSheetName+"] resource ["+styleSheet+"]");
 				result = TransformerPool.getInstance(styleSheet, xsltVersion);
@@ -272,6 +276,30 @@ public class TransformerPool {
 		return result;
 	}
 
+	public static TransformerPool getXPathTransformerPool(String namespaceDefs, String xPathExpression, OutputType outputType, boolean includeXmlDeclaration, ParameterList params) throws ConfigurationException {
+		return getXPathTransformerPool(namespaceDefs, xPathExpression, outputType, includeXmlDeclaration, params, 0);
+	}
+
+	public static TransformerPool getXPathTransformerPool(String namespaceDefs, String xPathExpression, OutputType outputType, boolean includeXmlDeclaration, ParameterList params, int xsltVersion) throws ConfigurationException {
+		List<String> paramNames = null;
+		if (params!=null) {
+			paramNames = new ArrayList<String>();
+			Iterator<Parameter> iterator = params.iterator();
+			while (iterator.hasNext()) {
+				paramNames.add(iterator.next().getName());
+			}
+		}
+		String xslt;
+		xslt = XmlUtils.createXPathEvaluatorSource(namespaceDefs,xPathExpression, outputType, includeXmlDeclaration, paramNames, true, StringUtils.isEmpty(namespaceDefs), null, xsltVersion);
+		if (log.isDebugEnabled()) log.debug("xpath ["+xPathExpression+"] resulted in xslt ["+xslt+"]");
+
+		try {
+			return new TransformerPool(xslt, "XPath "+xPathExpression, xsltVersion);
+		} catch (TransformerConfigurationException e) {
+			throw new ConfigurationException("Cannot create TransformerPool for XPath expression ["+xPathExpression+"]", e);
+		}
+	}
+
 	public void open() {
 		if (pool==null) {
 			pool=new SoftReferenceObjectPool<>(new BasePooledObjectFactory<Transformer>() {
@@ -286,7 +314,7 @@ public class TransformerPool {
 					return new DefaultPooledObject<Transformer>(transformer);
 				}
 
-			}); 
+			});
 		}
 	}
 
@@ -372,11 +400,11 @@ public class TransformerPool {
 	public String transform(Source s) throws TransformerException, IOException {
 		return transform(s,(Map<String,Object>)null);
 	}
-	
+
 	public String transform(Source s, ParameterValueList pvl) throws TransformerException, IOException, ParameterException {
 		return transform(s, null, pvl==null? (Map<String,Object>)null : pvl.getValueMap());
 	}
-	
+
 	public String transform(Source s, Map<String,Object> parameters) throws TransformerException, IOException {
 		return transform(s, null, parameters);
 	}
@@ -393,13 +421,13 @@ public class TransformerPool {
 			XmlUtils.setTransformerParameters(transformer, parameters);
 			if (r == null) {
 				return XmlUtils.transformXml(transformer, s);
-			} 
+			}
 			transformer.transform(s,r);
 		} catch (TransformerException te) {
 			((TransformerErrorListener)transformer.getErrorListener()).setFatalTransformerException(te);
 		} catch (IOException ioe) {
 			((TransformerErrorListener)transformer.getErrorListener()).setFatalIOException(ioe);
-		} 
+		}
 		finally {
 			if (transformer != null) {
 				TransformerErrorListener transformerErrorListener = (TransformerErrorListener)transformer.getErrorListener();
@@ -420,7 +448,7 @@ public class TransformerPool {
 		}
 		return null;
 	}
-	
+
 	public TransformerHandler getTransformerHandler() throws TransformerConfigurationException {
 	      TransformerHandler handler = ((SAXTransformerFactory)tFactory).newTransformerHandler(templates);
 	      Transformer transformer = handler.getTransformer();
