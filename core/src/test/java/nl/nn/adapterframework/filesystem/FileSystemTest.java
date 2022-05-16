@@ -393,7 +393,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		createFile(null, filename, contents);
 		waitForActionToFinish();
 		F f = null;
-		try(DirectoryStream<F> ds = fileSystem.listFiles(null)) {
+		try(DirectoryStream<F> ds = fileSystem.listFiles(null, true)) {
 			Iterator<F> files = ds.iterator();
 			if(files.hasNext()) {
 				f = files.next();

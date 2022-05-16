@@ -154,6 +154,11 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	}
 
 	@Override
+	public String getParentPath(Message f) throws FileSystemException {
+		return f.getFolder().getFullName();
+	}
+
+	@Override
 	public Message toFile(String filename) throws FileSystemException {
 		return toFile(null, filename);
 	}
@@ -222,7 +227,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	}
 
 	@Override
-	public DirectoryStream<Message> listFiles(String foldername) throws FileSystemException {
+	public DirectoryStream<Message> listFiles(String foldername, boolean ignoreFolders) throws FileSystemException {
 		IMAPFolder baseFolder = getConnection();
 		boolean invalidateConnectionOnRelease = false;
 		if (baseFolder==null) {
@@ -233,7 +238,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 			if (!folder.isOpen()) {
 				folder.open(Folder.READ_WRITE);
 			}
-			Message messages[] = folder.getMessages();
+			Message[] messages = folder.getMessages();
 			return FileSystemUtils.getDirectoryStream(Arrays.asList(messages));
 		} catch (MessagingException e) {
 			invalidateConnectionOnRelease = true;

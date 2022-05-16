@@ -97,7 +97,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
-	public DirectoryStream<FTPFile> listFiles(String folder) throws FileSystemException {
+	public DirectoryStream<FTPFile> listFiles(String folder, boolean ignoreFiles) throws FileSystemException {
 		try {
 			return FileSystemUtils.getDirectoryStream(new FTPFilePathIterator(folder, ftpClient.listFiles(folder)));
 		} catch (IOException e) {
@@ -280,6 +280,12 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 			return ((FTPFileRef) file).getFileName();
 		}
 		return file.getName();
+	}
+	
+	@Override
+	public String getParentPath(FTPFile file) {
+		// TODO: implement 
+		return null;
 	}
 
 	@Override

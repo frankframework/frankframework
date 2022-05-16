@@ -234,14 +234,13 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 
 
 	@Override
-	public DirectoryStream<String> listFiles(String folder) throws FileSystemException {
+	public DirectoryStream<String> listFiles(String folder, boolean ignoreFolders) throws FileSystemException {
 		return FileSystemUtils.getDirectoryStream(new FilesIterator(folder, diskShare.list(folder)));
 	}
 
 	@Override
 	public boolean exists(String f) throws FileSystemException {
-		boolean exists = isFolder(f) ? diskShare.folderExists(f) : diskShare.fileExists(f);
-		return exists;
+		return isFolder(f) ? diskShare.folderExists(f) : diskShare.fileExists(f);
 	}
 
 	@Override
@@ -414,10 +413,10 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 	}
 
 	private Directory getFolder(String filename, AccessMask accessMask, SMB2CreateDisposition createDisposition) {
-		Set<SMB2ShareAccess> shareAccess = new HashSet<SMB2ShareAccess>();
+		Set<SMB2ShareAccess> shareAccess = new HashSet<>();
 		shareAccess.addAll(SMB2ShareAccess.ALL);
 
-		Set<AccessMask> accessMaskSet = new HashSet<AccessMask>();
+		Set<AccessMask> accessMaskSet = new HashSet<>();
 		accessMaskSet.add(accessMask);
 		
 		Directory file;
@@ -444,6 +443,11 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 	@Override
 	public String getName(String f) {
 		return f;
+	}
+
+	@Override
+	public String getParentPath(String f) {
+		return getFolder(f, AccessMask.FILE_READ_ATTRIBUTES, SMB2CreateDisposition.FILE_OPEN).getFileName();
 	}
 
 	@Override

@@ -32,7 +32,7 @@ public class FileSystemMessageBrowsingIterator<F, FS extends IBasicFileSystem<F>
 
 	public FileSystemMessageBrowsingIterator(FS fileSystem, String folder, String messageIdPropertyKey) throws FileSystemException {
 		this.fileSystem = fileSystem;
-		directoryStream = fileSystem.listFiles(folder);
+		directoryStream = fileSystem.listFiles(folder, true);
 		iterator = directoryStream != null ? directoryStream.iterator() : null;
 		this.messageIdPropertyKey = messageIdPropertyKey;
 	}

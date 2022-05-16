@@ -47,21 +47,21 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination{
 
 	public boolean isOpen();
 
-
 	/**
-	 * Lists all files in 'folder' or in the 'root' of the filesystem (when folder is null). 
+	 * Lists all files in 'folder' or in the 'root' of the filesystem (when folder is null).
 	 * Should list only 'files', no folders.
 	 */
-	public DirectoryStream<F> listFiles(String folder) throws FileSystemException;
+	public DirectoryStream<F> listFiles(String folder, boolean ignoreFolders) throws FileSystemException;
 	public int getNumberOfFilesInFolder(String folder) throws FileSystemException;
 	/**
-	 * Get a string representation of an identification of a file. 
+	 * Get a string representation of an identification of a file.
 	 * Must pair up with the implementation of {@link #toFile(String)}.
 	 * Can reflect name a file has in its folder, is not expected to be unique over folders.
 	 */
 	public String getName(F f);
+	public String getParentPath(F f) throws FileSystemException;
 	/**
-	 * Get a file 'F' representation of an identification of a file. 
+	 * Get a file 'F' representation of an identification of a file.
 	 * Must pair up with the implementation of {@link #getName(Object)}.
 	 */
 	public F toFile(String filename) throws FileSystemException;

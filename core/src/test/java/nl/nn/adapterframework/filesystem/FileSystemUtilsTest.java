@@ -260,7 +260,7 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 	@Test
 	public void testEmptyFilteredStream() throws Exception {
 		IBasicFileSystem<?> fs = new MockFileSystem() {
-			public DirectoryStream<?> listFiles(String folder) {
+			public DirectoryStream<?> listFiles(String folder, boolean ignoreFolders) {
 				return new DirectoryStream() {
 
 					@Override

@@ -99,7 +99,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	}
 
 	@Override
-	public DirectoryStream<SmbFile> listFiles(String folder) throws FileSystemException {
+	public DirectoryStream<SmbFile> listFiles(String folder, boolean ignoreFolders) throws FileSystemException {
 		try {
 			if (!isListHiddenFiles()) {
 				SmbFileFilter filter = new SmbFileFilter() {
@@ -294,6 +294,11 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	@Override
 	public String getName(SmbFile f) {
 		return f.getName();
+	}
+
+	@Override
+	public String getParentPath(SmbFile f) throws FileSystemException {
+		return f.getParent();
 	}
 
 	@Override
