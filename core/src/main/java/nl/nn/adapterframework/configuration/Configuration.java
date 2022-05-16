@@ -146,7 +146,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	public void initMetrics() throws ConfigurationException {
 		StatisticsKeeperIterationHandler metricsInitializer = getBean(MetricsInitializer.class);
 		try {
-			forEachStatisticsKeeper(metricsInitializer, new Date(), statisticsMarkDateMain, statisticsMarkDateDetails, Action.FULL, null, null);
+			forEachStatisticsKeeper(metricsInitializer, new Date(), statisticsMarkDateMain, statisticsMarkDateDetails, Action.FULL, getName(), "configuration");
 		} catch (SenderException e) {
 			throw new ConfigurationException("Cannot initialize metrics", e);
 		}

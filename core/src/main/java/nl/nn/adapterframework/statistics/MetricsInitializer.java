@@ -66,7 +66,6 @@ public class MetricsInitializer implements StatisticsKeeperIterationHandler<Metr
 
 		List<Tag> tags = new LinkedList<>();
 		tags.add(Tag.of("type", "application"));
-		tags.add(Tag.of("configuration", applicationContext.getId()));
 		root = new NodeConfig("frank", tags, 0);
 	}
 
@@ -130,12 +129,10 @@ public class MetricsInitializer implements StatisticsKeeperIterationHandler<Metr
 		String nodeName = parentData.name;
 		List<Tag> tags = new LinkedList<>(parentData.tags);
 		int groupLevel = parentData.groupLevel;
-		if(type != null) {
-			if (StringUtils.isNotEmpty(dimensionName)) {
-				tags.add(Tag.of(type, dimensionName));
-			} else {
-				nodeName=nodeName+"."+type;
-			}
+		if (StringUtils.isNotEmpty(dimensionName)) {
+			tags.add(Tag.of(type, dimensionName));
+		} else {
+			nodeName=nodeName+"."+type;
 		}
 		return new NodeConfig(nodeName, tags, groupLevel);
 	}
