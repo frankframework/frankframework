@@ -35,20 +35,24 @@ import nl.nn.adapterframework.util.TransformerPool;
 public class MermaidFlowGenerator implements IFlowGenerator {
 	protected static Logger log = LogUtil.getLogger(MermaidFlowGenerator.class);
 
-	private static final String MERMAID_XSLT = "/xml/xsl/adapter2mermaid.xsl";
+	private static final String ADAPTER2MERMAID_XSLT = "/xml/xsl/adapter2mermaid.xsl";
+	private static final String CONFIGURATION2MERMAID_XSLT = "/xml/xsl/configuration2mermaid.xsl";
 
-	private TransformerPool transformerPool;
+	private TransformerPool transformerPoolAdapter, transformerPoolConfig;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		Resource xsltSourceConfig = Resource.getResource(MERMAID_XSLT);
-		transformerPool = TransformerPool.getInstance(xsltSourceConfig, 2);
+		Resource xsltSourceAdapter = Resource.getResource(ADAPTER2MERMAID_XSLT);
+		transformerPoolAdapter = TransformerPool.getInstance(xsltSourceAdapter, 2);
+
+		Resource xsltSourceConfig = Resource.getResource(CONFIGURATION2MERMAID_XSLT);
+		transformerPoolConfig = TransformerPool.getInstance(xsltSourceConfig, 2);
 	}
 
 	@Override
 	public void generateFlow(String xml, OutputStream outputStream) throws FlowGenerationException {
 		try {
-			String flow = generateDot(xml);
+			String flow = generateMermaid(xml);
 
 			outputStream.write(flow.getBytes(StandardCharsets.UTF_8));
 		} catch (IOException e) {
@@ -56,11 +60,15 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 		}
 	}
 
-	protected String generateDot(String xml) throws FlowGenerationException {
+	protected String generateMermaid(String xml) throws FlowGenerationException {
 		try {
-			return transformerPool.transform(xml, null);
+			if(xml.startsWith("<adapter")) {
+				return transformerPoolAdapter.transform(xml, null);
+			} else {
+				return transformerPoolConfig.transform(xml, null);
+			}
 		} catch (IOException | TransformerException | SAXException e) {
-			throw new FlowGenerationException("error transforming [xml] to [dot]", e);
+			throw new FlowGenerationException("error transforming [xml] to [mermaid]", e);
 		}
 	}
 
@@ -76,8 +84,12 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 
 	@Override
 	public void destroy() {
-		if(transformerPool != null) {
-			transformerPool.close();
+		if(transformerPoolAdapter != null) {
+			transformerPoolAdapter.close();
+		}
+
+		if(transformerPoolConfig != null) {
+			transformerPoolConfig.close();
 		}
 	}
 }
