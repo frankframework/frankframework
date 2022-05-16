@@ -2,6 +2,7 @@ package nl.nn.adapterframework.scheduler;
 
 import static org.junit.Assert.assertEquals;
 
+import java.sql.Connection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Set;
@@ -9,24 +10,18 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisManager;
-import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.jdbc.JdbcTestBase;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.jdbc.dbms.Dbms;
-import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.scheduler.job.CleanupDatabaseJob;
-import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JdbcUtil;
 
 public class CleanupDatabaseJobTest extends JdbcTestBase {
 
 	private CleanupDatabaseJob jobDef;
-	private JdbcTransactionalStorage storage;
-	private TestConfiguration configuration;
+	private JdbcTransactionalStorage<?> storage;
 	private final String cleanupJobName="CleanupDB";
 	private final String tableName="IBISLOCK";
 
@@ -37,9 +32,13 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 		System.setProperty("tableName", tableName);
 		runMigrator(TEST_CHANGESET_PATH);
 
-		configuration = new TestConfiguration();
-		Adapter adapter = setupAdapter(); 
-		configuration.registerAdapter(adapter);
+		storage = getConfiguration().createBean(JdbcTransactionalStorage.class);
+		storage.setName("test-cleanupDB");
+		storage.setType("A");
+		storage.setSlotId("dummySlotId");
+		storage.setTableName(tableName);
+		storage.setSequenceName("SEQ_"+tableName);
+		storage.setDatasourceName(getDataSourceName());
 
 		jobDef = new CleanupDatabaseJob() {
 
@@ -50,64 +49,38 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 
 		};
 
-		configuration.autowireByName(jobDef);
-	}
-
-	private Adapter setupAdapter() throws ConfigurationException {
-		Adapter adapter = configuration.createBean(Adapter.class);
-		adapter.setName("fakeAdapter");
-		PipeLine pipeline = configuration.createBean(PipeLine.class);
-
-		storage = configuration.createBean(JdbcTransactionalStorage.class);
-		storage.setName("test-cleanupDB");
-		storage.setType("A");
-		storage.setSlotId("dummySlotId");
-		storage.setTableName(tableName);
-		storage.setSequenceName("SEQ_"+tableName);
-		storage.setDatasourceName(getDataSourceName());
-
-		MessageSendingPipe pipe = new MessageSendingPipe();
-		pipe.setName("dummyPipe");
-		pipe.setMessageLog(storage);
-		pipeline.addPipe(pipe);
-
-		adapter.setPipeLine(pipeline);
-		return adapter;
+		getConfiguration().autowireByName(jobDef);
 	}
 
 	@Test
 	public void testCleanupDatabaseJobMaxRowsZero() throws Exception {
 		jobDef.setName(cleanupJobName);
 		jobDef.configure();
-		configuration.registerScheduledJob(jobDef);
 		prepareInsertQuery(1);
-		
+
 		// set max rows to 0 
 		AppConstants.getInstance().setProperty("cleanup.database.maxrows", "0");
 
-		jobDef.beforeExecuteJob(configuration.getIbisManager());
-		jobDef.execute(configuration.getIbisManager());
-		
-		int numRows = JdbcUtil.executeIntQuery(getConnection(), "SELECT count(*) from "+tableName);
-		assertEquals(0, numRows);
+		jobDef.beforeExecuteJob(getConfiguration().getIbisManager());
+		jobDef.execute(getConfiguration().getIbisManager());
+
+		assertEquals(0, getCount(tableName));
 	}
 
 	@Test
 	public void testCleanupDatabaseJob() throws Exception {
 		jobDef.setName(cleanupJobName);
 		jobDef.configure();
-		configuration.registerScheduledJob(jobDef);
 
 		prepareInsertQuery(5);
 
-		int rowCount = JdbcUtil.executeIntQuery(getConnection(), "SELECT count(*) from "+tableName);
 		// check insertion
-		assertEquals(5, rowCount);
+		assertEquals(5, getCount(tableName));
 
-		jobDef.beforeExecuteJob(configuration.getIbisManager());
-		jobDef.execute(configuration.getIbisManager());
-		int numRows = JdbcUtil.executeIntQuery(getConnection(), "SELECT count(*) from "+tableName);
-		assertEquals(0, numRows);
+		jobDef.beforeExecuteJob(getConfiguration().getIbisManager());
+		jobDef.execute(getConfiguration().getIbisManager());
+
+		assertEquals(0, getCount(tableName));
 	}
 
 	private void prepareInsertQuery(int numRows) throws Exception {
@@ -126,7 +99,7 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 			}
 			if(i != numRows) {
 				if(dbmsSupport.getDbms() == Dbms.ORACLE) {
-					 sb.append(" UNION ALL \n");
+					sb.append(" UNION ALL \n");
 				} else {
 					sb.append(",");
 				}
@@ -135,7 +108,7 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 		if(dbmsSupport.getDbms() == Dbms.ORACLE) {
 			sb.append(") SELECT * FROM valuesTable");
 		}
-		
+
 		String query ="INSERT INTO "+tableName+" (" +
 				(dbmsSupport.autoIncrementKeyMustBeInserted() ? storage.getKeyField()+"," : "")
 				+ storage.getTypeField() + ","
@@ -149,26 +122,33 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 				+ storage.getLabelField() + ")" + (dbmsSupport.getDbms() == Dbms.ORACLE ? " WITH valuesTable AS (" : " VALUES ")
 				+ sb.toString();
 
-		JdbcUtil.executeStatement(getConnection(), query);
+		try(Connection connection = getConnection()) {
+			JdbcUtil.executeStatement(connection, query);
+		}
+	}
+
+	private int getCount(String tableName) throws Exception {
+		try(Connection connection = getConnection()) {
+			return JdbcUtil.executeIntQuery(connection, "SELECT count(*) from "+tableName);
+		}
 	}
 
 	@Test
 	public void testCleanupDatabaseJobMaxRowsOne() throws Exception {
 		jobDef.setName(cleanupJobName);
 		jobDef.configure();
-		configuration.registerScheduledJob(jobDef);
 
 		prepareInsertQuery(5);
 
-		int rowCount = JdbcUtil.executeIntQuery(getConnection(), "SELECT count(*) from "+tableName);
-		
+		int rowCount = getCount(tableName);
+
 		// check insertion
 		assertEquals(5, rowCount);
 		// to clean up 1 by 1
 		AppConstants.getInstance().setProperty("cleanup.database.maxrows", "1");
 
-		jobDef.beforeExecuteJob(configuration.getIbisManager());
-		jobDef.execute(configuration.getIbisManager());
+		jobDef.beforeExecuteJob(getConfiguration().getIbisManager());
+		jobDef.execute(getConfiguration().getIbisManager());
 
 		int numRows = JdbcUtil.executeIntQuery(getConnection(), "SELECT count(*) from "+tableName);
 		

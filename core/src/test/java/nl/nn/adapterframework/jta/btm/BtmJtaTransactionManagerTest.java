@@ -2,8 +2,8 @@ package nl.nn.adapterframework.jta.btm;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -16,9 +16,9 @@ import javax.transaction.SystemException;
 
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.springframework.transaction.TransactionSystemException;
@@ -26,7 +26,7 @@ import org.springframework.util.StreamUtils;
 
 import bitronix.tm.BitronixTransactionManager;
 import bitronix.tm.TransactionManagerServices;
-import nl.nn.adapterframework.testutil.BTMXADataSourceFactory;
+import nl.nn.adapterframework.testutil.TransactionManagerType;
 
 public class BtmJtaTransactionManagerTest {
 
@@ -34,40 +34,39 @@ public class BtmJtaTransactionManagerTest {
 	public String TMUID_FILE = "tm-uid.txt";
 
 	private BtmJtaTransactionManager delegateTransactionManager;
-	private TemporaryFolder folder;
+	public @Rule TemporaryFolder folder = new TemporaryFolder();
 
 	@BeforeClass
 	public static void ensureBTMisNotActive() {
 		if(TransactionManagerServices.isTransactionManagerRunning()) {
-			TransactionManagerServices.getTransactionManager().shutdown();
+			TransactionManagerType.BTM.closeConfigurationContext();
+		}
+		if(TransactionManagerServices.isTransactionManagerRunning()) {
+			fail("unable to shutdown BTM TransactionManager");
 		}
 	}
 
 	@AfterClass
-	public static void reinstatePreviousTM() {
-		BTMXADataSourceFactory.createBtmTransactionManager();
-	}
-
-	@Before
-	public void setup() throws IOException {
-		folder = new TemporaryFolder();
-		folder.create();
+	public static void validateNoTXIsActive() {
+		if(TransactionManagerServices.isTransactionManagerRunning()) {
+			fail("TransactionManager still running");
+		}
 	}
 
 	@After
 	public void tearDown() {
-		if (delegateTransactionManager!=null) {
+		if (delegateTransactionManager != null) {
 			delegateTransactionManager.shutdownTransactionManager();
+			delegateTransactionManager = null;
 		}
-		folder.delete();
 	}
 
-	public BtmJtaTransactionManager getBtmJtaTransactionManager() {
+	private BtmJtaTransactionManager getBtmJtaTransactionManager() {
 		BtmJtaTransactionManager result = new BtmJtaTransactionManager();
 		result.setStatusFile(folder.getRoot()+"/"+STATUS_FILE);
 		result.setUidFile(folder.getRoot()+"/"+TMUID_FILE);
-		TransactionManagerServices.getConfiguration().setLogPart1Filename(folder.getRoot()+"/btm1.tlog");
-		TransactionManagerServices.getConfiguration().setLogPart2Filename(folder.getRoot()+"/btm2.tlog");
+		TransactionManagerServices.getConfiguration().setLogPart1Filename(folder.getRoot()+"/btm-1.tlog");
+		TransactionManagerServices.getConfiguration().setLogPart2Filename(folder.getRoot()+"/btm-2.tlog");
 		delegateTransactionManager = result;
 		return result;
 	}
@@ -117,7 +116,7 @@ public class BtmJtaTransactionManagerTest {
 		assertStatus("COMPLETED", tmUid);
 	}
 
-	@Ignore("This test takes 1 minute to executed")
+	@Ignore("This test takes 1 minute to execute")
 	@Test
 	public void testShutdownWithPendingTransactions() throws NotSupportedException, SystemException {
 		TransactionManagerServices.getConfiguration().setDefaultTransactionTimeout(1);
