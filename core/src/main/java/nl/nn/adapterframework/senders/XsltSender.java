@@ -88,7 +88,6 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	private @Getter boolean removeNamespaces=false;
 	private @Getter boolean skipEmptyTags=false;
 	private @Getter int xsltVersion=0; // set to 0 for auto detect.
-	private @Getter boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
 	private @Getter boolean debugInput = false;
 
 	private TransformerPool transformerPool;
@@ -403,6 +402,12 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		indentXml = b;
 	}
 
+	@Deprecated
+	@ConfigurationWarning("please use attribute 'removeNamespaces' instead")
+	public void setNamespaceAware(boolean b) {
+		setRemoveNamespaces(!b);
+	}
+
 	@IbisDoc({"9", "when set <code>true</code> namespaces (and prefixes) in the input message are removed before transformation", "false"})
 	public void setRemoveNamespaces(boolean b) {
 		removeNamespaces = b;
@@ -416,11 +421,6 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	@IbisDoc({"11", "when set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto detect", "0"})
 	public void setXsltVersion(int xsltVersion) {
 		this.xsltVersion=xsltVersion;
-	}
-
-	@IbisDoc({"12", "", "true"})
-	public void setNamespaceAware(boolean b) {
-		namespaceAware = b;
 	}
 
 	@IbisDoc({"13", "when set <code>true</code> the input is written to the log file, at DEBUG level", "false"})
