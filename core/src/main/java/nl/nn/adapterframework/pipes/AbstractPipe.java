@@ -48,7 +48,6 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.SpringUtils;
-import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Base class for {@link IPipe Pipe}.
@@ -101,7 +100,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	private @Getter String elementToMoveChain = null;
 	private @Getter boolean removeCompactMsgNamespaces = true;
 	private @Getter boolean restoreMovedElements=false;
-	private @Getter boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
 
 	private boolean sizeStatistics = AppConstants.getInstance(configurationClassLoader).getBoolean("statistics.size", false);
 	private @Getter Locker locker;
@@ -399,11 +397,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 		this.restoreMovedElements = restoreMovedElements;
 	}
 
-
-	@IbisDoc({"controls namespace-awareness of possible xml parsing in descender-classes", "application default"})
-	public void setNamespaceAware(boolean b) {
-		namespaceAware = b;
-	}
 
 
 	public void setSizeStatistics(boolean sizeStatistics) {

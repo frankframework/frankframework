@@ -17,6 +17,7 @@ import java.util.TreeMap;
 import javax.json.Json;
 import javax.json.JsonStructure;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.custommonkey.xmlunit.DetailedDiff;
 import org.custommonkey.xmlunit.Diff;
@@ -65,6 +66,9 @@ public class MatchUtils {
 	}
  
 	public static String xmlPretty(String xml, boolean removeNamespaces) {
+		if (StringUtils.isAllBlank(xml)) {
+			return "";
+		}
 		XmlWriter xmlWriter = new XmlWriter();
 		xmlWriter.setIncludeComments(false);
 		ContentHandler contentHandler = new PrettyPrintFilter(xmlWriter, true);
