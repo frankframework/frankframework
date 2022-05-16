@@ -11,11 +11,19 @@ on:
     branches: [master, 7.5-release, 7.6-release]
     paths-ignore:
       - "**.md"
+      - "**.yml"
+      - "**.txt"
+      - "**.png"
+      - ".github/**"
       - "webapp/src/main/webapp/iaf/**"
   pull_request:
     branches: [master, 7.5-release, 7.6-release]
     paths-ignore:
       - "**.md"
+      - "**.yml"
+      - "**.txt"
+      - "**.png"
+      - ".github/**"
       - "webapp/src/main/webapp/iaf/**"
 
 jobs:
