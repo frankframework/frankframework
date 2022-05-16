@@ -126,9 +126,13 @@ public class TransformerPool {
 		this(resource.asSource(),resource.getSystemId(),xsltVersion,resource.asSource(), resource);
 	}
 
+	//TODO Fix this, Thread.currentThread().getContextClassLoader() should not be used and causes memory leaks upon reloading configurations!!!
 	private TransformerPool(String xsltString, String sysId, int xsltVersion) throws TransformerConfigurationException {
 		this(xsltString, sysId, xsltVersion, new IScopeProvider() {
-			private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+			@Override
+			public ClassLoader getConfigurationClassLoader() {
+				return Thread.currentThread().getContextClassLoader();
+			}
 		});
 	}
 
