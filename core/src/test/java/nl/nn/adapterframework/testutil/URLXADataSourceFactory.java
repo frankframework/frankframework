@@ -19,8 +19,9 @@ public abstract class URLXADataSourceFactory extends URLDataSourceFactory {
 
 	protected abstract DataSource augmentXADataSource(XADataSource xaDataSource, String product);
 
+	@SuppressWarnings({ "unused", "null" }) //only used to verify that all datasources use the same setters
 	private void testClassMethods() {
-		org.h2.jdbcx.JdbcDataSource h2 = null; 
+		org.h2.jdbcx.JdbcDataSource h2 = null;
 		oracle.jdbc.xa.client.OracleXADataSource oracle = null;
 		com.microsoft.sqlserver.jdbc.SQLServerXADataSource mssql = null;
 		com.mysql.cj.jdbc.MysqlXADataSource mysql = null;

@@ -59,7 +59,7 @@ public class LockerTest extends TransactionManagerTestBase {
 	@Override
 	public void teardown() throws Exception {
 		if (tableCreated) {
-			dropTable("IBISLOCK");// drop the table if it was created, to avoid interference with Liquibase
+			dropTableIfPresent("IBISLOCK");// drop the table if it was created, to avoid interference with Liquibase
 		}
 		super.teardown();
 	}
