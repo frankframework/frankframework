@@ -43,14 +43,13 @@ import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
- * Provides an example of a pipe. It may return the contents of a file
- * (in the classpath) when <code>filename</code> or <code>filenameSessionKey</code> is specified, otherwise the
- * input of <code>returnString</code> is returned.
+ * Produces a fixed result that does not depend on the input message. It may return the contents of a file
+ * when <code>filename</code> or <code>filenameSessionKey</code> is specified. Otherwise the
+ * value of attribute <code>returnString</code> is returned.
  *
- * @ff.parameters Any parameters defined on the pipe will be used for replacements. Each occurrence of <code>${name-of-parameter}</code> in the file {@link #setFilename(String) filename} will be replaced by its corresponding <i>value-of-parameter</i>. This works only with files, not with values supplied in attribute {@link #setReturnString(String) returnString}
+ * @ff.parameters Parameters are not supported. Please do not use them with this pipe.
  *
  * @ff.forward filenotfound the configured file was not found (when this forward isn't specified an exception will be thrown)
- *
  *
  * @author Johan Verrips
  */
@@ -207,7 +206,12 @@ public class FixedResultPipe extends FixedForwardPipe {
 		return buffer.toString();
 	}
 
-	@IbisDoc({"should values between ${ and } be resolved from the pipelinesession (search order: 1) system properties 2) pipelinesession variables 3) application properties)", "false"})
+	/**
+	 * Should values between ${ and } be resolved. If true, the search order of replacement values is:
+	 * system properties (1), pipelinesession variables (2), application properties (3).
+	 * 
+	 * @ff.default false
+	 */
 	public void setSubstituteVars(boolean substitute){
 		this.substituteVars=substitute;
 	}
@@ -222,10 +226,8 @@ public class FixedResultPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * Sets the name of the filename. The filename should not be specified
-	 * as an absolute path, but as a resource in the classpath.
+	 * Name of the file containing the result message. Path is relative to the configuration's root directory (file is expected on the classpath).
 	 */
-	@IbisDoc({"name of the file containing the resultmessage", ""})
 	public void setFilename(String filename) {
 		this.filename = filename;
 	}
@@ -240,9 +242,9 @@ public class FixedResultPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * @param filenameSessionKey the session key that contains the name of the file
+	 * Name of the session key containing the file name of the file containing the result message.
+	 * Path is relative to the configuration's root directory (file is expected on the classpath).
 	 */
-	@IbisDoc({"name of the session key containing the file name of the file containing the result message", ""})
 	public void setFilenameSessionKey(String filenameSessionKey) {
 		this.filenameSessionKey = filenameSessionKey;
 	}
@@ -250,7 +252,9 @@ public class FixedResultPipe extends FixedForwardPipe {
 		return filenameSessionKey;
 	}
 
-	@IbisDoc({"returned message", ""})
+	/**
+	 * Returned message.
+	 */
 	public void setReturnString(String returnString) {
 		this.returnString = returnString;
 	}
@@ -261,6 +265,10 @@ public class FixedResultPipe extends FixedForwardPipe {
 	public String getReplaceFrom() {
 		return replaceFrom;
 	}
+	/**
+	 * If set, every occurrence of this attribute's value is replaced by the value of <code>replaceTo</code>.
+	 * Not applied if returned message comes from attribute <code>returnString</code>.
+	 */
 	public void setReplaceFrom (String replaceFrom){
 		this.replaceFrom=replaceFrom;
 	}
@@ -268,6 +276,10 @@ public class FixedResultPipe extends FixedForwardPipe {
 	public String getReplaceTo() {
 		return replaceTo;
 	}
+
+	/**
+	 * See <code>replaceFrom</code>.
+	 */
 	public void setReplaceTo (String replaceTo){
 		this.replaceTo=replaceTo;
 	}
@@ -275,11 +287,20 @@ public class FixedResultPipe extends FixedForwardPipe {
 	public String getStyleSheetName() {
 		return styleSheetName;
 	}
+	/**
+	 * File name of XSLT stylesheet to apply to the value obtained from attributes
+	 * <code>returnString</code>, <code>filename</code> and <code>filenameSessionKey</code>. 
+	 */
 	public void setStyleSheetName (String styleSheetName){
 		this.styleSheetName=styleSheetName;
 	}
 
-	@IbisDoc({"when set <code>true</code>, the lookup of the file will be done at runtime instead of at configuration time", "false"})
+	/**
+	 * When set <code>true</code>, the lookup of the file will be done at runtime instead of at configuration time.
+	 * In that case, attributes <code>replaceFrom</code> and <code>replaceTo</code> do not work.
+	 * 
+	 * @ff.default false
+	 */
 	public void setLookupAtRuntime(boolean b){
 		lookupAtRuntime=b;
 	}
@@ -287,7 +308,11 @@ public class FixedResultPipe extends FixedForwardPipe {
 		return lookupAtRuntime;
 	}
 
-	@IbisDoc({"when set <code>true</code>, any parameter is used for replacements but with <code>name-of-parameter</code> and not <code>${name-of-parameter}</code>", "false"})
+	/**
+	 * When set <code>true</code>, any parameter is used for replacements with <code>name-of-parameter</code> and not <code>${name-of-parameter}</code>.
+	 *
+	 * @ff.default false
+	 */
 	public void setReplaceFixedParams(boolean b){
 		replaceFixedParams=b;
 	}
