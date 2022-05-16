@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2020 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2016, 2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -56,10 +56,14 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 		try {
 			String cacheKey = keyTransformer.transformKey(message.asString(), session);
 			Cache cache = ibisCacheManager.getCache(cacheName);
-			if (cache.remove("r"+cacheKey) && cache.remove("s"+cacheKey)) {
-				log.debug("removed cache key [" + cacheKey + "] from cache ["+cacheName+"]");
+			if (cache == null) {
+				log.warn("cache ["+cacheName+"] not found");
 			} else {
-				log.warn("could not find cache key [" + cacheKey + "] to remove from cache ["+cacheName+"]");
+				if (cache.remove("r"+cacheKey) && cache.remove("s"+cacheKey)) {
+					log.debug("removed cache key [" + cacheKey + "] from cache ["+cacheName+"]");
+				} else {
+					log.warn("could not find cache key [" + cacheKey + "] to remove from cache ["+cacheName+"]");
+				}
 			}
 			return new PipeRunResult(getSuccessForward(), message);
 		} catch (IOException e) {
@@ -120,7 +124,7 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 }
 
 /**
- * 
+ *
  * Helper class to use the transformKey method of the abstract CacheAdapterBase
  * class.
  *
