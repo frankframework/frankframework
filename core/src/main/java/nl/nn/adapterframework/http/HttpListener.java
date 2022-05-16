@@ -34,6 +34,7 @@ import lombok.Getter;
  * @author  Gerrit van Brakel 
  * @since   4.4.x (still experimental)
  */
+@Deprecated
 public class HttpListener extends PushingListenerAdapter implements HasPhysicalDestination {
 
 	private final @Getter(onMethod = @__(@Override)) String domain = "Http";

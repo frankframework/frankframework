@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
+import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.StatusLine;
 import org.apache.http.auth.Credentials;
@@ -35,6 +36,7 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 
 import com.nimbusds.oauth2.sdk.AccessTokenResponse;
 import com.nimbusds.oauth2.sdk.AuthorizationGrant;
@@ -61,19 +63,24 @@ import nl.nn.adapterframework.util.StreamUtil;
 
 public class OAuthAccessTokenManager {
 
-	private String tokenEndpoint;
+	private URI tokenEndpoint;
 	private Scope scope;
 	private CredentialFactory client_cf;
 	private boolean useClientCredentialsGrant;
 	private HttpSenderBase httpSender;
 	private int expiryMs;
 	private boolean basicAuthenticateWithClientCredentials = false;
-	
+
 	private AccessToken accessToken;
 	private long accessTokenRefreshTime;
 
-	public OAuthAccessTokenManager(String tokenEndpoint, String scope, CredentialFactory client_cf, boolean useClientCredentialsGrant, HttpSenderBase httpSender, int expiry) {
-		this.tokenEndpoint = tokenEndpoint;
+	public OAuthAccessTokenManager(String tokenEndpoint, String scope, CredentialFactory client_cf, boolean useClientCredentialsGrant, HttpSenderBase httpSender, int expiry) throws HttpAuthenticationException {
+		try {
+			this.tokenEndpoint = new URI(tokenEndpoint);
+		} catch (URISyntaxException e) {
+			throw new HttpAuthenticationException("illegal token endpoint", e);
+		}
+
 		this.scope = StringUtils.isNotEmpty(scope) ? Scope.parse(scope) : null;
 		this.client_cf = client_cf;
 		this.useClientCredentialsGrant = useClientCredentialsGrant;
@@ -87,7 +94,7 @@ public class OAuthAccessTokenManager {
 		HttpRequestBase apacheHttpRequest = convertToApacheHttpRequest(request.toHTTPRequest());
 
 		CloseableHttpClient apacheHttpClient = httpSender.getHttpClient();
-		TimeoutGuard tg = new TimeoutGuard(1+httpSender.getTimeout()/1000,"token retrieval") {
+		TimeoutGuard tg = new TimeoutGuard(1+httpSender.getTimeout()/1000, "token retrieval") {
 
 			@Override
 			protected void abort() {
@@ -96,9 +103,8 @@ public class OAuthAccessTokenManager {
 
 		};
 		try (CloseableHttpResponse apacheHttpResponse = apacheHttpClient.execute(apacheHttpRequest)) {
-			String responseBody = StreamUtil.streamToString(apacheHttpResponse.getEntity().getContent(), null, null);
-			HTTPResponse httpResponse = convertFromApacheHttpResponse(apacheHttpResponse, responseBody);
-			parseResponse(httpResponse, responseBody);
+			HTTPResponse httpResponse = convertFromApacheHttpResponse(apacheHttpResponse);
+			parseResponse(httpResponse);
 		} catch (IOException e) {
 			apacheHttpRequest.abort();
 			throw new HttpAuthenticationException(e);
@@ -125,15 +131,10 @@ public class OAuthAccessTokenManager {
 		Secret clientSecret = new Secret(client_cf.getPassword());
 		ClientAuthentication clientAuth = new ClientSecretBasic(clientID, clientSecret);
 
-		try {
-			URI _tokenEndpoint = new URI(tokenEndpoint);
-			return new TokenRequest(_tokenEndpoint, clientAuth, grant, scope);
-		} catch (URISyntaxException e) {
-			throw new HttpAuthenticationException("illegal token endpoint", e);
-		}
+		return new TokenRequest(tokenEndpoint, clientAuth, grant, scope);
 	}
-	
-	private void parseResponse(HTTPResponse httpResponse, String responseBody) throws HttpAuthenticationException {
+
+	private void parseResponse(HTTPResponse httpResponse) throws HttpAuthenticationException {
 		try {
 			TokenResponse response = TokenResponse.parse(httpResponse);
 			if (! response.indicatesSuccess()) {
@@ -143,16 +144,16 @@ public class OAuthAccessTokenManager {
 			}
 
 			AccessTokenResponse successResponse = response.toSuccessResponse();
-			
+
 			// Get the access token
 			accessToken = successResponse.getTokens().getAccessToken();
 			// accessToken will be refreshed when it is half way expiration
 			accessTokenRefreshTime = System.currentTimeMillis() + expiryMs<0 ? 500 * accessToken.getLifetime() : expiryMs;
 		} catch (ParseException e) {
-			throw new HttpAuthenticationException("Could not parse TokenResponse: "+responseBody, e);
+			throw new HttpAuthenticationException("Could not parse TokenResponse: "+httpResponse.getContent(), e);
 		}
 	}
-	
+
 	// convert the Nimbus HTTPRequest into an Apache HttpClient HttpRequest
 	private HttpRequestBase convertToApacheHttpRequest(HTTPRequest httpRequest) throws HttpAuthenticationException {
 		HttpRequestBase apacheHttpRequest;
@@ -176,7 +177,7 @@ public class OAuthAccessTokenManager {
 				} catch (UnsupportedEncodingException e) {
 					throw new HttpAuthenticationException("Could not create TokenRequest", e);
 				}
-				
+
 				break;
 			default:
 				throw new IllegalStateException("Illegal Method, must be GET or POST");
@@ -185,8 +186,15 @@ public class OAuthAccessTokenManager {
 		return apacheHttpRequest;
 	}
 
-	private HTTPResponse convertFromApacheHttpResponse(CloseableHttpResponse apacheHttpResponse, String responseBody) throws HttpAuthenticationException {
+	private HTTPResponse convertFromApacheHttpResponse(CloseableHttpResponse apacheHttpResponse) throws HttpAuthenticationException, UnsupportedOperationException, IOException {
 		StatusLine statusLine = apacheHttpResponse.getStatusLine();
+
+		String responseBody = null;
+		HttpEntity entity = apacheHttpResponse.getEntity();
+		if(entity != null) {
+			responseBody = StreamUtil.streamToString(entity.getContent(), null, null);
+			EntityUtils.consume(entity);
+		}
 
 		if (statusLine.getStatusCode()!=200) {
 			throw new HttpAuthenticationException("Could not retrieve token: ("+statusLine.getStatusCode()+") "+statusLine.getReasonPhrase()+": "+responseBody);
@@ -197,11 +205,13 @@ public class OAuthAccessTokenManager {
 		for(Header header:apacheHttpResponse.getAllHeaders()) {
 			httpResponse.setHeader(header.getName(), header.getValue());
 		}
-		httpResponse.setContent(responseBody);
+
+		if(responseBody != null) {
+			httpResponse.setContent(responseBody);
+		}
 		return httpResponse;
 	}
-	
-	
+
 	public String getAccessToken(Credentials credentials) throws HttpAuthenticationException {
 		if (accessToken==null || System.currentTimeMillis() > accessTokenRefreshTime) {
 			// retrieve a fresh token if there is none, or it needs to be refreshed

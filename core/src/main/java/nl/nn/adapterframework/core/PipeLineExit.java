@@ -27,7 +27,7 @@ import nl.nn.adapterframework.core.PipeLine.ExitState;
  * When a Pipeline doesn't have an Exits element configured it will be initialized with one Exit having name READY and
  * state SUCCESS.
  * <br/><br/>
- * The name of an Exit can be referenced by the Forward of a Pipe.
+ * The name of an Exit can be referenced by the <code>path</code> attribute of a Forward within a Pipe.
  * 
  * @author Johan Verrips
  * @author Niels Meijer
@@ -45,7 +45,7 @@ public class PipeLineExit implements IForwardTarget {
 	}
 
 	/**
-	 * The name of the Exit that can be referenced by the Forward of a Pipe. When a Pipeline doesn't have an Exits
+	 * The name of the Exit that can be referenced by a {@link PipeForward}'s <code>path</code> attribute. When a Pipeline doesn't have an Exits
 	 * element configured it will be initialized with one Exit having name READY (and state SUCCESS)
 	 * @ff.mandatory ignoreInCompatibilityMode
 	 */

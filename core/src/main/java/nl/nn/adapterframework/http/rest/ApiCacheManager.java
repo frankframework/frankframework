@@ -1,5 +1,5 @@
 /*
-Copyright 2017, 2021 WeAreFrank!
+Copyright 2017, 2021-2022 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -48,10 +48,6 @@ public class ApiCacheManager {
 	 */
 	public static String buildCacheKey(String uriPattern) {
 		return instanceName + "_" + dtapStage.toUpperCase() + "_" + uriPattern;
-	}
-
-	public static String buildEtag(String uriPattern, int hash) {
-		return Integer.toOctalString(instanceName.hashCode()) + "_" +Integer.toHexString(uriPattern.hashCode()) + "_" + hash;
 	}
 
 	public static String getParentCacheKey(ApiListener listener, String uri) {

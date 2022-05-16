@@ -56,7 +56,6 @@ import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.xml.NamespaceRemovingFilter;
 import nl.nn.adapterframework.xml.PrettyPrintFilter;
 import nl.nn.adapterframework.xml.SkipEmptyTagsFilter;
 import nl.nn.adapterframework.xml.TransformerFilter;
@@ -88,7 +87,6 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	private @Getter boolean removeNamespaces=false;
 	private @Getter boolean skipEmptyTags=false;
 	private @Getter int xsltVersion=0; // set to 0 for auto detect.
-	private @Getter boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
 	private @Getter boolean debugInput = false;
 
 	private TransformerPool transformerPool;
@@ -170,10 +168,6 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 
 
 	protected ContentHandler filterInput(ContentHandler input, PipeLineSession session) {
-		if (isRemoveNamespaces()) {
-			log.debug(getLogPrefix()+ " providing filter to remove namespaces from input message");
-			return new NamespaceRemovingFilter(input);
-		}
 		return input; // TODO might be necessary to do something about namespaceaware
 	}
 
@@ -187,7 +181,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		try {
 			TransformerPool poolToUse = getTransformerPoolToUse(session);
 			boolean canStreamOut = streamingXslt && !isDisableOutputEscaping(poolToUse); // TODO fix problem in TransactionConnecor that currently inhibits streaming out when disable-output-escaping is used
-			ThreadConnector threadConnector = canStreamOut ? new ThreadConnector(this, threadLifeCycleEventListener, txManager,  session) : null;
+			ThreadConnector threadConnector = canStreamOut ? new ThreadConnector(this, threadLifeCycleEventListener, txManager, session) : null;
 			MessageOutputStream target = MessageOutputStream.getTargetStream(this, session, next);
 			ContentHandler handler = createHandler(null, threadConnector, session, poolToUse, target);
 			return new MessageOutputStream(this, handler, target, threadLifeCycleEventListener, txManager, session, threadConnector);
@@ -301,7 +295,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 			}
 
 
-			TransformerFilter mainFilter = poolToUse.getTransformerFilter(threadConnector, handler);
+			TransformerFilter mainFilter = poolToUse.getTransformerFilter(threadConnector, handler, isRemoveNamespaces());
 			if (pvl!=null) {
 				XmlUtils.setTransformerParameters(mainFilter.getTransformer(), pvl.getValueMap());
 			}
@@ -389,7 +383,8 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		disableOutputEscaping = b;
 	}
 
-	@IbisDoc({"6", "Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions. For some use other cases (NOT xpathExpression), one entry can be without a prefix, that will define the default namespace.", ""})
+	@IbisDoc({"6", "Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions. For some use other cases (NOT xpathExpression), one entry can be without a prefix, that will define the default namespace. "+
+				"If left empty, an the xpathExpression will match any namespace", ""})
 	public void setNamespaceDefs(String namespaceDefs) {
 		this.namespaceDefs = namespaceDefs;
 	}
@@ -402,6 +397,12 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	@IbisDoc({"8", "when set <code>true</code>, result is pretty-printed. When not set, the value specified in the stylesheet is followed", "false, if not set in stylesheet"})
 	public void setIndentXml(Boolean b) {
 		indentXml = b;
+	}
+
+	@Deprecated
+	@ConfigurationWarning("please use attribute 'removeNamespaces' instead")
+	public void setNamespaceAware(boolean b) {
+		setRemoveNamespaces(!b);
 	}
 
 	@IbisDoc({"9", "when set <code>true</code> namespaces (and prefixes) in the input message are removed before transformation", "false"})
@@ -417,11 +418,6 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	@IbisDoc({"11", "when set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto detect", "0"})
 	public void setXsltVersion(int xsltVersion) {
 		this.xsltVersion=xsltVersion;
-	}
-
-	@IbisDoc({"12", "", "true"})
-	public void setNamespaceAware(boolean b) {
-		namespaceAware = b;
 	}
 
 	@IbisDoc({"13", "when set <code>true</code> the input is written to the log file, at DEBUG level", "false"})

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,20 +28,20 @@ import nl.nn.adapterframework.stream.Message;
 /**
  * Stores parameter values in the PipeLineSession.
  *
- * @ff.parameters the result of each parameter defined will be we stored in the PipeLineSession, under the key specified by the parameter name 
- * 
+ * @ff.parameters the result of each parameter defined will be we stored in the PipeLineSession, under the key specified by the parameter name
+ *
  * @author  Peter Leeuwenburgh
  */
 @Deprecated
 @ConfigurationWarning("Please replace with PutInSessionPipe")
 public class PutParametersInSession extends FixedForwardPipe {
-	
+
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		ParameterList parameterList = getParameterList();
 		if (!parameterList.isEmpty()) {
 			try {
-				ParameterValueList pvl = parameterList.getValues(message, session, isNamespaceAware());
+				ParameterValueList pvl = parameterList.getValues(message, session);
 				if (pvl != null) {
 					for(ParameterValue pv : pvl) {
 						String name  = pv.getName();

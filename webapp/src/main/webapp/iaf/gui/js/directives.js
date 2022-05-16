@@ -71,9 +71,14 @@ angular.module('iaf.beheerconsole')
 						el.addClass("line-selected");
 						let lineNumber = Math.max(0, parseInt(hash.substr(1)) - 15);
 						$timeout(function() {
-							angular.element("#L"+lineNumber)[0].scrollIntoView();
+							let lineElement = angular.element("#L"+lineNumber)[0];
+							if(lineElement){
+								lineElement.scrollIntoView();
+							}
 						}, 500);
 					}
+				} else if(text === '') {
+					angular.element(code).text(text);
 				}
 			});
 

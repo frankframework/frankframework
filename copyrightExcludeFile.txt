@@ -21,7 +21,8 @@ LICENSE
 .travis
 .project
 .classpath
-org.eclipse.
+.settings/
+.settings\
 .gitignore
 .cvsignore
 .gif

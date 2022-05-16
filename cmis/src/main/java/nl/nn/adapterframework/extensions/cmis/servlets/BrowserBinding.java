@@ -18,8 +18,6 @@ package nl.nn.adapterframework.extensions.cmis.servlets;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpServlet;
-
 import org.apache.chemistry.opencmis.server.impl.browser.CmisBrowserBindingServlet;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -46,13 +44,8 @@ public class BrowserBinding extends CmisBrowserBindingServlet implements Dynamic
 	}
 
 	@Override
-	public HttpServlet getServlet() {
-		return this;
-	}
-
-	@Override
-	public String[] getRoles() {
-		return "IbisWebService,IbisTester".split(",");
+	public String[] getAccessGrantingRoles() {
+		return IBIS_FULL_SERVICE_ACCESS_ROLES;
 	}
 
 	@Autowired
