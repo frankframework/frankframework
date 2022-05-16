@@ -59,7 +59,7 @@ public class MetricsRegistry {
 	private void configureRegistry() {
 		registry.config().commonTags(
 			"instance", APP_CONSTANTS.getString("instance.name",""),
-//			"ff_version", APP_CONSTANTS.getString("application.version", "unknown"),
+			"ff_version", APP_CONSTANTS.getString("application.version", "unknown"),
 			"hostname" , Misc.getHostname(),
 			"dtap_stage" , APP_CONSTANTS.getProperty("dtap.stage")
 		);
