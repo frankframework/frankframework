@@ -31,6 +31,7 @@ import jcifs.smb.SmbFile;
 import jcifs.smb.SmbFileFilter;
 import jcifs.smb.SmbFileInputStream;
 import jcifs.smb.SmbFileOutputStream;
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
@@ -46,13 +47,13 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 
 	protected Logger log = LogUtil.getLogger(this);
 
-	private String share = null;
-	private String username = null;
-	private String password = null;
-	private String authAlias = null;
-	private String domain = null;
-	private boolean isForce;
-	private boolean listHiddenFiles = false;
+	private @Getter String share = null;
+	private @Getter String username = null;
+	private @Getter String password = null;
+	private @Getter String authAlias = null;
+	private @Getter String domain = null;
+	private @Getter boolean isForce;
+	private @Getter boolean listHiddenFiles = false;
 
 	private NtlmPasswordAuthentication auth = null;
 	private SmbFile smbContext;
@@ -99,7 +100,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	}
 
 	@Override
-	public DirectoryStream<SmbFile> listFiles(String folder, boolean ignoreFolders) throws FileSystemException {
+	public DirectoryStream<SmbFile> listFiles(String folder) throws FileSystemException {
 		try {
 			if (!isListHiddenFiles()) {
 				SmbFileFilter filter = new SmbFileFilter() {
@@ -316,41 +317,26 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 		return null;
 	}
 
-	public String getShare() {
-		return share;
-	}
 	@IbisDoc({ "1", "the destination, aka smb://xxx/yyy share", "" })
 	public void setShare(String share) {
 		this.share = share;
 	}
-	
-	public String getUsername() {
-		return username;
-	}
+
 	@IbisDoc({ "2", "the smb share username", "" })
 	public void setUsername(String username) {
 		this.username = username;
 	}
 
-	public String getPassword() {
-		return password;
-	}
 	@IbisDoc({ "3", "the smb share password", "" })
 	public void setPassword(String password) {
 		this.password = password;
 	}
 
-	public String getAuthAlias() {
-		return authAlias;
-	}
 	@IbisDoc({ "4", "alias used to obtain credentials for the smb share", "" })
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}
 
-	public String getDomain() {
-		return domain;
-	}
 	@IbisDoc({ "5", "domain, in case the user account is bound to a domain", "" })
 	public void setDomain(String domain) {
 		this.domain = domain;
@@ -361,9 +347,6 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 		isForce = force;
 	}
 
-	public boolean isListHiddenFiles() {
-		return listHiddenFiles;
-	}
 	@IbisDoc({ "7", "controls whether hidden files are seen or not", "false" })
 	public void setListHiddenFiles(boolean listHiddenFiles) {
 		this.listHiddenFiles = listHiddenFiles;

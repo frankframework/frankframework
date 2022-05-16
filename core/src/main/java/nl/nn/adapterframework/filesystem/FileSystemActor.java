@@ -330,7 +330,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				case CREATE:{
 					F file=getFile(input, pvl);
 					if (fileSystem.exists(file)) {
-						FileSystemUtils.prepareDestination((IWritableFileSystem<F>)fileSystem, file, isOverwrite(), getNumberOfBackups(), FileSystemAction.WRITE);
+						FileSystemUtils.prepareDestination((IWritableFileSystem<F>)fileSystem, file, isOverwrite(), getNumberOfBackups(), FileSystemAction.CREATE);
 						file=getFile(input, pvl); // reobtain the file, as the object itself may have changed because of the rollover
 					}
 					try (OutputStream out = ((IWritableFileSystem<F>)fileSystem).createFile(file)) {
@@ -552,7 +552,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	private void deleteEmptyFolder(String folder) throws FileSystemException, IOException {
 		if(isDeleteEmptyFolder()) {
 			boolean isEmpty = false;
-			try (Stream<F> stream = FileSystemUtils.getFilteredStream(fileSystem, folder, null, null, false)) {
+			try (Stream<F> stream = FileSystemUtils.getFilteredStream(fileSystem, folder, null, null)) {
 				isEmpty = !stream.iterator().hasNext();
 			} catch(IOException e) {
 				throw new FileSystemException("Cannot delete folder ["+folder+"]");

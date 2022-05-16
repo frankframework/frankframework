@@ -149,7 +149,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	}
 
 	@Override
-	public DirectoryStream<S3Object> listFiles(String folder, boolean ignoreFolders) throws FileSystemException {
+	public DirectoryStream<S3Object> listFiles(String folder) throws FileSystemException {
 		List<S3ObjectSummary> summaries = null;
 		String prefix = folder != null ? folder + "/" : "";
 		try {

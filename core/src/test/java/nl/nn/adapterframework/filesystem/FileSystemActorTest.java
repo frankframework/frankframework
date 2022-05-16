@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -1405,7 +1406,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.setAction(FileSystemAction.RMDIR);
 		actor.configure(fileSystem,null,owner);
 		actor.open();
-		
+
 		Message message = new Message(folder);
 		ParameterValueList pvl = null;
 		actor.doAction(message, pvl, session);
@@ -1435,12 +1436,12 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		assertEquals("result of sender should be name of deleted file",filename,result);
 		assertFalse("Expected file [" + filename + "] " + "not to be present", actual);
 	}
-	
+
 	@Test
 	public void fileSystemActorDeleteActionWithDeleteEmptyFolderTest() throws Exception {
 		String filename = "filetobedeleted" + FILE1;
 		String folder = "inner";
-		
+
 		_createFolder(folder);
 		createFile(folder, filename, "is not empty");
 
@@ -1462,6 +1463,33 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		assertFalse("Expected parent folder not to be present", _folderExists(folder));
 	}
 
+	@Test
+	public void fileSystemActorDeleteActionWithDeleteEmptyFolderRootContainsEmptyFoldersTest() throws Exception {
+		String filename = "filetobedeleted" + FILE1;
+		String folder = "inner";
+
+		_createFolder(folder);
+		_createFolder(folder+"/innerFolder1");
+		_createFolder(folder+"/innerFolder2");
+		createFile(folder, filename, "is not empty");
+
+		actor.setDeleteEmptyFolder(true);
+		actor.setAction(FileSystemAction.DELETE);
+		actor.configure(fileSystem, null, owner);
+		actor.open();
+		
+		Message message = new Message(folder+"/"+filename);
+		ParameterValueList pvl = null;
+		assertThrows(FileSystemException.class, () -> actor.doAction(message, pvl, session));
+
+		waitForActionToFinish();
+
+		// test
+		assertFalse("Expected file [" + filename + "] " + "not to be present", _fileExists(filename));
+		assertTrue("Expected parent folder to be present", _folderExists(folder));
+		assertTrue("Expected parent folder to be present", _folderExists(folder+"/innerFolder1"));
+	}
+	
 	@Test
 	public void fileSystemActorDeleteActionTestWithWildCard() throws Exception {
 		String srcFolderName = "src" + new Date().getTime();

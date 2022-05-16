@@ -373,7 +373,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 
 	@Override
-	public DirectoryStream<EmailMessage> listFiles(String folder, boolean ignoreFolders) throws FileSystemException {
+	public DirectoryStream<EmailMessage> listFiles(String folder) throws FileSystemException {
 		if (!isOpen()) {
 			return null;
 		}
@@ -549,14 +549,16 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		}
 	}
 	@Override
-	public String getParentPath(EmailMessage f) {
-//			ExchangeService exchangeService = getConnection();
-//			EmailMessage.bind(exchangeService, f.getParentFolderId());
-			return null;
-//		catch (ServiceLocalException e) {
-//			throw new RuntimeException("Could not determine Name",e);
-//		}
+	public String getParentPath(EmailMessage f) throws FileSystemException {
+		try {
+			FolderId folderId = f.getParentFolderId();
+			Folder folder = Folder.bind(getConnection(), folderId);
+			return folder.getDisplayName();
+		} catch(Exception e) {
+			throw new FileSystemException(e);
+		}
 	}
+
 	@Override
 	public String getCanonicalName(EmailMessage f) throws FileSystemException {
 		try {

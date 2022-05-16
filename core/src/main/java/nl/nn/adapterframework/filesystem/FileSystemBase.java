@@ -58,7 +58,7 @@ public abstract class FileSystemBase<F> implements IBasicFileSystem<F> {
 		if (stopAt<0) {
 			stopAt = Integer.MAX_VALUE;
 		}
-		try(DirectoryStream<F> ds = listFiles(folder, true)) {
+		try(DirectoryStream<F> ds = listFiles(folder)) {
 			for (Iterator<F> it = ds.iterator(); it.hasNext() && count<=stopAt; it.next()) {
 				count++;
 			}

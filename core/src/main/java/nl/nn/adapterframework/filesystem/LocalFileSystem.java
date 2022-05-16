@@ -79,7 +79,7 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	}
 
 	@Override
-	public DirectoryStream<Path> listFiles(String folder, boolean ignoreFolders) throws FileSystemException {
+	public DirectoryStream<Path> listFiles(String folder) throws FileSystemException {
 		final Path dir = toFile(folder);
 
 		DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<Path>() {
@@ -89,7 +89,7 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 			}
 		};
 		try {
-			return ignoreFolders ? Files.newDirectoryStream(dir, filter) : Files.newDirectoryStream(dir);
+			return Files.newDirectoryStream(dir, filter);
 		} catch (IOException e) {
 			throw new FileSystemException("Cannot list files in ["+folder+"]", e);
 		}

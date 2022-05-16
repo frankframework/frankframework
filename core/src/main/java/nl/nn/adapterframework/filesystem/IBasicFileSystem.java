@@ -51,7 +51,7 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination{
 	 * Lists all files in 'folder' or in the 'root' of the filesystem (when folder is null).
 	 * Should list only 'files', no folders.
 	 */
-	public DirectoryStream<F> listFiles(String folder, boolean ignoreFolders) throws FileSystemException;
+	public DirectoryStream<F> listFiles(String folder) throws FileSystemException;
 	public int getNumberOfFilesInFolder(String folder) throws FileSystemException;
 	/**
 	 * Get a string representation of an identification of a file.

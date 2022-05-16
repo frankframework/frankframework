@@ -499,6 +499,6 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 	}
 
 	private DirectoryStream<F> listFiles(String folder) throws FileSystemException {
-		return fileSystem.listFiles(folder, true);
+		return fileSystem.listFiles(folder);
 	}
 }

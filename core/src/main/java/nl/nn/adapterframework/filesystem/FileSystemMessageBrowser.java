@@ -105,7 +105,7 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 	@Override
 	public int getMessageCount() throws ListenerException {
 		int count = 0;
-		try(DirectoryStream<F> ds = fileSystem.listFiles(folder, true)) {
+		try(DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
 			if (ds==null) {
 				return -1;
 			}

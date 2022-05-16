@@ -135,7 +135,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		return files.size();
 	}
 	@Override
-	public DirectoryStream<M> listFiles(String folderName, boolean ignoreFolders) throws FileSystemException {
+	public DirectoryStream<M> listFiles(String folderName) throws FileSystemException {
 		checkOpen();
 		MockFolder folder = folderName==null ? this : getFolders().get(folderName);
 		if (folder==null) {
