@@ -10,11 +10,19 @@ on:
     branches: [master]
     paths-ignore:
       - "**.md"
+      - "**.yml"
+      - "**.txt"
+      - "**.png"
+      - ".github/**"
   pull_request:
     # The branches below must be a subset of the branches above
     branches: [master]
     paths-ignore:
       - "**.md"
+      - "**.yml"
+      - "**.txt"
+      - "**.png"
+      - ".github/**"
   schedule:
     - cron: '0 23 * * 1'
 
