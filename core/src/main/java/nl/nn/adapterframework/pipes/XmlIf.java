@@ -66,7 +66,7 @@ public class XmlIf extends AbstractPipe {
 
 	protected String makeStylesheet(String xpathExpression, String resultVal) {
 		String namespaceClause = XmlUtils.getNamespaceClause(getNamespaceDefs());
-		return XmlUtils.createXPathEvaluatorSource(xpathExpression, x -> "<xsl:choose>" +
+		return XmlUtils.createXPathEvaluatorSource(xpathExpression + (StringUtils.isEmpty(resultVal)?"":"='"+resultVal+"'"), x -> "<xsl:choose>" +
 				"<xsl:when "+namespaceClause+" test=\"" + XmlUtils.encodeChars(x) + "\">" +getThenForwardName()+"</xsl:when>"+
 				"<xsl:otherwise>" +getElseForwardName()+"</xsl:otherwise>" +
 			"</xsl:choose>", OutputType.TEXT,

@@ -158,9 +158,17 @@ public class XmlSwitch extends AbstractPipe {
 					parametervalues = parameterList.getValues(message, session, isNamespaceAware()).getValueMap();
 				}
 				if(StringUtils.isNotEmpty(getSessionKey())) {
-					forward = transformerPool.transform(Message.asString(session.get(sessionKey)), parametervalues, isNamespaceAware());
+					if (isNamespaceAware()) {
+						forward = transformerPool.transform(Message.asSource(session.get(sessionKey)), parametervalues);
+					} else {
+						forward = transformerPool.transform(Message.asString(session.get(sessionKey)), parametervalues, isNamespaceAware());
+					}
 				} else {
-					forward = transformerPool.transform(message.asString(), parametervalues, isNamespaceAware());
+					if (isNamespaceAware()) {
+						forward = transformerPool.transform(message.asSource(), parametervalues);
+					} else {
+						forward = transformerPool.transform(message.asString(), parametervalues, isNamespaceAware());
+					}
 				}
 			} catch (Throwable e) {
 				throw new PipeRunException(this, getLogPrefix(session) + "got exception on transformation", e);
