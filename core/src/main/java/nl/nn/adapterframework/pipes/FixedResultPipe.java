@@ -32,7 +32,6 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -267,7 +266,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 	}
 	/**
 	 * If set, every occurrence of this attribute's value is replaced by the value of <code>replaceTo</code>.
-	 * Not applied if returned message comes from attribute <code>returnString</code>.
+	 * Not applied if returned message comes via attribute <code>filenameSessionKey</code> or if <code>lookupAtRuntime</code> is true.
 	 */
 	public void setReplaceFrom (String replaceFrom){
 		this.replaceFrom=replaceFrom;
@@ -289,7 +288,8 @@ public class FixedResultPipe extends FixedForwardPipe {
 	}
 	/**
 	 * File name of XSLT stylesheet to apply to the value obtained from attributes
-	 * <code>returnString</code>, <code>filename</code> and <code>filenameSessionKey</code>. 
+	 * <code>returnString</code>, <code>filename</code> and <code>filenameSessionKey</code>.
+	 * Path is relative to the configuration's root directory (file is expected on the classpath).
 	 */
 	public void setStyleSheetName (String styleSheetName){
 		this.styleSheetName=styleSheetName;
@@ -313,6 +313,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 	 *
 	 * @ff.default false
 	 */
+	@Deprecated
 	public void setReplaceFixedParams(boolean b){
 		replaceFixedParams=b;
 	}
