@@ -105,12 +105,12 @@ public class TransactionManagerTest extends TransactionManagerTestBase {
 			JdbcUtil.executeStatement(txManagedConnection, "SELECT TVARCHAR FROM "+TEST_TABLE+" WHERE tkey=1");
 		}
 
-		TransactionStatus txStatus2 = txManager.getTransaction(requiresNew);
+		TransactionStatus txStatusInner = txManager.getTransaction(requiresNew);
 		try (Connection txManagedConnection = getConnection()) {
 			JdbcUtil.executeStatement(txManagedConnection, "INSERT INTO "+TEST_TABLE+" (tkey) VALUES (2)");
 		}
 
-		txManager.commit(txStatus2);
+		txManager.commit(txStatusInner);
 		txManager.commit(txStatusOuter);
 	}
 

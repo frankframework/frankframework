@@ -62,7 +62,7 @@ public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
 			int minor = metadata.getDriverMinorVersion();
 
 			if (ModifierFactory.getModifier(driverName, major, minor)==null) {
-				log.info("No Modifier found for driver [{}] version [{}.{}], creating IsSameRM modifier");
+				log.info("No Modifier found for driver [{}] version [{}.{}], creating IsSameRM modifier", driverName, major, minor);
 				ModifierFactory.putModifier(driverName, major, minor, IsSameRMModifier.class.getName());
 			}
 		} catch (SQLException e) {
