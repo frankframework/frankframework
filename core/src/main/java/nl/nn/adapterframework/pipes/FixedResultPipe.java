@@ -18,8 +18,6 @@ package nl.nn.adapterframework.pipes;
 import java.io.IOException;
 import java.net.URL;
 
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -41,7 +39,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StringResolver;
-import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.util.TransformerPool;
 
 /**
  * Provides an example of a pipe. It may return the contents of a file
@@ -69,6 +67,8 @@ public class FixedResultPipe extends FixedForwardPipe {
 	private @Getter String styleSheetName;
 	private @Getter boolean lookupAtRuntime;
 	private @Getter boolean replaceFixedParams;
+
+	private TransformerPool transformerPool;
 
 	/**
 	 * checks for correct configuration, and translates the filename to
@@ -102,21 +102,21 @@ public class FixedResultPipe extends FixedForwardPipe {
 		if (StringUtils.isEmpty(getFilename()) && StringUtils.isEmpty(getFilenameSessionKey()) && returnString==null) { // allow an empty returnString to be specified
 			throw new ConfigurationException("has neither filename nor filenameSessionKey nor returnString specified");
 		}
+		if (StringUtils.isNotEmpty(getStyleSheetName())) {
+			transformerPool = TransformerPool.configureStyleSheetTransformer(getLogPrefix(null), this, getStyleSheetName(), 0);
+		}
 	}
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String result=getReturnString();
-		String filename = null;
+		String filename = getFilename();
 		if (StringUtils.isNotEmpty(getFilenameSessionKey())) {
 			try {
 				filename = session.getMessage(getFilenameSessionKey()).asString();
 			} catch (IOException e) {
 				throw new PipeRunException(this, getLogPrefix(session) + "unable to get filename from session key ["+getFilenameSessionKey()+"]", e);
 			}
-		}
-		if (filename == null && StringUtils.isNotEmpty(getFilename()) && isLookupAtRuntime()) {
-			filename = getFilename();
 		}
 		if (StringUtils.isNotEmpty(filename)) {
 			URL resource = null;
@@ -163,16 +163,15 @@ public class FixedResultPipe extends FixedForwardPipe {
 			result=StringResolver.substVars(result, session, appConstants);
 		}
 
-		if (StringUtils.isNotEmpty(getStyleSheetName())) {
+		if (transformerPool != null) {
 			URL xsltSource = ClassUtils.getResourceURL(this, getStyleSheetName());
 			if (xsltSource!=null) {
 				try{
-					Transformer transformer = XmlUtils.createTransformer(xsltSource);
-					result = XmlUtils.transformXml(transformer, result);
+					result = transformerPool.transform(Message.asSource(result));
 				} catch (IOException e) {
 					throw new PipeRunException(this,getLogPrefix(session)+"cannot retrieve ["+ getStyleSheetName() + "], resource [" + xsltSource.toString() + "]", e);
-				} catch (SAXException|TransformerConfigurationException e) {
-					throw new PipeRunException(this,getLogPrefix(session)+"got error creating transformer from file [" + getStyleSheetName() + "]", e);
+				} catch (SAXException e) {
+					throw new PipeRunException(this,getLogPrefix(session)+"got error converting string [" + result + "] to source", e);
 				} catch (TransformerException e) {
 					throw new PipeRunException(this,getLogPrefix(session)+"got error transforming resource [" + xsltSource.toString() + "] from [" + getStyleSheetName() + "]", e);
 				}

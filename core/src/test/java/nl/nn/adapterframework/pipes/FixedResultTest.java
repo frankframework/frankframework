@@ -4,10 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -35,9 +32,6 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 		return ParameterBuilder.create().withName(name).withValue("abs").withSessionKey("*");
 	}
 
-	/**
-	 * Method: configure()
-	 */
 	@Test
 	public void testSuccess() throws Exception {
 		Parameter param = setUp("param1");
@@ -104,20 +98,19 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 	}
 
 	@Test
-	public void xsltFailForFindingFileButSucceed() throws Exception{
-		Parameter param = setUp("kar");
+	public void testXsltWithReturnedStringReplaced() throws Exception{
+		Parameter param = ParameterBuilder.create().withName("param").withValue("<result><field>empty</field></result>");
 		pipe.addParameter(param);
-		pipe.setLookupAtRuntime(true);
 		pipe.setSubstituteVars(true);
-		pipe.setStyleSheetName("/Xslt/importNsddsotFound/namdsfe2.xsl");
+		pipe.setStyleSheetName("/Xslt/extract.xslt");
 		pipe.setReplaceFrom("param1");
-		pipe.setReplaceTo("kar");
-		pipe.setReturnString("${param1} andandandparam2");
+		pipe.setReplaceTo("param");
+		pipe.setReturnString("${param1}");
 		pipe.configure();
 
-		PipeRunResult res = doPipe(pipe, "whatisthis", session);
+		PipeRunResult res = doPipe(pipe, "dummy", session);
 		assertEquals("success", res.getPipeForward().getName());
-		assertEquals("value andandandparam2", res.getResult().asString());
+		assertEquals("empty", res.getResult().asString());
 	}
 
 	@Test
@@ -126,6 +119,20 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 		param.setDefaultValue("DefaultValue");
 		pipe.addParameter(param);
 		pipe.setLookupAtRuntime(true);
+		pipe.setFilename("/FixedResult/fixedResultPipeInput.txt");
+		pipe.setSubstituteVars(true);
+		pipe.configure();
+
+		PipeRunResult res = doPipe(pipe, "propValueFromInput", session);
+		assertEquals("success", res.getPipeForward().getName());
+		assertEquals("Hello propValueFromInput", res.getResult().asString());
+	}
+
+	@Test
+	public void substitudeVarsFromFileConfigureTimeLookup() throws Exception{
+		Parameter param = ParameterBuilder.create().withName("myprop");
+		param.setDefaultValue("DefaultValue");
+		pipe.addParameter(param);
 		pipe.setFilename("/FixedResult/fixedResultPipeInput.txt");
 		pipe.setSubstituteVars(true);
 		pipe.configure();
