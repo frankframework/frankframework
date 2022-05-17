@@ -517,7 +517,6 @@
 					</configuration>
 					<executions>
 						<execution>
-							<?m2e ignore?>
 							<id>verify-code-style</id>
 							<phase>process-classes</phase>
 							<goals>
@@ -543,7 +542,6 @@
 					</configuration>
 					<executions>
 						<execution>
-							<?m2e ignore?>
 							<id>clean-and-flatten</id>
 							<phase>process-resources</phase>
 							<goals>
@@ -580,7 +578,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore></ignore>
+										<ignore />
 									</action>
 								</pluginExecution>
 								<pluginExecution>
@@ -593,7 +591,20 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore></ignore>
+										<ignore />
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-checkstyle-plugin</artifactId>
+										<versionRange>[3.1.2,)</versionRange>
+										<goals>
+											<goal>check</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
 									</action>
 								</pluginExecution>
 							</pluginExecutions>
