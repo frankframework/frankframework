@@ -226,7 +226,7 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	}
 
 	@Override
-	public String getParentPath(Path f) throws FileSystemException {
+	public String getParentFolder(Path f) throws FileSystemException {
 		return getCanonicalName(f.getParent());
 	}
 

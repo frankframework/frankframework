@@ -91,16 +91,16 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	public static final String ACTION_FORWARD="forward";
 	public static final String ACTION_LIST_ATTACHMENTS="listAttachments";
 
-	public static final String PARAMETER_ACTION="action";
-	public static final String PARAMETER_CONTENTS1="contents";
-	public static final String PARAMETER_CONTENTS2="file";
-	public static final String PARAMETER_FILENAME="filename";
-	public static final String PARAMETER_INPUTFOLDER="inputFolder";	// folder for actions list, mkdir and rmdir. This is a sub folder of baseFolder
-	public static final String PARAMETER_DESTINATION="destination";	// destination for action rename and move
+	public final String PARAMETER_ACTION="action";
+	public final String PARAMETER_CONTENTS1="contents";
+	public final String PARAMETER_CONTENTS2="file";
+	public final String PARAMETER_FILENAME="filename";
+	public final String PARAMETER_INPUTFOLDER="inputFolder";	// folder for actions list, mkdir and rmdir. This is a sub folder of baseFolder
+	public final String PARAMETER_DESTINATION="destination";	// destination for action rename and move
 
-	public static final FileSystemAction[] ACTIONS_BASIC= {FileSystemAction.CREATE, FileSystemAction.LIST, FileSystemAction.INFO, FileSystemAction.READ, FileSystemAction.DOWNLOAD, FileSystemAction.READDELETE, FileSystemAction.MOVE, FileSystemAction.COPY, FileSystemAction.DELETE, FileSystemAction.MKDIR, FileSystemAction.RMDIR};
-	public static final FileSystemAction[] ACTIONS_WRITABLE_FS= {FileSystemAction.WRITE, FileSystemAction.UPLOAD, FileSystemAction.APPEND, FileSystemAction.RENAME};
-	public static final FileSystemAction[] ACTIONS_MAIL_FS= {FileSystemAction.FORWARD};
+	public final FileSystemAction[] ACTIONS_BASIC= {FileSystemAction.CREATE, FileSystemAction.LIST, FileSystemAction.INFO, FileSystemAction.READ, FileSystemAction.DOWNLOAD, FileSystemAction.READDELETE, FileSystemAction.MOVE, FileSystemAction.COPY, FileSystemAction.DELETE, FileSystemAction.MKDIR, FileSystemAction.RMDIR};
+	public final FileSystemAction[] ACTIONS_WRITABLE_FS= {FileSystemAction.WRITE, FileSystemAction.UPLOAD, FileSystemAction.APPEND, FileSystemAction.RENAME};
+	public final FileSystemAction[] ACTIONS_MAIL_FS= {FileSystemAction.FORWARD};
 
 	private @Getter FileSystemAction action;
 	private @Getter String filename;
@@ -339,9 +339,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 					return FileSystemUtils.getFileInfo(fileSystem, file).toXML();
 				}
 				case DELETE: {
-					String result = processAction(input, pvl, f -> { fileSystem.deleteFile(f); return f; });
-					deleteEmptyFolder(fileSystem.getParentPath(getFile(input, pvl)));
-					return result;
+					return processAction(input, pvl, f -> { fileSystem.deleteFile(f); return f; });
 				}
 				case INFO: {
 					F file=getFile(input, pvl);
@@ -365,7 +363,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 							super.close();
 							try {
 								fileSystem.deleteFile(file);
-								deleteEmptyFolder(fileSystem.getParentPath(file));
+								deleteEmptyFolder(file);
 							} catch (FileSystemException e) {
 								throw new IOException("Could not delete file", e);
 							}
@@ -436,7 +434,6 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				case RMDIR: {
 					String folder = determineInputFoldername(input, pvl);
 					fileSystem.removeFolder(folder, isRemoveNonEmptyFolder());
-					deleteEmptyFolder(fileSystem.getParentPath(fileSystem.toFile(folder)));
 					return folder;
 				}
 				case RENAME: {
@@ -457,7 +454,6 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				case MOVE: {
 					String destinationFolder = determineDestination(pvl);
 					String result = processAction(input, pvl, f -> FileSystemUtils.moveFile(fileSystem, f, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder()));
-					deleteEmptyFolder(fileSystem.getParentPath(getFile(input, pvl)));
 					return result;
 				}
 				case COPY: {
@@ -502,10 +498,13 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 					}
 				}
 			}
+			deleteEmptyFolder(folder);
 			return dirXml.toXML();
 		}
 		F file=getFile(input, pvl);
-		return fileSystem.getName(action.execute(file));
+		String filename = fileSystem.getName(action.execute(file));
+		deleteEmptyFolder(file);
+		return filename;
 	}
 
 	private String arrangeFolder(String determinedFolderName) throws FileSystemException {
@@ -546,6 +545,12 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		}
 		if(isWriteLineSeparator()) {
 			out.write(eolArray);
+		}
+	}
+
+	private void deleteEmptyFolder(F f) throws FileSystemException, IOException {
+		if(isDeleteEmptyFolder()) {
+			deleteEmptyFolder(fileSystem.getParentFolder(f));
 		}
 	}
 
@@ -698,7 +703,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		this.charset = charset;
 	}
 
-	@IbisDoc({"16", "If set to true then the folder will be deleted if it is empty after processing the action. Works with actions "+ACTION_DELETE+", "+ACTION_READ_DELETE+", "+ACTION_MOVE+" and "+ACTION_RMDIR})
+	@IbisDoc({"16", "If set to true then the folder will be deleted if it is empty after processing the action. Works with actions "+ACTION_DELETE+", "+ACTION_READ_DELETE+" and "+ACTION_MOVE})
 	public void setDeleteEmptyFolder(boolean deleteEmptyFolder) {
 		this.deleteEmptyFolder = deleteEmptyFolder;
 	}

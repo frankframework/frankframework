@@ -328,7 +328,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	}
 
 	@Override
-	public String getParentPath(S3Object f) throws FileSystemException {
+	public String getParentFolder(S3Object f) throws FileSystemException {
 		return f.getBucketName();
 	}
 

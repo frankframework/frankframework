@@ -549,7 +549,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		}
 	}
 	@Override
-	public String getParentPath(EmailMessage f) throws FileSystemException {
+	public String getParentFolder(EmailMessage f) throws FileSystemException {
 		try {
 			FolderId folderId = f.getParentFolderId();
 			Folder folder = Folder.bind(getConnection(), folderId);

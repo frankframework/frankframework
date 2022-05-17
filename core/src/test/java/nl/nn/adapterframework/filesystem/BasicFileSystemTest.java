@@ -356,7 +356,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		Set<F> files = new HashSet<F>();
 		Set<String> filenames = new HashSet<String>();
 		int count = 0;
-		try(DirectoryStream<F> ds = listFiles(folder)) {
+		try(DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
 			Iterator<F> it = ds.iterator();
 			// Count files
 			while (it.hasNext()) {
@@ -379,7 +379,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 				assertTrue("file must exist when referred to by filename ["+filename+"]",fileSystem.exists(f));
 			}
 		}
-		try(DirectoryStream<F> ds = listFiles(folder)) {
+		try(DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
 			Iterator<F> it = ds.iterator();
 			for (int i = 0; i < count; i++) {
 				assertTrue(it.hasNext());
@@ -397,7 +397,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 
 			assertFalse("file should not exist anymore physically after deletion", _fileExists(folder, "file_0.txt"));
 	
-			try(DirectoryStream<F> ds = listFiles(folder)) {
+			try(DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
 				Iterator<F> it = ds.iterator();
 				for (int i = 0; i < count - numDeleted; i++) {
 					assertTrue(it.hasNext());
@@ -416,7 +416,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 				deleteFile(folder, "file_1.txt");
 				numDeleted++;
 		
-				try(DirectoryStream<F> ds = listFiles(folder)) {
+				try(DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
 					Iterator<F> it = ds.iterator();
 					for (int i = 0; i < count - numDeleted; i++) {
 						assertTrue(it.hasNext());
@@ -483,7 +483,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 
 		Set<F> files = new HashSet<F>();
 		Set<String> filenames = new HashSet<String>();
-		try(DirectoryStream<F> ds = listFiles(null)) {
+		try(DirectoryStream<F> ds = fileSystem.listFiles(null)) {
 			Iterator<F> it = ds.iterator();
 			// Count files
 			while (it.hasNext()) {
@@ -498,7 +498,42 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		
 	}
 
-	private DirectoryStream<F> listFiles(String folder) throws FileSystemException {
-		return fileSystem.listFiles(folder);
+	@Test
+	public void getParentOfTheDeletedFile() throws Exception {
+		String folderName = "parentFolder";
+
+		fileSystem.configure();
+		fileSystem.open();
+
+		_createFolder(folderName);
+		createFile(folderName, FILE1, "text");
+
+		F f = fileSystem.toFile(folderName, FILE1);
+
+		fileSystem.deleteFile(f);
+
+		String parentFolder = fileSystem.getParentFolder(f);
+
+		assertTrue(parentFolder.endsWith(folderName));
 	}
+
+	@Test
+	public void getParentOfTheDeletedFolder() throws Exception {
+		String folderName = "parentFolder";
+
+		fileSystem.configure();
+		fileSystem.open();
+
+		_createFolder(folderName);
+		_createFolder(folderName+"/innerFolder");
+
+		F f = fileSystem.toFile(folderName+"/innerFolder");
+
+		fileSystem.removeFolder(folderName+"/innerFolder", false);
+
+		String parentFolder = fileSystem.getParentFolder(f);
+
+		assertTrue(parentFolder.endsWith(folderName));
+	}
+
 }

@@ -59,7 +59,7 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination{
 	 * Can reflect name a file has in its folder, is not expected to be unique over folders.
 	 */
 	public String getName(F f);
-	public String getParentPath(F f) throws FileSystemException;
+	public String getParentFolder(F f) throws FileSystemException;
 	/**
 	 * Get a file 'F' representation of an identification of a file.
 	 * Must pair up with the implementation of {@link #getName(Object)}.

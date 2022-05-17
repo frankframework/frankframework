@@ -262,7 +262,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
-	public String getParentPath(M f) throws FileSystemException {
+	public String getParentFolder(M f) throws FileSystemException {
 		return f.getOwner().getName();
 	}
 

@@ -154,7 +154,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	}
 
 	@Override
-	public String getParentPath(Message f) throws FileSystemException {
+	public String getParentFolder(Message f) throws FileSystemException {
 		return f.getFolder().getFullName();
 	}
 

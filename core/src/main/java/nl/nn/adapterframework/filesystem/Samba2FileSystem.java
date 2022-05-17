@@ -444,7 +444,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 	}
 
 	@Override
-	public String getParentPath(String f) {
+	public String getParentFolder(String f) {
 		String filePath = f;
 		if(filePath.endsWith("\\")) {
 			filePath = filePath.substring(0, filePath.lastIndexOf("\\"));
