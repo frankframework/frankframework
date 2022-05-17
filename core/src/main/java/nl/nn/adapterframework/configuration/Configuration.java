@@ -51,6 +51,7 @@ import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle;
 import nl.nn.adapterframework.lifecycle.LazyLoadingEventListener;
 import nl.nn.adapterframework.lifecycle.SpringContextScope;
 import nl.nn.adapterframework.monitoring.MonitorManager;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.scheduler.job.IJob;
 import nl.nn.adapterframework.scheduler.job.Job;
 import nl.nn.adapterframework.statistics.HasStatistics.Action;
@@ -64,10 +65,17 @@ import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
- * The Configuration is the container of all configuration objects.
+ * Container of {@link Adapter}-s that belong together.
+ * A configuration may be deployed independently from other configurations.
+ * Names of nested elements like {@link Adapter}-s, {@link Receiver}-s, listeners and senders
+ * can be reused in other configurations.
+ * <br/><br/>
+ * Configurations are shown in the Frank!Console along with their {@link Adapter}-s,
+ * {@link Receiver}-s, listeners and senders. The Adapter Status page of the Frank!Console
+ * has a tab for each configuration that only shows information
+ * about that configuration. See the Frank!Manual for details.
  *
  * @author Johan Verrips
- * @see    nl.nn.adapterframework.core.Adapter
  */
 public class Configuration extends ClassPathXmlApplicationContext implements IConfigurable, ApplicationContextAware, ConfigurableLifecycle {
 	protected Logger log = LogUtil.getLogger(this);
@@ -415,7 +423,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	/**
-	 * Register an adapter with the configuration.
+	 * Processor that handles a specific kind of messages in a specific way. Comparable to a function in programming languages.
 	 */
 	public void registerAdapter(Adapter adapter) {
 		adapter.setConfiguration(this);
@@ -425,6 +433,9 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	// explicitly in this position, to have the right location in the XSD
+	/**
+	 * Container for jobs scheduled for periodic execution.
+	 */
 	public void setScheduleManager(ScheduleManager scheduleManager) {
 		this.scheduleManager = scheduleManager;
 	}

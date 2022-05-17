@@ -60,6 +60,16 @@ import nl.nn.adapterframework.util.RunState;
 import nl.nn.adapterframework.util.RunStateManager;
 
 /**
+ * An Adapter receives a specific type of messages and processes them. It has {@link Receiver}-s
+ * that determine how messages are received and a {@link PipeLine} that determines how
+ * the messages are processed. If an adapter can receive its messages from multiple sources,
+ * each source appears as a separate {@link Receiver} nested in the adapter. Each {@link Receiver} is also responsible for dealing with
+ * the response of its received messages; the response is the output of the {@link PipeLine}. Each adapter is
+ * part of a {@link Configuration}.
+ *
+ * @author Johan Verrips
+ */
+/*
  * The Adapter is the central manager in the IBIS Adapterframework, that has knowledge
  * and uses {@link Receiver Receivers} and a {@link PipeLine}.
  * <br/>
@@ -77,14 +87,6 @@ import nl.nn.adapterframework.util.RunStateManager;
  * object, which returns a {@link PipeLineResult}. If an error occurs during
  * the pipeline execution, the state in the <code>PipeLineResult</code> is set
  * to the state specified by <code>setErrorState</code>, which defaults to "ERROR".
- * 
- * @author Johan Verrips
- * @see    Receiver
- * @see    PipeLine
- * @see    StatisticsKeeper
- * @see    DateUtils
- * @see    MessageKeeper
- * @see    PipeLineResult
  * 
  */
 public class Adapter implements IAdapter, NamedBean {
@@ -704,7 +706,8 @@ public class Adapter implements IAdapter, NamedBean {
 
 	// technically, a Receiver is not mandatory, but no useful adapter can do without it.
 	/**
-	 * Register a receiver for this Adapter
+	 * Receives incoming messages. If an adapter can receive messages from multiple sources,
+	 * then add a receiver for each source.
 	 * @ff.mandatory
 	 */
 	public void registerReceiver(Receiver<?> receiver) {
@@ -713,21 +716,19 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	/**
-	 * Register a <code>ErrorMessageFormatter</code> as the formatter
-	 * for this <code>adapter</code>
-	 * @see IErrorMessageFormatter
+	 * Formatter for errors that can occur in this adapter.
 	 */
 	public void setErrorMessageFormatter(IErrorMessageFormatter errorMessageFormatter) {
 		this.errorMessageFormatter = errorMessageFormatter;
 	}
 
 	/**
-	 * Register a PipeLine at this adapter. On registering, the adapter performs
-	 * a <code>Pipeline.configurePipes()</code>, as to configure the individual pipes.
-	 * @see PipeLine
+	 * The {@link PipeLine}.
 	 * 
 	 * @ff.mandatory
 	 */
+	// On registering, the adapter performs
+	// a <code>Pipeline.configurePipes()</co
 	@Override
 	public void setPipeLine(PipeLine pipeline) throws ConfigurationException {
 		this.pipeline = pipeline;
