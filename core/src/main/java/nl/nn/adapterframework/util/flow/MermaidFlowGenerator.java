@@ -38,7 +38,8 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 	private static final String ADAPTER2MERMAID_XSLT = "/xml/xsl/adapter2mermaid.xsl";
 	private static final String CONFIGURATION2MERMAID_XSLT = "/xml/xsl/configuration2mermaid.xsl";
 
-	private TransformerPool transformerPoolAdapter, transformerPoolConfig;
+	private TransformerPool transformerPoolAdapter;
+	private TransformerPool transformerPoolConfig;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
