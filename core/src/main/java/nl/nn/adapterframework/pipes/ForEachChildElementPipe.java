@@ -88,10 +88,6 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 	private @Setter IThreadConnectableTransactionManager<?,?> txManager;
 	private @Getter @Setter IXmlDebugger xmlDebugger;
 
-	{
-		setNamespaceAware(true);
-	}
-
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
