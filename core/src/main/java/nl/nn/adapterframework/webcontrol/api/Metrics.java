@@ -17,7 +17,9 @@ package nl.nn.adapterframework.webcontrol.api;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.springframework.beans.factory.InitializingBean;
@@ -26,12 +28,15 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.prometheus.client.exporter.common.TextFormat;
+import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.metrics.FrankStatisticsRegistry;
 import nl.nn.adapterframework.metrics.MetricsRegistry;
 
 @Path("/")
 public class Metrics extends Base implements InitializingBean {
 
 	private PrometheusMeterRegistry prometheusRegistry = null;
+	private FrankStatisticsRegistry frankRegistry = null;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -41,6 +46,9 @@ public class Metrics extends Base implements InitializingBean {
 		if (metersRegistry instanceof CompositeMeterRegistry) {
 			CompositeMeterRegistry compositeMeterRegistry = (CompositeMeterRegistry)metersRegistry;
 			for(MeterRegistry meterRegistry:compositeMeterRegistry.getRegistries()) {
+				if (meterRegistry instanceof FrankStatisticsRegistry) {
+					frankRegistry = (FrankStatisticsRegistry)meterRegistry;
+				}
 				if (meterRegistry instanceof PrometheusMeterRegistry) {
 					prometheusRegistry = (PrometheusMeterRegistry)meterRegistry;
 				}
@@ -56,5 +64,18 @@ public class Metrics extends Base implements InitializingBean {
 			return Response.status(Response.Status.NOT_IMPLEMENTED).build();
 		}
 		return Response.status(Response.Status.OK).entity(prometheusRegistry).build(); // uses PrometheusMessageBodyWriter
+	}
+
+	@GET
+	@Path("/metrics/micrometer/{adapterName}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response view(@PathParam("adapterName") String adapterName) throws ApiException {
+		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
+
+		if(adapter == null){
+			throw new ApiException("Adapter not found!");
+		}
+
+		return Response.status(Response.Status.OK).entity(frankRegistry.doSomething(adapter)).build();
 	}
 }
