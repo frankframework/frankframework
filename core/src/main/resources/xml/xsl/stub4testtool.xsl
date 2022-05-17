@@ -23,7 +23,7 @@
 		- add, if not available, the parameter destination with value 'P2P.Infrastructure.Ibis4TestTool.Stub.Response' to all outputWrapper elements SoapWrapperPipe with attribute direction=wrap 
 	-->
 	<xsl:template match="/">
-		<xsl:apply-templates select="*|@*|comment()|processing-instruction()" />
+		<xsl:apply-templates select="*|comment()|processing-instruction()" />
 	</xsl:template>
 	
 	<xsl:template match="*|@*|comment()|processing-instruction()">
