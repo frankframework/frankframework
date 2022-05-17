@@ -1,0 +1,27 @@
+<configuration>
+	<adapter name="ConfigWithLocalSenders0">
+		<receiver>
+			<listener className="nl.nn.adapterframework.http.rest.ApiListener"/>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="ConfigWithLocalSenders0"/>
+		</receiver>
+		<pipeline>
+			<pipe name="ForEach" className="nl.nn.adapterframework.pipes.ForEachChildElementPipe">
+				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ConfigWithLocalSenders1"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+	<adapter name="ConfigWithLocalSenders1">
+		<receiver>
+			<listener className="nl.nn.adapterframework.jdbc.JdbcListener"/>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="ConfigWithLocalSenders1"/>
+		</receiver>
+		<pipeline>
+			<pipe name="Sender" className="nl.nn.adapterframework.pipes.SenderPipe">
+				<sender className="nl.nn.adapterframework.senders.SenderSeries">
+					<sender className="nl.nn.adapterframework.extensions.mqtt.MqttSender"/>
+					<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ConfigWithLocalSenders0"/>
+				</sender>
+			</pipe>
+		</pipeline>
+	</adapter>
+</configuration>

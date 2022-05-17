@@ -15,22 +15,77 @@ public class MermaidFlowGeneratorTest {
 	private static final String ORIGINAL_FILENAME = "/original.xml";
 	private static final String EXPECTED_FILENAME = "/expected.txt";
 
+
 	@Test
-	public void stub4testtoolSwitchPipes() throws Exception {
-		stub4testtoolTest("SwitchPipes");
+	public void ConfigWithLocalSenders() throws Exception {
+		Test("ConfigWithLocalSenders");
+	}
+	@Test
+	public void MultipleRealisticAdapters() throws Exception {
+		Test("MultipleRealisticAdapters");
 	}
 
 	@Test
-	public void stub4testtoolMultipleRealisticAdapters() throws Exception {
-		stub4testtoolTest("MultipleRealisticAdapters");
+	public void ExtendedAdapterInfo() throws Exception {
+		Test("ExtendedAdapterInfo");
 	}
 
 	@Test
-	public void stub4testtoolValidatorsAndWrappers() throws Exception {
-		stub4testtoolTest("ValidatorsAndWrappers");
+	public void CustomExtendedAdapterInfo() throws Exception {
+		Test("CustomExtendedAdapterInfo");
 	}
 
-	private void stub4testtoolTest(String directory) throws Exception {
+	@Test
+	public void NoFirstPipe() throws Exception {
+		Test("NoFirstPipe");
+	}
+
+	@Test
+	public void GlobalForwardsAndSwitchPipes() throws Exception {
+		Test("GlobalForwardsAndSwitchPipes");
+	}
+
+	@Test
+	public void Exit0Validators0Wrappers0() throws Exception {
+		Test("Exit0Validators0Wrappers0");
+	}
+
+	@Test
+	public void Exit0Validators0Wrappers1() throws Exception {
+		Test("Exit0Validators0Wrappers1");
+	}
+
+	@Test
+	public void Exit0Validators1Wrappers0() throws Exception {
+		Test("Exit0Validators1Wrappers0");
+	}
+
+	@Test
+	public void Exit0Validators1Wrappers1() throws Exception {
+		Test("Exit0Validators1Wrappers1");
+	}
+
+	@Test
+	public void Exit1Validators0Wrappers0() throws Exception {
+		Test("Exit1Validators0Wrappers0");
+	}
+
+	@Test
+	public void Exit1Validators0Wrappers1() throws Exception {
+		Test("Exit1Validators0Wrappers1");
+	}
+
+	@Test
+	public void Exit1Validators1Wrappers0() throws Exception {
+		Test("Exit1Validators1Wrappers0");
+	}
+
+	@Test
+	public void Exit1Validators1Wrappers1() throws Exception {
+		Test("Exit1Validators1Wrappers1");
+	}
+
+	private void Test(String directory) throws Exception {
 		String testFileDir = BASE_DIR + directory;
 
 		IFlowGenerator generator = new MermaidFlowGenerator();

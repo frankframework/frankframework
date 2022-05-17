@@ -1,8 +1,6 @@
 <module>
 	<adapter name="Document_GET" active="${documents.GET.active}">
-		<receiver name="Document_GET"
-				  className="nl.nn.adapterframework.receivers.GenericReceiver">
-
+		<receiver name="Document_GET">
 			<!-- GUID is passed over query param-->
 			<listener
 				className="nl.nn.adapterframework.http.rest.ApiListener"
@@ -29,7 +27,7 @@
 				<exit path="ServerError" state="error" code="500" />
 			</exits>
 
-			<pipe name="Select_Document" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe" storeResultInSessionKey="documentInformation">
+			<pipe name="Select_Document" className="nl.nn.adapterframework.pipes.SenderPipe" storeResultInSessionKey="documentInformation">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
 						queryType="select"
 						jmsRealm="test"
@@ -49,10 +47,10 @@
 				<forward name="else" path="Magdat" />
 			</pipe>
 
-			<pipe name="Magdat" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe" getInputFromSessionKey="documentInformation" storeResultInSessionKey="Magdat">
+			<pipe name="Magdat" className="nl.nn.adapterframework.pipes.SenderPipe" getInputFromSessionKey="documentInformation" storeResultInSessionKey="Magdat">
 				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="test" returnedSessionKeys="test">
-					<param name="test" 		xpathExpression="test"/>
-					<param name="test" 	sessionKey="securityHandler" />
+					<param name="test" xpathExpression="test"/>
+					<param name="test" sessionKey="securityHandler" />
 				</sender>
 
 				<forward name="success" path="Magdat_Result_Check" />
@@ -121,7 +119,7 @@
 				<forward name="exception" path="READY" />
 			</pipe>
 
-			<pipe name="Find_Retry_Actions" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe" storeResultInSessionKey="retryActions">
+			<pipe name="Find_Retry_Actions" className="nl.nn.adapterframework.pipes.SenderPipe" storeResultInSessionKey="retryActions">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
 						queryType="select"
 						jmsRealm="test"
@@ -135,7 +133,7 @@
 				<forward name="exception"   path="ServerError" />
 			</pipe>
 
-			<pipe name="Call_DPDH" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+			<pipe name="Call_DPDH" className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="test">
 					<param name="test" sessionKey="test" xpathExpression="test"/>
 					<param name="test" sessionKey="test" xpathExpression="test"/>
@@ -194,7 +192,7 @@
 	</adapter>
 	<adapter name="Select_Attachments" description="test" active="${test}">
 
-		<receiver name="Select_Attachments" className="nl.nn.adapterframework.receivers.GenericReceiver">
+		<receiver name="Select_Attachments" className="nl.nn.adapterframework.receivers.SenderPipe">
 			<listener name="Select_Attachments" className="nl.nn.adapterframework.receivers.JavaListener"/>
 		</receiver>
 
@@ -203,7 +201,7 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 
-			<pipe name="Select_Attachments" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe" storeResultInSessionKey="documentInformation">
+			<pipe name="Select_Attachments" className="nl.nn.adapterframework.pipes.SenderPipe" storeResultInSessionKey="documentInformation">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
 						queryType="select"
 						jmsRealm="test"

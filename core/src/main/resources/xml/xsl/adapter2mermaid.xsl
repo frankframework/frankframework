@@ -61,14 +61,22 @@
 		<xsl:copy>
 			<xsl:copy-of select="@*"/>
 			<exits>
-				<xsl:variable name="definedUsedExits" select="//exit[@name = current()//forward/@path]"/>
-				<xsl:copy-of select="$definedUsedExits"/>
+				<xsl:variable name="definedUsedExits" select="//exit[(@name = current()//forward/@path) or (@path = current()//forward/@path)]"/>
+				<xsl:apply-templates select="$definedUsedExits" mode="#current"/>
 				<xsl:if test="not($definedUsedExits)">
 					<exit name="READY" state="success"/>
 				</xsl:if>
 			</exits>
 			<xsl:copy-of select="*[not(name() = ('exit','exits'))]"/>
 		</xsl:copy>
+	</xsl:template>
+
+	<!--Copy exit but replace path with name attribute-->
+	<xsl:template match="exit" mode="resolveExits">
+		<xsl:element name="exit">
+			<xsl:attribute name="name" select="(@name,@path)[1]"/>
+			<xsl:copy-of select="@*[not(name() = ('path', 'name'))]"/>
+		</xsl:element>
 	</xsl:template>
 
 	<xsl:template match="*" mode="preprocess">
@@ -78,6 +86,7 @@
 	</xsl:template>
 
 	<xsl:template match="mermaid:attribute" mode="preprocess"></xsl:template>
+	<xsl:template match="sender" mode="preprocess"></xsl:template>
 
 	<xsl:template match="@*|comment()" mode="preprocess">
 		<xsl:copy/>
@@ -126,11 +135,11 @@
 	<xsl:template match="pipeline" mode="preprocess">
 		<xsl:param name="firstElementID"/>
 		<!-- Modify the pipeline in the following ways:
+			- Create all exits that are used by the pipeline
 			- Add a unique ID on all elements, and add that ID to the forwards pointing to that element
 			- Add implicit forwards and global-forwards explicitly to inputValidator -and Wrapper and all pipes
 			- For each exit that is used by the pipeline, make an outputWrapper -and Validator if they originally existed
 			- Recursively go through pipeline to determine things like errorHandling.
-			- Create all exits that are used by the pipeline
 		-->
 		<xsl:copy>
 			<xsl:apply-templates select="@*" mode="#current"/>
@@ -421,7 +430,7 @@
 
 	<xsl:template name="defaultCopyActions">
 		<xsl:attribute name="elementID" select="generate-id()"/>
-		<xsl:apply-templates select="@*|*[name() != 'sender']" mode="#current"/>
+		<xsl:apply-templates select="@*|*" mode="#current"/>
 		<xsl:call-template name="styleElement"/>
 	</xsl:template>
 
@@ -432,7 +441,7 @@
 
 	<xsl:template name="switchPipeCopyActions">
 		<xsl:attribute name="elementID" select="generate-id()"/>
-		<xsl:apply-templates select="@*|*[local-name() != 'forward']" mode="#current"/>
+		<xsl:apply-templates select="@*|*[name() != 'forward']" mode="#current"/>
 		<xsl:call-template name="styleElement"/>
 	</xsl:template>
 
@@ -441,11 +450,10 @@
 		<xsl:choose>
 			<xsl:when test="$type/mermaid:type = 'endpoint' and count(sender) = 1">
 				<xsl:variable name="newType" select="$pipeTypes/*[name()=current()/sender/@className]"/>
-				<xsl:copy-of select="($newType,$type)[1]/type"/>
-				<xsl:copy-of select="$type/mermaid:*[local-name() != 'type']"/>
+				<xsl:copy-of select="($newType,$type)[1]/mermaid:type"/>
 			</xsl:when>
 			<xsl:otherwise>
-				<xsl:copy-of select="$type/mermaid:*"/>
+				<xsl:copy-of select="$type/mermaid:type"/>
 			</xsl:otherwise>
 		</xsl:choose>
 		<xsl:if test="mermaid:attribute,$type/mermaid:attribute">
@@ -613,8 +621,8 @@
 			<xsl:if test="mermaid:attribute">
 				<xsl:for-each select="@*[name() = current()/mermaid:attribute/@name]">
 					<xsl:text><![CDATA[<br/>]]></xsl:text>
-					<xsl:variable name="specialAttr" select="../mermaid:attribute[@name = current()/name()]"/>
-					<xsl:value-of select="$specialAttr/(@text,concat(@name,': '))[1]"/>
+					<xsl:variable name="specialAttr" select="../mermaid:attribute[@name = current()/name()][1]"/>
+					<xsl:value-of select="if($specialAttr/@text) then ($specialAttr/@text) else (concat($specialAttr/@name,': '))"/>
 					<xsl:if test="$specialAttr/@showValue = 'true'">
 						<xsl:text><![CDATA[<i>]]></xsl:text>
 						<xsl:value-of select="."/>
