@@ -640,10 +640,10 @@ public class HttpSender extends HttpSenderBase {
 
 	public static void streamResponseBody(InputStream is, String contentType, String contentDisposition, HttpServletResponse response, Logger log, String logPrefix, String redirectLocation) throws IOException {
 		if (StringUtils.isNotEmpty(contentType)) {
-			response.setHeader("Content-Type", contentType); 
+			response.setHeader("Content-Type", contentType);
 		}
 		if (StringUtils.isNotEmpty(contentDisposition)) {
-			response.setHeader("Content-Disposition", contentDisposition); 
+			response.setHeader("Content-Disposition", contentDisposition);
 		}
 		if (StringUtils.isNotEmpty(redirectLocation)) {
 			response.sendRedirect(redirectLocation);
