@@ -861,27 +861,27 @@ angular.module('iaf.beheerconsole')
 
 	$scope.startAdapter = function(adapter) {
 		adapter.state = 'starting';
-		Api.Put("adapters/" + adapter.name, {"action": "start"});
+		Api.Put("adapters/" + Misc.escapeURL(adapter.name), {"action": "start"});
 	};
 	$scope.stopAdapter = function(adapter) {
 		adapter.state = 'stopping';
-		Api.Put("adapters/" + adapter.name, {"action": "stop"});
+		Api.Put("adapters/" + Misc.escapeURL(adapter.name), {"action": "stop"});
 	};
 	$scope.startReceiver = function(adapter, receiver) {
 		receiver.state = 'loading';
-		Api.Put("adapters/" + adapter.name + "/receivers/" + receiver.name, {"action": "start"});
+		Api.Put("adapters/" + Misc.escapeURL(adapter.name) + "/receivers/" + Misc.escapeURL(receiver.name), {"action": "start"});
 	};
 	$scope.stopReceiver = function(adapter, receiver) {
 		receiver.state = 'loading';
-		Api.Put("adapters/" + adapter.name + "/receivers/" + receiver.name, {"action": "stop"});
+		Api.Put("adapters/" + Misc.escapeURL(adapter.name) + "/receivers/" + Misc.escapeURL(receiver.name), {"action": "stop"});
 	};
 	$scope.addThread = function(adapter, receiver) {
 		receiver.state = 'loading';
-		Api.Put("adapters/" + adapter.name + "/receivers/" + receiver.name, {"action": "incthread"});
+		Api.Put("adapters/" + Misc.escapeURL(adapter.name) + "/receivers/" + Misc.escapeURL(receiver.name), {"action": "incthread"});
 	};
 	$scope.removeThread = function(adapter, receiver) {
 		receiver.state = 'loading';
-		Api.Put("adapters/" + adapter.name + "/receivers/" + receiver.name, {"action": "decthread"});
+		Api.Put("adapters/" + Misc.escapeURL(adapter.name) + "/receivers/" + Misc.escapeURL(receiver.name), {"action": "decthread"});
 	};
 
 }])
@@ -1195,7 +1195,7 @@ angular.module('iaf.beheerconsole')
 	}
 }])
 
-.controller('AdapterStatisticsCtrl', ['$scope', 'Api', '$stateParams', 'SweetAlert', '$timeout', '$filter', 'appConstants', 'Debug', function($scope, Api, $stateParams, SweetAlert, $timeout, $filter, appConstants, Debug) {
+.controller('AdapterStatisticsCtrl', ['$scope', 'Api', '$stateParams', 'SweetAlert', '$timeout', '$filter', 'appConstants', 'Debug', 'Misc', function($scope, Api, $stateParams, SweetAlert, $timeout, $filter, appConstants, Debug, Misc) {
 	var adapterName = $stateParams.name;
 	if(!adapterName)
 		return SweetAlert.Warning("Adapter not found!");
@@ -1241,7 +1241,7 @@ angular.module('iaf.beheerconsole')
 	$scope.statisticsNames = [];
 	$scope.refresh = function() {
 		$scope.refreshing = true;
-		Api.Get("adapters/"+adapterName+"/statistics", function(data) {
+		Api.Get("adapters/"+Misc.escapeURL(adapterName)+"/statistics", function(data) {
 			$scope.stats = data;
 
 			var labels = [];

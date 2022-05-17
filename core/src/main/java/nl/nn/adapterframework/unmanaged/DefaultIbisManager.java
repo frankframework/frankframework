@@ -37,6 +37,7 @@ import nl.nn.adapterframework.statistics.HasStatistics.Action;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunState;
+import nl.nn.credentialprovider.util.Misc;
 
 /**
  * Implementation of IbisManager which does not use EJB for
@@ -286,7 +287,7 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 	public Adapter getRegisteredAdapter(String name) {
 		List<Adapter> adapters = getRegisteredAdapters();
 		for (Adapter adapter : adapters) {
-			if (name.equals(adapter.getName())) {
+			if (name.equals(adapter.getName()) || adapter.getName().equals(Misc.urlDecode(name))) {
 				return adapter;
 			}
 		}

@@ -887,7 +887,7 @@ angular.module('iaf.beheerconsole')
 			return absolutePath;
 		};
 		this.escapeURL = function(uri) {
-			return encodeURIComponent(uri);
+			return encodeURIComponent(encodeURIComponent(uri));
 		}
 		this.isMobile = function() {
 			return ( navigator.userAgent.match(/Android/i)

@@ -279,7 +279,7 @@ public final class ShowConfigurationStatus extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateAdapter(@PathParam("adapterName") String adapterName, Map<String, Object> json) throws ApiException {
 
-		getAdapter(adapterName); //Check if the adapter exists!
+		Adapter adapter = getAdapter(adapterName); //Check if the adapter exists!
 		Response.ResponseBuilder response = Response.status(Response.Status.NO_CONTENT); //PUT defaults to no content
 
 		for (Entry<String, Object> entry : json.entrySet()) {
@@ -291,7 +291,7 @@ public final class ShowConfigurationStatus extends Base {
 				if(value.equals("stop")) { action = IbisAction.STOPADAPTER; }
 				if(value.equals("start")) { action = IbisAction.STARTADAPTER; }
 
-				getIbisManager().handleAction(action, "", adapterName, null, getUserPrincipalName(), false);
+				getIbisManager().handleAction(action, "", adapter.getName(), null, getUserPrincipalName(), false);
 
 				response.entity("{\"status\":\"ok\"}");
 			}
@@ -330,7 +330,7 @@ public final class ShowConfigurationStatus extends Base {
 				if(action == null)
 					throw new ApiException("no or unknown action provided");
 
-				getIbisManager().handleAction(action, "", adapterName, receiverName, getUserPrincipalName(), false);
+				getIbisManager().handleAction(action, "", adapter.getName(), receiver.getName(), getUserPrincipalName(), false);
 				response.entity("{\"status\":\"ok\"}");
 			}
 		}

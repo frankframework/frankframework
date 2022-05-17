@@ -138,7 +138,11 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	}
 
 	public IPipe getPipe(String pipeName) {
-		return pipesByName.get(pipeName);
+		IPipe pipe = pipesByName.get(pipeName);
+		if(pipe == null) {
+			pipe = pipesByName.get(Misc.urlDecode(pipeName));
+		}
+		return pipe;
 	}
 	public IPipe getPipe(int index) {
 		return pipes.get(index);
