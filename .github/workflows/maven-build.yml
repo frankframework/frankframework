@@ -35,10 +35,6 @@ jobs:
         java: [ '8', '11' ]
 
     steps:
-
-    - name: Print maven version
-      run: mvn -v
-
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
