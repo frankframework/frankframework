@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2021 WeAreFrank!
+   Copyright 2016-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import java.util.StringTokenizer;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -123,14 +122,14 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 			//Always add the cors headers when the origin has been set
 			if(allowedCorsDomains.contains(origin)) {
 				response.setHeader("Access-Control-Allow-Origin", origin);
-	
+
 				String requestHeaders = request.getHeader("Access-Control-Request-Headers");
 				if (requestHeaders != null)
 					response.setHeader("Access-Control-Allow-Headers", requestHeaders);
-	
+
 				response.setHeader("Access-Control-Expose-Headers", CORS_EXPOSE_HEADERS);
 				response.setHeader("Access-Control-Allow-Methods", CORS_ALLOW_METHODS);
-	
+
 				// Allow caching cross-domain permission
 				response.setHeader("Access-Control-Max-Age", "3600");
 			}
@@ -154,8 +153,9 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 	@Override
 	public void setBus(Bus bus) {
 		if(bus != null) {
-			log.debug("Successfully created IAF-API with SpringBus ["+bus.getId()+"]");
-			getServletContext().log("Successfully created IAF-API with SpringBus ["+bus.getId()+"]");
+			String busInfo = String.format("Successfully created %s with SpringBus [%s]", getName(), bus.getId());
+			log.info(busInfo);
+			getServletContext().log(busInfo);
 		}
 
 		super.setBus(bus);
@@ -179,13 +179,8 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 	}
 
 	@Override
-	public HttpServlet getServlet() {
-		return this;
-	}
-
-	@Override
-	public String[] getRoles() {
-		return null;
+	public String[] getAccessGrantingRoles() {
+		return ALL_IBIS_USER_ROLES;
 	}
 
 	@Autowired

@@ -21,17 +21,25 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.binder.cache.EhCache2Metrics;
+import io.micrometer.core.instrument.search.Search;
+import lombok.Setter;
 import net.sf.ehcache.Ehcache;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.metrics.MetricsRegistry;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class MetricsInitializer implements StatisticsKeeperIterationHandler<MetricsInitializer.NodeConfig> {
+public class MetricsInitializer implements StatisticsKeeperIterationHandler<MetricsInitializer.NodeConfig>, InitializingBean, DisposableBean, ApplicationContextAware {
 	protected Logger log = LogUtil.getLogger(this);
+	private @Setter ApplicationContext applicationContext;
 
 	private MeterRegistry registry;
 	private NodeConfig root;
@@ -48,9 +56,28 @@ public class MetricsInitializer implements StatisticsKeeperIterationHandler<Metr
 		}
 	}
 
-	public MetricsInitializer(MeterRegistry registry) {
-		this.registry = registry;
-		root = new NodeConfig("frank", null,0);
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		MetricsRegistry metrics = applicationContext.getBean("metricsRegistry", MetricsRegistry.class);
+		registry = metrics.getRegistry();
+		if(registry == null) {
+			throw new IllegalStateException("unable to initialize MetricsInitializer, no registry set!");
+		}
+
+		List<Tag> tags = new LinkedList<>();
+		tags.add(Tag.of("type", "application"));
+		root = new NodeConfig("frank", tags, 0);
+	}
+
+	@Override
+	public void destroy() throws Exception {
+		Search search = Search.in(registry).tag("configuration", applicationContext.getId());
+		search.counters().parallelStream().forEach(e -> {
+			registry.remove(e);
+		});
+		search.gauges().parallelStream().forEach(e -> {
+			registry.remove(e);
+		});
 	}
 
 	@Override

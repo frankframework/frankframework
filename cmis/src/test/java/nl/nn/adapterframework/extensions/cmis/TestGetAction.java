@@ -18,7 +18,6 @@ import org.junit.runners.Parameterized.Parameters;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestAssertions;
-import nl.nn.adapterframework.util.Misc;
 
 @RunWith(Parameterized.class)
 public class TestGetAction extends CmisSenderTestBase {
@@ -113,11 +112,11 @@ public class TestGetAction extends CmisSenderTestBase {
 			TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 		}
 
-		InputStream stream = (InputStream) session.get(sender.getFileSessionKey());
+		Message stream = session.getMessage(sender.getFileSessionKey());
 		if((getProperties && getDocumentContent) || (!getProperties && !resultToServlet)) {
-			assertEquals(GET_RESULT_FOR_INPUT, Misc.streamToString(stream));
+			assertEquals(GET_RESULT_FOR_INPUT, stream.asString());
 		} else {
-			assertNull(stream);
+			assertTrue(stream.isNull());
 		}
 	}
 
@@ -164,11 +163,11 @@ public class TestGetAction extends CmisSenderTestBase {
 			TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 		}
 
-		InputStream stream = (InputStream) session.get(sender.getFileSessionKey());
+		Message stream = session.getMessage(sender.getFileSessionKey());
 		if((getProperties && getDocumentContent) || (!getProperties && !resultToServlet)) {
-			assertEquals(GET_RESULT_FOR_INPUT, Misc.streamToString(stream));
+			assertEquals(GET_RESULT_FOR_INPUT, stream.asString());
 		} else {
-			assertNull(stream);
+			assertTrue(stream.isNull());
 		}
 	}
 

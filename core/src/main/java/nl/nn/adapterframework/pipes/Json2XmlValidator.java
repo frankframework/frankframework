@@ -213,7 +213,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		ValidatorHandler validatorHandler = validator.getValidatorHandler(session,context);
 
 		// Make sure to use Xerces' ValidatorHandlerImpl, otherwise casting below will fail.
-		XmlAligner aligner = new XmlAligner(validatorHandler);
+		XmlAligner aligner = new XmlAligner(validatorHandler, context.getXsModels());
 		if (isIgnoreUndeclaredElements()) {
 			log.warn(getLogPrefix(session)+"cannot ignore undeclared elements when converting from XML");
 		}

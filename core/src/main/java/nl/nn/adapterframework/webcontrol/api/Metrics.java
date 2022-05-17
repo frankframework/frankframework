@@ -15,36 +15,34 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+
+import org.springframework.beans.factory.InitializingBean;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.prometheus.client.exporter.common.TextFormat;
+import nl.nn.adapterframework.metrics.MetricsRegistry;
 
 @Path("/")
-public class Metrics extends Base {
-	@Context HttpServletRequest servletRequest;
+public class Metrics extends Base implements InitializingBean {
 
-	private PrometheusMeterRegistry registry;
+	private PrometheusMeterRegistry prometheusRegistry = null;
 
-	protected void initRegistry() {
-		if (registry==null) {
-			MeterRegistry metersRegistry = getIbisContext().getMeterRegistry();
-			if (metersRegistry instanceof PrometheusMeterRegistry) {
-				registry = (PrometheusMeterRegistry)metersRegistry;
-			} else if (metersRegistry instanceof CompositeMeterRegistry) {
-				CompositeMeterRegistry compositeMeterRegistry = (CompositeMeterRegistry)metersRegistry;
-				for(MeterRegistry meterRegistry:compositeMeterRegistry.getRegistries()) {
-					if (meterRegistry instanceof PrometheusMeterRegistry) {
-						registry = (PrometheusMeterRegistry)meterRegistry;
-						break;
-					}
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		MetricsRegistry metrics = getApplicationContext().getBean("metricsRegistry", MetricsRegistry.class);
+		MeterRegistry metersRegistry = metrics.getRegistry();
+
+		if (metersRegistry instanceof CompositeMeterRegistry) {
+			CompositeMeterRegistry compositeMeterRegistry = (CompositeMeterRegistry)metersRegistry;
+			for(MeterRegistry meterRegistry:compositeMeterRegistry.getRegistries()) {
+				if (meterRegistry instanceof PrometheusMeterRegistry) {
+					prometheusRegistry = (PrometheusMeterRegistry)meterRegistry;
 				}
 			}
 		}
@@ -54,13 +52,9 @@ public class Metrics extends Base {
 	@Path("/metrics/prometheus")
 	@Produces(TextFormat.CONTENT_TYPE_004) // see https://github.com/prometheus/prometheus/issues/6499
 	public Response scrapeForPrometheus() throws ApiException {
-		if (registry==null) {
-			initRegistry();
-			if (registry==null) {
-				return Response.status(Response.Status.NOT_IMPLEMENTED).build();
-			}
+		if (prometheusRegistry==null) {
+			return Response.status(Response.Status.NOT_IMPLEMENTED).build();
 		}
-		return Response.status(Response.Status.OK).entity(registry).build(); // uses PrometheusMessageBodyWriter
+		return Response.status(Response.Status.OK).entity(prometheusRegistry).build(); // uses PrometheusMessageBodyWriter
 	}
-
 }

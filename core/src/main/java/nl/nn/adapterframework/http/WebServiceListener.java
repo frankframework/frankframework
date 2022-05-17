@@ -50,8 +50,8 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * find these documents in the Frank!Console under main menu item Webservices, heading Available WSDL's.
  * The WSDL documents that we generate document how the SOAP services can be accessed. In particular, the
  * URL of a SOAP service can be found in an XML element <code>&lt;soap:address&gt;</code> with
- * <code>soap</code> pointing to namespace <code>http://schemas.xmlsoap.org/wsdl/soap/</code>.  
- * 
+ * <code>soap</code> pointing to namespace <code>http://schemas.xmlsoap.org/wsdl/soap/</code>.
+ *
  * @author Gerrit van Brakel
  * @author Jaco de Groot
  * @author Niels Meijer
@@ -197,8 +197,8 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 				throw new ListenerException(e);
 			}
 		}
-		else
-			return super.processRequest(correlationId, message, requestContext);
+
+		return super.processRequest(correlationId, message, requestContext);
 	}
 
 	public String getLogPrefix() {
@@ -229,7 +229,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		setApplicationFaultsAsExceptions(b);
 	}
 
-	@IbisDoc({ "The address to listen to, e.g the part <address> in https://mydomain.com/ibis4something/services/</address>, where mydomain.com and ibis4something refer to 'your ibis'","" })
+	@IbisDoc({ "The address to listen to, e.g the part &lt;address&gt; in https://mydomain.com/ibis4something/services/&lt;address&gt;, where mydomain.com and ibis4something refer to 'your ibis'","" })
 	public void setAddress(String address) {
 		if(!address.isEmpty()) {
 			if(address.startsWith("/"))

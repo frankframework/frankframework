@@ -18,12 +18,11 @@ package nl.nn.adapterframework.extensions.cmis.servlets;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpServlet;
+import org.apache.chemistry.opencmis.server.impl.webservices.CmisWebServicesServlet;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import nl.nn.adapterframework.lifecycle.DynamicRegistration;
 import nl.nn.adapterframework.lifecycle.ServletManager;
-import org.apache.chemistry.opencmis.server.impl.webservices.CmisWebServicesServlet;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * It is important that we register the correct CXF bus, or else 
@@ -46,13 +45,8 @@ public abstract class WebServicesServletBase extends CmisWebServicesServlet impl
 	}
 
 	@Override
-	public HttpServlet getServlet() {
-		return this;
-	}
-
-	@Override
-	public String[] getRoles() {
-		return "IbisWebService,IbisTester".split(",");
+	public String[] getAccessGrantingRoles() {
+		return IBIS_FULL_SERVICE_ACCESS_ROLES;
 	}
 
 	@Autowired

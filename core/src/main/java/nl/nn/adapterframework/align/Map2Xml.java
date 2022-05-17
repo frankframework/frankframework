@@ -28,21 +28,13 @@ import org.xml.sax.SAXException;
  * Base class for XML Schema guided Map to XML conversion;
  * ToXml Container C: Map M<K,V>
  * ToXml Node N: N
- * 
+ *
  * @author Gerrit van Brakel
  */
 public abstract class Map2Xml<K,V,N,M extends Map<K,V>> extends ToXml<M,N> {
 
 	{
 		setDeepSearch(true);
-	}
-	
-	public Map2Xml() {
-		super();
-	}
-
-	public Map2Xml(ValidatorHandler validatorHandler) {
-		super(validatorHandler);
 	}
 
 	public Map2Xml(ValidatorHandler validatorHandler, List<XSModel> schemaInformation) {

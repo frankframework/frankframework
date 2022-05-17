@@ -32,6 +32,12 @@
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 		</dependency>
+		<!-- Explicitly here to enforce this version of databind being used when the aspose dependency is declared before(!) the core dependency -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.13.2.2</version>
+		</dependency>
 
 		<!-- Tika library -->
 		<dependency>
@@ -186,6 +192,10 @@
 				<exclusion>
 					<artifactId>metadata-extractor</artifactId>
 					<groupId>com.drewnoakes</groupId>
+				</exclusion>
+				<exclusion>
+					<groupId>xerces</groupId>
+					<artifactId>xercesImpl</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>

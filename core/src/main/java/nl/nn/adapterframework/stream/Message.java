@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OptionalDataException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
@@ -66,12 +65,12 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class Message implements Serializable {
 
-	protected static final long serialVersionUID = 437863352486501445L;
-
 	protected transient Logger log = LogUtil.getLogger(this);
 
+	private static final long serialVersionUID = 437863352486501445L;
+
 	private Object request;
-	private @Getter Class<?> requestClass;
+	private @Getter String requestClass;
 
 	private @Getter Map<String,Object> context;
 	private boolean failedToDetermineCharset = false;
@@ -87,7 +86,7 @@ public class Message implements Serializable {
 			this.request = request;
 		}
 		this.context = context!=null ? context : new MessageContext();
-		this.requestClass = requestClass;
+		this.requestClass = requestClass!=null ? ClassUtils.nameOf(requestClass) : ClassUtils.nameOf(request);
 	}
 	private Message(Map<String,Object> context, Object request) {
 		this(context, request, request !=null ? request.getClass() : null);
@@ -502,7 +501,7 @@ public class Message implements Serializable {
 			return new DOMSource((Node) request);
 		}
 		log.debug("returning as Source");
-		return (XmlUtils.inputSourceToSAXSource(asInputSource()));
+		return XmlUtils.inputSourceToSAXSource(asInputSource());
 	}
 
 	/**
@@ -605,7 +604,7 @@ public class Message implements Serializable {
 			if (request==null) {
 				result.write("null");
 			} else {
-				result.write((getRequestClass()!=null?getRequestClass().getSimpleName():"?")+": "+request.toString());
+				result.write(getRequestClass()+": "+request.toString());
 			}
 		} catch (IOException e) {
 			result.write("cannot write toString: "+e.getMessage());
@@ -738,10 +737,19 @@ public class Message implements Serializable {
 		String charset = (String)stream.readObject();
 		request = stream.readObject();
 		try {
-			requestClass = (Class<?>)stream.readObject();
-		} catch (OptionalDataException e) {
-			requestClass = request.getClass();
-			log.warn("Could not read requestClass, using request.getClass() ["+requestClass.getTypeName()+"]");
+			Object requestClass = stream.readObject();
+			if (requestClass != null) {
+				if (requestClass instanceof Class<?>) {
+					this.requestClass = ((Class<?>)requestClass).getTypeName();
+				} else {
+					this.requestClass = requestClass.toString();
+				}
+			} else {
+				this.requestClass = ClassUtils.nameOf(request);
+			}
+		} catch (Exception e) {
+			requestClass = ClassUtils.nameOf(request);
+			log.warn("Could not read requestClass, using ClassUtils.nameOf(request) ["+requestClass+"], ("+ClassUtils.nameOf(e)+"): "+e.getMessage());
 		}
 
 		context = new MessageContext().withCharset(charset);

@@ -297,7 +297,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 	private @Getter String cronExpression;
 	private @Getter long interval = -1;
 
-	private Locker locker = null;
+	private @Getter(onMethod = @__(@Override)) Locker locker = null;
 	private @Getter int numThreads = 1;
 	private int countThreads = 0;
 
@@ -391,8 +391,6 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 				} else {
 					runJob();
 				}
-			} else {
-				getMessageKeeper().add("job execution skipped");
 			}
 		} finally {
 			decrementCountThreads();
@@ -469,10 +467,6 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 	public void setLocker(Locker locker) {
 		this.locker = locker;
 		locker.setName("Locker of job ["+getName()+"]");
-	}
-	@Override
-	public Locker getLocker() {
-		return locker;
 	}
 
 	/** Number of threads that may execute concurrently

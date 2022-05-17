@@ -158,9 +158,9 @@ angular.module('iaf.beheerconsole')
 			case "Available":
 				return "fa-server";
 			case "InProcess":
-				return "fa-share";
+				return "fa-gears";
 			case "Done":
-				return "fa-envelope-o";
+				return "fa-sign-in";
 			case "Error":
 				return "fa-times-circle";
 			case "Hold":
@@ -270,9 +270,22 @@ angular.module('iaf.beheerconsole')
 						adapter.status = 'warning';
 					}
 					adapter.hasSender = false;
+					adapter.sendersMessageLogCount=0;
+					adapter.senderTransactionalStorageMessageCount=0;
 					for(x in adapter.pipes) {
-						if(adapter.pipes[x].sender) {
+						let pipe = adapter.pipes[x];
+						if(pipe.sender) {
 							adapter.hasSender = true;
+							if(pipe.hasMessageLog) {
+								let count = parseInt(pipe.messageLogCount);
+								if (!Number.isNaN(count)){
+									if(pipe.isSenderTransactionalStorage) {
+										adapter.senderTransactionalStorageMessageCount += count;
+									} else {
+										adapter.sendersMessageLogCount += count;
+									}
+								}
+							}
 						}
 					}
 /*					//If last message is WARN or ERROR change adapter status to warning.
@@ -1345,6 +1358,7 @@ angular.module('iaf.beheerconsole')
 			$scope.updateTable();
 		}, function(data) {
 			message.resending = false;
+			data = (data.error) ? data.error : data;
 			$scope.addNote("danger", "Unable to resend message ["+messageId+"]. "+data);
 			$scope.updateTable();
 		}, false);
@@ -1403,6 +1417,18 @@ angular.module('iaf.beheerconsole')
 		$scope.updateTable();
 	};
 
+	$scope.truncated = false;
+	$scope.truncateButtonText = "Truncate displayed data";
+	$scope.truncate = function() {
+		$scope.truncated = !$scope.truncated;
+		if($scope.truncated) {
+			$scope.truncateButtonText="Show original";
+		} else {
+			$scope.truncateButtonText="Truncate displayed data";
+		}
+		$scope.updateTable();
+	};
+
 	$scope.dtOptions = {
 		stateSave: true,
 		stateSaveCallback: function(settings, data) {
@@ -1452,7 +1478,7 @@ angular.module('iaf.beheerconsole')
 					for(let i in data) {
 						if(i == "id") continue;
 						var columnData = data[i];
-						if(typeof columnData == 'string' && columnData.length > 30) {
+						if(typeof columnData == 'string' && columnData.length > 30 && $scope.truncated) {
 							data[i] = '<span title="'+columnData.replace(/"/g, '&quot;')+'">'+columnData.substr(0, 15)+' &#8230; '+columnData.substr(-15)+'</span>';
 						}
 					}
@@ -1813,11 +1839,24 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('AddScheduleCtrl', ['$scope', 'Api', 'Misc', function($scope, Api, Misc) {
+.controller('AddScheduleCtrl', ['$scope', 'Api', function($scope, Api) {
 	$scope.state = [];
 	$scope.addLocalAlert = function(type, message) {
 		$scope.state.push({type:type, message: message});
 	};
+
+	let adapters = $scope.adapters;
+	let schedulerEligibleAdapters={};
+	for(adapter in adapters) {
+		let receivers = adapters[adapter].receivers;
+		for(r in receivers) {
+			let receiver=receivers[r];
+			if(receiver.listener.class.startsWith('JavaListener')){
+				schedulerEligibleAdapters[adapter] = adapters[adapter];
+			}
+		}
+	}
+	$scope.schedulerEligibleAdapters = schedulerEligibleAdapters;
 
 	$scope.form = {
 			name:"",

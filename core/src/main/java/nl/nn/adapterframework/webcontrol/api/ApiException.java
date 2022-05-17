@@ -50,12 +50,12 @@ public class ApiException extends WebApplicationException implements Serializabl
 		this(msg, t, Status.INTERNAL_SERVER_ERROR);
 	}
 
-	public ApiException(Throwable t, int status) {
+	private ApiException(Throwable t, int status) {
 		this(t.getMessage(), t, Status.fromStatusCode(status));
 	}
 
 	private ApiException(String msg, Throwable t, Status status) {
-		super(msg, t, formatException(msg, status, MediaType.APPLICATION_JSON));
+		super(msg, t, formatException(msg, status));
 
 		log.warn(msg, t);
 	}
@@ -71,15 +71,16 @@ public class ApiException extends WebApplicationException implements Serializabl
 	}
 
 	public ApiException(String msg, Status status) {
-		super(msg, formatException(msg, status, MediaType.APPLICATION_JSON));
+		super(msg, formatException(msg, status));
 	}
 
-	private static Response formatException(String message, Status status, String mediaType) {
-		ResponseBuilder response = Response.status(status).type(mediaType);
+	protected static Response formatException(String message, Status status) {
+		ResponseBuilder response = Response.status(status).type(MediaType.TEXT_PLAIN);
 
 		if(message != null) {
 			message = message.replace("\"", "\\\"").replace("\n", " ").replace(System.getProperty("line.separator"), " ");
 
+			response.type(MediaType.APPLICATION_JSON);
 			response.entity(("{\"status\":\""+status.getReasonPhrase()+"\", \"error\":\"" + message + "\"}"));
 		}
 		return response.build();

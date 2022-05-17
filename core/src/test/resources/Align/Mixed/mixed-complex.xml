@@ -1,4 +1,4 @@
-<root xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:mixed file:///C:/Gerrit/Workspaces/neon/XmlAligner/src/test/resources/Align/Mixed/mixed.xsd" xmlns="urn:mixed">
+<root xmlns="urn:mixed">
 	<mixed>
 		<subcomplex>
 			<mixed/>

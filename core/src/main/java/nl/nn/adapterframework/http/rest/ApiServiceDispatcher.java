@@ -67,7 +67,6 @@ public class ApiServiceDispatcher {
 	private Logger log = LogUtil.getLogger(this);
 	private ConcurrentSkipListMap<String, ApiDispatchConfig> patternClients = new ConcurrentSkipListMap<>(new ApiUriComparator());
 	private static ApiServiceDispatcher self = null;
-	private static final String SCHEMA_DEFINITION_PATH = "#/components/schemas/";
 
 	public static synchronized ApiServiceDispatcher getInstance() {
 		if( self == null ) {
@@ -88,13 +87,13 @@ public class ApiServiceDispatcher {
 	private List<ApiDispatchConfig>  findMatchingConfigsForUri(String uri, boolean exactMatch) {
 		List<ApiDispatchConfig> results = new ArrayList<>();
 
-		String uriSegments[] = uri.split("/");
+		String[] uriSegments = uri.split("/");
 
 		for (Iterator<String> it = patternClients.keySet().iterator(); it.hasNext();) {
 			String uriPattern = it.next();
 			if(log.isTraceEnabled()) log.trace("comparing uri ["+uri+"] to pattern ["+uriPattern+"]");
 
-			String patternSegments[] = uriPattern.split("/");
+			String[] patternSegments = uriPattern.split("/");
 			if (exactMatch && patternSegments.length != uriSegments.length || patternSegments.length < uriSegments.length) {
 				continue;
 			}
@@ -103,8 +102,6 @@ public class ApiServiceDispatcher {
 			for (int i = 0; i < uriSegments.length; i++) {
 				if(patternSegments[i].equals(uriSegments[i]) || patternSegments[i].equals("*")) {
 					matches++;
-				} else {
-					continue;
 				}
 			}
 			if(matches == uriSegments.length) {
@@ -284,7 +281,7 @@ public class ApiServiceDispatcher {
 		List<String> paramsFromHeaderAndCookie = new ArrayList<String>();
 		// header parameters
 		if(StringUtils.isNotEmpty(listener.getHeaderParams())) {
-			String params[] = listener.getHeaderParams().split(",");
+			String[] params = listener.getHeaderParams().split(",");
 			for (String parameter : params) {
 				paramBuilder.add(addParameterToSchema(parameter, "header", false, Json.createObjectBuilder().add("type", "string")));
 				paramsFromHeaderAndCookie.add(parameter);
@@ -327,7 +324,7 @@ public class ApiServiceDispatcher {
 		Json2XmlValidator inputValidator = getJsonValidator(pipeline,false);
 		if(inputValidator != null && StringUtils.isNotEmpty(inputValidator.getRoot())) {
 			JsonObjectBuilder requestBodyContent = Json.createObjectBuilder();
-			JsonObjectBuilder schemaBuilder = Json.createObjectBuilder().add("schema", Json.createObjectBuilder().add("$ref", SCHEMA_DEFINITION_PATH+inputValidator.getRoot()));
+			JsonObjectBuilder schemaBuilder = Json.createObjectBuilder().add("schema", Json.createObjectBuilder().add("$ref", XmlTypeToJsonSchemaConverter.SCHEMA_DEFINITION_PATH+inputValidator.getRoot()));
 			requestBodyContent.add("content", Json.createObjectBuilder().add(consumes.getContentType(), schemaBuilder));
 			methodBuilder.add("requestBody", requestBodyContent);
 		}
@@ -342,7 +339,7 @@ public class ApiServiceDispatcher {
 
 		JsonObjectBuilder schema = null;
 		String schemaReferenceElement = null;
-		List<XSModel> models = new ArrayList<XSModel>();
+		List<XSModel> models = new ArrayList<>();
 		if(inputValidator != null) {
 			models.addAll(inputValidator.getXSModels());
 			schemaReferenceElement = inputValidator.getMessageRoot(true);
@@ -384,7 +381,7 @@ public class ApiServiceDispatcher {
 						}
 					}
 					// JsonObjectBuilder add method consumes the schema
-					schema.add("schema", Json.createObjectBuilder().add("$ref", SCHEMA_DEFINITION_PATH+reference));
+					schema.add("schema", Json.createObjectBuilder().add("$ref", XmlTypeToJsonSchemaConverter.SCHEMA_DEFINITION_PATH+reference));
 					content.add(contentType.getContentType(), schema);
 				}
 				exit.add("content", content);
@@ -396,7 +393,7 @@ public class ApiServiceDispatcher {
 	}
 
 	private void addComponentsToTheSchema(JsonObjectBuilder schemas, List<XSModel> models) {
-		XmlTypeToJsonSchemaConverter converter = new XmlTypeToJsonSchemaConverter(models, true, SCHEMA_DEFINITION_PATH);
+		XmlTypeToJsonSchemaConverter converter = new XmlTypeToJsonSchemaConverter(models, true, XmlTypeToJsonSchemaConverter.SCHEMA_DEFINITION_PATH);
 		JsonObject jsonSchema = converter.getDefinitions();
 		if(jsonSchema != null) {
 			for (Entry<String,JsonValue> entry: jsonSchema.entrySet()) {

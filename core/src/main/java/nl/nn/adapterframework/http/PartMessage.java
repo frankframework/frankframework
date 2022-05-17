@@ -27,7 +27,9 @@ import nl.nn.adapterframework.stream.MessageContext;
 
 public class PartMessage extends Message {
 
-	private Part part;
+	private static final long serialVersionUID = 4740404985426114492L;
+
+	private transient Part part;
 
 	public PartMessage(Part part) throws MessagingException {
 		this(new MessageContext(), part);
@@ -56,12 +58,15 @@ public class PartMessage extends Message {
 
 	@Override
 	public long size() {
-		try {
-			return part.getSize();
-		} catch (MessagingException e) {
-			log.warn("Cannot get size", e);
-			return -1;
+		if (part!=null) {
+			try {
+				return part.getSize();
+			} catch (MessagingException e) {
+				log.warn("Cannot get size", e);
+				return -1;
+			}
 		}
+		return super.size();
 	}
 
 }

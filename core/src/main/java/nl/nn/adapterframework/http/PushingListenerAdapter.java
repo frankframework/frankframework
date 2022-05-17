@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2017, 2019 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.ServiceClient;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
@@ -94,7 +93,7 @@ public abstract class PushingListenerAdapter implements IPushingListener<Message
 			if (isApplicationFaultsAsExceptions()) {
 				log.debug("PushingListenerAdapter.processRequest() rethrows ListenerException...");
 				throw e;
-			} 
+			}
 			log.debug("PushingListenerAdapter.processRequest() formats ListenerException to errormessage");
 			return handler.formatException(null,correlationId, message, e);
 		}
@@ -112,10 +111,12 @@ public abstract class PushingListenerAdapter implements IPushingListener<Message
 		return name;
 	}
 
+	/**
+	 * Name of the listener as known to the adapter
+	 */
 	@Override
-	@IbisDoc({"name of the listener as known to the adapter", ""})
 	public void setName(String name) {
-		this.name=name;
+		this.name = name;
 	}
 
 	@Override

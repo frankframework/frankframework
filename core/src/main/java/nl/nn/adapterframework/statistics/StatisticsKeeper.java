@@ -95,14 +95,15 @@ public class StatisticsKeeper<B extends IBasics<S>, S> implements ItemList {
 		for (int i=0;i<pest.getNumPercentiles();i++) {
 			percentiles[i]=((double)pest.getPercentage(i))/100;
 		}
-		DistributionSummary.Builder builder= DistributionSummary
+		DistributionSummary.Builder builder = DistributionSummary
 				.builder(name)
 				.baseUnit(getUnits())
 				.tags(tags)
 				.tag("name", getName())
+				.percentilePrecision(2)
 				.serviceLevelObjectives(serviceLevelObjectives)
 				.publishPercentiles(percentiles)
-				//.publishPercentileHistogram()
+//				.publishPercentileHistogram()
 				;
 		DistributionSummary distributionSummary = builder.register(registry);
 
