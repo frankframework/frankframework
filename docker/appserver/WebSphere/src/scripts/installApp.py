@@ -54,7 +54,7 @@ def assignSharedLibrary( ear, name ):
 	print AdminConfig.create('LibraryRef', classldr, [['libraryName', name ],  ['sharedClassloader', 'true']])
 	return
 
-installApp('adapterframework.ear', 'IBIS AdapterFramework', 'adapterframework.war', contextRoot)
+installApp('adapterframework.ear', 'Frank!Framework', 'adapterframework.war', contextRoot)
 setClassloaderMode('adapterframework.ear', 'PARENT_LAST')
 
 
