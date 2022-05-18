@@ -96,11 +96,7 @@ public class TransactionalStorage extends Base {
 				@PathParam("messageId") String messageId
 			) throws ApiException, IOException {
 
-		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
-
-		if(adapter == null){
-			throw new ApiException("Adapter not found!");
-		}
+		Adapter adapter = getAdapterByUrlEncodedName(adapterName);
 
 		String message = null;
 		IMessageBrowser<?> storage = null;
@@ -108,17 +104,11 @@ public class TransactionalStorage extends Base {
 		messageId = Misc.urlDecode(messageId);
 
 		if(storageSource == StorageSource.PIPES) {
-			MessageSendingPipe pipe = (MessageSendingPipe) adapter.getPipeLine().getPipe(storageSourceName);
-			if(pipe == null) {
-				throw new ApiException("Pipe ["+storageSourceName+"] not found!");
-			}
+			MessageSendingPipe pipe = (MessageSendingPipe) getPipeFromUrlEncodedName(adapter, storageSourceName);
 			storage = getPipeMessageLog(pipe);
 			message = getMessage(storage, messageId);
 		} else {
-			Receiver<?> receiver = adapter.getReceiverByName(storageSourceName);
-			if(receiver == null) {
-				throw new ApiException("Receiver ["+storageSourceName+"] not found!");
-			}
+			Receiver<?> receiver = getReceiverByUrlEncodedName(adapter, storageSourceName);
 			storage = receiver.getMessageBrowser(ProcessState.getProcessStateFromName(processState));
 			message = getMessage(storage, receiver.getListener(), messageId);
 		}
@@ -193,28 +183,16 @@ public class TransactionalStorage extends Base {
 			@PathParam("messageId") String messageId
 		) throws ApiException, IOException {
 
-		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
-
-		if(adapter == null){
-			throw new ApiException("Adapter not found!");
-		}
+		Adapter adapter = getAdapterByUrlEncodedName(adapterName);
 
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
 		messageId = Misc.urlDecode(messageId);
 		String message;
 		if(storageSource == StorageSource.PIPES) {
-			MessageSendingPipe pipe = (MessageSendingPipe) adapter.getPipeLine().getPipe(storageSourceName);
-			if(pipe == null) {
-				throw new ApiException("Pipe ["+storageSourceName+"] not found!");
-			}
-
+			MessageSendingPipe pipe = (MessageSendingPipe) getPipeFromUrlEncodedName(adapter, storageSourceName);
 			message = getMessage(getPipeMessageLog(pipe), messageId);
 		} else {
-			Receiver<?> receiver = adapter.getReceiverByName(storageSourceName);
-			if(receiver == null) {
-				throw new ApiException("Receiver ["+storageSourceName+"] not found!");
-			}
-
+			Receiver<?> receiver = getReceiverByUrlEncodedName(adapter, storageSourceName);
 			IMessageBrowser<?> storage = receiver.getMessageBrowser(ProcessState.getProcessStateFromName(processState));
 			message = getMessage(storage, receiver.getListener(), messageId);
 		}
@@ -242,28 +220,16 @@ public class TransactionalStorage extends Base {
 			MultipartBody input
 		) throws ApiException {
 
-		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
-
-		if(adapter == null){
-			throw new ApiException("Adapter not found!");
-		}
+		Adapter adapter = getAdapterByUrlEncodedName(adapterName);
 
 		IMessageBrowser<?> storage;
 		IListener<?> listener;
 		if(storageSource == StorageSource.PIPES) {
-			MessageSendingPipe pipe = (MessageSendingPipe) adapter.getPipeLine().getPipe(storageSourceName);
-			if(pipe == null) {
-				throw new ApiException("Pipe ["+storageSourceName+"] not found!");
-			}
-
+			MessageSendingPipe pipe = (MessageSendingPipe) getPipeFromUrlEncodedName(adapter, storageSourceName);
 			storage = getPipeMessageLog(pipe);
 			listener=null;
 		} else {
-			Receiver<?> receiver = adapter.getReceiverByName(storageSourceName);
-			if(receiver == null) {
-				throw new ApiException("Receiver ["+storageSourceName+"] not found!");
-			}
-
+			Receiver<?> receiver = getReceiverByUrlEncodedName(adapter, storageSourceName);
 			storage = receiver.getMessageBrowser(ProcessState.getProcessStateFromName(processState));
 			listener = receiver.getListener();
 		}
@@ -329,26 +295,16 @@ public class TransactionalStorage extends Base {
 				@QueryParam("max") int maxMessages
 			) throws ApiException {
 
-		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
-
-		if(adapter == null){
-			throw new ApiException("Adapter not found!");
-		}
+		Adapter adapter = getAdapterByUrlEncodedName(adapterName);
 
 		IMessageBrowser<?> storage = null;
 		IListener<?> listener = null;
 		Map<ProcessState, Map<String, String>> targetPSInfo = null;
 		if(storageSource == StorageSource.PIPES) {
-			MessageSendingPipe pipe = (MessageSendingPipe) adapter.getPipeLine().getPipe(storageSourceName);
-			if(pipe == null) {
-				throw new ApiException("Pipe ["+storageSourceName+"] not found!");
-			}
+			MessageSendingPipe pipe = (MessageSendingPipe) getPipeFromUrlEncodedName(adapter, storageSourceName);
 			storage = getPipeMessageLog(pipe);
 		} else {
-			Receiver<?> receiver = adapter.getReceiverByName(storageSourceName);
-			if(receiver == null) {
-				throw new ApiException("Receiver ["+storageSourceName+"] not found!");
-			}
+			Receiver<?> receiver = getReceiverByUrlEncodedName(adapter, storageSourceName);
 			ProcessState state = ProcessState.getProcessStateFromName(processState);
 			storage = receiver.getMessageBrowser(state);
 			targetPSInfo = getTargetProcessStateInfo(receiver.targetProcessStates().get(state));
@@ -396,16 +352,9 @@ public class TransactionalStorage extends Base {
 			@PathParam("messageId") String messageId
 		) throws ApiException {
 
-		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
+		Adapter adapter = getAdapterByUrlEncodedName(adapterName);
 
-		if(adapter == null){
-			throw new ApiException("Adapter not found!");
-		}
-
-		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
-		if(receiver == null) {
-			throw new ApiException("Receiver ["+receiverName+"] not found!");
-		}
+		Receiver<?> receiver = getReceiverByUrlEncodedName(adapter, receiverName);
 
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
 		messageId = Misc.urlDecode(messageId);
@@ -426,16 +375,9 @@ public class TransactionalStorage extends Base {
 			MultipartBody input
 		) throws ApiException {
 
-		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
+		Adapter adapter = getAdapterByUrlEncodedName(adapterName);
 
-		if(adapter == null){
-			throw new ApiException("Adapter not found!");
-		}
-
-		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
-		if(receiver == null) {
-			throw new ApiException("Receiver ["+receiverName+"] not found!");
-		}
+		Receiver<?> receiver = getReceiverByUrlEncodedName(adapter, receiverName);
 
 		String[] messageIds = getMessageIds(input);
 
@@ -473,16 +415,9 @@ public class TransactionalStorage extends Base {
 			MultipartBody input
 		) throws ApiException {
 
-		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
+		Adapter adapter = getAdapterByUrlEncodedName(adapterName);
 
-		if(adapter == null){
-			throw new ApiException("Adapter not found!");
-		}
-
-		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
-		if(receiver == null) {
-			throw new ApiException("Receiver ["+receiverName+"] not found!");
-		}
+		Receiver<?> receiver = getReceiverByUrlEncodedName(adapter, receiverName);
 		String[] messageIds = getMessageIds(input);
 
 		ProcessState currentState = ProcessState.getProcessStateFromName(processState);
@@ -523,16 +458,9 @@ public class TransactionalStorage extends Base {
 			@PathParam("messageId") String messageId
 		) throws ApiException {
 
-		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
+		Adapter adapter = getAdapterByUrlEncodedName(adapterName);
 
-		if(adapter == null){
-			throw new ApiException("Adapter not found!");
-		}
-
-		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
-		if(receiver == null) {
-			throw new ApiException("Receiver ["+receiverName+"] not found!");
-		}
+		Receiver<?> receiver = getReceiverByUrlEncodedName(adapter, receiverName);
 
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
 		messageId = Misc.urlDecode(messageId);
@@ -554,16 +482,8 @@ public class TransactionalStorage extends Base {
 			MultipartBody input
 		) throws ApiException {
 
-		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
-
-		if(adapter == null){
-			throw new ApiException("Adapter not found!");
-		}
-
-		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
-		if(receiver == null) {
-			throw new ApiException("Receiver ["+receiverName+"] not found!");
-		}
+		Adapter adapter = getAdapterByUrlEncodedName(adapterName);
+		Receiver<?> receiver = getReceiverByUrlEncodedName(adapter, receiverName);
 
 		String[] messageIds = getMessageIds(input);
 

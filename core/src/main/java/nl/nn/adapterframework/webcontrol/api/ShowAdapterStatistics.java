@@ -56,24 +56,20 @@ public final class ShowAdapterStatistics extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getStatistics(@PathParam("adapterName") String adapterName) throws ApiException {
 
-		Map<String, Object> statisticsMap = new HashMap<String, Object>();
+		Map<String, Object> statisticsMap = new HashMap<>();
 
 		statisticsMap.put("labels", StatisticsKeeper.getLabels());
 		statisticsMap.put("types", StatisticsKeeper.getTypes());
 
-		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
-
-		if(adapter == null){
-			throw new ApiException("Adapter not found!");
-		}
+		Adapter adapter = getAdapterByUrlEncodedName(adapterName);
 
 		StatisticsKeeper sk = adapter.getStatsMessageProcessingDuration();
 		statisticsMap.put("totalMessageProccessingTime", sk.asMap());
 
 		long[] numOfMessagesStartProcessingByHour = adapter.getNumOfMessagesStartProcessingByHour();
-		List<Map<String, Object>> hourslyStatistics = new ArrayList<Map<String, Object>>();
+		List<Map<String, Object>> hourslyStatistics = new ArrayList<>();
 		for (int i=0; i<numOfMessagesStartProcessingByHour.length; i++) {
-			Map<String, Object> item = new HashMap<String, Object>(2);
+			Map<String, Object> item = new HashMap<>(2);
 			String startTime;
 			if (i<10) {
 				startTime = "0" + i + ":00";
@@ -86,16 +82,16 @@ public final class ShowAdapterStatistics extends Base {
 		}
 		statisticsMap.put("hourly", hourslyStatistics);
 
-		List<Map<String, Object>> receivers = new ArrayList<Map<String, Object>>();
+		List<Map<String, Object>> receivers = new ArrayList<>();
 		for (Receiver<?> receiver: adapter.getReceivers()) {
-			Map<String, Object> receiverMap = new HashMap<String, Object>();
+			Map<String, Object> receiverMap = new HashMap<>();
 
 			receiverMap.put("name", receiver.getName());
 			receiverMap.put("class", receiver.getClass().getName());
 			receiverMap.put("messagesReceived", receiver.getMessagesReceived());
 			receiverMap.put("messagesRetried", receiver.getMessagesRetried());
 
-			ArrayList<Map<String, Object>> procStatsMap = new ArrayList<Map<String, Object>>();
+			ArrayList<Map<String, Object>> procStatsMap = new ArrayList<>();
 //			procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(statReceiver.getRequestSizeStatistics(), "stat"));
 //			procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(statReceiver.getResponseSizeStatistics(), "stat"));
 			for (StatisticsKeeper pstat: receiver.getProcessStatistics()) {
@@ -103,7 +99,7 @@ public final class ShowAdapterStatistics extends Base {
 			}
 			receiverMap.put("processing", procStatsMap);
 
-			ArrayList<Map<String, Object>> idleStatsMap = new ArrayList<Map<String, Object>>();
+			ArrayList<Map<String, Object>> idleStatsMap = new ArrayList<>();
 			for (StatisticsKeeper istat: receiver.getIdleStatistics()) {
 				idleStatsMap.add(istat.asMap());
 			}
@@ -113,7 +109,7 @@ public final class ShowAdapterStatistics extends Base {
 		}
 		statisticsMap.put("receivers", receivers);
 
-		Map<String, Object> tmp = new HashMap<String, Object>();
+		Map<String, Object> tmp = new HashMap<>();
 		StatisticsKeeperToMap handler = new StatisticsKeeperToMap(tmp);
 		handler.configure();
 		Object handle = handler.start(null, null, null);

@@ -493,7 +493,7 @@ public class Adapter implements IAdapter, NamedBean {
 	@Override
 	public Receiver<?> getReceiverByName(String receiverName) {
 		for (Receiver<?> receiver: receivers) {
-			if (receiver.getName().equalsIgnoreCase(receiverName) || receiver.getName().equalsIgnoreCase(Misc.urlDecode(receiverName))) {
+			if (receiver.getName().equalsIgnoreCase(receiverName)) {
 				return receiver;
 			}
 		}

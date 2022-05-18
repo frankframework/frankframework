@@ -41,7 +41,10 @@ import org.springframework.context.ApplicationContextAware;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -116,6 +119,39 @@ public abstract class Base implements ApplicationContextAware {
 		}
 
 		return ibisManager;
+	}
+
+	protected Adapter getAdapterByUrlEncodedName(String adapterName) {
+		adapterName = Misc.urlDecode(adapterName);
+		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
+
+		if(adapter == null){
+			throw new ApiException("Adapter ["+adapterName+"] not found!");
+		}
+
+		return adapter;
+	}
+
+	protected Receiver getReceiverByUrlEncodedName(Adapter adapter, String receiverName) {
+		receiverName = Misc.urlDecode(receiverName);
+		Receiver receiver = adapter.getReceiverByName(receiverName);
+
+		if(receiver == null){
+			throw new ApiException("Receiver ["+receiverName+"] not found in adapter ["+adapter.getName()+"]");
+		}
+
+		return receiver;
+	}
+
+	protected IPipe getPipeFromUrlEncodedName(Adapter adapter, String pipeName) {
+		pipeName = Misc.urlDecode(pipeName);
+		IPipe pipe = adapter.getPipeLine().getPipe(pipeName);
+
+		if(pipe == null){
+			throw new ApiException("Pipe ["+pipeName+"] not found in adapter ["+adapter.getName()+"]");
+		}
+
+		return pipe;
 	}
 
 	protected FlowDiagramManager getFlowDiagramManager() {

@@ -1333,7 +1333,7 @@ angular.module('iaf.beheerconsole')
 	$scope.doDeleteMessage = function(message, callback) {
 		message.deleting = true;
 		let messageId = message.id;
-		Api.Delete($scope.base_url+"/messages/"+encodeURIComponent(encodeURIComponent(messageId)), function() {
+		Api.Delete($scope.base_url+"/messages/"+Misc.escapeURL(messageId), function() {
 			if(callback != undefined && typeof callback == 'function')
 				callback(messageId);
 			$scope.addNote("success", "Successfully deleted message with ID: "+messageId);
@@ -1345,13 +1345,13 @@ angular.module('iaf.beheerconsole')
 		}, false);
 	};
 	$scope.downloadMessage = function(messageId) {
-		window.open(Misc.getServerPath() + "iaf/api/"+$scope.base_url+"/messages/"+encodeURIComponent(encodeURIComponent(messageId))+"/download");
+		window.open(Misc.getServerPath() + "iaf/api/"+$scope.base_url+"/messages/"+Misc.escapeURL(messageId)+"/download");
 	};
 
 	$scope.doResendMessage = function(message, callback) {
 		message.resending = true;
 		let messageId = message.id;
-		Api.Put($scope.base_url+"/messages/"+encodeURIComponent(encodeURIComponent(messageId)), false, function() {
+		Api.Put($scope.base_url+"/messages/"+Misc.escapeURL(messageId), false, function() {
 			if(callback != undefined && typeof callback == 'function')
 				callback(message.id);
 			$scope.addNote("success", "Successfully resent message with ID: "+messageId);
@@ -1670,7 +1670,7 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('AdapterViewStorageIdCtrl', ['$scope', 'Api', '$state', 'SweetAlert', function($scope, Api, $state, SweetAlert) {
+.controller('AdapterViewStorageIdCtrl', ['$scope', 'Api', '$state', 'SweetAlert', 'Misc', function($scope, Api, $state, SweetAlert, Misc) {
 	$scope.message = {};
 	$scope.closeNotes();
 
@@ -1678,7 +1678,7 @@ angular.module('iaf.beheerconsole')
 	if(!$scope.message.id)
 		return SweetAlert.Warning("Invalid URL", "No message id provided!");
 
-	Api.Get($scope.base_url+"/messages/"+encodeURIComponent(encodeURIComponent($scope.message.id)), function(data) {
+	Api.Get($scope.base_url+"/messages/"+Misc.escapeURL($scope.message.id), function(data) {
 		$scope.metadata=JSON.parse(data);
 	}, function(_, statusCode, statusText) {
 		if(statusCode == 500) {
