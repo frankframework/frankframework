@@ -799,7 +799,6 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		sender.configure();
 		sender.open();
-
 	}
 
 	@Test
@@ -833,7 +832,6 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		sender.configure();
 		sender.open();
-
 	}
 
 	@Test
@@ -854,9 +852,8 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		exception.expectMessage("cannot create or initialize SocketFactory");
 		sender.configure();
 		sender.open();
-
 	}
-	
+
 	@Test
 	public void testTargetingSpecificKeyPairInMultiEntryKeystore() throws Throwable {
 
@@ -872,6 +869,21 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.setMethodType(HttpMethod.GET);
 		sender.configure();
 		sender.open();
+	}
 
+	@Test
+	public void simpleMockedHttpHead() throws Throwable {
+		sender = getSender(false);
+		Message input = new Message("ignored");
+
+		PipeLineSession pls = new PipeLineSession(session);
+
+		sender.setMethodType(HttpMethod.HEAD);
+
+		sender.configure();
+		sender.open();
+
+		String result = sender.sendMessage(input, pls).asString();
+		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpHead.txt"), result.trim());
 	}
 }

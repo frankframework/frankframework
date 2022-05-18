@@ -14,8 +14,7 @@
 		<spring.version>5.3.19</spring.version>
 		<j2v8.version>4.6.0</j2v8.version>
 		<cxf.version>3.4.7</cxf.version>
-		<jackson.version>2.13.2</jackson.version>
-		<jackson.databind.version>2.13.2.2</jackson.databind.version> <!-- patch release -->
+		<jackson.version>2.13.3</jackson.version>
 	</properties>
 
 	<dependencies>
@@ -428,7 +427,7 @@
 		<dependency>
 			<groupId>com.nimbusds</groupId>
 			<artifactId>oauth2-oidc-sdk</artifactId>
-			<version>9.20</version>
+			<version>9.35</version>
 		</dependency>
 
 		<!-- TransactionManagers: BTM + NARAYANA -->
@@ -580,7 +579,7 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>${jackson.databind.version}</version>
+			<version>${jackson.version}</version>
 		</dependency>
 
 		<!-- Use our own JaxB and JaxWS implementations to run on the IBM JDK -->
@@ -640,7 +639,7 @@
 		<dependency>
 			<groupId>name.neuhalfen.projects.crypto.bouncycastle.openpgp</groupId>
 			<artifactId>bouncy-gpg</artifactId>
-			<version>2.2.0</version>
+			<version>2.3.0</version>
 			<exclusions>
 				<exclusion>
 					<!-- #475 exclude to avoid excessive logging of other slf4j enabled components like quartz -->
