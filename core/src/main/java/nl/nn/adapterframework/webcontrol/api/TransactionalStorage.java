@@ -104,7 +104,7 @@ public class TransactionalStorage extends Base {
 		messageId = Misc.urlDecode(messageId);
 
 		if(storageSource == StorageSource.PIPES) {
-			MessageSendingPipe pipe = (MessageSendingPipe) getPipeFromUrlEncodedName(adapter, storageSourceName);
+			MessageSendingPipe pipe = (MessageSendingPipe) getPipeByUrlEncodedName(adapter, storageSourceName);
 			storage = getPipeMessageLog(pipe);
 			message = getMessage(storage, messageId);
 		} else {
@@ -189,7 +189,7 @@ public class TransactionalStorage extends Base {
 		messageId = Misc.urlDecode(messageId);
 		String message;
 		if(storageSource == StorageSource.PIPES) {
-			MessageSendingPipe pipe = (MessageSendingPipe) getPipeFromUrlEncodedName(adapter, storageSourceName);
+			MessageSendingPipe pipe = (MessageSendingPipe) getPipeByUrlEncodedName(adapter, storageSourceName);
 			message = getMessage(getPipeMessageLog(pipe), messageId);
 		} else {
 			Receiver<?> receiver = getReceiverByUrlEncodedName(adapter, storageSourceName);
@@ -225,7 +225,7 @@ public class TransactionalStorage extends Base {
 		IMessageBrowser<?> storage;
 		IListener<?> listener;
 		if(storageSource == StorageSource.PIPES) {
-			MessageSendingPipe pipe = (MessageSendingPipe) getPipeFromUrlEncodedName(adapter, storageSourceName);
+			MessageSendingPipe pipe = (MessageSendingPipe) getPipeByUrlEncodedName(adapter, storageSourceName);
 			storage = getPipeMessageLog(pipe);
 			listener=null;
 		} else {
@@ -301,7 +301,7 @@ public class TransactionalStorage extends Base {
 		IListener<?> listener = null;
 		Map<ProcessState, Map<String, String>> targetPSInfo = null;
 		if(storageSource == StorageSource.PIPES) {
-			MessageSendingPipe pipe = (MessageSendingPipe) getPipeFromUrlEncodedName(adapter, storageSourceName);
+			MessageSendingPipe pipe = (MessageSendingPipe) getPipeByUrlEncodedName(adapter, storageSourceName);
 			storage = getPipeMessageLog(pipe);
 		} else {
 			Receiver<?> receiver = getReceiverByUrlEncodedName(adapter, storageSourceName);

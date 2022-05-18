@@ -143,7 +143,7 @@ public abstract class Base implements ApplicationContextAware {
 		return receiver;
 	}
 
-	protected IPipe getPipeFromUrlEncodedName(Adapter adapter, String pipeName) {
+	protected IPipe getPipeByUrlEncodedName(Adapter adapter, String pipeName) {
 		pipeName = Misc.urlDecode(pipeName);
 		IPipe pipe = adapter.getPipeLine().getPipe(pipeName);
 
