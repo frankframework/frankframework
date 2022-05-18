@@ -517,23 +517,4 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		assertTrue(parentFolder.endsWith(folderName));
 	}
 
-	@Test
-	public void getParentOfTheDeletedFolder() throws Exception {
-		String folderName = "parentFolder";
-
-		fileSystem.configure();
-		fileSystem.open();
-
-		_createFolder(folderName);
-		_createFolder(folderName+"/innerFolder");
-
-		F f = fileSystem.toFile(folderName+"/innerFolder");
-
-		fileSystem.removeFolder(folderName+"/innerFolder", false);
-
-		String parentFolder = fileSystem.getParentFolder(f);
-
-		assertTrue(parentFolder.endsWith(folderName));
-	}
-
 }

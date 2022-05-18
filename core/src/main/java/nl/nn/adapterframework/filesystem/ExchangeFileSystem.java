@@ -550,12 +550,17 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	}
 	@Override
 	public String getParentFolder(EmailMessage f) throws FileSystemException {
+		ExchangeService exchangeService = getConnection();
+		boolean invalidateConnectionOnRelease = false;
 		try {
 			FolderId folderId = f.getParentFolderId();
-			Folder folder = Folder.bind(getConnection(), folderId);
+			Folder folder = Folder.bind(exchangeService, folderId);
 			return folder.getDisplayName();
 		} catch(Exception e) {
+			invalidateConnectionOnRelease = true;
 			throw new FileSystemException(e);
+		} finally {
+			releaseConnection(exchangeService, invalidateConnectionOnRelease);
 		}
 	}
 

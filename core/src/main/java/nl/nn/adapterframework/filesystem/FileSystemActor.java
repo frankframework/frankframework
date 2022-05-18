@@ -129,8 +129,6 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	private byte[] eolArray=null;
 
 	public enum FileSystemAction implements DocumentedEnum {
-		/** create empty file, specified by attribute <code>filename</code>, parameter <code>filename</code> or input message */
-		@EnumLabel(ACTION_CREATE) CREATE,
 		/** list files in a folder/directory, specified by attribute <code>inputFolder</code>, parameter <code>inputFolder</code> or input message */
 		@EnumLabel(ACTION_LIST) LIST,
 		/** show info about a single file, specified by attribute <code>filename</code>, parameter <code>filename</code> or input message */
@@ -159,6 +157,8 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		/** (only for filesystems that support 'append') append contents, specified by parameter <code>contents</code> or input message, to a file, specified by attribute <code>filename</code>, parameter <code>filename</code> or input message.
 		 *  At least one of the parameters must be specified. The missing parameter defaults to the input message. For streaming operation, the parameter <code>filename</code> must be specified. */
 		@EnumLabel(ACTION_APPEND) APPEND,
+		/** create empty file, specified by attribute <code>filename</code>, parameter <code>filename</code> or input message */
+		@EnumLabel(ACTION_CREATE) CREATE,
 		/** change the name of a file, specified by attribute <code>filename</code>, parameter <code>filename</code> or input message, to the value specified by attribute <code>destination</code> or parameter <code>destination</code> */
 		@EnumLabel(ACTION_RENAME) RENAME,
 		/** (for MailFileSystems only:) forward an existing file, specified by parameter <code>contents</code> or input message, to a file, to an email address specified by attribute <code>destination</code> or parameter <code>destination</code> */
@@ -453,8 +453,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				}
 				case MOVE: {
 					String destinationFolder = determineDestination(pvl);
-					String result = processAction(input, pvl, f -> FileSystemUtils.moveFile(fileSystem, f, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder()));
-					return result;
+					return processAction(input, pvl, f -> FileSystemUtils.moveFile(fileSystem, f, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder()));
 				}
 				case COPY: {
 					String destinationFolder = determineDestination(pvl);
