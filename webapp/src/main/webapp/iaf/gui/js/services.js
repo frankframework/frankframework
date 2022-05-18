@@ -887,6 +887,8 @@ angular.module('iaf.beheerconsole')
 			return absolutePath;
 		};
 		this.escapeURL = function(uri) {
+			// double url encode. Slashes in the path are denied by webserver
+			// https://stackoverflow.com/questions/3235219/urlencoded-forward-slash-is-breaking-url
 			return encodeURIComponent(encodeURIComponent(uri));
 		}
 		this.isMobile = function() {
