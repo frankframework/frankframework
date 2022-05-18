@@ -163,7 +163,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * please check password or authAlias configuration of the corresponding certificate. 
  * </p>
  * 
- * @ff.parameters Any parameters present are appended to the request as request-parameters except the headersParams list which are added as http headers
+ * @ff.parameters Any parameters present are appended to the request (when method is <code>GET</code> as request-parameters, when method <code>POST</code> as body part) except the headersParams list, which are added as HTTP headers, and the urlParam header
  * 
  * @author	Niels Meijer
  * @since	7.0
