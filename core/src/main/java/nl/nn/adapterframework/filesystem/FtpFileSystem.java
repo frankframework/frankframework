@@ -284,11 +284,8 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	
 	@Override
 	public String getParentFolder(FTPFile file) throws FileSystemException {
-		try {
-			return ftpClient.printWorkingDirectory();
-		} catch (IOException e) {
-			throw new FileSystemException(e);
-		}
+		FTPFileRef fileRef = (FTPFileRef) file;
+		return fileRef.getFolder();
 	}
 
 	@Override
