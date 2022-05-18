@@ -14,8 +14,7 @@
 		<spring.version>5.3.19</spring.version>
 		<j2v8.version>4.6.0</j2v8.version>
 		<cxf.version>3.4.7</cxf.version>
-		<jackson.version>2.13.2</jackson.version>
-		<jackson.databind.version>2.13.2.2</jackson.databind.version> <!-- patch release -->
+		<jackson.version>2.13.3</jackson.version>
 	</properties>
 
 	<dependencies>
@@ -580,7 +579,7 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>${jackson.databind.version}</version>
+			<version>${jackson.version}</version>
 		</dependency>
 
 		<!-- Use our own JaxB and JaxWS implementations to run on the IBM JDK -->
