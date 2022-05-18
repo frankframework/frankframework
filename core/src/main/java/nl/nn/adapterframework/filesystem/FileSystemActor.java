@@ -20,6 +20,7 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.DirectoryStream;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -556,7 +557,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	private void deleteEmptyFolder(String folder) throws FileSystemException, IOException {
 		if(isDeleteEmptyFolder()) {
 			boolean isEmpty = false;
-			try (Stream<F> stream = FileSystemUtils.getFilteredStream(fileSystem, folder, null, null)) {
+			try (DirectoryStream<F> stream = fileSystem.listFiles(folder)) {
 				isEmpty = !stream.iterator().hasNext();
 			} catch(IOException e) {
 				throw new FileSystemException("Cannot delete folder ["+folder+"]");
