@@ -38,7 +38,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * 
+ *
  * @author alisihab
  *
  */
@@ -150,7 +150,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	}
 
 	private class Samba1Message extends Message {
-		
+
 		public Samba1Message(SmbFile f, Map<String,Object> context) {
 			super(() -> new SmbFileInputStream(f), context, f.getClass());
 		}
@@ -225,7 +225,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	}
 
 	@Override
-	public SmbFile moveFile(SmbFile f, String destinationFolder, boolean createFolder) throws FileSystemException {
+	public SmbFile moveFile(SmbFile f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
 		SmbFile dest = toFile(destinationFolder, f.getName());
 		try {
 			f.renameTo(dest);
@@ -236,7 +236,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	}
 
 	@Override
-	public SmbFile copyFile(SmbFile f, String destinationFolder, boolean createFolder) throws FileSystemException {
+	public SmbFile copyFile(SmbFile f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
 		SmbFile dest = toFile(destinationFolder, f.getName());
 		try {
 			f.copyTo(dest);
@@ -318,7 +318,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	public void setShare(String share) {
 		this.share = share;
 	}
-	
+
 	public String getUsername() {
 		return username;
 	}

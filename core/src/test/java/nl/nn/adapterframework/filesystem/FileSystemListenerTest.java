@@ -307,7 +307,7 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 
 		createFile(null, filename, contents);
 		F f = fileSystemListener.getFileSystem().toFile(fileAndFolderPrefix+filename);
-		F copiedFile = fileSystemListener.getFileSystem().copyFile(f, fileAndFolderPrefix+copiedFileFolderName, true);
+		F copiedFile = fileSystemListener.getFileSystem().copyFile(f, fileAndFolderPrefix+copiedFileFolderName, true, true);
 
 		rawMessage=fileSystemListener.getRawMessage(threadContext);
 		assertNotNull("raw message must be not null when a file is available",rawMessage);
@@ -315,7 +315,7 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		F movedFile = fileSystemListener.changeProcessState(rawMessage, ProcessState.INPROCESS, null);
 		assertTrue(fileSystemListener.getFileSystem().getName(movedFile).startsWith(filename+"-"));
 
-		F movedCopiedFile = fileSystemListener.getFileSystem().moveFile(copiedFile, fileAndFolderPrefix, true);
+		F movedCopiedFile = fileSystemListener.getFileSystem().moveFile(copiedFile, fileAndFolderPrefix, true, true);
 
 		Date modificationDateFile = fileSystemListener.getFileSystem().getModificationTime(movedCopiedFile);
 		Date modificationDateSecondFile = fileSystemListener.getFileSystem().getModificationTime(f);
@@ -356,7 +356,7 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		Date modificationDateFirstFile = fileSystemListener.getFileSystem().getModificationTime(f);
 		// copy file 
 		for(int i=1;i<=6;i++) {
-			fileSystemListener.getFileSystem().copyFile(f, fileAndFolderPrefix+copiedFileFolderName+i, true);
+			fileSystemListener.getFileSystem().copyFile(f, fileAndFolderPrefix+copiedFileFolderName+i, true, false);
 		}
 
 		rawMessage=fileSystemListener.getRawMessage(threadContext);
@@ -369,7 +369,7 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		
 		
 		for(int i=1;i<=6;i++) {
-			F movedCopiedFile = fileSystemListener.getFileSystem().moveFile(fileSystemListener.getFileSystem().toFile(fileAndFolderPrefix+copiedFileFolderName+i, filename), fileAndFolderPrefix, true);
+			F movedCopiedFile = fileSystemListener.getFileSystem().moveFile(fileSystemListener.getFileSystem().toFile(fileAndFolderPrefix+copiedFileFolderName+i, filename), fileAndFolderPrefix, true, true);
 
 			Date modificationDate = fileSystemListener.getFileSystem().getModificationTime(movedCopiedFile);
 			assertEquals(modificationDateFirstFile.getTime(), modificationDate.getTime());

@@ -39,7 +39,7 @@ import nl.nn.adapterframework.ftp.FtpSession;
 import nl.nn.adapterframework.stream.Message;
 
 /**
- * 
+ *
  * @author Daniël Meyer
  *
  */
@@ -248,7 +248,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
-	public FTPFile moveFile(FTPFile f, String destinationFolder, boolean createFolder) throws FileSystemException {
+	public FTPFile moveFile(FTPFile f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
 		String destinationFilename = destinationFolder+"/"+getName(f);
 		try {
 			if(ftpClient.rename(getCanonicalName(f), destinationFilename)) {
@@ -259,12 +259,12 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 			throw new FileSystemException(e);
 		}
 	}
-	
+
 	@Override
-	public FTPFile copyFile(FTPFile f, String destinationFolder, boolean createFolder) throws FileSystemException {
+	public FTPFile copyFile(FTPFile f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
 		throw new NotImplementedException("CopyFile not implemented for FtpFileSystem");
 	}
-	
+
 	@Override
 	public long getFileSize(FTPFile f) throws FileSystemException {
 		return f.getSize();

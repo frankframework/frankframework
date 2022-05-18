@@ -253,7 +253,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	}
 
 	@Override
-	public Message moveFile(Message f, String destinationFolder, boolean createFolder) throws FileSystemException {
+	public Message moveFile(Message f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
 		IMAPFolder baseFolder = getConnection();
 		boolean invalidateConnectionOnRelease = false;
 		try {
@@ -281,7 +281,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	}
 
 	@Override
-	public Message copyFile(final Message f, String destinationFolder, boolean createFolder) throws FileSystemException {
+	public Message copyFile(final Message f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
 		IMAPFolder baseFolder = getConnection();
 		boolean invalidateConnectionOnRelease = false;
 		try {

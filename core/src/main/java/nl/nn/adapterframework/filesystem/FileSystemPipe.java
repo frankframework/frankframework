@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2019-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,9 +21,9 @@ import java.util.Map;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -40,15 +40,15 @@ import nl.nn.adapterframework.stream.StreamingPipe;
 
 /**
  * Base class for Pipes that use a {@link IBasicFileSystem FileSystem}.
- * 
+ *
  * @see FileSystemActor
- * 
+ *
  * @ff.parameter action overrides attribute <code>action</code>.
  * @ff.parameter filename overrides attribute <code>filename</code>. If not present, the input message is used.
  * @ff.parameter destination destination for action <code>rename</code> and <code>move</code>. Overrides attribute <code>destination</code>.
  * @ff.parameter contents contents for action <code>write</code> and <code>append</code>.
  * @ff.parameter inputFolder folder for actions <code>list</code>, <code>mkdir</code> and <code>rmdir</code>. This is a sub folder of baseFolder. Overrides attribute <code>inputFolder</code>. If not present, the input message is used.
- * 
+ *
  * @author Gerrit van Brakel
  */
 public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends StreamingPipe implements HasPhysicalDestination {
@@ -61,7 +61,7 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 	public void configure() throws ConfigurationException {
 		super.configure();
 		getFileSystem().configure();
-		try { 
+		try {
 			actor.configure(fileSystem, getParameterList(), this);
 		} catch (ConfigurationException e) {
 			throw new ConfigurationException(getLogPrefix(null),e);
@@ -151,7 +151,7 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 		actor.addActions(specificActions);
 	}
 
-	@IbisDocRef({"1", FILESYSTEMACTOR})
+	@IbisDocRef({FILESYSTEMACTOR})
 	public void setAction(FileSystemAction action) {
 		actor.setAction(action);
 	}
@@ -159,47 +159,52 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 		return actor.getAction();
 	}
 
-	@IbisDocRef({"2", FILESYSTEMACTOR})
+	@IbisDocRef({FILESYSTEMACTOR})
 	public void setFilename(String filename) {
 		actor.setFilename(filename);
 	}
 
-	@IbisDocRef({"2", FILESYSTEMACTOR})
+	@IbisDocRef({FILESYSTEMACTOR})
 	public void setDestination(String destination) {
 		actor.setDestination(destination);
 	}
 
-	@IbisDocRef({"3", FILESYSTEMACTOR})
+	@IbisDocRef({FILESYSTEMACTOR})
 	public void setInputFolder(String inputFolder) {
 		actor.setInputFolder(inputFolder);
 	}
 
-	@IbisDocRef({"4", FILESYSTEMACTOR})
+	@IbisDocRef({FILESYSTEMACTOR})
 	public void setCreateFolder(boolean createFolder) {
 		actor.setCreateFolder(createFolder);
 	}
 
-	@IbisDocRef({"5", FILESYSTEMACTOR})
+	@IbisDocRef({FILESYSTEMACTOR})
 	public void setOverwrite(boolean overwrite) {
 		actor.setOverwrite(overwrite);
 	}
 
-	@IbisDocRef({"6", FILESYSTEMACTOR})
+	@IbisDocRef({FILESYSTEMACTOR})
+	public void setDestinationFileMustBeReturned(boolean destinationFileMustBeReturned) {
+		actor.setDestinationFileMustBeReturned(destinationFileMustBeReturned);
+	}
+
+	@IbisDocRef({FILESYSTEMACTOR})
 	public void setRotateDays(int rotateDays) {
 		actor.setRotateDays(rotateDays);
 	}
 
-	@IbisDocRef({"7", FILESYSTEMACTOR})
+	@IbisDocRef({FILESYSTEMACTOR})
 	public void setRotateSize(int rotateSize) {
 		actor.setRotateSize(rotateSize);
 	}
 
-	@IbisDocRef({"8", FILESYSTEMACTOR})
+	@IbisDocRef({FILESYSTEMACTOR})
 	public void setNumberOfBackups(int numberOfBackups) {
 		actor.setNumberOfBackups(numberOfBackups);
 	}
 
-	@IbisDocRef({"9", FILESYSTEMACTOR})
+	@IbisDocRef({FILESYSTEMACTOR})
 	@Deprecated
 	public void setBase64(Base64Pipe.Direction base64) {
 		actor.setBase64(base64);
@@ -210,7 +215,7 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 	public void setWildCard(String wildcard) {
 		setWildcard(wildcard);
 	}
-	@IbisDocRef({"10", FILESYSTEMACTOR})
+	@IbisDocRef({FILESYSTEMACTOR})
 	public void setWildcard(String wildcard) {
 		actor.setWildcard(wildcard);
 	}
@@ -220,22 +225,22 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 	public void setExcludeWildCard(String excludeWildcard) {
 		setExcludeWildcard(excludeWildcard);
 	}
-	@IbisDocRef({"11", FILESYSTEMACTOR})
+	@IbisDocRef({FILESYSTEMACTOR})
 	public void setExcludeWildcard(String excludeWildcard) {
 		actor.setExcludeWildcard(excludeWildcard);
 	}
 
-	@IbisDocRef({"12", FILESYSTEMACTOR})
+	@IbisDocRef({FILESYSTEMACTOR})
 	public void setRemoveNonEmptyFolder(boolean removeNonEmptyFolder) {
 		actor.setRemoveNonEmptyFolder(removeNonEmptyFolder);
 	}
 
-	@IbisDocRef({"13", FILESYSTEMACTOR})
+	@IbisDocRef({FILESYSTEMACTOR})
 	public void setWriteLineSeparator(boolean writeLineSeparator) {
 		actor.setWriteLineSeparator(writeLineSeparator);
 	}
 
-	@IbisDocRef({"14", FILESYSTEMACTOR})
+	@IbisDocRef({FILESYSTEMACTOR})
 	public void setCharset(String charset) {
 		actor.setCharset(charset);
 	}

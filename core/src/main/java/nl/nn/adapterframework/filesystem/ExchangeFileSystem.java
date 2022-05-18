@@ -107,7 +107,7 @@ import nl.nn.adapterframework.xml.SaxElementBuilder;
  * </ol>
  *
  *
- * N.B. MS Exchange is susceptible to problems with invalid XML characters, like &amp;#x3;. 
+ * N.B. MS Exchange is susceptible to problems with invalid XML characters, like &amp;#x3;.
  * To work around these problems, a special streaming XMLInputFactory is configured in
  * METAINF/services/javax.xml.stream.XMLInputFactory as nl.nn.adapterframework.xml.StaxParserFactory
  *
@@ -500,7 +500,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		}
 	}
 	@Override
-	public EmailMessage moveFile(EmailMessage f, String destinationFolder, boolean createFolder) throws FileSystemException {
+	public EmailMessage moveFile(EmailMessage f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
 		ExchangeService exchangeService = getConnection();
 		boolean invalidateConnectionOnRelease = false;
 		try {
@@ -515,7 +515,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	}
 
 	@Override
-	public EmailMessage copyFile(EmailMessage f, String destinationFolder, boolean createFolder) throws FileSystemException {
+	public EmailMessage copyFile(EmailMessage f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
 		ExchangeService exchangeService = getConnection();
 		boolean invalidateConnectionOnRelease = false;
 		try {

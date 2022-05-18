@@ -73,7 +73,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * 
+ *
  * @author alisihab
  *
  */
@@ -83,10 +83,10 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 
 	private final String SPNEGO_OID="1.3.6.1.5.5.2";
 	private final String KERBEROS5_OID="1.2.840.113554.1.2.2";
-	
+
 	private String authType = "SPNEGO";
 	private List<String> authTypes = Arrays.asList("NTLM", "SPNEGO");
-	
+
 	private String shareName = null;
 	private String domain = null;
 	private String kdc = null;
@@ -143,7 +143,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 				diskShare.close();
 			}
 			if(session != null) {
-				session.close();		
+				session.close();
 			}
 			if(connection != null) {
 				connection.close();
@@ -176,7 +176,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 				loginParams.put("principal", getUsername());
 				LoginContext lc;
 				try {
-					lc = new LoginContext(getUsername(), null, 
+					lc = new LoginContext(getUsername(), null,
 							new UsernameAndPasswordCallbackHandler(getUsername(), getPassword()),
 							new KerberosLoginConfiguration(loginParams));
 					lc.login();
@@ -221,7 +221,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 		}
 		return null;
 	}
-	
+
 	@Override
 	public String toFile(String filename) throws FileSystemException {
 		return filename;
@@ -249,7 +249,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 		Set<AccessMask> accessMask = new HashSet<AccessMask>(EnumSet.of(AccessMask.FILE_ADD_FILE));
 		Set<SMB2CreateOptions> createOptions = new HashSet<SMB2CreateOptions>(
 				EnumSet.of(SMB2CreateOptions.FILE_NON_DIRECTORY_FILE, SMB2CreateOptions.FILE_WRITE_THROUGH));
-		
+
 		final File file = diskShare.openFile(f, accessMask, null, SMB2ShareAccess.ALL,
 				SMB2CreateDisposition.FILE_OVERWRITE_IF, createOptions);
 		OutputStream out = file.getOutputStream();
@@ -293,7 +293,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 	}
 
 	private class Samba2Message extends Message {
-		
+
 		public Samba2Message(File file, Map<String,Object> context) {
 			super(() -> {
 				InputStream is = file.getInputStream();
@@ -310,12 +310,12 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 					}
 				};
 				return fis;
-				
+
 			}, context, file.getClass());
 		}
 	}
 
-	
+
 	@Override
 	public void deleteFile(String f) throws FileSystemException {
 		diskShare.rm(f);
@@ -330,7 +330,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 	}
 
 	@Override
-	public String moveFile(String f, String destinationFolder, boolean createFolder) throws FileSystemException {
+	public String moveFile(String f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
 		try (File file = getFile(f, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OPEN)) {
 			String destination = toFile(destinationFolder, f);
 			file.rename(destination, false);
@@ -339,7 +339,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 	}
 
 	@Override
-	public String copyFile(String f, String destinationFolder, boolean createFolder) throws FileSystemException {
+	public String copyFile(String f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
 		try (File file = getFile(f, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OPEN)) {
 			String destination = toFile(destinationFolder, f);
 			try (File destinationFile = getFile(f, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OVERWRITE)) {
@@ -362,14 +362,14 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 		}catch(SMBApiException e) {
 			if(NtStatus.valueOf(e.getStatusCode()).equals(NtStatus.STATUS_OBJECT_NAME_NOT_FOUND)) {
 				return false;
-			} 
+			}
 			if(NtStatus.valueOf(e.getStatusCode()).equals(NtStatus.STATUS_DELETE_PENDING)) {
 				return false;
 			}
-			
+
 			throw new FileSystemException(e);
 		}
-		
+
 	}
 	@Override
 	public boolean folderExists(String folder) throws FileSystemException {
@@ -404,7 +404,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 
 		Set<SMB2CreateOptions> createOptions = new HashSet<SMB2CreateOptions>();
 		createOptions.add(SMB2CreateOptions.FILE_WRITE_THROUGH);
-		
+
 		Set<AccessMask> accessMaskSet = new HashSet<AccessMask>();
 		accessMaskSet.add(accessMask);
 		File file;
@@ -419,7 +419,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 
 		Set<AccessMask> accessMaskSet = new HashSet<AccessMask>();
 		accessMaskSet.add(accessMask);
-		
+
 		Directory file;
 		file = diskShare.openDirectory(filename, accessMaskSet, null, shareAccess, createDisposition, null);
 		return file;
@@ -472,7 +472,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 	}
 
 
-	
+
 	public String getShare() {
 		return shareName;
 	}
@@ -521,7 +521,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 	public void setAuthType(String authType) {
 		this.authType = authType;
 	}
-	
+
 	public String getKdc() {
 		return kdc;
 	}
@@ -529,7 +529,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 	public void setKdc(String kdc) {
 		this.kdc = kdc;
 	}
-	
+
 	public String getRealm() {
 		return realm;
 	}
