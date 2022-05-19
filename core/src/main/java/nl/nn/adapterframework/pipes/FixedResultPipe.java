@@ -164,17 +164,12 @@ public class FixedResultPipe extends FixedForwardPipe {
 		}
 
 		if (transformerPool != null) {
-			URL xsltSource = ClassUtils.getResourceURL(this, getStyleSheetName());
-			if (xsltSource!=null) {
-				try{
-					result = transformerPool.transform(Message.asSource(result));
-				} catch (IOException e) {
-					throw new PipeRunException(this,getLogPrefix(session)+"cannot retrieve ["+ getStyleSheetName() + "], resource [" + xsltSource.toString() + "]", e);
-				} catch (SAXException e) {
-					throw new PipeRunException(this,getLogPrefix(session)+"got error converting string [" + result + "] to source", e);
-				} catch (TransformerException e) {
-					throw new PipeRunException(this,getLogPrefix(session)+"got error transforming resource [" + xsltSource.toString() + "] from [" + getStyleSheetName() + "]", e);
-				}
+			try{
+				result = transformerPool.transform(Message.asSource(result));
+			} catch (SAXException e) {
+				throw new PipeRunException(this,getLogPrefix(session)+"got error converting string [" + result + "] to source", e);
+			} catch (IOException | TransformerException e) {
+				throw new PipeRunException(this,getLogPrefix(session)+"got error transforming message [" + result + "] with [" + getStyleSheetName() + "]", e);
 			}
 		}
 		log.debug(getLogPrefix(session)+ " returning fixed result [" + result + "]");
