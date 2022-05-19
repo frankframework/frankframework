@@ -35,17 +35,19 @@ public class SenderThread extends Thread {
 	private PipeLineSession session;
 	private String request;
 	private String response;
+	private String correlationId;
 	private SenderException senderException;
 	private IOException ioException;
 	private TimeoutException timeOutException;
 	private boolean convertExceptionToMessage = false;
 
-	SenderThread(ISender sender, String request, PipeLineSession session, boolean convertExceptionToMessage) {
+	SenderThread(ISender sender, String request, PipeLineSession session, boolean convertExceptionToMessage, String generatedCorrelationId) {
 		name = sender.getName();
 		this.sender = sender;
 		this.request = request;
 		this.session = session;
 		this.convertExceptionToMessage = convertExceptionToMessage;
+		this.correlationId = generatedCorrelationId;
 		log.debug("Creating SenderThread for ISenderWithParameters '" + name + "'");
 		log.debug("Request: " + request);
 	}
@@ -56,7 +58,7 @@ public class SenderThread extends Thread {
 			if (session==null) {
 				session = new PipeLineSession();
 			}
-			session.put(PipeLineSession.businessCorrelationIdKey, TestTool.TESTTOOL_CORRELATIONID);
+			session.put(PipeLineSession.businessCorrelationIdKey, correlationId);
 			response = sender.sendMessage(new Message(request), session).asString();
 		} catch(SenderException e) {
 			if (convertExceptionToMessage) {
