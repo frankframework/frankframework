@@ -293,7 +293,7 @@ public class TestTool {
 				Iterator<File> scenarioFilesIterator = scenarioFiles.iterator();
 				while (scenarioFilesIterator.hasNext()) {
 					// increment suffix for each scenario
-					String generatedCorrelationId = TESTTOOL_CORRELATIONID + "("+ correlationIdSuffixCounter.getAndIncrement() +")";
+					String correlationId = TESTTOOL_CORRELATIONID + "("+ correlationIdSuffixCounter.getAndIncrement() +")";
 					int scenarioPassed = RESULT_ERROR;
 					File scenarioFile = scenarioFilesIterator.next();
 
@@ -318,7 +318,7 @@ public class TestTool {
 						if (steps != null) {
 							synchronized(STEP_SYNCHRONIZER) {
 								debugMessage("Open queues", writers);
-								Map<String, Map<String, Object>> queues = openQueues(scenarioDirectory, steps, properties, ibisContext, appConstants, writers, timeout, generatedCorrelationId);
+								Map<String, Map<String, Object>> queues = openQueues(scenarioDirectory, steps, properties, ibisContext, appConstants, writers, timeout, correlationId);
 								if (queues != null) {
 									debugMessage("Execute steps", writers);
 									boolean allStepsPassed = true;
@@ -335,7 +335,7 @@ public class TestTool {
 										String step = (String)iterator.next();
 										String stepDisplayName = shortName + " - " + step + " - " + properties.get(step);
 										debugMessage("Execute step '" + stepDisplayName + "'", writers);
-										int stepPassed = executeStep(step, properties, stepDisplayName, queues, writers, timeout, generatedCorrelationId);
+										int stepPassed = executeStep(step, properties, stepDisplayName, queues, writers, timeout, correlationId);
 										if (stepPassed==RESULT_OK) {
 											stepPassedMessage("Step '" + stepDisplayName + "' passed", writers);
 										} else if (stepPassed==RESULT_AUTOSAVED) {
@@ -360,7 +360,7 @@ public class TestTool {
 									} catch(InterruptedException e) {
 									}
 									debugMessage("Close queues", writers);
-									boolean remainingMessagesFound = closeQueues(queues, properties, writers, generatedCorrelationId);
+									boolean remainingMessagesFound = closeQueues(queues, properties, writers, correlationId);
 									if (remainingMessagesFound) {
 										stepFailedMessage("Found one or more messages on queues or in database after scenario executed", writers);
 										scenarioPassed = RESULT_ERROR;

@@ -41,13 +41,13 @@ public class SenderThread extends Thread {
 	private TimeoutException timeOutException;
 	private boolean convertExceptionToMessage = false;
 
-	SenderThread(ISender sender, String request, PipeLineSession session, boolean convertExceptionToMessage, String generatedCorrelationId) {
+	SenderThread(ISender sender, String request, PipeLineSession session, boolean convertExceptionToMessage, String correlationId) {
 		name = sender.getName();
 		this.sender = sender;
 		this.request = request;
 		this.session = session;
 		this.convertExceptionToMessage = convertExceptionToMessage;
-		this.correlationId = generatedCorrelationId;
+		this.correlationId = correlationId;
 		log.debug("Creating SenderThread for ISenderWithParameters '" + name + "'");
 		log.debug("Request: " + request);
 	}
