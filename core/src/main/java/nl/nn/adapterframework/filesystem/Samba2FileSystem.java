@@ -164,9 +164,6 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 	private AuthenticationContext authenticate() throws FileSystemException {
 		CredentialFactory credentialFactory = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
 		if (StringUtils.isNotEmpty(credentialFactory.getUsername())) {
-			if(authType == Samba2AuthType.NTLM) {
-				return new AuthenticationContext(getUsername(), password.toCharArray(), getDomain());
-			}
 			switch(authType) {
 				case NTLM:
 					return new AuthenticationContext(getUsername(), password.toCharArray(), getDomain());
