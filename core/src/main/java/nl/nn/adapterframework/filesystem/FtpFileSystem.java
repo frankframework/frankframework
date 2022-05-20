@@ -259,12 +259,12 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 			throw new FileSystemException(e);
 		}
 	}
-	
+
 	@Override
 	public FTPFile copyFile(FTPFile f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		throw new NotImplementedException("CopyFile not implemented for FtpFileSystem");
 	}
-	
+
 	@Override
 	public long getFileSize(FTPFile f) throws FileSystemException {
 		return f.getSize();
@@ -281,7 +281,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 		}
 		return file.getName();
 	}
-	
+
 	@Override
 	public String getParentFolder(FTPFile file) throws FileSystemException {
 		FTPFileRef fileRef = (FTPFileRef) file;
@@ -308,7 +308,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 
 	@Override
 	public Map<String, Object> getAdditionalFileProperties(FTPFile f) {
-		Map<String, Object> attributes = new HashMap<String, Object>();
+		Map<String, Object> attributes = new HashMap<>();
 		attributes.put("user", f.getUser());
 		attributes.put("group", f.getGroup());
 		attributes.put("type", f.getType());
@@ -337,7 +337,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 		private List<FTPFile> files;
 		private int i = 0;
 
-		FTPFilePathIterator(String folder, FTPFile filesArr[]) {
+		FTPFilePathIterator(String folder, FTPFile[] filesArr) {
 			files = new ArrayList<>();
 			for (FTPFile ftpFile : filesArr) {
 				if(ftpFile.isFile()) {
