@@ -83,6 +83,7 @@ import nl.nn.adapterframework.encryption.HasKeystore;
 import nl.nn.adapterframework.encryption.HasTruststore;
 import nl.nn.adapterframework.encryption.KeystoreType;
 import nl.nn.adapterframework.http.authentication.AuthenticationScheme;
+import nl.nn.adapterframework.http.authentication.HttpAuthenticationException;
 import nl.nn.adapterframework.http.authentication.OAuthAccessTokenManager;
 import nl.nn.adapterframework.http.authentication.OAuthAuthenticationScheme;
 import nl.nn.adapterframework.http.authentication.OAuthPreferringAuthenticationStrategy;
@@ -162,7 +163,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * please check password or authAlias configuration of the corresponding certificate. 
  * </p>
  * 
- * @ff.parameters Any parameters present are appended to the request as request-parameters except the headersParams list which are added as http headers
+ * @ff.parameters Any parameters present are appended to the request (when method is <code>GET</code> as request-parameters, when method <code>POST</code> as body part) except the headersParams list, which are added as HTTP headers, and the urlParam header
  * 
  * @author	Niels Meijer
  * @since	7.0
@@ -172,7 +173,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 public abstract class HttpSenderBase extends SenderWithParametersBase implements HasPhysicalDestination, HasKeystore, HasTruststore {
 
 	private final @Getter(onMethod = @__(@Override)) String domain = "Http";
-	
+
 	private @Getter String url;
 	private @Getter String urlParam = "url";
 
@@ -375,7 +376,11 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			httpClientBuilder.setProxy(proxy);
 		}
 
-		setupAuthentication(credentials, pcf, proxy, requestConfigBuilder);
+		try {
+			setupAuthentication(credentials, pcf, proxy, requestConfigBuilder);
+		} catch (HttpAuthenticationException e) {
+			throw new ConfigurationException("exception configuring authentication", e);
+		}
 
 		if (StringUtils.isNotEmpty(getStyleSheetName())) {
 			try {
@@ -464,7 +469,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		}
 	}
 
-	private void setupAuthentication(CredentialFactory user_cf, CredentialFactory proxyCredentials, HttpHost proxy, Builder requestConfigBuilder) {
+	private void setupAuthentication(CredentialFactory user_cf, CredentialFactory proxyCredentials, HttpHost proxy, Builder requestConfigBuilder) throws HttpAuthenticationException {
 		CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
 		if (StringUtils.isNotEmpty(user_cf.getUsername()) || StringUtils.isNotEmpty(getTokenEndpoint())) {
 

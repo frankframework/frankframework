@@ -369,7 +369,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	@Override
 	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
-		Object pipeStatsData = hski.openGroup(data, null, "pipeStats");
+		Object pipeStatsData = hski.openGroup(data, null, "duration");
 		handlePipeStat(getInputValidator(),pipeStatistics,pipeStatsData, hski, true, action);
 		handlePipeStat(getOutputValidator(),pipeStatistics,pipeStatsData, hski, true, action);
 		handlePipeStat(getInputWrapper(),pipeStatistics,pipeStatsData, hski, true, action);
@@ -399,10 +399,10 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			Object waitStatsData = hski.openGroup(data, null, "waitStats");
 			for (IPipe pipe : adapter.getPipeLine().getPipes()) {
 				handlePipeStat(pipe, pipeWaitingStatistics, waitStatsData, hski, false, action);
-				}
+			}
 		}
 		hski.closeGroup(pipeStatsData);
-		Object sizeStatsData = hski.openGroup(data, null,"sizeStats");
+		Object sizeStatsData = hski.openGroup(data, null,"size");
 		hski.handleStatisticsKeeper(sizeStatsData,getRequestSizeStats());
 		for (IPipe pipe : adapter.getPipeLine().getPipes()) {
 			if (pipe instanceof AbstractPipe) {

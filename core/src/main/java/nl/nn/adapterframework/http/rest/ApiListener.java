@@ -52,7 +52,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	private final @Getter(onMethod = @__(@Override)) String domain = "Http";
 	private @Getter String uriPattern;
-	private @Getter boolean updateEtag = true;
+	private @Getter boolean updateEtag = true; //Consider setting this to false
 	private @Getter String operationId;
 
 	private @Getter HttpMethod method = HttpMethod.GET;

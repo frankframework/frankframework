@@ -15,14 +15,6 @@
 		<aspose.version>19.1</aspose.version>
 	</properties>
 
-	<repositories>
-		<repository>
-			<id>AsposeJavaAPI</id>
-			<name>Aspose Java API</name>
-			<url>https://repository.aspose.com/repo/</url>
-		</repository>
-	</repositories>
-
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
@@ -31,6 +23,12 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
+		</dependency>
+		<!-- Explicitly here to enforce this version of databind being used when the aspose dependency is declared before(!) the core dependency -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.13.3</version>
 		</dependency>
 
 		<!-- Tika library -->
@@ -291,4 +289,22 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
+	<profiles>
+		<profile>
+			<id>AsposeRepository</id>
+			<activation>
+				<property>
+					<name>aspose</name>
+				</property>
+			</activation>
+			<repositories>
+				<repository>
+					<id>AsposeJavaAPI</id>
+					<name>Aspose Java API</name>
+					<url>https://repository.aspose.com/repo/</url>
+				</repository>
+			</repositories>
+		</profile>
+	</profiles>
 </project>

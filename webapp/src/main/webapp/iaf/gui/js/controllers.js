@@ -158,9 +158,9 @@ angular.module('iaf.beheerconsole')
 			case "Available":
 				return "fa-server";
 			case "InProcess":
-				return "fa-share";
+				return "fa-gears";
 			case "Done":
-				return "fa-envelope-o";
+				return "fa-sign-in";
 			case "Error":
 				return "fa-times-circle";
 			case "Hold":
@@ -270,9 +270,22 @@ angular.module('iaf.beheerconsole')
 						adapter.status = 'warning';
 					}
 					adapter.hasSender = false;
+					adapter.sendersMessageLogCount=0;
+					adapter.senderTransactionalStorageMessageCount=0;
 					for(x in adapter.pipes) {
-						if(adapter.pipes[x].sender) {
+						let pipe = adapter.pipes[x];
+						if(pipe.sender) {
 							adapter.hasSender = true;
+							if(pipe.hasMessageLog) {
+								let count = parseInt(pipe.messageLogCount);
+								if (!Number.isNaN(count)){
+									if(pipe.isSenderTransactionalStorage) {
+										adapter.senderTransactionalStorageMessageCount += count;
+									} else {
+										adapter.sendersMessageLogCount += count;
+									}
+								}
+							}
 						}
 					}
 /*					//If last message is WARN or ERROR change adapter status to warning.

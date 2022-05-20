@@ -24,6 +24,9 @@
 
 	<bean name="flowDiagramManager" class="nl.nn.adapterframework.util.flow.FlowDiagramManager" autowire="no" scope="singleton" lazy-init="true" />
 
+	<bean name="metricsRegistry" class="nl.nn.adapterframework.metrics.MetricsRegistry" autowire="byName"/>
+	<bean name="configurationMetrics" class="nl.nn.adapterframework.statistics.MetricsInitializer" />
+
 	<!-- Suppress Spring initialisation warnings by providing a dummy class -->
 	<bean id="schedulerHelper" class="nl.nn.adapterframework.testutil.SchedulerHelperMock" lazy-init="true" />
 

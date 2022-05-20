@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2019-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,8 +32,8 @@ public class TransformerFilter extends FullXmlFilter {
 	private TransformerHandler transformerHandler;
 	private @Getter ErrorListener errorListener;
 	private ThreadConnectingFilter threadConnectingFilter;
-	
-	public TransformerFilter(ThreadConnector threadConnector, TransformerHandler transformerHandler, ContentHandler handler) {
+
+	public TransformerFilter(ThreadConnector threadConnector, TransformerHandler transformerHandler, ContentHandler handler, boolean removeNamespacesFromInput) {
 		super();
 		if (threadConnector != null) {
 			handler = threadConnectingFilter = new ThreadConnectingFilter(threadConnector, handler);
@@ -49,7 +49,7 @@ public class TransformerFilter extends FullXmlFilter {
 		ContentHandler inputHandler = transformerHandler;
 		if (threadConnectingFilter != null) {
 			/*
-			 * If XSLT processing is done in another thread than the SAX events are provided, which is the 
+			 * If XSLT processing is done in another thread than the SAX events are provided, which is the
 			 * case if streaming XSLT is used, then exceptions in the processing part do not travel up
 			 * through the transformerHandler automatically.
 			 * Here we set up a ExceptionInsertingFilter and ErrorListener that provide this.
@@ -57,7 +57,7 @@ public class TransformerFilter extends FullXmlFilter {
 			ExceptionInsertingFilter exceptionInsertingFilter = new ExceptionInsertingFilter(inputHandler);
 			inputHandler = exceptionInsertingFilter;
 			transformerHandler.getTransformer().setErrorListener(new ErrorListener() {
-				
+
 				@Override
 				public void error(TransformerException paramTransformerException) throws TransformerException {
 					try {
@@ -68,7 +68,7 @@ public class TransformerFilter extends FullXmlFilter {
 						exceptionInsertingFilter.insertException(new SaxException(e));
 						// this throw is necessary, although it causes log messages like 'Exception in thread "main/Thread-0"'
 						// If absent, Xslt tests fail.
-						throw e; 
+						throw e;
 					}
 				}
 
@@ -82,9 +82,9 @@ public class TransformerFilter extends FullXmlFilter {
 						exceptionInsertingFilter.insertException(new SaxException(e));
 						// this throw is necessary, although it causes log messages like 'Exception in thread "main/Thread-0"'
 						// If absent, Xslt tests fail.
-						throw e; 
+						throw e;
 					}
-					
+
 				}
 
 				@Override
@@ -97,11 +97,14 @@ public class TransformerFilter extends FullXmlFilter {
 						exceptionInsertingFilter.insertException(new SaxException(e));
 						// this throw is necessary, although it causes log messages like 'Exception in thread "main/Thread-0"'
 						// If absent, Xslt tests fail.
-						throw e; 
+						throw e;
 					}
-					
+
 				}
 			});
+		}
+		if (removeNamespacesFromInput) {
+			inputHandler = new NamespaceRemovingFilter(inputHandler);
 		}
 		setContentHandler(inputHandler);
 	}

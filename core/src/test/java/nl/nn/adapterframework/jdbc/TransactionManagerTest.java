@@ -90,4 +90,28 @@ public class TransactionManagerTest extends TransactionManagerTestBase {
 		checkNumberOfLines(1);
 		checkNumberOfLines(1, "select count(*) from "+TEST_TABLE+" where TKEY = 2");
 	}
+
+	@Test
+	public void testRequiresNewAfterSelect() throws Exception {
+
+		// This tests fails for Narayana, if no Modifiers are present for the database driver.
+		// @see NarayanaDataSourceFactory.checkModifiers()
+
+		TransactionDefinition required = getTxDef(TransactionDefinition.PROPAGATION_REQUIRED);
+		TransactionDefinition requiresNew = getTxDef(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+
+		TransactionStatus txStatusOuter = txManager.getTransaction(required);
+		try (Connection txManagedConnection = getConnection()) {
+			JdbcUtil.executeStatement(txManagedConnection, "SELECT TVARCHAR FROM "+TEST_TABLE+" WHERE tkey=1");
+		}
+
+		TransactionStatus txStatusInner = txManager.getTransaction(requiresNew);
+		try (Connection txManagedConnection = getConnection()) {
+			JdbcUtil.executeStatement(txManagedConnection, "INSERT INTO "+TEST_TABLE+" (tkey) VALUES (2)");
+		}
+
+		txManager.commit(txStatusInner);
+		txManager.commit(txStatusOuter);
+	}
+
 }

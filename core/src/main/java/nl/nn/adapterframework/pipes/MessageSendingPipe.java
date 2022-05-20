@@ -145,7 +145,6 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	private @Getter String retryNamespaceDefs;
 	private @Getter int presumedTimeOutInterval=10;
 
-
 	private @Getter boolean streamResultToServlet=false;
 
 	private @Getter String stubFilename;
@@ -156,7 +155,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	private @Getter ICorrelatedPullingListener listener = null;
 	private @Getter ITransactionalStorage messageLog=null;
 
-	private String returnString; // contains contents of stubUrl	
+	private String returnString; // contains contents of stubUrl
 	private TransformerPool auditTrailTp=null;
 	private TransformerPool correlationIDTp=null;
 	private TransformerPool labelTp=null;
@@ -177,12 +176,11 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	private @Getter IValidator outputValidator=null;
 	private @Getter IWrapperPipe inputWrapper=null;
 	private @Getter IWrapperPipe outputWrapper=null;
-	
+
 	private boolean timeoutPending=false;
 
 	private boolean isConfigurationStubbed = ConfigurationUtils.isConfigurationStubbed(getConfigurationClassLoader());
 	private boolean msgLogHumanReadable = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("msg.log.humanReadable", false);
-
 
 	private @Setter PipeProcessor pipeProcessor;
 	private @Setter ListenerProcessor listenerProcessor;
@@ -218,7 +216,6 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			if (getSender() == null) {
 				throw new ConfigurationException("no sender defined ");
 			}
-			
 			// copying of pipe parameters to sender must be done at configure(), not by overriding addParam()
 			// because sender might not have been set when addPipe() is called.
 			if (getParameterList()!=null && getSender() instanceof ISenderWithParameters) {
@@ -227,7 +224,6 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 						((ISenderWithParameters)getSender()).addParameter(p);
 					}
 				}
-				
 			}
 
 			try {
@@ -291,7 +287,9 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		}
 		ITransactionalStorage messageLog = getMessageLog();
 		if (messageLog==null) {
-			if (StringUtils.isEmpty(getStubFilename()) && !getSender().isSynchronous() && getListener()==null && !(getSender() instanceof nl.nn.adapterframework.senders.IbisLocalSender)) { // sender is asynchronous and not a local sender, but has no messageLog
+			if (StringUtils.isEmpty(getStubFilename()) && !getSender().isSynchronous() && getListener()==null 
+					&& !(getSender() instanceof nl.nn.adapterframework.senders.IbisLocalSender)
+					&& !(getSender() instanceof nl.nn.adapterframework.jdbc.MessageStoreSender)) { // sender is asynchronous and not a local sender or messageStoreSender, but has no messageLog
 				boolean suppressIntegrityCheckWarning = ConfigurationWarnings.isSuppressed(SuppressKeys.INTEGRITY_CHECK_SUPPRESS_KEY, getAdapter());
 				if (!suppressIntegrityCheckWarning) {
 					boolean legacyCheckMessageLog = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("messageLog.check", true);
@@ -399,7 +397,6 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		super.setName(name);
 		propagateName();
 	}
-
 
 	@Override
 	public boolean supportsOutputStreamPassThrough() {

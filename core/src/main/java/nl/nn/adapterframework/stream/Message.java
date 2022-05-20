@@ -501,7 +501,7 @@ public class Message implements Serializable {
 			return new DOMSource((Node) request);
 		}
 		log.debug("returning as Source");
-		return (XmlUtils.inputSourceToSAXSource(asInputSource()));
+		return XmlUtils.inputSourceToSAXSource(asInputSource());
 	}
 
 	/**
