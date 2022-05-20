@@ -202,35 +202,6 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 						throw new IllegalArgumentException("No mechanism found");
 					}
 
-					HashMap<String, String> loginParams = new HashMap<>();
-					loginParams.put("principal", getUsername());
-					LoginContext lc;
-					try {
-						lc = new LoginContext(getUsername(), null, 
-								new UsernameAndPasswordCallbackHandler(getUsername(), getPassword()),
-								new KerberosLoginConfiguration(loginParams));
-						lc.login();
-
-						Subject subject = lc.getSubject();
-						KerberosPrincipal krbPrincipal = subject.getPrincipals(KerberosPrincipal.class).iterator().next();
-
-						Oid spnego = new Oid(SPNEGO_OID);
-						Oid kerberos5 = new Oid(KERBEROS5_OID);
-
-						final GSSManager manager = GSSManager.getInstance();
-
-						final GSSName name = manager.createName(krbPrincipal.toString(), GSSName.NT_USER_NAME);
-						Set<Oid> mechs = new HashSet<Oid>(Arrays.asList(manager.getMechsForName(name.getStringNameType())));
-						final Oid mech;
-
-						if (mechs.contains(kerberos5)) {
-							mech = kerberos5;
-						} else if (mechs.contains(spnego)) {
-							mech = spnego;
-						} else {
-							throw new IllegalArgumentException("No mechanism found");
-						}
-
 						GSSCredential creds = Subject.doAs(subject, new PrivilegedExceptionAction<GSSCredential>() {
 							@Override
 							public GSSCredential run() throws GSSException {

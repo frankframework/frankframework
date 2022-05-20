@@ -240,7 +240,7 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 		actor.setCharset(charset);
 	}
 
-	@IbisDocRef({"15", FILESYSTEMACTOR})
+	@IbisDocRef({FILESYSTEMACTOR})
 	public void setDeleteEmptyFolder(boolean deleteEmptyFolder) {
 		actor.setDeleteEmptyFolder(deleteEmptyFolder);
 	}
