@@ -66,7 +66,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 	public void fileSystemPipeUploadActionTestWithString() throws Exception {
 		String filename = "uploadedwithString" + FILE1;
 		String contents = "Some text content to test upload action\n";
-
+		
 		if (_fileExists(filename)) {
 			_deleteFile(null, filename);
 		}
@@ -83,7 +83,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		PipeRunResult prr = fileSystemPipe.doPipe(message, session);
 		String result=prr.getResult().asString();
 		waitForActionToFinish();
-
+		
 		TestAssertions.assertXpathValueEquals(filename, result, "file/@name");
 		String actual = readFile(null, filename);
 		// test
@@ -96,7 +96,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 	public void fileSystemPipeUploadActionTestWithByteArray() throws Exception {
 		String filename = "uploadedwithByteArray" + FILE1;
 		String contents = "Some text content to test upload action\n";
-
+		
 		if (_fileExists(filename)) {
 			_deleteFile(null, filename);
 		}
@@ -127,7 +127,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 	public void fileSystemPipeUploadActionTestWithInputStream() throws Exception {
 		String filename = "uploadedwithInputStream" + FILE1;
 		String contents = "Some text content to test upload action\n";
-
+		
 		if (_fileExists(filename)) {
 			_deleteFile(null, filename);
 		}
@@ -158,7 +158,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 	public void fileSystemPipeUploadActionTestWithOutputStream() throws Exception {
 		String filename = "uploadedwithOutputStream" + FILE1;
 		String contents = "Some text content to test upload action\n";
-
+		
 		if (_fileExists(filename)) {
 			_deleteFile(null, filename);
 		}
@@ -189,37 +189,37 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		waitForActionToFinish();
 		String actualContents = readFile(null, filename);
 		assertEquals(contents,actualContents);
-
+		
 		PipeForward forward = target.getForward();
 		assertNotNull(forward);
 		assertEquals("success", forward.getName());
 	}
-
-
+	
+	
 	@Test
 	public void fileSystemPipeDownloadActionTest() throws Exception {
 		String filename = "sender" + FILE1;
 		String contents = "Tekst om te lezen";
-
+		
 		createFile(null, filename, contents);
 		waitForActionToFinish();
 
 		fileSystemPipe.setAction(FileSystemAction.DOWNLOAD);
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
-
+		
 		Message message= new Message(filename);
 		PipeRunResult prr = fileSystemPipe.doPipe(message, null);
 		String result=prr.getResult().asString();
-
+		
 		// test
 		assertEquals("result should be base64 of file content", contents.trim(), result.trim());
 	}
 
-	public void fileSystemPipeMoveActionTest(String folder1, String folder2, boolean folderExists, boolean setCreateFolderAttribute, boolean mustReturnResult) throws Exception {
+	public void fileSystemPipeMoveActionTest(String folder1, String folder2, boolean folderExists, boolean setCreateFolderAttribute) throws Exception {
 		String filename = "sendermove" + FILE1;
 		String contents = "Tekst om te lezen";
-
+		
 		if (folder1!=null) {
 			_createFolder(folder1);
 		}
@@ -231,45 +231,40 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		waitForActionToFinish();
 
 		fileSystemPipe.setAction(FileSystemAction.MOVE);
-		fileSystemPipe.setDestinationFileMustBeReturned(mustReturnResult);
 		fileSystemPipe.addParameter(new Parameter("destination", folder2));
 		if (setCreateFolderAttribute) {
 			fileSystemPipe.setCreateFolder(true);
 		}
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
-
+		
 		Message message= new Message(filename);
 		PipeRunResult prr = fileSystemPipe.doPipe(message, null);
 		String result=prr.getResult().asString();
-
+		
 		// test
 		// result should be name of the moved file
 		assertNotNull(result);
-
+		
 		// TODO: result should point to new location of file
 		// TODO: contents of result should be contents of original file
-
+		
 		// assertTrue("file should exist in destination folder ["+folder2+"]", _fileExists(folder2, filename)); // does not have to be this way. filename may have changed.
 		assertFalse("file should not exist anymore in original folder ["+folder1+"]", _fileExists(folder1, filename));
 	}
 
 	@Test
 	public void fileSystemPipeMoveActionTestRootToFolder() throws Exception {
-		fileSystemPipeMoveActionTest(null,"folder",true,false, true);
-	}
-	@Test
-	public void fileSystemPipeMoveActionTestRootToFolderNoResult() throws Exception {
-		fileSystemPipeMoveActionTest(null,"folder",true,false, false);
+		fileSystemPipeMoveActionTest(null,"folder",true,false);
 	}
 	@Test
 	public void fileSystemPipeMoveActionTestRootToFolderCreateFolder() throws Exception {
-		fileSystemPipeMoveActionTest(null,"folder",false,true, true);
+		fileSystemPipeMoveActionTest(null,"folder",false,true);
 	}
 	@Test
 	public void fileSystemPipeMoveActionTestRootToFolderFailIfolderDoesNotExist() throws Exception {
 		thrown.expectMessage("unable to process ["+FileSystemAction.MOVE+"] action for File [sendermovefile1.txt]: destination folder [folder] does not exist");
-		fileSystemPipeMoveActionTest(null,"folder",false,false, true);
+		fileSystemPipeMoveActionTest(null,"folder",false,false);
 	}
 //	@Test
 //	public void fileSystemPipeMoveActionTestFolderToRoot() throws Exception {
@@ -283,7 +278,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 	@Test
 	public void fileSystemPipeMkdirActionTest() throws Exception {
 		String folder = "mkdir" + DIR1;
-
+		
 		if (_folderExists(folder)) {
 			_deleteFolder(folder);
 		}
@@ -291,14 +286,14 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		fileSystemPipe.setAction(FileSystemAction.MKDIR);
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
-
+		
 		Message message= new Message(folder);
 		PipeRunResult prr = fileSystemPipe.doPipe(message, null);
 		String result=prr.getResult().asString();
 		waitForActionToFinish();
 
 		// test
-
+		
 		boolean actual = _folderExists(folder);
 		// test
 		assertEquals("result of pipe should be name of created folder",folder,result);
@@ -308,7 +303,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 	@Test
 	public void fileSystemPipeRmdirActionTest() throws Exception {
 		String folder = DIR1;
-
+		
 		if (!_folderExists(DIR1)) {
 			_createFolder(folder);
 		}
@@ -316,7 +311,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		fileSystemPipe.setAction(FileSystemAction.RMDIR);
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
-
+		
 		Message message= new Message(folder);
 		PipeRunResult prr = fileSystemPipe.doPipe(message, null);
 		String result=prr.getResult().asString();
@@ -324,7 +319,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		// test
 		assertEquals("result of pipe should be name of removed folder",folder,result);
 		waitForActionToFinish();
-
+		
 		boolean actual = _fileExists(folder);
 		// test
 		assertFalse("Expected file [" + folder + "] " + "not to be present", actual);
@@ -340,18 +335,18 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		if (!_folderExists(innerFolder)) {
 			_createFolder(innerFolder);
 		}
-
+		
 		for (int i=0; i < 3; i++) {
 			String filename = "file"+i + FILE1;
 			createFile(folder, filename, "is not empty");
 			createFile(innerFolder, filename, "is not empty");
 		}
-
+		
 		fileSystemPipe.setRemoveNonEmptyFolder(true);
 		fileSystemPipe.setAction(FileSystemAction.RMDIR);
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
-
+		
 		Message message= new Message(folder);
 		PipeRunResult prr = fileSystemPipe.doPipe(message, null);
 		String result=prr.getResult().asString();
@@ -359,16 +354,16 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		// test
 		assertEquals("result of pipe should be name of removed folder",folder,result);
 		waitForActionToFinish();
-
+		
 		boolean actual = _fileExists(folder);
 		// test
 		assertFalse("Expected file [" + folder + "] " + "not to be present", actual);
 	}
-
+	
 	@Test
 	public void fileSystemPipeDeleteActionTest() throws Exception {
 		String filename = "tobedeleted" + FILE1;
-
+		
 		if (!_fileExists(filename)) {
 			createFile(null, filename, "is not empty");
 		}
@@ -376,13 +371,13 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		fileSystemPipe.setAction(FileSystemAction.DELETE);
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
-
+		
 		Message message= new Message(filename);
 		PipeRunResult prr = fileSystemPipe.doPipe(message, null);
 		String result=prr.getResult().asString();
 
 		waitForActionToFinish();
-
+		
 		boolean actual = _fileExists(filename);
 		// test
 		assertEquals("result of pipe should be name of deleted file",filename,result);
@@ -393,7 +388,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 	public void fileSystemPipeRenameActionTest() throws Exception {
 		String filename = "toberenamed" + FILE1;
 		String dest = "renamed" + FILE1;
-
+		
 		if (!_fileExists(filename)) {
 			createFile(null, filename, "is not empty");
 		}
@@ -423,15 +418,15 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 
 	public void fileSystemPipeListActionTest(String inputFolder, int numberOfFiles) throws Exception {
 
-
+		
 		for (int i=0; i<numberOfFiles; i++) {
 			String filename = "tobelisted"+i + FILE1;
-
+			
 			if (!_fileExists(filename)) {
 				createFile(inputFolder, filename, "is not empty");
 			}
 		}
-
+		
 		fileSystemPipe.setAction(FileSystemAction.LIST);
 		if (inputFolder!=null) {
 			fileSystemPipe.setInputFolder(inputFolder);
@@ -444,7 +439,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		String result=prr.getResult().asString();
 
 		log.debug(result);
-
+		
 		// TODO test that the fileSystemPipe has returned the an XML with the details of the file
 //		Iterator<F> it = result;
 //		int count = 0;
@@ -452,14 +447,14 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 //			it.next();
 //			count++;
 //		}
-
+		
 		String anchor=" count=\"";
 		int posCount=result.indexOf(anchor);
 		if (posCount<0) {
 			fail("result does not contain anchor ["+anchor+"]");
 		}
 		int posQuote=result.indexOf('"',posCount+anchor.length());
-
+		
 		int resultCount = Integer.valueOf(result.substring(posCount+anchor.length(), posQuote));
 		// test
 		assertEquals("count mismatch",numberOfFiles, resultCount);
@@ -486,7 +481,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		_createFolder("folder");
 		fileSystemPipeListActionTest("folder",2);
 	}
-
+	
 	@Test(expected = PipeStartException.class)
 	public void fileSystemPipeTestForFolderExistenceWithNonExistingFolder() throws Exception {
 		fileSystemPipe.setAction(FileSystemAction.LIST);
@@ -510,17 +505,17 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 	}
-
+	
 	@Test
 	public void fileSystemPipeListActionTestWithInputFolderAsParameter() throws Exception {
 		String filename = FILE1;
 		String filename2 = FILE2;
 		String inputFolder = "directory";
-
+		
 		if (_fileExists(inputFolder, filename)) {
 			_deleteFile(inputFolder, filename);
 		}
-
+		
 		if (_fileExists(inputFolder, filename2)) {
 			_deleteFile(inputFolder, filename2);
 		}
@@ -530,32 +525,32 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		fileSystemPipe.setAction(FileSystemAction.LIST);
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
-
+		
 		OutputStream out = _createFile(inputFolder, filename);
 		out.write("some content".getBytes());
 		out.close();
 		waitForActionToFinish();
 		assertTrue("File ["+filename+"]expected to be present", _fileExists(inputFolder, filename));
-
+		
 		OutputStream out2 = _createFile(inputFolder, filename2);
 		out2.write("some content of second file".getBytes());
 		out2.close();
 		waitForActionToFinish();
 		assertTrue("File ["+filename2+"]expected to be present", _fileExists(inputFolder, filename2));
-
+		
 		Message message= new Message(filename);
 		PipeRunResult prr = fileSystemPipe.doPipe(message, null);
 		String result=prr.getResult().asString();
 		System.err.println(result);
 		waitForActionToFinish();
-
+		
 		String anchor=" count=\"";
 		int posCount=result.indexOf(anchor);
 		if (posCount<0) {
 			fail("result does not contain anchor ["+anchor+"]");
 		}
 		int posQuote=result.indexOf('"',posCount+anchor.length());
-
+		
 		int resultCount = Integer.valueOf(result.substring(posCount+anchor.length(), posQuote));
 		// test
 		assertEquals("count mismatch", 2, resultCount);
