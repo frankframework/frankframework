@@ -185,11 +185,6 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 	}
 
 	@IbisDocRef({FILESYSTEMACTOR})
-	public void setDestinationFileMustBeReturned(boolean destinationFileMustBeReturned) {
-		actor.setDestinationFileMustBeReturned(destinationFileMustBeReturned);
-	}
-
-	@IbisDocRef({FILESYSTEMACTOR})
 	public void setRotateDays(int rotateDays) {
 		actor.setRotateDays(rotateDays);
 	}
@@ -243,5 +238,10 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 	@IbisDocRef({FILESYSTEMACTOR})
 	public void setCharset(String charset) {
 		actor.setCharset(charset);
+	}
+
+	@IbisDocRef({"15", FILESYSTEMACTOR})
+	public void setDeleteEmptyFolder(boolean deleteEmptyFolder) {
+		actor.setDeleteEmptyFolder(deleteEmptyFolder);
 	}
 }

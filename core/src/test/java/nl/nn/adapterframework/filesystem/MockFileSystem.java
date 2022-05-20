@@ -137,11 +137,11 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	@Override
 	public DirectoryStream<M> listFiles(String folderName) throws FileSystemException {
 		checkOpen();
-		MockFolder folder=folderName==null?this:getFolders().get(folderName);
+		MockFolder folder = folderName==null ? this : getFolders().get(folderName);
 		if (folder==null) {
 			throw new FileSystemException("folder ["+folderName+"] is null");
 		}
-		Map<String,MockFile>files = folder.getFiles();
+		Map<String,MockFile> files = folder.getFiles();
 		if (files==null) {
 			throw new FileSystemException("files in folder ["+folderName+"] is null");
 		}
@@ -259,6 +259,11 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	public String getName(M f) {
 //		checkOpenAndExists(f);
 		return f.getName();
+	}
+
+	@Override
+	public String getParentFolder(M f) throws FileSystemException {
+		return f.getOwner().getName();
 	}
 
 	@Override

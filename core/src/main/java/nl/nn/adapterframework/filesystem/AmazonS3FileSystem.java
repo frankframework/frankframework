@@ -163,7 +163,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 			throw new FileSystemException("Cannot process requested action", e);
 		}
 
-		List<S3Object> list = new ArrayList<S3Object>();
+		List<S3Object> list = new ArrayList<>();
 		for (S3ObjectSummary summary : summaries) {
 			S3Object object = new S3Object();
 			ObjectMetadata metadata = new ObjectMetadata();
@@ -325,6 +325,11 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	public String getName(S3Object f) {
 		return f.getKey();
+	}
+
+	@Override
+	public String getParentFolder(S3Object f) throws FileSystemException {
+		return f.getBucketName();
 	}
 
 	@Override

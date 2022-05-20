@@ -127,6 +127,7 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	public boolean isFolder(Path f) {
 		return Files.isDirectory(f);
 	}
+
 	@Override
 	public boolean folderExists(String folder) throws FileSystemException {
 		return isFolder(toFile(folder));
@@ -222,6 +223,11 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 			return f.getFileName().toString();
 		}
 		return null;
+	}
+
+	@Override
+	public String getParentFolder(Path f) throws FileSystemException {
+		return getCanonicalName(f.getParent());
 	}
 
 	@Override

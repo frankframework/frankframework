@@ -171,11 +171,6 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 	}
 
 	@IbisDocRef({FILESYSTEMACTOR})
-	public void setDestinationFileMustBeReturned(boolean destinationFileMustBeReturned) {
-		actor.setDestinationFileMustBeReturned(destinationFileMustBeReturned);
-	}
-
-	@IbisDocRef({FILESYSTEMACTOR})
 	public void setRotateDays(int rotateDays) {
 		actor.setRotateDays(rotateDays);
 	}
@@ -229,5 +224,10 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 	@IbisDocRef({FILESYSTEMACTOR})
 	public void setCharset(String charset) {
 		actor.setCharset(charset);
+	}
+
+	@IbisDocRef({"15", FILESYSTEMACTOR})
+	public void setDeleteEmptyFolder(boolean deleteEmptyFolder) {
+		actor.setDeleteEmptyFolder(deleteEmptyFolder);
 	}
 }
