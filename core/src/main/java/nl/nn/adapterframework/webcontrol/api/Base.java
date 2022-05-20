@@ -38,6 +38,7 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
@@ -58,6 +59,7 @@ public abstract class Base implements ApplicationContextAware {
 	@Context protected ServletConfig servletConfig;
 	@Context protected SecurityContext securityContext;
 	@Context protected HttpServletRequest request;
+	private @Getter ApplicationContext applicationContext;
 
 	private IbisContext ibisContext = null;
 	private JAXRSServiceFactoryBean serviceFactory = null;
@@ -66,7 +68,8 @@ public abstract class Base implements ApplicationContextAware {
 	protected static String HATEOASImplementation = AppConstants.getInstance().getString("ibis-api.hateoasImplementation", "default");
 
 	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+	public final void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.applicationContext = applicationContext;
 		SpringJAXRSServerFactoryBean server = (SpringJAXRSServerFactoryBean) applicationContext.getBean("IAF-API");
 		serviceFactory = server.getServiceFactory();
 	}

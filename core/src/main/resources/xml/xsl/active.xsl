@@ -7,7 +7,7 @@
 		- active attributes
 	-->
 	<xsl:template match="/">
-		<xsl:apply-templates select="*|@*|comment()|processing-instruction()" />
+		<xsl:apply-templates select="*|comment()|processing-instruction()" />
 	</xsl:template>
 	
 	<xsl:template match="*[@active]">

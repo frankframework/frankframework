@@ -15,15 +15,26 @@
 */
 package nl.nn.adapterframework.jta.narayana;
 
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
+
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
+import org.apache.logging.log4j.Logger;
+
+import com.arjuna.ats.internal.jdbc.drivers.modifiers.IsSameRMModifier;
+import com.arjuna.ats.internal.jdbc.drivers.modifiers.ModifierFactory;
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
+import nl.nn.adapterframework.util.LogUtil;
 
 public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
+	protected static Logger log = LogUtil.getLogger(NarayanaDataSourceFactory.class);
+
 	private NarayanaRecoveryManager recoveryManager;
 
 	@Override
@@ -31,9 +42,10 @@ public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
 		if (dataSource instanceof XADataSource) {
 			XAResourceRecoveryHelper recoveryHelper = new DataSourceXAResourceRecoveryHelper((XADataSource) dataSource);
 			this.recoveryManager.registerXAResourceRecoveryHelper(recoveryHelper);
-			return new NarayanaDataSource(dataSource, dataSourceName);
+			DataSource result = new NarayanaDataSource(dataSource, dataSourceName);
+			checkModifiers(result);
+			return result;
 		}
-
 		log.warn("DataSource [{}] is not XA enabled", dataSourceName);
 		return (DataSource) dataSource;
 	}
@@ -41,4 +53,21 @@ public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
 	public void setRecoveryManager(NarayanaRecoveryManager recoveryManager) {
 		this.recoveryManager = recoveryManager;
 	}
+
+	public static void checkModifiers(DataSource dataSource) {
+		try (Connection connection = dataSource.getConnection()) {
+			DatabaseMetaData metadata = connection.getMetaData();
+			String driverName = metadata.getDriverName();
+			int major = metadata.getDriverMajorVersion();
+			int minor = metadata.getDriverMinorVersion();
+
+			if (ModifierFactory.getModifier(driverName, major, minor)==null) {
+				log.info("No Modifier found for driver [{}] version [{}.{}], creating IsSameRM modifier", driverName, major, minor);
+				ModifierFactory.putModifier(driverName, major, minor, IsSameRMModifier.class.getName());
+			}
+		} catch (SQLException e) {
+			log.warn("Could not check for existence of Modifier", e);
+		}
+	}
+
 }
