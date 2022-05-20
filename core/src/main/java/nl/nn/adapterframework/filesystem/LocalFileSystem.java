@@ -127,6 +127,7 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	public boolean isFolder(Path f) {
 		return Files.isDirectory(f);
 	}
+
 	@Override
 	public boolean folderExists(String folder) throws FileSystemException {
 		return isFolder(toFile(folder));
@@ -173,7 +174,7 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 			throw new FileSystemException("Cannot rename file ["+ source.toString() +"] to ["+ destination.toString() +"]", e);
 		}
 	}
-	
+
 	@Override
 	public Path moveFile(Path f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		if(createFolder && !folderExists(destinationFolder)) {
@@ -222,6 +223,11 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 			return f.getFileName().toString();
 		}
 		return null;
+	}
+
+	@Override
+	public String getParentFolder(Path f) throws FileSystemException {
+		return getCanonicalName(f.getParent());
 	}
 
 	@Override

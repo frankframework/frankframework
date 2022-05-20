@@ -281,6 +281,12 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 		}
 		return file.getName();
 	}
+	
+	@Override
+	public String getParentFolder(FTPFile file) throws FileSystemException {
+		FTPFileRef fileRef = (FTPFileRef) file;
+		return fileRef.getFolder();
+	}
 
 	@Override
 	public String getCanonicalName(FTPFile f) {
