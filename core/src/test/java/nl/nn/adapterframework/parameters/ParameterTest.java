@@ -1434,4 +1434,15 @@ public class ParameterTest {
 
 		assertEquals(null, result);
 	}
+	
+	@Test
+	// see https://github.com/ibissource/iaf/issues/3232
+	public void test3232_PotentialProblematicSysId() throws ConfigurationException {
+		Parameter p = new Parameter();
+		p.setName("pid");
+		p.setXpathExpression("'#'"); // when this xpath expression is made part of the sysid, then an Exception occurs: '(TransformerException) Did not find the stylesheet root!'
+		p.setXsltVersion(1);
+		p.configure();
+	}
+
 }
