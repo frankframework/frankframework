@@ -1362,15 +1362,6 @@ public class ParameterTest {
 	}
 
 	@Test
-	public void test3232() throws ConfigurationException {
-		Parameter p = new Parameter();
-		p.setName("pid");
-		p.setXpathExpression("substring-before(substring-after(substring-after(NotifyTransactionREQ/INPUT/SOURCEID, '#'), '#'), '#')");
-		p.setXsltVersion(2);
-		p.configure();
-	}
-
-	@Test
 	// see https://github.com/ibissource/iaf/issues/3232
 	public void test3232_PotentialProblematicSysId() throws ConfigurationException {
 		Parameter p = new Parameter();
