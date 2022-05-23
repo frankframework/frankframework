@@ -65,7 +65,6 @@ public class FixedResultPipe extends FixedForwardPipe {
 	private @Getter String replaceFrom;
 	private @Getter String replaceTo;
 	private @Getter String styleSheetName;
-	private @Getter boolean lookupAtRuntime;
 	private @Getter boolean replaceFixedParams;
 
 	private TransformerPool transformerPool;
@@ -83,7 +82,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 		parameterNamesMustBeUnique = true;
 		super.configure();
 		appConstants = AppConstants.getInstance(getConfigurationClassLoader());
-		if (StringUtils.isNotEmpty(getFilename()) && !isLookupAtRuntime()) {
+		if (StringUtils.isNotEmpty(getFilename())) {
 			URL resource = null;
 			try {
 				resource = ClassUtils.getResourceURL(this, getFilename());
@@ -245,11 +244,6 @@ public class FixedResultPipe extends FixedForwardPipe {
 
 	public void setStyleSheetName (String styleSheetName){
 		this.styleSheetName=styleSheetName;
-	}
-
-	@IbisDoc({"when set <code>true</code>, the lookup of the file will be done at runtime instead of at configuration time", "false"})
-	public void setLookupAtRuntime(boolean b){
-		lookupAtRuntime=b;
 	}
 
 	@IbisDoc({"when set <code>true</code>, any parameter is used for replacements but with <code>name-of-parameter</code> and not <code>${name-of-parameter}</code>", "false"})

@@ -36,7 +36,6 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 	public void testSuccess() throws Exception {
 		Parameter param = setUp("param1");
 		pipe.addParameter(param);
-		pipe.setLookupAtRuntime(true);
 		pipe.setFilename(sourceFolderPath);
 		pipe.setReplaceFrom("param1");
 		pipe.setReplaceTo("kar");
@@ -72,7 +71,6 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 		Parameter param = setUp("param1");
 		pipe.addParameter(param);
 		pipe.setSubstituteVars(true);
-		pipe.setLookupAtRuntime(true);
 		pipe.setStyleSheetName("/Xslt/importNotFound/name.xsl");
 		pipe.setReplaceFrom("param1");
 		pipe.setReplaceTo("kar");
@@ -87,7 +85,6 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 		exception.expect(PipeRunException.class);
 		Parameter param = setUp("param1");
 		pipe.addParameter(param);
-		pipe.setLookupAtRuntime(true);
 		pipe.setStyleSheetName("/Xslt/importNotFound/name2.xsl");
 		pipe.setReplaceFrom("param1");
 		pipe.setReplaceTo("kar");
@@ -118,7 +115,6 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 		Parameter param = ParameterBuilder.create().withName("myprop");
 		param.setDefaultValue("DefaultValue");
 		pipe.addParameter(param);
-		pipe.setLookupAtRuntime(true);
 		pipe.setFilename("/FixedResult/fixedResultPipeInput.txt");
 		pipe.setSubstituteVars(true);
 		pipe.configure();
@@ -153,7 +149,6 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 		Parameter param = ParameterBuilder.create().withName("myprop");
 		param.setDefaultValue("DefaultValue");
 		pipe.addParameter(param);
-		pipe.setLookupAtRuntime(true);
 
 		session.put("filename", "/FixedResult/fixedResultPipeInput.txt");
 
@@ -217,8 +212,6 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 
 	@Test
 	public void testFilenameSessionKeyPointsToNonexistingFile() throws Exception {
-		pipe.setLookupAtRuntime(true);
-
 		session.put("filename", "nofile");
 
 		pipe.setFilenameSessionKey("filename");
