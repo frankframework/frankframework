@@ -24,20 +24,20 @@ import software.amazon.awssdk.services.cloudwatch.CloudWatchAsyncClient;
 public class CloudWatchRegistryConfigurator extends MetricsRegistryConfiguratorBase {
 
 	private final String NAMESPACE_PROPERTY="namespace";
-	
+
 	public CloudWatchRegistryConfigurator() {
 		super("cloudwatch");
 	}
-	
+
 	@Override
 	protected MeterRegistry createRegistry() {
-	
+
 		CloudWatchConfig cloudWatchConfig = new CloudWatchConfig() {
 			@Override
 			public String get(String s) {
 				return getProperty(s);
 			}
-	
+
 			@Override
 			public String namespace() {
 				return getProperty(NAMESPACE_PROPERTY);

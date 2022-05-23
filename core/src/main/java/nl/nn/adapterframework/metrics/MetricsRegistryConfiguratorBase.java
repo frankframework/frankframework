@@ -23,11 +23,11 @@ import nl.nn.adapterframework.util.CredentialFactory;
 public abstract class MetricsRegistryConfiguratorBase {
 
 	public static final String METRICS_EXPORT_PROPERTY_PREFIX="management.metrics.export.";
-	
+
 	private String registryPrefix;
 	private AppConstants appConstants;
 	private CredentialFactory credentialFactory;
-	
+
 	protected MetricsRegistryConfiguratorBase(String registryTypeKey) {
 		registryPrefix = METRICS_EXPORT_PROPERTY_PREFIX + registryTypeKey+".";
 		appConstants = AppConstants.getInstance();
@@ -36,25 +36,25 @@ public abstract class MetricsRegistryConfiguratorBase {
 	protected String getProperty(String key) {
 		return appConstants.get(registryPrefix+key);
 	}
-	
+
 	protected CredentialFactory getCredentialFactory() {
 		return getCredentialFactory("username","password");
 	}
-	
+
 	protected CredentialFactory getCredentialFactory(String usernameKey, String passwordKey) {
 		if (credentialFactory==null) {
 			credentialFactory = new CredentialFactory(getProperty("authAlias"), getProperty(usernameKey), getProperty(passwordKey));
 		}
 		return credentialFactory;
 	}
-	
+
 
 	public void registerAt(CompositeMeterRegistry compositeRegistry) {
 		if ("true".equals(getProperty("enabled"))) {
 			compositeRegistry.add(createRegistry());
 		}
 	}
-	
+
 	protected abstract MeterRegistry createRegistry();
 
 }

@@ -50,7 +50,7 @@ public class MetricsRegistry {
 	public MetricsRegistry() {
 		CompositeMeterRegistry compositeRegistry = new CompositeMeterRegistry();
 		compositeRegistry.add(new PrometheusMeterRegistry(PrometheusConfig.DEFAULT));
-		
+
 		new StatsDRegistryConfigurator().registerAt(compositeRegistry);
 		new CloudWatchRegistryConfigurator().registerAt(compositeRegistry);
 		new KairosDbRegistryConfigurator().registerAt(compositeRegistry);

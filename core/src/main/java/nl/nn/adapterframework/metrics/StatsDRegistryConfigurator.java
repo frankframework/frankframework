@@ -25,20 +25,20 @@ import nl.nn.adapterframework.util.EnumUtils;
 public class StatsDRegistryConfigurator extends MetricsRegistryConfiguratorBase {
 
 	private final String FLAVOR_PROPERTY="flavor";
-	
+
 	public StatsDRegistryConfigurator() {
 		super("statsd");
 	}
-	
+
 	@Override
 	protected MeterRegistry createRegistry() {
-	
+
 		StatsdConfig config = new StatsdConfig() {
 			@Override
 			public String get(String s) {
 				return getProperty(s);
 			}
-	
+
 			@Override
 			public StatsdFlavor flavor() {
 				return EnumUtils.parse(StatsdFlavor.class, getProperty(FLAVOR_PROPERTY));
