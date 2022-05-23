@@ -503,9 +503,10 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			deleteEmptyFolder(folder);
 			return dirXml.toXML();
 		}
-		F srcFile=getFile(input, pvl);
-		F destFile=action.execute(srcFile);
-		return destFile!=null ? fileSystem.getName(destFile) : null;
+		F file=getFile(input, pvl);
+		F resultFile = action.execute(file);
+		deleteEmptyFolder(file);
+		return resultFile!=null ? fileSystem.getName(resultFile) : null;
 	}
 
 	private String arrangeFolder(String determinedFolderName) throws FileSystemException {

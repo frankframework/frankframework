@@ -245,7 +245,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		fileDuplicate.setLastModified(f.getLastModified());
 		destFolder.getFiles().put(fileDuplicate.getName(), fileDuplicate);
 		fileDuplicate.setOwner(destFolder);
-		return resultantMustBeReturned ? fileDuplicate : null;
+		return fileDuplicate;
 	}
 
 	@Override
