@@ -13,7 +13,7 @@ import nl.nn.adapterframework.ftp.FTPFileRef;
  * @author alisihab
  *
  */
-public class FtpFileSystemTest extends FileSystemTest<FTPFile, FtpFileSystem> {
+public class FtpFileSystemTest extends FileSystemTest<FTPFileRef, FtpFileSystem> {
 
 	private String username = "wearefrank";
 	private String password = "pass_123";
