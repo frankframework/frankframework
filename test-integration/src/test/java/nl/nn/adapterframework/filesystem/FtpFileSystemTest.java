@@ -2,7 +2,6 @@ package nl.nn.adapterframework.filesystem;
 
 import static org.junit.Assert.assertEquals;
 
-import org.apache.commons.net.ftp.FTPFile;
 import org.junit.Ignore;
 import org.junit.Test;
 
