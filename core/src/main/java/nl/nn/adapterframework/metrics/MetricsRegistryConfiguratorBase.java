@@ -15,9 +15,8 @@
 */
 package nl.nn.adapterframework.metrics;
 
-import java.util.Optional;
-
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CredentialFactory;
 
@@ -50,11 +49,10 @@ public abstract class MetricsRegistryConfiguratorBase {
 	}
 	
 
-	public Optional<MeterRegistry> getRegistry() {
+	public void registerAt(CompositeMeterRegistry compositeRegistry) {
 		if ("true".equals(getProperty("enabled"))) {
-			return Optional.of(createRegistry());
+			compositeRegistry.add(createRegistry());
 		}
-		return Optional.of(null);
 	}
 	
 	protected abstract MeterRegistry createRegistry();
