@@ -294,7 +294,7 @@ public class TransformerPool {
 		if (log.isDebugEnabled()) log.debug("xpath ["+xPathExpression+"] resulted in xslt ["+xslt+"]");
 
 		try {
-			return new TransformerPool(xslt, "XPath "+xPathExpression, xsltVersion);
+			return new TransformerPool(xslt, null, xsltVersion);
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException("Cannot create TransformerPool for XPath expression ["+xPathExpression+"]", e);
 		}
