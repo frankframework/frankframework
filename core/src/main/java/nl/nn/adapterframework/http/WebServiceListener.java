@@ -27,7 +27,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.Bus;
 import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.cxf.jaxws.EndpointImpl;
-import org.springframework.context.ApplicationContextAware;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -41,6 +40,7 @@ import nl.nn.adapterframework.http.cxf.MessageProvider;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -56,12 +56,13 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @author Jaco de Groot
  * @author Niels Meijer
  */
-public class WebServiceListener extends PushingListenerAdapter implements HasPhysicalDestination, HasSpecialDefaultValues, ApplicationContextAware {
+public class WebServiceListener extends PushingListenerAdapter implements HasPhysicalDestination, HasSpecialDefaultValues {
 
 	private final @Getter(onMethod = @__(@Override)) String domain = "Http";
 	private @Getter boolean soap = true;
 	private @Getter String serviceNamespaceURI;
 	private SoapWrapper soapWrapper = null;
+	private String servletUrlMapping = AppConstants.getInstance().getString("servlet.SoapProviderServlet.urlMapping", "services");
 
 	/* CXF Implementation */
 	private @Getter String address;
@@ -208,7 +209,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	@Override
 	public String getPhysicalDestinationName() {
 		if(StringUtils.isNotEmpty(getAddress())) {
-			return "address ["+getAddress()+"]";
+			return "address [/"+servletUrlMapping+"/"+getAddress()+"]";
 		}
 		else if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
 			return "serviceNamespaceURI ["+getServiceNamespaceURI()+"]";
