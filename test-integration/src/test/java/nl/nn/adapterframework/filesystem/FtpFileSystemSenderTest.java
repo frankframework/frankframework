@@ -2,6 +2,7 @@ package nl.nn.adapterframework.filesystem;
 
 import org.apache.commons.net.ftp.FTPFile;
 
+import nl.nn.adapterframework.ftp.FTPFileRef;
 import nl.nn.adapterframework.senders.FtpFileSystemSender;
 
 /**
@@ -9,7 +10,7 @@ import nl.nn.adapterframework.senders.FtpFileSystemSender;
  * @author alisihab
  *
  */
-public class FtpFileSystemSenderTest extends FileSystemSenderTest<FtpFileSystemSender, FTPFile, FtpFileSystem> {
+public class FtpFileSystemSenderTest extends FileSystemSenderTest<FtpFileSystemSender, FTPFileRef, FtpFileSystem> {
 
 	private String username = "wearefrank";
 	private String password = "pass_123";

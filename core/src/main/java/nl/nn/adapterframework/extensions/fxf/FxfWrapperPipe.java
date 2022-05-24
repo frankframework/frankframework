@@ -32,6 +32,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -85,7 +86,10 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 		if (getDirection()==Direction.WRAP) {
 			ParameterList parameterList = getParameterList();
 			if (parameterList.findParameter(DESTINATION) == null) {
-				parameterList.add(new Parameter(DESTINATION, DESTINATION_PREFIX+"."+retrieveStartTransferVersion()+"."+DESTINATION_SUFFIX));
+				Parameter p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+				p.setName(DESTINATION);
+				p.setValue(DESTINATION_PREFIX+"."+retrieveStartTransferVersion()+"."+DESTINATION_SUFFIX);
+				parameterList.add(p);
 			}
 		}
 		super.configure();

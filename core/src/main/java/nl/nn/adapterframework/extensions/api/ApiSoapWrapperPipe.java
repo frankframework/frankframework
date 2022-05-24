@@ -22,6 +22,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.soap.SoapWrapperPipe;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * Extension to SoapWrapperPipe for API Management.
@@ -77,7 +78,7 @@ public class ApiSoapWrapperPipe extends SoapWrapperPipe {
 		ParameterList parameterList = getParameterList();
 		Parameter p;
 		if (parameterList.findParameter(CONVERSATIONID) == null) {
-			p = new Parameter();
+			p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 			p.setName(CONVERSATIONID);
 			p.setSessionKey(getSoapHeaderSessionKey());
 			p.setXpathExpression("MessageHeader/HeaderFields/ConversationId");
@@ -88,14 +89,16 @@ public class ApiSoapWrapperPipe extends SoapWrapperPipe {
 			addParameter(p);
 		}
 		if (parameterList.findParameter(FROM_IN) == null) {
-			p = new Parameter();
+			p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 			p.setName(FROM_IN);
 			p.setSessionKey(getSoapHeaderSessionKey());
 			p.setXpathExpression("MessageHeader/From");
 			addParameter(p);
 		}
-
-		addParameter(new Parameter(FROM_OUT, AppConstants.getInstance().getProperty("instance.name", "")));
+		p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+		p.setName(FROM_OUT);
+		p.setValue(AppConstants.getInstance().getProperty("instance.name", ""));
+		addParameter(p);
 
 	}
 }
