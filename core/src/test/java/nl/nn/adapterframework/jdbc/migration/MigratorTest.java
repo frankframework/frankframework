@@ -126,6 +126,7 @@ public class MigratorTest extends TransactionManagerTestBase {
 			fail("no match found");
 			return null;
 		}
+		sqlScript = sqlScript.replaceAll("\\'[4-9]\\.\\d+\\.\\d{1,3}\\'", "'VERSION'"); //Replace the Liquibase Version
 
 		return sqlScript.replaceAll("(LOCKEDBY = ')(.*)(WHERE)", "LOCKEDBY = 'IGNORE', LOCKGRANTED = 'IGNORE' WHERE");
 	}
