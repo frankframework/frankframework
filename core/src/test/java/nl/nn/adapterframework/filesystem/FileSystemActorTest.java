@@ -1288,7 +1288,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		
 		// test
 		// result should be name of the moved file
-		assertNotNull(result);
+		// assertNotNull(result); from 7.8, result is allowed to be null
 		
 		// TODO: result should point to new location of file
 		// TODO: contents of result should be contents of original file

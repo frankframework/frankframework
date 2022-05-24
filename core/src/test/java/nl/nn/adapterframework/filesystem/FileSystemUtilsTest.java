@@ -24,13 +24,13 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		fileSystem.configure();
 		fileSystem.open();
 	}
-	
+
 	public void testRolloverByNumber(String folder) throws Exception {
 		String filename = "backupTest" + FILE1;
 		String contents = "text content:";
 		int numOfBackups=3;
 		int numOfFilesPresentAtStart=5;
-		
+
 		if (folder!=null && !_folderExists(folder)) {
 			_createFolder(folder);
 		}
@@ -43,15 +43,15 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 			createFile(folder, filename+"."+i,contents+i);
 		}
 		createFile(folder, filename,contents+"0");
-		
+
 		assertFileExistsWithContents(folder, filename, contents.trim()+"0");
 		assertFileExistsWithContents(folder, filename+"."+numOfFilesPresentAtStart, contents.trim()+(numOfFilesPresentAtStart));
-		
+
 		F file = fileSystem.toFile(folder, filename);
 
 		// execute rollover
 		FileSystemUtils.rolloverByNumber(fileSystem, file, numOfBackups);
-		
+
 		// assert that the file has been backed up, and backups have been rotated
 		assertFileDoesNotExist(folder, filename);
 		for (int i=1;i<=numOfBackups;i++) {
@@ -69,7 +69,7 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 	public void testRolloverByNumberInFolder() throws Exception {
 		testRolloverByNumber("folder");
 	}
-	
+
 	public void testRolloverBySize(String folder) throws Exception {
 		String filename = "rolloverBySize" + FILE1;
 		String contents = "-abcd-";
@@ -87,15 +87,15 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 			createFile(folder, filename+"."+i,contents+i);
 		}
 		createFile(folder, filename,contents+"0");
-		
+
 		// test for rollover for the small file, it should do nothing now
 		FileSystemUtils.rolloverBySize(fileSystem, fileSystem.toFile(folder, filename), rotateSize, numOfBackups);
 
 		// assert that nothing has changed yet, because the file is smaller than the rotate size.
 		assertFileExistsWithContents(folder, filename, contents.trim()+"0");
 		assertFileExistsWithContents(folder, filename+"."+numOfFilesPresentAtStart, contents.trim()+(numOfFilesPresentAtStart));
-		
-		
+
+
 		// create a bigger file
 		_deleteFile(folder, filename);
 		createFile(folder, filename,contents+contents+"0");
@@ -106,7 +106,7 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 
 		// test rollover for bigger file
 		FileSystemUtils.rolloverBySize(fileSystem, fileSystem.toFile(folder, filename), rotateSize, numOfBackups);
-		
+
 		// assert that the file has been backed up, and backups have been rotated
 		assertFileDoesNotExist(folder, filename);
 		assertFileExistsWithContents(folder, filename+".1", contents+contents+"0");
@@ -121,13 +121,13 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 	public void testRolloverBySizeInRoot() throws Exception {
 		testRolloverBySize(null);
 	}
-	
+
 	@Test
 	public void testRolloverBySizeInFolder() throws Exception {
 		testRolloverBySize("folder");
 	}
-	
-	
+
+
 	@Test
 	public void testMoveWithBackup() throws Exception {
 		String filename = "backupTest" + FILE1;
@@ -153,15 +153,15 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		}
 		createFile(dstFolder, filename,contents+"0");
 		createFile(srcFolder, filename,contents+"new");
-		
+
 		F file = fileSystem.toFile(srcFolder, filename);
-		
+
 		assertFileExistsWithContents(dstFolder, filename, contents.trim()+"0");
 		assertFileExistsWithContents(dstFolder, filename+"."+numOfFilesPresentAtStart, contents.trim()+(numOfFilesPresentAtStart));
-		
+
 		// execute move
-		FileSystemUtils.moveFile(fileSystem, file, dstFolder, false, numOfBackups, false);
-		
+		FileSystemUtils.moveFile(fileSystem, file, dstFolder, false, numOfBackups, false, false);
+
 		// assert that the file has been backed up, and backups have been rotated
 		assertFileDoesNotExist(srcFolder, filename);
 		assertFileExistsWithContents(dstFolder, filename, contents.trim()+"new");
@@ -197,15 +197,15 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		}
 		createFile(dstFolder, filename,contents+"0");
 		createFile(srcFolder, filename,contents+"new");
-		
+
 		F file = fileSystem.toFile(srcFolder, filename);
-		
+
 		assertFileExistsWithContents(dstFolder, filename, contents.trim()+"0");
 		assertFileExistsWithContents(dstFolder, filename+"."+numOfFilesPresentAtStart, contents.trim()+(numOfFilesPresentAtStart));
-		
+
 		// execute move
-		FileSystemUtils.copyFile(fileSystem, file, dstFolder, false, numOfBackups, false);
-		
+		FileSystemUtils.copyFile(fileSystem, file, dstFolder, false, numOfBackups, false, false);
+
 		// assert that the file has been backed up, and backups have been rotated
 		assertFileExistsWithContents(srcFolder, filename, contents.trim()+"new");
 		assertFileExistsWithContents(dstFolder, filename, contents.trim()+"new");
@@ -240,15 +240,15 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		}
 		createFile(dstFolder, filename,contents+"0");
 		createFile(srcFolder, filename,contents+"new");
-		
+
 		F file = fileSystem.toFile(srcFolder, filename);
-		
+
 		assertFileExistsWithContents(dstFolder, filename, contents.trim()+"0");
 		assertFileExistsWithContents(dstFolder, filename+"."+numOfFilesPresentAtStart, contents.trim()+(numOfFilesPresentAtStart));
-		
+
 		// execute move
-		FileSystemUtils.moveFile(fileSystem, file, dstFolder, true, numOfBackups, false);
-		
+		FileSystemUtils.moveFile(fileSystem, file, dstFolder, true, numOfBackups, false, false);
+
 		// assert that the file has been overwritten, and no backups have been rotated
 		assertFileDoesNotExist(srcFolder, filename);
 		assertFileExistsWithContents(dstFolder, filename, contents.trim()+"new");
@@ -274,11 +274,11 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 					public Iterator iterator() {
 						return null;
 					}
-					
+
 				};
 			}
 		};
-		
+
 		Stream<?> stream = FileSystemUtils.getFilteredStream(fs, null, null, null);
 		assertTrue(stream==null || stream.count()==0);
 	}

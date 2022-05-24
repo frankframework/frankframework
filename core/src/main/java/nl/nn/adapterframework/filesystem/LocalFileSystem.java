@@ -40,7 +40,7 @@ import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * {@link IWritableFileSystem FileSystem} representation of the local filesystem.
- *  
+ *
  * @author Gerrit van Brakel
  *
  */
@@ -176,7 +176,7 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	}
 
 	@Override
-	public Path moveFile(Path f, String destinationFolder, boolean createFolder) throws FileSystemException {
+	public Path moveFile(Path f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
 		if(createFolder && !folderExists(destinationFolder)) {
 			try {
 				Files.createDirectories(toFile(destinationFolder));
@@ -191,7 +191,7 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 		}
 	}
 	@Override
-	public Path copyFile(Path f, String destinationFolder, boolean createFolder) throws FileSystemException {
+	public Path copyFile(Path f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
 		if(createFolder && !folderExists(destinationFolder)) {
 			try {
 				Files.createDirectories(toFile(destinationFolder));

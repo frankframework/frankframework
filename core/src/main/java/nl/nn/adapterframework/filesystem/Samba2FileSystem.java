@@ -73,7 +73,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 
 /**
- * 
+ *
  * @author alisihab
  *
  */
@@ -324,7 +324,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 	}
 
 	@Override
-	public String moveFile(String f, String destinationFolder, boolean createFolder) throws FileSystemException {
+	public String moveFile(String f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
 		try (File file = getFile(f, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OPEN)) {
 			String destination = toFile(destinationFolder, f);
 			file.rename(destination, false);
@@ -333,7 +333,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 	}
 
 	@Override
-	public String copyFile(String f, String destinationFolder, boolean createFolder) throws FileSystemException {
+	public String copyFile(String f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
 		try (File file = getFile(f, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OPEN)) {
 			String destination = toFile(destinationFolder, f);
 			try (File destinationFile = getFile(f, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OVERWRITE)) {
