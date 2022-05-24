@@ -21,6 +21,7 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * ESB (Enterprise Service Bus) extension of JmsSender.
@@ -55,7 +56,7 @@ public class EsbJmsSender extends JmsSender {
 			}
 		}
 		if (StringUtils.isEmpty(getSoapAction()) && (paramList==null || paramList.findParameter("SoapAction")==null)) {
-			Parameter p = new Parameter();
+			Parameter p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 			p.setName("SoapAction");
 			p.setStyleSheetName("/xml/xsl/esb/soapAction.xsl");
 			//p.setXslt2(true);

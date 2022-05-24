@@ -493,7 +493,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public void deleteFile(EmailMessage f) throws FileSystemException {
-		 try {
+		try {
 			f.delete(DeleteMode.MoveToDeletedItems);
 		} catch (Exception e) {
 			throw new FileSystemException("Could not delete",e);
