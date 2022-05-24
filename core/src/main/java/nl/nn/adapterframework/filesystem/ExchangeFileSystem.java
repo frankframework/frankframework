@@ -493,7 +493,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public void deleteFile(EmailMessage f) throws FileSystemException {
-		 try {
+		try {
 			f.delete(DeleteMode.MoveToDeletedItems);
 		} catch (Exception e) {
 			throw new FileSystemException("Could not delete",e);
@@ -548,6 +548,22 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			throw new RuntimeException("Could not determine Name",e);
 		}
 	}
+	@Override
+	public String getParentFolder(EmailMessage f) throws FileSystemException {
+		ExchangeService exchangeService = getConnection();
+		boolean invalidateConnectionOnRelease = false;
+		try {
+			FolderId folderId = f.getParentFolderId();
+			Folder folder = Folder.bind(exchangeService, folderId);
+			return folder.getDisplayName();
+		} catch(Exception e) {
+			invalidateConnectionOnRelease = true;
+			throw new FileSystemException(e);
+		} finally {
+			releaseConnection(exchangeService, invalidateConnectionOnRelease);
+		}
+	}
+
 	@Override
 	public String getCanonicalName(EmailMessage f) throws FileSystemException {
 		try {
