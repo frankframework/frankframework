@@ -38,7 +38,6 @@ import javax.security.auth.kerberos.KerberosPrincipal;
 import javax.security.auth.login.LoginContext;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
 import org.ietf.jgss.GSSManager;
@@ -68,10 +67,10 @@ import com.hierynomus.smbj.share.File;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * 
@@ -79,15 +78,14 @@ import nl.nn.adapterframework.util.LogUtil;
  *
  */
 public class Samba2FileSystem extends FileSystemBase<String> implements IWritableFileSystem<String> {
+	private final @Getter(onMethod = @__(@Override)) String domain = "SMB";
 
-	protected Logger log = LogUtil.getLogger(this);
-
-	private static final String SPNEGO_OID="1.3.6.1.5.5.2";
-	private static final String KERBEROS5_OID="1.2.840.113554.1.2.2";
+	private static final String SPNEGO_OID = "1.3.6.1.5.5.2";
+	private static final String KERBEROS5_OID = "1.2.840.113554.1.2.2";
 
 	private @Getter Samba2AuthType authType = Samba2AuthType.SPNEGO;
 	private @Getter String share = null;
-	private @Getter String domain = null;
+	private @Getter String authenticationDomain = null;
 	private @Getter String kdc = null;
 	private @Getter String realm = null;
 	private @Getter String username = null;
@@ -118,13 +116,13 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 		try {
 			AuthenticationContext auth = authenticate();
 			client = new SMBClient();
-			connection = client.connect(domain);
+			connection = client.connect(authenticationDomain); //TODO: can this be null!?
 			if(connection.isConnected()) {
 				log.debug("successfully created connection to ["+connection.getRemoteHostname()+"]");
 			}
 			session = connection.authenticate(auth);
 			if(session == null) {
-				throw new FileSystemException("Cannot create session for user ["+username+"] on domain ["+domain+"]");
+				throw new FileSystemException("Cannot create session for user ["+username+"] on domain ["+authenticationDomain+"]");
 			}
 			diskShare = (DiskShare) session.connectShare(getShare());
 			if(diskShare == null) {
@@ -166,7 +164,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 		if (StringUtils.isNotEmpty(credentialFactory.getUsername())) {
 			switch(authType) {
 				case NTLM:
-					return new AuthenticationContext(getUsername(), password.toCharArray(), getDomain());
+					return new AuthenticationContext(getUsername(), password.toCharArray(), getAuthenticationDomain());
 				case SPNEGO:
 					if(!StringUtils.isEmpty(getKdc()) && !StringUtils.isEmpty(getRealm())) {
 						System.setProperty("java.security.krb5.kdc", getKdc());
@@ -177,7 +175,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 					loginParams.put("principal", getUsername());
 					LoginContext lc;
 					try {
-						lc = new LoginContext(getUsername(), null, 
+						lc = new LoginContext(getUsername(), null,
 								new UsernameAndPasswordCallbackHandler(getUsername(), getPassword()),
 								new KerberosLoginConfiguration(loginParams));
 						lc.login();
@@ -191,7 +189,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 						final GSSManager manager = GSSManager.getInstance();
 
 						final GSSName name = manager.createName(krbPrincipal.toString(), GSSName.NT_USER_NAME);
-						Set<Oid> mechs = new HashSet<Oid>(Arrays.asList(manager.getMechsForName(name.getStringNameType())));
+						Set<Oid> mechs = new HashSet<>(Arrays.asList(manager.getMechsForName(name.getStringNameType())));
 						final Oid mech;
 
 						if (mechs.contains(kerberos5)) {
@@ -209,8 +207,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 							}
 						});
 
-						GSSAuthenticationContext auth = new GSSAuthenticationContext(krbPrincipal.getName(), krbPrincipal.getRealm(), subject, creds);
-						return auth;
+						return new GSSAuthenticationContext(krbPrincipal.getName(), krbPrincipal.getRealm(), subject, creds);
 					} catch (Exception e) {
 						if(e.getMessage().contains("Cannot locate default realm")) {
 							throw new FileSystemException("Please fill the kdc and realm field or provide krb5.conf file including realm",e);
@@ -247,7 +244,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 		Set<AccessMask> accessMask = new HashSet<>(EnumSet.of(AccessMask.FILE_ADD_FILE));
 		Set<SMB2CreateOptions> createOptions = new HashSet<>(
 				EnumSet.of(SMB2CreateOptions.FILE_NON_DIRECTORY_FILE, SMB2CreateOptions.FILE_WRITE_THROUGH));
-		
+
 		final File file = diskShare.openFile(f, accessMask, null, SMB2ShareAccess.ALL,
 				SMB2CreateDisposition.FILE_OVERWRITE_IF, createOptions);
 		OutputStream out = file.getOutputStream();
@@ -291,7 +288,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 	}
 
 	private class Samba2Message extends Message {
-		
+
 		public Samba2Message(File file, Map<String,Object> context) {
 			super(() -> {
 				InputStream is = file.getInputStream();
@@ -308,7 +305,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 					}
 				};
 				return fis;
-				
+
 			}, context, file.getClass());
 		}
 	}
@@ -359,14 +356,12 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 		}catch(SMBApiException e) {
 			if(NtStatus.valueOf(e.getStatusCode()).equals(NtStatus.STATUS_OBJECT_NAME_NOT_FOUND)) {
 				return false;
-			} 
+			}
 			if(NtStatus.valueOf(e.getStatusCode()).equals(NtStatus.STATUS_DELETE_PENDING)) {
 				return false;
 			}
-			
 			throw new FileSystemException(e);
 		}
-		
 	}
 
 	@Override
@@ -380,7 +375,6 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 			throw new FileSystemException("Create directory for [" + folder + "] has failed. Directory already exists.");
 		}
 		diskShare.mkdir(folder);
-		
 	}
 
 	@Override
@@ -391,9 +385,8 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 		try {
 			diskShare.rmdir(folder, removeNonEmptyFolder);
 		} catch(SMBApiException e) {
-			new FileSystemException("Remove directory for [" + folder + "] has failed.", e);
+			throw new FileSystemException("Remove directory for [" + folder + "] has failed.", e);
 		}
-		
 	}
 
 	private File getFile(String filename, AccessMask accessMask, SMB2CreateDisposition createDisposition) {
@@ -461,20 +454,17 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 	public Date getModificationTime(String f) throws FileSystemException {
 		if (isFolder(f)) {
 			try (Directory dir = getFolder(f, AccessMask.FILE_READ_ATTRIBUTES, SMB2CreateDisposition.FILE_OPEN)) {
-				Date date = dir.getFileInformation().getBasicInformation().getLastWriteTime().toDate();
-				return date;
+				return dir.getFileInformation().getBasicInformation().getLastWriteTime().toDate();
 			}
 		}
 		try (File file = getFile(f, AccessMask.FILE_READ_ATTRIBUTES, SMB2CreateDisposition.FILE_OPEN)) {
-			Date date = file.getFileInformation().getBasicInformation().getLastWriteTime().toDate();
-			return date;
+			return file.getFileInformation().getBasicInformation().getLastWriteTime().toDate();
 		}
-		
 	}
 
 	@Override
 	public String getPhysicalDestinationName() {
-		return "domain ["+getDomain()+"] share ["+getShare()+"]";
+		return "domain ["+getAuthenticationDomain()+"] share ["+getShare()+"]";
 	}
 
 	@IbisDoc({ "1", "the destination, aka smb://xxx/yyy share", "" })
@@ -498,8 +488,13 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 	}
 
 	@IbisDoc({ "5", "domain, in case the user account is bound to a domain", "" })
+	public void setAuthenticationDomain(String domain) {
+		this.authenticationDomain = domain;
+	}
+	@Deprecated
+	@ConfigurationWarning("Please use attribute authenticationDomain instead")
 	public void setDomain(String domain) {
-		this.domain = domain;
+		setAuthenticationDomain(domain);
 	}
 
 	@IbisDoc({ "6", "Type of the authentication either 'NTLM' or 'SPNEGO' ", "SPNEGO" })

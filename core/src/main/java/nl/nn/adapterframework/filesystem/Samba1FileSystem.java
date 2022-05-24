@@ -23,7 +23,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 
 import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbException;
@@ -33,10 +32,10 @@ import jcifs.smb.SmbFileInputStream;
 import jcifs.smb.SmbFileOutputStream;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * 
@@ -44,14 +43,13 @@ import nl.nn.adapterframework.util.LogUtil;
  *
  */
 public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritableFileSystem<SmbFile> {
-
-	protected Logger log = LogUtil.getLogger(this);
+	private final @Getter(onMethod = @__(@Override)) String domain = "SMB";
 
 	private @Getter String share = null;
 	private @Getter String username = null;
 	private @Getter String password = null;
 	private @Getter String authAlias = null;
-	private @Getter String domain = null;
+	private @Getter String authenticationDomain = null;
 	private @Getter boolean isForce;
 	private @Getter boolean listHiddenFiles = false;
 
@@ -69,7 +67,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 		//NOTE: When using NtmlPasswordAuthentication without username it returns GUEST
 		CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
 		if (StringUtils.isNotEmpty(cf.getUsername())) {
-			auth = new NtlmPasswordAuthentication(getDomain(), cf.getUsername(), cf.getPassword());
+			auth = new NtlmPasswordAuthentication(getAuthenticationDomain(), cf.getUsername(), cf.getPassword());
 			log.debug("setting authentication to [" + auth.toString() + "]");
 		}
 	}
@@ -151,7 +149,6 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	}
 
 	private class Samba1Message extends Message {
-		
 		public Samba1Message(SmbFile f, Map<String,Object> context) {
 			super(() -> new SmbFileInputStream(f), context, f.getClass());
 		}
@@ -249,16 +246,16 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 
 	@Override
 	public String getPhysicalDestinationName() {
-		return "domain ["+getDomain()+"] share ["+getShare()+"]";
+		return "domain ["+getAuthenticationDomain()+"] share ["+getShare()+"]";
 	}
 
 
 	private class SmbFileIterator implements Iterator<SmbFile> {
 
-		private SmbFile files[];
+		private SmbFile[] files;
 		private int i = 0;
 
-		public SmbFileIterator(SmbFile files[]) {
+		public SmbFileIterator(SmbFile[] files) {
 			this.files = files;
 		}
 
@@ -338,8 +335,13 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	}
 
 	@IbisDoc({ "5", "domain, in case the user account is bound to a domain", "" })
+	public void setAuthenticationDomain(String domain) {
+		this.authenticationDomain = domain;
+	}
+	@Deprecated
+	@ConfigurationWarning("Please use attribute authenticationDomain instead")
 	public void setDomain(String domain) {
-		this.domain = domain;
+		setAuthenticationDomain(domain);
 	}
 
 	@IbisDoc({ "6", "when <code>true</code>, intermediate directories are created also", "false" })
@@ -351,6 +353,4 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	public void setListHiddenFiles(boolean listHiddenFiles) {
 		this.listHiddenFiles = listHiddenFiles;
 	}
-
-
 }
