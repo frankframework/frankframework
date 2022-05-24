@@ -4,11 +4,10 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-    allow:
-    - dependency-type: "all"
-      update-types: ["version-update:semver-major"]
     open-pull-requests-limit: 1
     labels:
-        - "dependencies"
+      - "dependencies"
     ignore:
-    - dependency-name: "org.ibissource:ibis-ladybug"
+      - dependency-name: "org.ibissource:ibis-ladybug"
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
