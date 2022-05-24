@@ -32,9 +32,9 @@ import nl.nn.adapterframework.util.LogUtil;
  */
 public abstract class FileSystemBase<F> implements IBasicFileSystem<F> {
 	protected Logger log = LogUtil.getLogger(this);
-	
+
 	private int maxNumberOfMessagesToList=-1;
-	
+
 	private boolean open;
 
 	@Override
@@ -45,7 +45,7 @@ public abstract class FileSystemBase<F> implements IBasicFileSystem<F> {
 	public void close() throws FileSystemException {
 		open = false;
 	}
-	
+
 	@Override
 	public boolean isOpen() {
 		return open;
