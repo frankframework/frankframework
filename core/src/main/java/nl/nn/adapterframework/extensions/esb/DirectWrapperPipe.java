@@ -25,6 +25,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * Kind of extension to EsbSoapWrapperPipe for real time destinations.
@@ -52,14 +53,17 @@ public class DirectWrapperPipe extends TimeoutGuardPipe {
 		String cmhVersion = getParameterValue(pvl, CMHVERSION);
 		String addOutputNamespace = getParameterValue(pvl, ADDOUTPUTNAMESPACE);
 
-		EsbSoapWrapperPipe eswPipe = new EsbSoapWrapperPipe();
+		EsbSoapWrapperPipe eswPipe = SpringUtils.createBean(getApplicationContext(), EsbSoapWrapperPipe.class);
 		if (addOutputNamespace != null) {
 			if ("on".equalsIgnoreCase(addOutputNamespace)) {
 				eswPipe.setAddOutputNamespace(true);
 			}
 		}
 		if (destination != null) {
-			eswPipe.addParameter(new Parameter(DESTINATION, destination));
+			Parameter destinationParameter = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+			destinationParameter.setName(DESTINATION);
+			destinationParameter.setValue(destination);
+			eswPipe.addParameter(destinationParameter);
 		}
 		if (cmhVersion != null) {
 			if (StringUtils.isNumeric(cmhVersion)) {
