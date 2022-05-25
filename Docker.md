@@ -108,9 +108,10 @@ Note: The GUI will not load data if accessed via HTTP and `dtap.stage!=LOC`, HTT
 ## Secrets
 
 Special consideration should be taken with secrets. As described on the [Tomcat website](https://cwiki.apache.org/confluence/display/TOMCAT/Password), passwords are stored in plain text. To use secrets in your Tomcat and Frank!Application configuration, you can take the following steps:
-- In your configuration, refer to the username as `${<secret-name>/username}` and password as `${<secret-name>/password}`
-- Mount the username in `/opt/frank/secrets/<secret-name>/username`
-- Mount the password in `/opt/frank/secrets/<secret-name>/password`
+- In your configuration, refer to the authAlias as `${<secret-name>}` 
+- In cases where you need to refer to username or password separately, you can use `${<secret-name>/username}` and `${<secret-name>/password}` respectively
+- Mount the value for the username in the file `/opt/frank/secrets/<secret-name>/username`
+- Mount the value for the password in the file `/opt/frank/secrets/<secret-name>/password`
 
 See the [context.xml](test/src/main/webapp/META-INF/context.xml) of the test-project and corresponding [Dockerfile](docker/appserver/Tomcat/test/Dockerfile) for an example.
 
