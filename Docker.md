@@ -35,6 +35,10 @@ To run the image, run the following command, adding environment variables and mo
 
 `docker run --publish <hostport>:8080 [-e <name>=<value>] [--mount type=bind,source=<source>,target=<target>] --name <name> nexus.frankframework.org/frank-framework[:<tag>]`
 
+For example, to run Frank2Example on http://localhost with the latest image using Powershell on Windows:
+
+`docker run --publish 80:8080 -e dtap.stage=LOC --mount type=bind,source=$pwd/example/src/main/resources,target=/opt/frank/resources --mount type=bind,source=$pwd/example/src/main/webapp/META-INF/context.xml,target=/usr/local/tomcat/conf/Catalina/localhost/ROOT.xml --name Frank2Example nexus.frankframework.org/frank-framework:latest`
+
 ## Server use
 
 Please read the [Considerations](#Considerations) before using the image on servers, as the default setup might not be secure enough for your use.
@@ -65,7 +69,7 @@ The image contains the following directories:
 The image also contains the following files:
 | file | description | notes |
 |---|---|---|
-| /usr/local/tomcat/conf/Catalina/localhost/iaf.xml | mount/copy of your context.xml | Use hostname `host.docker.internal` to get to the host machine for local testing. Changing this file will require a new instance to be started, it cannot be reloaded |
+| /usr/local/tomcat/conf/Catalina/localhost/ROOT.xml | mount/copy of your context.xml | Use hostname `host.docker.internal` to get to the host machine for local testing. Changing this file will require a new instance to be started, it cannot be reloaded |
 | /usr/local/tomcat/conf/server.xml | mount/copy of your server.xml | Contains the default server.xml of Tomcat, replace to secure your application |
 | /usr/local/tomcat/conf/catalina.properties | Server properties, contains default framework values | Do not replace this file, use [Environment variables](#Environment-variables) or append to the file, see [Dockerfile](docker/appserver/Tomcat/Dockerfile) for an example |
 
