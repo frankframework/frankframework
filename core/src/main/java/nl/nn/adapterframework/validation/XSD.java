@@ -391,7 +391,7 @@ public class XSD implements Schema, Comparable<XSD> {
 	@Override
 	public String getSystemId() {
 		if (url == null) {
-			return getTargetNamespace();
+			return getTargetNamespace(); // used by PreparserEntityResolver
 		}
 		return url.toExternalForm();
 	}
