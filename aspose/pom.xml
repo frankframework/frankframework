@@ -12,7 +12,7 @@
 
 	<properties>
 		<!-- NOTE: some dependencies require the classifier tag to be set to jdk16 (1.6) -->
-		<aspose.version>19.1</aspose.version>
+		<aspose.version>19.12</aspose.version>
 	</properties>
 
 	<dependencies>
