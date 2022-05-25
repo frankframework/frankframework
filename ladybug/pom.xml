@@ -64,7 +64,7 @@
 			<repositories>
 				<repository>
 					<id>ibissource</id>
-					<url>https://nexus.ibissource.org/content/groups/public</url>
+					<url>https://nexus.frankframework.org/content/groups/public</url>
 				</repository>
 			</repositories>
 		</profile>
