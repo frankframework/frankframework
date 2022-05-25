@@ -17,25 +17,25 @@
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-ear</artifactId>
-			<version>${iaf.version}</version>
+			<version>${project.version}</version>
 			<type>ear</type>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-test</artifactId>
-			<version>${iaf.version}</version>
+			<version>${project.version}</version>
 			<classifier>resources</classifier>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-test</artifactId>
-			<version>${iaf.version}</version>
+			<version>${project.version}</version>
 			<classifier>configurations</classifier>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-test</artifactId>
-			<version>${iaf.version}</version>
+			<version>${project.version}</version>
 			<classifier>scenarios</classifier>
 		</dependency>
 		<dependency>
