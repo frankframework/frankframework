@@ -387,8 +387,8 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		XmlValidator validator = new XmlValidator();
 		validator.registerForward(createSuccessForward());
 		validator.registerForward(createFailureForward());
-		validator.setRoot("GetPartiesOnAgreementInsuranceREQ");
-		validator.setSchemaLocation("http://www.ibissource.org/tom /Validation/Include/xsd/GetPartiesOnAgreementInsurance_v1.xsd");
+		validator.setRoot("GetParties");
+		validator.setSchemaLocation("http://www.ibissource.org/tom /Validation/Include/xsd/main.xsd");
 		validator.setAddNamespaceToSchema(true);
 		validator.setThrowException(true);
 		validator.configure();
@@ -396,7 +396,7 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 
 		String testXml = getTestXml("/Validation/Include/in-ok.xml");
 		PipeLineSession session = new PipeLineSession();
-		PipeRunResult result = validator.validate(new Message(testXml), session, "GetPartiesOnAgreementInsuranceREQ");
+		PipeRunResult result = validator.validate(new Message(testXml), session, "GetParties");
 		PipeForward forward = result.getPipeForward();
 
 		assertEquals("success", forward.getName());
@@ -407,15 +407,15 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		XmlValidator validator = new XmlValidator();
 		validator.registerForward(createSuccessForward());
 		validator.registerForward(createFailureForward());
-		validator.setRoot("GetPartiesOnAgreementInsuranceREQ");
-		validator.setSchemaLocation("http://www.ibissource.org/tom /Validation/Include/xsd/GetPartiesOnAgreementInsurance_v1.xsd");
+		validator.setRoot("GetParties");
+		validator.setSchemaLocation("http://www.ibissource.org/tom /Validation/Include/xsd/main.xsd");
 		validator.setAddNamespaceToSchema(true);
 		validator.configure();
 		validator.start();
 
 		String testXml = getTestXml("/Validation/Include/in-err.xml");
 		PipeLineSession session = new PipeLineSession();
-		PipeRunResult result = validator.validate(new Message(testXml), session, "GetPartiesOnAgreementInsuranceREQ");
+		PipeRunResult result = validator.validate(new Message(testXml), session, "GetParties");
 		PipeForward forward = result.getPipeForward();
 
 		assertEquals("failure", forward.getName());
