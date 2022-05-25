@@ -75,6 +75,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
+	private @Getter IConfigurationAware owner;
 
 	private @Getter boolean throwException = false;
 	private @Getter boolean fullSchemaChecking = false;
@@ -104,8 +105,9 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 	 *     <li>when the parser does not accept setting the properties for validating</li>
 	 * </ul>
 	 */
-	public void configure(String logPrefix) throws ConfigurationException {
-		this.logPrefix = logPrefix;
+	public void configure(IConfigurationAware owner) throws ConfigurationException {
+		this.logPrefix = ClassUtils.nameOf(owner);
+		this.owner = owner;
 	}
 
 	@Override
