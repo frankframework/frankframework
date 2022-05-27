@@ -32,6 +32,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 	private static final String BASIC					= ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/GetPolicyDetails/GetPolicyDetails.wsdl";
 	private static final String SIVTR					= ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/IgnoreImport/StartIncomingValueTransferProcess_1.wsdl";
 	private static final String SIVTRX					= ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/IgnoreImport/StartIncomingValueTransferProcess_1x.wsdl";
+	private static final String MULTIPLE_OPERATIONS		= ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/multipleOperations.wsdl";
 
 	@Override
 	public WsdlXmlValidator createPipe() {
@@ -60,6 +61,46 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		val.configure();
 		val.start();
 		val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body><TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbol>foo</tickerSymbol></TradePriceRequest></Body></Envelope>", session);
+	}
+
+	@Test
+	public void testSoapBodyFromSoapAction() throws Exception {
+		WsdlXmlValidator val = pipe;
+		val.setWsdl(MULTIPLE_OPERATIONS);
+		val.setThrowException(true);
+		val.setSoapBodyNamespace("http://test.example.com");
+		val.registerForward(new PipeForward("success", null));
+		session.put("SOAPAction", "test");
+		val.configure();
+		val.start();
+		val.validate("<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:impl=\"http://test.example.com\">\n"
+				+ "	<s:Header/>\n"
+				+ "	<s:Body>\n"
+				+ "		<impl:add>\n"
+				+ "			<impl:numA>3.14</impl:numA>\n"
+				+ "			<impl:numB>3.14</impl:numB>\n"
+				+ "		</impl:add>\n"
+				+ "	</s:Body>\n"
+				+ "</s:Envelope>", session);
+	}
+
+	@Test(expected = XmlValidatorException.class)
+	public void testSoapBodyFromSoapActionWithoutSoapAction() throws Exception {
+		WsdlXmlValidator val = pipe;
+		val.setWsdl(MULTIPLE_OPERATIONS);
+		val.setThrowException(true);
+		val.registerForward(new PipeForward("success", null));
+		val.configure();
+		val.start();
+		val.validate("<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:impl=\"http://test.example.com\">\n"
+				+ "	<s:Header/>\n"
+				+ "	<s:Body>\n"
+				+ "		<impl:add>\n"
+				+ "			<impl:numA>3.14</impl:numA>\n"
+				+ "			<impl:numB>3.14</impl:numB>\n"
+				+ "		</impl:add>\n"
+				+ "	</s:Body>\n"
+				+ "</s:Envelope>", session);
 	}
 
 	@Test
