@@ -41,7 +41,7 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		this.implementation = implementation;
 	}
 
-	@Parameterized.Parameters
+	@Parameterized.Parameters(name= "{0}")
 	public static Collection<Object[]> data() {
 		Object[][] data = new Object[][]{
 			{XercesXmlValidator.class}
