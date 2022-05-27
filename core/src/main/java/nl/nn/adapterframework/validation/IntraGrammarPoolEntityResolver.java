@@ -27,9 +27,9 @@ import org.apache.xerces.xni.parser.XMLInputSource;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * Xerces native EntityResolver, currently only used in XercesXmlValidator when initializing the grammar pool.
+ * EntityResolver for XercesXmlValidator to resolve imported schema documents to other schemas used to populate the grammar pool.
  * 
- * Resolves referenced schema documents by namespace to other schemas used to populate the grammar pool.
+ * References are resolved by namespace.
  * 
  * @author Gerrit van Brakel
  */
