@@ -27,22 +27,18 @@ import org.apache.xerces.xni.parser.XMLInputSource;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * Xerces native EntityResolver, only used in XercesXmlValidator currently.
+ * Xerces native EntityResolver, currently only used in XercesXmlValidator when initializing the grammar pool.
  * 
- * It's important that the XMLEntityResolver does not return NULL, when it cannot find a resource.
- * Returning NULL will cause the XmlReader to fall back to it's built in EntityResolver.
- * 
- * This EntityResolver can be set by using the following property on the XmlReader:
- * Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY
+ * Resolves referenced schema documents by namespace to other schemas used to populate the grammar pool.
  * 
  * @author Gerrit van Brakel
  */
-public class PreparserEntityResolver implements XMLEntityResolver {
+public class IntraGrammarPoolEntityResolver implements XMLEntityResolver {
 	protected Logger log = LogUtil.getLogger(this);
 
-	List<Schema> schemas;
+	private List<Schema> schemas;
 
-	public PreparserEntityResolver(List<Schema> schemas) {
+	public IntraGrammarPoolEntityResolver(List<Schema> schemas) {
 		this.schemas = schemas;
 	}
 

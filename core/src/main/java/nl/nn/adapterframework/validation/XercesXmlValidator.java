@@ -184,7 +184,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		XMLGrammarPool grammarPool = new XMLGrammarPoolImpl();
 		Set<String> namespaceSet = new HashSet<String>();
 		XMLGrammarPreparser preparser = new XMLGrammarPreparser(symbolTable);
-		preparser.setEntityResolver(new PreparserEntityResolver(schemas));
+		preparser.setEntityResolver(new IntraGrammarPoolEntityResolver(schemas));
 		preparser.registerPreparser(XMLGrammarDescription.XML_SCHEMA, null);
 		preparser.setProperty(GRAMMAR_POOL, grammarPool);
 		preparser.setFeature(NAMESPACES_FEATURE_ID, true);
