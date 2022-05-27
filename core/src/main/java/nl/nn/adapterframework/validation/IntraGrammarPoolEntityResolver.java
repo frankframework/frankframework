@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2019 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,37 +13,33 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.xml;
+package nl.nn.adapterframework.validation;
 
 import java.io.IOException;
+import java.util.List;
 
-import javax.xml.transform.TransformerException;
-
+import org.apache.logging.log4j.Logger;
 import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
 
-import nl.nn.adapterframework.core.IScopeProvider;
-import nl.nn.adapterframework.core.Resource;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * Xerces native EntityResolver. Appears to be only used in XercesXmlValidator currently.
+ * EntityResolver for XercesXmlValidator to resolve imported schema documents to other schemas used to populate the grammar pool.
  * 
- * It's important that the XMLEntityResolver does not return NULL, when it cannot find a resource.
- * Returning NULL will cause the XmlReader to fall back to it's built in EntityResolver.
+ * References are resolved by namespace.
  * 
- * This EntityResolver can be set by using the following property on the XmlReader:
- * Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY
- * 
- * @author Jaco de Groot
  * @author Gerrit van Brakel
- * @see ClassLoaderURIResolver
  */
-public class ClassLoaderXmlEntityResolver extends ClassLoaderURIResolver implements XMLEntityResolver {
+public class IntraGrammarPoolEntityResolver implements XMLEntityResolver {
+	protected Logger log = LogUtil.getLogger(this);
 
-	public ClassLoaderXmlEntityResolver(IScopeProvider classLoaderProvider) {
-		super(classLoaderProvider);
+	private List<Schema> schemas;
+
+	public IntraGrammarPoolEntityResolver(List<Schema> schemas) {
+		this.schemas = schemas;
 	}
 
 	@Override
@@ -63,22 +59,20 @@ public class ClassLoaderXmlEntityResolver extends ClassLoaderURIResolver impleme
 			return null;
 		}
 
-		String base = resourceIdentifier.getBaseSystemId();
-		String href = resourceIdentifier.getLiteralSystemId();
-		if (href == null) {
-			if (log.isTraceEnabled()) log.trace("Ignore import with namespace but without schemaLocation");
+		String targetNamespace = resourceIdentifier.getNamespace();
+		if (targetNamespace==null) {
+			log.warn("resolveEntity publicId ["+resourceIdentifier.getPublicId()+"] baseSystemId ["+resourceIdentifier.getBaseSystemId()+"] expandedSystemId ["+resourceIdentifier.getExpandedSystemId()+"] literalSystemId ["+resourceIdentifier.getLiteralSystemId()+"] namespace ["+resourceIdentifier.getNamespace()+"] has no namespace to resolve to");
 			return null;
 		}
-
-		Resource resource;
-		try {
-			if (log.isTraceEnabled()) log.trace("call resolveToResource(href ["+href+"] base ["+base+"])");
-			resource = resolveToResource(href, base);
-		} catch (TransformerException e) {
-			throw new XNIException(e);
+		for(Schema schema:schemas) {
+			if (log.isTraceEnabled()) log.trace("matching namespace ["+targetNamespace+"] to schema ["+schema.getSystemId()+"]");
+			if (targetNamespace.equals(schema.getSystemId())) {
+				return new XMLInputSource(null, targetNamespace, null, schema.getInputStream(), null);
+			}
 		}
+		log.warn("namespace ["+targetNamespace+"] not found in list of schemas");
 
-		return resource.asXMLInputSource();
+		return null;
 	}
 
 }
