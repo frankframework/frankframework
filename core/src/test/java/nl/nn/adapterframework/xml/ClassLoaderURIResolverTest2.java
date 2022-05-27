@@ -22,16 +22,15 @@ import nl.nn.adapterframework.testutil.TestScopeProvider;
 public class ClassLoaderURIResolverTest2 {
 
 	private static final IScopeProvider scopeProvider = new TestScopeProvider();
-	private String publicId="fakePublicId";
 	//private String base="/ClassLoader/zip/Xslt/names.xslt";
 	protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
-	
-	
-	
+
+
+
 	@Test
 	public void localClassPathFileOnRootOfClasspath() throws Exception {
 		ClassLoaderURIResolver resolver = new ClassLoaderURIResolver(scopeProvider);
-		
+
 		Resource resource = resolver.resolveToResource("AppConstants.properties", null);
 		assertNotNull(resource);
 	}
@@ -52,7 +51,7 @@ public class ClassLoaderURIResolverTest2 {
 		assertNotNull(resource);
 	}
 
-	
+
 	@Test
 	public void bytesClassPath() throws Exception {
 		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
@@ -93,7 +92,7 @@ public class ClassLoaderURIResolverTest2 {
 
 	@Ignore
 	@Test(expected = XNIException.class)
-	public void ClassLoaderURIResolverCanLoadLocalEntities() throws Exception {
+	public void classLoaderURIResolverCanLoadLocalEntities() throws Exception {
 		ClassLoaderURIResolver resolver = new ClassLoaderURIResolver(scopeProvider);
 
 		URL url = this.getClass().getResource("/ClassLoader/request.xsd");
@@ -104,14 +103,14 @@ public class ClassLoaderURIResolverTest2 {
 	}
 
 	@Test
-	public void ClassLoaderURIResolverCannotLoadExternalEntities() throws Exception {
+	public void classLoaderURIResolverCannotLoadExternalEntities() throws Exception {
 		ClassLoaderURIResolver resolver = new ClassLoaderURIResolver(scopeProvider);
 
 		URL url = this.getClass().getResource("/ClassLoader/request-ftp.xsd");
 		assertNotNull(url);
 
 		TransformerException thrown = assertThrows(TransformerException.class, () -> {
-			Resource resource = resolver.resolveToResource("ftp://share.host.org/UDTSchema.xsd", url.toExternalForm());
+			resolver.resolveToResource("ftp://share.host.org/UDTSchema.xsd", url.toExternalForm());
 		});
 
 		assertThat(thrown.getMessage(), startsWith("Cannot lookup resource [ftp://share.host.org/UDTSchema.xsd] not allowed with protocol [ftp]"));
