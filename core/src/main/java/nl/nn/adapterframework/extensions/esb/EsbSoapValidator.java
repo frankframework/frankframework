@@ -120,12 +120,12 @@ public class EsbSoapValidator extends SoapValidator {
 		throw new IllegalArgumentException("Esb soap is unmodifiable, it is: " + getSoapHeader());
 	}
 
-	public void setDirection(String direction) {
-		this.direction = Direction.valueOf(direction.toUpperCase());
+	public void setDirection(Direction direction) {
+		this.direction = direction;
 	}
 
-	public void setMode(String mode) { // Why does PropertyUtil not understand enums?
-		this.mode = EsbSoapWrapperPipe.Mode.valueOf(mode.toUpperCase());
+	public void setMode(EsbSoapWrapperPipe.Mode mode) {
+		this.mode = mode;
 	}
 
 	public void setCmhVersion(int i) {
