@@ -552,6 +552,15 @@ angular.module('iaf.beheerconsole')
 	}
 }])
 
+.controller('FlowDiagramModalCtrl', ['$scope', '$uibModalInstance', 'xhr', function($scope, $uibModalInstance, xhr) {
+	$scope.adapter = xhr.adapter;
+	$scope.flow = xhr.data;
+
+	$scope.close = function () {
+		$uibModalInstance.close();
+	};
+}])
+
 .controller('CookieModalCtrl', ['$scope', 'GDPR', 'appConstants', '$rootScope', '$uibModalInstance', function($scope, GDPR, appConstants, $rootScope, $uibModalInstance) {
 	$scope.cookies = GDPR.defaults;
 
