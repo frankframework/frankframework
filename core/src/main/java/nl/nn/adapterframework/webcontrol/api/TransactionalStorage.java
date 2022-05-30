@@ -249,7 +249,7 @@ public class TransactionalStorage extends Base {
 
 		String[] messageIds = getMessages(input);
 
-		List<String> errorMessages = new ArrayList<String>();
+		List<String> errorMessages = new ArrayList<>();
 		for(int i=0; i < messageIds.length; i++) {
 			try {
 				resendMessage(receiver, messageIds[i]);
@@ -264,7 +264,7 @@ public class TransactionalStorage extends Base {
 			}
 		}
 
-		if(errorMessages.size() == 0)
+		if(errorMessages.isEmpty())
 			return Response.status(Response.Status.OK).build();
 
 		return Response.status(Response.Status.ACCEPTED).entity(errorMessages).build();
@@ -300,7 +300,7 @@ public class TransactionalStorage extends Base {
 		Set<ProcessState> targetProcessStates = receiver.targetProcessStates().get(currentState);
 		ProcessState targetPS = ProcessState.getProcessStateFromName(targetState);
 
-		List<String> errorMessages = new ArrayList<String>();
+		List<String> errorMessages = new ArrayList<>();
 		if(targetProcessStates != null && targetProcessStates.contains(targetPS)) {
 			IMessageBrowser<?> store = receiver.getMessageBrowser(currentState);
 			for(int i=0; i < messageIds.length; i++) {
@@ -316,7 +316,7 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("It is not allowed to move messages from ["+processState+"] " + "to ["+targetState+"]");
 		}
 
-		if(errorMessages.size() == 0)
+		if(errorMessages.isEmpty())
 			return Response.status(Response.Status.OK).build();
 
 		return Response.status(Response.Status.ACCEPTED).entity(errorMessages).build();
@@ -392,7 +392,7 @@ public class TransactionalStorage extends Base {
 			}
 		}
 
-		if(errorMessages.size() == 0)
+		if(errorMessages.isEmpty())
 			return Response.status(Response.Status.OK).build();
 
 		return Response.status(Response.Status.ACCEPTED).entity(errorMessages).build();
@@ -621,7 +621,7 @@ public class TransactionalStorage extends Base {
 			messageCount = -1;
 		}
 
-		Map<String, Object> returnObj = new HashMap<String, Object>(3);
+		Map<String, Object> returnObj = new HashMap<>(3);
 		returnObj.put("totalMessages", messageCount);
 		returnObj.put("skipMessages", filter.skipMessages());
 		returnObj.put("messageCount", messageCount - filter.skipMessages());
@@ -630,7 +630,7 @@ public class TransactionalStorage extends Base {
 		Date endDate = null;
 		try (IMessageBrowsingIterator iterator = transactionalStorage.getIterator(startDate, endDate, filter.getSortOrder())) {
 			int count;
-			List<Object> messages = new LinkedList<Object>();
+			List<Object> messages = new LinkedList<>();
 			
 			for (count=0; iterator.hasNext(); ) {
 				try (IMessageBrowsingIteratorItem iterItem = iterator.next()) {
@@ -638,8 +638,8 @@ public class TransactionalStorage extends Base {
 						continue;
 
 					count++;
-					if (count > filter.skipMessages()) { 
-						Map<String, Object> message = new HashMap<String, Object>(3);
+					if (count > filter.skipMessages() && messages.size() < filter.maxMessages()) { 
+						Map<String, Object> message = new HashMap<>(3);
 
 						message.put("id", iterItem.getId());
 						message.put("pos", count);
@@ -653,13 +653,10 @@ public class TransactionalStorage extends Base {
 						message.put("label", iterItem.getLabel());
 						messages.add(message);
 					}
-	
-					if (filter.maxMessages() > 0 && count >= (filter.maxMessages() + filter.skipMessages())) {
-						log.warn("stopped iterating messages after ["+count+"]: limit reached");
-						break;
-					}
 				}
 			}
+
+			returnObj.put("recordsFiltered", count);
 			returnObj.put("messages", messages);
 		} catch (ListenerException|IOException e) {
 			throw new ApiException(e);
@@ -672,9 +669,9 @@ public class TransactionalStorage extends Base {
 		if(targetProcessStates == null) {
 			return null;
 		}
-		Map<ProcessState, Map<String, String>> result = new LinkedHashMap<ProcessState, Map<String,String>>();
+		Map<ProcessState, Map<String, String>> result = new LinkedHashMap<>();
 		for (ProcessState ps : targetProcessStates) {
-			Map<String, String> psInfo = new HashMap<String, String>();
+			Map<String, String> psInfo = new HashMap<>();
 			psInfo.put("name", ps.getName());
 			result.put(ps, psInfo);
 		}

@@ -1401,7 +1401,6 @@ angular.module('iaf.beheerconsole')
 			Api.Get(url, function(response) {
 				response.draw = data.draw;
 				response.recordsTotal = response.totalMessages;
-				response.recordsFiltered = response.skipMessages;
 				$scope.targetStates = response.targetStates;
 				callback(response);
 			});
@@ -1563,7 +1562,7 @@ angular.module('iaf.beheerconsole')
 
 	var columns = [
 		{ "data": null, defaultContent: a, className: "m-b-xxs storageActions", bSortable: false},
-		{ "name": "pos", "data": "position", bSortable: false },
+		{ "name": "pos", "data": "pos", bSortable: false },
 		{ "name": "id", "data": "id", bSortable: false },
 		{ "name": "insertDate", "data": "insertDate", className: "date" },
 		{ "name": "host", "data": "host", bSortable: false },
@@ -1634,7 +1633,6 @@ angular.module('iaf.beheerconsole')
 			Api.Get(url, function(response) {
 				response.draw = data.draw;
 				response.recordsTotal = response.totalMessages;
-				response.recordsFiltered = response.messages.length;
 				callback(response);
 			});
 		}
