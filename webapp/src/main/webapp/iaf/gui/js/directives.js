@@ -195,18 +195,24 @@ angular.module('iaf.beheerconsole')
 			});
 
 			scope.openFlowModal = function (xhr) {
+				scope.flowModalLadda = true;
 				$uibModal.open({
 					templateUrl: 'views/flow-modal.html',
+					windowClass: 'mermaidFlow',
 					resolve: {
+						loadPlugin: function($ocLazyLoad) {
+							return $ocLazyLoad.load('mermaid');
+						},
 						xhr: function() {
 							return xhr;
 						}
 					},
 					controller: 'FlowDiagramModalCtrl'
 				});
+				setTimeout(function(){scope.flowModalLadda = false;},1000);
 			}
 		},
-		template: '<a ng-if="flow.image === true" ng-href="{{flow.url}}" target="_blank"><img ng-src="{{flow.url}}" alt="Flow Diagram"></a><button ng-if="flow.image === false" ng-click="openFlowModal(flow.data)" title="Generate Flow Diagram" class="btn btn-xs btn-info" type="button"><i class="fa fa-share-alt-square"></i> Flow Diagram</button>'
+		template: '<a ng-if="flow.image === true" ng-href="{{flow.url}}" target="_blank"><img ng-src="{{flow.url}}" alt="Flow Diagram"></a><button ng-if="flow.image === false" ladda="flowModalLadda" ng-click="openFlowModal(flow.data)" title="Generate Flow Diagram" class="btn btn-xs btn-info" type="button"><i class="fa fa-share-alt-square"></i> Flow Diagram</button>'
 	}
 }])
 
