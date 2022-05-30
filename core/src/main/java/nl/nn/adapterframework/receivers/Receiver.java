@@ -107,15 +107,19 @@ import nl.nn.adapterframework.util.TransformerPool.OutputType;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
- * Specific input source for the messages of a specific {@link Adapter}. Details about the input
- * source are determined by the listener nested in the receiver. The added value of
- * receivers is that they can be configured to store received messages and keep track of the processed / failed
+ * Wrapper for a listener that specifies a channel for the incoming messages of a specific {@link Adapter}.
+ * By choosing a listener, the Frank developer determines how the messages are received.
+ * For example, an {@link nl.nn.adapterframework.http.rest.ApiListener} receives RESTful HTTP requests and a
+ * {@link JavaListener} receives messages from direct Java calls.
+ * <br/><br/>
+ * Apart from wrapping the listener, a {@link Receiver} can be configured
+ * to store received messages and to keep track of the processed / failed
  * status of these messages.
  * <br/><br/>
  * There are two kinds of listeners: synchronous listeners and asynchronous listeners.
  * Synchronous listeners are expected to return a response. The system that triggers the
- * receiver typically waits for a response before proceding its operation. When a
- * {@link nl.nn.adapterframework.http.rest.ApiListener} receives HTTP request, the listener is expected to return a
+ * receiver typically waits for a response before proceeding its operation. When a
+ * {@link nl.nn.adapterframework.http.rest.ApiListener} receives a HTTP request, the listener is expected to return a
  * HTTP response. Asynchronous listeners are not expected to return a response. The system that
  * triggers the listener typically continues without waiting for the adapter to finish. When a
  * receiver contains an asynchronous listener, it can have a sender to which
@@ -1956,12 +1960,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 
 	/**
-	 * Sets the listener used to receive messages from. If the listener implements the {@link nl.nn.adapterframework.core.INamedObject name} interface and no <code>getName()</code>
-	 * of the listener is empty, the name of this object is given to the listener.
+	 * Sets the listener used to receive messages from.
 	 *
 	 * @ff.mandatory
 	 */
-	@IbisDoc({"10", "The source of messages."})
 	public void setListener(IListener<M> newListener) {
 		listener = newListener;
 		if (listener instanceof RunStateEnquiring)  {
@@ -1995,7 +1997,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 
 	/**
-	 * Sender that will receive the result in case the PipeLineExit state was not <code>SUCCESS</code>.
+	 * Sender that will send the result in case the PipeLineExit state was not <code>SUCCESS</code>.
 	 * Applies if the receiver has an asynchronous listener.
 	 */
 	public void setErrorSender(ISender errorSender) {

@@ -60,10 +60,11 @@ import nl.nn.adapterframework.util.RunState;
 import nl.nn.adapterframework.util.RunStateManager;
 
 /**
- * An Adapter receives a specific type of messages and processes them. It has {@link Receiver}-s
- * that determine how messages are received and a {@link PipeLine} that determines how
- * the messages are processed. If an adapter can receive its messages from multiple sources,
- * each source appears as a separate {@link Receiver} nested in the adapter. Each {@link Receiver} is also responsible for dealing with
+ * An Adapter receives a specific type of messages and processes them. It has {@link Receiver Receivers}
+ * that receive the messages and a {@link PipeLine} that processes the incoming messages.
+ * If an adapter can receive its messages through multiple channels (e.g. RESTful HTTP requests, incoming files, etc),
+ * each channel appears as a separate {@link Receiver} nested in the adapter. Each {@link Receiver} is also responsible
+ * for dealing with
  * the response of its received messages; the response is the output of the {@link PipeLine}. Each adapter is
  * part of a {@link Configuration}.
  *
@@ -706,8 +707,8 @@ public class Adapter implements IAdapter, NamedBean {
 
 	// technically, a Receiver is not mandatory, but no useful adapter can do without it.
 	/**
-	 * Receives incoming messages. If an adapter can receive messages from multiple sources,
-	 * then add a receiver for each source.
+	 * Receives incoming messages. If an adapter can receive messages through multiple channels,
+	 * then add a receiver for each channel.
 	 * @ff.mandatory
 	 */
 	public void registerReceiver(Receiver<?> receiver) {
@@ -727,8 +728,6 @@ public class Adapter implements IAdapter, NamedBean {
 	 * 
 	 * @ff.mandatory
 	 */
-	// On registering, the adapter performs
-	// a <code>Pipeline.configurePipes()</co
 	@Override
 	public void setPipeLine(PipeLine pipeline) throws ConfigurationException {
 		this.pipeline = pipeline;

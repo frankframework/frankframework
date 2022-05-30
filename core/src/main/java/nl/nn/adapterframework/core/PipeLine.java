@@ -50,7 +50,7 @@ import nl.nn.adapterframework.util.Misc;
 
 /**
  * Required in each {@link Adapter} to transform incoming messages. A pipeline
- * is a network of pipes that are connected using {@link PipeForward}-s. A
+ * is a sequence of pipes. A
  * pipeline also defines its allowed end states using the <code>&lt;Exits&gt;</code>
  * tag.
  * <br/><br/>

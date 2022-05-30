@@ -136,7 +136,8 @@ public class ScheduleManager extends ConfigurableLifecyleBase implements Applica
 	}
 
 	/**
-	 * Job that is executed periodically as configured in the configuration or the Frank!Console or by the <code>cronExpression</code> of the job.
+	 * Job that is executed periodically. The time of execution can be configured within the job
+	 * or from outside the configuration through the Frank!Console.
 	 */
 	public void registerScheduledJob(IJob job) {
 		if(!inState(BootState.STOPPED)) {

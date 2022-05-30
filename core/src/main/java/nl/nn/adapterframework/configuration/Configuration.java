@@ -64,13 +64,13 @@ import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
- * Container of {@link Adapter}-s that belong together.
+ * Container of {@link Adapter Adapters} that belong together.
  * A configuration may be deployed independently from other configurations.
- * Names of nested elements like {@link Adapter}-s, {@link Receiver}-s, listeners and senders
+ * Names of nested elements like {@link Adapter Adapters}, {@link Receiver Receivers}, listeners and senders
  * can be reused in other configurations.
  * <br/><br/>
- * Configurations are shown in the Frank!Console along with their {@link Adapter}-s,
- * {@link Receiver}-s, listeners and senders. The Adapter Status page of the Frank!Console
+ * Configurations are shown in the Frank!Console along with their {@link Adapter Adapters},
+ * {@link Receiver Receivers}, listeners and senders. The Adapter Status page of the Frank!Console
  * has a tab for each configuration that only shows information
  * about that configuration. See the Frank!Manual for details.
  *
