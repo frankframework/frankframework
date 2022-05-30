@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ public class SapSystemFactory {
 			log.error("no SapSystem found under name [" + sapSystem	+ "], factory contents [" + toString() + "]");
 			return null;
 		}
-		nl.nn.adapterframework.extensions.sap.jco3.SapSystem sapSystem3 = (nl.nn.adapterframework.extensions.sap.jco3.SapSystem) sapSystem;
+		nl.nn.adapterframework.extensions.sap.jco3.SapSystemImpl sapSystem3 = (nl.nn.adapterframework.extensions.sap.jco3.SapSystemImpl) sapSystem;
 		try {
 			return sapSystem3.getDestination().toString();
 		} catch (JCoException e) {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -40,27 +40,27 @@ import com.sap.conn.jco.JCoException;
 
 /**
  * DefaultHandler extension to parse SAP Idocs in XML format into JCoIDoc format.
- * 
+ *
  * @author  Gerrit van Brakel
  * @author  Jaco de Groot
  * @since   5.0
  */
 public class IdocXmlHandler extends DefaultHandler {
 	protected Logger log = LogUtil.getLogger(this.getClass());
-	
-	private SapSystem sapSystem;
+
+	private SapSystemImpl sapSystem;
 	private IDocDocument doc=null;
 	private List<IDocSegment> segmentStack = new ArrayList<IDocSegment>();
 	private String currentField;
 	private StringBuffer currentFieldValue=new StringBuffer();
 	private boolean parsingEdiDcHeader=false;
 	private Locator locator;
-	
-	public IdocXmlHandler(SapSystem sapSystem) {
+
+	public IdocXmlHandler(SapSystemImpl sapSystem) {
 		super();
 		this.sapSystem=sapSystem;
 	}
-	
+
 	public IDocDocument getIdoc() {
 		return doc;
 	}
@@ -102,7 +102,7 @@ public class IdocXmlHandler extends DefaultHandler {
 			}
 		}
 	}
-	
+
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
 		//log.debug("endElement("+localName+")");
@@ -159,7 +159,7 @@ public class IdocXmlHandler extends DefaultHandler {
 					}
 				} else {
 					IDocSegment segment = (IDocSegment)segmentStack.get(segmentStack.size()-1);
-					if (log.isDebugEnabled()) log.debug("setting field ["+currentField+"] to ["+value+"]");  
+					if (log.isDebugEnabled()) log.debug("setting field ["+currentField+"] to ["+value+"]");
 					try {
 						segment.setValue(currentField,value);
 					} catch (IDocFieldNotFoundException e) {

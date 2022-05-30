@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017 Nationale-Nederlanden
+   Copyright 2013, 2017 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ public class SapSystemDataProvider implements DestinationDataProvider {
 
 	@Override
 	public Properties getDestinationProperties(String destinationName) {
-		SapSystem sapSystem = SapSystem.getSystem(destinationName);
+		SapSystemImpl sapSystem = SapSystemImpl.getSystem(destinationName);
 		if (sapSystem == null) {
 			log.warn("Could not find destination name");
 			return null;
@@ -109,21 +109,21 @@ public class SapSystemDataProvider implements DestinationDataProvider {
 	}
 
 	@Deprecated
-	public synchronized void registerSystem(SapSystem sapSystem) throws SapException {
+	public synchronized void registerSystem(SapSystemImpl sapSystem) throws SapException {
 		registerSystem(sapSystem);
 	}
 
-	public synchronized void updateSystem(SapSystem sapSystem) throws SapException {
+	public synchronized void updateSystem(SapSystemImpl sapSystem) throws SapException {
 		log.debug("Update " + sapSystem.getName());
 		destinationDataEventListener.updated(sapSystem.getName());
 	}
 
 	@Deprecated
-	public synchronized void unregisterSystem(SapSystem sapSystem) {
+	public synchronized void unregisterSystem(SapSystemImpl sapSystem) {
 		deleteSystem(sapSystem);
 	}
 
-	public synchronized void deleteSystem(SapSystem sapSystem) {
+	public synchronized void deleteSystem(SapSystemImpl sapSystem) {
 		log.debug("Delete " + sapSystem.getName());
 		destinationDataEventListener.deleted(sapSystem.getName());
 	}
