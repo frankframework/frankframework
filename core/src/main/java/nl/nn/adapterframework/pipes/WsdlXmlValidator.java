@@ -202,9 +202,7 @@ public class WsdlXmlValidator extends SoapValidator {
 			String soapBodyFromSoapAction = getSoapBodyFromSoapAction(soapAction);
 			if(StringUtils.compare(getSoapBody(), soapBodyFromSoapAction) != 0) {
 				log.debug("soapBody ["+soapBodyFromSoapAction+"] is determined from soapAction ["+soapAction+"]");
-				setSoapBody(soapBodyFromSoapAction);
-				resetCalculatedRootValidatons();
-				configure();
+				messageRoot = soapBodyFromSoapAction;
 			}
 		}
 		return super.validate(messageToValidate, session, responseMode, messageRoot);

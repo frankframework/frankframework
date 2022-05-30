@@ -21,7 +21,7 @@
 				<complexType>
 					<sequence>
 						<element name="numA" type="xsd:double"/>
-						<element name="numB" type="xsd:double"/>
+						<element name="numC" type="xsd:double"/>
 					</sequence>
 				</complexType>
 			</element>
@@ -134,7 +134,7 @@
 	<wsdl:binding name="LNNCalculatorSoapBinding" type="impl:LNNCalculator">
 		<wsdlsoap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
 		<wsdl:operation name="add">
-			<wsdlsoap:operation soapAction="test"/>
+			<wsdlsoap:operation soapAction="add"/>
 			<wsdl:input name="addRequest">
 				<wsdlsoap:body use="literal"/>
 			</wsdl:input>
@@ -143,7 +143,7 @@
 			</wsdl:output>
 		</wsdl:operation>
 		<wsdl:operation name="sub">
-			<wsdlsoap:operation soapAction=""/>
+			<wsdlsoap:operation soapAction="sub"/>
 			<wsdl:input name="subRequest">
 				<wsdlsoap:body use="literal"/>
 			</wsdl:input>

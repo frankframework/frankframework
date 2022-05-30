@@ -70,7 +70,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		val.setThrowException(true);
 		val.setSoapBodyNamespace("http://test.example.com");
 		val.registerForward(new PipeForward("success", null));
-		session.put("SOAPAction", "test");
+		session.put("SOAPAction", "add");
 		val.configure();
 		val.start();
 		val.validate("<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:impl=\"http://test.example.com\">\n"
@@ -80,6 +80,17 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 				+ "			<impl:numA>3.14</impl:numA>\n"
 				+ "			<impl:numB>3.14</impl:numB>\n"
 				+ "		</impl:add>\n"
+				+ "	</s:Body>\n"
+				+ "</s:Envelope>", session);
+		
+		session.put("SOAPAction", "sub");
+		val.validate("<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:impl=\"http://test.example.com\">\n"
+				+ "	<s:Header/>\n"
+				+ "	<s:Body>\n"
+				+ "		<impl:sub>\n"
+				+ "			<impl:numA>3.14</impl:numA>\n"
+				+ "			<impl:numC>3.14</impl:numC>\n"
+				+ "		</impl:sub>\n"
 				+ "	</s:Body>\n"
 				+ "</s:Envelope>", session);
 	}

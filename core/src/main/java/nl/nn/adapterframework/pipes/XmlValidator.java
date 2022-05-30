@@ -702,12 +702,6 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return requestRootValidations;
 	}
 
-	protected void resetCalculatedRootValidatons() {
-		requestRootValidations = null;
-		responseRootValidations = null;
-		invalidRootNamespaces = null;
-	}
-
 	protected void addResponseRootValidation(RootValidation path) {
 		if (responseRootValidations == null) {
 			responseRootValidations = new RootValidations(path);
