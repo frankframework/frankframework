@@ -29,7 +29,7 @@ import com.sap.conn.jco.JCoException;
  * for obtaining transactional resources.
  *
  * <p>based on {@link org.springframework.jms.connection.ConnectionFactoryUtils}
- * 
+ *
  * @author  Gerrit van Brakel
  * @author  Jaco de Groot
  * @since   5.0
@@ -64,7 +64,7 @@ public abstract class DestinationFactoryUtils {
 	 * SapSystem needs to handle transaction enlistment underneath the covers.
 	 * @return the TID, or <code>null</code> if none found
 	 * @throws SapException in case of JCo failure
-	 * @throws JCoException 
+	 * @throws JCoException
 	 */
 	public static String getTransactionalTid(
 			final SapSystemImpl sapSystem, final JCoDestination existingDestination, final boolean synchedLocalTransactionAllowed)
@@ -95,7 +95,7 @@ public abstract class DestinationFactoryUtils {
 	}
 
 	public static JCoDestination getTransactionalDestination(
-			final SapSystemImpl sapSystem, final boolean synchedLocalTransactionAllowed) 
+			final SapSystemImpl sapSystem, final boolean synchedLocalTransactionAllowed)
 			throws SapException, JCoException {
 
 		return doGetTransactionalDestination(sapSystem, new ResourceFactory() {

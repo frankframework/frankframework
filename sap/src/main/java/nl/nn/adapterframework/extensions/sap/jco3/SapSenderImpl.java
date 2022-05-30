@@ -34,20 +34,20 @@ import nl.nn.adapterframework.stream.Message;
 
 /**
  * Implementation of {@link nl.nn.adapterframework.core.ISender sender} that calls a SAP RFC-function.
- * 
+ *
  * N.B. If no requestFieldIndex or requestFieldName is specified, input is converted from xml;
- * If no replyFieldIndex or replyFieldName is specified, output is converted to xml. 
- * 
+ * If no replyFieldIndex or replyFieldName is specified, output is converted to xml.
+ *
  * @ff.parameter functionName   defines functionName; required when attribute <code>functionName</code> is empty
  * @ff.parameter <i>inputfieldname</i> The value of the parameter is set to the (simple) input field
  * @ff.parameter <i>structurename</i>/<i>inputfieldname</i> The value of the parameter is set to the named field of the named structure
- * 
+ *
  * @author  Gerrit van Brakel
  * @author  Jaco de Groot
  * @since   5.0
  */
 public abstract class SapSenderImpl extends SapSenderBase implements ISapSender {
-	
+
 	private @Getter String functionName=null;
 	private @Getter String functionNameParam="functionName";
 
@@ -55,7 +55,7 @@ public abstract class SapSenderImpl extends SapSenderBase implements ISapSender 
 		super();
 		setSynchronous(true);
 	}
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -87,7 +87,7 @@ public abstract class SapSenderImpl extends SapSenderBase implements ISapSender 
 				throw new SapException("could not get ParameterValue for parameter ["+getFunctionNameParam()+"]");
 			}
 			functionName = pv.asStringValue(null);
-		}	
+		}
 		if (StringUtils.isEmpty(functionName)) {
 			throw new SapException("could not determine functionName using parameter ["+getFunctionNameParam()+"]");
 		}
@@ -103,7 +103,7 @@ public abstract class SapSenderImpl extends SapSenderBase implements ISapSender 
 				pvl = paramList.getValues(message, session);
 			}
 			SapSystemImpl sapSystem = getSystem(pvl);
-			
+
 			JCoFunction function=getFunction(sapSystem, pvl);
 
 			if (StringUtils.isEmpty(getSapSystemName())) {

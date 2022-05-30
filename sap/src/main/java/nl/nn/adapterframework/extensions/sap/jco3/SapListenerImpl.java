@@ -63,12 +63,12 @@ import nl.nn.adapterframework.stream.Message;
 
 /**
  * Implementation of a {@link nl.nn.adapterframework.core.IPushingListener},
- * that enables a GenericReceiver to receive messages from SAP-systems. 
- * 
+ * that enables a GenericReceiver to receive messages from SAP-systems.
+ *
  * In SAP the function to be called is a RFC-function to the destination that is registered using <code>progid</code>.
  * </b>
  * N.B. If no requestFieldIndex or requestFieldName is specified, input is converted to xml;
- * If no replyFieldIndex or replyFieldName is specified, output is converted from xml. 
+ * If no replyFieldIndex or replyFieldName is specified, output is converted from xml.
  * </p>
  * @author Gerrit van Brakel
  * @author Jaco de Groot
@@ -106,7 +106,7 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 			Environment.registerServerDataProvider(this);
 			serverDataEventListener.updated(getName());
 			log.debug(getLogPrefix()+"start server");
-			JCoIDocServer server = JCoIDoc.getServer(getName()); 
+			JCoIDocServer server = JCoIDoc.getServer(getName());
 			server.setCallHandlerFactory(functionHandlerFactory);
 			server.setIDocHandlerFactory(this);
 			server.setTIDHandler(this);
@@ -268,7 +268,7 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 		progid = string;
 	}
 
-	/** 
+	/**
 	  * The number of connections that should be registered at the gateway
 	  * @ff.default 2
 	  */

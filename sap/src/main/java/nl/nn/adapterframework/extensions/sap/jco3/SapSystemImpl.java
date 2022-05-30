@@ -40,7 +40,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.GlobalListItem;
 /**
  * A SapSystem is a provider of repository information and connections to a SAP-system.
- * 
+ *
  * @author  Gerrit van Brakel
  * @author  Jaco de Groot
  * @author  Niels Meijer
@@ -112,7 +112,7 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 		if (referenceCount++<=0) {
 			referenceCount=1;
 			log.debug(getLogPrefix()+"opening system");
-			initSystem(); 
+			initSystem();
 			log.debug(getLogPrefix()+"opened system");
 		}
 	}
@@ -176,7 +176,7 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 	}
 
 	public String getLogPrefix() {
-		return "SapSystem ["+getName()+"] "; 
+		return "SapSystem ["+getName()+"] ";
 	}
 
 	@Override

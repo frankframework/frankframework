@@ -31,7 +31,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Implementation of {@link nl.nn.adapterframework.core.ISender sender} that sends an IDoc to SAP.
  * N.B. The sending of the iDoc is committed right after the XA transaction is completed.
- * 
+ *
  * @author  Gerrit van Brakel
  * @author  Jaco de Groot
  * @since   5.0
@@ -39,12 +39,12 @@ import nl.nn.adapterframework.util.XmlUtils;
 public abstract class IdocSenderImpl extends SapSenderBase {
 
 	protected IDocDocument parseIdoc(SapSystemImpl sapSystem, Message message) throws SenderException {
-		
+
 		IdocXmlHandler handler = new IdocXmlHandler(sapSystem);
-	
+
 		try {
 			log.debug(getLogPrefix()+"start parsing Idoc");
-			XmlUtils.parseXml(message.asInputSource(), handler);	
+			XmlUtils.parseXml(message.asInputSource(), handler);
 			log.debug(getLogPrefix()+"finished parsing Idoc");
 			return handler.getIdoc();
 		} catch (Exception e) {
@@ -61,9 +61,9 @@ public abstract class IdocSenderImpl extends SapSenderBase {
 				pvl = paramList.getValues(message, session);
 			}
 			SapSystemImpl sapSystem = getSystem(pvl);
-			
+
 			IDocDocument idoc = parseIdoc(sapSystem,message);
-			
+
 			try {
 				log.trace(getLogPrefix()+"checking syntax");
 				idoc.checkSyntax();
