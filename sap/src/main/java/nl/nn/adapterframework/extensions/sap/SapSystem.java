@@ -15,5 +15,5 @@
 */
 package nl.nn.adapterframework.extensions.sap;
 
-public class SapSystem extends nl.nn.adapterframework.extensions.sap.jco3.SapSystem implements ISapSystem {
+public class SapSystem extends nl.nn.adapterframework.extensions.sap.jco3.SapSystemImpl implements ISapSystem {
 }
