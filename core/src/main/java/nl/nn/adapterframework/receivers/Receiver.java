@@ -122,9 +122,11 @@ import nl.nn.adapterframework.util.XmlUtils;
  * {@link nl.nn.adapterframework.http.rest.ApiListener} receives a HTTP request, the listener is expected to return a
  * HTTP response. Asynchronous listeners are not expected to return a response. The system that
  * triggers the listener typically continues without waiting for the adapter to finish. When a
- * receiver contains an asynchronous listener, it can have a sender to which
- * the result is sent. Such a receiver can also have an error sender that is used
- * by the receiver to send error messages.
+ * receiver contains an asynchronous listener, it can have a sender that sends the transformed
+ * message to its destination. Receivers with an asynchronous listener can also have an error sender that is used
+ * by the receiver to send error messages. In other words: if the result state is SUCCESS then the
+ * message is sent by the ordinary sender, while the error sender is used if the result state
+ * is ERROR.
  * <br/><br/>
  * <b>Transaction control</b><br/><br/>
  * If {@link #setTransacted(boolean) transacted} is set to <code>true</code>, messages will be received and processed under transaction control.

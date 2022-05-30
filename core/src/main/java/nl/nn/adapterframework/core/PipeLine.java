@@ -54,6 +54,13 @@ import nl.nn.adapterframework.util.Misc;
  * pipeline also defines its allowed end states using the <code>&lt;Exits&gt;</code>
  * tag.
  * <br/><br/>
+ * The pipes in a {@link PipeLine} may not be executed in sequential order, see {@link PipeForward}.
+ * <br/><br/>
+ * A pipeline gathers statistics about the messages it processes.
+ * <br/><br/>
+ * In the AppConstants there may be a property named <code>log.logIntermediaryResults</code> (true/false)
+ * which indicates whether the intermediary results (between calling pipes) have to be logged.
+ * <br/><br/>
  * <b>Transaction control</b><br/><br/>
  * THE FOLLOWING TO BE UPDATED, attribute 'transacted' replaced by 'transactionAttribute'
  *
@@ -78,17 +85,6 @@ import nl.nn.adapterframework.util.Misc;
  * or marked for roll back by the calling party.
  *
  * @author  Johan Verrips
- */
-/*
- * Processor and keeper of a line of {@link IPipe Pipes}.
- * <br/>
- * Pipelines also generate statics information per Pipe and keep forwards, that are registered
- * at individual pipes during the configure phase.
- * <br/>
- * In the AppConstants there may be a property named "log.logIntermediaryResults" (true/false)
- * which indicates whether the intermediary results (between calling pipes) have to be logged.
- * <br/><br/>
- * 
  */
 public class PipeLine extends TransactionAttributes implements ICacheEnabled<String,String>, HasStatistics, IConfigurationAware {
 	private @Getter @Setter ApplicationContext applicationContext;

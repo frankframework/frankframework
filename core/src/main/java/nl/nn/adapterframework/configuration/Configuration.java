@@ -421,7 +421,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	/**
-	 * Processor that handles a specific kind of messages in a specific way. Comparable to a function in programming languages.
+	 * Add adapter.
 	 */
 	public void registerAdapter(Adapter adapter) {
 		adapter.setConfiguration(this);
