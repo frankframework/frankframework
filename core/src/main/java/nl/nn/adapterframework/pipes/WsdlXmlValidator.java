@@ -100,6 +100,23 @@ public class WsdlXmlValidator extends SoapValidator {
 	public void configure() throws ConfigurationException {
 		addSoapEnvelopeToSchemaLocation = false;
 
+		WSDLReader reader  = FACTORY.newWSDLReader();
+		reader.setFeature("javax.wsdl.verbose", false);
+		reader.setFeature("javax.wsdl.importDocuments", true);
+		ClassLoaderWSDLLocator wsdlLocator = new ClassLoaderWSDLLocator(this, wsdl);
+		URL url = wsdlLocator.getUrl();
+		if (wsdlLocator.getUrl() == null) {
+			throw new ConfigurationException("Could not find WSDL: " + wsdl);
+		}
+		try {
+			definition = reader.readWSDL(wsdlLocator);
+		} catch (WSDLException e) {
+			throw new ConfigurationException("WSDLException reading WSDL or import from url: " + url, e);
+		}
+		if (wsdlLocator.getIOException() != null) {
+			throw new ConfigurationException("IOException reading WSDL or import from url: " + url, wsdlLocator.getIOException());
+		}
+
 		if (StringUtils.isNotEmpty(getSchemaLocation()) && !isAddNamespaceToSchema()) {
 			ConfigurationWarnings.add(this, log, "attribute [schemaLocation] for wsdl [" + getWsdl() + "] should only be set when addNamespaceToSchema=true");
 		}
@@ -337,24 +354,13 @@ public class WsdlXmlValidator extends SoapValidator {
 	}
 
 	@IbisDoc({"the wsdl to read the xsd's from", " "})
-	public void setWsdl(String wsdl) throws ConfigurationException {
+	public void setWsdl(String wsdl) {
 		this.wsdl = wsdl;
-		WSDLReader reader  = FACTORY.newWSDLReader();
-		reader.setFeature("javax.wsdl.verbose", false);
-		reader.setFeature("javax.wsdl.importDocuments", true);
-		ClassLoaderWSDLLocator wsdlLocator = new ClassLoaderWSDLLocator(this, wsdl);
-		URL url = wsdlLocator.getUrl();
-		if (wsdlLocator.getUrl() == null) {
-			throw new ConfigurationException("Could not find WSDL: " + wsdl);
-		}
-		try {
-			definition = reader.readWSDL(wsdlLocator);
-		} catch (WSDLException e) {
-			throw new ConfigurationException("WSDLException reading WSDL or import from url: " + url, e);
-		}
-		if (wsdlLocator.getIOException() != null) {
-			throw new ConfigurationException("IOException reading WSDL or import from url: " + url, wsdlLocator.getIOException());
-		}
+	}
+
+	@IbisDoc({"Name of the child element of the SOAP body, or a comma separated list of names to choose from (only one is allowed) (wsdl generator will use the first element) (use empty value to allow an empty soap body, for example to allow element x and an empty soap body use: x,). In case the request contains SOAPAction header and the wsdl contains an element specific to that SOAPAction, it will use that element as soapBody.", "" })
+	public void setSoapBody(String soapBody) {
+		super.setSoapBody(soapBody);
 	}
 
 	@IbisDoc({"pairs of uri references which will be added to the wsdl", " "})
