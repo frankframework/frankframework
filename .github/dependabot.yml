@@ -9,5 +9,6 @@ updates:
       - "dependencies"
     ignore:
       - dependency-name: "org.ibissource:ibis-ladybug"
+      - dependency-name: "com.aspose:*"
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
