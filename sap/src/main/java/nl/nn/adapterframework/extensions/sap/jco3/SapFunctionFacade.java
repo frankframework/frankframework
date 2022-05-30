@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * Wrapper round SAP-functions, either SAP calling Ibis, or Ibis calling SAP.
  *
  * N.B. If no requestFieldIndex or requestFieldName is specified, input is converted from/to xml;
- * If no replyFieldIndex or replyFieldName is specified, output is converted from/to xml. 
+ * If no replyFieldIndex or replyFieldName is specified, output is converted from/to xml.
  * </p>
  * @author  Gerrit van Brakel
  * @author  Jaco de Groot
@@ -56,7 +56,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 
 	private @Getter String name;
 	private @Getter String sapSystemName;
-	
+
 	private @Getter int correlationIdFieldIndex=0;
 	private @Getter String correlationIdFieldName;
 	private @Getter int requestFieldIndex=0;
@@ -65,7 +65,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 	private @Getter String replyFieldName;
 
 	private JCoFunctionTemplate ftemplate;
-	private SapSystem sapSystem;
+	private SapSystemImpl sapSystem;
 
 	protected String getLogPrefix() {
 		return this.getClass().getName()+" ["+getName()+"] ";
@@ -77,12 +77,12 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 //			throw new ConfigurationException("attribute sapSystemName must be specified");
 //		}
 		if (StringUtils.isNotEmpty(getSapSystemName())) {
-			sapSystem=SapSystem.getSystem(getSapSystemName());
+			sapSystem=SapSystemImpl.getSystem(getSapSystemName());
 			if (sapSystem==null) {
 				throw new ConfigurationException(getLogPrefix()+"cannot find SapSystem ["+getSapSystemName()+"]");
 			}
 		} else {
-			SapSystem.configureAll();
+			SapSystemImpl.configureAll();
 		}
 	}
 
@@ -105,7 +105,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 			}
 		} else {
 			log.info("open ALL SapSystems");
-			SapSystem.openSystems();
+			SapSystemImpl.openSystems();
 		}
 	}
 
@@ -116,7 +116,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 			sapSystem.closeSystem();
 			log.debug("closed local defined sapSystem");
 		} else {
-			SapSystem.closeSystems();
+			SapSystemImpl.closeSystems();
 			log.debug("closed all sapSystems");
 		}
 		ftemplate = null;
@@ -201,7 +201,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 
 	/**
 	 * Calculate the index of the field that corresponds with the message as a whole.
-	 * 
+	 *
 	 * return values
 	 *  >0 : the required index
 	 *  0  : no index found, convert all fields to/from xml.
@@ -259,7 +259,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 
 	public Message functionResult2message(JCoFunction function) {
 		JCoParameterList export = function.getExportParameterList();
-		
+
 		int replyFieldIndex = findFieldIndex(export, getReplyFieldIndex(), getReplyFieldName());
 		String result=null;
 		if (replyFieldIndex>0) {
@@ -270,7 +270,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 			result = "<response function=\""+function.getName()+"\">";
 
 			JCoParameterList tables = function.getTableParameterList();
-		
+
 			if (export!=null) {
 				result+=export.toXML();
 			}
@@ -313,14 +313,14 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 		setParameters(output, function.getTableParameterList(), result, replyFieldIndex);
 	}
 
-	public SapSystem getSapSystem() throws SapException {
+	public SapSystemImpl getSapSystem() throws SapException {
 		if(sapSystem==null) {
 			throw new SapException("no fixed sapSystem specified");
 		}
 		return sapSystem;
 	}
-	public SapSystem getSapSystem(String systemName) throws SapException {
-		SapSystem sapSystem = SapSystem.getSystem(systemName);
+	public SapSystemImpl getSapSystem(String systemName) throws SapException {
+		SapSystemImpl sapSystem = SapSystemImpl.getSystem(systemName);
 		if(sapSystem==null) {
 			throw new SapException("cannot find sapSystem ["+systemName+"]");
 		}
@@ -334,7 +334,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 		return ftemplate;
 	}
 
-	protected JCoFunctionTemplate getFunctionTemplate(SapSystem sapSystem, String functionName) throws SapException {
+	protected JCoFunctionTemplate getFunctionTemplate(SapSystemImpl sapSystem, String functionName) throws SapException {
 		JCoFunctionTemplate functionTemplate;
 		try {
 			functionTemplate = sapSystem.getJcoRepository().getFunctionTemplate(functionName);
@@ -347,7 +347,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 		return functionTemplate;
 	}
 
-	
+
 	@IbisDoc({"1", "Name of the Ibis-object", ""})
 	@Override
 	public void setName(String string) {
@@ -359,7 +359,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 	public void setSapSystemName(String string) {
 		sapSystemName = string;
 	}
-	
+
 	@IbisDoc({"3", "Index of the field in the ImportParameterList of the RFC function that contains the correlationId", "0"})
 	@Override
 	public void setCorrelationIdFieldIndex(int i) {

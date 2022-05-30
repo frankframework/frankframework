@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import com.sap.conn.jco.JCoException;
 
 /**
  * Wrapper for SAP sessions, used to control Logical Units of Work (LUWs).
- * 
+ *
  * @author  Gerrit van Brakel
  * @author  Jaco de Groot
  * @since   5.0
@@ -38,13 +38,13 @@ public class SapLUWHandle {
 	private JCoDestination destination;
 	private String tid;
 	private boolean useTid=false;
-	
-	private SapLUWHandle(SapSystem sapSystem) throws JCoException {
+
+	private SapLUWHandle(SapSystemImpl sapSystem) throws JCoException {
 		super();
 		this.destination = sapSystem.getDestination();
 	}
 
-	public static SapLUWHandle createHandle(PipeLineSession session, String sessionKey, SapSystem sapSystem, boolean useTid) throws JCoException {
+	public static SapLUWHandle createHandle(PipeLineSession session, String sessionKey, SapSystemImpl sapSystem, boolean useTid) throws JCoException {
 		SapLUWHandle result=(SapLUWHandle)session.get(sessionKey);
 		if (result!=null) {
 			log.warn("LUWHandle already exists under key ["+sessionKey+"]");
@@ -60,7 +60,7 @@ public class SapLUWHandle {
 		return result;
 	}
 
-	public static SapLUWHandle retrieveHandle(PipeLineSession session, String sessionKey, boolean create, SapSystem sapSystem, boolean useTid) throws JCoException {
+	public static SapLUWHandle retrieveHandle(PipeLineSession session, String sessionKey, boolean create, SapSystemImpl sapSystem, boolean useTid) throws JCoException {
 		SapLUWHandle result=(SapLUWHandle)session.get(sessionKey);
 		if (result==null && create) {
 			return createHandle(session, sessionKey, sapSystem, useTid);
@@ -78,7 +78,7 @@ public class SapLUWHandle {
 		}
 	}
 
-	
+
 
 	public void begin() throws JCoException {
 		if (isUseTid()) {
@@ -107,7 +107,7 @@ public class SapLUWHandle {
 		tid=null;
 		throw new RollbackException();
 	}
-	
+
 	public void release() throws JCoException {
 		if (!isUseTid()) {
 			// End the stateful connection

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,8 +37,8 @@ import nl.nn.adapterframework.stream.Message;
 
 /**
  * Base class for functions that call SAP.
- * 
- * @ff.parameter sapSystemName  points to {@link SapSystem} to use; required when attribute <code>sapSystemName</code> is empty
+ *
+ * @ff.parameter sapSystemName  points to {@link SapSystemImpl} to use; required when attribute <code>sapSystemName</code> is empty
 
  * @author  Gerrit van Brakel
  * @author  Jaco de Groot
@@ -92,7 +92,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 		return sendMessage(message,null);
 	}
 
-	public SapSystem getSystem(ParameterValueList pvl) throws SapException {
+	public SapSystemImpl getSystem(ParameterValueList pvl) throws SapException {
 		if (StringUtils.isNotEmpty(getSapSystemName())) {
 			return getSapSystem();
 		}
@@ -103,15 +103,15 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 		if (StringUtils.isEmpty(SapSystemName)) {
 			throw new SapException("could not determine sapSystemName using parameter ["+getSapSystemNameParam()+"]");
 		}
-		SapSystem result = getSapSystem(SapSystemName);
-		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"determined SapSystemName ["+SapSystemName+"]"); 
+		SapSystemImpl result = getSapSystem(SapSystemName);
+		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"determined SapSystemName ["+SapSystemName+"]");
 		if (result==null) {
 			log.warn(getLogPrefix()+"could not find a SapSystem ["+SapSystemName+"] from Parameter ["+getSapSystemNameParam()+"]");
 		}
 		return getSapSystem(SapSystemName);
 	}
 
-	public JCoDestination getDestination(PipeLineSession session, SapSystem sapSystem) throws SenderException, SapException, JCoException {
+	public JCoDestination getDestination(PipeLineSession session, SapSystemImpl sapSystem) throws SenderException, SapException, JCoException {
 		JCoDestination result;
 		if (isSynchronous()) {
 			if (StringUtils.isNotEmpty(getLuwHandleSessionKey())) {
@@ -135,7 +135,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 		return result;
 	}
 
-	public String getTid(JCoDestination destination, SapSystem sapSystem) throws SapException, JCoException {
+	public String getTid(JCoDestination destination, SapSystemImpl sapSystem) throws SapException, JCoException {
 		if (isSynchronous()) {
 			return null;
 		}
