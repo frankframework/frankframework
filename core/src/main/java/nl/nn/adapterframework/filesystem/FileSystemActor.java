@@ -336,6 +336,9 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				}
 				case READ: {
 					F file=getFile(input, pvl);
+					if(!fileSystem.exists(file)) {
+						throw new FileSystemException("File to read does not exist.");
+					}
 					Message in = fileSystem.readFile(file, getCharset());
 					if (getBase64()!=null) {
 						return new Base64InputStream(in.asInputStream(), getBase64()==Base64Pipe.Direction.ENCODE);

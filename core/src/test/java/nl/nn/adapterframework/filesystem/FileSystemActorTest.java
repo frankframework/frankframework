@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -533,6 +534,20 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		Message result = Message.asMessage(actor.doAction(message, pvl, session));
 		assertEquals(contents, result.asString());
 		assertEquals(fileShouldStillExistAfterwards, _fileExists(filename));
+	}
+
+	@Test
+	public void fileSystemActorReadActionNonExistingFileTest() throws Exception {
+		String filename = "nonExistingfile";
+
+		actor.setAction(FileSystemAction.READ);
+		actor.configure(fileSystem,null,owner);
+		actor.open();
+
+		Message message= new Message(filename);
+		ParameterValueList pvl = null;
+
+		assertThrows(FileSystemException.class, () -> actor.doAction(message, pvl, session));
 	}
 
 	@Test
