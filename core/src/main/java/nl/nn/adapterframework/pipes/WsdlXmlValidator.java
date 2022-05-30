@@ -199,9 +199,13 @@ public class WsdlXmlValidator extends SoapValidator {
 	protected PipeForward validate(Message messageToValidate, PipeLineSession session, boolean responseMode, String messageRoot) throws XmlValidatorException, PipeRunException, ConfigurationException {
 		String soapAction = session.get(SoapBindingConstants.SOAP_ACTION, "");
 		if(StringUtils.isNotEmpty(soapAction)) {
-			setSoapBody(getSoapBodyFromSoapAction(soapAction));
-			resetCalculatedRootValidatons();
-			configure();
+			String soapBodyFromSoapAction = getSoapBodyFromSoapAction(soapAction);
+			if(StringUtils.compare(getSoapBody(), soapBodyFromSoapAction) != 0) {
+				log.debug("soapBody ["+soapBodyFromSoapAction+"] is determined from soapAction ["+soapAction+"]");
+				setSoapBody(soapBodyFromSoapAction);
+				resetCalculatedRootValidatons();
+				configure();
+			}
 		}
 		return super.validate(messageToValidate, session, responseMode, messageRoot);
 	}

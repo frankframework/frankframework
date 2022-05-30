@@ -23,7 +23,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
 import nl.nn.adapterframework.validation.RootValidation;
@@ -75,16 +74,14 @@ public class SoapValidator extends Json2XmlValidator {
 			}
 			super.setSchemaLocation(getSchemaLocation() + (getSchemaLocation().length() > 0 ? " " : "") + soapVersion.getSchemaLocation());
 		}
-		if (StringUtils.isEmpty(soapBody)) {
-			ConfigurationWarnings.add(this, log, "soapBody not specified");
-		}
+
 		if (!isAllowPlainXml()) {
 			addRequestRootValidation(new RootValidation(SOAP_ENVELOPE, SOAP_BODY, soapBody));
 			if (StringUtils.isNotEmpty(outputSoapBody)) {
 				addResponseRootValidation(new RootValidation(SOAP_ENVELOPE, SOAP_BODY, outputSoapBody));
 			}
 			addRequestRootValidation(new RootValidation(SOAP_ENVELOPE, SOAP_HEADER, soapHeader));
-			List<String> invalidRootNamespaces = new ArrayList<String>();
+			List<String> invalidRootNamespaces = new ArrayList<>();
 			for (String namespace:soapVersion.getNamespaces()) {
 				invalidRootNamespaces.add(namespace);
 			}
