@@ -1,0 +1,6 @@
+<!DOCTYPE configuration [
+	<!ENTITY ConfigurationSap SYSTEM "./ConfigurationSap.xml">
+]>
+<configuration name="SAP" active="${active.sap}">
+	&ConfigurationSap;
+</configuration>
