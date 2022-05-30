@@ -1,0 +1,13 @@
+<GetPartiesOnAgreementRLY xmlns="urn:parties">
+	<ReturnCode>1</ReturnCode>
+	<ReturnCodeExtension>aaaaaaaa</ReturnCodeExtension>
+	<Agreement>
+		<Id>2400136</Id>
+	</Agreement>
+	<PartyAgreementRole>
+		<Id>2410367</Id>
+	</PartyAgreementRole>
+	<PartyAgreementRole>
+		<Id>2412367</Id>
+	</PartyAgreementRole>
+</GetPartiesOnAgreementRLY>

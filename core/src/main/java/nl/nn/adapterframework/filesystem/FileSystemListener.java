@@ -238,6 +238,9 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 				if (threadContext!=null && StringUtils.isNotEmpty(getInProcessFolder())) {
 					threadContext.put(ORIGINAL_FILENAME_KEY, fileSystem.getName(file));
 				}
+				if (StringUtils.isNotEmpty(getLogFolder())) {
+					FileSystemUtils.copyFile(fileSystem, file, getLogFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders(), false);
+				}
 				return file;
 			}
 		} catch (IOException | FileSystemException e) {
@@ -260,9 +263,6 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 			@SuppressWarnings("unchecked")
 			F rawMessage = (F)rawMessageOrWrapper; // if it is not a wrapper, than it must be an F
 			try {
-				if (StringUtils.isNotEmpty(getLogFolder())) {
-					FileSystemUtils.copyFile(fileSystem, rawMessage, getLogFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders());
-				}
 				if (isDelete() && (processResult.isSuccessful() || StringUtils.isEmpty(getErrorFolder()))) {
 					fileSystem.deleteFile(rawMessage);
 					return;
@@ -366,6 +366,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		}
 	}
 
+	// result is guaranteed if toState==ProcessState.INPROCESS
 	@Override
 	public F changeProcessState(F message, ProcessState toState, String reason) throws ListenerException {
 		try {
@@ -373,10 +374,10 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 				return null; // if message and/or toState does not exist, the message can/will not be moved to it, so return null.
 			}
 			if (toState==ProcessState.DONE || toState==ProcessState.ERROR) {
-				return FileSystemUtils.moveFile(getFileSystem(), message, getStateFolder(toState), isOverwrite(), getNumberOfBackups(), isCreateFolders());
+				return FileSystemUtils.moveFile(getFileSystem(), message, getStateFolder(toState), isOverwrite(), getNumberOfBackups(), isCreateFolders(), false);
 			}
 			if (toState==ProcessState.INPROCESS && isFileTimeSensitive() && getFileSystem() instanceof IWritableFileSystem) {
-				F movedFile = getFileSystem().moveFile(message, getStateFolder(toState), false);
+				F movedFile = getFileSystem().moveFile(message, getStateFolder(toState), false, true);
 				String newName = getFileSystem().getCanonicalName(movedFile)+"-"+(DateUtils.format(getFileSystem().getModificationTime(movedFile)).replace(":", "_"));
 				F renamedFile = getFileSystem().toFile(newName);
 				int i=1;
@@ -390,7 +391,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 				}
 				return FileSystemUtils.renameFile((IWritableFileSystem<F>) getFileSystem(), movedFile, renamedFile, false, 0);
 			}
-			return getFileSystem().moveFile(message, getStateFolder(toState), false);
+			return getFileSystem().moveFile(message, getStateFolder(toState), false, toState==ProcessState.INPROCESS);
 		} catch (FileSystemException e) {
 			throw new ListenerException("Cannot change processState to ["+toState+"] for ["+getFileSystem().getName(message)+"]", e);
 		}
@@ -422,7 +423,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 
 	@Override
-	@IbisDoc({"1", "Name of the listener", ""})
+	@IbisDoc({"Name of the listener", ""})
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -433,7 +434,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		setInputFolder(inputDirectory);
 	}
 
-	@IbisDoc({"2", "Folder that is scanned for files. If not set, the root is scanned", ""})
+	@IbisDoc({"Folder that is scanned for files. If not set, the root is scanned", ""})
 	public void setInputFolder(String inputFolder) {
 		this.inputFolder = inputFolder;
 	}
@@ -444,7 +445,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		setInProcessFolder(outputDirectory);
 	}
 
-	@IbisDoc({"3", "Folder where files are stored <i>while</i> being processed", ""})
+	@IbisDoc({"Folder where files are stored <i>while</i> being processed", ""})
 	public void setInProcessFolder(String inProcessFolder) {
 		this.inProcessFolder = inProcessFolder;
 	}
@@ -455,27 +456,27 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		setProcessedFolder(processedDirectory);
 	}
 
-	@IbisDoc({"4", "Folder where files are stored <i>after</i> being processed", ""})
+	@IbisDoc({"Folder where files are stored <i>after</i> being processed", ""})
 	public void setProcessedFolder(String processedFolder) {
 		this.processedFolder = processedFolder;
 	}
 
-	@IbisDoc({"5", "Folder where files are stored <i>after</i> being processed, in case the exit-state was not equal to <code>success</code>", ""})
+	@IbisDoc({"Folder where files are stored <i>after</i> being processed, in case the exit-state was not equal to <code>success</code>", ""})
 	public void setErrorFolder(String errorFolder) {
 		this.errorFolder = errorFolder;
 	}
 
-	@IbisDoc({"6", "Folder where messages from the error folder can be put on Hold, temporarily", ""})
+	@IbisDoc({"Folder where messages from the error folder can be put on Hold, temporarily", ""})
 	public void setHoldFolder(String holdFolder) {
 		this.holdFolder = holdFolder;
 	}
 
-	@IbisDoc({"6", "Folder where a copy of every file that is received is stored", ""})
+	@IbisDoc({"Folder where a copy of every file that is received is stored", ""})
 	public void setLogFolder(String logFolder) {
 		this.logFolder = logFolder;
 	}
 
-	@IbisDoc({"7", "If set to <code>true</code>, the folders to look for files and to move files to when being processed and after being processed are created if they are specified and do not exist", "false"})
+	@IbisDoc({"If set to <code>true</code>, the folders to look for files and to move files to when being processed and after being processed are created if they are specified and do not exist", "false"})
 	public void setCreateFolders(boolean createFolders) {
 		this.createFolders = createFolders;
 	}
@@ -486,7 +487,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		setCreateFolders(createInputDirectory);
 	}
 
-	@IbisDoc({"8", "If set <code>true</code>, the file processed will be deleted after being processed, and not stored", "false"})
+	@IbisDoc({"If set <code>true</code>, the file processed will be deleted after being processed, and not stored", "false"})
 	public void setDelete(boolean b) {
 		delete = b;
 	}
@@ -509,37 +510,37 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 //	}
 
 
-	@IbisDoc({"9", "Number of copies held of a file with the same name. Backup files have a dot and a number suffixed to their name. If set to 0, no backups will be kept.", "0"})
+	@IbisDoc({"Number of copies held of a file with the same name. Backup files have a dot and a number suffixed to their name. If set to 0, no backups will be kept.", "0"})
 	public void setNumberOfBackups(int i) {
 		numberOfBackups = i;
 	}
 
-	@IbisDoc({"10", "If set <code>true</code>, the destination file will be deleted if it already exists", "false"})
+	@IbisDoc({"If set <code>true</code>, the destination file will be deleted if it already exists", "false"})
 	public void setOverwrite(boolean overwrite) {
 		this.overwrite = overwrite;
 	}
 
-	@IbisDoc({"11", "Determines the contents of the message that is sent to the pipeline. Can be 'name', for the filename, 'path', for the full file path, 'contents' for the contents of the file, 'info' for file information. For any other value, the attributes of the file are searched and used", "path"})
+	@IbisDoc({"Determines the contents of the message that is sent to the pipeline. Can be 'name', for the filename, 'path', for the full file path, 'contents' for the contents of the file, 'info' for file information. For any other value, the attributes of the file are searched and used", "path"})
 	public void setMessageType(String messageType) {
 		this.messageType = messageType;
 	}
 
-	@IbisDoc({"12", "If <code>true</code>, the file modification time is used in addition to the filename to determine if a file has been seen before", "false"})
+	@IbisDoc({"If <code>true</code>, the file modification time is used in addition to the filename to determine if a file has been seen before", "false"})
 	public void setFileTimeSensitive(boolean b) {
 		fileTimeSensitive = b;
 	}
 
-	@IbisDoc({"13", "Minimal age of file <i>in milliseconds</i>, to avoid receiving a file while it is still being written", "1000"})
+	@IbisDoc({"Minimal age of file <i>in milliseconds</i>, to avoid receiving a file while it is still being written", "1000"})
 	public void setMinStableTime(long minStableTime) {
 		this.minStableTime = minStableTime;
 	}
 
-	@IbisDoc({"14", "Key of Property to use as messageId. If not set, the filename of the file as it was received in the inputFolder is used as the messageId", "for MailFileSystems: Message-ID"})
+	@IbisDoc({"Key of Property to use as messageId. If not set, the filename of the file as it was received in the inputFolder is used as the messageId", "for MailFileSystems: Message-ID"})
 	public void setMessageIdPropertyKey(String messageIdPropertyKey) {
 		this.messageIdPropertyKey = messageIdPropertyKey;
 	}
 
-	@IbisDoc({"15", "If set <code>true</code>, no browsers for process folders are generated", "false"})
+	@IbisDoc({"If set <code>true</code>, no browsers for process folders are generated", "false"})
 	public void setDisableMessageBrowsers(boolean disableMessageBrowsers) {
 		this.disableMessageBrowsers = disableMessageBrowsers;
 	}
@@ -549,7 +550,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	public void setWildCard(String wildcard) {
 		setWildcard(wildcard);
 	}
-	@IbisDoc({"16", "Filter of files to look for in inputFolder e.g. '*.inp'.", ""})
+	@IbisDoc({"Filter of files to look for in inputFolder e.g. '*.inp'.", ""})
 	public void setWildcard(String wildcard) {
 		this.wildcard = wildcard;
 	}
@@ -559,17 +560,17 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	public void setExcludeWildCard(String excludeWildcard) {
 		setExcludeWildcard(excludeWildcard);
 	}
-	@IbisDoc({"17", "Filter of files to be excluded when looking in inputFolder.", ""})
+	@IbisDoc({"Filter of files to be excluded when looking in inputFolder.", ""})
 	public void setExcludeWildcard(String excludeWildcard) {
 		this.excludeWildcard = excludeWildcard;
 	}
 
-	@IbisDoc({"18", "If set, an XML with all message properties is provided under this key", ""})
+	@IbisDoc({"If set, an XML with all message properties is provided under this key", ""})
 	public void setStoreMetadataInSessionKey(String storeMetadataInSessionKey) {
 		this.storeMetadataInSessionKey = storeMetadataInSessionKey;
 	}
 
-	@IbisDoc({"19", "Charset to be used for extracting the contents"})
+	@IbisDoc({"Charset to be used for extracting the contents"})
 	public void setCharset(String charset) {
 		this.charset = charset;
 	}

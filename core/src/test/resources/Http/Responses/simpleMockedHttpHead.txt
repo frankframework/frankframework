@@ -1,0 +1,4 @@
+<headers>
+	<header name="Connection"><![CDATA[Keep-Alive]]></header>
+	<header name="Content-Type"><![CDATA[text/plain]]></header>
+</headers>

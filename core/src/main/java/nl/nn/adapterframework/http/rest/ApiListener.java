@@ -82,6 +82,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter String roleClaim;
 
 	private @Getter JwtValidator<SecurityContext> jwtValidator;
+	private String servletUrlMapping = AppConstants.getInstance().getString("servlet.ApiListenerServlet.urlMapping", "api");
 
 	public enum AuthenticationMethods {
 		NONE, COOKIE, HEADER, AUTHROLE, JWT;
@@ -145,7 +146,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	@Override
 	public String getPhysicalDestinationName() {
-		String destinationName = "uriPattern: "+getUriPattern()+"; method: "+getMethod();
+		String destinationName = "uriPattern: /"+servletUrlMapping+getUriPattern()+"; method: "+getMethod();
 		if(!MediaTypes.ANY.equals(consumes))
 			destinationName += "; consumes: "+getConsumes();
 		if(!MediaTypes.ANY.equals(produces))
@@ -249,7 +250,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	//TODO add authenticationType
 
 	/** 
-	 * Enables security for this listener. If you wish to use the application servers authorisation roles [AUTHROLE], you need to enable them globally for all ApiListeners with the `servlet.ApiListenerServlet.securityroles=ibistester,ibiswebservice` property
+	 * Enables security for this listener. If you wish to use the application servers authorisation roles [AUTHROLE], you need to enable them globally for all ApiListeners with the `servlet.ApiListenerServlet.securityRoles=IbisTester,IbisWebService` property
 	 * @ff.default <code>NONE</code>
 	 */
 	public void setAuthenticationMethod(AuthenticationMethods authenticationMethod) {

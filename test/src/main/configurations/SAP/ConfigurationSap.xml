@@ -1,0 +1,42 @@
+<Module xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://frankdoc.frankframework.org/iaf/api/frankdoc/files/FrankConfig.xsd">
+	<SapSystems>
+		<SapSystem 
+			name="default" 
+			host="${sap.host}" 
+			mandant="${sap.mandant}" 
+			systemnr="${sap.systemnr}" 
+			maxConnections="${sap.maxConnections}" 
+			authAlias="sap" 
+			language="NL" 
+			unicode="true" 
+			traceLevel="${sap.traceLevel}" 
+			group="${sap.group}" 
+			r3name="${sap.r3name}" 
+			msservOffset="${sap.msservOffset}" 
+			sncEnabled="${sap.snc.enabled}" 
+			sncLibrary="${sap.snc.libraryPath}" 
+			sncQop="${sap.snc.qop}" 
+			myName="${sap.snc.myName}" 
+			partnerName="${sap.snc.partnerName}"/>
+	</SapSystems>
+	<Adapter name="SapListener">
+		<Receiver name="1">
+			<SapListener progid="dummy1" sapSystemName="default"/>
+		</Receiver>
+		<Receiver name="2">
+			<listener className="nl.nn.adapterframework.extensions.sap.SapListener" progid="dummy2" sapSystemName="default"/>
+		</Receiver>
+		<Pipeline>
+			<Exit name="EXIT" status="SUCCESS"/>
+			<pipe name="sapSender">
+				<sender className="nl.nn.adapterframework.extensions.sap.SapSender" functionName="dummy3" sapSystemName="default" />
+			</pipe>
+			<pipe name="sapSender2">
+				<SapSender functionName="dummy3" sapSystemName="default" />
+			</pipe>
+			<Base64Pipe name="dummy">
+				<forward name="success" path="EXIT"/>
+			</Base64Pipe>
+		</Pipeline>
+	</Adapter>
+</Module>

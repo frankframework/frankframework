@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.xml.transform.TransformerConfigurationException;
@@ -102,7 +103,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Sender for the HTTP protocol using GET, POST, PUT or DELETE using httpclient 4+
- * 
+ *
  * <p><b>Expected message format:</b></p>
  * <p>GET methods expect a message looking like this</p>
  * <pre>
@@ -116,7 +117,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  *
  * <p>
  * Note 1:
- * Some certificates require the &lt;java_home&gt;/jre/lib/security/xxx_policy.jar files to be upgraded to unlimited strength. Typically, in such a case, an error message like 
+ * Some certificates require the &lt;java_home&gt;/jre/lib/security/xxx_policy.jar files to be upgraded to unlimited strength. Typically, in such a case, an error message like
  * <code>Error in loading the keystore: Private key decryption error: (java.lang.SecurityException: Unsupported keysize or algorithm parameters</code> is observed.
  * For IBM JDKs these files can be downloaded from http://www.ibm.com/developerworks/java/jdk/security/50/ (scroll down to 'IBM SDK Policy files')
  * </p>
@@ -135,7 +136,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </p>
  * <p>
  * Note 3:
- * In case <code>javax.net.ssl.SSLHandshakeException: unknown certificate</code>-exceptions are thrown, 
+ * In case <code>javax.net.ssl.SSLHandshakeException: unknown certificate</code>-exceptions are thrown,
  * probably the certificate of the other party is not trusted. Try to use one of the certificates in the path as your truststore by doing the following:
  * <ul>
  *   <li>open the URL you are trying to reach in InternetExplorer</li>
@@ -154,17 +155,17 @@ import nl.nn.adapterframework.util.XmlUtils;
  *   <li>if you didn't use the standard keydatabase, then reference the file in the truststore-attribute in Configuration.xml (include the file as a resource)</li>
  *   <li>use jks for the truststoreType-attribute</li>
  *   <li>restart your application</li>
- *   <li>instead of IBM ikeyman you can use the standard java tool <code>keytool</code> as follows: 
+ *   <li>instead of IBM ikeyman you can use the standard java tool <code>keytool</code> as follows:
  *      <code>keytool -import -alias <i>yourAlias</i> -file <i>pathToSavedCertificate</i></code></li>
  * </ul>
  * <p>
  * Note 4:
  * In case <code>cannot create or initialize SocketFactory: (IOException) Unable to verify MAC</code>-exceptions are thrown,
- * please check password or authAlias configuration of the corresponding certificate. 
+ * please check password or authAlias configuration of the corresponding certificate.
  * </p>
- * 
- * @ff.parameters Any parameters present are appended to the request as request-parameters except the headersParams list which are added as http headers
- * 
+ *
+ * @ff.parameters Any parameters present are appended to the request (when method is <code>GET</code> as request-parameters, when method <code>POST</code> as body part) except the headersParams list, which are added as HTTP headers, and the urlParam header
+ *
  * @author	Niels Meijer
  * @since	7.0
  */
@@ -237,6 +238,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private @Getter boolean followRedirects=true;
 	private @Getter boolean staleChecking=true;
 	private @Getter int staleTimeout = 5000;
+	private @Getter int connectionTimeToLive = 900;
 	private @Getter boolean xhtml=false;
 	private @Getter String styleSheetName=null;
 	private @Getter String protocol=null;
@@ -416,17 +418,21 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		// In order to support multiThreading and connectionPooling
 		// If a sslSocketFactory has been defined, the connectionManager has to be initialized with the sslSocketFactory
 		PoolingHttpClientConnectionManager connectionManager;
+		int timeToLive = getConnectionTimeToLive();
+		if (timeToLive<=0) {
+			timeToLive = -1;
+		}
 		SSLConnectionSocketFactory sslSocketFactory = getSSLConnectionSocketFactory();
 		if(sslSocketFactory != null) {
 			Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
 				.register("http", PlainConnectionSocketFactory.getSocketFactory())
 				.register("https", sslSocketFactory)
 				.build();
-			connectionManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
+			connectionManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry, null, null, null, timeToLive, TimeUnit.SECONDS);
 			log.debug(getLogPrefix()+"created PoolingHttpClientConnectionManager with custom SSLConnectionSocketFactory");
 		}
 		else {
-			connectionManager = new PoolingHttpClientConnectionManager();
+			connectionManager = new PoolingHttpClientConnectionManager(timeToLive, TimeUnit.SECONDS);
 			log.debug(getLogPrefix()+"created default PoolingHttpClientConnectionManager");
 		}
 
@@ -597,7 +603,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 	/**
 	 * Custom implementation to extract the response and format it to a String result. <br/>
-	 * It is important that the {@link HttpResponseHandler#getResponse() response} 
+	 * It is important that the {@link HttpResponseHandler#getResponse() response}
 	 * will be read or will be {@link HttpResponseHandler#close() closed}.
 	 * @param responseHandler {@link HttpResponseHandler} that contains the response information
 	 * @param session {@link PipeLineSession} which may be null
@@ -717,12 +723,12 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				}
 				throw new SenderException(e);
 			} finally {
-				// By forcing the use of the HttpResponseHandler the resultStream 
+				// By forcing the use of the HttpResponseHandler the resultStream
 				// will automatically be closed when it has been read.
 				// See HttpResponseHandler and ReleaseConnectionAfterReadInputStream.
 				// We cannot close the connection as the response might be kept
 				// in a sessionKey for later use in the pipeline.
-				// 
+				//
 				// IMPORTANT: It is possible that poorly written implementations
 				// wont read or close the response.
 				// This will cause the connection to become stale..
@@ -853,17 +859,17 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		authDomain = string;
 	}
 
-	/** 
-	 * Endpoint to obtain OAuth accessToken. If <code>authAlias</code> or <code>username</code>( and <code>password</code>) are specified, 
+	/**
+	 * Endpoint to obtain OAuth accessToken. If <code>authAlias</code> or <code>username</code>( and <code>password</code>) are specified,
 	 * then a PasswordGrant is used, otherwise a ClientCredentials grant. The obtained accessToken will be added to the regular requests
-	 * in an HTTP Header 'Authorization' with a 'Bearer' prefix. 
+	 * in an HTTP Header 'Authorization' with a 'Bearer' prefix.
 	 */
 	public void setTokenEndpoint(String string) {
 		tokenEndpoint = string;
 	}
 	/**
-	 * If set to a non-negative value, then determines the time (in seconds) after which the token will be refreshed. Otherwise the token 
-	 * will be refreshed when it is half way its lifetime as defined by the <code>expires_in</code> clause of the token response, 
+	 * If set to a non-negative value, then determines the time (in seconds) after which the token will be refreshed. Otherwise the token
+	 * will be refreshed when it is half way its lifetime as defined by the <code>expires_in</code> clause of the token response,
 	 * or when the regular server returns a 401 status with a challenge.
 	 * @ff.default -1
 	 */
@@ -940,7 +946,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		return disableCookies;
 	}
 
-	
+
 	@Deprecated
 	@ConfigurationWarning("Please use attribute keystore instead")
 	public void setCertificate(String string) {
@@ -962,7 +968,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		setKeystorePassword(string);
 	}
 
-	/** resource url to keystore or certificate to be used for authentication. If none specified, the JVMs default keystore will be used. */
+	/** resource URL to keystore or certificate to be used for authentication. If none specified, the JVMs default keystore will be used. */
 	@Override
 	public void setKeystore(String string) {
 		keystore = string;
@@ -982,7 +988,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	public void setKeystorePassword(String string) {
 		keystorePassword = string;
 	}
-	
+
 	@Override
 	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
 		this.keyManagerAlgorithm = keyManagerAlgorithm;
@@ -1002,7 +1008,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	}
 
 	@Override
-	/** Resource url to truststore to be used for authenticating peer. If none specified, the JVMs default truststore will be used. */
+	/** Resource URL to truststore to be used for authenticating peer. If none specified, the JVMs default truststore will be used. */
 	public void setTruststore(String string) {
 		truststore = string;
 	}
@@ -1041,34 +1047,39 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	public void setIgnoreCertificateExpiredException(boolean b) {
 		ignoreCertificateExpiredException = b;
 	}
-	
-	
-	@IbisDoc({"comma separated list of parameter names which should be set as http headers", ""})
+
+
+	@IbisDoc({"Comma separated list of parameter names which should be set as HTTP headers", ""})
 	public void setHeadersParams(String headersParams) {
 		this.headersParams = headersParams;
 	}
-	
-	@IbisDoc({"when true, a redirect request will be honoured, e.g. to switch to https", "true"})
+
+	@IbisDoc({"If <code>true</code>, a redirect request will be honoured, e.g. to switch to HTTPS", "true"})
 	public void setFollowRedirects(boolean b) {
 		followRedirects = b;
 	}
-	
-	@IbisDoc({"controls whether connections checked to be stale, i.e. appear open, but are not.", "true"})
+
+	@IbisDoc({"Controls whether connections checked to be stale, i.e. appear open, but are not.", "true"})
 	public void setStaleChecking(boolean b) {
 		staleChecking = b;
 	}
-	
-	@IbisDoc({"Used when StaleChecking=true. Timeout when stale connections should be closed.", "5000"})
+
+	@IbisDoc({"Used when StaleChecking=<code>true</code>. Timeout when stale connections should be closed.", "5000 ms"})
 	public void setStaleTimeout(int timeout) {
 		staleTimeout = timeout;
 	}
 
-	@IbisDoc({"when true, the html response is transformed to xhtml", "false"})
+	@IbisDoc({"Maximum Time to Live for connections in the pool. No connection will be re-used past its timeToLive value.", "900 s"})
+	public void setConnectionTimeToLive(int timeToLive) {
+		connectionTimeToLive = timeToLive;
+	}
+
+	@IbisDoc({"If <code>true</code>, the HTML response is transformed to XHTML", "false"})
 	public void setXhtml(boolean xHtml) {
 		xhtml = xHtml;
 	}
 
-	@IbisDoc({"(only used when <code>xhtml=true</code>) stylesheet to apply to the html response", ""})
+	@IbisDoc({"(Only used when xHtml=<code>true</code>) stylesheet to apply to the HTML response", ""})
 	public void setStyleSheetName(String stylesheetName){
 		this.styleSheetName=stylesheetName;
 	}
@@ -1078,7 +1089,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		this.protocol = protocol;
 	}
 
-	@IbisDoc({"if set, the status code of the http response is put in specified in the sessionkey and the (error or okay) response message is returned", ""})
+	@IbisDoc({"If set, the status code of the HTTP response is put in specified in the sessionKey and the (error or okay) response message is returned", ""})
 	public void setResultStatusCodeSessionKey(String resultStatusCodeSessionKey) {
 		this.resultStatusCodeSessionKey = resultStatusCodeSessionKey;
 	}

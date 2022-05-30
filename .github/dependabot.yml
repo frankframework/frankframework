@@ -1,0 +1,14 @@
+version: 2
+updates:
+  - package-ecosystem: "maven"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 1
+    labels:
+      - "dependencies"
+    ignore:
+      - dependency-name: "org.ibissource:ibis-ladybug"
+      - dependency-name: "com.aspose:*"
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]

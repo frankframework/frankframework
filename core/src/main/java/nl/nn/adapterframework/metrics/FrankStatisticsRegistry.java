@@ -43,8 +43,8 @@ import nl.nn.adapterframework.core.IPipe;
 public class FrankStatisticsRegistry extends SimpleMeterRegistry {
 	private static final NumberFormat keyFormat = new DecimalFormat("#");
 
-	public FrankStatisticsRegistry() {
-		super(SimpleConfig.DEFAULT, Clock.SYSTEM);
+	public FrankStatisticsRegistry(SimpleConfig config) {
+		super(config, Clock.SYSTEM);
 	}
 
 	@Override

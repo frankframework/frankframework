@@ -42,7 +42,7 @@ public class XmlValidatorSender extends XercesXmlValidator implements ISenderWit
 
 	@Override
 	public void configure() throws ConfigurationException {
-		configure(getLogPrefix());
+		configure(this);
 	}
 
 	@Override

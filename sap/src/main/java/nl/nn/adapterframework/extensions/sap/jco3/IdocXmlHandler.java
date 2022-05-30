@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ import com.sap.conn.jco.JCoException;
 public class IdocXmlHandler extends DefaultHandler {
 	protected Logger log = LogUtil.getLogger(this.getClass());
 	
-	private SapSystem sapSystem;
+	private SapSystemImpl sapSystem;
 	private IDocDocument doc=null;
 	private List<IDocSegment> segmentStack = new ArrayList<IDocSegment>();
 	private String currentField;
@@ -56,7 +56,7 @@ public class IdocXmlHandler extends DefaultHandler {
 	private boolean parsingEdiDcHeader=false;
 	private Locator locator;
 	
-	public IdocXmlHandler(SapSystem sapSystem) {
+	public IdocXmlHandler(SapSystemImpl sapSystem) {
 		super();
 		this.sapSystem=sapSystem;
 	}

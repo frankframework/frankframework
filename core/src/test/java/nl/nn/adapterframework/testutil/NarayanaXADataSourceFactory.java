@@ -13,6 +13,7 @@ import com.arjuna.ats.internal.jdbc.ConnectionManager;
 import com.arjuna.ats.jdbc.TransactionalDriver;
 
 import nl.nn.adapterframework.jta.narayana.NarayanaConfigurationBean;
+import nl.nn.adapterframework.jta.narayana.NarayanaDataSourceFactory;
 
 public class NarayanaXADataSourceFactory extends URLXADataSourceFactory {
 
@@ -29,7 +30,7 @@ public class NarayanaXADataSourceFactory extends URLXADataSourceFactory {
 
 	@Override
 	protected DataSource augmentXADataSource(XADataSource xaDataSource, String product) {
-		return new DelegatingDataSource() { //Cannot use NarayanaDatasource as the PGSQL driver does not implement the Datasource interface
+		DataSource result = new DelegatingDataSource() { //Cannot use NarayanaDatasource as the PGSQL driver does not implement the Datasource interface
 			@Override
 			public Connection getConnection() throws SQLException {
 				Properties properties = new Properties();
@@ -39,5 +40,7 @@ public class NarayanaXADataSourceFactory extends URLXADataSourceFactory {
 				return ConnectionManager.create(null, properties);
 			}
 		};
+		NarayanaDataSourceFactory.checkModifiers(result);
+		return result;
 	}
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden
+   Copyright 2013, 2015 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,11 +18,9 @@ package nl.nn.adapterframework.validation;
 import java.io.IOException;
 import java.io.InputStream;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-
 public interface Schema {
 
-	InputStream getInputStream() throws IOException, ConfigurationException;
+	InputStream getInputStream() throws IOException;
 
 	String getSystemId();
 
