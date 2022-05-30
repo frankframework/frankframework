@@ -37,12 +37,12 @@ public class KairosDbRegistryConfigurator extends MetricsRegistryConfiguratorBas
 
 			@Override
 			public String userName() {
-				return getCredentialFactory("user-name", "password").getUsername();
+				return getCredentialFactory().getUsername();
 			}
 
 			@Override
 			public String password() {
-				return getCredentialFactory("user-name", "password").getPassword();
+				return getCredentialFactory().getPassword();
 			}
 		};
 		return new KairosMeterRegistry(kairosConfig, Clock.SYSTEM);
