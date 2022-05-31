@@ -398,7 +398,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		}
 
 		httpClientBuilder.setDefaultRequestConfig(requestConfigBuilder.build());
-		
+
 		httpClientBuilder.setRetryHandler(new DefaultHttpRequestRetryHandler(getMaxExecuteRetries(), true));
 
 		if(areCookiesDisabled()) {
