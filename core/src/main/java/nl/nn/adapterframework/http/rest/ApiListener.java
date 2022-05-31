@@ -314,7 +314,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		this.headerParams = headerParams;
 	}
 
-	/** Session key that references the Content-disposition header in the response */
+	/** Session key that provides the Content-disposition header in the response */
 	public void setContentDispositionHeaderSessionKey(String key) {
 		this.contentDispositionHeaderSessionKey = key;
 	}
