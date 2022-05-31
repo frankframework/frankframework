@@ -5,6 +5,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.any;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 
+import com.github.tomakehurst.wiremock.http.Fault;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.github.tomakehurst.wiremock.stubbing.Scenario;
 
@@ -16,6 +17,9 @@ public class MockTokenServer extends WireMockRule {
 	
 	String KEYCLOAK_SERVER="http://localhost:8888";
 	String KEYCLOAK_PATH="/auth/realms/iaf-test/protocol/openid-connect/token";
+	
+	public String SCENARIO_CONNECTION_RESET="Connection Reset";
+	public String SCENARIO_STATE_RESET_CONNECTION="Reset Connection";
 
 	String LOCAL_PATH="/token";
 	
@@ -57,6 +61,13 @@ public class MockTokenServer extends WireMockRule {
 					  .withStatus(200)
 					  .withHeader("Content-Type", "application/json")
 					  .withBody(accessTokenResponseExpired)));
+		stubFor(any(urlEqualTo(path)).inScenario(SCENARIO_CONNECTION_RESET)
+				  .whenScenarioStateIs(SCENARIO_STATE_RESET_CONNECTION)
+				  .willSetStateTo(Scenario.STARTED)
+				  .willReturn(aResponse().withFault(Fault.CONNECTION_RESET_BY_PEER)));
+		stubFor(any(urlEqualTo("/token/xxxxx"))
+				  .willReturn(aResponse()
+					  .withStatus(404)));
 		super.start();
 	}
 	
