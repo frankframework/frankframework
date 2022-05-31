@@ -41,7 +41,7 @@ public class SchedulerSenderTest extends SchedulerTestBase {
 	@Before
 	public void setUp() throws SchedulerException, ParseException {
 		super.setUp();
-		schedulerSender = new SchedulerSender();
+		schedulerSender = configuration.createBean(SchedulerSender.class);
 		schedulerSender.setName(JOB_NAME);
 		schedulerSender.setSchedulerHelper(schedulerHelper);
 	}

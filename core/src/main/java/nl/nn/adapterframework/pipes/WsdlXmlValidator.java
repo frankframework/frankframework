@@ -257,7 +257,6 @@ public class WsdlXmlValidator extends SoapValidator {
 			xsds.add(xsd);
 		}
 		if (StringUtils.isNotEmpty(getSchemaLocationToAdd())) {
-			combineSchemas = true;
 			StringTokenizer st = new StringTokenizer(getSchemaLocationToAdd(), ", \t\r\n\f");
 			while (st.hasMoreTokens()) {
 				XSD xsd = new XSD();
