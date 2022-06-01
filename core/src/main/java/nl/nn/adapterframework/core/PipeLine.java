@@ -175,6 +175,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		for (int i=0; i < pipes.size(); i++) {
 			IPipe pipe = getPipe(i);
 
+			log.debug(getLogPrefix()+"configuring Pipe ["+pipe.getName()+"]");
 			if (pipe instanceof FixedForwardPipe) {
 				FixedForwardPipe ffpipe = (FixedForwardPipe)pipe;
 				// getSuccessForward will return null if it has not been set. See below configure(pipe)

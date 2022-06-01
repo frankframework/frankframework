@@ -16,6 +16,9 @@
 package nl.nn.adapterframework.extensions.ibm;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+
 import java.io.IOException;
 
 import javax.jms.Destination;
@@ -35,8 +38,6 @@ import nl.nn.adapterframework.jms.JmsMessagingSource;
 import nl.nn.adapterframework.jms.MessagingSource;
 import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.stream.Message;
-
-import nl.nn.adapterframework.extensions.ibm.TestJMSMessage;
 
 public class IMSSenderTest extends SenderTestBase<IMSSender> {
 	
