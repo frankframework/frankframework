@@ -122,7 +122,7 @@
 						<manifestEntries>
 							<Ibis-Project>${project.name}</Ibis-Project>
 							<Ibis-Description>${project.description}</Ibis-Description>
-							<IAF-Version>${iaf.version}</IAF-Version>
+							<IAF-Version>${revision}</IAF-Version>
 							<Created-By>Apache Maven ${maven.version}</Created-By>
 							<Creation-Time>${timestamp}</Creation-Time>
 							<Build-Version>${project.version}</Build-Version>
