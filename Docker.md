@@ -108,9 +108,7 @@ The images are based on Tomcat, all restrictions and considerations that apply t
 
 ## HTTPS and authentication
 
-By default, the image uses the default server.xml of Tomcat which is not configured for inbound HTTPS traffic and user authentication on the administration console. To secure your application, replace server.xml with a secured version matching your requirements.
-
-Note: The GUI will not load data if accessed via HTTP and `dtap.stage!=LOC`, HTTP-based listeners will still process messages.
+Frank!Applications use HTTPS and require authentication unless `dtap.stage=LOC`, but the default server.xml of Tomcat is not configured for inbound HTTPS traffic and user authentication. To configure this, the server.xml file will need to be replaced by either building your own image or mounting it at runtime.
 
 ## Secrets
 
