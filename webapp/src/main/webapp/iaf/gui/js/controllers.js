@@ -870,27 +870,27 @@ angular.module('iaf.beheerconsole')
 
 	$scope.startAdapter = function(adapter) {
 		adapter.state = 'starting';
-		Api.Put("adapters/" + Misc.escapeURL(adapter.name), {"action": "start"});
+		Api.Put("adapters/" + adapter.name, {"action": "start"});
 	};
 	$scope.stopAdapter = function(adapter) {
 		adapter.state = 'stopping';
-		Api.Put("adapters/" + Misc.escapeURL(adapter.name), {"action": "stop"});
+		Api.Put("adapters/" + adapter.name, {"action": "stop"});
 	};
 	$scope.startReceiver = function(adapter, receiver) {
 		receiver.state = 'loading';
-		Api.Put("adapters/" + Misc.escapeURL(adapter.name) + "/receivers/" + Misc.escapeURL(receiver.name), {"action": "start"});
+		Api.Put("adapters/" + adapter.name + "/receivers/" + receiver.name, {"action": "start"});
 	};
 	$scope.stopReceiver = function(adapter, receiver) {
 		receiver.state = 'loading';
-		Api.Put("adapters/" + Misc.escapeURL(adapter.name) + "/receivers/" + Misc.escapeURL(receiver.name), {"action": "stop"});
+		Api.Put("adapters/" + adapter.name + "/receivers/" + receiver.name, {"action": "stop"});
 	};
 	$scope.addThread = function(adapter, receiver) {
 		receiver.state = 'loading';
-		Api.Put("adapters/" + Misc.escapeURL(adapter.name) + "/receivers/" + Misc.escapeURL(receiver.name), {"action": "incthread"});
+		Api.Put("adapters/" + adapter.name + "/receivers/" + receiver.name, {"action": "incthread"});
 	};
 	$scope.removeThread = function(adapter, receiver) {
 		receiver.state = 'loading';
-		Api.Put("adapters/" + Misc.escapeURL(adapter.name) + "/receivers/" + Misc.escapeURL(receiver.name), {"action": "decthread"});
+		Api.Put("adapters/" + adapter.name + "/receivers/" + receiver.name, {"action": "decthread"});
 	};
 
 }])
@@ -1204,7 +1204,7 @@ angular.module('iaf.beheerconsole')
 	}
 }])
 
-.controller('AdapterStatisticsCtrl', ['$scope', 'Api', '$stateParams', 'SweetAlert', '$timeout', '$filter', 'appConstants', 'Debug', 'Misc', function($scope, Api, $stateParams, SweetAlert, $timeout, $filter, appConstants, Debug, Misc) {
+.controller('AdapterStatisticsCtrl', ['$scope', 'Api', '$stateParams', 'SweetAlert', '$timeout', '$filter', 'appConstants', 'Debug', function($scope, Api, $stateParams, SweetAlert, $timeout, $filter, appConstants, Debug) {
 	var adapterName = $stateParams.name;
 	if(!adapterName)
 		return SweetAlert.Warning("Adapter not found!");
@@ -1250,7 +1250,7 @@ angular.module('iaf.beheerconsole')
 	$scope.statisticsNames = [];
 	$scope.refresh = function() {
 		$scope.refreshing = true;
-		Api.Get("adapters/"+Misc.escapeURL(adapterName)+"/statistics", function(data) {
+		Api.Get("adapters/"+adapterName+"/statistics", function(data) {
 			$scope.stats = data;
 
 			var labels = [];
@@ -1342,7 +1342,7 @@ angular.module('iaf.beheerconsole')
 	$scope.doDeleteMessage = function(message, callback) {
 		message.deleting = true;
 		let messageId = message.id;
-		Api.Delete($scope.base_url+"/messages/"+Misc.escapeURL(messageId), function() {
+		Api.Delete($scope.base_url+"/messages/"+encodeURIComponent(encodeURIComponent(messageId)), function() {
 			if(callback != undefined && typeof callback == 'function')
 				callback(messageId);
 			$scope.addNote("success", "Successfully deleted message with ID: "+messageId);
@@ -1354,13 +1354,13 @@ angular.module('iaf.beheerconsole')
 		}, false);
 	};
 	$scope.downloadMessage = function(messageId) {
-		window.open(Misc.getServerPath() + "iaf/api/"+$scope.base_url+"/messages/"+Misc.escapeURL(messageId)+"/download");
+		window.open(Misc.getServerPath() + "iaf/api/"+$scope.base_url+"/messages/"+encodeURIComponent(encodeURIComponent(messageId))+"/download");
 	};
 
 	$scope.doResendMessage = function(message, callback) {
 		message.resending = true;
 		let messageId = message.id;
-		Api.Put($scope.base_url+"/messages/"+Misc.escapeURL(messageId), false, function() {
+		Api.Put($scope.base_url+"/messages/"+encodeURIComponent(encodeURIComponent(messageId)), false, function() {
 			if(callback != undefined && typeof callback == 'function')
 				callback(message.id);
 			$scope.addNote("success", "Successfully resent message with ID: "+messageId);
@@ -1679,7 +1679,7 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('AdapterViewStorageIdCtrl', ['$scope', 'Api', '$state', 'SweetAlert', 'Misc', function($scope, Api, $state, SweetAlert, Misc) {
+.controller('AdapterViewStorageIdCtrl', ['$scope', 'Api', '$state', 'SweetAlert', function($scope, Api, $state, SweetAlert) {
 	$scope.message = {};
 	$scope.closeNotes();
 
@@ -1687,7 +1687,7 @@ angular.module('iaf.beheerconsole')
 	if(!$scope.message.id)
 		return SweetAlert.Warning("Invalid URL", "No message id provided!");
 
-	Api.Get($scope.base_url+"/messages/"+Misc.escapeURL($scope.message.id), function(data) {
+	Api.Get($scope.base_url+"/messages/"+encodeURIComponent(encodeURIComponent($scope.message.id)), function(data) {
 		$scope.metadata=JSON.parse(data);
 	}, function(_, statusCode, statusText) {
 		if(statusCode == 500) {

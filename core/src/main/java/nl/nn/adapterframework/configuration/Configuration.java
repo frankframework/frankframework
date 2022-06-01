@@ -19,8 +19,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -250,9 +248,8 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	@Override
 	public void configure() throws ConfigurationException {
 		log.info("configuring configuration [{}]", this::getId);
-		Matcher m = Pattern.compile("[^A-Za-z0-9\\-_]").matcher(getName());
-		if(m.find()) {
-			throw new ConfigurationException("Configuration name ["+getName()+"] cannot contain special characters outside character set [A-Za-z0-9\\-_].");
+		if(getName().contains("/")) {
+			throw new ConfigurationException("It is not allowed to have '/' in configuration name ["+getName()+"]");
 		}
 		state = BootState.STARTING;
 		long start = System.currentTimeMillis();

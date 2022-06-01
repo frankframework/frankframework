@@ -99,6 +99,16 @@ public final class ShowConfigurationStatus extends Base {
 
 	private boolean showCountMessageLog = AppConstants.getInstance().getBoolean("messageLog.count.show", true);
 
+	private Adapter getAdapter(String adapterName) {
+		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
+
+		if(adapter == null){
+			throw new ApiException("Adapter not found!");
+		}
+
+		return adapter;
+	}
+
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters")
@@ -146,8 +156,8 @@ public final class ShowConfigurationStatus extends Base {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters/{name}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getAdapter(@PathParam("name") String adapterName, @QueryParam("expanded") String expanded, @QueryParam("showPendingMsgCount") boolean showPendingMsgCount) throws ApiException {
-		Adapter adapter = getAdapterByUrlEncodedName(adapterName);
+	public Response getAdapter(@PathParam("name") String name, @QueryParam("expanded") String expanded, @QueryParam("showPendingMsgCount") boolean showPendingMsgCount) throws ApiException {
+		Adapter adapter = getAdapter(name);
 		Map<String, Object> adapterInfo = mapAdapter(adapter);
 		if(expanded != null && !expanded.isEmpty()) {
 			if(expanded.equalsIgnoreCase("all")) {
@@ -186,9 +196,9 @@ public final class ShowConfigurationStatus extends Base {
 	@PermitAll
 	@Path("/adapters/{name}/health")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getIbisHealth(@PathParam("name") String adapterNAme) throws ApiException {
+	public Response getIbisHealth(@PathParam("name") String name) throws ApiException {
 
-		Adapter adapter = getAdapterByUrlEncodedName(adapterNAme);
+		Adapter adapter = getAdapter(name);
 		Map<String, Object> response = new HashMap<>();
 		List<String> errors = new ArrayList<>();
 
@@ -269,7 +279,7 @@ public final class ShowConfigurationStatus extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateAdapter(@PathParam("adapterName") String adapterName, Map<String, Object> json) throws ApiException {
 
-		Adapter adapter = getAdapterByUrlEncodedName(adapterName); //Check if the adapter exists!
+		getAdapter(adapterName); //Check if the adapter exists!
 		Response.ResponseBuilder response = Response.status(Response.Status.NO_CONTENT); //PUT defaults to no content
 
 		for (Entry<String, Object> entry : json.entrySet()) {
@@ -281,7 +291,7 @@ public final class ShowConfigurationStatus extends Base {
 				if(value.equals("stop")) { action = IbisAction.STOPADAPTER; }
 				if(value.equals("start")) { action = IbisAction.STARTADAPTER; }
 
-				getIbisManager().handleAction(action, "", adapter.getName(), null, getUserPrincipalName(), false);
+				getIbisManager().handleAction(action, "", adapterName, null, getUserPrincipalName(), false);
 
 				response.entity("{\"status\":\"ok\"}");
 			}
@@ -297,9 +307,9 @@ public final class ShowConfigurationStatus extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateReceiver(@PathParam("adapterName") String adapterName, @PathParam("receiverName") String receiverName, Map<String, Object> json) throws ApiException {
 
-		Adapter adapter = getAdapterByUrlEncodedName(adapterName);
+		Adapter adapter = getAdapter(adapterName);
 
-		Receiver<?> receiver = getReceiverByUrlEncodedName(adapter, receiverName);
+		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
@@ -320,7 +330,7 @@ public final class ShowConfigurationStatus extends Base {
 				if(action == null)
 					throw new ApiException("no or unknown action provided");
 
-				getIbisManager().handleAction(action, "", adapter.getName(), receiver.getName(), getUserPrincipalName(), false);
+				getIbisManager().handleAction(action, "", adapterName, receiverName, getUserPrincipalName(), false);
 				response.entity("{\"status\":\"ok\"}");
 			}
 		}
@@ -334,7 +344,7 @@ public final class ShowConfigurationStatus extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAdapterPipes(@PathParam("name") String adapterName) throws ApiException {
 
-		Adapter adapter = getAdapterByUrlEncodedName(adapterName);
+		Adapter adapter = getAdapter(adapterName);
 		ArrayList<Object> adapterInfo = mapAdapterPipes(adapter);
 
 		if(adapterInfo == null)
@@ -349,7 +359,7 @@ public final class ShowConfigurationStatus extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAdapterMessages(@PathParam("name") String adapterName) throws ApiException {
 
-		Adapter adapter = getAdapterByUrlEncodedName(adapterName);
+		Adapter adapter = getAdapter(adapterName);
 		ArrayList<Object> adapterInfo = mapAdapterMessages(adapter);
 
 		return Response.status(Response.Status.OK).entity(adapterInfo).build();
@@ -361,7 +371,7 @@ public final class ShowConfigurationStatus extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAdapterReceivers(@PathParam("name") String adapterName, @QueryParam("showPendingMsgCount") boolean showPendingMsgCount) throws ApiException {
 
-		Adapter adapter = getAdapterByUrlEncodedName(adapterName);
+		Adapter adapter = getAdapter(adapterName);
 		ArrayList<Object> receiverInfo = mapAdapterReceivers(adapter, showPendingMsgCount);
 
 		return Response.status(Response.Status.OK).entity(receiverInfo).build();
@@ -372,7 +382,7 @@ public final class ShowConfigurationStatus extends Base {
 	@Path("/adapters/{name}/flow")
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getAdapterFlow(@PathParam("name") String adapterName) throws ApiException {
-		Adapter adapter = getAdapterByUrlEncodedName(adapterName);
+		Adapter adapter = getAdapter(adapterName);
 
 		FlowDiagramManager flowDiagramManager = getFlowDiagramManager();
 
