@@ -17,7 +17,7 @@ public class ForwardHandlingTest extends ConfiguredTestBase {
 		super.setUp();
 		ApplicationWarnings.removeInstance();
 	}
-	
+
 	@Test
 	public void testFindForwardToPipeExplicit() throws ConfigurationException {
 		XmlSwitch pipe1 = new XmlSwitch();

@@ -20,6 +20,9 @@ public abstract class ConfiguredTestBase {
 	protected Adapter adapter;
 	private static  TestConfiguration configuration;
 
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
+
 	protected TestConfiguration getConfiguration() {
 		if(configuration == null) {
 			configuration = new TestConfiguration();
@@ -27,8 +30,6 @@ public abstract class ConfiguredTestBase {
 		return configuration;
 	}
 
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
 
 
 	@Before
