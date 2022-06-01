@@ -36,6 +36,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 	public static int EXPECTED_NUMBER_OF_DUPLICATE_LOGGINGS=1; // this should be one, but for the time being we're happy that there is logging
 
 	private final String FILE_NOT_FOUND_EXCEPTION="Cannot get resource for href [";
+	private final String FILE_NOT_FOUND_EXCEPTION_SAXON_98="WARN Nonfatal transformation warning: Exception thrown by URIResolver; SystemID:";
 
 	private final boolean testForEmptyOutputStream=false;
 
@@ -182,15 +183,18 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 		String errorMessage = null;
 		try {
 			doPipe(pipe, input, session);
-			fail("Expected to run into an exception");
+			//fail("Expected to run into an exception");
 		} catch (AssumptionViolatedException e) {
 			assumeTrue("assumption violated:"+e.getMessage(),false);
 		} catch (Exception e) {
 			errorMessage = e.getMessage();
 			assertThat(errorMessage,containsString(FILE_NOT_FOUND_EXCEPTION));
 		}
+		//assertThat(testAppender.toString(),containsString(FILE_NOT_FOUND_EXCEPTION));
 
-		checkTestAppender(0,null);
+		// Saxon 9.8 no longer considers a missing import to be fatal. This is similar to Xalan
+		assertThat(testAppender.toString(),containsString(FILE_NOT_FOUND_EXCEPTION_SAXON_98));
+
 		System.out.println("ErrorMessage: "+errorMessage);
 		if (testForEmptyOutputStream) {
 			System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
@@ -240,7 +244,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 		} catch (ConfigurationException e) {
 			log.warn("final exception: "+e.getMessage());
 			errorMessage = e.getMessage();
-			assertThat(errorMessage,containsString("Cannot find a matching 2-argument function named {http://exslt.org/strings}tokenize()"));
+			assertThat(errorMessage,containsString("Cannot find a 2-argument function named {http://exslt.org/strings}tokenize()"));
 		}
 
 		assertThat("number of alerts in logging " + testAppender.getLogLines(), testAppender.getNumberOfAlerts(), is(2+EXPECTED_NUMBER_OF_DUPLICATE_LOGGINGS));
