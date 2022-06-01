@@ -244,7 +244,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 		} catch (ConfigurationException e) {
 			log.warn("final exception: "+e.getMessage());
 			errorMessage = e.getMessage();
-			assertThat(errorMessage,containsString("Cannot find a 2-argument function named {http://exslt.org/strings}tokenize()"));
+			assertThat(errorMessage,containsString("Cannot find a 2-argument function named Q{http://exslt.org/strings}tokenize()"));
 		}
 
 		assertThat("number of alerts in logging " + testAppender.getLogLines(), testAppender.getNumberOfAlerts(), is(2+EXPECTED_NUMBER_OF_DUPLICATE_LOGGINGS));
