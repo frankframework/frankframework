@@ -63,6 +63,7 @@ The image contains the following directories:
 | /opt/frank/testtool-ext | For Larva tests that are mounted from the environment | |
 | /usr/local/tomcat/lib | Contains drivers and other dependencies | Contains all Framework required dependencies and drivers for supported JMS and JDBC systems |
 | /usr/local/tomcat/logs | Log directory | |
+| /opt/frank/secrets | Credential storage | See [Secrets](#Secrets) |
 
 ## Files
 
@@ -91,7 +92,9 @@ Environment variables
 
 Environment variables can be used to set parameters. Environment variables have the highest precedence and override parameters set in .property files supplied by Tomcat, resources and configurations.
 
-As `org.apache.tomcat.util.digester.PROPERTY_SOURCE=org.apache.tomcat.util.digester.EnvironmentPropertySource` is set in our images, environment variables can also be used to replace parameters in Tomcat configuration files such as server.xml and context.xml.
+Environment variables can be used to replace parameters in Tomcat configuration files such as server.xml and context.xml.
+
+Do not use environment variables for secrets!
 
 Health and readiness
 ====================
@@ -111,9 +114,9 @@ Note: The GUI will not load data if accessed via HTTP and `dtap.stage!=LOC`, HTT
 
 ## Secrets
 
-Special consideration should be taken with secrets. As described on the [Tomcat website](https://cwiki.apache.org/confluence/display/TOMCAT/Password), passwords are stored in plain text. To use secrets in your Tomcat and Frank!Application configuration, you can take the following steps:
+Special consideration should be taken with secrets. As described on the [Tomcat website](https://cwiki.apache.org/confluence/display/TOMCAT/Password), secrets are stored in plain text in the container. To use secrets in your Tomcat and Frank!Application configuration, you can take the following steps:
 - In your configuration, use the authAlias attribute with value `${<secret-name>}` 
-- In cases where you need to use username or password separately, you can set the values to `${<secret-name>/username}` and `${<secret-name>/password}` respectively
+- In cases where you need to use username or password separately (such as the Tomcat context.xml), you can set the values to `${<secret-name>/username}` and `${<secret-name>/password}` respectively
 - Mount the value for the username in the file `/opt/frank/secrets/<secret-name>/username`
 - Mount the value for the password in the file `/opt/frank/secrets/<secret-name>/password`
 
