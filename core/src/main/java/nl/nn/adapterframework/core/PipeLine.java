@@ -81,7 +81,7 @@ import nl.nn.adapterframework.util.Misc;
  * or marked for roll back by the calling party.
 
  * </p>
- * 
+ *
  * @author  Johan Verrips
  */
 public class PipeLine extends TransactionAttributes implements ICacheEnabled<String,String>, HasStatistics, IConfigurationAware {
@@ -108,7 +108,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	private @Getter IWrapperPipe inputWrapper    = null;
 	private @Getter IWrapperPipe outputWrapper   = null;
 	private @Getter Map<String, PipeLineExit> pipeLineExits = new LinkedHashMap<String, PipeLineExit>();
-	private Map<String, PipeForward> globalForwards = new Hashtable<String, PipeForward>();
+	private @Getter Map<String, PipeForward> globalForwards = new Hashtable<String, PipeForward>();
 	private @Getter Locker locker;
 	private @Getter ICache<String,String> cache;
 
@@ -174,15 +174,6 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		}
 		for (int i=0; i < pipes.size(); i++) {
 			IPipe pipe = getPipe(i);
-
-			log.debug(getLogPrefix()+"configuring Pipe ["+pipe.getName()+"]");
-			// register the global forwards at the Pipes
-			// the pipe will take care that if a local, pipe-specific
-			// forward is defined, it is not overwritten by the globals
-			for (String gfName : globalForwards.keySet()) {
-				PipeForward pipeForward = globalForwards.get(gfName);
-				pipe.registerForward(pipeForward);
-			}
 
 			if (pipe instanceof FixedForwardPipe) {
 				FixedForwardPipe ffpipe = (FixedForwardPipe)pipe;
@@ -660,7 +651,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		}
 	}
 
-	/** 
+	/**
 	 * PipeLine exits.
 	 */
 	@Deprecated
@@ -692,10 +683,10 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		log.debug("registered global PipeForward "+forward.toString());
 	}
 
-	/** 
-	 * Optional Locker, to avoid parallel execution of the PipeLine by multiple threads on multiple servers. 
-	 * The Pipeline is NOT executed (and is considered to have ended successfully) when the lock cannot be obtained, 
-	 * e.g. in case another thread, may be in another server, holds the lock and does not release it in a timely manner. 
+	/**
+	 * Optional Locker, to avoid parallel execution of the PipeLine by multiple threads on multiple servers.
+	 * The Pipeline is NOT executed (and is considered to have ended successfully) when the lock cannot be obtained,
+	 * e.g. in case another thread, may be in another server, holds the lock and does not release it in a timely manner.
 	 * If only the number of threads executing this PipeLine needs to be limited, the attribute maxThreads can be set instead, avoiding the database overhead.
 	 */
 	public void setLocker(Locker locker) {
@@ -736,19 +727,9 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			pipeWaitingStatistics.put(name, new StatisticsKeeper(name));
 		}
 		log.debug("added pipe [" + pipe.toString() + "]");
-
-		//Add this pipe's name to the pipeline's Global-Forwards list. @See XmlSwitch
-		if (globalForwards.get(name) == null) {
-			PipeForward pw = new PipeForward();
-			pw.setName(name);
-			pw.setPath(name);
-			registerForward(pw);
-		} else {
-			log.info("already had a pipeForward with name ["+ name+ "] skipping the implicit one to Pipe ["+ pipe.getName()+ "]");
-		}
 	}
 
-	/** 
+	/**
 	 * Name of the first pipe to execute when a message is to be processed
 	 * @ff.default first pipe of the pipeline
 	 */
@@ -756,7 +737,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		firstPipe = pipeName;
 	}
 
-	/** 
+	/**
 	 * Maximum number of threads that may execute this Pipeline simultaneously, use 0 to disable limit
 	 * @ff.default 0
 	 */
@@ -764,7 +745,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		maxThreads = newMaxThreads;
 	}
 
-	/** 
+	/**
 	 * If set <code>true</code> the original message without namespaces (and prefixes) is stored under the session key originalMessageWithoutNamespaces
 	 * @ff.default false
 	 */
@@ -772,7 +753,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		storeOriginalMessageWithoutNamespaces = b;
 	}
 
-	/** 
+	/**
 	 * If messageSizeWarn>=0 and the size of the input or result pipe message exceeds the value specified a warning message is logged. You can specify the value with the suffixes <code>KB</code>, <code>MB</code> or <code>GB</code>
 	 * @ff.default application default (3MB)"
 	 */

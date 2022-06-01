@@ -28,8 +28,8 @@ public class StreamPipeTest extends PipeTestBase<StreamPipe> {
 	}
 
 	@Override
-	public void setup() throws Exception {
-		super.setup();
+	public void setUp() throws Exception {
+		super.setUp();
 		session = new PipeLineSession();
 	}
 
