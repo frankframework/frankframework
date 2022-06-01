@@ -115,7 +115,7 @@ public class OAuthAccessTokenManager {
 		}
 	}
 
-	private TokenRequest createRequest(Credentials credentials) throws HttpAuthenticationException {
+	private TokenRequest createRequest(Credentials credentials) {
 		AuthorizationGrant grant;
 
 		if (useClientCredentialsGrant) {

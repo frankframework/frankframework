@@ -72,6 +72,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	private @Getter String messageIdHeader = AppConstants.getInstance(getConfigurationClassLoader()).getString("apiListener.messageIdHeader", "Message-Id");
 	private @Getter String headerParams = null;
+	private @Getter String contentDispositionHeaderSessionKey;
 	private @Getter String charset = null;
 
 	// for jwt validation
@@ -311,6 +312,11 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 */
 	public void setHeaderParams(String headerParams) {
 		this.headerParams = headerParams;
+	}
+
+	/** Session key that provides the Content-disposition header in the response */
+	public void setContentDispositionHeaderSessionKey(String key) {
+		this.contentDispositionHeaderSessionKey = key;
 	}
 
 	/** issuer to validate jwt */
