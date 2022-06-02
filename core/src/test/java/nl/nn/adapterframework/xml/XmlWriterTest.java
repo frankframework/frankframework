@@ -17,7 +17,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class XmlWriterTest {
 
-	
+
 	@Test
 	public void testBasic() throws Exception {
 		String input    = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
@@ -26,7 +26,7 @@ public class XmlWriterTest {
 		XmlUtils.parseXml(input, xmlWriter);
 		assertEquals(expected,xmlWriter.toString());
 	}
-	
+
 	@Test
 	public void testWithXmlDeclaration() throws Exception {
 		String input    = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
@@ -57,14 +57,14 @@ public class XmlWriterTest {
 		XmlUtils.parseXml(input, xmlWriter);
 		assertEquals(expected,xmlWriter.toString());
 	}
-	
+
 
 	@Test
 	public void testNoLexicalHandling() throws Exception {
 		String input    = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
 		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/NoComments.xml");
 		XmlWriter xmlWriter = new XmlWriter();
-		
+
 		InputSource inputSource = new InputSource(new StringReader(input));
 		XMLReader xmlReader = XmlUtils.getXMLReader(xmlWriter);
 		// lexical handling is automatically set, when the contentHandler (xmlWriter in this case) implements  the interface LexicalHandler.
@@ -96,7 +96,7 @@ public class XmlWriterTest {
 		assertEquals(expected,writer.toString());
 		assertTrue(writer.closeCalled);
 	}
-	
+
 	@Test
 	public void testBasicCheckNotClosed() throws Exception {
 		String input    = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
@@ -107,7 +107,18 @@ public class XmlWriterTest {
 		assertEquals(expected,writer.toString());
 		assertFalse(writer.closeCalled);
 	}
-	
+
+	@Test
+	public void testMultinamespace() throws Exception {
+		String input    = TestFileUtils.getTestFile("/Xslt/MultiNamespace/in.xml");
+		String expected = TestFileUtils.getTestFile("/Xslt/MultiNamespace/out.xml");
+		CloseObservableWriter writer = new CloseObservableWriter();
+		XmlWriter xmlWriter = new XmlWriter(writer, false);
+		XmlUtils.parseXml(input, xmlWriter);
+		assertEquals(expected,writer.toString());
+		assertFalse(writer.closeCalled);
+	}
+
 	private class CloseObservableWriter extends StringWriter {
 		public boolean closeCalled;
 

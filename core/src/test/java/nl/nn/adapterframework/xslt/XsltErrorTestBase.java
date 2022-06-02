@@ -33,10 +33,10 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 	protected TestAppender testAppender;
 	private ErrorOutputStream errorOutputStream;
 	private PrintStream prevStdErr;
-	public static int EXPECTED_NUMBER_OF_DUPLICATE_LOGGINGS=1; // this should be one, but for the time being we're happy that there is logging
+	public static int EXPECTED_NUMBER_OF_DUPLICATE_LOGGINGS=0;
 
 	private final String FILE_NOT_FOUND_EXCEPTION="Cannot get resource for href [";
-	private final String FILE_NOT_FOUND_EXCEPTION_SAXON_98="WARN Nonfatal transformation warning: Exception thrown by URIResolver; SystemID:";
+	private final String FILE_NOT_FOUND_EXCEPTION_SAXON_10="WARN Fatal transformation error: Exception thrown by URIResolver resolving `";
 
 	private final boolean testForEmptyOutputStream=false;
 
@@ -193,7 +193,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 		//assertThat(testAppender.toString(),containsString(FILE_NOT_FOUND_EXCEPTION));
 
 		// Saxon 9.8 no longer considers a missing import to be fatal. This is similar to Xalan
-		assertThat(testAppender.toString(),containsString(FILE_NOT_FOUND_EXCEPTION_SAXON_98));
+		assertThat(testAppender.toString(),containsString(FILE_NOT_FOUND_EXCEPTION_SAXON_10));
 
 		System.out.println("ErrorMessage: "+errorMessage);
 		if (testForEmptyOutputStream) {
@@ -230,7 +230,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 			errorMessage = e.getMessage();
 			assertThat(errorMessage,containsString(FILE_NOT_FOUND_EXCEPTION));
 		}
-		checkTestAppender(2,FILE_NOT_FOUND_EXCEPTION); // TODO: find out and fix why error message is logged twice
+		checkTestAppender(1,FILE_NOT_FOUND_EXCEPTION);
 	}
 
 	@Test
