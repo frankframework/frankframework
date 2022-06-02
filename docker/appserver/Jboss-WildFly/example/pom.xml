@@ -16,25 +16,25 @@
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-docker-as-jboss-wildfly</artifactId>
-			<version>${iaf.version}</version>
+			<version>${project.version}</version>
 			<type>pom</type>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-example</artifactId>
-			<version>${iaf.version}</version>
+			<version>${project.version}</version>
 			<classifier>resources</classifier>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-example</artifactId>
-			<version>${iaf.version}</version>
+			<version>${project.version}</version>
 			<classifier>configurations</classifier>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-example</artifactId>
-			<version>${iaf.version}</version>
+			<version>${project.version}</version>
 			<classifier>scenarios</classifier>
 		</dependency>
 	</dependencies>
