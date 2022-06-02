@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import javax.mail.internet.InternetAddress;
 
@@ -46,7 +45,6 @@ import microsoft.exchange.webservices.data.autodiscover.IAutodiscoverRedirection
 import microsoft.exchange.webservices.data.core.ExchangeService;
 import microsoft.exchange.webservices.data.core.PropertySet;
 import microsoft.exchange.webservices.data.core.WebProxy;
-import microsoft.exchange.webservices.data.core.enumeration.misc.ConnectingIdType;
 import microsoft.exchange.webservices.data.core.enumeration.misc.ExchangeVersion;
 import microsoft.exchange.webservices.data.core.enumeration.misc.error.ServiceError;
 import microsoft.exchange.webservices.data.core.enumeration.property.WellKnownFolderName;
@@ -65,7 +63,6 @@ import microsoft.exchange.webservices.data.core.service.schema.ItemSchema;
 import microsoft.exchange.webservices.data.credential.ExchangeCredentials;
 import microsoft.exchange.webservices.data.credential.WebCredentials;
 import microsoft.exchange.webservices.data.credential.WebProxyCredentials;
-import microsoft.exchange.webservices.data.misc.ImpersonatedUserId;
 import microsoft.exchange.webservices.data.property.complex.Attachment;
 import microsoft.exchange.webservices.data.property.complex.AttachmentCollection;
 import microsoft.exchange.webservices.data.property.complex.EmailAddress;
@@ -528,9 +525,14 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		boolean invalidateConnectionOnRelease = false;
 
 		try {
-			// When f is moved from mailbox A to mailbox B, null will be returned.
+			// When f is moved from mailbox A to mailbox B, null will be returned. This is not a problem when resultantMustBeReturned==false.
+			// otherwise, an Exception must be thrown.
 			FolderId destinationFolderId = getFolderIdByFolderName(exchangeService, resolver, createFolder, false);
-			return (EmailMessage)f.move(destinationFolderId);
+			EmailMessage result = (EmailMessage)f.move(destinationFolderId);
+			if (result==null && resultantMustBeReturned) {
+				throw new FileSystemException("Cannot return EmailMessage after moving it to folder ["+destinationFolder+"]");
+			}
+			return result;
 		} catch (Exception e) {
 			invalidateConnectionOnRelease = true;
 			throw new FileSystemException(e);
@@ -555,9 +557,11 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			if(destinationItem instanceof EmailMessage){
 				if(log.isDebugEnabled()) log.debug("Attempting to cast to EmailMessage");
 				return (EmailMessage) destinationItem;
-			} else {
+			} else if (resultantMustBeReturned) {
 				if(log.isDebugEnabled()) log.debug("Unable to cast to EmailMessage, will use bind method!");
 				return EmailMessage.bind(exchangeService, destinationItem.getId());
+			} else {
+				return null;
 			}
 		} catch (Exception e) {
 			invalidateConnectionOnRelease = true;
