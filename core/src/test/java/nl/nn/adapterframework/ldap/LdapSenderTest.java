@@ -14,7 +14,6 @@ import org.custommonkey.xmlunit.DifferenceConstants;
 import org.custommonkey.xmlunit.DifferenceListener;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
@@ -55,7 +54,6 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 	}
 
 	@Override
-	@Before
 	public void setUp() throws Exception {
 		XMLUnit.setIgnoreWhitespace(true);
 		XMLUnit.setIgnoreAttributeOrder(true);

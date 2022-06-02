@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2018-2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,45 +15,22 @@
 */
 package nl.nn.adapterframework.senders;
 
-import org.apache.logging.log4j.Logger;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.ExpectedException;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-
+import nl.nn.adapterframework.core.ConfiguredTestBase;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.testutil.TestConfiguration;
-import nl.nn.adapterframework.util.LogUtil;
 
-public abstract class SenderTestBase<S extends ISender> extends Mockito {
+public abstract class SenderTestBase<S extends ISender> extends ConfiguredTestBase {
 
-	protected Logger log = LogUtil.getLogger(this);
 	protected S sender;
-	private static TestConfiguration configuration;
-
-	private TestConfiguration getConfiguration() {
-		if(configuration == null) {
-			configuration = new TestConfiguration();
-		}
-		return configuration;
-	}
-
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
-
-	@Mock
-	protected PipeLineSession session;
 
 	public abstract S createSender() throws Exception;
 
-	@Before
+	@Override
 	public void setUp() throws Exception {
+		super.setUp();
 		session = new PipeLineSession();
 		String messageId = "testmessageac13ecb1--30fe9225_16caa708707_-7fb1";
 		String technicalCorrelationId = "testmessageac13ecb1--30fe9225_16caa708707_-7fb2";
@@ -63,12 +40,13 @@ public abstract class SenderTestBase<S extends ISender> extends Mockito {
 		getConfiguration().autowireByType(sender);
 	}
 
-	@After
+	@Override
 	public void tearDown() throws Exception {
 		if (sender != null) {
 			sender.close();
 			sender = null;
 		}
+		super.tearDown();
 	}
 
 	public Message sendMessage(String message) throws SenderException, TimeoutException {

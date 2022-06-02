@@ -18,6 +18,7 @@ package nl.nn.adapterframework.http;
 import static nl.nn.adapterframework.testutil.TestAssertions.assertEqualsIgnoreCRLF;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.spy;
 
 import java.io.ByteArrayInputStream;
 import java.net.URL;

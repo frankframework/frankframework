@@ -134,6 +134,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	//For testing purposes the configure method should not require the PipeLine to be present.
 	@Override
 	public void configure() throws ConfigurationException {
+		super.configure();
 		if(StringUtils.isNotEmpty(getName()) && getName().contains("/")) {
 			throw new ConfigurationException("It is not allowed to have '/' in pipe name ["+getName()+"]");
 		}
@@ -151,15 +152,9 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 			throw new ConfigurationException("cannot have both an elementToMove and an elementToMoveChain specified");
 		}
 
-		if (pipeForwards.isEmpty()) { //In the case of a NON-FixedForwardPipe (default success/exception forwards) || no global forwards
-			ConfigurationWarnings.add(this, log, "has no pipe forwards defined");
-		}
-
 		if (getLocker() != null) {
 			getLocker().configure();
 		}
-
-		super.configure();
 	}
 
 	/**
@@ -246,28 +241,37 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	}
 
 	/**
-	 * looks up a key in the pipeForward hashtable. <br/>
+	 * Looks up a key in the pipeForward hashtable. <br/>
 	 * A typical use would be on return from a Pipe: <br/>
 	 * <code><pre>
 	 * return new PipeRunResult(findForward("success"), result);
 	 * </pre></code>
-	 * In the pipeForward hashtable are available:
-	 * <ul><li>All forwards defined in xml under the pipe element of this pipe</li>
-	 * <li> All global forwards defined in xml under the PipeLine element</li>
-	 * <li> All pipenames with their (identical) path</li>
+	 * findForward searches:<ul>
+	 * <li>All forwards defined in xml under the pipe element of this pipe</li>
+	 * <li>All global forwards defined in xml under the PipeLine element</li>
+	 * <li>All pipe names with their (identical) path</li>
 	 * </ul>
-	 * Therefore, you can directly jump to another pipe, although this is not recommended
-	 * as the pipe should not know the existence of other pipes. Nevertheless, this feature
-	 * may come in handy for switcher-pipes.<br/><br/>
-	 * @param forward   Name of the forward
-	 * @return PipeForward
 	 */
-	//TODO: Create a 2nd findForwards method without all pipes in the hashtable and make the first one deprecated.
 	public PipeForward findForward(String forward){
-		if (StringUtils.isEmpty(forward)) {
-			return null;
+		if (StringUtils.isNotEmpty(forward)) {
+			if (pipeForwards.containsKey(forward)) {
+				return pipeForwards.get(forward);
+			}
+			if (pipeLine!=null) {
+				PipeForward result = pipeLine.getGlobalForwards().get(forward);
+				if (result == null) {
+					IPipe pipe = pipeLine.getPipe(forward);
+					if (pipe!=null) {
+						result = new PipeForward(forward, forward);
+					}
+				}
+				if (result!=null) {
+					pipeForwards.put(forward, result);
+				}
+				return result;
+			}
 		}
-		return pipeForwards.get(forward);
+		return null;
 	}
 
 	@Override
