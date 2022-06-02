@@ -747,12 +747,6 @@
 				<module>example</module>
 				<module>credentialProvider</module>
 			</modules>
-			<repositories>
-				<repository>
-					<id>basex</id>
-					<url>https://files.basex.org/maven/</url> <!-- required for javax.xml.xquery -->
-				</repository>
-			</repositories>
 		</profile>
 		<profile>
 			<id>docker</id>
