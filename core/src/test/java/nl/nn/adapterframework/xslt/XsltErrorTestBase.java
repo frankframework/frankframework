@@ -183,15 +183,12 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 		String errorMessage = null;
 		try {
 			doPipe(pipe, input, session);
-			//fail("Expected to run into an exception");
 		} catch (AssumptionViolatedException e) {
 			assumeTrue("assumption violated:"+e.getMessage(),false);
 		} catch (Exception e) {
 			errorMessage = e.getMessage();
 			assertThat(errorMessage,containsString(FILE_NOT_FOUND_EXCEPTION));
 		}
-		//assertThat(testAppender.toString(),containsString(FILE_NOT_FOUND_EXCEPTION));
-
 		// Saxon 9.8 no longer considers a missing import to be fatal. This is similar to Xalan
 		assertThat(testAppender.toString(),containsString(FILE_NOT_FOUND_EXCEPTION_SAXON_10));
 
