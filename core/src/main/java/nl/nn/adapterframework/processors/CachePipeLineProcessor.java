@@ -59,7 +59,7 @@ public class CachePipeLineProcessor extends PipeLineProcessorBase {
 			result = new Message(cache.get("r"+key));
 			state = cache.get("s"+key);
 		}
-		if (result!=null && state!=null) {
+		if (!result.isNull() && state!=null) {
 			if (log.isDebugEnabled()) log.debug("retrieved result from cache using key ["+key+"]");
 			PipeLineResult plr=new PipeLineResult();
 			plr.setState(EnumUtils.parse(ExitState.class, state));
