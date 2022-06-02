@@ -30,7 +30,7 @@
 							<label class="col-sm-3 control-label">Select an adapter</label>
 							<div class="col-sm-9">
 								<select class="form-control m-b" name="adapter" ng-model="form.adapter">
-									<option ng-repeat="adapter in adapters" ng-value="adapter.name">{{adapter.name + (adapter.description != null? " - "+adapter.description:"")}}</option>
+									<option ng-repeat="adapter in schedulerEligibleAdapters" ng-value="adapter.name">{{adapter.name + (adapter.description != null? " - "+adapter.description:"")}}</option>
 								</select>
 							</div>
 						</div>
@@ -41,7 +41,7 @@
 							</div>
 							<div class="col-sm-9" ng-if="form.adapter">
 								<select class="form-control m-b" name="receiver" ng-model="form.receiver">
-									<option ng-repeat="receiver in adapters[form.adapter].receivers" ng-value="receiver.name">{{receiver.listener.name}}</option>
+									<option ng-repeat="receiver in schedulerEligibleAdapters[form.adapter].receivers" ng-if="receiver.listener.class.startsWith('JavaListener')" ng-value="receiver.name">{{receiver.listener.name}}</option>
 								</select>
 							</div>
 						</div>

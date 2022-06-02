@@ -15,14 +15,6 @@
 		<aspose.version>19.1</aspose.version>
 	</properties>
 
-	<repositories>
-		<repository>
-			<id>AsposeJavaAPI</id>
-			<name>Aspose Java API</name>
-			<url>https://repository.aspose.com/repo/</url>
-		</repository>
-	</repositories>
-
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
@@ -32,12 +24,18 @@
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 		</dependency>
+		<!-- Explicitly here to enforce this version of databind being used when the aspose dependency is declared before(!) the core dependency -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.13.3</version>
+		</dependency>
 
 		<!-- Tika library -->
 		<dependency>
 			<groupId>org.apache.tika</groupId>
 			<artifactId>tika-parsers</artifactId>
-			<version>1.28.1</version>
+			<version>1.28.3</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>json-simple</artifactId>
@@ -187,6 +185,10 @@
 					<artifactId>metadata-extractor</artifactId>
 					<groupId>com.drewnoakes</groupId>
 				</exclusion>
+				<exclusion>
+					<groupId>xerces</groupId>
+					<artifactId>xercesImpl</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 
@@ -277,14 +279,32 @@
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>pdfbox</artifactId>
-			<version>2.0.25</version>
+			<version>2.0.26</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>pdfbox-tools</artifactId>
-			<version>2.0.25</version>
+			<version>2.0.26</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
+	<profiles>
+		<profile>
+			<id>AsposeRepository</id>
+			<activation>
+				<property>
+					<name>aspose</name>
+				</property>
+			</activation>
+			<repositories>
+				<repository>
+					<id>AsposeJavaAPI</id>
+					<name>Aspose Java API</name>
+					<url>https://repository.aspose.com/repo/</url>
+				</repository>
+			</repositories>
+		</profile>
+	</profiles>
 </project>

@@ -102,6 +102,8 @@ public class ConfigurationWarnings extends ApplicationWarningsBase {
 	public boolean isSuppressed(SuppressKeys key) {
 		if(key == null) {
 			throw new IllegalArgumentException("SuppressKeys may not be NULL");
+		} else if(key == SuppressKeys.SQL_INJECTION_SUPPRESS_KEY) {
+			return "true".equals(System.getProperty(SuppressKeys.SQL_INJECTION_SUPPRESS_KEY.getKey()));
 		}
 
 		return key.isAllowGlobalSuppression() && getAppConstants().getBoolean(key.getKey(), false); // warning is suppressed globally, for all adapters

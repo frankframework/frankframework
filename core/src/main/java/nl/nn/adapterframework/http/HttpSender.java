@@ -640,10 +640,10 @@ public class HttpSender extends HttpSenderBase {
 
 	public static void streamResponseBody(InputStream is, String contentType, String contentDisposition, HttpServletResponse response, Logger log, String logPrefix, String redirectLocation) throws IOException {
 		if (StringUtils.isNotEmpty(contentType)) {
-			response.setHeader("Content-Type", contentType); 
+			response.setHeader("Content-Type", contentType);
 		}
 		if (StringUtils.isNotEmpty(contentDisposition)) {
-			response.setHeader("Content-Disposition", contentDisposition); 
+			response.setHeader("Content-Disposition", contentDisposition);
 		}
 		if (StringUtils.isNotEmpty(redirectLocation)) {
 			response.sendRedirect(redirectLocation);
@@ -683,7 +683,7 @@ public class HttpSender extends HttpSenderBase {
 	public void setInputMessageParam(String inputMessageParam) {
 		setFirstBodyPartName(inputMessageParam);
 	}
-	@IbisDoc({"(Only used when <code>methodType=POST</code> and <code>postType=URLENCODED</code>, <code>FORM-DATA</code> or <code>MTOM</code>) Name of the first body part", ""})
+	@IbisDoc({"(Only used when <code>methodType=POST</code> and <code>postType=URLENCODED</code>, <code>FORM-DATA</code> or <code>MTOM</code>) Prepends a new BodyPart using the specified name and uses the input of the Sender as content", ""})
 	public void setFirstBodyPartName(String firstBodyPartName) {
 		this.firstBodyPartName = firstBodyPartName;
 	}

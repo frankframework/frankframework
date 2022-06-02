@@ -18,26 +18,23 @@ package nl.nn.adapterframework.pipes;
 import java.io.IOException;
 import java.util.Map;
 
-import javax.xml.transform.TransformerConfigurationException;
-
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
-import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.TransformerPool;
-import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
+import nl.nn.adapterframework.util.XmlUtils;
 
 
 /**
@@ -53,7 +50,6 @@ public class XmlSwitch extends AbstractPipe {
 
 	public static final String XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT = "Switch: Forward Found";
 	public static final String XML_SWITCH_FORWARD_NOT_FOUND_MONITOR_EVENT = "Switch: Forward Not Found";
-	private static final String DEFAULT_SERVICESELECTION_XPATH = XmlUtils.XPATH_GETROOTNODENAME;
 
 	private @Getter String styleSheetName = null;
 	private @Getter String xpathExpression = null;
@@ -64,6 +60,7 @@ public class XmlSwitch extends AbstractPipe {
 	private @Getter String emptyForwardName = null;
 	private @Getter int xsltVersion = 0; // set to 0 for auto detect.
 	private @Getter String forwardNameSessionKey = null;
+	private @Getter boolean namespaceAware = XmlUtils.isNamespaceAwareByDefault();
 
 	private TransformerPool transformerPool = null;
 
@@ -85,29 +82,10 @@ public class XmlSwitch extends AbstractPipe {
 				ConfigurationWarnings.add(this, log, "has a emptyForwardName attribute. However, this forward ["+getEmptyForwardName()+"] is not configured.");
 			}
 		}
-		if (StringUtils.isNotEmpty(getXpathExpression())) {
-			if (StringUtils.isNotEmpty(getStyleSheetName())) {
-				throw new ConfigurationException("cannot have both an xpathExpression and a styleSheetName specified");
-			}
-			transformerPool = TransformerPool.configureTransformer0(getLogPrefix(null), this, getNamespaceDefs(), getXpathExpression(), null, OutputType.TEXT, false, getParameterList(), getXsltVersion());
-		} else if(StringUtils.isNotEmpty(getStyleSheetName())) {
-			try {
-				Resource stylesheet = Resource.getResource(this, getStyleSheetName());
-				if (stylesheet==null) {
-					throw new ConfigurationException("cannot find stylesheet ["+getStyleSheetName()+"]");
-				}
-				transformerPool = TransformerPool.getInstance(stylesheet, getXsltVersion());
-			} catch (IOException e) {
-				throw new ConfigurationException("cannot retrieve ["+ styleSheetName + "]", e);
-			} catch (TransformerConfigurationException te) {
-				throw new ConfigurationException("got error creating transformer from file [" + styleSheetName + "]", te);
-			}
+		if (StringUtils.isNotEmpty(getXpathExpression()) || StringUtils.isNotEmpty(getStyleSheetName())) {
+			transformerPool = TransformerPool.configureTransformer0(getLogPrefix(null), this, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), OutputType.TEXT, false, getParameterList(), getXsltVersion());
 		} else {
-			try {
-				transformerPool = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(DEFAULT_SERVICESELECTION_XPATH, OutputType.TEXT));
-			} catch (TransformerConfigurationException e) {
-				throw new ConfigurationException("got error creating XPathEvaluator from string [" + DEFAULT_SERVICESELECTION_XPATH + "]", e);
-			}
+			transformerPool = XmlUtils.getGetRootNodeNameTransformerPool();
 		}
 		registerEvent(XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT);
 		registerEvent(XML_SWITCH_FORWARD_NOT_FOUND_MONITOR_EVENT);
@@ -159,10 +137,10 @@ public class XmlSwitch extends AbstractPipe {
 					parametervalues = parameterList.getValues(message, session, isNamespaceAware()).getValueMap();
 				}
 				if(StringUtils.isNotEmpty(getSessionKey())) {
-					forward = transformerPool.transform(session.getMessage(getSessionKey()), parametervalues);
+					forward = transformerPool.transform(session.getMessage(getSessionKey()), parametervalues, isNamespaceAware());
 				} else {
 					message.preserve();
-					forward = transformerPool.transform(message, parametervalues);
+					forward = transformerPool.transform(message, parametervalues, isNamespaceAware());
 				}
 			} catch (Throwable e) {
 				throw new PipeRunException(this, getLogPrefix(session) + "got exception on transformation", e);
@@ -274,4 +252,10 @@ public class XmlSwitch extends AbstractPipe {
 	public void setForwardNameSessionKey(String forwardNameSessionKey) {
 		this.forwardNameSessionKey = forwardNameSessionKey;
 	}
+
+	@IbisDoc({"controls namespace-awareness of XSLT transformation", "true"})
+	public void setNamespaceAware(boolean b) {
+		namespaceAware = b;
+	}
+
 }

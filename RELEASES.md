@@ -13,7 +13,9 @@ Upcoming (7.8)
 - WebServiceListener does no longer (simultaneously) bind to the listener-name AND address attribute.
 - Larva httpRequest parameter is no longer supported
 - Json2XmlValidator input format session key prefix changed from "Json2XmlValidator.inputformat " to "Json2XmlValidator.inputFormat " (capital F)
-
+- property xml.namespaceAware.default=true by default. When set to false, parsing is done via a DOM source, or namespaces are removed before XSLT transformations.
+- Parameter handling for types Node and DomDoc is namespace aware, starting from version 7.6. To remove namespaces, use set attribute removeNamespaces="true"
+- Larva uses different correlationId in the format *Test Tool correlation id(${counter})* for each scenario.
 
 7.7
 ---

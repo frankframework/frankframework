@@ -1,5 +1,5 @@
 /*
-   Copyright 2018, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2018, 2020 Nationale-Nederlanden, 2021-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,17 +15,22 @@
 */
 package nl.nn.ibistesttool;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.webcontainer.WebContainerServlet;
+import nl.nn.adapterframework.lifecycle.DynamicRegistration;
+import nl.nn.adapterframework.lifecycle.IbisInitializer;
+import nl.nn.adapterframework.lifecycle.ServletManager;
 import nl.nn.testtool.echo2.Echo2Application;
 
 /**
  * @author Jaco de Groot
  */
-public class Servlet extends WebContainerServlet {
+@IbisInitializer
+public class Servlet extends WebContainerServlet implements DynamicRegistration.Servlet {
 	private static final long serialVersionUID = 1L;
 
 	/**
@@ -37,4 +42,23 @@ public class Servlet extends WebContainerServlet {
 		return webApplicationContext.getBean("echo2Application", Echo2Application.class);
 	}
 
+	@Override
+	public String getUrlMapping() {
+		return "/testtool";
+	}
+
+	@Override
+	public String getName() {
+		return "TestTool";
+	}
+
+	@Override
+	public String[] getAccessGrantingRoles() {
+		return ALL_IBIS_USER_ROLES;
+	}
+
+	@Autowired
+	public void setServletManager(ServletManager servletManager) {
+		servletManager.register(this);
+	}
 }

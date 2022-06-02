@@ -17,6 +17,7 @@ package nl.nn.adapterframework.align;
 
 import java.net.URL;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -31,9 +32,11 @@ import org.apache.xerces.impl.xs.XMLSchemaLoader;
 import org.apache.xerces.xs.ElementPSVI;
 import org.apache.xerces.xs.PSVIProvider;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
+import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSModel;
 import org.apache.xerces.xs.XSModelGroup;
+import org.apache.xerces.xs.XSNamedMap;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSParticle;
 import org.apache.xerces.xs.XSTerm;
@@ -67,6 +70,8 @@ public class XmlAligner extends XMLFilterImpl {
 	private @Setter PSVIProvider psviProvider;
 	private boolean indent=true;
 	private @Getter @Setter boolean ignoreUndeclaredElements=false;
+	protected ValidatorHandler validatorHandler;
+	private @Getter @Setter List<XSModel> schemaInformation;
 
 	private @Getter AlignmentContext context;
 	private int indentLevel;
@@ -78,6 +83,8 @@ public class XmlAligner extends XMLFilterImpl {
 	private @Getter Set<String> multipleOccurringChildElements=null;
 	private Stack<Boolean> parentOfSingleMultipleOccurringChildElements=new Stack<Boolean>();
 	private @Getter boolean parentOfSingleMultipleOccurringChildElement=false;
+	private Stack<Boolean> typeContainsWildcards=new Stack<Boolean>();
+	private @Getter boolean typeContainsWildcard=false;
 
 	private final char[] INDENTOR="\n                                                                                         ".toCharArray();
 	private final int MAX_INDENT=INDENTOR.length/2;
@@ -90,20 +97,21 @@ public class XmlAligner extends XMLFilterImpl {
 	}
 
 
-	public XmlAligner() {
-		super();
-	}
-
 	private XmlAligner(PSVIProvider psviProvider) {
-		this();
+		super();
 		setPsviProvider(psviProvider);
 	}
 
 	public XmlAligner(ValidatorHandler psviProvidingValidatorHandler) {
 		this((PSVIProvider)psviProvidingValidatorHandler);
 		psviProvidingValidatorHandler.setContentHandler(this);
+		this.validatorHandler = psviProvidingValidatorHandler;
 	}
 
+	public XmlAligner(ValidatorHandler validatorHandler, List<XSModel> schemaInformation) {
+		this(validatorHandler);
+		this.schemaInformation=schemaInformation;
+	}
 
 
 	public void newLine() throws SAXException {
@@ -125,21 +133,30 @@ public class XmlAligner extends XMLFilterImpl {
 		if (log.isTraceEnabled()) log.trace("startElement() uri ["+namespaceUri+"] localName ["+localName+"] qName ["+qName+"]");
 		// call getChildElementDeclarations with in startElement, to obtain all child elements of the current node
 		typeDefinition=getTypeDefinition(psviProvider);
-		if (typeDefinition==null) {
+		if (typeDefinition==null && !isTypeContainsWildcard()) {
 			handleRecoverableError("No typeDefinition found for element ["+localName+"] in namespace ["+namespaceUri+"] qName ["+qName+"]", isIgnoreUndeclaredElements());
 		} else {
 			multipleOccurringElements.push(multipleOccurringChildElements);
 			parentOfSingleMultipleOccurringChildElements.push(parentOfSingleMultipleOccurringChildElement);
+			typeContainsWildcards.push(typeContainsWildcard);
 			// call findMultipleOccurringChildElements, to obtain all child elements that could be part of an array
 			if (typeDefinition instanceof XSComplexTypeDefinition) {
 				XSComplexTypeDefinition complexTypeDefinition = (XSComplexTypeDefinition)typeDefinition;
 				multipleOccurringChildElements=findMultipleOccurringChildElements(complexTypeDefinition.getParticle());
 				parentOfSingleMultipleOccurringChildElement=(ChildOccurrence.ONE_MULTIPLE_OCCURRING_ELEMENT==determineIsParentOfSingleMultipleOccurringChildElement(complexTypeDefinition.getParticle()));
+				typeContainsWildcard=typeContainsWildcard(complexTypeDefinition.getParticle());
 				if (log.isTraceEnabled()) log.trace("element ["+localName+"] is parentOfSingleMultipleOccurringChildElement ["+parentOfSingleMultipleOccurringChildElement+"]");
 			} else {
 				multipleOccurringChildElements=null;
 				parentOfSingleMultipleOccurringChildElement=false;
-				if (log.isTraceEnabled()) log.trace("element ["+localName+"] is a SimpleType, and therefor not multiple");
+				typeContainsWildcard=!typeContainsWildcards.isEmpty() && typeContainsWildcards.peek();
+				if (log.isTraceEnabled()) {
+					if (typeDefinition==null) {
+						log.trace("element ["+localName+"] is a SimpleType, and therefor not multiple");
+					} else {
+						log.trace("no type definition found for element ["+localName+"], assuming not multiple");
+					}
+				}
 			}
 			super.startElement(namespaceUri, localName, qName, attributes);
 		}
@@ -152,11 +169,12 @@ public class XmlAligner extends XMLFilterImpl {
 		boolean knownElement = context.getTypeDefinition()!=null;
 		context = context.getParent();
 		indentLevel--;
-		if (knownElement) {
+		if (knownElement|| isTypeContainsWildcard()) {
 			typeDefinition=null;
 			super.endElement(uri, localName, qName);
 			multipleOccurringChildElements=multipleOccurringElements.pop();
 			parentOfSingleMultipleOccurringChildElement=parentOfSingleMultipleOccurringChildElements.pop();
+			typeContainsWildcards.pop();
 		}
 	}
 
@@ -260,6 +278,34 @@ public class XmlAligner extends XMLFilterImpl {
 			return ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
 		}
 		throw new IllegalStateException("determineIsParentOfSingleMultipleOccurringChildElement unknown Term type ["+term.getClass().getName()+"]");
+	}
+
+	public static boolean typeContainsWildcard(XSParticle particle) {
+		if (particle==null) {
+			return false;
+		}
+		XSTerm term = particle.getTerm();
+		if (term==null) {
+			throw new IllegalStateException("checkIfTypeIsWildcard particle.term is null");
+
+		}
+		if (term instanceof XSWildcard) {
+			return true;
+		}
+		if (term instanceof XSElementDeclaration) {
+			return false;
+		}
+		if (term instanceof XSModelGroup) {
+			XSModelGroup modelGroup = (XSModelGroup)term;
+			XSObjectList particles = modelGroup.getParticles();
+			for (int i=0;i<particles.getLength();i++) {
+				if (typeContainsWildcard((XSParticle)particles.item(i))) {
+					return true;
+				}
+			}
+			return false;
+		}
+		throw new IllegalStateException("typeIsWildcard unknown Term type ["+term.getClass().getName()+"]");
 	}
 
 
@@ -406,4 +452,38 @@ public class XmlAligner extends XMLFilterImpl {
 			throw new SAXParseException(message, getDocumentLocator());
 		}
 	}
+
+	protected XSElementDeclaration findElementDeclarationForName(String namespace, String name) throws SAXException {
+		Set<XSElementDeclaration> elementDeclarations=findElementDeclarationsForName(namespace, name);
+		if (elementDeclarations==null) {
+			log.warn("No element declarations found for ["+namespace+"]:["+name+"]");
+			return null;
+		}
+		if (elementDeclarations.size()>1) {
+			XSElementDeclaration[] XSElementDeclarationArray=elementDeclarations.toArray(new XSElementDeclaration[0]);
+			throw new SAXException("multiple ["+elementDeclarations.size()+"] elementDeclarations found for ["+namespace+"]:["+name+"]: first two ["+XSElementDeclarationArray[0].getNamespace()+":"+XSElementDeclarationArray[0].getName()+"]["+XSElementDeclarationArray[1].getNamespace()+":"+XSElementDeclarationArray[1].getName()+"]");
+		}
+		if (elementDeclarations.size()==1) {
+			return (XSElementDeclaration)elementDeclarations.toArray()[0];
+		}
+		return null;
+	}
+	protected Set<XSElementDeclaration> findElementDeclarationsForName(String namespace, String name) {
+		Set<XSElementDeclaration> result=new LinkedHashSet<XSElementDeclaration>();
+		if (schemaInformation==null) {
+			throw new IllegalStateException("No SchemaInformation specified, cannot find namespaces for ["+namespace+"]:["+name+"]");
+		}
+		for (XSModel model:schemaInformation) {
+			XSNamedMap components = model.getComponents(XSConstants.ELEMENT_DECLARATION);
+			for (int i=0;i<components.getLength();i++) {
+				XSElementDeclaration item=(XSElementDeclaration)components.item(i);
+				if ((namespace==null || namespace.equals(item.getNamespace())) && (name==null || name.equals(item.getName()))) {
+					if (log.isTraceEnabled()) log.trace("name ["+item.getName()+"] found in namespace ["+item.getNamespace()+"]");
+					result.add(item);
+				}
+			}
+		}
+		return result;
+	}
+
 }

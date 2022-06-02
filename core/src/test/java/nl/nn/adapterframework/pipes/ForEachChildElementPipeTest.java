@@ -394,7 +394,6 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		pipe.setElementXPathExpression("/ns:root/ns:sub");
 		pipe.setNamespaceDefs("ns=urn:test");
 		pipe.setRemoveNamespaces(true);
-		pipe.setNamespaceAware(true);
 		pipe.setSender(getElementRenderer(sc));
 		configurePipe();
 		pipe.start();
@@ -414,7 +413,6 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		pipe.setElementXPathExpression("/ns:root/ns:sub");
 		pipe.setNamespaceDefs("ns=urn:test");
 		pipe.setRemoveNamespaces(true);
-		pipe.setNamespaceAware(true);
 		pipe.setSender(getElementRenderer(sc));
 		configurePipe();
 		pipe.start();
@@ -432,7 +430,6 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 	public void testXPathNoRemoveNamespacesNonPrefixed() throws Exception {
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setElementXPathExpression("/*[local-name()='root']/*[local-name()='sub']");
-		pipe.setNamespaceAware(false);
 		pipe.setRemoveNamespaces(false);
 		pipe.setSender(getElementRenderer(sc));
 		configurePipe();
@@ -451,7 +448,6 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 	public void testXPathNoRemoveNamespacesPrefixed() throws Exception {
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setElementXPathExpression("/*[local-name()='root']/*[local-name()='sub']");
-		pipe.setNamespaceAware(false);
 		pipe.setRemoveNamespaces(false);
 		pipe.setSender(getElementRenderer(sc));
 		configurePipe();
@@ -489,7 +485,6 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 	public void testXPathWithSpecialChars() throws Exception {
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setElementXPathExpression("/root/sub[position()<3]");
-		pipe.setNamespaceAware(true);
 		pipe.setSender(getElementRenderer(sc));
 		configurePipe();
 		pipe.start();
@@ -527,7 +522,6 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setContainerElement("root");
 		pipe.setRemoveNamespaces(true);
-		pipe.setNamespaceAware(true);
 		pipe.setSender(getElementRenderer(sc));
 		configurePipe();
 		pipe.start();
@@ -547,7 +541,6 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setContainerElement("root");
 		pipe.setNamespaceDefs("urn:test");
-		pipe.setNamespaceAware(false);
 		pipe.setRemoveNamespaces(false);
 		pipe.setSender(getElementRenderer(sc));
 		configurePipe();
@@ -586,7 +579,6 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setTargetElement("sub");
 		pipe.setRemoveNamespaces(true);
-		pipe.setNamespaceAware(true);
 		pipe.setSender(getElementRenderer(sc));
 		configurePipe();
 		pipe.start();

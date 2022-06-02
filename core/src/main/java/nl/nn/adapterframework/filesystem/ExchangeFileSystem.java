@@ -111,8 +111,8 @@ import nl.nn.adapterframework.xml.SaxElementBuilder;
  * Specify the target mailbox in front of your folder name, separated by 'mailboxFolderSeparator' which defaults to '|', for example <code>"example@domain.com|My folder"</code>
  * Please consider the following behavioural differences when using multiple mailboxes:
  *
- * - copyFile - When copying an email message from mailbox A to mailbox B an expensive call to service.bind() is done to retrieve the newly created object in mailbox B.
- * - moveFile - When moving an email message from mailbox A to mailbox B, null will be returned
+ * - copyFile - When copying an email message from mailbox A to mailbox B an expensive call to service.bind() is done to retrieve the newly created object in mailbox B, if resultantMustBeReturned is set true.
+ * - moveFile - When moving an email message from mailbox A to mailbox B, null will be returned, or an exception is thrown when resultantMustBeReturned is set true
  *
  * N.B. MS Exchange is susceptible to problems with invalid XML characters, like &amp;#x3;.
  * To work around these problems, a special streaming XMLInputFactory is configured in
@@ -515,14 +515,14 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public void deleteFile(EmailMessage f) throws FileSystemException {
-		 try {
+		try {
 			f.delete(DeleteMode.MoveToDeletedItems);
 		} catch (Exception e) {
 			throw new FileSystemException("Could not delete",e);
 		}
 	}
 	@Override
-	public EmailMessage moveFile(EmailMessage f, String destinationFolder, boolean createFolder) throws FileSystemException {
+	public EmailMessage moveFile(EmailMessage f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
 		ExchangeFileSystemResolver resolver = getResolver(destinationFolder);
 		ExchangeService exchangeService = getConnection(resolver.getMailbox());
 		boolean invalidateConnectionOnRelease = false;
@@ -540,7 +540,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	}
 
 	@Override
-	public EmailMessage copyFile(EmailMessage f, String destinationFolder, boolean createFolder) throws FileSystemException {
+	public EmailMessage copyFile(EmailMessage f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
 		ExchangeFileSystemResolver resolver = getResolver(destinationFolder);
 		ExchangeService exchangeService = getConnection(resolver.getMailbox());
 		boolean invalidateConnectionOnRelease = false;
@@ -586,6 +586,22 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			throw new RuntimeException("Could not determine Name",e);
 		}
 	}
+	@Override
+	public String getParentFolder(EmailMessage f) throws FileSystemException {
+		ExchangeService exchangeService = getConnection();
+		boolean invalidateConnectionOnRelease = false;
+		try {
+			FolderId folderId = f.getParentFolderId();
+			Folder folder = Folder.bind(exchangeService, folderId);
+			return folder.getDisplayName();
+		} catch(Exception e) {
+			invalidateConnectionOnRelease = true;
+			throw new FileSystemException(e);
+		} finally {
+			releaseConnection(exchangeService, invalidateConnectionOnRelease);
+		}
+	}
+
 	@Override
 	public String getCanonicalName(EmailMessage f) throws FileSystemException {
 		try {

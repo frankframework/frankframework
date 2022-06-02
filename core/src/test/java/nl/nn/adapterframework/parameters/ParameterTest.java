@@ -40,6 +40,7 @@ import nl.nn.adapterframework.processors.CorePipeProcessor;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.testutil.MatchUtils;
+import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.DateUtils;
@@ -1421,4 +1422,27 @@ public class ParameterTest {
 
 		assertEquals("<doc/>", result);
 	}
+
+	@Test
+	public void testParameterFromNullMessage() throws Exception {
+		Parameter p = ParameterBuilder.create().withName("parameter");
+		p.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+
+		String result = (String)p.getValue(alreadyResolvedParameters, Message.nullMessage(), null, false);
+
+		assertEquals(null, result);
+	}
+
+	@Test
+	// see https://github.com/ibissource/iaf/issues/3232
+	public void testPotentialProblematicSysId() throws ConfigurationException {
+		Parameter p = new Parameter();
+		p.setName("pid");
+		p.setXpathExpression("'#'"); // when this xpath expression is made part of the sysid, then an Exception occurs: '(TransformerException) Did not find the stylesheet root!'
+		p.setXsltVersion(1);
+		p.configure();
+	}
+
 }

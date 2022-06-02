@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.scheduler;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
@@ -26,6 +27,8 @@ public class CheckReloadJobTest extends JdbcTestBase {
 			}
 		};
 
+		getConfiguration().getIbisManager(); //call once to ensure it exists.
+
 		jobDef.setName("CheckReloadJob");
 		getConfiguration().autowireByName(jobDef);
 	}
@@ -38,7 +41,15 @@ public class CheckReloadJobTest extends JdbcTestBase {
 
 		assertEquals(1, jobDef.getMessageKeeper().size());
 		assertTrue(jobDef.getMessageKeeper().getMessage(0).getMessageText().contains("job successfully configured"));
-
 	}
 
+	@Test
+	public void testBeforeExecuteJobWithEmptyTable() throws Exception {
+		jobDef.configure();
+
+		assertFalse(jobDef.beforeExecuteJob());
+
+		assertEquals(2, jobDef.getMessageKeeper().size());
+		assertEquals("skipped job execution: no database configurations found", jobDef.getMessageKeeper().getMessage(1).getMessageText());
+	}
 }

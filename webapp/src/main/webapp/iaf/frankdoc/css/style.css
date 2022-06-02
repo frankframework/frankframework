@@ -125,6 +125,10 @@ table.table thead th.tbl-85 {
 .sidebar__elements li.deprecated span, td.deprecated, code.deprecated {
 	text-decoration: line-through;
 }
+.mandatory:after {
+	content: '*';
+	color: red;
+}
 .sidebar__elements li.deprecated i {
 	color: #f0ad4e;
 	padding-left: 2px;

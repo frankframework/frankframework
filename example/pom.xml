@@ -65,7 +65,7 @@
 					</webAppConfig>
 					<loginServices>
 						<loginServices implementation="org.eclipse.jetty.jaas.JAASLoginService">
-							<name>Ibis</name>
+							<name>Frank</name>
 						</loginServices>
 					</loginServices>
 				</configuration>

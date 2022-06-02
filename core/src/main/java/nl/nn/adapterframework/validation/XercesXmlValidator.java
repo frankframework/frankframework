@@ -63,7 +63,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.xml.ClassLoaderXmlEntityResolver;
 
 
 /**
@@ -135,14 +134,14 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	}
 
 	@Override
-	public void configure(String logPrefix) throws ConfigurationException {
+	public void configure(IConfigurationAware owner) throws ConfigurationException {
 		if (StringUtils.isEmpty(getXmlSchemaVersion())) {
 			setXmlSchemaVersion(AppConstants.getInstance(getConfigurationClassLoader()).getString("xml.schema.version", DEFAULT_XML_SCHEMA_VERSION));
 			if (!isXmlSchema1_0() && !"1.1".equals(getXmlSchemaVersion())) {
 				throw new ConfigurationException("class ("+this.getClass().getName()+") only supports XmlSchema version 1.0 and 1.1, no ["+getXmlSchemaVersion()+"]");
 			}
 		}
-		super.configure(logPrefix);
+		super.configure(owner);
 	}
 
 	@Override
@@ -185,7 +184,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		XMLGrammarPool grammarPool = new XMLGrammarPoolImpl();
 		Set<String> namespaceSet = new HashSet<String>();
 		XMLGrammarPreparser preparser = new XMLGrammarPreparser(symbolTable);
-		preparser.setEntityResolver(new ClassLoaderXmlEntityResolver(this));
+		preparser.setEntityResolver(new IntraGrammarPoolEntityResolver(schemas));
 		preparser.registerPreparser(XMLGrammarDescription.XML_SCHEMA, null);
 		preparser.setProperty(GRAMMAR_POOL, grammarPool);
 		preparser.setFeature(NAMESPACES_FEATURE_ID, true);
@@ -202,7 +201,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 				throw new ConfigurationException(msg, e);
 			}
 		}
-		MyErrorHandler errorHandler = new MyErrorHandler(this);
+		XercesValidationErrorHandler errorHandler = new XercesValidationErrorHandler(getOwner()!=null ? getOwner() : this);
 		errorHandler.warn = warn;
 		preparser.setErrorHandler(errorHandler);
 		Set<Grammar> namespaceRegisteredGrammars = new HashSet<>();
@@ -448,12 +447,12 @@ class PreparseResult {
 	}
 
 }
-class MyErrorHandler implements XMLErrorHandler {
+class XercesValidationErrorHandler implements XMLErrorHandler {
 	protected Logger log = LogUtil.getLogger(this);
 	protected boolean warn = true;
 	private IConfigurationAware source;
 
-	public MyErrorHandler(IConfigurationAware source) {
+	public XercesValidationErrorHandler(IConfigurationAware source) {
 		this.source = source;
 	}
 
@@ -471,16 +470,12 @@ class MyErrorHandler implements XMLErrorHandler {
 		if (e.getMessage() != null && e.getMessage().startsWith("schema_reference.4: Failed to read schema document '")) {
 			throw e;
 		}
-		if (warn) {
-			ConfigurationWarnings.add(source, log, e.getMessage());
-		}
+		warning(domain, key, e);
 	}
 
 	@Override
 	public void fatalError(String domain, String key, XMLParseException e) throws XNIException {
-		if (warn) {
-			ConfigurationWarnings.add(source, log, e.getMessage());
-		}
+		warning(domain, key, e);
 		throw new XNIException(e);
 	}
 }

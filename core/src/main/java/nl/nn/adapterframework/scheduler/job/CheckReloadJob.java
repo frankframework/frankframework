@@ -49,6 +49,11 @@ public class CheckReloadJob extends JobDef {
 					break;
 				}
 			}
+		} else {
+			getMessageKeeper().add("skipped job execution: autoload is disabled");
+		}
+		if(!atLeastOneConfigrationHasDBClassLoader) {
+			getMessageKeeper().add("skipped job execution: no database configurations found");
 		}
 		return atLeastOneConfigrationHasDBClassLoader;
 	}

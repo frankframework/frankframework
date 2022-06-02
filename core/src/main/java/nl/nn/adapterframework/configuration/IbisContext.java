@@ -30,16 +30,7 @@ import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
-import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
-import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
-import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
-import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
-import io.micrometer.prometheus.PrometheusConfig;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
 import lombok.Getter;
-import lombok.Setter;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.http.RestServiceDispatcher;
@@ -50,7 +41,6 @@ import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
@@ -89,8 +79,6 @@ public class IbisContext extends IbisApplicationContext {
 	private FlowDiagramManager flowDiagramManager;
 	private ClassLoaderManager classLoaderManager = null;
 	private static List<String> loadingConfigs = new ArrayList<>();
-
-	private @Getter @Setter MeterRegistry meterRegistry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
 
 	private Thread ibisContextReconnectThread = null;
 
@@ -132,8 +120,6 @@ public class IbisContext extends IbisApplicationContext {
 			LOG.debug("Loaded IbisManager Bean");
 
 			classLoaderManager = new ClassLoaderManager(this);
-
-			initMetrics();
 
 			try {
 				flowDiagramManager = getBean("flowDiagramManager", FlowDiagramManager.class); //The FlowDiagramManager should always initialize.
@@ -210,7 +196,7 @@ public class IbisContext extends IbisApplicationContext {
 		Configuration configuration = ibisManager.getConfiguration(configurationName);
 		if (configuration != null) {
 			ibisManager.unload(configurationName);
-			if (configuration.getRegisteredAdapters().size() > 0) {
+			if (!configuration.getRegisteredAdapters().isEmpty()) {
 				log("Not all adapters are unregistered: " + configuration.getRegisteredAdapters(), MessageKeeperLevel.ERROR);
 			}
 			getApplicationContext().getAutowireCapableBeanFactory().destroyBean(configuration);
@@ -233,7 +219,7 @@ public class IbisContext extends IbisApplicationContext {
 
 		close();
 		Set<String> javaListenerNames = JavaListener.getListenerNames();
-		if (javaListenerNames.size() > 0) {
+		if (!javaListenerNames.isEmpty()) {
 			// cannot log to MessageKeeper here, as applicationContext is closed
 			LOG.warn("Not all java listeners are unregistered: " + javaListenerNames);
 		}
@@ -386,23 +372,6 @@ public class IbisContext extends IbisApplicationContext {
 			log("exception loading configuration ["+currentConfigurationName+"]", MessageKeeperLevel.ERROR, e);
 		} finally {
 			Thread.currentThread().setContextClassLoader(originalClassLoader);
-		}
-	}
-
-	private void initMetrics() {
-		if (meterRegistry!=null) {
-			meterRegistry.config().commonTags(
-						"instance", APP_CONSTANTS.getString("instance.name",""),
-						"ff_version", APP_CONSTANTS.getProperty("application.version"),
-						"hostname" , Misc.getHostname(),
-						"dtap.stage" , APP_CONSTANTS.getProperty("dtap.stage")
-					);
-			// These classes are for exposing JVM specific metrics
-			new ClassLoaderMetrics().bindTo(meterRegistry);
-			new JvmMemoryMetrics().bindTo(meterRegistry);
-			new JvmGcMetrics().bindTo(meterRegistry);
-			new ProcessorMetrics().bindTo(meterRegistry);
-			new JvmThreadMetrics().bindTo(meterRegistry);
 		}
 	}
 

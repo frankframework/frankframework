@@ -1,19 +1,13 @@
-<web-app xmlns="http://java.sun.com/xml/ns/javaee"
+<web-app xmlns="https://java.sun.com/xml/ns/javaee"
 		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		 xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
 		 version="3.0">
-	<display-name>IBIS AdapterFramework</display-name>
+	<display-name>Frank!Framework</display-name>
 
-	<description>The IBIS AdapterFramework provides functionality to listen to some
-	event (e.g. a JMS message arrival) and perform some predefined actions. These actions
-	are configured in an XML file. On the event several actions, called pipes, grouped in
-	a pipeline, are fired.
+	<description>
+		The Frank!Framework provides functionality to listen to some event (e.g. a JMS message arrival) and perform some predefined actions.
+		These actions are configured in an XML file. On the event several actions, called pipes, grouped in a pipeline, are fired.
 	</description>
-
-	<context-param>
-		<param-name>restListenerPathPrefix</param-name>
-		<param-value>rest</param-value>
-	</context-param>
 
 	<filter>
 		<filter-name>LoginFilter</filter-name>
@@ -77,83 +71,6 @@
 		<load-on-startup>0</load-on-startup>
 	</servlet>
 
-	<servlet>
-		<description>CXF Servlet for SOAP WebServices</description>
-		<display-name>CXF Servlet</display-name>
-		<servlet-name>CXFServlet</servlet-name>
-		<servlet-class>org.apache.cxf.transport.servlet.CXFServlet</servlet-class>
-	</servlet>
-
-	<servlet-mapping>
-		<servlet-name>CXFServlet</servlet-name>
-		<url-pattern>/services/*</url-pattern>
-	</servlet-mapping>
-
-	<!-- legacy; to be removed in the year 2020 -->
-	<servlet-mapping>
-		<servlet-name>CXFServlet</servlet-name>
-		<url-pattern>/servlet/*</url-pattern>
-	</servlet-mapping>
-	<!-- END Soap Router -->
-
-	<!-- Index Servlet -->
-	<servlet>
-		<display-name>Webapp index redirect</display-name>
-		<servlet-name>IndexProxy</servlet-name>
-		<servlet-class>nl.nn.adapterframework.webcontrol.RedirectIndexProxy</servlet-class>
-	</servlet>
-
-	<!-- Test Tool Servlet -->
-	<servlet>
-		<servlet-name>TestToolServlet</servlet-name>
-		<servlet-class>nl.nn.ibistesttool.Servlet</servlet-class>
-	</servlet>
-
-	<!-- AdapterFramework servlets -->
-	<servlet>
-		<display-name>file viewer</display-name>
-		<servlet-name>FileViewerServlet</servlet-name>
-		<servlet-class>nl.nn.adapterframework.webcontrol.FileViewerServlet</servlet-class>
-	</servlet>
-	<servlet>
-		<display-name>HttpListener</display-name>
-		<servlet-name>HttpListener</servlet-name>
-		<servlet-class>nl.nn.adapterframework.http.HttpListenerServlet</servlet-class>
-	</servlet>
-	<servlet>
-		<display-name>RestListener</display-name>
-		<servlet-name>RestListener</servlet-name>
-		<servlet-class>nl.nn.adapterframework.http.RestListenerServlet</servlet-class>
-	</servlet>
-
-	<servlet-mapping>
-		<servlet-name>FileViewerServlet</servlet-name>
-		<url-pattern>/FileViewerServlet</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>HttpListener</servlet-name>
-		<url-pattern>/HttpListener</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>RestListener</servlet-name>
-		<url-pattern>/rest/*</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>RestListener</servlet-name>
-		<url-pattern>/rest-public/*</url-pattern>
-	</servlet-mapping>
-
-	<servlet-mapping>
-		<servlet-name>IndexProxy</servlet-name>
-		<url-pattern>/index.jsp</url-pattern>
-	</servlet-mapping>
-
-	<!-- Test Tool Servlet Mapping -->
-	<servlet-mapping>
-		<servlet-name>TestToolServlet</servlet-name>
-		<url-pattern>/testtool</url-pattern>
-	</servlet-mapping>
-
 	<!-- Welcome File List -->
 	<mime-mapping>
 		<extension>svg</extension>
@@ -179,6 +96,9 @@
 	</login-config>
 
 	<!--
+	LEGACY URL-based security configuration, now superseded by dynamic servlet configuration.
+	See nl.nn.adapterframework.lifecycle.ServletManager
+
 	When a security-constraint element is present Tomcat will authenticate the
 	user for all url's whereas WebSphere does this only for the url's mentioned
 	in the security constraint(s). The PublicAccess security constraint will

@@ -272,12 +272,12 @@ public class XSD implements Schema, Comparable<XSD> {
 	}
 
 	@Override
-	public InputStream getInputStream() throws IOException, ConfigurationException {
+	public InputStream getInputStream() throws IOException {
 		if (wsdlSchema != null) {
 			try {
 				return SchemaUtils.toInputStream(wsdlDefinition, wsdlSchema);
 			} catch (WSDLException e) {
-				throw new ConfigurationException(e);
+				throw new IOException(e);
 			}
 		} else if (byteArrayOutputStream != null) {
 			return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
@@ -391,7 +391,7 @@ public class XSD implements Schema, Comparable<XSD> {
 	@Override
 	public String getSystemId() {
 		if (url == null) {
-			return null;
+			return getTargetNamespace(); // used by IntraGrammarPoolEntityResolver
 		}
 		return url.toExternalForm();
 	}

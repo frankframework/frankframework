@@ -288,13 +288,13 @@
 			<caption class="caption">Duration statistics per pipe (in ms)</caption>
 			<tr>
 				<th class="colHeader">name</th>
-				<xsl:for-each select="(statgroup[@type='pipeline']/statgroup[@type='pipeStats']/stat)[1]/cumulative/item">
+				<xsl:for-each select="(statgroup[@type='pipeline']/statgroup[@type='duration']/stat)[1]/cumulative/item">
 					<th class="colHeader">
 						<xsl:value-of select="@name"/>
 					</th>
 				</xsl:for-each>
 			</tr>
-			<xsl:for-each select="statgroup[@type='pipeline']/statgroup[@type='pipeStats']/stat">
+			<xsl:for-each select="statgroup[@type='pipeline']/statgroup[@type='duration']/stat">
 				<tr>
 					<xsl:attribute name="class"><xsl:choose><xsl:when test="(position() mod 2) = 0">rowEven</xsl:when><xsl:otherwise>filterRow</xsl:otherwise></xsl:choose></xsl:attribute>
 					<td class="filterRow">
@@ -317,13 +317,13 @@
 			<caption class="caption">Size statistics per pipe (in bytes)</caption>
 			<tr>
 				<th class="colHeader">name</th>
-				<xsl:for-each select="(statgroup[@type='pipeline']/statgroup[@type='sizeStats']/stat)[1]/cumulative/item">
+				<xsl:for-each select="(statgroup[@type='pipeline']/statgroup[@type='size']/stat)[1]/cumulative/item">
 					<th class="colHeader">
 						<xsl:value-of select="@name"/>
 					</th>
 				</xsl:for-each>
 			</tr>
-			<xsl:for-each select="statgroup[@type='pipeline']/statgroup[@type='sizeStats']/stat">
+			<xsl:for-each select="statgroup[@type='pipeline']/statgroup[@type='size']/stat">
 				<tr>
 					<xsl:attribute name="class"><xsl:choose><xsl:when test="(position() mod 2) = 0">rowEven</xsl:when><xsl:otherwise>filterRow</xsl:otherwise></xsl:choose></xsl:attribute>
 					<td class="filterRow">

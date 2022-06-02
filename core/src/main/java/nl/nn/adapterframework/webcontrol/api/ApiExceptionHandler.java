@@ -15,13 +15,8 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
@@ -31,9 +26,9 @@ import org.apache.logging.log4j.Logger;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * Register custom errorHandler for the API.
+ * Custom errorHandler for the FF!API to unpack and re-pack {@link WebApplicationException}s.
+ * Has to be explicitly configured to override the CXF default {@link WebApplicationException}Listener.
  * 
- * @since	7.0-B1
  * @author	Niels Meijer
  */
 
@@ -49,20 +44,8 @@ public class ApiExceptionHandler implements ExceptionMapper<WebApplicationExcept
 			return ((ApiException) exception).getResponse();
 		}
 
-		log.warn("Caught unhandled exception in handling FF!API call", exception);
+		log.warn("Caught unhandled WebApplicationException while executing FF!API call", exception);
 
-		ResponseBuilder response = Response.status(Status.INTERNAL_SERVER_ERROR).type(MediaType.TEXT_PLAIN);
-		String message = exception.getMessage();
-
-		if(message != null) {
-			message = message.replace("\"", "\\\"").replace("\n", " ").replace(System.getProperty("line.separator"), " ");
-			Map<String, Object> entity = new HashMap<>(3);
-			entity.put("status", Status.INTERNAL_SERVER_ERROR.getReasonPhrase());
-			entity.put("error", message);
-
-			response.entity(entity).type(MediaType.APPLICATION_JSON);
-		}
-
-		return response.build();
+		return ApiException.formatException(exception.getMessage(), Status.INTERNAL_SERVER_ERROR);
 	}
 }

@@ -15,7 +15,7 @@ import org.junit.Test;
 import nl.nn.adapterframework.testutil.MatchUtils;
 
 public class TestMap2Xml extends AlignTestBase {
-	
+
 	public void testStrings(String xmlIn, String mapInStr, URL schemaUrl, String targetNamespace, String rootElement, boolean checkRoundTrip, String expectedFailureReason) throws Exception {
 		System.out.println("schemaUrl ["+schemaUrl+"]");
 		if (xmlIn!=null) assertTrue("validated input",Utils.validate(schemaUrl, xmlIn));
@@ -120,7 +120,7 @@ public class TestMap2Xml extends AlignTestBase {
 	public void testOK_abc() throws Exception {
 		super.testOK_abc();
 	}
-	
+
 	@Override
 	@Test
 	@Ignore("Map2XML does not support arrays of complex values")
@@ -148,7 +148,7 @@ public class TestMap2Xml extends AlignTestBase {
 		testFiles("DoubleId/Party.xsd","","Party","DoubleId/Party");
 	}
 
-	
+
 	@Override
 	@Test
 	@Ignore("No content")
@@ -162,4 +162,12 @@ public class TestMap2Xml extends AlignTestBase {
 	public void testFamilyTree() throws Exception {
 		testFiles("FamilyTree/family.xsd", "urn:family", "family", "FamilyTree/family", true);
 	}
+
+	@Override
+	@Test
+	@Ignore("cannot decide what elements should be inserted at wildcard position")
+	public void testAnyElement() throws Exception {
+		super.testAnyElement();
+	}
+
 }

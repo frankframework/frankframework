@@ -1,3 +1,9 @@
+Frank!Framework
+===============
+**Exchange, modify and aggregate messages between systems!**
+
+![frank-framework-github-banner](frank-framework-github-banner.png)
+
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/ibissource/iaf/blob/master/LICENSE)
 [![Build Status](https://api.travis-ci.org/ibissource/iaf.svg?branch=master)](https://travis-ci.org/ibissource/iaf)
 [![Core Tests](https://github.com/ibissource/iaf/workflows/Java%20CI%20with%20Maven/badge.svg)](https://github.com/ibissource/iaf/actions?query=workflow%3A%22Java+CI+with+Maven%22+branch%3Amaster)
@@ -10,41 +16,26 @@
 [![Latest Snapshot](https://img.shields.io/nexus/public/org.ibissource/ibis-adapterframework-core?label=Latest%20Snapshot&server=https%3A%2F%2Fnexus.frankframework.org%2F)](https://nexus.frankframework.org/#browse/browse)
 
 
-Frank!Framework
-===============
+## Open-Source, Low-Code & Stateless
+The Frank!Framework is a framework that is completely configurable through XML configurations. Each Frank!Application may contain multiple configurations, and each configuration can consist of multiple end-to-end connections which we call 'adapters'. Configurations may be (re)loaded conditionally or individiually for optimal performance and customizability.
+The application may be managed and monitored through a web interface or REST API.
+See it in action: https://frank2example.frankframework.org
 
-Build adapters using XML configuration. Build applications using adapters.
+## Rebranding
+The Ibis Adapter Framework has been renamed to "Frank!Framework". The migration is a work in progress, which is why you may encounter some old(er) names throughout our source code. Don't worry, everything will remain fully backwards compatible!
 
-![Ibis AdapterFramework](IAF.png)
+## Releases
+All our releases can be found on Maven central. Individual builds can be found on our Nexus repository [here](https://nexus.frankframework.org).
+For more information about our releases, see our [release notes](RELEASES.md) and [releases](https://github.com/ibissource/iaf/releases).
 
-Some example XML configurations:
-- [HelloWorld](example/src/main/resources/ConfigurationHelloWorld.xml)
-- [HelloWorlds](example/src/main/resources/ConfigurationHelloWorlds.xml)
-- [ManageDatabase](core/src/main/resources/IAF_Util/ConfigurationManageDatabase.xml)
-
-See them in action: https://frank2example.frankframework.org
-
-
-The Ibis Adapter Framework is being renamed to "Frank!Framework". There is a user manual, the Frank!Manual, which can
-be found at <http://frank-manual.readthedocs.io>. If you want to contribute to this manual, please go to
-<https://github.com/ibissource/frank-manual>.
-
-
-Releases
-========
-
-See [release notes](RELEASES.md).
-
-
-Feedback
-========
-
+## Feedback
 For bug reports and feature requests create a new issue at <https://github.com/ibissource/iaf/issues>. The
 Frank!Framework is developed and maintained by [WeAreFrank!](https://wearefrank.nl/). Contact us at
 <https://wearefrank.nl/en/contact/> or send an email to info@wearefrank.nl.
 
+## Frank!Manual
+In need of help? Our manual can be found at <http://frank-manual.readthedocs.io>. If you cannot find an answer to your question [feel free to contact us](https://wearefrank.nl/en/contact/). If you want to contribute to our manual, the sources can be found [here](https://github.com/ibissource/frank-manual).
 
-Contributing
-============
-
-Before [Contributing](CONTRIBUTING.md) please read our [Code of Conduct](CODE_OF_CONDUCT.md).
+## Contributing
+Eager to help us expand or enhance our framework? 
+Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before [Contributing](CONTRIBUTING.md).
