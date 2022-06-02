@@ -22,10 +22,10 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 	private String fileSeparator = File.separator;
 
 	@Override
-	public void setup() throws Exception {
+	public void setUp() throws Exception {
 		folder = new TemporaryFolder();
 		folder.create();
-		super.setup();
+		super.setUp();
 	}
 
 	@Override
@@ -44,16 +44,16 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 	public void testUnzipFromStream() throws Exception {
 		pipe.setKeepOriginalFileName(true);
 		configureAndStartPipe();
-		
+
 		URL zip = TestFileUtils.getTestFileURL("/Unzip/ab.zip");
-		
+
 		String expected = 	"<results count=\"2\">"+
-								"<result item=\"1\"><zipEntry>fileaa.txt</zipEntry><fileName>"+folder.getRoot().toString()+fileSeparator+"fileaa.txt</fileName></result>" + 
-								"<result item=\"2\"><zipEntry>filebb.log</zipEntry><fileName>"+folder.getRoot().toString()+fileSeparator+"filebb.log</fileName></result>" + 
+								"<result item=\"1\"><zipEntry>fileaa.txt</zipEntry><fileName>"+folder.getRoot().toString()+fileSeparator+"fileaa.txt</fileName></result>" +
+								"<result item=\"2\"><zipEntry>filebb.log</zipEntry><fileName>"+folder.getRoot().toString()+fileSeparator+"filebb.log</fileName></result>" +
 							"</results>";
-		
+
 		PipeRunResult prr = doPipe(new UrlMessage(zip));
-		
+
 		assertXmlEquals(expected, prr.getResult().asString());
 	}
 
@@ -63,14 +63,14 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 		pipe.setKeepOriginalFileName(true);
 		pipe.setCollectResults(false);
 		configureAndStartPipe();
-		
+
 		URL zip = TestFileUtils.getTestFileURL("/Unzip/ab.zip");
-		
+
 		String expected = 	"<results count=\"2\">"+
 							"</results>";
-		
+
 		PipeRunResult prr = doPipe(new UrlMessage(zip));
-		
+
 		assertXmlEquals(expected, prr.getResult().asString());
 	}
 
@@ -79,43 +79,43 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 		pipe.setKeepOriginalFileName(true);
 		pipe.setCollectFileContents(true);
 		configureAndStartPipe();
-		
+
 		URL zip = TestFileUtils.getTestFileURL("/Unzip/ab.zip");
-		
+
 		String expected = 	"<results count=\"2\">" +
-				"<result item=\"1\"><zipEntry>fileaa.txt</zipEntry><fileName>"+folder.getRoot().toString()+fileSeparator+"fileaa.txt</fileName>" + 
+				"<result item=\"1\"><zipEntry>fileaa.txt</zipEntry><fileName>"+folder.getRoot().toString()+fileSeparator+"fileaa.txt</fileName>" +
 					"<fileContent>aaa</fileContent>"+
-				"</result>" + 
+				"</result>" +
 				"<result item=\"2\"><zipEntry>filebb.log</zipEntry><fileName>"+folder.getRoot().toString()+fileSeparator+"filebb.log</fileName>" +
 					"<fileContent>bbb</fileContent>"+
-				"</result>" + 
+				"</result>" +
 			"</results>";
-		
+
 		PipeRunResult prr = doPipe(new UrlMessage(zip));
-		
+
 		assertXmlEquals(expected, prr.getResult().asString());
 	}
-	
+
 	@Test
 	public void testUnzipCollectFileContentsBase64() throws Exception {
 		pipe.setKeepOriginalFileName(true);
 		pipe.setCollectFileContentsBase64Encoded(".log");
 		pipe.setCollectFileContents(true);
 		configureAndStartPipe();
-		
+
 		URL zip = TestFileUtils.getTestFileURL("/Unzip/ab.zip");
-		
+
 		String expected = 	"<results count=\"2\">" +
-				"<result item=\"1\"><zipEntry>fileaa.txt</zipEntry><fileName>"+folder.getRoot().toString()+fileSeparator+"fileaa.txt</fileName>" + 
+				"<result item=\"1\"><zipEntry>fileaa.txt</zipEntry><fileName>"+folder.getRoot().toString()+fileSeparator+"fileaa.txt</fileName>" +
 					"<fileContent>aaa</fileContent>"+
-				"</result>" + 
+				"</result>" +
 				"<result item=\"2\"><zipEntry>filebb.log</zipEntry><fileName>"+folder.getRoot().toString()+fileSeparator+"filebb.log</fileName>" +
 					"<fileContent>YmJi\n</fileContent>"+
-				"</result>" + 
+				"</result>" +
 			"</results>";
-		
+
 		PipeRunResult prr = doPipe(new UrlMessage(zip));
-		
+
 		assertXmlEquals(expected, prr.getResult().asString());
 	}
 
@@ -123,45 +123,45 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 	public void testCreateSubDirectories() throws Exception {
 		pipe.setKeepOriginalFilePath(true);
 		configureAndStartPipe();
-		
+
 		URL zip = TestFileUtils.getTestFileURL("/Unzip/folder.zip");
 		doPipe(new UrlMessage(zip));
 		String[] files = new File(folder.getRoot()+"/Folder/innerFolder").list();
 		assertEquals(1, files.length);
 		assertTrue(files[0].contains("innerFile"));
 	}
-	
+
 	@Test
 	public void testCreateSubDirectoriesInnerItemAsTheFirstEntry() throws Exception {
 		pipe.setKeepOriginalFilePath(true);
 		configureAndStartPipe();
-		
+
 		URL zip = TestFileUtils.getTestFileURL("/Unzip/input.zip");
 		doPipe(new UrlMessage(zip));
 		String[] files = new File(folder.getRoot()+"/MyProjects/").list();
 		assertEquals(5, files.length);
-		
+
 		files = new File(folder.getRoot()+"/MyProjects/classes/xml/xsl/").list();
 		assertEquals(2, files.length);
 	}
-	
+
 	@Test
 	public void testExtractAllInTheRoot() throws Exception {
 		pipe.setKeepOriginalFileName(true);
 		pipe.setKeepOriginalFilePath(false);
 		pipe.setDeleteOnExit(false);
 		configureAndStartPipe();
-		
+
 		URL zip = TestFileUtils.getTestFileURL("/Unzip/input.zip");
 		doPipe(new UrlMessage(zip));
 		String[] files = new File(folder.getRoot().getPath()).list();
 		assertEquals(6, files.length);
 	}
-	
+
 	@Test
 	public void testDefaultConfiguration() throws Exception {
 		configureAndStartPipe();
-		
+
 		URL zip = TestFileUtils.getTestFileURL("/Unzip/input.zip");
 		doPipe(new UrlMessage(zip));
 		String[] files = new File(folder.getRoot().getPath()).list();

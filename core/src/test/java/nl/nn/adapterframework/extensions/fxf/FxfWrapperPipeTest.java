@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.IWrapperPipe.Direction;
@@ -21,8 +20,9 @@ public class FxfWrapperPipeTest extends PipeTestBase<FxfWrapperPipe> {
 		return new FxfWrapperPipe();
 	}
 
-	@Before
-	public void setUp() {
+	@Override
+	public void setUp() throws Exception {
+		super.setUp();
 		AppConstants.getInstance().setProperty("fxf.dir", logDir);
 	}
 
