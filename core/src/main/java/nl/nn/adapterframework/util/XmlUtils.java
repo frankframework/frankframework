@@ -58,6 +58,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.URIResolver;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
@@ -1006,12 +1007,15 @@ public class XmlUtils {
 		return createTransformer(stylesource, xsltVersion);
 	}
 
-	public static Transformer createTransformer(Source source) throws TransformerConfigurationException {
-		return createTransformer(source, 0);
+	public static Transformer createTransformer(Source source, int xsltVersion) throws TransformerConfigurationException {
+		return createTransformer(source, xsltVersion, null);
 	}
 
-	public static Transformer createTransformer(Source source, int xsltVersion) throws TransformerConfigurationException {
+	public static Transformer createTransformer(Source source, int xsltVersion, URIResolver uriResolver) throws TransformerConfigurationException {
 		TransformerFactory tFactory = getTransformerFactory(xsltVersion);
+		if(uriResolver != null) {
+			tFactory.setURIResolver(uriResolver);
+		}
 		Transformer result = tFactory.newTransformer(source);
 
 		return result;
