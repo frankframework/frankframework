@@ -248,6 +248,9 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	@Override
 	public void configure() throws ConfigurationException {
 		log.info("configuring configuration [{}]", this::getId);
+		if(getName().contains("/")) {
+			throw new ConfigurationException("It is not allowed to have '/' in configuration name ["+getName()+"]");
+		}
 		state = BootState.STARTING;
 		long start = System.currentTimeMillis();
 

@@ -562,6 +562,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					setName(ClassUtils.nameOf(this));
 				}
 			}
+			if(getName().contains("/")) {
+				throw new ConfigurationException("It is not allowed to have '/' in receiver name ["+getName()+"]");
+			}
 
 			registerEvent(RCV_CONFIGURED_MONITOR_EVENT);
 			registerEvent(RCV_CONFIGURATIONEXCEPTION_MONITOR_EVENT);

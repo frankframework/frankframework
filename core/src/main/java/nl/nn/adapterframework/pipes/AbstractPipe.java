@@ -135,8 +135,10 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
+		if(StringUtils.isNotEmpty(getName()) && getName().contains("/")) {
+			throw new ConfigurationException("It is not allowed to have '/' in pipe name ["+getName()+"]");
+		}
 		ParameterList params = getParameterList();
-
 		if (params!=null) {
 			try {
 				params.setNamesMustBeUnique(parameterNamesMustBeUnique);
