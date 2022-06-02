@@ -48,7 +48,7 @@ public class SkipContainersFilter extends FullXmlFilter {
 	public SkipContainersFilter(ContentHandler handler) {
 		super(handler);
 	}
-	
+
 	protected boolean isContainer(String localName) {
 		return skipableContainers.contains(localName);
 	}

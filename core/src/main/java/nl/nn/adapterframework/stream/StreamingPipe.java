@@ -28,11 +28,11 @@ import nl.nn.adapterframework.util.AppConstants;
 
 public abstract class StreamingPipe extends FixedForwardPipe implements IOutputStreamingSupport {
 
-	public final String AUTOMATIC_STREAMING = "streaming.auto";
+	public static final String AUTOMATIC_STREAMING = "streaming.auto";
 
 	private boolean streamingActive=AppConstants.getInstance().getBoolean(AUTOMATIC_STREAMING, false);
 	private boolean canProvideOutputStream;
-	private boolean canStreamToNextPipe; 
+	private boolean canStreamToNextPipe;
 
 
 	@Override
@@ -66,7 +66,7 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 			return null;
 		}
 	}
-	
+
 
 	/**
 	 * returns true when:
@@ -95,7 +95,7 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 	 * Implementations should provide a forward target by calling {@link #getNextPipe()}.
 	 */
 	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
-		log.debug("pipe [{}] has no implementation to provide an outputstream", () -> getName());
+		log.debug("pipe [{}] has no implementation to provide an outputstream", this::getName);
 		return null;
 	}
 
@@ -105,13 +105,13 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 	@Override //Can't make AOP'd methods final
 	public MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
 		if (!canProvideOutputStream()) {
-			log.debug("pipe [{}] cannot provide outputstream", () -> getName());
+			log.debug("pipe [{}] cannot provide outputstream", this::getName);
 			return null;
 		}
-		log.debug("pipe [{}] creating outputstream", () -> getName());
+		log.debug("pipe [{}] creating outputstream", this::getName);
 		return provideOutputStream(session);
 	}
-	
+
 
 	/**
 	 * Provides a non-null MessageOutputStream, that the caller can use to obtain a Writer, OutputStream or ContentHandler.
@@ -142,7 +142,6 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 
 	@Override
 	public boolean supportsOutputStreamPassThrough() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
