@@ -65,8 +65,7 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 
 				if (StringUtils.isNotEmpty(getStyleSheet())) {
 					URL url = ClassUtils.getResourceURL(this, getStyleSheet());
-					int xsltVersion = XmlUtils.detectXsltVersion(url);
-					errorTransformer = XmlUtils.createTransformer(new StreamSource(url.openStream()), xsltVersion, new ClassLoaderURIResolver(this));
+					errorTransformer = XmlUtils.createTransformer(url, new ClassLoaderURIResolver(this));
 				} else {
 					errorTransformer = XmlUtils.createTransformer(XmlUtils.createXPathEvaluatorSource(getXpathExpression()));
 				}

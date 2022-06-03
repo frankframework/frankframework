@@ -108,6 +108,7 @@ import nl.nn.adapterframework.validation.XmlValidatorErrorHandler;
 import nl.nn.adapterframework.xml.BodyOnlyFilter;
 import nl.nn.adapterframework.xml.CanonicalizeFilter;
 import nl.nn.adapterframework.xml.ClassLoaderEntityResolver;
+import nl.nn.adapterframework.xml.ClassLoaderURIResolver;
 import nl.nn.adapterframework.xml.NonResolvingExternalEntityResolver;
 import nl.nn.adapterframework.xml.PrettyPrintFilter;
 import nl.nn.adapterframework.xml.SaxException;
@@ -994,17 +995,18 @@ public class XmlUtils {
 
 	public static Transformer createTransformer(URL url) throws TransformerConfigurationException, IOException {
 		try {
-			return createTransformer(url, detectXsltVersion(url));
+			return createTransformer(url, null);
 		} catch (Exception e) {
 			throw new TransformerConfigurationException(e);
 		}
 	}
 
-	public static Transformer createTransformer(URL url, int xsltVersion) throws TransformerConfigurationException, IOException {
+	public static Transformer createTransformer(URL url, ClassLoaderURIResolver classLoaderURIResolver) throws TransformerConfigurationException, IOException {
+		int xsltVersion = detectXsltVersion(url);
 		StreamSource stylesource = new StreamSource(url.openStream());
 		stylesource.setSystemId(ClassUtils.getCleanedFilePath(url.toExternalForm()));
 
-		return createTransformer(stylesource, xsltVersion);
+		return createTransformer(stylesource, xsltVersion, classLoaderURIResolver);
 	}
 
 	public static Transformer createTransformer(Source source, int xsltVersion) throws TransformerConfigurationException {
