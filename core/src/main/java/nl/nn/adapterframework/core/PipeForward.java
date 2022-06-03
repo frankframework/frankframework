@@ -45,8 +45,8 @@ import nl.nn.adapterframework.pipes.FixedResultPipe;
 // Looking up the next pipe or exit is done by method AbstractPipe.findForward(String)
 public class PipeForward {
 
-	public final static String SUCCESS_FORWARD_NAME = "success";
-	public final static String EXCEPTION_FORWARD_NAME = "exception";
+	public static final String SUCCESS_FORWARD_NAME = "success";
+	public static final String EXCEPTION_FORWARD_NAME = "exception";
 
 	private @Getter String name;
 	private @Getter String path;

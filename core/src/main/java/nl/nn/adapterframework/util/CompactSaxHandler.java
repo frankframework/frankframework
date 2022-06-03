@@ -30,8 +30,8 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author  Peter Leeuwenburgh
  */
 public class CompactSaxHandler extends DefaultHandler {
-	private final static String VALUE_MOVE_START = "{sessionKey:";
-	private final static String VALUE_MOVE_END = "}";
+	private static final String VALUE_MOVE_START = "{sessionKey:";
+	private static final String VALUE_MOVE_END = "}";
 
 	private String chompCharSize = null;
 	private int chompLength = -1;

@@ -18,7 +18,7 @@ import nl.nn.adapterframework.util.Misc;
 
 @RunWith(Parameterized.class)
 public class MtomRequestWrapperTest {
-	private final static String BASEPATH = "/proxy/";
+	private static final String BASEPATH = "/proxy/";
 
 	private URL request_in;
 	private URL request_out;

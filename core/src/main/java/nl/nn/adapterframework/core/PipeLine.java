@@ -88,10 +88,10 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
-	public final static String INPUT_VALIDATOR_NAME  = "- pipeline inputValidator";
-	public final static String OUTPUT_VALIDATOR_NAME = "- pipeline outputValidator";
-	public final static String INPUT_WRAPPER_NAME    = "- pipeline inputWrapper";
-	public final static String OUTPUT_WRAPPER_NAME   = "- pipeline outputWrapper";
+	public static final String INPUT_VALIDATOR_NAME  = "- pipeline inputValidator";
+	public static final String OUTPUT_VALIDATOR_NAME = "- pipeline outputValidator";
+	public static final String INPUT_WRAPPER_NAME    = "- pipeline inputWrapper";
+	public static final String OUTPUT_WRAPPER_NAME   = "- pipeline outputWrapper";
 
 	// If you edit this default exit, please update the JavaDoc of class PipeLineExits as well.
 	private final String DEFAULT_SUCCESS_EXIT_NAME = "READY";

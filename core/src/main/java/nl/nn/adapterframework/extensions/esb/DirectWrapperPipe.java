@@ -34,9 +34,9 @@ import nl.nn.adapterframework.util.SpringUtils;
  */
 
 public class DirectWrapperPipe extends TimeoutGuardPipe {
-	protected final static String DESTINATION = "destination";
-	protected final static String CMHVERSION = "cmhVersion";
-	protected final static String ADDOUTPUTNAMESPACE = "addOutputNamespace";
+	protected static final String DESTINATION = "destination";
+	protected static final String CMHVERSION = "cmhVersion";
+	protected static final String ADDOUTPUTNAMESPACE = "addOutputNamespace";
 
 	@Override
 	public PipeRunResult doPipeWithTimeoutGuarded(Message message, PipeLineSession session) throws PipeRunException {
