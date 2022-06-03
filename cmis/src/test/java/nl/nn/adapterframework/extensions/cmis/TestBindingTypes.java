@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.extensions.cmis;
 
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -25,26 +26,26 @@ import nl.nn.adapterframework.testutil.TestAssertions;
 public class TestBindingTypes extends CmisSenderTestBase {
 
 	private final static String INPUT = "<cmis><id>id</id><objectId>dummy</objectId><objectTypeId>cmis:document</objectTypeId>"
-			+ "<fileName>fileInput.txt</fileName>" + 
-			" <properties><property name=\"project:number\" type=\"integer\">123456789</property>" + 
-			"<property name=\"project:lastModified\" type=\"datetime\">2019-02-26T16:31:15</property>" + 
+			+ "<fileName>fileInput.txt</fileName>" +
+			" <properties><property name=\"project:number\" type=\"integer\">123456789</property>" +
+			"<property name=\"project:lastModified\" type=\"datetime\">2019-02-26T16:31:15</property>" +
 			"<property name=\"project:onTime\" type=\"boolean\">true</property></properties></cmis>";
-	private final static String FIND_INPUT = "<query><name>dummy</name>\n" + 
-			"	<objectId>dummy</objectId>\n" + 
-			"	<objectTypeId>dummy</objectTypeId>\n" + 
-			"	<maxItems>15</maxItems>\n" + 
-			"	<skipCount>0</skipCount>\n" + 
-			"	<searchAllVersions>true</searchAllVersions>\n" + 
-			"	<properties>\n" + 
-			"		<property name=\"cmis:name\">dummy</property>\n" + 
-			"		<property name=\"project:number\" type=\"integer\">123456789</property>\n" + 
-			"		<property name=\"project:onTime\" type=\"boolean\">true</property>\n" + 
-			"		<property name=\"project:lastModified\" type=\"datetime\">2019-02-26T16:29:46</property>\n" + 
-			"	</properties>\n" + 
-			"	<statement>SELECT * from cmis:document</statement>\n" + 
-			"	<filter>cmis:objectId</filter>\n" + 
-			"	<includeAllowableActions>true</includeAllowableActions>\n" + 
-			"	<includePolicies>true</includePolicies>\n" + 
+	private final static String FIND_INPUT = "<query><name>dummy</name>\n" +
+			"	<objectId>dummy</objectId>\n" +
+			"	<objectTypeId>dummy</objectTypeId>\n" +
+			"	<maxItems>15</maxItems>\n" +
+			"	<skipCount>0</skipCount>\n" +
+			"	<searchAllVersions>true</searchAllVersions>\n" +
+			"	<properties>\n" +
+			"		<property name=\"cmis:name\">dummy</property>\n" +
+			"		<property name=\"project:number\" type=\"integer\">123456789</property>\n" +
+			"		<property name=\"project:onTime\" type=\"boolean\">true</property>\n" +
+			"		<property name=\"project:lastModified\" type=\"datetime\">2019-02-26T16:29:46</property>\n" +
+			"	</properties>\n" +
+			"	<statement>SELECT * from cmis:document</statement>\n" +
+			"	<filter>cmis:objectId</filter>\n" +
+			"	<includeAllowableActions>true</includeAllowableActions>\n" +
+			"	<includePolicies>true</includePolicies>\n" +
 			"	<includeAcl>true</includeAcl> </query>";
 	private final static String FIND_RESULT = "<cmis totalNumItems=\"0\">  <rowset /></cmis>";
 	private final static String FETCH_RESULT = "<cmis>  <properties>    "
