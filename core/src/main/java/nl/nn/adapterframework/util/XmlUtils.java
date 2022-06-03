@@ -1001,6 +1001,13 @@ public class XmlUtils {
 		}
 	}
 
+	public static Transformer createTransformer(URL url, int xsltVersion) throws TransformerConfigurationException, IOException {
+		StreamSource stylesource = new StreamSource(url.openStream());
+		stylesource.setSystemId(ClassUtils.getCleanedFilePath(url.toExternalForm()));
+
+		return createTransformer(stylesource, xsltVersion, null);
+	}
+
 	public static Transformer createTransformer(URL url, ClassLoaderURIResolver classLoaderURIResolver) throws TransformerConfigurationException, IOException {
 		int xsltVersion = detectXsltVersion(url);
 		StreamSource stylesource = new StreamSource(url.openStream());
