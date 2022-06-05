@@ -20,10 +20,23 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.DistributionSummary;
@@ -42,6 +55,7 @@ import nl.nn.adapterframework.core.IPipe;
 
 public class FrankStatisticsRegistry extends SimpleMeterRegistry {
 	private static final NumberFormat keyFormat = new DecimalFormat("#");
+	private AtomicInteger order = new AtomicInteger();
 
 	public FrankStatisticsRegistry(SimpleConfig config) {
 		super(config, Clock.SYSTEM);
@@ -50,7 +64,7 @@ public class FrankStatisticsRegistry extends SimpleMeterRegistry {
 	@Override
 	protected DistributionSummary newDistributionSummary(Id id, DistributionStatisticConfig distributionStatisticConfig, double scale) {
 		DistributionStatisticConfig merged = distributionStatisticConfig.merge(DistributionStatisticConfig.builder().expiry(Duration.ofHours(1)).build());
-		DistributionSummary summary = new FrankDistributionSummary(id, clock, merged, scale, false);
+		DistributionSummary summary = new FrankDistributionSummary(id, clock, merged, scale, false, order.getAndIncrement());
 
 		HistogramGauges.registerWithCommonFormat(summary, this);
 
@@ -94,21 +108,20 @@ public class FrankStatisticsRegistry extends SimpleMeterRegistry {
 //		frank.receivers.messagesReceived
 //		frank.receivers.messagesRejected
 //		frank.receivers.messagesRetried
+		try {
 
-		for(IPipe pipe : adapter.getPipeLine().getPipes()) {
-			
-			System.out.println(pipe.getName());
-		}
+		root.put("durationPerPipe", getDistributionSummary(search, "frank.pipeline.duration"));
 
-		List adapterStats = getDistributionSummary(search, "frank");
+		List<JsonObject> adapterStats = getDistributionSummary(search, "frank");
 		if(adapterStats.isEmpty()) {
 			return null;
 		}
 
 		root.put("totalMessageProccessingTime", adapterStats.get(0));
 //		root.put("receivers", getReceivers(search, "frank.receivers.messagesReceived"));
-		root.put("durationPerPipe", getDistributionSummary(search, "frank.pipeline.duration"));
-		root.put("sizePerPipe", getDistributionSummary(search, "frank.pipeline.size"));
+//		root.put("durationPerPipe2", getDistributionSummary(search, "frank.pipeline.duration"));
+//		root.put("sizePerPipe", getDistributionSummary(search, "frank.pipeline.size"));
+		} catch (Throwable t) {t.printStackTrace();}
 
 		return root;
 	}
@@ -117,48 +130,54 @@ public class FrankStatisticsRegistry extends SimpleMeterRegistry {
 		return null;
 	}
 
-	private List getDistributionSummary(Search search, String summaryName) {
-//		Map<String, Map<String, Object>> root = new ConcurrentSkipListMap<>();
-		List<Map<String, Object>> root = new LinkedList<>();
-		for(DistributionSummary distSum : search.name(summaryName).summaries()) { //n -> true
+//	private List getDistributionSummary(Search search, String summaryName) {
+	private List<JsonObject> getDistributionSummary(Search search, String summaryName) {
+//		Map<Integer, JsonObject> root = new HashMap<>();
+//		List<Map<String, Object>> root = new LinkedList<>();
+		Collection<DistributionSummary> summaries = search.name(summaryName).summaries();
+		JsonObject[] root = new JsonObject[summaries.size()];
+		for(DistributionSummary distSum : summaries) { //n -> true
 			FrankDistributionSummary summary = (FrankDistributionSummary) distSum;
 			String name = summary.getId().getTag("name");
+			JsonObjectBuilder jsonSummary = Json.createObjectBuilder();
 //			Map<String, Object> values = root.computeIfAbsent(name, e -> new LinkedHashMap<>());
-			Map<String, Object> values = new LinkedHashMap<>();
+//			Map<String, Object> values = new LinkedHashMap<>();
 			String unit = summary.getId().getBaseUnit();
 			HistogramSnapshot snapshot = summary.takeSnapshot();//abstractTimeWindowHistogram
 
 			long total = summary.count();
-			values.put("name", name);
-			values.put("count", total);
-			values.put("min", summary.getMin());
-			values.put("max", format(summary.max()));
-			values.put("avg", format(summary.mean()));
-			values.put("stdDev", format(summary.getStdDev()));
-			values.put("sum", format(summary.totalAmount()));
-			values.put("first", summary.getFirst());
-			values.put("last", summary.getLast());
+			jsonSummary.add("name", name);
+			jsonSummary.add("count", total);
+			jsonSummary.add("min", summary.getMin());
+			jsonSummary.add("max", format(summary.max()));
+			jsonSummary.add("avg", format(summary.mean()));
+			jsonSummary.add("stdDev", format(summary.getStdDev()));
+			jsonSummary.add("sum", format(summary.totalAmount()));
+			jsonSummary.add("first", summary.getFirst());
+			jsonSummary.add("last", summary.getLast());
 
 			//le tags, 100/1000/2000/10000
 			for (CountAtBucket bucket : snapshot.histogramCounts()) {
 				String key = keyFormat.format(bucket.bucket()) + unit;
-				values.put(key, bucket.count());
+				jsonSummary.add(key, bucket.count());
 			}
 
 			//phi tags, 50/90/95/98
 			for (ValueAtPercentile percentile : snapshot.percentileValues()) {
 				String key = "p" + keyFormat.format(percentile.percentile() * 100);
-				values.put(key, format(percentile.value()));
+				jsonSummary.add(key, format(percentile.value()));
 			}
-			root.add(values);
+//			root.put(summary.getOrder(), jsonSummary.build());
+			root[summary.getOrder()] = jsonSummary.build();
 		}
-		return root;
+
+		return Arrays.asList(root);
 	}
 
-	private Number format(double val) {
+	private double format(double val) {
 		if (Double.isInfinite(val) || Double.isNaN(val)) {
 			return 0;
 		}
-		return new BigDecimal(val).setScale(1, BigDecimal.ROUND_HALF_EVEN);
+		return new BigDecimal(val).setScale(1, BigDecimal.ROUND_HALF_EVEN).doubleValue();
 	}
 }
