@@ -14,6 +14,7 @@ import org.junit.Test;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.validation.ValidatorTestBase;
 import nl.nn.adapterframework.validation.XmlValidatorException;
@@ -64,11 +65,10 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 	}
 
 	@Test
-	public void testSoapBodyFromSoapAction() throws Exception {
+	public void testSoapInputBodyFromSoapAction() throws Exception {
 		WsdlXmlValidator val = pipe;
 		val.setWsdl(MULTIPLE_OPERATIONS);
 		val.setThrowException(true);
-		val.setSoapBodyNamespace("http://test.example.com");
 		val.registerForward(new PipeForward("success", null));
 		session.put("SOAPAction", "add");
 		val.configure();
@@ -93,6 +93,44 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 				+ "		</impl:sub>\n"
 				+ "	</s:Body>\n"
 				+ "</s:Envelope>", session);
+	}
+
+	@Test
+	public void testSoapOutputBodyFromSoapAction() throws Exception {
+		WsdlXmlValidator val = pipe;
+		val.setWsdl(MULTIPLE_OPERATIONS);
+		val.setThrowException(true);
+		val.registerForward(new PipeForward("success", null));
+		session.put("SOAPAction", "add");
+		val.configure();
+		val.start();
+		val.validate(Message.asMessage("<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:impl=\"http://test.example.com\">\n"
+				+ "	<s:Header/>\n"
+				+ "	<s:Body>\n"
+				+ "		<impl:addResponse>\n"
+				+ "			<impl:addReturn>3.14</impl:addReturn>\n"
+				+ "		</impl:addResponse>\n"
+				+ "	</s:Body>\n"
+				+ "</s:Envelope>"), session, true, null);
+
+		session.put("SOAPAction", "sub");
+		val.validate(Message.asMessage("<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:impl=\"http://test.example.com\">\n"
+				+ "	<s:Header/>\n"
+				+ "	<s:Body>\n"
+				+ "		<impl:subResponse>\n"
+				+ "			<impl:subReturn>3.14</impl:subReturn>\n"
+				+ "		</impl:subResponse>\n"
+				+ "	</s:Body>\n"
+				+ "</s:Envelope>"), session, true, null);
+
+		val.validate(Message.asMessage("<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:impl=\"http://test.example.com\">\n"
+				+ "	<s:Header/>\n"
+				+ "	<s:Body>\n"
+				+ "		<impl:addResponse>\n"
+				+ "			<impl:addReturn>3.14</impl:addReturn>\n"
+				+ "		</impl:addResponse>\n"
+				+ "	</s:Body>\n"
+				+ "</s:Envelope>"), session, true, null);
 	}
 
 	@Test(expected = XmlValidatorException.class)

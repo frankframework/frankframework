@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -29,10 +30,12 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.wsdl.Binding;
 import javax.wsdl.BindingOperation;
 import javax.wsdl.Definition;
+import javax.wsdl.Part;
 import javax.wsdl.WSDLException;
 import javax.wsdl.extensions.ExtensibilityElement;
 import javax.wsdl.extensions.schema.Schema;
@@ -199,16 +202,16 @@ public class WsdlXmlValidator extends SoapValidator {
 	protected PipeForward validate(Message messageToValidate, PipeLineSession session, boolean responseMode, String messageRoot) throws XmlValidatorException, PipeRunException, ConfigurationException {
 		String soapAction = session.get(SoapBindingConstants.SOAP_ACTION, "");
 		if(StringUtils.isNotEmpty(soapAction)) {
-			String soapBodyFromSoapAction = getSoapBodyFromSoapAction(soapAction);
-			if(StringUtils.compare(getSoapBody(), soapBodyFromSoapAction) != 0) {
-				log.debug("soapBody ["+soapBodyFromSoapAction+"] is determined from soapAction ["+soapAction+"]");
+			String soapBodyFromSoapAction = getSoapBodyFromSoapAction(soapAction, responseMode);
+			if(StringUtils.compare(messageRoot, soapBodyFromSoapAction) != 0) {
+				log.debug("messageRoot ["+soapBodyFromSoapAction+"] is determined from soapAction ["+soapAction+"]");
 				messageRoot = soapBodyFromSoapAction;
 			}
 		}
 		return super.validate(messageToValidate, session, responseMode, messageRoot);
 	}
 
-	private String getSoapBodyFromSoapAction(String soapAction) {
+	private String getSoapBodyFromSoapAction(String soapAction, boolean responseMode) throws PipeRunException {
 		Map<QName, Binding> bindings = definition.getBindings();
 		for (Entry<QName, Binding> binding : bindings.entrySet()) {
 			List<BindingOperation> operations = binding.getValue().getBindingOperations();
@@ -219,7 +222,9 @@ public class WsdlXmlValidator extends SoapValidator {
 						if(element instanceof SOAPOperation) {
 							String soapActionFromDefinition = ((SOAPOperation) element).getSoapActionURI();
 							if(soapActionFromDefinition.equals(soapAction)) {
-								return bindingOperation.getName();
+								javax.wsdl.Message message = responseMode ? bindingOperation.getOperation().getOutput().getMessage() : bindingOperation.getOperation().getInput().getMessage();
+								Map<String, Part> parts = message.getParts();
+								return parts.values().stream().map(Part::getElementName).map(QName::getLocalPart).collect(Collectors.joining(","));
 							}
 						}
 					}

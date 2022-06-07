@@ -96,6 +96,7 @@
 	</wsdl:message>
 	<wsdl:message name="subResponse">
 		<wsdl:part element="impl:subResponse" name="parameters"/>
+		<wsdl:part element="impl:addResponse" name="parameters1"/>
 	</wsdl:message>
 	<wsdl:message name="mulRequest">
 		<wsdl:part element="impl:mul" name="parameters"/>
