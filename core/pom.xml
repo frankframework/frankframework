@@ -15,6 +15,7 @@
 		<j2v8.version>4.6.0</j2v8.version>
 		<cxf.version>3.4.7</cxf.version>
 		<jackson.version>2.13.3</jackson.version>
+		<micrometer.version>1.9.0</micrometer.version>
 	</properties>
 
 	<dependencies>
@@ -67,12 +68,27 @@
 		<dependency>
 			<groupId>io.micrometer</groupId>
 			<artifactId>micrometer-core</artifactId>
-			<version>1.8.2</version>
+			<version>${micrometer.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.micrometer</groupId>
 			<artifactId>micrometer-registry-prometheus</artifactId>
-			<version>1.9.0</version>
+			<version>${micrometer.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-registry-statsd</artifactId>
+			<version>${micrometer.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-registry-cloudwatch2</artifactId>
+			<version>${micrometer.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-registry-kairos</artifactId>
+			<version>${micrometer.version}</version>
 		</dependency>
 
 		<dependency>
@@ -462,7 +478,7 @@
 		<dependency>
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time</artifactId>
-			<version>2.8</version>
+			<version>2.10.14</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.paho</groupId>
@@ -666,7 +682,7 @@
 		<dependency>
 			<groupId>org.apache.tika</groupId>
 			<artifactId>tika-core</artifactId>
-			<version>1.28.1</version>
+			<version>1.28.3</version>
 		</dependency>
 		<!-- explicitly defined because of dependency inheritance -->
 		<dependency>
@@ -698,8 +714,8 @@
 		</dependency>
 		<dependency>
 			<groupId>com.github.tomakehurst</groupId>
-			<artifactId>wiremock</artifactId>
-			<version>1.58</version>
+			<artifactId>wiremock-jre8-standalone</artifactId>
+			<version>2.33.2</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

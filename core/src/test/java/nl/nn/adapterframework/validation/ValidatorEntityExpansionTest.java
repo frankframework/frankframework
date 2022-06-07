@@ -20,14 +20,14 @@ import nl.nn.adapterframework.util.EntityResolvingTest;
 @RunWith(value = Parameterized.class)
 public class ValidatorEntityExpansionTest extends EntityResolvingTest {
 
-	
+
 	private Class<? extends AbstractXmlValidator> implementation;
 
 	@Parameterized.Parameters(name = "{index}, {0}")
 	public static Collection<Object[]> data() {
-		Object[][] data = new Object[][] { 
-			{ XercesXmlValidator.class }, 
-			{ JavaxXmlValidator.class } 
+		Object[][] data = new Object[][] {
+			{ XercesXmlValidator.class },
+			{ JavaxXmlValidator.class }
 		};
 		return Arrays.asList(data);
 	}
@@ -52,7 +52,7 @@ public class ValidatorEntityExpansionTest extends EntityResolvingTest {
 		instance.setSchemasProvider(new DummySchemasProviderImpl(SCHEMA_NAMESPACE, xsd));
 		instance.setThrowException(true);
 		instance.setFullSchemaChecking(true);
-		instance.configure("init");
+		instance.configure(null);
 		instance.start();
 
 		PipeLineSession session = new PipeLineSession();
@@ -121,5 +121,5 @@ public class ValidatorEntityExpansionTest extends EntityResolvingTest {
 		}
 		return sb.toString();
 	}
-	
+
 }

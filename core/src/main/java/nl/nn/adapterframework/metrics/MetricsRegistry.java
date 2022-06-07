@@ -31,8 +31,6 @@ import io.micrometer.core.instrument.binder.logging.Log4j2Metrics;
 import io.micrometer.core.instrument.binder.system.DiskSpaceMetrics;
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
-import io.micrometer.prometheus.PrometheusConfig;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
 import lombok.Getter;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Misc;
@@ -49,7 +47,11 @@ public class MetricsRegistry {
 
 	public MetricsRegistry() {
 		CompositeMeterRegistry compositeRegistry = new CompositeMeterRegistry();
-		compositeRegistry.add(new PrometheusMeterRegistry(PrometheusConfig.DEFAULT));
+
+		new PrometheusRegistryConfigurator().registerAt(compositeRegistry);
+		new StatsDRegistryConfigurator().registerAt(compositeRegistry);
+		new CloudWatchRegistryConfigurator().registerAt(compositeRegistry);
+		new KairosDbRegistryConfigurator().registerAt(compositeRegistry);
 
 		this.registry = compositeRegistry;
 		configureRegistry();

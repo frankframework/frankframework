@@ -90,7 +90,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 		instance.start();
 		validator.setSchemasProvider(instance);
 		validator.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);
-		validator.configure("setup");
+		validator.configure(null);
 		validator.start();
 
 		String testXml = inputFile != null ? TestFileUtils.getTestFile(inputFile + ".xml") : null;

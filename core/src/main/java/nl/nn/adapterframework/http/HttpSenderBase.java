@@ -45,7 +45,6 @@ import org.apache.http.auth.AuthState;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.AuthCache;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.AuthSchemes;
 import org.apache.http.client.config.RequestConfig;
@@ -65,6 +64,7 @@ import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
@@ -315,7 +315,6 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		 * TODO find out if this really breaks proxy authentication or not.
 		 */
 //		httpClientBuilder.disableAuthCaching();
-		httpClientBuilder.disableAutomaticRetries();
 
 		Builder requestConfigBuilder = RequestConfig.custom();
 		requestConfigBuilder.setConnectTimeout(getTimeout());
@@ -399,6 +398,8 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		}
 
 		httpClientBuilder.setDefaultRequestConfig(requestConfigBuilder.build());
+
+		httpClientBuilder.setRetryHandler(new DefaultHttpRequestRetryHandler(getMaxExecuteRetries(), true));
 
 		if(areCookiesDisabled()) {
 			httpClientBuilder.disableCookieManagement();
@@ -667,75 +668,59 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 		Message result = null;
 		int statusCode = -1;
-		int count=getMaxExecuteRetries();
 		String msg = null;
 		HttpHost targetHost = new HttpHost(targetUri.getHost(), getPort(targetUri), targetUri.getScheme());
 
-		while (count-- >= 0 && statusCode == -1) {
-			TimeoutGuard tg = new TimeoutGuard(1+getTimeout()/1000, getName()) {
+		TimeoutGuard tg = new TimeoutGuard(1+getTimeout()/1000, getName()) {
 
-				@Override
-				protected void abort() {
-					httpRequestBase.abort();
-				}
-
-			};
-			try {
-				log.debug(getLogPrefix()+"executing method [" + httpRequestBase.getRequestLine() + "]");
-				HttpResponse httpResponse = getHttpClient().execute(targetHost, httpRequestBase, httpClientContext);
-				log.debug(getLogPrefix()+"executed method");
-
-				HttpResponseHandler responseHandler = new HttpResponseHandler(httpResponse);
-				StatusLine statusline = httpResponse.getStatusLine();
-				statusCode = statusline.getStatusCode();
-
-				if (StringUtils.isNotEmpty(getResultStatusCodeSessionKey()) && session != null) {
-					session.put(getResultStatusCodeSessionKey(), Integer.toString(statusCode));
-				}
-
-				// Only give warnings for 4xx (client errors) and 5xx (server errors)
-				if (statusCode >= 400 && statusCode < 600) {
-					log.warn(getLogPrefix()+"status ["+statusline.toString()+"]");
-				} else {
-					log.debug(getLogPrefix()+"status ["+statusCode+"]");
-				}
-
-				result = extractResult(responseHandler, session);
-
-				log.debug(getLogPrefix()+"retrieved result ["+result+"]");
-			} catch (ClientProtocolException e) {
-				StringBuilder msgBuilder = new StringBuilder(getLogPrefix()+"httpException with");
-				if(e.getMessage() != null) {
-					msg = e.getMessage();
-					msgBuilder.append(" message [" + msg + "]");
-				}
-				Throwable throwable = e.getCause();
-				if (throwable != null) {
-					msgBuilder.append(" cause [" + throwable.toString() + "]");
-				}
-				msgBuilder.append(" executeRetries left [" + count + "]");
-
-				log.warn(msgBuilder.toString());
-			} catch (IOException e) {
+			@Override
+			protected void abort() {
 				httpRequestBase.abort();
-				if (e instanceof SocketTimeoutException) {
-					throw new TimeoutException(e);
-				}
-				throw new SenderException(e);
-			} finally {
-				// By forcing the use of the HttpResponseHandler the resultStream
-				// will automatically be closed when it has been read.
-				// See HttpResponseHandler and ReleaseConnectionAfterReadInputStream.
-				// We cannot close the connection as the response might be kept
-				// in a sessionKey for later use in the pipeline.
-				//
-				// IMPORTANT: It is possible that poorly written implementations
-				// wont read or close the response.
-				// This will cause the connection to become stale..
+			}
 
-				if (tg.cancel()) {
-					throw new TimeoutException(getLogPrefix()+"timeout of ["+getTimeout()+"] ms exceeded");
-				}
+		};
+		try {
+			log.debug(getLogPrefix()+"executing method [" + httpRequestBase.getRequestLine() + "]");
+			HttpResponse httpResponse = getHttpClient().execute(targetHost, httpRequestBase, httpClientContext);
+			log.debug(getLogPrefix()+"executed method");
+
+			HttpResponseHandler responseHandler = new HttpResponseHandler(httpResponse);
+			StatusLine statusline = httpResponse.getStatusLine();
+			statusCode = statusline.getStatusCode();
+
+			if (StringUtils.isNotEmpty(getResultStatusCodeSessionKey()) && session != null) {
+				session.put(getResultStatusCodeSessionKey(), Integer.toString(statusCode));
+			}
+
+			// Only give warnings for 4xx (client errors) and 5xx (server errors)
+			if (statusCode >= 400 && statusCode < 600) {
+				log.warn(getLogPrefix()+"status ["+statusline.toString()+"]");
+			} else {
+				log.debug(getLogPrefix()+"status ["+statusCode+"]");
+			}
+
+			result = extractResult(responseHandler, session);
+
+			log.debug(getLogPrefix()+"retrieved result ["+result+"]");
+		} catch (IOException e) {
+			httpRequestBase.abort();
+			if (e instanceof SocketTimeoutException) {
+				throw new TimeoutException(e);
+			}
+			throw new SenderException(e);
+		} finally {
+			// By forcing the use of the HttpResponseHandler the resultStream
+			// will automatically be closed when it has been read.
+			// See HttpResponseHandler and ReleaseConnectionAfterReadInputStream.
+			// We cannot close the connection as the response might be kept
+			// in a sessionKey for later use in the pipeline.
+			//
+			// IMPORTANT: It is possible that poorly written implementations
+			// wont read or close the response.
+			// This will cause the connection to become stale..
+
+			if (tg.cancel()) {
+				throw new TimeoutException(getLogPrefix()+"timeout of ["+getTimeout()+"] ms exceeded");
 			}
 		}
 

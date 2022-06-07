@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.http;
 
 import static nl.nn.adapterframework.testutil.TestAssertions.assertEqualsIgnoreCRLF;
+import static org.mockito.Mockito.spy;
 
 import org.junit.Test;
 
