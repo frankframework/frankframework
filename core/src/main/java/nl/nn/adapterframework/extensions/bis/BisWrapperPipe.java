@@ -177,17 +177,17 @@ import org.xml.sax.SAXException;
 @Deprecated
 @ConfigurationWarning("Please change to EsbSoapWrapperPipe")
 public class BisWrapperPipe extends SoapWrapperPipe {
-	private final static String soapNamespaceDefs = "soapenv=http://schemas.xmlsoap.org/soap/envelope/";
-	private final static String soapHeaderXPath = "soapenv:Envelope/soapenv:Header";
-	private final static String soapBodyXPath = "soapenv:Envelope/soapenv:Body";
-	private final static String soapErrorXPath = "soapenv:Fault/faultcode";
-	private final static String bisNamespaceDefs = "bis=http://www.ing.com/CSP/XSD/General/Message_2";
-	private final static String bisMessageHeaderXPath = "bis:MessageHeader";
-	private final static String bisMessageHeaderConversationIdXPath = "bis:MessageHeader/bis:HeaderFields/bis:ConversationId";
-	private final static String bisMessageHeaderExternalRefToMessageIdXPath = "bis:MessageHeader/bis:HeaderFields/bis:MessageId";
-	private final static String bisErrorXPath = "bis:Result/bis:Status='ERROR'";
+	private static final String soapNamespaceDefs = "soapenv=http://schemas.xmlsoap.org/soap/envelope/";
+	private static final String soapHeaderXPath = "soapenv:Envelope/soapenv:Header";
+	private static final String soapBodyXPath = "soapenv:Envelope/soapenv:Body";
+	private static final String soapErrorXPath = "soapenv:Fault/faultcode";
+	private static final String bisNamespaceDefs = "bis=http://www.ing.com/CSP/XSD/General/Message_2";
+	private static final String bisMessageHeaderXPath = "bis:MessageHeader";
+	private static final String bisMessageHeaderConversationIdXPath = "bis:MessageHeader/bis:HeaderFields/bis:ConversationId";
+	private static final String bisMessageHeaderExternalRefToMessageIdXPath = "bis:MessageHeader/bis:HeaderFields/bis:MessageId";
+	private static final String bisErrorXPath = "bis:Result/bis:Status='ERROR'";
 
-	private final static String[][] BISERRORS = { { "ERR6002", "Service Interface Request Time Out" }, {
+	private static final String[][] BISERRORS = { { "ERR6002", "Service Interface Request Time Out" }, {
 			"ERR6003", "Invalid Request Message" }, {
 			"ERR6004", "Invalid Backend system response" }, {
 			"ERR6005", "Backend system failure response" }, {

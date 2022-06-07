@@ -20,7 +20,7 @@ import java.util.Properties;
 import nl.nn.adapterframework.lifecycle.CustomPropertySourcePostProcessor;
 import nl.nn.adapterframework.util.AppConstants;
 
- /**
+/**
  * Make a lower case variant of the instance.name property (instance.name.lc)
  * available to the Ibis configuration and the Spring configuration.
  *

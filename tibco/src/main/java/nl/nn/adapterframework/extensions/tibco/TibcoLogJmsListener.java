@@ -38,8 +38,8 @@ import nl.nn.adapterframework.util.DateUtils;
 
 public class TibcoLogJmsListener extends JmsListener {
 
-	private final static int[] LOGLEVELS = { 5, 10, 30, 50, 70, 90 };
-	private final static String[] LOGLEVELS_TEXT = { "TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL" };
+	private static final int[] LOGLEVELS = { 5, 10, 30, 50, 70, 90 };
+	private static final String[] LOGLEVELS_TEXT = { "TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL" };
 
 	@Override
 	public Message extractMessage(Object rawMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException {

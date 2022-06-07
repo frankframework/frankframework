@@ -26,7 +26,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  */
 public class BigBasics extends Basics {
 
-	private final static long HALF_MAX_LONG=Long.MAX_VALUE>>1;
+	private static final long HALF_MAX_LONG=Long.MAX_VALUE>>1;
 	
 	protected int shift=0;
 	

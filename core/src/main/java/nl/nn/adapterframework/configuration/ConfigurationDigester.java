@@ -218,7 +218,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	 */
 	public void parseAndResolveEntitiesAndProperties(ContentHandler digester, Configuration configuration, Resource resource, Properties appConstants) throws IOException, SAXException, TransformerConfigurationException {
 		ContentHandler handler;
-		
+
 		XmlWriter loadedHiddenWriter = new XmlWriter();
 		handler = new PrettyPrintFilter(loadedHiddenWriter);
 		handler = new AttributePropertyResolver(handler, appConstants, getPropsToHide(appConstants));
@@ -283,14 +283,14 @@ public class ConfigurationDigester implements ApplicationContextAware {
 			TransformerPool tp = TransformerPool.getInstance(xslt);
 
 			TransformerFilter filter = tp.getTransformerFilter(null, handler);
-			
+
 			Map<String,Object> parameters = new HashMap<String,Object>();
 			parameters.put(ConfigurationUtils.STUB4TESTTOOL_XSLT_VALIDATORS_PARAM, Boolean.parseBoolean(properties.getProperty(ConfigurationUtils.STUB4TESTTOOL_VALIDATORS_DISABLED_KEY,"false")));
-			
+
 			XmlUtils.setTransformerParameters(filter.getTransformer(), parameters);
-			
+
 			return filter;
-		} 
+		}
 		return handler;
 	}
 

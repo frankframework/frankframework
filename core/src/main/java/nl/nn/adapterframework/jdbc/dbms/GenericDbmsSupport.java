@@ -50,7 +50,7 @@ import nl.nn.adapterframework.util.Misc;
 public class GenericDbmsSupport implements IDbmsSupport {
 	protected Logger log = LogUtil.getLogger(this.getClass());
 
-	protected final static String KEYWORD_SELECT="select";
+	protected static final String KEYWORD_SELECT="select";
 
 	protected static final String TYPE_BLOB = "blob";
 	protected static final String TYPE_CLOB = "clob";

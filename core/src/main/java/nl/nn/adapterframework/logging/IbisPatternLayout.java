@@ -36,7 +36,7 @@ import java.util.List;
 @Plugin(name = "IbisPatternLayout", category = "Core", elementType = "layout", printObject = true)
 public class IbisPatternLayout extends IbisMaskingLayout {
 
-	private final static String DEFAULT_PATTERN = "%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %TC %c{2} - %m%n";
+	private static final String DEFAULT_PATTERN = "%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %TC %c{2} - %m%n";
 	private Serializer serializer;
 
 	/**
