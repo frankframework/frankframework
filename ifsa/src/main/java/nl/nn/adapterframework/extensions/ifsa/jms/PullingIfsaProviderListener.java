@@ -90,9 +90,9 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class PullingIfsaProviderListener extends IfsaFacade implements IPullingListener, INamedObject, RunStateEnquiring {
 
-    private final static String THREAD_CONTEXT_SESSION_KEY = "session";
-    private final static String THREAD_CONTEXT_RECEIVER_KEY = "receiver";
-	private final static String THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY = "originalRawMessage";
+    private static final String THREAD_CONTEXT_SESSION_KEY = "session";
+    private static final String THREAD_CONTEXT_RECEIVER_KEY = "receiver";
+	private static final String THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY = "originalRawMessage";
 	private RunStateEnquirer runStateEnquirer=null;
 
 	public PullingIfsaProviderListener() {

@@ -26,10 +26,10 @@ import java.util.Map;
  */
 public class ProcessMetrics {
 
-	private final static long K_LIMIT=10*1024;
-	private final static long M_LIMIT=K_LIMIT*1024;
-	private final static long G_LIMIT=M_LIMIT*1024;
-	private final static long T_LIMIT=G_LIMIT*1024;
+	private static final long K_LIMIT=10*1024;
+	private static final long M_LIMIT=K_LIMIT*1024;
+	private static final long G_LIMIT=M_LIMIT*1024;
+	private static final long T_LIMIT=G_LIMIT*1024;
 	
 	public static String normalizedNotation(long value) {
 		String valueString;

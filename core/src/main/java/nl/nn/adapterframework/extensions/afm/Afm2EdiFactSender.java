@@ -45,12 +45,12 @@ public class Afm2EdiFactSender implements ISender {
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
-	public final static String VERWERKTAG = "VRWRKCD";
-	public final static String TPNRTAG = "AL_RECCRT";
+	public static final String VERWERKTAG = "VRWRKCD";
+	public static final String TPNRTAG = "AL_RECCRT";
 	
-	private final static String contractRoot = "Contractdocument";
-	private final static String mantelRoot = "Mantel";
-	private final static String onderdeelRoot = "Onderdeel";
+	private static final String contractRoot = "Contractdocument";
+	private static final String mantelRoot = "Mantel";
+	private static final String onderdeelRoot = "Onderdeel";
 
 	private String destination = "   "; // 3 tekens
 	private String tpnummer = "999999";

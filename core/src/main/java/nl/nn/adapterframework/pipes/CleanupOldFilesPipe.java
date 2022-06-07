@@ -38,7 +38,7 @@ import org.apache.commons.lang3.StringUtils;
  * @since  4.2
  */
 public class CleanupOldFilesPipe extends FixedForwardPipe {
-	
+
 	private String filePattern;
 	private String filePatternSessionKey;
 	private boolean subdirectories=false;
@@ -50,8 +50,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 
 	private _FileFilter fileFilter = new _FileFilter();
 	private _DirFilter dirFilter = new _DirFilter();
-		
-		
+
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
@@ -70,12 +69,11 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 					}
 				}
 			}
-			
-			List delFiles = getFilesForDeletion(filename);
-			if (delFiles != null && delFiles.size() > 0) {
-				for (Iterator fileIt = delFiles.iterator(); fileIt.hasNext();) {
-					File file = (File)fileIt.next();
-					String curfilename=file.getName();
+
+			List<File> delFiles = getFilesForDeletion(filename);
+			if (delFiles != null && !delFiles.isEmpty()) {
+				for (Iterator<File> fileIt = delFiles.iterator(); fileIt.hasNext();) {
+					File file = fileIt.next();
 					if (file.delete()) {
 						log.info(getLogPrefix(session)+"deleted file ["+file.getAbsolutePath()+"]");
 					} else {
@@ -92,18 +90,18 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 					deleteEmptySubdirectories(getLogPrefix(session), file, 0);
 				}
 			}
-			
+
 			return new PipeRunResult(getSuccessForward(), message);
 		}
 		catch(Exception e) {
-			throw new PipeRunException(this, "Error while deleting file(s)", e); 
+			throw new PipeRunException(this, "Error while deleting file(s)", e);
 		}
 	}
 
-	private List getFilesForDeletion(String filename) {
+	private List<File> getFilesForDeletion(String filename) {
 		File file = new File(filename);
 		if (file.exists()) {
-			List result = new ArrayList();
+			List<File> result = new ArrayList<>();
 			if (file.isDirectory()) {
 				getFilesForDeletion(result, file);
 			}
@@ -116,15 +114,14 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 		return null;
 	}
 
-	private void getFilesForDeletion(List result, File directory) {
+	private void getFilesForDeletion(List<File> result, File directory) {
 		File[] files;
 		if (getWildcard()!=null) {
 			//WildCardFilter filter = new WildCardFilter(getWildcard());
 			//files = directory.listFiles(filter);
 			files=FileUtils.getFiles(directory.getPath(), getWildcard(), getExcludeWildcard(), getMinStableTime());
 			for (int i = 0; i < files.length; i++) {
-				if (getLastModifiedDelta() < 0
-						|| FileUtils.getLastModifiedDelta(files[i]) > getLastModifiedDelta()) {
+				if (getLastModifiedDelta() < 0 || FileUtils.getLastModifiedDelta(files[i]) > getLastModifiedDelta()) {
 					result.add(files[i]);
 				}
 			}
@@ -134,12 +131,12 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 				result.add(files[i]);
 			}
 		}
-		
+
 		if (isSubdirectories()) {
 			files = directory.listFiles(dirFilter);
 			for (int i = 0; i < files.length; i++) {
 				getFilesForDeletion(result, files[i]);
-			}		
+			}
 		}
 	}
 
@@ -162,6 +159,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 	}
 
 	private class _FileFilter implements FileFilter {
+		@Override
 		public boolean accept(File file) {
 			if (file.isFile()) {
 				if (getLastModifiedDelta() < 0
@@ -174,6 +172,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 	}
 
 	private class _DirFilter implements FileFilter {
+		@Override
 		public boolean accept(File file) {
 			return file.isDirectory();
 		}

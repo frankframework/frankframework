@@ -99,8 +99,8 @@ import nl.nn.adapterframework.xml.PrettyPrintFilter;
  */
 public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 
-	public final static String UNP_START = "?{";
-	public final static String UNP_END = "}";
+	public static final String UNP_START = "?{";
+	public static final String UNP_END = "}";
 
 	private QueryType queryType = QueryType.OTHER;
 	private @Getter int maxRows=-1; // return all rows

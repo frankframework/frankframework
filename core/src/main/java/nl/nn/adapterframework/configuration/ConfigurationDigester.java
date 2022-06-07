@@ -280,7 +280,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 			TransformerFilter filter = tp.getTransformerFilter(null, handler);
 
 			Map<String,Object> parameters = new HashMap<>();
-			parameters.put(ConfigurationUtils.STUB4TESTTOOL_XSLT_VALIDATORS_PARAM, Boolean.parseBoolean(properties.getProperty(ConfigurationUtils.STUB4TESTTOOL_VALIDATORS_DISABLED_KEY, "false")));
+			parameters.put(ConfigurationUtils.STUB4TESTTOOL_XSLT_VALIDATORS_PARAM, Boolean.parseBoolean(properties.getProperty(ConfigurationUtils.STUB4TESTTOOL_VALIDATORS_DISABLED_KEY,"false")));
 
 			XmlUtils.setTransformerParameters(filter.getTransformer(), parameters);
 
