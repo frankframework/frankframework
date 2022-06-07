@@ -56,9 +56,9 @@ import nl.nn.adapterframework.util.TransformerPool.OutputType;
  * @author  Peter Leeuwenburgh
  */
 public class EsbJmsListener extends JmsListener implements ITransactionRequirements {
-	private final static String REQUEST_REPLY = "RR";
-	private final static String FIRE_AND_FORGET = "FF";
-	private final static String CACHE_CONSUMER = "CACHE_CONSUMER";
+	private static final String REQUEST_REPLY = "RR";
+	private static final String FIRE_AND_FORGET = "FF";
+	private static final String CACHE_CONSUMER = "CACHE_CONSUMER";
 
 	private String messageProtocol = null;
 	private boolean copyAEProperties = false;

@@ -248,6 +248,9 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	@Override
 	public void configure() throws ConfigurationException {
 		log.info("configuring configuration [{}]", this::getId);
+		if(getName().contains("/")) {
+			throw new ConfigurationException("It is not allowed to have '/' in configuration name ["+getName()+"]");
+		}
 		state = BootState.STARTING;
 		long start = System.currentTimeMillis();
 
@@ -257,12 +260,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 			ConfigurationDigester configurationDigester = getBean(ConfigurationDigester.class);
 			configurationDigester.digest();
 
-			FlowDiagramManager flowDiagramManager = getBean(FlowDiagramManager.class);
-			try {
-				flowDiagramManager.generate(this);
-			} catch (Exception e) { //Don't throw an exception when generating the flow fails
-				ConfigurationWarnings.add(this, log, "Error generating flow diagram for configuration ["+getName()+"]", e);
-			}
+			generateConfigurationFlow();
 
 			//Trigger a configure on all Lifecycle beans
 			LifecycleProcessor lifecycle = getBean(LIFECYCLE_PROCESSOR_BEAN_NAME, LifecycleProcessor.class);
@@ -287,6 +285,19 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		}
 		secLog.info("Configuration [" + getName() + "] [" + getVersion()+"] " + msg);
 		publishEvent(new ConfigurationMessageEvent(this, msg));
+	}
+
+	/**
+	 * Generate a flow over the digested {@link Configuration}.
+	 * Uses {@link Configuration#getLoadedConfiguration()}.
+	 */
+	private void generateConfigurationFlow() {
+		FlowDiagramManager flowDiagramManager = getBean(FlowDiagramManager.class);
+		try {
+			flowDiagramManager.generate(this);
+		} catch (Exception e) { //Don't throw an exception when generating the flow fails
+			ConfigurationWarnings.add(this, log, "Error generating flow diagram for configuration ["+getName()+"]", e);
+		}
 	}
 
 	/** Execute any database changes before calling {@link #configure()}. */

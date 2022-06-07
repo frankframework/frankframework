@@ -67,7 +67,7 @@ import nl.nn.adapterframework.webcontrol.FileViewerServlet;
 public class ShowLogging extends Base {
 	@Context HttpServletRequest servletRequest;
 
-	private final static String FF_PACKAGE_PREFIX = "nl.nn.adapterframework";
+	private static final String FF_PACKAGE_PREFIX = "nl.nn.adapterframework";
 	boolean showDirectories = AppConstants.getInstance().getBoolean("logging.showdirectories", false);
 	int maxItems = AppConstants.getInstance().getInt("logging.items.max", 500);
 
