@@ -97,7 +97,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 
 	private static final String CONFIGURATION_VALIDATION_SCHEMA = "FrankFrameworkCanonical.xsd";
 
-	private @Getter @Setter String digesterRules = FrankDigesterRules.DIGESTER_RULES_FILE;
+	private @Getter @Setter String digesterRuleFile = FrankDigesterRules.DIGESTER_RULES_FILE;
 
 	private boolean suppressValidationWarnings = AppConstants.getInstance().getBoolean(SuppressKeys.CONFIGURATION_VALIDATION.getKey(), false);
 	private boolean validation = AppConstants.getInstance().getBoolean("configurations.validation", true);
@@ -148,7 +148,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		digester.setUseContextClassLoader(true);
 		digester.push(configuration);
 
-		Resource digesterRulesResource = Resource.getResource(configuration, getDigesterRules());
+		Resource digesterRulesResource = Resource.getResource(configuration, getDigesterRuleFile());
 		loadDigesterRules(digester, digesterRulesResource);
 
 		if (validation) {
@@ -176,11 +176,12 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	}
 
 	public void digest() throws ConfigurationException {
-		if(applicationContext instanceof Configuration) {
-			digestConfiguration((Configuration)applicationContext);
-		} else {
+		if(!(applicationContext instanceof Configuration)) {
 			throw new IllegalStateException("no suitable Configuration found");
 		}
+		Configuration configurationContext = (Configuration)applicationContext;
+
+		digestConfiguration(configurationContext);
 	}
 
 	private void digestConfiguration(Configuration configuration) throws ConfigurationException {
@@ -208,7 +209,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 				currentElementName = digester.getCurrentElementName();
 			}
 
-			throw new ConfigurationException("error during unmarshalling configuration from file [" + configurationFile + "] with digester-rules-file ["+getDigesterRules()+"] in element ["+currentElementName+"]", t);
+			throw new ConfigurationException("error during unmarshalling configuration from file [" + configurationFile + "] with digester-rules-file ["+getDigesterRuleFile()+"] in element ["+currentElementName+"]", t);
 		}
 	}
 
@@ -235,12 +236,6 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		XmlUtils.parseXml(resource, handler);
 		configuration.setOriginalConfiguration(originalConfigWriter.toString());
 		configuration.setLoadedConfiguration(loadedHiddenWriter.toString());
-	}
-
-
-	//Fixes ConfigurationDigesterTest#testOldSchoolConfigurationParser test
-	protected boolean isConfigurationStubbed(ClassLoader classLoader) {
-		return ConfigurationUtils.isConfigurationStubbed(classLoader);
 	}
 
 	private List<String> getPropsToHide(Properties appConstants) {
@@ -278,13 +273,13 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	 * If stubbing is disabled, the input ContentHandler is returned as-is
 	 */
 	public ContentHandler getStub4TesttoolContentHandler(ContentHandler handler, Properties properties) throws IOException, TransformerConfigurationException {
-		if (Boolean.parseBoolean(properties.getProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY,"false"))) {
+		if (Boolean.parseBoolean(properties.getProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false"))) {
 			Resource xslt = Resource.getResource(ConfigurationUtils.STUB4TESTTOOL_XSLT);
 			TransformerPool tp = TransformerPool.getInstance(xslt);
 
 			TransformerFilter filter = tp.getTransformerFilter(null, handler);
 
-			Map<String,Object> parameters = new HashMap<String,Object>();
+			Map<String,Object> parameters = new HashMap<>();
 			parameters.put(ConfigurationUtils.STUB4TESTTOOL_XSLT_VALIDATORS_PARAM, Boolean.parseBoolean(properties.getProperty(ConfigurationUtils.STUB4TESTTOOL_VALIDATORS_DISABLED_KEY,"false")));
 
 			XmlUtils.setTransformerParameters(filter.getTransformer(), parameters);
@@ -293,5 +288,4 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		}
 		return handler;
 	}
-
 }

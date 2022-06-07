@@ -56,21 +56,24 @@ public class GraphvizJsFlowGenerator extends DotFlowGenerator {
 		try {
 			return new GraphvizEngine();
 		} catch (Throwable t) {
-			log.warn("failed to initalize IFlowGenerator", t);
+			log.warn("failed to initalize GraphvizEngine", t);
 			return null;
 		}
 	}
 
 	@Override
 	public void generateFlow(String xml, OutputStream outputStream) throws FlowGenerationException {
-		String dot = generateDot(xml);
+		GraphvizEngine engine = getGraphvizEngine();
+		if(engine != null) {
+			String dot = generateDot(xml);
 
-		try {
-			String flow = getGraphvizEngine().execute(dot);
+			try {
+				String flow = engine.execute(dot);
 
-			outputStream.write(flow.getBytes());
-		} catch (IOException e) {
-			throw new FlowGenerationException(e);
+				outputStream.write(flow.getBytes());
+			} catch (IOException e) {
+				throw new FlowGenerationException(e);
+			}
 		}
 	}
 
