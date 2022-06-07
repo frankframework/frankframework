@@ -385,7 +385,7 @@
                                     <tbody>
                                         <tr ng-repeat="pipes in adapter.pipes" ng-if="pipes.sender">
                                             <td>{{::pipes.name}}</td>
-                                            <td>{{::pipes.sender}}<span ng-if="pipes.destination" title="{{::pipes.destination}"> ({{::pipes.destination|truncate:150}})</span></td>
+                                            <td>{{::pipes.sender}}<span ng-if="pipes.destination" title="{{::pipes.destination}}"> ({{::pipes.destination|truncate:150}})</span></td>
                                             <td>
                                                 <span class="pull-right">
                                                     <span class="text-success">
