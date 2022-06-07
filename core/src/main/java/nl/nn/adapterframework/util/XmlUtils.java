@@ -58,7 +58,6 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.URIResolver;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
@@ -108,7 +107,6 @@ import nl.nn.adapterframework.validation.XmlValidatorErrorHandler;
 import nl.nn.adapterframework.xml.BodyOnlyFilter;
 import nl.nn.adapterframework.xml.CanonicalizeFilter;
 import nl.nn.adapterframework.xml.ClassLoaderEntityResolver;
-import nl.nn.adapterframework.xml.ClassLoaderURIResolver;
 import nl.nn.adapterframework.xml.NonResolvingExternalEntityResolver;
 import nl.nn.adapterframework.xml.PrettyPrintFilter;
 import nl.nn.adapterframework.xml.SaxException;
@@ -995,7 +993,7 @@ public class XmlUtils {
 
 	public static Transformer createTransformer(URL url) throws TransformerConfigurationException, IOException {
 		try {
-			return createTransformer(url, null);
+			return createTransformer(url, detectXsltVersion(url));
 		} catch (Exception e) {
 			throw new TransformerConfigurationException(e);
 		}
@@ -1005,26 +1003,15 @@ public class XmlUtils {
 		StreamSource stylesource = new StreamSource(url.openStream());
 		stylesource.setSystemId(ClassUtils.getCleanedFilePath(url.toExternalForm()));
 
-		return createTransformer(stylesource, xsltVersion, null);
+		return createTransformer(stylesource, xsltVersion);
 	}
 
-	public static Transformer createTransformer(URL url, ClassLoaderURIResolver classLoaderURIResolver) throws TransformerConfigurationException, IOException {
-		int xsltVersion = detectXsltVersion(url);
-		StreamSource stylesource = new StreamSource(url.openStream());
-		stylesource.setSystemId(ClassUtils.getCleanedFilePath(url.toExternalForm()));
-
-		return createTransformer(stylesource, xsltVersion, classLoaderURIResolver);
+	public static Transformer createTransformer(Source source) throws TransformerConfigurationException {
+		return createTransformer(source, 0);
 	}
 
 	public static Transformer createTransformer(Source source, int xsltVersion) throws TransformerConfigurationException {
-		return createTransformer(source, xsltVersion, null);
-	}
-
-	public static Transformer createTransformer(Source source, int xsltVersion, URIResolver uriResolver) throws TransformerConfigurationException {
 		TransformerFactory tFactory = getTransformerFactory(xsltVersion);
-		if(uriResolver != null) {
-			tFactory.setURIResolver(uriResolver);
-		}
 		Transformer result = tFactory.newTransformer(source);
 
 		return result;
