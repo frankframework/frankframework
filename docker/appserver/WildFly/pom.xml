@@ -77,11 +77,11 @@
 			<version>1.11</version>
 		</dependency>
 		<!-- Required for #2539 -->
-		<dependency>
+<!--		<dependency>
 			<groupId>org.reactivestreams</groupId>
 			<artifactId>reactive-streams</artifactId>
 			<version>1.0.3</version>
-		</dependency>
+		</dependency>-->
 	</dependencies>
 
 	<build>

@@ -1,6 +1,5 @@
 import os
 
-
 # name of the module that war file will depend on
 moduleName = "module.nl.nn.adapterframework"
 
@@ -19,5 +18,7 @@ for jarFile in jarList:
 resources = resources[0:-1]
 
 command="module add --name="+moduleName+" --resources="+resources
+
+print(command)
 
 os.system("/opt/jboss/wildfly/bin/jboss-cli.sh --command='"+command+"'")
