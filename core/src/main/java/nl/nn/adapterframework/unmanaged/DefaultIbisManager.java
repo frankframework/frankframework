@@ -85,28 +85,21 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 	}
 
 	/**
-	 * Start the already configured Configuration
-	 */
-	@Override
-	public void startConfiguration(Configuration configuration) {
-		configuration.start();
-	}
-
-	/**
 	 * Stop and remove the Configuration
 	 */
 	@Override
 	public void unload(String configurationName) {
 		if (configurationName == null) {
-			while (configurations.size() > 0) {
-				unload(configurations.get(0));
+			while (!configurations.isEmpty()) {
+				remove(configurations.get(0));
 			}
 		} else {
-			unload(getConfiguration(configurationName));
+			remove(getConfiguration(configurationName));
 		}
 	}
 
-	private void unload(Configuration configuration) {
+	private void remove(Configuration configuration) {
+		log.info("removing configuration [{}]", configuration);
 		configuration.close();
 
 		configurations.remove(configuration);
