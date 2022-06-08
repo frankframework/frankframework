@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package nl.nn.adapterframework.batch;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 
 import lombok.Getter;
@@ -52,25 +53,31 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 
 	@Override
 	protected String getStreamId(Message input, PipeLineSession session) {
-		String filename = (String)input.asObject();
+		String filename = null;
+		try {
+			filename = input.asString();
+		} catch (IOException e) {
+			log.error("Could not get message ["+input+"] as String");
+		}
 		File file = new File(filename);
 		return file.getName();
 	}
+
 	@Override
 	protected InputStream getInputStream(String streamId, Message input, PipeLineSession session) throws PipeRunException {
 		try {
-			String filename	= (String)input.asObject();
+			String filename = input.asString();
 			File file = new File(filename);
 			return new FileInputStream(file);
 		} catch (FileNotFoundException e) {
 			throw new PipeRunException(this,"cannot find file ["+streamId+"]",e);
+		} catch (IOException e) {
+			throw new PipeRunException(this, "could not get message ["+input+"] as String", e);
 		}
 	}
-	
 
 	/**
-	 * Open a reader for the file named according the input messsage and 
-	 * transform it.
+	 * Open a reader for the file named according the input message and transform it.
 	 * Move the input file to a done directory when transformation is finished
 	 * and return the names of the generated files. 
 	 * 
@@ -81,24 +88,29 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 		if (input==null) {
 			throw new PipeRunException(this,"got null input instead of String containing filename");
 		}
-		
+
 		if (!(input.asObject() instanceof String)) {
 			throw new PipeRunException(this,"expected String containing filename as input, got ["+ClassUtils.nameOf(input)+"], value ["+input+"]");
 		}
-		String filename	= (String)input.asObject();
+		String filename;
+		try {
+			filename = input.asString();
+		} catch (IOException e) {
+			throw new PipeRunException(this, "could not get message ["+input+"] as String", e);
+		}
 		File file = new File(filename);
 
 		try {
 			PipeRunResult result = super.doPipe(input,session);
 			try {
-				FileUtils.moveFileAfterProcessing(file, getMove2dirAfterTransform(), isDelete(),isOverwrite(), getNumberOfBackups()); 
+				FileUtils.moveFileAfterProcessing(file, getMove2dirAfterTransform(), isDelete(),isOverwrite(), getNumberOfBackups());
 			} catch (Exception e) {
 				log.error(getLogPrefix(session),e);
 			}
 			return result;
 		} catch (PipeRunException e) {
 			try {
-				FileUtils.moveFileAfterProcessing(file, getMove2dirAfterError(), isDelete(),isOverwrite(), getNumberOfBackups()); 
+				FileUtils.moveFileAfterProcessing(file, getMove2dirAfterError(), isDelete(), isOverwrite(), getNumberOfBackups());
 			} catch (Exception e2) {
 				log.error(getLogPrefix(session)+"Could not move file after exception ["+e2+"]");
 			}
@@ -106,7 +118,6 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 		}
 	}
 
-	
 	@IbisDoc({"1", "Directory in which the transformed file(s) is stored", ""})
 	public void setMove2dirAfterTransform(String readyDir) {
 		move2dirAfterTransform = readyDir;
@@ -116,7 +127,6 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 	public void setMove2dirAfterError(String errorDir) {
 		move2dirAfterError = errorDir;
 	}
-
 
 	@IbisDoc({"3", "Number of copies held of a file with the same name. Backup files have a dot and a number suffixed to their name. If set to 0, no backups will be kept.", "5"})
 	public void setNumberOfBackups(int i) {
