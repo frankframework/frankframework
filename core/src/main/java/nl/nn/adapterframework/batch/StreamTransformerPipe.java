@@ -296,7 +296,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		return new PipeRunResult(getSuccessForward(),transformationResult);
 	}
 
-	private List<String> getBlockStack(PipeLineSession session, IResultHandler handler, String streamId, boolean create, Map<String, Object> blocks) {
+	private List<String> getBlockStack(IResultHandler handler, String streamId, boolean create, Map<String, Object> blocks) {
 		String blockStackKey="blockStack for "+handler.getName();
 		List<String> list = (List<String>)blocks.get(blockStackKey);
 		if (list==null) {
@@ -308,12 +308,12 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		return list;
 	}
 
-	private List<String> getBlockStack(PipeLineSession session, IResultHandler handler, String streamId, Map<String, Object> blocks) {
-		return getBlockStack(session, handler, streamId, false, blocks);
+	private List<String> getBlockStack(IResultHandler handler, String streamId, Map<String, Object> blocks) {
+		return getBlockStack(handler, streamId, false, blocks);
 	}
 
 	private boolean autoCloseBlocks(PipeLineSession session, IResultHandler handler, String streamId, RecordHandlingFlow flow, String blockName, Map<String, Object> blocks) throws Exception {
-		List<String> blockStack=getBlockStack(session, handler, streamId, true, blocks);
+		List<String> blockStack=getBlockStack(handler, streamId, true, blocks);
 		int blockLevel;
 		if (log.isTraceEnabled()) log.trace("searching block stack for open block ["+blockName+"] to perform autoclose");
 		for (blockLevel=blockStack.size()-1;blockLevel>=0; blockLevel--) {
@@ -340,7 +340,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 			if (handler!=null) {
 				if (flow.isAutoCloseBlock()) {
 					autoCloseBlocks(session, handler, streamId,flow, blockName, blocks);
-					List<String> blockStack=getBlockStack(session, handler, streamId, true, blocks);
+					List<String> blockStack=getBlockStack(handler, streamId, true, blocks);
 					if (log.isTraceEnabled()) log.trace("adding block ["+blockName+"] to block stack at position ["+blockStack.size()+"]");
 					blockStack.add(blockName);
 				}
@@ -380,7 +380,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 
 	protected void closeAllBlocks(PipeLineSession session, String streamId, IResultHandler handler, Map<String, Object> blocks) throws Exception {
 		if (handler!=null) {
-			List<String> blockStack=getBlockStack(session, handler, streamId, blocks);
+			List<String> blockStack=getBlockStack(handler, streamId, blocks);
 			if (blockStack!=null) {
 				for (int i=blockStack.size()-1; i>=0; i--) {
 					String stackedBlock=blockStack.remove(i);
