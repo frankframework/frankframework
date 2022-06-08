@@ -1,5 +1,5 @@
-ARG WILDFLY_VERSION=22.0.0.Final
-FROM jboss/wildfly:${WILDFLY_VERSION} AS iaf-test-as-wildfly
+ARG WILDFLY_VERSION=6.1.1.Final
+FROM quay.io/wildfly/wildfly:${WILDFLY_VERSION} AS iaf-test-as-wildfly
 
 # copy dependencies
 COPY target/dependencies/*.jar /opt/jboss/wildfly/standalone/lib/ext/
