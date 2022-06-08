@@ -2,7 +2,10 @@
 <jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.2"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<deployment>
-		<exclusions />
+		<exclusions>
+			<!-- WildFly has a different version of log4j2, which results in EMPTY_BYTE_ARRAY upon startup -->
+			<module name="org.apache.logging.log4j.api"/>
+		</exclusions>
 		<exports />
 		<module-alias name="deployment.iaf" />
 		<dependencies>
