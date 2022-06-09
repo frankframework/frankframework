@@ -19,11 +19,12 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.util.JdbcUtil;
-
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author  Gerrit van Brakel
@@ -261,37 +262,17 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public boolean hasIndexOnColumn(Connection conn, String schemaOwner, String tableName, String columnName) {
-		String query="select count(*) from all_ind_columns";
-		query+=" where TABLE_OWNER='"+schemaOwner.toUpperCase()+"' and TABLE_NAME='"+tableName.toUpperCase()+"'";
-		query+=" and column_name=?";
-		query+=" and column_position=1";
-		try {
-			return JdbcUtil.executeIntQuery(conn, query, columnName.toUpperCase())>=1;
-		} catch (Exception e) {
-			log.warn("could not determine presence of index column ["+columnName+"] on table ["+tableName+"] using query ["+query+"]",e);
-			return false;
-		}
+	public boolean hasIndexOnColumn(Connection conn, String schemaOwner, String tableName, String columnName) throws JdbcException {
+		return super.hasIndexOnColumn(conn, schemaOwner.toUpperCase(), tableName.toUpperCase(), columnName.toUpperCase());
 	}
 
 	@Override
 	public boolean hasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns) {
-		StringBuilder query= new StringBuilder("select count(*) from all_indexes ai");
-		for (int i=1;i<=columns.size();i++) {
-			query.append(", all_ind_columns aic"+i);
-		}
-		query.append(" where ai.TABLE_OWNER='"+schemaOwner.toUpperCase()+"' and ai.TABLE_NAME='"+tableName.toUpperCase()+"'");
-		for (int i=1;i<=columns.size();i++) {
-			query.append(" and ai.OWNER=aic"+i+".INDEX_OWNER");
-			query.append(" and ai.INDEX_NAME=aic"+i+".INDEX_NAME");
-			query.append(" and aic"+i+".column_name='"+((String)columns.get(i-1)).toUpperCase()+"'");
-			query.append(" and aic"+i+".column_position="+i);
-		}
-		try {
-			return JdbcUtil.executeIntQuery(conn, query.toString())>=1;
-		} catch (Exception e) {
-			log.warn("could not determine presence of index columns on table ["+tableName+"] using query ["+query+"]",e);
-			return false;
-		}
+		List<String> columnsUC = columns.stream().map(c -> c.toUpperCase()).collect(Collectors.toList());
+		return doHasIndexOnColumns(conn, schemaOwner.toUpperCase(), tableName.toUpperCase(), columnsUC,
+				"all_indexes", "all_ind_columns",
+				"TABLE_OWNER", "TABLE_NAME", "INDEX_NAME", "column_name", "column_position");
 	}
+
+
 }
