@@ -71,6 +71,7 @@ import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -106,27 +107,28 @@ import nl.nn.adapterframework.util.TransformerPool.OutputType;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
- * The receiver is the trigger and central communicator for the framework.
- * <br/>
- * The main responsibilities are:
- * <ul>
- *    <li>receiving messages</li>
- *    <li>for asynchronous receivers (which have a separate sender):<br/>
- *            <ul><li>initializing ISender objects</li>
- *                <li>stopping ISender objects</li>
- *                <li>sending the message with the ISender object</li>
- *            </ul>
- *    <li>synchronous receivers give the result directly</li>
- *    <li>take care of connection, sessions etc. to startup and shutdown</li>
- * </ul>
- * Listeners call the IAdapter.processMessage(String correlationID,String message)
- * to do the actual work, which returns a <code>{@link PipeLineResult}</code>. The receiver
- * may observe the status in the <code>{@link PipeLineResult}</code> to perform committing
- * requests.
- *
- *
- * </p>
- * <p><b>Transaction control</b><br>
+ * Wrapper for a listener that specifies a channel for the incoming messages of a specific {@link Adapter}.
+ * By choosing a listener, the Frank developer determines how the messages are received.
+ * For example, an {@link nl.nn.adapterframework.http.rest.ApiListener} receives RESTful HTTP requests and a
+ * {@link JavaListener} receives messages from direct Java calls.
+ * <br/><br/>
+ * Apart from wrapping the listener, a {@link Receiver} can be configured
+ * to store received messages and to keep track of the processed / failed
+ * status of these messages.
+ * <br/><br/>
+ * There are two kinds of listeners: synchronous listeners and asynchronous listeners.
+ * Synchronous listeners are expected to return a response. The system that triggers the
+ * receiver typically waits for a response before proceeding its operation. When a
+ * {@link nl.nn.adapterframework.http.rest.ApiListener} receives a HTTP request, the listener is expected to return a
+ * HTTP response. Asynchronous listeners are not expected to return a response. The system that
+ * triggers the listener typically continues without waiting for the adapter to finish. When a
+ * receiver contains an asynchronous listener, it can have a sender that sends the transformed
+ * message to its destination. Receivers with an asynchronous listener can also have an error sender that is used
+ * by the receiver to send error messages. In other words: if the result state is SUCCESS then the
+ * message is sent by the ordinary sender, while the error sender is used if the result state
+ * is ERROR.
+ * <br/><br/>
+ * <b>Transaction control</b><br/><br/>
  * If {@link #setTransacted(boolean) transacted} is set to <code>true</code>, messages will be received and processed under transaction control.
  * This means that after a message has been read and processed and the transaction has ended, one of the following apply:
  * <ul>
@@ -139,7 +141,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>transfer to errorSender failed</td><td>message read and committed</td><td>message processing failed and rolled back</td><td>message present</td><td>unchanged</td><td>message only transferred from listener to inProcess storage</td></tr>
  * </table>
  * If the application or the server crashes in the middle of one or more transactions, these transactions
- * will be recovered and rolled back after the server/application is restarted. Then allways exactly one of
+ * will be recovered and rolled back after the server/application is restarted. Then always exactly one of
  * the following applies for any message touched at any time by Ibis by a transacted receiver:
  * <ul>
  * <li>It is processed correctly by the pipeline and removed from the input-queue,
@@ -161,6 +163,27 @@ import nl.nn.adapterframework.util.XmlUtils;
  *
  * @author Gerrit van Brakel
  * @since 4.2
+ *
+ */
+/*
+ * The receiver is the trigger and central communicator for the framework.
+ * <br/>
+ * The main responsibilities are:
+ * <ul>
+ *    <li>receiving messages</li>
+ *    <li>for asynchronous receivers (which have a separate sender):<br/>
+ *            <ul><li>initializing ISender objects</li>
+ *                <li>stopping ISender objects</li>
+ *                <li>sending the message with the ISender object</li>
+ *            </ul>
+ *    <li>synchronous receivers give the result directly</li>
+ *    <li>take care of connection, sessions etc. to startup and shutdown</li>
+ * </ul>
+ * Listeners call the IAdapter.processMessage(String correlationID,String message)
+ * to do the actual work, which returns a <code>{@link PipeLineResult}</code>. The receiver
+ * may observe the status in the <code>{@link PipeLineResult}</code> to perform committing
+ * requests.
+ *
  */
 public class Receiver<M> extends TransactionAttributes implements IManagable, IReceiverStatistics, IMessageHandler<M>, IProvidesMessageBrowsers<Object>, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, IThreadCountControllable, BeanFactoryAware {
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
@@ -1909,12 +1932,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 
 	/**
-	 * Sets the listener used to receive messages from. If the listener implements the {@link nl.nn.adapterframework.core.INamedObject name} interface and no <code>getName()</code>
-	 * of the listener is empty, the name of this object is given to the listener.
+	 * Sets the listener used to receive messages from.
 	 *
 	 * @ff.mandatory
 	 */
-	@IbisDoc({"10", "The source of messages"})
 	public void setListener(IListener<M> newListener) {
 		listener = newListener;
 		if (listener instanceof RunStateEnquiring)  {
@@ -1922,7 +1943,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		}
 	}
 
-	@IbisDoc("20")
+	/**
+	 * Sender to which the response (output of {@link PipeLine}) should be sent. Applies if the receiver
+	 * has an asynchronous listener.
+	 */
 	public void setSender(ISender sender) {
 		this.sender = sender;
 	}
@@ -1945,10 +1969,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 
 	/**
-	 * Sets the errorSender.
-	 * @param errorSender The errorSender to set
+	 * Sender that will send the result in case the PipeLineExit state was not <code>SUCCESS</code>.
+	 * Applies if the receiver has an asynchronous listener.
 	 */
-	@IbisDoc({"30", "Sender that will receive the result in case the PipeLineExit state was not 'success'"})
 	public void setErrorSender(ISender errorSender) {
 		this.errorSender = errorSender;
 		errorSender.setName("errorSender of ["+getName()+"]");
