@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -150,22 +150,31 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 				}
 			}
 		}
-		Message message =  new Message(rawMessage);
-		if (throwException) {
+		try (PipeLineSession session = new PipeLineSession(context) {
+											@Override
+											public Object put(String key, Object value) {
+												Object result = super.put(key,value);
+												context.put(key, value); // copy each assignment back to the original context
+												return result;
+											}
+										}) {
+			Message message =  new Message(rawMessage);
+			if (throwException) {
+				try {
+						return handler.processRequest(this, correlationId, rawMessage, message, session).asString();
+				} catch (IOException e) {
+					throw new ListenerException("cannot convert stream", e);
+				}
+			} 
 			try {
-				return handler.processRequest(this, correlationId, rawMessage, message, (Map<String,Object>)context).asString();
-			} catch (IOException e) {
-				throw new ListenerException("cannot convert stream", e);
-			}
-		} 
-		try {
-			return handler.processRequest(this, correlationId, rawMessage, message, context).asString();
-		} catch (ListenerException | IOException e) {
-			try {
-				return handler.formatException(null,correlationId, message, e).asString();
-			} catch (IOException e1) {
-				e.addSuppressed(e1);
-				throw new ListenerException(e);
+					return handler.processRequest(this, correlationId, rawMessage, message, session).asString();
+			} catch (ListenerException | IOException e) {
+				try {
+					return handler.formatException(null,correlationId, message, e).asString();
+				} catch (IOException e1) {
+					e.addSuppressed(e1);
+					throw new ListenerException(e);
+				}
 			}
 		}
 	}

@@ -1,6 +1,6 @@
 <module>
-    <!-- serviceNamespaceURI listeners -->
-	<adapter name="WebServiceListenerAddress" 
+	<!-- WebServiceListeners with address -->
+	<adapter name="WebServiceListenerAddress"
 		description="Test the functioning of the WebServiceListener with the attribute address">
 		<receiver>
 			<listener className="nl.nn.adapterframework.http.WebServiceListener"
@@ -46,8 +46,8 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-	
-	<adapter name="WebServiceSenderAddress" 
+
+	<adapter name="WebServiceSenderAddress"
 		description="Test the functioning of the WebServiceSender sending to a listener with address">
 		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
@@ -82,7 +82,7 @@
 			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="Send2WS">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
-					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws_error/address" 
+					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws_error/address"
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
 					authAlias="${framework.api.user.alias}"
@@ -111,7 +111,7 @@
 				name="send2ws_no_forwards">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws_timeout/address"
-					timeout="1000" 
+					timeout="1000"
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
 					authAlias="${framework.api.user.alias}"
@@ -123,7 +123,7 @@
 				name="send2ws_forward_timeout">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws_timeout/address"
-					timeout="1000" 
+					timeout="1000"
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
 					authAlias="${framework.api.user.alias}"
@@ -166,7 +166,7 @@
 				name="send2ws_no_forwards">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws_timeout/address"
-					timeout="1000" 
+					timeout="1000"
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
 					authAlias="${framework.api.user.alias}"
@@ -178,7 +178,7 @@
 				name="send2ws_forward_timeout">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws_timeout/address"
-					timeout="1000" 
+					timeout="1000"
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
 					authAlias="${framework.api.user.alias}"
@@ -204,7 +204,7 @@
 				name="send2ws_with_forwards">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws_timeout/address"
-					timeout="1000" 
+					timeout="1000"
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
 					authAlias="${framework.api.user.alias}"
@@ -218,7 +218,7 @@
 				name="send2ws_multiple_with_forwards" removeXmlDeclarationInResults="true">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws_timeout/address"
-					timeout="1000" 
+					timeout="1000"
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
 					authAlias="${framework.api.user.alias}"
@@ -232,7 +232,7 @@
 				name="send2ws_no_forwards_resultOnTimeOut" resultOnTimeOut="&lt;receiver_timed_out/&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws_timeout/address"
-					timeout="1000" 
+					timeout="1000"
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
 					authAlias="${framework.api.user.alias}"
@@ -244,7 +244,7 @@
 				name="send2ws_forward_timeout_resultOnTimeOut" resultOnTimeOut="&lt;receiver_timed_out/&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws_timeout/address"
-					timeout="1000" 
+					timeout="1000"
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
 					authAlias="${framework.api.user.alias}"
@@ -257,7 +257,7 @@
 				name="send2ws_forward_exception_resultOnTimeOut" resultOnTimeOut="&lt;receiver_timed_out/&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws_timeout/address"
-					timeout="1000" 
+					timeout="1000"
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
 					authAlias="${framework.api.user.alias}"
@@ -270,7 +270,7 @@
 				name="send2ws_with_forwards_resultOnTimeOut" resultOnTimeOut="&lt;receiver_timed_out/&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws_timeout/address"
-					timeout="1000" 
+					timeout="1000"
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
 					authAlias="${framework.api.user.alias}"
@@ -291,4 +291,61 @@
 			</pipe>
 		</pipeline>
 	</adapter>
+
+	<adapter name="WebServiceListenerAddressMultipartAttachmentOuter">
+		<receiver>
+			<listener name="getDocumentWithAttachmentOuter"
+				className="nl.nn.adapterframework.receivers.JavaListener"
+				serviceName="ibis4test-WebServiceListenerAddressMultipartAttachmentOuter"/>
+		</receiver>
+		<pipeline>
+			<exits>
+				<exit path="READY" state="success"/>
+			</exits>
+			<pipe name="send" >
+				<WebServiceSender url="${web.protocol}://${web.host}:${web.port}/${web.contextpath}/services/getDocumentWithAttachment" soap="false"/>
+			</pipe>
+			<pipe name="showPart" className="nl.nn.adapterframework.pipes.EchoPipe"
+				getInputFromSessionKey="multipart1">
+				<forward name="success" path="READY"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+	<adapter name="WebServiceListenerAddressMultipartAttachmentInner">
+		<receiver>
+			<listener name="getDocumentWithAttachmentInner"
+				className="nl.nn.adapterframework.http.WebServiceListener"
+				address="getDocumentWithAttachment"
+				mtomEnabled="true" />
+		</receiver>
+
+		<pipeline>
+			<exits>
+				<exit path="READY" state="success"/>
+			</exits>
+
+			<pipe
+				name="call getUnifiedDocument" className="nl.nn.adapterframework.pipes.FixedResultPipe"
+				returnString="fakeFileContents" storeResultInSessionKey="FileContent"
+			/>
+			<pipe
+				name="base64tostream2" className="nl.nn.adapterframework.pipes.Base64Pipe"
+				direction="ENCODE" getInputFromSessionKey="FileContent" preserveInput="true"
+				storeResultInSessionKey="multipart1"
+			/>
+
+			<pipe
+				name="createMultipartXml" className="nl.nn.adapterframework.pipes.FixedResultPipe"
+				storeResultInSessionKey="multipartXml"
+				filename="Multipart/MultipartXml.xml"
+			/>
+			<pipe
+				name="createResponse" className="nl.nn.adapterframework.pipes.FixedResultPipe"
+				filename="Multipart/GetDocument_Response.xml"
+			>
+				<forward name="success" path="READY"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+
 </module>

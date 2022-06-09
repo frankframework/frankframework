@@ -37,13 +37,15 @@ import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLine.ExitState;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Test Service Listners.
- * 
+ *
  * @since	7.0-B1
  * @author	Niels Meijer
  */
@@ -87,7 +89,7 @@ public final class TestServiceListener extends Base {
 		String message = null, serviceName = null, dispatchResult = null;
 		InputStream file = null;
 
-		String fileEncoding = resolveTypeFromMap(inputDataMap, "encoding", String.class, Misc.DEFAULT_INPUT_STREAM_ENCODING);
+		String fileEncoding = resolveTypeFromMap(inputDataMap, "encoding", String.class, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 
 		try {
 			if(inputDataMap.getAttachment("service") != null) {
@@ -110,18 +112,20 @@ public final class TestServiceListener extends Base {
 				return Response.status(Response.Status.BAD_REQUEST).build();
 			}
 
-			try {
-				@SuppressWarnings("rawtypes")
-				Map context = new HashMap();
-				dispatchResult = ServiceDispatcher.getInstance().dispatchRequest(serviceName, null, message, context);
+			try (PipeLineSession session = new PipeLineSession()) {
+				dispatchResult = ServiceDispatcher.getInstance().dispatchRequest(serviceName, null, message, session);
 			} catch (ListenerException e) {
-				return Response.status(Response.Status.BAD_REQUEST).build();
+				String msg = "Exception executing service ["+serviceName+"]";
+				log.warn(msg, e);
+				return Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
 			}
 
 			result.put("state", ExitState.SUCCESS);
 			result.put("result", dispatchResult);
 		} catch (IOException e) {
-			return Response.status(Response.Status.BAD_REQUEST).build();
+			String msg = "Exception executing service ["+serviceName+"]";
+			log.warn(msg, e);
+			return Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
 		}
 
 		return Response.status(Response.Status.CREATED).entity(result).build();
