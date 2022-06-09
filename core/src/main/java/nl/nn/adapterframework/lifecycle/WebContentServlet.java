@@ -168,20 +168,21 @@ public class WebContentServlet extends HttpServletBase {
 	 * Should fail fast, always return null / HTTP 404.
 	 */
 	private URL findResource(String path) {
-		if(path.startsWith("/")) {
-			path = path.substring(1);
+		String normalizedPath = FilenameUtils.normalize(path, true);
+		if(normalizedPath.startsWith("/")) {
+			normalizedPath = normalizedPath.substring(1);
 		}
-		String[] split = path.split("/");
+		String[] split = normalizedPath.split("/");
 		String configurationName = split[0];
 		Configuration configuration = findConfiguration(configurationName);
 		if(configuration == null) {
-			log.debug("unable to find configuration [{}] derived from path [{}]", configurationName, path);
+			log.debug("unable to find configuration [{}] derived from path [{}]", configurationName, normalizedPath);
 			return null;
 		}
 
-		String resource = path.substring(configurationName.length());
+		String resource = normalizedPath.substring(configurationName.length());
 		if(StringUtils.isEmpty(resource) || resource.equals("/")) {
-			log.debug("unable to determine resource from path [{}] returning welcome file [{}]", path, WELCOME_FILE);
+			log.debug("unable to determine resource from path [{}] returning welcome file [{}]", normalizedPath, WELCOME_FILE);
 			resource = WELCOME_FILE;
 		}
 
