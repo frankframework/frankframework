@@ -43,22 +43,32 @@ import org.springframework.util.MimeType;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
+import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
 import nl.nn.adapterframework.http.HttpServletBase;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
+ * This servlet allows the use of WebContent served from {@link Configuration Configurations}.
+ * The configuration must have a folder called <code>webcontent</code> for this to work. The Configuration
+ * may consist of adapters and webcontent or standalone webcontent. This works for all {@link IConfigurationClassLoader ClassLoaders}.
+ * 
+ * Just like other {@link DynamicRegistration.Servlet servlets} this servlet may be configured through the {@link ServletManager}.
  * 
  * @author Niels Meijer
  */
 @IbisInitializer
 public class WebContentServlet extends HttpServletBase {
 
+	private static final long serialVersionUID = 1L;
 	private final transient Logger log = LogUtil.getLogger(this);
 	private static final String SERVLET_PATH = "/webcontent/";
 	private static final String WELCOME_FILE = "index.html";
+	private static final String CONFIGURATION_KEY = WebContentServlet.class.getCanonicalName() + ".configuration";
 	private final Map<String, MimeType> supportedMediaTypes = new HashMap<>();
 	private final Map<URL, MimeType> computedMediaTypes = new WeakHashMap<>();
+	private final boolean isDtapStageLoc = "LOC".equalsIgnoreCase(AppConstants.getInstance().getProperty("dtap.stage"));
 	private IbisContext ibisContext;
 	private Detector detector = null;
 
@@ -105,15 +115,19 @@ public class WebContentServlet extends HttpServletBase {
 			resp.sendRedirect(req.getContextPath() + SERVLET_PATH);
 			return;
 		} else if(path.equals("/")) {
-			listDirectory(resp);
-			resp.flushBuffer();
+			if(isDtapStageLoc) {
+				listDirectory(resp);
+				resp.flushBuffer();
+			} else {
+				resp.sendError(404, "resource not found");
+			}
 			return;
 		}
 
-		URL resource = findResource(path);
+		URL resource = findResource(req);
 
 		if(resource == null) {
-			resp.sendError(404, "file not found");
+			resp.sendError(404, "resource not found");
 			return;
 		}
 
@@ -132,6 +146,17 @@ public class WebContentServlet extends HttpServletBase {
 		}
 
 		resp.flushBuffer();
+	}
+
+	@Override
+	protected long getLastModified(HttpServletRequest req) {
+		String path = req.getPathInfo();
+		if(StringUtils.isNotEmpty(path) && !path.equals("/") && findResource(req) != null) {
+			String configurationName = (String) req.getAttribute(CONFIGURATION_KEY);
+			return findConfiguration(configurationName).getStartupDate();
+		}
+
+		return -1;
 	}
 
 	private MimeType determineMimeType(URL resource) {
@@ -168,8 +193,8 @@ public class WebContentServlet extends HttpServletBase {
 	/**
 	 * Should fail fast, always return null / HTTP 404.
 	 */
-	private URL findResource(String path) {
-		String normalizedPath = FilenameUtils.normalize(path, true);
+	private URL findResource(HttpServletRequest req) {
+		String normalizedPath = FilenameUtils.normalize(req.getPathInfo(), true);
 		if(normalizedPath.startsWith("/")) {
 			normalizedPath = normalizedPath.substring(1);
 		}
@@ -180,6 +205,7 @@ public class WebContentServlet extends HttpServletBase {
 			log.debug("unable to find configuration [{}] derived from path [{}]", configurationName, normalizedPath);
 			return null;
 		}
+		req.setAttribute(CONFIGURATION_KEY, configurationName);
 
 		String resource = normalizedPath.substring(configurationName.length());
 		if(StringUtils.isEmpty(resource) || resource.equals("/")) {
