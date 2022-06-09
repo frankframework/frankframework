@@ -77,11 +77,11 @@ public class ApiServiceDispatcher {
 
 	public ApiDispatchConfig findConfigForUri(String uri) {
 		List<ApiDispatchConfig> configs = findMatchingConfigsForUri(uri, true);
-		return configs.isEmpty()? null : configs.get(0); 
+		return configs.isEmpty()? null : configs.get(0);
 	}
 
 	public List<ApiDispatchConfig> findMatchingConfigsForUri(String uri) {
-		return findMatchingConfigsForUri(uri, false); 
+		return findMatchingConfigsForUri(uri, false);
 	}
 
 	private List<ApiDispatchConfig>  findMatchingConfigsForUri(String uri, boolean exactMatch) {
@@ -105,7 +105,7 @@ public class ApiServiceDispatcher {
 				}
 			}
 			if(matches == uriSegments.length) {
-				ApiDispatchConfig result = patternClients.get(uriPattern); 
+				ApiDispatchConfig result = patternClients.get(uriPattern);
 				results.add(result);
 				if (exactMatch) {
 					return results;
@@ -276,9 +276,9 @@ public class ApiServiceDispatcher {
 			methodBuilder.add("parameters", paramBuilderArray);
 		}
 	}
-	
+
 	private List<String> mapHeaderAndParams(JsonArrayBuilder paramBuilder, HttpServletRequest request, ApiListener listener) {
-		List<String> paramsFromHeaderAndCookie = new ArrayList<String>();
+		List<String> paramsFromHeaderAndCookie = new ArrayList<>();
 		// header parameters
 		if(StringUtils.isNotEmpty(listener.getHeaderParams())) {
 			String[] params = listener.getHeaderParams().split(",");

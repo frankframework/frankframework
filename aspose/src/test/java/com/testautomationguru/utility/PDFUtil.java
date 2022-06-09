@@ -47,7 +47,7 @@ import org.apache.commons.io.FileUtils;
 */
 public class PDFUtil {
 
-	private final static Logger logger = Logger.getLogger(PDFUtil.class.getName());
+	private static final Logger logger = Logger.getLogger(PDFUtil.class.getName());
 	private String imageDestinationPath;
 	private boolean bTrimWhiteSpace;
 	private boolean bHighlightPdfDifference;

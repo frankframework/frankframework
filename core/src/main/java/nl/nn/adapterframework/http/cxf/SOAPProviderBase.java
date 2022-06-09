@@ -213,23 +213,28 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 							String partSessionKey = partElement.getAttribute("sessionKey");
 							String partMimeType = partElement.getAttribute("mimeType");
 							Message partObject = pipelineSession.getMessage(partSessionKey);
-							DataHandler dataHander;
-							try {
-								if (partObject.isBinary()) {
-									dataHander = new DataHandler(new ByteArrayDataSource(partObject.asByteArray(), partMimeType));
-								} else {
-									dataHander = new DataHandler(new ByteArrayDataSource(partObject.asString(), partMimeType));
-								}
-							} catch (IOException e) {
-								String m = "Unable to add session key '" + partSessionKey + "' as attachment";
-								log.error(m, e);
-								throw new WebServiceException(m, e);
-							}
-							AttachmentPart attachmentPart = soapMessage.createAttachmentPart(dataHander);
-							attachmentPart.setContentId(partName);
-							soapMessage.addAttachmentPart(attachmentPart);
 
-							log.debug(getLogPrefix(correlationId)+"appended filepart ["+partSessionKey+"] name ["+partName+"]");
+							if(!partObject.isNull()) {
+								DataHandler dataHander;
+								try {
+									if (partObject.isBinary()) {
+										dataHander = new DataHandler(new ByteArrayDataSource(partObject.asByteArray(), partMimeType));
+									} else {
+										dataHander = new DataHandler(new ByteArrayDataSource(partObject.asString(), partMimeType));
+									}
+								} catch (IOException e) {
+									String m = "Unable to add session key '" + partSessionKey + "' as attachment";
+									log.error(m, e);
+									throw new WebServiceException(m, e);
+								}
+								AttachmentPart attachmentPart = soapMessage.createAttachmentPart(dataHander);
+								attachmentPart.setContentId(partName);
+								soapMessage.addAttachmentPart(attachmentPart);
+
+								log.debug(getLogPrefix(correlationId)+"appended filepart ["+partSessionKey+"] name ["+partName+"]");
+							} else {
+								log.debug(getLogPrefix(correlationId)+"skipping filepart ["+partSessionKey+"] name ["+partName+"], content is <NULL>");
+							}
 						}
 					}
 				}

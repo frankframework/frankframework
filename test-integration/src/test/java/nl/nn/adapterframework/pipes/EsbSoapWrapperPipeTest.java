@@ -39,7 +39,6 @@ public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPi
 		addParam("errorDetailText","errorDetailText-value");
 		addParam("operation","operation-value");
 		addParam("operationVersion","operationVersion-value");
-		pipe.setNamespaceAware(true);
 		pipe.configure();
 		pipe.start();
 		
@@ -87,7 +86,6 @@ public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPi
 		addParam("errorDetailText",errorDetailText);
 		addParam("operation",null);
 		addParam("operationVersion",null);
-		pipe.setNamespaceAware(true);
 		pipe.configure();
 		pipe.start();
 		
@@ -143,7 +141,6 @@ public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPi
 		addParam("errorDetailText",errorDetailText);
 		addParam("operation",operation);
 		addParam("operationVersion",operationVersion);
-		pipe.setNamespaceAware(true);
 		pipe.configure();
 		pipe.start();
 		

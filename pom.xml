@@ -12,11 +12,10 @@
 		<log4j2.version>2.17.2</log4j2.version>
 		<h2.version>2.1.212</h2.version>
 		<btm.version>3.0.0-mk1</btm.version>
-		<narayana.version>5.11.0.Final</narayana.version>
+		<narayana.version>5.11.4.Final</narayana.version>
 		<jboss-logging.version>3.4.2.Final</jboss-logging.version>
 		<argLine /> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
-		<!-- Override this property to use another version of the Frank!Doc -->
 		<frankdoc.version>1.1-SNAPSHOT</frankdoc.version>
 	</properties>
 
@@ -51,8 +50,8 @@
 			<organizationUrl>https://frankframework.org</organizationUrl>
 		</developer>
 		<developer>
-			<name>Peter Leeuwenburgh</name>
-			<email>peter@ibissource.org</email>
+			<name>Ali Sihab Akcan</name>
+			<email>ali@ibissource.org</email>
 			<organization>Frank!Framework</organization>
 			<organizationUrl>https://frankframework.org</organizationUrl>
 		</developer>
@@ -256,7 +255,7 @@
 			<dependency>
 				<groupId>org.mockito</groupId>
 				<artifactId>mockito-core</artifactId>
-				<version>2.24.5</version>
+				<version>4.5.1</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hamcrest</groupId>

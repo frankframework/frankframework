@@ -37,17 +37,17 @@ public abstract class StreamingPipeTestBase<P extends StreamingPipe> extends Pip
 	@Parameters(name = "{index}: {0}: provide [{2}] stream out [{3}]")
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
-			{ "classic", 			true, false, false }, 
-			{ "new, no stream", 	false, false, false }, 
-			{ "output to stream", 	false, false, true  }, 
-			{ "consume stream", 	false, true,  false }, 
+			{ "classic", 			true, false, false },
+			{ "new, no stream", 	false, false, false },
+			{ "output to stream", 	false, false, true  },
+			{ "consume stream", 	false, true,  false },
 			{ "stream through",  	false, true,  true  }
 		});
 	}
 
 	@Override
-	public void setup() throws Exception {
-		super.setup();
+	public void setUp() throws Exception {
+		super.setUp();
 		pipe.setStreamingActive(!classic);
 	}
 
@@ -100,11 +100,11 @@ public abstract class StreamingPipeTestBase<P extends StreamingPipe> extends Pip
 	private class CapProvider implements IOutputStreamingSupport {
 
 		private CloseObservableCap cap;
-		
+
 		public CapProvider(INamedObject owner) {
 			cap=new CloseObservableCap(owner);
 		}
-		
+
 		@Override
 		public boolean supportsOutputStreamPassThrough() {
 			return false;
@@ -114,31 +114,30 @@ public abstract class StreamingPipeTestBase<P extends StreamingPipe> extends Pip
 		public MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
 			return cap;
 		}
-		
+
 		public CloseObservableCap getCap() {
 			return cap;
 		}
-		
+
 	}
-	
+
 	private class CloseObservableCap extends MessageOutputStreamCap {
 
 		private int closeCount=0;
-		
+
 		public CloseObservableCap(INamedObject owner) {
 			super(owner, null);
 		}
-		
+
 		@Override
 		public void afterClose() throws Exception {
 			super.afterClose();
 			closeCount++;
 		}
-		
+
 		public int getCloseCount() {
 			return closeCount;
 		}
 	}
 
-	
 }

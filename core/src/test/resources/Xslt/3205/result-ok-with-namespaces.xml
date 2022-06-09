@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Message xmlns="urn:Messages">
+	<someData/>
+	<PolicyAccount>
+		<bankAccount>aaaaaaaaaaaaaaaaaa</bankAccount>
+		<GEVONDEN xmlns="">Hoi</GEVONDEN>
+		<PartyAgreementRole xmlns="urn:parties">
+			<Id>2410367</Id>
+		</PartyAgreementRole>
+		<PartyAgreementRole xmlns="urn:parties">
+			<Id>2412367</Id>
+		</PartyAgreementRole>
+	</PolicyAccount>
+	<someMoreData/>
+</Message>

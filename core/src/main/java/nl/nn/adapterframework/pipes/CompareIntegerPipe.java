@@ -46,12 +46,12 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class CompareIntegerPipe extends AbstractPipe {
 
-	private final static String LESSTHANFORWARD = "lessthan";
-	private final static String GREATERTHANFORWARD = "greaterthan";
-	private final static String EQUALSFORWARD = "equals";
+	private static final String LESSTHANFORWARD = "lessthan";
+	private static final String GREATERTHANFORWARD = "greaterthan";
+	private static final String EQUALSFORWARD = "equals";
 
-	private final static String OPERAND1 = "operand1";
-	private final static String OPERAND2 = "operand2";
+	private static final String OPERAND1 = "operand1";
+	private static final String OPERAND2 = "operand2";
 
 	private String sessionKey1 = null;
 	private String sessionKey2 = null;

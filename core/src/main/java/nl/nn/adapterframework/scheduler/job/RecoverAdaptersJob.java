@@ -48,7 +48,7 @@ public class RecoverAdaptersJob extends JobDef {
 					} catch (ConfigurationException e) {
 						// log the warning and do nothing, it couldn't configure before, it still can't...
 						log.warn("error configuring adapter [" + adapter.getName() + "] while trying to recover", e);
-					} 
+					}
 				}
 
 				if (adapter.configurationSucceeded()) {

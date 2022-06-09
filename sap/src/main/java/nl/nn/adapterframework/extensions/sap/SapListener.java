@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019 Nationale-Nederlanden
+   Copyright 2013, 2019 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,5 +15,5 @@
 */
 package nl.nn.adapterframework.extensions.sap;
 
-public class SapListener extends nl.nn.adapterframework.extensions.sap.jco3.SapListener {
+public class SapListener extends nl.nn.adapterframework.extensions.sap.jco3.SapListenerImpl {
 }

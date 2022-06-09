@@ -158,6 +158,9 @@ public class Adapter implements IAdapter, NamedBean {
 		Configurator.setLevel(msgLog.getName(), msgLogLevel);
 		configurationSucceeded = false;
 		log.debug("configuring adapter [" + getName() + "]");
+		if(getName().contains("/")) {
+			throw new ConfigurationException("It is not allowed to have '/' in adapter name ["+getName()+"]");
+		}
 
 		statsMessageProcessingDuration = new StatisticsKeeper(getName());
 		if (pipeline == null) {

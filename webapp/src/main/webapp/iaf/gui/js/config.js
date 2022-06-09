@@ -28,6 +28,14 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 			serie: true,
 			name: 'chartjs',
 			files: ['js/plugins/chartJs/Chart.min.js', 'js/plugins/chartJs/angular-chart.min.js', 'css/plugins/chartJs/Chart.min.css']
+		},
+		{
+			name: 'mermaid',
+			serie: true,
+			files: [
+				'js/plugins/mermaid/mermaid.min.js',
+				'js/plugins/mermaid/ng-mermaid.js',
+			]
 		}],
 		// Set to true if you want to see what and when is dynamically loaded
 		debug: true

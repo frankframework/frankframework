@@ -56,6 +56,8 @@ import nl.nn.credentialprovider.rolemapping.RoleGroupMappingRuleSet;
  */
 public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupMapper {
 
+	private final String ALL_AUTHENTICATED = "AllAuthenticated";
+
 	private final Log log = LogFactory.getLog(this.getClass());
 
 	/**
@@ -174,6 +176,7 @@ public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupM
 				}
 			}
 		}
+		allRoles.add(ALL_AUTHENTICATED);
 		if (this.containerLog.isTraceEnabled()) this.containerLog.trace("allRoles out: "+allRoles);
 		return new ArrayList<>(allRoles);
 	}

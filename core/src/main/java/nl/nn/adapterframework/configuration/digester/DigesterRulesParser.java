@@ -38,7 +38,7 @@ public class DigesterRulesParser extends DigesterRulesHandler {
 	private RulesBinder rulesBinder;
 	private @Setter ApplicationContext applicationContext; //Autowired ByType
 	private Rule attributeChecker;
-	private Set<String> parsedPatterns = new HashSet<String>();
+	private Set<String> parsedPatterns = new HashSet<>();
 
 	public DigesterRulesParser(Digester digester, RulesBinder rulesBinder) {
 		this.digester = digester;
@@ -48,7 +48,7 @@ public class DigesterRulesParser extends DigesterRulesHandler {
 	@Override
 	protected void handle(DigesterRule rule) {
 		if(log.isTraceEnabled()) log.trace("adding digesterRule " + rule.toString());
-		
+
 		String pattern = rule.getPattern();
 
 		if (parsedPatterns.contains(pattern)) {
@@ -58,7 +58,7 @@ public class DigesterRulesParser extends DigesterRulesHandler {
 			return;
 		}
 		parsedPatterns.add(pattern);
-		
+
 		LinkedRuleBuilder ruleBuilder = rulesBinder.forPattern(pattern);
 
 

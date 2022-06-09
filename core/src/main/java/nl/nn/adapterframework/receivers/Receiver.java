@@ -566,13 +566,13 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		}
 	}
 
- 	/**
- 	 * This method is called by the <code>IAdapter</code> to let the
- 	 * receiver do things to initialize itself before the <code>startListening</code>
- 	 * method is called.
- 	 * @see #startRunning
- 	 * @throws ConfigurationException when initialization did not succeed.
- 	 */
+	/**
+	 * This method is called by the <code>IAdapter</code> to let the
+	 * receiver do things to initialize itself before the <code>startListening</code>
+	 * method is called.
+	 * @see #startRunning
+	 * @throws ConfigurationException when initialization did not succeed.
+	 */
 	@Override
 	public void configure() throws ConfigurationException {
 		configurationSucceeded = false;
@@ -584,6 +584,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				} else {
 					setName(ClassUtils.nameOf(this));
 				}
+			}
+			if(getName().contains("/")) {
+				throw new ConfigurationException("It is not allowed to have '/' in receiver name ["+getName()+"]");
 			}
 
 			registerEvent(RCV_CONFIGURED_MONITOR_EVENT);
@@ -1423,7 +1426,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					}
 				}
 			} finally {
-				if (pipelineSession != null ) {
+				if (pipelineSession != null) {
 					if(!Message.isEmpty(result) && result.isScheduledForCloseOnExitOf(pipelineSession)) { //Don't close Message in case it's passed to a 'parent' adapter or ServiceDispatcher.
 						log.debug("unscheduling result message from close on exit");
 						result.unscheduleFromCloseOnExitOf(pipelineSession);
@@ -2147,7 +2150,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		removeCompactMsgNamespaces = b;
 	}
 
-	@IbisDoc({"Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&lt;=&lt;party&gt;).*?(?=&lt;/party&gt;) will replace every character between keys<party> and </party> ", ""})
+	@IbisDoc({"Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&lt;=&lt;party&gt;).*?(?=&lt;/party&gt;) will replace every character between keys &lt;party&gt; and &lt;/party&gt;", ""})
 	public void setHideRegex(String hideRegex) {
 		this.hideRegex = hideRegex;
 	}

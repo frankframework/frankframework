@@ -45,8 +45,8 @@ import nl.nn.adapterframework.util.LogUtil;
 
 @RunWith(Parameterized.class)
 public abstract class JdbcTestBase {
-	protected final static String TEST_CHANGESET_PATH = "Migrator/Ibisstore_4_unittests_changeset.xml";
-	protected final static String DEFAULT_CHANGESET_PATH = "IAF_Util/IAF_DatabaseChangelog.xml";
+	protected static final String TEST_CHANGESET_PATH = "Migrator/Ibisstore_4_unittests_changeset.xml";
+	protected static final String DEFAULT_CHANGESET_PATH = "IAF_Util/IAF_DatabaseChangelog.xml";
 	protected static Logger log = LogUtil.getLogger(JdbcTestBase.class);
 	private @Getter TestConfiguration configuration;
 

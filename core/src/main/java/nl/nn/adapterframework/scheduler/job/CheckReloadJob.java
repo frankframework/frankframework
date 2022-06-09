@@ -57,7 +57,7 @@ public class CheckReloadJob extends JobDef {
 		}
 		return atLeastOneConfigrationHasDBClassLoader;
 	}
-	
+
 	@Override
 	public void execute() {
 		IbisManager ibisManager = getIbisManager();

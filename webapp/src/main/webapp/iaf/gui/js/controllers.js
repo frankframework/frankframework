@@ -552,6 +552,15 @@ angular.module('iaf.beheerconsole')
 	}
 }])
 
+.controller('FlowDiagramModalCtrl', ['$scope', '$uibModalInstance', 'xhr', function($scope, $uibModalInstance, xhr) {
+	$scope.adapter = xhr.adapter;
+	$scope.flow = xhr.data;
+
+	$scope.close = function () {
+		$uibModalInstance.close();
+	};
+}])
+
 .controller('CookieModalCtrl', ['$scope', 'GDPR', 'appConstants', '$rootScope', '$uibModalInstance', function($scope, GDPR, appConstants, $rootScope, $uibModalInstance) {
 	$scope.cookies = GDPR.defaults;
 
@@ -1354,7 +1363,7 @@ angular.module('iaf.beheerconsole')
 		Api.Put($scope.base_url+"/messages/"+encodeURIComponent(encodeURIComponent(messageId)), false, function() {
 			if(callback != undefined && typeof callback == 'function')
 				callback(message.id);
-			$scope.addNote("success", "Successfully resent message with ID: "+messageId);
+			$scope.addNote("success", "Message with ID: "+messageId+" will be reprocessed";
 			$scope.updateTable();
 		}, function(data) {
 			message.resending = false;
@@ -1596,7 +1605,7 @@ angular.module('iaf.beheerconsole')
 			$scope.messagesResending = true;
 			Api.Post($scope.base_url, fd, function() {
 				$scope.messagesResending = false;
-				$scope.addNote("success", "Successfully resent messages");
+				$scope.addNote("success", "Selected messages will be reprocessed");
 				$scope.updateTable();
 			}, function(data) {
 				$scope.messagesResending = false;

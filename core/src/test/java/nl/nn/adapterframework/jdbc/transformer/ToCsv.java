@@ -17,8 +17,8 @@ import nl.nn.adapterframework.testutil.TestFileUtils;
 
 @RunWith(Parameterized.class)
 public class ToCsv {
-	private final static String FOLDER = "/Jdbc.transformer/";
-	private final static String SRC = "src/test/resources" + FOLDER;
+	private static final String FOLDER = "/Jdbc.transformer/";
+	private static final String SRC = "src/test/resources" + FOLDER;
 	private File xmlFile, expectedFile;
 
 	public ToCsv(File xmlFile, File expectedFile) {

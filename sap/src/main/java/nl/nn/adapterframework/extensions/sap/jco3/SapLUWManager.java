@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -58,7 +58,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 	private @Getter String action;
 	private @Getter String sapSystemName;
 	
-	private SapSystem sapSystem;
+	private SapSystemImpl sapSystem;
 
 
 	@Override
@@ -82,7 +82,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 			throw new ConfigurationException("action should be specified, it must be one of: "+
 				ACTION_BEGIN+", "+ACTION_COMMIT+", "+ACTION_ROLLBACK+", "+ACTION_RELEASE+".");
 		}
-		sapSystem=SapSystem.getSystem(getSapSystemName());
+		sapSystem=SapSystemImpl.getSystem(getSapSystemName());
 		if (sapSystem==null) {
 			throw new ConfigurationException(getLogPrefix(null)+"cannot find SapSystem ["+getSapSystemName()+"]");
 		}
@@ -152,7 +152,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 
 
 
-	public SapSystem getSapSystem() {
+	public SapSystemImpl getSapSystem() {
 		return sapSystem;
 	}
 

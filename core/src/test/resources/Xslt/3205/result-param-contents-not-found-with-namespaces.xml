@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Message xmlns="urn:Messages">
+	<someData/>
+	<PolicyAccount>
+		<bankAccount>aaaaaaaaaaaaaaaaaa</bankAccount>
+		<GEVONDEN xmlns="">Hoi</GEVONDEN>
+	</PolicyAccount>
+	<someMoreData/>
+</Message>

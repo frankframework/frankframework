@@ -37,6 +37,11 @@ import nl.nn.adapterframework.util.StreamUtil;
 public class NetStorageUtils {
 
 	/**
+	 * Lookup table for base64 encoding.
+	 */
+	private static final char[] BASE64_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".toCharArray();
+
+	/**
 	 * An enum of the keyed-hash algorithms supported by {@link #computeKeyedHash(byte[], String, nl.nn.adapterframework.extensions.akamai.NetStorageUtils.KeyedHashAlgorithm)}
 	 * Currently supported hashes include HMAC-MD5; HMAC-SHA1; HMAC-SHA256
 	 *
@@ -79,11 +84,6 @@ public class NetStorageUtils {
 			throw new IllegalArgumentException("This should never happen!", e);
 		}
 	}
-
-	/**
-	 * Lookup table for base64 encoding.
-	 */
-	private final static char[] BASE64_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".toCharArray();
 
 	/**
 	 * Base64-encode a byte array.
