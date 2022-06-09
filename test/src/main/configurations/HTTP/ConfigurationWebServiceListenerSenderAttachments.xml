@@ -39,16 +39,21 @@
 		<receiver name="WebServiceListener-address-with-attachments">
 			<listener className="nl.nn.adapterframework.http.WebServiceListener" address="urn/ws/address/attachments/returning" attachmentSessionKeys="attachment1"/>
 		</receiver>
-		<pipeline>
+		<pipeline firstPipe="EchoMessage">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
+			<pipe className="nl.nn.adapterframework.pipes.EchoPipe" name="EchoMessage" getInputFromFixedValue="&lt;xml/&gt;">
+				<forward name="success" path="GetFile"/>
+			</pipe>
 			<pipe
 				name="GetFile" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe" action="read" 
-				filename="${testdata.dir}/webservices/filetext.txt" 
-			/>
-			<pipe name="Base64Encode" className="nl.nn.adapterframework.pipes.Base64Pipe" direction="ENCODE" storeResultInSessionKey="attachment1" /> <!-- make file data non-repeatable -->
-			<pipe className="nl.nn.adapterframework.pipes.EchoPipe" name="EchoMessage" getInputFromFixedValue="&lt;xml/&gt;" />
+				filename="${testdata.dir}/webservices/filetext.txt" storeResultInSessionKey="attachment1" 
+				preserveInput="true"
+				>
+
+				<forward name="success" path="EXIT"/>
+			</pipe>
 		</pipeline>
 	</adapter>
 
@@ -57,21 +62,26 @@
 		<receiver name="WebServiceListener-address-with-MultipartXml-attachments">
 			<listener className="nl.nn.adapterframework.http.WebServiceListener" address="urn/ws/address/attachments/returning/sessionkey"/>
 		</receiver>
-		<pipeline>
+		<pipeline firstPipe="EchoMessage">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
+			<pipe className="nl.nn.adapterframework.pipes.EchoPipe" name="EchoMessage" getInputFromFixedValue="&lt;xml/&gt;">
+				<forward name="success" path="GetFile"/>
+			</pipe>
 			<pipe
 				name="GetFile" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe" action="read" 
-				filename="${testdata.dir}/webservices/filetext.txt" 
-			/>
-			<pipe name="Base64Encode" className="nl.nn.adapterframework.pipes.Base64Pipe" direction="ENCODE" storeResultInSessionKey="file" /> <!-- make file data non-repeatable -->
-			<pipe name="SetMultipartSessionKey"
+				filename="${testdata.dir}/webservices/filetext.txt" storeResultInSessionKey="file" 
+				preserveInput="true"
+			>
+				<forward name="success" path="SetMultipartSessionKey"/>
+			</pipe>
+			<pipe name="SetMultipartSessionKey" preserveInput="true"
 				className="nl.nn.adapterframework.pipes.PutInSession" getInputFromFixedValue="hello world" 
 			>
 				<param name="multipartXml" value="&lt;parts&gt;&lt;part name='file' sessionKey='file' mimeType='text/plain'/&gt;&lt;/parts&gt;"/>
+				<forward name="success" path="EXIT" />
 			</pipe> 
-			<pipe className="nl.nn.adapterframework.pipes.EchoPipe" name="EchoMessage" getInputFromFixedValue="&lt;xml/&gt;" />
 		</pipeline>
 	</adapter>
 
@@ -100,7 +110,7 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-	<adapter name="WebServiceSenderAddressAttachments" 
+    <adapter name="WebServiceSenderAddressAttachments" 
 		description="Test the functioning of the WebServiceSender sending attachments to a listener with address">
 		<receiver name="WebServiceSender-address-send-attachments">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
