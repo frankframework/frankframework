@@ -82,7 +82,7 @@ public class WebContentServlet extends HttpServletBase {
 	}
 
 	private void loadMediaTypes() throws IOException {
-		URL mappingFile = ClassUtils.getResourceURL("/MediaType.mapping");
+		URL mappingFile = ClassUtils.getResourceURL("/MediaTypeMapping.properties");
 		if(mappingFile == null) {
 			throw new IOException("unable to find mappingFile");
 		}
