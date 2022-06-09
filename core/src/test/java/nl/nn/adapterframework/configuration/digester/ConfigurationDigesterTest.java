@@ -131,6 +131,30 @@ public class ConfigurationDigesterTest {
 		String expectedConfiguration = TestFileUtils.getTestFile(baseDirectory + "/expected.xml");
 		MatchUtils.assertXmlEquals(expectedConfiguration, actual);
 	}
+	
+	@Test
+	public void stub4testtoolEsbJmsListenerTest() throws Exception {
+		String baseDirectory = "/ConfigurationUtils/stub4testtool/EsbJmsListener";
+		
+		StringWriter target = new StringWriter();
+		XmlWriter xmlWriter = new XmlWriter(target);
+		
+		Properties properties = new Properties();
+		properties.setProperty(STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		properties.setProperty(STUB4TESTTOOL_VALIDATORS_DISABLED_KEY, Boolean.toString(false));
+		
+		String originalConfiguration = TestFileUtils.getTestFile(baseDirectory + "/original.xml");
+		
+		ConfigurationDigester digester = new ConfigurationDigester();
+		ContentHandler filter = digester.getStub4TesttoolContentHandler(xmlWriter, properties);
+		
+		XmlUtils.parseXml(originalConfiguration, filter);
+		
+		String actual = new String(target.toString());
+
+		String expectedConfiguration = TestFileUtils.getTestFile(baseDirectory + "/expected.xml");
+		MatchUtils.assertXmlEquals(expectedConfiguration, actual);
+	}
 
 	private class XmlErrorHandler implements ErrorHandler {
 		@Override
