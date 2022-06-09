@@ -76,6 +76,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.encryption.KeystoreType;
 import nl.nn.adapterframework.encryption.PkiUtil;
 import nl.nn.adapterframework.http.mime.MultipartEntityBuilder;
@@ -645,7 +646,6 @@ public class ApiListenerServletTest extends Mockito {
 		headers.put("if-match", "my-etag-value");
 		Response result = service(createRequest(uri, Methods.POST, "{\"tralalalallala\":true}", headers));
 
-		System.out.println(result);
 		assertEquals(200, result.getStatus());
 		assertEquals("{\"tralalalallala\":true}", result.getContentAsString());
 		assertTrue(result.containsHeader("Allow"));
@@ -955,7 +955,7 @@ public class ApiListenerServletTest extends Mockito {
 		assertEquals(200, result.getStatus());
 		assertEquals(PAYLOAD, session.get("ClaimsSet"));
 	}
-	
+
 	@Test
 	public void testJwtTokenWithRoleClaimAndEmptyAuthRoles() throws Exception {
 		new ApiListenerBuilder(JWT_VALIDATION_URI, Methods.GET)
@@ -1002,7 +1002,7 @@ public class ApiListenerServletTest extends Mockito {
 
 		return signedJWT.serialize();
 	}
-	
+
 	public MockHttpServletRequest prepareJWTRequest(String token) throws Exception {
 		Map<String, String> headers = new HashMap<String, String>();
 		headers.put("Authorization", "Bearer "+ (token != null ? token : createJWT()) );
@@ -1098,12 +1098,12 @@ public class ApiListenerServletTest extends Mockito {
 	private class MessageHandler implements IMessageHandler<Message> {
 
 		@Override
-		public void processRawMessage(IListener<Message> origin, Message message, Map<String, Object> context, boolean duplicatesAlreadyChecked) throws ListenerException {
+		public void processRawMessage(IListener<Message> origin, Message message, PipeLineSession session, boolean duplicatesAlreadyChecked) throws ListenerException {
 			fail("method should not be called");
 		}
 
 		@Override
-		public void processRawMessage(IListener<Message> origin, Message message, Map<String, Object> context, long waitingTime, boolean duplicatesAlreadyChecked) throws ListenerException {
+		public void processRawMessage(IListener<Message> origin, Message message, PipeLineSession session, long waitingTime, boolean duplicatesAlreadyChecked) throws ListenerException {
 			fail("method should not be called");
 		}
 
@@ -1114,7 +1114,7 @@ public class ApiListenerServletTest extends Mockito {
 
 
 		@Override
-		public Message processRequest(IListener<Message> origin, String correlationId, Message rawMessage, Message message, Map<String, Object> context) throws ListenerException {
+		public Message processRequest(IListener<Message> origin, String correlationId, Message rawMessage, Message message, PipeLineSession context) throws ListenerException {
 			if(session != null) {
 				context.putAll(session);
 			}
