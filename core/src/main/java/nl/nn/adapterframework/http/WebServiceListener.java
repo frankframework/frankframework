@@ -53,9 +53,9 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * URL of a SOAP service can be found in an XML element <code>&lt;soap:address&gt;</code> with
  * <code>soap</code> pointing to namespace <code>http://schemas.xmlsoap.org/wsdl/soap/</code>.
  *
- * <br/>If address is set, then for each request:<ul>
- * <li>mime headers are described in a 'mimeHeaders'-XML stored under session key 'mimeHeaders'</li>
- * <li>attachments present in the request are described by an 'attachments'-XML stored under session key 'attachments'</li>
+ * <br/>If <code>address</code> is set, then for each request:<ul>
+ * <li>MIME headers are described in a 'mimeHeaders'-XML stored under session key 'mimeHeaders'</li>
+ * <li>Attachments present in the request are described by an 'attachments'-XML stored under session key 'attachments'</li>
  * <li>SOAP protocol is stored under a session key 'soapProtocol'</li>
  * <li>SOAP action is stored under a session key 'SOAPAction'</li>
  * </ul>
@@ -231,17 +231,22 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		soap = b;
 	}
 
-	@IbisDoc({"Namespace of the service that is provided by the adapter of this listener", ""})
+	/** 
+	 * Namespace of the service that is provided by the adapter of this listener.
+	 * If specified, requests posted to https://mydomain.com/ibis4something/servlet/rpcrouter that have this namespace in their body  will be handled by this listener,
+	 * where mydomain.com and ibis4something refer to 'your ibis'.
+	 */
 	public void setServiceNamespaceURI(String string) {
 		serviceNamespaceURI = string;
 	}
+	
 	public void setApplicationFaultsAsSoapFaults(boolean b) {
 		setApplicationFaultsAsExceptions(b);
 	}
 
 	/**
 	 * The address to listen to, e.g the part &lt;address&gt; in https://mydomain.com/ibis4something/services/&lt;address&gt;,
-	 * where mydomain.com and ibis4something refer to 'your ibis'. <br/>
+	 * where mydomain.com and ibis4something refer to 'your ibis'.
 	 */
 	public void setAddress(String address) {
 		if(!address.isEmpty()) {
