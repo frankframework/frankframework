@@ -1363,7 +1363,7 @@ angular.module('iaf.beheerconsole')
 		Api.Put($scope.base_url+"/messages/"+encodeURIComponent(encodeURIComponent(messageId)), false, function() {
 			if(callback != undefined && typeof callback == 'function')
 				callback(message.id);
-			$scope.addNote("success", "Message with ID: "+messageId+" will be reprocessed";
+			$scope.addNote("success", "Message with ID: "+messageId+" will be reprocessed");
 			$scope.updateTable();
 		}, function(data) {
 			message.resending = false;
