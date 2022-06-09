@@ -16,6 +16,7 @@
 		<cxf.version>3.4.7</cxf.version>
 		<jackson.version>2.13.3</jackson.version>
 		<micrometer.version>1.9.0</micrometer.version>
+		<saxon.version>10.8</saxon.version>
 	</properties>
 
 	<dependencies>
@@ -192,7 +193,13 @@
 		<dependency>
 			<groupId>net.sf.saxon</groupId>
 			<artifactId>Saxon-HE</artifactId>
-			<version>9.4.0.7</version>
+			<version>${saxon.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.saxon</groupId>
+			<artifactId>Saxon-HE</artifactId>
+			<version>${saxon.version}</version>
+			<classifier>xqj</classifier>
 		</dependency>
 		<dependency>
 			<groupId>net.java.dev.stax-utils</groupId>

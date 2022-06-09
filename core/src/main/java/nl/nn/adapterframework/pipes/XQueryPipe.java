@@ -31,7 +31,8 @@ import javax.xml.xquery.XQResultSequence;
 
 import org.apache.commons.lang3.StringUtils;
 
-import net.sf.saxon.xqj.SaxonXQDataSource;
+import com.saxonica.xqj.SaxonXQDataSource;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -46,7 +47,7 @@ import nl.nn.adapterframework.util.Misc;
  * Perform an XQuery.
  *
  * @ff.parameters any parameters defined on the pipe will be passed as external variable to the XQuery
- * 
+ *
  * @author Jaco de Groot
  */
 public class XQueryPipe extends FixedForwardPipe {
@@ -103,9 +104,6 @@ public class XQueryPipe extends FixedForwardPipe {
 		}
 		try {
 			String stringResult = input;
-			// We already specifically use Saxon in this pipe, hence set xslt2
-			// to true to make XmlUtils use the Saxon
-			// DocumentBuilderFactoryImpl.
 			preparedExpression.bindDocument(XQConstants.CONTEXT_ITEM, stringResult, null, null);
 			if (getParameterList() != null) {
 				Map<String,Object> parametervalues = null;

@@ -321,7 +321,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 
 	@Test
 	public void emptyNamespaceDefsTest() throws Exception {
-		exception.expectMessage("Undeclared namespace prefix");
+		exception.expectMessage("Namespace prefix 'xs' has not been declared");
 		String input = "&lt;root&gt;\n" + 
 				"&lt;dummy&gt;true&lt;/dummy&gt;\n" + 
 				"&lt;dummy&gt;true&lt;/dummy&gt;\n" + 

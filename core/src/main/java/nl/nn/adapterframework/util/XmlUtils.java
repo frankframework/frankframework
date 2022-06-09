@@ -51,6 +51,7 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.StartElement;
+import javax.xml.transform.ErrorListener;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -1022,6 +1023,10 @@ public class XmlUtils {
 	}
 
 	public static TransformerFactory getTransformerFactory(int xsltVersion) {
+		return getTransformerFactory(xsltVersion, new TransformerErrorListener());
+	}
+
+	public static TransformerFactory getTransformerFactory(int xsltVersion, ErrorListener errorListener) {
 		TransformerFactory factory;
 		switch (xsltVersion) {
 		case 2:
@@ -1030,11 +1035,11 @@ public class XmlUtils {
 			// is included or imported more than once. This is permitted, but
 			// may lead to errors or unexpected behavior" written to System.err
 			// (https://stackoverflow.com/questions/10096086/how-to-handle-duplicate-imports-in-xslt)
-			factory.setErrorListener(new TransformerErrorListener());
+			factory.setErrorListener(errorListener);
 			return factory;
 		default:
 			factory=new org.apache.xalan.processor.TransformerFactoryImpl();
-			factory.setErrorListener(new TransformerErrorListener());
+			factory.setErrorListener(errorListener);
 			if (isXsltStreamingByDefault()) {
 				factory.setAttribute(org.apache.xalan.processor.TransformerFactoryImpl.FEATURE_INCREMENTAL, Boolean.TRUE);
 			}

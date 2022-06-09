@@ -67,6 +67,7 @@ public class TransformerPool {
 	protected static Logger log = LogUtil.getLogger(TransformerPool.class);
 
 	private TransformerFactory tFactory;
+	private TransformerErrorListener factoryErrorListener;
 
 	private Templates templates;
 	private Resource reloadResource=null;
@@ -104,7 +105,8 @@ public class TransformerPool {
 			throw new TransformerConfigurationException("xsltVersion ["+xsltVersion+"] must be positive for sysId ["+sysId+"] ");
 		}
 		this.xsltVersion=xsltVersion;
-		tFactory = XmlUtils.getTransformerFactory(xsltVersion);
+		factoryErrorListener = new TransformerErrorListener();
+		tFactory = XmlUtils.getTransformerFactory(xsltVersion, factoryErrorListener);
 		if(scopeProvider != null) {
 			classLoaderURIResolver = new ClassLoaderURIResolver(scopeProvider);
 			if (log.isDebugEnabled()) log.debug("created Transformerpool for sysId ["+sysId+"] scopeProvider ["+scopeProvider+"]");
@@ -186,8 +188,7 @@ public class TransformerPool {
 		try {
 			templates=tFactory.newTemplates(source);
 		} catch (TransformerConfigurationException e) {
-			TransformerErrorListener tel = (TransformerErrorListener)tFactory.getErrorListener();
-			TransformerException te=tel.getFatalTransformerException();
+			TransformerException te=factoryErrorListener.getFatalTransformerException();
 			if (te!=null) {
 				throw new TransformerConfigurationException(te);
 			}
