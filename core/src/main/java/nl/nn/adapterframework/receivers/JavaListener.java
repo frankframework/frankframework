@@ -150,19 +150,14 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 				}
 			}
 		}
-		try (PipeLineSession session = new PipeLineSession() {
-
-				{
-					super.putAll(context);
-				}
-
-				@Override
-				public Object put(String key, Object value) {
-					Object result = super.put(key,value);
-					context.put(key, value);
-					return result;
-				}
-			}) {
+		try (PipeLineSession session = new PipeLineSession(context) {
+											@Override
+											public Object put(String key, Object value) {
+												Object result = super.put(key,value);
+												context.put(key, value); // copy each assignment back to the original context
+												return result;
+											}
+										}) {
 			Message message =  new Message(rawMessage);
 			if (throwException) {
 				try {

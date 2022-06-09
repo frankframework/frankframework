@@ -39,6 +39,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -114,13 +115,17 @@ public final class TestServiceListener extends Base {
 			try (PipeLineSession session = new PipeLineSession()) {
 				dispatchResult = ServiceDispatcher.getInstance().dispatchRequest(serviceName, null, message, session);
 			} catch (ListenerException e) {
-				return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
+				String msg = "Exception executing service ["+serviceName+"] ("+ClassUtils.nameOf(e)+") "+e.getMessage();
+				log.warn(msg);
+				return Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
 			}
 
 			result.put("state", ExitState.SUCCESS);
 			result.put("result", dispatchResult);
 		} catch (IOException e) {
-			return Response.status(Response.Status.BAD_REQUEST).build();
+			String msg = "Exception executing service ["+serviceName+"] ("+ClassUtils.nameOf(e)+") "+e.getMessage();
+			log.warn(msg);
+			return Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
 		}
 
 		return Response.status(Response.Status.CREATED).entity(result).build();
