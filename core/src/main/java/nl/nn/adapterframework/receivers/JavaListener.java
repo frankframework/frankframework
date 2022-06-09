@@ -152,11 +152,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 				}
 			}
 		}
-		try (PipeLineSession session = new PipeLineSession() {
-
-				{
-					super.putAll(context);
-				}
+		try (PipeLineSession session = new PipeLineSession(context) {
 
 				@Override
 				public Object put(String key, Object value) {
