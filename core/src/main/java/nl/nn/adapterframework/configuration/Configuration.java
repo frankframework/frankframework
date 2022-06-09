@@ -182,8 +182,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		if(ibisManager == null) {
 			throw new IllegalStateException("No IbisManager set");
 		}
-
-		setVersion(ConfigurationUtils.getConfigurationVersion(getClassLoader()));
 		if(StringUtils.isEmpty(getVersion())) {
 			log.info("unable to determine [configuration.version] for configuration [{}]", this::getName);
 		} else {
@@ -211,6 +209,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	@Override
 	public void refresh() throws BeansException, IllegalStateException {
 		setId(getId()); // Update the setIdCalled flag in AbstractRefreshableConfigApplicationContext. When wired through spring it calls the setBeanName method.
+		setVersion(ConfigurationUtils.getConfigurationVersion(getClassLoader()));
 
 		super.refresh();
 
@@ -285,7 +284,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 		String msg;
 		if (isAutoStart()) {
-			getIbisManager().startConfiguration(this);
+			start();
 			msg = "startup in " + (System.currentTimeMillis() - start) + " ms";
 		}
 		else {
@@ -557,6 +556,11 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		return null;
 	}
 
+	@Override
+	public ClassLoader getConfigurationClassLoader() {
+		return getClassLoader();
+	}
+
 	// Dummy setter to allow SapSystems being added to Configurations via Frank!Config XSD
 	public void setSapSystems(SapSystems sapSystems) {
 		// SapSystems self register;
@@ -573,11 +577,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		JmsRealmFactory.getInstance().registerJmsRealm(realm); // For backwards compatibility to support old ibisdoc xsd
 	}
 
-	@Override
-	public ClassLoader getConfigurationClassLoader() {
-		return getClassLoader();
-	}
-
 	/**
 	 * Container for monitor objects 
 	 */
@@ -585,9 +584,12 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		// Monitors self register in MonitorManager;
 	}
 	// above comment is used in FrankDoc
+	// Dummy setter to allow Monitors being added to Configurations via Frank!Config XSD
 	@Deprecated
 	public void registerMonitoring(MonitorManager factory) {
 	}
+
+
 
 	@Override
 	@Protected
