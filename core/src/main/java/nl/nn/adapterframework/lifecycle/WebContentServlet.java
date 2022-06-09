@@ -21,6 +21,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.WeakHashMap;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -57,7 +58,7 @@ public class WebContentServlet extends HttpServletBase {
 	private static final String SERVLET_PATH = "/webcontent/";
 	private static final String WELCOME_FILE = "index.html";
 	private final Map<String, MimeType> supportedMediaTypes = new HashMap<>();
-	private final Map<URL, MimeType> computedMediaTypes = new HashMap<>();
+	private final Map<URL, MimeType> computedMediaTypes = new WeakHashMap<>();
 	private IbisContext ibisContext;
 	private Detector detector = null;
 
