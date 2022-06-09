@@ -115,16 +115,16 @@ public final class TestServiceListener extends Base {
 			try (PipeLineSession session = new PipeLineSession()) {
 				dispatchResult = ServiceDispatcher.getInstance().dispatchRequest(serviceName, null, message, session);
 			} catch (ListenerException e) {
-				String msg = "Exception executing service ["+serviceName+"] ("+ClassUtils.nameOf(e)+") "+e.getMessage();
-				log.warn(msg);
+				String msg = "Exception executing service ["+serviceName+"]";
+				log.warn(msg, e);
 				return Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
 			}
 
 			result.put("state", ExitState.SUCCESS);
 			result.put("result", dispatchResult);
 		} catch (IOException e) {
-			String msg = "Exception executing service ["+serviceName+"] ("+ClassUtils.nameOf(e)+") "+e.getMessage();
-			log.warn(msg);
+			String msg = "Exception executing service ["+serviceName+"]";
+			log.warn(msg, e);
 			return Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
 		}
 
