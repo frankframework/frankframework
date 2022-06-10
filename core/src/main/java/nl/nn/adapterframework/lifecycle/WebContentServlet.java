@@ -42,6 +42,7 @@ import org.springframework.util.MimeType;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisContext;
+import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
 import nl.nn.adapterframework.http.HttpServletBase;
@@ -69,7 +70,6 @@ public class WebContentServlet extends HttpServletBase {
 	private final Map<String, MimeType> supportedMediaTypes = new HashMap<>();
 	private final Map<URL, MimeType> computedMediaTypes = new WeakHashMap<>();
 	private final boolean isDtapStageLoc = "LOC".equalsIgnoreCase(AppConstants.getInstance().getProperty("dtap.stage"));
-	private IbisContext ibisContext;
 	private Detector detector = null;
 
 	@Override
@@ -88,8 +88,6 @@ public class WebContentServlet extends HttpServletBase {
 		} catch (TikaException | IOException e) {
 			throw new ServletException(e);
 		}
-
-		ibisContext = IbisApplicationServlet.getIbisContext(getServletContext());
 	}
 
 	private void loadMediaTypes() throws IOException {
@@ -222,11 +220,11 @@ public class WebContentServlet extends HttpServletBase {
 	}
 
 	private Configuration findConfiguration(String configurationName) {
-		return ibisContext.getIbisManager().getConfiguration(configurationName);
+		return getIbisManager().getConfiguration(configurationName);
 	}
 
 	private void listDirectory(HttpServletResponse resp) throws IOException {
-		for(Configuration configuration : ibisContext.getIbisManager().getConfigurations()) {
+		for(Configuration configuration : getIbisManager().getConfigurations()) {
 			ClassLoaderBase classLoader = (ClassLoaderBase) configuration.getClassLoader();
 			boolean isWebContentFolderPresent = classLoader != null && classLoader.getLocalResource("WebContent") != null;
 			if(isWebContentFolderPresent) {
@@ -234,6 +232,14 @@ public class WebContentServlet extends HttpServletBase {
 				resp.getWriter().append("<a href=\""+configuration.getName()+"\">"+configuration.getName()+"</a>");
 			}
 		}
+	}
+
+	/**
+	 * Should be fetched runtime, the IbisContext is not available until after the IbisApplicationServlet has initialized
+	 */
+	private IbisManager getIbisManager() {
+		IbisContext ibisContext = IbisApplicationServlet.getIbisContext(getServletContext());
+		return ibisContext.getIbisManager();
 	}
 
 	@Override
