@@ -72,7 +72,7 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 		} catch (FileNotFoundException e) {
 			throw new PipeRunException(this,"cannot find file ["+streamId+"]",e);
 		} catch (IOException e) {
-			throw new PipeRunException(this, "could not get message ["+input+"] as String", e);
+			throw new PipeRunException(this, "could not read message ["+input+"] as String", e);
 		}
 	}
 
