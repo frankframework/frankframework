@@ -96,7 +96,7 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 		try {
 			filename = input.asString();
 		} catch (IOException e) {
-			throw new PipeRunException(this, "could not get message ["+input+"] as String", e);
+			throw new PipeRunException(this, "could not read message ["+input+"] as String", e);
 		}
 		File file = new File(filename);
 
