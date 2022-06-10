@@ -433,6 +433,40 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		}
 	}
 
+	@Override
+	public boolean hasIndexOnColumn(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException {
+		try (ResultSet rs = conn.getMetaData().getIndexInfo(null, schemaName, tableName, false, true)) {
+			while (rs.next()) {
+				if (tableName.equalsIgnoreCase(rs.getString("TABLE_NAME")) && columnName.equalsIgnoreCase(rs.getString("COLUMN_NAME")) && rs.getInt("ORDINAL_POSITION")==1) {
+					return true;
+				}
+			}
+			return false;
+		} catch(SQLException e) {
+			throw new JdbcException("exception checking for existence of column ["+columnName+"] in table ["+tableName+"]"+(schemaName==null?"":" with schema ["+schemaName+"]"), e);
+		}
+	}
+
+	protected boolean doHasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns, String indexTableName, String indexColumnTableName,
+			String tableOwnerColumnName, String tableNameColumnName, String indexNameColumnName, String columnNameColumnName, String columPositionColumnName) {
+		StringBuilder query= new StringBuilder("select count(*) from "+indexTableName+" ai");
+		for (int i=1;i<=columns.size();i++) {
+			query.append(", "+indexColumnTableName+" aic"+i);
+		}
+		query.append(" where ai."+tableOwnerColumnName+"='"+schemaOwner+"' and ai."+tableNameColumnName+"='"+tableName+"'");
+		for (int i=1;i<=columns.size();i++) {
+//			query.append(" and ai."+indexOwnerColumnName+"=aic"+i+"."+indexOwnerColumnName);
+			query.append(" and ai."+indexNameColumnName+"=aic"+i+"."+indexNameColumnName);
+			query.append(" and aic"+i+"."+columnNameColumnName+"='"+columns.get(i-1)+"'");
+			query.append(" and aic"+i+"."+columPositionColumnName+"="+i);
+		}
+		try {
+			return JdbcUtil.executeIntQuery(conn, query.toString())>=1;
+		} catch (Exception e) {
+			log.warn("could not determine presence of index columns on table ["+tableName+"] using query ["+query+"]",e);
+			return false;
+		}
+	}
 
 	/**
 	 * Alternative implementation of isTablePresent(), that can be used by descender classes if the implementation via metadata does not work for that driver.
@@ -487,25 +521,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
-	public boolean isIndexColumnPresent(Connection conn, String schemaOwner, String tableName, String indexName, String columnName) {
-		log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"]");
-		return true;
-	}
-
-	@Override
-	public int getIndexColumnPosition(Connection conn, String schemaOwner, String tableName, String indexName, String columnName) {
-		log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"]");
-		return -1;
-	}
-
-	@Override
-	public boolean hasIndexOnColumn(Connection conn, String schemaOwner, String tableName, String columnName) {
-		log.warn("could not determine presence of index column ["+columnName+"] on table ["+tableName+"]");
-		return true;
-	}
-
-	@Override
-	public boolean hasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns) {
+	public boolean hasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns) throws JdbcException {
 		log.warn("could not determine presence of index columns on table ["+tableName+"]");
 		return true;
 	}
