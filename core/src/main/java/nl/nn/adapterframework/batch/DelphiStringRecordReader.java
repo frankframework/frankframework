@@ -40,12 +40,12 @@ public class DelphiStringRecordReader extends Reader {
 	private int stringsPerRecord; // 0 means read till end of file
 	private String separator;
 	private String separatorReplacement;
-	
+
 	private StringBuffer buffer;
 	private int bufferLen=0;
 	private int bufferPos=0;
 	boolean eof=false;
-	
+
 	private final boolean trace=false;
 
 	public DelphiStringRecordReader(InputStream in, String charsetName, int stringLength, int stringsPerRecord, String separator, String separatorReplacement) {
@@ -57,7 +57,7 @@ public class DelphiStringRecordReader extends Reader {
 		this.separator=separator;
 		this.separatorReplacement=separatorReplacement;
 	}
-	
+
 	/*
 	 * Fill buffer if empty, then copy characters as required.  
 	 */
@@ -108,7 +108,7 @@ public class DelphiStringRecordReader extends Reader {
 			}
 		}
 		if (pos<stringLength) {
-			if (trace && log.isDebugEnabled()) log.debug("skipping ["+(stringLength-pos)+"] bytes");		
+			if (trace && log.isDebugEnabled()) log.debug("skipping ["+(stringLength-pos)+"] bytes");
 			in.skip(stringLength-pos);
 		}
 		String result=new String(buf,charsetName);
@@ -128,7 +128,7 @@ public class DelphiStringRecordReader extends Reader {
 		while (!eof && (stringsPerRecord==0 || stringsRead<stringsPerRecord)) {
 			String part=readString();
 			if (part==null) {
-				eof=true; 
+				eof=true;
 			} else {
 				buffer.append(part).append(separator);
 				stringsRead++;

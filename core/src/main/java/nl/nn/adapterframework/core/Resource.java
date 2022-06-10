@@ -39,7 +39,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 public abstract class Resource implements IScopeProvider {
 	protected IScopeProvider scopeProvider;
 
-	public Resource(IScopeProvider scopeProvider) {
+	protected Resource(IScopeProvider scopeProvider) {
 		if(scopeProvider == null) {
 			throw new IllegalStateException("a scopeProvider must be present");
 		}

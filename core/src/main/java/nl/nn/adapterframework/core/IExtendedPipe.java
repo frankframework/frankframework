@@ -75,7 +75,7 @@ public interface IExtendedPipe extends IPipe {
 
 	public void setRemoveCompactMsgNamespaces(boolean b);
 	public boolean isRemoveCompactMsgNamespaces();
-	
+
 	/** If set <code>true</code>, compacted messages in the result are restored to their original format (see also  {@link #setElementToMove(java.lang.String)}) */
 	public void setRestoreMovedElements(boolean restoreMovedElements);
 	public boolean isRestoreMovedElements();
@@ -102,7 +102,7 @@ public interface IExtendedPipe extends IPipe {
 
 	/**Register an event for flexible monitoring. */
 	public void registerEvent(String description);
-	
+
 	/** Throw an event for flexible monitoring. */
 	public void throwEvent(String event);
 

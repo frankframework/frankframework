@@ -23,7 +23,7 @@ package nl.nn.adapterframework.core;
  * @since	4.9  
  */
 public interface IKnowsDeliveryCount<M> {
-	
+
 	int getDeliveryCount(M rawMessage);
 
 }

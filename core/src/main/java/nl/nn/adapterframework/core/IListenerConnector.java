@@ -40,7 +40,7 @@ public interface IListenerConnector<M> {
 	 * Start Listener-port to which the Listener is connected.
 	 */
 	void start() throws ListenerException;
- 
+
 	/**
 	 * Stop Listener-port to which the Listener is connected.
 	 */

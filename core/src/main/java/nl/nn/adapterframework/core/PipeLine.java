@@ -96,7 +96,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	public static final String OUTPUT_WRAPPER_NAME   = "- pipeline outputWrapper";
 
 	// If you edit this default exit, please update the JavaDoc of class PipeLineExits as well.
-	private final String DEFAULT_SUCCESS_EXIT_NAME = "READY";
+	private static final String DEFAULT_SUCCESS_EXIT_NAME = "READY";
 
 	private @Getter String firstPipe;
 	private @Getter int maxThreads = 0;
