@@ -521,18 +521,6 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
-	public boolean isIndexColumnPresent(Connection conn, String schemaOwner, String tableName, String indexName, String columnName) {
-		log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"]");
-		return true;
-	}
-
-	@Override
-	public int getIndexColumnPosition(Connection conn, String schemaOwner, String tableName, String indexName, String columnName) {
-		log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"]");
-		return -1;
-	}
-
-	@Override
 	public boolean hasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns) throws JdbcException {
 		log.warn("could not determine presence of index columns on table ["+tableName+"]");
 		return true;

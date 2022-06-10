@@ -236,30 +236,30 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 		}
 	}
 
-	@Override
-	public boolean isIndexColumnPresent(Connection conn, String schemaOwner, String tableName, String indexName, String columnName) {
-		String query="select count(*) from all_ind_columns where index_owner='"+schemaOwner.toUpperCase()+"' and table_name='"+tableName.toUpperCase()+"' and index_name='"+indexName.toUpperCase()+"' and column_name=?";
-		try {
-			if (JdbcUtil.executeIntQuery(conn, query, columnName.toUpperCase())>=1) {
-				return true;
-			}
-			return false;
-		} catch (Exception e) {
-			log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"]",e);
-			return false;
-		}
-	}
-
-	@Override
-	public int getIndexColumnPosition(Connection conn, String schemaOwner, String tableName, String indexName, String columnName) {
-		String query="select column_position from all_ind_columns where index_owner='"+schemaOwner.toUpperCase()+"' and table_name='"+tableName.toUpperCase()+"' and index_name='"+indexName.toUpperCase()+"' and column_name=?";
-		try {
-			return JdbcUtil.executeIntQuery(conn, query, columnName.toUpperCase());
-		} catch (Exception e) {
-			log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"]",e);
-			return -1;
-		}
-	}
+//	@Override
+//	public boolean isIndexColumnPresent(Connection conn, String schemaOwner, String tableName, String indexName, String columnName) {
+//		String query="select count(*) from all_ind_columns where index_owner='"+schemaOwner.toUpperCase()+"' and table_name='"+tableName.toUpperCase()+"' and index_name='"+indexName.toUpperCase()+"' and column_name=?";
+//		try {
+//			if (JdbcUtil.executeIntQuery(conn, query, columnName.toUpperCase())>=1) {
+//				return true;
+//			}
+//			return false;
+//		} catch (Exception e) {
+//			log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"]",e);
+//			return false;
+//		}
+//	}
+//
+//	@Override
+//	public int getIndexColumnPosition(Connection conn, String schemaOwner, String tableName, String indexName, String columnName) {
+//		String query="select column_position from all_ind_columns where index_owner='"+schemaOwner.toUpperCase()+"' and table_name='"+tableName.toUpperCase()+"' and index_name='"+indexName.toUpperCase()+"' and column_name=?";
+//		try {
+//			return JdbcUtil.executeIntQuery(conn, query, columnName.toUpperCase());
+//		} catch (Exception e) {
+//			log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"]",e);
+//			return -1;
+//		}
+//	}
 
 	@Override
 	public boolean hasIndexOnColumn(Connection conn, String schemaOwner, String tableName, String columnName) throws JdbcException {
