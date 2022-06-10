@@ -60,11 +60,6 @@ public interface IbisManager extends ApplicationEventPublisherAware {
 	void handleAction(IbisAction action, String configurationName, String adapterName, String receiverName, String commandIssuedBy, boolean isAdmin);
 
 	/**
-	 * Start an already configured Configuration
-	 */
-	void startConfiguration(Configuration configuration);
-
-	/**
 	 * Unload specified configuration.
 	 */
 	void unload(String configurationName);

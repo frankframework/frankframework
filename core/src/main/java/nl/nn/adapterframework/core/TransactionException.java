@@ -22,7 +22,7 @@ package nl.nn.adapterframework.core;
  * @since   4.1
  */
 public class TransactionException extends IbisException {
-	
+
 	public TransactionException() {
 		super();
 	}

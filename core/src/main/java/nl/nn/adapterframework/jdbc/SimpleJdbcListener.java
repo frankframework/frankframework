@@ -40,7 +40,7 @@ import nl.nn.adapterframework.stream.Message;
  */
 
 public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<String> {
-	protected final static String KEYWORD_SELECT_COUNT = "select count(";
+	protected static final String KEYWORD_SELECT_COUNT = "select count(";
 
 	private String selectQuery;
 	private boolean trace = false;

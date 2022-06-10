@@ -79,7 +79,7 @@ public class IbisTransaction {
 	public static IbisTransaction getTransaction(PlatformTransactionManager txManager, TransactionDefinition txDef, String descriptionOfOwner) {
 		return txManager!=null ? new IbisTransaction(txManager, txDef, descriptionOfOwner) : null;
 	}
-	
+
 	private String getRealTransactionManager() {
 		if (txManager == null) {
 			return null;
@@ -104,7 +104,7 @@ public class IbisTransaction {
 			return txManager.getClass().getName();
 		}
 	}
-	
+
 	public void setRollbackOnly() {
 		txStatus.setRollbackOnly();
 	}
@@ -112,11 +112,11 @@ public class IbisTransaction {
 	public boolean isRollbackOnly() {
 		return txStatus.isRollbackOnly();
 	}
-	
+
 	public boolean isCompleted() {
 		return txStatus.isCompleted();
 	}
-	
+
 	public void commit() {
 		boolean mustRollback = txStatus.isRollbackOnly();
 		if (txIsNew) {

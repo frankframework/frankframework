@@ -30,7 +30,7 @@ public interface IPushingListener<M> extends IListener<M> {
 	 * Each of the received messages must be pushed through handler.processMessage()
 	 */
 	void setHandler(IMessageHandler<M> handler);
-	
+
 	/**
 	 * Set a (single) listener that will be notified of any exceptions.
 	 * The listener should use this listener to notify the receiver of 

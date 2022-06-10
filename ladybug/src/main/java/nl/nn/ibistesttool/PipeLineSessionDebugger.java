@@ -55,7 +55,16 @@ public class PipeLineSessionDebugger implements MethodHandler {
 			putAll((Map<String,Object>)args[0]);
 			return null;
 		}
+		if(method.getName().equals("getMessage")) {
+			return getMessage((String)args[0]);
+		}
 		return method.invoke(pipeLineSession, args);
+	}
+
+	private Object getMessage(String name) {
+		Object value = pipeLineSession.getMessage(name);
+		ibisDebugger.showValue(pipeLineSession.getMessageId(), "SessionKey "+name, value);
+		return value;
 	}
 
 	private Object put(String name, Object value) {

@@ -119,8 +119,7 @@ public class RestListenerServlet extends HttpServletBase {
 				if(result == null && messageContext.containsKey("exitcode") && messageContext.containsKey("validateEtag")) {
 					int status = Integer.parseInt( ""+ messageContext.get("exitcode"));
 					response.setStatus(status);
-					//TODO: overbodig?
-					if(log.isDebugEnabled()) log.trace("aborted request with status ["+status+"]");
+					log.trace("aborted request with status [{}]", status);
 					return;
 				}
 

@@ -46,17 +46,17 @@ public class ReloadSender extends SenderWithParametersBase {
 	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 
 		String configName = null;
-		String activeVersion = null;
+		String newVersion = null;
 		boolean forceReload = getForceReload();
 
 		ParameterValueList pvl = null;
 		try {
 			if (paramList != null) {
 				pvl = paramList.getValues(message, session);
-				if(pvl.getParameterValue("name") != null)
-					configName = pvl.getParameterValue("name").asStringValue();
-				if(pvl.getParameterValue("forceReload") != null)
-					forceReload = pvl.getParameterValue("forceReload").asBooleanValue(false);
+				if(pvl.get("name") != null)
+					configName = pvl.get("name").asStringValue();
+				if(pvl.get("forceReload") != null)
+					forceReload = pvl.get("forceReload").asBooleanValue(false);
 			}
 		} catch (ParameterException e) {
 			throw new SenderException(getLogPrefix()+"Sender ["+getName()+"] caught exception evaluating parameters",e);
@@ -71,7 +71,7 @@ public class ReloadSender extends SenderWithParametersBase {
 
 		try {
 			if(!forceReload) {
-				activeVersion = XmlUtils.evaluateXPathNodeSetFirstElement(message.asString(), "row/field[@name='VERSION']");
+				newVersion = XmlUtils.evaluateXPathNodeSetFirstElement(message.asString(), "row/field[@name='VERSION']");
 			}
 		} catch (Exception e) {
 			throw new SenderException(getLogPrefix()+"error evaluating Xpath expression activeVersion", e);
@@ -80,8 +80,8 @@ public class ReloadSender extends SenderWithParametersBase {
 		Configuration configuration = ibisManager.getConfiguration(configName);
 
 		if (configuration != null) {
-			String latestVersion = configuration.getVersion();
-			if (forceReload || (latestVersion != null && !activeVersion.equals(latestVersion))) {
+			String currentVersion = configuration.getVersion();
+			if (forceReload || (currentVersion != null && !newVersion.equals(currentVersion))) {
 				IbisContext ibisContext = ibisManager.getIbisContext();
 				ibisContext.reload(configName);
 				return new Message("Reload " + configName + " succeeded");
@@ -89,7 +89,7 @@ public class ReloadSender extends SenderWithParametersBase {
 			return new Message("Reload " + configName + " skipped");
 		}
 		log.warn("Configuration [" + configName + "] not loaded yet");
-		return new Message("Reload " + configName + " skipped"); 
+		return new Message("Reload " + configName + " skipped");
 	}
 
 	@IbisDoc({"reload the configuration regardless of the version", "false"})

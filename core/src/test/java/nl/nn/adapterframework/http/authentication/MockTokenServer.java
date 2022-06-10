@@ -23,8 +23,8 @@ public class MockTokenServer extends WireMockRule {
 
 	String LOCAL_PATH="/token";
 	
-	public final static String VALID_TOKEN	="fakeValidAccessToken";
-	public final static String EXPIRED_TOKEN="fakeExpiredAccessToken";
+	public static final String VALID_TOKEN	="fakeValidAccessToken";
+	public static final String EXPIRED_TOKEN="fakeExpiredAccessToken";
 	
 	private @Getter String path		 = mockServer ? LOCAL_PATH	 : KEYCLOAK_PATH;
 	

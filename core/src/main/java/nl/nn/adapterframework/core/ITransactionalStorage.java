@@ -39,10 +39,10 @@ public interface ITransactionalStorage<S extends Serializable> extends IMessageB
 	/**
 	 * Prepares the object for operation. After this
 	 * method is called the storeMessage() and retrieveMessage() methods may be called
-	 */ 
+	 */
 	public void open() throws Exception;
 	public void close();
-	
+
 	public void configure() throws ConfigurationException;
 
 	/**

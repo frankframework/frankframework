@@ -57,7 +57,7 @@ public class CheckReloadJob extends JobDef {
 		}
 		return atLeastOneConfigrationHasDBClassLoader;
 	}
-	
+
 	@Override
 	public void execute() {
 		IbisManager ibisManager = getIbisManager();
@@ -136,7 +136,7 @@ public class CheckReloadJob extends JobDef {
 			}
 		}
 	}
-	
+
 	protected String getDataSource() {
 		return JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
 	}

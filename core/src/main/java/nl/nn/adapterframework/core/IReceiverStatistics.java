@@ -29,7 +29,7 @@ public interface IReceiverStatistics  {
 	 * the receiver has been waiting between messages.
 	 */
 	Iterable<StatisticsKeeper> getIdleStatistics();
-	
+
 	/**
 	 * @return an iterator of {@link nl.nn.adapterframework.statistics.StatisticsKeeper}s describing the durations of time that
 	 * the receiver has been waiting for the adapter to process messages.

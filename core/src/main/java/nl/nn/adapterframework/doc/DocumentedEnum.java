@@ -32,7 +32,7 @@ public interface DocumentedEnum {
 		if(enumConstant.isAnnotationPresent(EnumLabel.class)) {
 			EnumLabel enumLabel = enumConstant.getAnnotation(EnumLabel.class);
 			return enumLabel.value();
-		} 
+		}
 		return name();
 	}
 

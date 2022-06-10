@@ -86,7 +86,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Sends a message using a {@link ISender sender} and optionally receives a reply from the same sender, or
  * from a {@link ICorrelatedPullingListener listener}.
- *  * 
+ * 
  * @ff.parameters any parameters defined on the pipe will be handed to the sender, if this is a {@link ISenderWithParameters ISenderWithParameters}
  * @ff.parameter  stubFilename will <u>not</u> be handed to the sender 
  * and it is used at runtime instead of the stubFilename specified by the attribute. A lookup of the 
@@ -109,12 +109,12 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";
 	public static final String PIPE_EXCEPTION_MONITOR_EVENT = "Sender Exception Caught";
 
-	private final static String TIMEOUT_FORWARD = "timeout";
-	private final static String ILLEGAL_RESULT_FORWARD = "illegalResult";
-	private final static String PRESUMED_TIMEOUT_FORWARD = "presumedTimeout";
-	private final static String INTERRUPT_FORWARD = "interrupt";
+	private static final String TIMEOUT_FORWARD = "timeout";
+	private static final String ILLEGAL_RESULT_FORWARD = "illegalResult";
+	private static final String PRESUMED_TIMEOUT_FORWARD = "presumedTimeout";
+	private static final String INTERRUPT_FORWARD = "interrupt";
 	
-	private final static String STUBFILENAME = "stubFilename";
+	private static final String STUBFILENAME = "stubFilename";
 
 	public static final int MIN_RETRY_INTERVAL=1;
 	public static final int MAX_RETRY_INTERVAL=600;
@@ -161,16 +161,16 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	private TransformerPool labelTp=null;
 	private TransformerPool retryTp=null;
 
-	public final static String INPUT_VALIDATOR_NAME_PREFIX="- ";
-	public final static String INPUT_VALIDATOR_NAME_SUFFIX=": validate input";
-	public final static String OUTPUT_VALIDATOR_NAME_PREFIX="- ";
-	public final static String OUTPUT_VALIDATOR_NAME_SUFFIX=": validate output";
-	public final static String INPUT_WRAPPER_NAME_PREFIX="- ";
-	public final static String INPUT_WRAPPER_NAME_SUFFIX=": wrap input";
-	public final static String OUTPUT_WRAPPER_NAME_PREFIX="- ";
-	public final static String OUTPUT_WRAPPER_NAME_SUFFIX=": wrap output";
-	public final static String MESSAGE_LOG_NAME_PREFIX="- ";
-	public final static String MESSAGE_LOG_NAME_SUFFIX=": message log";
+	public static final String INPUT_VALIDATOR_NAME_PREFIX="- ";
+	public static final String INPUT_VALIDATOR_NAME_SUFFIX=": validate input";
+	public static final String OUTPUT_VALIDATOR_NAME_PREFIX="- ";
+	public static final String OUTPUT_VALIDATOR_NAME_SUFFIX=": validate output";
+	public static final String INPUT_WRAPPER_NAME_PREFIX="- ";
+	public static final String INPUT_WRAPPER_NAME_SUFFIX=": wrap input";
+	public static final String OUTPUT_WRAPPER_NAME_PREFIX="- ";
+	public static final String OUTPUT_WRAPPER_NAME_SUFFIX=": wrap output";
+	public static final String MESSAGE_LOG_NAME_PREFIX="- ";
+	public static final String MESSAGE_LOG_NAME_SUFFIX=": message log";
 
 	private @Getter IValidator inputValidator=null;
 	private @Getter IValidator outputValidator=null;
