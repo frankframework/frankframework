@@ -435,7 +435,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 
 				if (isStoreOriginalBlock()) {
 					if (resultHandler instanceof ResultBlock2Sender) {
-						// If block does not contain a previous block, it never existed, or has been removed by closing the block.
+						// If blocks does not contain a previous block, it never existed, or has been removed by closing the block.
 						// In both cases a new block has just started
 						if (!blocks.containsKey(originalBlockKey)) {
 							sb = new StringBuffer();
