@@ -29,7 +29,9 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.zip.ZipException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -117,6 +119,10 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 	private TransactionDefinition txDef;
 
+	private static Set<String> checkedTables = new HashSet<>();
+	private static Set<String> checkedIndices = new HashSet<>();
+	private static Set<String> checkedSequences = new HashSet<>();
+
 	public JdbcTransactionalStorage() {
 		super(null);
 		setTableName("IBISSTORE");
@@ -154,6 +160,12 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	}
 
 	private void checkTable(Connection connection) throws JdbcException {
+		String storageRefKey = getStorageRefKey();
+		if (checkedTables.contains(storageRefKey)) {
+			log.debug("table [{}] already checked", this::getTableName);
+			return;
+		}
+		checkedTables.add(storageRefKey);
 		IDbmsSupport dbms=getDbmsSupport();
 		String schemaOwner=getSchemaOwner4Check();
 		log.debug("checking for presence of table ["+getTableName()+"] in schema/catalog ["+schemaOwner+"]");
@@ -177,6 +189,13 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	}
 
 	private void checkIndices(Connection connection) throws JdbcException {
+		String storageRefKey = getStorageRefKey();
+		if (checkedIndices.contains(storageRefKey)) {
+			log.debug("table [{}] already checked for indices", this::getTableName);
+			return;
+		}
+		checkedIndices.add(storageRefKey);
+
 		checkIndexOnColumnPresent(connection, getKeyField());
 
 		ArrayList<String> columnList= new ArrayList<String>();
@@ -216,6 +235,12 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	}
 
 	private void checkSequence(Connection connection) {
+		String storageRefKey = getStorageRefKey();
+		if (checkedSequences.contains(storageRefKey)) {
+			log.debug("table [{}] already checked for sequence", this::getTableName);
+			return;
+		}
+		checkedSequences.add(storageRefKey);
 		if (getDbmsSupport().isSequencePresent(connection, getSchemaOwner4Check(), getTableName(), getSequenceName())) {
 			//no more checks
 		} else {
@@ -774,6 +799,10 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		S result = browseMessage(storageKey);
 		deleteMessage(storageKey);
 		return result;
+	}
+
+	protected String getStorageRefKey() {
+		return getDatasourceName()+"|"+getTableName();
 	}
 
 
