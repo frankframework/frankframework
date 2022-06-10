@@ -303,7 +303,7 @@
 				<exit path="READY" state="success"/>
 			</exits>
 			<pipe name="send" >
-				<WebServiceSender url="${web.protocol}://${web.host}:${web.port}/${web.contextpath}/services/getDocumentWithAttachment" soap="false"/>
+				<WebServiceSender url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/getDocumentWithAttachment" soap="false"/>
 			</pipe>
 			<pipe name="showPart" className="nl.nn.adapterframework.pipes.EchoPipe"
 				getInputFromSessionKey="multipart1">
