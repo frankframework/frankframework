@@ -604,7 +604,7 @@ public class Message implements Serializable {
 			if (request==null) {
 				result.write("null");
 			} else {
-				result.write(getRequestClass()+" with hashCode["+this.hashCode()+"]: "+request.toString());
+				result.write(getRequestClass()+" Message["+this.hashCode()+"]: "+request.toString());
 			}
 		} catch (IOException e) {
 			result.write("cannot write toString: "+e.getMessage());
