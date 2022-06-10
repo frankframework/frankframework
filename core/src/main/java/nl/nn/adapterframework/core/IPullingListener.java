@@ -33,14 +33,14 @@ public interface IPullingListener<M> extends IListener<M> {
 	 * thread-specific data can be stored. 
 	 */
 	Map<String,Object> openThread() throws ListenerException;
-	
+
 	/**
 	 * Finalizes a message receiving thread.
 	 * Called once for each thread that listens for messages, just before
 	 * {@link #close()} is called.
 	 */
 	void closeThread(Map<String,Object> threadContext) throws ListenerException;
-	
+
 	/**
 	 * Retrieves messages from queue or other channel, but does no processing on it.
 	 * Multiple objects may try to call this method at the same time, from different threads. 

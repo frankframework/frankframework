@@ -386,7 +386,7 @@ public class Adapter implements IAdapter, NamedBean {
 			messageKeeper = new MessageKeeper(getMessageKeeperSize() < 1 ? 1 : getMessageKeeperSize());
 		return messageKeeper;
 	}
-	
+
 //	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski, Date now, Date mainMark, Date detailMark, Action action) throws SenderException {
 //		Object root=hski.start(now,mainMark,detailMark);
 //		try {
@@ -395,7 +395,7 @@ public class Adapter implements IAdapter, NamedBean {
 //			hski.end(root);
 //		}
 //	}
-	
+
 	@Override
 	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
 		Object adapterData=hski.openGroup(data,getName(),"adapter");
@@ -631,7 +631,7 @@ public class Adapter implements IAdapter, NamedBean {
 				String messageOrSize = (isMsgLogHidden()) ? "SIZE="+getFileSizeAsBytes(message) : message.toString();
 				msgLog.log(MSGLOG_LEVEL_TERSE, String.format(format, getName(), messageOrSize, messageId) + additionalLogging);
 			}
-			if (log.isDebugEnabled()) { 
+			if (log.isDebugEnabled()) {
 				log.debug(String.format(format, getName(), message, messageId) + additionalLogging);
 			} else if(log.isInfoEnabled()) {
 				log.info(String.format("Adapter [%s] received message with messageId [%s]" + additionalLogging, getName(), messageId));
@@ -676,7 +676,7 @@ public class Adapter implements IAdapter, NamedBean {
 			long duration = endTime - startTime;
 			//reset the InProcess fields, and increase processedMessagesCount
 			decNumOfMessagesInProcess(duration, processingSuccess);
-	
+
 			if (log.isDebugEnabled()) { // for performance reasons
 				log.debug("Adapter: [" + getName()
 						+ "] STAT: Finished processing message with messageId [" + messageId
@@ -978,7 +978,7 @@ public class Adapter implements IAdapter, NamedBean {
 	public void setAutoStart(boolean autoStart) {
 		this.autoStart = autoStart;
 	}
-	
+
 
 	/**
 	 * If <code>true</code> a null message is replaced by an empty message

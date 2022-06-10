@@ -668,7 +668,6 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 		Message result = null;
 		int statusCode = -1;
-		String msg = null;
 		HttpHost targetHost = new HttpHost(targetUri.getHost(), getPort(targetUri), targetUri.getScheme());
 
 		TimeoutGuard tg = new TimeoutGuard(1+getTimeout()/1000, getName()) {
@@ -725,10 +724,6 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		}
 
 		if (statusCode == -1){
-			if (msg != null && StringUtils.contains(msg.toUpperCase(), "TIMEOUTEXCEPTION")) {
-				//java.net.SocketTimeoutException: Read timed out
-				throw new TimeoutException("Failed to recover from timeout exception");
-			}
 			throw new SenderException("Failed to recover from exception");
 		}
 

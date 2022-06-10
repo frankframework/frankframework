@@ -26,7 +26,7 @@ import nl.nn.adapterframework.stream.Message;
  * @since   4.7
  */
 public interface IMessageWrapper {
-	
+
 	public Map<String,Object> getContext();
 	public String getId();
 	public Message getMessage();

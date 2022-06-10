@@ -74,7 +74,7 @@ import nl.nn.adapterframework.util.RunState;
  */
 public class SpringJmsConnector extends AbstractJmsConfigurator implements IListenerConnector<Message>, IThreadCountControllable, BeanFactoryAware, ExceptionListener, SessionAwareMessageListener<Message> {
 
- 	private PlatformTransactionManager txManager;
+	private PlatformTransactionManager txManager;
 	private BeanFactory beanFactory;
 	private DefaultMessageListenerContainer jmsContainer;
 	private String messageListenerClassName;
@@ -377,9 +377,6 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		return result;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.beans.factory.BeanFactoryAware#setBeanFactory(org.springframework.beans.factory.BeanFactory)
-	 */
 	@Override
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 		this.beanFactory = beanFactory;
@@ -439,18 +436,18 @@ class PollGuard extends TimerTask {
 		}
 		long currentCheck = System.currentTimeMillis();
 		if (lastPollFinishedTime < lastCheck) {
- 			if (lastPollFinishedTime != previousLastPollFinishedTime
+			if (lastPollFinishedTime != previousLastPollFinishedTime
 				&& springJmsConnector.threadsProcessing.getValue() == 0
 				&& springJmsConnector.getReceiver().getRunState() == RunState.STARTED
 				&& !springJmsConnector.getJmsContainer().isRecovering()) {
- 				previousLastPollFinishedTime = lastPollFinishedTime;
- 				timeoutDetected = true;
- 				warn("JMS poll timeout ["+pollTimeouts.incrementAndGet()+"] last poll finished ["+((currentCheck-lastPollFinishedTime)/1000)+"] s ago, an attempt will be made to stop and start listener");
+				previousLastPollFinishedTime = lastPollFinishedTime;
+				timeoutDetected = true;
+				warn("JMS poll timeout ["+pollTimeouts.incrementAndGet()+"] last poll finished ["+((currentCheck-lastPollFinishedTime)/1000)+"] s ago, an attempt will be made to stop and start listener");
 
- 				// Try to auto-recover the listener, when PollGuard detects `no activity` AND `threadsProcessing` == 0
- 				springJmsConnector.getListener().getReceiver().stopRunning();
- 				springJmsConnector.getListener().getReceiver().startRunning();
- 			}
+				// Try to auto-recover the listener, when PollGuard detects `no activity` AND `threadsProcessing` == 0
+				springJmsConnector.getListener().getReceiver().stopRunning();
+				springJmsConnector.getListener().getReceiver().startRunning();
+			}
 		} else {
 			if (timeoutDetected) {
 				timeoutDetected = false;
