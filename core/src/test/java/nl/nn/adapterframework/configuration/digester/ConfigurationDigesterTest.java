@@ -153,7 +153,7 @@ public class ConfigurationDigesterTest {
 		String actual = new String(target.toString());
 
 		String expectedConfiguration = TestFileUtils.getTestFile(baseDirectory + "/expected.xml");
-		MatchUtils.assertXmlEquals(expectedConfiguration, actual);
+		MatchUtils.assertXmlEquals(null, expectedConfiguration, actual, false, true);
 	}
 
 	private class XmlErrorHandler implements ErrorHandler {

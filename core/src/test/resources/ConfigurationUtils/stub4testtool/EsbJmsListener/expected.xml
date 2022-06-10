@@ -4,7 +4,11 @@
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="testtool-adapter"/>
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="stubbed-slotId"/>
 			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="stubbed-slotId"/>
-		</receiver>
+		</receiver><!--<receiver name='receiver' transactionAttribute='Required' transactionTimeout='${FXF_TransactionTimeout}' maxRetries='${FXF_maxRetries}'>
+			<listener className='nl.nn.adapterframework.extensions.esb.EsbJmsListener' destinationName='P2P.General.LC_PDDS.FileTransfer.Action' lookupDestination='false' jmsRealm='qcf_tibco_p2p_ff' messageProtocol='FF'></listener>
+			<errorStorage className='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage' jmsRealm='jdbc' slotId='slotId'></errorStorage>
+			<messageLog className='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage' jmsRealm='jdbc' slotId='slotId'></messageLog>
+			</receiver>-->
 		<receiver maxRetries="${FXF_maxRetries}" name="testtool-adapter-1" transactionAttribute="Required" transactionTimeout="${FXF_TransactionTimeout}">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="testtool-adapter-1"/>
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="stubbed-slotId"/>
