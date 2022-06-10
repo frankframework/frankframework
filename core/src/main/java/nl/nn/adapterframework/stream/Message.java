@@ -206,12 +206,12 @@ public class Message implements Serializable {
 			return;
 		}
 		if (request instanceof Reader) {
-			log.debug("preserving Reader as String");
+			log.debug("preserving Reader Message[{}] as String", this::hashCode);
 			request = StreamUtil.readerToString((Reader) request, null);
 			return;
 		}
 		if (request instanceof InputStream) {
-			log.debug("preserving InputStream as byte[]");
+			log.debug("preserving InputStream Message[{}] as byte[]", this::hashCode);
 			request = StreamUtil.streamToByteArray((InputStream) request, false);
 			return;
 		}
@@ -219,10 +219,10 @@ public class Message implements Serializable {
 		// otherwise we rely on that File and URL can be repeatedly read
 		if (deepPreserve && !(request instanceof String || request instanceof byte[])) {
 			if (isBinary()) {
-				log.debug("deep preserving as byte[]");
+				log.debug("deep preserving Message[{}] as byte[]", this::hashCode);
 				request = asByteArray();
 			} else {
-				log.debug("deep preserving as String");
+				log.debug("deep preserving Message[{}] as String", this::hashCode);
 				request = asString();
 			}
 		}
@@ -288,16 +288,16 @@ public class Message implements Serializable {
 		if (!(request instanceof InputStream || request instanceof Reader) || isScheduledForCloseOnExitOf(session)) {
 			return;
 		}
-		if (log.isDebugEnabled()) log.debug("registering Message ["+this+"] for close on exit");
+		if (log.isDebugEnabled()) log.debug("registering Message [{}] for close on exit", this);
 		if (request instanceof InputStream) {
 			request = StreamUtil.onClose((InputStream)request, () -> {
-				if (log.isDebugEnabled()) log.debug("closed InputStream and unregistering Message ["+this+"] from close on exit");
+				if (log.isDebugEnabled()) log.debug("closed InputStream and unregistering Message [{}] from close on exit", this);
 				unscheduleFromCloseOnExitOf(session);
 			});
 		}
 		if (request instanceof Reader) {
 			request = StreamUtil.onClose((Reader)request, () -> {
-				if (log.isDebugEnabled()) log.debug("closed Reader and unregistering Message ["+this+"] from close on exit");
+				if (log.isDebugEnabled()) log.debug("closed Reader and unregistering Message [{}] from close on exit", this);
 				unscheduleFromCloseOnExitOf(session);
 			});
 		}
@@ -331,13 +331,13 @@ public class Message implements Serializable {
 			return null;
 		}
 		if (request instanceof Reader) {
-			log.debug("returning Reader as Reader");
+			log.debug("returning Reader Message[{}] as Reader", this::hashCode);
 			return (Reader) request;
 		}
 		if (isBinary()) {
 			String readerCharset = computeDecodingCharset(defaultDecodingCharset); //Don't overwrite the Message's charset unless it's set to AUTO
 
-			log.debug("returning InputStream as Reader");
+			log.debug("returning InputStream Message[{}] as Reader", this::hashCode);
 			InputStream inputStream = asInputStream();
 			try {
 				return StreamUtil.getCharsetDetectingInputStreamReader(inputStream, readerCharset);
@@ -350,10 +350,10 @@ public class Message implements Serializable {
 			}
 		}
 		if(request instanceof Node) {
-			log.debug("returning Node as Reader");
+			log.debug("returning Node Message[{}] as Reader", this::hashCode);
 			return new StringReader(asString());
 		}
-		log.debug("returning String as Reader");
+		log.debug("returning String Message[{}] as Reader", this::hashCode);
 		return new StringReader(request.toString());
 	}
 
@@ -373,27 +373,27 @@ public class Message implements Serializable {
 				return null;
 			}
 			if (request instanceof InputStream) {
-				log.debug("returning InputStream as InputStream");
+				log.debug("returning InputStream Message[{}] as InputStream", this::hashCode);
 				return (InputStream) request;
 			}
 			if (request instanceof ThrowingSupplier) {
-				log.debug("returning InputStream from supplier");
+				log.debug("returning InputStream Message[{}] from supplier", this::hashCode);
 				return ((ThrowingSupplier<InputStream,Exception>) request).get();
 			}
 			if (request instanceof byte[]) {
-				log.debug("returning byte[] as InputStream");
+				log.debug("returning byte[] Message[{}] as InputStream", this::hashCode);
 				return new ByteArrayInputStream((byte[]) request);
 			}
 			if(request instanceof Node) {
-				log.debug("returning Node as InputStream");
+				log.debug("returning Node Message[{}] as InputStream", this::hashCode);
 				return new ByteArrayInputStream(asByteArray());
 			}
 			String charset = computeEncodingCharset(defaultEncodingCharset);
 			if (request instanceof Reader) {
-				log.debug("returning Reader as InputStream");
+				log.debug("returning Reader Message[{}] as InputStream", this::hashCode);
 				return new ReaderInputStream((Reader) request, charset);
 			}
-			log.debug("returning String as InputStream");
+			log.debug("returning String Message[{}] as InputStream", this::hashCode);
 			return new ByteArrayInputStream(request.toString().getBytes(charset));
 		} catch (IOException e) {
 			onExceptionClose(e);
@@ -467,18 +467,18 @@ public class Message implements Serializable {
 			return null;
 		}
 		if (request instanceof InputSource) {
-			log.debug("returning InputSource as InputSource");
+			log.debug("returning InputSource Message[{}] as InputSource", this::hashCode);
 			return (InputSource) request;
 		}
 		if (request instanceof Reader) {
-			log.debug("returning Reader as InputSource");
+			log.debug("returning Reader Message[{}] as InputSource", this::hashCode);
 			return new InputSource((Reader) request);
 		}
 		if (request instanceof String) {
-			log.debug("returning String as InputSource");
+			log.debug("returning String Message[{}] as InputSource", this::hashCode);
 			return new InputSource(new StringReader((String) request));
 		}
-		log.debug("returning as InputSource");
+		log.debug("returning Message[{}] as InputSource", this::hashCode);
 		if (isBinary()) {
 			return new InputSource(asInputStream());
 		}
@@ -493,14 +493,14 @@ public class Message implements Serializable {
 			return null;
 		}
 		if (request instanceof Source) {
-			log.debug("returning Source as Source");
+			log.debug("returning Source Message[{}] as Source", this::hashCode);
 			return (Source) request;
 		}
 		if (request instanceof Node) {
-			log.debug("returning Node as DOMSource");
+			log.debug("returning Node Message[{}] as DOMSource", this::hashCode);
 			return new DOMSource((Node) request);
 		}
-		log.debug("returning as Source");
+		log.debug("returning Message[{}] as Source", this::hashCode);
 		return XmlUtils.inputSourceToSAXSource(asInputSource());
 	}
 
@@ -519,10 +519,10 @@ public class Message implements Serializable {
 		}
 		if (request instanceof Node) {
 			try {
-				log.warn("returning Node as byte[]; consider to avoid using Node or Document here to reduce memory footprint");
+				log.warn("returning Node Message[{}] as byte[]; consider to avoid using Node or Document here to reduce memory footprint", this::hashCode);
 				return XmlUtils.nodeToByteArray((Node) request);
 			} catch (TransformerException e) {
-				throw new IOException("Could not convert Node to byte[]", e);
+				throw new IOException("Could not convert Node Message["+this.hashCode()+"] to byte[]", e);
 			}
 		}
 		String charset = computeEncodingCharset(defaultEncodingCharset);
@@ -549,10 +549,10 @@ public class Message implements Serializable {
 		}
 		if(request instanceof Node) {
 			try {
-				log.warn("returning Node as String; consider to avoid using Node or Document here to reduce memory footprint");
+				log.warn("returning Node Message[{}] as String; consider to avoid using Node or Document here to reduce memory footprint", this::hashCode);
 				return XmlUtils.nodeToString((Node)request);
 			} catch (TransformerException e) {
-				throw new IOException("Could not convert type Node to String", e);
+				throw new IOException("Could not convert type Node Message["+this.hashCode()+"] to String", e);
 			}
 		}
 
@@ -604,7 +604,7 @@ public class Message implements Serializable {
 			if (request==null) {
 				result.write("null");
 			} else {
-				result.write(getRequestClass()+": "+request.toString());
+				result.write(getRequestClass()+" with hashCode["+this.hashCode()+"]: "+request.toString());
 			}
 		} catch (IOException e) {
 			result.write("cannot write toString: "+e.getMessage());
@@ -768,7 +768,7 @@ public class Message implements Serializable {
 				FileInputStream fileStream = (FileInputStream) request;
 				return fileStream.getChannel().size();
 			} catch (IOException e) {
-				log.debug("unable to determine size of stream ["+ClassUtils.nameOf(request)+"]", e);
+				log.debug("unable to determine size of stream [{}]", ClassUtils.nameOf(request), e);
 			}
 		}
 
@@ -785,7 +785,7 @@ public class Message implements Serializable {
 
 		if(!(request instanceof InputStream || request instanceof Reader)) {
 			//Unable to determine the size of a Stream
-			log.debug("unable to determine size of Message ["+ClassUtils.nameOf(request)+"]");
+			log.debug("unable to determine size of Message [{}]", ClassUtils.nameOf(request));
 		}
 
 		return -1;
@@ -804,9 +804,9 @@ public class Message implements Serializable {
 		captureBinaryStream(outputStream, StreamUtil.DEFAULT_STREAM_CAPTURE_LIMIT);
 	}
 	public void captureBinaryStream(OutputStream outputStream, int maxSize) throws IOException {
-		log.debug("creating capture of "+ClassUtils.nameOf(request));
+		log.debug("creating capture of {}", ClassUtils.nameOf(request));
 		if (isRepeatable()) {
-			log.warn("repeatability of message of type ["+request.getClass().getTypeName()+"] will be lost by capturing stream");
+			log.warn("repeatability of Message[{}] of type [{}] will be lost by capturing stream", this.hashCode(), request.getClass().getTypeName());
 		}
 		if (isBinary()) {
 			request = StreamUtil.captureInputStream(asInputStream(), outputStream, maxSize, true);
@@ -832,9 +832,9 @@ public class Message implements Serializable {
 		captureCharacterStream(writer, StreamUtil.DEFAULT_STREAM_CAPTURE_LIMIT);
 	}
 	public void captureCharacterStream(Writer writer, int maxSize) throws IOException {
-		log.debug("creating capture of "+ClassUtils.nameOf(request));
+		log.debug("creating capture of {}", ClassUtils.nameOf(request));
 		if (isRepeatable()) {
-			log.warn("repeatability of message of type ["+request.getClass().getTypeName()+"] will be lost by capturing stream");
+			log.warn("repeatability of Message[{}] of type [{}] will be lost by capturing stream", this.hashCode(), request.getClass().getTypeName());
 		}
 		if (!isBinary()) {
 			request = StreamUtil.captureReader(asReader(), writer, maxSize, true);
