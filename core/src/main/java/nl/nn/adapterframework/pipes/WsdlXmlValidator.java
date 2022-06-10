@@ -202,8 +202,10 @@ public class WsdlXmlValidator extends SoapValidator {
 		String soapAction = session.get(SoapBindingConstants.SOAP_ACTION, "");
 		if(StringUtils.isNotEmpty(soapAction)) {
 			String soapBodyFromSoapAction = getSoapBodyFromSoapAction(soapAction, responseMode);
-			if(StringUtils.compare(messageRoot, soapBodyFromSoapAction) != 0) {
-				log.debug("messageRoot ["+soapBodyFromSoapAction+"] is determined from soapAction ["+soapAction+"]");
+			if(soapBodyFromSoapAction == null) {
+				log.debug("Could not determine messageRoot from soapAction original messageRoot [{}] will be used", messageRoot);
+			} else if(StringUtils.compare(messageRoot, soapBodyFromSoapAction) != 0) {
+				log.debug("messageRoot [{}] is determined from soapAction [{}]", soapBodyFromSoapAction, soapAction);
 				messageRoot = soapBodyFromSoapAction;
 			}
 		}
@@ -230,7 +232,7 @@ public class WsdlXmlValidator extends SoapValidator {
 				}
 			}
 		}
-		return getSoapBody();
+		return null;
 	}
 
 	private static String getFormattedSchemaLocation(String schemaLocation) {
