@@ -150,13 +150,24 @@
 					<connection-url>jdbc:h2:file:./ibis4test;NON_KEYWORDS=VALUE;DB_CLOSE_ON_EXIT=FALSE;AUTO_SERVER=TRUE</connection-url>
 					<driver>h2</driver>
 				</datasource>
+				<xa-datasource jndi-name="java:/jdbc/ibis4test-oracle" pool-name="ibis4test-oracle">
+					<driver>oracle</driver>
+					<xa-datasource-property name="URL">jdbc:oracle:thin:@host.docker.internal:1521:ORCLCDB</xa-datasource-property>
+					<security>
+						<user-name>testiaf_user</user-name>
+						<password>testiaf_user00</password>
+					</security>
+					<xa-pool>
+						<is-same-rm-override>false</is-same-rm-override>
+						<no-tx-separate-pools/>
+					</xa-pool>
+				</xa-datasource>
                 <xa-datasource jndi-name="java:/jdbc/ibis4test-mssql" pool-name="ibis4test-mssql" enabled="true" use-java-context="true" spy="false" use-ccm="true" statistics-enabled="false">
 					<xa-datasource-property name="SelectMethod">direct</xa-datasource-property>
 					<xa-datasource-property name="URL">jdbc:sqlserver://host.docker.internal:1433;database=testiaf</xa-datasource-property>
 					<xa-datasource-property name="encrypt">false</xa-datasource-property>
 					<xa-datasource-property name="trustServerCertificate">true</xa-datasource-property>
-					<xa-datasource-class>com.microsoft.sqlserver.jdbc.SQLServerXADataSource</xa-datasource-class>
-					<driver>mssql-xa</driver>
+					<driver>mssql</driver>
 					<xa-pool>
 						<min-pool-size>3</min-pool-size>
 						<max-pool-size>75</max-pool-size>
@@ -179,27 +190,48 @@
 						<share-prepared-statements>false</share-prepared-statements>
 					</statement>
 				</xa-datasource>
-				<!-- <xa-datasource jndi-name="java:/jdbc/ibis4test-oracle" pool-name="ibis4test-oracle">
-					<driver>ojdbc8.jar</driver>
-					<xa-datasource-property name="URL">jdbc:oracle:thin:@host.docker.internal:1521:ORCLCDB</xa-datasource-property>
-					<xa-datasource-class>oracle.jdbc.xa.client.OracleXADataSource</xa-datasource-class>
+				<xa-datasource jndi-name="java:/jdbc/ibis4test-mysql" pool-name="ibis4test-mysql">
+					<driver>mysql</driver>
+					<xa-datasource-property name="URL">jdbc:mysql://host.docker.internal:3307/testiaf</xa-datasource-property>
 					<security>
 						<user-name>testiaf_user</user-name>
 						<password>testiaf_user00</password>
 					</security>
-					<xa-pool>
-						<is-same-rm-override>false</is-same-rm-override>
-						<no-tx-separate-pools/>
-					</xa-pool>
-				</xa-datasource> -->
+				</xa-datasource>
+				<!-- Use MySQL driver for MariaDB for proper XA support. -->
+				<xa-datasource jndi-name="java:/jdbc/ibis4test-mariadb" pool-name="ibis4test-mariadb">
+					<driver>mysql</driver>
+					<xa-datasource-property name="URL">jdbc:mysql://host.docker.internal:3307/testiaf</xa-datasource-property>
+					<security>
+						<user-name>testiaf_user</user-name>
+						<password>testiaf_user00</password>
+					</security>
+				</xa-datasource>
+				<xa-datasource jndi-name="java:/jdbc/ibis4test-postgres-xa" pool-name="ibis4test-postgres">
+					<driver>postgresql</driver>
+					<xa-datasource-property name="URL">jdbc:postgresql://host.docker.internal:5432/testiaf</xa-datasource-property>
+					<security>
+						<user-name>testiaf_user</user-name>
+						<password>testiaf_user00</password>
+					</security>
+				</xa-datasource>	
                 <!-- End of Framework datasources -->
                 <drivers>
                     <driver name="h2" module="com.h2database.h2">
                         <xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>
                     </driver>
                     <!-- Framework drivers -->
-					<driver name="mssql-xa" module="module.nl.nn.adapterframework">
+					<driver name="mssql" module="module.nl.nn.adapterframework">
 						<xa-datasource-class>com.microsoft.sqlserver.jdbc.SQLServerXADataSource</xa-datasource-class>
+					</driver>
+					<driver name="oracle" module="module.nl.nn.adapterframework">
+						<xa-datasource-class>oracle.jdbc.xa.client.OracleXADataSource</xa-datasource-class>
+					</driver>
+					<driver name="mysql" module="module.nl.nn.adapterframework">
+						<xa-datasource-class>com.mysql.cj.jdbc.MysqlXADataSource</xa-datasource-class>
+					</driver>
+					<driver name="postgresql" module="module.nl.nn.adapterframework">
+						<xa-datasource-class>org.postgresql.xa.PGXADataSource</xa-datasource-class>
 					</driver>
 					<!-- End of Framework drivers -->
                 </drivers>
@@ -232,7 +264,7 @@
                     <managed-scheduled-executor-service name="default" jndi-name="java:jboss/ee/concurrency/scheduler/default" context-service="default" hung-task-termination-period="0" hung-task-threshold="60000" keepalive-time="3000"/>
                 </managed-scheduled-executor-services>
             </concurrent>
-            <default-bindings context-service="java:jboss/ee/concurrency/context/default" datasource="java:jboss/datasources/ExampleDS" managed-executor-service="java:jboss/ee/concurrency/executor/default" managed-scheduled-executor-service="java:jboss/ee/concurrency/scheduler/default" managed-thread-factory="java:jboss/ee/concurrency/factory/default"/>
+            <default-bindings context-service="java:jboss/ee/concurrency/context/default" datasource="java:jboss/datasources/ExampleDS" jms-connection-factory="java:jboss/ActiveMQ/QueueConnectionFactory" managed-executor-service="java:jboss/ee/concurrency/executor/default" managed-scheduled-executor-service="java:jboss/ee/concurrency/scheduler/default" managed-thread-factory="java:jboss/ee/concurrency/factory/default"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:ee-security:1.0"/>
         <subsystem xmlns="urn:jboss:domain:ejb3:9.0">
@@ -501,8 +533,37 @@
             <http-connector name="http-remoting-connector" connector-ref="default" sasl-authentication-factory="application-sasl-authentication"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:request-controller:1.0"/>
-        <subsystem xmlns="urn:jboss:domain:resource-adapters:6.1"/>
-        <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
+        <subsystem xmlns="urn:jboss:domain:resource-adapters:6.1">
+	        <resource-adapters>  
+	            <resource-adapter id="activemq">  
+	              	<archive>activemq-rar.rar</archive>
+	                <transaction-support>XATransaction</transaction-support>  
+	                <config-property name="ServerUrl">  
+	                    tcp://host.docker.internal:61616
+	                </config-property>  
+	                <connection-definitions>  
+	                    <connection-definition class-name="org.apache.activemq.ra.ActiveMQManagedConnectionFactory" jndi-name="jms/qcf-activemq" enabled="true" use-java-context="true" pool-name="jms/qcf-activemq" use-ccm="true">
+		                    <xa-pool>
+		                        <min-pool-size>1</min-pool-size>
+		                        <max-pool-size>200</max-pool-size>
+		                        <is-same-rm-override>false</is-same-rm-override>
+		                    </xa-pool>
+		                </connection-definition>
+	                </connection-definitions>  
+	                <admin-objects>  
+	                    <admin-object class-name="org.apache.activemq.command.ActiveMQQueue" jndi-name="jms/i4testiaf_in" use-java-context="true" pool-name="jms/i4testiaf_in">  
+	                        <config-property name="PhysicalName">dynamicQueues/Q.TEST.IN</config-property>  
+	                    </admin-object>  
+	                    <admin-object class-name="org.apache.activemq.command.ActiveMQQueue" jndi-name="jms/i4testiaf_out" use-java-context="true" pool-name="jms/i4testiaf_out">  
+	                        <config-property name="PhysicalName">dynamicQueues/Q.TEST.OUT</config-property>   
+	                    </admin-object>  
+	                    <admin-object class-name="org.apache.activemq.command.ActiveMQQueue" jndi-name="jms/i4testiaf_ff" use-java-context="true" pool-name="jms/i4testiaf_ff">  
+	                        <config-property name="PhysicalName">dynamicQueues/Q.TEST.FF</config-property>  
+	                    </admin-object>  
+	                </admin-objects>  
+	            </resource-adapter>  
+	 		</resource-adapters> 
+        </subsystem>
         <subsystem xmlns="urn:jboss:domain:security-manager:1.0">
             <deployment-permissions>
                 <maximum-set>

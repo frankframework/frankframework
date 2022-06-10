@@ -60,28 +60,12 @@
 		    <artifactId>artemis-jms-client-all</artifactId>
 			<version>${artemis.driver.version}</version>
 		</dependency>
-		<!-- required for ActiveMQ classic-->
 		<dependency>
-			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-client</artifactId>
-			<version>${activemq.driver.version}</version>
+		    <groupId>org.apache.activemq</groupId>
+		    <artifactId>activemq-rar</artifactId>
+		    <version>${activemq.driver.version}</version>
+		    <type>rar</type>
 		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>1.7.31</version>
-		</dependency>
-		<dependency>
-			<groupId>org.fusesource.hawtbuf</groupId>
-			<artifactId>hawtbuf</artifactId>
-			<version>1.11</version>
-		</dependency>
-		<!-- Required for #2539 -->
-<!--		<dependency>
-			<groupId>org.reactivestreams</groupId>
-			<artifactId>reactive-streams</artifactId>
-			<version>1.0.3</version>
-		</dependency>-->
 	</dependencies>
 
 	<build>

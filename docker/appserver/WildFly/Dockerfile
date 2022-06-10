@@ -3,6 +3,7 @@ FROM quay.io/wildfly/wildfly:${WILDFLY_VERSION} AS iaf-test-as-wildfly
 
 # copy dependencies
 COPY target/dependencies/*.jar /opt/jboss/wildfly/standalone/lib/ext/
+COPY target/dependencies/*.rar /opt/jboss/wildfly/standalone/deployments/ 
 
 # Copy in standalone-configuration.xml
 COPY src/configuration/standalone.xml /opt/jboss/wildfly/standalone/configuration/standalone.xml
