@@ -31,7 +31,7 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 			//Add separator where attributes inherit from
 			if(parent.attributes && parent.attributes.length > 0) {
 				if(!el.attributes) { el.attributes = []; } //Make sure an array exists
-				el.attributes.push({from: parent.name});
+				el.attributes.push({from: parent.name, desc: parent.description});
 			}
 
 			el.attributes = copyOf(el.attributes, parent.attributes, 'name');
