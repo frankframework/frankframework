@@ -793,9 +793,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			}
 			synchronized (runState) {
 				RunState currentRunState = getRunState();
-				if (currentRunState!=RunState.STOPPED 
-						&& currentRunState!=RunState.EXCEPTION_STOPPING 
-						&& currentRunState!=RunState.ERROR 
+				if (currentRunState!=RunState.STOPPED
+						&& currentRunState!=RunState.EXCEPTION_STOPPING
+						&& currentRunState!=RunState.EXCEPTION_STARTING
+						&& currentRunState!=RunState.ERROR
 						&& configurationSucceeded()) { // Only start the receiver if it is properly configured, and is not already starting or still stopping
 					if (currentRunState==RunState.STARTING || currentRunState==RunState.STARTED) {
 						log.info("already in state [" + currentRunState + "]");
