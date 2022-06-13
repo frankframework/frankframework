@@ -36,6 +36,7 @@ import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.rmi.server.UID;
 import java.text.DecimalFormat;
@@ -1391,10 +1392,19 @@ public class Misc {
 			count++;
 		return count;
 	}
-	
+
 	public static String urlDecode(String input) {
 		try {
 			return URLDecoder.decode(input, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+		} catch (UnsupportedEncodingException e) {
+			log.warn("unable to parse input using charset ["+StreamUtil.DEFAULT_INPUT_STREAM_ENCODING+"]", e);
+			return null;
+		}
+	}
+
+	public static String urlEncode(String input) {
+		try {
+			return URLEncoder.encode(input, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 		} catch (UnsupportedEncodingException e) {
 			log.warn("unable to parse input using charset ["+StreamUtil.DEFAULT_INPUT_STREAM_ENCODING+"]", e);
 			return null;
@@ -1410,7 +1420,7 @@ public class Misc {
 
 	public static <T> void addToSortedListNonUnique(List<T> list, T item) {
 		int index = Misc.binarySearchResultToInsertionPoint(Collections.binarySearch(list, item, null));
-		list.add(index, item);		
+		list.add(index, item);
 	}
 
 	private static int binarySearchResultToInsertionPoint(int index) {
