@@ -37,7 +37,6 @@ import javax.json.JsonValue;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.xerces.xs.XSModel;
@@ -236,7 +235,7 @@ public class ApiServiceDispatcher {
 			serversArray.add(Json.createObjectBuilder().add("url", loadBalancerUrl + servletPath).add("description", "load balancer"));
 		} else { // fall back to the request url
 			String requestUrl = request.getRequestURL().toString(); // -> schema+hostname+port/context-path/servlet-path/+request-uri
-			requestUrl = Misc.urlDecode(requestUrl); // request from browser encodes
+			requestUrl = Misc.urlDecode(requestUrl); // request url from browser might be encoded
 			String requestPath = request.getPathInfo(); // -> the remaining path, starts with a /
 			String url = requestUrl.substring(0, requestUrl.indexOf(requestPath));
 			serversArray.add(Json.createObjectBuilder().add("url", url));
