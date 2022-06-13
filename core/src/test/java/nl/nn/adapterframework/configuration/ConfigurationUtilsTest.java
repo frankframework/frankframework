@@ -498,13 +498,19 @@ public class ConfigurationUtilsTest extends Mockito {
 		String directory = STUB4TESTTOOL_DIRECTORY + "/ReceiverTransactionAttribute";
 		stub4testtoolTest(directory, false);
 	}
-	
+
 	@Test
 	public void stub4testtoolFullAdapter() throws Exception {
 		String directory = STUB4TESTTOOL_DIRECTORY + "/FullAdapter";
 		stub4testtoolTest(directory, false);
 	}
-	
+
+	@Test
+	public void stub4testtoolEsbJmsListener() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/EsbJmsListener";
+		stub4testtoolTest(directory, false);
+	}
+
 	private void stub4testtoolTest(String baseDirectory, boolean disableValidators) throws Exception {
 		Map<String, Object> parameters = new Hashtable<String, Object>();
 		parameters.put(STUB4TESTTOOL_XSLT_VALIDATORS_PARAM, disableValidators);
