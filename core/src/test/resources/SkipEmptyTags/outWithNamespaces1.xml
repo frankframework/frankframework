@@ -1,0 +1,5 @@
+<prefix-ns1 uri="urn:test">
+<root xmlns:ns1="urn:test">
+<x>x</x>
+</root>
+</prefix-ns1>

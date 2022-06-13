@@ -41,6 +41,8 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IListenerConnector;
 import nl.nn.adapterframework.core.IPortConnectedListener;
@@ -74,10 +76,10 @@ import nl.nn.adapterframework.util.RunState;
  */
 public class SpringJmsConnector extends AbstractJmsConfigurator implements IListenerConnector<Message>, IThreadCountControllable, BeanFactoryAware, ExceptionListener, SessionAwareMessageListener<Message> {
 
-	private PlatformTransactionManager txManager;
-	private BeanFactory beanFactory;
-	private DefaultMessageListenerContainer jmsContainer;
-	private String messageListenerClassName;
+	private @Getter @Setter PlatformTransactionManager txManager;
+	private @Setter BeanFactory beanFactory;
+	private @Getter DefaultMessageListenerContainer jmsContainer;
+	private @Getter @Setter String messageListenerClassName;
 
 	public static final int DEFAULT_CACHE_LEVEL_TRANSACTED=DefaultMessageListenerContainer.CACHE_NONE;
 //	public static final int DEFAULT_CACHE_LEVEL_NON_TRANSACTED=DefaultMessageListenerContainer.CACHE_CONSUMER;
@@ -97,7 +99,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 
 	final Counter threadsProcessing = new Counter(0);
 
-	private long lastPollFinishedTime;
+	private @Getter @Setter long lastPollFinishedTime;
 	private long pollGuardInterval;
 	private Timer pollGuardTimer;
 
@@ -370,50 +372,20 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 
 
 	public String getLogPrefix() {
-		String result="SpringJmsContainer ";
+		String result="SpringJmsConnector ";
 		if (getListener()!=null && getListener().getReceiver()!=null) {
 			result += "of Receiver ["+getListener().getReceiver().getName()+"] ";
 		}
 		return result;
 	}
 
-	@Override
-	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-		this.beanFactory = beanFactory;
-	}
-
-
-	public void setTxManager(PlatformTransactionManager txManager) {
-		this.txManager = txManager;
-	}
-	public PlatformTransactionManager getTxManager() {
-		return txManager;
-	}
-
-	public DefaultMessageListenerContainer getJmsContainer() {
-		return jmsContainer;
-	}
-
-	public void setMessageListenerClassName(String messageListenerClassName) {
-		this.messageListenerClassName = messageListenerClassName;
-	}
-	public String getMessageListenerClassName() {
-		return messageListenerClassName;
-	}
-
-	public void setLastPollFinishedTime(long lastPollFinishedTime) {
-		this.lastPollFinishedTime = lastPollFinishedTime;
-	}
-	public long getLastPollFinishedTime() {
-		return lastPollFinishedTime;
-	}
 
 }
 
 class PollGuard extends TimerTask {
 	private Logger log = LogUtil.getLogger(this);
 	private SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DateUtils.FORMAT_FULL_GENERIC);
-	private SpringJmsConnector springJmsConnector;
+	private @Setter SpringJmsConnector springJmsConnector;
 	private long lastCheck;
 	private long previousLastPollFinishedTime;
 	private boolean timeoutDetected = false;
@@ -422,10 +394,6 @@ class PollGuard extends TimerTask {
 
 	PollGuard() {
 		lastCheck = System.currentTimeMillis();
-	}
-
-	public void setSpringJmsConnector(SpringJmsConnector springJmsConnector) {
-		this.springJmsConnector = springJmsConnector;
 	}
 
 	@Override
