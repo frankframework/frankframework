@@ -273,19 +273,6 @@ public class FixedResultPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * When set <code>true</code>, the lookup of the file will be done at runtime instead of at configuration time.
-	 * In that case, attributes <code>replaceFrom</code> and <code>replaceTo</code> do not work.
-	 * 
-	 * @ff.default false
-	 */
-	public void setLookupAtRuntime(boolean b){
-		lookupAtRuntime=b;
-	}
-	public boolean isLookupAtRuntime(){
-		return lookupAtRuntime;
-	}
-
-	/**
 	 * When set <code>true</code>, any parameter is used for replacements but with <code>name-of-parameter</code> and not <code>${name-of-parameter}</code>
 	 *
 	 * @ff.default false
