@@ -41,8 +41,6 @@ public class EsbSoapValidator extends SoapValidator {
 	private @Getter int cmhVersion = 0;
 	private static final Map<String, HeaderInformation> GENERIC_HEADER;
 
-	// This is unused now, we use to to have an extra tag on the output.
-	//private static final QName  GENERIC_RESULT_TAG     = new QName(GENERIC_HEADER_XMLNS, "Result");
 
 	static {
 		Map<String, HeaderInformation> temp = new HashMap<>();
