@@ -204,7 +204,7 @@ public class WsdlXmlValidator extends SoapValidator {
 			String soapBodyFromSoapAction = getSoapBodyFromSoapAction(soapAction, responseMode);
 			if(soapBodyFromSoapAction == null) {
 				log.debug("Could not determine messageRoot from soapAction original messageRoot [{}] will be used", messageRoot);
-			} else if(StringUtils.compare(messageRoot, soapBodyFromSoapAction) != 0) {
+			} else if(!soapBodyFromSoapAction.equalsIgnoreCase(messageRoot)) {
 				log.debug("messageRoot [{}] is determined from soapAction [{}]", soapBodyFromSoapAction, soapAction);
 				messageRoot = soapBodyFromSoapAction;
 			}
