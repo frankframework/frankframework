@@ -1,7 +1,9 @@
 package nl.nn.adapterframework.configuration.digester;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.io.StringWriter;
 import java.net.URL;
@@ -10,8 +12,10 @@ import java.util.Properties;
 import javax.xml.validation.ValidatorHandler;
 
 import org.junit.Test;
+import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
+import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 import nl.nn.adapterframework.configuration.Configuration;
@@ -130,6 +134,48 @@ public class ConfigurationDigesterTest {
 
 		String expectedConfiguration = TestFileUtils.getTestFile(baseDirectory + "/expected.xml");
 		MatchUtils.assertXmlEquals(expectedConfiguration, actual);
+	}
+	
+	@Test
+	public void stub4testtoolEsbJmsListenerTest() throws Exception {
+		String baseDirectory = "/ConfigurationUtils/stub4testtool/EsbJmsListener";
+
+		StringWriter target = new StringWriter();
+
+		XmlWriter xmlWriter = new XmlWriter(target) {
+			
+			@Override
+			public void startElement(String uri, String localName, String qName, Attributes attributes)throws SAXException {
+				if(attributes != null && attributes.getValue("className") != null) {
+					assertFalse(attributes.getValue("className").contains("EsbJmsListener"));
+				}
+				super.startElement(uri, localName, qName, attributes);
+			}
+			
+			@Override
+			public void comment(char[] ch, int start, int length) throws SAXException {
+				if(!new String(ch).startsWith("<receiver name='receiver' transactionAttribute='Required' transactionTimeout=")) {
+					fail("Digester should have commented out the receiver that has EsbJmsListener");
+				}
+				super.comment(ch, start, length);
+			}
+		};
+
+		Properties properties = new Properties();
+		properties.setProperty(STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		properties.setProperty(STUB4TESTTOOL_VALIDATORS_DISABLED_KEY, Boolean.toString(false));
+
+		String originalConfiguration = TestFileUtils.getTestFile(baseDirectory + "/original.xml");
+
+		ConfigurationDigester digester = new ConfigurationDigester();
+		ContentHandler filter = digester.getStub4TesttoolContentHandler(xmlWriter, properties);
+
+		XmlUtils.parseXml(originalConfiguration, filter);
+
+		String actual = new String(target.toString());
+
+		String expectedConfiguration = TestFileUtils.getTestFile(baseDirectory + "/expected.xml");
+		MatchUtils.assertXmlEquals(null, expectedConfiguration, actual, false, true);
 	}
 
 	private class XmlErrorHandler implements ErrorHandler {
