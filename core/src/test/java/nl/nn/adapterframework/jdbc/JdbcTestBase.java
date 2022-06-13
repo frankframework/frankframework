@@ -199,6 +199,7 @@ public abstract class JdbcTestBase {
 				"CREATE TABLE "+TEST_TABLE+"(tKEY "+dbmsSupport.getNumericKeyFieldType()+ " PRIMARY KEY, tVARCHAR "+dbmsSupport.getTextFieldType()+"(100), tINT INT, tNUMBER NUMERIC(10,5), " +
 				"tDATE DATE, tDATETIME "+dbmsSupport.getTimestampFieldType()+", tBOOLEAN "+dbmsSupport.getBooleanFieldType()+", "+
 				"tCLOB "+dbmsSupport.getClobFieldType()+", tBLOB "+dbmsSupport.getBlobFieldType()+")");
+		JdbcUtil.executeStatement(connection,"CREATE INDEX idx2 ON "+TEST_TABLE+"(tINT,tDATE)");
 		SQLWarning warnings = connection.getWarnings();
 		if(warnings != null) {
 			log.warn(JdbcUtil.warningsToString(warnings));

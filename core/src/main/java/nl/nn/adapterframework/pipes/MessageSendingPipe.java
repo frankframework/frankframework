@@ -86,7 +86,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Sends a message using a {@link ISender sender} and optionally receives a reply from the same sender, or
  * from a {@link ICorrelatedPullingListener listener}.
- *  * 
+ * 
  * @ff.parameters any parameters defined on the pipe will be handed to the sender, if this is a {@link ISenderWithParameters ISenderWithParameters}
  * @ff.parameter  stubFilename will <u>not</u> be handed to the sender 
  * and it is used at runtime instead of the stubFilename specified by the attribute. A lookup of the 

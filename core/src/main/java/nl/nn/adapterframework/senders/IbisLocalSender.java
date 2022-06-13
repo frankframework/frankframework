@@ -16,7 +16,7 @@
 package nl.nn.adapterframework.senders;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -40,17 +40,17 @@ import nl.nn.adapterframework.util.Misc;
 
 /**
  * Posts a message to another IBIS-adapter in the same IBIS instance.
- * 
+ *
  * An IbisLocalSender makes a call to a Receiver with either a {@link nl.nn.adapterframework.http.WebServiceListener WebServiceListener}
  * or a {@link JavaListener JavaListener}.
  *
  * Any parameters are copied to the PipeLineSession of the service called.
- * 
+ *
  * <h3>Configuration of the Adapter to be called</h3>
  * A call to another Adapter in the same IBIS instance is preferably made using the combination
  * of an IbisLocalSender and a {@link JavaListener JavaListener}. If,
  * however, a Receiver with a {@link nl.nn.adapterframework.http.WebServiceListener WebServiceListener} is already present, that can be used in some cases, too.
- *  
+ *
  * <h4>configuring IbisLocalSender and JavaListener</h4>
  * <ul>
  *   <li>Define a SenderPipe with an IbisLocalSender</li>
@@ -64,9 +64,9 @@ import nl.nn.adapterframework.util.Misc;
  *   <li>Do not set the attribute <code>serviceName</code>, except if the service is to be called also
  *       from applications other than this IBIS-instance</li>
  * </ul>
- * 
+ *
  * <h4>configuring IbisLocalSender and WebServiceListener</h4>
- * 
+ *
  * <ul>
  *   <li>Define a SenderPipe with an IbisLocalSender</li>
  *   <li>Set the attribute <code>serviceName</code> to <i>yourIbisWebServiceName</i></li>
@@ -77,7 +77,7 @@ import nl.nn.adapterframework.util.Misc;
  *   <li>Define a Receiver with a WebServiceListener</li>
  *   <li>Set the attribute <code>name</code> to <i>yourIbisWebServiceName</i></li>
  * </ul>
- * 
+ *
  * @author Gerrit van Brakel
  * @since  4.2
  */
@@ -166,104 +166,105 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		String correlationID = session==null ? null : session.getMessageId();
 		Message result = null;
-		HashMap<String,Object> context = null;
-		if (paramList!=null) {
-			try {
-				context = (HashMap<String,Object>) paramList.getValues(message, session).getValueMap();
-			} catch (ParameterException e) {
-				throw new SenderException(getLogPrefix()+"exception evaluating parameters",e);
-			}
-		}
-		if (context==null) {
-			context = new HashMap<>();
-		}
-		String serviceIndication;
-		if (StringUtils.isNotEmpty(getServiceName())) {
-			serviceIndication="service ["+getServiceName()+"]";
-			try {
-				if (isIsolated()) {
-					if (isSynchronous()) {
-						log.debug(getLogPrefix()+"calling "+serviceIndication+" in separate Thread");
-						result = isolatedServiceCaller.callServiceIsolated(getServiceName(), correlationID, message, context, false);
-					} else {
-						log.debug(getLogPrefix()+"calling "+serviceIndication+" in asynchronously");
-						isolatedServiceCaller.callServiceAsynchronous(getServiceName(), correlationID, message, context, false);
-						result = message;
-					}
-				} else {
-					log.debug(getLogPrefix()+"calling "+serviceIndication+" in same Thread");
-					result = new Message(ServiceDispatcher.getInstance().dispatchRequest(getServiceName(), correlationID, message.asString(), context));
-				}
-			} catch (ListenerException | IOException e) {
-				if (ExceptionUtils.getRootCause(e) instanceof TimeoutException) {
-					throw new TimeoutException(getLogPrefix()+"timeout calling "+serviceIndication+"",e);
-				}
-				throw new SenderException(getLogPrefix()+"exception calling "+serviceIndication+"",e);
-			} finally {
-				if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
-					log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
-				}
-				if (session!=null) {
-					Misc.copyContext(getReturnedSessionKeys(), context, session, this);
-				}
-			} 
-		} else {
-			String javaListener;
-			if (StringUtils.isNotEmpty(getJavaListenerSessionKey())) {
+		try (PipeLineSession context = new PipeLineSession()) {
+			if (paramList!=null) {
 				try {
-					javaListener = session.getMessage(getJavaListenerSessionKey()).asString();
-				} catch (IOException e) {
-					throw new SenderException("unable to resolve session key ["+getJavaListenerSessionKey()+"]", e);
+					Map<String,Object> paramValues = paramList.getValues(message, session).getValueMap();
+					if (paramValues!=null) {
+						context.putAll(paramValues);
+					}
+				} catch (ParameterException e) {
+					throw new SenderException(getLogPrefix()+"exception evaluating parameters",e);
+				}
+			}
+			String serviceIndication;
+			if (StringUtils.isNotEmpty(getServiceName())) {
+				serviceIndication="service ["+getServiceName()+"]";
+				try {
+					if (isIsolated()) {
+						if (isSynchronous()) {
+							log.debug(getLogPrefix()+"calling "+serviceIndication+" in separate Thread");
+							result = isolatedServiceCaller.callServiceIsolated(getServiceName(), correlationID, message, context, false);
+						} else {
+							log.debug(getLogPrefix()+"calling "+serviceIndication+" in asynchronously");
+							isolatedServiceCaller.callServiceAsynchronous(getServiceName(), correlationID, message, context, false);
+							result = message;
+						}
+					} else {
+						log.debug(getLogPrefix()+"calling "+serviceIndication+" in same Thread");
+						result = new Message(ServiceDispatcher.getInstance().dispatchRequest(getServiceName(), correlationID, message.asString(), context));
+					}
+				} catch (ListenerException | IOException e) {
+					if (ExceptionUtils.getRootCause(e) instanceof TimeoutException) {
+						throw new TimeoutException(getLogPrefix()+"timeout calling "+serviceIndication+"",e);
+					}
+					throw new SenderException(getLogPrefix()+"exception calling "+serviceIndication+"",e);
+				} finally {
+					if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
+						log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
+					}
+					if (session!=null) {
+						Misc.copyContext(getReturnedSessionKeys(), context, session, this);
+					}
 				}
 			} else {
-				javaListener = getJavaListener();
-			}
-			serviceIndication="JavaListener ["+javaListener+"]";
-			try {
-				JavaListener listener= JavaListener.getListener(javaListener);
-				if (listener==null) {
-					String msg = "could not find JavaListener ["+javaListener+"]";
-					if (isThrowJavaListenerNotFoundException()) {
-						throw new SenderException(msg);
-					}
-					log.info(getLogPrefix()+msg);
-					return new Message("<error>"+msg+"</error>");
-				}
-				if (isIsolated()) {
-					if (isSynchronous()) {
-						log.debug(getLogPrefix()+"calling "+serviceIndication+" in separate Thread");
-						result = isolatedServiceCaller.callServiceIsolated(javaListener, correlationID, message, context, true);
-					} else {
-						log.debug(getLogPrefix()+"calling "+serviceIndication+" in asynchronously");
-						isolatedServiceCaller.callServiceAsynchronous(javaListener, correlationID, message, context, true);
-						result = message;
+				String javaListener;
+				if (StringUtils.isNotEmpty(getJavaListenerSessionKey())) {
+					try {
+						javaListener = session.getMessage(getJavaListenerSessionKey()).asString();
+					} catch (IOException e) {
+						throw new SenderException("unable to resolve session key ["+getJavaListenerSessionKey()+"]", e);
 					}
 				} else {
-					log.debug(getLogPrefix()+"calling "+serviceIndication+" in same Thread");
-					result = new Message(listener.processRequest(correlationID,message.asString(),context));
+					javaListener = getJavaListener();
 				}
-			} catch (ListenerException | IOException e) {
-				if (ExceptionUtils.getRootCause(e) instanceof TimeoutException) {
-					throw new TimeoutException(getLogPrefix()+"timeout calling "+serviceIndication,e);
-				}
-				throw new SenderException(getLogPrefix()+"exception calling "+serviceIndication,e);
-			} finally {
-				if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
-					log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
-				}
-				if (session!=null) {
-					Misc.copyContext(getReturnedSessionKeys(), context, session, this);
+				serviceIndication="JavaListener ["+javaListener+"]";
+				try {
+					JavaListener listener= JavaListener.getListener(javaListener);
+					if (listener==null) {
+						String msg = "could not find JavaListener ["+javaListener+"]";
+						if (isThrowJavaListenerNotFoundException()) {
+							throw new SenderException(msg);
+						}
+						log.info(getLogPrefix()+msg);
+						return new Message("<error>"+msg+"</error>");
+					}
+					if (isIsolated()) {
+						if (isSynchronous()) {
+							log.debug(getLogPrefix()+"calling "+serviceIndication+" in separate Thread");
+							result = isolatedServiceCaller.callServiceIsolated(javaListener, correlationID, message, context, true);
+						} else {
+							log.debug(getLogPrefix()+"calling "+serviceIndication+" in asynchronously");
+							isolatedServiceCaller.callServiceAsynchronous(javaListener, correlationID, message, context, true);
+							result = message;
+						}
+					} else {
+						log.debug(getLogPrefix()+"calling "+serviceIndication+" in same Thread");
+						result = new Message(listener.processRequest(correlationID,message.asString(),context));
+					}
+				} catch (ListenerException | IOException e) {
+					if (ExceptionUtils.getRootCause(e) instanceof TimeoutException) {
+						throw new TimeoutException(getLogPrefix()+"timeout calling "+serviceIndication,e);
+					}
+					throw new SenderException(getLogPrefix()+"exception calling "+serviceIndication,e);
+				} finally {
+					if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
+						log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
+					}
+					if (session!=null) {
+						Misc.copyContext(getReturnedSessionKeys(), context, session, this);
+					}
 				}
 			}
+
+			ExitState exitState = (ExitState)context.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
+			Object exitCode = context.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
+			if (exitState!=null && exitState!=ExitState.SUCCESS) {
+				context.put("originalResult", result);
+				throw new SenderException(getLogPrefix()+"call to "+serviceIndication+" resulted in exitState ["+exitState+"] exitCode ["+exitCode+"]");
+			}
+			return result;
 		}
-		
-		ExitState exitState = (ExitState)context.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
-		Object exitCode = context.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
-		if (exitState!=null && exitState!=ExitState.SUCCESS) {
-			context.put("originalResult", result);
-			throw new SenderException(getLogPrefix()+"call to "+serviceIndication+" resulted in exitState ["+exitState+"] exitCode ["+exitCode+"]");
-		}
-		return result;
 	}
 
 	/**
@@ -275,7 +276,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 
 	/**
-	 * When <code>true</code>, the call is made in a separate thread, possibly using separate transaction. 
+	 * When <code>true</code>, the call is made in a separate thread, possibly using separate transaction.
 	 */
 	@IbisDoc({"when <code>true</code>, the call is made in a separate thread, possibly using separate transaction", "false"})
 	public void setIsolated(boolean b) {

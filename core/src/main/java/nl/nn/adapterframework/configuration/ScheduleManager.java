@@ -28,14 +28,17 @@ import org.springframework.context.ApplicationContextAware;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.lifecycle.ConfigurableLifecyleBase;
-import nl.nn.adapterframework.lifecycle.ConfiguringLifecycleProcessor;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
 import nl.nn.adapterframework.scheduler.job.IJob;
 
 /**
- * Configure/start/stop lifecycles are managed by Spring. See {@link ConfiguringLifecycleProcessor}
- *
+ * Container for jobs that are scheduled for periodic execution.
+ * 
  * @author Niels Meijer
+ *
+ */
+/*
+ * Configure/start/stop lifecycles are managed by Spring. See {@link ConfiguringLifecycleProcessor}
  */
 public class ScheduleManager extends ConfigurableLifecyleBase implements ApplicationContextAware, AutoCloseable {
 
@@ -132,6 +135,10 @@ public class ScheduleManager extends ConfigurableLifecyleBase implements Applica
 		}
 	}
 
+	/**
+	 * Job that is executed periodically. The time of execution can be configured within the job
+	 * or from outside the configuration through the Frank!Console.
+	 */
 	public void registerScheduledJob(IJob job) {
 		if(!inState(BootState.STOPPED)) {
 			log.warn("cannot add JobDefinition, manager in state ["+getState()+"]");

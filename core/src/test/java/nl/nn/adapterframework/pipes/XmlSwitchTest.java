@@ -2,7 +2,6 @@ package nl.nn.adapterframework.pipes;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -152,7 +151,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		session=new PipeLineSession();
 		session.put("originalMessage", message);
 
-		assertThrows("Cannot compare xs:string to xs:integer", PipeRunException.class, () -> testSwitch(new Message("<dummy/>"),"true"));
+		testSwitch(new Message("<dummy/>"),"true");
 	}
 
 	@Test

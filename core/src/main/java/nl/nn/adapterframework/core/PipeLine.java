@@ -49,15 +49,19 @@ import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.Misc;
 
 /**
- * Processor and keeper of a line of {@link IPipe Pipes}.
- * <br/>
- * Pipelines also generate statics information per Pipe and keep forwards, that are registered
- * at individual pipes during the configure phase.
- * <br/>
- * In the AppConstants there may be a property named "log.logIntermediaryResults" (true/false)
+ * Required in each {@link Adapter} to transform incoming messages. A pipeline
+ * is a sequence of pipes. A
+ * pipeline also defines its allowed end states using the <code>&lt;Exits&gt;</code>
+ * tag.
+ * <br/><br/>
+ * The pipes in a {@link PipeLine} may not be executed in sequential order, see {@link PipeForward}.
+ * <br/><br/>
+ * A pipeline gathers statistics about the messages it processes.
+ * <br/><br/>
+ * In the AppConstants there may be a property named <code>log.logIntermediaryResults</code> (true/false)
  * which indicates whether the intermediary results (between calling pipes) have to be logged.
  * <br/><br/>
- * <b>Transaction control</b><br>
+ * <b>Transaction control</b><br/><br/>
  * THE FOLLOWING TO BE UPDATED, attribute 'transacted' replaced by 'transactionAttribute'
  *
  * If {@link #setTransacted(boolean) transacted} is set to <code>true</code>, messages will be processed
@@ -79,8 +83,6 @@ import nl.nn.adapterframework.util.Misc;
  * If the processing of the message concluded without exceptions and the status of the transaction is
  * STATUS_ACTIVE (i.e. normal) the transaction will be committed. Otherwise it will be rolled back,
  * or marked for roll back by the calling party.
-
- * </p>
  *
  * @author  Johan Verrips
  */
@@ -94,7 +96,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	public static final String OUTPUT_WRAPPER_NAME   = "- pipeline outputWrapper";
 
 	// If you edit this default exit, please update the JavaDoc of class PipeLineExits as well.
-	private final String DEFAULT_SUCCESS_EXIT_NAME = "READY";
+	private static final String DEFAULT_SUCCESS_EXIT_NAME = "READY";
 
 	private @Getter String firstPipe;
 	private @Getter int maxThreads = 0;

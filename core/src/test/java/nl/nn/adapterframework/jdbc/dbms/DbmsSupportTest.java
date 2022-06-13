@@ -24,7 +24,9 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.hamcrest.core.StringStartsWith;
 import org.hamcrest.text.IsEmptyString;
@@ -91,6 +93,43 @@ public class DbmsSupportTest extends JdbcTestBase {
 		assumeThat(productKey, not(anyOf(equalTo("MariaDB"),equalTo("MySQL")))); // MariaDB and MySQL require exact case for table name parameters
 		assertTrue("Should have found existing column in schema ["+schema+"]", dbmsSupport.isColumnPresent(connection, schema, TEST_TABLE.toLowerCase(), "TINT"));
 		assertTrue("Should have found existing column in schema ["+schema+"]", dbmsSupport.isColumnPresent(connection, schema, TEST_TABLE.toUpperCase(), "TINT"));
+	}
+
+	@Test
+	public void testHasIndexOnColumn() throws JdbcException {
+		String schema = dbmsSupport.getSchema(connection);
+		assertTrue("Should have been index on column", dbmsSupport.hasIndexOnColumn(connection, schema, TEST_TABLE, "TKEY"));
+		assertTrue("Should have been index on column", dbmsSupport.hasIndexOnColumn(connection, schema, TEST_TABLE, "tkey"));
+		assertTrue("Should have been index on column", dbmsSupport.hasIndexOnColumn(connection, schema, TEST_TABLE, "tINT")); // also check first column of multi column index
+		assertFalse("Should not have been index on column", dbmsSupport.hasIndexOnColumn(connection, schema, TEST_TABLE, "TBOOLEAN"));
+		assertFalse("Should not have been index on column", dbmsSupport.hasIndexOnColumn(connection, schema, TEST_TABLE, "tboolean"));
+		assumeThat(productKey, not(anyOf(equalTo("MariaDB"),equalTo("MySQL")))); // MariaDB and MySQL require exact case for table name parameters
+		assertTrue("Should have been index on column", dbmsSupport.hasIndexOnColumn(connection, schema, TEST_TABLE.toLowerCase(), "TKEY"));
+		assertTrue("Should have been index on column", dbmsSupport.hasIndexOnColumn(connection, schema, TEST_TABLE.toUpperCase(), "TKEY"));
+	}
+
+	@Test
+	public void testHasIndexOnColumns() throws JdbcException {
+		String schema = dbmsSupport.getSchema(connection);
+		List<String> indexedColums = new ArrayList<>();
+		indexedColums.add("tINT");
+		indexedColums.add("tDATE");
+		List<String> indexedColumsUC = new ArrayList<>();
+		indexedColumsUC.add("tINT");
+		indexedColumsUC.add("tDATE");
+		List<String> indexedColumsLC = new ArrayList<>();
+		indexedColumsLC.add("tINT");
+		indexedColumsLC.add("tDATE");
+		List<String> indexedColumsWrongOrder = new ArrayList<>();
+		indexedColumsWrongOrder.add("tDATE");
+		indexedColumsWrongOrder.add("tINT");
+		assertTrue("Should have been index on columns", dbmsSupport.hasIndexOnColumns(connection, schema, TEST_TABLE, indexedColums));
+		assertTrue("Should have been index on columns", dbmsSupport.hasIndexOnColumns(connection, schema, TEST_TABLE, indexedColumsUC));
+		assertTrue("Should have been index on columns", dbmsSupport.hasIndexOnColumns(connection, schema, TEST_TABLE, indexedColumsLC));
+		assertFalse("Should not have been index on columns", dbmsSupport.hasIndexOnColumns(connection, schema, TEST_TABLE, indexedColumsWrongOrder));
+		assumeThat(productKey, not(anyOf(equalTo("MariaDB"),equalTo("MySQL")))); // MariaDB and MySQL require exact case for table name parameters
+		assertTrue("Should have been index on columns", dbmsSupport.hasIndexOnColumns(connection, schema, TEST_TABLE.toLowerCase(), indexedColums));
+		assertTrue("Should have been index on columns", dbmsSupport.hasIndexOnColumns(connection, schema, TEST_TABLE.toUpperCase(), indexedColums));
 	}
 
 	public void testGetTableColumns(String tableName) throws Exception {

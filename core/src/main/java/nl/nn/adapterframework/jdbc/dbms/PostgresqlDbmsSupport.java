@@ -31,6 +31,7 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 //import org.postgresql.largeobject.LargeObject;
@@ -276,6 +277,33 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 	@Override
 	public boolean isColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException {
 		return super.isColumnPresent(conn, schemaName!=null?schemaName:"public", tableName.toLowerCase(), columnName.toLowerCase());
+	}
+
+	@Override
+	public boolean hasIndexOnColumn(Connection conn, String schemaOwner, String tableName, String columnName) throws JdbcException {
+		return super.hasIndexOnColumn(conn, schemaOwner!=null?schemaOwner:"public", tableName.toLowerCase(), columnName.toLowerCase());
+	}
+
+	@Override
+	public boolean hasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns) throws JdbcException {
+		String schema = schemaOwner!=null?schemaOwner:"public";
+		String query = "SELECT pg_get_indexdef(indexrelid) FROM pg_index WHERE  indrelid = '"+schema+"."+tableName.toLowerCase()+"'::regclass";
+		StringBuilder target = new StringBuilder().append(" (").append(columns.get(0).toLowerCase());
+		for (int i=1; i<columns.size(); i++) {
+			target.append(", ").append(columns.get(i).toLowerCase());
+		}
+		try (PreparedStatement stmt = conn.prepareStatement(query)) {
+			try (ResultSet rs = stmt.executeQuery()) {
+				while (rs.next()) {
+					if (rs.getString(1).indexOf(target.toString())>0) {
+						return true;
+					}
+				}
+			}
+			return false;
+		} catch(SQLException e) {
+			throw new JdbcException("exception checking for indexes of table ["+tableName+"]"+(schemaOwner==null?"":" with schema ["+schemaOwner+"]"), e);
+		}
 	}
 
 	@Override

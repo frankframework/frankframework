@@ -1,0 +1,12 @@
+<block xmlns="urn:test" xmlns:ns="urn:test1">
+	<XDOC xmlns:ns="urn:test2">
+		<REF_ID xmlns:ns="urn:test3">0</REF_ID>
+		<XX xmlns:ns="urn:test4">0</XX>
+	</XDOC>
+	<XDOC>
+		<REF_ID>1</REF_ID>
+	</XDOC>
+	<XDOC>
+		<REF_ID>2</REF_ID>
+	</XDOC>
+</block>
