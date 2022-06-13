@@ -18,13 +18,12 @@ package nl.nn.adapterframework.pipes;
 import java.io.IOException;
 import java.net.URL;
 
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
@@ -39,7 +38,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StringResolver;
-import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.util.TransformerPool;
 
 /**
  * Produces a fixed result that does not depend on the input message. It may return the contents of a file
@@ -54,18 +53,19 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class FixedResultPipe extends FixedForwardPipe {
 
-	private final static String FILE_NOT_FOUND_FORWARD = "filenotfound";
+	private static final String FILE_NOT_FOUND_FORWARD = "filenotfound";
 
-	AppConstants appConstants;
-	private String filename;
-	private String filenameSessionKey;
-	private String returnString;
-	private boolean substituteVars=false;
-	private String replaceFrom = null;
-	private String replaceTo = null;
-	private String styleSheetName = null;
-	private boolean lookupAtRuntime=false;
-	private boolean replaceFixedParams=false;
+	private AppConstants appConstants;
+	private @Getter String filename;
+	private @Getter String filenameSessionKey;
+	private @Getter String returnString;
+	private @Getter boolean substituteVars;
+	private @Getter String replaceFrom;
+	private @Getter String replaceTo;
+	private @Getter String styleSheetName;
+	private @Getter boolean replaceFixedParams;
+
+	private TransformerPool transformerPool;
 
 	/**
 	 * checks for correct configuration, and translates the filename to
@@ -80,7 +80,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 		parameterNamesMustBeUnique = true;
 		super.configure();
 		appConstants = AppConstants.getInstance(getConfigurationClassLoader());
-		if (StringUtils.isNotEmpty(getFilename()) && !isLookupAtRuntime()) {
+		if (StringUtils.isNotEmpty(getFilename())) {
 			URL resource = null;
 			try {
 				resource = ClassUtils.getResourceURL(this, getFilename());
@@ -96,27 +96,24 @@ public class FixedResultPipe extends FixedForwardPipe {
 				throw new ConfigurationException("got exception loading ["+getFilename()+"]", e);
 			}
 		}
-		if ((StringUtils.isEmpty(getFilename())) && (StringUtils.isEmpty(getFilenameSessionKey())) && returnString==null) {  // allow an empty returnString to be specified
+		if (StringUtils.isEmpty(getFilename()) && StringUtils.isEmpty(getFilenameSessionKey()) && returnString==null) { // allow an empty returnString to be specified
 			throw new ConfigurationException("has neither filename nor filenameSessionKey nor returnString specified");
 		}
-		if (StringUtils.isNotEmpty(replaceFrom)) {
-			returnString = replace(returnString, replaceFrom, replaceTo );
+		if (StringUtils.isNotEmpty(getStyleSheetName())) {
+			transformerPool = TransformerPool.configureStyleSheetTransformer(getLogPrefix(null), this, getStyleSheetName(), 0);
 		}
 	}
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		String result=returnString;
-		String filename = null;
+		String result=getReturnString();
+		String filename = getFilename();
 		if (StringUtils.isNotEmpty(getFilenameSessionKey())) {
 			try {
 				filename = session.getMessage(getFilenameSessionKey()).asString();
 			} catch (IOException e) {
 				throw new PipeRunException(this, getLogPrefix(session) + "unable to get filename from session key ["+getFilenameSessionKey()+"]", e);
 			}
-		}
-		if (filename == null && StringUtils.isNotEmpty(getFilename()) && isLookupAtRuntime()) {
-			filename = getFilename();
 		}
 		if (StringUtils.isNotEmpty(filename)) {
 			URL resource = null;
@@ -129,9 +126,8 @@ public class FixedResultPipe extends FixedForwardPipe {
 				PipeForward fileNotFoundForward = findForward(FILE_NOT_FOUND_FORWARD);
 				if (fileNotFoundForward != null) {
 					return new PipeRunResult(fileNotFoundForward, message);
-				} else {
-					throw new PipeRunException(this,getLogPrefix(session)+"cannot find resource ["+filename+"]");
 				}
+				throw new PipeRunException(this,getLogPrefix(session)+"cannot find resource ["+filename+"]");
 			}
 			try {
 				result = Misc.resourceToString(resource, Misc.LINE_SEPARATOR);
@@ -139,47 +135,40 @@ public class FixedResultPipe extends FixedForwardPipe {
 				throw new PipeRunException(this,getLogPrefix(session)+"got exception loading ["+filename+"]", e);
 			}
 		}
-		if (getParameterList()!=null) {
-			ParameterValueList pvl;
+		if (StringUtils.isNotEmpty(getReplaceFrom()) && result != null) {
+			result = replace(result, getReplaceFrom(), getReplaceTo());
+		}
+		if (!getParameterList().isEmpty()) {
 			try {
-				pvl = getParameterList().getValues(message, session);
+				ParameterValueList pvl = getParameterList().getValues(message, session);
+				for(ParameterValue pv : pvl) {
+					String replaceFrom;
+					if (isReplaceFixedParams()) {
+						replaceFrom=pv.getName();
+					} else {
+						replaceFrom="${"+pv.getName()+"}";
+					}
+					result=replace(result, replaceFrom, pv.asStringValue(""));
+				}
 			} catch (ParameterException e) {
 				throw new PipeRunException(this,getLogPrefix(session)+"exception extracting parameters",e);
-			}
-			for(ParameterValue pv : pvl) {
-				String replaceFrom;
-				if (isReplaceFixedParams()) {
-					replaceFrom=pv.getDefinition().getName();
-				} else {
-					replaceFrom="${"+pv.getDefinition().getName()+"}";
-				}
-				result=replace(result,replaceFrom,pv.asStringValue(""));
 			}
 		}
 
 		message.closeOnCloseOf(session, this); // avoid connection leaking when the message itself is not consumed.
-		if (getSubstituteVars()){
-			result=StringResolver.substVars(returnString, session, appConstants);
+		if (isSubstituteVars()) {
+			result=StringResolver.substVars(result, session, appConstants);
 		}
 
-		if (StringUtils.isNotEmpty(styleSheetName)) {
-			URL xsltSource = ClassUtils.getResourceURL(this, styleSheetName);
-			if (xsltSource!=null) {
-				try{
-					String xsltResult = null;
-					Transformer transformer = XmlUtils.createTransformer(xsltSource);
-					xsltResult = XmlUtils.transformXml(transformer, result);
-					result = xsltResult;
-				} catch (IOException e) {
-					throw new PipeRunException(this,getLogPrefix(session)+"cannot retrieve ["+ styleSheetName + "], resource [" + xsltSource.toString() + "]", e);
-				} catch (SAXException|TransformerConfigurationException e) {
-					throw new PipeRunException(this,getLogPrefix(session)+"got error creating transformer from file [" + styleSheetName + "]", e);
-				} catch (TransformerException e) {
-					throw new PipeRunException(this,getLogPrefix(session)+"got error transforming resource [" + xsltSource.toString() + "] from [" + styleSheetName + "]", e);
-				}
+		if (transformerPool != null) {
+			try{
+				result = transformerPool.transform(Message.asSource(result));
+			} catch (SAXException e) {
+				throw new PipeRunException(this,getLogPrefix(session)+"got error converting string [" + result + "] to source", e);
+			} catch (IOException | TransformerException e) {
+				throw new PipeRunException(this,getLogPrefix(session)+"got error transforming message [" + result + "] with [" + getStyleSheetName() + "]", e);
 			}
 		}
-
 		log.debug(getLogPrefix(session)+ " returning fixed result [" + result + "]");
 
 		return new PipeRunResult(getSuccessForward(), result);
@@ -189,20 +178,20 @@ public class FixedResultPipe extends FixedForwardPipe {
 		// target is the original string
 		// from   is the string to be replaced
 		// to	 is the string which will used to replace
-		int start = target.indexOf (from);
+		int start = target.indexOf(from);
 		if (start==-1) return target;
 		int lf = from.length();
 		char [] targetChars = target.toCharArray();
-		StringBuffer buffer = new StringBuffer();
-		int copyFrom=0;
+		StringBuilder builder = new StringBuilder();
+		int copyFrom = 0;
 		while (start != -1) {
-			buffer.append (targetChars, copyFrom, start-copyFrom);
-			buffer.append (to);
-			copyFrom=start+lf;
+			builder.append(targetChars, copyFrom, start-copyFrom);
+			builder.append(to);
+			copyFrom = start+lf;
 			start = target.indexOf (from, copyFrom);
 		}
-		buffer.append (targetChars, copyFrom, targetChars.length-copyFrom);
-		return buffer.toString();
+		builder.append (targetChars, copyFrom, targetChars.length-copyFrom);
+		return builder.toString();
 	}
 
 	/**
@@ -213,9 +202,6 @@ public class FixedResultPipe extends FixedForwardPipe {
 	 */
 	public void setSubstituteVars(boolean substitute){
 		this.substituteVars=substitute;
-	}
-	public boolean getSubstituteVars(){
-		return this.substituteVars;
 	}
 
 	@Deprecated
@@ -229,9 +215,6 @@ public class FixedResultPipe extends FixedForwardPipe {
 	 */
 	public void setFilename(String filename) {
 		this.filename = filename;
-	}
-	public String getFilename() {
-		return filename;
 	}
 
 	@Deprecated
@@ -247,18 +230,12 @@ public class FixedResultPipe extends FixedForwardPipe {
 	public void setFilenameSessionKey(String filenameSessionKey) {
 		this.filenameSessionKey = filenameSessionKey;
 	}
-	public String getFilenameSessionKey() {
-		return filenameSessionKey;
-	}
 
 	/**
 	 * Returned message.
 	 */
 	public void setReturnString(String returnString) {
 		this.returnString = returnString;
-	}
-	public String getReturnString() {
-		return returnString;
 	}
 
 	public String getReplaceFrom() {
@@ -309,16 +286,12 @@ public class FixedResultPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * When set <code>true</code>, any parameter is used for replacements with <code>name-of-parameter</code> and not <code>${name-of-parameter}</code>.
+	 * When set <code>true</code>, any parameter is used for replacements but with <code>name-of-parameter</code> and not <code>${name-of-parameter}</code>
 	 *
 	 * @ff.default false
 	 */
-	@Deprecated
 	public void setReplaceFixedParams(boolean b){
 		replaceFixedParams=b;
-	}
-	public boolean isReplaceFixedParams(){
-		return replaceFixedParams;
 	}
 
 }

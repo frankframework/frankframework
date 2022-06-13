@@ -58,7 +58,7 @@
 			</pipe>
 			<pipe
 				name="do_success"
-				className="nl.nn.adapterframework.pipes.EchoPipe">
+				className="nl.nn.adapterframework.pipes.EchoPipe" getInputFromFixedValue="short text">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

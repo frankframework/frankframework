@@ -23,7 +23,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 
 import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbException;
@@ -31,28 +30,28 @@ import jcifs.smb.SmbFile;
 import jcifs.smb.SmbFileFilter;
 import jcifs.smb.SmbFileInputStream;
 import jcifs.smb.SmbFileOutputStream;
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * 
+ *
  * @author alisihab
  *
  */
 public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritableFileSystem<SmbFile> {
+	private final @Getter(onMethod = @__(@Override)) String domain = "SMB";
 
-	protected Logger log = LogUtil.getLogger(this);
-
-	private String share = null;
-	private String username = null;
-	private String password = null;
-	private String authAlias = null;
-	private String domain = null;
-	private boolean isForce;
-	private boolean listHiddenFiles = false;
+	private @Getter String share = null;
+	private @Getter String username = null;
+	private @Getter String password = null;
+	private @Getter String authAlias = null;
+	private @Getter String authenticationDomain = null;
+	private @Getter boolean isForce;
+	private @Getter boolean listHiddenFiles = false;
 
 	private NtlmPasswordAuthentication auth = null;
 	private SmbFile smbContext;
@@ -68,7 +67,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 		//NOTE: When using NtmlPasswordAuthentication without username it returns GUEST
 		CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
 		if (StringUtils.isNotEmpty(cf.getUsername())) {
-			auth = new NtlmPasswordAuthentication(getDomain(), cf.getUsername(), cf.getPassword());
+			auth = new NtlmPasswordAuthentication(getAuthenticationDomain(), cf.getUsername(), cf.getPassword());
 			log.debug("setting authentication to [" + auth.toString() + "]");
 		}
 	}
@@ -150,7 +149,6 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	}
 
 	private class Samba1Message extends Message {
-		
 		public Samba1Message(SmbFile f, Map<String,Object> context) {
 			super(() -> new SmbFileInputStream(f), context, f.getClass());
 		}
@@ -225,7 +223,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	}
 
 	@Override
-	public SmbFile moveFile(SmbFile f, String destinationFolder, boolean createFolder) throws FileSystemException {
+	public SmbFile moveFile(SmbFile f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
 		SmbFile dest = toFile(destinationFolder, f.getName());
 		try {
 			f.renameTo(dest);
@@ -236,7 +234,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	}
 
 	@Override
-	public SmbFile copyFile(SmbFile f, String destinationFolder, boolean createFolder) throws FileSystemException {
+	public SmbFile copyFile(SmbFile f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
 		SmbFile dest = toFile(destinationFolder, f.getName());
 		try {
 			f.copyTo(dest);
@@ -248,16 +246,16 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 
 	@Override
 	public String getPhysicalDestinationName() {
-		return "domain ["+getDomain()+"] share ["+getShare()+"]";
+		return "domain ["+getAuthenticationDomain()+"] share ["+getShare()+"]";
 	}
 
 
 	private class SmbFileIterator implements Iterator<SmbFile> {
 
-		private SmbFile files[];
+		private SmbFile[] files;
 		private int i = 0;
 
-		public SmbFileIterator(SmbFile files[]) {
+		public SmbFileIterator(SmbFile[] files) {
 			this.files = files;
 		}
 
@@ -297,6 +295,11 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	}
 
 	@Override
+	public String getParentFolder(SmbFile f) throws FileSystemException {
+		return f.getParent();
+	}
+
+	@Override
 	public String getCanonicalName(SmbFile f) {
 		return f.getCanonicalPath();
 	}
@@ -311,44 +314,34 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 		return null;
 	}
 
-	public String getShare() {
-		return share;
-	}
 	@IbisDoc({ "1", "the destination, aka smb://xxx/yyy share", "" })
 	public void setShare(String share) {
 		this.share = share;
 	}
-	
-	public String getUsername() {
-		return username;
-	}
+
 	@IbisDoc({ "2", "the smb share username", "" })
 	public void setUsername(String username) {
 		this.username = username;
 	}
 
-	public String getPassword() {
-		return password;
-	}
 	@IbisDoc({ "3", "the smb share password", "" })
 	public void setPassword(String password) {
 		this.password = password;
 	}
 
-	public String getAuthAlias() {
-		return authAlias;
-	}
 	@IbisDoc({ "4", "alias used to obtain credentials for the smb share", "" })
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}
 
-	public String getDomain() {
-		return domain;
-	}
 	@IbisDoc({ "5", "domain, in case the user account is bound to a domain", "" })
+	public void setAuthenticationDomain(String domain) {
+		this.authenticationDomain = domain;
+	}
+	@Deprecated
+	@ConfigurationWarning("Please use attribute authenticationDomain instead")
 	public void setDomain(String domain) {
-		this.domain = domain;
+		setAuthenticationDomain(domain);
 	}
 
 	@IbisDoc({ "6", "when <code>true</code>, intermediate directories are created also", "false" })
@@ -356,13 +349,8 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 		isForce = force;
 	}
 
-	public boolean isListHiddenFiles() {
-		return listHiddenFiles;
-	}
 	@IbisDoc({ "7", "controls whether hidden files are seen or not", "false" })
 	public void setListHiddenFiles(boolean listHiddenFiles) {
 		this.listHiddenFiles = listHiddenFiles;
 	}
-
-
 }

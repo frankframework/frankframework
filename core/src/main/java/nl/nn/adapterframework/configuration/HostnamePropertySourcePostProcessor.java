@@ -23,7 +23,7 @@ import nl.nn.adapterframework.lifecycle.CustomPropertySourcePostProcessor;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Misc;
 
- /**
+/**
  * Make the hostname property available to the Ibis configuration and the Spring
  * configuration.
  *

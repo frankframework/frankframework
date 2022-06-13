@@ -40,7 +40,7 @@ import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * {@link IWritableFileSystem FileSystem} representation of the local filesystem.
- *  
+ *
  * @author Gerrit van Brakel
  *
  */
@@ -127,6 +127,7 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	public boolean isFolder(Path f) {
 		return Files.isDirectory(f);
 	}
+
 	@Override
 	public boolean folderExists(String folder) throws FileSystemException {
 		return isFolder(toFile(folder));
@@ -173,9 +174,9 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 			throw new FileSystemException("Cannot rename file ["+ source.toString() +"] to ["+ destination.toString() +"]", e);
 		}
 	}
-	
+
 	@Override
-	public Path moveFile(Path f, String destinationFolder, boolean createFolder) throws FileSystemException {
+	public Path moveFile(Path f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
 		if(createFolder && !folderExists(destinationFolder)) {
 			try {
 				Files.createDirectories(toFile(destinationFolder));
@@ -190,7 +191,7 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 		}
 	}
 	@Override
-	public Path copyFile(Path f, String destinationFolder, boolean createFolder) throws FileSystemException {
+	public Path copyFile(Path f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
 		if(createFolder && !folderExists(destinationFolder)) {
 			try {
 				Files.createDirectories(toFile(destinationFolder));
@@ -222,6 +223,11 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 			return f.getFileName().toString();
 		}
 		return null;
+	}
+
+	@Override
+	public String getParentFolder(Path f) throws FileSystemException {
+		return getCanonicalName(f.getParent());
 	}
 
 	@Override

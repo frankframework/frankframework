@@ -99,8 +99,8 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class PushingIfsaProviderListener extends IfsaFacade implements IPortConnectedListener<IFSAMessage>, IThreadCountControllable, IKnowsDeliveryCount, ITransactionRequirements {
 
-	public final static String THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY = "originalRawMessage";
-	public final static String THREAD_CONTEXT_BIFNAME_KEY="IfsaBif";
+	public static final String THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY = "originalRawMessage";
+	public static final String THREAD_CONTEXT_BIFNAME_KEY="IfsaBif";
 
 
 	private String listenerPort;

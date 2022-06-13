@@ -45,8 +45,8 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class InputOutputPipeProcessor extends PipeProcessorBase {
 	protected Logger secLog = LogUtil.getLogger("SEC");
 	
-	private final static String ME_START = "{sessionKey:";
-	private final static String ME_END = "}";
+	private static final String ME_START = "{sessionKey:";
+	private static final String ME_END = "}";
 
 	@Override
 	protected PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {

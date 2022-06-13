@@ -43,7 +43,7 @@ public class IbisMessageListenerContainer extends DefaultMessageListenerContaine
 
 	@Override
 	protected Connection createConnection() throws JMSException {
-		Connection conn; 
+		Connection conn;
 		if (credentialFactory!=null) {
 			conn = getConnectionFactory().createConnection(credentialFactory.getUsername(), credentialFactory.getPassword());
 		} else {

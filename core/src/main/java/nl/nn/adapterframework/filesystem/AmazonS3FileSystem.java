@@ -67,7 +67,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	private boolean chunkedEncodingDisabled = false;
 	private boolean forceGlobalBucketAccessEnabled = false;
 	private String clientRegion = Regions.EU_WEST_1.getName();
-	
+
 	private String bucketName;
 //	private String destinationBucketName;
 //	private String bucketRegion;
@@ -79,10 +79,10 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 //	private boolean storageClassEnabled = false;
 //	private boolean bucketCreationEnabled = false;
 //	private boolean bucketExistsThrowException = true;
-	
+
 	private String proxyHost = null;
 	private Integer proxyPort = null;
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 
@@ -163,7 +163,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 			throw new FileSystemException("Cannot process requested action", e);
 		}
 
-		List<S3Object> list = new ArrayList<S3Object>();
+		List<S3Object> list = new ArrayList<>();
 		for (S3ObjectSummary summary : summaries) {
 			S3Object object = new S3Object();
 			ObjectMetadata metadata = new ObjectMetadata();
@@ -174,7 +174,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 			object.setObjectMetadata(metadata);
 			if(!object.getKey().endsWith("/") && !(prefix.isEmpty() && object.getKey().contains("/"))) {
 				list.add(object);
-			} 
+			}
 		}
 
 		return FileSystemUtils.getDirectoryStream(list.iterator());
@@ -203,7 +203,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 					try (FileInputStream fis = new FileInputStream(file)) {
 						ObjectMetadata metaData = new ObjectMetadata();
 						metaData.setContentLength(file.length());
-	
+
 						s3Client.putObject(bucketName, f.getKey(), fis, metaData);
 					} finally {
 						file.delete();
@@ -231,9 +231,9 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	}
 
 	private class S3Message extends Message {
-		
+
 		private S3Object file;
-		
+
 		public S3Message(S3Object file, Map<String,Object> context) {
 			super(() -> file.getObjectContent(), context, file.getClass());
 			this.file = file;
@@ -243,9 +243,9 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		public long size() {
 			return file.getObjectMetadata().getContentLength();
 		}
-		
+
 	}
-	
+
 	@Override
 	public void deleteFile(S3Object f) throws FileSystemException {
 		try {
@@ -298,14 +298,14 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	}
 
 	@Override
-	public S3Object copyFile(S3Object f, String destinationFolder, boolean createFolder) throws FileSystemException {
+	public S3Object copyFile(S3Object f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
 		String destinationFile = destinationFolder+"/"+f.getKey();
 		s3Client.copyObject(bucketName, f.getKey(), bucketName, destinationFile);
 		return toFile(destinationFile);
 	}
 
 	@Override
-	public S3Object moveFile(S3Object f, String destinationFolder, boolean createFolder) throws FileSystemException {
+	public S3Object moveFile(S3Object f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
 		return renameFile(f,toFile(destinationFolder,f.getKey()));
 	}
 
@@ -316,7 +316,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		attributes.put("name", bucketName);
 		return attributes;
 	}
-	
+
 	@Override
 	public long getFileSize(S3Object f) throws FileSystemException {
 		return f.getObjectMetadata().getContentLength();
@@ -325,6 +325,11 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	public String getName(S3Object f) {
 		return f.getKey();
+	}
+
+	@Override
+	public String getParentFolder(S3Object f) throws FileSystemException {
+		return f.getBucketName();
 	}
 
 	@Override
@@ -347,10 +352,10 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 //	* Creates a bucket on Amazon S3.
 //	*
 //	* @param bucketName
-//	*            The desired name for a bucket that is about to be created. The class {@link BucketNameUtils} 
+//	*            The desired name for a bucket that is about to be created. The class {@link BucketNameUtils}
 //	*            provides a method that can check if the bucketName is valid. This is done just before the bucketName is used here.
 //	* @param bucketExistsThrowException
-//	* 			  This parameter is used for controlling the behavior for whether an exception has to be thrown or not. 
+//	* 			  This parameter is used for controlling the behavior for whether an exception has to be thrown or not.
 //	* 			  In case of upload action being configured to be able to create a bucket, an exception will not be thrown when a bucket with assigned bucketName already exists.
 //	*/
 //	public String createBucket(String bucketName, boolean bucketExistsThrowException) throws SenderException {
@@ -392,11 +397,11 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 //	}
 
 //	/**
-//	 * Copies a file from one Amazon S3 bucket to another one. 
+//	 * Copies a file from one Amazon S3 bucket to another one.
 //	 *
 //	 * @param fileName
 //	 * 				This is the name of the file that is desired to be copied.
-//	 * 
+//	 *
 //	 * @param destinationFileName
 //	 * 				The name of the destination file
 //	 */
@@ -447,11 +452,11 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 //	}
 
 //	/**
-//	 * This method is wrapper which makes it possible for upload and copy actions to create a bucket and 
-//	 * in case a bucket already exists the operation will proceed without throwing an exception. 
+//	 * This method is wrapper which makes it possible for upload and copy actions to create a bucket and
+//	 * in case a bucket already exists the operation will proceed without throwing an exception.
 //	 *
 //	 * @param bucketName
-//	 *            The name of the bucket that is addressed. 
+//	 *            The name of the bucket that is addressed.
 //	 */
 //	public void bucketCreationWithObjectAction(String bucketName) throws SenderException {
 //		if (isBucketCreationEnabled())
@@ -464,7 +469,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 //	 * This is a help method which throws an exception if a bucket does not exist.
 //	 *
 //	 * @param bucketName
-//	 *            The name of the bucket that is processed. 
+//	 *            The name of the bucket that is processed.
 //	 */
 //	public void bucketDoesNotExist(String bucketName) throws SenderException {
 //		if (!s3Client.doesBucketExistV2(bucketName))
@@ -477,7 +482,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 //	 * @param bucketName
 //	 *            The name of the bucket where the file is stored in.
 //	 * @param fileName
-//	 * 			  The name of the file that is processed. 
+//	 * 			  The name of the file that is processed.
 //	 */
 //	public void fileDoesNotExist(String bucketName, String fileName) throws SenderException {
 //		if (!s3Client.doesObjectExist(bucketName, fileName))
@@ -486,7 +491,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	@Override
 	public String getPhysicalDestinationName() {
-		return "bucket ["+getBucketName()+"]"; 
+		return "bucket ["+getBucketName()+"]";
 	}
 
 	public static List<String> getAvailableRegions() {

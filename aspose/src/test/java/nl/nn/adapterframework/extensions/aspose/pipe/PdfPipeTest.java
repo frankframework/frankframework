@@ -51,7 +51,7 @@ import nl.nn.adapterframework.testutil.TestFileUtils;
 
 /**
  * Executes defined tests against the PdfPipe to ensure the correct working of this pipe.
- * 
+ *
  * @author Laurens Mäkel
  */
 
@@ -67,8 +67,8 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	}
 
 	@Override
-	public void setup() throws Exception {
-		super.setup();
+	public void setUp() throws Exception {
+		super.setUp();
 		pdfOutputLocation = Files.createTempDirectory("Pdf");
 		pipe.setPdfOutputLocation(pdfOutputLocation.toString());
 		pipe.setUnpackCommonFontsArchive(true);
@@ -248,7 +248,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	public void emailWithAttachments() throws Exception {
 		expectSuccessfullConversion("Txt2Pdf", "/PdfPipe/nestedMail.msg", "/PdfPipe/xml-results/nestedMail.xml", "/PdfPipe/results/nestedMail.pdf");
 	}
-	
+
 	@Test
 	public void excel2pdf() throws Exception {
 		expectSuccessfullConversion("xls2pdf", "/PdfPipe/excel.xls", "/PdfPipe/xml-results/xls.xml", "/PdfPipe/results/excel.pdf");
@@ -263,27 +263,27 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	public void fontTestEmail() throws Exception {
 		expectSuccessfullConversion("fontTestEmail", "/PdfPipe/fonttest/fontTestEmail.msg", "/PdfPipe/xml-results/fontTestEmail.xml", "/PdfPipe/results/fontTestEmail.pdf");
 	}
-	
+
 	@Test
 	public void fontTestSlides() throws Exception {
 		expectSuccessfullConversion("fontTestSlides", "/PdfPipe/fonttest/fontTestSlides.msg", "/PdfPipe/xml-results/fontTestSlides.xml", "/PdfPipe/results/fontTestSlides.pdf");
 	}
-	
+
 	@Test
 	public void fontTestWord() throws Exception {
 		expectSuccessfullConversion("fontTestWord", "/PdfPipe/fonttest/fontTestWord.msg", "/PdfPipe/xml-results/fontTestWord.xml", "/PdfPipe/results/fontTestWord.pdf");
 	}
-	
+
 	@Test
 	public void mailWithExcelAttachment() throws Exception {
 		expectSuccessfullConversion("mailWithExcelAttachment", "/PdfPipe/MailWithAttachments/mailWithExcelAttachment.msg", "/PdfPipe/xml-results/mailWithExcelAttachment.xml", "/PdfPipe/results/mailWithExcelAttachment.pdf");
 	}
-	
+
 	@Test
 	public void mailWithImage() throws Exception {
 		expectSuccessfullConversion("mailWithImage", "/PdfPipe/MailWithAttachments/mailWithImage.msg", "/PdfPipe/xml-results/mailWithImage.xml", "/PdfPipe/results/mailWithImage.pdf");
 	}
-	
+
 	@Test
 	public void mailWithPdfAttachment() throws Exception {
 		expectSuccessfullConversion("mailWithPdfAttachment", "/PdfPipe/MailWithAttachments/mailWithPdfAttachment.msg", "/PdfPipe/xml-results/mailWithPdfAttachment.xml", "/PdfPipe/results/mailWithPdfAttachment.pdf");

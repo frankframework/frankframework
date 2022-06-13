@@ -45,8 +45,8 @@ import nl.nn.adapterframework.util.LogUtil;
 
 @RunWith(Parameterized.class)
 public abstract class JdbcTestBase {
-	protected final static String TEST_CHANGESET_PATH = "Migrator/Ibisstore_4_unittests_changeset.xml";
-	protected final static String DEFAULT_CHANGESET_PATH = "IAF_Util/IAF_DatabaseChangelog.xml";
+	protected static final String TEST_CHANGESET_PATH = "Migrator/Ibisstore_4_unittests_changeset.xml";
+	protected static final String DEFAULT_CHANGESET_PATH = "IAF_Util/IAF_DatabaseChangelog.xml";
 	protected static Logger log = LogUtil.getLogger(JdbcTestBase.class);
 	private @Getter TestConfiguration configuration;
 
@@ -199,6 +199,7 @@ public abstract class JdbcTestBase {
 				"CREATE TABLE "+TEST_TABLE+"(tKEY "+dbmsSupport.getNumericKeyFieldType()+ " PRIMARY KEY, tVARCHAR "+dbmsSupport.getTextFieldType()+"(100), tINT INT, tNUMBER NUMERIC(10,5), " +
 				"tDATE DATE, tDATETIME "+dbmsSupport.getTimestampFieldType()+", tBOOLEAN "+dbmsSupport.getBooleanFieldType()+", "+
 				"tCLOB "+dbmsSupport.getClobFieldType()+", tBLOB "+dbmsSupport.getBlobFieldType()+")");
+		JdbcUtil.executeStatement(connection,"CREATE INDEX idx2 ON "+TEST_TABLE+"(tINT,tDATE)");
 		SQLWarning warnings = connection.getWarnings();
 		if(warnings != null) {
 			log.warn(JdbcUtil.warningsToString(warnings));

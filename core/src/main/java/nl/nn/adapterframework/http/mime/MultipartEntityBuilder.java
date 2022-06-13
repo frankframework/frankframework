@@ -47,12 +47,10 @@ public class MultipartEntityBuilder {
 	/**
 	 * The pool of ASCII chars to be used for generating a multipart boundary.
 	 */
-	private final static char[] MULTIPART_CHARS =
-			"-_1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-					.toCharArray();
+	private static final char[] MULTIPART_CHARS = "-_1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
 
-	private final static String DEFAULT_SUBTYPE = "form-data";
-	private final static String MTOM_SUBTYPE = "related";
+	private static final String DEFAULT_SUBTYPE = "form-data";
+	private static final String MTOM_SUBTYPE = "related";
 
 	private ContentType contentType;
 	private String boundary = null;
@@ -74,7 +72,7 @@ public class MultipartEntityBuilder {
 	}
 
 	public MultipartEntityBuilder setMtomMultipart() {
- 		mtom = true;
+		mtom = true;
 		return this;
 	}
 
@@ -100,7 +98,7 @@ public class MultipartEntityBuilder {
 			return this;
 		}
 		if (this.bodyParts == null) {
-			this.bodyParts = new ArrayList<FormBodyPart>();
+			this.bodyParts = new ArrayList<>();
 		}
 
 		if(mtom) {
@@ -190,7 +188,7 @@ public class MultipartEntityBuilder {
 			charsetCopy = contentType.getCharset();
 		}
 
-		List<NameValuePair> paramsList = new ArrayList<NameValuePair>(5);
+		List<NameValuePair> paramsList = new ArrayList<>(5);
 		paramsList.add(new BasicNameValuePair("boundary", boundaryCopy));
 		if (charsetCopy != null) {
 			paramsList.add(new BasicNameValuePair("charset", charsetCopy.name()));
@@ -209,8 +207,7 @@ public class MultipartEntityBuilder {
 				contentType.withParameters(params) :
 				ContentType.create("multipart/" + subtypeCopy, params);
 
-		List<FormBodyPart> bodyPartsCopy = bodyParts != null ? new ArrayList<FormBodyPart>(bodyParts) :
-				Collections.<FormBodyPart>emptyList();
+		List<FormBodyPart> bodyPartsCopy = bodyParts != null ? new ArrayList<>(bodyParts) : Collections.<FormBodyPart>emptyList();
 		MultipartForm form = new MultipartForm(charsetCopy, boundaryCopy, bodyPartsCopy);
 		return new MultipartEntity(form, contentTypeCopy, form.getTotalLength());
 	}

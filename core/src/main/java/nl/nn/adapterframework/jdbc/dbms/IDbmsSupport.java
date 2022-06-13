@@ -155,10 +155,8 @@ public interface IDbmsSupport {
 	boolean isColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException;
 	boolean isIndexPresent(Connection conn, String schemaOwner, String tableName, String indexName);
 	boolean isSequencePresent(Connection conn, String schemaOwner, String tableName, String sequenceName);
-	boolean isIndexColumnPresent(Connection conn, String schemaOwner, String tableName, String indexName, String columnName);
-	int getIndexColumnPosition(Connection conn, String schemaOwner, String tableName, String indexName, String columnName);
-	boolean hasIndexOnColumn(Connection conn, String schemaOwner, String tableName, String columnName);
-	boolean hasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns);
+	boolean hasIndexOnColumn(Connection conn, String schemaOwner, String tableName, String columnName) throws JdbcException;
+	boolean hasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns) throws JdbcException;
 	String getSchemaOwner(Connection conn) throws SQLException, JdbcException;
 
 	boolean isConstraintViolation(SQLException e);

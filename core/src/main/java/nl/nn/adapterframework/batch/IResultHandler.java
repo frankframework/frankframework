@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.batch;
 
 import java.util.List;
+import java.util.Map;
 
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -72,8 +73,8 @@ public interface IResultHandler extends IConfigurable {
 	 */
 	void closeRecordType(PipeLineSession session, String streamId) throws Exception;
 	
-	void openBlock(PipeLineSession session, String streamId, String blockName) throws Exception;
-	void closeBlock(PipeLineSession session, String streamId, String blockName) throws Exception;
+	void openBlock(PipeLineSession session, String streamId, String blockName, Map<String, Object> blocks) throws Exception;
+	void closeBlock(PipeLineSession session, String streamId, String blockName, Map<String, Object> blocks) throws Exception;
 
 	/**
 	 * @return true if this resulthandler should be used for all flows if no resulthandler is specified for that flow 

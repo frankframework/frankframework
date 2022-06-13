@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GetParties xmlns="http://www.ibissource.org/tom" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.ibissource.org/tom file:///C:/Gerrit/Workspaces/eclipse/iaf/core/src/test/resources/Validation/Include/xsd/GetPartiesOnAgreementInsurance_v1.xsd">
+	<PartyAgreementRoleType>99</PartyAgreementRoleType>
+</GetParties>

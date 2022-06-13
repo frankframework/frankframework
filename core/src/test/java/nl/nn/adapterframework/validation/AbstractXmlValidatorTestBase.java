@@ -42,7 +42,7 @@ public abstract class AbstractXmlValidatorTestBase extends XmlValidatorTestBase 
 		PipeLineSession session = new PipeLineSession();
 
 		try {
-			instance.configure("init");
+			instance.configure(null);
 			instance.start();
 
 			RootValidations rootvalidations = null;
