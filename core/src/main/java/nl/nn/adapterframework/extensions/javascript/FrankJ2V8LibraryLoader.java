@@ -14,6 +14,10 @@
    limitations under the License.
 */
 /*******************************************************************************
+ * File copied from the original j2v8 LibraryLoader.java source, version 4.6.0.
+ * It has been modified to avoid having to set the <<ALL FILES>> execute permission
+ * for loading the native library. Only the call to 'chmod()' is disabled.
+ * 
  * Original Copyright statement:
  *
  * Copyright (c) 2015 EclipseSource and others.
@@ -25,9 +29,6 @@
  * Contributors:
  *	EclipseSource - initial API and implementation
  *
- * File copied from the original j2v8 LibraryLoader.java source, version 4.6.0.
- * It has been modified to avoid having to set the <<ALL FILES>> execute permission
- * for loading the native library. Only the call to 'chmod()' is disabled.
  ******************************************************************************/
 package nl.nn.adapterframework.extensions.javascript;
 
