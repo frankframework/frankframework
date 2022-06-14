@@ -17,7 +17,7 @@
  * File copied from the original j2v8 LibraryLoader.java source, version 4.6.0.
  * It has been modified to avoid having to set the <<ALL FILES>> execute permission
  * for loading the native library. Only the call to 'chmod()' is disabled.
- * 
+ *
  * Original Copyright statement:
  *
  * Copyright (c) 2015 EclipseSource and others.
@@ -62,8 +62,8 @@ class FrankJ2V8LibraryLoader {
 
 	static void loadLibrary(final String tempDirectory) {
 		if ( isAndroid() ) {
-		  System.loadLibrary("j2v8");
-		  return;
+			System.loadLibrary("j2v8");
+			return;
 		}
 		StringBuffer message = new StringBuffer();
 		String libShortName = computeLibraryShortName();

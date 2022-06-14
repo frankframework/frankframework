@@ -99,7 +99,7 @@ public class J2V8 implements JavascriptEngine<V8> {
 				}
 			}
 		}
-		v8 = V8.createV8Runtime(alias, tempDirectory); 
+		v8 = V8.createV8Runtime(alias, tempDirectory);
 	}
 
 	@Override
