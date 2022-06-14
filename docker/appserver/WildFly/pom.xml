@@ -57,15 +57,11 @@
 		</dependency>
 		<dependency>
 		    <groupId>org.apache.activemq</groupId>
-		    <artifactId>artemis-jms-client-all</artifactId>
-			<version>${artemis.driver.version}</version>
-		</dependency>
-		<dependency>
-		    <groupId>org.apache.activemq</groupId>
 		    <artifactId>activemq-rar</artifactId>
 		    <version>${activemq.driver.version}</version>
 		    <type>rar</type>
 		</dependency>
+		<!-- Artemis is already part of WildFly, so not added explicitly -->
 	</dependencies>
 
 	<build>
