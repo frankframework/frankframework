@@ -49,6 +49,8 @@
 		<property name="active.tibco" value="false"/>
 		<property name="active.jms" value="false"/>
 		<property name="active.ifsa" value="false"/>
+		<property name="credentialFactory.class" value="nl.nn.credentialprovider.PropertyFileCredentialFactory"/>
+		<property name="authAliases.expansion.allowed" value="testalias"/>
 	</system-properties>
 	<!-- End of Framework properties -->
     <management>
