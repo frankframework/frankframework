@@ -63,4 +63,3 @@ overview.html
 .editorconfig
 .checkstyle
 checkstyle.xml
-J2V8LibraryLoader.java
