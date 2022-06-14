@@ -25,10 +25,10 @@ import org.xml.sax.SAXException;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.ParameterValue;
@@ -44,8 +44,29 @@ import nl.nn.adapterframework.util.TransformerPool;
  * Produces a fixed result that does not depend on the input message. It may return the contents of a file
  * when <code>filename</code> or <code>filenameSessionKey</code> is specified. Otherwise the
  * value of attribute <code>returnString</code> is returned.
+ * <br/><br/>
+ * Using parameters and the attributes of this pipe, it is possible to substitute values. This pipe
+ * performs the following steps:
+ * <ol>
+ * <li>When a configuration is loaded, all expressions <code>${...}</code> within <code>Configuration.xml</code> and its referenced entities are substituted.
+ * This substitution is done according to system properties and application properties (DeploymentSpecifics.properties and others). See the Frank!Manual for details.
+ * This substitution is done before this pipe is configured or executed.
+ * <li>During execution, this pipe first obtains a string based on attributes <code>returnString</code>, <code>filename</code> or <code>filenameSessionKey</code>.
+ * <li>The resulting string is transformed according to attributes <code>replaceFrom</code> and <code>replaceTo</code> if set.
+ * Please note that the plain value of attribute <code>replaceFrom</code> is matched, no <code>${...}</code> here.
+ * <li>The resulting string is substituted based on the parameters of this pipe. This step depends on attribute <code>replaceFixedParams</code>.
+ * Assume that there is a parameter with name <code>xyz</code>. If <code>replaceFixedParams</code> is <code>false</code>, then
+ * each occurrence of <code>${xyz}</code> is replaced by the parameter's value. Otherwise, the text <code>xyz</code>
+ * is substituted. See {@link nl.nn.adapterframework.parameters.Parameter} to see how parameter values are determined.
+ * <li>If attribute <code>substituteVars</code> is <code>true</code>, then expressions <code>${...}</code> are substituted using
+ * system properties, pipelinesession variables and application properties. Please note that
+ * no <code>${...}</code> patterns are left if the initial string came from attribute <code>returnString</code>, because
+ * any <code>${...}</code> pattern in attribute <code>returnString</code> is substituted when the configuration is loaded.
+ * <li>If attribute <code>styleSheetName</code> is set, then the referenced XSLT stylesheet is applied to the resulting string.
+ * </ol>  
  *
- * @ff.parameters Parameters are not supported. Please do not use them with this pipe.
+ * @ff.parameters Used for substitution. For a parameter named <code>xyz</code>, the string <code>${xyz}</code> or
+ * <code>xyz</code> (if <code>replaceFixedParams</code> is true) is substituted by the parameter's value.
  *
  * @ff.forward filenotfound the configured file was not found (when this forward isn't specified an exception will be thrown)
  *
@@ -243,7 +264,6 @@ public class FixedResultPipe extends FixedForwardPipe {
 	}
 	/**
 	 * If set, every occurrence of this attribute's value is replaced by the value of <code>replaceTo</code>.
-	 * Not applied if returned message comes via attribute <code>filenameSessionKey</code> or if <code>lookupAtRuntime</code> is true.
 	 */
 	public void setReplaceFrom (String replaceFrom){
 		this.replaceFrom=replaceFrom;
@@ -264,8 +284,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 		return styleSheetName;
 	}
 	/**
-	 * File name of XSLT stylesheet to apply to the value obtained from attributes
-	 * <code>returnString</code>, <code>filename</code> and <code>filenameSessionKey</code>.
+	 * File name of XSLT stylesheet to apply.
 	 * Path is relative to the configuration's root directory (file is expected on the classpath).
 	 */
 	public void setStyleSheetName (String styleSheetName){
@@ -273,7 +292,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * When set <code>true</code>, any parameter is used for replacements but with <code>name-of-parameter</code> and not <code>${name-of-parameter}</code>
+	 * When set <code>true</code>, parameter replacement matches <code>name-of-parameter</code>, not <code>${name-of-parameter}</code>
 	 *
 	 * @ff.default false
 	 */
