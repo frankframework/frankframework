@@ -259,18 +259,11 @@ public class FixedResultPipe extends FixedForwardPipe {
 		this.returnString = returnString;
 	}
 
-	public String getReplaceFrom() {
-		return replaceFrom;
-	}
 	/**
 	 * If set, every occurrence of this attribute's value is replaced by the value of <code>replaceTo</code>.
 	 */
 	public void setReplaceFrom (String replaceFrom){
 		this.replaceFrom=replaceFrom;
-	}
-
-	public String getReplaceTo() {
-		return replaceTo;
 	}
 
 	/**
