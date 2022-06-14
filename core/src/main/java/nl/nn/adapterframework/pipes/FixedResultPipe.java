@@ -262,20 +262,17 @@ public class FixedResultPipe extends FixedForwardPipe {
 	/**
 	 * If set, every occurrence of this attribute's value is replaced by the value of <code>replaceTo</code>.
 	 */
-	public void setReplaceFrom (String replaceFrom){
+	public void setReplaceFrom(String replaceFrom){
 		this.replaceFrom=replaceFrom;
 	}
 
 	/**
 	 * See <code>replaceFrom</code>.
 	 */
-	public void setReplaceTo (String replaceTo){
+	public void setReplaceTo(String replaceTo){
 		this.replaceTo=replaceTo;
 	}
 
-	public String getStyleSheetName() {
-		return styleSheetName;
-	}
 	/**
 	 * File name of XSLT stylesheet to apply.
 	 * Path is relative to the configuration's root directory (file is expected on the classpath).
