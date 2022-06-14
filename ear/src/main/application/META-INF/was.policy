@@ -45,7 +45,8 @@ permission java.util.logging.LoggingPermission "control";
 
 permission java.lang.RuntimePermission "getenv.*";
 
-// permission java.util.PropertyPermission "*", "read";
+// to be able to read custom properties 
+permission java.util.PropertyPermission "*", "read";
 
 permission com.ibm.websphere.security.WebSphereRuntimePermission "accessRuntimeClasses";
 

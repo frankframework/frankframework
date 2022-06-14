@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2019-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.extensions.javascript;
 
 import java.io.File;
+import java.lang.reflect.Field;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -38,6 +39,9 @@ public class J2V8 implements JavascriptEngine<V8> {
 	private Logger log = LogUtil.getLogger(this);
 	private V8 v8;
 	private String alias = null;
+
+	private static boolean j2v8LibraryLoaded = false;
+	private static Object j2v8Lock = new Object();
 
 	@Override
 	public void setGlobalAlias(String alias) {
@@ -75,9 +79,27 @@ public class J2V8 implements JavascriptEngine<V8> {
 	}
 
 	@Override
-	public void startRuntime() {
-		String directory = getTempDirectory();
-		v8 = V8.createV8Runtime(alias, directory); // The V8 runtime (DLL/SO files) have to be extracted somewhere, using an absolute path. Defaults to ${ibis.tmpdir}
+	public void startRuntime() throws JavascriptException {
+		// The V8 runtime (DLL/SO files) have to be extracted somewhere, using an absolute path. Defaults to ${ibis.tmpdir}
+		String tempDirectory = getTempDirectory();
+		// preload the library to avoid having to set ALL FILES execute permission
+		if (!j2v8LibraryLoaded) {
+			synchronized (j2v8Lock) {
+				if (!j2v8LibraryLoaded) {
+					FrankJ2V8LibraryLoader.loadLibrary(tempDirectory);
+					// now update the private boolean field in the ancestor that indicates that the library has been loaded.
+					try {
+						Field privateField = V8.class.getDeclaredField("nativeLibraryLoaded");
+						privateField.setAccessible(true); // it additional permissions might be required for this
+						privateField.set(null, true);
+					} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+						throw new JavascriptException("Cannot indicate that native J2V8 library has been loaded", e);
+					}
+					j2v8LibraryLoaded = true;
+				}
+			}
+		}
+		v8 = V8.createV8Runtime(alias, tempDirectory); 
 	}
 
 	@Override
