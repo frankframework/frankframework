@@ -412,7 +412,7 @@
 					<configuration>
 						<excludeFile>${iaf.rootdir}/copyrightExcludeFile.txt</excludeFile>
 						<exclude>
-							DataSourceXAResourceRecoveryHelper.java,NarayanaRecoveryManager.java,FilenameUtils.java,PasswordHash.java
+							DataSourceXAResourceRecoveryHelper.java,NarayanaRecoveryManager.java,FilenameUtils.java,PasswordHash.java,FrankJ2V8LibraryLoader.java
 						</exclude>
 						<ignoreYear>true</ignoreYear>
 						<useDash>true</useDash>
@@ -534,7 +534,7 @@
 						</execution>
 					</executions>
 				</plugin>
-				
+
 				<!-- This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
@@ -585,9 +585,9 @@
 				<artifactId>maven-project-info-reports-plugin</artifactId>
 				<version>3.1.0</version>
 			</plugin>
-			<!-- 
-				http://maven.apache.org/plugins/maven-javadoc-plugin/usage.html 
-				Generate Javadocs As Part Of Project Reports 
+			<!--
+				http://maven.apache.org/plugins/maven-javadoc-plugin/usage.html
+				Generate Javadocs As Part Of Project Reports
 			-->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
