@@ -32,7 +32,7 @@ public class IbisActionJob extends JobDef {
 	private @Getter String configurationName;
 	private @Getter String adapterName;
 	private @Getter String receiverName;
-	private Action action;
+	private Action jobAction;
 	private IbisAction ibisAction;
 
 	// Subset of the IbisAction enum as we do not want to expose all fields.
@@ -47,7 +47,7 @@ public class IbisActionJob extends JobDef {
 	public void configure() throws ConfigurationException {
 		super.configure();
 
-		this.ibisAction = EnumUtils.parse(IbisAction.class, "action", action.name()); // Try and parse the Action as an IbisAction
+		this.ibisAction = EnumUtils.parse(IbisAction.class, "function", jobAction.name()); // Try and parse the Action as an IbisAction
 
 		if (StringUtils.isEmpty(getAdapterName())) {
 			throw new ConfigurationException("an adapterName must be specified");
@@ -58,7 +58,7 @@ public class IbisActionJob extends JobDef {
 			throw new ConfigurationException(msg);
 		}
 
-		if (action == Action.STOPRECEIVER || action == Action.STARTRECEIVER) {
+		if (jobAction == Action.STOPRECEIVER || jobAction == Action.STARTRECEIVER) {
 			if (StringUtils.isEmpty(getReceiverName())) {
 				throw new ConfigurationException("a receiverName must be specified");
 			}
@@ -76,8 +76,9 @@ public class IbisActionJob extends JobDef {
 
 	@Mandatory
 	public void setAction(Action action) {
-		this.action = action;
+		this.jobAction = action;
 	}
+
 	@Deprecated
 	public void setFunction(Action function) {
 		setAction(function);
