@@ -203,7 +203,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	/**
-	 * Don't manually call this method. Spring should automatically trigger 
+	 * Don't manually call this method. Spring should automatically trigger
 	 * this when super.afterPropertiesSet(); is called.
 	 */
 	@Override
@@ -236,7 +236,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 	/**
 	 * Spring method which starts the ApplicationContext.
-	 * Loads + digests the configuration and calls start() in all registered 
+	 * Loads + digests the configuration and calls start() in all registered
 	 * beans that implement the Spring {@link Lifecycle} interface.
 	 */
 	@Override
@@ -284,7 +284,11 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 		String msg;
 		if (isAutoStart()) {
-			start();
+			try {
+				start();
+			} catch (Exception e) {
+				throw new ConfigurationException("could not start configuration", e);
+			}
 			msg = "startup in " + (System.currentTimeMillis() - start) + " ms";
 		}
 		else {
@@ -472,10 +476,10 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 	/*
 	 * Configurations should be wired through Spring, which in turn should call {@link #setBeanName(String)}.
-	 * Once the ConfigurationContext has a name it should not be changed anymore, hence 
+	 * Once the ConfigurationContext has a name it should not be changed anymore, hence
 	 * {@link AbstractRefreshableConfigApplicationContext#setBeanName(String) super.setBeanName(String)} only sets the name once.
 	 * If not created by Spring, the setIdCalled flag in AbstractRefreshableConfigApplicationContext wont be set, allowing the name to be updated.
-	 * 
+	 *
 	 * The DisplayName will always be updated, which is purely used for logging purposes.
 	 */
 	/** Name of the Configuration */
@@ -578,7 +582,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	/**
-	 * Container for monitor objects 
+	 * Container for monitor objects
 	 */
 	public void setMonitoring(MonitorManager monitorManager) {
 		// Monitors self register in MonitorManager;
