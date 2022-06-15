@@ -1019,7 +1019,7 @@ public class XmlUtils {
 	}
 
 	public static TransformerFactory getTransformerFactory() {
-		return getTransformerFactory(0);
+		return getTransformerFactory(1);
 	}
 
 	public static TransformerFactory getTransformerFactory(int xsltVersion) {
