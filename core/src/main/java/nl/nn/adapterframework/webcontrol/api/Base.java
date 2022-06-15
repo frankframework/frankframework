@@ -23,6 +23,7 @@ import java.security.Principal;
 import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
 import org.apache.commons.lang3.StringUtils;
@@ -37,10 +38,13 @@ import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHeaders;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.lifecycle.Gateway;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
@@ -66,6 +70,14 @@ public abstract class Base implements ApplicationContextAware {
 
 	protected Logger log = LogUtil.getLogger(this);
 	protected static String HATEOASImplementation = AppConstants.getInstance().getString("ibis-api.hateoasImplementation", "default");
+
+	public Response callGateway(Message<String> input) throws ApiException {
+		Gateway<String> gateway = getApplicationContext().getBean("gateway", Gateway.class);
+		Message<String> response = gateway.execute(input);
+		MessageHeaders headers = response.getHeaders();
+		System.out.println(headers.keySet());
+		return Response.status(Response.Status.OK).entity(response.getPayload()).build();
+	}
 
 	@Override
 	public final void setApplicationContext(ApplicationContext applicationContext) throws BeansException {

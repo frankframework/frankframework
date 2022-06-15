@@ -46,9 +46,12 @@ import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.support.MessageBuilder;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
+import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
@@ -106,6 +109,16 @@ public final class ShowConfiguration extends Base {
 			}
 			return Response.status(Response.Status.OK).entity(result).build();
 		}
+	}
+
+	@GET
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/configurations2")
+	@Produces(MediaType.APPLICATION_XML)
+	public Response getXMLConfiguration2(@QueryParam("loadedConfiguration") boolean loaded, @QueryParam("flow") String flow) throws ApiException {
+		ApiMessageRequest request = new ApiMessageRequest(Action.GET_CONFIGURATION, IbisContext.ALL_CONFIGS_KEY);
+		Message<String> input = MessageBuilder.withPayload("getConfigurations").build();
+		return callGateway(input);
 	}
 
 	@PUT
