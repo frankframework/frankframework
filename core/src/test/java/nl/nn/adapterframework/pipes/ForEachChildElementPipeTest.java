@@ -136,19 +136,19 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 	protected ElementRenderer getElementRenderer(final SwitchCounter sc, final Exception e) {
 		return new ElementRenderer(sc, e);
 	}
-	
+
 	private class ElementRenderer extends EchoSender {
 
 		public SwitchCounter sc;
 		public Exception e;
 		public int callCounter;
-		
+
 		ElementRenderer(SwitchCounter sc, Exception e) {
 			super();
 			this.sc=sc;
 			this.e=e;
 		}
-		
+
 		@Override
 		public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 			callCounter++;
@@ -181,7 +181,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		assumeFalse(provideStreamForInput);
 		super.setUp();
 	}
-	
+
 	@Test
 	public void testBasic() throws Exception {
 		pipe.setSender(getElementRenderer());
@@ -496,7 +496,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		assertEquals(expectedBasicNoNSFirstTwoElements, actual);
 		assumeTrue("Streaming XSLT switched off", AppConstants.getInstance().getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, true));
 		assertTrue("streaming failure: switch count [" + sc.count + "] should be larger than 2", sc.count > 2);
-	} 
+	}
 
 	@Test
 	public void testContainerElement() throws Exception {
@@ -554,7 +554,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 
 		assertEquals(expectedBasicNS1, actual);
 		assertTrue("streaming failure: switch count [" + sc.count + "] should be larger than 2", sc.count > 2);
-	} 
+	}
 
 
 	@Test
@@ -617,7 +617,6 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		configurePipe();
 		pipe.start();
 
-		
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageDuplNamespace1.getBytes());
 		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
 		String actual = Message.asString(prr.getResult());
@@ -635,7 +634,6 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		configurePipe();
 		pipe.start();
 
-		
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageDuplNamespace2.getBytes());
 		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
 		String actual = Message.asString(prr.getResult());
@@ -902,7 +900,6 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		assertEquals(expectedBasicNoNS, actual);
 	}
 
-	
 	@Test
 	public void testNoDuplicateNamespaces() throws Exception, IOException {
 		pipe.setSender(getElementRenderer());
@@ -999,7 +996,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		pipe.setTargetElement("Person");
 		pipe.configure();
 		pipe.start();
-		
+
 		URL input = TestFileUtils.getTestFileURL("/XmlFileElementIteratorPipe/input.xml");
 		File file = new File(input.toURI());
 		String expected = TestFileUtils.getTestFile("/XmlFileElementIteratorPipe/ElementNameOutput.xml");
@@ -1034,7 +1031,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		public int count;
 		private String prevLabel;
 		public Map<String,Integer> hitCount = new HashMap<String,Integer>();
-		
+
 		public void mark(String label) {
 			if (prevLabel==null || !prevLabel.equals(label)) {
 				prevLabel=label;
@@ -1054,7 +1051,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 
 		private int blocksize=10;
 		private SwitchCounter sc;
-		
+
 		public LoggingInputStream(InputStream arg0, SwitchCounter sc) {
 			super(arg0);
 			this.sc=sc;
@@ -1096,7 +1093,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 			}
 			return l;
 		}
-		
+
 	}
 
 
