@@ -169,6 +169,9 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			msalClientAdapter.setProxyPassword(proxyCredentials.getPassword());
 
 			try {
+				msalClientAdapter.configure();
+				msalClientAdapter.open();
+
 				client = ConfidentialClientApplication.builder(
 						cf.getUsername(),
 						ClientCredentialFactory.createFromSecret(cf.getPassword()))
@@ -176,7 +179,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 					.httpClient(msalClientAdapter)
 					.executorService(executor)
 					.build();
-			} catch (MalformedURLException e){
+			} catch (MalformedURLException | ConfigurationException | SenderException e){
 				throw new FileSystemException("Failed to initialize MSAL ConfidentialClientApplication.", e);
 			}
 		}
