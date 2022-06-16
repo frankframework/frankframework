@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ import nl.nn.adapterframework.util.Misc;
 
 /**
  * Base Exception with compact but informative getMessage().
- * 
+ *
  * @author Gerrit van Brakel
  */
 public class IbisException extends Exception {
@@ -128,20 +128,26 @@ public class IbisException extends Exception {
 	@Override
 	public String getMessage() {
 		if (expandedMessage == null) {
-			List<String> msgChain = getMessages(this, super.getMessage());
-			Throwable t = this;
-			for(String message:msgChain) {
-				String exceptionType = t instanceof IbisException ? "" : "("+t.getClass().getSimpleName()+")";
-				message = Misc.concatStrings(exceptionType, " ", message);
-				expandedMessage = Misc.concatStrings(expandedMessage, ": ", message);
-				t = getCause(t);
-			}
-			if (expandedMessage==null) {
-				// do not replace the following with toString(), this causes an endless loop. GvB
-				expandedMessage="no message, fields of this exception: "+ToStringBuilder.reflectionToString(this);
-			}
+			expandedMessage = expandMessage(super.getMessage(), this);
 		}
 		return expandedMessage;
+	}
+
+	public static String expandMessage(String msg, Throwable e) {
+		String result=null;
+		List<String> msgChain = getMessages(e, msg);
+		Throwable t = e;
+		for(String message:msgChain) {
+			String exceptionType = t instanceof IbisException ? "" : "("+t.getClass().getSimpleName()+")";
+			message = Misc.concatStrings(exceptionType, " ", message);
+			result = Misc.concatStrings(result, ": ", message);
+			t = getCause(t);
+		}
+		if (result==null) {
+			// do not replace the following with toString(), this causes an endless loop. GvB
+			result="no message, fields of this exception: "+ToStringBuilder.reflectionToString(t);
+		}
+		return result;
 	}
 
 	/**

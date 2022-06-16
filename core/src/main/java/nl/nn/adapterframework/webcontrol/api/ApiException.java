@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017 Integration Partners B.V.
+Copyright 2016-2017, 2022 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,13 +23,14 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 
+import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.logging.log4j.Logger;
 
 /**
  * Custom errors for the API.
- * 
+ *
  * @since	7.0-B1
  * @author	Niels Meijer
  */
@@ -51,11 +52,11 @@ public class ApiException extends WebApplicationException implements Serializabl
 	}
 
 	private ApiException(Throwable t, int status) {
-		this(t.getMessage(), t, Status.fromStatusCode(status));
+		this(null, t, Status.fromStatusCode(status));
 	}
 
 	private ApiException(String msg, Throwable t, Status status) {
-		super(msg, t, formatException(msg, status));
+		super(msg, t, formatException(IbisException.expandMessage(msg, t), status));
 
 		log.warn(msg, t);
 	}
