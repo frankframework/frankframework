@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,11 +22,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.core.task.TaskExecutor;
-
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -47,8 +46,8 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class ShadowSender extends ParallelSenders {
 
-	private String originalSender = null;
-	private String resultSender = null;
+	private @Getter String originalSender = null;
+	private @Getter String resultSender = null;
 	private ISender resultISender = null;
 	private List<ISender> senderList = null;
 
@@ -86,8 +85,9 @@ public class ShadowSender extends ParallelSenders {
 		if(!hasShadowSender)
 			throw new ConfigurationException("no shadowSender found");
 
-		if(getSenderList().size()==0)
-			throw new ConfigurationException("this is not supposed to happen, like ever");
+		if(getSenderList().isEmpty()) {
+			throw new ConfigurationException("no senders found, please add a [originalSender] and a [resultSender]");
+		}
 
 		super.configure();
 	}
@@ -96,28 +96,17 @@ public class ShadowSender extends ParallelSenders {
 	 * We override this from the parallel sender as we should only execute the original and shadowsenders here!
 	 */
 	@Override
-	public Message doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		Guard guard = new Guard();
-		Map<ISender, ParallelSenderExecutor> executorMap = new HashMap<ISender, ParallelSenderExecutor>();
-		TaskExecutor executor = createTaskExecutor();
+		Map<ISender, ParallelSenderExecutor> executorMap = new HashMap<>();
 
-		// Create a new ParameterResolutionContext to be thread safe, see
-		// documentation on constructor of ParameterResolutionContext
-		// (parameter cacheXmlSource).
-		// Testing also showed that disabling caching is better for
-		// performance. At least when testing with a lot of large messages
-		// in parallel. This might be due to the fact that objects can be
-		// garbage collected earlier. OutOfMemoryErrors occur much
-		// faster when caching is enabled. Testing was done by sending 10
-		// messages of 1 MB concurrently to a pipeline which will process
-		// the message in parallel with 10 SenderWrappers (containing a
-		// XsltSender and IbisLocalSender).
 		for (Iterator<ISender> it = getExecutableSenders(); it.hasNext();) {
 			ISender sender = it.next();
 			guard.addResource();
 			ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, message, session, guard, getStatisticsKeeper(sender));
 			executorMap.put(sender, pse);
-			executor.execute(pse);
+
+			getExecutor().execute(pse);
 		}
 		try {
 			guard.waitForAllResources();
@@ -125,8 +114,8 @@ public class ShadowSender extends ParallelSenders {
 			throw new SenderException(getLogPrefix()+"was interupted",e);
 		}
 
-		ParallelSenderExecutor originalSender = null;
-		XmlBuilder resultsXml = new XmlBuilder("results");
+		ParallelSenderExecutor originalSenderExecutor = null;
+		XmlBuilder resultsXml = new XmlBuilder("results"); //SaxDocumentBuilder
 		String correlationID = session==null ? null : session.getMessageId();
 		resultsXml.addAttribute("correlationID", correlationID);
 
@@ -145,7 +134,7 @@ public class ShadowSender extends ParallelSenders {
 
 			XmlBuilder resultXml;
 			if(sender.getName() != null && sender.getName().equalsIgnoreCase(getOriginalSender())) {
-				originalSender = pse;
+				originalSenderExecutor = pse;
 				resultXml = new XmlBuilder("originalResult");
 			}
 			else {
@@ -153,14 +142,13 @@ public class ShadowSender extends ParallelSenders {
 			}
 
 			StatisticsKeeper sk = getStatisticsKeeper(sender);
-			resultXml.addAttribute("duration", sk.getLast() + sk.getUnits());
-			resultXml.addAttribute("count", sk.getCount());
+			resultXml.addAttribute("duration", sk.getLast());
 
 			resultXml.addAttribute("senderClass", ClassUtils.nameOf(sender));
 			resultXml.addAttribute("senderName", sender.getName());
 			Throwable throwable = pse.getThrowable();
 			if (throwable==null) {
-				Object result = pse.getReply();
+				Object result = pse.getReply().asObject();
 				if (result==null) {
 					resultXml.addAttribute("type", "null");
 				} else {
@@ -176,9 +164,8 @@ public class ShadowSender extends ParallelSenders {
 
 		// If the originalSender contains any exceptions these should be thrown and
 		// cause an SenderException regardless of the results of the ShadowSenders.
-		if(originalSender == null) {
-			//In theory this should never happen!
-			throw new SenderException("no originalSender found");
+		if(originalSenderExecutor == null) {
+			throw new IllegalStateException("unable to find originalSenderExecutor");
 		}
 
 		//The messages have been processed, now the results need to be stored somewhere.
@@ -188,10 +175,10 @@ public class ShadowSender extends ParallelSenders {
 			log.warn("failed to send ShadowSender result to ["+resultISender.getName()+"]");
 		}
 
-		if (originalSender.getThrowable() != null) {
-			throw new SenderException(originalSender.getThrowable());
+		if (originalSenderExecutor.getThrowable() != null) {
+			throw new SenderException(originalSenderExecutor.getThrowable());
 		}
-		return originalSender.getReply();
+		return originalSenderExecutor.getReply();
 	}
 
 	protected Iterator<ISender> getExecutableSenders() {
@@ -213,15 +200,9 @@ public class ShadowSender extends ParallelSenders {
 	public void setOriginalSender(String sender) {
 		this.originalSender = sender;
 	}
-	public String getOriginalSender() {
-		return originalSender;
-	}
 
 	@IbisDoc({"the sender which will process all results", ""})
 	public void setResultSender(String sender) {
 		this.resultSender = sender;
-	}
-	public String getResultSender() {
-		return resultSender;
 	}
 }
