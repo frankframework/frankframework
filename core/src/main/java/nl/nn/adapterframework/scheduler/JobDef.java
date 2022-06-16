@@ -308,6 +308,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 
 	@Override
 	public void configure() throws ConfigurationException {
+		super.configure();
 		if (StringUtils.isEmpty(getName())) {
 			throw new ConfigurationException("a name must be specified");
 		}
@@ -316,13 +317,14 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 			setJobGroup(applicationContext.getId());
 		}
 
+		SchedulerHelper.validateJob(getJobDetail(), getCronExpression());
+
 		if (getLocker()!=null) {
 			getLocker().configure();
 		}
 
 		statsKeeper = new StatisticsKeeper(getName());
 
-		super.configure();
 		getMessageKeeper().add("job successfully configured");
 		configured = true;
 	}

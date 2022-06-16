@@ -284,11 +284,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 		String msg;
 		if (isAutoStart()) {
-			try {
-				start();
-			} catch (Exception e) {
-				throw new ConfigurationException("could not start configuration", e);
-			}
+			start();
 			msg = "startup in " + (System.currentTimeMillis() - start) + " ms";
 		}
 		else {
