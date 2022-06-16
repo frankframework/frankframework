@@ -34,7 +34,6 @@ import com.sap.conn.jco.AbapException;
 import com.sap.conn.jco.JCoException;
 import com.sap.conn.jco.JCoFunction;
 import com.sap.conn.jco.JCoRuntimeException;
-import com.sap.conn.jco.ext.ServerDataEventListener;
 import com.sap.conn.jco.server.DefaultServerHandlerFactory;
 import com.sap.conn.jco.server.JCoServer;
 import com.sap.conn.jco.server.JCoServerContext;
@@ -75,12 +74,10 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 	private @Getter String progid;	 // progid of the RFC-destination
 	private @Getter String connectionCount = "2"; // used in SAP examples
 
-	private SapSystemImpl sapSystem;
 	private IMessageHandler<JCoFunction> handler;
 	private IbisExceptionListener exceptionListener;
 
 	private DefaultServerHandlerFactory.FunctionHandlerFactory functionHandlerFactory;
-	private ServerDataEventListener serverDataEventListener;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -88,7 +85,9 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 			throw new ConfigurationException("attribute progid must be specified");
 		}
 		super.configure();
-		sapSystem=SapSystemImpl.getSystem(getSapSystemName());
+		if (SapSystemImpl.getSystem(getSapSystemName())==null) {
+			throw new ConfigurationException("unknown SapSystem ["+getSapSystemName()+"]");
+		}
 		functionHandlerFactory = new DefaultServerHandlerFactory.FunctionHandlerFactory();
 		functionHandlerFactory.registerGenericHandler(this);
 	}
