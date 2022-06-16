@@ -29,10 +29,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import javax.mail.internet.InternetAddress;
 
+import nl.nn.adapterframework.core.SenderException;
 import org.apache.commons.lang3.StringUtils;
 
 import com.microsoft.aad.msal4j.ClientCredentialFactory;
@@ -135,6 +138,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	private @Getter String clientSecret = null;
 	private @Getter String tenantId = null;
 	private ConfidentialClientApplication client;
+	private MsalClientAdapter msalClientAdapter;
 
 	private FolderId basefolderId;
 
@@ -155,17 +159,40 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		super.open();
 		if( StringUtils.isNotEmpty(getTenantId()) ){
 			CredentialFactory cf = getCredentials();
+			CredentialFactory proxyCredentials = getProxyCredentials();
+			ExecutorService executor = Executors.newSingleThreadExecutor();
+
+			msalClientAdapter = new MsalClientAdapter();
+			msalClientAdapter.setProxyHost(getProxyHost());
+			msalClientAdapter.setProxyPort(getProxyPort());
+			msalClientAdapter.setProxyUsername(proxyCredentials.getUsername());
+			msalClientAdapter.setProxyPassword(proxyCredentials.getPassword());
+
 			try {
 				client = ConfidentialClientApplication.builder(
 						cf.getUsername(),
 						ClientCredentialFactory.createFromSecret(cf.getPassword()))
 					.authority(AUTHORITY + getTenantId())
+					.httpClient(msalClientAdapter)
+					.executorService(executor)
 					.build();
 			} catch (MalformedURLException e){
 				throw new FileSystemException("Failed to initialize MSAL ConfidentialClientApplication.", e);
 			}
 		}
 		basefolderId = getBaseFolderId(getMailAddress(),getBaseFolder());
+	}
+
+	@Override
+	public void close() throws FileSystemException {
+		super.close();
+		if(msalClientAdapter != null){
+			try {
+				msalClientAdapter.close();
+			} catch (SenderException e) {
+				throw new FileSystemException("An exception occurred during closing of MSAL HttpClient", e);
+			}
+		}
 	}
 
 	public FolderId getBaseFolderId(String emailAddress, String baseFolderName) throws FileSystemException {
@@ -970,6 +997,10 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	private CredentialFactory getCredentials(){
 		return new CredentialFactory(getAuthAlias(), getClientId(), getClientSecret());
+	}
+
+	private CredentialFactory getProxyCredentials(){
+		return new CredentialFactory(getProxyAuthAlias(), getProxyUsername(), getProxyPassword());
 	}
 
 	private static class RedirectionUrlCallback implements IAutodiscoverRedirectionUrl {
