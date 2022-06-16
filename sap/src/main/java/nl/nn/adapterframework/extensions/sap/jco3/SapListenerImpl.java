@@ -17,10 +17,8 @@ package nl.nn.adapterframework.extensions.sap.jco3;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import com.sap.conn.idoc.IDocDocument;
 import com.sap.conn.idoc.IDocDocumentIterator;
@@ -31,15 +29,12 @@ import com.sap.conn.idoc.jco.JCoIDocHandler;
 import com.sap.conn.idoc.jco.JCoIDocHandlerFactory;
 import com.sap.conn.idoc.jco.JCoIDocServer;
 import com.sap.conn.idoc.jco.JCoIDocServerContext;
-import com.sap.conn.idoc.jco.JCoQueuedIDocHandler;
 import com.sap.conn.jco.AbapClassException;
 import com.sap.conn.jco.AbapException;
 import com.sap.conn.jco.JCoException;
 import com.sap.conn.jco.JCoFunction;
 import com.sap.conn.jco.JCoRuntimeException;
-import com.sap.conn.jco.ext.Environment;
 import com.sap.conn.jco.ext.ServerDataEventListener;
-import com.sap.conn.jco.ext.ServerDataProvider;
 import com.sap.conn.jco.server.DefaultServerHandlerFactory;
 import com.sap.conn.jco.server.JCoServer;
 import com.sap.conn.jco.server.JCoServerContext;
@@ -75,7 +70,7 @@ import nl.nn.adapterframework.stream.Message;
  * @since 5.0
  * @see "http://help.sap.com/saphelp_nw04/helpdata/en/09/c88442a07b0e53e10000000a155106/frameset.htm"
  */
-public abstract class SapListenerImpl extends SapFunctionFacade implements ISapListener<JCoFunction>, JCoServerFunctionHandler, JCoServerTIDHandler, JCoIDocHandlerFactory, JCoIDocHandler, JCoQueuedIDocHandler, JCoServerExceptionListener, JCoServerErrorListener, ServerDataProvider {
+public abstract class SapListenerImpl extends SapFunctionFacade implements ISapListener<JCoFunction>, JCoServerFunctionHandler, JCoServerTIDHandler, JCoIDocHandlerFactory, JCoIDocHandler, JCoServerExceptionListener, JCoServerErrorListener {
 
 	private @Getter String progid;	 // progid of the RFC-destination
 	private @Getter String connectionCount = "2"; // used in SAP examples
@@ -102,10 +97,9 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 	public void open() throws ListenerException {
 		try {
 			openFacade();
-			log.debug(getLogPrefix()+"register ServerDataProvider");
-			Environment.registerServerDataProvider(this);
-			serverDataEventListener.updated(getName());
+			SapServerDataProvider serverDataProvider = SapServerDataProvider.getInstance();
 			log.debug(getLogPrefix()+"start server");
+			serverDataProvider.registerListener(this);
 			JCoIDocServer server = JCoIDoc.getServer(getName());
 			server.setCallHandlerFactory(functionHandlerFactory);
 			server.setIDocHandlerFactory(this);
@@ -113,11 +107,12 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 			server.addServerErrorListener(this);
 			server.addServerExceptionListener(this);
 			server.start();
+			serverDataProvider.getServerDataEventListener().updated(getName());
 		} catch (Exception e) {
 			try {
 				close();
 			} catch (Exception e2) {
-				log.warn("exception closing SapListener after exception opening listener",e2);
+				e.addSuppressed(e2);
 			}
 			throw new ListenerException(getLogPrefix()+"could not start", e);
 		}
@@ -127,61 +122,21 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 	public void close() throws ListenerException {
 		try {
 			log.debug(getLogPrefix()+"stop server");
-			serverDataEventListener.deleted(getName());
+			SapServerDataProvider.getInstance().getServerDataEventListener().deleted(getName());
 
 			JCoServer server = JCoServerFactory.getServer(getName());
 			server.stop();
 
-			log.debug(getLogPrefix()+"unregister ServerDataProvider");
-			// Delete doesn't work after stopping the server, when calling
-			// delete first the stop method will fail.
-			// serverDataEventListener.deleted(getName());
 		} catch (Exception e) {
 			throw new ListenerException(getLogPrefix()+"could not stop", e);
 		} finally {
-			try {
-				Environment.unregisterServerDataProvider(this);
-			} catch (Exception e) {
-				throw new ListenerException(getLogPrefix()+"could not unregister", e);
-			} finally {
-				closeFacade();
-			}
+			closeFacade();
 		}
-	}
-
-	@Override
-	public Properties getServerProperties(String arg0) {
-		Properties serverProperties = new Properties();
-		serverProperties.setProperty(ServerDataProvider.JCO_GWHOST, sapSystem.getGwhost());
-		serverProperties.setProperty(ServerDataProvider.JCO_GWSERV, sapSystem.getGwserv());
-		serverProperties.setProperty(ServerDataProvider.JCO_PROGID, progid);
-		serverProperties.setProperty(ServerDataProvider.JCO_REP_DEST, sapSystem.getName());
-		serverProperties.setProperty(ServerDataProvider.JCO_CONNECTION_COUNT, connectionCount);
-
-		if(sapSystem.isSncEnabled()) {
-			serverProperties.setProperty(ServerDataProvider.JCO_SNC_MODE, "1");
-			serverProperties.setProperty(ServerDataProvider.JCO_SNC_LIBRARY, sapSystem.getSncLibrary());
-			serverProperties.setProperty(ServerDataProvider.JCO_SNC_MYNAME, sapSystem.getMyName());
-			serverProperties.setProperty(ServerDataProvider.JCO_SNC_QOP, sapSystem.getSncQop()+"");
-		}
-
-		return serverProperties;
 	}
 
 	@Override
 	public JCoIDocHandler getIDocHandler(JCoIDocServerContext serverCtx) {
 		return this;
-	}
-
-	@Override
-	public void setServerDataEventListener(ServerDataEventListener serverDataEventListener) {
-		log.debug("setting new serverDataEventListener ["+serverDataEventListener.toString()+"]");
-		this.serverDataEventListener = serverDataEventListener;
-	}
-
-	@Override
-	public boolean supportsEvents() {
-		return true;
 	}
 
 	@Override
@@ -239,21 +194,6 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 		}
 	}
 
-	@Override
-	public void handleRequest(JCoIDocServerContext idocServerCtx, IDocDocumentList documentList) {
-		handleRequest(idocServerCtx.getJCoServerContext(), documentList);
-	}
-
-	/**
-	 * The <code>toString()</code> method retrieves its value
-  	 * by reflection.
-  	 * @see org.apache.commons.lang3.builder.ToStringBuilder#reflectionToString
-  	 *
-  	 **/
-	@Override
-	public String toString() {
-		return ToStringBuilder.reflectionToString(this);
-	}
 
 	@Override
 	@Mandatory
