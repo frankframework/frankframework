@@ -42,6 +42,11 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 
+			<pipe name="HiddenParam" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="result [param]" replaceFixedParams="true">
+				<param name="param" hidden="true" value="xyz" />
+				<forward name="success" path="EXIT" />
+			</pipe>
+
 		</pipeline>
 	</adapter>
 </module>
