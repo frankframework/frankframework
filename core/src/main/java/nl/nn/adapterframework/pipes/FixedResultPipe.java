@@ -48,9 +48,6 @@ import nl.nn.adapterframework.util.TransformerPool;
  * Using parameters and the attributes of this pipe, it is possible to substitute values. This pipe
  * performs the following steps:
  * <ol>
- * <li>When a configuration is loaded, all expressions <code>${...}</code> within <code>Configuration.xml</code> and its referenced entities are substituted.
- * This substitution is done according to system properties and application properties (DeploymentSpecifics.properties and others). See the Frank!Manual for details.
- * This substitution is done before this pipe is configured or executed.
  * <li>During execution, this pipe first obtains a string based on attributes <code>returnString</code>, <code>filename</code> or <code>filenameSessionKey</code>.
  * <li>The resulting string is transformed according to attributes <code>replaceFrom</code> and <code>replaceTo</code> if set.
  * Please note that the plain value of attribute <code>replaceFrom</code> is matched, no <code>${...}</code> here.
