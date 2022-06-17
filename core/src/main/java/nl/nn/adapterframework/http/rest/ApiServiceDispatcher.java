@@ -240,7 +240,7 @@ public class ApiServiceDispatcher {
 			String requestUrl = request.getRequestURL().toString(); // -> schema+hostname+port/context-path/servlet-path/+request-uri
 			requestUrl = Misc.urlDecode(requestUrl); // request url from browser might be encoded
 			String requestPath = request.getPathInfo(); // -> the remaining path, starts with a /
-			String url = requestUrl.substring(0, requestUrl.indexOf(requestPath));
+			String url = requestUrl.substring(0, requestUrl.indexOf(Misc.urlDecode(requestPath)));
 			serversArray.add(Json.createObjectBuilder().add("url", url));
 		}
 
