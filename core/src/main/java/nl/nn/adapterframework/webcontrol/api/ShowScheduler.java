@@ -78,7 +78,7 @@ import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * Retrieves the Scheduler metadata and the jobgroups with there jobs from the Scheduler.
- * 
+ *
  * @since	7.0-B1
  * @author	Niels Meijer
  */
@@ -378,7 +378,7 @@ public final class ShowScheduler extends Base {
 			} else {
 				return Response.status(Response.Status.BAD_REQUEST).build();
 			}
-	
+
 		} catch (Exception e) {
 			log.error("unable to run action ["+action+"]",e);
 		}
@@ -390,12 +390,7 @@ public final class ShowScheduler extends Base {
 	}
 
 	private Scheduler getScheduler() {
-		try {
-			return getSchedulerHelper().getScheduler();
-		}
-		catch (SchedulerException e) {
-			throw new ApiException("Cannot find scheduler", e);
-		}
+		return getSchedulerHelper().getScheduler();
 	}
 
 	@PUT
@@ -411,7 +406,7 @@ public final class ShowScheduler extends Base {
 			String commandIssuedBy = request.getRemoteHost();
 			commandIssuedBy += "-"+request.getRemoteAddr();
 			commandIssuedBy += "-"+request.getRemoteUser();
-	
+
 			log.info("trigger job jobName [" + jobName + "] groupName [" + groupName + "] " + commandIssuedBy);
 		}
 		JobKey jobKey = JobKey.jobKey(jobName, groupName);
@@ -432,7 +427,7 @@ public final class ShowScheduler extends Base {
 			else if("resume".equals(action)) {
 				SchedulerHelper sh = getSchedulerHelper();
 				JobDetail jobDetail = scheduler.getJobDetail(jobKey);
-				// TODO this part can be more generic in case multiple triggers 
+				// TODO this part can be more generic in case multiple triggers
 				// can be configurable
 				List<? extends Trigger> triggers = scheduler.getTriggersOfJob(jobKey);
 				if(triggers != null) {
@@ -453,7 +448,7 @@ public final class ShowScheduler extends Base {
 				throw new ApiException("no (valid) action provided! Expected one of PAUSE,RESUME,TRIGGER");
 			}
 		} catch (SchedulerException e) {
-			throw new ApiException("Failed to "+action+" job", e); 
+			throw new ApiException("Failed to "+action+" job", e);
 		}
 
 		return Response.status(Response.Status.OK).build();
@@ -599,7 +594,7 @@ public final class ShowScheduler extends Base {
 							deleteStatement.executeUpdate();
 						}
 					}
-	
+
 					String insertQuery = "INSERT INTO IBISSCHEDULES (JOBNAME, JOBGROUP, ADAPTER, RECEIVER, CRON, EXECUTIONINTERVAL, MESSAGE, DESCRIPTION, LOCKER, LOCK_KEY, CREATED_ON, BY_USER) "
 							+ "VALUES (?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?)";
 					try (PreparedStatement stmt = conn.prepareStatement(insertQuery)) {
@@ -614,7 +609,7 @@ public final class ShowScheduler extends Base {
 						stmt.setBoolean(9, hasLocker);
 						stmt.setString(10, lockKey);
 						stmt.setString(11, getUserPrincipalName());
-		
+
 						success = stmt.executeUpdate() > 0;
 					}
 				}
@@ -667,7 +662,7 @@ public final class ShowScheduler extends Base {
 						try (PreparedStatement stmt = conn.prepareStatement(query)) {
 							stmt.setString(1, jobKey.getName());
 							stmt.setString(2, jobKey.getGroup());
-		
+
 							success = stmt.executeUpdate() > 0;
 						}
 					}
@@ -684,7 +679,7 @@ public final class ShowScheduler extends Base {
 			// remove from memory
 			scheduler.deleteJob(jobKey);
 		} catch (SchedulerException e) {
-			throw new ApiException("Failed to delete job", e); 
+			throw new ApiException("Failed to delete job", e);
 		}
 		return Response.status(Response.Status.OK).build();
 	}

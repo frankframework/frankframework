@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package nl.nn.adapterframework.scheduler.job;
 
 import org.apache.commons.lang3.NotImplementedException;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.configuration.digester.JobFactory;
@@ -26,14 +27,14 @@ import nl.nn.adapterframework.scheduler.JobDefFunctions;
 
 /**
  * Placeholder class to allow old-school <code>&lt;job function='SendMessage' /&gt;</code> in the new Frank!Config XSD.
- * 
+ *
  * Should never be instantiated directly. See {@link JobFactory} and {@link JobDefFunctions} for more information.
- * 
+ *
  * @author Niels Meijer
  */
 public class Job extends JobDef {
 
-	private JobDefFunctions function;
+	private @Getter JobDefFunctions function;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -49,11 +50,12 @@ public class Job extends JobDef {
 		throw new NotImplementedException();
 	}
 
+	/**
+	 * The function to execute
+	 * @ff.mandatory
+	 */
 	public void setFunction(JobDefFunctions function) {
 		this.function = function;
-	}
-	public JobDefFunctions getFunction() {
-		return function;
 	}
 
 	@Override

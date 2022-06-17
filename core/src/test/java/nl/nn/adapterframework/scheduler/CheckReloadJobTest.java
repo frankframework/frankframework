@@ -17,6 +17,7 @@ public class CheckReloadJobTest extends JdbcTestBase {
 	@Before
 	public void setup() throws Exception {
 		super.setup();
+		getConfiguration().getIbisManager(); // force ibisManager bean to be available in applicationContext
 		runMigrator("Migrator/Ibisconfig_4_unittests_changeset.xml");
 
 		jobDef = new CheckReloadJob() {

@@ -273,8 +273,12 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 		String msg;
 		if (isAutoStart()) {
-			getIbisManager().startConfiguration(this);
-			msg = "startup in " + (System.currentTimeMillis() - start) + " ms";
+			try {
+				getIbisManager().startConfiguration(this);
+				msg = "startup in " + (System.currentTimeMillis() - start) + " ms";
+			} catch (Exception e) {
+				throw new ConfigurationException("could not start configuration ["+getId()+"]", e);
+			}
 		}
 		else {
 			msg = "configured in " + (System.currentTimeMillis() - start) + " ms";

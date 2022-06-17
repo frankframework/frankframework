@@ -44,7 +44,7 @@ public class ScheduleManager extends ConfigurableLifecyleBase implements Applica
 	private final Map<String, IJob> schedules = new LinkedHashMap<>();
 
 	@Override
-	public void configure() {
+	public void configure() throws ConfigurationException {
 		if(!inState(BootState.STOPPED)) {
 			log.warn("unable to configure ["+this+"] while in state ["+getState()+"]");
 			return;
@@ -56,7 +56,7 @@ public class ScheduleManager extends ConfigurableLifecyleBase implements Applica
 				jobdef.configure();
 				log.info("job scheduled with properties :" + jobdef.toString());
 			} catch (Exception e) {
-				log.error("Could not schedule job [" + jobdef.getName() + "] cron [" + jobdef.getCronExpression() + "]", e);
+				throw new ConfigurationException("Could not schedule job [" + jobdef.getName() + "] cron [" + jobdef.getCronExpression() + "]", e);
 			}
 		}
 	}

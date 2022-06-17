@@ -49,6 +49,8 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 
 		};
 
+		getConfiguration().getIbisManager(); // force ibisManager bean to be available in applicationContext
+
 		getConfiguration().autowireByName(jobDef);
 	}
 
