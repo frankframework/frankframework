@@ -21,6 +21,7 @@ public class IbisJobDetailTest {
 	@Before
 	public void setup() throws ConfigurationException {
 		Configuration configuration = new TestConfiguration();
+		configuration.getIbisManager();
 
 		jobDef1 = SpringUtils.createBean(configuration, SendMessageJob.class);
 		jobDef1.setName("fakeName");
