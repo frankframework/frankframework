@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.senders;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -11,6 +12,7 @@ import org.w3c.dom.Element;
 
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
@@ -73,6 +75,56 @@ public class ShadowSenderTest extends ParallelSendersTest {
 	}
 
 	@Test
+	public void testWithoutResultSender() throws Exception {
+		ConfigurationException exception = assertThrows(ConfigurationException.class, () -> {
+			((ShadowSender)sender).setResultSender(null);
+			sender.configure();
+			sender.open();
+		});
+		assertEquals("no resultSender defined", exception.getMessage());
+	}
+
+	@Test
+	public void testWithoutOriginalSender() throws Exception {
+		ConfigurationException exception = assertThrows(ConfigurationException.class, () -> {
+			((ShadowSender)sender).setOriginalSender(null);
+			sender.configure();
+			sender.open();
+		});
+		assertEquals("no originalSender defined", exception.getMessage());
+	}
+
+	@Test
+	public void testMultipleResultSenders() throws Exception {
+		ConfigurationException exception = assertThrows(ConfigurationException.class, () -> {
+			sender.registerSender(createResultSender());
+			sender.configure();
+			sender.open();
+		});
+		assertEquals("resultSender can only be defined once", exception.getMessage());
+	}
+
+	@Test
+	public void testMultipleOriginalSenders() throws Exception {
+		ConfigurationException exception = assertThrows(ConfigurationException.class, () -> {
+			sender.registerSender(createOriginalSender());
+			sender.configure();
+			sender.open();
+		});
+		assertEquals("originalSender can only be defined once", exception.getMessage());
+	}
+
+	@Test
+	public void testNoSenders() throws Exception {
+		ConfigurationException exception = assertThrows(ConfigurationException.class, () -> {
+			ShadowSender ps = new ShadowSender();
+			ps.configure();
+			ps.open();
+		});
+		assertEquals("no senders found, please add a [originalSender] and a [resultSender]", exception.getMessage());
+	}
+
+	@Test
 	public void testResultSenderResult() throws Exception {
 		sender.registerSender(new TestSender("shadowSenderWithDelay"));
 
@@ -105,6 +157,6 @@ public class ShadowSenderTest extends ParallelSendersTest {
 		assertEquals(INPUT_MESSAGE, XmlUtils.getStringValue(shadowResult, true));
 		assertEquals(ORIGINAL_SENDER_NAME, origResult.getAttribute("senderName"));
 		int duration = Integer.parseInt(shadowResult.getAttribute("duration"));
-		assertTrue(duration > 2000 && duration < 2050);
+		assertTrue("test duration was ["+duration+"]", duration >= 2000 && duration < 2050);
 	}
 }

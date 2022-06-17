@@ -22,6 +22,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.xml.sax.SAXException;
+
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
@@ -35,6 +37,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.xml.SaxDocumentBuilder;
 
 /**
  * Collection of Senders, that are executed all at the same time. Once the results are processed, all results will be sent to the resultSender, while the original sender will return it's result to the pipeline.
@@ -46,48 +49,49 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class ShadowSender extends ParallelSenders {
 
-	private @Getter String originalSender = null;
-	private @Getter String resultSender = null;
-	private ISender resultISender = null;
+	private @Getter String originalSenderName = null;
+	private ISender originalSender = null;
+	private @Getter String resultSenderName = null;
+	private ISender resultSender = null;
 	private List<ISender> senderList = null;
 
 	@Override
 	public void configure() throws ConfigurationException {
-		boolean hasShadowSender = false;
-		boolean hasResultSender = false;
-		boolean hasOriginalSender = false;
-
-		if(originalSender == null)
-			throw new ConfigurationException("no originalSender defined");
-		if(resultSender == null)
-			throw new ConfigurationException("no resultSender defined");
-
-		for (ISender sender: getSenders()) {
-			if(sender.getName() != null && sender.getName().equalsIgnoreCase(getOriginalSender())) {
-				if(hasOriginalSender)
-					throw new ConfigurationException("originalSender can only be defined once");
-				hasOriginalSender = true;
-			}
-			else if(sender.getName() != null && sender.getName().equalsIgnoreCase(getResultSender())) {
-				if(hasResultSender)
-					throw new ConfigurationException("resultSender can only be defined once");
-				hasResultSender = true;
-				resultISender = sender;
-			}
-			else
-				hasShadowSender = true;
-		}
-
-		if(!hasOriginalSender)
-			throw new ConfigurationException("no originalSender found");
-		if(!hasResultSender)
-			throw new ConfigurationException("no resultSender found");
-		if(!hasShadowSender)
-			throw new ConfigurationException("no shadowSender found");
-
 		if(getSenderList().isEmpty()) {
 			throw new ConfigurationException("no senders found, please add a [originalSender] and a [resultSender]");
 		}
+
+		boolean hasShadowSender = false;
+
+		if(originalSenderName == null)
+			throw new ConfigurationException("no originalSender defined");
+		if(resultSenderName == null)
+			throw new ConfigurationException("no resultSender defined");
+
+		for (ISender sender: getSenders()) {
+			if(originalSenderName.equalsIgnoreCase(sender.getName())) {
+				if(originalSender != null) {
+					throw new ConfigurationException("originalSender can only be defined once");
+				}
+				originalSender = sender;
+			}
+			else if(resultSenderName.equalsIgnoreCase(sender.getName())) {
+				if(resultSender != null) {
+					throw new ConfigurationException("resultSender can only be defined once");
+				}
+				resultSender = sender;
+			}
+			else {
+				hasShadowSender = true;
+			}
+		}
+
+		if(originalSender == null)
+			throw new ConfigurationException("no originalSender found");
+		if(resultSender == null)
+			throw new ConfigurationException("no resultSender found");
+		if(!hasShadowSender)
+			throw new ConfigurationException("no shadowSender found");
 
 		super.configure();
 	}
@@ -108,23 +112,43 @@ public class ShadowSender extends ParallelSenders {
 
 			getExecutor().execute(pse);
 		}
+
 		try {
 			guard.waitForAllResources();
 		} catch (InterruptedException e) {
-			throw new SenderException(getLogPrefix()+"was interupted",e);
+			throw new SenderException(getLogPrefix()+"was interupted", e);
 		}
 
-		ParallelSenderExecutor originalSenderExecutor = null;
+		ParallelSenderExecutor originalSenderExecutor = executorMap.get(originalSender);
+		if(originalSenderExecutor == null) {
+			throw new IllegalStateException("unable to find originalSenderExecutor");
+		}
+
+		try {
+			collectResults(executorMap, message, session);
+		} catch (SAXException e) {
+			// TODO handle exception!
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO handle exception!
+			e.printStackTrace();
+		} finally {
+		}
+		if (originalSenderExecutor.getThrowable() != null) {
+			throw new SenderException(originalSenderExecutor.getThrowable());
+		}
+		return originalSenderExecutor.getReply();
+	}
+
+	private void collectResults(Map<ISender, ParallelSenderExecutor> executorMap, Message message, PipeLineSession session) throws SAXException, IOException {
+		SaxDocumentBuilder builder = new SaxDocumentBuilder("results");
+
 		XmlBuilder resultsXml = new XmlBuilder("results"); //SaxDocumentBuilder
 		String correlationID = session==null ? null : session.getMessageId();
 		resultsXml.addAttribute("correlationID", correlationID);
 
 		XmlBuilder originalMessageXml = new XmlBuilder("originalMessage");
-		try {
-			originalMessageXml.setValue(XmlUtils.skipXmlDeclaration(message.asString()),false);
-		} catch (IOException e) {
-			throw new SenderException(getLogPrefix(),e);
-		}
+		originalMessageXml.setValue(XmlUtils.skipXmlDeclaration(message.asString()),false);
 		resultsXml.addSubElement(originalMessageXml);
 
 		// First loop through all (Shadow)Senders and handle their results
@@ -133,8 +157,7 @@ public class ShadowSender extends ParallelSenders {
 			ParallelSenderExecutor pse = executorMap.get(sender);
 
 			XmlBuilder resultXml;
-			if(sender.getName() != null && sender.getName().equalsIgnoreCase(getOriginalSender())) {
-				originalSenderExecutor = pse;
+			if(sender.getName() != null && sender.getName().equalsIgnoreCase(getOriginalSenderName())) {
 				resultXml = new XmlBuilder("originalResult");
 			}
 			else {
@@ -159,36 +182,28 @@ public class ShadowSender extends ParallelSenders {
 				resultXml.addAttribute("type", ClassUtils.nameOf(throwable));
 				resultXml.setValue(throwable.getMessage());
 			}
-			resultsXml.addSubElement(resultXml); 
+			resultsXml.addSubElement(resultXml);
 		}
 
 		// If the originalSender contains any exceptions these should be thrown and
 		// cause an SenderException regardless of the results of the ShadowSenders.
-		if(originalSenderExecutor == null) {
-			throw new IllegalStateException("unable to find originalSenderExecutor");
-		}
 
 		//The messages have been processed, now the results need to be stored somewhere.
 		try {
-			resultISender.sendMessage(new Message(resultsXml.toXML()), session);
-		} catch(SenderException se) {
-			log.warn("failed to send ShadowSender result to ["+resultISender.getName()+"]");
+			resultSender.sendMessage(new Message(resultsXml.toXML()), session);
+		} catch(TimeoutException | SenderException se) {
+			log.warn("failed to send ShadowSender result to ["+resultSender.getName()+"]");
 		}
-
-		if (originalSenderExecutor.getThrowable() != null) {
-			throw new SenderException(originalSenderExecutor.getThrowable());
-		}
-		return originalSenderExecutor.getReply();
 	}
 
-	protected Iterator<ISender> getExecutableSenders() {
+	private Iterator<ISender> getExecutableSenders() {
 		return getSenderList().iterator();
 	}
 	private List<ISender> getSenderList() {
 		if(senderList == null) {
-			senderList = new ArrayList<ISender>();
+			senderList = new ArrayList<>();
 			for (ISender sender: getSenders()) {
-				if(sender.getName() == null || (!sender.getName().equals(getResultSender())))
+				if(sender.getName() == null || (!sender.getName().equals(getResultSenderName())))
 					senderList.add(sender);
 			}
 		}
@@ -196,13 +211,13 @@ public class ShadowSender extends ParallelSenders {
 	}
 
 
-	@IbisDoc({"the default or original sender", ""})
-	public void setOriginalSender(String sender) {
-		this.originalSender = sender;
+	/** The default or original sender name */
+	public void setOriginalSender(String senderName) {
+		this.originalSenderName = senderName;
 	}
 
-	@IbisDoc({"the sender which will process all results", ""})
-	public void setResultSender(String sender) {
-		this.resultSender = sender;
+	/** The sender name which will process the results */
+	public void setResultSender(String senderName) {
+		this.resultSenderName = senderName;
 	}
 }
