@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -115,7 +115,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 		}
 		return result;
 	}
-	
+
 	@Override
 	public <T> T pipeOutput(PipeLine pipeLine, IPipe pipe, String correlationId, T output) {
 		PipeDescription pipeDescription = pipeDescriptionProvider.getPipeDescription(pipeLine, pipe);
@@ -163,12 +163,12 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 
 	@Override
 	public void createThread(Object sourceObject, String threadId, String correlationId) {
-		testTool.threadCreatepoint(correlationId, threadId); 
+		testTool.threadCreatepoint(correlationId, threadId);
 	}
 
 	@Override
 	public void cancelThread(Object sourceObject, String threadId, String correlationId) {
-		testTool.close(correlationId, threadId); 
+		testTool.close(correlationId, threadId);
 	}
 
 	@Override
@@ -209,15 +209,19 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	@Override
 	public Object parameterResolvedTo(Parameter parameter, String correlationId, Object value) {
 		if (parameter.isHidden()) {
+			String hiddenValue=null;
 			try {
-				value = Misc.hide(Message.asString(value));
+				hiddenValue = Misc.hide(Message.asString(value));
 			} catch (IOException e) {
-				value = "IOException while hiding value for parameter " + parameter.getName() + ": " + e.getMessage();
-				log.warn(value, e);
+				hiddenValue = "IOException while hiding value for parameter " + parameter.getName() + ": " + e.getMessage();
+				log.warn(hiddenValue, e);
 			}
+			testTool.inputpoint(correlationId, null, "Parameter " + parameter.getName(), hiddenValue);
+			return value;
 		}
 		return testTool.inputpoint(correlationId, null, "Parameter " + parameter.getName(), value);
 	}
+
 	@Override
 	public Object storeInSessionKey(String correlationId, String sessionKey, Object result) {
 		return testTool.outputpoint(correlationId, null, "SessionKey " + sessionKey, result);
@@ -228,12 +232,12 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 		return testTool.inputpoint(correlationId, null, label, value);
 	}
 
-	
+
 	@Override
 	public Message preserveInput(String correlationId, Message input) {
 		return testTool.outputpoint(correlationId, null, "PreserveInput", input);
 	}
-	
+
 	@Override
 	public String rerun(String correlationId, Report originalReport, SecurityContext securityContext, ReportRunner reportRunner) {
 		String errorMessage = null;
@@ -355,14 +359,14 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 			// listener handled by this class. A reply listener is always linked
 			// to a sender, so stub when senders should be stubbed.
 			return (checkpointName.startsWith("Sender ") || checkpointName.startsWith("Listener ")) && isEndpoint;
-		} 
+		}
 		if (STUB_STRATEGY_ALWAYS.equals(stubStrategy)
 			// Don't stub messageId as IbisDebuggerAdvice will read it as correlationId from PipeLineSession and
 			// use it as correlationId parameter for checkpoints, hence these checkpoint will not be correlated to
 			// the report with the correlationId used by the rerun method
 			&& !"SessionKey messageId".equals(checkpointName)) {
 			return true;
-		} 
+		}
 		return false;
 	}
 
