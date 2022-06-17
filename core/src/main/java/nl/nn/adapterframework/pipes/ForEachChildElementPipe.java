@@ -36,12 +36,14 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.SuppressKeys;
+import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jta.IThreadConnectableTransactionManager;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.IThreadCreator;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
@@ -67,6 +69,8 @@ import nl.nn.adapterframework.xml.XmlWriter;
 /**
  * Sends a message to a Sender for each child element of the input XML.
  * Input can be a String containing XML, a filename (set processFile true), an InputStream or a Reader.
+ *
+ * @ff.parameters all parameters will be applied to the xslt if an elementXPathExpression is specified
  *
  * @author Gerrit van Brakel
  * @since 4.6.1
@@ -134,11 +138,18 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 	}
 
 	protected String makeEncapsulatingXslt(String rootElementname, String xpathExpression, int xsltVersion, String namespaceDefs) {
+		String paramsString = "";
+		if (getParameterList() != null) {
+			for (Parameter param: getParameterList()) {
+				paramsString = paramsString + "<xsl:param name=\"" + param.getName() + "\"/>";
+			}
+		}
 		String namespaceClause = XmlUtils.getNamespaceClause(namespaceDefs);
 		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\""+xsltVersion+".0\" xmlns:xalan=\"http://xml.apache.org/xslt\">" +
 		"<xsl:output method=\"xml\" omit-xml-declaration=\"yes\"/>" +
 		"<xsl:strip-space elements=\"*\"/>" +
+		paramsString +
 		"<xsl:template match=\"/\">" +
 		"<xsl:element "+namespaceClause+" name=\"" + rootElementname + "\">" +
 		"<xsl:copy-of select=\"" + XmlUtils.encodeChars(xpathExpression) + "\"/>" +
@@ -288,7 +299,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		private TransformerErrorListener transformerErrorListener=null;
 	}
 
-	protected void createHandler(HandlerRecord result, ThreadConnector<?> threadConnector, PipeLineSession session, ItemCallback callback) throws TransformerConfigurationException {
+	protected void createHandler(HandlerRecord result, ThreadConnector<?> threadConnector, Message input, PipeLineSession session, ItemCallback callback) throws TransformerConfigurationException {
 		result.itemHandler = new ItemCallbackCallingHandler(callback);
 		result.inputHandler=result.itemHandler;
 
@@ -307,6 +318,13 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		if (getExtractElementsTp()!=null) {
 			if (log.isDebugEnabled()) log.debug("transforming input to obtain list of elements using xpath ["+getElementXPathExpression()+"]");
 			TransformerFilter transformerFilter = getExtractElementsTp().getTransformerFilter(threadConnector, result.inputHandler);
+			if (getParameterList()!=null) {
+				try {
+					XmlUtils.setTransformerParameters(transformerFilter.getTransformer(), getParameterList().getValues(input, session).getValueMap());
+				} catch (ParameterException | IOException e) {
+					throw new TransformerConfigurationException("Cannot apply parameters", e);
+				}
+			}
 			result.inputHandler=transformerFilter;
 			result.transformerErrorListener=(TransformerErrorListener)transformerFilter.getErrorListener();
 			result.errorMessage="Could not process list of elements using xpath ["+getElementXPathExpression()+"]";
@@ -362,7 +380,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			MessageOutputStream target=getTargetStream(session);
 			Writer resultWriter = target.asWriter();
 			ItemCallback callback = createItemCallBack(session, getSender(), resultWriter);
-			createHandler(handlerRecord, threadConnector, session, callback);
+			createHandler(handlerRecord, threadConnector, null, session, callback);
 			return new MessageOutputStream(this, handlerRecord.inputHandler, target, threadLifeCycleEventListener, txManager, session, threadConnector);
 		} catch (TransformerException e) {
 			throw new StreamingException(handlerRecord.errorMessage, e);
@@ -394,7 +412,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		HandlerRecord handlerRecord = new HandlerRecord();
 		try (ThreadConnector<?> threadConnector = streamingXslt ? new ThreadConnector<>(this, threadLifeCycleEventListener, txManager, session) : null) {
 			try {
-				createHandler(handlerRecord, threadConnector, session, callback);
+				createHandler(handlerRecord, threadConnector, input, session, callback);
 			} catch (TransformerException e) {
 				throw new SenderException(handlerRecord.errorMessage, e);
 			}
