@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,43 +17,27 @@ package nl.nn.adapterframework.scheduler.job;
 
 import org.apache.commons.lang3.NotImplementedException;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.digester.JobFactory;
+import lombok.Getter;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.doc.Mandatory;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.scheduler.JobDefFunctions;
 
 /**
  * Placeholder class to allow old-school <code>&lt;job function='SendMessage' /&gt;</code> in the new Frank!Config XSD.
- * 
- * Should never be instantiated directly. See {@link JobFactory} and {@link JobDefFunctions} for more information.
- * 
+ *
  * @author Niels Meijer
  */
+// Should never be instantiated directly. See {@link JobFactory} and {@link JobDefFunctions} for more information.
 public class Job extends JobDef {
 
-	private JobDefFunctions function;
-
-	@Override
-	public void configure() throws ConfigurationException {
-		if (getFunction() == null) {
-			throw new ConfigurationException("a function must be specified");
-		}
-
-		super.configure();
-	}
+	private @Getter JobDefFunctions function;
 
 	@Override
 	public void execute() throws JobExecutionException, TimeoutException {
-		throw new NotImplementedException();
+		throw new NotImplementedException(); // will be replaced by appropriate executor class in JobFactory, based on function
 	}
 
-	public void setFunction(JobDefFunctions function) {
-		this.function = function;
-	}
-	public JobDefFunctions getFunction() {
-		return function;
-	}
 
 	@Override
 	public String toString() {
@@ -61,4 +45,10 @@ public class Job extends JobDef {
 		if(function != null) builder.append(" function ["+function+"]");
 		return builder.toString();
 	}
+
+	@Mandatory
+	public void setFunction(JobDefFunctions function) {
+		this.function = function;
+	}
+
 }
