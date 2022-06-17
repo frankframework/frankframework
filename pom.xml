@@ -412,7 +412,7 @@
 					<configuration>
 						<excludeFile>${iaf.rootdir}/copyrightExcludeFile.txt</excludeFile>
 						<exclude>
-							DataSourceXAResourceRecoveryHelper.java,NarayanaRecoveryManager.java,FilenameUtils.java,PasswordHash.java
+							DataSourceXAResourceRecoveryHelper.java,NarayanaRecoveryManager.java,FilenameUtils.java,PasswordHash.java,FrankJ2V8LibraryLoader.java
 						</exclude>
 						<ignoreYear>true</ignoreYear>
 						<useDash>true</useDash>
@@ -443,7 +443,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
-					<version>3.2.0</version>
+					<version>3.4.0</version>
 					<configuration>
 						<doclint>none</doclint>
 						<tags>
@@ -627,7 +627,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.2.0</version>
+				<version>3.4.0</version>
 				<inherited>false</inherited>
 				<reportSets>
 					<reportSet>
@@ -821,7 +821,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-javadoc-plugin</artifactId>
-						<version>3.2.0</version>
+						<version>3.4.0</version>
 						<configuration>
 							<sourcepath>${project.build.directory}/generated-sources/delombok</sourcepath>
 						</configuration>
