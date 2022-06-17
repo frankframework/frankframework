@@ -97,7 +97,7 @@ public class MsalClientAdapter extends HttpSenderBase implements IHttpClient {
         Map<String, String> headers = (Map<String, String>) session.get(HEADERS_SESSION_KEY);
 
         if(uri == null){
-            throw new SenderException("Unknown URI to connect to! " + uri);
+            throw new SenderException("No URI to connect to! ");
         }
 
         boolean queryParametersAppended = false;
