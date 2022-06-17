@@ -136,7 +136,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class CmisUtils {
 
-	public static final String FORMATSTRING_BY_DEFAULT = "yyyy-MM-dd'T'HH:mm:ss";
+	public static final String FORMATSTRING_BY_DEFAULT = AppConstants.getInstance().getString("cmis.datetime.formatstring", "yyyy-MM-dd'T'HH:mm:ss");
 	public static final String ORIGINAL_OBJECT_KEY = "originalObject";
 	public static final String CMIS_VERSION_KEY = "cmisVersion";
 	public static final String CMIS_BINDING_KEY = "cmisBinding";
