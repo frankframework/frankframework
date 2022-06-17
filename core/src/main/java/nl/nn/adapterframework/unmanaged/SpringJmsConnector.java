@@ -15,11 +15,7 @@
 */
 package nl.nn.adapterframework.unmanaged;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -29,7 +25,6 @@ import javax.jms.Message;
 import javax.jms.Session;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -52,13 +47,10 @@ import nl.nn.adapterframework.jms.IbisMessageListenerContainer;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
-import nl.nn.adapterframework.util.RunState;
 
 /**
  * Configure a Spring JMS Container from a {@link nl.nn.adapterframework.jms.PushingJmsListener}.
- * 
+ *
  * <p>
  * This implementation expects to receive an instance of
  * org.springframework.jms.listener.DefaultMessageListenerContainer
@@ -82,7 +74,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 	public static final int DEFAULT_CACHE_LEVEL_TRANSACTED=DefaultMessageListenerContainer.CACHE_NONE;
 //	public static final int DEFAULT_CACHE_LEVEL_NON_TRANSACTED=DefaultMessageListenerContainer.CACHE_CONSUMER;
 	public static final int DEFAULT_CACHE_LEVEL_NON_TRANSACTED=DefaultMessageListenerContainer.CACHE_NONE;
-	
+
 //	public static final int MAX_MESSAGES_PER_TASK=100;
 	public static final int IDLE_TASK_EXECUTION_LIMIT=1000;
 
@@ -154,12 +146,12 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 						+ "] should be smaller than transaction timeout [" + TX.getTimeout()
 						+ "] as the receive time is part of the total transaction time");
 			}
-		} else { 
+		} else {
 			log.debug(getLogPrefix()+"setting no transction manager");
 		}
-		if (sessionTransacted) { 
+		if (sessionTransacted) {
 			jmsContainer.setSessionTransacted(sessionTransacted);
-		} 
+		}
 		if (StringUtils.isNotEmpty(messageSelector)) {
 			jmsContainer.setMessageSelector(messageSelector);
 		}
@@ -266,11 +258,11 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		Thread.currentThread().setName(getReceiver().getName()+"["+threadsProcessing.getValue()+"]");
 
 		try (PipeLineSession pipeLineSession = new PipeLineSession()) {
-			try {		
+			try {
 				if (TX!=null) {
 					txStatus = txManager.getTransaction(TX);
 				}
-	
+
 				try {
 					IPortConnectedListener<Message> listener = getListener();
 						pipeLineSession.put(THREAD_CONTEXT_SESSION_KEY,session);
@@ -295,12 +287,12 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 				threadsProcessing.decrease();
 				if (log.isInfoEnabled()) {
 					long onMessageEnd= System.currentTimeMillis();
-	
+
 					log.info(getLogPrefix()+"A) JMSMessageTime ["+DateUtils.format(jmsTimestamp)+"]");
 					log.info(getLogPrefix()+"B) onMessageStart ["+DateUtils.format(onMessageStart)+"] diff (~'queing' time) ["+(onMessageStart-jmsTimestamp)+"]");
 					log.info(getLogPrefix()+"C) onMessageEnd   ["+DateUtils.format(onMessageEnd)+"] diff (process time) ["+(onMessageEnd-onMessageStart)+"]");
 				}
-				
+
 //				boolean simulateCrashAfterCommit=true;
 //				if (simulateCrashAfterCommit) {
 //					toggle=!toggle;
@@ -354,7 +346,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 	@Override
 	public void increaseThreadCount() {
 		if (jmsContainer!=null) {
-			jmsContainer.setMaxConcurrentConsumers(jmsContainer.getMaxConcurrentConsumers()+1);	
+			jmsContainer.setMaxConcurrentConsumers(jmsContainer.getMaxConcurrentConsumers()+1);
 		}
 	}
 
@@ -363,7 +355,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		if (jmsContainer!=null) {
 			int current=getMaxThreadCount();
 			if (current>1) {
-				jmsContainer.setMaxConcurrentConsumers(current-1);	
+				jmsContainer.setMaxConcurrentConsumers(current-1);
 			}
 		}
 	}
@@ -409,60 +401,6 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 	}
 	public long getLastPollFinishedTime() {
 		return lastPollFinishedTime;
-	}
-
-}
-
-class PollGuard extends TimerTask {
-	private Logger log = LogUtil.getLogger(this);
-	private SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DateUtils.FORMAT_FULL_GENERIC);
-	private SpringJmsConnector springJmsConnector;
-	private long lastCheck;
-	private long previousLastPollFinishedTime;
-	private boolean timeoutDetected = false;
-
-	private static AtomicInteger pollTimeouts = new AtomicInteger();
-	
-	PollGuard() {
-		lastCheck = System.currentTimeMillis();
-	}
-
-	public void setSpringJmsConnector(SpringJmsConnector springJmsConnector) {
-		this.springJmsConnector = springJmsConnector;
-	}
-
-	@Override
-	public void run() {
-		long lastPollFinishedTime = springJmsConnector.getLastPollFinishedTime();
-		if (log.isTraceEnabled()) {
-			log.trace(springJmsConnector.getLogPrefix() + "check last poll finished time " + simpleDateFormat.format(new Date(lastPollFinishedTime)));
-		}
-		long currentCheck = System.currentTimeMillis();
-		if (lastPollFinishedTime < lastCheck) {
- 			if (lastPollFinishedTime != previousLastPollFinishedTime
-				&& springJmsConnector.threadsProcessing.getValue() == 0
-				&& springJmsConnector.getReceiver().getRunState() == RunState.STARTED
-				&& !springJmsConnector.getJmsContainer().isRecovering()) {
- 				previousLastPollFinishedTime = lastPollFinishedTime;
- 				timeoutDetected = true;
- 				warn("JMS poll timeout ["+pollTimeouts.incrementAndGet()+"] last poll finished ["+((currentCheck-lastPollFinishedTime)/1000)+"] s ago, an attempt will be made to stop and start listener");
-
- 				// Try to auto-recover the listener, when PollGuard detects `no activity` AND `threadsProcessing` == 0
- 				springJmsConnector.getListener().getReceiver().stopRunning();
- 				springJmsConnector.getListener().getReceiver().startRunning();
- 			}
-		} else {
-			if (timeoutDetected) {
-				timeoutDetected = false;
-				warn("JMS poll timeout appears to be resolved, total number of timeouts detected ["+pollTimeouts.intValue()+"]");
-			}
-		}
-		lastCheck = currentCheck;
-	}
-
-	private void warn(String message) {
-		log.warn(springJmsConnector.getLogPrefix() + message);
-		springJmsConnector.getReceiver().getAdapter().getMessageKeeper().add(message, MessageKeeperLevel.WARN);
 	}
 
 }

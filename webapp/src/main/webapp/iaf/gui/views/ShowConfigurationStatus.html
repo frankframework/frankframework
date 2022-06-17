@@ -60,8 +60,7 @@
                                         <th title="Stopping" ng-class="{'text-danger': (adapterSummary.stopping > 0 || receiverSummary.stopping > 0) }">
                                             <i class="fa fa-stop-circle-o"></i>
                                         </th>
-                                        <th title="Error" ng-class="{'text-warning': (adapterSummary.error > 0 || receiverSummary.error > 0) }">
-                                            <i class="fa fa-warning"></i>
+                                        <th title="Error" ng-class="{'text-warning': (adapterSummary.error > 0 || receiverSummary.error > 0 || adapterSummary.exception_starting > 0 || receiverSummary.exception_starting > 0 || adapterSummary.exception_stopping > 0 || receiverSummary.exception_stopping > 0) }">                                            <i class="fa fa-warning"></i>
                                         </th>
                                     </tr>
                                 </thead>
@@ -72,7 +71,7 @@
                                         <td>{{adapterSummary.starting}}</td>
                                         <td>{{adapterSummary.stopped}}</td>
                                         <td>{{adapterSummary.stopping}}</td>
-                                        <td>{{adapterSummary.error}}</td>
+                                        <td>{{adapterSummary.error+ adapterSummary.exception_starting + adapterSummary.exception_stopping}}</td>
                                     </tr>
                                     <tr>
                                         <td><strong>Receivers</strong></td>
@@ -80,7 +79,7 @@
                                         <td>{{receiverSummary.starting}}</td>
                                         <td>{{receiverSummary.stopped}}</td>
                                         <td>{{receiverSummary.stopping}}</td>
-                                        <td>{{receiverSummary.error}}</td>
+                                        <td>{{receiverSummary.error+ receiverSummary.exception_starting + receiverSummary.exception_stopping}}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -358,8 +357,8 @@
 	                                                        </button>
 	                                                    </span>
                                                 	</span>
-                                                    <button title="Stop receiver" class="btn btn-xs danger-hover" ng-show="receiver.state =='started'" type="button" ng-click="stopReceiver(adapter, receiver)"><i class="fa fa-stop"></i></button>
-                                                    <button title="Start receiver" class="btn btn-xs primary-hover" ng-show="receiver.state =='stopped'" type="button" ng-click="startReceiver(adapter, receiver)"><i class="fa fa-play"></i></button>
+                                                    <button title="Stop receiver" class="btn btn-xs danger-hover" ng-show="receiver.state =='started' || receiver.state =='exception_starting'" type="button" ng-click="stopReceiver(adapter, receiver)"><i class="fa fa-stop"></i></button>
+                                                    <button title="Start receiver" class="btn btn-xs primary-hover" ng-show="receiver.state =='stopped' || receiver.state =='exception_stopping'" type="button" ng-click="startReceiver(adapter, receiver)"><i class="fa fa-play"></i></button>
                                                     <button title="Loading..." class="btn btn-warning btn-xs" ng-show="receiver.state =='starting' || receiver.state =='stopping'" type="button"><i class="fa fa-cog fa-spin"></i></button>
                                                     <button title="RECEIVER IN ERROR STATE" class="btn btn-warning btn-xs" ng-show="receiver.state =='error'" type="button" disabled><i class="fa fa-warning"></i></button>
                                                 </span>
