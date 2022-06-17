@@ -64,7 +64,10 @@ import nl.nn.adapterframework.util.TransformerPool;
  * any <code>${...}</code> pattern in attribute <code>returnString</code> is substituted when the configuration is loaded.
  * <li>If attribute <code>styleSheetName</code> is set, then the referenced XSLT stylesheet is applied to the resulting string.
  * </ol>  
- *
+ * <br/><br/>
+ * Many attributes of this pipe reference file names. If a file is referenced by a relative path, the path
+ * is relative to the configuration's root directory.
+ * 
  * @ff.parameters Used for substitution. For a parameter named <code>xyz</code>, the string <code>${xyz}</code> or
  * <code>xyz</code> (if <code>replaceFixedParams</code> is true) is substituted by the parameter's value.
  *
@@ -232,7 +235,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * Name of the file containing the result message. Path is relative to the configuration's root directory (file is expected on the classpath).
+	 * Name of the file containing the result message.
 	 */
 	public void setFilename(String filename) {
 		this.filename = filename;
@@ -246,7 +249,6 @@ public class FixedResultPipe extends FixedForwardPipe {
 
 	/**
 	 * Name of the session key containing the file name of the file containing the result message.
-	 * Path is relative to the configuration's root directory (file is expected on the classpath).
 	 */
 	public void setFilenameSessionKey(String filenameSessionKey) {
 		this.filenameSessionKey = filenameSessionKey;
@@ -275,7 +277,6 @@ public class FixedResultPipe extends FixedForwardPipe {
 
 	/**
 	 * File name of XSLT stylesheet to apply.
-	 * Path is relative to the configuration's root directory (file is expected on the classpath).
 	 */
 	public void setStyleSheetName (String styleSheetName){
 		this.styleSheetName=styleSheetName;
