@@ -43,7 +43,7 @@ public class IbisJobDetailTest {
 
 	@Test
 	public void compareOneCron() throws Exception {
-		jobDef1.setCronExpression("0 0 *");
+		jobDef1.setCronExpression("0 0 * ? * * *");
 		jobDef1.configure();
 		jobDef2.configure();
 		IbisJobDetail jobDetail1 = (IbisJobDetail)IbisJobBuilder.fromJobDef(jobDef1).build();
@@ -52,7 +52,7 @@ public class IbisJobDetailTest {
 
 	@Test
 	public void compareOtherCron() throws Exception {
-		jobDef2.setCronExpression("0 0 *");
+		jobDef2.setCronExpression("0 0 * ? * * *");
 		jobDef1.configure();
 		jobDef2.configure();
 		IbisJobDetail jobDetail1 = (IbisJobDetail)IbisJobBuilder.fromJobDef(jobDef1).build();
@@ -61,8 +61,8 @@ public class IbisJobDetailTest {
 
 	@Test
 	public void compareEqualCron() throws Exception {
-		jobDef1.setCronExpression("0 0 *");
-		jobDef2.setCronExpression("0 0 *");
+		jobDef1.setCronExpression("0 0 * ? * * *");
+		jobDef2.setCronExpression("0 0 * ? * * *");
 		jobDef1.configure();
 		jobDef2.configure();
 		IbisJobDetail jobDetail1 = (IbisJobDetail)IbisJobBuilder.fromJobDef(jobDef1).build();
@@ -71,8 +71,8 @@ public class IbisJobDetailTest {
 
 	@Test
 	public void compareDifferentCron() throws Exception {
-		jobDef1.setCronExpression("0 0 *");
-		jobDef2.setCronExpression("1 1 *");
+		jobDef1.setCronExpression("0 0 * ? * * *");
+		jobDef2.setCronExpression("1 1 * ? * * *");
 		jobDef1.configure();
 		jobDef2.configure();
 		IbisJobDetail jobDetail1 = (IbisJobDetail)IbisJobBuilder.fromJobDef(jobDef1).build();

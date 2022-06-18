@@ -26,6 +26,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.IteratingPipe.StopReason;
 import nl.nn.adapterframework.senders.EchoSender;
 import nl.nn.adapterframework.senders.XsltSender;
@@ -49,6 +50,11 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 	private String messageError="<root><sub name=\"a\">B</sub><sub>error</sub><sub>tail</sub></root>";
 	private String messageDuplNamespace1="<root xmlns=\"urn:test\"><header xmlns=\"urn:header\">x</header><sub xmlns=\"urn:test\">A &amp; B</sub><sub xmlns=\"urn:test\" name=\"p &amp; Q\">"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</sub><sub xmlns=\"urn:test\" name=\"r\">R</sub></root>";
 	private String messageDuplNamespace2="<ns:root xmlns:ns=\"urn:test\"><header xmlns=\"urn:header\">x</header><ns:sub xmlns:ns=\"urn:test\">A &amp; B</ns:sub><ns:sub xmlns:ns=\"urn:test\" name=\"p &amp; Q\">"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</ns:sub><ns:sub xmlns:ns=\"urn:test\" name=\"r\">R</ns:sub></ns:root>";
+
+	private String expectedBasicOnlyR="<results>\n"+
+			"<result item=\"1\">\n"+
+			"<sub name=\"r\">R</sub>\n"+
+			"</result>\n</results>";
 
 	private String expectedBasicNoNS="<results>\n"+
 			"<result item=\"1\">\n"+
@@ -389,6 +395,23 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 	}
 
 	@Test
+	public void testXPathWithParameter() throws Exception {
+		SwitchCounter sc = new SwitchCounter();
+		pipe.setElementXPathExpression("/root/sub[@name=$param]");
+		// pipe.setNamespaceAware(true);
+		pipe.setSender(getElementRenderer(sc));
+		pipe.addParameter(new Parameter("param","r"));
+		configurePipe();
+		pipe.start();
+
+		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNoNS.getBytes());
+		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
+		String actual = Message.asString(prr.getResult());
+
+		assertEquals(expectedBasicOnlyR, actual);
+	}
+
+	@Test
 	public void testXPathRemoveNamespacesNonPrefixed() throws Exception {
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setElementXPathExpression("/ns:root/ns:sub");
@@ -617,6 +640,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		configurePipe();
 		pipe.start();
 
+
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageDuplNamespace1.getBytes());
 		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
 		String actual = Message.asString(prr.getResult());
@@ -633,6 +657,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		pipe.setSender(getElementRenderer(sc));
 		configurePipe();
 		pipe.start();
+
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageDuplNamespace2.getBytes());
 		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
@@ -900,6 +925,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		assertEquals(expectedBasicNoNS, actual);
 	}
 
+
 	@Test
 	public void testNoDuplicateNamespaces() throws Exception, IOException {
 		pipe.setSender(getElementRenderer());
@@ -1095,6 +1121,5 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		}
 
 	}
-
 
 }
