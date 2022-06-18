@@ -6,9 +6,11 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.util.Collection;
 
 import org.junit.Test;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -126,7 +128,9 @@ public class ShadowSenderTest extends ParallelSendersTest {
 
 	@Test
 	public void testResultSenderResult() throws Exception {
-		sender.registerSender(new TestSender("shadowSenderWithDelay"));
+		sender.registerSender(new TestSender("shadowSenderWithDelay1"));
+		sender.registerSender(new TestSender("shadowSenderWithDelay2"));
+		sender.registerSender(new TestSender("shadowSenderWithDelay3"));
 
 		sender.configure();
 		sender.open();
@@ -153,10 +157,14 @@ public class ShadowSenderTest extends ParallelSendersTest {
 		assertEquals(ORIGINAL_SENDER_NAME, origResult.getAttribute("senderName"));
 		assertTrue(Integer.parseInt(origResult.getAttribute("duration")) < 10);
 
-		Element shadowResult = XmlUtils.getFirstChildTag(el, "shadowResult");
-		assertEquals(INPUT_MESSAGE, XmlUtils.getStringValue(shadowResult, true));
-		assertEquals(ORIGINAL_SENDER_NAME, origResult.getAttribute("senderName"));
-		int duration = Integer.parseInt(shadowResult.getAttribute("duration"));
-		assertTrue("test duration was ["+duration+"]", duration >= 2000 && duration < 2050);
+		Collection<Node> shadowResults = XmlUtils.getChildTags(el, "shadowResult");
+		assertEquals(3, shadowResults.size());
+		for(Node node : shadowResults) {
+			Element shadowResult = (Element) node;
+			assertEquals(INPUT_MESSAGE, XmlUtils.getStringValue(shadowResult, true));
+			assertTrue(shadowResult.getAttribute("senderName").startsWith("shadowSenderWithDelay"));
+			int duration = Integer.parseInt(shadowResult.getAttribute("duration"));
+			assertTrue("test duration was ["+duration+"]", duration >= 2000 && duration < 2050);
+		}
 	}
 }

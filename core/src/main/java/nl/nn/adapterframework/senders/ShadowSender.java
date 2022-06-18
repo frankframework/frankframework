@@ -30,14 +30,13 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Guard;
-import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.SaxDocumentBuilder;
+import nl.nn.adapterframework.xml.SaxElementBuilder;
 
 /**
  * Collection of Senders, that are executed all at the same time. Once the results are processed, all results will be sent to the resultSender, while the original sender will return it's result to the pipeline.
@@ -125,75 +124,60 @@ public class ShadowSender extends ParallelSenders {
 		}
 
 		try {
-			collectResults(executorMap, message, session);
-		} catch (SAXException e) {
-			// TODO handle exception!
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO handle exception!
-			e.printStackTrace();
-		} finally {
+			Message result = collectResults(executorMap, message, session);
+			resultSender.sendMessage(result, session);
+		} catch (IOException | SAXException e) {
+			log.error("unable to compose result message", e);
+		} catch(TimeoutException | SenderException se) {
+			log.error("failed to send ShadowSender result to ["+resultSender.getName()+"]");
 		}
+
+		// If the originalSender contains any exceptions these should be thrown and
+		// cause an SenderException regardless of the results of the ShadowSenders.
 		if (originalSenderExecutor.getThrowable() != null) {
 			throw new SenderException(originalSenderExecutor.getThrowable());
 		}
 		return originalSenderExecutor.getReply();
 	}
 
-	private void collectResults(Map<ISender, ParallelSenderExecutor> executorMap, Message message, PipeLineSession session) throws SAXException, IOException {
+	private Message collectResults(Map<ISender, ParallelSenderExecutor> executorMap, Message message, PipeLineSession session) throws SAXException, IOException {
 		SaxDocumentBuilder builder = new SaxDocumentBuilder("results");
 
-		XmlBuilder resultsXml = new XmlBuilder("results"); //SaxDocumentBuilder
 		String correlationID = session==null ? null : session.getMessageId();
-		resultsXml.addAttribute("correlationID", correlationID);
+		builder.addAttribute("correlationID", correlationID);
 
-		XmlBuilder originalMessageXml = new XmlBuilder("originalMessage");
-		originalMessageXml.setValue(XmlUtils.skipXmlDeclaration(message.asString()),false);
-		resultsXml.addSubElement(originalMessageXml);
+		builder.addElement("originalMessage", XmlUtils.skipXmlDeclaration(message.asString()));
 
-		// First loop through all (Shadow)Senders and handle their results
+		// First loop through all (Shadow)Senders and collect their results
 		for (Iterator<ISender> it = getExecutableSenders(); it.hasNext();) {
 			ISender sender = it.next();
 			ParallelSenderExecutor pse = executorMap.get(sender);
 
-			XmlBuilder resultXml;
-			if(sender.getName() != null && sender.getName().equalsIgnoreCase(getOriginalSenderName())) {
-				resultXml = new XmlBuilder("originalResult");
-			}
-			else {
-				resultXml = new XmlBuilder("shadowResult");
+			SaxElementBuilder senderResult;
+			if(sender == originalSender) {
+				senderResult = builder.startElement("originalResult");
+			} else {
+				senderResult = builder.startElement("shadowResult");
 			}
 
 			StatisticsKeeper sk = getStatisticsKeeper(sender);
-			resultXml.addAttribute("duration", sk.getLast());
+			senderResult.addAttribute("duration", ""+sk.getLast());
 
-			resultXml.addAttribute("senderClass", ClassUtils.nameOf(sender));
-			resultXml.addAttribute("senderName", sender.getName());
+			senderResult.addAttribute("senderClass", ClassUtils.nameOf(sender));
+			senderResult.addAttribute("senderName", sender.getName());
 			Throwable throwable = pse.getThrowable();
 			if (throwable==null) {
-				Object result = pse.getReply().asObject();
-				if (result==null) {
-					resultXml.addAttribute("type", "null");
-				} else {
-					resultXml.addAttribute("type", ClassUtils.nameOf(result));
-					resultXml.setValue(XmlUtils.skipXmlDeclaration(result.toString()), false);
-				}
+				Message result = pse.getReply();
+				senderResult.addValue(XmlUtils.skipXmlDeclaration(result.asString()));
 			} else {
-				resultXml.addAttribute("type", ClassUtils.nameOf(throwable));
-				resultXml.setValue(throwable.getMessage());
+				senderResult.addValue(throwable.getMessage());
 			}
-			resultsXml.addSubElement(resultXml);
+			senderResult.endElement();
 		}
 
-		// If the originalSender contains any exceptions these should be thrown and
-		// cause an SenderException regardless of the results of the ShadowSenders.
+		builder.close();
 
-		//The messages have been processed, now the results need to be stored somewhere.
-		try {
-			resultSender.sendMessage(new Message(resultsXml.toXML()), session);
-		} catch(TimeoutException | SenderException se) {
-			log.warn("failed to send ShadowSender result to ["+resultSender.getName()+"]");
-		}
+		return Message.asMessage(builder.toString());
 	}
 
 	private Iterator<ISender> getExecutableSenders() {
