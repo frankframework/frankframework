@@ -4,8 +4,7 @@
 	<sub-deployment name="adapterframework.war">
 		<dependencies>
 			<module name="javax.jws.api" export="true"/>	<!-- java.lang.NoClassDefFoundError: javax/jws/WebService -->
-			<module name="org.codehaus.jackson.jackson-xc" />	<!-- java.lang.NoClassDefFoundError: Could not initialize class org.codehaus.jackson.map.ObjectMapper  -->
-			<module name="org.codehaus.jackson.jackson-mapper-asl" />
+			<module name="javax.jms.api" export="true"/>
 			<module name="module.frankframework.resources" /> 	<!--  -->
 		</dependencies>
 		<exclude-subsystems>

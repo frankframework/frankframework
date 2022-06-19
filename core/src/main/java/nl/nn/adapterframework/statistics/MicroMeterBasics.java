@@ -25,7 +25,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
  * Container for basic statistical estimators, based on MicroMeter DistributionSummary.
- * 
+ *
  * @author  Gerrit van Brakel
  */
 public class MicroMeterBasics implements IBasics<MicroMeterSnapshot> {
@@ -54,6 +54,7 @@ public class MicroMeterBasics implements IBasics<MicroMeterSnapshot> {
 		return result;
 	}
 
+	@Override
 	public void addValue(long value) {
 		if (distributionSummary!=null) {
 			distributionSummary.record(value);
@@ -62,6 +63,7 @@ public class MicroMeterBasics implements IBasics<MicroMeterSnapshot> {
 		addSums(value);
 	}
 
+	@Override
 	public void checkMinMax(long value) {
 		if (value < min) {
 			min = value;
@@ -181,6 +183,7 @@ public class MicroMeterBasics implements IBasics<MicroMeterSnapshot> {
 
 
 
+	@Override
 	public long getCount() {
 		return distributionSummary!=null ? distributionSummary.count() : 0;
 	}
@@ -188,17 +191,21 @@ public class MicroMeterBasics implements IBasics<MicroMeterSnapshot> {
 		return getCount()-mark.getCount();
 	}
 
+	@Override
 	public long getMax() {
 		return distributionSummary!=null ? Math.round(distributionSummary.max()) : 0;
 	}
 
+	@Override
 	public long getMin() {
 		return min;
 	}
 
+	@Override
 	public long getSum() {
 		return distributionSummary!=null ? Math.round(distributionSummary.totalAmount()) : 0;
 	}
+	@Override
 	public long getSumOfSquares() {
 		return sumOfSquares;
 	}
@@ -210,6 +217,7 @@ public class MicroMeterBasics implements IBasics<MicroMeterSnapshot> {
 		return sumOfSquares-mark.getSumOfSquares();
 	}
 
+	@Override
 	public double getAverage() {
 		return distributionSummary!=null ? distributionSummary.mean() : 0;
 	}
@@ -221,6 +229,7 @@ public class MicroMeterBasics implements IBasics<MicroMeterSnapshot> {
 		return getIntervalSum(mark)/(double)(intervalCount);
 	}
 
+	@Override
 	public double getVariance() {
 		if (distributionSummary==null) {
 			return Double.NaN;
@@ -236,6 +245,7 @@ public class MicroMeterBasics implements IBasics<MicroMeterSnapshot> {
 		return calculateVariance(snapshot.count()-mark.getCount(), Math.round(snapshot.total())-mark.getSum(), sumOfSquares-mark.getSumOfSquares());
 	}
 
+	@Override
 	public double getStdDev() {
 		return Math.sqrt(getVariance());
 	}
