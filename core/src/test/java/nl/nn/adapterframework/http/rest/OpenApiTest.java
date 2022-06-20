@@ -13,6 +13,7 @@ import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.testutil.threading.IsolatedThread;
 import nl.nn.adapterframework.testutil.threading.RunInThreadRule;
+import nl.nn.adapterframework.util.Misc;
 
 public class OpenApiTest extends OpenApiTestBase {
 
@@ -213,7 +214,7 @@ public class OpenApiTest extends OpenApiTestBase {
 			.build(true);
 
 		assertEquals("more then 2 registered pattern found!", 2, dispatcher.findMatchingConfigsForUri(uri).size());
-		String result = callOpenApi(uri+"/mock-pattern");
+		String result = callOpenApi(uri+"/"+Misc.urlEncode("{pattern}"));
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/envelopePathParamQueryParam.json");
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
