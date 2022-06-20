@@ -44,13 +44,13 @@ import nl.nn.adapterframework.util.StreamUtil;
  * <ul>
  * 	<li>String refering to a filename</li>
  *  <li>File</li>
- *  <li>InputStream</li> 
+ *  <li>InputStream</li>
  * </ul>
- * The message sent each time to the sender is the filename of the entry found in the archive. 
- * The contents of the archive is available as a Stream or a String in a session variable. 
+ * The message sent each time to the sender is the filename of the entry found in the archive.
+ * The contents of the archive is available as a Stream or a String in a session variable.
  *
  * <br>
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.9.10
  */
@@ -61,6 +61,7 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 	private @Getter boolean closeInputstreamOnExit=true;
 	private @Getter String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	private @Getter boolean skipBOM=false;
+	private @Getter boolean processFile=false;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -153,22 +154,27 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 
 	protected ZipInputStream getZipInputStream(Message input, PipeLineSession session, Map<String,Object> threadContext) throws SenderException {
 		if (input==null) {
-			throw new SenderException("input is null. Must supply String (Filename), File or InputStream as input");
+			throw new SenderException("input is null. Must supply String (Filename, with processFile=true), File or InputStream as input");
 		}
 		InputStream source=null;
-		try {
-			if (input.asObject() instanceof String) {
-				String filename=(String)input.asObject();
+		if (isProcessFile()) {
+			try {
+				String filename=null;
 				try {
-					source=new FileInputStream(filename);
-				} catch (FileNotFoundException e) {
-					throw new SenderException("Cannot find file ["+filename+"]",e);
+					filename = input.asString();
+				} catch (IOException e) {
+					throw new SenderException(getLogPrefix(session)+"cannot find filename ["+filename+"]", e);
 				}
-			} else {
-				source = input.asInputStream();
+				source = new FileInputStream(filename);
+			} catch (FileNotFoundException e) {
+				throw new SenderException("could not find file ["+input+"]",e);
 			}
-		} catch (IOException e) {
-			throw new SenderException(getLogPrefix(session)+"cannot open stream", e);
+		} else {
+			try {
+				source = input.asInputStream();
+			} catch (IOException e) {
+				throw new SenderException(getLogPrefix(session)+"cannot open stream", e);
+			}
 		}
 		if (!(source instanceof BufferedInputStream)) {
 			source=new BufferedInputStream(source);
@@ -217,5 +223,12 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 	@IbisDoc({"If set to <code>true</code>, a possible bytes order mark (BOM) at the start of the file is skipped (only used for encoding uft-8)", "false"})
 	public void setSkipBOM(boolean b) {
 		skipBOM = b;
+	}
+
+	@IbisDoc({"If set <code>true</code>, the each entry is assumed to be the name of a file to be compressed. Otherwise, the input itself is compressed.", "false"})
+	@Deprecated
+	@ConfigurationWarning("Please add a LocalFileSystemPipe with action=read in front of this pipe instead")
+	public void setProcessFile(boolean b) {
+		processFile = b;
 	}
 }

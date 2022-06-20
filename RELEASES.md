@@ -16,6 +16,7 @@ Upcoming (7.8)
 - property xml.namespaceAware.default=true by default. When set to false, parsing is done via a DOM source, or namespaces are removed before XSLT transformations.
 - Parameter handling for types Node and DomDoc is namespace aware, starting from version 7.6. To remove namespaces, use set attribute removeNamespaces="true"
 - Larva uses different correlationId in the format *Test Tool correlation id(${counter})* for each scenario.
+- To use files in ZipIteratorPipe and UnzipPipe the attribute processFilename="true" must be set. Otherwise the data will not be interpreted as a filename, but as data.
 
 7.7
 ---
