@@ -27,7 +27,6 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.FileUtils;
 
 /**
@@ -36,11 +35,11 @@ import nl.nn.adapterframework.util.FileUtils;
  * You can use the &lt;child&gt; tag to register RecordHandlers, RecordHandlerManagers, ResultHandlers
  * and RecordHandlingFlow elements. This is deprecated, however. Since 4.7 one should use &lt;manager&gt;,
  * &lt;recordHandler&gt;, &lt;resultHandler&gt; and &lt;flow&gt;
- * 
+ *
  * For files containing only a single type of lines, a simpler configuration without managers and flows
  * can be specified. A single recordHandler with key="*" and (optional) a single resultHandler need to be specified.
  * Each line will be handled by this recordHandler and resultHandler.
- * 
+ *
  * @author  John Dekker
  */
 public class BatchFileTransformerPipe extends StreamTransformerPipe {
@@ -79,8 +78,8 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 	/**
 	 * Open a reader for the file named according the input message and transform it.
 	 * Move the input file to a done directory when transformation is finished
-	 * and return the names of the generated files. 
-	 * 
+	 * and return the names of the generated files.
+	 *
 	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Message, PipeLineSession)
 	 */
 	@Override
@@ -89,9 +88,6 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 			throw new PipeRunException(this,"got null input instead of String containing filename");
 		}
 
-		if (!(input.asObject() instanceof String)) {
-			throw new PipeRunException(this,"expected String containing filename as input, got ["+ClassUtils.nameOf(input)+"], value ["+input+"]");
-		}
 		String filename;
 		try {
 			filename = input.asString();
