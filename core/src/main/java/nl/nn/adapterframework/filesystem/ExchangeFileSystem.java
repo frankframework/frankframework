@@ -139,6 +139,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	private @Getter String tenantId = null;
 	private ConfidentialClientApplication client;
 	private MsalClientAdapter msalClientAdapter;
+	private ExecutorService executor;
 
 	private FolderId basefolderId;
 
@@ -158,9 +159,10 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	public void open() throws FileSystemException {
 		super.open();
 		if( StringUtils.isNotEmpty(getTenantId()) ){
+			executor = Executors.newSingleThreadExecutor(); //Create a new Executor in the same thread(context) to avoid SecurityExceptions when setting a ClassLoader on the Runnable.
+
 			CredentialFactory cf = getCredentials();
 			CredentialFactory proxyCredentials = getProxyCredentials();
-			ExecutorService executor = Executors.newSingleThreadExecutor();
 
 			msalClientAdapter = new MsalClientAdapter();
 			msalClientAdapter.setProxyHost(getProxyHost());
@@ -195,6 +197,10 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			} catch (SenderException e) {
 				throw new FileSystemException("An exception occurred during closing of MSAL HttpClient", e);
 			}
+		}
+		if(executor != null) {
+			executor.shutdown();
+			executor = null;
 		}
 	}
 
