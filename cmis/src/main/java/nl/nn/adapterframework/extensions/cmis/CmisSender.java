@@ -534,7 +534,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		try {
 			Message inputFromSessionKey = session.getMessage( getParameterOverriddenAttributeValue(pvl, "fileSessionKey", getFileSessionKey()) );
 
-			if(convert2Base64 && inputFromSessionKey.asObject() instanceof String) {
+			if(convert2Base64) {
 				inputFromSessionKey = new Message(Base64.decodeBase64(inputFromSessionKey.asByteArray()));
 			}
 
