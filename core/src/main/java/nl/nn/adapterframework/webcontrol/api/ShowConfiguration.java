@@ -116,8 +116,8 @@ public final class ShowConfiguration extends Base {
 	@Path("/configurations2")
 	@Produces(MediaType.APPLICATION_XML)
 	public Response getXMLConfiguration2(@QueryParam("loadedConfiguration") boolean loaded, @QueryParam("flow") String flow) throws ApiException {
-		ApiMessageRequest request = new ApiMessageRequest(Action.GET_CONFIGURATION, IbisContext.ALL_CONFIGS_KEY);
-		Message<String> input = MessageBuilder.withPayload("getConfigurations").build();
+//		ApiMessageRequest request = new ApiMessageRequest(Action.GET_CONFIGURATION, IbisContext.ALL_CONFIGS_KEY);//json bericht!
+		Message<String> input = MessageBuilder.withPayload("GET:configurations").build();
 		return callGateway(input);
 	}
 
