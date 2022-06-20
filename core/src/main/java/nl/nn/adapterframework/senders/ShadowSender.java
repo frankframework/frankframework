@@ -18,7 +18,6 @@ package nl.nn.adapterframework.senders;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -52,27 +51,33 @@ public class ShadowSender extends ParallelSenders {
 	private ISender originalSender = null;
 	private @Getter String resultSenderName = null;
 	private ISender resultSender = null;
-	private List<ISender> senderList = null;
+	private @Getter List<ISender> executableSenders;
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if(getSenderList().isEmpty()) {
-			throw new ConfigurationException("no senders found, please add a [originalSender] and a [resultSender]");
+		if(originalSenderName == null || resultSenderName == null) {
+			throw new ConfigurationException("no originalSender or resultSender defined");
 		}
 
-		boolean hasShadowSender = false;
+		executableSenders = validateExecutableSenders();
 
-		if(originalSenderName == null)
-			throw new ConfigurationException("no originalSender defined");
-		if(resultSenderName == null)
-			throw new ConfigurationException("no resultSender defined");
+		if(originalSender == null)
+			throw new ConfigurationException("no originalSender found");
+		if(resultSender == null)
+			throw new ConfigurationException("no resultSender found");
 
+		super.configure();
+	}
+
+	public List<ISender> validateExecutableSenders() throws ConfigurationException {
+		List<ISender> executableSenderList = new ArrayList<>();
 		for (ISender sender: getSenders()) {
 			if(originalSenderName.equalsIgnoreCase(sender.getName())) {
 				if(originalSender != null) {
 					throw new ConfigurationException("originalSender can only be defined once");
 				}
 				originalSender = sender;
+				executableSenderList.add(sender);
 			}
 			else if(resultSenderName.equalsIgnoreCase(sender.getName())) {
 				if(resultSender != null) {
@@ -80,19 +85,12 @@ public class ShadowSender extends ParallelSenders {
 				}
 				resultSender = sender;
 			}
-			else {
-				hasShadowSender = true;
+			else { // ShadowSender
+				executableSenderList.add(sender);
 			}
 		}
 
-		if(originalSender == null)
-			throw new ConfigurationException("no originalSender found");
-		if(resultSender == null)
-			throw new ConfigurationException("no resultSender found");
-		if(!hasShadowSender)
-			throw new ConfigurationException("no shadowSender found");
-
-		super.configure();
+		return executableSenderList;
 	}
 
 	/**
@@ -103,8 +101,8 @@ public class ShadowSender extends ParallelSenders {
 		Guard guard = new Guard();
 		Map<ISender, ParallelSenderExecutor> executorMap = new HashMap<>();
 
-		for (Iterator<ISender> it = getExecutableSenders(); it.hasNext();) {
-			ISender sender = it.next();
+		// Loop through all senders and execute the message.
+		for (ISender sender : getExecutableSenders()) {
 			guard.addResource();
 			ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, message, session, guard, getStatisticsKeeper(sender));
 			executorMap.put(sender, pse);
@@ -112,6 +110,7 @@ public class ShadowSender extends ParallelSenders {
 			getExecutor().execute(pse);
 		}
 
+		// Wait till every sender has replied.
 		try {
 			guard.waitForAllResources();
 		} catch (InterruptedException e) {
@@ -123,6 +122,7 @@ public class ShadowSender extends ParallelSenders {
 			throw new IllegalStateException("unable to find originalSenderExecutor");
 		}
 
+		// Collect the results of the (Shadow)Sender and send them to the resultSender.
 		try {
 			Message result = collectResults(executorMap, message, session);
 			resultSender.sendMessage(result, session);
@@ -148,9 +148,7 @@ public class ShadowSender extends ParallelSenders {
 
 		builder.addElement("originalMessage", XmlUtils.skipXmlDeclaration(message.asString()));
 
-		// First loop through all (Shadow)Senders and collect their results
-		for (Iterator<ISender> it = getExecutableSenders(); it.hasNext();) {
-			ISender sender = it.next();
+		for (ISender sender : getExecutableSenders()) {
 			ParallelSenderExecutor pse = executorMap.get(sender);
 
 			SaxElementBuilder senderResult;
@@ -179,21 +177,6 @@ public class ShadowSender extends ParallelSenders {
 
 		return Message.asMessage(builder.toString());
 	}
-
-	private Iterator<ISender> getExecutableSenders() {
-		return getSenderList().iterator();
-	}
-	private List<ISender> getSenderList() {
-		if(senderList == null) {
-			senderList = new ArrayList<>();
-			for (ISender sender: getSenders()) {
-				if(sender.getName() == null || (!sender.getName().equals(getResultSenderName())))
-					senderList.add(sender);
-			}
-		}
-		return senderList;
-	}
-
 
 	/** The default or original sender name */
 	public void setOriginalSender(String senderName) {

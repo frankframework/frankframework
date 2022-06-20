@@ -43,7 +43,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 	}
 
 	@Override
-	protected String getTestFile(String path) throws IOException {
+	protected String getExpectedTestFile(String path) throws IOException {
 		return ORIGINAL_SENDER_RESULT; //Should always return the result of the originalSender
 	}
 
@@ -83,7 +83,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 			sender.configure();
 			sender.open();
 		});
-		assertEquals("no resultSender defined", exception.getMessage());
+		assertEquals("no originalSender or resultSender defined", exception.getMessage());
 	}
 
 	@Test
@@ -93,7 +93,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 			sender.configure();
 			sender.open();
 		});
-		assertEquals("no originalSender defined", exception.getMessage());
+		assertEquals("no originalSender or resultSender defined", exception.getMessage());
 	}
 
 	@Test
@@ -123,11 +123,43 @@ public class ShadowSenderTest extends ParallelSendersTest {
 			ps.configure();
 			ps.open();
 		});
-		assertEquals("no senders found, please add a [originalSender] and a [resultSender]", exception.getMessage());
+		assertEquals("no originalSender or resultSender defined", exception.getMessage());
 	}
 
 	@Test
-	public void testResultSenderResult() throws Exception {
+	public void testNoShadowSenders() throws Exception {
+		sender.configure();
+		sender.open();
+
+		String result = sender.sendMessage(new Message(INPUT_MESSAGE), session).asString();
+		assertEquals(ORIGINAL_SENDER_RESULT, result);
+
+		Message senderResult = null;
+		for(ISender sender : sender.getSenders()) {
+			if(RESULT_SENDER_NAME.equals(sender.getName())) {
+				senderResult = ((ResultSender)sender).getResult();
+			}
+		}
+		if(senderResult == null) {
+			fail("no sender result");
+		}
+
+		Element el = XmlUtils.buildDomDocument(senderResult.asInputSource(), false).getDocumentElement();
+
+		String origMsg = XmlUtils.getChildTagAsString(el, "originalMessage");
+		assertEquals(INPUT_MESSAGE, origMsg);
+
+		Element origResult = XmlUtils.getFirstChildTag(el, "originalResult");
+		assertEquals(ORIGINAL_SENDER_RESULT, XmlUtils.getStringValue(origResult, true));
+		assertEquals(ORIGINAL_SENDER_NAME, origResult.getAttribute("senderName"));
+		assertTrue(Integer.parseInt(origResult.getAttribute("duration")) < 10);
+
+		Collection<Node> shadowResults = XmlUtils.getChildTags(el, "shadowResult");
+		assertEquals(0, shadowResults.size());
+	}
+
+	@Test
+	public void testResultSenderResultWith3ShadowSenders() throws Exception {
 		sender.registerSender(new TestSender("shadowSenderWithDelay1"));
 		sender.registerSender(new TestSender("shadowSenderWithDelay2"));
 		sender.registerSender(new TestSender("shadowSenderWithDelay3"));

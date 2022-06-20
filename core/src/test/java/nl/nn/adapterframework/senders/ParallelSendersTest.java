@@ -22,7 +22,7 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 		return ps;
 	}
 
-	protected String getTestFile(String path) throws IOException {
+	protected String getExpectedTestFile(String path) throws IOException {
 		return TestFileUtils.getTestFile(BASEPATH+path);
 	}
 
@@ -43,7 +43,7 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 		sender.configure();
 		sender.open();
 
-		String expected = getTestFile("test10SubSenders.txt");
+		String expected = getExpectedTestFile("test10SubSenders.txt");
 		assertNotNull("cannot find expected result file", expected);
 
 		Message message = new Message("<dummy/>");
@@ -72,7 +72,7 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 		sender.configure();
 		sender.open();
 
-		String expected = getTestFile("test5wrappersWith10SubSenders.txt");
+		String expected = getExpectedTestFile("test5wrappersWith10SubSenders.txt");
 		assertNotNull("cannot find expected result file", expected);
 
 		Message message = new Message("<dummy/>");
