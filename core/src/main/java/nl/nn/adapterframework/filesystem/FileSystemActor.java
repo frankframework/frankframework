@@ -312,12 +312,12 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	}
 
 	public Object doAction(Message input, ParameterValueList pvl, PipeLineSession session) throws FileSystemException, TimeoutException {
+		FileSystemAction action=null;
 		try {
 			if(input != null) {
 				input.closeOnCloseOf(session, getClass().getSimpleName()+" of a "+fileSystem.getClass().getSimpleName()); // don't know if the input will be used
 			}
 
-			FileSystemAction action;
 			if (pvl != null && pvl.contains(PARAMETER_ACTION)) {
 				try {
 					action = EnumUtils.parse(FileSystemAction.class, pvl.getParameterValue(PARAMETER_ACTION).asStringValue(getAction()+""));
@@ -469,10 +469,10 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 					return null;
 				}
 				default:
-					throw new FileSystemException("action ["+getAction()+"] is not supported!");
+					throw new FileSystemException("action ["+action+"] is not supported!");
 			}
 		} catch (Exception e) {
-			throw new FileSystemException("unable to process ["+getAction()+"] action for File [" + determineFilename(input, pvl) + "]", e);
+			throw new FileSystemException("unable to process ["+action+"] action for File [" + determineFilename(input, pvl) + "]", e);
 		}
 	}
 
@@ -489,7 +489,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	private String processAction(Message input, ParameterValueList pvl, FileAction<F> action) throws FileSystemException, IOException {
 		if(StringUtils.isNotEmpty(getWildcard()) || StringUtils.isNotEmpty(getExcludeWildcard())) {
 			String folder = arrangeFolder(determineInputFoldername(input, pvl));
-			XmlBuilder dirXml = new XmlBuilder(getAction()+"FilesList");
+			XmlBuilder dirXml = new XmlBuilder(action+"FilesList");
 			try(Stream<F> stream = FileSystemUtils.getFilteredStream(fileSystem, folder, getWildcard(), getExcludeWildcard())) {
 				Iterator<F> it = stream.iterator();
 				while(it.hasNext()) {
