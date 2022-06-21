@@ -21,10 +21,10 @@ README.MD
 README.MD
 </result>
 		<result item="6">
-c:/temp/logs/testdata/ManageFileSystem/test
+TESTDATA_DIR/ManageFileSystem/test
 </result>
 		<result item="7">
-c:/temp/logs/testdata/ManageFileSystem
+TESTDATA_DIR/ManageFileSystem
 </result>
 	</results>
 </manageFileSystemRLY>
