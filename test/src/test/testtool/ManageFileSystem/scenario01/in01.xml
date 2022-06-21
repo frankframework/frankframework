@@ -29,34 +29,4 @@
 		<filename>${testdata.dir}/ManageFileSystem/test.txt</filename>
 		<destination>${testdata.dir}/ManageFileSystem/test</destination>
 	</copy>
-
-	<readDelete>
-		<filename>${testdata.dir}/ManageFileSystem/test/test.txt</filename>
-	</readDelete>
-
-	<move>
-		<filename>${testdata.dir}/ManageFileSystem/test.txt</filename>
-		<destination>${testdata.dir}/ManageFileSystem/test</destination>
-	</move>
-
-	<rename>
-		<filename>${testdata.dir}/ManageFileSystem/test/test.txt</filename>
-		<destination>${testdata.dir}/ManageFileSystem/test/README.MD</destination>
-	</rename>
-
-	<list>
-		<inputFolder>${testdata.dir}/ManageFileSystem/test</inputFolder>
-	</list>
-	
-	<delete>
-		<filename>${testdata.dir}/ManageFileSystem/test/README.MD</filename>
-	</delete>
-
-	<rmdir>
-		<inputFolder>${testdata.dir}/ManageFileSystem/test</inputFolder>
-	</rmdir>
-
-	<rmdir>
-		<inputFolder>${testdata.dir}/ManageFileSystem</inputFolder>
-	</rmdir>
 </manageFileSystemREQ>
