@@ -36,7 +36,6 @@ import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.rmi.server.UID;
 import java.text.DecimalFormat;
@@ -1396,15 +1395,6 @@ public class Misc {
 	public static String urlDecode(String input) {
 		try {
 			return URLDecoder.decode(input, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-		} catch (UnsupportedEncodingException e) {
-			log.warn("unable to parse input using charset ["+StreamUtil.DEFAULT_INPUT_STREAM_ENCODING+"]", e);
-			return null;
-		}
-	}
-
-	public static String urlEncode(String input) {
-		try {
-			return URLEncoder.encode(input, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 		} catch (UnsupportedEncodingException e) {
 			log.warn("unable to parse input using charset ["+StreamUtil.DEFAULT_INPUT_STREAM_ENCODING+"]", e);
 			return null;

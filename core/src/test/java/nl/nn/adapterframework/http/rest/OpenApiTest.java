@@ -13,7 +13,6 @@ import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.testutil.threading.IsolatedThread;
 import nl.nn.adapterframework.testutil.threading.RunInThreadRule;
-import nl.nn.adapterframework.util.Misc;
 
 public class OpenApiTest extends OpenApiTestBase {
 
@@ -214,10 +213,13 @@ public class OpenApiTest extends OpenApiTestBase {
 			.build(true);
 
 		assertEquals("more then 2 registered pattern found!", 2, dispatcher.findMatchingConfigsForUri(uri).size());
-		String result = callOpenApi(uri+"/"+Misc.urlEncode("{pattern}"));
-
 		String expected = TestFileUtils.getTestFile("/OpenApi/envelopePathParamQueryParam.json");
+
+		String result = callOpenApi(uri+"/{pattern}");
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+
+		String encodedResult = callOpenApi(uri+"/%7Bpattern%7D");
+		TestAssertions.assertEqualsIgnoreCRLF("Test should pass in escaped form!", expected, encodedResult);
 	}
 
 	@Test
@@ -325,7 +327,7 @@ public class OpenApiTest extends OpenApiTestBase {
 			.addExit("200")
 			.addExit("500")
 			.build(true);
-		
+
 		new AdapterBuilder("myAdapterName", "description4simple-get")
 			.setListener(uri+"test", "get", null)
 			.setInputValidator("simple.xsd", null, "user", null)
@@ -353,7 +355,7 @@ public class OpenApiTest extends OpenApiTestBase {
 			.addExit("200")
 			.addExit("500")
 			.build(true);
-		
+
 		new AdapterBuilder("myAdapterName", "description4simple-get")
 			.setListener(uri+"/noValidator", "get", null)
 			.addExit("200")
@@ -500,7 +502,7 @@ public class OpenApiTest extends OpenApiTestBase {
 		String expected = TestFileUtils.getTestFile("/OpenApi/messageIdHeaderTest.json");
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
 	}
-	
+
 	@Test
 	@IsolatedThread
 	public void testHeaderParamIsnotAddedAsQueryParam() throws Exception {
