@@ -92,6 +92,13 @@
 			<version>${micrometer.version}</version>
 		</dependency>
 
+		<!-- explicit dependency to force version 1.1.1 -->
+		<dependency>
+			<groupId>javax.activation</groupId>
+			<artifactId>activation</artifactId>
+			<version>1.1.1</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.apache.geronimo.specs</groupId>
 			<artifactId>geronimo-jms_1.1_spec</artifactId>
@@ -103,6 +110,7 @@
 			<version>1.3</version>
 			<scope>provided</scope>
 		</dependency>
+
 		<dependency>
 			<!-- to be able to extract Oracle error messages in IbisException.getExceptionSpecificDetails() -->
 			<groupId>com.oracle.database.jdbc</groupId>
@@ -113,12 +121,6 @@
 		<dependency>
 			<groupId>com.sun.mail</groupId>
 			<artifactId>javax.mail</artifactId>
-			<exclusions>
-				<exclusion> <!-- conflicts with the javax.activation package from jdk see https://github.com/ibissource/iaf/issues/2372 -->
-					<groupId>javax.activation</groupId>
-					<artifactId>activation</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>javax.xml</groupId>
@@ -619,7 +621,7 @@
 		<dependency>
 			<groupId>javax.xml.ws</groupId>
 			<artifactId>jaxws-api</artifactId>
-			<version>2.3.0</version> <!-- 2.3.1 contains javax.activation package that conflicts with the jdk javax.activation package. -->
+			<version>2.3.0</version> <!-- 2.3.1 contains javax.activation 1.2.0 that conflicts with the jdk javax.activation (1.1.1) package. -->
 		</dependency>
 
 		<!--
@@ -634,10 +636,6 @@
 				<exclusion>
 					<groupId>javax.xml.stream</groupId>
 					<artifactId>stax-api</artifactId>
-				</exclusion>
-				<exclusion> <!-- conflicts with the javax.activation package from jdk see https://github.com/ibissource/iaf/issues/2372 -->
-					<groupId>javax.activation</groupId>
-					<artifactId>activation</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
