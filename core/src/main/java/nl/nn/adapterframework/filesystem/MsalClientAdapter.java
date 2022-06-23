@@ -110,7 +110,7 @@ public class MsalClientAdapter extends HttpSenderBase implements IHttpClient {
 		try {
 			switch (httpMethod) {
 			case GET:
-				HttpGet getMethod = new HttpGet(rawPath.toString()));
+				HttpGet getMethod = new HttpGet(rawPath.toString());
 
 				if(log.isDebugEnabled())
 					log.debug(getLogPrefix() + "HttpSender constructed GET-method [" + getMethod.getURI().getQuery() + "]");
