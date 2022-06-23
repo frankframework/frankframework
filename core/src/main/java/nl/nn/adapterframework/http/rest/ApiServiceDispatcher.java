@@ -234,10 +234,10 @@ public class ApiServiceDispatcher {
 		if(StringUtils.isNotEmpty(loadBalancerUrl)) {
 			serversArray.add(Json.createObjectBuilder().add("url", loadBalancerUrl + servletPath).add("description", "load balancer"));
 		} else { // fall back to the request url
-			String requestUrl = request.getRequestURL().toString(); // -> schema+hostname+port/context-path/servlet-path/+request-uri
-			requestUrl = Misc.urlDecode(requestUrl); // request url from browser might be encoded
-			String requestPath = request.getPathInfo(); // -> the remaining path, starts with a /
-			String url = requestUrl.substring(0, requestUrl.indexOf(Misc.urlDecode(requestPath)));
+			String requestUrl = request.getRequestURL().toString(); // raw request -> schema+hostname+port/context-path/servlet-path/+request-uri
+			requestUrl = Misc.urlDecode(requestUrl);
+			String requestPath = request.getPathInfo(); // -> the remaining path, starts with a /. Is automatically decoded by the web container!
+			String url = requestUrl.substring(0, requestUrl.indexOf(requestPath));
 			serversArray.add(Json.createObjectBuilder().add("url", url));
 		}
 
