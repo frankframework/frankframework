@@ -93,11 +93,17 @@
 		</dependency>
 
 		<!-- explicit dependency to force version 1.1.1 -->
-		<dependency>
+		<dependency><!-- this dependency handles javax.activation.* imports, compatible with the IBM JRE -->
 			<groupId>javax.activation</groupId>
 			<artifactId>activation</artifactId>
 			<version>1.1.1</version>
 		</dependency>
+		<dependency><!-- this dependency handles jakarta.activation.* imports -->
+			<groupId>com.sun.activation</groupId>
+			<artifactId>jakarta.activation</artifactId>
+			<version>2.0.1</version>
+		</dependency>
+
 
 		<dependency>
 			<groupId>org.apache.geronimo.specs</groupId>
@@ -313,6 +319,10 @@
 				<exclusion>
 					<groupId>org.apache.geronimo.javamail</groupId>
 					<artifactId>geronimo-javamail_1.4_mail</artifactId>
+				</exclusion>
+				<exclusion><!-- excluded because we want to ignore this (1.2.2) version! this dependency handles javax.activation.* imports, and is NOT compatible with the IBM JRE -->
+					<groupId>jakarta.activation</groupId>
+					<artifactId>jakarta.activation-api</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -558,6 +568,10 @@
 					<groupId>org.apache.geronimo.specs</groupId>
 					<artifactId>geronimo-jta_1.1_spec</artifactId>
 				</exclusion>
+				<exclusion><!-- excluded because we want to ignore this (1.2.2) version! this dependency handles javax.activation.* imports, and is NOT compatible with the IBM JRE -->
+					<groupId>jakarta.activation</groupId>
+					<artifactId>jakarta.activation-api</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -688,6 +702,12 @@
 			<groupId>org.apache.tika</groupId>
 			<artifactId>tika-core</artifactId>
 			<version>1.28.3</version>
+			<exclusions>
+				<exclusion><!-- excluded because we want to ignore this (1.2.2) version! this dependency handles javax.activation.* imports, and is NOT compatible with the IBM JRE -->
+					<groupId>jakarta.activation</groupId>
+					<artifactId>jakarta.activation-api</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<!-- explicitly defined because of dependency inheritance -->
 		<dependency>
