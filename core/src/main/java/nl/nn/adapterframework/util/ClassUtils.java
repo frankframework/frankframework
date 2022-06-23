@@ -26,9 +26,13 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -404,4 +408,49 @@ public abstract class ClassUtils {
 		}
 		return path;
 	}
+
+	public static List<Object> getClassInfoList(Class<?> clazz) throws IOException {
+		ClassLoader classLoader = clazz.getClassLoader();
+		List<Object> infoList = new LinkedList<>();
+		String className = clazz.getName();
+		while (true) {
+			infoList.add(getClassInfo(clazz, classLoader));
+			if (classLoader == null || classLoader.equals(ClassLoader.getSystemClassLoader())) {
+				break;
+			}
+			classLoader = classLoader.getParent();
+			try {
+				if (classLoader!=null) {
+					clazz = classLoader.loadClass(className);
+				} else {
+					clazz = ClassLoader.getSystemClassLoader().loadClass(className);
+				}
+			} catch (ClassNotFoundException e) {
+				clazz = null;
+			}
+		};
+		return infoList;
+	}
+
+	public static Map<String,Object> getClassInfo(Class clazz, ClassLoader classLoader) throws IOException {
+
+		Map<String,Object> result = new LinkedHashMap<>();
+		String classLoaderName=classLoader!=null? classLoader.toString() : "<system classloader>";
+		result.put("ClassLoader", classLoaderName);
+		if (clazz!=null) {
+			Package pkg = clazz.getPackage();
+			result.put("Specification",  pkg.getSpecificationTitle() +" version " + pkg.getSpecificationVersion() +" by "+ pkg.getSpecificationVendor());
+			result.put("Implementation", pkg.getImplementationTitle()+" version " + pkg.getImplementationVersion()+" by "+ pkg.getImplementationVendor());
+
+			CodeSource codeSource = clazz.getProtectionDomain().getCodeSource();
+			result.put("CodeSource", codeSource!=null ? codeSource.getLocation().toString() : "unknown");
+
+			URL classLocation = clazz.getResource('/' + clazz.getName().replace('.', '/') + ".class");
+			result.put("Location", classLocation!=null ? classLocation.toString() : "unknown");
+		} else {
+			result.put("message", "Class not found in this classloader");
+		}
+		return result;
+	}
+
 }
