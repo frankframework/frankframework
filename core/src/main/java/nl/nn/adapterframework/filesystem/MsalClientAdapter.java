@@ -106,43 +106,21 @@ public class MsalClientAdapter extends HttpSenderBase implements IHttpClient {
 			throw new SenderException("No URI to connect to!");
 		}
 
-		boolean queryParametersAppended = false;
-		StringBuffer relativePath = new StringBuffer(uri.getRawPath());
-		if(!StringUtils.isEmpty(uri.getQuery())) {
-			relativePath.append("?" + uri.getQuery());
-			queryParametersAppended = true;
-		}
+		StringBuffer rawPath = new StringBuffer(uri.getRawPath());
 		try {
 			switch (httpMethod) {
 			case GET:
-				if(parameters != null) {
-					queryParametersAppended = appendParameters(queryParametersAppended, relativePath, parameters);
-					if(log.isDebugEnabled())
-						log.debug(getLogPrefix() + "path after appending of parameters [" + relativePath + "]");
-				}
-				HttpGet getMethod = new HttpGet(relativePath + (parameters == null ? message.asString() : ""));
+				HttpGet getMethod = new HttpGet(rawPath.toString()));
 
 				if(log.isDebugEnabled())
 					log.debug(getLogPrefix() + "HttpSender constructed GET-method [" + getMethod.getURI().getQuery() + "]");
-				if(null != getFullContentType()) { // Manually set Content-Type header
-					getMethod.setHeader("Content-Type", getFullContentType().toString());
-				}
+
 
 				return appendHeaders(headers, getMethod);
 			case POST:
-				String messageString = message.asString();
-				if(parameters != null) {
-					StringBuffer msg = new StringBuffer(messageString);
-					appendParameters(true, msg, parameters);
-					if(StringUtils.isEmpty(messageString) && msg.length() > 1) {
-						messageString = msg.substring(1);
-					} else {
-						messageString = msg.toString();
-					}
-				}
-				HttpEntity entity = new ByteArrayEntity(messageString.getBytes(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING), getFullContentType());
+				HttpEntity entity = new ByteArrayEntity(message.asByteArray(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING), getFullContentType());
 
-				HttpEntityEnclosingRequestBase method = new HttpPost(relativePath.toString());
+				HttpEntityEnclosingRequestBase method = new HttpPost(rawPath.toString());
 
 				method.setEntity(entity);
 				return appendHeaders(headers, method);
