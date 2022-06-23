@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
@@ -31,6 +32,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.ByteArrayEntity;
+import org.apache.logging.log4j.Logger;
 
 import com.microsoft.aad.msal4j.HttpRequest;
 import com.microsoft.aad.msal4j.IHttpClient;
@@ -44,6 +46,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.EnumUtils;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 
 public class MsalClientAdapter extends HttpSenderBase implements IHttpClient {
@@ -71,7 +74,7 @@ public class MsalClientAdapter extends HttpSenderBase implements IHttpClient {
 
 		try {
 			Message response = sendMessage(request, session);
-			return translateResponse(response, session);
+			return new MsalResponse(response, session);
 		} catch (Exception e) {
 			log.error("An exception occurred whilst connecting with MSAL HTTPS call to [" + httpRequest.url().toString() + "]", e);
 			throw e;
@@ -178,45 +181,50 @@ public class MsalClientAdapter extends HttpSenderBase implements IHttpClient {
 		return request;
 	}
 
-	private IHttpResponse translateResponse(Message response, PipeLineSession session) {
-		return new IHttpResponse() {
-			@Override
-			public int statusCode() {
-				int statusCode = Integer.parseInt((String) session.get(STATUS_CODE_SESSION_KEY));
+	private class MsalResponse implements IHttpResponse {
+		protected Logger log = LogUtil.getLogger(this);
+
+		private int statusCode;
+		private Map<String, List<String>> headers = new HashMap<>();
+		private String body = "";
+
+		public MsalResponse(Message response, PipeLineSession session){
+			this.statusCode = Integer.parseInt( (String) session.get(STATUS_CODE_SESSION_KEY) );
+			if(log.isDebugEnabled())
+				log.debug("Parsing status code [" + statusCode + "]");
+
+			String[] headersAsCsv = ((String) session.get(RESPONSE_HEADERS_SESSION_KEY)).split(",");
+			for (String headerName : headersAsCsv) {
+				List<String> values = new ArrayList<>();
+				String headerValue = (String) session.get(headerName);
+				values.add(headerValue);
+
 				if(log.isDebugEnabled())
-					log.debug("Parsing status code [" + statusCode + "]");
-
-				return statusCode;
+					log.debug("Parsing header [" + headerName + "] [" + headerValue + "]");
+				this.headers.put(headerName, values);
 			}
 
-			@Override
-			public Map<String, List<String>> headers() {
-				String[] headersAsCsv = ((String) session.get(RESPONSE_HEADERS_SESSION_KEY)).split(",");
-				Map<String, List<String>> headers = new HashMap<>();
-
-				for(String headerName : headersAsCsv) {
-					List<String> values = new ArrayList<>();
-					String headerValue = (String) session.get(headerName);
-					values.add(headerValue);
-
-					if(log.isDebugEnabled())
-						log.debug("Parsing header [" + headerName + "] [" + headerValue + "]");
-					headers.put(headerName, values);
-				}
-
-				return headers;
-			}
-
-			@Override
-			public String body() {
+			try {
 				log.debug("Parsing body [{}]", response::toString);
-				try {
-					return response.asString();
-				} catch (IOException e) {
-					log.error("An exception occurred whilst parsing the response body of MSAL authentication call.", e);
-				}
-				return "";
+				this.body = response.asString();
+			} catch (IOException e) {
+				log.error("An exception occurred whilst parsing the response body of MSAL authentication call.", e);
 			}
-		};
+		}
+
+		@Override
+		public int statusCode() {
+			return statusCode;
+		}
+
+		@Override
+		public Map<String, List<String>> headers() {
+			return headers;
+		}
+
+		@Override
+		public String body() {
+			return body;
+		}
 	}
 }
