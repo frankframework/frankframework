@@ -134,6 +134,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		ApiServiceDispatcher.getInstance().unregisterServiceClient(this);
 	}
 
+	@Override
 	public Message processRequest(String correlationId, Message message, PipeLineSession requestContext) throws ListenerException {
 		Message result = super.processRequest(correlationId, message, requestContext);
 

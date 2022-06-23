@@ -32,11 +32,11 @@ import nl.nn.adapterframework.logging.IbisMaskingLayout;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class TestLoggingSettings extends ApiTestBase<ShowLogging> {
+public class TestLoggingSettings extends ApiTestBase<UpdateLoggingConfig> {
 
 	@Override
-	public ShowLogging createJaxRsResource() {
-		return new ShowLogging();
+	public UpdateLoggingConfig createJaxRsResource() {
+		return new UpdateLoggingConfig();
 	}
 
 	@Test
