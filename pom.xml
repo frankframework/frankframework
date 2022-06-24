@@ -914,7 +914,7 @@
 					<plugin>
 						<groupId>org.jacoco</groupId>
 						<artifactId>jacoco-maven-plugin</artifactId>
-						<version>0.8.6</version>
+						<version>0.8.8</version>
 						<executions>
 							<execution>
 								<id>prepare-jacoco</id>
@@ -939,7 +939,7 @@
 					<plugin>
 						<groupId>org.jacoco</groupId>
 						<artifactId>jacoco-maven-plugin</artifactId>
-						<version>0.8.6</version>
+						<version>0.8.8</version>
 						<reportSets>
 							<reportSet>
 								<reports>
