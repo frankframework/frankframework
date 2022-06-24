@@ -78,7 +78,7 @@ public class TestLogMessages {
 			log.error("some message");
 
 			List<String> logEvents = appender.getLogLines();
-			assertEquals(6, logEvents.size());
+			assertEquals("found messages "+logEvents.toString(), 6, logEvents.size());
 			assertEquals("WARN - my beautiful warning message", logEvents.get(0));
 			assertEquals("ERROR - my beautiful error message", logEvents.get(1));
 		}
@@ -155,7 +155,7 @@ public class TestLogMessages {
 			log.debug("my beautiful unicode debug  aâΔع你好ಡತ  message for me & you --> \\\"world\\\"");
 
 			List<String> logEvents = appender.getLogLines();
-			assertEquals(1, logEvents.size());
+			assertEquals("found messages "+logEvents, 1, logEvents.size());
 			String message = logEvents.get(0);
 			assertEquals("DEBUG - my beautiful unicode debug  aâΔع你好ಡತ  message for me & you --> \\\"world\\\"", message);
 		}
@@ -174,7 +174,7 @@ public class TestLogMessages {
 			log.info("my beautiful  aâΔع你好ಡತ  info <![CDATA[message]]> for me & you --> \"world\"");
 
 			List<String> logEvents = appender.getLogLines();
-			assertEquals(2, logEvents.size());
+			assertEquals("found messages "+logEvents, 2, logEvents.size());
 
 			String expectedWarn = "<event logger=\"nl.nn.adapterframework.logging.TestLogMessages\" timestamp=\"xxx\" level=\"DEBUG\" thread=\"main\">\n" +
 			"  <message>my beautiful \\u0010 a\\u00E2\\u0394\\u0639\\u4F60\\u597D\\u0CA1\\u0CA4  debug &lt;![CDATA[message]]&gt; for me &amp; you --&gt; \\\"world\\\"</message>\n" +
@@ -205,7 +205,7 @@ public class TestLogMessages {
 			log.debug(TEST_REGEX_IN);
 
 			List<String> logEvents = appender.getLogLines();
-			assertEquals(1, logEvents.size());
+			assertEquals("found messages "+logEvents, 1, logEvents.size());
 			String message = logEvents.get(0);
 
 			String expected = "DEBUG - "+ TEST_REGEX_IN.substring(0, length).trim() + " ...("+(TEST_REGEX_IN.length()-length)+" more characters)";
@@ -229,7 +229,7 @@ public class TestLogMessages {
 			log.debug("Oh no, something went wrong!", t);
 
 			List<String> logEvents = appender.getLogLines();
-			assertEquals(1, logEvents.size());
+			assertEquals("found messages "+logEvents, 1, logEvents.size());
 			String message = logEvents.get(0);
 
 			String expected = "DEBUG - Oh no, something went wrong! java.lang.Throwable: my exception message\n" +
@@ -288,7 +288,7 @@ public class TestLogMessages {
 			log.warn("warn");
 			log.error("error");
 
-			assertEquals(4, appender.getNumberOfAlerts());
+			assertEquals("found messages "+appender.getLogLines(), 4, appender.getNumberOfAlerts());
 		} finally {
 			TestAppender.removeAppender(appender);
 			Configurator.setLevel(rootLoggerName, Level.DEBUG);
