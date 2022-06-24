@@ -3043,7 +3043,7 @@ public class TestTool {
 			} catch (IOException | XMLStreamException e) {
 				errorMessage("Could not determine encoding for file '" + fileName + "': " + e.getMessage(), e, writers);
 			}
-		} else if (fileName.endsWith(".utf8")) {
+		} else if (fileName.endsWith(".utf8") || fileName.endsWith(".json")) {
 			encoding = "UTF-8";
 		} else {
 			encoding = "ISO-8859-1";
