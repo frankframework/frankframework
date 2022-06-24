@@ -3,7 +3,6 @@ package nl.nn.adapterframework.extensions.cmis;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -15,10 +14,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestAssertions;
 
@@ -111,14 +107,15 @@ public class TestBindingTypes extends CmisSenderTestBase {
 	}
 
 	@Test
-	public void configure() throws ConfigurationException {
+	public void configure() throws Exception {
 		sender.setBindingType(bindingType);
 		sender.setAction(action);
 		sender.configure();
+		sender.open();
 	}
 
 	@Test
-	public void sendMessage() throws ConfigurationException, SenderException, TimeoutException, IOException {
+	public void sendMessage() throws Exception {
 
 		if(action.equals("get")) {
 			sender.setFileContentSessionKey("");
@@ -132,7 +129,7 @@ public class TestBindingTypes extends CmisSenderTestBase {
 	}
 
 	@Test
-	public void sendMessageWithContentStream() throws ConfigurationException, SenderException, TimeoutException, IOException {
+	public void sendMessageWithContentStream() throws Exception {
 		if(!action.equals("get")) return;
 
 		configure();
