@@ -50,7 +50,7 @@ import nl.nn.adapterframework.util.StreamUtil;
 /**
  * This class ensures that Microsoft Authentication Library (MSAL) requests are sent through the configured proxy and the correct SSLSocketFactory.
  * @see ExchangeFileSystem
- * 
+ *
  * @ff.protected
  */
 public class MsalClientAdapter extends HttpSenderBase implements IHttpClient {
@@ -113,11 +113,11 @@ public class MsalClientAdapter extends HttpSenderBase implements IHttpClient {
 		try {
 			switch (httpMethod) {
 			case GET:
-				HttpGet getMethod = new HttpGet(uri.getRawPath());
+				HttpGet getMethod = new HttpGet(uri.toString());
 
 				return appendHeaders(headers, getMethod);
 			case POST:
-				HttpEntityEnclosingRequestBase method = new HttpPost(uri.getRawPath());
+				HttpEntityEnclosingRequestBase method = new HttpPost(uri.toString());
 				HttpEntity entity = new ByteArrayEntity(message.asByteArray(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING)); //MSAL sets application/soap+xml later on
 
 				method.setEntity(entity);

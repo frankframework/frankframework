@@ -140,6 +140,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	private ConfidentialClientApplication client;
 	private MsalClientAdapter msalClientAdapter;
 	private ExecutorService executor;
+	private ClientCredentialParameters clientCredentialParam;
 
 	private FolderId basefolderId;
 	private CredentialFactory cf;
@@ -166,12 +167,26 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		msalClientAdapter.setProxyUsername(proxyCf.getUsername());
 		msalClientAdapter.setProxyPassword(proxyCf.getPassword());
 		msalClientAdapter.configure();
+
+		if(StringUtils.isNotEmpty(getTenantId())) {
+			msalClientAdapter = new MsalClientAdapter();
+			msalClientAdapter.setProxyHost(getProxyHost());
+			msalClientAdapter.setProxyPort(getProxyPort());
+			CredentialFactory proxyCredentials = getProxyCredentials();
+			msalClientAdapter.setProxyUsername(proxyCredentials.getUsername());
+			msalClientAdapter.setProxyPassword(proxyCredentials.getPassword());
+			msalClientAdapter.configure();
+
+			clientCredentialParam = ClientCredentialParameters.builder(
+				Collections.singleton(SCOPE)
+			).tenant(getTenantId()).build();
+		}
 	}
 
 	@Override
 	public void open() throws FileSystemException {
 		super.open();
-		if( StringUtils.isNotEmpty(getTenantId()) ){
+		if(msalClientAdapter != null) {
 			executor = Executors.newSingleThreadExecutor(); //Create a new Executor in the same thread(context) to avoid SecurityExceptions when setting a ClassLoader on the Runnable.
 
 			try {
@@ -249,10 +264,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		ExchangeService exchangeService = new ExchangeService(ExchangeVersion.Exchange2010_SP2);
 
 		if (client != null) {
-			ClientCredentialParameters clientCredentialParam = ClientCredentialParameters.builder(
-				Collections.singleton(SCOPE)
-			).build();
-
 			CompletableFuture<IAuthenticationResult> future = client.acquireToken(clientCredentialParam);
 			try {
 				String token = future.get().accessToken();
