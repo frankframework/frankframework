@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2021 WeAreFrank!
+   Copyright 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ public class TestLogMessages {
 			log.debug(TEST_REGEX_IN);
 
 			List<String> logEvents = appender.getLogLines();
-			assertEquals(1, logEvents.size());
+			assertEquals("found messages "+logEvents, 1, logEvents.size());
 			String message = logEvents.get(0);
 			assertEquals("DEBUG - "+ TEST_REGEX_OUT, message);
 		}
@@ -78,7 +78,7 @@ public class TestLogMessages {
 			log.error("some message");
 
 			List<String> logEvents = appender.getLogLines();
-			assertEquals("found messages "+logEvents.toString(), 6, logEvents.size());
+			assertEquals("found messages "+logEvents, 6, logEvents.size());
 			assertEquals("WARN - my beautiful warning message", logEvents.get(0));
 			assertEquals("ERROR - my beautiful error message", logEvents.get(1));
 		}
@@ -107,7 +107,7 @@ public class TestLogMessages {
 			log.error("some message");
 
 			List<String> logEvents = appender.getLogLines();
-			assertEquals("found messages "+logEvents.toString(), 6, logEvents.size());
+			assertEquals("found messages "+logEvents, 6, logEvents.size());
 
 			String expectedWarn = "<event logger=\"nl.nn.adapterframework.logging.TestLogMessages\" timestamp=\"xxx\" level=\"WARN\" thread=\"HIDE-HERE\">\n" +
 			"  <message>my beautiful warning &lt;![CDATA[message]]&gt; for me &amp; you --&gt; \\\"world\\\"</message>\n" +
