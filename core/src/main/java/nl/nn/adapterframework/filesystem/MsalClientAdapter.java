@@ -48,7 +48,7 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 
 /**
- * This class ensures that Microsoft Authentication Library (MSAL) requests are sent through the configured proxy and the correct SSLSockerFactory.
+ * This class ensures that Microsoft Authentication Library (MSAL) requests are sent through the configured proxy and the correct SSLSocketFactory.
  * @see ExchangeFileSystem
  * 
  * @ff.protected
