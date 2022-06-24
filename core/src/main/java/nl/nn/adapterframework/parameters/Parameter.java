@@ -812,11 +812,10 @@ public class Parameter implements IConfigurable, IWithParameters {
 				}
 				Object fixedDateTime = session.get(PutSystemDateInSession.FIXEDDATE_STUB4TESTTOOL_KEY);
 				if (fixedDateTime==null) {
-					fixedDateTime = PutSystemDateInSession.FIXEDDATETIME;
 					DateFormat df = new SimpleDateFormat(DateUtils.FORMAT_GENERICDATETIME);
 					try {
-						fixedDateTime = df.parse(Message.asString(fixedDateTime));
-					} catch (ParseException | IOException e) {
+						fixedDateTime = df.parse(PutSystemDateInSession.FIXEDDATETIME);
+					} catch (ParseException e) {
 						throw new ParameterException("Could not parse FIXEDDATETIME ["+fixedDateTime+"]", e);
 					}
 				}
