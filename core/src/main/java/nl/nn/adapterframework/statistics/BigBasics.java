@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,10 +26,19 @@ import nl.nn.adapterframework.util.XmlBuilder;
  */
 public class BigBasics extends Basics {
 
-	private final static long HALF_MAX_LONG=Long.MAX_VALUE>>1;
+	private static final long HALF_MAX_LONG=Long.MAX_VALUE>>1;
 	
 	protected int shift=0;
 	
+	public BigBasics() {
+		super();
+	}
+
+	protected BigBasics(long count, long sum, long sumOfSquares, int shift) {
+		super(count, sum, sumOfSquares);
+		this.shift = shift;
+	}
+
 	public void checkSizes() {
 		if (sumOfSquares > HALF_MAX_LONG) {
 			shiftRight();
@@ -42,20 +51,18 @@ public class BigBasics extends Basics {
 		sumOfSquares >>= 2;
 	}
 	
+	@Override
 	public void reset() {
 		super.reset();
 		shift=0;
 	}
 
-	public void mark(Basics other) {
-		super.mark(other);
-		if (other instanceof BigBasics) {
-			shift=((BigBasics)other).shift;
-		} else {
-			shift=0;
-		}
+	@Override
+	public BigBasics takeSnapshot() {
+		return new BigBasics(count, sum, sumOfSquares, shift);
 	}
 
+	@Override
 	protected void addSums(long value) {
 		//checkSizes();
 		if (value>0) {
@@ -90,6 +97,7 @@ public class BigBasics extends Basics {
 		}
 	}
 	
+	@Override
 	public void addRecord(Basics record) {
 		count+=record.getCount();
 		if (record.getMin() < min) {
@@ -137,6 +145,7 @@ public class BigBasics extends Basics {
 		return result;
 	}
 	
+	@Override
 	public Object getItemValue(int index) {
 		if (index==5) {
 			if (getCount() == 0) return null; 
@@ -145,6 +154,7 @@ public class BigBasics extends Basics {
 		return super.getItemValue(index);
 	}
 
+	@Override
 	public double getVariance() {
 		return calculateVariance(count, sum, sumOfSquares, shift);
 	}
@@ -154,6 +164,7 @@ public class BigBasics extends Basics {
 	}
 
 	
+	@Override
 	public double getAverage() {
 		if (shift==0 || count == 0) {
 			return super.getAverage();
@@ -161,6 +172,7 @@ public class BigBasics extends Basics {
 		return (1L<<shift)*(sum / (double)count);
 	}
 
+	@Override
 	public double getIntervalAverage(Basics mark) {
 		long intervalCount=getIntervalCount(mark);
 		if (intervalCount==0) {
@@ -172,6 +184,7 @@ public class BigBasics extends Basics {
 	/*
 	 * Result is shifted. 
 	 */
+	@Override
 	public long getIntervalSum(Basics mark) {
 		long markSum=mark.getSum();
 		if (mark instanceof BigBasics) {
@@ -190,6 +203,7 @@ public class BigBasics extends Basics {
 	/*
 	 * Result is shifted. 
 	 */
+	@Override
 	public long getIntervalSumOfSquares(Basics mark) {
 		long markSumOfSquares=mark.getSumOfSquares();
 		if (mark instanceof BigBasics) {
@@ -206,11 +220,13 @@ public class BigBasics extends Basics {
 	}
 
 	
+	@Override
 	public double getIntervalVariance(Basics mark) {
 		return calculateVariance(count-mark.getCount(), getIntervalSum(mark), getIntervalSumOfSquares(mark), shift);
 	}
 
 
+	@Override
 	protected XmlBuilder toXml(String elementName, String name, DecimalFormat timeFormat, DecimalFormat percentageFormat) {
 		// TODO Auto-generated method stub
 		return super.toXml(elementName, name, timeFormat, percentageFormat);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.TransactionAttributes;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.Mandatory;
 import nl.nn.adapterframework.monitoring.EventPublisher;
 import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -47,7 +48,6 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.SpringUtils;
-import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Base class for {@link IPipe Pipe}.
@@ -76,7 +76,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  *
  * @ff.forward success successful processing of the message of the pipe
  * @ff.forward exception an exception was caught when processing the message
- * 
+ *
  * @author     Johan Verrips / Gerrit van Brakel
  *
  * @see PipeLineSession
@@ -100,7 +100,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	private @Getter String elementToMoveChain = null;
 	private @Getter boolean removeCompactMsgNamespaces = true;
 	private @Getter boolean restoreMovedElements=false;
-	private @Getter boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
 
 	private boolean sizeStatistics = AppConstants.getInstance(configurationClassLoader).getBoolean("statistics.size", false);
 	private @Getter Locker locker;
@@ -112,6 +111,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 
 	private Map<String, PipeForward> pipeForwards = new Hashtable<String, PipeForward>();
 	private ParameterList parameterList = new ParameterList();
+	protected boolean parameterNamesMustBeUnique;
 	private @Setter EventPublisher eventPublisher=null;
 
 	private @Getter @Setter PipeLine pipeLine;
@@ -134,10 +134,14 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	//For testing purposes the configure method should not require the PipeLine to be present.
 	@Override
 	public void configure() throws ConfigurationException {
+		super.configure();
+		if(StringUtils.isNotEmpty(getName()) && getName().contains("/")) {
+			throw new ConfigurationException("It is not allowed to have '/' in pipe name ["+getName()+"]");
+		}
 		ParameterList params = getParameterList();
-
 		if (params!=null) {
 			try {
+				params.setNamesMustBeUnique(parameterNamesMustBeUnique);
 				params.configure();
 			} catch (ConfigurationException e) {
 				throw new ConfigurationException(getLogPrefix(null)+"while configuring parameters",e);
@@ -148,15 +152,9 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 			throw new ConfigurationException("cannot have both an elementToMove and an elementToMoveChain specified");
 		}
 
-		if (pipeForwards.isEmpty()) { //In the case of a NON-FixedForwardPipe (default success/exception forwards) || no global forwards
-			ConfigurationWarnings.add(this, log, "has no pipe forwards defined");
-		}
-
 		if (getLocker() != null) {
 			getLocker().configure();
 		}
-
-		super.configure();
 	}
 
 	/**
@@ -223,7 +221,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	}
 
 	@Override
-	/** Forwards are used to determine the next Pipe to execute in the Pipeline */ 
+	/** Forwards are used to determine the next Pipe to execute in the Pipeline */
 	public void registerForward(PipeForward forward) throws ConfigurationException {
 		String forwardName = forward.getName();
 		if(forwardName != null) {
@@ -243,28 +241,37 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	}
 
 	/**
-	 * looks up a key in the pipeForward hashtable. <br/>
+	 * Looks up a key in the pipeForward hashtable. <br/>
 	 * A typical use would be on return from a Pipe: <br/>
 	 * <code><pre>
 	 * return new PipeRunResult(findForward("success"), result);
 	 * </pre></code>
-	 * In the pipeForward hashtable are available:
-	 * <ul><li>All forwards defined in xml under the pipe element of this pipe</li>
-	 * <li> All global forwards defined in xml under the PipeLine element</li>
-	 * <li> All pipenames with their (identical) path</li>
+	 * findForward searches:<ul>
+	 * <li>All forwards defined in xml under the pipe element of this pipe</li>
+	 * <li>All global forwards defined in xml under the PipeLine element</li>
+	 * <li>All pipe names with their (identical) path</li>
 	 * </ul>
-	 * Therefore, you can directly jump to another pipe, although this is not recommended
-	 * as the pipe should not know the existence of other pipes. Nevertheless, this feature
-	 * may come in handy for switcher-pipes.<br/><br/>
-	 * @param forward   Name of the forward
-	 * @return PipeForward
 	 */
-	//TODO: Create a 2nd findForwards method without all pipes in the hashtable and make the first one deprecated.
 	public PipeForward findForward(String forward){
-		if (StringUtils.isEmpty(forward)) {
-			return null;
+		if (StringUtils.isNotEmpty(forward)) {
+			if (pipeForwards.containsKey(forward)) {
+				return pipeForwards.get(forward);
+			}
+			if (pipeLine!=null) {
+				PipeForward result = pipeLine.getGlobalForwards().get(forward);
+				if (result == null) {
+					IPipe pipe = pipeLine.getPipe(forward);
+					if (pipe!=null) {
+						result = new PipeForward(forward, forward);
+					}
+				}
+				if (result!=null) {
+					pipeForwards.put(forward, result);
+				}
+				return result;
+			}
 		}
-		return pipeForwards.get(forward);
+		return null;
 	}
 
 	@Override
@@ -274,7 +281,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 		if (pipeline==null) {
 			return null;
 		}
-	
+
 		//Omit global pipeline-forwards and only return local pipe-forwards
 		List<IPipe> pipes = pipeline.getPipes();
 		for (int i=0; i<pipes.size(); i++) {
@@ -317,10 +324,10 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 
 
 	/**
-	 * The functional name of this pipe
-	 * TODO add ff.mandatory tag once validators and wrappers can be excluded.
+	 * The functional name of this pipe. Can be referenced by the <code>path</code> attribute of a {@link PipeForward}.
 	 */
 	@Override
+	@Mandatory
 	public void setName(String name) {
 		this.name=name;
 		inSizeStatDummyObject.setName(getName() + " (in)");
@@ -375,7 +382,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	public void setElementToMoveSessionKey(String string) {
 		elementToMoveSessionKey = string;
 	}
-	
+
 	@Override
 	public void setElementToMoveChain(String string) {
 		elementToMoveChain = string;
@@ -396,11 +403,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 		this.restoreMovedElements = restoreMovedElements;
 	}
 
-	
-	@IbisDoc({"controls namespace-awareness of possible xml parsing in descender-classes", "application default"})
-	public void setNamespaceAware(boolean b) {
-		namespaceAware = b;
-	}
 
 
 	public void setSizeStatistics(boolean sizeStatistics) {
@@ -436,10 +438,10 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 		logIntermediaryResults = string;
 	}
 
-	/** 
-	 * Regular expression to mask strings in the log. For example, the regular expression <code>(?&lt;=&lt;password&gt;).*?(?=&lt;/password&gt;)</code> 
-	 * will replace every character between keys '&lt;password&gt;' and '&lt;/password&gt;'. <b>note:</b> this feature is used at adapter level, 
-	 * so one pipe affects all pipes in the pipeline (and multiple values in different pipes are merged) 
+	/**
+	 * Regular expression to mask strings in the log. For example, the regular expression <code>(?&lt;=&lt;password&gt;).*?(?=&lt;/password&gt;)</code>
+	 * will replace every character between keys '&lt;password&gt;' and '&lt;/password&gt;'. <b>note:</b> this feature is used at adapter level,
+	 * so one pipe affects all pipes in the pipeline (and multiple values in different pipes are merged)
 	 */
 	public void setHideRegex(String hideRegex) {
 		this.hideRegex = hideRegex;

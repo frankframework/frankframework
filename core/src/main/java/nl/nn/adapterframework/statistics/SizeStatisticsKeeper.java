@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,13 +19,13 @@ package nl.nn.adapterframework.statistics;
  * @author  Gerrit van Brakel
  * @since  
  */
-public class SizeStatisticsKeeper extends StatisticsKeeper {
+public class SizeStatisticsKeeper<B extends IBasics<S>, S> extends StatisticsKeeper<B,S> {
 
 	private static final String statConfigKey="Statistics.size.boundaries";
-    public static final String DEFAULT_BOUNDARY_LIST="10000,100000,1000000";
+	public static final String DEFAULT_BOUNDARY_LIST="10000,100000,1000000";
 
-    public SizeStatisticsKeeper(String name) {
-		super(name,BigBasics.class, statConfigKey, DEFAULT_BOUNDARY_LIST);
+	public SizeStatisticsKeeper(String name) {
+		super(name, (B)new BigBasics(), statConfigKey, DEFAULT_BOUNDARY_LIST);
 	}
 
 	public String getUnits() {

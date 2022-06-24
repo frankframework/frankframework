@@ -41,7 +41,7 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class IncreaseIntegerPipe extends FixedForwardPipe {
 
-	private final static String PARAMETER_INCREMENT = "increment";
+	private static final String PARAMETER_INCREMENT = "increment";
 
 	private @Getter String sessionKey=null;
 	private @Getter int increment=1;

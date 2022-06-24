@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013-2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,18 +21,24 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
+import javax.wsdl.Binding;
+import javax.wsdl.BindingOperation;
 import javax.wsdl.Definition;
+import javax.wsdl.Part;
 import javax.wsdl.WSDLException;
 import javax.wsdl.extensions.ExtensibilityElement;
 import javax.wsdl.extensions.schema.Schema;
+import javax.wsdl.extensions.soap.SOAPOperation;
 import javax.wsdl.factory.WSDLFactory;
 import javax.wsdl.xml.WSDLLocator;
 import javax.wsdl.xml.WSDLReader;
@@ -40,6 +46,7 @@ import javax.xml.namespace.QName;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.cxf.binding.soap.SoapBindingConstants;
 import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -49,27 +56,37 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IScopeProvider;
+import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.soap.SoapValidator;
 import nl.nn.adapterframework.soap.SoapVersion;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.validation.SchemaUtils;
 import nl.nn.adapterframework.validation.XSD;
+import nl.nn.adapterframework.validation.XmlValidatorException;
 
 /**
  * XmlValidator that will read the XSD's to use from a WSDL. As it extends the
  * SoapValidator is will also add the SOAP envelope XSD.
- * 
+ *
  * @author Michiel Meeuwissen
  * @author Jaco de Groot
  */
 public class WsdlXmlValidator extends SoapValidator {
 	private static final Logger LOG = LogUtil.getLogger(WsdlXmlValidator.class);
 
-	private String soapBodyNamespace = "";
-
 	private static final WSDLFactory FACTORY;
+	public static final String RESOURCE_INTERNAL_REFERENCE_PREFIX = "schema";
+
+	private @Getter String soapBodyNamespace = "";
+	private @Getter String wsdl;
+	private @Getter Definition definition;
+	private @Getter String schemaLocationToAdd;
+
 	static {
 		WSDLFactory f;
 		try {
@@ -81,15 +98,10 @@ public class WsdlXmlValidator extends SoapValidator {
 		FACTORY = f;
 	}
 
-	public static final String RESOURCE_INTERNAL_REFERENCE_PREFIX = "schema";
-	
-	private String wsdl;
-	private Definition definition;
-	private String schemaLocationToAdd;
+	@Override
+	public void configure() throws ConfigurationException {
+		addSoapEnvelopeToSchemaLocation = false;
 
-	@IbisDoc({"the wsdl to read the xsd's from", " "})
-	public void setWsdl(String wsdl) throws ConfigurationException {
-		this.wsdl = wsdl;
 		WSDLReader reader  = FACTORY.newWSDLReader();
 		reader.setFeature("javax.wsdl.verbose", false);
 		reader.setFeature("javax.wsdl.importDocuments", true);
@@ -106,15 +118,6 @@ public class WsdlXmlValidator extends SoapValidator {
 		if (wsdlLocator.getIOException() != null) {
 			throw new ConfigurationException("IOException reading WSDL or import from url: " + url, wsdlLocator.getIOException());
 		}
-	}
-
-	private String getWsdl() {
-		return wsdl;
-	}
-
-	@Override
-	public void configure() throws ConfigurationException {
-		addSoapEnvelopeToSchemaLocation = false;
 
 		if (StringUtils.isNotEmpty(getSchemaLocation()) && !isAddNamespaceToSchema()) {
 			ConfigurationWarnings.add(this, log, "attribute [schemaLocation] for wsdl [" + getWsdl() + "] should only be set when addNamespaceToSchema=true");
@@ -133,16 +136,13 @@ public class WsdlXmlValidator extends SoapValidator {
 		for (Object o : definition.getTypes().getExtensibilityElements()) {
 			if (o instanceof Schema) {
 				Schema schema = (Schema) o;
-				String tns = schema.getElement()
-						.getAttribute("targetNamespace");
+				String tns = schema.getElement().getAttribute("targetNamespace");
 				NodeList childNodes = schema.getElement().getChildNodes();
 				boolean soapBodyFound = false;
 				for (int i = 0; i < childNodes.getLength(); i++) {
 					Node n = childNodes.item(i);
-					if (n.getNodeType() == Node.ELEMENT_NODE
-							&& n.getLocalName().equals("element")) {
-						String name = n.getAttributes().getNamedItem("name")
-								.getNodeValue();
+					if (n.getNodeType() == Node.ELEMENT_NODE && n.getLocalName().equals("element")) {
+						String name = n.getAttributes().getNamedItem("name").getNodeValue();
 						if (getSoapBody().equals(name)) {
 							soapBodyFound = true;
 							soapBodyFoundCounter++;
@@ -164,18 +164,16 @@ public class WsdlXmlValidator extends SoapValidator {
 				}
 				sb.append(" ");
 				sbx.append(" ");
-				String schemaWithNumber = RESOURCE_INTERNAL_REFERENCE_PREFIX + ++counter; 
+				String schemaWithNumber = RESOURCE_INTERNAL_REFERENCE_PREFIX + ++counter;
 				sb.append(schemaWithNumber);
 				sbx.append(schemaWithNumber);
 			}
 		}
 
-		if (StringUtils.isNotEmpty(getSoapBodyNamespace())
-				&& soapBodyFoundCounter > 1) {
+		if (StringUtils.isNotEmpty(getSoapBodyNamespace()) && soapBodyFoundCounter > 1) {
 			throw new ConfigurationException("soapBody [" + getSoapBody() + "] exists multiple times, not possible to create schemaLocation from soapBodyNamespace");
+		}
 
-		}		
-		
 		if (sb.length() > 0) {
 			String wsdlSchemaLocation = sb.toString();
 			if (StringUtils.isNotEmpty(getSchemaLocation()) && isAddNamespaceToSchema()) {
@@ -199,8 +197,46 @@ public class WsdlXmlValidator extends SoapValidator {
 		super.configure();
 	}
 
+	@Override
+	protected PipeForward validate(Message messageToValidate, PipeLineSession session, boolean responseMode, String messageRoot) throws XmlValidatorException, PipeRunException, ConfigurationException {
+		String soapAction = session.get(SoapBindingConstants.SOAP_ACTION, "");
+		if(StringUtils.isNotEmpty(soapAction)) {
+			String soapBodyFromSoapAction = getSoapBodyFromSoapAction(soapAction, responseMode);
+			if(soapBodyFromSoapAction == null) {
+				log.debug("Could not determine messageRoot from soapAction original messageRoot [{}] will be used", messageRoot);
+			} else if(!soapBodyFromSoapAction.equalsIgnoreCase(messageRoot)) {
+				log.debug("messageRoot [{}] is determined from soapAction [{}]", soapBodyFromSoapAction, soapAction);
+				messageRoot = soapBodyFromSoapAction;
+			}
+		}
+		return super.validate(messageToValidate, session, responseMode, messageRoot);
+	}
+
+	private String getSoapBodyFromSoapAction(String soapAction, boolean responseMode) throws PipeRunException {
+		Map<QName, Binding> bindings = definition.getBindings();
+		for (Entry<QName, Binding> binding : bindings.entrySet()) {
+			List<BindingOperation> operations = binding.getValue().getBindingOperations();
+			for (BindingOperation bindingOperation : operations) {
+				List<ExtensibilityElement> elements = bindingOperation.getExtensibilityElements();
+				if(elements != null && !elements.isEmpty()) {
+					for (ExtensibilityElement element : elements) {
+						if(element instanceof SOAPOperation) {
+							String soapActionFromDefinition = ((SOAPOperation) element).getSoapActionURI();
+							if(soapActionFromDefinition.equals(soapAction)) {
+								javax.wsdl.Message message = responseMode ? bindingOperation.getOperation().getOutput().getMessage() : bindingOperation.getOperation().getInput().getMessage();
+								Map<String, Part> parts = message.getParts();
+								return parts.values().stream().map(Part::getElementName).map(QName::getLocalPart).collect(Collectors.joining(","));
+							}
+						}
+					}
+				}
+			}
+		}
+		return null;
+	}
+
 	private static String getFormattedSchemaLocation(String schemaLocation) {
-		List<SchemaLocation> schemaLocationList = new ArrayList<SchemaLocation>();
+		List<SchemaLocation> schemaLocationList = new ArrayList<>();
 		String[] schemaLocationArray = schemaLocation.trim().split("\\s+");
 		for (int i = 0; i < schemaLocationArray.length; i++) {
 			String namespace = schemaLocationArray[i];
@@ -221,14 +257,13 @@ public class WsdlXmlValidator extends SoapValidator {
 		}
 		return sb.toString();
 	}
-	
+
 	@Override
 	protected void checkSchemaSpecified() throws ConfigurationException {
 		if (StringUtils.isEmpty(getWsdl())) {
 			throw new ConfigurationException("wsdl attribute cannot be empty");
 		}
 	}
-
 
 	protected static void addNamespaces(Schema schema, Map<String, String> namespaces) {
 		for (Map.Entry<String,String> e : namespaces.entrySet()) {
@@ -246,7 +281,7 @@ public class WsdlXmlValidator extends SoapValidator {
 
 	@Override
 	public Set<XSD> getXsds() throws ConfigurationException {
-		Set<XSD> xsds = new HashSet<XSD>();
+		Set<XSD> xsds = new LinkedHashSet<>();
 		SoapVersion soapVersion = getSoapVersion();
 		if (soapVersion == null || soapVersion==SoapVersion.SOAP11 || soapVersion==SoapVersion.AUTO) {
 			XSD xsd = new XSD();
@@ -266,7 +301,7 @@ public class WsdlXmlValidator extends SoapValidator {
 				xsds.add(xsd);
 			}
 		}
-		List<Schema> schemas = new ArrayList<Schema>();
+		List<Schema> schemas = new ArrayList<>();
 		List<ExtensibilityElement> types = definition.getTypes().getExtensibilityElements();
 		for (Iterator<ExtensibilityElement> i = types.iterator(); i.hasNext();) {
 			ExtensibilityElement type = i.next();
@@ -283,9 +318,9 @@ public class WsdlXmlValidator extends SoapValidator {
 		if (StringUtils.isEmpty(getSchemaLocation())) {
 			filteredSchemas = schemas;
 		} else {
-			filteredSchemas = new ArrayList<Schema>();
-			filteredReferences = new HashMap<Schema, String>();
-			filteredNamespaces = new HashMap<Schema, String>();
+			filteredSchemas = new ArrayList<>();
+			filteredReferences = new HashMap<>();
+			filteredNamespaces = new HashMap<>();
 			String[] split =  getSchemaLocation().trim().split("\\s+");
 			if (split.length % 2 != 0) throw new ConfigurationException("The schema must exist from an even number of strings, but it is [" + getSchemaLocation() +"]");
 			for (int i = 0; i < split.length; i += 2) {
@@ -324,45 +359,40 @@ public class WsdlXmlValidator extends SoapValidator {
 	public String toExtendedString() {
 		return "[" + getConfigurationClassLoader() + "][" + FilenameUtils.normalize(getWsdl()) + "][" + getSoapBody() + "][" + getOutputSoapBody() + "][" + getSoapBodyNamespace() + "]";
 	}
-	
-	@IbisDoc({"1", "pairs of uri references which will be added to the wsdl", " "})
+
+	@IbisDoc({"the wsdl to read the xsd's from", " "})
+	public void setWsdl(String wsdl) {
+		this.wsdl = wsdl;
+	}
+
+	@IbisDoc({"Name of the child element of the SOAP body, or a comma separated list of names to choose from (only one is allowed) (WSDL generator will use the first element) (use empty value to allow an empty SOAP body, for example to allow element x and an empty SOAP body use: x,). In case the request contains SOAPAction header and the WSDL contains an element specific to that SOAPAction, it will use that element as SOAP body.", "" })
+	public void setSoapBody(String soapBody) {
+		super.setSoapBody(soapBody);
+	}
+
+	@IbisDoc({"pairs of uri references which will be added to the wsdl", " "})
 	public void setSchemaLocationToAdd(String schemaLocationToAdd) {
 		this.schemaLocationToAdd = schemaLocationToAdd;
 	}
 
-	public String getSchemaLocationToAdd() {
-		return schemaLocationToAdd;
-	}
-
-	@IbisDoc({"2", "creates <code>schemalocation</code> attribute based on the wsdl and replaces the namespace of the soap body element", " " })
+	@IbisDoc({"creates <code>schemalocation</code> attribute based on the wsdl and replaces the namespace of the soap body element", " " })
 	public void setSoapBodyNamespace(String soapBodyNamespace) {
 		this.soapBodyNamespace = soapBodyNamespace;
 	}
 
-	public String getSoapBodyNamespace() {
-		return soapBodyNamespace;
-	}
 }
 
 class ClassLoaderWSDLLocator implements WSDLLocator, IScopeProvider {
 	private @Getter ClassLoader configurationClassLoader = null;
 	private String wsdl;
-	private URL url;
-	private IOException ioException;
-	private String latestImportURI;
+	private @Getter URL url;
+	private @Getter IOException iOException;
+	private @Getter String latestImportURI;
 
 	ClassLoaderWSDLLocator(WsdlXmlValidator wsdlXmlValidator, String wsdl) {
 		configurationClassLoader = wsdlXmlValidator.getConfigurationClassLoader();
 		this.wsdl = wsdl;
 		url = ClassUtils.getResourceURL(this, wsdl);
-	}
-
-	public URL getUrl() {
-		return url;
-	}
-
-	public IOException getIOException() {
-		return ioException;
 	}
 
 	@Override
@@ -389,10 +419,6 @@ class ClassLoaderWSDLLocator implements WSDLLocator, IScopeProvider {
 		return getInputSource(latestImportURI);
 	}
 
-	@Override
-	public String getLatestImportURI() {
-		return latestImportURI;
-	}
 
 	@Override
 	public void close() {
@@ -409,7 +435,7 @@ class ClassLoaderWSDLLocator implements WSDLLocator, IScopeProvider {
 			try {
 				inputStream = url.openStream();
 			} catch (IOException e) {
-				ioException = e;
+				iOException = e;
 			}
 			if (inputStream != null) {
 				source = new InputSource(inputStream);
@@ -433,8 +459,7 @@ class SchemaLocation implements Comparable<SchemaLocation> {
 			String schemaNumberString = StringUtils.substringAfter(schema,
 					WsdlXmlValidator.RESOURCE_INTERNAL_REFERENCE_PREFIX);
 			if (StringUtils.isNumeric(schemaNumberString)) {
-				this.schemaFormatted = WsdlXmlValidator.RESOURCE_INTERNAL_REFERENCE_PREFIX
-						+ StringUtils.leftPad(schemaNumberString, 3, "0");
+				this.schemaFormatted = WsdlXmlValidator.RESOURCE_INTERNAL_REFERENCE_PREFIX + StringUtils.leftPad(schemaNumberString, 3, "0");
 			} else {
 				this.schemaFormatted = schema;
 			}

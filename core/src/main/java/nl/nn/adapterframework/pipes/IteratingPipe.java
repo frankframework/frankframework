@@ -471,7 +471,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	}
 
 	@Override
-	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
+	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
 		super.iterateOverStatistics(hski, data, action);
 		if (preprocessingStatisticsKeeper!=null) {
 			hski.handleStatisticsKeeper(data, preprocessingStatisticsKeeper);

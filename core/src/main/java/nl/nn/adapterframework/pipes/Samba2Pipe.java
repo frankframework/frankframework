@@ -18,6 +18,7 @@ package nl.nn.adapterframework.pipes;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.filesystem.FileSystemPipe;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem;
+import nl.nn.adapterframework.filesystem.Samba2FileSystem.Samba2AuthType;
 
 public class Samba2Pipe extends FileSystemPipe<String, Samba2FileSystem> {
 
@@ -51,7 +52,7 @@ public class Samba2Pipe extends FileSystemPipe<String, Samba2FileSystem> {
 	}
 
 	@IbisDoc({ "6", "Type of the authentication either 'NTLM' or 'SPNEGO' ", "SPNEGO" })
-	public void setAuthType(String authType) {
+	public void setAuthType(Samba2AuthType authType) {
 		getFileSystem().setAuthType(authType);
 	}
 

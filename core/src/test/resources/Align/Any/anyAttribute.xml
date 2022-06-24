@@ -1,0 +1,3 @@
+<root xmlns="urn:anyAttribute">
+	<elemWithAnyAttribute attr1="abc" attr2="def" attr3="pqr"/>
+</root>

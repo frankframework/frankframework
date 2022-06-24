@@ -57,8 +57,8 @@ import java.util.zip.GZIPOutputStream;
 import java.util.zip.Inflater;
 
 import javax.json.Json;
-import javax.json.JsonObject;
 import javax.json.JsonReader;
+import javax.json.JsonStructure;
 import javax.json.JsonWriter;
 import javax.json.JsonWriterFactory;
 import javax.json.stream.JsonGenerator;
@@ -1391,7 +1391,7 @@ public class Misc {
 			count++;
 		return count;
 	}
-	
+
 	public static String urlDecode(String input) {
 		try {
 			return URLDecoder.decode(input, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
@@ -1410,7 +1410,7 @@ public class Misc {
 
 	public static <T> void addToSortedListNonUnique(List<T> list, T item) {
 		int index = Misc.binarySearchResultToInsertionPoint(Collections.binarySearch(list, item, null));
-		list.add(index, item);		
+		list.add(index, item);
 	}
 
 	private static int binarySearchResultToInsertionPoint(int index) {
@@ -1424,17 +1424,17 @@ public class Misc {
 
 	public static String jsonPretty(String json) {
 		StringWriter sw = new StringWriter();
-		JsonReader jr = Json.createReader(new StringReader(json));
-		JsonObject jobj = jr.readObject();
+		try(JsonReader jr = Json.createReader(new StringReader(json))) {
+			JsonStructure jobj = jr.read();
 
-		Map<String, Object> properties = new HashMap<>(1);
-		properties.put(JsonGenerator.PRETTY_PRINTING, true);
+			Map<String, Object> properties = new HashMap<>(1);
+			properties.put(JsonGenerator.PRETTY_PRINTING, true);
 
-		JsonWriterFactory writerFactory = Json.createWriterFactory(properties);
-		try (JsonWriter jsonWriter = writerFactory.createWriter(sw)) {
-			jsonWriter.writeObject(jobj);
+			JsonWriterFactory writerFactory = Json.createWriterFactory(properties);
+			try (JsonWriter jsonWriter = writerFactory.createWriter(sw)) {
+				jsonWriter.write(jobj);
+			}
 		}
-
 		return sw.toString().trim();
 	}
 

@@ -13,7 +13,7 @@ import nl.nn.adapterframework.testutil.TestFileUtils;
 public abstract class AlignTestBase {
 
 	public static String BASEDIR="/Align/";
-	
+
 	public abstract void testFiles(String schemaFile, String namespace, String rootElement, String inputFile, boolean potentialCompactionProblems, String expectedFailureReason) throws Exception;
 
 	public void testFiles(String schemaFile, String namespace, String rootElement, String inputFile, String expectedFailureReason) throws Exception {
@@ -33,20 +33,20 @@ public abstract class AlignTestBase {
 		}
 	 return result;
 	}
-	
+
 	protected String getTestFile(String file) throws IOException, TimeoutException {
 		return TestFileUtils.getTestFile(BASEDIR+file);
 	}
 
 
-	
+
 	@Test
 	public void testOK_abc() throws Exception {
 		testFiles("Abc/abc.xsd","urn:test","a","Abc/abc");
 	}
 
 
-	
+
 	@Test
 	public void testArrays() throws Exception {
 		// straight test
@@ -78,82 +78,98 @@ public abstract class AlignTestBase {
 	}
 
 
-	
-	@Test
-    public void testAttributes() throws Exception {
-    	testFiles("DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/Attributes");
-    }
 
 	@Test
-    public void testBooleans() throws Exception {
-    	testFiles("DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/Booleans",true);
-    }
-
-    @Test
-    public void testDateTime() throws Exception {
-    	testFiles("DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/DateTime");
-    }
-    
-	@Test
-    public void testDiacritics() throws Exception {
-    	testFiles("DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/Diacritics",true);
-    }
-
-    @Test
-    public void testNull() throws Exception {
-    	testFiles("DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/Null");
-    }
-
-    @Test
-    public void testNumbers() throws Exception {
-    	testFiles("DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/Numbers");
-    }
-
-    @Test
-    public void testSpecialChars() throws Exception {
-    	testFiles("DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/SpecialChars",true);
-    }
+	public void testAttributes() throws Exception {
+		testFiles("DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/Attributes");
+	}
 
 	@Test
-    public void testStrings() throws Exception {
-    	testFiles("DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/Strings",true);
-    }
+	public void testBooleans() throws Exception {
+		testFiles("DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/Booleans",true);
+	}
 
-	
+	@Test
+	public void testDateTime() throws Exception {
+		testFiles("DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/DateTime");
+	}
+
+	@Test
+	public void testDiacritics() throws Exception {
+		testFiles("DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/Diacritics",true);
+	}
+
+	@Test
+	public void testNull() throws Exception {
+		testFiles("DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/Null");
+	}
+
+	@Test
+	public void testNumbers() throws Exception {
+		testFiles("DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/Numbers");
+	}
+
+	@Test
+	public void testSpecialChars() throws Exception {
+		testFiles("DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/SpecialChars",true);
+	}
+
+	@Test
+	public void testStrings() throws Exception {
+		testFiles("DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/Strings",true);
+	}
+
+
 
 	@Test
 	public void test_hcda() throws Exception {
 		testFiles("HCDA/HandleCollectionDisbursementAccount3_v3.0.xsd","","HandleCollectionDisbursementAccount","HCDA/HandleCollectionDisbursementAccount");
 	}
 
-	
 
-    @Test
-    public void testMixedContent() throws Exception {
-    	testFiles("Mixed/mixed.xsd","urn:mixed","root","Mixed/mixed-simple");
-    	testFiles("Mixed/mixed.xsd","urn:mixed","root","Mixed/mixed-complex");
-    	testFiles("Mixed/mixed.xsd","urn:mixed","root","Mixed/mixed-empty");
-    }
 
-    @Test
-    public void testMixedContentUnknown() throws Exception {
-    	testFiles("Mixed/mixed.xsd","urn:mixed","root","Mixed/mixed-unknown","Cannot find the declaration of element");
-    }
+
+	@Test
+	public void testAnyAttribute() throws Exception {
+		testFiles("Any/AnyAttribute.xsd", "urn:anyAttribute", "root", "Any/anyAttribute");
+	}
+
+	@Test
+	public void testAnyElement() throws Exception {
+		testFiles("Any/AnyElement.xsd", "urn:anyElement", "root", "Any/anyElement", false, null);
+	}
+
+	@Test
+	public void testLabelValue() throws Exception {
+		testFiles("Any/LabelValue.xsd", "urn:labelValue", "root", "Any/labelValue", true);
+	}
+
+	@Test
+	public void testMixedContent() throws Exception {
+		testFiles("Mixed/mixed.xsd","urn:mixed","root","Mixed/mixed-simple");
+		testFiles("Mixed/mixed.xsd","urn:mixed","root","Mixed/mixed-complex");
+		testFiles("Mixed/mixed.xsd","urn:mixed","root","Mixed/mixed-empty");
+	}
+
+	@Test
+	public void testMixedContentUnknown() throws Exception {
+		testFiles("Mixed/mixed.xsd","urn:mixed","root","Mixed/mixed-unknown");
+	}
 
 
  	@Test
-    public void testRepeatedElements() throws Exception {
-    	testFiles("RepeatedElements/sprint.xsd","","sprint","/RepeatedElements/sprint-withRepeatedElement");
-    	testFiles("RepeatedElements/sprint.xsd","","sprint","/RepeatedElements/sprint-withoutRepeatedElement");
-    }
+	public void testRepeatedElements() throws Exception {
+		testFiles("RepeatedElements/sprint.xsd","","sprint","/RepeatedElements/sprint-withRepeatedElement");
+		testFiles("RepeatedElements/sprint.xsd","","sprint","/RepeatedElements/sprint-withoutRepeatedElement");
+	}
 
-    @Test
-    public void testSimple() throws Exception {
-    	testFiles("Simple/simple.xsd","urn:simple","simple","/Simple/simple");
-    }
+	@Test
+	public void testSimple() throws Exception {
+		testFiles("Simple/simple.xsd","urn:simple","simple","/Simple/simple");
+	}
 
 
-    @Test
+	@Test
 	public void testChoiceOfSequence() throws Exception {
 		testFiles("ChoiceOfSequence/transaction.xsd","","transaction","ChoiceOfSequence/order");
 		testFiles("ChoiceOfSequence/transaction.xsd","","transaction","ChoiceOfSequence/invoice");
@@ -194,6 +210,11 @@ public abstract class AlignTestBase {
 	@Test
 	public void testTextAndAttributes() throws Exception {
 		testFiles("TextAndAttributes/schema.xsd", "", "Root", "TextAndAttributes/input", true);
+	}
+
+	@Test
+	public void testMultipleChoices() throws Exception {
+		testFiles("MultipleChoices/MultipleChoices.xsd", "", "EmbeddedChoice", "MultipleChoices/MultipleChoices");
 	}
 
 //	@Test

@@ -37,7 +37,7 @@ public interface IListener<M> extends IConfigurable {
 	 * Purpose of this method is to reduce creating connections to databases etc. in the {@link nl.nn.adapterframework.core.IPullingListener#getRawMessage(Map)} method.
 	 * As much as possible class-instantiating should take place in the
 	 * <code>configure()</code> or <code>open()</code> method, to improve performance.
-	 */ 
+	 */
 	@Override
 	public void configure() throws ConfigurationException;
 
@@ -68,14 +68,14 @@ public interface IListener<M> extends IConfigurable {
 	 * @return Correlation ID string.
 	 */
 	String getIdFromRawMessage(M rawMessage, Map<String,Object> context) throws ListenerException;
-	
+
 	/**
 	 * Extracts string from message obtained from {@link nl.nn.adapterframework.core.IPullingListener#getRawMessage(Map)}. May also extract
 	 * other parameters from the message and put those in the threadContext.
 	 * @return input message for adapter.
 	 */
 	Message extractMessage(M rawMessage, Map<String,Object> context) throws ListenerException;
-	
+
 	/**
 	 * Called to perform actions (like committing or sending a reply) after a message has been processed by the 
 	 * Pipeline. 

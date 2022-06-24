@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -52,12 +52,14 @@ import nl.nn.adapterframework.util.LogUtil;
  * <p>
  * To understand what this listener does exactly, please remember that the Frank!Framework is a Java application.
  * The JavaListener listens to Java method calls. You can issue Java method calls using a {@link nl.nn.adapterframework.senders.IbisJavaSender} (external call)
- * or {@link nl.nn.adapterframework.senders.IbisLocalSender} (internal call). 
+ * or {@link nl.nn.adapterframework.senders.IbisLocalSender} (internal call).
  * For more information see the ibis-servicedispatcher project.
  *
  * @author  Gerrit van Brakel
  */
 public class JavaListener implements IPushingListener<String>, RequestProcessor, HasPhysicalDestination {
+
+	private final @Getter(onMethod = @__(@Override)) String domain = "JVM";
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
@@ -150,22 +152,32 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 				}
 			}
 		}
-		Message message =  new Message(rawMessage);
-		if (throwException) {
-			try {
-				return handler.processRequest(this, correlationId, rawMessage, message, (Map<String,Object>)context).asString();
-			} catch (IOException e) {
-				throw new ListenerException("cannot convert stream", e);
+		try (PipeLineSession session = new PipeLineSession(context) {
+
+				@Override
+				public Object put(String key, Object value) {
+					Object result = super.put(key,value);
+					context.put(key, value);
+					return result;
+				}
+			}) {
+			Message message =  new Message(rawMessage);
+			if (throwException) {
+				try {
+					return handler.processRequest(this, correlationId, rawMessage, message, session).asString();
+				} catch (IOException e) {
+					throw new ListenerException("cannot convert stream", e);
+				}
 			}
-		} 
-		try {
-			return handler.processRequest(this, correlationId, rawMessage, message, context).asString();
-		} catch (ListenerException | IOException e) {
 			try {
-				return handler.formatException(null,correlationId, message, e).asString();
-			} catch (IOException e1) {
-				e.addSuppressed(e1);
-				throw new ListenerException(e);
+				return handler.processRequest(this, correlationId, rawMessage, message, session).asString();
+			} catch (ListenerException | IOException e) {
+				try {
+					return handler.formatException(null,correlationId, message, e).asString();
+				} catch (IOException e1) {
+					e.addSuppressed(e1);
+					throw new ListenerException(e);
+				}
 			}
 		}
 	}
@@ -229,7 +241,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 	public String getPhysicalDestinationName() {
 		if (StringUtils.isNotEmpty(getServiceName())) {
 			return "external: "+getServiceName();
-		} 
+		}
 		return "internal: "+getName();
 	}
 
@@ -252,7 +264,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 		return name;
 	}
 
-	
+
 	@IbisDoc({"2", "External Name of the listener. An IbisJavaSender refers to this name in its <code>serviceName</code>-attribute.", ""})
 	public void setServiceName(String jndiName) {
 		this.serviceName = jndiName;
@@ -287,7 +299,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 	public boolean isThrowException() {
 		return throwException;
 	}
-	
+
 	@IbisDoc({"5", "If <code>true</code>, the WSDL of the service provided by this listener will available for download ", "false"})
 	public void setHttpWsdl(boolean httpWsdl) {
 		this.httpWsdl = httpWsdl;

@@ -41,13 +41,13 @@ import nl.nn.adapterframework.util.ClassUtils;
  */
 public class SenderSeries extends SenderWrapperBase {
 
-	private List<ISender> senderList = new LinkedList<ISender>();
-	private Map<ISender, StatisticsKeeper> statisticsMap = new HashMap<ISender, StatisticsKeeper>();
+	private List<ISender> senderList = new LinkedList<>();
+	private Map<ISender, StatisticsKeeper> statisticsMap = new HashMap<>();
 	private @Getter @Setter boolean synchronous=true;
 
 	@Override
 	protected boolean isSenderConfigured() {
-		return senderList.size()!=0;
+		return !senderList.isEmpty();
 	}
 
 	@Override
@@ -90,10 +90,10 @@ public class SenderSeries extends SenderWrapperBase {
 	}
 
 	@Override
-	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
+	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
 		//Object senderData=hski.openGroup(data,getName(),"sender");
 		for (ISender sender: getSenders()) {
-			hski.handleStatisticsKeeper(data,getStatisticsKeeper(sender));		
+			hski.handleStatisticsKeeper(data,getStatisticsKeeper(sender));
 			if (sender instanceof HasStatistics) {
 				((HasStatistics)sender).iterateOverStatistics(hski,data,action);
 			}
@@ -105,7 +105,6 @@ public class SenderSeries extends SenderWrapperBase {
 	public boolean consumesSessionVariable(String sessionKey) {
 		if (super.consumesSessionVariable(sessionKey)) {
 			return true;
-			
 		}
 		for (ISender sender:senderList) {
 			if (sender.consumesSessionVariable(sessionKey)) {
@@ -121,7 +120,7 @@ public class SenderSeries extends SenderWrapperBase {
 	public final void setSender(ISender sender) {
 		registerSender(sender);
 	}
-	
+
 	/** 
 	 * one or more specifications of senders that will be executed one after another. Each sender will get the result of the preceding one as input. 
 	 * @ff.mandatory
@@ -131,7 +130,7 @@ public class SenderSeries extends SenderWrapperBase {
 		setSynchronous(sender.isSynchronous()); // set synchronous to isSynchronous of the last Sender added
 		statisticsMap.put(sender, new StatisticsKeeper("-> "+ClassUtils.nameOf(sender)));
 	}
-	
+
 	protected Iterable<ISender> getSenders() {
 		return senderList;
 	}

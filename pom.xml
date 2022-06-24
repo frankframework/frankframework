@@ -9,22 +9,23 @@
 	<properties>
 		<revision>7.8-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<log4j2.version>2.17.1</log4j2.version>
-		<h2.version>2.1.210</h2.version>
+		<log4j2.version>2.17.2</log4j2.version>
+		<h2.version>2.1.212</h2.version>
 		<btm.version>3.0.0-mk1</btm.version>
-		<narayana.version>5.11.0.Final</narayana.version>
+		<narayana.version>5.11.4.Final</narayana.version>
 		<jboss-logging.version>3.4.2.Final</jboss-logging.version>
 		<argLine /> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
+		<frankdoc.version>1.1-SNAPSHOT</frankdoc.version>
 	</properties>
 
 	<name>Ibis AdapterFramework parent</name>
 	<description>The Ibis Adapter Framework is an easy to use, stateless integration framework which allows (transactional) messages to be modified and exchanged between different systems.</description>
-	<url>http://maven.ibissource.org/iaf/</url>
+	<url>https://frankframework.org</url>
 
 	<organization>
-		<name>Ibissource.org</name>
-		<url>https://ibissource.org</url>
+		<name>Frank!Framework</name>
+		<url>https://frankframework.org</url>
 	</organization>
 
 	<licenses>
@@ -39,26 +40,26 @@
 		<developer>
 			<name>Jaco de Groot</name>
 			<email>jaco@ibissource.org</email>
-			<organization>Ibissource</organization>
-			<organizationUrl>https://ibissource.org</organizationUrl>
+			<organization>Frank!Framework</organization>
+			<organizationUrl>https://frankframework.org</organizationUrl>
 		</developer>
 		<developer>
 			<name>Niels Meijer</name>
 			<email>niels@ibissource.org</email>
-			<organization>Ibissource</organization>
-			<organizationUrl>https://ibissource.org</organizationUrl>
+			<organization>Frank!Framework</organization>
+			<organizationUrl>https://frankframework.org</organizationUrl>
 		</developer>
 		<developer>
-			<name>Peter Leeuwenburgh</name>
-			<email>peter@ibissource.org</email>
-			<organization>Ibissource</organization>
-			<organizationUrl>https://ibissource.org</organizationUrl>
+			<name>Ali Sihab Akcan</name>
+			<email>ali@ibissource.org</email>
+			<organization>Frank!Framework</organization>
+			<organizationUrl>https://frankframework.org</organizationUrl>
 		</developer>
 		<developer>
 			<name>Gerrit van Brakel</name>
 			<email>gerrit@ibissource.org</email>
-			<organization>Ibissource</organization>
-			<organizationUrl>https://ibissource.org</organizationUrl>
+			<organization>Frank!Framework</organization>
+			<organizationUrl>https://frankframework.org</organizationUrl>
 		</developer>
 	</developers>
 
@@ -196,7 +197,7 @@
 			<dependency>
 				<groupId>org.apache.geronimo.specs</groupId>
 				<artifactId>geronimo-jms_1.1_spec</artifactId>
-				<version>1.1</version>
+				<version>1.1.1</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
@@ -243,8 +244,7 @@
 			<dependency>
 				<groupId>org.projectlombok</groupId>
 				<artifactId>lombok</artifactId>
-				<!-- If you update this version number, please update it in CONTRIBUTING.md  as well! -->
-				<version>1.18.12</version>
+				<version>1.18.24</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
@@ -255,7 +255,7 @@
 			<dependency>
 				<groupId>org.mockito</groupId>
 				<artifactId>mockito-core</artifactId>
-				<version>2.24.5</version>
+				<version>4.5.1</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hamcrest</groupId>
@@ -290,6 +290,39 @@
 			<plugin>
 				<groupId>org.glassfish.copyright</groupId>
 				<artifactId>glassfish-copyright-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<version>3.1.0</version>
+				<executions>
+					<execution>
+						<id>enforce-lib-ban</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<bannedDependencies>
+									<!-- the activation framework was renamed to the jarkata activation framework -->
+									<excludes>
+										<exclude>javax.activation:javax.activation-api</exclude>
+										<exclude>com.sun.activation:javax.activation</exclude>
+								<!-- 	<exclude>javax.activation:activation</exclude> -->
+									</excludes>
+									<message>use com.sun.activation:jakarta.activation instead of jakarta.activation:jakarta.activation-api</message>
+								</bannedDependencies>
+								<bannedDependencies>
+									<!-- the implementation com.sun.activation:jakarta.activation contains the api classes too -->
+									<excludes>
+										<exclude>jakarta.activation:jakarta.activation-api</exclude>
+									</excludes>
+									<message>the implementation com.sun.activation:jakarta.activation is included and it contains the api classes too</message>
+								</bannedDependencies>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
@@ -336,7 +369,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.8.1</version>
+					<version>3.10.1</version>
 					<configuration>
 						<source>1.8</source>
 						<target>1.8</target>
@@ -359,7 +392,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-war-plugin</artifactId>
-					<version>3.3.0</version>
+					<version>3.3.2</version>
 					<configuration>
 						<packagingExcludes>.gitignore</packagingExcludes>
 					</configuration>
@@ -381,7 +414,7 @@
 				<plugin>
 					<groupId>org.projectlombok</groupId>
 					<artifactId>lombok-maven-plugin</artifactId>
-					<version>1.18.16.0</version>
+					<version>1.18.20.0</version>
 					<executions>
 						<execution>
 							<phase>generate-sources</phase>
@@ -401,7 +434,6 @@
 					<version>2.4</version>
 					<executions>
 						<execution>
-							<?m2e ignore?> <!-- Eclipse doesn't seem to like this plugin, it doesn't need to be executed by Eclipse so ignore it -->
 							<id>Check-CopyRight-Notice</id>
 							<goals>
 								<goal>copyright</goal><!-- Checks for Copyright notices -->
@@ -413,7 +445,7 @@
 					<configuration>
 						<excludeFile>${iaf.rootdir}/copyrightExcludeFile.txt</excludeFile>
 						<exclude>
-							DataSourceXAResourceRecoveryHelper.java,NarayanaRecoveryManager.java,FilenameUtils.java,PasswordHash.java
+							DataSourceXAResourceRecoveryHelper.java,NarayanaRecoveryManager.java,FilenameUtils.java,PasswordHash.java,FrankJ2V8LibraryLoader.java
 						</exclude>
 						<ignoreYear>true</ignoreYear>
 						<useDash>true</useDash>
@@ -426,7 +458,6 @@
 					<version>1.0</version>
 					<executions>
 						<execution>
-							<?m2e ignore?>
 							<id>find-project-root-directory</id>
 							<goals>
 								<goal>directory-of</goal>
@@ -445,7 +476,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
-					<version>3.2.0</version>
+					<version>3.4.0</version>
 					<configuration>
 						<doclint>none</doclint>
 						<tags>
@@ -517,7 +548,6 @@
 					</configuration>
 					<executions>
 						<execution>
-							<?m2e ignore?>
 							<id>verify-code-style</id>
 							<phase>process-classes</phase>
 							<goals>
@@ -543,7 +573,6 @@
 					</configuration>
 					<executions>
 						<execution>
-							<?m2e ignore?>
 							<id>clean-and-flatten</id>
 							<phase>process-resources</phase>
 							<goals>
@@ -559,6 +588,59 @@
 							</goals>
 						</execution>
 					</executions>
+				</plugin>
+
+				<!-- This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself -->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.glassfish.copyright</groupId>
+										<artifactId>glassfish-copyright-maven-plugin</artifactId>
+										<versionRange>[2.4,)</versionRange>
+										<goals>
+											<goal>check</goal>
+											<goal>copyright</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.commonjava.maven.plugins</groupId>
+										<artifactId>directory-maven-plugin</artifactId>
+										<versionRange>[1.0,)</versionRange>
+										<goals>
+											<goal>directory-of</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-checkstyle-plugin</artifactId>
+										<versionRange>[3.1.2,)</versionRange>
+										<goals>
+											<goal>check</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -578,7 +660,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.2.0</version>
+				<version>3.4.0</version>
 				<inherited>false</inherited>
 				<reportSets>
 					<reportSet>
@@ -661,11 +743,11 @@
 			<distributionManagement>
 				<repository>
 					<id>ibissource</id>
-					<url>https://nexus.ibissource.org/content/repositories/releases</url>
+					<url>https://nexus.frankframework.org/content/repositories/releases</url>
 				</repository>
 				<snapshotRepository>
 					<id>ibissource</id>
-					<url>https://nexus.ibissource.org/content/repositories/snapshots</url>
+					<url>https://nexus.frankframework.org/content/repositories/snapshots</url>
 				</snapshotRepository>
 				<site>
 					<id>www.ibissource.org</id>
@@ -675,7 +757,7 @@
 			<repositories>
 				<repository>
 					<id>ibissource</id>
-					<url>https://nexus.ibissource.org/content/groups/public</url>
+					<url>https://nexus.frankframework.org/content/groups/public</url>
 				</repository>
 			</repositories>
 		</profile>
@@ -739,7 +821,7 @@
 			<repositories>
 				<repository>
 					<id>proprietary</id>
-					<url>https://nexus.ibissource.org/content/repositories/private/</url>
+					<url>https://nexus.frankframework.org/content/repositories/private/</url>
 					<snapshots>
 						<!-- Prevent Maven from attempting to download non existing /x.y-SNAPSHOT/maven-metadata.xml on this url for every module on every build -->
 						<enabled>false</enabled>
@@ -772,7 +854,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-javadoc-plugin</artifactId>
-						<version>3.2.0</version>
+						<version>3.4.0</version>
 						<configuration>
 							<sourcepath>${project.build.directory}/generated-sources/delombok</sourcepath>
 						</configuration>
@@ -799,7 +881,7 @@
 			<pluginRepositories>
 				<pluginRepository>
 					<id>ibissource</id>
-					<url>https://nexus.ibissource.org/content/groups/public</url>
+					<url>https://nexus.frankframework.org/content/groups/public</url>
 					<snapshots>
 						<enabled>true</enabled>
 						<updatePolicy>always</updatePolicy>
@@ -823,7 +905,7 @@
 							<docletArtifact>
 								<groupId>org.ibissource</groupId>
 								<artifactId>frank-doc</artifactId>
-								<version>1.0</version>
+								<version>${frankdoc.version}</version>
 							</docletArtifact>
 							<additionalOptions>
 								<additionalOption>-outputDirectory</additionalOption>
@@ -832,6 +914,8 @@
 								<additionalOption>${project.basedir}/core/src/main/resources/digester-rules.xml</additionalOption>
 								<additionalOption>-rootClass</additionalOption>
 								<additionalOption>nl.nn.adapterframework.configuration.Configuration</additionalOption>
+								<additionalOption>-frankFrameworkVersion</additionalOption>
+								<additionalOption>${project.version}</additionalOption>
 							</additionalOptions>
 							<outputDirectory>${project.build.directory}/frankdoc</outputDirectory>
 							<source>1.8</source>
@@ -863,7 +947,7 @@
 					<plugin>
 						<groupId>org.jacoco</groupId>
 						<artifactId>jacoco-maven-plugin</artifactId>
-						<version>0.8.6</version>
+						<version>0.8.8</version>
 						<executions>
 							<execution>
 								<id>prepare-jacoco</id>
@@ -888,7 +972,7 @@
 					<plugin>
 						<groupId>org.jacoco</groupId>
 						<artifactId>jacoco-maven-plugin</artifactId>
-						<version>0.8.6</version>
+						<version>0.8.8</version>
 						<reportSets>
 							<reportSet>
 								<reports>

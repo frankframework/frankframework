@@ -53,9 +53,11 @@ angular.module('iaf.beheerconsole')
 			var callback = args.shift();
 			var error = args.shift();
 			var intercept = args.shift();
+			var responseType = args.shift();
 
 			return $http.post(buildURI(uri), object, {
 				headers: headers,
+				responseType: responseType,
 				transformRequest: angular.identity,
 				intercept: intercept,
 			}).then(function(response){
@@ -718,6 +720,13 @@ angular.module('iaf.beheerconsole')
 		return function(input, length) {
 			if(input && input.length > length) {
 				return input.substring(0, length) + "... ("+(input.length - length)+" characters more)";
+			}
+			return input;
+		};
+	}).filter('dropLastChar', function() {
+		return function(input) {
+			if(input && input.length > 0) {
+				return input.substring(0, input.length-1);
 			}
 			return input;
 		};

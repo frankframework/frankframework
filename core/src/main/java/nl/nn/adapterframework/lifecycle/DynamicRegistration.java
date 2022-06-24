@@ -17,8 +17,6 @@ package nl.nn.adapterframework.lifecycle;
 
 import java.util.Map;
 
-import javax.servlet.http.HttpServlet;
-
 /**
  * Interface to use in combination with the {@link IbisInitializer} annotation.
  * Classes that implement the annotation are automatically picked up by Spring, and allow you to use:
@@ -33,33 +31,35 @@ import javax.servlet.http.HttpServlet;
  */
 public interface DynamicRegistration {
 
+	public static final String[] ALL_IBIS_ROLES = {"IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester", "IbisWebService"};
+	public static final String[] ALL_IBIS_USER_ROLES = {"IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester"};
+	public static final String[] IBIS_FULL_SERVICE_ACCESS_ROLES = {"IbisTester", "IbisWebService"};
+
 	public interface Servlet extends DynamicRegistration, javax.servlet.Servlet {
 
-		public static final String[] ALL_IBIS_ROLES = {"IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester", "IbisWebService"};
-		public static final String[] ALL_IBIS_USER_ROLES = {"IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester"};
-
-		/** @return The {@link javax.servlet.http.HttpServlet Servlet} to register using the {@link ServletManager} */
-		public HttpServlet getServlet();
-
-		/** @return The URL the {@link javax.servlet.http.HttpServlet Servlet} should be mapped to. */
+		/** 
+		 * The URL the {@link javax.servlet.http.HttpServlet Servlet} should be mapped to.
+		 * This value may be overridden by setting property <code>servlet.servlet-name.urlMapping</code> to change path the servlet listens to
+		 */
 		public String getUrlMapping();
 
 		/**
-		 * Not used when dtap.stage == LOC. See {@link ServletManager} for more information.
-		 * @return The default roles the {@link javax.servlet.http.HttpServlet Servlet} has, or <code>null</code> to disable.
+		 * The default authorization roles giving access to the {@link javax.servlet.http.HttpServlet Servlet}, or <code>null</code> to disable.
+		 * This value may be overridden by setting property <code>servlet.servlet-name.securityRoles</code> to the roles that should be granted access.
+		 * see {@link ServletManager} for more information.
 		 */
-		public String[] getRoles();
+		public String[] getAccessGrantingRoles();
 	}
 
 	public interface ServletWithParameters extends Servlet {
 		/**
-		 * @return {@link javax.servlet.http.HttpServlet Servlet} specific init parameters
+		 * {@link javax.servlet.http.HttpServlet Servlet} specific init parameters
 		 */
 		public Map<String, String> getParameters();
 	}
 
 	/**
-	 * @return Name of the to-be implemented class
+	 * Name of the to-be implemented class
 	 */
 	public default String getName() {
 		return this.getClass().getSimpleName();
@@ -67,9 +67,10 @@ public interface DynamicRegistration {
 
 	/**
 	 * Order in which to automatically instantiate and load the class.</br>
-	 * @return <code>0</code> to let the application server determine, <code>-1</code> to disable
+	 * <code>0</code> to let the application server determine, <code>-1</code> to disable
+	 * This value may be overridden by setting property <code>servlet.servlet-name.loadOnStartup</code>
 	 */
 	public default int loadOnStartUp() {
-		return 1;
+		return -1;
 	}
 }

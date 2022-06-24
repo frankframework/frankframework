@@ -83,8 +83,8 @@ public class CmisSessionBuilder {
 	private String proxyUserName;
 	private String proxyPassword;
 
-	public final static String OVERRIDE_WSDL_URL = "http://fake.url";
-	public final static String OVERRIDE_WSDL_KEY = "override_wsdl_key";
+	public static final String OVERRIDE_WSDL_URL = "http://fake.url";
+	public static final String OVERRIDE_WSDL_KEY = "override_wsdl_key";
 	private String overrideEntryPointWSDL;
 
 	private IScopeProvider scopeProvider = null;

@@ -12,10 +12,10 @@
 		</thead>
 		<tbody>
 			<tr ng-repeat="attr in element.attributes" ng-if="!attr.deprecated || showDeprecatedElements">
-				<td colspan="4" ng-if="attr.from" class="attribute__from">From {{attr.from}}:</td>
+				<td colspan="4" ng-if="attr.from" class="attribute__from">From <span title="{{attr.desc}}">{{attr.from}}: </span> </td>
 
-				<td ng-if-start="!attr.from" ng-class="{ 'deprecated': attr.deprecated }">
-					{{::attr.name}} 
+				<td ng-if-start="!attr.from" ng-class="{ 'deprecated': attr.deprecated, 'mandatory': attr.mandatory}" ng-attr-title="{{attr.mandatory ? 'Mandatory attribute' : ''}}">
+					{{::attr.name}}
 				</td>
 				<td><div attribute-description /></td>
 				<td ng-bind-html="::attr.default"></td>

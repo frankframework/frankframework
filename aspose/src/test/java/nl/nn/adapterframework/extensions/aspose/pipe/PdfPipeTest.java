@@ -44,13 +44,14 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.extensions.aspose.pipe.PdfPipe.DocumentAction;
 import nl.nn.adapterframework.pipes.PipeTestBase;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.UrlMessage;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 /**
  * Executes defined tests against the PdfPipe to ensure the correct working of this pipe.
- * 
+ *
  * @author Laurens Mäkel
  */
 
@@ -66,8 +67,8 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	}
 
 	@Override
-	public void setup() throws Exception {
-		super.setup();
+	public void setUp() throws Exception {
+		super.setUp();
 		pdfOutputLocation = Files.createTempDirectory("Pdf");
 		pipe.setPdfOutputLocation(pdfOutputLocation.toString());
 		pipe.setUnpackCommonFontsArchive(true);
@@ -107,13 +108,13 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 		if(convertedDocumentMatcher.find()) { //Find converted document location
 			String convertedFilePath = convertedDocumentMatcher.group();
-			System.out.println("found converted file ["+convertedFilePath+"]");
+			log.debug("found converted file ["+convertedFilePath+"]");
 
 			URL expectedFileUrl = TestFileUtils.getTestFileURL(expectedFile);
 			assertNotNull("cannot find expected file ["+expectedFile+"]", expectedFileUrl);
 			File file = new File(expectedFileUrl.toURI());
 			String expectedFilePath = file.getPath();
-			System.out.println("converted relative path ["+expectedFile+"] to absolute file ["+expectedFilePath+"]");
+			log.debug("converted relative path ["+expectedFile+"] to absolute file ["+expectedFilePath+"]");
 
 			PDFUtil pdfUtil = new PDFUtil();
 			//remove Aspose evaluation copy information
@@ -142,7 +143,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 		PipeLineSession session = new PipeLineSession();
 		URL input = TestFileUtils.getTestFileURL(fileToConvert);
-		pipe.doPipe(Message.asMessage(new File(input.toURI())), session);
+		pipe.doPipe(new UrlMessage(input), session);
 
 		//returns <main conversionOption="0" mediaType="xxx/xxx" documentName="filename" numberOfPages="1" convertedDocument="xxx.pdf" />
 		return session.getMessage("documents").asString();
@@ -247,7 +248,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	public void emailWithAttachments() throws Exception {
 		expectSuccessfullConversion("Txt2Pdf", "/PdfPipe/nestedMail.msg", "/PdfPipe/xml-results/nestedMail.xml", "/PdfPipe/results/nestedMail.pdf");
 	}
-	
+
 	@Test
 	public void excel2pdf() throws Exception {
 		expectSuccessfullConversion("xls2pdf", "/PdfPipe/excel.xls", "/PdfPipe/xml-results/xls.xml", "/PdfPipe/results/excel.pdf");
@@ -262,27 +263,27 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	public void fontTestEmail() throws Exception {
 		expectSuccessfullConversion("fontTestEmail", "/PdfPipe/fonttest/fontTestEmail.msg", "/PdfPipe/xml-results/fontTestEmail.xml", "/PdfPipe/results/fontTestEmail.pdf");
 	}
-	
+
 	@Test
 	public void fontTestSlides() throws Exception {
 		expectSuccessfullConversion("fontTestSlides", "/PdfPipe/fonttest/fontTestSlides.msg", "/PdfPipe/xml-results/fontTestSlides.xml", "/PdfPipe/results/fontTestSlides.pdf");
 	}
-	
+
 	@Test
 	public void fontTestWord() throws Exception {
 		expectSuccessfullConversion("fontTestWord", "/PdfPipe/fonttest/fontTestWord.msg", "/PdfPipe/xml-results/fontTestWord.xml", "/PdfPipe/results/fontTestWord.pdf");
 	}
-	
+
 	@Test
 	public void mailWithExcelAttachment() throws Exception {
 		expectSuccessfullConversion("mailWithExcelAttachment", "/PdfPipe/MailWithAttachments/mailWithExcelAttachment.msg", "/PdfPipe/xml-results/mailWithExcelAttachment.xml", "/PdfPipe/results/mailWithExcelAttachment.pdf");
 	}
-	
+
 	@Test
 	public void mailWithImage() throws Exception {
 		expectSuccessfullConversion("mailWithImage", "/PdfPipe/MailWithAttachments/mailWithImage.msg", "/PdfPipe/xml-results/mailWithImage.xml", "/PdfPipe/results/mailWithImage.pdf");
 	}
-	
+
 	@Test
 	public void mailWithPdfAttachment() throws Exception {
 		expectSuccessfullConversion("mailWithPdfAttachment", "/PdfPipe/MailWithAttachments/mailWithPdfAttachment.msg", "/PdfPipe/xml-results/mailWithPdfAttachment.xml", "/PdfPipe/results/mailWithPdfAttachment.pdf");
@@ -292,7 +293,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	public void mailWithWordAttachment() throws Exception {
 		expectSuccessfullConversion("mailWithWordAttachment", "/PdfPipe/MailWithAttachments/mailWithWordAttachment.msg", "/PdfPipe/xml-results/mailWithWordAttachment.xml", "/PdfPipe/results/mailWithWordAttachment.pdf");
 	}
-	
+
 	@Test
 	public void multiThreadedMailWithWordAttachment() throws Exception {
 		pipe.setName("multiThreadedmailWithWordAttachment");
@@ -311,9 +312,9 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 			try {
 				PipeRunResult prr = pipe.doPipe(Message.asMessage(new File(item.toURI())), session);
 				Message result = prr.getResult();
-				MatchUtils.assertXmlEquals("Conversion XML does not match", applyIgnores(result.asString()), applyIgnores(expected), true);
+				MatchUtils.assertXmlEquals("Conversion XML does not match", applyIgnores(expected), applyIgnores(result.asString()), true);
 			} catch (Exception e) {
-				fail("Failed to execute test " + e.getMessage());
+				fail("Failed to execute test ("+e.getClass()+"): " + e.getMessage());
 			}
 		});
 	}

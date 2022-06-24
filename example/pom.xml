@@ -43,7 +43,7 @@
 			<plugin>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-maven-plugin</artifactId>
-				<version>9.2.29.v20191105</version>
+				<version>9.4.46.v20220331</version>
 				<configuration>
 					<systemProperties>
 						<systemProperty>
@@ -65,17 +65,15 @@
 					</webAppConfig>
 					<loginServices>
 						<loginServices implementation="org.eclipse.jetty.jaas.JAASLoginService">
-							<name>Ibis</name>
+							<name>Frank</name>
 						</loginServices>
 					</loginServices>
 				</configuration>
 			</plugin>
 			<!-- use maven-jar-plugin to make separate artifacts of context, configurations, resources and testscenarios, to inject them into deployments -->
-			<!--
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.2.0</version>
 				<executions>
 					<execution>
 						<id>zip-context</id>
@@ -125,7 +123,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			-->
 		</plugins>
 	</build>
 

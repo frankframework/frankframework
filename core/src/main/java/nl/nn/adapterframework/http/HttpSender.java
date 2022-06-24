@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -174,6 +174,7 @@ public class HttpSender extends HttpSenderBase {
 	private @Getter String multipartXmlSessionKey;
 	private @Getter String mtomContentTransferEncoding = null; //Defaults to 8-bit for normal String messages, 7-bit for e-mails and binary for streams
 	private @Getter boolean encodeMessages = false;
+	private @Getter Boolean treatInputMessageAsParameters = null;
 
 	private @Getter PostType postType = PostType.RAW;
 
@@ -203,6 +204,10 @@ public class HttpSender extends HttpSenderBase {
 		}
 
 		super.configure();
+
+		if (getTreatInputMessageAsParameters()==null && getHttpMethod()!=HttpMethod.GET) {
+			setTreatInputMessageAsParameters(Boolean.TRUE);
+		}
 
 		if (getHttpMethod() != HttpMethod.POST) {
 			if (!isParamsInUrl()) {
@@ -237,9 +242,9 @@ public class HttpSender extends HttpSenderBase {
 			} catch (IOException e) {
 				throw new SenderException(getLogPrefix()+"unable to read message", e);
 			}
-		} else { // RAW + BINARY
-			return getMethod(uri, message, parameters);
 		}
+		// RAW + BINARY
+		return getMethod(uri, message, parameters);
 	}
 
 	// Encode query parameter values.
@@ -278,7 +283,8 @@ public class HttpSender extends HttpSenderBase {
 					queryParametersAppended = appendParameters(queryParametersAppended,relativePath,parameters);
 					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"path after appending of parameters ["+relativePath+"]");
 				}
-				HttpGet getMethod = new HttpGet(relativePath+(parameters==null && !Message.isEmpty(message)? message.asString():""));
+
+				HttpGet getMethod = new HttpGet(relativePath+(parameters==null && BooleanUtils.isTrue(getTreatInputMessageAsParameters()) && !Message.isEmpty(message)? message.asString():""));
 
 				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+getMethod.getURI().getQuery()+"]");
 				if (null != getFullContentType()) { //Manually set Content-Type header
@@ -291,7 +297,7 @@ public class HttpSender extends HttpSenderBase {
 			case PATCH:
 				HttpEntity entity;
 				if(postType.equals(PostType.RAW)) {
-					String messageString = message.asString();
+					String messageString = BooleanUtils.isTrue(getTreatInputMessageAsParameters()) && !Message.isEmpty(message) ? message.asString() : "";
 					if (parameters!=null) {
 						StringBuffer msg = new StringBuffer(messageString);
 						appendParameters(true,msg,parameters);
@@ -377,7 +383,7 @@ public class HttpSender extends HttpSenderBase {
 			try {
 				hmethod.setEntity(new UrlEncodedFormEntity(requestFormElements, getCharSet()));
 			} catch (UnsupportedEncodingException e) {
-				throw new SenderException(getLogPrefix()+"unsupported encoding for one or more post parameters");
+				throw new SenderException(getLogPrefix()+"unsupported encoding for one or more post parameters", e);
 			}
 		}
 		else { //formdata and mtom
@@ -389,10 +395,10 @@ public class HttpSender extends HttpSenderBase {
 	}
 
 	protected FormBodyPart createMultipartBodypart(String name, String message) {
-		if(postType.equals(PostType.MTOM))
+		if(postType.equals(PostType.MTOM)) {
 			return createMultipartBodypart(name, message, "application/xop+xml");
-		else
-			return createMultipartBodypart(name, message, null);
+		}
+		return createMultipartBodypart(name, message, null);
 	}
 
 	protected FormBodyPart createMultipartBodypart(String name, String message, String contentType) {
@@ -496,9 +502,8 @@ public class HttpSender extends HttpSenderBase {
 
 		if (partObject.isBinary()) {
 			return createMultipartBodypart(partSessionKey, partObject.asInputStream(), partName, partMimeType);
-		} else {
-			return createMultipartBodypart(partName, partObject.asString(), partMimeType);
 		}
+		return createMultipartBodypart(partName, partObject.asString(), partMimeType);
 	}
 
 	protected boolean validateResponseCode(int statusCode) {
@@ -570,10 +575,9 @@ public class HttpSender extends HttpSenderBase {
 			} else {
 				return getResponseBody(responseHandler);
 			}
-		} else {
-			streamResponseBody(responseHandler, response);
-			return Message.nullMessage();
 		}
+		streamResponseBody(responseHandler, response);
+		return Message.nullMessage();
 	}
 
 	public Message getResponseBody(HttpResponseHandler responseHandler) {
@@ -636,10 +640,10 @@ public class HttpSender extends HttpSenderBase {
 
 	public static void streamResponseBody(InputStream is, String contentType, String contentDisposition, HttpServletResponse response, Logger log, String logPrefix, String redirectLocation) throws IOException {
 		if (StringUtils.isNotEmpty(contentType)) {
-			response.setHeader("Content-Type", contentType); 
+			response.setHeader("Content-Type", contentType);
 		}
 		if (StringUtils.isNotEmpty(contentDisposition)) {
-			response.setHeader("Content-Disposition", contentDisposition); 
+			response.setHeader("Content-Disposition", contentDisposition);
 		}
 		if (StringUtils.isNotEmpty(redirectLocation)) {
 			response.sendRedirect(redirectLocation);
@@ -679,7 +683,7 @@ public class HttpSender extends HttpSenderBase {
 	public void setInputMessageParam(String inputMessageParam) {
 		setFirstBodyPartName(inputMessageParam);
 	}
-	@IbisDoc({"(Only used when <code>methodType=POST</code> and <code>postType=URLENCODED</code>, <code>FORM-DATA</code> or <code>MTOM</code>) Name of the first body part", ""})
+	@IbisDoc({"(Only used when <code>methodType=POST</code> and <code>postType=URLENCODED</code>, <code>FORM-DATA</code> or <code>MTOM</code>) Prepends a new BodyPart using the specified name and uses the input of the Sender as content", ""})
 	public void setFirstBodyPartName(String firstBodyPartName) {
 		this.firstBodyPartName = firstBodyPartName;
 	}
@@ -755,5 +759,10 @@ public class HttpSender extends HttpSenderBase {
 	@IbisDoc({"64", "specifies whether messages will encoded, e.g. spaces will be replaced by '+' etc.", "false"})
 	public void setEncodeMessages(boolean b) {
 		encodeMessages = b;
+	}
+
+	@IbisDoc({"65", "if <code>true</code>, the input will be added to the URL for methodType=GET, or for methodType=POST, PUT or PATCH if postType=RAW. This used to be the default behaviour in framework version 7.7 and earlier", "for methodType=GET: <code>false</code>,<br/>for methodTypes POST, PUT, PATCH: <code>true</code> "})
+	public void setTreatInputMessageAsParameters(Boolean b) {
+		treatInputMessageAsParameters = b;
 	}
 }

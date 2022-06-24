@@ -35,7 +35,7 @@ import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 
 /**
  * Definition / configuration of scheduler jobs.
- * 
+ *
  * Specified in the Configuration.xml by a &lt;job&gt; inside a &lt;scheduler&gt;. The scheduler element must
  * be a direct child of configuration, not of adapter.
  * <br/>
@@ -48,7 +48,7 @@ import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
  *   <li>this calls {@link SchedulerHelper#scheduleJob(IJob) SchedulerHelper.scheduleJob()};</li>
  *   <li>this creates a Quartz JobDetail object, and copies adapterName, receiverName, function and a reference to the configuration to jobdetail's datamap;</li>
  *   <li>it sets the class to execute to AdapterJob</li>
- *   <li>this job is scheduled using the cron expression</li> 
+ *   <li>this job is scheduled using the cron expression</li>
  * </ul>
  * </p>
  *
@@ -283,7 +283,7 @@ import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
  *   </li>
  * </ul>
  * </p>
- * 
+ *
  */
 public abstract class JobDef extends TransactionAttributes implements IConfigurationAware, IJob {
 
@@ -297,7 +297,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 	private @Getter String cronExpression;
 	private @Getter long interval = -1;
 
-	private Locker locker = null;
+	private @Getter(onMethod = @__(@Override)) Locker locker = null;
 	private @Getter int numThreads = 1;
 	private int countThreads = 0;
 
@@ -308,6 +308,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 
 	@Override
 	public void configure() throws ConfigurationException {
+		super.configure();
 		if (StringUtils.isEmpty(getName())) {
 			throw new ConfigurationException("a name must be specified");
 		}
@@ -316,22 +317,21 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 			setJobGroup(applicationContext.getId());
 		}
 
+		SchedulerHelper.validateJob(getJobDetail(), getCronExpression());
+
 		if (getLocker()!=null) {
 			getLocker().configure();
 		}
 
 		statsKeeper = new StatisticsKeeper(getName());
 
-		super.configure();
 		getMessageKeeper().add("job successfully configured");
 		configured = true;
 	}
 
 	@Override
 	public JobDetail getJobDetail() {
-		IbisManager ibisManager = applicationContext.getBean("ibisManager", IbisManager.class);
-
-		return IbisJobBuilder.fromJobDef(this).setIbisManager(ibisManager).build();
+		return IbisJobBuilder.fromJobDef(this).build();
 	}
 
 	public synchronized boolean incrementCountThreads() {
@@ -347,21 +347,21 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 	}
 
 	/** Called before executeJob to prepare resources for executeJob method. Returns false if job does not need to run */
-	public boolean beforeExecuteJob(IbisManager ibisManager) {
+	public boolean beforeExecuteJob() {
 		return true;
 	}
 
 	/** Called from {@link ConfiguredJob} which should trigger this job definition. */
 	@Override
-	public final void executeJob(IbisManager ibisManager) {
-		if (!incrementCountThreads()) { 
+	public final void executeJob() {
+		if (!incrementCountThreads()) {
 			String msg = "maximum number of threads that may execute concurrently [" + getNumThreads() + "] is exceeded, the processing of this thread will be aborted";
 			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
 			log.error(getLogPrefix()+msg);
 			return;
 		}
 		try {
-			if(beforeExecuteJob(ibisManager)) {
+			if(beforeExecuteJob()) {
 				if (getLocker() != null) {
 					String objectId = null;
 					try {
@@ -374,7 +374,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 						TimeoutGuard tg = new TimeoutGuard("Job "+getName());
 						try {
 							tg.activateGuard(getTransactionTimeout());
-							runJob(ibisManager);
+							runJob();
 						} finally {
 							if (tg.cancel()) {
 								log.error(getLogPrefix()+"thread has been interrupted");
@@ -391,10 +391,8 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 						getMessageKeeper().add("unable to acquire lock ["+getName()+"] did not run");
 					}
 				} else {
-					runJob(ibisManager);
+					runJob();
 				}
-			} else {
-				getMessageKeeper().add("job execution skipped");
 			}
 		} finally {
 			decrementCountThreads();
@@ -404,12 +402,12 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 	/**
 	 * Wrapper around running the job, to log and deal with Exception in a uniform manner.
 	 */
-	private void runJob(IbisManager ibisManager) {
+	private void runJob() {
 		long startTime = System.currentTimeMillis();
 		getMessageKeeper().add("starting to run the job");
 
 		try {
-			execute(ibisManager);
+			execute();
 		} catch (Exception e) {
 			String msg = "error while executing job ["+this+"] (as part of scheduled job execution): " + e.getMessage();
 			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
@@ -420,6 +418,10 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 		long duration = endTime - startTime;
 		statsKeeper.addValue(duration);
 		getMessageKeeper().add("finished running the job in ["+(duration)+"] ms");
+	}
+
+	protected IbisManager getIbisManager() {
+		return getApplicationContext().getBean(IbisManager.class);
 	}
 
 	protected String getLogPrefix() {
@@ -441,14 +443,14 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 	}
 
 	@Override
-	/** Name of the job" 
+	/** Name of the job
 	 * @ff.mandatory
 	 */
 	public void setName(String name) {
 		this.name = name;
 	}
 
-	/** (Optional) Description of the job */
+	/** Description of the job */
 	public void setDescription(String description) {
 		this.description = description;
 	}
@@ -467,10 +469,6 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 	public void setLocker(Locker locker) {
 		this.locker = locker;
 		locker.setName("Locker of job ["+getName()+"]");
-	}
-	@Override
-	public Locker getLocker() {
-		return locker;
 	}
 
 	/** Number of threads that may execute concurrently

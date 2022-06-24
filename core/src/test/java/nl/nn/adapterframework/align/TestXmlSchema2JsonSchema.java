@@ -66,7 +66,7 @@ public class TestXmlSchema2JsonSchema extends AlignTestBase {
 //    	if (expectValid) {
 //    		assertEquals("valid XML", expectValid, Utils.validate(schemaUrl, xmlString));
 //    	}
-//    
+//
 		JsonStructure jsonschema = validator.createJsonSchema(rootElement);
 		//JsonStructure jsonschema = validator.createJsonSchema();
 
@@ -91,7 +91,7 @@ public class TestXmlSchema2JsonSchema extends AlignTestBase {
 //	    	if (!expectValid) {
 //				fail("expected to fail with reason ["+ expectedFailureReason +"]");
 //			}
-			
+
 		}
 
 		// validate the json against the generated schema
@@ -102,9 +102,9 @@ public class TestXmlSchema2JsonSchema extends AlignTestBase {
 
 				ObjectMapper mapper = new ObjectMapper();
 				JsonNode node = mapper.readTree(jsonString);
-	
+
 				Set<ValidationMessage> errors = schema.validate(node);
-	
+
 				System.out.println(jsonString);
 				System.out.println(errors);
 				assertEquals(errors.toString(), 0, errors.size());

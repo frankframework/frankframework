@@ -39,7 +39,7 @@ public class Verify extends PGPAction {
 				.decryptAndVerifyStream()
 				.withConfig(keyringConfig);
 
-		try (InputStream decryptionStream = senders == null 
+		try (InputStream decryptionStream = senders == null
 				? validation.andValidateSomeoneSigned().fromEncryptedInputStream(inputStream)
 				: validation.andRequireSignatureFromAllKeys(senders).fromEncryptedInputStream(inputStream)) {
 			Streams.pipeAll(decryptionStream, outputStream);

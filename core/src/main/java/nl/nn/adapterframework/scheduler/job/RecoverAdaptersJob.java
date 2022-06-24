@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,17 +29,18 @@ public class RecoverAdaptersJob extends JobDef {
 	protected Logger heartbeatLog = LogUtil.getLogger("HEARTBEAT");
 
 	@Override
-	public void execute(IbisManager ibisManager) {
+	public void execute() {
 		int countAdapter=0;
 		int countAdapterStateStarted=0;
 		int countReceiver=0;
 		int countReceiverStateStarted=0;
+		IbisManager ibisManager = getIbisManager();
 		for (Adapter adapter: ibisManager.getRegisteredAdapters()) {
 			countAdapter++;
 			RunState adapterRunState = adapter.getRunState();
 			boolean startAdapter = false;
 			if (adapterRunState==RunState.ERROR) { //if not previously configured, there is no point in trying to do this again.
-				log.debug("trying to recover adapter [" + adapter.getName() + "]");
+				log.debug("trying to recover adapter [{}]", adapter::getName);
 
 				if (!adapter.configurationSucceeded()) { //This should only happen once, so only try to (re-)configure if it failed in the first place!
 					try {
@@ -47,14 +48,14 @@ public class RecoverAdaptersJob extends JobDef {
 					} catch (ConfigurationException e) {
 						// log the warning and do nothing, it couldn't configure before, it still can't...
 						log.warn("error configuring adapter [" + adapter.getName() + "] while trying to recover", e);
-					} 
+					}
 				}
 
 				if (adapter.configurationSucceeded()) {
 					startAdapter = adapter.isAutoStart(); // if configure has succeeded and adapter was in state ERROR try to auto (re-)start the adapter
 				}
 
-				log.debug("finished recovering adapter [" + adapter.getName() + "]");
+				log.debug("finished recovering adapter[{}]", adapter::getName);
 			}
 
 			String message = "adapter [" + adapter.getName() + "] has state [" + adapterRunState + "]";
@@ -71,12 +72,13 @@ public class RecoverAdaptersJob extends JobDef {
 				countReceiver++;
 
 				RunState receiverRunState = receiver.getRunState();
-				if (adapterRunState==RunState.STARTED && receiverRunState==RunState.ERROR && receiver.configurationSucceeded()) { //Only try to (re-)start receivers in a running adapter. Receiver configure is done in Adapter.configure
-					log.debug("trying to recover receiver [" + receiver.getName() + "] of adapter [" + adapter.getName() + "]");
+				//Only try to (re-)start receivers in a running adapter. Receiver configure is done in Adapter.configure
+				if (adapterRunState==RunState.STARTED && (receiverRunState==RunState.ERROR || receiverRunState==RunState.EXCEPTION_STARTING) && receiver.configurationSucceeded()) {
+					log.debug("trying to recover receiver [{}] of adapter [{}]", receiver::getName, adapter::getName);
 
 					receiver.startRunning();
 
-					log.debug("finished recovering receiver [" + receiver.getName() + "] of adapter [" + adapter.getName() + "]");
+					log.debug("finished recovering receiver [{}] of adapter [{}]", receiver::getName, adapter::getName);
 				}
 
 				receiverRunState = receiver.getRunState();

@@ -38,6 +38,7 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
@@ -58,6 +59,7 @@ public abstract class Base implements ApplicationContextAware {
 	@Context protected ServletConfig servletConfig;
 	@Context protected SecurityContext securityContext;
 	@Context protected HttpServletRequest request;
+	private @Getter ApplicationContext applicationContext;
 
 	private IbisContext ibisContext = null;
 	private JAXRSServiceFactoryBean serviceFactory = null;
@@ -66,7 +68,8 @@ public abstract class Base implements ApplicationContextAware {
 	protected static String HATEOASImplementation = AppConstants.getInstance().getString("ibis-api.hateoasImplementation", "default");
 
 	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+	public final void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.applicationContext = applicationContext;
 		SpringJAXRSServerFactoryBean server = (SpringJAXRSServerFactoryBean) applicationContext.getBean("IAF-API");
 		serviceFactory = server.getServiceFactory();
 	}
@@ -80,10 +83,14 @@ public abstract class Base implements ApplicationContextAware {
 	 */
 	private void retrieveIbisContextFromServlet() {
 		if(servletConfig == null) {
-			throw new ApiException(new IllegalStateException("no ServletConfig found to retrieve IbisContext from"));
+			throw new ApiException("no ServletConfig found to retrieve IbisContext from");
 		}
 
-		ibisContext = IbisApplicationServlet.getIbisContext(servletConfig.getServletContext());
+		try {
+			ibisContext = IbisApplicationServlet.getIbisContext(servletConfig.getServletContext());
+		} catch (IllegalStateException e) {
+			throw new ApiException(e);
+		}
 	}
 
 	public IbisContext getIbisContext() {
@@ -105,7 +112,7 @@ public abstract class Base implements ApplicationContextAware {
 		IbisManager ibisManager = getIbisContext().getIbisManager();
 
 		if (ibisManager==null) {
-			throw new ApiException(new IllegalStateException("Could not retrieve ibisManager from context"));
+			throw new ApiException("Could not retrieve ibisManager from IbisContext");
 		}
 
 		return ibisManager;
@@ -168,8 +175,9 @@ public abstract class Base implements ApplicationContextAware {
 
 	protected <T> T resolveTypeFromMap(MultipartBody inputDataMap, String key, Class<T> clazz, T defaultValue) throws ApiException {
 		try {
-			if(inputDataMap.getAttachment(key) != null) {
-				return inputDataMap.getAttachment(key).getObject(clazz);
+			Attachment attachment = inputDataMap.getAttachment(key);
+			if(attachment != null) {
+				return convert(clazz, attachment.getObject(InputStream.class));
 			}
 		} catch (Exception e) {
 			log.debug("Failed to parse parameter ["+key+"]", e);
@@ -178,5 +186,24 @@ public abstract class Base implements ApplicationContextAware {
 			return defaultValue;
 		}
 		throw new ApiException("Key ["+key+"] not defined", 400);
+	}
+
+	@SuppressWarnings("unchecked")
+	protected static <T> T convert(Class<T> clazz, InputStream is) throws IOException {
+		if(clazz.isAssignableFrom(InputStream.class)) {
+			return (T) is;
+		}
+		String str = Misc.streamToString(is);
+		if(str == null) {
+			return null;
+		}
+		if(clazz.isAssignableFrom(boolean.class) || clazz.isAssignableFrom(Boolean.class)) {
+			return (T) Boolean.valueOf(str);
+		} else if(clazz.isAssignableFrom(int.class) || clazz.isAssignableFrom(Integer.class)) {
+			return (T) Integer.valueOf(str);
+		} else if(clazz.isAssignableFrom(String.class)) {
+			return (T) str;
+		}
+		throw new IllegalArgumentException("cannot convert to class ["+clazz+"]");
 	}
 }

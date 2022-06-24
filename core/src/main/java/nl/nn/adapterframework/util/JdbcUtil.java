@@ -46,7 +46,6 @@ import java.util.zip.ZipException;
 import javax.jms.JMSException;
 import javax.jms.TextMessage;
 
-import org.apache.commons.codec.Charsets;
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
@@ -978,7 +977,7 @@ public class JdbcUtil {
 				statement.setLong(parameterIndex, Long.parseLong((String)value));
 				break;
 			case Types.BLOB:
-				statement.setBytes(parameterIndex, ((String)value).getBytes(Charsets.UTF_8));
+				statement.setBytes(parameterIndex, ((String)value).getBytes(StreamUtil.DEFAULT_CHARSET));
 				break;
 			case Types.DATE:
 				statement.setDate(parameterIndex, new java.sql.Date(DateUtils.parseAnyDate((String) value).getTime()));

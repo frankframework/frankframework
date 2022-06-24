@@ -1,7 +1,9 @@
 package nl.nn.adapterframework.configuration.digester;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.io.StringWriter;
 import java.net.URL;
@@ -10,8 +12,10 @@ import java.util.Properties;
 import javax.xml.validation.ValidatorHandler;
 
 import org.junit.Test;
+import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
+import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 import nl.nn.adapterframework.configuration.Configuration;
@@ -20,8 +24,6 @@ import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.XmlWriter;
 
@@ -35,7 +37,7 @@ public class ConfigurationDigesterTest {
 	public void testNewCanonicalizer() throws Exception {
 		XmlWriter writer = new XmlWriter();
 		ConfigurationDigester digester = new ConfigurationDigester();
-		ContentHandler handler = digester.getCanonicalizedConfiguration(writer, FRANK_CONFIG_XSD, new XmlErrorHandler());
+		ContentHandler handler = digester.getConfigurationCanonicalizer(writer, FRANK_CONFIG_XSD, new XmlErrorHandler());
 
 		Resource resource = Resource.getResource("/Digester/SimpleConfiguration/Configuration.xml");
 		XmlUtils.parseXml(resource, handler);
@@ -58,7 +60,9 @@ public class ConfigurationDigesterTest {
 		properties.setProperty("properties.hide", "secret");
 		Configuration configuration = new TestConfiguration();
 
-		String result = digester.resolveEntitiesAndProperties(configuration, resource, properties, true);
+		XmlWriter loadedConfigWriter = new XmlWriter();
+		digester.parseAndResolveEntitiesAndProperties(loadedConfigWriter, configuration, resource, properties);
+		String result = loadedConfigWriter.toString();
 		String expected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfigurationUnresolved.xml");
 		MatchUtils.assertXmlEquals(expected, result);
 
@@ -66,62 +70,14 @@ public class ConfigurationDigesterTest {
 		String storedExpected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfigurationResolvedAndHidden.xml");
 		MatchUtils.assertXmlEquals(storedExpected, storedResult);
 
+		loadedConfigWriter = new XmlWriter();
 		properties.setProperty(STUB4TESTTOOL_CONFIGURATION_KEY, "true");
-		String stubbedResult = digester.resolveEntitiesAndProperties(configuration, resource, properties, true);
+		digester.parseAndResolveEntitiesAndProperties(loadedConfigWriter, configuration, resource, properties);
 		String stubbedExpected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfigurationStubbed.xml");
-		MatchUtils.assertXmlEquals(stubbedExpected, stubbedResult);
+		MatchUtils.assertXmlEquals(stubbedExpected, loadedConfigWriter.toString());
 
 	}
 
-	//Both OLD and NEW configuration parsers should set the same values for 'loadedConfiguration': properties resolved, secrets hidden
-	//The old configuration parser returns the configuration with all property references resolved
-	@Test
-	public void testOldSchoolConfigurationParser() throws Exception {
-		ConfigurationDigester digester = new ConfigurationDigester();
-		AppConstants.getInstance().put("properties.hide", "secret");
-		Resource resource = Resource.getResource("/Digester/SimpleConfiguration/Configuration.xml");
-		Properties properties = new Properties();
-		properties.setProperty("HelloWorld.active", "false");
-		properties.setProperty("HelloBeautifulWorld.active", "!false");
-		properties.setProperty("digester.property", "[ &gt;&quot;&lt; ]"); // old style escaped property values
-		properties.setProperty("secret", "GEHEIM");
-		properties.setProperty("properties.hide", "secret");
-		Configuration configuration = new TestConfiguration();
-
-		String result = digester.resolveEntitiesAndProperties(configuration, resource, properties, false);
-		//Unfortunately we need to cleanup the result a bit...
-		result = cleanupOldStyleResult(result);
-		String expected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfigurationUnresolved.xml");
-		expected = StringResolver.substVars(expected, properties);
-		MatchUtils.assertXmlSimilar(expected, result);
-
-		String storedResult = configuration.getLoadedConfiguration();
-		//Unfortunately we need to cleanup the result a bit...
-		storedResult = cleanupOldStyleResult(storedResult);
-		String storedExpected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfigurationResolvedAndHidden.xml");
-		MatchUtils.assertXmlSimilar(storedExpected, storedResult);
-
-		digester = new ConfigurationDigester() {
-			@Override
-			protected boolean isConfigurationStubbed(ClassLoader classLoader) {
-				return true;
-			}
-		};
-		properties.setProperty(STUB4TESTTOOL_CONFIGURATION_KEY, "true");
-		String stubbedResult = digester.resolveEntitiesAndProperties(configuration, resource, properties, false);
-		//Unfortunately we need to cleanup the result a bit...
-		stubbedResult = cleanupOldStyleResult(stubbedResult);
-		String stubbedExpected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfigurationStubbed.xml");
-		stubbedExpected = StringResolver.substVars(stubbedExpected, properties);
-		MatchUtils.assertXmlSimilar(stubbedExpected, stubbedResult);
-	}
-
-	private String cleanupOldStyleResult(String oldStyleResult) {
-		String result = oldStyleResult.replaceAll("(</?module>)", "");//Remove the modules root tag
-		result = result.replaceAll("(</?exits>)", "");//Remove the exits tag
-		result = result.replace("<root xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">", "").replace("</root>", "");//Remove the root tag
-		return result;
-	}
 
 
 	@Test
@@ -178,6 +134,48 @@ public class ConfigurationDigesterTest {
 
 		String expectedConfiguration = TestFileUtils.getTestFile(baseDirectory + "/expected.xml");
 		MatchUtils.assertXmlEquals(expectedConfiguration, actual);
+	}
+	
+	@Test
+	public void stub4testtoolEsbJmsListenerTest() throws Exception {
+		String baseDirectory = "/ConfigurationUtils/stub4testtool/EsbJmsListener";
+
+		StringWriter target = new StringWriter();
+
+		XmlWriter xmlWriter = new XmlWriter(target) {
+			
+			@Override
+			public void startElement(String uri, String localName, String qName, Attributes attributes)throws SAXException {
+				if(attributes != null && attributes.getValue("className") != null) {
+					assertFalse(attributes.getValue("className").contains("EsbJmsListener"));
+				}
+				super.startElement(uri, localName, qName, attributes);
+			}
+			
+			@Override
+			public void comment(char[] ch, int start, int length) throws SAXException {
+				if(!new String(ch).startsWith("<receiver name='receiver' transactionAttribute='Required' transactionTimeout=")) {
+					fail("Digester should have commented out the receiver that has EsbJmsListener");
+				}
+				super.comment(ch, start, length);
+			}
+		};
+
+		Properties properties = new Properties();
+		properties.setProperty(STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		properties.setProperty(STUB4TESTTOOL_VALIDATORS_DISABLED_KEY, Boolean.toString(false));
+
+		String originalConfiguration = TestFileUtils.getTestFile(baseDirectory + "/original.xml");
+
+		ConfigurationDigester digester = new ConfigurationDigester();
+		ContentHandler filter = digester.getStub4TesttoolContentHandler(xmlWriter, properties);
+
+		XmlUtils.parseXml(originalConfiguration, filter);
+
+		String actual = new String(target.toString());
+
+		String expectedConfiguration = TestFileUtils.getTestFile(baseDirectory + "/expected.xml");
+		MatchUtils.assertXmlEquals(null, expectedConfiguration, actual, false, true);
 	}
 
 	private class XmlErrorHandler implements ErrorHandler {

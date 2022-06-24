@@ -23,7 +23,7 @@
 		- add, if not available, the parameter destination with value 'P2P.Infrastructure.Ibis4TestTool.Stub.Response' to all outputWrapper elements SoapWrapperPipe with attribute direction=wrap 
 	-->
 	<xsl:template match="/">
-		<xsl:apply-templates select="*|@*|comment()|processing-instruction()" />
+		<xsl:apply-templates select="*|comment()|processing-instruction()" />
 	</xsl:template>
 	
 	<xsl:template match="*|@*|comment()|processing-instruction()">
@@ -378,18 +378,37 @@
 			<xsl:apply-templates select="*|@*|comment()|processing-instruction()|text()" />
 		</xsl:copy>
 	</xsl:template>
-	
+
 	<xsl:template name="disable">
-		<xsl:text disable-output-escaping="yes">&lt;!--</xsl:text>
-		<xsl:copy>
-			<xsl:apply-templates select="*|@*|processing-instruction()|text()" mode="disable" />
-		</xsl:copy>
-		<xsl:text disable-output-escaping="yes">--&gt;</xsl:text>
+		<xsl:comment>
+			<xsl:copy>
+				<xsl:apply-templates select="." mode="escape" />
+			</xsl:copy>
+		</xsl:comment>
 	</xsl:template>
 
-	<xsl:template match="*|@*|processing-instruction()|text()" mode="disable">
-		<xsl:copy>
-			<xsl:apply-templates select="*|@*|processing-instruction()|text()" mode="disable"/>
-		</xsl:copy>
+	<!-- Escape xml tag opening(<) and closing(>) signs so that xsl:comment can process the copy of the xml. Processes elements and attributes only -->
+	<xsl:template match="*" mode="escape">
+		<xsl:variable name="apos">'</xsl:variable>
+		<!-- Start element -->
+		<xsl:text>&lt;</xsl:text>
+		<xsl:value-of select="name()" />
+
+		<!-- Attributes -->
+		<xsl:for-each select="@*">
+			<xsl:value-of select="concat(' ', name(), '=', $apos, ., $apos)"/>
+		</xsl:for-each>
+
+		<!-- End opening tag -->
+		<xsl:text>&gt;</xsl:text>
+
+		<!-- Children -->
+		<xsl:apply-templates select="node()" mode="escape" />
+
+		<!-- End element -->
+		<xsl:text>&lt;/</xsl:text>
+		<xsl:value-of select="name()" />
+		<xsl:text>&gt;</xsl:text>
 	</xsl:template>
+
 </xsl:stylesheet>

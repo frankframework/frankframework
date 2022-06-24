@@ -26,6 +26,7 @@ import java.util.TreeSet;
 import liquibase.resource.InputStreamList;
 import liquibase.resource.ResourceAccessor;
 import nl.nn.adapterframework.core.Resource;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -69,9 +70,9 @@ public class LiquibaseResourceAccessor implements ResourceAccessor {
 	public InputStream openStream(String relativeTo, String path) throws IOException {
 		if(path.equals(resource.getSystemId())) {
 			return resource.openStream();
+		} else { // script may contain include(s)
+			return ClassUtils.getResourceURL(resource, path).openStream();
 		}
-
-		return null;
 	}
 
 	@Override

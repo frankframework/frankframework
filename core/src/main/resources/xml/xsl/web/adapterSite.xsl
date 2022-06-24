@@ -216,7 +216,7 @@
 								</a>
 							</td>
 							<td>
-								<a href="https://ibissource.org/" target="_blank">
+								<a href="https://frankframework.org/" target="_blank">
 									<img alt="Ibissource">
 										<xsl:attribute name="src"><xsl:value-of select="concat($srcPrefix,'./images/ibissource.png')"/></xsl:attribute>
 									</img>

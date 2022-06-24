@@ -21,6 +21,7 @@ import java.net.URL;
 
 import org.apache.soap.SOAPException;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -40,6 +41,8 @@ import nl.nn.adapterframework.util.AppConstants;
  * @since 4.2
  */
 public class IbisWebServiceSender extends SenderBase implements HasPhysicalDestination {
+
+	private final @Getter(onMethod = @__(@Override)) String domain = "Local";
 
 	private String ibisHost = "localhost";
 	private String ibisInstance = null;

@@ -16,22 +16,25 @@
 package nl.nn.adapterframework.core;
 
 /**
- * Exception thrown by the ISender (implementation) to notify
- * that the sending did not succeed.
+ * Exception thrown by the ISender (implementation) to notify that the sending
+ * did not succeed.
  * 
- * @author  Gerrit van Brakel
+ * @author Gerrit van Brakel
  */
 public class SenderException extends IbisException {
-		
+
 	public SenderException() {
 		super();
 	}
+
 	public SenderException(String errMsg) {
 		super(errMsg);
 	}
+
 	public SenderException(String errMsg, Throwable t) {
 		super(errMsg, t);
 	}
+
 	public SenderException(Throwable t) {
 		super(t);
 	}

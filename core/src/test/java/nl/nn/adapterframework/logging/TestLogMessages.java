@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2021 WeAreFrank!
+   Copyright 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package nl.nn.adapterframework.logging;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 
 import java.io.InputStream;
 import java.net.URL;
@@ -48,7 +49,7 @@ public class TestLogMessages {
 			log.debug(TEST_REGEX_IN);
 
 			List<String> logEvents = appender.getLogLines();
-			assertEquals(1, logEvents.size());
+			assertEquals("found messages "+logEvents, 1, logEvents.size());
 			String message = logEvents.get(0);
 			assertEquals("DEBUG - "+ TEST_REGEX_OUT, message);
 		}
@@ -77,7 +78,7 @@ public class TestLogMessages {
 			log.error("some message");
 
 			List<String> logEvents = appender.getLogLines();
-			assertEquals(6, logEvents.size());
+			assertEquals("found messages "+logEvents, 6, logEvents.size());
 			assertEquals("WARN - my beautiful warning message", logEvents.get(0));
 			assertEquals("ERROR - my beautiful error message", logEvents.get(1));
 		}
@@ -106,13 +107,13 @@ public class TestLogMessages {
 			log.error("some message");
 
 			List<String> logEvents = appender.getLogLines();
-			assertEquals(6, logEvents.size());
+			assertEquals("found messages "+logEvents, 6, logEvents.size());
 
-			String expectedWarn = "<event logger=\"nl.nn.adapterframework.logging.TestLogMessages\" timestamp=\"xxx\" level=\"WARN\" thread=\"HIDE-HERE\">\n" + 
-			"  <message>my beautiful warning &lt;![CDATA[message]]&gt; for me &amp; you --&gt; \\\"world\\\"</message>\n" + 
+			String expectedWarn = "<event logger=\"nl.nn.adapterframework.logging.TestLogMessages\" timestamp=\"xxx\" level=\"WARN\" thread=\"HIDE-HERE\">\n" +
+			"  <message>my beautiful warning &lt;![CDATA[message]]&gt; for me &amp; you --&gt; \\\"world\\\"</message>\n" +
 			"</event>";
-			String expectedError = "<event logger=\"nl.nn.adapterframework.logging.TestLogMessages\" timestamp=\"xxx\" level=\"ERROR\" thread=\"HIDE-HERE\">\n" + 
-			"  <message>my beautiful error &lt;![CDATA[message]]&gt; for me &amp; you --&gt; \\\"world\\\"</message>\n" + 
+			String expectedError = "<event logger=\"nl.nn.adapterframework.logging.TestLogMessages\" timestamp=\"xxx\" level=\"ERROR\" thread=\"HIDE-HERE\">\n" +
+			"  <message>my beautiful error &lt;![CDATA[message]]&gt; for me &amp; you --&gt; \\\"world\\\"</message>\n" +
 			"</event>";
 
 			//Remove the timestamp
@@ -154,7 +155,7 @@ public class TestLogMessages {
 			log.debug("my beautiful unicode debug  aâΔع你好ಡತ  message for me & you --> \\\"world\\\"");
 
 			List<String> logEvents = appender.getLogLines();
-			assertEquals(1, logEvents.size());
+			assertEquals("found messages "+logEvents, 1, logEvents.size());
 			String message = logEvents.get(0);
 			assertEquals("DEBUG - my beautiful unicode debug  aâΔع你好ಡತ  message for me & you --> \\\"world\\\"", message);
 		}
@@ -173,13 +174,13 @@ public class TestLogMessages {
 			log.info("my beautiful  aâΔع你好ಡತ  info <![CDATA[message]]> for me & you --> \"world\"");
 
 			List<String> logEvents = appender.getLogLines();
-			assertEquals(2, logEvents.size());
+			assertEquals("found messages "+logEvents, 2, logEvents.size());
 
-			String expectedWarn = "<event logger=\"nl.nn.adapterframework.logging.TestLogMessages\" timestamp=\"xxx\" level=\"DEBUG\" thread=\"main\">\n" + 
-			"  <message>my beautiful \\u0010 a\\u00E2\\u0394\\u0639\\u4F60\\u597D\\u0CA1\\u0CA4  debug &lt;![CDATA[message]]&gt; for me &amp; you --&gt; \\\"world\\\"</message>\n" + 
+			String expectedWarn = "<event logger=\"nl.nn.adapterframework.logging.TestLogMessages\" timestamp=\"xxx\" level=\"DEBUG\" thread=\"main\">\n" +
+			"  <message>my beautiful \\u0010 a\\u00E2\\u0394\\u0639\\u4F60\\u597D\\u0CA1\\u0CA4  debug &lt;![CDATA[message]]&gt; for me &amp; you --&gt; \\\"world\\\"</message>\n" +
 			"</event>";
-			String expectedError = "<event logger=\"nl.nn.adapterframework.logging.TestLogMessages\" timestamp=\"xxx\" level=\"INFO\" thread=\"main\">\n" + 
-			"  <message>my beautiful \\u0010 a\\u00E2\\u0394\\u0639\\u4F60\\u597D\\u0CA1\\u0CA4  info &lt;![CDATA[message]]&gt; for me &amp; you --&gt; \\\"world\\\"</message>\n" + 
+			String expectedError = "<event logger=\"nl.nn.adapterframework.logging.TestLogMessages\" timestamp=\"xxx\" level=\"INFO\" thread=\"main\">\n" +
+			"  <message>my beautiful \\u0010 a\\u00E2\\u0394\\u0639\\u4F60\\u597D\\u0CA1\\u0CA4  info &lt;![CDATA[message]]&gt; for me &amp; you --&gt; \\\"world\\\"</message>\n" +
 			"</event>";
 
 			//Remove the timestamp
@@ -204,7 +205,7 @@ public class TestLogMessages {
 			log.debug(TEST_REGEX_IN);
 
 			List<String> logEvents = appender.getLogLines();
-			assertEquals(1, logEvents.size());
+			assertEquals("found messages "+logEvents, 1, logEvents.size());
 			String message = logEvents.get(0);
 
 			String expected = "DEBUG - "+ TEST_REGEX_IN.substring(0, length).trim() + " ...("+(TEST_REGEX_IN.length()-length)+" more characters)";
@@ -228,10 +229,10 @@ public class TestLogMessages {
 			log.debug("Oh no, something went wrong!", t);
 
 			List<String> logEvents = appender.getLogLines();
-			assertEquals(1, logEvents.size());
+			assertEquals("found messages "+logEvents, 1, logEvents.size());
 			String message = logEvents.get(0);
 
-			String expected = "DEBUG - Oh no, something went wrong! java.lang.Throwable: my exception message\n" + 
+			String expected = "DEBUG - Oh no, something went wrong! java.lang.Throwable: my exception message\n" +
 					"	at TestLogMessages.logWithStacktrace(TestLogMessages:0) ~[?:?]";
 			TestAssertions.assertEqualsIgnoreCRLF(expected, message);
 		}
@@ -240,12 +241,15 @@ public class TestLogMessages {
 		}
 	}
 
-	@Test(expected = IllegalStateException.class)
+	@Test
 	public void throwExceptionWhenOldLog4jVersion() throws Exception {
 		URL log4jOld = TestFileUtils.getTestFileURL("/Logging/log4j-old.xml");
 		assertNotNull("cannot find log4j-old.xml", log4jOld);
 		InputStream oldLog4jConfiguration = log4jOld.openStream();
-		IbisLoggerConfigurationFactory.readLog4jConfiguration(oldLog4jConfiguration);
+		IllegalStateException ex = assertThrows(IllegalStateException.class, () -> {
+			IbisLoggerConfigurationFactory.readLog4jConfiguration(oldLog4jConfiguration);
+		});
+		assertEquals("Did not recognize configuration format, unable to configure Log4j2. Please use the log4j2 layout in file log4j4ibis.xml", ex.getMessage());
 	}
 
 	@Test
@@ -284,7 +288,7 @@ public class TestLogMessages {
 			log.warn("warn");
 			log.error("error");
 
-			assertEquals(4, appender.getNumberOfAlerts());
+			assertEquals("found messages "+appender.getLogLines(), 4, appender.getNumberOfAlerts());
 		} finally {
 			TestAppender.removeAppender(appender);
 			Configurator.setLevel(rootLoggerName, Level.DEBUG);

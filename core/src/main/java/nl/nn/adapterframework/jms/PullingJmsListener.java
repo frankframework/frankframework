@@ -84,8 +84,8 @@ import nl.nn.adapterframework.util.RunState;
  */
 public class PullingJmsListener extends JmsListenerBase implements IPostboxListener<javax.jms.Message>, ICorrelatedPullingListener<javax.jms.Message>, HasSender, RunStateEnquiring {
 
-	private final static String THREAD_CONTEXT_SESSION_KEY="session";
-	private final static String THREAD_CONTEXT_MESSAGECONSUMER_KEY="messageConsumer";
+	private static final String THREAD_CONTEXT_SESSION_KEY="session";
+	private static final String THREAD_CONTEXT_MESSAGECONSUMER_KEY="messageConsumer";
 	private RunStateEnquirer runStateEnquirer=null;
 	
 	public PullingJmsListener() {  

@@ -35,13 +35,13 @@ public interface IMessageBrowser<M> extends IXAEnabled {
 		MESSAGELOG_RECEIVER("A"),
 		MESSAGESTORAGE("M"),
 		HOLDSTORAGE("H");
-		
+
 		private String code;
-		
+
 		private StorageType(String code) {
 			this.code = code;
 		}
-		
+
 		public String getCode() {
 			return code;
 		}
@@ -55,19 +55,19 @@ public interface IMessageBrowser<M> extends IXAEnabled {
 
 	/**
 	 * Retrieves the message context as an iteratorItem.
-	 * The result can be used in the methods above that use an iteratorItem. Use this method as try-with-resources to close the connections. 
+	 * The result can be used in the methods above that use an iteratorItem. Use this method as try-with-resources to close the connections.
 	 */
 	IMessageBrowsingIteratorItem getContext(String storageKey) throws ListenerException;
 
 	/**
-	 * Check if the storage contains message with the given original messageId 
+	 * Check if the storage contains message with the given original messageId
 	 * (as passed to storeMessage).
 	 */
 	public boolean containsMessageId(String originalMessageId) throws ListenerException;
 	public boolean containsCorrelationId(String correlationId) throws ListenerException;
 
 	/**
-	 * Retrieves the message, but does not delete. 
+	 * Retrieves the message, but does not delete.
 	 */
 	public M browseMessage(String storageKey) throws ListenerException;
 	/**
@@ -76,7 +76,7 @@ public interface IMessageBrowser<M> extends IXAEnabled {
 	public void deleteMessage(String storageKey) throws ListenerException;
 	public int getMessageCount() throws ListenerException; // may return -1 when the count cannot be determined
 
-	@IbisDoc({"Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&lt;=&lt;party&gt;).*?(?=&lt;/party&gt;) will replace every character between keys<party> and </party> ", ""})
+	@IbisDoc({"Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&lt;=&lt;party&gt;).*?(?=&lt;/party&gt;) will replace every character between keys &lt;party&gt; and &lt;/party&gt;", ""})
 	public void setHideRegex(String hideRegex);
 	public String getHideRegex();
 

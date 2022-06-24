@@ -93,13 +93,6 @@
 		lazy-init="true"
 		>
 	</bean>
-	<bean
-		name="flowGenerator"
-		class="nl.nn.adapterframework.util.flow.JavaScriptFlowGenerator"
-		scope="prototype"
-		lazy-init="true"
-		>
-	</bean>
 
 	<bean name="applicationWarnings" class="nl.nn.adapterframework.configuration.ApplicationWarnings" />
 
@@ -121,8 +114,8 @@
 		id="txManagerProxy"
 		class="nl.nn.adapterframework.jta.SpringTxManagerProxy"
 		>
-		<property name="realTxManagerBeanName">
-			<idref bean="txManagerReal"/>
+		<property name="realTxManager">
+			<ref bean="txManagerReal"/>
 		</property>
 	</bean>
 

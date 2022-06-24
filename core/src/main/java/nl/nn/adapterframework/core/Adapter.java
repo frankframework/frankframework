@@ -44,13 +44,13 @@ import nl.nn.adapterframework.jmx.JmxAttribute;
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.receivers.Receiver;
+import nl.nn.adapterframework.statistics.CounterStatistic;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.CounterStatistic;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
@@ -60,32 +60,24 @@ import nl.nn.adapterframework.util.RunState;
 import nl.nn.adapterframework.util.RunStateManager;
 
 /**
- * The Adapter is the central manager in the IBIS Adapterframework, that has knowledge
- * and uses {@link Receiver Receivers} and a {@link PipeLine}.
- * <br/>
- * <b>Responsibilities</b><br/>
- * <ul>
- *   <li>keeping and gathering statistics</li>
- *   <li>processing messages, retrieved from IReceivers</li>
- *   <li>starting and stoppping IReceivers</li>
- *   <li>delivering error messages in a specified format</li>
- * </ul>
- * All messages from IReceivers pass through the adapter (multi threaded).
- * Multiple receivers may be attached to one adapter.<br/>
- * <br/>
- * The actual processing of messages is delegated to the {@link PipeLine}
- * object, which returns a {@link PipeLineResult}. If an error occurs during
- * the pipeline execution, the state in the <code>PipeLineResult</code> is set
- * to the state specified by <code>setErrorState</code>, which defaults to "ERROR".
- * 
+ * An Adapter receives a specific type of messages and processes them. It has {@link Receiver Receivers}
+ * that receive the messages and a {@link PipeLine} that transforms the incoming messages. Each adapter is part of a {@link Configuration}.
+ * <br></br>
+ * If an adapter can receive its messages through multiple channels (e.g. RESTful HTTP requests, incoming files, etc),
+ * each channel appears as a separate {@link Receiver} nested in the adapter. Each {@link Receiver} is also responsible
+ * for dealing with
+ * the result of its received messages; the result is the output of the {@link PipeLine}. The result
+ * consists of the transformed message and a state. The Frank!Framework distinguishes between exit states
+ * SUCCESS and ERROR. There is also a state REJECTED for messages that are not accepted by the Frank!Framework
+ * and that are not processed by the {@link PipeLine}. If the exit state is ERROR, the result message may
+ * not be usable by the calling system. This can be fixed by adding an
+ * errorMessageFormatter that formats the result message if the state is ERROR.
+ * <br/><br/>
+ * Adapters gather statistics about the messages they process.
+ * <br></br>
+ * Adapters can process messages in parallel. They are thread-safe.
+ *
  * @author Johan Verrips
- * @see    Receiver
- * @see    PipeLine
- * @see    StatisticsKeeper
- * @see    DateUtils
- * @see    MessageKeeper
- * @see    PipeLineResult
- * 
  */
 public class Adapter implements IAdapter, NamedBean {
 	private @Getter @Setter ApplicationContext applicationContext;
@@ -166,6 +158,9 @@ public class Adapter implements IAdapter, NamedBean {
 		Configurator.setLevel(msgLog.getName(), msgLogLevel);
 		configurationSucceeded = false;
 		log.debug("configuring adapter [" + getName() + "]");
+		if(getName().contains("/")) {
+			throw new ConfigurationException("It is not allowed to have '/' in adapter name ["+getName()+"]");
+		}
 
 		statsMessageProcessingDuration = new StatisticsKeeper(getName());
 		if (pipeline == null) {
@@ -391,26 +386,41 @@ public class Adapter implements IAdapter, NamedBean {
 			messageKeeper = new MessageKeeper(getMessageKeeperSize() < 1 ? 1 : getMessageKeeperSize());
 		return messageKeeper;
 	}
-	
-	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski, Date now, Date mainMark, Date detailMark, int action) throws SenderException {
-		Object root=hski.start(now,mainMark,detailMark);
-		try {
-			forEachStatisticsKeeperBody(hski,root,action);
-		} finally {
-			hski.end(root);
+
+//	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski, Date now, Date mainMark, Date detailMark, Action action) throws SenderException {
+//		Object root=hski.start(now,mainMark,detailMark);
+//		try {
+//			iterateOverStatistics(hski,root,action);
+//		} finally {
+//			hski.end(root);
+//		}
+//	}
+
+	@Override
+	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
+		Object adapterData=hski.openGroup(data,getName(),"adapter");
+		hski.handleScalar(adapterData,"upSince", getStatsUpSinceDate());
+		hski.handleScalar(adapterData,"lastMessageDate", getLastMessageDateDate());
+
+		if (action!=Action.FULL &&
+			action!=Action.SUMMARY) {
+			synchronized (statsMessageProcessingDuration) {
+				iterateOverStatisticsBody(hski,adapterData,action);
+			}
+		} else {
+			iterateOverStatisticsBody(hski,adapterData,action);
 		}
+		hski.closeGroup(adapterData);
 	}
-	
-	private void doForEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object adapterData, int action) throws SenderException {
+
+	private void iterateOverStatisticsBody(StatisticsKeeperIterationHandler hski, Object adapterData, Action action) throws SenderException {
 		hski.handleScalar(adapterData,"messagesInProcess", getNumOfMessagesInProcess());
-		hski.handleScalar(adapterData,"messagesProcessed", getNumOfMessagesProcessed());
-		hski.handleScalar(adapterData,"messagesInError", getNumOfMessagesInError());
+		hski.handleScalar(adapterData,"messagesProcessed", numOfMessagesProcessed);
+		hski.handleScalar(adapterData,"messagesInError", numOfMessagesInError);
 		hski.handleScalar(adapterData,"messagesProcessedThisInterval", numOfMessagesProcessed.getIntervalValue());
 		hski.handleScalar(adapterData,"messagesInErrorThisInterval", numOfMessagesInError.getIntervalValue());
 		hski.handleStatisticsKeeper(adapterData, statsMessageProcessingDuration);
 		statsMessageProcessingDuration.performAction(action);
-		numOfMessagesProcessed.performAction(action);
-		numOfMessagesInError.performAction(action);
 
 		Object hourData=hski.openGroup(adapterData,getName(),"processing by hour");
 		for (int i=0; i<getNumOfMessagesStartProcessingByHour().length; i++) {
@@ -424,10 +434,7 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 		hski.closeGroup(hourData);
 
-		boolean showDetails = action == HasStatistics.STATISTICS_ACTION_FULL
-				|| action == HasStatistics.STATISTICS_ACTION_MARK_FULL
-				|| action == HasStatistics.STATISTICS_ACTION_RESET;
-		if (showDetails) {
+		if (action == Action.FULL || action == Action.MARK_FULL) {
 			Object recsData=hski.openGroup(adapterData,null,"receivers");
 			for (Receiver<?> receiver: receivers) {
 				receiver.iterateOverStatistics(hski,recsData,action);
@@ -443,23 +450,6 @@ public class Adapter implements IAdapter, NamedBean {
 			getPipeLine().iterateOverStatistics(hski, pipelineData, action);
 			hski.closeGroup(pipelineData);
 		}
-	}
-
-	@Override
-	public void forEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
-		Object adapterData=hski.openGroup(data,getName(),"adapter");
-		hski.handleScalar(adapterData,"upSince", getStatsUpSinceDate());
-		hski.handleScalar(adapterData,"lastMessageDate", getLastMessageDateDate());
-
-		if (action!=HasStatistics.STATISTICS_ACTION_FULL &&
-			action!=HasStatistics.STATISTICS_ACTION_SUMMARY) {
-			synchronized (statsMessageProcessingDuration) {
-				doForEachStatisticsKeeperBody(hski,adapterData,action);
-			}
-		} else {
-			doForEachStatisticsKeeperBody(hski,adapterData,action);
-		}
-		hski.closeGroup(adapterData);
 	}
 
 
@@ -641,7 +631,7 @@ public class Adapter implements IAdapter, NamedBean {
 				String messageOrSize = (isMsgLogHidden()) ? "SIZE="+getFileSizeAsBytes(message) : message.toString();
 				msgLog.log(MSGLOG_LEVEL_TERSE, String.format(format, getName(), messageOrSize, messageId) + additionalLogging);
 			}
-			if (log.isDebugEnabled()) { 
+			if (log.isDebugEnabled()) {
 				log.debug(String.format(format, getName(), message, messageId) + additionalLogging);
 			} else if(log.isInfoEnabled()) {
 				log.info(String.format("Adapter [%s] received message with messageId [%s]" + additionalLogging, getName(), messageId));
@@ -686,7 +676,7 @@ public class Adapter implements IAdapter, NamedBean {
 			long duration = endTime - startTime;
 			//reset the InProcess fields, and increase processedMessagesCount
 			decNumOfMessagesInProcess(duration, processingSuccess);
-	
+
 			if (log.isDebugEnabled()) { // for performance reasons
 				log.debug("Adapter: [" + getName()
 						+ "] STAT: Finished processing message with messageId [" + messageId
@@ -709,7 +699,8 @@ public class Adapter implements IAdapter, NamedBean {
 
 	// technically, a Receiver is not mandatory, but no useful adapter can do without it.
 	/**
-	 * Register a receiver for this Adapter
+	 * Receives incoming messages. If an adapter can receive messages through multiple channels,
+	 * then add a receiver for each channel.
 	 * @ff.mandatory
 	 */
 	public void registerReceiver(Receiver<?> receiver) {
@@ -718,18 +709,14 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	/**
-	 * Register a <code>ErrorMessageFormatter</code> as the formatter
-	 * for this <code>adapter</code>
-	 * @see IErrorMessageFormatter
+	 * Formatter for errors that can occur in this adapter.
 	 */
 	public void setErrorMessageFormatter(IErrorMessageFormatter errorMessageFormatter) {
 		this.errorMessageFormatter = errorMessageFormatter;
 	}
 
 	/**
-	 * Register a PipeLine at this adapter. On registering, the adapter performs
-	 * a <code>Pipeline.configurePipes()</code>, as to configure the individual pipes.
-	 * @see PipeLine
+	 * The {@link PipeLine}.
 	 * 
 	 * @ff.mandatory
 	 */
@@ -991,7 +978,7 @@ public class Adapter implements IAdapter, NamedBean {
 	public void setAutoStart(boolean autoStart) {
 		this.autoStart = autoStart;
 	}
-	
+
 
 	/**
 	 * If <code>true</code> a null message is replaced by an empty message

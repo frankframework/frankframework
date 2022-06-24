@@ -174,7 +174,7 @@ public class CompareStringPipe extends AbstractPipe {
 			log.debug("operand2 [" + operand2 + "]");
 		}
 
-		int comparison = operand1.compareTo(operand2);
+		int comparison = StringUtils.compare(operand1, operand2);
 		if (comparison == 0)
 			return new PipeRunResult(findForward(EQUALSFORWARD), message);
 		else if (comparison < 0)

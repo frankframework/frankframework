@@ -17,6 +17,7 @@ package nl.nn.adapterframework.extensions.akamai;
 
 import static nl.nn.adapterframework.testutil.TestAssertions.assertEqualsIgnoreCRLF;
 import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.spy;
 
 import java.io.IOException;
 

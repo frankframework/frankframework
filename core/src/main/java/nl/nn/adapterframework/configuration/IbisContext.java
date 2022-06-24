@@ -30,6 +30,7 @@ import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.http.RestServiceDispatcher;
@@ -74,7 +75,7 @@ public class IbisContext extends IbisApplicationContext {
 			ApplicationWarnings.add(LOG, "DEPRECATED property [configurations.autoDatabaseClassLoader], please use [configurations.database.autoLoad] instead");
 	}
 
-	private IbisManager ibisManager;
+	private @Getter IbisManager ibisManager;
 	private FlowDiagramManager flowDiagramManager;
 	private ClassLoaderManager classLoaderManager = null;
 	private static List<String> loadingConfigs = new ArrayList<>();
@@ -195,7 +196,7 @@ public class IbisContext extends IbisApplicationContext {
 		Configuration configuration = ibisManager.getConfiguration(configurationName);
 		if (configuration != null) {
 			ibisManager.unload(configurationName);
-			if (configuration.getRegisteredAdapters().size() > 0) {
+			if (!configuration.getRegisteredAdapters().isEmpty()) {
 				log("Not all adapters are unregistered: " + configuration.getRegisteredAdapters(), MessageKeeperLevel.ERROR);
 			}
 			getApplicationContext().getAutowireCapableBeanFactory().destroyBean(configuration);
@@ -218,7 +219,7 @@ public class IbisContext extends IbisApplicationContext {
 
 		close();
 		Set<String> javaListenerNames = JavaListener.getListenerNames();
-		if (javaListenerNames.size() > 0) {
+		if (!javaListenerNames.isEmpty()) {
 			// cannot log to MessageKeeper here, as applicationContext is closed
 			LOG.warn("Not all java listeners are unregistered: " + javaListenerNames);
 		}
@@ -395,10 +396,6 @@ public class IbisContext extends IbisApplicationContext {
 
 	public void log(String message, MessageKeeperLevel level, Exception e) {
 		getApplicationContext().publishEvent(new ApplicationMessageEvent(getApplicationContext(), message, level, e));
-	}
-
-	public IbisManager getIbisManager() {
-		return ibisManager;
 	}
 
 	public String getApplicationName() {

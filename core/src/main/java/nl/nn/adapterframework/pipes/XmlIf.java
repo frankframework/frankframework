@@ -25,27 +25,26 @@ import org.apache.commons.lang3.StringUtils;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
- * Selects an exitState, based on xpath evaluation
- * 
+ * Selects an forward, based on XPath evaluation
+ *
  * @ff.forward then The configured condition is met
  * @ff.forward else The configured condition is not met
  *
  * @author  Peter Leeuwenburgh
  * @since   4.3
  */
-
 public class XmlIf extends AbstractPipe {
 
 	private @Getter String namespaceDefs = null;
@@ -56,37 +55,18 @@ public class XmlIf extends AbstractPipe {
 	private @Getter String elseForwardName = "else";
 	private @Getter String regex = null;
 	private @Getter int xsltVersion = XmlUtils.DEFAULT_XSLT_VERSION;
+	private @Getter boolean namespaceAware = XmlUtils.isNamespaceAwareByDefault();
 
 	private TransformerPool tp = null;
 
-	{
-		setNamespaceAware(true);
-	}
-
 	protected String makeStylesheet(String xpathExpression, String resultVal) {
-		String nameSpaceClause = XmlUtils.getNamespaceClause(getNamespaceDefs());
-		StringBuilder parameters = new StringBuilder("");
-		for(Parameter parameter : getParameterList()) {
-				parameters.append("<xsl:param name=\"" + parameter.getName() + "\"/>");
-		}
-
-		String result = 
-			// "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-			"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\""+getXsltVersion()+".0\">" +
-			"<xsl:output method=\"text\" omit-xml-declaration=\"yes\"/>" +
-			"<xsl:strip-space elements=\"*\"/>" +
-			parameters.toString()+
-			"<xsl:template match=\"/\">" +
-			"<xsl:choose>" +
-			"<xsl:when "+nameSpaceClause+" test=\"" +xpathExpression + 
-				(StringUtils.isEmpty(resultVal)?"":"='"+resultVal+"'")+
-			"\">" +getThenForwardName()+"</xsl:when>"+
-			"<xsl:otherwise>" +getElseForwardName()+"</xsl:otherwise>" +
-			"</xsl:choose>" +
-			"</xsl:template>" +
-			"</xsl:stylesheet>";
-			log.debug(getLogPrefix(null)+"created stylesheet ["+result+"]");
-			return result;
+		String namespaceClause = XmlUtils.getNamespaceClause(getNamespaceDefs());
+		return XmlUtils.createXPathEvaluatorSource(x -> "<xsl:choose>" +
+															"<xsl:when "+namespaceClause+" test=\"" + XmlUtils.encodeChars(x) + "\">" +getThenForwardName()+"</xsl:when>"+
+															"<xsl:otherwise>" +getElseForwardName()+"</xsl:otherwise>" +
+														"</xsl:choose>",
+													xpathExpression + (StringUtils.isEmpty(resultVal)?"":"='"+resultVal+"'"),
+													OutputType.TEXT, false, getParameterList(), true, !isNamespaceAware(), xsltVersion);
 	}
 
 	@Override
@@ -150,7 +130,7 @@ public class XmlIf extends AbstractPipe {
 		log.debug(getLogPrefix(session)+ "determined forward [" + forward + "]");
 
 		pipeForward=findForward(forward);
-		
+
 		if (pipeForward == null) {
 			  throw new PipeRunException (this, getLogPrefix(null)+"cannot find forward or pipe named [" + forward + "]");
 		}
@@ -203,5 +183,11 @@ public class XmlIf extends AbstractPipe {
 	@IbisDoc({"namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions.", ""})
 	public void setNamespaceDefs(String namespaceDefs) {
 		this.namespaceDefs = namespaceDefs;
+	}
+
+
+	@IbisDoc({"controls namespace-awareness of XSLT transformation", "true"})
+	public void setNamespaceAware(boolean b) {
+		namespaceAware = b;
 	}
 }

@@ -45,7 +45,7 @@ import com.ing.ifsa.IFSAQueueConnectionFactory;
  */
 public class IfsaMessagingSource extends MessagingSource {
 
-	private final static String CLEANUP_ON_CLOSE_KEY="ifsa.cleanUpOnClose";
+	private static final String CLEANUP_ON_CLOSE_KEY="ifsa.cleanUpOnClose";
 	private static Boolean cleanUpOnClose=null; 
 
 	private boolean preJms22Api;

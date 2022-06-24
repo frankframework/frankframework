@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:StUF="http://www.egem.nl/StUF/StUF0301" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xs="http://www.w3.org/2001/XMLSchema" name="StUF" targetNamespace="http://www.egem.nl/StUF/StUF0301">
+	<documentation>
+		<xs:documentation>
+			   Versie 030102, wijzigingen vergeleken met versie 030101:
+			   - ERR206: Bestandsnaam 'stuf0301.types.wsdl' gewijzigd in 'stuf0301_types.wsdl' conform erratum ERR192.
+			
+			   Versie 030103, wijzigingen t.b.v. patch 21 (1-4-2015) vergeleken met versie 030102 zijn de volgende wijzigingen doorgevoerd:			
+			   - ERR0353: Het documentation element is voorzien van een standaard 'appinfo' structuur met daarin informatie over het schema.
+			
+		</xs:documentation>
+		<xs:appinfo>
+			<StUF:onderdeel>http://www.egem.nl/StUF/StUF0301</StUF:onderdeel>
+			<StUF:patch>27</StUF:patch>
+			<StUF:patchdatum>20170701</StUF:patchdatum>
+			<StUF:schemaversie>3</StUF:schemaversie>
+		</xs:appinfo>
+	</documentation>
+	<types>
+		<xs:schema>
+			<xs:import namespace="http://www.egem.nl/StUF/StUF0301" schemaLocation="zkn0310_msg_stuf_zs-dms_resolved2017.xsd"/>
+		</xs:schema>
+	</types>
+	<message name="Bv01">
+		<part name="body" element="StUF:Bv01Bericht"/>
+	</message>
+	<message name="Bv02">
+		<part name="body" element="StUF:Bv02Bericht"/>
+	</message>
+	<message name="Bv03">
+		<part name="body" element="StUF:Bv03Bericht"/>
+	</message>
+	<message name="Bv04">
+		<part name="body" element="StUF:Bv04Bericht"/>
+	</message>
+	<message name="Fo01">
+		<part name="body" element="StUF:Fo01Bericht"/>
+	</message>
+	<message name="Fo02">
+		<part name="body" element="StUF:Fo02Bericht"/>
+	</message>
+	<message name="Fo03">
+		<part name="body" element="StUF:Fo03Bericht"/>
+	</message>
+	<message name="Tr01">
+		<part name="body" element="StUF:Tr01Bericht"/>
+	</message>
+</definitions>

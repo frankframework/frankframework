@@ -115,8 +115,19 @@ table.table thead th.tbl-85 {
 	background-color: white;
 	overflow-y: scroll;
 }
+.element .version::before {
+	content: 'Frank!Doc: ';
+}
+.element .version {
+	font-size: 18px;
+	float: right;
+}
 .sidebar__elements li.deprecated span, td.deprecated, code.deprecated {
 	text-decoration: line-through;
+}
+.mandatory:after {
+	content: '*';
+	color: red;
 }
 .sidebar__elements li.deprecated i {
 	color: #f0ad4e;
@@ -184,6 +195,15 @@ td.attribute__from {
 		border-color: #ddd;
 		border-width: 1px;
 		border-radius: 0 4px 0 0;
+	}
+}
+
+@media print {
+	.sidebar {
+		display: none;
+	}
+	a::after, a[href]:after {
+		content: ""; /*disables default behaviour*/
 	}
 }
 

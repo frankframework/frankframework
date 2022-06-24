@@ -75,9 +75,9 @@ import javax.naming.NamingException;
  * @version $Id$
  */
 public class IfsaSimulatorJmsSender extends JmsSender {
-	private final static String RR_REQUEST = "rr_request";
-	private final static String RR_REPLY = "rr_reply";
-	private final static String FF_REQUEST = "ff_request";
+	private static final String RR_REQUEST = "rr_request";
+	private static final String RR_REPLY = "rr_reply";
+	private static final String FF_REQUEST = "ff_request";
 
 	private String messageType = "";
 

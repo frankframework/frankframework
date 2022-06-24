@@ -69,15 +69,16 @@ import lombok.Setter;
  * @since 4.2
  */
 public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
+	private final @Getter(onMethod = @__(@Override)) String domain = "IFSA";
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
-	private final static String USE_SELECTOR_FOR_PROVIDER_KEY="ifsa.provider.useSelectors";
-	private final static int DEFAULT_PROVIDER_ACKNOWLEDGMODE_RR=Session.CLIENT_ACKNOWLEDGE;
-	private final static int DEFAULT_PROVIDER_ACKNOWLEDGMODE_FF=Session.AUTO_ACKNOWLEDGE;
-	private final static int DEFAULT_REQUESTER_ACKNOWLEDGMODE_RR=Session.AUTO_ACKNOWLEDGE;
-	private final static int DEFAULT_REQUESTER_ACKNOWLEDGMODE_FF=Session.AUTO_ACKNOWLEDGE;
+	private static final String USE_SELECTOR_FOR_PROVIDER_KEY="ifsa.provider.useSelectors";
+	private static final int DEFAULT_PROVIDER_ACKNOWLEDGMODE_RR=Session.CLIENT_ACKNOWLEDGE;
+	private static final int DEFAULT_PROVIDER_ACKNOWLEDGMODE_FF=Session.AUTO_ACKNOWLEDGE;
+	private static final int DEFAULT_REQUESTER_ACKNOWLEDGMODE_RR=Session.AUTO_ACKNOWLEDGE;
+	private static final int DEFAULT_REQUESTER_ACKNOWLEDGMODE_FF=Session.AUTO_ACKNOWLEDGE;
 
 	private static Boolean useSelectorsStore=null; 
 

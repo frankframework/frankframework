@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,13 @@
 */
 package nl.nn.adapterframework.receivers;
 
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import lombok.Getter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.core.ListenerException;
@@ -34,38 +37,53 @@ public class MessageWrapper<M> implements Serializable, IMessageWrapper {
 
 	static final long serialVersionUID = -8251009650246241025L;
 
-	private Map<String,Object> context = new LinkedHashMap<>();
-	private Message message;
-	private String id;
+	private @Getter Map<String,Object> context = new LinkedHashMap<>();
+	private @Getter Message message;
+	private @Getter String id;
 
-	public MessageWrapper()  {
+	public MessageWrapper() {
 		super();
 	}
-	public MessageWrapper(M rawMessage, IListener<M> listener) throws ListenerException  {
+
+	public MessageWrapper(Message message, String messageId) {
 		this();
-		message = listener.extractMessage(rawMessage, context);
-		Object rm = context.remove("originalRawMessage"); //PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
-		id = listener.getIdFromRawMessage(rawMessage, context);
+		this.message = message;
+		this.id = messageId;
 	}
 
-	@Override
-	public Map<String,Object> getContext() {
-		return context;
+	public MessageWrapper(M rawMessage, IListener<M> listener) throws ListenerException {
+		this();
+		message = listener.extractMessage(rawMessage, context);
+		context.remove("originalRawMessage"); //PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
+		id = listener.getIdFromRawMessage(rawMessage, context);
 	}
 
 	public void setId(String string) {
 		id = string;
 	}
-	@Override
-	public String getId() {
-		return id;
-	}
 
 	public void setMessage(Message message) {
 		this.message = message;
 	}
-	@Override
-	public Message getMessage() {
-		return message;
+
+
+	/*
+	 * this method is used by Serializable, to serialize objects to a stream.
+	 */
+	private void writeObject(ObjectOutputStream stream) throws IOException {
+		message.preserve();
+		if (message.isBinary()) {
+			if (!(message.asObject() instanceof byte[])) {
+				message = new Message(message.asByteArray(), message.getContext());
+			}
+		} else {
+			if (!(message.asObject() instanceof String)) {
+				message = new Message(message.asString(), message.getContext());
+			}
+		}
+		stream.writeObject(context);
+		stream.writeObject(id);
+		stream.writeObject(message);
 	}
+
 }

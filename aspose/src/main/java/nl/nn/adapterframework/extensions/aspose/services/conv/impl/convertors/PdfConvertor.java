@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021 WeAreFrank!
+   Copyright 2019, 2021-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.tika.mime.MediaType;
+import org.springframework.http.MediaType;
 
 import com.aspose.pdf.Document;
 import com.aspose.pdf.LoadOptions;
@@ -32,11 +32,9 @@ import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResul
 import nl.nn.adapterframework.stream.Message;
 
 /**
- * Converts the files which are required and supported by the aspose pdf
- * library.
- * @author
- * 	Gerard van der Hoorn
+ * Converts the files which are required and supported by the Aspose pdf library.
  * 
+ * @author Gerard van der Hoorn
  */
 public class PdfConvertor extends AbstractConvertor {
 

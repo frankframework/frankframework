@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2020 WeAreFrank!
+   Copyright 2018-2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,17 +23,19 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.extensions.javascript.JavascriptEngine;
+import nl.nn.adapterframework.extensions.javascript.JavascriptException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.flow.FlowGenerationException;
+import nl.nn.adapterframework.util.flow.GraphvizJsFlowGenerator;
 import nl.nn.adapterframework.util.flow.ResultHandler;
 
 //TODO: consider moving this to a separate module
 /**
  * JavaScript engine wrapper for VizJs flow diagrams
- * 
+ *
  * @author Niels Meijer
  *
  */
@@ -41,12 +43,16 @@ public class GraphvizEngine {
 	protected Logger log = LogUtil.getLogger(this);
 	private Engine engine;
 	private String graphvizVersion = AppConstants.getInstance().getProperty("graphviz.js.version", "2.0.0");
+	private String fileFormat = AppConstants.getInstance().getProperty("graphviz.js.format", "SVG");
+
 	// Available JS Engines. Lower index has priority.
 	private static String[] engines = AppConstants.getInstance().getString("flow.javascript.engines", "nl.nn.adapterframework.extensions.javascript.J2V8,nl.nn.adapterframework.extensions.javascript.Nashorn").split(",");
 
+	private Options defaultOptions = null;
+
 	/**
 	 * Create a new GraphvizEngine instance. Using version 2.0.0
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public GraphvizEngine() throws IOException {
 		this(null);
@@ -55,11 +61,21 @@ public class GraphvizEngine {
 	/**
 	 * Create a new GraphvizEngine instance
 	 * @param graphvizVersion version of the the VisJs engine to initiate
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public GraphvizEngine(String graphvizVersion) throws IOException {
-		if(StringUtils.isNotEmpty(graphvizVersion))
+		if(StringUtils.isNotEmpty(graphvizVersion)) {
 			this.graphvizVersion = graphvizVersion;
+		}
+
+		try {
+			Format format = Format.valueOf(fileFormat.toUpperCase());
+			defaultOptions = Options.create().format(format);
+			if(log.isDebugEnabled()) log.debug("Setting Graphviz options to ["+defaultOptions+"]");
+		}
+		catch(IllegalArgumentException e) {
+			throw new IllegalArgumentException("unknown format["+fileFormat.toUpperCase()+"], must be one of "+Format.values());
+		}
 
 		//Create the GraphvizEngine, make sure it can find and load the required libraries
 		getEngine();
@@ -73,7 +89,7 @@ public class GraphvizEngine {
 	 * @throws FlowGenerationException when a JavaScript engine error occurs
 	 */
 	public String execute(String src) throws IOException, FlowGenerationException {
-		return execute(src, Options.create());
+		return execute(src, defaultOptions);
 	}
 
 	/**
@@ -112,11 +128,11 @@ public class GraphvizEngine {
 	}
 
 	private String getVizJsSource(String version) throws IOException {
-		URL api = ClassUtils.getResourceURL("/js/viz-" + version + ".js");
-		URL engine = ClassUtils.getResourceURL("/js/viz-full.render-" + version + ".js");
-		if(api == null || engine == null)
+		URL vizWrapperURL = ClassUtils.getResourceURL("/js/viz-" + version + ".js");
+		URL vizRenderURL = ClassUtils.getResourceURL("/js/viz-full.render-" + version + ".js");
+		if(vizWrapperURL == null || vizRenderURL == null)
 			throw new IOException("failed to open vizjs file for version ["+version+"]");
-		return Misc.streamToString(api.openStream()) + Misc.streamToString(engine.openStream());
+		return Misc.streamToString(vizWrapperURL.openStream()) + Misc.streamToString(vizRenderURL.openStream());
 	}
 
 
@@ -124,7 +140,7 @@ public class GraphvizEngine {
 	 * Creates the GraphvizEngine instance
 	 * @throws IOException when the VizJS file can't be found
 	 */
-	private Engine getEngine() throws IOException {
+	private synchronized Engine getEngine() throws IOException {
 		if(null == engine) {
 			log.debug("creating new VizJs engine");
 			String visJsSource = getVizJsSource(graphvizVersion);
@@ -140,6 +156,16 @@ public class GraphvizEngine {
 		if (engine != null) {
 			engine.close();
 		}
+	}
+
+	/**
+	 * The {@link GraphvizJsFlowGenerator} uses a ThreadLocal+SoftReference map to cache the
+	 * {@link GraphvizEngine GraphvisEngines}. This method ensures that the engine is destroyed properly.
+	 */
+	@Override
+	protected void finalize() throws Throwable {
+		close();
+		super.finalize();
 	}
 
 	private String getVisJsWrapper() {
@@ -181,7 +207,7 @@ public class GraphvizEngine {
 				throw new UnsupportedOperationException("no usable Javascript engines found, tried "+Arrays.toString(engines));
 		}
 
-		private void startEngine(JavascriptEngine<?> engine, ResultHandler resultHandler, String initScript, String graphvisJsLibrary) throws Exception {
+		private void startEngine(JavascriptEngine<?> engine, ResultHandler resultHandler, String initScript, String graphvisJsLibrary) throws JavascriptException {
 			log.info("Starting runtime for Javascript Engine...");
 			engine.setGlobalAlias("GraphvizJS"); //Set a global alias so all scripts can be cached
 			engine.startRuntime();

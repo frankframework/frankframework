@@ -136,11 +136,11 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class CmisUtils {
 
-	public final static String FORMATSTRING_BY_DEFAULT = "yyyy-MM-dd'T'HH:mm:ss";
-	public final static String ORIGINAL_OBJECT_KEY = "originalObject";
-	public final static String CMIS_VERSION_KEY = "cmisVersion";
-	public final static String CMIS_BINDING_KEY = "cmisBinding";
-	public final static String CMIS_CALLCONTEXT_KEY = "cmisCallContext";
+	public static final String FORMATSTRING_BY_DEFAULT = AppConstants.getInstance().getString("cmis.datetime.formatstring", "yyyy-MM-dd'T'HH:mm:ss");
+	public static final String ORIGINAL_OBJECT_KEY = "originalObject";
+	public static final String CMIS_VERSION_KEY = "cmisVersion";
+	public static final String CMIS_BINDING_KEY = "cmisBinding";
+	public static final String CMIS_CALLCONTEXT_KEY = "cmisCallContext";
 
 	private static Logger log = LogUtil.getLogger(CmisUtils.class);
 	private static String CMIS_SECURITYHANDLER = AppConstants.getInstance().getString("cmis.securityHandler.type", "wsse");

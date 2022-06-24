@@ -83,9 +83,8 @@ public class IbisTester {
 			request.setServletPath("/larva/index.jsp");
 			boolean silent;
 			if (scenario == null) {
-				String ibisContextKey = appConstants.getResolvedProperty(IbisApplicationServlet.KEY_CONTEXT);
 				application = new MockServletContext("file:" + webAppPath, null);
-				application.setAttribute(ibisContextKey, ibisContext);
+				application.setAttribute(IbisApplicationServlet.CONTEXT_KEY, ibisContext);
 				silent = false;
 			} else {
 				request.setParameter("loglevel", "scenario passed/failed");

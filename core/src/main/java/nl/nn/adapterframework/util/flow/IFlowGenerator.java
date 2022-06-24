@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020,2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,11 @@
  */
 package nl.nn.adapterframework.util.flow;
 
-import java.io.IOException;
 import java.io.OutputStream;
 
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.http.MediaType;
 
 /**
  * Used by the FlowDiagramManager to turn a dot file into an image.
@@ -27,9 +27,8 @@ import org.springframework.beans.factory.InitializingBean;
  */
 public interface IFlowGenerator extends InitializingBean, DisposableBean {
 
-	public void setFileExtension(String extension);
 	public String getFileExtension();
-	//TODO FlowDiagramManager should determine MimeType
+	public MediaType getMediaType();
 
-	public void generateFlow(String name, String dot, OutputStream outputStream) throws IOException;
+	public void generateFlow(String xml, OutputStream outputStream) throws FlowGenerationException;
 }

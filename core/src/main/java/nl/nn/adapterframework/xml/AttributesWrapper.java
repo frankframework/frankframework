@@ -61,6 +61,7 @@ public class AttributesWrapper implements Attributes {
 	}
 
 	protected AttributesWrapper(Attributes source, Function<Integer,Boolean> filter, boolean sortAttributeOrder, Function<String,String> valueTransformer) {
+		int indexPos=0;
 		for(int i=0;i<source.getLength();i++) {
 			if (filter==null || filter.apply(i)) {
 				Attribute a = new Attribute();
@@ -69,9 +70,10 @@ public class AttributesWrapper implements Attributes {
 				a.qName=source.getQName(i);
 				a.type=source.getType(i);
 				a.value=valueTransformer!=null ? valueTransformer.apply(source.getValue(i)) : source.getValue(i);
-				indexByQName.put(a.qName, i);
-				indexByUriAndLocalName.put(a.uri+":"+a.localName, i);
+				indexByQName.put(a.qName, indexPos);
+				indexByUriAndLocalName.put(a.uri+":"+a.localName, indexPos);
 				attributes.add(a);
+				indexPos++;
 			}
 		}
 
