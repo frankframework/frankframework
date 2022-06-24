@@ -847,8 +847,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 					try {
 						fixedDateTime = df.parse(Message.asString(fixedDateTime));
 					} catch (ParseException | IOException e) {
-						log.warn("Could not parse FIXEDDATETIME", e);
-						fixedDateTime = e;
+						throw new ParameterException("Could not parse FIXEDDATETIME ["+fixedDateTime+"]", e);
 					}
 				}
 				substitutionValue = preFormatDateType(fixedDateTime, formatType, formatString);
