@@ -190,18 +190,21 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public void close() throws FileSystemException {
-		super.close();
-		if(msalClientAdapter != null){
-			try {
+		try {
+			super.close();
+			if(msalClientAdapter != null){
 				msalClientAdapter.close();
-			} catch (SenderException e) {
-				throw new FileSystemException("An exception occurred during closing of MSAL HttpClient", e);
 			}
-			msalClientAdapter = null;
-		}
-		if(executor != null) {
-			executor.shutdown();
-			executor = null;
+		} catch (SenderException e){
+			throw new FileSystemException("An exception occurred during closing of MSAL HttpClient", e);
+		} finally {
+			if(executor != null) {
+				executor.shutdown();
+				executor = null;
+			}
+			if(msalClientAdapter != null){
+				msalClientAdapter = null;
+			}
 		}
 	}
 
