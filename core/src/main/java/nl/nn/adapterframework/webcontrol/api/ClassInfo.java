@@ -38,10 +38,10 @@ public class ClassInfo {
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/class/{className}")
+	@Path("/classinfo/{className}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getClassInfo(
-			@PathParam("className") String className, 
+			@PathParam("className") String className,
 			@QueryParam("base") String baseClassName
 			) throws ApiException {
 		try {
@@ -52,11 +52,11 @@ public class ClassInfo {
 				baseClass = this.getClass();
 			}
 			ClassLoader classLoader = baseClass.getClassLoader();
-			
+
 			Class clazz = classLoader.loadClass(className);
-			
+
 			List<?> result = ClassUtils.getClassInfoList(clazz);
-			
+
 			return Response.status(Response.Status.OK).entity(result).build();
 		} catch (Exception e) {
 			throw new ApiException("Could not determine classInfo for class ["+className+"]", e);

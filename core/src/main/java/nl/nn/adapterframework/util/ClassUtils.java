@@ -90,7 +90,7 @@ public abstract class ClassUtils {
 	 * because the configuration might be loaded from outside the webapp
 	 * ClassPath. Hence the Thread.currentThread().getContextClassLoader() at
 	 * the time the class was instantiated should be used.
-	 * 
+	 *
 	 * @see IbisContext#init()
 	 */
 	public static URL getResourceURL(IScopeProvider scopeProvider, String resource) {
@@ -116,7 +116,7 @@ public abstract class ClassUtils {
 			resourceToUse = resource.substring(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME.length());
 		}
 
-		// Remove slash like Class.getResource(String name) is doing before delegation to ClassLoader. 
+		// Remove slash like Class.getResource(String name) is doing before delegation to ClassLoader.
 		// Resources retrieved from ClassLoaders should never start with a leading slash
 		if (resourceToUse.startsWith("/")) {
 			resourceToUse = resourceToUse.substring(1);
@@ -174,7 +174,7 @@ public abstract class ClassUtils {
 	public static Reader urlToReader(URL url) throws IOException {
 		return urlToReader(url, 0);
 	}
-	
+
 	public static Reader urlToReader(URL url, int timeoutMs) throws IOException {
 		return StreamUtil.getCharsetDetectingInputStreamReader(urlToStream(url,timeoutMs));
 	}
@@ -243,7 +243,7 @@ public abstract class ClassUtils {
 	}
 
 	/**
-	 * If the classLoader is derivable of IConfigurationClassLoader return the className + configurationName, 
+	 * If the classLoader is derivable of IConfigurationClassLoader return the className + configurationName,
 	 * else return the className of the object. Don't return the package name to avoid cluttering the logs.
 	 */
 	public static String nameOf(ClassLoader classLoader) {
@@ -428,7 +428,7 @@ public abstract class ClassUtils {
 			} catch (ClassNotFoundException e) {
 				clazz = null;
 			}
-		};
+		}
 		return infoList;
 	}
 
