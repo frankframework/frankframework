@@ -54,7 +54,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class CorePipeLineProcessor implements PipeLineProcessor, ApplicationContextAware {
 	private Logger log = LogUtil.getLogger(this);
-	private PipeProcessor pipeProcessor;
+	private @Setter PipeProcessor pipeProcessor;
 	private @Setter ApplicationContext applicationContext;
 
 	@Override
@@ -77,7 +77,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor, ApplicationCont
 				}
 			}
 		}
-		
+
 		// ready indicates whether the pipeline processing is complete
 		boolean ready=false;
 
@@ -159,22 +159,24 @@ public class CorePipeLineProcessor implements PipeLineProcessor, ApplicationCont
 					PipeLineExit plExit= (PipeLineExit)forwardTarget;
 					if(!plExit.isEmptyResult()) {
 						boolean outputWrapError = false;
-						IPipe outputWrapper = pipeLine.getOutputWrapper();
-						if (outputWrapper !=null) {
-							log.debug("wrapping PipeLineResult");
-							PipeRunResult wrapResult = pipeProcessor.processPipe(pipeLine, outputWrapper, message, pipeLineSession);
-							if (wrapResult!=null && !wrapResult.isSuccessful()) {
-								forwardTarget = pipeLine.resolveForward(outputWrapper, wrapResult.getPipeForward());
-								log.warn("forwarding execution flow to ["+forwardTarget.getName()+"] due to wrap fault");
-								outputWrapError = true;
-							} else {
-								log.debug("wrap succeeded");
-								message = wrapResult.getResult();
+						if (!plExit.isSkipWrapping()) {
+							IPipe outputWrapper = pipeLine.getOutputWrapper();
+							if (outputWrapper !=null) {
+								log.debug("wrapping PipeLineResult");
+								PipeRunResult wrapResult = pipeProcessor.processPipe(pipeLine, outputWrapper, message, pipeLineSession);
+								if (wrapResult!=null && !wrapResult.isSuccessful()) {
+									forwardTarget = pipeLine.resolveForward(outputWrapper, wrapResult.getPipeForward());
+									log.warn("forwarding execution flow to ["+forwardTarget.getName()+"] due to wrap fault");
+									outputWrapError = true;
+								} else {
+									log.debug("wrap succeeded");
+									message = wrapResult.getResult();
+								}
+								if(log.isDebugEnabled()) log.debug("PipeLineResult after wrapping: " + (message==null?"<null>":"("+message.getClass().getSimpleName()+") ["+message +"]" ));
 							}
-							if(log.isDebugEnabled()) log.debug("PipeLineResult after wrapping: " + (message==null?"<null>":"("+message.getClass().getSimpleName()+") ["+message +"]" ));
 						}
 
-						if (!outputWrapError) {
+						if (!outputWrapError && !plExit.isSkipValidation()) {
 							IValidator outputValidator = pipeLine.getOutputValidator();
 							if (outputValidator != null) {
 								if (outputValidationFailed) {
@@ -233,7 +235,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor, ApplicationCont
 					IPipe pipeToRun=(IPipe)forwardTarget;
 					PipeRunResult pipeRunResult = pipeProcessor.processPipe(pipeLine, pipeToRun, message, pipeLineSession);
 					message=pipeRunResult.getResult();
-	
+
 					// TODO: this should be moved to a StatisticsPipeProcessor
 					if (!(pipeToRun instanceof AbstractPipe) && !message.isEmpty()) {
 						StatisticsKeeper sizeStat = pipeLine.getPipeSizeStatistics(pipeToRun);
@@ -260,11 +262,6 @@ public class CorePipeLineProcessor implements PipeLineProcessor, ApplicationCont
 			}
 		}
 		return pipeLineResult;
-	}
-	
-	
-	public void setPipeProcessor(PipeProcessor pipeProcessor) {
-		this.pipeProcessor = pipeProcessor;
 	}
 
 }

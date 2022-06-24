@@ -39,6 +39,8 @@ public class PipeLineExit implements IForwardTarget {
 	private @Getter int exitCode = 0;
 	private @Getter String responseRoot;
 	private @Getter boolean emptyResult = false;
+	private @Getter boolean skipValidation = false;
+	private @Getter boolean skipWrapping = false;
 
 	public boolean isSuccessExit() {
 		return getState()==ExitState.SUCCESS;
@@ -87,8 +89,24 @@ public class PipeLineExit implements IForwardTarget {
 	 * If using RestListener and set to <code>true</code>, this removes the output and shows a blank page, the output is still logged in the ladybug testtool
 	 * @ff.default <code>false</code>
 	 */
-	public void setEmpty(String b) {
-		emptyResult = Boolean.parseBoolean(b);
+	public void setEmpty(boolean b) {
+		emptyResult = b;
+	}
+
+	/**
+	 * If set to <code>true</code>, the output will not be wrapped by the OutputWrapper.
+	 * @ff.default <code>false</code>
+	 */
+	public void setSkipWrapping(boolean b) {
+		skipWrapping = b;
+	}
+
+	/**
+	 * If set to <code>true</code>, the output will not be validated or transformed by the validator.
+	 * @ff.default <code>false</code>
+	 */
+	public void setSkipValidation(boolean b) {
+		skipValidation = b;
 	}
 
 }
