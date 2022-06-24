@@ -112,17 +112,17 @@ public class Parameter implements IConfigurable, IWithParameters {
 	public final static String TYPE_INPUTSTREAM="inputstream";
 	public final static String TYPE_LIST="list";
 	public final static String TYPE_MAP="map";
-	
+
 	public final static String TYPE_DATE_PATTERN="yyyy-MM-dd";
 	public final static String TYPE_TIME_PATTERN="HH:mm:ss";
 	public final static String TYPE_DATETIME_PATTERN="yyyy-MM-dd HH:mm:ss";
 	public final static String TYPE_TIMESTAMP_PATTERN=DateUtils.FORMAT_FULL_GENERIC;
 
 	private static final List<String> TYPES_REQUIRE_CONVERSION = Arrays.asList(new String[] {TYPE_NODE, TYPE_DOMDOC, TYPE_DATE, TYPE_TIME, TYPE_DATETIME, TYPE_TIMESTAMP, TYPE_XMLDATETIME, TYPE_NUMBER, TYPE_INTEGER, TYPE_BOOLEAN});
-	
+
 	public final static String FIXEDUID ="0a1b234c--56de7fa8_9012345678b_-9cd0";
 	public final static String FIXEDHOSTNAME ="MYHOST000012345";
-	
+
 	private String name = null;
 	private String type = null;
 	private String sessionKey = null;
@@ -182,7 +182,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 			}
 			String outputType=TYPE_XML.equalsIgnoreCase(getType()) || TYPE_NODE.equalsIgnoreCase(getType()) || TYPE_DOMDOC.equalsIgnoreCase(getType())?"xml":"text";
 			boolean includeXmlDeclaration=false;
-			
+		
 			transformerPool=TransformerPool.configureTransformer0("Parameter ["+getName()+"] ", this, getNamespaceDefs(),getXpathExpression(), styleSheetName,outputType,includeXmlDeclaration,paramList,getXsltVersion());
 		} else {
 			if (paramList!=null && StringUtils.isEmpty(getXpathExpression())) {
@@ -283,7 +283,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 		if (!configured) {
 			throw new ParameterException("Parameter ["+getName()+"] not configured");
 		}
-		
+	
 		String requestedSessionKey;
 		if (transformerPoolSessionKey != null) {
 			try {
@@ -617,13 +617,13 @@ public class Parameter implements IConfigurable, IWithParameters {
 				throw new ParameterException(new ParseException("Bracket is not closed", startNdx));
 			}
 			String substitutionPattern = pattern.substring(startNdx + 1, tmpEndNdx);
-			
+		
 			// get value
 			Object substitutionValue = getValueForFormatting(alreadyResolvedParameters, session, substitutionPattern);
 			params.add(substitutionValue);
 			formatPattern.append('{').append(paramPosition++);
 		}
-		
+	
 		return MessageFormat.format(formatPattern.toString(), params.toArray());
 	}
 
@@ -654,7 +654,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 		String[] patternElements = targetPattern.split(",");
 		String name = patternElements[0].trim();
 		String formatType = patternElements.length>1 ? patternElements[1].trim() : null;
-		
+	
 		ParameterValue paramValue = alreadyResolvedParameters.getParameterValue(name);
 		Object substitutionValue = paramValue == null ? null : paramValue.getValue();
 
@@ -688,7 +688,12 @@ public class Parameter implements IConfigurable, IWithParameters {
 				}
 				Object fixedDateTime = session.get(PutSystemDateInSession.FIXEDDATE_STUB4TESTTOOL_KEY);
 				if (fixedDateTime==null) {
-					fixedDateTime = PutSystemDateInSession.FIXEDDATETIME;
+					DateFormat df = new SimpleDateFormat(DateUtils.FORMAT_GENERICDATETIME);
+					try {
+						fixedDateTime = df.parse(PutSystemDateInSession.FIXEDDATETIME);
+					} catch (ParseException e) {
+						throw new ParameterException("Could not parse FIXEDDATETIME ["+fixedDateTime+"]", e);
+					}
 				}
 				substitutionValue = preFormatDateType(fixedDateTime, formatType);
 			} else if ("fixeduid".equals(namelc)) {
