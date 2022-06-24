@@ -47,7 +47,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class ParallelSenders extends SenderSeries {
 
 	private @Getter int maxConcurrentThreads = 0;
-	private TaskExecutor executor;
+	private @Getter TaskExecutor executor;
 
 	@Override
 	public void configure() throws ConfigurationException {

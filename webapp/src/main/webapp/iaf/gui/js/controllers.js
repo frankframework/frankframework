@@ -333,6 +333,8 @@ angular.module('iaf.beheerconsole')
 			stopped:0,
 			starting:0,
 			stopping:0,
+			exception_starting:0,
+			exception_stopping:0,
 			error:0
 		};
 		var receiverSummary = {
@@ -340,6 +342,8 @@ angular.module('iaf.beheerconsole')
 			stopped:0,
 			starting:0,
 			stopping:0,
+			exception_starting:0,
+			exception_stopping:0,
 			error:0
 		};
 		var messageSummary = {
@@ -1771,6 +1775,9 @@ angular.module('iaf.beheerconsole')
 }])
 .controller('WebservicesCtrl', ['$scope', 'Api', 'Misc', function($scope, Api, Misc) {
 	$scope.rootURL = Misc.getServerPath();
+	$scope.compileURL = function(apiListener) {
+		return $scope.rootURL + "api/openapi.json?uri=" + encodeURI(apiListener.uriPattern);
+	}
 	Api.Get("webservices", function(data) {
 		$.extend($scope, data);
 	});

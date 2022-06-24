@@ -54,6 +54,7 @@ import nl.nn.adapterframework.pipes.Json2XmlValidator;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 
 /**
  * This class registers dispatches requests to the proper registered ApiListeners.
@@ -232,11 +233,11 @@ public class ApiServiceDispatcher {
 		String loadBalancerUrl = AppConstants.getInstance().getProperty("loadBalancer.url", null);
 		if(StringUtils.isNotEmpty(loadBalancerUrl)) {
 			serversArray.add(Json.createObjectBuilder().add("url", loadBalancerUrl + servletPath).add("description", "load balancer"));
-		}
-		else { // fall back to the request url
-			String requestUrl = request.getRequestURL().toString(); // -> schema+hostname+port/context-path/servlet-path/+request-uri
-			String requestPath = request.getPathInfo(); // -> the remaining path, starts with a /
-			String url = requestUrl.split(requestPath)[0];
+		} else { // fall back to the request url
+			String requestUrl = request.getRequestURL().toString(); // raw request -> schema+hostname+port/context-path/servlet-path/+request-uri
+			requestUrl = Misc.urlDecode(requestUrl);
+			String requestPath = request.getPathInfo(); // -> the remaining path, starts with a /. Is automatically decoded by the web container!
+			String url = requestUrl.substring(0, requestUrl.indexOf(requestPath));
 			serversArray.add(Json.createObjectBuilder().add("url", url));
 		}
 

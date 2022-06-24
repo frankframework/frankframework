@@ -292,6 +292,39 @@
 				<artifactId>glassfish-copyright-maven-plugin</artifactId>
 			</plugin>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<version>3.1.0</version>
+				<executions>
+					<execution>
+						<id>enforce-lib-ban</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<bannedDependencies>
+									<!-- the activation framework was renamed to the jarkata activation framework -->
+									<excludes>
+										<exclude>javax.activation:javax.activation-api</exclude>
+										<exclude>com.sun.activation:javax.activation</exclude>
+								<!-- 	<exclude>javax.activation:activation</exclude> -->
+									</excludes>
+									<message>use com.sun.activation:jakarta.activation instead of jakarta.activation:jakarta.activation-api</message>
+								</bannedDependencies>
+								<bannedDependencies>
+									<!-- the implementation com.sun.activation:jakarta.activation contains the api classes too -->
+									<excludes>
+										<exclude>jakarta.activation:jakarta.activation-api</exclude>
+									</excludes>
+									<message>the implementation com.sun.activation:jakarta.activation is included and it contains the api classes too</message>
+								</bannedDependencies>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>2.22.2</version>
 				<configuration>
@@ -336,7 +369,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.8.1</version>
+					<version>3.10.1</version>
 					<configuration>
 						<source>1.8</source>
 						<target>1.8</target>
@@ -359,7 +392,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-war-plugin</artifactId>
-					<version>3.3.0</version>
+					<version>3.3.2</version>
 					<configuration>
 						<packagingExcludes>.gitignore</packagingExcludes>
 					</configuration>

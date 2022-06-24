@@ -136,9 +136,6 @@ public final class Webservices extends Base {
 				if (adapter!=null) endpoint.put("adapter", adapter.getName());
 				if (receiver!=null) endpoint.put("receiver", receiver.getName());
 
-				String schemaResource = uriPattern.substring(1).replace("/", "_")+"_"+method+"_"+"openapi.json";
-				endpoint.put("schemaResource",schemaResource);
-
 				apiListeners.add(endpoint);
 			}
 		}
@@ -156,7 +153,7 @@ public final class Webservices extends Base {
 		@PathParam("resourceName") String resourceName,
 		@DefaultValue("true") @QueryParam("indent") boolean indent,
 		@DefaultValue("false") @QueryParam("useIncludes") boolean useIncludes) throws ApiException {
-	
+
 		String adapterName;
 		boolean zip;
 		int dotPos=resourceName.lastIndexOf('.');
@@ -167,7 +164,7 @@ public final class Webservices extends Base {
 			adapterName=resourceName;
 			zip=false;
 		}
-		
+
 		if (StringUtils.isEmpty(adapterName)) {
 			return Response.status(Response.Status.BAD_REQUEST).entity("<error>no adapter specified</error>").build();
 		}
@@ -176,7 +173,7 @@ public final class Webservices extends Base {
 			return Response.status(Response.Status.BAD_REQUEST).entity("<error>adapter not found</error>").build();
 		}
 		try {
-			String servletName = getServiceEndpoint(adapter); 
+			String servletName = getServiceEndpoint(adapter);
 			String generationInfo = "by FrankConsole";
 			WsdlGenerator wsdl = new WsdlGenerator(adapter.getPipeLine(), generationInfo);
 			wsdl.setIndent(indent);

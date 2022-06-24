@@ -25,13 +25,12 @@ import org.xml.sax.SAXException;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -42,14 +41,34 @@ import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.TransformerPool;
 
 /**
- * Provides an example of a pipe. It may return the contents of a file
- * (in the classpath) when <code>filename</code> or <code>filenameSessionKey</code> is specified, otherwise the
- * input of <code>returnString</code> is returned.
- *
- * @ff.parameters Any parameters defined on the pipe will be used for replacements. Each occurrence of <code>${name-of-parameter}</code> in the file {@link #setFilename(String) filename} will be replaced by its corresponding <i>value-of-parameter</i>. This works only with files, not with values supplied in attribute {@link #setReturnString(String) returnString}
+ * Produces a fixed result that does not depend on the input message. It may return the contents of a file
+ * when <code>filename</code> or <code>filenameSessionKey</code> is specified. Otherwise the
+ * value of attribute <code>returnString</code> is returned.
+ * <br/><br/>
+ * Using parameters and the attributes of this pipe, it is possible to substitute values. This pipe
+ * performs the following steps:
+ * <ol>
+ * <li>During execution, this pipe first obtains a string based on attributes <code>returnString</code>, <code>filename</code> or <code>filenameSessionKey</code>.
+ * <li>The resulting string is transformed according to attributes <code>replaceFrom</code> and <code>replaceTo</code> if set.
+ * Please note that the plain value of attribute <code>replaceFrom</code> is matched, no <code>${...}</code> here.
+ * <li>The resulting string is substituted based on the parameters of this pipe. This step depends on attribute <code>replaceFixedParams</code>.
+ * Assume that there is a parameter with name <code>xyz</code>. If <code>replaceFixedParams</code> is <code>false</code>, then
+ * each occurrence of <code>${xyz}</code> is replaced by the parameter's value. Otherwise, the text <code>xyz</code>
+ * is substituted. See {@link nl.nn.adapterframework.parameters.Parameter} to see how parameter values are determined.
+ * <li>If attribute <code>substituteVars</code> is <code>true</code>, then expressions <code>${...}</code> are substituted using
+ * system properties, pipelinesession variables and application properties. Please note that
+ * no <code>${...}</code> patterns are left if the initial string came from attribute <code>returnString</code>, because
+ * any <code>${...}</code> pattern in attribute <code>returnString</code> is substituted when the configuration is loaded.
+ * <li>If attribute <code>styleSheetName</code> is set, then the referenced XSLT stylesheet is applied to the resulting string.
+ * </ol>  
+ * <br/><br/>
+ * Many attributes of this pipe reference file names. If a file is referenced by a relative path, the path
+ * is relative to the configuration's root directory.
+ * 
+ * @ff.parameters Used for substitution. For a parameter named <code>xyz</code>, the string <code>${xyz}</code> or
+ * <code>xyz</code> (if <code>replaceFixedParams</code> is true) is substituted by the parameter's value.
  *
  * @ff.forward filenotfound the configured file was not found (when this forward isn't specified an exception will be thrown)
- *
  *
  * @author Johan Verrips
  */
@@ -196,7 +215,12 @@ public class FixedResultPipe extends FixedForwardPipe {
 		return builder.toString();
 	}
 
-	@IbisDoc({"should values between ${ and } be resolved from the pipelinesession (search order: 1) system properties 2) pipelinesession variables 3) application properties)", "false"})
+	/**
+	 * Should values between ${ and } be resolved. If true, the search order of replacement values is:
+	 * system properties (1), pipelinesession variables (2), application properties (3).
+	 * 
+	 * @ff.default false
+	 */
 	public void setSubstituteVars(boolean substitute){
 		this.substituteVars=substitute;
 	}
@@ -208,10 +232,8 @@ public class FixedResultPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * Sets the name of the filename. The filename should not be specified
-	 * as an absolute path, but as a resource in the classpath.
+	 * Name of the file containing the result message.
 	 */
-	@IbisDoc({"name of the file containing the resultmessage", ""})
 	public void setFilename(String filename) {
 		this.filename = filename;
 	}
@@ -222,31 +244,46 @@ public class FixedResultPipe extends FixedForwardPipe {
 		setFilenameSessionKey(fileNameSessionKey);
 	}
 
-	@IbisDoc({"name of the session key containing the file name of the file containing the result message", ""})
+	/**
+	 * Name of the session key containing the file name of the file containing the result message.
+	 */
 	public void setFilenameSessionKey(String filenameSessionKey) {
 		this.filenameSessionKey = filenameSessionKey;
 	}
 
-	@IbisDoc({"returned message", ""})
+	/**
+	 * Returned message.
+	 */
 	public void setReturnString(String returnString) {
 		this.returnString = returnString;
 	}
 
-	/** When set, any match in the result string will be replaced by the value of <code>replaceTo</code> attribute */
+	/**
+	 * If set, every occurrence of this attribute's value is replaced by the value of <code>replaceTo</code>.
+	 */
 	public void setReplaceFrom(String replaceFrom){
 		this.replaceFrom=replaceFrom;
 	}
 
-	/** Target value for the matches of attribute <code>replaceFrom</code> in the result string */
+	/**
+	 * See <code>replaceFrom</code>.
+	 */
 	public void setReplaceTo(String replaceTo){
 		this.replaceTo=replaceTo;
 	}
 
+	/**
+	 * File name of XSLT stylesheet to apply.
+	 */
 	public void setStyleSheetName (String styleSheetName){
 		this.styleSheetName=styleSheetName;
 	}
 
-	@IbisDoc({"when set <code>true</code>, any parameter is used for replacements but with <code>name-of-parameter</code> and not <code>${name-of-parameter}</code>", "false"})
+	/**
+	 * When set <code>true</code>, parameter replacement matches <code>name-of-parameter</code>, not <code>${name-of-parameter}</code>
+	 *
+	 * @ff.default false
+	 */
 	public void setReplaceFixedParams(boolean b){
 		replaceFixedParams=b;
 	}
