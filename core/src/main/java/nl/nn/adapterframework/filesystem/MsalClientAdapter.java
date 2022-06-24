@@ -22,9 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 import org.apache.commons.lang3.NotImplementedException;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
@@ -49,6 +47,12 @@ import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 
+/**
+ * This class ensures that Microsoft Authentication Library (MSAL) requests are sent through the configured proxy and the correct SSLSockerFactory.
+ * @see ExchangeFileSystem
+ * 
+ * @ff.protected
+ */
 public class MsalClientAdapter extends HttpSenderBase implements IHttpClient {
 	private static final String METHOD_SESSION_KEY = "HTTP_METHOD";
 	private static final String REQUEST_HEADERS_SESSION_KEY = "HTTP_REQUEST_HEADERS";
@@ -57,7 +61,7 @@ public class MsalClientAdapter extends HttpSenderBase implements IHttpClient {
 	private static final String STATUS_CODE_SESSION_KEY = "HTTP_STATUSCODE";
 
 	public MsalClientAdapter() {
-		setName("MSAL");
+		setName("MSAL Autentication Sender");
 
 		Parameter urlParameter = new Parameter();
 		urlParameter.setName("url");
@@ -92,7 +96,7 @@ public class MsalClientAdapter extends HttpSenderBase implements IHttpClient {
 		log.debug("Put http method [{}] in session under key [{}]", ()->httpRequest.httpMethod().name(), ()->METHOD_SESSION_KEY);
 
 		session.put(REQUEST_HEADERS_SESSION_KEY, httpRequest.headers());
-		if(log.isDebugEnabled()) log.debug("Put http headers [{}] in session under key [{}]", ()->httpRequest.headers(), ()->REQUEST_HEADERS_SESSION_KEY);
+		if(log.isDebugEnabled()) log.debug("Put http headers [{}] in session under key [{}]", httpRequest::headers, ()->REQUEST_HEADERS_SESSION_KEY);
 
 		return session;
 	}
@@ -106,29 +110,23 @@ public class MsalClientAdapter extends HttpSenderBase implements IHttpClient {
 			throw new SenderException("No URI to connect to!");
 		}
 
-		StringBuffer rawPath = new StringBuffer(uri.getRawPath());
 		try {
 			switch (httpMethod) {
 			case GET:
-				HttpGet getMethod = new HttpGet(rawPath.toString());
-
-				if(log.isDebugEnabled())
-					log.debug(getLogPrefix() + "HttpSender constructed GET-method [" + getMethod.getURI().getQuery() + "]");
-
+				HttpGet getMethod = new HttpGet(uri.getRawPath());
 
 				return appendHeaders(headers, getMethod);
 			case POST:
-				HttpEntity entity = new ByteArrayEntity(message.asByteArray(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING), getFullContentType());
-
-				HttpEntityEnclosingRequestBase method = new HttpPost(rawPath.toString());
+				HttpEntityEnclosingRequestBase method = new HttpPost(uri.getRawPath());
+				HttpEntity entity = new ByteArrayEntity(message.asByteArray(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING)); //MSAL sets application/soap+xml later on
 
 				method.setEntity(entity);
 				return appendHeaders(headers, method);
 			default:
 					throw new NotImplementedException("method ["+httpMethod+"] has not been implemented");
 			}
-		} catch (Exception e) {
-			throw new SenderException("An exception occurred whilst getting method", e);
+		} catch (IOException e) {
+			throw new SenderException("unable to parse message as bytearray", e);
 		}
 	}
 
@@ -166,8 +164,8 @@ public class MsalClientAdapter extends HttpSenderBase implements IHttpClient {
 		private Map<String, List<String>> headers = new HashMap<>();
 		private String body = "";
 
-		public MsalResponse(Message response, PipeLineSession session){
-			this.statusCode = Integer.parseInt( (String) session.get(STATUS_CODE_SESSION_KEY) );
+		public MsalResponse(Message response, PipeLineSession session) {
+			this.statusCode = Integer.parseInt((String) session.get(STATUS_CODE_SESSION_KEY));
 			if(log.isDebugEnabled())
 				log.debug("Parsing status code [" + statusCode + "]");
 

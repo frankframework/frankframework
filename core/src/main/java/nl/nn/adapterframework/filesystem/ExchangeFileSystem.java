@@ -153,6 +153,14 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		if (StringUtils.isEmpty(getUrl()) && StringUtils.isEmpty(getMailAddress())) {
 			throw new ConfigurationException("either url or mailAddress needs to be specified");
 		}
+
+		msalClientAdapter = new MsalClientAdapter();
+		msalClientAdapter.setProxyHost(getProxyHost());
+		msalClientAdapter.setProxyPort(getProxyPort());
+		CredentialFactory proxyCredentials = getProxyCredentials();
+		msalClientAdapter.setProxyUsername(proxyCredentials.getUsername());
+		msalClientAdapter.setProxyPassword(proxyCredentials.getPassword());
+		msalClientAdapter.configure();
 	}
 
 	@Override
@@ -162,16 +170,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			executor = Executors.newSingleThreadExecutor(); //Create a new Executor in the same thread(context) to avoid SecurityExceptions when setting a ClassLoader on the Runnable.
 
 			CredentialFactory cf = getCredentials();
-			CredentialFactory proxyCredentials = getProxyCredentials();
-
-			msalClientAdapter = new MsalClientAdapter();
-			msalClientAdapter.setProxyHost(getProxyHost());
-			msalClientAdapter.setProxyPort(getProxyPort());
-			msalClientAdapter.setProxyUsername(proxyCredentials.getUsername());
-			msalClientAdapter.setProxyPassword(proxyCredentials.getPassword());
 
 			try {
-				msalClientAdapter.configure();
 				msalClientAdapter.open();
 
 				client = ConfidentialClientApplication.builder(
@@ -181,7 +181,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 					.httpClient(msalClientAdapter)
 					.executorService(executor)
 					.build();
-			} catch (MalformedURLException | ConfigurationException | SenderException e){
+			} catch (MalformedURLException | SenderException e) {
 				throw new FileSystemException("Failed to initialize MSAL ConfidentialClientApplication.", e);
 			}
 		}
@@ -197,6 +197,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			} catch (SenderException e) {
 				throw new FileSystemException("An exception occurred during closing of MSAL HttpClient", e);
 			}
+			msalClientAdapter = null;
 		}
 		if(executor != null) {
 			executor.shutdown();
