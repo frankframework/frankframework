@@ -226,9 +226,9 @@ public class OpenApiTestBase extends Mockito {
 			return this;
 		}
 		public AdapterBuilder addExit(String exitCode) {
-			return addExit(exitCode, null, "false");
+			return addExit(exitCode, null, false);
 		}
-		public AdapterBuilder addExit(String exitCode, String responseRoot, String isEmpty) {
+		public AdapterBuilder addExit(String exitCode, String responseRoot, boolean isEmpty) {
 			PipeLineExit ple = new PipeLineExit();
 			ple.setCode(exitCode);
 			ple.setResponseRoot(responseRoot);
@@ -251,7 +251,7 @@ public class OpenApiTestBase extends Mockito {
 			return build(false);
 		}
 		/**
-		 * Create the adapter 
+		 * Create the adapter
 		 * @param start automatically start the adapter upon creation
 		 */
 		public Adapter build(boolean start) throws ConfigurationException {
