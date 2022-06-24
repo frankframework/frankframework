@@ -520,7 +520,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 				if (log.isDebugEnabled() && (result==null ||
 					result instanceof String  && ((String)result).isEmpty() ||
 					result instanceof Message && ((Message)result).isEmpty())) {
-						if (log.isDebugEnabled()) log.debug("Parameter ["+getName()+"] session variable ["+requestedSessionKey+"] is empty");
+						log.debug("Parameter ["+getName()+"] session variable ["+requestedSessionKey+"] is empty");
 				}
 			} else if (StringUtils.isNotEmpty(getPattern())) {
 				result=formatPattern(alreadyResolvedParameters, session);
