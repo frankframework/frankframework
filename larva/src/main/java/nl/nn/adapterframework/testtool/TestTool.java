@@ -22,7 +22,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Reader;
@@ -100,6 +99,7 @@ import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.ProcessUtil;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -3049,10 +3049,10 @@ public class TestTool {
 			encoding = "ISO-8859-1";
 		}
 		if (encoding != null) {
-			InputStreamReader inputStreamReader = null;
+			Reader inputStreamReader = null;
 			try {
 				StringBuffer stringBuffer = new StringBuffer();
-				inputStreamReader = new InputStreamReader(new FileInputStream(fileName), encoding);
+				inputStreamReader = StreamUtil.getCharsetDetectingInputStreamReader(new FileInputStream(fileName), encoding);
 				char[] cbuf = new char[4096];
 				int len = inputStreamReader.read(cbuf);
 				while (len != -1) {
