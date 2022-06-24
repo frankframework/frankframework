@@ -1184,7 +1184,6 @@ public class ParameterTest {
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false); //Should return PutSystemDateInSession.FIXEDDATETIME
 			assertTrue(result instanceof String);
 
-			SimpleDateFormat sdf = new SimpleDateFormat(DateUtils.FORMAT_FULL_GENERIC);
 			assertEquals(expectedDate, result);
 
 		} finally {
@@ -1192,7 +1191,135 @@ public class ParameterTest {
 		}
 	}
 
+	@Test
+	public void testPatternFixedDateWithExtendedDateFormatType() throws Exception {
+		String expectedDate = "2001-12-17 09:30:47.000";
+		Parameter p = new Parameter();
+		System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		try {
+			p.setName("EsbSoapWrapperPipeTimestamp");
+			p.setPattern("{fixeddate,date,yyyy-MM-dd HH:mm:ss.SSS}");
+			p.configure();
+			PipeLineSession session = new PipeLineSession();
 
+			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+			Message message = new Message("fakeMessage");
+
+			Object result = p.getValue(alreadyResolvedParameters, message, session, false); //Should return PutSystemDateInSession.FIXEDDATETIME
+			assertTrue(result instanceof String);
+
+			assertEquals(expectedDate, result);
+
+		} finally {
+			System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
+		}
+	}
+
+	@Test
+	public void testPatternFixedDateWithDateFormatTypeAndParameterTypeSet() throws Exception {
+		String expectedDate = "2001-12-17 09:30:47.000";
+		Parameter p = new Parameter();
+		System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		try {
+			p.setName("EsbSoapWrapperPipeTimestamp");
+			p.setPattern("{fixeddate,date,yyyy-MM-dd'T'HH:mm:ss}");
+			p.setType(ParameterType.TIMESTAMP);
+			p.setFormatString("yyyy-MM-dd'T'HH:mm:ss");
+			p.configure();
+			PipeLineSession session = new PipeLineSession();
+
+			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+			Message message = new Message("fakeMessage");
+
+			Object result = p.getValue(alreadyResolvedParameters, message, session, false); //Should return PutSystemDateInSession.FIXEDDATETIME
+			assertTrue(result instanceof Date);
+
+			SimpleDateFormat sdf = new SimpleDateFormat(DateUtils.FORMAT_FULL_GENERIC);
+			assertEquals(expectedDate, sdf.format(result));
+
+		} finally {
+			System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
+		}
+	}
+
+	@Test
+	public void testPatternFixedDateWithParameterTypeDateTime() throws Exception {
+		String expectedDate = "2001-12-17 09:30:47.000";
+		Parameter p = new Parameter();
+		System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		try {
+			p.setName("EsbSoapWrapperPipeTimestamp");
+			p.setPattern("{fixeddate}");
+			p.setType(ParameterType.DATETIME);
+			p.configure();
+			PipeLineSession session = new PipeLineSession();
+
+			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+			Message message = new Message("fakeMessage");
+
+			Object result = p.getValue(alreadyResolvedParameters, message, session, false); //Should return PutSystemDateInSession.FIXEDDATETIME
+			assertTrue(result instanceof Date);
+
+			SimpleDateFormat sdf = new SimpleDateFormat(DateUtils.FORMAT_FULL_GENERIC);
+			assertEquals(expectedDate, sdf.format(result));
+
+		} finally {
+			System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
+		}
+	}
+
+	@Test
+	public void testPatternFixedDateWithParameterTypeTimestamp() throws Exception {
+		String expectedDate = "2001-12-17 09:30:47.000";
+		Parameter p = new Parameter();
+		System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		try {
+			p.setName("EsbSoapWrapperPipeTimestamp");
+			p.setPattern("{fixeddate}");
+			p.setFormatString("yyyy-MM-dd HH:mm:ss");
+			p.setType(ParameterType.TIMESTAMP);
+			p.configure();
+			PipeLineSession session = new PipeLineSession();
+
+			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+			Message message = new Message("fakeMessage");
+
+			Object result = p.getValue(alreadyResolvedParameters, message, session, false); //Should return PutSystemDateInSession.FIXEDDATETIME
+			assertTrue(result instanceof Date);
+
+			SimpleDateFormat sdf = new SimpleDateFormat(DateUtils.FORMAT_FULL_GENERIC);
+			assertEquals(expectedDate, sdf.format(result));
+
+		} finally {
+			System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
+		}
+	}
+
+	@Test
+	public void testPatternFixedDateWithExtendedDateFormatTypeAndParameterTypeSet() throws Exception {
+		String expectedDate = "2001-12-17 09:30:47.000";
+		Parameter p = new Parameter();
+		System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		try {
+			p.setName("EsbSoapWrapperPipeTimestamp");
+			p.setPattern("{fixeddate,date,yyyy-MM-dd HH:mm:ss.SSS}");
+			p.setType(ParameterType.TIMESTAMP);
+			p.configure();
+			PipeLineSession session = new PipeLineSession();
+
+			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+			Message message = new Message("fakeMessage");
+
+			Object result = p.getValue(alreadyResolvedParameters, message, session, false); //Should return PutSystemDateInSession.FIXEDDATETIME
+			assertTrue(result instanceof Date);
+
+			SimpleDateFormat sdf = new SimpleDateFormat(DateUtils.FORMAT_FULL_GENERIC);
+			assertEquals(expectedDate, sdf.format(result));
+
+		} finally {
+			System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
+		}
+	}
 
 	@Test
 	public void testDefaultValueMethodDefaultNoDefaultValue() throws Exception {

@@ -68,10 +68,10 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Generic parameter definition.
- * 
+ *
  * A parameter resembles an attribute. However, while attributes get their value at configuration-time,
  * parameters get their value at the time of processing the message. Value can be retrieved from the message itself,
- * a fixed value, or from the pipelineSession. If this does not result in a value (or if neither of these is specified), a default value 
+ * a fixed value, or from the pipelineSession. If this does not result in a value (or if neither of these is specified), a default value
  * can be specified. If an XPathExpression or stylesheet is specified, it will be applied to the message, the value retrieved
  * from the pipelineSession or the fixed value specified.
  * <br/>
@@ -83,19 +83,19 @@ import nl.nn.adapterframework.util.XmlUtils;
  *   &lt;to&gt;***@zonnet.nl&lt;/to&gt;
  *   &lt;cc&gt;***@zonnet.nl&lt;/cc&gt;
  *  &lt;/transportinfo&gt;
- * 
+ *
  * to obtain all 'to' addressees as a parameter:
  * sessionKey="TransportInfo"
  * xpathExpression="transportinfo/to"
  * type="xml"
- * 
+ *
  * Result:
  *   &lt;to&gt;***@zonnet.nl&lt;/to&gt;
  *   &lt;to&gt;***@zonnet.nl&lt;/to&gt;
  * </code></pre>
- * 
+ *
  * N.B. to obtain a fixed value: a non-existing 'dummy' <code>sessionKey</code> in combination with the fixed value in <code>DefaultValue</code> is used traditionally.
- * The current version of parameter supports the 'value' attribute, that is sufficient to set a fixed value.    
+ * The current version of parameter supports the 'value' attribute, that is sufficient to set a fixed value.
  * @author Gerrit van Brakel
  * @ff.parameters Parameters themselves can have parameters too, for instance if a XSLT transformation is used, that transformation can have parameters.
  */
@@ -116,7 +116,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 	private @Getter ParameterType type = ParameterType.STRING;
 	private @Getter String sessionKey = null;
 	private @Getter String sessionKeyXPath = null;
-	private @Getter String xpathExpression = null; 
+	private @Getter String xpathExpression = null;
 	private @Getter String namespaceDefs = null;
 	private @Getter String styleSheetName = null;
 	private @Getter String pattern = null;
@@ -146,11 +146,11 @@ public class Parameter implements IConfigurable, IWithParameters {
 	protected ParameterList paramList = null;
 	private boolean configured = false;
 	private CredentialFactory cf;
-	
+
 	private List<DefaultValueMethods> defaultValueMethodsList;
 
 	public enum ParameterType {
-		/** Renders the contents of the first node (in combination with xslt or xpath). Please note that 
+		/** Renders the contents of the first node (in combination with xslt or xpath). Please note that
 		 * if there are child nodes, only the contents are returned, use <code>XML</code> if the xml tags are required */
 		STRING,
 
@@ -232,7 +232,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 		@EnumLabel("value")			VALUE,
 		@EnumLabel("input") 		INPUT;
 	}
-	
+
 	public Parameter() {
 		super();
 	}
@@ -245,7 +245,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 	}
 
 	@Override
-	public void addParameter(Parameter p) { 
+	public void addParameter(Parameter p) {
 		if (paramList==null) {
 			paramList=new ParameterList();
 		}
@@ -268,7 +268,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 			}
 			OutputType outputType=getType() == ParameterType.XML || getType()==ParameterType.NODE || getType()==ParameterType.DOMDOC ? OutputType.XML : OutputType.TEXT;
 			boolean includeXmlDeclaration=false;
-			
+
 			transformerPool=TransformerPool.configureTransformer0("Parameter ["+getName()+"] ", this, getNamespaceDefs(),getXpathExpression(), getStyleSheetName(),outputType,includeXmlDeclaration,paramList,getXsltVersion());
 		} else {
 			if (paramList!=null && StringUtils.isEmpty(getXpathExpression())) {
@@ -376,13 +376,13 @@ public class Parameter implements IConfigurable, IWithParameters {
 	}
 
 	public boolean consumesSessionVariable(String sessionKey) {
-		return sessionKey.equals(getSessionKey()) 
-				|| getPattern()!=null && getPattern().contains("{"+sessionKey+"}") 
+		return sessionKey.equals(getSessionKey())
+				|| getPattern()!=null && getPattern().contains("{"+sessionKey+"}")
 				|| getParameterList()!=null && getParameterList().consumesSessionVariable(sessionKey);
 	}
 
 	/**
-	 * determines the raw value 
+	 * determines the raw value
 	 */
 	public Object getValue(ParameterValueList alreadyResolvedParameters, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
 		Object result = null;
@@ -390,7 +390,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 		if (!configured) {
 			throw new ParameterException("Parameter ["+getName()+"] not configured");
 		}
-		
+
 		String requestedSessionKey;
 		if (tpDynamicSessionKey != null) {
 			try {
@@ -410,7 +410,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 				 * 2) requestedSessionKey
 				 * 3) pattern
 				 * 4) input message
-				 * 
+				 *
 				 * N.B. this order differs from untransformed parameters
 				 */
 				Source source=null;
@@ -490,12 +490,12 @@ public class Parameter implements IConfigurable, IWithParameters {
 			 * 2) pattern
 			 * 3) value attribute
 			 * 4) input message
-			 * 
-			 * N.B. this order differs from transformed parameters. 
+			 *
+			 * N.B. this order differs from transformed parameters.
 			 */
 			if (StringUtils.isNotEmpty(requestedSessionKey)) {
 				result=session.get(requestedSessionKey);
-				if (log.isDebugEnabled() && (result==null || 
+				if (log.isDebugEnabled() && (result==null ||
 					result instanceof String  && ((String)result).isEmpty() ||
 					result instanceof Message && ((Message)result).isEmpty())) {
 						log.debug("Parameter ["+getName()+"] session variable ["+requestedSessionKey+"] is empty");
@@ -528,7 +528,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 			if (log.isDebugEnabled()) log.debug("Parameter ["+getName()+"] resolved to ["+(isHidden()?hide(result.toString()):result)+"]");
 		} else {
 			// if result is null then return specified default value
-			// N.B. 
+			// N.B.
 			Iterator<DefaultValueMethods> it = getDefaultValueMethodsList().iterator();
 			while (result == null && it.hasNext()) {
 				DefaultValueMethods method = it.next();
@@ -592,7 +592,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 			log.debug("Adding leading zeros to parameter ["+getName()+"]" );
 			result = StringUtils.leftPad(result+"", getMinLength(), '0');
 		}
-		return result; 
+		return result;
 	}
 
 	/** Converts raw data to configured parameter type */
@@ -695,7 +695,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 		} catch(IOException e) {
 			throw new ParameterException("Could not convert parameter ["+getName()+"] to String", e);
 		}
-		
+
 		return result;
 	}
 
@@ -721,7 +721,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 		List<Object> params = new ArrayList<Object>();
 		int paramPosition = 0;
 		while(endNdx != -1) {
-			// get name of parameter in pattern to be substituted 
+			// get name of parameter in pattern to be substituted
 			startNdx = pattern.indexOf("{", endNdx);
 			if (startNdx == -1) {
 				formatPattern.append(pattern.substring(endNdx));
@@ -740,13 +740,13 @@ public class Parameter implements IConfigurable, IWithParameters {
 			}
 			//String substitutionName = pattern.substring(startNdx + 1, endNdx);
 			String substitutionPattern = pattern.substring(startNdx + 1, tmpEndNdx);
-			
+
 			// get value
 			Object substitutionValue = getValueForFormatting(alreadyResolvedParameters, session, substitutionPattern);
 			params.add(substitutionValue);
 			formatPattern.append('{').append(paramPosition++);
 		}
-		
+
 		return MessageFormat.format(formatPattern.toString(), params.toArray());
 	}
 
@@ -761,7 +761,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 			} catch (ParseException | IOException e) {
 				throw new ParameterException("Cannot parse ["+rawValue+"] as date", e);
 			}
-		} 
+		}
 		if (rawValue instanceof Date) {
 			DateFormat df = new SimpleDateFormat(StringUtils.isNotEmpty(getFormatString()) ? getFormatString() : DateUtils.FORMAT_GENERICDATETIME);
 			return df.format(rawValue);
@@ -772,13 +772,13 @@ public class Parameter implements IConfigurable, IWithParameters {
 			throw new ParameterException("Cannot read date value ["+rawValue+"]", e);
 		}
 	}
-	
-	
+
+
 	private Object getValueForFormatting(ParameterValueList alreadyResolvedParameters, PipeLineSession session, String targetPattern) throws ParameterException {
 		String[] patternElements = targetPattern.split(",");
 		String name = patternElements[0].trim();
 		String formatType = patternElements.length>1 ? patternElements[1].trim() : null;
-		
+
 		ParameterValue paramValue = alreadyResolvedParameters.getParameterValue(name);
 		Object substitutionValue = paramValue == null ? null : paramValue.getValue();
 
@@ -813,6 +813,13 @@ public class Parameter implements IConfigurable, IWithParameters {
 				Object fixedDateTime = session.get(PutSystemDateInSession.FIXEDDATE_STUB4TESTTOOL_KEY);
 				if (fixedDateTime==null) {
 					fixedDateTime = PutSystemDateInSession.FIXEDDATETIME;
+					DateFormat df = new SimpleDateFormat(DateUtils.FORMAT_GENERICDATETIME);
+					try {
+						fixedDateTime = df.parse(Message.asString(fixedDateTime));
+					} catch (ParseException | IOException e) {
+						log.warn("Could not parse FIXEDDATETIME", e);
+						fixedDateTime = e;
+					}
 				}
 				substitutionValue = preFormatDateType(fixedDateTime, formatType);
 			} else if ("fixeduid".equals(namelc)) {
@@ -865,10 +872,10 @@ public class Parameter implements IConfigurable, IWithParameters {
 		this.value = value;
 	}
 
-	@IbisDoc({"4", "Key of a pipelinesession-variable. <br/>If specified, the value of the pipelinesession variable is used as input for "+ 
-			"the xpathExpression or stylesheet, instead of the current input message. <br/>If no xpathExpression or stylesheet are "+ 
-			"specified, the value itself is returned. <br/>If the value '*' is specified, all existing sessionkeys are added as "+ 
-			"parameter of which the name starts with the name of this parameter. <br/>If also the name of the parameter has the "+ 
+	@IbisDoc({"4", "Key of a pipelinesession-variable. <br/>If specified, the value of the pipelinesession variable is used as input for "+
+			"the xpathExpression or stylesheet, instead of the current input message. <br/>If no xpathExpression or stylesheet are "+
+			"specified, the value itself is returned. <br/>If the value '*' is specified, all existing sessionkeys are added as "+
+			"parameter of which the name starts with the name of this parameter. <br/>If also the name of the parameter has the "+
 			"value '*' then all existing sessionkeys are added as parameter (except tsReceived)", ""})
 	public void setSessionKey(String string) {
 		sessionKey = string;
@@ -888,7 +895,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 	}
 
 	/**
-	 * @param xpathExpression to extract the parameter value from the (xml formatted) input 
+	 * @param xpathExpression to extract the parameter value from the (xml formatted) input
 	 */
 	@IbisDoc({"7", "the XPath expression to extract the parameter value from the (xml formatted) input or session-variable.", ""})
 	public void setXpathExpression(String xpathExpression) {
@@ -910,13 +917,13 @@ public class Parameter implements IConfigurable, IWithParameters {
 		xsltVersion=b?2:1;
 	}
 
-	@IbisDoc({"10", "Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of "+ 
+	@IbisDoc({"10", "Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of "+
 			"<code>prefix=namespaceuri</code>-definitions. One entry can be without a prefix, that will define the default namespace.", ""})
 	public void setNamespaceDefs(String namespaceDefs) {
 		this.namespaceDefs = namespaceDefs;
 	}
 
-	@IbisDoc({"11", "When set <code>true</code> namespaces (and prefixes) in the input message are removed before the "+ 
+	@IbisDoc({"11", "When set <code>true</code> namespaces (and prefixes) in the input message are removed before the "+
 		"stylesheet/xpathExpression is executed", "false"})
 	public void setRemoveNamespaces(boolean b) {
 		removeNamespaces = b;
@@ -935,9 +942,9 @@ public class Parameter implements IConfigurable, IWithParameters {
 	/**
 	 * @param string with pattern to be used, follows MessageFormat syntax with named parameters
 	 */
-	@IbisDoc({"14", "Value of parameter is determined using substitution and formating. The expression can contain references "+ 
-		"to session-variables or other parameters using {name-of-parameter} and is formatted using java.text.MessageFormat. "+ 
-		"<br/>If for instance <code>fname</code> is a parameter or session variable that resolves to eric, then the pattern "+ 
+	@IbisDoc({"14", "Value of parameter is determined using substitution and formating. The expression can contain references "+
+		"to session-variables or other parameters using {name-of-parameter} and is formatted using java.text.MessageFormat. "+
+		"<br/>If for instance <code>fname</code> is a parameter or session variable that resolves to eric, then the pattern "+
 		"'hi {fname}, hoe gaat het?' resolves to 'hi eric, hoe gaat het?'.<br/>" +
 		"The following predefined reference can be used in the expression too:<ul>" +
 		"<li>{now}: the current system time</li>" +
@@ -949,10 +956,10 @@ public class Parameter implements IConfigurable, IWithParameters {
 		"<li>{fixeddate}: fake date, for testing only</li>" +
 		"<li>{fixeduid}: fake uid, for testing only</li>" +
 		"<li>{fixedhostname}: fake hostname, for testing only</li>" +
-		"</ul>"+ 
-		"A guid can be generated using {hostname}_{uid}, see also "+ 
-		"<a href=\"http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html\">http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html</a> "+ 
-		"for more information about (g)uid's or <a href=\"http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html\">http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html</a> "+ 
+		"</ul>"+
+		"A guid can be generated using {hostname}_{uid}, see also "+
+		"<a href=\"http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html\">http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html</a> "+
+		"for more information about (g)uid's or <a href=\"http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html\">http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html</a> "+
 		"for more information about uuid's.", ""})
 	public void setPattern(String string) {
 		pattern = string;
@@ -1007,7 +1014,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 	public void setMaxInclusive(String string) {
 		maxInclusiveString = string;
 	}
-	
+
 	@IbisDoc({"24", "Used in combination with type <code>number</code>; if set and the value of the parameter falls short of this minimum value, this minimum value is taken", ""})
 	public void setMinInclusive(String string) {
 		minInclusiveString = string;
