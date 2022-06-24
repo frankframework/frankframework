@@ -436,17 +436,17 @@ public abstract class ClassUtils {
 
 		Map<String,Object> result = new LinkedHashMap<>();
 		String classLoaderName=classLoader!=null? classLoader.toString() : "<system classloader>";
-		result.put("ClassLoader", classLoaderName);
+		result.put("classLoader", classLoaderName);
 		if (clazz!=null) {
 			Package pkg = clazz.getPackage();
-			result.put("Specification",  pkg.getSpecificationTitle() +" version " + pkg.getSpecificationVersion() +" by "+ pkg.getSpecificationVendor());
-			result.put("Implementation", pkg.getImplementationTitle()+" version " + pkg.getImplementationVersion()+" by "+ pkg.getImplementationVendor());
+			result.put("specification",  pkg.getSpecificationTitle() +" version " + pkg.getSpecificationVersion() +" by "+ pkg.getSpecificationVendor());
+			result.put("implementation", pkg.getImplementationTitle()+" version " + pkg.getImplementationVersion()+" by "+ pkg.getImplementationVendor());
 
 			CodeSource codeSource = clazz.getProtectionDomain().getCodeSource();
-			result.put("CodeSource", codeSource!=null ? codeSource.getLocation().toString() : "unknown");
+			result.put("codeSource", codeSource!=null ? codeSource.getLocation().toString() : "unknown");
 
 			URL classLocation = clazz.getResource('/' + clazz.getName().replace('.', '/') + ".class");
-			result.put("Location", classLocation!=null ? classLocation.toString() : "unknown");
+			result.put("location", classLocation!=null ? classLocation.toString() : "unknown");
 		} else {
 			result.put("message", "Class not found in this classloader");
 		}
