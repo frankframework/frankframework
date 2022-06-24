@@ -428,7 +428,7 @@ public abstract class ClassUtils {
 			} catch (ClassNotFoundException e) {
 				clazz = null;
 			}
-		};
+		}
 		return infoList;
 	}
 
@@ -441,7 +441,7 @@ public abstract class ClassUtils {
 			Package pkg = clazz.getPackage();
 			result.put("Specification",  pkg.getSpecificationTitle() +" version " + pkg.getSpecificationVersion() +" by "+ pkg.getSpecificationVendor());
 			result.put("Implementation", pkg.getImplementationTitle()+" version " + pkg.getImplementationVersion()+" by "+ pkg.getImplementationVendor());
-	
+
 			CodeSource codeSource = clazz.getProtectionDomain().getCodeSource();
 			result.put("CodeSource", codeSource!=null ? codeSource.getLocation().toString() : "unknown");
 

@@ -52,7 +52,7 @@ import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Read and update logging configuration
- * 
+ *
  * @since	7.0-B1
  * @author	Niels Meijer
  */
@@ -125,7 +125,7 @@ public class UpdateLoggingConfig extends Base {
 			boolean logIntermediary = AppConstants.getInstance().getBoolean("log.logIntermediaryResults", true);
 			if(logIntermediary != logIntermediaryResults) {
 				AppConstants.getInstance().put("log.logIntermediaryResults", "" + logIntermediaryResults);
-	
+
 				if(msg.length() > 0)
 					msg.append(", logIntermediaryResults from [" + logIntermediary+ "] to [" + logIntermediaryResults + "]");
 				else
