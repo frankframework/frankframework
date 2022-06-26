@@ -160,21 +160,12 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		cf = new CredentialFactory(getAuthAlias(), getClientId(), getClientSecret());
 		proxyCf = new CredentialFactory(getAuthAlias(), getClientId(), getClientSecret());
 
-
-		msalClientAdapter = new MsalClientAdapter();
-		msalClientAdapter.setProxyHost(getProxyHost());
-		msalClientAdapter.setProxyPort(getProxyPort());
-		msalClientAdapter.setProxyUsername(proxyCf.getUsername());
-		msalClientAdapter.setProxyPassword(proxyCf.getPassword());
-		msalClientAdapter.configure();
-
 		if(StringUtils.isNotEmpty(getTenantId())) {
 			msalClientAdapter = new MsalClientAdapter();
 			msalClientAdapter.setProxyHost(getProxyHost());
 			msalClientAdapter.setProxyPort(getProxyPort());
-			CredentialFactory proxyCredentials = getProxyCredentials();
-			msalClientAdapter.setProxyUsername(proxyCredentials.getUsername());
-			msalClientAdapter.setProxyPassword(proxyCredentials.getPassword());
+			msalClientAdapter.setProxyUsername(proxyCf.getUsername());
+			msalClientAdapter.setProxyPassword(proxyCf.getPassword());
 			msalClientAdapter.configure();
 
 			clientCredentialParam = ClientCredentialParameters.builder(
