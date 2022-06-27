@@ -29,10 +29,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import javax.mail.internet.InternetAddress;
 
+import nl.nn.adapterframework.core.SenderException;
 import org.apache.commons.lang3.StringUtils;
 
 import com.microsoft.aad.msal4j.ClientCredentialFactory;
@@ -135,9 +138,13 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	private @Getter String clientSecret = null;
 	private @Getter String tenantId = null;
 	private ConfidentialClientApplication client;
+	private MsalClientAdapter msalClientAdapter;
+	private ExecutorService executor;
+	private ClientCredentialParameters clientCredentialParam;
 
 	private FolderId basefolderId;
 	private CredentialFactory cf;
+	private CredentialFactory proxyCf;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -149,24 +156,65 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		if (StringUtils.isEmpty(getUrl()) && StringUtils.isEmpty(getMailAddress())) {
 			throw new ConfigurationException("either url or mailAddress needs to be specified");
 		}
+
 		cf = new CredentialFactory(getAuthAlias(), getClientId(), getClientSecret());
+		proxyCf = new CredentialFactory(getAuthAlias(), getClientId(), getClientSecret());
+
+		if(StringUtils.isNotEmpty(getTenantId())) {
+			msalClientAdapter = new MsalClientAdapter();
+			msalClientAdapter.setProxyHost(getProxyHost());
+			msalClientAdapter.setProxyPort(getProxyPort());
+			msalClientAdapter.setProxyUsername(proxyCf.getUsername());
+			msalClientAdapter.setProxyPassword(proxyCf.getPassword());
+			msalClientAdapter.configure();
+
+			clientCredentialParam = ClientCredentialParameters.builder(
+				Collections.singleton(SCOPE)
+			).tenant(getTenantId()).build();
+		}
 	}
 
 	@Override
 	public void open() throws FileSystemException {
 		super.open();
-		if( StringUtils.isNotEmpty(getTenantId()) ){
+		if(msalClientAdapter != null) {
+			executor = Executors.newSingleThreadExecutor(); //Create a new Executor in the same thread(context) to avoid SecurityExceptions when setting a ClassLoader on the Runnable.
+
 			try {
+				msalClientAdapter.open();
+
 				client = ConfidentialClientApplication.builder(
 						cf.getUsername(),
 						ClientCredentialFactory.createFromSecret(cf.getPassword()))
 					.authority(AUTHORITY + getTenantId())
+					.httpClient(msalClientAdapter)
+					.executorService(executor)
 					.build();
-			} catch (MalformedURLException e){
+			} catch (MalformedURLException | SenderException e) {
 				throw new FileSystemException("Failed to initialize MSAL ConfidentialClientApplication.", e);
 			}
 		}
 		basefolderId = getBaseFolderId(getMailAddress(),getBaseFolder());
+	}
+
+	@Override
+	public void close() throws FileSystemException {
+		try {
+			super.close();
+			if(msalClientAdapter != null){
+				msalClientAdapter.close();
+			}
+		} catch (SenderException e){
+			throw new FileSystemException("An exception occurred during closing of MSAL HttpClient", e);
+		} finally {
+			if(executor != null) {
+				executor.shutdown();
+				executor = null;
+			}
+			if(msalClientAdapter != null){
+				msalClientAdapter = null;
+			}
+		}
 	}
 
 	public FolderId getBaseFolderId(String emailAddress, String baseFolderName) throws FileSystemException {
@@ -207,10 +255,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		ExchangeService exchangeService = new ExchangeService(ExchangeVersion.Exchange2010_SP2);
 
 		if (client != null) {
-			ClientCredentialParameters clientCredentialParam = ClientCredentialParameters.builder(
-				Collections.singleton(SCOPE)
-			).build();
-
 			CompletableFuture<IAuthenticationResult> future = client.acquireToken(clientCredentialParam);
 			try {
 				String token = future.get().accessToken();
