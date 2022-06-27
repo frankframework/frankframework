@@ -37,6 +37,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.Logger;
 
 import com.nimbusds.oauth2.sdk.AccessTokenResponse;
 import com.nimbusds.oauth2.sdk.AuthorizationGrant;
@@ -58,10 +59,13 @@ import com.nimbusds.oauth2.sdk.token.AccessToken;
 import nl.nn.adapterframework.http.HttpSenderBase;
 import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 
 public class OAuthAccessTokenManager {
+	protected Logger log = LogUtil.getLogger(this);
 
 	private URI tokenEndpoint;
 	private Scope scope;
@@ -148,7 +152,14 @@ public class OAuthAccessTokenManager {
 			// Get the access token
 			accessToken = successResponse.getTokens().getAccessToken();
 			// accessToken will be refreshed when it is half way expiration
-			accessTokenRefreshTime = System.currentTimeMillis() + expiryMs<0 ? 500 * accessToken.getLifetime() : expiryMs;
+			long accessTokenLifetime = accessToken.getLifetime();
+			if (expiryMs<0 && accessTokenLifetime==0) {
+				log.debug("no accessToken lifetime found in accessTokenResponse, and no expiry specified. Token will not be refreshed preemptively");
+				accessTokenRefreshTime = -1;
+			} else {
+				accessTokenRefreshTime = System.currentTimeMillis() + (expiryMs<0 ? 500 * accessTokenLifetime : expiryMs);
+			}
+			log.debug("set accessTokenRefreshTime [{}]", ()->DateUtils.format(accessTokenRefreshTime));
 		} catch (ParseException e) {
 			throw new HttpAuthenticationException("Could not parse TokenResponse: "+httpResponse.getContent(), e);
 		}
@@ -213,7 +224,7 @@ public class OAuthAccessTokenManager {
 	}
 
 	public String getAccessToken(Credentials credentials) throws HttpAuthenticationException {
-		if (accessToken==null || System.currentTimeMillis() > accessTokenRefreshTime) {
+		if (accessToken==null || accessTokenRefreshTime>0 && System.currentTimeMillis() > accessTokenRefreshTime) {
 			// retrieve a fresh token if there is none, or it needs to be refreshed
 			retrieveAccessToken(credentials);
 		}

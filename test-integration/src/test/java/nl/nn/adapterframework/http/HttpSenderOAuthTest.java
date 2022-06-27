@@ -20,9 +20,9 @@ public class HttpSenderOAuthTest {
 	protected String tokenBaseUrl  = PropertyUtil.getProperty(PROPERTY_FILE, "tokenBaseUrl");
 	protected String dataBaseUrl   = PropertyUtil.getProperty(PROPERTY_FILE, "dataBaseUrl");
 	protected String apiContext    = PropertyUtil.getProperty(PROPERTY_FILE, "apiContext");
-	protected String oauthService  = PropertyUtil.getProperty(PROPERTY_FILE, "oauthService");
+	protected String tokenContext  = PropertyUtil.getProperty(PROPERTY_FILE, "tokenContext");
 	protected String url           = dataBaseUrl + apiContext;
-	protected String tokenEndpoint = tokenBaseUrl + oauthService;
+	protected String tokenEndpoint = tokenBaseUrl + tokenContext;
 	protected String client_id     = PropertyUtil.getProperty(PROPERTY_FILE, "client_id");
 	protected String client_secret = PropertyUtil.getProperty(PROPERTY_FILE, "client_secret");
 	protected String username      = PropertyUtil.getProperty(PROPERTY_FILE, "username");
@@ -111,7 +111,14 @@ public class HttpSenderOAuthTest {
 		PipeLineSession session = new PipeLineSession();
 		
 		Message result = sender.sendMessage(new Message(""), session);
+		System.out.println("result: "+result.asString());
+		assertEquals("200", session.getMessage("StatusCode").asString());
 		
+		System.out.println("Wait 5 seconds");
+		Thread.sleep(5000);
+		System.out.println("Test again");
+
+		result = sender.sendMessage(new Message(""), session);
 		System.out.println("result: "+result.asString());
 		assertEquals("200", session.getMessage("StatusCode").asString());
 	}
