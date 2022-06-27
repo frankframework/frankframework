@@ -28,7 +28,7 @@ import org.apache.http.util.CharArrayBuffer;
 
 /**
  * HttpClient AuthScheme that uses OAuthAccessTokenManager to obtain an access token (via Client Credentials flow).
- * 
+ *
  * @author Gerrit van Brakel
  *
  */
@@ -37,7 +37,7 @@ public class OAuthAuthenticationScheme extends BasicScheme {
 	public static final String SCHEME_NAME_AUTO = "OAUTH2";
 	public static final String SCHEME_NAME_FORCE_REFRESH = "OAUTH2-REFRESHED";
 	public static final String ACCESSTOKEN_MANAGER_KEY="AccessTokenManager";
-	
+
 	private boolean forceRefresh;
 
 	public OAuthAuthenticationScheme() {

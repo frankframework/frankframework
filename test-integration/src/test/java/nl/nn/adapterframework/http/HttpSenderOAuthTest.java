@@ -5,14 +5,17 @@ import static org.junit.Assert.assertEquals;
 import java.net.URLEncoder;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.PropertyUtil;
+import nl.nn.adapterframework.util.LogUtil;
 
 public class HttpSenderOAuthTest {
+	protected Logger log = LogUtil.getLogger(this);
 
 	protected String PROPERTY_FILE = "HttpSenderOAuth.properties";
 
@@ -77,7 +80,7 @@ public class HttpSenderOAuthTest {
 		
 		Message result = sender.sendMessage(new Message("<dummy/>"), session);
 		
-		System.out.println("result: "+result.asString());
+		//log.debug("result: "+result.asString());
 		assertEquals("200", session.getMessage("StatusCode").asString());
 	}
 	
@@ -111,15 +114,15 @@ public class HttpSenderOAuthTest {
 		PipeLineSession session = new PipeLineSession();
 		
 		Message result = sender.sendMessage(new Message(""), session);
-		//System.out.println("result: "+result.asString());
+		log.debug("result: "+result.asString());
 		assertEquals("200", session.getMessage("StatusCode").asString());
 		
-		System.out.println("Wait 1 second");
+		log.debug("Wait 1 second");
 		Thread.sleep(1000);
-		System.out.println("Test again");
+		log.debug("Test again");
 
 		result = sender.sendMessage(new Message(""), session);
-		//System.out.println("result: "+result.asString());
+		log.debug("result: "+result.asString());
 		assertEquals("200", session.getMessage("StatusCode").asString());
 	}
 }
