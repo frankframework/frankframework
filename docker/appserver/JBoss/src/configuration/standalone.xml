@@ -30,6 +30,7 @@
         <extension module="org.wildfly.extension.ee-security"/>
         <extension module="org.wildfly.extension.elytron"/>
         <extension module="org.wildfly.extension.io"/>
+        <extension module="org.wildfly.extension.messaging-activemq"/>
         <extension module="org.wildfly.extension.microprofile.config-smallrye"/>
         <extension module="org.wildfly.extension.microprofile.health-smallrye"/>
         <extension module="org.wildfly.extension.microprofile.metrics-smallrye"/>
@@ -518,6 +519,20 @@
                 <smtp-server outbound-socket-binding-ref="mail-smtp"/>
             </mail-session>
         </subsystem>
+        <subsystem xmlns="urn:jboss:domain:messaging-activemq:4.0">
+           <server name="default">
+               <security elytron-domain="ApplicationDomain"/>
+               <statistics enabled="${wildfly.messaging-activemq.statistics-enabled:${wildfly.statistics-enabled:false}}"/>
+               <security-setting name="#">
+                   <role name="guest" send="true" consume="true" create-non-durable-queue="true" delete-non-durable-queue="true"/>
+               </security-setting>
+               <jms-queue name="dynamicQueues/Q.TEST.IN" entries="jms/i4testiaf_in" />
+               <jms-queue name="dynamicQueues/Q.TEST.OUT" entries="jms/i4testiaf_out" />
+               <jms-queue name="dynamicQueues/Q.TEST.FF" entries="jms/i4testiaf_ff" />
+               <remote-connector name="netty-remote-throughput" socket-binding="artemis"/>
+               <pooled-connection-factory name="artemis" entries="jms/qcf-artemis java:jboss/DefaultJMSConnectionFactory" connectors="netty-remote-throughput" transaction="xa"/>
+           </server>
+		</subsystem>
         <subsystem xmlns="urn:wildfly:microprofile-config-smallrye:1.0"/>
         <subsystem xmlns="urn:wildfly:microprofile-health-smallrye:2.0" security-enabled="false" empty-liveness-checks-status="${env.MP_HEALTH_EMPTY_LIVENESS_CHECKS_STATUS:UP}" empty-readiness-checks-status="${env.MP_HEALTH_EMPTY_READINESS_CHECKS_STATUS:UP}"/>
         <subsystem xmlns="urn:wildfly:microprofile-metrics-smallrye:2.0" security-enabled="false" exposed-subsystems="*" prefix="${wildfly.metrics.prefix:jboss}"/>
@@ -530,8 +545,8 @@
             <http-connector name="http-remoting-connector" connector-ref="default" security-realm="ApplicationRealm"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:request-controller:1.0"/>
-        <subsystem xmlns="urn:jboss:domain:resource-adapters:5.0"/>
-	        <!-- <resource-adapters>  
+        <subsystem xmlns="urn:jboss:domain:resource-adapters:5.0">
+	        <resource-adapters>  
 	            <resource-adapter id="activemq">  
 	              	<archive>activemq-rar.rar</archive>
 	                <transaction-support>XATransaction</transaction-support>  
@@ -558,8 +573,9 @@
 	                        <config-property name="PhysicalName">dynamicQueues/Q.TEST.FF</config-property>  
 	                    </admin-object>  
 	                </admin-objects>  
-	            </resource-adapter> 
-	 		</resource-adapters> -->
+	            </resource-adapter>
+	 		</resource-adapters> 
+	 	</subsystem>
         <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
         <subsystem xmlns="urn:jboss:domain:security:2.0">
             <security-domains>
@@ -659,5 +675,8 @@
         <outbound-socket-binding name="mail-smtp">
             <remote-destination host="localhost" port="25"/>
         </outbound-socket-binding>
+        <outbound-socket-binding name="artemis">
+		    <remote-destination host="host.docker.internal" port="61615"/>
+		</outbound-socket-binding>
     </socket-binding-group>
 </server>
