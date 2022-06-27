@@ -158,8 +158,8 @@ public class OAuthAccessTokenManager {
 				accessTokenRefreshTime = -1;
 			} else {
 				accessTokenRefreshTime = System.currentTimeMillis() + (expiryMs<0 ? 500 * accessTokenLifetime : expiryMs);
+				log.debug("set accessTokenRefreshTime [{}]", ()->DateUtils.format(accessTokenRefreshTime));
 			}
-			log.debug("set accessTokenRefreshTime [{}]", ()->DateUtils.format(accessTokenRefreshTime));
 		} catch (ParseException e) {
 			throw new HttpAuthenticationException("Could not parse TokenResponse: "+httpResponse.getContent(), e);
 		}
@@ -223,10 +223,12 @@ public class OAuthAccessTokenManager {
 		return httpResponse;
 	}
 
-	public String getAccessToken(Credentials credentials) throws HttpAuthenticationException {
-		if (accessToken==null || accessTokenRefreshTime>0 && System.currentTimeMillis() > accessTokenRefreshTime) {
-			// retrieve a fresh token if there is none, or it needs to be refreshed
+	public String getAccessToken(Credentials credentials, boolean forceRefresh) throws HttpAuthenticationException {
+		if (forceRefresh || accessToken==null || accessTokenRefreshTime>0 && System.currentTimeMillis() > accessTokenRefreshTime) {
+			log.debug("refresh accessToken");
 			retrieveAccessToken(credentials);
+		} else {
+			log.debug("reusing cached accessToken");
 		}
 		return accessToken.toAuthorizationHeader();
 	}

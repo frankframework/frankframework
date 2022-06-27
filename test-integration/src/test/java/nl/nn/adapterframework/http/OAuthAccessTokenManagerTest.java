@@ -46,7 +46,7 @@ public class OAuthAccessTokenManagerTest {
 
 		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenEndpoint, scope, client_cf, true, httpSender, expiry);
 				
-		String accessToken = accessTokenManager.getAccessToken(null);
+		String accessToken = accessTokenManager.getAccessToken(null, true);
 		
 		assertThat(accessToken,startsWith("Bearer"));
 	}
@@ -62,7 +62,7 @@ public class OAuthAccessTokenManagerTest {
 
 		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenEndpoint, scope, client_cf, true, httpSender, expiry);
 				
-		String accessToken = accessTokenManager.getAccessToken(null);
+		String accessToken = accessTokenManager.getAccessToken(null, true);
 		
 		assertThat(accessToken,startsWith("Bearer"));
 	}
@@ -78,7 +78,7 @@ public class OAuthAccessTokenManagerTest {
 
 		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenEndpoint, scope, client_cf, true, httpSender, expiry);
 
-		HttpAuthenticationException exception = assertThrows(HttpAuthenticationException.class, ()->accessTokenManager.getAccessToken(null));
+		HttpAuthenticationException exception = assertThrows(HttpAuthenticationException.class, ()->accessTokenManager.getAccessToken(null, true));
 		assertThat(exception.getMessage(), containsString("unauthorized_client"));
 	}
 	
@@ -93,7 +93,7 @@ public class OAuthAccessTokenManagerTest {
 
 		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenEndpoint, scope, client_cf, true, httpSender, expiry);
 
-		HttpAuthenticationException exception = assertThrows(HttpAuthenticationException.class, ()->accessTokenManager.getAccessToken(null));
+		HttpAuthenticationException exception = assertThrows(HttpAuthenticationException.class, ()->accessTokenManager.getAccessToken(null, true));
 		assertThat(exception.getMessage(), containsString("404"));
 	}
 

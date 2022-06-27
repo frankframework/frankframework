@@ -111,15 +111,15 @@ public class HttpSenderOAuthTest {
 		PipeLineSession session = new PipeLineSession();
 		
 		Message result = sender.sendMessage(new Message(""), session);
-		System.out.println("result: "+result.asString());
+		//System.out.println("result: "+result.asString());
 		assertEquals("200", session.getMessage("StatusCode").asString());
 		
-		System.out.println("Wait 5 seconds");
-		Thread.sleep(5000);
+		System.out.println("Wait 1 second");
+		Thread.sleep(1000);
 		System.out.println("Test again");
 
 		result = sender.sendMessage(new Message(""), session);
-		System.out.println("result: "+result.asString());
+		//System.out.println("result: "+result.asString());
 		assertEquals("200", session.getMessage("StatusCode").asString());
 	}
 }
