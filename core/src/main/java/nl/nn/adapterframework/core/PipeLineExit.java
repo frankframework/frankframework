@@ -18,6 +18,7 @@ package nl.nn.adapterframework.core;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLine.ExitState;
+import nl.nn.adapterframework.doc.Category;
 
 /**
  * The Exit of a Pipeline that specifies the end state of a PipeLine. The state is returned to the receiver as well as
@@ -28,10 +29,11 @@ import nl.nn.adapterframework.core.PipeLine.ExitState;
  * state SUCCESS.
  * <br/><br/>
  * The name of an Exit can be referenced by the <code>path</code> attribute of a Forward within a Pipe.
- * 
+ *
  * @author Johan Verrips
  * @author Niels Meijer
  */
+@Category("Basic")
 public class PipeLineExit implements IForwardTarget {
 
 	private @Getter String name;

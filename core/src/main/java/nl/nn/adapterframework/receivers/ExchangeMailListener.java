@@ -18,6 +18,7 @@ package nl.nn.adapterframework.receivers;
 import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
 import microsoft.exchange.webservices.data.property.complex.Attachment;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.filesystem.ExchangeFileSystem;
 import nl.nn.adapterframework.filesystem.MailListener;
@@ -27,6 +28,7 @@ import nl.nn.adapterframework.filesystem.MailListener;
  *
  * @author Gerrit van Brakel
  */
+@Category("Advanced")
 public class ExchangeMailListener extends MailListener<EmailMessage,Attachment,ExchangeFileSystem> {
 
 	public final String EXCHANGE_FILE_SYSTEM ="nl.nn.adapterframework.filesystem.ExchangeFileSystem";

@@ -17,6 +17,8 @@ package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.CanProvideOutputStream;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
@@ -24,10 +26,12 @@ import nl.nn.adapterframework.stream.StreamingPipe;
 
 /**
  * Returns simply the input message.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.2
  */
+@Category("Basic")
+@CanProvideOutputStream
 public class EchoPipe extends StreamingPipe {
 
 	@Override

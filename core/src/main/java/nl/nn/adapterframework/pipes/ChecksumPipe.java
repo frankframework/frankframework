@@ -31,6 +31,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.CanProvideOutputStream;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
@@ -39,10 +40,11 @@ import nl.nn.adapterframework.stream.StreamingPipe;
 /**
  * Pipe to calculate checksum on input.
  *
- * 
+ *
  * @author  Gerrit van Brakel
- * @since   4.9  
+ * @since   4.9
  */
+@CanProvideOutputStream
 public class ChecksumPipe extends StreamingPipe {
 
 	private @Getter String charset;
@@ -76,7 +78,7 @@ public class ChecksumPipe extends StreamingPipe {
 		}
 	}
 
-	protected class ZipChecksumGenerator implements ChecksumGenerator {	
+	protected class ZipChecksumGenerator implements ChecksumGenerator {
 
 		private Checksum checksum;
 
@@ -143,7 +145,7 @@ public class ChecksumPipe extends StreamingPipe {
 			throw new PipeRunException(this,"cannot calculate ["+getType()+"]"+(isInputIsFile()?" on file ["+message+"]":" using charset ["+getCharset()+"]"),e);
 		}
 	}
-	
+
 	@Override
 	protected boolean canProvideOutputStream() {
 		return !isInputIsFile() && super.canProvideOutputStream();
@@ -175,11 +177,11 @@ public class ChecksumPipe extends StreamingPipe {
 			public Message getResponse() {
 				return new Message(cg.getResult());
 			}
-			
+
 		};
 	}
 
-	
+
 	/**
 	 * Character encoding to be used to encode message before calculating checksum.
 	 */
