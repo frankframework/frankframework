@@ -73,7 +73,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * a fixed value, or from the pipelineSession. If this does not result in a value (or if neither of these is specified), a default value
  * can be specified. If an XPathExpression or stylesheet is specified, it will be applied to the message, the value retrieved
  * from the pipelineSession or the fixed value specified.
- * <br/>
+ * <br/><br/>
  * Examples:
  * <pre><code>
  * stored under SessionKey 'TransportInfo':
@@ -975,7 +975,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 	}
 
 	/**
-	 * Value of parameter is determined using substitution and formating, following MessageFormat syntax with named parameters. The expression can contain references
+	 * Value of parameter is determined using substitution and formatting, following MessageFormat syntax with named parameters. The expression can contain references
 	 * to session-variables or other parameters using {name-of-parameter} and is formatted using java.text.MessageFormat.
 	 * <br/>If for instance <code>fname</code> is a parameter or session variable that resolves to eric, then the pattern
 	 * 'hi {fname}, hoe gaat het?' resolves to 'hi eric, hoe gaat het?'.<br/>
