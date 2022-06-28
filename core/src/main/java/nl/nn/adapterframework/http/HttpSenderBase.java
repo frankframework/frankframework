@@ -26,6 +26,7 @@ import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -243,6 +244,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private @Getter String styleSheetName=null;
 	private @Getter String protocol=null;
 	private @Getter String resultStatusCodeSessionKey;
+	private @Getter String parametersToSkipWhenEmpty;
 
 	private final boolean APPEND_MESSAGEID_HEADER = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("http.headers.messageid", true);
 	private boolean disableCookies = false;
@@ -254,22 +256,9 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	protected URI staticUri;
 	private CredentialFactory credentials;
 
-	private Set<String> parametersToSkip=new HashSet<String>();
-
-	protected void addParameterToSkip(String parameterName) {
-		if (parameterName != null) {
-			parametersToSkip.add(parameterName);
-		}
-	}
-
-	protected boolean skipParameter(String parameterName) {
-		for(String param : parametersToSkip) {
-			if(param.equalsIgnoreCase(parameterName))
-				return true;
-		}
-
-		return false;
-	}
+	protected Set<String> requestOrBodyParamsSet=new HashSet<>();
+	protected Set<String> headerParamsSet=new LinkedHashSet<>();
+	protected Set<String> parametersToSkipWhenEmptySet=new HashSet<>();
 
 	/**
 	 * Makes sure only http(s) requests can be performed.
@@ -323,16 +312,37 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 		if (paramList!=null) {
 			paramList.configure();
-			if (StringUtils.isNotEmpty(getUrlParam())) {
-				urlParameter = paramList.findParameter(getUrlParam());
-				if(urlParameter != null)
-					addParameterToSkip(urlParameter.getName());
+			if (StringUtils.isNotEmpty(getHeadersParams())) {
+				StringTokenizer st = new StringTokenizer(getHeadersParams(), ",");
+				while (st.hasMoreElements()) {
+					String paramName = st.nextToken().trim();
+					headerParamsSet.add(paramName);
+				}
+			}
+			for (Parameter p: paramList) {
+				String paramName = p.getName();
+				if (!headerParamsSet.contains(paramName)) {
+					requestOrBodyParamsSet.add(paramName);
+				}
 			}
 
-			//Add all HeaderParams to paramIgnoreList
-			StringTokenizer st = new StringTokenizer(getHeadersParams(), ",");
-			while (st.hasMoreElements()) {
-				addParameterToSkip(st.nextToken());
+			if (StringUtils.isNotEmpty(getUrlParam())) {
+				headerParamsSet.remove(getUrlParam());
+				requestOrBodyParamsSet.remove(getUrlParam());
+				urlParameter = paramList.findParameter(getUrlParam());
+			}
+
+			if (StringUtils.isNotEmpty(getParametersToSkipWhenEmpty())) {
+				if (getParametersToSkipWhenEmpty().equals("*")) {
+					parametersToSkipWhenEmptySet.addAll(headerParamsSet);
+					parametersToSkipWhenEmptySet.addAll(requestOrBodyParamsSet);
+				} else {
+					StringTokenizer st = new StringTokenizer(getParametersToSkipWhenEmpty(), ",");
+					while (st.hasMoreElements()) {
+						String paramName = st.nextToken().trim();
+						parametersToSkipWhenEmptySet.add(paramName);
+					}
+				}
 			}
 		}
 
@@ -568,23 +578,24 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		if (parameters != null) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appending ["+parameters.size()+"] parameters");
 			for(ParameterValue pv : parameters) {
-				if (skipParameter(pv.getName())) {
-					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"skipping ["+pv.getName()+"]");
-					continue;
-				}
-				try {
-					if (parametersAppended) {
-						path.append("&");
-					} else {
-						path.append("?");
-						parametersAppended = true;
-					}
+				if (requestOrBodyParamsSet.contains(pv.getName())) {
+					String value = pv.asStringValue("");
+					if (StringUtils.isNotEmpty(value) || !parametersToSkipWhenEmptySet.contains(pv.getName())) {
+						try {
+							if (parametersAppended) {
+								path.append("&");
+							} else {
+								path.append("?");
+								parametersAppended = true;
+							}
 
-					String parameterToAppend = pv.getDefinition().getName() +"="+ URLEncoder.encode(pv.asStringValue(""), getCharSet());
-					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appending parameter ["+parameterToAppend+"]");
-					path.append(parameterToAppend);
-				} catch (UnsupportedEncodingException e) {
-					throw new SenderException(getLogPrefix()+"["+getCharSet()+"] encoding error. Failed to add parameter ["+pv.getDefinition().getName()+"]", e);
+							String parameterToAppend = pv.getDefinition().getName() +"="+ URLEncoder.encode(value, getCharSet());
+							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appending parameter ["+parameterToAppend+"]");
+							path.append(parameterToAppend);
+						} catch (UnsupportedEncodingException e) {
+							throw new SenderException(getLogPrefix()+"["+getCharSet()+"] encoding error. Failed to add parameter ["+pv.getDefinition().getName()+"]", e);
+						}
+					}
 				}
 			}
 		}
@@ -635,14 +646,16 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 			// Resolve HeaderParameters
 			Map<String, String> headersParamsMap = new HashMap<>();
-			if (headersParams != null && pvl!=null) {
+			if (!headerParamsSet.isEmpty() && pvl!=null) {
 				log.debug("appending header parameters "+headersParams);
-				StringTokenizer st = new StringTokenizer(getHeadersParams(), ",");
-				while (st.hasMoreElements()) {
-					String paramName = st.nextToken();
+				for (String paramName:headerParamsSet) {
 					ParameterValue paramValue = pvl.get(paramName);
-					if(paramValue != null)
-						headersParamsMap.put(paramName, paramValue.asStringValue(null));
+					if(paramValue != null) {
+						String value = paramValue.asStringValue(null);
+						if (StringUtils.isNotEmpty(value) || !parametersToSkipWhenEmptySet.contains(paramName)) {
+							headersParamsMap.put(paramName, value);
+						}
+					}
 				}
 			}
 
@@ -1033,6 +1046,12 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	public void setHeadersParams(String headersParams) {
 		this.headersParams = headersParams;
 	}
+
+	@IbisDoc({"Comma separated list of parameter names that should not be added as request or body parameter, or as HTTP header, if they are empty. Set to '*' for this behaviour for all parameters", ""})
+	public void setParametersToSkipWhenEmpty(String parametersToSkipWhenEmpty) {
+		this.parametersToSkipWhenEmpty = parametersToSkipWhenEmpty;
+	}
+
 
 	@IbisDoc({"If <code>true</code>, a redirect request will be honoured, e.g. to switch to HTTPS", "true"})
 	public void setFollowRedirects(boolean b) {
