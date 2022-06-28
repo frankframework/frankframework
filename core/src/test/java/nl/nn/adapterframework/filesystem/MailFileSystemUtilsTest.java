@@ -14,7 +14,7 @@ public class MailFileSystemUtilsTest {
 	public void testGetValidAddress(String address) throws AddressException {
 		testGetValidAddress(address, address);
 	}
-	
+
 	public void testGetValidAddress(String expected, String address) throws AddressException {
 		assertEquals(expected, MailFileSystemUtils.getValidAddress("test", address));
 	}
@@ -41,7 +41,7 @@ public class MailFileSystemUtilsTest {
 		InternetAddress address = new InternetAddress("gerrit@waf.nl", "Brakel, G. van");
 		testGetValidAddress("\"Brakel, G. van\" <gerrit@waf.nl>", address.toString());
 	}
-	
+
 	@Test
 	public void testgetValidAddressWithWhitespace1() throws AddressException {
 		testGetValidAddress(null, "scan@ <popp.dk scan@popp.dk>");

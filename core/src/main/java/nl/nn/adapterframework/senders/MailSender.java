@@ -103,7 +103,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class MailSender extends MailSenderBase {
 
 	private @Getter String smtpHost;
-	
+
 	private Properties properties = new Properties();
 	private Session session = null;
 

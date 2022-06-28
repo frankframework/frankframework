@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import javax.activation.DataHandler;
+import javax.activation.DataSource;
 import javax.annotation.Resource;
 import javax.xml.soap.AttachmentPart;
 import javax.xml.soap.MessageFactory;
@@ -41,7 +42,6 @@ import javax.xml.ws.handler.MessageContext;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.binding.soap.SoapBindingConstants;
 import org.apache.logging.log4j.Logger;
-import org.apache.soap.util.mime.ByteArrayDataSource;
 import org.springframework.util.MimeType;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -52,6 +52,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.MessageDataSource;
 import nl.nn.adapterframework.util.MessageUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -208,24 +209,24 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 						Iterator<Node> iter = parts.iterator();
 						while (iter.hasNext()) {
 							Element partElement = (Element) iter.next();
-							//String partType = partElement.getAttribute("type");
-							String partName = partElement.getAttribute("name");
+
+							if(StringUtils.isNotEmpty(partElement.getAttribute("name"))) {
+								if(StringUtils.isNotEmpty(partElement.getAttribute("mimeType"))) {
+									log.warn("multipart xml attributes name and mimeType are no longer used!");
+								} else {
+									log.warn("multipart xml attribute name is no longer used!");
+								}
+							}
+
 							String partSessionKey = partElement.getAttribute("sessionKey");
-							String partMimeType = partElement.getAttribute("mimeType");
 							Message partObject = pipelineSession.getMessage(partSessionKey);
+							DataSource ds = new MessageDataSource(partObject);
+							String partName = ds.getName();
 
 							if(!partObject.isNull()) {
-								DataHandler dataHander;
-								try {
-									if (partObject.isBinary()) {
-										dataHander = new DataHandler(new ByteArrayDataSource(partObject.asByteArray(), partMimeType));
-									} else {
-										dataHander = new DataHandler(new ByteArrayDataSource(partObject.asString(), partMimeType));
-									}
-								} catch (IOException e) {
-									String m = "Unable to add session key '" + partSessionKey + "' as attachment";
-									log.error(m, e);
-									throw new WebServiceException(m, e);
+								DataHandler dataHander = new DataHandler(ds);
+								if(StringUtils.isEmpty(partName)) {
+									partName = dataHander.getName();
 								}
 								AttachmentPart attachmentPart = soapMessage.createAttachmentPart(dataHander);
 								attachmentPart.setContentId(partName);

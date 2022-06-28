@@ -40,7 +40,6 @@ import javax.xml.soap.SOAPMessage;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.ws.WebServiceContext;
 
-import org.apache.soap.util.mime.ByteArrayDataSource;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,6 +49,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.w3c.dom.Element;
 
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.http.InputStreamDataSource;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.util.DomBuilderException;
@@ -63,7 +63,6 @@ public class SoapProviderTest {
 	public static void setUp() {
 		Properties prop = System.getProperties();
 		String vendor = prop.getProperty("java.vendor");
-		System.out.println("JVM Vendor : " + vendor);
 		assumeThat(vendor, not(equalTo("IBM Corporation")));
 
 	/*
@@ -129,7 +128,7 @@ public class SoapProviderTest {
 
 		if(addAttachment) {
 			InputStream fis = new ByteArrayInputStream(ATTACHMENT_CONTENT.getBytes());
-			DataHandler dataHander = new DataHandler(new ByteArrayDataSource(fis, ATTACHMENT_MIMETYPE));
+			DataHandler dataHander = new DataHandler(new InputStreamDataSource(ATTACHMENT_MIMETYPE, fis));
 
 			AttachmentPart part = soapMessage.createAttachmentPart(dataHander);
 			soapMessage.addAttachmentPart(part);
