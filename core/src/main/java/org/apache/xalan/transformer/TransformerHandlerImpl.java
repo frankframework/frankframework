@@ -45,6 +45,14 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.ext.DeclHandler;
 import org.xml.sax.ext.LexicalHandler;
 
+/*
+ * This class has been copied from Apache Xalan 2.7.2, to work around a
+ * race condition that can cause NullPointerExceptions. 
+ * The NullPointerException occurs when in between the test for null of
+ * m_lexicalHandler and the dereferencing, the value has been cleared by
+ * clearCoRoutine().
+ * See also https://github.com/ibissource/iaf/issues/2004.
+ */
 
 /**
  * A TransformerHandler
