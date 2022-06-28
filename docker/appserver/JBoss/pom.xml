@@ -67,7 +67,7 @@
 		    <version>${activemq.driver.version}</version>
 		    <type>rar</type>
 		</dependency>
-		<!-- Artemis is already part of WildFly, so not added explicitly -->
+		<!-- Artemis is already part of JBOSS, so not added explicitly -->
 	</dependencies>
 
 	<build>

@@ -9,6 +9,7 @@ USER jboss
 
 # Copy dependencies
 COPY target/dependencies/*.jar /home/jboss/jboss-eap-7.3/standalone/lib/ext/
+COPY target/dependencies/*.rar /home/jboss/jboss-eap-7.3/standalone/deployments/ 
 
 # Copy in standalone-configuration.xml
 COPY src/configuration/standalone.xml /home/jboss/jboss-eap-7.3/standalone/configuration/standalone.xml
