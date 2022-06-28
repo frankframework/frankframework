@@ -22,7 +22,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 import javax.activation.DataHandler;
-import javax.activation.DataSource;
 import javax.annotation.Resource;
 import javax.xml.soap.AttachmentPart;
 import javax.xml.soap.MessageFactory;
@@ -210,31 +209,31 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 						while (iter.hasNext()) {
 							Element partElement = (Element) iter.next();
 
+							String mimeType = partElement.getAttribute("mimeType");
 							if(StringUtils.isNotEmpty(partElement.getAttribute("name"))) {
-								if(StringUtils.isNotEmpty(partElement.getAttribute("mimeType"))) {
-									log.warn("multipart xml attributes name and mimeType are no longer used!");
+								if(StringUtils.isNotEmpty(mimeType)) {
+									log.info("multipart xml attributes name and mimeType are no longer used!");
 								} else {
-									log.warn("multipart xml attribute name is no longer used!");
+									log.info("multipart xml attribute name is no longer used!");
 								}
 							}
 
 							String partSessionKey = partElement.getAttribute("sessionKey");
 							Message partObject = pipelineSession.getMessage(partSessionKey);
-							DataSource ds = new MessageDataSource(partObject);
-							String partName = ds.getName();
 
 							if(!partObject.isNull()) {
-								DataHandler dataHander = new DataHandler(ds);
-								if(StringUtils.isEmpty(partName)) {
-									partName = dataHander.getName();
+								MessageDataSource ds = new MessageDataSource(partObject);
+								if(mimeType != null && !mimeType.equalsIgnoreCase(ds.getContentType())) {
+									log.warn("determined content-type [{}] differs from specified value [{}]", ds.getContentType(), mimeType);
 								}
+								DataHandler dataHander = new DataHandler(ds);
 								AttachmentPart attachmentPart = soapMessage.createAttachmentPart(dataHander);
-								attachmentPart.setContentId(partName);
+								attachmentPart.setContentId(partSessionKey);
 								soapMessage.addAttachmentPart(attachmentPart);
 
-								log.debug(getLogPrefix(correlationId)+"appended filepart ["+partSessionKey+"] name ["+partName+"]");
+								log.debug(getLogPrefix(correlationId)+"appended filepart ["+partSessionKey+"] key ["+partSessionKey+"]");
 							} else {
-								log.debug(getLogPrefix(correlationId)+"skipping filepart ["+partSessionKey+"] name ["+partName+"], content is <NULL>");
+								log.debug(getLogPrefix(correlationId)+"skipping filepart ["+partSessionKey+"] key ["+partSessionKey+"], content is <NULL>");
 							}
 						}
 					}

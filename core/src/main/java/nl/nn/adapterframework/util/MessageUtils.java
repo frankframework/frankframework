@@ -203,6 +203,10 @@ public abstract class MessageUtils {
 	 * NOTE: This is a resource intensive operation, the first 64k is being read and stored in memory.
 	 */
 	public static MimeType computeMimeType(Message message, String filename) {
+		if(message.isEmpty()) {
+			return null;
+		}
+
 		Map<String, Object> context = message.getContext();
 		MimeType mimeType = getMimeType(message);
 		if(mimeType != null) {
@@ -220,6 +224,9 @@ public abstract class MessageUtils {
 			metadata.set(TikaMetadataKeys.RESOURCE_NAME_KEY, name);
 			int tikaMimeMagicLength = tika.getMimeRepository().getMinLength();
 			byte[] magic = message.getMagic(tikaMimeMagicLength);
+			if(magic == null || magic.length == 0) {
+				return null;
+			}
 			org.apache.tika.mime.MediaType tikaMediaType = tika.getDetector().detect(new ByteArrayInputStream(magic), metadata);
 			return MimeType.valueOf(tikaMediaType.toString());
 		} catch (Throwable t) {

@@ -30,27 +30,36 @@ public class MessageDataSource implements DataSource {
 	private final Message message;
 	private final String name;
 
-	/**
-	 * Use content type application/octet-stream in case it cannot be
-	 * determined. See http://docs.oracle.com/javase/7/docs/api/javax/activation/DataSource.html#getContentType():
-	 * This method returns the MIME type of the data in the form of a string.
-	 * It should always return a valid type. It is suggested that getContentType
-	 * return "application/octet-stream" if the DataSource implementation can
-	 * not determine the data type.
-	 */
-	public MessageDataSource(Message message) {
+	public MessageDataSource(Message message) throws IOException {
+		if(message.isNull()) {
+			throw new IllegalArgumentException("message may not be null");
+		}
 		if(message.getContext() == null) {
 			throw new IllegalArgumentException("no message context available");
 		}
 
 		this.message = message;
+		this.message.preserve();
 		this.name = (String) message.getContext().get(MessageContext.METADATA_NAME);
 	}
 
+	/**
+	 * Use content type application/octet-stream in case it cannot be
+	 * determined. See http://docs.oracle.com/javase/7/docs/api/javax/activation/DataSource.html#getContentType():
+	 * This method returns the MIME type of the data in the form of a string.
+	 * It should always return a valid type. It is suggested that getContentType
+	 * @returns "application/octet-stream" if the DataSource implementation can
+	 * not determine the data type.
+	 */
 	@Override
 	public String getContentType() {
-		MimeType mimeType = MessageUtils.computeMimeType(message, getName());
-		return mimeType.toString();
+		if(message.isBinary()) {
+			MimeType mimeType = MessageUtils.computeMimeType(message, getName());
+			if(mimeType != null) {
+				return mimeType.toString();
+			}
+		}
+		return "application/octet-stream";
 	}
 
 	@Override
