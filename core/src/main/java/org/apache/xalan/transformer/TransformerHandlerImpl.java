@@ -771,9 +771,10 @@ public class TransformerHandlerImpl
       System.out.println("TransformerHandlerImpl#startDTD: " + name + ", "
                          + publicId + ", " + systemId);
 
-    if (null != m_lexicalHandler)
+    LexicalHandler localLexicalHandler = m_lexicalHandler;
+    if (null != localLexicalHandler)
     {
-      m_lexicalHandler.startDTD(name, publicId, systemId);
+    	localLexicalHandler.startDTD(name, publicId, systemId);
     }
   }
 
@@ -789,9 +790,10 @@ public class TransformerHandlerImpl
     if (DEBUG)
       System.out.println("TransformerHandlerImpl#endDTD");
 
-    if (null != m_lexicalHandler)
+    LexicalHandler localLexicalHandler = m_lexicalHandler;
+    if (null != localLexicalHandler)
     {
-      m_lexicalHandler.endDTD();
+    	localLexicalHandler.endDTD();
     }
   }
 
@@ -823,9 +825,10 @@ public class TransformerHandlerImpl
     if (DEBUG)
       System.out.println("TransformerHandlerImpl#startEntity: " + name);
 
-    if (null != m_lexicalHandler)
+    LexicalHandler localLexicalHandler = m_lexicalHandler;
+    if (null != localLexicalHandler)
     {
-      m_lexicalHandler.startEntity(name);
+    	localLexicalHandler.startEntity(name);
     }
   }
 
@@ -842,9 +845,10 @@ public class TransformerHandlerImpl
     if (DEBUG)
       System.out.println("TransformerHandlerImpl#endEntity: " + name);
 
-    if (null != m_lexicalHandler)
+    LexicalHandler localLexicalHandler = m_lexicalHandler;
+    if (null != localLexicalHandler)
     {
-      m_lexicalHandler.endEntity(name);
+    	localLexicalHandler.endEntity(name);
     }
   }
 
@@ -864,9 +868,10 @@ public class TransformerHandlerImpl
     if (DEBUG)
       System.out.println("TransformerHandlerImpl#startCDATA");
 
-    if (null != m_lexicalHandler)
+    LexicalHandler localLexicalHandler = m_lexicalHandler;
+    if (null != localLexicalHandler)
     {
-      m_lexicalHandler.startCDATA();
+    	localLexicalHandler.startCDATA();
     }
   }
 
@@ -882,9 +887,10 @@ public class TransformerHandlerImpl
     if (DEBUG)
       System.out.println("TransformerHandlerImpl#endCDATA");
 
-    if (null != m_lexicalHandler)
+    LexicalHandler localLexicalHandler = m_lexicalHandler;
+    if (null != localLexicalHandler)
     {
-      m_lexicalHandler.endCDATA();
+    	localLexicalHandler.endCDATA();
     }
   }
 
@@ -907,9 +913,10 @@ public class TransformerHandlerImpl
       System.out.println("TransformerHandlerImpl#comment: " + start + ", "
                          + length);
 
-    if (null != m_lexicalHandler)
+    LexicalHandler localLexicalHandler = m_lexicalHandler;
+    if (null != localLexicalHandler)
     {
-      m_lexicalHandler.comment(ch, start, length);
+    	localLexicalHandler.comment(ch, start, length);
     }
   }
 
