@@ -67,6 +67,7 @@
 				styleSheetName="/Larva/xsl/CreateMail.xsl"
 				getInputFromFixedValue="&lt;dummy/&gt;"
 				>
+				<param name="sendername" value="${sendername}" />
 				<param name="hostname" value="${hostname}" />
 				<param name="message" sessionKey="message" />
 				<param name="mailaddresses" sessionKey="mailaddresses" />
