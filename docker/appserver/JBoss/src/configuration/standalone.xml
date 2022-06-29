@@ -519,7 +519,7 @@
                 <smtp-server outbound-socket-binding-ref="mail-smtp"/>
             </mail-session>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:messaging-activemq:4.0">
+        <subsystem xmlns="urn:jboss:domain:messaging-activemq:8.0">
            <server name="default">
                <security elytron-domain="ApplicationDomain"/>
                <statistics enabled="${wildfly.messaging-activemq.statistics-enabled:${wildfly.statistics-enabled:false}}"/>
