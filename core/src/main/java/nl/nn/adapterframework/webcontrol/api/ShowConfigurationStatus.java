@@ -305,6 +305,9 @@ public final class ShowConfigurationStatus extends Base {
 				if(value.equals("stop")) { action = IbisAction.STOPADAPTER; }
 				if(value.equals("start")) { action = IbisAction.STARTADAPTER; }
 
+				if(action == null) {
+					throw new ApiException("unknown action ["+value+"] provided");
+				}
 				getIbisManager().handleAction(action, "", adapterName, null, getUserPrincipalName(), false);
 
 				response.entity("{\"status\":\"ok\"}");

@@ -10,7 +10,6 @@
           <xs:element ref="Adapter" minOccurs="0" maxOccurs="unbounded" />
           <xs:element ref="Scheduler" minOccurs="0" maxOccurs="1" />
           <xs:group ref="JobElementGroup" minOccurs="0" maxOccurs="unbounded" />
-          <xs:element ref="SapSystems" minOccurs="0" maxOccurs="1" />
           <xs:element ref="JmsRealms" minOccurs="0" maxOccurs="1" />
           <xs:element ref="JmsRealm" minOccurs="0" maxOccurs="unbounded" />
           <xs:element ref="Monitoring" minOccurs="0" maxOccurs="1" />
@@ -239,7 +238,7 @@
       <xs:attribute name="removeCompactMsgNamespaces" type="frankBoolean" />
       <xs:attribute name="hideRegex" type="xs:string">
         <xs:annotation>
-          <xs:documentation>Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&amp;lt;=&amp;lt;party&amp;gt;).*?(?=&amp;lt;/party&amp;gt;) will replace every character between keys&lt;party&gt; and &lt;/party&gt;</xs:documentation>
+          <xs:documentation>Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&amp;lt;=&amp;lt;party&amp;gt;).*?(?=&amp;lt;/party&amp;gt;) will replace every character between keys &amp;lt;party&amp;gt; and &amp;lt;/party&amp;gt;</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute name="hideMethod" type="xs:string">
@@ -447,7 +446,7 @@
       </xs:sequence>
       <xs:attribute name="firstPipe" type="xs:string">
         <xs:annotation>
-          <xs:documentation>Name of the first pipe to execute when a message is to be processed Default: &lt;first pipe of the pipeline&gt;" })</xs:documentation>
+          <xs:documentation>Name of the first pipe to execute when a message is to be processed Default: first pipe of the pipeline</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute name="maxThreads" type="frankInt">
@@ -875,20 +874,11 @@
       <xs:anyAttribute namespace="##other" processContents="skip" />
     </xs:complexType>
   </xs:element>
-  <xs:element name="SapSystems">
-    <xs:annotation>
-      <xs:documentation>nl.nn.adapterframework.configuration.extensions.SapSystems</xs:documentation>
-    </xs:annotation>
-    <xs:complexType>
-      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.configuration.extensions.SapSystems" use="prohibited" />
-      <xs:attribute ref="active" />
-      <xs:attribute name="elementRole" type="xs:string" fixed="sapSystems" />
-      <xs:anyAttribute namespace="##other" processContents="skip" />
-    </xs:complexType>
-  </xs:element>
   <xs:element name="JmsRealms">
     <xs:annotation>
-      <xs:documentation>nl.nn.adapterframework.jms.JmsRealms</xs:documentation>
+      <xs:documentation>nl.nn.adapterframework.jms.JmsRealmFactory - Singleton that has the different jmsRealms.&lt;br/&gt;
+ Typical use: JmsRealmFactory.getInstance().&amp;lt;method to execute&amp;gt;
+ &lt;br/&gt;</xs:documentation>
     </xs:annotation>
     <xs:complexType>
       <xs:sequence>
@@ -896,7 +886,7 @@
           <xs:element ref="JmsRealm" minOccurs="0" maxOccurs="unbounded" />
         </xs:choice>
       </xs:sequence>
-      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jms.JmsRealms" use="prohibited" />
+      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jms.JmsRealmFactory" use="prohibited" />
       <xs:attribute ref="active" />
       <xs:attribute name="elementRole" type="xs:string" fixed="jmsRealms" />
       <xs:anyAttribute namespace="##other" processContents="skip" />
@@ -1773,6 +1763,20 @@ MQTT listener which will connect to a broker and subscribe to a topic.</xs:docum
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="MqttSenderType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="sender" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="MsalClientAdapterSender">
+        <xs:annotation>
+          <xs:documentation>MsalClientAdapterSender - nl.nn.adapterframework.filesystem.MsalClientAdapter used as Sender
+
+This class ensures that Microsoft Authentication Library (MSAL) requests are sent through the configured proxy and the correct SSLSocketFactory.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="MsalClientAdapterType">
               <xs:attribute name="elementRole" type="xs:string" fixed="sender" />
             </xs:extension>
           </xs:complexContent>
@@ -3361,24 +3365,34 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
         <xs:documentation>Url of the Exchange server. Set to e.g. https://outlook.office365.com/EWS/Exchange.asmx to speed up start up, leave empty to use autodiscovery</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="accessToken" type="xs:string">
+    <xs:attribute name="clientId" type="xs:string">
       <xs:annotation>
-        <xs:documentation>AccessToken for authentication to Exchange mail server</xs:documentation>
+        <xs:documentation>Client ID that represents a registered application in Azure AD which could be found at Azure AD -&gt; App Registrations -&gt; MyApp -&gt; Overview.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="clientSecret" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Client secret that belongs to registered application in Azure AD which could be found at Azure AD -&gt; App Registrations -&gt; MyApp -&gt; Certificates and Secrets</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="tenantId" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Tenant ID that represents the tenant in which the registered application exists within Azure AD which could be found at Azure AD -&gt; App Registrations -&gt; MyApp -&gt; Overview.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="username" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Username for authentication to Exchange mail server. Ignored when accessToken is also specified</xs:documentation>
+        <xs:documentation>Username for authentication to Exchange mail server. Ignored when tenantId is also specified</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="password" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Password for authentication to Exchange mail server. Ignored when accessToken is also specified</xs:documentation>
+        <xs:documentation>Password for authentication to Exchange mail server. Ignored when tenantId is also specified</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="authAlias" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Alias used to obtain accessToken or username and password for authentication to Exchange mail server. If the alias refers to a combination of a username and a password, the deprecated Basic Authentication method is used. If the alias refers to a password without a username, the password is treated as the accessToken.</xs:documentation>
+        <xs:documentation>Alias used to obtain client ID and secret or username and password for authentication to Exchange mail server. If the attribute tenantId is empty, the deprecated Basic Authentication method is used. If the attribute tenantId is not empty, the username and password are treated as the client ID and secret.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="baseFolder" type="xs:string">
@@ -5121,6 +5135,11 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
         <xs:documentation>omit the xml declaration on top of the output. When not set, the value specified in the stylesheet is followed Default: false, if not set in stylesheet</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="disableOutputEscaping" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>when set &lt;code&gt;true&lt;/code&gt;, any output is reparsed before being handled as XML again. When not set, the stylesheet is searched for &lt;code&gt;@disable-output-escaping='yes'&lt;/code&gt; and the value is set accordingly Default: false, if not set in stylesheet</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="outputType">
       <xs:simpleType>
         <xs:union memberTypes="OutputTypeAttributeValuesType variableRef">
@@ -5135,6 +5154,7 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
         <xs:documentation>when set &lt;code&gt;true&lt;/code&gt;, result is pretty-printed. When not set, the value specified in the stylesheet is followed Default: false, if not set in stylesheet</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="namespaceAware" type="frankBoolean" />
     <xs:attribute name="removeNamespaces" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>when set &lt;code&gt;true&lt;/code&gt; namespaces (and prefixes) in the input message are removed before transformation Default: false</xs:documentation>
@@ -5148,11 +5168,6 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
     <xs:attribute name="xsltVersion" type="frankInt">
       <xs:annotation>
         <xs:documentation>when set to &lt;code&gt;2&lt;/code&gt; xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan). &lt;code&gt;0&lt;/code&gt; will auto detect Default: 0</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="namespaceAware" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="debugInput" type="frankBoolean">
@@ -5202,6 +5217,11 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
         <xs:documentation>omit the xml declaration on top of the output. When not set, the value specified in the stylesheet is followed Default: false, if not set in stylesheet</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="disableOutputEscaping" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>when set &lt;code&gt;true&lt;/code&gt;, any output is reparsed before being handled as XML again. When not set, the stylesheet is searched for &lt;code&gt;@disable-output-escaping='yes'&lt;/code&gt; and the value is set accordingly Default: false, if not set in stylesheet</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="namespaceDefs" type="xs:string">
       <xs:annotation>
         <xs:documentation>Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions. For some use other cases (NOT xpathExpression), one entry can be without a prefix, that will define the default namespace.</xs:documentation>
@@ -5221,6 +5241,7 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
         <xs:documentation>when set &lt;code&gt;true&lt;/code&gt;, result is pretty-printed. When not set, the value specified in the stylesheet is followed Default: false, if not set in stylesheet</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="namespaceAware" type="frankBoolean" />
     <xs:attribute name="removeNamespaces" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>when set &lt;code&gt;true&lt;/code&gt; namespaces (and prefixes) in the input message are removed before transformation Default: false</xs:documentation>
@@ -5234,11 +5255,6 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
     <xs:attribute name="xsltVersion" type="frankInt">
       <xs:annotation>
         <xs:documentation>when set to &lt;code&gt;2&lt;/code&gt; xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan). &lt;code&gt;0&lt;/code&gt; will auto detect Default: 0</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="namespaceAware" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="debugInput" type="frankBoolean">
@@ -5529,12 +5545,14 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
     <xs:attributeGroup ref="MessageStoreSenderDeclaredAttributeGroup" />
     <xs:attribute name="slotId" type="xs:string">
       <xs:annotation>
-        <xs:documentation>The name of the column slotids are stored in Default: SLOTID</xs:documentation>
+        <xs:documentation>Optional identifier for this storage, to be able to share the physical storage between a number of receivers and pipes.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="type" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Possible values are E (error store), M (message store), L (message log for pipe) or A (message log for receiver). Receiver will always set type to E for errorStorage and always set type to A for messageLog. SenderPipe will set type to L for messageLog (when type isn't specified). See MessagestoreSender for type M Default: E for errorstorage on receiver, A for messageLog on receiver and L for messageLog on Pipe</xs:documentation>
+        <xs:documentation>Possible values are &lt;code&gt;E&lt;/code&gt; (error store), &lt;code&gt;M&lt;/code&gt; (message store), &lt;code&gt;L&lt;/code&gt; (message log for Pipe) or &lt;code&gt;A&lt;/code&gt; (message log for Receiver).&lt;br/&gt;
+ Receiver will always set type to &lt;code&gt;E&lt;/code&gt; for errorStorage and always set type to &lt;code&gt;A&lt;/code&gt; for messageLog. SenderPipe will set type to &lt;code&gt;L&lt;/code&gt; for messageLog (when type isn't specified).&lt;br/&gt;
+ See MessageStoreSender for type &lt;code&gt;M&lt;/code&gt;. Default: &lt;code&gt;E&lt;/code&gt; for errorStorage on Receiver&lt;br/&gt;&lt;code&gt;A&lt;/code&gt; for messageLog on Receiver&lt;br/&gt;&lt;code&gt;L&lt;/code&gt; for messageLog on Pipe</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="slotIdField" type="xs:string">
@@ -5554,7 +5572,7 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
     </xs:attribute>
     <xs:attribute name="sequenceName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>The name of the sequence used to generate the primary key, for DBMSes that use sequences, like Oracle) Default: seq_ibisstore</xs:documentation>
+        <xs:documentation>The name of the sequence used to generate the primary key, for DBMSes that use sequences, like Oracle Default: seq_ibisstore</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="checkIfTableExists" type="frankBoolean" />
@@ -5585,7 +5603,7 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
     </xs:attribute>
     <xs:attribute name="textFieldType" type="xs:string">
       <xs:annotation>
-        <xs:documentation>The type of the columns messageId and correlationId, slotId and comments are stored in. N.B. (100) is appended for id's, (1000) is appended for comments.</xs:documentation>
+        <xs:documentation>The type of the columns messageId and correlationId, slotId and comments are stored in. N.B. &lt;code&gt;(100)&lt;/code&gt; is appended for id's, &lt;code&gt;(1000)&lt;/code&gt; is appended for comments.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="blobsCompressed" type="frankBoolean">
@@ -5617,12 +5635,14 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
   <xs:attributeGroup name="JdbcTransactionalStorageDeclaredAttributeGroup">
     <xs:attribute name="slotId" type="xs:string">
       <xs:annotation>
-        <xs:documentation>The name of the column slotids are stored in Default: SLOTID</xs:documentation>
+        <xs:documentation>Optional identifier for this storage, to be able to share the physical storage between a number of receivers and pipes.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="type" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Possible values are E (error store), M (message store), L (message log for pipe) or A (message log for receiver). Receiver will always set type to E for errorStorage and always set type to A for messageLog. SenderPipe will set type to L for messageLog (when type isn't specified). See MessagestoreSender for type M Default: E for errorstorage on receiver, A for messageLog on receiver and L for messageLog on Pipe</xs:documentation>
+        <xs:documentation>Possible values are &lt;code&gt;E&lt;/code&gt; (error store), &lt;code&gt;M&lt;/code&gt; (message store), &lt;code&gt;L&lt;/code&gt; (message log for Pipe) or &lt;code&gt;A&lt;/code&gt; (message log for Receiver).&lt;br/&gt;
+ Receiver will always set type to &lt;code&gt;E&lt;/code&gt; for errorStorage and always set type to &lt;code&gt;A&lt;/code&gt; for messageLog. SenderPipe will set type to &lt;code&gt;L&lt;/code&gt; for messageLog (when type isn't specified).&lt;br/&gt;
+ See MessageStoreSender for type &lt;code&gt;M&lt;/code&gt;. Default: &lt;code&gt;E&lt;/code&gt; for errorStorage on Receiver&lt;br/&gt;&lt;code&gt;A&lt;/code&gt; for messageLog on Receiver&lt;br/&gt;&lt;code&gt;L&lt;/code&gt; for messageLog on Pipe</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="slotIdField" type="xs:string">
@@ -5642,7 +5662,7 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
     </xs:attribute>
     <xs:attribute name="sequenceName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>The name of the sequence used to generate the primary key, for DBMSes that use sequences, like Oracle) Default: seq_ibisstore</xs:documentation>
+        <xs:documentation>The name of the sequence used to generate the primary key, for DBMSes that use sequences, like Oracle Default: seq_ibisstore</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="checkIfTableExists" type="frankBoolean" />
@@ -5673,7 +5693,7 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
     </xs:attribute>
     <xs:attribute name="textFieldType" type="xs:string">
       <xs:annotation>
-        <xs:documentation>The type of the columns messageId and correlationId, slotId and comments are stored in. N.B. (100) is appended for id's, (1000) is appended for comments.</xs:documentation>
+        <xs:documentation>The type of the columns messageId and correlationId, slotId and comments are stored in. N.B. &lt;code&gt;(100)&lt;/code&gt; is appended for id's, &lt;code&gt;(1000)&lt;/code&gt; is appended for comments.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="blobsCompressed" type="frankBoolean">
@@ -5916,6 +5936,15 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
+  <xs:complexType name="MsalClientAdapterType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="HttpSenderBaseCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.filesystem.MsalClientAdapter" />
+  </xs:complexType>
   <xs:complexType name="MultipartHttpSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -6541,19 +6570,10 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
         <xs:group ref="SapSenderBaseDeclaredChildGroup" />
       </xs:choice>
     </xs:sequence>
-    <xs:attributeGroup ref="SapSender2CumulativeAttributeGroup" />
+    <xs:attributeGroup ref="SapSenderImplCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.sap.SapSender" />
   </xs:complexType>
-  <xs:complexType name="SapSender2Type">
-    <xs:sequence>
-      <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="SapSenderBaseDeclaredChildGroup" />
-      </xs:choice>
-    </xs:sequence>
-    <xs:attributeGroup ref="SapSender2CumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.sap.jco3.SapSender" />
-  </xs:complexType>
-  <xs:attributeGroup name="SapSender2DeclaredAttributeGroup">
+  <xs:attributeGroup name="SapSenderImplDeclaredAttributeGroup">
     <xs:attribute name="synchronous" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>when &lt;code&gt;false&lt;/code&gt;, the sender operates in RR mode: the a reply is expected from SAP, and the sender does not participate in a transaction. When &lt;code&gt;false&lt;/code&gt;, the sender operates in FF mode: no reply is expected from SAP, and the sender joins the transaction, that must be present. The SAP transaction is committed right after the XA transaction is completed. Default: false</xs:documentation>
@@ -6570,8 +6590,8 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
-  <xs:attributeGroup name="SapSender2CumulativeAttributeGroup">
-    <xs:attributeGroup ref="SapSender2DeclaredAttributeGroup" />
+  <xs:attributeGroup name="SapSenderImplCumulativeAttributeGroup">
+    <xs:attributeGroup ref="SapSenderImplDeclaredAttributeGroup" />
     <xs:attributeGroup ref="SapSenderBaseCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="SchedulerSenderType">
@@ -7918,11 +7938,10 @@ Listener that allows a nl.nn.adapterframework.receivers.Receiver to receive mess
   <xs:attributeGroup name="PushingListenerAdapterDeclaredAttributeGroup">
     <xs:attribute name="name" type="xs:string">
       <xs:annotation>
-        <xs:documentation>name of the listener as known to the adapter</xs:documentation>
+        <xs:documentation>Name of the listener as known to the adapter</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="applicationFaultsAsExceptions" type="frankBoolean" />
-    <xs:attribute name="running" type="frankBoolean" />
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
@@ -8331,24 +8350,34 @@ Listener that allows a nl.nn.adapterframework.receivers.Receiver to receive mess
         <xs:documentation>Url of the Exchange server. Set to e.g. https://outlook.office365.com/EWS/Exchange.asmx to speed up start up, leave empty to use autodiscovery</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="accessToken" type="xs:string">
+    <xs:attribute name="clientId" type="xs:string">
       <xs:annotation>
-        <xs:documentation>AccessToken for authentication to Exchange mail server</xs:documentation>
+        <xs:documentation>Client ID that represents a registered application in Azure AD which could be found at Azure AD -&gt; App Registrations -&gt; MyApp -&gt; Overview.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="clientSecret" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Client secret that belongs to registered application in Azure AD which could be found at Azure AD -&gt; App Registrations -&gt; MyApp -&gt; Certificates and Secrets</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="tenantId" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Tenant ID that represents the tenant in which the registered application exists within Azure AD which could be found at Azure AD -&gt; App Registrations -&gt; MyApp -&gt; Overview.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="username" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Username for authentication to Exchange mail server. Ignored when accessToken is also specified</xs:documentation>
+        <xs:documentation>Username for authentication to Exchange mail server. Ignored when tenantId is also specified</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="password" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Password for authentication to Exchange mail server. Ignored when accessToken is also specified</xs:documentation>
+        <xs:documentation>Password for authentication to Exchange mail server. Ignored when tenantId is also specified</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="authAlias" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Alias used to obtain accessToken or username and password for authentication to Exchange mail server. If the alias refers to a combination of a username and a password, the deprecated Basic Authentication method is used. If the alias refers to a password without a username, the password is treated as the accessToken.</xs:documentation>
+        <xs:documentation>Alias used to obtain client ID and secret or username and password for authentication to Exchange mail server. If the attribute tenantId is empty, the deprecated Basic Authentication method is used. If the attribute tenantId is not empty, the username and password are treated as the client ID and secret.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="baseFolder" type="xs:string">
@@ -8409,10 +8438,117 @@ Listener that allows a nl.nn.adapterframework.receivers.Receiver to receive mess
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="storeEmailAsStreamInSessionKey" type="xs:string" />
+    <xs:attribute name="messageType" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Determines the contents of the message that is sent to the pipeline. Can be 'name', for the filename, 'path', for the full file path, 'contents' for the contents of the file, 'info' for file information. For any other value, the attributes of the file are searched and used Default: path</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="MailListenerCumulativeAttributeGroup">
     <xs:attributeGroup ref="MailListenerDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FileSystemListenerDeclaredAttributeGroup" />
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the listener</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="inputDirectory" type="xs:string" />
+    <xs:attribute name="inputFolder" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Folder that is scanned for files. If not set, the root is scanned</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="outputDirectory" type="xs:string" />
+    <xs:attribute name="inProcessFolder" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Folder where files are stored &lt;i&gt;while&lt;/i&gt; being processed</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="processedDirectory" type="xs:string" />
+    <xs:attribute name="processedFolder" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Folder where files are stored &lt;i&gt;after&lt;/i&gt; being processed</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="errorFolder" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Folder where files are stored &lt;i&gt;after&lt;/i&gt; being processed, in case the exit-state was not equal to &lt;code&gt;success&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="holdFolder" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Folder where messages from the error folder can be put on Hold, temporarily</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="logFolder" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Folder where a copy of every file that is received is stored</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="createFolders" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, the folders to look for files and to move files to when being processed and after being processed are created if they are specified and do not exist Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="createInputDirectory" type="frankBoolean" />
+    <xs:attribute name="delete" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the file processed will be deleted after being processed, and not stored Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="numberOfBackups" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Number of copies held of a file with the same name. Backup files have a dot and a number suffixed to their name. If set to 0, no backups will be kept. Default: 0</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="overwrite" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the destination file will be deleted if it already exists Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="fileTimeSensitive" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the file modification time is used in addition to the filename to determine if a file has been seen before Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="minStableTime" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Minimal age of file &lt;i&gt;in milliseconds&lt;/i&gt;, to avoid receiving a file while it is still being written Default: 1000</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="messageIdPropertyKey" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Key of Property to use as messageId. If not set, the filename of the file as it was received in the inputFolder is used as the messageId Default: for MailFileSystems: Message-ID</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="disableMessageBrowsers" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, no browsers for process folders are generated Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="wildCard" type="xs:string" />
+    <xs:attribute name="wildcard" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Filter of files to look for in inputFolder e.g. '*.inp'.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="excludeWildCard" type="xs:string" />
+    <xs:attribute name="excludeWildcard" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Filter of files to be excluded when looking in inputFolder.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="storeMetadataInSessionKey" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>If set, an XML with all message properties is provided under this key</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="charset" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Charset to be used for extracting the contents</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
   <xs:complexType name="FileRecordListenerType">
     <xs:sequence>
@@ -9366,15 +9502,11 @@ Listener that allows a nl.nn.adapterframework.receivers.Receiver to receive mess
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.receivers.SambaListener" />
   </xs:complexType>
   <xs:complexType name="SapListenerType">
-    <xs:attributeGroup ref="SapListener2CumulativeAttributeGroup" />
+    <xs:attributeGroup ref="SapListenerImplCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.sap.SapListener" />
   </xs:complexType>
-  <xs:complexType name="SapListener2Type">
-    <xs:attributeGroup ref="SapListener2CumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.sap.jco3.SapListener" />
-  </xs:complexType>
-  <xs:attributeGroup name="SapListener2DeclaredAttributeGroup">
-    <xs:attribute name="progid" type="xs:string">
+  <xs:attributeGroup name="SapListenerImplDeclaredAttributeGroup">
+    <xs:attribute name="progid" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>Name of the RFC-destination to be registered in the SAP system</xs:documentation>
       </xs:annotation>
@@ -9385,8 +9517,8 @@ Listener that allows a nl.nn.adapterframework.receivers.Receiver to receive mess
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
-  <xs:attributeGroup name="SapListener2CumulativeAttributeGroup">
-    <xs:attributeGroup ref="SapListener2DeclaredAttributeGroup" />
+  <xs:attributeGroup name="SapListenerImplCumulativeAttributeGroup">
+    <xs:attributeGroup ref="SapListenerImplDeclaredAttributeGroup" />
     <xs:attributeGroup ref="SapFunctionFacadeDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="SimpleJdbcListenerType">
@@ -9437,23 +9569,38 @@ Listener that allows a nl.nn.adapterframework.receivers.Receiver to receive mess
   <xs:attributeGroup name="WebServiceListenerDeclaredAttributeGroup">
     <xs:attribute name="soap" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>when &lt;code&gt;true&lt;/code&gt; the soap envelope is removed from received messages and a soap envelope is added to returned messages (soap envelope will not be visible to the pipeline) Default: true</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt; the SOAP envelope is removed from received messages and a SOAP envelope is added to returned messages (SOAP envelope will not be visible to the pipeline) Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="serviceNamespaceURI" type="xs:string">
       <xs:annotation>
-        <xs:documentation>namespace of the service that is provided by the adapter of this listener</xs:documentation>
+        <xs:documentation>Namespace of the service that is provided by the adapter of this listener.
+ If specified, requests posted to https://mydomain.com/ibis4something/servlet/rpcrouter that have this namespace in their body  will be handled by this listener,
+ where mydomain.com and ibis4something refer to 'your ibis'.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="applicationFaultsAsSoapFaults" type="frankBoolean" />
     <xs:attribute name="address" type="xs:string">
       <xs:annotation>
-        <xs:documentation>The address to listen to, e.g the part &lt;address&gt; in https://mydomain.com/ibis4something/services/&lt;/address&gt;, where mydomain.com and ibis4something refer to 'your ibis'</xs:documentation>
+        <xs:documentation>The address to listen to, e.g the part &amp;lt;address&amp;gt; in https://mydomain.com/ibis4something/services/&amp;lt;address&amp;gt;,
+ where mydomain.com and ibis4something refer to 'your ibis'.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="mtomEnabled" type="frankBoolean" />
-    <xs:attribute name="attachmentSessionKeys" type="xs:string" />
-    <xs:attribute name="multipartXmlSessionKey" type="xs:string" />
+    <xs:attribute name="mtomEnabled" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set, MTOM is enabled on the SOAP binding</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="attachmentSessionKeys" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Comma separated list of session keys to hold contents of attachments of the request</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="multipartXmlSessionKey" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Key of session variable that holds the description (name, sessionKey, mimeType) of the parts present in the request. Only used if attachmentSessionKeys are specified Default: multipartXml</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="WebServiceListenerCumulativeAttributeGroup">
     <xs:attributeGroup ref="WebServiceListenerDeclaredAttributeGroup" />
@@ -9569,12 +9716,14 @@ Send messages to the ibisstore to have them processed exactly-once by another
   <xs:attributeGroup name="JmsTransactionalStorageDeclaredAttributeGroup">
     <xs:attribute name="slotId" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Optional identifier for this storage, to be able to share the physical storage between a number of receivers and pipes</xs:documentation>
+        <xs:documentation>Optional identifier for this storage, to be able to share the physical storage between a number of receivers and pipes.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="type" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Possible values are E (error store), M (message store), L (message log for pipe) or A (message log for receiver). Receiver will always set type to E for errorStorage and always set type to A for messageLog. SenderPipe will set type to L for messageLog (when type isn't specified). See MessagestoreSender for type M Default: E for errorstorage on receiver, A for messageLog on receiver and L for messageLog on Pipe</xs:documentation>
+        <xs:documentation>Possible values are &lt;code&gt;E&lt;/code&gt; (error store), &lt;code&gt;M&lt;/code&gt; (message store), &lt;code&gt;L&lt;/code&gt; (message log for Pipe) or &lt;code&gt;A&lt;/code&gt; (message log for Receiver).&lt;br/&gt;
+ Receiver will always set type to &lt;code&gt;E&lt;/code&gt; for errorStorage and always set type to &lt;code&gt;A&lt;/code&gt; for messageLog. SenderPipe will set type to &lt;code&gt;L&lt;/code&gt; for messageLog (when type isn't specified).&lt;br/&gt;
+ See MessageStoreSender for type &lt;code&gt;M&lt;/code&gt;. Default: &lt;code&gt;E&lt;/code&gt; for errorStorage on Receiver&lt;br/&gt;&lt;code&gt;A&lt;/code&gt; for messageLog on Receiver&lt;br/&gt;&lt;code&gt;L&lt;/code&gt; for messageLog on Pipe</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -10150,6 +10299,20 @@ MQTT listener which will connect to a broker and subscribe to a topic.</xs:docum
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="MqttSenderType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="errorSender" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="MsalClientAdapterErrorSender">
+        <xs:annotation>
+          <xs:documentation>MsalClientAdapterErrorSender - nl.nn.adapterframework.filesystem.MsalClientAdapter used as ErrorSender
+
+This class ensures that Microsoft Authentication Library (MSAL) requests are sent through the configured proxy and the correct SSLSocketFactory.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="MsalClientAdapterType">
               <xs:attribute name="elementRole" type="xs:string" fixed="errorSender" />
             </xs:extension>
           </xs:complexContent>
@@ -14750,7 +14913,7 @@ Sends a message to a Sender for each element in the XML file that the input mess
         <xs:annotation>
           <xs:documentation>XmlIfPipe - nl.nn.adapterframework.pipes.XmlIf used as Pipe
 
-Selects an exitState, based on xpath evaluation</xs:documentation>
+Selects an forward, based on XPath evaluation</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -15341,11 +15504,6 @@ Pipe that creates a ZipStream.</xs:documentation>
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="MessageSendingPipeDeclaredAttributeGroup">
-    <xs:attribute name="name" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>name of the pipe</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="linkMethod">
       <xs:simpleType>
         <xs:union memberTypes="LinkMethodAttributeValuesType_2 variableRef">
@@ -15497,6 +15655,12 @@ Pipe that creates a ZipStream.</xs:documentation>
     <xs:attributeGroup ref="MessageSendingPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="StreamingPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="FixedForwardPipeDeclaredAttributeGroup" />
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The functional name of this pipe
+ TODO add ff.mandatory tag once validators and wrappers can be excluded.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="getInputFromSessionKey" type="xs:string">
       <xs:annotation>
         <xs:documentation>If set, input is taken from this session key, instead of regular input</xs:documentation>
@@ -17210,6 +17374,11 @@ A true multi-threaded Listener-class.</xs:documentation>
         <xs:documentation>omit the xml declaration on top of the output. When not set, the value specified in the stylesheet is followed Default: false, if not set in stylesheet</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="disableOutputEscaping" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>when set &lt;code&gt;true&lt;/code&gt;, any output is reparsed before being handled as XML again. When not set, the stylesheet is searched for &lt;code&gt;@disable-output-escaping='yes'&lt;/code&gt; and the value is set accordingly Default: false, if not set in stylesheet</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="outputType">
       <xs:simpleType>
         <xs:union memberTypes="OutputTypeAttributeValuesType variableRef">
@@ -17246,7 +17415,7 @@ A true multi-threaded Listener-class.</xs:documentation>
     </xs:attribute>
     <xs:attribute name="namespaceAware" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Default: true</xs:documentation>
+        <xs:documentation>controls namespace-awareness of possible xml parsing in descender-classes Default: application default</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="sessionKey" type="xs:string">
@@ -17383,6 +17552,11 @@ A true multi-threaded Listener-class.</xs:documentation>
         <xs:documentation>omit the xml declaration on top of the output. When not set, the value specified in the stylesheet is followed Default: false, if not set in stylesheet</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="disableOutputEscaping" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>when set &lt;code&gt;true&lt;/code&gt;, any output is reparsed before being handled as XML again. When not set, the stylesheet is searched for &lt;code&gt;@disable-output-escaping='yes'&lt;/code&gt; and the value is set accordingly Default: false, if not set in stylesheet</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="namespaceDefs" type="xs:string">
       <xs:annotation>
         <xs:documentation>Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions. For some use other cases (NOT xpathExpression), one entry can be without a prefix, that will define the default namespace.</xs:documentation>
@@ -17424,7 +17598,7 @@ A true multi-threaded Listener-class.</xs:documentation>
     </xs:attribute>
     <xs:attribute name="namespaceAware" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Default: true</xs:documentation>
+        <xs:documentation>controls namespace-awareness of possible xml parsing in descender-classes Default: application default</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="sessionKey" type="xs:string">
@@ -19571,12 +19745,12 @@ A true multi-threaded Listener-class.</xs:documentation>
     <xs:attribute name="jobGroup" type="xs:string" />
     <xs:attribute name="name" type="xs:string" use="required">
       <xs:annotation>
-        <xs:documentation>Name of the job"</xs:documentation>
+        <xs:documentation>Name of the job</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="description" type="xs:string">
       <xs:annotation>
-        <xs:documentation>(Optional) Description of the job</xs:documentation>
+        <xs:documentation>Description of the job</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="cronExpression" type="xs:string">
@@ -19749,6 +19923,15 @@ A true multi-threaded Listener-class.</xs:documentation>
   </xs:complexType>
   <xs:attributeGroup name="IbisActionJobDeclaredAttributeGroup">
     <xs:attribute name="action">
+      <xs:simpleType>
+        <xs:union memberTypes="ActionAttributeValuesType variableRef">
+          <xs:annotation>
+            <xs:documentation>action to execute</xs:documentation>
+          </xs:annotation>
+        </xs:union>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="function">
       <xs:simpleType>
         <xs:union memberTypes="ActionAttributeValuesType variableRef" />
       </xs:simpleType>
