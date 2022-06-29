@@ -526,9 +526,9 @@
                <security-setting name="#">
                    <role name="guest" send="true" consume="true" create-non-durable-queue="true" delete-non-durable-queue="true"/>
                </security-setting>
-               <jms-queue name="dynamicQueues/Q.TEST.IN" entries="jms/i4testiaf_in" />
-               <jms-queue name="dynamicQueues/Q.TEST.OUT" entries="jms/i4testiaf_out" />
-               <jms-queue name="dynamicQueues/Q.TEST.FF" entries="jms/i4testiaf_ff" />
+               <jms-queue name="dynamicQueues/Q.TEST.IN" entries="jms/i4testiaf_in-artemis" />
+               <jms-queue name="dynamicQueues/Q.TEST.OUT" entries="jms/i4testiaf_out-artemis" />
+               <jms-queue name="dynamicQueues/Q.TEST.FF" entries="jms/i4testiaf_ff-artemis" />
                <remote-connector name="netty-remote-throughput" socket-binding="artemis"/>
                <pooled-connection-factory name="artemis" entries="jms/qcf-artemis java:jboss/DefaultJMSConnectionFactory" connectors="netty-remote-throughput" transaction="xa"/>
            </server>
