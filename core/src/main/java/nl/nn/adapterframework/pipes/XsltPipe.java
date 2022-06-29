@@ -223,7 +223,7 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 	}
 
 	@IbisDocRef({XSLTSENDER})
-	public void setHandleLexicalEvents(Boolean b) {
+	public void setHandleLexicalEvents(boolean b) {
 		sender.setHandleLexicalEvents(b);
 	}
 

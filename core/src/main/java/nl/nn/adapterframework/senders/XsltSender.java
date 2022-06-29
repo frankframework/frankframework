@@ -413,7 +413,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 
 	@IbisDoc({"If set <code>true</code>, the transformer is enabled to handle lexical events, allowing it for example to process comments and to distinghuish CDATA from escaped text. " +
 			"Beware that this option can cause spurious NullPointerExceptions due to a race condition in streaming XSLT 1.0 processing in Xalan 2.7.2", "false"})
-	public void setHandleLexicalEvents(Boolean b) {
+	public void setHandleLexicalEvents(boolean b) {
 		handleLexicalEvents = b;
 	}
 
