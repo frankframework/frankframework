@@ -31,7 +31,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.CanProvideOutputStream;
+import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
@@ -44,7 +44,7 @@ import nl.nn.adapterframework.stream.StreamingPipe;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-@CanProvideOutputStream
+@SupportsOutputStreaming
 public class ChecksumPipe extends StreamingPipe {
 
 	private @Getter String charset;

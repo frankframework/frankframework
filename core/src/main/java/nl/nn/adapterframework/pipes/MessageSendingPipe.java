@@ -56,7 +56,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.CanProvideOutputStream;
+import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
@@ -101,7 +101,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  *
  * @author  Gerrit van Brakel
  */
-@CanProvideOutputStream
+@SupportsOutputStreaming
 public class MessageSendingPipe extends StreamingPipe implements HasSender, HasStatistics {
 	protected Logger msgLog = LogUtil.getLogger("MSG");
 	private Level MSGLOG_LEVEL_TERSE = Level.toLevel("TERSE");

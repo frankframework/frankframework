@@ -22,9 +22,9 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Target;
 
 @Target(TYPE)
-@Label(name="CanProvideOutputStream")
+@Label(name="SupportsOutputStreaming")
 @Documented
 @Inherited
-public @interface CanProvideOutputStream {
+public @interface SupportsOutputStreaming {
 	@LabelValue public boolean value() default true;
 }

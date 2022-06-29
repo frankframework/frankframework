@@ -51,7 +51,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.CanProvideOutputStream;
+import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.jta.TransactionConnectorCoordinator;
@@ -98,7 +98,7 @@ import nl.nn.adapterframework.xml.PrettyPrintFilter;
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
-@CanProvideOutputStream
+@SupportsOutputStreaming
 public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 
 	public static final String UNP_START = "?{";
