@@ -48,7 +48,7 @@ public class OAuthAccessTokenManagerTest {
 
 		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenServer.getEndpoint(), scope, client_cf, true, httpSender, -1);
 
-		String accessToken = accessTokenManager.getAccessToken(null);
+		String accessToken = accessTokenManager.getAccessToken(null, true);
 
 		assertThat(accessToken, startsWith("Bearer"));
 	}
@@ -66,7 +66,7 @@ public class OAuthAccessTokenManagerTest {
 
 		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenServer.getEndpoint(), scope, client_cf, false, httpSender, -1);
 
-		String accessToken = accessTokenManager.getAccessToken(credentials);
+		String accessToken = accessTokenManager.getAccessToken(credentials, true);
 
 		assertThat(accessToken, startsWith("Bearer"));
 	}
@@ -81,7 +81,7 @@ public class OAuthAccessTokenManagerTest {
 
 		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenServer.getEndpoint(), scope, client_cf, true, httpSender, -1);
 
-		String accessToken = accessTokenManager.getAccessToken(null);
+		String accessToken = accessTokenManager.getAccessToken(null, true);
 
 		assertThat(accessToken, startsWith("Bearer"));
 	}
@@ -96,7 +96,7 @@ public class OAuthAccessTokenManagerTest {
 
 		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenServer.getEndpoint() + "/xxxxx", scope, client_cf, true, httpSender, -1);
 
-		HttpAuthenticationException actualException = assertThrows(HttpAuthenticationException.class, () -> accessTokenManager.getAccessToken(null));
+		HttpAuthenticationException actualException = assertThrows(HttpAuthenticationException.class, () -> accessTokenManager.getAccessToken(null, true));
 		assertThat(actualException.getMessage(), containsString("Could not retrieve token"));
 	}
 
@@ -111,10 +111,10 @@ public class OAuthAccessTokenManagerTest {
 		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenServer.getEndpointFirstExpired(), scope, client_cf, true, httpSender, -1);
 
 		tokenServer.resetScenarios();
-		assertThat(accessTokenManager.getAccessToken(null), containsString("Expired"));
+		assertThat(accessTokenManager.getAccessToken(null, true), containsString("Expired"));
 
 		accessTokenManager.retrieveAccessToken(null);
-		assertThat(accessTokenManager.getAccessToken(null), not(containsString("Expired")));
+		assertThat(accessTokenManager.getAccessToken(null, true), not(containsString("Expired")));
 	}
 
 	@Test
@@ -128,10 +128,10 @@ public class OAuthAccessTokenManagerTest {
 		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenServer.getEndpointFirstExpired(), scope, client_cf, true, httpSender, -1);
 
 		tokenServer.resetScenarios();
-		assertThat(accessTokenManager.getAccessToken(null), containsString("Expired"));
+		assertThat(accessTokenManager.getAccessToken(null, true), containsString("Expired"));
 
 		Thread.sleep(100);
-		assertThat(accessTokenManager.getAccessToken(null), not(containsString("Expired")));
+		assertThat(accessTokenManager.getAccessToken(null, true), not(containsString("Expired")));
 	}
 
 	@Test

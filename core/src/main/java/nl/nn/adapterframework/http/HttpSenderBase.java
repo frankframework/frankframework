@@ -1,5 +1,4 @@
 /*
-
    Copyright 2017-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -864,6 +863,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	 * If set to a non-negative value, then determines the time (in seconds) after which the token will be refreshed. Otherwise the token
 	 * will be refreshed when it is half way its lifetime as defined by the <code>expires_in</code> clause of the token response,
 	 * or when the regular server returns a 401 status with a challenge.
+	 * If not specified, and the accessTokens lifetime is not found in the token response, the accessToken will not be refreshed preemptively.
 	 * @ff.default -1
 	 */
 	public void setTokenExpiry(int value) {

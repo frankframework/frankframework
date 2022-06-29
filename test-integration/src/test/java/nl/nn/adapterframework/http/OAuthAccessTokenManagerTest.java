@@ -17,7 +17,7 @@ public class OAuthAccessTokenManagerTest {
 	String TOKENENDPOINT = "http://localhost:8888/auth/realms/iaf-test/protocol/openid-connect/token";
 	String USERINFOENDPOINT = "http://localhost:8888/auth/realms/iaf-test/protocol/openid-connect/userinfo";
 	String INTROSPECTIONENDPOINT = "http://localhost:8888/auth/realms/iaf-test/protocol/openid-connect/userinfo";
-	
+
 	String clientClientId = "testiaf-client";
 	String clientClientSecret = "testiaf-client-pwd";
 
@@ -34,7 +34,7 @@ public class OAuthAccessTokenManagerTest {
 		httpSender.configure();
 		httpSender.open();
 	}
-	
+
 	@Test
 	public void testRetrieveAccessToken() throws Exception {
 		String tokenEndpoint = TOKENENDPOINT;
@@ -45,12 +45,12 @@ public class OAuthAccessTokenManagerTest {
 		CredentialFactory client_cf = new CredentialFactory(null, clientId, clientSecret);
 
 		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenEndpoint, scope, client_cf, true, httpSender, expiry);
-				
-		String accessToken = accessTokenManager.getAccessToken(null);
-		
+
+		String accessToken = accessTokenManager.getAccessToken(null, true);
+
 		assertThat(accessToken,startsWith("Bearer"));
 	}
-	
+
 	@Test
 	public void testRetrieveAccessTokenNoScope() throws Exception {
 		String tokenEndpoint = TOKENENDPOINT;
@@ -61,12 +61,12 @@ public class OAuthAccessTokenManagerTest {
 		CredentialFactory client_cf = new CredentialFactory(null, clientId, clientSecret);
 
 		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenEndpoint, scope, client_cf, true, httpSender, expiry);
-				
-		String accessToken = accessTokenManager.getAccessToken(null);
-		
+
+		String accessToken = accessTokenManager.getAccessToken(null, true);
+
 		assertThat(accessToken,startsWith("Bearer"));
 	}
-	
+
 	@Test
 	public void testRetrieveAccessTokenWrongCredentials() throws Exception {
 		String tokenEndpoint = TOKENENDPOINT;
@@ -78,10 +78,10 @@ public class OAuthAccessTokenManagerTest {
 
 		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenEndpoint, scope, client_cf, true, httpSender, expiry);
 
-		HttpAuthenticationException exception = assertThrows(HttpAuthenticationException.class, ()->accessTokenManager.getAccessToken(null));
+		HttpAuthenticationException exception = assertThrows(HttpAuthenticationException.class, ()->accessTokenManager.getAccessToken(null, true));
 		assertThat(exception.getMessage(), containsString("unauthorized_client"));
 	}
-	
+
 	@Test
 	public void testRetrieveAccessTokenWrongTokenEndpoint() throws Exception {
 		String tokenEndpoint = TOKENENDPOINT+"x";
@@ -93,7 +93,7 @@ public class OAuthAccessTokenManagerTest {
 
 		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenEndpoint, scope, client_cf, true, httpSender, expiry);
 
-		HttpAuthenticationException exception = assertThrows(HttpAuthenticationException.class, ()->accessTokenManager.getAccessToken(null));
+		HttpAuthenticationException exception = assertThrows(HttpAuthenticationException.class, ()->accessTokenManager.getAccessToken(null, true));
 		assertThat(exception.getMessage(), containsString("404"));
 	}
 
