@@ -63,4 +63,3 @@ overview.html
 .editorconfig
 .checkstyle
 checkstyle.xml
-TransformerHandlerImpl.java
