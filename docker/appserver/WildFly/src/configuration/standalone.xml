@@ -228,16 +228,16 @@
                         <xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>
                     </driver>
                     <!-- Framework drivers -->
-					<driver name="mssql" module="module.nl.nn.adapterframework">
+					<driver name="mssql" module="module.frank-framework">
 						<xa-datasource-class>com.microsoft.sqlserver.jdbc.SQLServerXADataSource</xa-datasource-class>
 					</driver>
-					<driver name="oracle" module="module.nl.nn.adapterframework">
+					<driver name="oracle" module="module.frank-framework">
 						<xa-datasource-class>oracle.jdbc.xa.client.OracleXADataSource</xa-datasource-class>
 					</driver>
-					<driver name="mysql" module="module.nl.nn.adapterframework">
+					<driver name="mysql" module="module.frank-framework">
 						<xa-datasource-class>com.mysql.cj.jdbc.MysqlXADataSource</xa-datasource-class>
 					</driver>
-					<driver name="postgresql" module="module.nl.nn.adapterframework">
+					<driver name="postgresql" module="module.frank-framework">
 						<xa-datasource-class>org.postgresql.xa.PGXADataSource</xa-datasource-class>
 					</driver>
 					<!-- End of Framework drivers -->
