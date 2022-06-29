@@ -36,6 +36,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
@@ -48,6 +49,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Peter Leeuwenburgh
  */
 
+@Category("NN-Special")
 public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 
 	private String url;

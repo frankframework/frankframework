@@ -19,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.util.SpringUtils;
@@ -28,6 +29,7 @@ import nl.nn.adapterframework.util.SpringUtils;
  *
  * @author  Peter Leeuwenburgh
  */
+@Category("NN-Special")
 public class EsbJmsSender extends JmsSender {
 
 	public enum MessageProtocol {
@@ -36,7 +38,7 @@ public class EsbJmsSender extends JmsSender {
 		/** Request-Reply protocol */
 		RR;
 	}
-	
+
 	private @Getter MessageProtocol messageProtocol = null;
 	private @Getter long timeOut = 20000;
 
@@ -76,14 +78,14 @@ public class EsbJmsSender extends JmsSender {
 	public void setTimeOut(long l) {
 		timeOut = l;
 	}
-	
-	
+
+
 	/** if messageProtocol=<code>RR</code> then <code>deliveryMode</code> defaults to <code>NON_PERSISTENT</code> */
 	@Override
 	public void setDeliveryMode(DeliveryMode deliveryMode) {
 		super.setDeliveryMode(deliveryMode);
 	}
-	
+
 	/** if messageProtocol=<code>RR</code> then <code>replyTimeout</code> defaults to <code>timeOut</code> */
 	@Override
 	public void setReplyTimeout(int replyTimeout) {
@@ -99,5 +101,5 @@ public class EsbJmsSender extends JmsSender {
 	public void setSoapAction(String soapAction) {
 		super.setSoapAction(soapAction);
 	}
-	
+
 }

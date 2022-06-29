@@ -17,10 +17,12 @@ package nl.nn.adapterframework.receivers;
 
 import java.nio.file.Path;
 
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.filesystem.FileSystemListener;
 import nl.nn.adapterframework.filesystem.LocalFileSystem;
 
+@Category("Basic")
 public class DirectoryListener extends FileSystemListener<Path, LocalFileSystem>{
 
 	@Override

@@ -15,13 +15,10 @@
 */
 package nl.nn.adapterframework.extensions.afm;
 
-import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.util.LogUtil;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.w3c.dom.Document;
@@ -30,16 +27,21 @@ import org.w3c.dom.NodeList;
 
 import lombok.Getter;
 import lombok.Setter;
-
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.Category;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Domparser om AFM-XML berichten om te zetten in edifactberichten (voor de backoffice).
  *
  * @author Erik van de Wetering, fine tuned and wrapped for Ibis by Gerrit van Brakel
  */
+@Category("NN-Special")
 public class Afm2EdiFactSender implements ISender {
 	protected Logger logger = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();

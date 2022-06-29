@@ -41,6 +41,8 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.doc.SupportsOutputStreaming;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jta.IThreadConnectableTransactionManager;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -75,6 +77,8 @@ import nl.nn.adapterframework.xml.XmlWriter;
  * @author Gerrit van Brakel
  * @since 4.6.1
  */
+@Category("Basic")
+@SupportsOutputStreaming
 public class ForEachChildElementPipe extends StringIteratorPipe implements IThreadCreator {
 
 	public final int DEFAULT_XSLT_VERSION = 1; // currently only Xalan supports XSLT Streaming

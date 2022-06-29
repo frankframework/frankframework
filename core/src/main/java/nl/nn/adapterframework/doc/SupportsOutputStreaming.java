@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,11 +13,18 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.receivers;
+package nl.nn.adapterframework.doc;
 
-import nl.nn.adapterframework.doc.Category;
+import static java.lang.annotation.ElementType.TYPE;
 
-@Category("Advanced")
-public class SambaListener extends Samba2Listener {
+import java.lang.annotation.Documented;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Target;
 
+@Target(TYPE)
+@Label(name="SupportsOutputStreaming")
+@Documented
+@Inherited
+public @interface SupportsOutputStreaming {
+	@LabelValue public boolean value() default true;
 }

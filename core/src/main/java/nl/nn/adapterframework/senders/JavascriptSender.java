@@ -27,6 +27,7 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.javascript.J2V8;
 import nl.nn.adapterframework.extensions.javascript.JavascriptEngine;
@@ -41,18 +42,19 @@ import nl.nn.adapterframework.util.Misc;
 
 /**
  * Sender used to run javascript code using J2V8 or Rhino
- * 
+ *
  * This sender can execute a function of a given javascript file, the result of the function will be the output of the sender.
  * The parameters of the javascript function to run are given as parameters by the adapter configuration
- * The sender doesn't accept nor uses the given input, instead for each argument for the {@link #jsFunctionName} method, 
+ * The sender doesn't accept nor uses the given input, instead for each argument for the {@link #jsFunctionName} method,
  * you will need to create a parameter on the sender.
- * It is recommended to have the result of the javascript function be of type String, as the output of the sender will be 
+ * It is recommended to have the result of the javascript function be of type String, as the output of the sender will be
  * of type String.
- * 
+ *
  * @author Jarno Huibers
  * @since 7.4
  */
 
+@Category("Advanced")
 public class JavascriptSender extends SenderSeries {
 
 	private @Getter String jsFileName;
@@ -102,11 +104,11 @@ public class JavascriptSender extends SenderSeries {
 				throw new SenderException(getLogPrefix() + "got exception loading [" + getJsFileName() + "]", e);
 			}
 		}
-		if (StringUtils.isEmpty(fileInput)) { 
+		if (StringUtils.isEmpty(fileInput)) {
 			// No input from file or input string. Only from session-keys?
 			throw new SenderException(getLogPrefix() + "has neither fileName nor inputString specified");
 		}
-		if (StringUtils.isEmpty(jsFunctionName)) { 
+		if (StringUtils.isEmpty(jsFunctionName)) {
 			// Cannot run the code in factory without any function start point
 			throw new SenderException(getLogPrefix() + "JavaScript FunctionName not specified!");
 		}
@@ -173,7 +175,7 @@ public class JavascriptSender extends SenderSeries {
 	}
 
 	/**
-	 * Since neither engine supports the ES6's "const" or "let" literals. This method adapts the given 
+	 * Since neither engine supports the ES6's "const" or "let" literals. This method adapts the given
 	 * helper source written in ES6 to work (by converting let/const to var).
 	 *
 	 * @param source the helper source.

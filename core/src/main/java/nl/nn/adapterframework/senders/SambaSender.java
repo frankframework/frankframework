@@ -15,6 +15,9 @@
 */
 package nl.nn.adapterframework.senders;
 
+import nl.nn.adapterframework.doc.Category;
+
+@Category("Basic")
 public class SambaSender extends Samba2Sender {
 
 }

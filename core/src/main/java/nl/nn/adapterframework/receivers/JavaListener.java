@@ -40,6 +40,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
 import nl.nn.adapterframework.dispatcher.RequestProcessor;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.stream.Message;
@@ -57,6 +58,7 @@ import nl.nn.adapterframework.util.LogUtil;
  *
  * @author  Gerrit van Brakel
  */
+@Category("Basic")
 public class JavaListener implements IPushingListener<String>, RequestProcessor, HasPhysicalDestination {
 
 	private final @Getter(onMethod = @__(@Override)) String domain = "JVM";
