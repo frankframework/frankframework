@@ -16,24 +16,24 @@
 package nl.nn.adapterframework.lifecycle;
 
 import java.io.File;
-import java.net.URL;
 
 import javax.servlet.ServletContext;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.context.ServletContextAware;
 
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.XmlUtils;
 
 @IbisInitializer
 public class DetermineApplicationServerBean implements ServletContextAware {
 
 	private ServletContext servletContext;
 	private Logger log = LogUtil.getLogger(this);
+	private ServletManager servletManager;
 
 	@Override
 	public void setServletContext(ServletContext servletContext) {
@@ -43,20 +43,16 @@ public class DetermineApplicationServerBean implements ServletContextAware {
 		checkSecurityConstraintEnabled();
 	}
 
+	@Autowired
+	public void setServletManager(ServletManager servletManager) {
+		this.servletManager = servletManager;
+	}
+
 	private void checkSecurityConstraintEnabled() {
 		AppConstants appConstants = AppConstants.getInstance();
-		String stage = appConstants.getString("dtap.stage", "LOC");
-		if(appConstants.getBoolean("security.constraint.warning", !"LOC".equalsIgnoreCase(stage))) {
-			try {
-				String web = "/WEB-INF"+File.separator+"web.xml";
-				URL webXml = servletContext.getResource(web);
-				if(webXml != null) {
-					if(XmlUtils.buildDomDocument(webXml).getElementsByTagName("security-constraint").getLength() < 1)
-						ApplicationWarnings.add(log, "unsecure IBIS application, enable the security constraints section in the web.xml in order to secure the application!");
-				}
-			} catch (Exception e) {
-				ApplicationWarnings.add(log, "unable to determine whether security constraints have been enabled, is there a web.xml present?", e);
-			}
+		boolean isDtapStageLoc = "LOC".equalsIgnoreCase(appConstants.getProperty("dtap.stage"));
+		if(appConstants.getBoolean("security.constraint.warning", !isDtapStageLoc) && !servletManager.isWebSecurityEnabled()) {
+			ApplicationWarnings.add(log, "unsecure Frank! application, authentication has been disabled!");
 		}
 	}
 
