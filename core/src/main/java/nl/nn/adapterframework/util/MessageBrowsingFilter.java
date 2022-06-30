@@ -15,6 +15,7 @@ limitations under the License.
 */
 package nl.nn.adapterframework.util;
 
+import java.io.IOException;
 import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
@@ -62,7 +63,7 @@ public class MessageBrowsingFilter {
 		return sortOrder;
 	}
 
-	public boolean matchAny(IMessageBrowsingIteratorItem iterItem) throws ListenerException {
+	public boolean matchAny(IMessageBrowsingIteratorItem iterItem) throws ListenerException, IOException {
 		int count = 0;
 		int matches = 0;
 
@@ -144,7 +145,7 @@ public class MessageBrowsingFilter {
 			comment = commentMask;
 	}
 
-	public boolean matchMessage(IMessageBrowsingIteratorItem iterItem) throws ListenerException {
+	public boolean matchMessage(IMessageBrowsingIteratorItem iterItem) throws ListenerException, IOException {
 		if(message != null) {
 			String msg = getMessageText(storage, listener, iterItem.getId());
 			if (!StringUtils.containsIgnoreCase(msg, message)) {
@@ -154,7 +155,7 @@ public class MessageBrowsingFilter {
 		return true;
 	}
 
-	private String getMessageText(IMessageBrowser<?> messageBrowser, IListener listener, String messageId) throws ListenerException {
+	private String getMessageText(IMessageBrowser<?> messageBrowser, IListener listener, String messageId) throws ListenerException, IOException {
 		Object rawmsg = messageBrowser.browseMessage(messageId);
 		return MessageBrowsingUtil.getMessageText(rawmsg, listener);
 	}

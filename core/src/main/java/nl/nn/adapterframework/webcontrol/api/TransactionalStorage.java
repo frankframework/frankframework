@@ -699,7 +699,7 @@ public class TransactionalStorage extends Base {
 
 			returnObj.put("recordsFiltered", count);
 			returnObj.put("messages", messages);
-		} catch (ListenerException e) {
+		} catch (ListenerException|IOException e) {
 			throw new ApiException(e);
 		}
 

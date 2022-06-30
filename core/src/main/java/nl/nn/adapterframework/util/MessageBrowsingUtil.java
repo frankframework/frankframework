@@ -28,7 +28,7 @@ import nl.nn.adapterframework.webcontrol.api.ApiException;
 public class MessageBrowsingUtil {
 	private static Logger log = LogUtil.getLogger(MessageBrowsingUtil.class);
 
-	public static String getMessageText(Object rawmsg, IListener listener) {
+	public static String getMessageText(Object rawmsg, IListener listener) throws IOException {
 		String msg = null;
 		if (rawmsg != null) {
 			if(rawmsg instanceof MessageWrapper) {
@@ -54,13 +54,8 @@ public class MessageBrowsingUtil {
 						log.warn(ClassUtils.nameOf(listener)+" cannot extract raw message ["+rawmsg+"] ("+ClassUtils.nameOf(e)+"): "+e.getMessage());
 					}
 				}
-				try {
-					if (StringUtils.isEmpty(msg)) {
-						msg = Message.asString(rawmsg);
-					}
-				} catch (Exception e) {
-					log.warn("Cannot convert raw message ["+rawmsg+"] ("+ClassUtils.nameOf(e)+"): "+e.getMessage());
-					msg = rawmsg.toString();
+				if (StringUtils.isEmpty(msg)) {
+					msg = Message.asString(rawmsg);
 				}
 			}
 		}
