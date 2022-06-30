@@ -127,7 +127,6 @@
 		factory="com.mongodb.client.MongoClientFactory"
 		connectionString="mongodb://testiaf_user:testiaf_user00@host.docker.internal"
 		auth="Container"
-		closeMethod="close"
 		singleton="true"
 	/>
 
