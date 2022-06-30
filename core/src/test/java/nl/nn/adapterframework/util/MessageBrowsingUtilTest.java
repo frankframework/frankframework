@@ -23,14 +23,14 @@ public class MessageBrowsingUtilTest {
 	public void testGetMessageTextWithMessage() throws Exception {
 		String contents = "fakeMessage";
 		Message message = new Message(contents);
-		
+
 		assertEquals(contents, MessageBrowsingUtil.getMessageText(message, new TestListener()));
 	}
 
 	@Test
 	public void testGetMessageTextWithString() throws Exception {
 		String contents = "fakeMessage";
-		
+
 		assertEquals(contents, MessageBrowsingUtil.getMessageText(contents, new TestListener()));
 	}
 
@@ -39,30 +39,37 @@ public class MessageBrowsingUtilTest {
 		String contents = "fakeMessage";
 		Message message = new Message(contents);
 		MessageWrapper messageWrapper = new MessageWrapper(message,"fakeId");
-		
+
 		assertEquals(contents, MessageBrowsingUtil.getMessageText(messageWrapper, new TestListener()));
 	}
 
 	@Test
-	public void testGetMessageTextWithJmsMessage() throws Exception {
+	public void testGetMessageTextWithListenerMessage() throws Exception {
 		String contents = "fakeMessage";
 		TestListenerMessage listenerMessage = new TestListenerMessage();
 		listenerMessage.setText(contents);
-					
+
 		assertEquals(contents, MessageBrowsingUtil.getMessageText(listenerMessage, new TestListener()));
 	}
-	
-	
+
+	@Test
+	public void testGetMessageTextWithByteArray() throws Exception {
+		String contents = "fakeMessage";
+		byte[] bytes = contents.getBytes();
+
+		assertEquals(contents, MessageBrowsingUtil.getMessageText(bytes, new TestListener()));
+	}
+
+
 	private class TestListenerMessage {
 		private @Getter @Setter String text;
 	}
-	
+
 	private class TestListener implements IListener<TestListenerMessage> {
 
 		@Override
 		public void setName(String name) {
 			// TODO Auto-generated method stub
-			
 		}
 
 		@Override
@@ -86,25 +93,21 @@ public class MessageBrowsingUtilTest {
 		@Override
 		public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 			// TODO Auto-generated method stub
-			
 		}
 
 		@Override
 		public void configure() throws ConfigurationException {
 			// TODO Auto-generated method stub
-			
 		}
 
 		@Override
 		public void open() throws ListenerException {
 			// TODO Auto-generated method stub
-			
 		}
 
 		@Override
 		public void close() throws ListenerException {
 			// TODO Auto-generated method stub
-			
 		}
 
 		@Override
@@ -123,8 +126,7 @@ public class MessageBrowsingUtilTest {
 		public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper,
 				Map<String, Object> context) throws ListenerException {
 			// TODO Auto-generated method stub
-			
 		}
-		
+
 	}
 }
