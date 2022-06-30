@@ -202,8 +202,17 @@ public abstract class MessageUtils {
 	 * <p>
 	 * NOTE: This is a resource intensive operation, the first 64k is being read and stored in memory.
 	 */
+	public static MimeType computeMimeType(Message message) {
+		return computeMimeType(message, null);
+	}
+
+	/**
+	 * Computes the {@link MimeType} when not available.
+	 * <p>
+	 * NOTE: This is a resource intensive operation, the first 64k is being read and stored in memory.
+	 */
 	public static MimeType computeMimeType(Message message, String filename) {
-		if(message.isEmpty()) {
+		if(Message.isEmpty(message)) {
 			return null;
 		}
 

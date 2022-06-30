@@ -34,6 +34,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.UrlMessage;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
@@ -151,7 +152,8 @@ public class FixedResultPipe extends FixedForwardPipe {
 				throw new PipeRunException(this,getLogPrefix(session)+"cannot find resource ["+filename+"]");
 			}
 			try {
-				result = Misc.resourceToString(resource, Misc.LINE_SEPARATOR);
+				Message msg = new UrlMessage(resource);
+				result = msg.asString();
 			} catch (Throwable e) {
 				throw new PipeRunException(this,getLogPrefix(session)+"got exception loading ["+filename+"]", e);
 			}
@@ -172,7 +174,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 					result=replace(result, replaceFrom, pv.asStringValue(""));
 				}
 			} catch (ParameterException e) {
-				throw new PipeRunException(this,getLogPrefix(session)+"exception extracting parameters",e);
+				throw new PipeRunException(this, getLogPrefix(session)+"exception extracting parameters", e);
 			}
 		}
 
@@ -185,13 +187,13 @@ public class FixedResultPipe extends FixedForwardPipe {
 			try{
 				result = transformerPool.transform(Message.asSource(result));
 			} catch (SAXException e) {
-				throw new PipeRunException(this,getLogPrefix(session)+"got error converting string [" + result + "] to source", e);
+				throw new PipeRunException(this, getLogPrefix(session)+"got error converting string [" + result + "] to source", e);
 			} catch (IOException | TransformerException e) {
-				throw new PipeRunException(this,getLogPrefix(session)+"got error transforming message [" + result + "] with [" + getStyleSheetName() + "]", e);
+				throw new PipeRunException(this, getLogPrefix(session)+"got error transforming message [" + result + "] with [" + getStyleSheetName() + "]", e);
 			}
 		}
-		log.debug(getLogPrefix(session)+ " returning fixed result [" + result + "]");
 
+		log.debug("{}returning fixed result [{}]", getLogPrefix(session), result);
 		return new PipeRunResult(getSuccessForward(), result);
 	}
 

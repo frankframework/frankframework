@@ -209,24 +209,16 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 						while (iter.hasNext()) {
 							Element partElement = (Element) iter.next();
 
-							String mimeType = partElement.getAttribute("mimeType");
 							if(StringUtils.isNotEmpty(partElement.getAttribute("name"))) {
-								if(StringUtils.isNotEmpty(mimeType)) {
-									log.info("multipart xml attributes name and mimeType are no longer used!");
-								} else {
-									log.info("multipart xml attribute name is no longer used!");
-								}
+								log.info("multipart xml attribute name is no longer used!");
 							}
 
 							String partSessionKey = partElement.getAttribute("sessionKey");
 							Message partObject = pipelineSession.getMessage(partSessionKey);
 
 							if(!partObject.isNull()) {
-								MessageDataSource ds = new MessageDataSource(partObject);
-								if(mimeType != null && !mimeType.equalsIgnoreCase(ds.getContentType())) {
-									log.warn("determined content-type [{}] differs from specified value [{}]", ds.getContentType(), mimeType);
-								}
-								DataHandler dataHander = new DataHandler(ds);
+								String mimeType = partElement.getAttribute("mimeType");
+								DataHandler dataHander = new DataHandler(new MessageDataSource(partObject, mimeType));
 								AttachmentPart attachmentPart = soapMessage.createAttachmentPart(dataHander);
 								attachmentPart.setContentId(partSessionKey);
 								soapMessage.addAttachmentPart(attachmentPart);
