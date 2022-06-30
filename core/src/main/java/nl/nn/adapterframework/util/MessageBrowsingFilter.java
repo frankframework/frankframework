@@ -15,7 +15,6 @@ limitations under the License.
 */
 package nl.nn.adapterframework.util;
 
-import java.io.IOException;
 import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
@@ -23,11 +22,9 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
+import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
-import nl.nn.adapterframework.receivers.MessageWrapper;
-import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.webcontrol.api.ApiException;
 
 public class MessageBrowsingFilter {
@@ -65,7 +62,7 @@ public class MessageBrowsingFilter {
 		return sortOrder;
 	}
 
-	public boolean matchAny(IMessageBrowsingIteratorItem iterItem) throws ListenerException, IOException {
+	public boolean matchAny(IMessageBrowsingIteratorItem iterItem) throws ListenerException {
 		int count = 0;
 		int matches = 0;
 
@@ -147,7 +144,7 @@ public class MessageBrowsingFilter {
 			comment = commentMask;
 	}
 
-	public boolean matchMessage(IMessageBrowsingIteratorItem iterItem) throws ListenerException, IOException {
+	public boolean matchMessage(IMessageBrowsingIteratorItem iterItem) throws ListenerException {
 		if(message != null) {
 			String msg = getMessageText(storage, listener, iterItem.getId());
 			if (!StringUtils.containsIgnoreCase(msg, message)) {
@@ -157,37 +154,11 @@ public class MessageBrowsingFilter {
 		return true;
 	}
 
-	private String getMessageText(IMessageBrowser<?> messageBrowser, IListener listener, String messageId) throws IOException, ListenerException {
+	private String getMessageText(IMessageBrowser<?> messageBrowser, IListener listener, String messageId) throws ListenerException {
 		Object rawmsg = messageBrowser.browseMessage(messageId);
-
-		String msg = null;
-		if (rawmsg != null) {
-			if(rawmsg instanceof MessageWrapper) {
-				try {
-					MessageWrapper<?> msgsgs = (MessageWrapper<?>) rawmsg;
-					msg = msgsgs.getMessage().asString();
-				} catch (IOException e) {
-					throw new ApiException(e);
-				}
-			} else if(rawmsg instanceof Message) { // For backwards compatibility: earlier MessageLog messages were stored as Message.
-				try {
-					msg = ((Message)rawmsg).asString();
-				} catch (IOException e) {
-					throw new ApiException(e);
-				}
-			} else {
-				if (listener!=null) {
-					msg = listener.extractMessage(rawmsg, null).asString();
-				} else if (StringUtils.isEmpty(msg)) {
-					msg = Message.asString(rawmsg);
-				} else {
-					msg = rawmsg.toString();
-				}
-			}
-		}
-
-		return msg;
+		return MessageBrowsingUtil.getMessageText(rawmsg, listener);
 	}
+
 	public void setMessageMask(String messageMask, IMessageBrowser<?> storage) {
 		setMessageMask(messageMask, storage, null);
 	}
