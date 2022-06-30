@@ -20,6 +20,7 @@ import java.io.Writer;
 import java.util.Iterator;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -85,7 +86,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	// - to get notified of changes, components should listen to DebuggerStatusChangedEvents
 	// IbisDebuggerAdvice stores state in appconstants testtool.enabled for use by GUI
 	private static boolean enabled=true;
-	
+
 	private AtomicInteger threadCounter = new AtomicInteger(0);
 
 
@@ -204,10 +205,10 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		if (!sender.isSynchronous() && sender instanceof JmsSender) {
 			// Ignore JmsSenders within JmsListeners (calling JmsSender without ParameterResolutionContext) within Receivers.
 			return (M)proceedingJoinPoint.proceed();
-		} 
+		}
 
 		String messageId = session == null ? null : session.getMessageId();
-		message = ibisDebugger.senderInput(sender, messageId, message); 
+		message = ibisDebugger.senderInput(sender, messageId, message);
 
 		M result = null; // result can be PipeRunResult (for StreamingSenders) or Message (for all other Senders)
 		// For SenderWrapperBase continue even when it needs to be stubbed
@@ -246,7 +247,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		}
 		return (M)ibisDebugger.senderOutput(sender, messageId, Message.asMessage(result));
 	}
-	
+
 	/**
 	 * Provides advice for {@link ISender#sendMessage(Message message, PipeLineSession session)}
 	 */
@@ -267,7 +268,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	public PipeRunResult debugStreamingSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, PipeLineSession session, IForwardTarget next) throws Throwable {
 		return debugSenderInputOutputAbort(proceedingJoinPoint, message, session, 0, true);
 	}
-	 
+
 	/**
 	 * Provides advice for {@link IOutputStreamingSupport#provideOutputStream(PipeLineSession session, IForwardTarget next)}
 	 */
@@ -309,12 +310,12 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 					writer.write("--> Requesting OutputStream from next pipe"); //We already know it failed, but it's a more user-friendly message..
 				}
 			}
-		} 
+		}
 		return resultStream!=null ? "<-- OutputStream provided" : "<-- Request to provide OutputStream could not be honored, no outputstream provided";
 	}
-	
+
 	@Override
-	public ContentHandler inspectXml(PipeLineSession session, String label, ContentHandler contentHandler) {
+	public ContentHandler inspectXml(PipeLineSession session, String label, ContentHandler contentHandler, BiConsumer<AutoCloseable,String> closeOnCloseRegister) {
 		if (!isEnabled()) {
 			return contentHandler;
 		}
@@ -322,14 +323,14 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		WriterPlaceHolder writerPlaceHolder = ibisDebugger.showValue(correlationId, label, new WriterPlaceHolder());
 		if (writerPlaceHolder!=null && writerPlaceHolder.getWriter()!=null) {
 			Writer writer = writerPlaceHolder.getWriter();
-			session.scheduleCloseOnSessionExit(writer, "debugger for inspectXml labeled ["+label+"]");
+			closeOnCloseRegister.accept(writer, "debugger for inspectXml labeled ["+label+"]");
 			XmlWriter xmlWriter = new XmlWriter(StreamUtil.limitSize(writer, writerPlaceHolder.getSizeLimit()), true);
 			contentHandler = new XmlTee(contentHandler, new PrettyPrintFilter(xmlWriter));
-		} 
+		}
 		return contentHandler;
 	}
-	
-	
+
+
 	/**
 	 * Provides advice for {@link CacheSenderWrapperProcessor#sendMessage(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session)}
 	 */
@@ -338,9 +339,9 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			return (Message)proceedingJoinPoint.proceed();
 		}
 		String messageId = session == null ? null : session.getMessageId();
-		message = debugGetInputFrom(session, messageId, message, 
-				senderWrapperBase.getGetInputFromSessionKey(), 
-				senderWrapperBase.getGetInputFromFixedValue(), 
+		message = debugGetInputFrom(session, messageId, message,
+				senderWrapperBase.getGetInputFromSessionKey(),
+				senderWrapperBase.getGetInputFromFixedValue(),
 				null);
 		if (ibisDebugger.stubSender(senderWrapperBase, messageId)) {
 			return null;
@@ -442,7 +443,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		}
 		return ibisDebugger.abortThread(ref.owner, ref.correlationId, t);
 	}
-	
+
 	/**
 	 * Provides advice for {@link Parameter#getValue(ParameterValueList alreadyResolvedParameters, Message message, PipeLineSession session, boolean namespaceAware)}
 	 */
@@ -470,7 +471,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		}
 		return input;
 	}
-	
+
 
 	public class Executor implements Runnable {
 		private RequestReplyExecutor requestReplyExecutor;
@@ -480,7 +481,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			this.requestReplyExecutor=requestReplyExecutor;
 			this.threadConnector = new ThreadConnector<ThreadDebugInfo>(requestReplyExecutor, threadLifeCycleEventListener, null, requestReplyExecutor.getCorrelationID());
 		}
-		
+
 		@Override
 		public void run() {
 			threadConnector.startThread(requestReplyExecutor.getRequest());
