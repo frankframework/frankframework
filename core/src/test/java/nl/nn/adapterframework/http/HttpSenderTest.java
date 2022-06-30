@@ -769,21 +769,51 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	@Test
 	public void paramsWithoutValue() throws Throwable {
 		sender = getSender();
-		Message input = new Message("paramterValue");
-
-		PipeLineSession pls = new PipeLineSession(session);
-
 		sender.addParameter(new Parameter("url", "http://127.0.0.1/value%2Fvalue?emptyParam"));
-
 		sender.addParameter(new Parameter("myParam", ""));
-
 		sender.setMethodType(HttpMethod.GET);
-
 		sender.configure();
 		sender.open();
 
+		Message input = new Message("");
+		PipeLineSession pls = new PipeLineSession(session);
+
 		String result = sender.sendMessage(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("paramsWithoutValue.txt"), result.trim());
+	}
+
+	@Test
+	public void paramsWithoutValueSkipped() throws Throwable {
+		sender = getSender();
+		sender.addParameter(new Parameter("url", "http://127.0.0.1/value%2Fvalue?emptyParam"));
+		sender.addParameter(new Parameter("myParam", ""));
+		sender.setMethodType(HttpMethod.GET);
+		sender.setParametersToSkipWhenEmpty("myParam");
+		sender.configure();
+		sender.open();
+
+		Message input = new Message("");
+		PipeLineSession pls = new PipeLineSession(session);
+
+		String result = sender.sendMessage(input, pls).asString();
+		assertEqualsIgnoreCRLF(getFile("paramsWithoutValue-skipped.txt"), result.trim());
+	}
+
+	@Test
+	public void paramsWithoutValueSkippedAll() throws Throwable {
+		sender = getSender();
+		sender.addParameter(new Parameter("url", "http://127.0.0.1/value%2Fvalue?emptyParam"));
+		sender.addParameter(new Parameter("myParam", ""));
+		sender.setMethodType(HttpMethod.GET);
+		sender.setParametersToSkipWhenEmpty("*");
+		sender.configure();
+		sender.open();
+
+		Message input = new Message("");
+		PipeLineSession pls = new PipeLineSession(session);
+
+		String result = sender.sendMessage(input, pls).asString();
+		assertEqualsIgnoreCRLF(getFile("paramsWithoutValue-skipped.txt"), result.trim());
 	}
 
 	@Test

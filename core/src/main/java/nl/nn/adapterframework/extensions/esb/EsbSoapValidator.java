@@ -25,15 +25,17 @@ import org.apache.commons.lang3.StringUtils;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.soap.SoapValidator;
 
 /**
- * XmlValidator that will automatically add the SOAP envelope XSD and the ESB XSD (e.g. a CommonMessageHeader.xsd) 
+ * XmlValidator that will automatically add the SOAP envelope XSD and the ESB XSD (e.g. a CommonMessageHeader.xsd)
  * to the set of XSD's used for validation.
- * 
+ *
  * @author Michiel Meeuwissen
  * @author Jaco de Groot
  */
+@Category("NN-Special")
 public class EsbSoapValidator extends SoapValidator {
 
 	private @Getter Direction direction = null;

@@ -3,8 +3,8 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>ibis-adapterframework-docker-as-jboss-wildfly</artifactId>
-	<name>Frank!Framework Docker image for jboss-wildfly</name>
+	<artifactId>ibis-adapterframework-docker-as-jboss</artifactId>
+	<name>Frank!Framework Docker image for JBoss</name>
 	<packaging>pom</packaging>
 
 	<parent>
@@ -12,11 +12,19 @@
 		<artifactId>ibis-adapterframework-docker-as</artifactId>
 		<version>${revision}</version>
 	</parent>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-ear</artifactId>
-			<type>ear</type>
+			<artifactId>ibis-adapterframework-test</artifactId>
+			<version>${project.version}</version>
+			<classifier>scenarios</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-test</artifactId>
+			<version>${project.version}</version>
+			<type>war</type>
 		</dependency>
 		<dependency>
 			<groupId>${oracle.driver.groupid}</groupId>
@@ -49,42 +57,22 @@
 			<version>${postgresql.driver.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.geronimo.specs</groupId>
-			<artifactId>geronimo-j2ee-management_1.1_spec</artifactId>
-			<version>1.0.1</version>
+			<groupId>org.mongodb</groupId>
+			<artifactId>mongodb-driver-sync</artifactId>
+			<version>4.2.3</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.geronimo.specs</groupId>
-			<artifactId>geronimo-jms_1.1_spec</artifactId>
+		    <groupId>org.apache.activemq</groupId>
+		    <artifactId>activemq-rar</artifactId>
+		    <version>${activemq.driver.version}</version>
+		    <type>rar</type>
 		</dependency>
-		<dependency>
-			<groupId>org.apache.geronimo.specs</groupId>
-			<artifactId>geronimo-jta_1.1_spec</artifactId>
-			<version>1.1.1</version>
-		</dependency>
+		<!-- Artemis is already part of JBOSS, so not added explicitly -->
 	</dependencies>
 
 	<build>
 		<defaultGoal>package</defaultGoal>
 		<plugins>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>properties-maven-plugin</artifactId>
-				<version>1.0.0</version>
-				<executions>
-					<execution>
-						<phase>initialize</phase>
-						<goals>
-							<goal>read-project-properties</goal>
-						</goals>
-						<configuration>
-							<files>
-								<file>./server.properties</file>
-							</files>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
@@ -102,6 +90,46 @@
 							<overWriteSnapshots>true</overWriteSnapshots>
 							<excludeTransitive>true</excludeTransitive>
 							<stripVersion>true</stripVersion>
+							<excludeClassifiers>configurations,resources,scenarios</excludeClassifiers>
+						</configuration>
+					</execution>
+					<execution>
+						<id>unpack-tests</id>
+						<phase>package</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>org.ibissource</groupId>
+									<artifactId>ibis-adapterframework-test</artifactId>
+									<classifier>scenarios</classifier>
+								</artifactItem>
+							</artifactItems>
+							<excludeTransitive>true</excludeTransitive>
+							<outputDirectory>${project.build.directory}/dependencies/frank/testtool</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.2.0</version>
+				<executions>
+					<execution>
+						<id>prepare-as-dependencies</id>
+						<phase>package</phase>
+						<goals>
+							<goal>resources</goal>
+						</goals>
+						<configuration>
+							<resources>
+								<resource>
+									<filtering>true</filtering>
+									<directory>src/scripts</directory>
+								</resource>
+							</resources>
 						</configuration>
 					</execution>
 				</executions>
@@ -120,11 +148,7 @@
 								<exec executable="docker" failonerror="true">
 									<arg value="build"/>
 									<arg value="-t"/>
-									<arg value="iaf-as-${SERVER_TYPE}"/>
-									<arg value="--build-arg"/>
-									<arg value="DOCKER_REPO=${DOCKER_REPO}"/>
-									<arg value="--build-arg"/>
-									<arg value="IMAGE_VERSION=${IMAGE_VERSION}"/>
+									<arg value="iaf-test-as-jboss"/>
 									<arg value="."/>
 								</exec>
 							</target>
@@ -137,10 +161,5 @@
 			</plugin>
 		</plugins>
 	</build>
-	
-	<modules>
-		<module>example</module>
-		<module>test</module>
-	</modules>
 
 </project>

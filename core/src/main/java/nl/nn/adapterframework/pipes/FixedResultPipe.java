@@ -31,6 +31,7 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -61,11 +62,11 @@ import nl.nn.adapterframework.util.TransformerPool;
  * no <code>${...}</code> patterns are left if the initial string came from attribute <code>returnString</code>, because
  * any <code>${...}</code> pattern in attribute <code>returnString</code> is substituted when the configuration is loaded.
  * <li>If attribute <code>styleSheetName</code> is set, then the referenced XSLT stylesheet is applied to the resulting string.
- * </ol>  
+ * </ol>
  * <br/><br/>
  * Many attributes of this pipe reference file names. If a file is referenced by a relative path, the path
  * is relative to the configuration's root directory.
- * 
+ *
  * @ff.parameters Used for substitution. For a parameter named <code>xyz</code>, the string <code>${xyz}</code> or
  * <code>xyz</code> (if <code>replaceFixedParams</code> is true) is substituted by the parameter's value.
  *
@@ -73,6 +74,7 @@ import nl.nn.adapterframework.util.TransformerPool;
  *
  * @author Johan Verrips
  */
+@Category("Basic")
 public class FixedResultPipe extends FixedForwardPipe {
 
 	private static final String FILE_NOT_FOUND_FORWARD = "filenotfound";
@@ -220,7 +222,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 	/**
 	 * Should values between ${ and } be resolved. If true, the search order of replacement values is:
 	 * system properties (1), pipelinesession variables (2), application properties (3).
-	 * 
+	 *
 	 * @ff.default false
 	 */
 	public void setSubstituteVars(boolean substitute){

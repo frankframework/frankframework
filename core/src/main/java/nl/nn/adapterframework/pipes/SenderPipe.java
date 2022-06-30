@@ -20,6 +20,7 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.IWrapperPipe;
+import nl.nn.adapterframework.doc.Category;
 
 /**
  * Plain extension to {@link MessageSendingPipe} that can be used directly in configurations.
@@ -30,6 +31,7 @@ import nl.nn.adapterframework.core.IWrapperPipe;
  *
  * @author  Dennis van Loon
  */
+@Category("Basic")
 public class SenderPipe extends MessageSendingPipe {
 
 	@Override // to obtain proper order in FrankDoc and XSD

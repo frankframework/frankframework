@@ -26,6 +26,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Counter;
@@ -48,6 +49,7 @@ import nl.nn.adapterframework.util.Misc;
  * 
  * @author Gerrit van Brakel
  */
+@Category("NN-Special")
 public class RekenBoxCaller extends FixedForwardPipe {
 	
 	private String runPath="";

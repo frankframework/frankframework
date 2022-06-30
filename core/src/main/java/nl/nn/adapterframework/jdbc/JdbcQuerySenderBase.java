@@ -51,6 +51,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.jta.TransactionConnectorCoordinator;
@@ -97,6 +98,7 @@ import nl.nn.adapterframework.xml.PrettyPrintFilter;
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
+@SupportsOutputStreaming
 public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 
 	public static final String UNP_START = "?{";
@@ -1010,8 +1012,8 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		resultQuery = string;
 	}
 
-	/** 
-	 * Comma separated list of columns whose values are to be returned. Works only if the driver implements jdbc 3.0 getGeneratedKeys(). 
+	/**
+	 * Comma separated list of columns whose values are to be returned. Works only if the driver implements jdbc 3.0 getGeneratedKeys().
 	 * Note: not all drivers support multiple values and returned field names may vary between drivers.
 	 * Works for H2 and Oracle. Could work for MS_SQL with a single identity column, with name GENERATED_KEYS, if a identity has been generated. Not supported for other DBMSes.
 	 */

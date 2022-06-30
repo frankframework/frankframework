@@ -18,17 +18,19 @@ package nl.nn.adapterframework.senders;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 
 /**
- * Echos input to output. 
- * 
+ * Echos input to output.
+ *
  * @author  Gerrit van Brakel
  * @since   4.9
  */
+@Category("Basic")
 public class EchoSender extends SenderWithParametersBase {
-	
+
 	private boolean synchronous=true;
 
 	@Override
