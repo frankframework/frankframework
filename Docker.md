@@ -33,11 +33,18 @@ For a list of available tags, see https://nexus.frankframework.org/#browse/searc
 
 To run the image, run the following command, adding environment variables and mounts as needed:
 
-`docker run --publish <hostport>:8080 [-e <name>=<value>] [--mount type=bind,source=<source>,target=<target>] --name <name> nexus.frankframework.org/frank-framework[:<tag>]`
+`docker run --publish <hostport>:8080 [-e <name>=<value>] [-v <source>:<target>[:<options>]] --name <name> nexus.frankframework.org/frank-framework[:<tag>]`
 
 For example, to run Frank2Example on http://localhost with the latest image using Powershell on Windows:
 
-`docker run --publish 80:8080 -e dtap.stage=LOC --mount type=bind,source=$pwd/example/src/main/resources,target=/opt/frank/resources --mount type=bind,source=$pwd/example/src/main/webapp/META-INF/context.xml,target=/usr/local/tomcat/conf/Catalina/localhost/ROOT.xml --name Frank2Example nexus.frankframework.org/frank-framework:latest`
+```bash
+docker run --publish 80:8080 \
+	-e dtap.stage=LOC \
+	-v $pwd/example/src/main/resources:/frank/resources \
+	-v $pwd/example/src/main/webapp/META-INF/context.xml:/context.xml \
+	--name Frank2Example \
+	nexus.frankframework.org/frank-framework:latest
+```
 
 ## Server use
 
@@ -57,21 +64,21 @@ Filesystem
 The image contains the following directories:
 | directory | description | notes |
 |---|---|---|
-| /opt/frank/resources | For application-wide properties, may contain files or a .jar with all files | Minimum required properties to set are `instance.name` and `configurations.names`, can also be set using environment variables |
-| /opt/frank/configurations | For configurations, may contain a directory with files per configuration or a .jar containing a directory per configuration | When Configuration.xml is not located at `<configurationName>/Configuration.xml`, your resources should include a property `configurations.<configurationName>.configurationFile` containing the path to the Configuration.xml |
-| /opt/frank/testtool | For Larva tests that are included in the image | |
-| /opt/frank/testtool-ext | For Larva tests that are mounted from the environment | |
+| /frank/resources | For application-wide properties, may contain files or a .jar with all files | Minimum required properties to set are `instance.name` and `configurations.names`, can also be set using environment variables |
+| /frank/configurations | For configurations, may contain a directory with files per configuration or a .jar containing a directory per configuration | When Configuration.xml is not located at `<configurationName>/Configuration.xml`, your resources should include a property `configurations.<configurationName>.configurationFile` containing the path to the Configuration.xml |
+| /frank/testtool | For Larva tests that are included in the image | |
+| /frank/testtool-ext | For Larva tests that are mounted from the environment | |
 | /usr/local/tomcat/lib | Contains drivers and other dependencies | Contains all Framework required dependencies and drivers for supported JMS and JDBC systems |
 | /usr/local/tomcat/logs | Log directory | |
-| /opt/frank/secrets | Credential storage | See [Secrets](#Secrets) |
+| /frank/secrets | Credential storage | See [Secrets](#Secrets) |
 
 ## Files
 
 The image also contains the following files:
 | file | description | notes |
 |---|---|---|
-| /usr/local/tomcat/conf/Catalina/localhost/ROOT.xml | mount/copy of your context.xml | Use hostname `host.docker.internal` to get to the host machine for local testing. Changing this file will require a new instance to be started, it cannot be reloaded |
-| /usr/local/tomcat/conf/server.xml | mount/copy of your server.xml | Contains the default server.xml of Tomcat, replace to secure your application |
+| /context.xml | mount/copy of your context.xml | Use hostname `host.docker.internal` to get to the host machine for local testing. Changing this file will require a new instance to be started, it cannot be reloaded |
+| /server.xml | mount/copy of your server.xml | Contains the default server.xml of Tomcat, replace to secure your application |
 | /usr/local/tomcat/conf/catalina.properties | Server properties, contains default framework values | Do not replace this file, use [Environment variables](#Environment-variables) or append to the file, see [Dockerfile](docker/appserver/Tomcat/Dockerfile) for an example |
 
 ## Permissions
@@ -115,8 +122,8 @@ Frank!Applications use HTTPS and require authentication unless `dtap.stage=LOC`,
 Special consideration should be taken with secrets. As described on the [Tomcat website](https://cwiki.apache.org/confluence/display/TOMCAT/Password), secrets are stored in plain text in the container. To use secrets in your Tomcat and Frank!Application configuration, you can take the following steps:
 - In your configuration, use the authAlias attribute with value `${<secret-name>}` 
 - In cases where you need to use username or password separately (such as the Tomcat context.xml), you can set the values to `${<secret-name>/username}` and `${<secret-name>/password}` respectively
-- Mount the value for the username in the file `/opt/frank/secrets/<secret-name>/username`
-- Mount the value for the password in the file `/opt/frank/secrets/<secret-name>/password`
+- Mount the value for the username in the file `/frank/secrets/<secret-name>/username`
+- Mount the value for the password in the file `/frank/secrets/<secret-name>/password`
 
 See the [context.xml](test/src/main/webapp/META-INF/context.xml) of the test-project and corresponding [Dockerfile](docker/appserver/Tomcat/test/Dockerfile) for an example.
 
@@ -125,3 +132,13 @@ See the [context.xml](test/src/main/webapp/META-INF/context.xml) of the test-pro
 This image runs Tomcat as a separate user `tomcat:tomcat` with `UID=1000` and `GID=1000`. To ensure correct file permissions, by default the root user sets the file permissions on startup after which Tomcat is started using `gosu` to step down to `tomcat`. For setups with a large number of files, setting the permissions reduces startup performance, see [Permissions](#Permissions) to set the file permissions during build and skip the step during container startup.
 
 These actions are handled by the [/entrypoint.sh](docker/appserver/Tomcat/src/entrypoint.sh) and [/setPermissions.sh](docker/appserver/Tomcat/src/setPermissions.sh) scripts, replacing or modifying these scripts or changing the ENTRYPOINT of the image might result in incorrect file permissions being set or Tomcat running as `root`.
+
+## Symbolic link
+
+Files that are copied or mounted to `/frank` will be linked to `/opt/frank`. `/opt/frank` will change ownership to the user `tomcat`. This is done as part of running the container as [non-root](#Non-root). The reason a symbolic link is used, is to preserve the ownership of the original files. This way, the ownership won't change on the host when a mount is used. These are all the symbolic links used:
+
+| Target                                             | Name         |
+| -------------------------------------------------- | ------------ |
+| /opt/frank                                         | /frank       |
+| /usr/local/tomcat/conf/server.xml                  | /server.xml  |
+| /usr/local/tomcat/conf/Catalina/localhost/ROOT.xml | /context.xml |
