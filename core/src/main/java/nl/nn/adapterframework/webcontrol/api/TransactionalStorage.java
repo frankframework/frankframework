@@ -63,11 +63,10 @@ import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
-import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.receivers.Receiver;
-import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.MessageBrowsingFilter;
+import nl.nn.adapterframework.util.MessageBrowsingUtil;
 import nl.nn.adapterframework.util.Misc;
 
 @Path("/")
@@ -106,20 +105,24 @@ public class TransactionalStorage extends Base {
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
 		messageId = Misc.urlDecode(messageId);
 
-		if(storageSource == StorageSource.PIPES) {
-			MessageSendingPipe pipe = (MessageSendingPipe) adapter.getPipeLine().getPipe(storageSourceName);
-			if(pipe == null) {
-				throw new ApiException("Pipe ["+storageSourceName+"] not found!");
+		try {
+			if(storageSource == StorageSource.PIPES) {
+				MessageSendingPipe pipe = (MessageSendingPipe) adapter.getPipeLine().getPipe(storageSourceName);
+				if(pipe == null) {
+					throw new ApiException("Pipe ["+storageSourceName+"] not found!");
+				}
+				storage = pipe.getMessageLog();
+				message = getMessage(storage, messageId);
+			} else {
+				Receiver<?> receiver = adapter.getReceiverByName(storageSourceName);
+				if(receiver == null) {
+					throw new ApiException("Receiver ["+storageSourceName+"] not found!");
+				}
+				storage = receiver.getMessageBrowser(ProcessState.getProcessStateFromName(processState));
+				message = getMessage(storage, receiver.getListener(), messageId);
 			}
-			storage = pipe.getMessageLog();
-			message = getMessage(storage, messageId);
-		} else {
-			Receiver<?> receiver = adapter.getReceiverByName(storageSourceName);
-			if(receiver == null) {
-				throw new ApiException("Receiver ["+storageSourceName+"] not found!");
-			}
-			storage = receiver.getMessageBrowser(ProcessState.getProcessStateFromName(processState));
-			message = getMessage(storage, receiver.getListener(), messageId);
+		} catch (IOException e) {
+			throw new ApiException(e);
 		}
 
 		try {
@@ -187,21 +190,25 @@ public class TransactionalStorage extends Base {
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
 		messageId = Misc.urlDecode(messageId);
 		String message;
-		if(storageSource == StorageSource.PIPES) {
-			MessageSendingPipe pipe = (MessageSendingPipe) adapter.getPipeLine().getPipe(storageSourceName);
-			if(pipe == null) {
-				throw new ApiException("Pipe ["+storageSourceName+"] not found!");
-			}
+		try {
+			if(storageSource == StorageSource.PIPES) {
+				MessageSendingPipe pipe = (MessageSendingPipe) adapter.getPipeLine().getPipe(storageSourceName);
+				if(pipe == null) {
+					throw new ApiException("Pipe ["+storageSourceName+"] not found!");
+				}
 
-			message = getMessage(pipe.getMessageLog(), messageId);
-		} else {
-			Receiver<?> receiver = adapter.getReceiverByName(storageSourceName);
-			if(receiver == null) {
-				throw new ApiException("Receiver ["+storageSourceName+"] not found!");
-			}
+				message = getMessage(pipe.getMessageLog(), messageId);
+			} else {
+				Receiver<?> receiver = adapter.getReceiverByName(storageSourceName);
+				if(receiver == null) {
+					throw new ApiException("Receiver ["+storageSourceName+"] not found!");
+				}
 
-			IMessageBrowser<?> storage = receiver.getMessageBrowser(ProcessState.getProcessStateFromName(processState));
-			message = getMessage(storage, receiver.getListener(), messageId);
+				IMessageBrowser<?> storage = receiver.getMessageBrowser(ProcessState.getProcessStateFromName(processState));
+				message = getMessage(storage, receiver.getListener(), messageId);
+			}
+		} catch (IOException e) {
+			throw new ApiException(e);
 		}
 
 		MediaType mediaType = getMediaType(message);
@@ -333,8 +340,8 @@ public class TransactionalStorage extends Base {
 			if(receiver == null) {
 				throw new ApiException("Receiver ["+storageSourceName+"] not found!");
 			}
-			
-			ProcessState state = ProcessState.getProcessStateFromName(processState); 
+
+			ProcessState state = ProcessState.getProcessStateFromName(processState);
 			storage = receiver.getMessageBrowser(state);
 			targetPSInfo = getTargetProcessStateInfo(receiver.targetProcessStates().get(state));
 			listener = receiver.getListener();
@@ -602,48 +609,21 @@ public class TransactionalStorage extends Base {
 		}
 	}
 
-	private String getMessage(IMessageBrowser<?> messageBrowser, String messageId) {
+	private String getMessage(IMessageBrowser<?> messageBrowser, String messageId) throws IOException {
 		return getMessage(messageBrowser, null, messageId);
 	}
 
-	private String getMessage(IMessageBrowser<?> messageBrowser, IListener<?> listener, String messageId) {
-		return getRawMessage(messageBrowser, listener, messageId);
+	private String getMessage(IMessageBrowser<?> messageBrowser, IListener<?> listener, String messageId) throws IOException {
+		return getMessageText(messageBrowser, listener, messageId);
 	}
 
-	private String getRawMessage(IMessageBrowser<?> messageBrowser, IListener listener, String messageId) {
-		Object rawmsg = null;
+	private String getMessageText(IMessageBrowser<?> messageBrowser, IListener listener, String messageId) throws IOException {
+		String msg = null;
 		try {
-			rawmsg = messageBrowser.browseMessage(messageId);
+			Object rawmsg = messageBrowser.browseMessage(messageId);
+			msg = MessageBrowsingUtil.getMessageText(rawmsg, listener);
 		} catch(ListenerException e) {
 			throw new ApiException(e, 404);
-		}
-
-		String msg = null;
-		if (rawmsg != null) {
-			if(rawmsg instanceof MessageWrapper) {
-				try {
-					MessageWrapper<?> msgsgs = (MessageWrapper<?>) rawmsg;
-					msg = msgsgs.getMessage().asString();
-				} catch (IOException e) {
-					throw new ApiException(e, 500);
-				}
-			} else {
-				try {
-					if (listener!=null) {
-						msg = listener.extractMessage(rawmsg, null).asString();
-					} 
-				} catch (Exception e) {
-					log.warn("Exception reading value raw message", e);
-				}
-				try {
-					if (StringUtils.isEmpty(msg)) {
-						msg = Message.asString(rawmsg);
-					}
-				} catch (Exception e) {
-					log.warn("Cannot convert message", e);
-					msg = rawmsg.toString();
-				}
-			}
 		}
 		if (StringUtils.isEmpty(msg)) {
 			msg = "<no message found/>";
@@ -658,7 +638,7 @@ public class TransactionalStorage extends Base {
 		MediaType type = MediaType.TEXT_PLAIN_TYPE;
 		if (StringUtils.isEmpty(msg)) {
 			throw new ApiException("message not found");
-		} 
+		}
 		if(msg.startsWith("<")) {
 			type = MediaType.APPLICATION_XML_TYPE;
 		} else if(msg.startsWith("{") || msg.startsWith("[")) {
@@ -666,7 +646,7 @@ public class TransactionalStorage extends Base {
 		}
 		return type;
 	}
-	
+
 	private String getContentDispositionHeader(MediaType type, String filename) {
 		String extension="txt";
 		if(MediaType.APPLICATION_XML_TYPE.equals(type)) {
