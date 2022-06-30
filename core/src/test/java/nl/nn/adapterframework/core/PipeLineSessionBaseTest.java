@@ -137,17 +137,17 @@ public class PipeLineSessionBaseTest {
 		assertEquals(TEST_OBJECT, session.get("object1"));
 		assertEquals(TEST_OBJECT.toString(), session.get("object1", "dummy"));
 	}
-	
-	
+
+
 	@ToString
 	private class StateObservableInputStream extends InputStream {
 		protected int closes = 0;
 		protected String name;
-		
+
 		StateObservableInputStream(String name) {
 			this.name=name;
 		}
-		
+
 		@Override
 		public void close() {
 			log.debug("closing inputstream ["+name+"]");
@@ -159,40 +159,40 @@ public class PipeLineSessionBaseTest {
 			return 0;
 		}
 	}
-	
+
 	@Test
 	public void testCloseables() throws Exception {
 		StateObservableInputStream a = new StateObservableInputStream("a");
 		StateObservableInputStream b = new StateObservableInputStream("b");
 		StateObservableInputStream c = new StateObservableInputStream("c");
 		StateObservableInputStream d = new StateObservableInputStream("d");
-		
+
 		Message ma = new Message(a);
 		Message mb = new Message(b);
 		Message mc = new Message(c);
 		Message md = new Message(d);
-		
+
 		ma.closeOnCloseOf(session, "testCloseables()");
 		InputStream p = (InputStream)ma.asObject();
 		ma.closeOnCloseOf(session, "testCloseables()");
 		InputStream q = (InputStream)ma.asObject();
 
-		assertTrue("scheduling a resource twice must yield the same object", p==q); 
-		
+		assertTrue("scheduling a resource twice must yield the same object", p==q);
+
 		mb.closeOnCloseOf(session, "testCloseables()");
 		mc.closeOnCloseOf(session, "testCloseables()");
 		md.closeOnCloseOf(session, "testCloseables()");
 
 		log.debug("test calling close on wrapped(b)");
 		mb.close();
-		
+
 		assertFalse(mb.isScheduledForCloseOnExitOf(session));
 
 		log.debug("test unschedule wrapped(c)");
 		mc.unscheduleFromCloseOnExitOf(session);
-		
+
 		session.close();
-		
+
 		assertEquals(1, a.closes);
 		assertEquals(1, b.closes);
 		assertEquals(0, c.closes);

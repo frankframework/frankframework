@@ -419,7 +419,7 @@ public class Message implements Serializable {
 	 */
 	public byte[] getMagic(int readLimit) throws IOException {
 		if(!isBinary()) {
-			return null;
+			return new byte[0];
 		}
 
 		if (request instanceof InputStream) {
@@ -443,7 +443,7 @@ public class Message implements Serializable {
 			}
 		}
 
-		return null;
+		return new byte[0];
 	}
 
 	private byte[] readBytesFromInputStream(InputStream stream, int readLimit) throws IOException {
