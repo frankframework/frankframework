@@ -12,7 +12,7 @@ import nl.nn.adapterframework.util.TransformerPool.OutputType;
 public class XsltSenderTest extends XsltErrorTestBase<SenderPipe> {
 
 	protected XsltSender sender;
-	
+
 	@Override
 	public SenderPipe createPipe() {
 		SenderPipe pipe=new SenderPipe();
@@ -22,21 +22,41 @@ public class XsltSenderTest extends XsltErrorTestBase<SenderPipe> {
 		return pipe;
 	}
 
+	/*
+	 * Test with output-method=xml, but yielding a text file.
+	 * It should not render namespace definitions multiple times
+	 */
+	@Test
+	public void multiNamespace() throws Exception {
+		setStyleSheetName("/Xslt/MultiNamespace/toText.xsl");
+		setIndent(true);
+		pipe.configure();
+		pipe.start();
+		String input = TestFileUtils.getTestFile("/Xslt/MultiNamespace/in.xml");
+		String expected = TestFileUtils.getTestFile("/Xslt/MultiNamespace/out.txt");
+
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String result = Message.asString(prr.getResult());
+
+		assertResultsAreCorrect(expected, result, session);
+	}
+
+
 
 	@Override
 	protected void setStyleSheetName(String styleSheetName) {
-		sender.setStyleSheetName(styleSheetName);		
+		sender.setStyleSheetName(styleSheetName);
 	}
-	
+
 	@Override
 	protected void setStyleSheetNameSessionKey(String styleSheetNameSessionKey) {
-		sender.setStyleSheetNameSessionKey(styleSheetNameSessionKey);		
+		sender.setStyleSheetNameSessionKey(styleSheetNameSessionKey);
 	}
-	
+
 
 	@Override
 	protected void setXpathExpression(String xpathExpression) {
-		sender.setXpathExpression(xpathExpression);		
+		sender.setXpathExpression(xpathExpression);
 	}
 
 	@Override
@@ -70,23 +90,9 @@ public class XsltSenderTest extends XsltErrorTestBase<SenderPipe> {
 		sender.setXslt2(xslt2);
 	}
 
-	/*
-	 * Test with output-method=xml, but yielding a text file.
-	 * It should not render namespace definitions multiple times
-	 */
-	@Test
-	public void multiNamespace() throws Exception {
-		setStyleSheetName("/Xslt/MultiNamespace/toText.xsl");
-		setIndent(true);
-		pipe.configure();
-		pipe.start();
-		String input = TestFileUtils.getTestFile("/Xslt/MultiNamespace/in.xml");
-		String expected = TestFileUtils.getTestFile("/Xslt/MultiNamespace/out.txt");
-
-		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = Message.asString(prr.getResult());
-		
-		assertResultsAreCorrect(expected, result, session);
+	@Override
+	protected void setHandleLexicalEvents(boolean handleLexicalEvents) {
+		sender.setHandleLexicalEvents(handleLexicalEvents);
 	}
 
 
