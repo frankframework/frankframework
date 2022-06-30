@@ -35,6 +35,10 @@ public class MessageDataSource implements DataSource {
 	private static final MimeType DEFAULT_MIMETYPE = MimeTypeUtils.APPLICATION_OCTET_STREAM;
 
 	public MessageDataSource(Message message) throws IOException {
+		this(message, null);
+	}
+
+	public MessageDataSource(Message message, String newContentType) throws IOException {
 		if(message.isNull()) {
 			throw new IllegalArgumentException("message may not be null");
 		}
@@ -45,11 +49,11 @@ public class MessageDataSource implements DataSource {
 		this.message = message;
 		this.message.preserve();
 		this.name = (String) message.getContext().get(MessageContext.METADATA_NAME);
+
+		determineContentType(newContentType);
 	}
 
-	public MessageDataSource(Message message, String newContentType) throws IOException {
-		this(message);
-
+	private void determineContentType(String newContentType) {
 		if(StringUtils.isNotEmpty(newContentType)) {
 			MimeType mimeType = MimeType.valueOf(newContentType);
 			if(mimeType != DEFAULT_MIMETYPE) {
