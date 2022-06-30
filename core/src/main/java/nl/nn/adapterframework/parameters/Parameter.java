@@ -72,7 +72,8 @@ import nl.nn.adapterframework.util.XmlUtils;
  * parameters get their value at the time of processing the message. Value can be retrieved from the message itself,
  * a fixed value, or from the pipelineSession. If this does not result in a value (or if neither of these is specified), a default value
  * can be specified. If an XPathExpression or stylesheet is specified, it will be applied to the message, the value retrieved
- * from the pipelineSession or the fixed value specified.
+ * from the pipelineSession or the fixed value specified. If the transformation produces no output, the default value
+ * of the parameter is taken if provided.
  * <br/><br/>
  * Examples:
  * <pre><code>
@@ -93,7 +94,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  *   &lt;to&gt;***@zonnet.nl&lt;/to&gt;
  * </code></pre>
  *
- * N.B. to obtain a fixed value: a non-existing 'dummy' <code>sessionKey</code> in combination with the fixed value in <code>DefaultValue</code> is used traditionally.
+ * N.B. to obtain a fixed value: a non-existing 'dummy' <code>sessionKey</code> in combination with the fixed value in <code>defaultValue</code> is used traditionally.
  * The current version of parameter supports the 'value' attribute, that is sufficient to set a fixed value.
  * @author Gerrit van Brakel
  * @ff.parameters Parameters themselves can have parameters too, for instance if a XSLT transformation is used, that transformation can have parameters.
@@ -891,6 +892,10 @@ public class Parameter implements IConfigurable, IWithParameters {
 		return name;
 	}
 
+	/**
+	 * The target data type of the parameter, related to the database or XSLT stylesheet to which the parameter is applied.
+	 * @param type
+	 */
 	public void setType(ParameterType type) {
 		this.type = type;
 	}
