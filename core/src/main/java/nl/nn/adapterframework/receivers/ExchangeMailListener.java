@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2016, 2019 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,8 +15,11 @@
  */
 package nl.nn.adapterframework.receivers;
 
+import org.apache.commons.lang3.StringUtils;
+
 import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
 import microsoft.exchange.webservices.data.property.complex.Attachment;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.IbisDocRef;
@@ -32,6 +35,17 @@ import nl.nn.adapterframework.filesystem.MailListener;
 public class ExchangeMailListener extends MailListener<EmailMessage,Attachment,ExchangeFileSystem> {
 
 	public final String EXCHANGE_FILE_SYSTEM ="nl.nn.adapterframework.filesystem.ExchangeFileSystem";
+
+	@Override
+	public void configure() throws ConfigurationException {
+		super.configure();
+		String separator = getFileSystem().getMailboxFolderSeparator();
+		if (StringUtils.isNotEmpty(getInputFolder()) && getInputFolder().contains(separator) ||
+			StringUtils.isNotEmpty(getInProcessFolder()) && getInProcessFolder().contains(separator)){
+			throw new ConfigurationException("Moving items across mailboxes is not supported by ExchangeMailListener for attributes [inputFolder,inProcessFolder]. " +
+				"Please do not use dynamic mailboxes / folders separated by ["+separator+"].");
+		}
+	}
 
 	@Override
 	protected ExchangeFileSystem createFileSystem() {
@@ -143,4 +157,8 @@ public class ExchangeMailListener extends MailListener<EmailMessage,Attachment,E
 		getFileSystem().setProxyDomain(domain);
 	}
 
+	@IbisDocRef({EXCHANGE_FILE_SYSTEM})
+	public void setMailboxFolderSeparator(String separator) {
+		getFileSystem().setMailboxFolderSeparator(separator);
+	}
 }
