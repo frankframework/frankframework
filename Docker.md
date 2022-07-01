@@ -38,8 +38,8 @@ For example, to run Frank2Example on http://localhost with the latest image usin
 ```bash
 docker run --publish 80:8080 \
 	-e dtap.stage=LOC \
-	-v $pwd/example/src/main/resources:/frank/resources \
-	-v $pwd/example/src/main/webapp/META-INF/context.xml:/context.xml \
+	-v $pwd/example/src/main/resources:/opt/frank/resources \
+	-v $pwd/example/src/main/webapp/META-INF/context.xml:/usr/local/tomcat/conf/Catalina/localhost/ROOT.xml \
 	--name Frank2Example \
 	nexus.frankframework.org/frank-framework:latest
 ```
@@ -68,7 +68,7 @@ The image contains the following directories:
 | /opt/frank/testtool-ext | For Larva tests that are mounted from the environment | |
 | /usr/local/tomcat/lib | Contains drivers and other dependencies | Contains all Framework required dependencies and drivers for supported JMS and JDBC systems |
 | /usr/local/tomcat/logs | Log directory | |
-| /frank/secrets | Credential storage | See [Secrets](#Secrets) |
+| /opt/frank/secrets | Credential storage | See [Secrets](#Secrets) |
 
 ## Files
 
