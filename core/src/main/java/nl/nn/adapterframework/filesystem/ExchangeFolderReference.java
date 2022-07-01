@@ -22,9 +22,9 @@ import microsoft.exchange.webservices.data.property.complex.FolderId;
 
 public class ExchangeFolderReference {
 
-	private @Getter String mailbox;
-	private @Getter String folderName;
-	private @Getter FolderId baseFolderId;
+	private final @Getter String mailbox;
+	private final @Getter String folderName;
+	private final @Getter FolderId baseFolderId;
 
 	public ExchangeFolderReference(String folderName, String staticMailAddress, FolderId defaultBaseFolderId, String separator) {
 		if(folderName == null){
