@@ -36,10 +36,12 @@ public class VerifyServerSecurityBean implements InitializingBean {
 
 	@Override
 	public void afterPropertiesSet() {
-		AppConstants appConstants = AppConstants.getInstance();
-		boolean isDtapStageLoc = "LOC".equalsIgnoreCase(appConstants.getProperty("dtap.stage"));
-		if(appConstants.getBoolean("security.constraint.warning", !isDtapStageLoc) && !servletManager.isWebSecurityEnabled()) {
-			ApplicationWarnings.add(log, "unsecure Frank!Application, authentication has been disabled!");
+		if(!servletManager.isWebSecurityEnabled()) {
+			AppConstants appConstants = AppConstants.getInstance();
+			boolean isDtapStageLoc = "LOC".equalsIgnoreCase(appConstants.getProperty("dtap.stage"));
+			if(appConstants.getBoolean("security.constraint.warning", !isDtapStageLoc)) {
+				ApplicationWarnings.add(log, "unsecure Frank!Application, authentication has been disabled!");
+			}
 		}
 	}
 }
