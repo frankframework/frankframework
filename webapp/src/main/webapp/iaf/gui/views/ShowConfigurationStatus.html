@@ -366,7 +366,7 @@
                                                 	</span>
                                                     <button title="Stop receiver" class="btn btn-xs danger-hover" ng-show="receiver.state =='started' || receiver.state =='exception_starting'" type="button" ng-click="stopReceiver(adapter, receiver)"><i class="fa fa-stop"></i></button>
                                                     <button title="Start receiver" class="btn btn-xs primary-hover" ng-show="receiver.state =='stopped' || receiver.state =='exception_stopping'" type="button" ng-click="startReceiver(adapter, receiver)"><i class="fa fa-play"></i></button>
-                                                    <button title="Loading..." class="btn btn-warning btn-xs" ng-show="receiver.state =='starting' || receiver.state =='stopping'" type="button"><i class="fa fa-cog fa-spin"></i></button>
+                                                    <button title="Loading..." class="btn btn-warning btn-xs" ng-show="receiver.state =='loading' || receiver.state =='starting' || receiver.state =='stopping'" type="button"><i class="fa fa-cog fa-spin"></i></button>
                                                     <button title="RECEIVER IN ERROR STATE" class="btn btn-warning btn-xs" ng-show="receiver.state =='error'" type="button" disabled><i class="fa fa-warning"></i></button>
                                                 </span>
                                             </td>
