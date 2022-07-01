@@ -39,6 +39,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * @author Gerrit van Brakel
  * @since 4.2
  */
+@Deprecated
 public class IbisWebServiceSender extends SenderBase implements HasPhysicalDestination {
 
 	private String ibisHost = "localhost";
