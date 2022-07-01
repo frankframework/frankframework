@@ -35,7 +35,6 @@ import java.util.stream.Collectors;
 
 import javax.mail.internet.InternetAddress;
 
-import nl.nn.adapterframework.core.SenderException;
 import org.apache.commons.lang3.StringUtils;
 
 import com.microsoft.aad.msal4j.ClientCredentialFactory;
@@ -88,6 +87,7 @@ import microsoft.exchange.webservices.data.search.ItemView;
 import microsoft.exchange.webservices.data.search.filter.SearchFilter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.ExchangeMailListener;
 import nl.nn.adapterframework.stream.Message;
@@ -121,6 +121,7 @@ import nl.nn.adapterframework.xml.SaxElementBuilder;
 public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachment,ExchangeService> {
 	private final @Getter(onMethod = @__(@Override)) String domain = "Exchange";
 	private @Getter String mailAddress;
+	private @Getter String mailboxFolderSeparator="|";
 	private @Getter boolean validateAllRedirectUrls=true;
 	private @Getter String url;
 	private @Getter String filter;
@@ -134,6 +135,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	private final String AUTHORITY = "https://login.microsoftonline.com/";
 	private final String SCOPE = "https://outlook.office365.com/.default";
+	private final String ANCHOR_HEADER = "X-AnchorMailbox";
 	private @Getter String clientId = null;
 	private @Getter String clientSecret = null;
 	private @Getter String tenantId = null;
@@ -314,52 +316,87 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	}
 
 
-	public FolderId findFolder(String folderName) throws Exception {
+	public FolderId findFolder(String folderName) throws FileSystemException {
 		return findFolder(basefolderId, folderName);
 	}
 
+	/**
+	 * find a folder for listFiles(), getNumberOfFilesInFolder(), folderExists.
+	 * If folderName is empty, the result defaults to the baseFolder.
+	 * If baseFolder is null, the folder is searched in the root of the message folder hierarchy.
+	 * If the folder is not found, null is returned.
+	 */
 	public FolderId findFolder(FolderId baseFolderId, String folderName) throws FileSystemException {
+		if (StringUtils.isEmpty(folderName)) {
+			return baseFolderId;
+		}
+		ExchangeFolderReference targetFolder = new ExchangeFolderReference(folderName, getMailAddress(), baseFolderId, getMailboxFolderSeparator());
 		ExchangeService exchangeService = getConnection();
 		boolean invalidateConnectionOnRelease = false;
 		try {
-			FindFoldersResults findFoldersResultsIn;
-			FolderId result;
-			FolderView folderViewIn = new FolderView(10);
-			if (StringUtils.isNotEmpty(folderName)) {
-				SearchFilter searchFilterIn = new SearchFilter.IsEqualTo(FolderSchema.DisplayName, folderName);
-				if (baseFolderId==null) {
-					findFoldersResultsIn = exchangeService.findFolders(WellKnownFolderName.MsgFolderRoot, searchFilterIn, folderViewIn);
-				} else {
-					findFoldersResultsIn = exchangeService.findFolders(baseFolderId, searchFilterIn, folderViewIn);
-				}
-				if (findFoldersResultsIn.getTotalCount() == 0) {
-					if(log.isDebugEnabled()) log.debug("no folder found with name [" + folderName + "] in basefolder ["+baseFolderId+"]");
-					return null;
-				}
-				if (findFoldersResultsIn.getTotalCount() > 1) {
-					if (log.isDebugEnabled()) {
-						for (Folder folder:findFoldersResultsIn.getFolders()) {
-							log.debug("found folder ["+folder.getDisplayName()+"]");
-						}
-					}
-					throw new ConfigurationException("multiple folders found with name ["+ folderName + "]");
-				}
-			} else {
-				//findFoldersResultsIn = getExchangeService().findFolders(baseFolderId, folderViewIn);
-				return baseFolderId;
-			}
-			if (findFoldersResultsIn.getFolders().isEmpty()) {
-				result=baseFolderId;
-			} else {
-				result=findFoldersResultsIn.getFolders().get(0).getId();
-			}
-			return result;
-		} catch (Exception e) {
+			return findFolder(exchangeService, targetFolder);
+		} catch (FileSystemException e) {
 			invalidateConnectionOnRelease = true;
-			throw new FileSystemException("Cannot find folder ["+folderName+"]", e);
+			throw e;
 		} finally {
 			releaseConnection(exchangeService, invalidateConnectionOnRelease);
 		}
+	}
+
+
+	private FolderId findFolder(ExchangeService exchangeService, ExchangeFolderReference targetFolder) throws FileSystemException {
+		FindFoldersResults findFoldersResultsIn;
+		FolderView folderViewIn = new FolderView(10);
+		SearchFilter searchFilterIn = new SearchFilter.IsEqualTo(FolderSchema.DisplayName, targetFolder.getFolderName());
+		setMailboxOnService(exchangeService, targetFolder.getMailbox());
+		try {
+			if (targetFolder.getBaseFolderId()!=null) {
+				findFoldersResultsIn = exchangeService.findFolders(targetFolder.getBaseFolderId(), searchFilterIn, folderViewIn);
+			} else {
+				findFoldersResultsIn = exchangeService.findFolders(WellKnownFolderName.MsgFolderRoot, searchFilterIn, folderViewIn);
+			}
+		} catch (Exception e) {
+			throw new FileSystemException("Cannot find folder ["+targetFolder.getFolderName()+"]", e);
+		}
+		if (findFoldersResultsIn.getTotalCount() == 0) {
+			if(log.isDebugEnabled()) log.debug("no folder found with name [" + targetFolder.getFolderName() + "] in basefolder ["+targetFolder.getBaseFolderId()+"]");
+			return null;
+		}
+		if (findFoldersResultsIn.getTotalCount() > 1) {
+			if (log.isDebugEnabled()) {
+				for (Folder folder:findFoldersResultsIn.getFolders()) {
+					try {
+						log.debug("found folder ["+folder.getDisplayName()+"]");
+					} catch (ServiceLocalException e) {
+						log.warn("could not display foldername", e);
+					}
+				}
+			}
+			throw new FileSystemException("multiple folders found with name ["+ targetFolder.getFolderName() + "]");
+		}
+		return findFoldersResultsIn.getFolders().get(0).getId();
+	}
+
+	/**
+	 * Find a folder when it is to be used as target, e.g. for copyFile(), moveFile() and removeFolder().
+	 * Folder is subfolder of the basefolder.
+	 * @throws FileNotFoundException If the folder is not present (and not created)
+	 */
+	public FolderId getFolderIdByFolderName(ExchangeService exchangeService, String folderName, boolean create) throws Exception{
+		ExchangeFolderReference targetFolder = new ExchangeFolderReference(folderName, getMailAddress(), basefolderId, getMailboxFolderSeparator());
+		FolderId folderId = findFolder(exchangeService, targetFolder);
+		if (folderId==null && create) {
+			log.debug("creating folder [" + folderName + "]");
+			Folder folder = new Folder(exchangeService);
+			folder.setDisplayName(folderName);
+			folder.save(new FolderId(basefolderId.getUniqueId()));
+			createFolder(folderName);
+			folderId = findFolder(exchangeService, targetFolder);
+		}
+		if (folderId==null) {
+			throw new FileNotFoundException("folder [" + folderName + "] not found");
+		}
+		return folderId;
 	}
 
 
@@ -424,7 +461,10 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		boolean invalidateConnectionOnRelease = false;
 		boolean closeConnectionOnExit = true;
 		try {
-			FolderId folderId = findFolder(basefolderId,folder);
+			FolderId folderId = findFolder(folder);
+			if (folderId==null) {
+				throw new FileSystemException("Cannot find folder ["+folder+"]");
+			}
 			ItemView view = new ItemView(getMaxNumberOfMessagesToList()<0?100:getMaxNumberOfMessagesToList());
 			view.getOrderBy().add(ItemSchema.DateTimeReceived, SortDirection.Ascending);
 			FindItemsResults<Item> findResults;
@@ -469,10 +509,13 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		if (!isOpen()) {
 			return -1;
 		}
+		FolderId folderId = findFolder(foldername);
+		if (folderId==null) {
+			throw new FileSystemException("Cannot find folder ["+foldername+"]");
+		}
 		ExchangeService exchangeService = getConnection();
 		boolean invalidateConnectionOnRelease = false;
 		try {
-			FolderId folderId = findFolder(basefolderId,foldername);
 			Folder folder = Folder.bind(exchangeService,folderId);
 			return folder.getTotalCount();
 		} catch (Exception e) {
@@ -486,12 +529,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public boolean folderExists(String folder) throws FileSystemException {
-		FolderId folderId;
-		try {
-			folderId = findFolder(folder);
-		} catch (Exception e) {
-			throw new FileSystemException(e);
-		}
+		FolderId folderId = findFolder(folder);
 		return folderId!=null;
 	}
 
@@ -833,26 +871,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 
 
-	public FolderId getFolderIdByFolderName(ExchangeService exchangeService, String folderName, boolean create) throws Exception{
-		FindFoldersResults findResults;
-		findResults = exchangeService.findFolders(basefolderId, new SearchFilter.IsEqualTo(FolderSchema.DisplayName, folderName), new FolderView(Integer.MAX_VALUE));
-		if (create && findResults.getTotalCount()==0) {
-			log.debug("creating folder [" + folderName + "]");
-			createFolder(folderName);
-			findResults = exchangeService.findFolders(basefolderId, new SearchFilter.IsEqualTo(FolderSchema.DisplayName, folderName), new FolderView(Integer.MAX_VALUE));
-		}
-		if (findResults.getTotalCount()==0) {
-			log.debug("folder [" + folderName + "] not found");
-			return null;
-		}
-		if (log.isDebugEnabled()) {
-			log.debug("amount of folders with name: " + folderName + " = " + findResults.getTotalCount());
-			log.debug("found folder with name: " + findResults.getFolders().get(0).getDisplayName());
-		}
-		FolderId folderId = findResults.getFolders().get(0).getId();
-		return folderId;
-	}
-
 	@Override
 	public void createFolder(String folderName) throws FileSystemException {
 		ExchangeService exchangeService = getConnection();
@@ -1019,6 +1037,17 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		return new CredentialFactory(getProxyAuthAlias(), getProxyUsername(), getProxyPassword());
 	}
 
+	private void setMailboxOnService(ExchangeService service, String mailbox){
+		service.getHttpHeaders().put(ANCHOR_HEADER, mailbox);
+//		service.setImpersonatedUserId(new ImpersonatedUserId(ConnectingIdType.SmtpAddress, mailbox));
+	}
+
+	@Override
+	protected void releaseConnection(ExchangeService service, boolean invalidateConnectionOnRelease){
+		service.getHttpHeaders().remove(ANCHOR_HEADER);
+		super.releaseConnection(service, invalidateConnectionOnRelease);
+	}
+
 	private static class RedirectionUrlCallback implements IAutodiscoverRedirectionUrl {
 
 		@Override
@@ -1027,38 +1056,38 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		}
 	}
 
-	@IbisDoc({"1", "The mail address of the mailbox connected to (also used for auto discovery)", ""})
+	@IbisDoc({"The mail address of the mailbox connected to (also used for auto discovery)", ""})
 	public void setMailAddress(String mailAddress) {
 		this.mailAddress = mailAddress;
 	}
 
-	@IbisDoc({"2", "When <code>true</code>, all redirect uris are accepted when connecting to the server", "true"})
+	@IbisDoc({"When <code>true</code>, all redirect uris are accepted when connecting to the server", "true"})
 	public void setValidateAllRedirectUrls(boolean validateAllRedirectUrls) {
 		this.validateAllRedirectUrls = validateAllRedirectUrls;
 	}
 
-	@IbisDoc({"3", "Url of the Exchange server. Set to e.g. https://outlook.office365.com/EWS/Exchange.asmx to speed up start up, leave empty to use autodiscovery", ""})
+	@IbisDoc({"Url of the Exchange server. Set to e.g. https://outlook.office365.com/EWS/Exchange.asmx to speed up start up, leave empty to use autodiscovery", ""})
 	public void setUrl(String url) {
 		this.url = url;
 	}
 
 
-	@IbisDoc({"4", "Client ID that represents a registered application in Azure AD which could be found at Azure AD -> App Registrations -> MyApp -> Overview.", ""})
+	@IbisDoc({"Client ID that represents a registered application in Azure AD which could be found at Azure AD -> App Registrations -> MyApp -> Overview.", ""})
 	public void setClientId(String clientId) {
 		this.clientId = clientId;
 	}
 
-	@IbisDoc({"5", "Client secret that belongs to registered application in Azure AD which could be found at Azure AD -> App Registrations -> MyApp -> Certificates and Secrets", ""})
+	@IbisDoc({"Client secret that belongs to registered application in Azure AD which could be found at Azure AD -> App Registrations -> MyApp -> Certificates and Secrets", ""})
 	public void setClientSecret(String clientSecret) {
 		this.clientSecret = clientSecret;
 	}
 
-	@IbisDoc({"6", "Tenant ID that represents the tenant in which the registered application exists within Azure AD which could be found at Azure AD -> App Registrations -> MyApp -> Overview.", ""})
+	@IbisDoc({"Tenant ID that represents the tenant in which the registered application exists within Azure AD which could be found at Azure AD -> App Registrations -> MyApp -> Overview.", ""})
 	public void setTenantId(String tenantId) {
 		this.tenantId = tenantId;
 	}
 
-	@IbisDoc({"7", "Alias used to obtain client ID and secret or username and password for authentication to Exchange mail server. " +
+	@IbisDoc({"Alias used to obtain client ID and secret or username and password for authentication to Exchange mail server. " +
 			"If the attribute tenantId is empty, the deprecated Basic Authentication method is used. " +
 			"If the attribute tenantId is not empty, the username and password are treated as the client ID and secret.", ""})
 	@Override
@@ -1066,7 +1095,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		super.setAuthAlias(authAlias);
 	}
 
-	@IbisDoc({"8", "Username for authentication to Exchange mail server. Ignored when tenantId is also specified", ""})
+	@IbisDoc({"Username for authentication to Exchange mail server. Ignored when tenantId is also specified", ""})
 	@Deprecated
 	@ConfigurationWarning("Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to modern authentication using clientId and clientSecret!")
 	@Override
@@ -1075,7 +1104,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		setClientId(username);
 	}
 
-	@IbisDoc({"9", "Password for authentication to Exchange mail server. Ignored when tenantId is also specified", ""})
+	@IbisDoc({"Password for authentication to Exchange mail server. Ignored when tenantId is also specified", ""})
 	@Deprecated
 	@ConfigurationWarning("Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to modern authentication using clientId and clientSecret!")
 	@Override
@@ -1084,40 +1113,48 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		setClientSecret(password);
 	}
 
-	@IbisDoc({"10", "If empty, all mails are retrieved. If set to <code>NDR</code> only Non-Delivery Report mails ('bounces') are retrieved", ""})
+	@IbisDoc({"If empty, all mails are retrieved. If set to <code>NDR</code> only Non-Delivery Report mails ('bounces') are retrieved", ""})
 	public void setFilter(String filter) {
 		this.filter = filter;
 	}
 
 
-	@IbisDoc({"13", "proxy host", ""})
+	@IbisDoc({"proxy host", ""})
 	public void setProxyHost(String proxyHost) {
 		this.proxyHost = proxyHost;
 	}
 
-	@IbisDoc({"14", "proxy port", "8080"})
+	@IbisDoc({"proxy port", "8080"})
 	public void setProxyPort(int proxyPort) {
 		this.proxyPort = proxyPort;
 	}
 
-	@IbisDoc({"15", "proxy username", ""})
+	@IbisDoc({"proxy username", ""})
 	public void setProxyUsername(String proxyUsername) {
 		this.proxyUsername = proxyUsername;
 	}
 
-	@IbisDoc({"16", "proxy password", ""})
+	@IbisDoc({"proxy password", ""})
 	public void setProxyPassword(String proxyPassword) {
 		this.proxyPassword = proxyPassword;
 	}
 
-	@IbisDoc({"17", "proxy authAlias", ""})
+	@IbisDoc({"proxy authAlias", ""})
 	public void setProxyAuthAlias(String proxyAuthAlias) {
 		this.proxyAuthAlias = proxyAuthAlias;
 	}
 
-	@IbisDoc({"18", "proxy domain", ""})
+	@IbisDoc({"proxy domain", ""})
 	public void setProxyDomain(String proxyDomain) {
 		this.proxyDomain = proxyDomain;
 	}
 
+	/**
+	 * Separator character used when working with multiple mailboxes, specified before the separator in the folder name <code>test@organisation.com|My sub folder</code>.
+	 * Please consider when moving emails across mailboxes that there will be a null value returned instead of the newly created identifier.
+	 * @ff.default |
+	 */
+	public void setMailboxFolderSeparator(String separator) {
+		this.mailboxFolderSeparator = separator;
+	}
 }

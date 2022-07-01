@@ -35,6 +35,7 @@ public abstract class MailFileSystemTestBase<M,A,FS> extends SelfContainedBasicF
 	protected String username    = PropertyUtil.getProperty(PROPERTY_FILE, "username");
 	protected String password    = PropertyUtil.getProperty(PROPERTY_FILE, "password");
 	protected String basefolder1 = PropertyUtil.getProperty(PROPERTY_FILE, "basefolder1");
+	protected String expectdBestReplyAddress = PropertyUtil.getProperty(PROPERTY_FILE, "bestReplyAddress");
 
 
 
@@ -135,8 +136,7 @@ public abstract class MailFileSystemTestBase<M,A,FS> extends SelfContainedBasicF
 		M emailMessage = getFirstFileFromFolder("XmlProblem");
 		Map<String,Object> properties = fileSystem.getAdditionalFileProperties(emailMessage);
 		String bestReplyAddress = (String)properties.get(IMailFileSystem.BEST_REPLY_ADDRESS_KEY);
-		String expected = "xyz";
-		assertEquals(expected, bestReplyAddress);
+		assertEquals(expectdBestReplyAddress, bestReplyAddress);
 	}
 
 //	@Test
