@@ -20,4 +20,5 @@ RUN cat /tmp/catalinaAdditional.properties >> /usr/local/tomcat/conf/catalina.pr
 # Copy JDBC and JMS drivers
 COPY target/dependencies/*.jar /usr/local/tomcat/lib/
 
+# All previous actions are performed as root. Start container as tomcat.
 USER tomcat
