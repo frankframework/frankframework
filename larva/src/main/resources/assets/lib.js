@@ -375,27 +375,8 @@ function scrollToBottom() {
 
 function copyContents(elementId)
 {
-	if ($(elementId).createTextRange)
-	{
-		var range = $(elementId).createTextRange();
-		if (range && BodyLoaded == 1)
-			range.execCommand('Copy');
-	}
-	else
-	{
-		var flashcopier = "flashcopier";
-		
-		if (!$(flashcopier))
-		{
-			var divholder = document.createElement("div");
-			divholder.id = flashcopier;
-			document.body.appendChild(divholder);
-		}
-		
-		$(flashcopier).innerHTML = "";
-		var divinfo = '<embed src="assets/_clipboard.swf" FlashVars="clipboard=' + escape($(elementId).value) + '" type="application/x-shockwave-flash"></embed>';
-		$(flashcopier).innerHTML = divinfo;
-	}
+	$(elementId).select();
+	document.execCommand('copy');
 }
 
 function indentCompare(sources, result)
