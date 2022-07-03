@@ -419,7 +419,7 @@ public class Message implements Serializable {
 	 */
 	public byte[] getMagic(int readLimit) throws IOException {
 		if(!isBinary()) {
-			return new byte[0];
+			return readBytesFromCharacterData(readLimit);
 		}
 
 		if (request instanceof InputStream) {
@@ -446,11 +446,17 @@ public class Message implements Serializable {
 		return new byte[0];
 	}
 
+	private byte[] readBytesFromCharacterData(int readLimit) throws IOException {
+		String characterData = asString();
+		byte[] data = characterData.getBytes(StreamUtil.DEFAULT_CHARSET);
+		return Arrays.copyOf(data, readLimit);
+	}
+
 	private byte[] readBytesFromInputStream(InputStream stream, int readLimit) throws IOException {
 		byte[] bytes = new byte[readLimit];
 		int numRead = stream.read(bytes);
 		if (numRead < 0) {
-			return null;
+			return new byte[0];
 		}
 		if (numRead < readLimit) {
 			// move the bytes into a smaller array
