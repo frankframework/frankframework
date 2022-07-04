@@ -120,7 +120,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 
 	public enum AcknowledgeMode implements DocumentedEnum {
 		@EnumLabel("none") NOT_SET(0),
-		
+
 		/** auto or auto_acknowledge: Specifies that the session is to automatically acknowledge consumer receipt of
 		  * messages when message processing is complete. */
 		@EnumLabel("auto") AUTO_ACKNOWLEDGE(Session.AUTO_ACKNOWLEDGE),
@@ -139,7 +139,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			this.acknowledgeMode = acknowledgeMode;
 		}
 	}
-	
+
 	public enum DeliveryMode {
 		NOT_SET(0),
 		PERSISTENT(javax.jms.DeliveryMode.PERSISTENT),
@@ -328,11 +328,11 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		}
 		return getDestination(getDestinationName());
 	}
-	
+
 	public Destination getDestination(String destinationName) throws NamingException, JMSException, JmsException {
 		return destinations.computeIfAbsent(destinationName, name -> computeDestination(name));
 	}
-	
+
 	@SneakyThrows
 	private Destination computeDestination(String destinationName) {
 		Destination result;
@@ -445,7 +445,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		} catch (Exception e) {
 			if (throwException) {
 				throw new JmsException(e);
-			} 
+			}
 			log.warn("[" + getName() + "] got exception in getPhysicalDestinationShortName", e);
 		}
 		return result;
@@ -453,20 +453,17 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 
 	@Override
 	public String getPhysicalDestinationName() {
-		String result = getDestinationType()+"("+getDestinationName()+") ["+getPhysicalDestinationShortName()+"]";
+		StringBuilder builder = new StringBuilder(getDestinationType().toString());
+		builder.append("("+getDestinationName()+") ["+getPhysicalDestinationShortName()+"]");
 		if (StringUtils.isNotEmpty(getMessageSelector())) {
-			result+=" selector ["+getMessageSelector()+"]";
+			builder.append(" selector ["+getMessageSelector()+"]");
 		}
-		JmsRealm jmsRealm=null;
-		if (getJmsRealmName()!=null) {
-			jmsRealm=JmsRealmFactory.getInstance().getJmsRealm(getJmsRealmName());
-		}
-		if (jmsRealm==null) {
-			log.warn("Could not find jmsRealm ["+getJmsRealmName()+"]");
-		} else {
-			result+=" on ("+jmsRealm.retrieveConnectionFactoryName()+")";
-		}
-		return result;
+
+		builder.append(" on (");
+		builder.append(destinationType == DestinationType.QUEUE ? getQueueConnectionFactoryName() : getTopicConnectionFactoryName());
+		builder.append(")");
+
+		return builder.toString();
 	}
 
 	/**
@@ -474,8 +471,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 * @see QueueReceiver
 	 */
 	private QueueReceiver getQueueReceiver(QueueSession session, Queue destination, String selector) throws JMSException {
-		QueueReceiver queueReceiver = session.createReceiver(destination, selector);
-		return queueReceiver;
+		return session.createReceiver(destination, selector);
 	}
 
 	/**
@@ -493,8 +489,8 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	private TopicPublisher getTopicPublisher(TopicSession session, Topic topic) throws JMSException {
 		return session.createPublisher(topic);
 	}
-	private TopicSubscriber getTopicSubscriber(TopicSession session, Topic topic, String selector) throws JMSException {
 
+	private TopicSubscriber getTopicSubscriber(TopicSession session, Topic topic, String selector) throws JMSException {
 		TopicSubscriber topicSubscriber;
 		switch (subscriberType) {
 		case DURABLE:
@@ -555,7 +551,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			if (ignoreInvalidDestinationException) {
 				log.warn("queue ["+dest+"] doesn't exist");
 				return null;
-			} 
+			}
 			throw e;
 		}
 		if (messageType!=null) {
@@ -598,11 +594,11 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	}
 	public String send(MessageProducer messageProducer, javax.jms.Message message, boolean ignoreInvalidDestinationException) throws NamingException, JMSException {
 		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix()+"sender on ["+ getDestinationName() 
+			log.debug(getLogPrefix()+"sender on ["+ getDestinationName()
 				+ "] will send message with JMSDeliveryMode=[" + message.getJMSDeliveryMode()
 				+ "] \n  JMSMessageID=[" + message.getJMSMessageID()
 				+ "] \n  JMSCorrelationID=[" + message.getJMSCorrelationID()
-				+ "] \n  JMSTimestamp=[" + DateUtils.format(message.getJMSTimestamp()) 
+				+ "] \n  JMSTimestamp=[" + DateUtils.format(message.getJMSTimestamp())
 				+ "] \n  JMSExpiration=[" + message.getJMSExpiration()
 				+ "] \n  JMSPriority=[" + message.getJMSPriority()
 				+ "] \n Message=[" + message.toString()
@@ -644,9 +640,9 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			if (useJms102()) {
 				if (dest instanceof Topic) {
 					return sendByTopic((TopicSession)session, (Topic)dest, message);
-				} 
+				}
 				return sendByQueue((QueueSession)session, (Queue)dest, message);
-			} 
+			}
 			MessageProducer mp = session.createProducer(dest);
 			mp.send(message);
 			mp.close();
@@ -738,7 +734,6 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 						throw new IOException("Cannot read JMS message", e);
 					}
 				}
-				
 			};
 			message = new Message(new BufferedInputStream(input));
 		} else if (rawMessage == null) {
@@ -823,7 +818,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	public AcknowledgeMode getAcknowledgeModeEnum() {
 		return acknowledgeMode;
 	}
-	
+
 	/**
 	 * Controls whether messages are processed persistently.
 	 *
