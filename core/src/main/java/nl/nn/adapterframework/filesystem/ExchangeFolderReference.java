@@ -42,8 +42,8 @@ public class ExchangeFolderReference {
 			}
 			this.mailbox = staticMailAddress;
 			this.folderName = folderName;
+			this.baseFolderId = defaultBaseFolderId;
 		}
-		this.baseFolderId = defaultBaseFolderId;
 	}
 
 }
