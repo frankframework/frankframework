@@ -11,7 +11,6 @@ Docker images are provided, suitable both for local and server use. Images are p
 - [Filesystem](#Filesystem)
   - [Directories](#Directories)
   - [Files](#Files)
-  - [Permissions](#Permissions)
 - [Logging](#Logging)
 - [Environment variables](#Environment-variables)
 - [Health and readiness](#Health-and-readiness)
@@ -33,11 +32,18 @@ For a list of available tags, see https://nexus.frankframework.org/#browse/searc
 
 To run the image, run the following command, adding environment variables and mounts as needed:
 
-`docker run --publish <hostport>:8080 [-e <name>=<value>] [--mount type=bind,source=<source>,target=<target>] --name <name> nexus.frankframework.org/frank-framework[:<tag>]`
+`docker run --publish <hostport>:8080 [-e <name>=<value>] [-v <source>:<target>[:<options>]] --name <name> nexus.frankframework.org/frank-framework[:<tag>]`
 
 For example, to run Frank2Example on http://localhost with the latest image using Powershell on Windows:
 
-`docker run --publish 80:8080 -e dtap.stage=LOC --mount type=bind,source=$pwd/example/src/main/resources,target=/opt/frank/resources --mount type=bind,source=$pwd/example/src/main/webapp/META-INF/context.xml,target=/usr/local/tomcat/conf/Catalina/localhost/ROOT.xml --name Frank2Example nexus.frankframework.org/frank-framework:latest`
+```bash
+docker run --publish 80:8080 \
+	-e dtap.stage=LOC \
+	-v $pwd/example/src/main/resources:/opt/frank/resources \
+	-v $pwd/example/src/main/webapp/META-INF/context.xml:/usr/local/tomcat/conf/Catalina/localhost/ROOT.xml \
+	--name Frank2Example \
+	nexus.frankframework.org/frank-framework:latest
+```
 
 ## Server use
 
@@ -47,7 +53,7 @@ For use on servers, you need to build your own image that includes the required 
 
 `FROM nexus.frankframework.org/frank-framework[:<tag>]`
 
-Dockerfiles based on our image use `root` during build. During startup we use `gosu` to step down to a more restricted `tomcat` user.
+Use `COPY --chown=tomcat` when copying files to ensure that tomcat can use the files.
 
 Filesystem
 ==========
@@ -73,14 +79,6 @@ The image also contains the following files:
 | /usr/local/tomcat/conf/Catalina/localhost/ROOT.xml | mount/copy of your context.xml | Use hostname `host.docker.internal` to get to the host machine for local testing. Changing this file will require a new instance to be started, it cannot be reloaded |
 | /usr/local/tomcat/conf/server.xml | mount/copy of your server.xml | Contains the default server.xml of Tomcat, replace to secure your application |
 | /usr/local/tomcat/conf/catalina.properties | Server properties, contains default framework values | Do not replace this file, use [Environment variables](#Environment-variables) or append to the file, see [Dockerfile](docker/appserver/Tomcat/Dockerfile) for an example |
-
-## Permissions
-
-As this image does not run Tomcat using the root user, file permissions need to be set correctly. By default this is done during startup, to ensure that all files copied to the above locations have the correct permissions. For images with a large number of files in these locations, this can reduce startup performance. It is possible to set the permissions during build and disable the step during startup by adding the following lines at the end of your Dockerfile:
-```
-RUN /setPermissions.sh
-ENV SET_PERMISSIONS_ON_STARTUP=FALSE
-```
 
 Logging
 =======
@@ -122,6 +120,4 @@ See the [context.xml](test/src/main/webapp/META-INF/context.xml) of the test-pro
 
 ## Non-root
 
-This image runs Tomcat as a separate user `tomcat:tomcat` with `UID=1000` and `GID=1000`. To ensure correct file permissions, by default the root user sets the file permissions on startup after which Tomcat is started using `gosu` to step down to `tomcat`. For setups with a large number of files, setting the permissions reduces startup performance, see [Permissions](#Permissions) to set the file permissions during build and skip the step during container startup.
-
-These actions are handled by the [/entrypoint.sh](docker/appserver/Tomcat/src/entrypoint.sh) and [/setPermissions.sh](docker/appserver/Tomcat/src/setPermissions.sh) scripts, replacing or modifying these scripts or changing the ENTRYPOINT of the image might result in incorrect file permissions being set or Tomcat running as `root`.
+This image runs Tomcat as a separate user `tomcat:tomcat` with `UID=1000` and `GID=1000` instead of `root`. If you need to run as `root`, you will need to set `USER root` in your Dockerfile.
