@@ -330,8 +330,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		if (StringUtils.isEmpty(folderName)) {
 			return baseFolderId;
 		}
-		ExchangeFolderReference targetFolder = new ExchangeFolderReference(folderName, getMailAddress(), baseFolderId, getMailboxFolderSeparator());
-		ExchangeService exchangeService = getConnection();
+		ExchangeFolderReference targetFolder = asFolderReference(folderName);;
+		ExchangeService exchangeService = getConnection(targetFolder);
 		boolean invalidateConnectionOnRelease = false;
 		try {
 			return findFolder(exchangeService, targetFolder);
@@ -348,7 +348,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		FindFoldersResults findFoldersResultsIn;
 		FolderView folderViewIn = new FolderView(10);
 		SearchFilter searchFilterIn = new SearchFilter.IsEqualTo(FolderSchema.DisplayName, targetFolder.getFolderName());
-		setMailboxOnService(exchangeService, targetFolder.getMailbox());
 		try {
 			if (targetFolder.getBaseFolderId()!=null) {
 				findFoldersResultsIn = exchangeService.findFolders(targetFolder.getBaseFolderId(), searchFilterIn, folderViewIn);
@@ -457,7 +456,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		if (!isOpen()) {
 			return null;
 		}
-		ExchangeService exchangeService = getConnection();
+		ExchangeFolderReference reference = asFolderReference(folder);
+		ExchangeService exchangeService = getConnection(reference);
 		boolean invalidateConnectionOnRelease = false;
 		boolean closeConnectionOnExit = true;
 		try {

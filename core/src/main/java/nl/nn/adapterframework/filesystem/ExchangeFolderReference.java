@@ -38,7 +38,7 @@ public class ExchangeFolderReference {
 		} else {
 			if(staticMailAddress == null){
 				throw new IllegalArgumentException("Cannot create ExchangeFolderReference when staticMailAddress is null " +
-					"and folderName does not contain separator ["+separator+"]!");
+					"and folderName ["+folderName+"] does not contain separator ["+separator+"]!");
 			}
 			this.mailbox = staticMailAddress;
 			this.folderName = folderName;
