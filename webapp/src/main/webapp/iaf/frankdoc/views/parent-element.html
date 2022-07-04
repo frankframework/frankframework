@@ -1,7 +1,7 @@
 <div class="sub__element">
 	<h3 class="element__name">{{element.name}} <span class="label label-warning" ng-if="element.deprecated">Deprecated</span></h3>
 	<h5 class="element__fullname">
-		<a ng-if="javaDocURL" href="{{javaDocURL}}" target="_blank" rel="noreferrer">{{element.fullName}}</a>
+		<a ng-if="element.name != 'Module'" ng-href="{{javaDocUrlOf(element.fullName)}}" target="_blank" rel="noreferrer">{{element.fullName}}</a>
 	</h5>
 
 	<div ng-if="::element.description" class="block">
