@@ -183,7 +183,7 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', '
 		return $sce.trustAsHtml(input);
 	};
 }).filter('asText', function() {
-	return function(input, $scope) {
+	return function(input) {
 		if(!input) return;
 		input = input.replaceAll('\\"', '"');
 		input = input.replace(/<[^>]*>?/gm, '');
