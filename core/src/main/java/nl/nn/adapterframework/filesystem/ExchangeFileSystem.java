@@ -330,7 +330,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		if (StringUtils.isEmpty(folderName)) {
 			return baseFolderId;
 		}
-		ExchangeFolderReference targetFolder = asFolderReference(folderName);;
+		ExchangeFolderReference targetFolder = asFolderReference(folderName);
 		ExchangeService exchangeService = getConnection(targetFolder);
 		boolean invalidateConnectionOnRelease = false;
 		try {
