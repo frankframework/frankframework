@@ -17,6 +17,7 @@ Docker images are provided, suitable both for local and server use. Images are p
 - [Considerations](#Considerations)
   - [HTTPS and authentication](#HTTPS-and-authentication)
   - [Secrets](#Secrets)
+  - [Non-root](#Non-root)
 
 
 General use
@@ -52,12 +53,12 @@ For use on servers, you need to build your own image that includes the required 
 
 `FROM nexus.frankframework.org/frank-framework[:<tag>]`
 
+Use `COPY --chown=tomcat` when copying files to ensure that tomcat can use the files.
+
 Filesystem
 ==========
 
 ## Directories
-
-Use `COPY --chown=tomcat` when copying files to ensure that tomcat can use the files. 
 
 The image contains the following directories:
 | directory | description | notes |
@@ -116,3 +117,7 @@ Special consideration should be taken with secrets. As described on the [Tomcat 
 - Mount the value for the password in the file `/opt/frank/secrets/<secret-name>/password`
 
 See the [context.xml](test/src/main/webapp/META-INF/context.xml) of the test-project and corresponding [Dockerfile](docker/appserver/Tomcat/test/Dockerfile) for an example.
+
+## Non-root
+
+This image runs Tomcat as a separate user `tomcat:tomcat` with `UID=1000` and `GID=1000` instead of `root`. If you need to run as `root`, you will need to set `USER root` in your Dockerfile.
