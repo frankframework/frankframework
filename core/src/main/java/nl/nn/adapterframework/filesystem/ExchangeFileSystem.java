@@ -882,7 +882,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		try {
 			Folder folder = new Folder(exchangeService);
 			folder.setDisplayName(reference.getFolderName());
-			folder.save(getBaseFolderId(reference.getMailbox(), getBaseFolder()));
+			folder.save(reference.getBaseFolderId());
 		} catch (Exception e) {
 			invalidateConnectionOnRelease = true;
 			throw new FileSystemException("cannot create folder ["+reference.getFolderName()+"]", e);
