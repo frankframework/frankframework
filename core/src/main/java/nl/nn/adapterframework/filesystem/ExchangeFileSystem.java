@@ -873,15 +873,16 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public void createFolder(String folderName) throws FileSystemException {
-		ExchangeService exchangeService = getConnection();
+		ExchangeFolderReference reference = new ExchangeFolderReference(folderName, getMailAddress(), null, getMailboxFolderSeparator());
+		ExchangeService exchangeService = getConnection(reference);
 		boolean invalidateConnectionOnRelease = false;
 		try {
 			Folder folder = new Folder(exchangeService);
-			folder.setDisplayName(folderName);
-			folder.save(new FolderId(basefolderId.getUniqueId()));
+			folder.setDisplayName(reference.getFolderName());
+			folder.save(getBaseFolderId(reference.getMailbox(), getBaseFolder()));
 		} catch (Exception e) {
 			invalidateConnectionOnRelease = true;
-			throw new FileSystemException("cannot create folder ["+folderName+"]", e);
+			throw new FileSystemException("cannot create folder ["+reference.getFolderName()+"]", e);
 		} finally {
 			releaseConnection(exchangeService, invalidateConnectionOnRelease);
 		}
@@ -1039,7 +1040,14 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	private void setMailboxOnService(ExchangeService service, String mailbox){
 		service.getHttpHeaders().put(ANCHOR_HEADER, mailbox);
-//		service.setImpersonatedUserId(new ImpersonatedUserId(ConnectingIdType.SmtpAddress, mailbox));
+		service.setImpersonatedUserId(new ImpersonatedUserId(ConnectingIdType.SmtpAddress, mailbox));
+	}
+
+	private ExchangeService getConnection(ExchangeFolderReference reference) throws FileSystemException {
+		ExchangeService service = super.getConnection();
+		setMailboxOnService(service, reference.getMailbox());
+
+		return service;
 	}
 
 	@Override
