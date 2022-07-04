@@ -13,12 +13,13 @@ RUN set -eux && \
 	chown -hR tomcat:tomcat ${CATALINA_HOME} && \
 	chown -hR tomcat:tomcat /opt/frank
 
+# All previous actions are performed as root. Run following instructions and start container as tomcat.
+USER tomcat
+
 # Copy environment configuration
-COPY src/scripts/catalinaAdditional.properties /tmp
+COPY --chown=tomcat src/scripts/catalinaAdditional.properties /tmp
 RUN cat /tmp/catalinaAdditional.properties >> /usr/local/tomcat/conf/catalina.properties  && rm -f /tmp/catalinaAdditional.properties
 
 # Copy JDBC and JMS drivers
-COPY target/dependencies/*.jar /usr/local/tomcat/lib/
+COPY --chown=tomcat target/dependencies/*.jar /usr/local/tomcat/lib/
 
-# All previous actions are performed as root. Start container as tomcat.
-USER tomcat
