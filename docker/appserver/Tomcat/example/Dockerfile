@@ -1,7 +1,7 @@
 FROM iaf-webapp-tomcat AS iaf-example-tomcat
 
 # copy any additional drivers
-COPY target/dependencies/*.jar /usr/local/tomcat/lib/
+COPY --chown=tomcat target/dependencies/*.jar /usr/local/tomcat/lib/
 
 # copy resources
 COPY --chown=tomcat target/dependencies/resources /opt/frank/resources
