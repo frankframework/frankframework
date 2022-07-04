@@ -384,6 +384,9 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	 */
 	public FolderId getFolderIdByFolderName(ExchangeService exchangeService, String folderName, boolean create) throws Exception{
 		ExchangeFolderReference targetFolder = new ExchangeFolderReference(folderName, getMailAddress(), basefolderId, getMailboxFolderSeparator());
+		return getFolderIdByFolderName(exchangeService, folderName, targetFolder, create);
+	}
+	public FolderId getFolderIdByFolderName(ExchangeService exchangeService, String folderName, ExchangeFolderReference targetFolder, boolean create) throws Exception{
 		FolderId folderId = findFolder(exchangeService, targetFolder);
 		if (folderId==null && create) {
 			log.debug("creating folder [" + folderName + "]");
@@ -873,7 +876,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public void createFolder(String folderName) throws FileSystemException {
-		ExchangeFolderReference reference = new ExchangeFolderReference(folderName, getMailAddress(), null, getMailboxFolderSeparator());
+		ExchangeFolderReference reference = asFolderReference(folderName);
 		ExchangeService exchangeService = getConnection(reference);
 		boolean invalidateConnectionOnRelease = false;
 		try {
@@ -891,10 +894,11 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public void removeFolder(String folderName, boolean removeNonEmptyFolder) throws FileSystemException {
-		ExchangeService exchangeService = getConnection();
+		ExchangeFolderReference reference = asFolderReference(folderName);
+		ExchangeService exchangeService = getConnection(reference);
 		boolean invalidateConnectionOnRelease = false;
 		try {
-			FolderId folderId = getFolderIdByFolderName(exchangeService, folderName, false);
+			FolderId folderId = getFolderIdByFolderName(exchangeService, folderName, reference, false);
 			Folder folder = Folder.bind(exchangeService, folderId);
 			if(removeNonEmptyFolder) {
 				folder.empty(DeleteMode.HardDelete, true);
@@ -1041,6 +1045,13 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	private void setMailboxOnService(ExchangeService service, String mailbox){
 		service.getHttpHeaders().put(ANCHOR_HEADER, mailbox);
 		service.setImpersonatedUserId(new ImpersonatedUserId(ConnectingIdType.SmtpAddress, mailbox));
+	}
+
+	private ExchangeFolderReference asFolderReference(String folderName) throws FileSystemException {
+		ExchangeFolderReference reference = new ExchangeFolderReference(folderName, getMailAddress(), null, getMailboxFolderSeparator());
+		reference.setBaseFolderId(getBaseFolderId(reference.getMailbox(), getBaseFolder()));
+
+		return reference;
 	}
 
 	private ExchangeService getConnection(ExchangeFolderReference reference) throws FileSystemException {

@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.filesystem;
 
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -24,7 +25,7 @@ public class ExchangeFolderReference {
 
 	private final @Getter String mailbox;
 	private final @Getter String folderName;
-	private final @Getter FolderId baseFolderId;
+	private @Getter @Setter FolderId baseFolderId;
 
 	public ExchangeFolderReference(String folderName, String staticMailAddress, FolderId defaultBaseFolderId, String separator) {
 		if(folderName == null){
@@ -34,7 +35,6 @@ public class ExchangeFolderReference {
 		if (items.length > 1) {
 			this.mailbox = items[0];
 			this.folderName = items[1];
-			this.baseFolderId = null;
 		} else {
 			if(staticMailAddress == null){
 				throw new IllegalArgumentException("Cannot create ExchangeFolderReference when staticMailAddress is null " +
@@ -42,8 +42,8 @@ public class ExchangeFolderReference {
 			}
 			this.mailbox = staticMailAddress;
 			this.folderName = folderName;
-			this.baseFolderId = defaultBaseFolderId;
 		}
+		this.baseFolderId = defaultBaseFolderId;
 	}
 
 }
