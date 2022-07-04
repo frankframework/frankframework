@@ -26,9 +26,14 @@
 })();
 
 
-angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', function config($stateProvider, $urlRouterProvider) {
+angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', '$uibTooltipProvider', function config($stateProvider, $urlRouterProvider, $uibTooltipProvider) {
 
 	$urlRouterProvider.otherwise("/");
+
+	$uibTooltipProvider.options({
+		animation: false,
+		placement: "auto bottom-left"
+	});
 
 	$stateProvider
 	.state('overview', {
@@ -161,7 +166,7 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 					return method.substring(1, method.indexOf("("));
 				}
 			}
-			let captures = referencedElement.split(" ");
+			let captures = referencedElement.split(" "); //first part is the ClassName, 2nd part the written name
 			let name = captures[captures.length-1];
 			if(hash > -1) {
 				let method = captureGroup.split("#")[1];
@@ -172,10 +177,44 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 				return name;
 			}
 
-			return '<span title="'+element.description+'"><a href="#!/All/'+element.name+'">'+name+'</a></span>';
+			return '<a href="#!/All/'+element.name+'">'+name+'</a>';
 		});
 
 		return $sce.trustAsHtml(input);
+	};
+}).filter('asText', function() {
+	return function(input, $scope) {
+		if(!input) return;
+		input = input.replace(/\[(.*?)\]\((.+?)\)/g, '$1');
+		input = input.replaceAll('\\"', '"');
+		input = input.replace(/<[^>]*>?/gm, '');
+		input = input.replace(/(?:{@link\s(.*?)})/g, function(match, captureGroup) {
+			// {@link PipeLineSession pipeLineSession}
+			// {@link IPipe#configure()}
+			// {@link #doPipe(Message, PipeLineSession) doPipe}
+			let referencedElement = captureGroup;
+			let hash = captureGroup.indexOf("#");
+			if(hash > -1) {
+				referencedElement = captureGroup.split("#")[0];
+	
+				if(referencedElement == '') { //if there is no element ref then it's a method
+					let method = captureGroup.substring(hash);
+					let nameOrAlias = method.split(") ");
+					if(nameOrAlias.length == 2) {
+						return nameOrAlias[1]; //If it's an alias
+					}
+					return method.substring(1, method.indexOf("("));
+				}
+			}
+			let captures = referencedElement.split(" "); //first part is the ClassName, 2nd part the written name
+			let name = captures[captures.length-1];
+			if(hash > -1) {
+				let method = captureGroup.split("#")[1];
+				name = name +"."+ (method.substring(method.indexOf(") ")+1)).trim();
+			}
+			return name;
+		});
+		return input;
 	};
 });
 
