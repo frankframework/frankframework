@@ -62,11 +62,9 @@ public class MessageDataSource implements DataSource {
 		}
 
 		if(contentType == null) { //if the contentType is still null try to compute
-			if(message.isBinary()) {
-				MimeType mimeType = MessageUtils.computeMimeType(message);
-				if(mimeType != null) {
-					contentType = mimeType.toString();
-				}
+			MimeType mimeType = MessageUtils.computeMimeType(message);
+			if(mimeType != null) {
+				contentType = mimeType.toString();
 			}
 			if(contentType == null) { //if unable to compute, fall back to the default
 				contentType = DEFAULT_MIMETYPE.toString();
