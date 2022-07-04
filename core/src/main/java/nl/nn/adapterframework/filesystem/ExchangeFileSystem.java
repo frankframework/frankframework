@@ -343,8 +343,11 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		}
 	}
 
-
 	private FolderId findFolder(ExchangeService exchangeService, ExchangeFolderReference targetFolder) throws FileSystemException {
+		return findFolder(exchangeService, targetFolder, false);
+	}
+
+	private FolderId findFolder(ExchangeService exchangeService, ExchangeFolderReference targetFolder, boolean createFolder) throws FileSystemException {
 		FindFoldersResults findFoldersResultsIn;
 		FolderView folderViewIn = new FolderView(10);
 		SearchFilter searchFilterIn = new SearchFilter.IsEqualTo(FolderSchema.DisplayName, targetFolder.getFolderName());
@@ -359,6 +362,11 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		}
 		if (findFoldersResultsIn.getTotalCount() == 0) {
 			if(log.isDebugEnabled()) log.debug("no folder found with name [" + targetFolder.getFolderName() + "] in basefolder ["+targetFolder.getBaseFolderId()+"]");
+			if(createFolder){
+				if(log.isDebugEnabled()) log.debug("creating folder with name [" + targetFolder.getFolderName() + "] in basefolder ["+targetFolder.getBaseFolderId()+"]");
+				createFolder(targetFolder.getOriginalReference());
+				return findFolder(exchangeService, targetFolder, false);
+			}
 			return null;
 		}
 		if (findFoldersResultsIn.getTotalCount() > 1) {
@@ -401,10 +409,12 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public EmailMessage toFile(String filename) throws FileSystemException {
-		ExchangeService exchangeService = getConnection();
+		ExchangeFolderReference reference = asFolderReference(filename);
+		ExchangeService exchangeService = getConnection(reference);
 		boolean invalidateConnectionOnRelease = false;
 		try {
-			ItemId itemId = ItemId.getItemIdFromString(filename);
+			// foldername is filename here
+			ItemId itemId = ItemId.getItemIdFromString(reference.getFolderName());
 			return EmailMessage.bind(exchangeService,itemId);
 		} catch (Exception e) {
 			invalidateConnectionOnRelease = true;
@@ -582,10 +592,11 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	}
 	@Override
 	public EmailMessage moveFile(EmailMessage f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
-		ExchangeService exchangeService = getConnection();
+		ExchangeFolderReference reference = asFolderReference(destinationFolder);
+		ExchangeService exchangeService = getConnection(reference);
 		boolean invalidateConnectionOnRelease = false;
 		try {
-			FolderId destinationFolderId = getFolderIdByFolderName(exchangeService, destinationFolder, createFolder);
+			FolderId destinationFolderId = findFolder(exchangeService, reference, createFolder);
 			return (EmailMessage)f.move(destinationFolderId);
 		} catch (Exception e) {
 			invalidateConnectionOnRelease = true;
@@ -597,10 +608,11 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public EmailMessage copyFile(EmailMessage f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
-		ExchangeService exchangeService = getConnection();
+		ExchangeFolderReference reference = asFolderReference(destinationFolder);
+		ExchangeService exchangeService = getConnection(reference);
 		boolean invalidateConnectionOnRelease = false;
 		try {
-			FolderId destinationFolderId = getFolderIdByFolderName(exchangeService, destinationFolder, createFolder);
+			FolderId destinationFolderId = findFolder(exchangeService, reference, createFolder);
 			return (EmailMessage)f.copy(destinationFolderId);
 		} catch (Exception e) {
 			invalidateConnectionOnRelease = true;
