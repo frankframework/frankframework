@@ -185,7 +185,6 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', '
 }).filter('asText', function() {
 	return function(input, $scope) {
 		if(!input) return;
-		input = input.replace(/\[(.*?)\]\((.+?)\)/g, '$1');
 		input = input.replaceAll('\\"', '"');
 		input = input.replace(/<[^>]*>?/gm, '');
 		input = input.replace(/(?:{@link\s(.*?)})/g, function(match, captureGroup) {
