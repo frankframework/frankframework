@@ -263,8 +263,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			} catch (Exception e){
 				throw new FileSystemException("Could not generate access token!", e);
 			}
-			exchangeService.setImpersonatedUserId(new ImpersonatedUserId(ConnectingIdType.SmtpAddress, getMailAddress()));
-			exchangeService.getHttpHeaders().put("X-AnchorMailbox", getMailAddress());
 		} else {
 			CredentialFactory cf = getCredentials();
 			// use deprecated Basic Authentication. Support will end 2021-Q3!
@@ -273,7 +271,9 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			exchangeService.setCredentials(credentials);
 		}
 
-
+		if(StringUtils.isNotEmpty(getMailAddress())){
+			setMailboxOnService(exchangeService, getMailAddress());
+		}
 
 		if (StringUtils.isNotEmpty(getProxyHost()) && (StringUtils.isNotEmpty(getProxyAuthAlias()) || StringUtils.isNotEmpty(getProxyUsername()) || StringUtils.isNotEmpty(getProxyPassword()))) {
 			CredentialFactory proxyCf = new CredentialFactory(getProxyAuthAlias(), getProxyUsername(), getProxyPassword());
