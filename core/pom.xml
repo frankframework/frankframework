@@ -95,14 +95,22 @@
 		<dependency><!-- this dependency handles javax.activation.* imports, compatible with the IBM JRE -->
 			<groupId>javax.activation</groupId>
 			<artifactId>activation</artifactId>
-			<version>1.1.1</version>
 		</dependency>
 		<dependency><!-- this dependency handles jakarta.activation.* imports -->
 			<groupId>com.sun.activation</groupId>
 			<artifactId>jakarta.activation</artifactId>
-			<version>2.0.1</version>
 		</dependency>
-
+		<dependency><!-- javax based dependency -->
+			<groupId>jakarta.xml.soap</groupId>
+			<artifactId>jakarta.xml.soap-api</artifactId>
+			<version>1.4.2</version>
+			<exclusions>
+				<exclusion>
+					<groupId>jakarta.activation</groupId>
+					<artifactId>jakarta.activation-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 
 		<dependency>
 			<groupId>org.apache.geronimo.specs</groupId>
@@ -636,6 +644,12 @@
 			<groupId>javax.xml.ws</groupId>
 			<artifactId>jaxws-api</artifactId>
 			<version>2.3.0</version> <!-- 2.3.1 contains javax.activation 1.2.0 that conflicts with the jdk javax.activation (1.1.1) package. -->
+			<exclusions>
+				<exclusion><!-- excluded because we use the jakarta based com.sun.xml.soap instead -->
+					<groupId>javax.xml.soap</groupId>
+					<artifactId>javax.xml.soap-api</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<!--
@@ -782,11 +796,11 @@
 			<version>${postgresql.driver.version}</version>
 			<scope>test</scope>
 		</dependency>
-
+		<!-- LdapSenderTest -->
 		<dependency>
 			<groupId>com.unboundid</groupId>
 			<artifactId>unboundid-ldapsdk</artifactId>
-			<version>2.3.8</version>
+			<version>4.0.14</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
