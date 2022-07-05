@@ -149,9 +149,9 @@
 					<attribute name="changetype" value="add" />
 					<attribute name="modifyTimestamp" value="20180108095303.279Z" />
 					<attribute name="modifiersName" value="" />
+					<attribute name="cn" value="LEA Administrator" />
 					<attribute name="createTimestamp" value="20180108095303.211Z" />
 					<attribute name="creatorsName" value="cn=Internal Root User" />
-					<attribute name="cn" value="LEA Administrator" />
 					<attribute name="subschemaSubentry" value="cn=schema" />
 				</attributes>
 			</context>
