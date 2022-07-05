@@ -442,6 +442,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		ExchangeService exchangeService = getConnection();
 		boolean invalidateConnectionOnRelease = false;
 		try {
+			setMailboxOnService(exchangeService, getReceivedBy(f));
 			EmailMessage emailMessage = EmailMessage.bind(exchangeService, f.getId());
 			return itemExistsInFolder(exchangeService, emailMessage.getParentFolderId(), f.getId().toString());
 		} catch (ServiceResponseException e) {
@@ -550,6 +551,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		ExchangeService exchangeService = getConnection();
 		boolean invalidateConnectionOnRelease = false;
 		try {
+			setMailboxOnService(exchangeService, getReceivedBy(f));
 			if (f.getId()!=null) {
 				PropertySet ps = new PropertySet(EmailMessageSchema.DateTimeReceived,
 						EmailMessageSchema.From, EmailMessageSchema.Subject,
@@ -704,12 +706,10 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		ExchangeService exchangeService = getConnection();
 		boolean invalidateConnectionOnRelease = false;
 		try {
-			if (f.getId()!=null) {
-				PropertySet ps=PropertySet.FirstClassProperties;
-				emailMessage = EmailMessage.bind(exchangeService, f.getId(), ps);
-			} else {
-				emailMessage = f;
-			}
+			f.load(PropertySet.FirstClassProperties);
+			emailMessage = f;
+			setMailboxOnService(exchangeService, getReceivedBy(f));
+
 			Map<String, Object> result=new LinkedHashMap<String,Object>();
 			result.put(IMailFileSystem.TO_RECEPIENTS_KEY, asList(emailMessage.getToRecipients()));
 			result.put(IMailFileSystem.CC_RECEPIENTS_KEY, asList(emailMessage.getCcRecipients()));
@@ -784,6 +784,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		ExchangeService exchangeService = getConnection();
 		boolean invalidateConnectionOnRelease = false;
 		try {
+			setMailboxOnService(exchangeService, getReceivedBy(f));
 			EmailMessage emailMessage;
 			if (f.getId()!=null) {
 				PropertySet ps = new PropertySet(EmailMessageSchema.Attachments);
@@ -926,6 +927,15 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			return cleanAddress(emailMessage.getFrom());
 		} catch (ServiceLocalException e) {
 			log.warn("Could not get From Address: "+ e.getMessage());
+			return null;
+		}
+	}
+
+	protected String getReceivedBy(EmailMessage emailMessage) throws FileSystemException {
+		try {
+			return emailMessage.getReceivedBy().getAddress();
+		} catch (ServiceLocalException e) {
+			log.warn("Could not get ReceivedBy Address: "+ e.getMessage());
 			return null;
 		}
 	}
