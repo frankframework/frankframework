@@ -383,28 +383,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		}
 		return findFoldersResultsIn.getFolders().get(0).getId();
 	}
-	/**
-	 * Find a folder when it is to be used as target, e.g. for copyFile(), moveFile() and removeFolder().
-	 * Folder is subfolder of the basefolder.
-	 * @throws FileNotFoundException If the folder is not present (and not created)
-	 */
-	public FolderId getFolderIdByFolderName(ExchangeService exchangeService, String folderName, boolean create) throws Exception{
-		ExchangeObjectReference targetFolder = new ExchangeObjectReference(folderName, getMailAddress(), basefolderId, getMailboxFolderSeparator());
-		FolderId folderId = findFolder(exchangeService, targetFolder);
-		if (folderId==null && create) {
-			log.debug("creating folder [" + folderName + "]");
-			Folder folder = new Folder(exchangeService);
-			folder.setDisplayName(folderName);
-			folder.save(new FolderId(basefolderId.getUniqueId()));
-			createFolder(folderName);
-			folderId = findFolder(exchangeService, targetFolder);
-		}
-		if (folderId==null) {
-			throw new FileNotFoundException("folder [" + folderName + "] not found");
-		}
-		return folderId;
-	}
-
 
 	@Override
 	public EmailMessage toFile(String filename) throws FileSystemException {
