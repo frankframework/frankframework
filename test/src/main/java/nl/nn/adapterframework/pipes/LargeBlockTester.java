@@ -32,9 +32,9 @@ public class LargeBlockTester extends FixedForwardPipe {
 	private @Setter int blockCount = 20;
 	private @Setter int sleepBetweenServedBlocks = 0;
 	private @Setter Direction direction=Direction.PRODUCE;
-	
+
 	private static AtomicInteger totalBlocksServed = new AtomicInteger();
-	
+
 	public enum Direction {
 		PRODUCE,
 		CONSUME
@@ -45,7 +45,7 @@ public class LargeBlockTester extends FixedForwardPipe {
 		Message result;
 		if (direction==Direction.PRODUCE) {
 			final String filler;
-	
+
 			{
 				String fillerTmp ="";
 				for (int i=0; i<blockSize/10; i++) {
@@ -55,7 +55,7 @@ public class LargeBlockTester extends FixedForwardPipe {
 			}
 			result = new Message(new InputStream() {
 						int i;
-						
+
 						@Override
 						public int read(byte[] buf, int off, int len) throws IOException {
 							if (i++>blockCount) {
@@ -75,7 +75,7 @@ public class LargeBlockTester extends FixedForwardPipe {
 							}
 							return len;
 						}
-	
+
 						@Override
 						public int read() throws IOException {
 							if (i<blockCount) {
@@ -84,7 +84,7 @@ public class LargeBlockTester extends FixedForwardPipe {
 							log.debug("serve byte");
 							return 'x';
 						}
-	
+
 					});
 		} else {
 			try (Reader reader=message.asReader()) {
@@ -110,7 +110,7 @@ public class LargeBlockTester extends FixedForwardPipe {
 
 				int blocksServedWhileReading = blocksServedAtEndOfReading-blocksServedAfterFirstBlockRead;
 				boolean moreThanHalfOfBlocksProducedWhileReading = blocksServedWhileReading*2 > blockCount;
-				
+
 				result = new Message("bytesRead ["+bytesRead+"], more than half of blocks produced while reading ["+moreThanHalfOfBlocksProducedWhileReading+"]");
 			} catch (IOException e) {
 				throw new PipeRunException(this, "Cannot consume blocks", e);

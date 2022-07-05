@@ -142,7 +142,7 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-	
+
 	<adapter name="ApiListener_LargeStreamProducer">
 		<receiver
 			processResultCacheSize="0"
@@ -184,5 +184,5 @@
 			/>
 		</pipeline>
 	</adapter>
-	
+
 </module>

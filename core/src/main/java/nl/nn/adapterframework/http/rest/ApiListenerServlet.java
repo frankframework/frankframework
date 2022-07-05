@@ -62,7 +62,7 @@ import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
- * 
+ *
  * @author Niels Meijer
  *
  */
@@ -400,7 +400,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				//TODO: authentication implementation
 
 				/**
-				 * Map uriIdentifiers into messageContext 
+				 * Map uriIdentifiers into messageContext
 				 */
 				String[] patternSegments = listener.getUriPattern().split("/");
 				String[] uriSegments = uri.split("/");
@@ -555,7 +555,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					updateEtag=listener.getUpdateEtag();
 				}
 				if (updateEtag==null) {
-					updateEtag=result.isRepeatable();
+					updateEtag=result==null || result.isRepeatable();
 				}
 				if(updateEtag) {
 					log.debug("calculating etags over processed result");

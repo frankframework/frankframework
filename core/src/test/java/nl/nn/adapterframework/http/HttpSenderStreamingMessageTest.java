@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -23,8 +24,10 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.LogUtil;
 
 public class HttpSenderStreamingMessageTest {
+	protected Logger log = LogUtil.getLogger(this);
 
 	int serverBlockSize = 10000;
 	int serverBlockCount = 20;
@@ -69,7 +72,7 @@ public class HttpSenderStreamingMessageTest {
 				if (len<0) {
 					break;
 				}
-				System.out.println("read block "+(block++)+": "+new String(buf,0,len<displaylen?len:displaylen));
+				log.debug("read block "+(block++)+": "+new String(buf,0,len<displaylen?len:displaylen));
 			}
 			int blocksServedAtEndOfReading = totalBlocksServed;
 
@@ -109,7 +112,7 @@ public class HttpSenderStreamingMessageTest {
 							return -1;
 						}
 						totalBlocksServed++;
-						System.out.println("serve block "+i);
+						log.debug("serve block "+i);
 						byte[] block = ("["+i+"]"+filler).getBytes();
 
 						System.arraycopy(block, 0, buf, off, len<blockSize?len:blockSize);
@@ -126,7 +129,7 @@ public class HttpSenderStreamingMessageTest {
 						if (i<blockCount) {
 							return -1;
 						}
-						System.out.println("read byte");
+						log.debug("read byte");
 						return 'x';
 					}
 
