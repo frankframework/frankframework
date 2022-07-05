@@ -1038,6 +1038,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		}
 		long startExtractingMessage = System.currentTimeMillis();
 		boolean sessionCreated=false;
+		if (session==null) {
+			session = new PipeLineSession();
+			sessionCreated = true;
+		}
 		try {
 			if(isForceRetryFlag()) {
 				session.put(Receiver.RETRY_FLAG_SESSION_KEY, "true");
