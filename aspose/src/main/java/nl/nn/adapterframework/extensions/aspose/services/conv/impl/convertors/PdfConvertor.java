@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionOptions;
+import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import org.springframework.http.MediaType;
 
 import com.aspose.pdf.Document;
@@ -50,7 +50,7 @@ public class PdfConvertor extends AbstractConvertor {
 		MEDIA_TYPE_LOAD_FORMAT_MAPPING = Collections.unmodifiableMap(map);
 	}
 
-	protected PdfConvertor(CisConversionOptions options) {
+	protected PdfConvertor(CisConfiguration options) {
 		super(options, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[MEDIA_TYPE_LOAD_FORMAT_MAPPING.size()]));
 	}
 

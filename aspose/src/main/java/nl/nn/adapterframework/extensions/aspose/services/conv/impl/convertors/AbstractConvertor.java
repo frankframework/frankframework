@@ -25,9 +25,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import lombok.Getter;
-import lombok.Setter;
-import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionOptions;
+import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
 
@@ -45,10 +43,10 @@ abstract class AbstractConvertor implements Convertor {
 
 	private static final Logger LOGGER = LogUtil.getLogger(AbstractConvertor.class);
 	private List<MediaType> supportedMediaTypes;
-	protected CisConversionOptions options;
+	protected CisConfiguration options;
 	private static AtomicInteger atomicCount = new AtomicInteger(1);
 
-	protected AbstractConvertor(CisConversionOptions options, MediaType... args) {
+	protected AbstractConvertor(CisConfiguration options, MediaType... args) {
 		this.options = options;
 		supportedMediaTypes = Arrays.asList(args);
 	}

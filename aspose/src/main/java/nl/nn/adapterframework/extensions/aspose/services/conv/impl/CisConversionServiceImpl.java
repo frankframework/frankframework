@@ -17,9 +17,7 @@ package nl.nn.adapterframework.extensions.aspose.services.conv.impl;
 
 import java.io.IOException;
 
-import lombok.Getter;
-import lombok.Setter;
-import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionOptions;
+import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
@@ -40,11 +38,11 @@ public class CisConversionServiceImpl implements CisConversionService {
 
 	private static final Logger LOGGER = LogUtil.getLogger(CisConversionServiceImpl.class);
 
-	private CisConversionOptions options;
+	private CisConfiguration options;
 	private ConvertorFactory convertorFactory;
 	private MediaTypeValidator mediaTypeValidator = new MediaTypeValidator();
 
-	public CisConversionServiceImpl(CisConversionOptions options){
+	public CisConversionServiceImpl(CisConfiguration options){
 		this.options = options;
 		convertorFactory = new ConvertorFactory(this, options);
 	}
