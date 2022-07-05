@@ -85,7 +85,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Sender for the HTTP protocol using GET, POST, PUT or DELETE.
- * 
+ *
  * <p><b>Expected message format:</b></p>
  * <p>GET methods expect a message looking like this</p>
  * <pre>
@@ -99,7 +99,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  *
  * <p>
  * Note 1:
- * Some certificates require the &lt;java_home&gt;/jre/lib/security/xxx_policy.jar files to be upgraded to unlimited strength. Typically, in such a case, an error message like 
+ * Some certificates require the &lt;java_home&gt;/jre/lib/security/xxx_policy.jar files to be upgraded to unlimited strength. Typically, in such a case, an error message like
  * <code>Error in loading the keystore: Private key decryption error: (java.lang.SecurityException: Unsupported keysize or algorithm parameters</code> is observed.
  * For IBM JDKs these files can be downloaded from http://www.ibm.com/developerworks/java/jdk/security/50/ (scroll down to 'IBM SDK Policy files')
  * </p>
@@ -118,7 +118,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </p>
  * <p>
  * Note 3:
- * In case <code>javax.net.ssl.SSLHandshakeException: unknown certificate</code>-exceptions are thrown, 
+ * In case <code>javax.net.ssl.SSLHandshakeException: unknown certificate</code>-exceptions are thrown,
  * probably the certificate of the other party is not trusted. Try to use one of the certificates in the path as your truststore by doing the following:
  * <ul>
  *   <li>open the URL you are trying to reach in InternetExplorer</li>
@@ -137,15 +137,15 @@ import nl.nn.adapterframework.util.XmlUtils;
  *   <li>if you didn't use the standard keydatabase, then reference the file in the truststore-attribute in Configuration.xml (include the file as a resource)</li>
  *   <li>use jks for the truststoreType-attribute</li>
  *   <li>restart your application</li>
- *   <li>instead of IBM ikeyman you can use the standard java tool <code>keytool</code> as follows: 
+ *   <li>instead of IBM ikeyman you can use the standard java tool <code>keytool</code> as follows:
  *      <code>keytool -import -alias <i>yourAlias</i> -file <i>pathToSavedCertificate</i></code></li>
  * </ul>
  * <p>
  * Note 4:
  * In case <code>cannot create or initialize SocketFactory: (IOException) Unable to verify MAC</code>-exceptions are thrown,
- * please check password or authAlias configuration of the correspondig certificate. 
+ * please check password or authAlias configuration of the correspondig certificate.
  * </p>
- * 
+ *
  * <p>
  * Note 5:
  * When used as MTOM sender and MTOM receiver doesn't support Content-Transfer-Encoding "base64", messages without line feeds will give an error.
@@ -355,7 +355,7 @@ public class HttpSender extends HttpSenderBase {
 
 	/**
 	 * Returns a multi-parted message, either as X-WWW-FORM-URLENCODED, FORM-DATA or MTOM
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	protected HttpPost getMultipartPostMethodWithParamsInBody(URI uri, String message, ParameterValueList parameters, PipeLineSession session) throws SenderException, IOException {
 		HttpPost hmethod = new HttpPost(uri);
@@ -372,12 +372,10 @@ public class HttpSender extends HttpSenderBase {
 					String name = pv.getDefinition().getName();
 					String value = pv.asStringValue("");
 
-					// Skip parameters that are configured as ignored
-					if (skipParameter(name))
-						continue;
-
-					requestFormElements.add(new BasicNameValuePair(name,value));
-					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended parameter ["+name+"] with value ["+value+"]");
+					if (requestOrBodyParamsSet.contains(name) && (StringUtils.isNotEmpty(value) || !parametersToSkipWhenEmptySet.contains(name))) {
+						requestFormElements.add(new BasicNameValuePair(name,value));
+						if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended parameter ["+name+"] with value ["+value+"]");
+					}
 				}
 			}
 			try {
@@ -442,26 +440,25 @@ public class HttpSender extends HttpSenderBase {
 		if (parameters!=null) {
 			for(ParameterValue pv : parameters) {
 				String name = pv.getDefinition().getName();
+				if (requestOrBodyParamsSet.contains(name)) {
+					Message msg = pv.asMessage();
+					if (!msg.isEmpty() || !parametersToSkipWhenEmptySet.contains(name)) {
+						if (msg.isBinary()) {
+							InputStream fis = msg.asInputStream();
+							String fileName = null;
+							String sessionKey = pv.getDefinition().getSessionKey();
+							if (sessionKey != null) {
+								fileName = session.getMessage(sessionKey + "Name").asString();
+							}
 
-				// Skip parameters that are configured as ignored
-				if (skipParameter(name))
-					continue;
-
-				Message msg = pv.asMessage();
-				if (msg.isBinary()) {
-					InputStream fis = msg.asInputStream();
-					String fileName = null;
-					String sessionKey = pv.getDefinition().getSessionKey();
-					if (sessionKey != null) {
-						fileName = session.getMessage(sessionKey + "Name").asString();
+							entity.addPart(createMultipartBodypart(name, fis, fileName));
+							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended filepart ["+name+"] with value ["+msg+"] and name ["+fileName+"]");
+						} else {
+							String value = msg.asString();
+							entity.addPart(createMultipartBodypart(name, value));
+							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+name+"] with value ["+value+"]");
+						}
 					}
-
-					entity.addPart(createMultipartBodypart(name, fis, fileName));
-					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended filepart ["+name+"] with value ["+msg+"] and name ["+fileName+"]");
-				} else {
-					String value = msg.asString();
-					entity.addPart(createMultipartBodypart(name, value));
-					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+name+"] with value ["+value+"]");
 				}
 			}
 		}
@@ -640,10 +637,10 @@ public class HttpSender extends HttpSenderBase {
 
 	public static void streamResponseBody(InputStream is, String contentType, String contentDisposition, HttpServletResponse response, Logger log, String logPrefix, String redirectLocation) throws IOException {
 		if (StringUtils.isNotEmpty(contentType)) {
-			response.setHeader("Content-Type", contentType); 
+			response.setHeader("Content-Type", contentType);
 		}
 		if (StringUtils.isNotEmpty(contentDisposition)) {
-			response.setHeader("Content-Disposition", contentDisposition); 
+			response.setHeader("Content-Disposition", contentDisposition);
 		}
 		if (StringUtils.isNotEmpty(redirectLocation)) {
 			response.sendRedirect(redirectLocation);
@@ -683,7 +680,7 @@ public class HttpSender extends HttpSenderBase {
 	public void setInputMessageParam(String inputMessageParam) {
 		setFirstBodyPartName(inputMessageParam);
 	}
-	@IbisDoc({"(Only used when <code>methodType=POST</code> and <code>postType=URLENCODED</code>, <code>FORM-DATA</code> or <code>MTOM</code>) Name of the first body part", ""})
+	@IbisDoc({"(Only used when <code>methodType=POST</code> and <code>postType=URLENCODED</code>, <code>FORM-DATA</code> or <code>MTOM</code>) Prepends a new BodyPart using the specified name and uses the input of the Sender as content", ""})
 	public void setFirstBodyPartName(String firstBodyPartName) {
 		this.firstBodyPartName = firstBodyPartName;
 	}

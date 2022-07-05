@@ -39,7 +39,7 @@ public enum ProcessState {
 	private ProcessState(String name) {
 		this.name=name;
 	}
-	
+
 	public static Set<ProcessState> getMandatoryKnownStates() {
 		Set<ProcessState> knownProcessStates = new LinkedHashSet<>();
 		knownProcessStates.add(AVAILABLE);

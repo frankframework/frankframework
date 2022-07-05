@@ -20,7 +20,7 @@ public class EchoPipeTest extends PipeTestBase<EchoPipe> {
 	@Test
 	public void testDoPipe() throws PipeRunException, IOException {
 		String dummyInput = "dummyInput";
-		
+
 		PipeRunResult prr = doPipe(pipe, dummyInput, session);
 		String result = Message.asString(prr.getResult());
 

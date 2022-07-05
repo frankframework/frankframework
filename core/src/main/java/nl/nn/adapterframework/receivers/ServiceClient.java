@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,15 +15,14 @@
 */
 package nl.nn.adapterframework.receivers;
 
-import java.util.Map;
-
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 
 /**
  * The interface clients (users) of a service may use.
  */
 public interface ServiceClient {
-	
-	public Message processRequest(String correlationId, Message message, Map<String, Object> requestContext) throws ListenerException;
+
+	public Message processRequest(String correlationId, Message message, PipeLineSession session) throws ListenerException;
 }

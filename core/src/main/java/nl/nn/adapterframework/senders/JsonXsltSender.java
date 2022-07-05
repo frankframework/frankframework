@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.senders;
 
 import java.io.IOException;
+import java.util.function.BiConsumer;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -46,9 +47,9 @@ import nl.nn.adapterframework.xml.IXmlDebugger;
  * Perform an XSLT transformation with a specified stylesheet on a JSON input, yielding JSON, yielding JSON, XML or text.
  * JSON input is transformed into XML map, array, string, integer and boolean elements, in the namespace http://www.w3.org/2013/XSL/json.
  * The XSLT stylesheet or XPathExpression operates on these element.
- * 
+ *
  * @see  <a href="https://www.xml.com/articles/2017/02/14/why-you-should-be-using-xslt-30/">https://www.xml.com/articles/2017/02/14/why-you-should-be-using-xslt-30/</a>
- * 
+ *
  * @author Gerrit van Brakel
  */
 
@@ -71,7 +72,7 @@ public class JsonXsltSender extends XsltSender {
 			log.debug("sender [{}] cannot provide outputstream", () -> getName());
 			return null;
 		}
-		ThreadConnector threadConnector = isStreamingXslt() ? new ThreadConnector(this, threadLifeCycleEventListener, txManager, session) : null; 
+		ThreadConnector threadConnector = isStreamingXslt() ? new ThreadConnector(this, threadLifeCycleEventListener, txManager, session) : null;
 		MessageOutputStream target = MessageOutputStream.getTargetStream(this, session, next);
 		try {
 			TransformerPool poolToUse = getTransformerPoolToUse(session);
@@ -92,16 +93,16 @@ public class JsonXsltSender extends XsltSender {
 		MessageOutputStream prev = new MessageOutputStream(this,xjw,target,threadLifeCycleEventListener, txManager, session, null);
 		ContentHandler handler = super.createHandler(input, threadConnector, session, poolToUse, prev);
 		if (getXmlDebugger()!=null) {
-			handler = getXmlDebugger().inspectXml(session, "XML to be converted to JSON", handler);
+			handler = getXmlDebugger().inspectXml(session, "XML to be converted to JSON", handler, (resource,label)->target.closeOnClose(resource));
 		}
 		return handler;
 	}
 
 
 	@Override
-	protected XMLReader getXmlReader(PipeLineSession session, ContentHandler handler) throws ParserConfigurationException, SAXException {
+	protected XMLReader getXmlReader(PipeLineSession session, ContentHandler handler, BiConsumer<AutoCloseable,String> closeOnCloseRegister) throws ParserConfigurationException, SAXException {
 		if (getXmlDebugger()!=null) {
-			handler = getXmlDebugger().inspectXml(session, "JSON converted to XML", handler);
+			handler = getXmlDebugger().inspectXml(session, "JSON converted to XML", handler, closeOnCloseRegister);
 		}
 		return new JsonXslt3XmlReader(handler);
 	}

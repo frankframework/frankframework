@@ -119,8 +119,8 @@ public final class ShowAdapterStatistics extends Base {
 		Object handle = handler.start(null, null, null);
 		try {
 			adapter.getPipeLine().iterateOverStatistics(handler, tmp, Action.FULL);
-			statisticsMap.put("durationPerPipe", tmp.get("pipeStats"));
-			statisticsMap.put("sizePerPipe", tmp.get("sizeStats"));
+			statisticsMap.put("durationPerPipe", tmp.get("duration"));
+			statisticsMap.put("sizePerPipe", tmp.get("size"));
 		} catch (SenderException e) {
 			log.error("unable to parse pipeline statistics", e);
 		} finally {

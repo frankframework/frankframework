@@ -56,6 +56,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
@@ -86,21 +87,21 @@ import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Sends a message using a {@link ISender sender} and optionally receives a reply from the same sender, or
  * from a {@link ICorrelatedPullingListener listener}.
- *  * 
+ *
  * @ff.parameters any parameters defined on the pipe will be handed to the sender, if this is a {@link ISenderWithParameters ISenderWithParameters}
- * @ff.parameter  stubFilename will <u>not</u> be handed to the sender 
- * and it is used at runtime instead of the stubFilename specified by the attribute. A lookup of the 
- * file for this stubFilename will be done at runtime, while the file for the stubFilename specified 
+ * @ff.parameter  stubFilename will <u>not</u> be handed to the sender
+ * and it is used at runtime instead of the stubFilename specified by the attribute. A lookup of the
+ * file for this stubFilename will be done at runtime, while the file for the stubFilename specified
  * as an attribute will be done at configuration time.
 
  * @ff.forward timeout
  * @ff.forward illegalResult
  * @ff.forward presumedTimeout
  * @ff.forward interrupt
- * 
+ *
  * @author  Gerrit van Brakel
  */
-
+@SupportsOutputStreaming
 public class MessageSendingPipe extends StreamingPipe implements HasSender, HasStatistics {
 	protected Logger msgLog = LogUtil.getLogger("MSG");
 	private Level MSGLOG_LEVEL_TERSE = Level.toLevel("TERSE");
@@ -109,12 +110,12 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";
 	public static final String PIPE_EXCEPTION_MONITOR_EVENT = "Sender Exception Caught";
 
-	private final static String TIMEOUT_FORWARD = "timeout";
-	private final static String ILLEGAL_RESULT_FORWARD = "illegalResult";
-	private final static String PRESUMED_TIMEOUT_FORWARD = "presumedTimeout";
-	private final static String INTERRUPT_FORWARD = "interrupt";
-	
-	private final static String STUBFILENAME = "stubFilename";
+	private static final String TIMEOUT_FORWARD = "timeout";
+	private static final String ILLEGAL_RESULT_FORWARD = "illegalResult";
+	private static final String PRESUMED_TIMEOUT_FORWARD = "presumedTimeout";
+	private static final String INTERRUPT_FORWARD = "interrupt";
+
+	private static final String STUBFILENAME = "stubFilename";
 
 	public static final int MIN_RETRY_INTERVAL=1;
 	public static final int MAX_RETRY_INTERVAL=600;
@@ -145,7 +146,6 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	private @Getter String retryNamespaceDefs;
 	private @Getter int presumedTimeOutInterval=10;
 
-
 	private @Getter boolean streamResultToServlet=false;
 
 	private @Getter String stubFilename;
@@ -156,33 +156,32 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	private @Getter ICorrelatedPullingListener listener = null;
 	private @Getter ITransactionalStorage messageLog=null;
 
-	private String returnString; // contains contents of stubUrl	
+	private String returnString; // contains contents of stubUrl
 	private TransformerPool auditTrailTp=null;
 	private TransformerPool correlationIDTp=null;
 	private TransformerPool labelTp=null;
 	private TransformerPool retryTp=null;
 
-	public final static String INPUT_VALIDATOR_NAME_PREFIX="- ";
-	public final static String INPUT_VALIDATOR_NAME_SUFFIX=": validate input";
-	public final static String OUTPUT_VALIDATOR_NAME_PREFIX="- ";
-	public final static String OUTPUT_VALIDATOR_NAME_SUFFIX=": validate output";
-	public final static String INPUT_WRAPPER_NAME_PREFIX="- ";
-	public final static String INPUT_WRAPPER_NAME_SUFFIX=": wrap input";
-	public final static String OUTPUT_WRAPPER_NAME_PREFIX="- ";
-	public final static String OUTPUT_WRAPPER_NAME_SUFFIX=": wrap output";
-	public final static String MESSAGE_LOG_NAME_PREFIX="- ";
-	public final static String MESSAGE_LOG_NAME_SUFFIX=": message log";
+	public static final String INPUT_VALIDATOR_NAME_PREFIX="- ";
+	public static final String INPUT_VALIDATOR_NAME_SUFFIX=": validate input";
+	public static final String OUTPUT_VALIDATOR_NAME_PREFIX="- ";
+	public static final String OUTPUT_VALIDATOR_NAME_SUFFIX=": validate output";
+	public static final String INPUT_WRAPPER_NAME_PREFIX="- ";
+	public static final String INPUT_WRAPPER_NAME_SUFFIX=": wrap input";
+	public static final String OUTPUT_WRAPPER_NAME_PREFIX="- ";
+	public static final String OUTPUT_WRAPPER_NAME_SUFFIX=": wrap output";
+	public static final String MESSAGE_LOG_NAME_PREFIX="- ";
+	public static final String MESSAGE_LOG_NAME_SUFFIX=": message log";
 
 	private @Getter IValidator inputValidator=null;
 	private @Getter IValidator outputValidator=null;
 	private @Getter IWrapperPipe inputWrapper=null;
 	private @Getter IWrapperPipe outputWrapper=null;
-	
+
 	private boolean timeoutPending=false;
 
 	private boolean isConfigurationStubbed = ConfigurationUtils.isConfigurationStubbed(getConfigurationClassLoader());
 	private boolean msgLogHumanReadable = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("msg.log.humanReadable", false);
-
 
 	private @Setter PipeProcessor pipeProcessor;
 	private @Setter ListenerProcessor listenerProcessor;
@@ -218,7 +217,6 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			if (getSender() == null) {
 				throw new ConfigurationException("no sender defined ");
 			}
-			
 			// copying of pipe parameters to sender must be done at configure(), not by overriding addParam()
 			// because sender might not have been set when addPipe() is called.
 			if (getParameterList()!=null && getSender() instanceof ISenderWithParameters) {
@@ -227,7 +225,6 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 						((ISenderWithParameters)getSender()).addParameter(p);
 					}
 				}
-				
 			}
 
 			try {
@@ -291,7 +288,9 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		}
 		ITransactionalStorage messageLog = getMessageLog();
 		if (messageLog==null) {
-			if (StringUtils.isEmpty(getStubFilename()) && !getSender().isSynchronous() && getListener()==null && !(getSender() instanceof nl.nn.adapterframework.senders.IbisLocalSender)) { // sender is asynchronous and not a local sender, but has no messageLog
+			if (StringUtils.isEmpty(getStubFilename()) && !getSender().isSynchronous() && getListener()==null
+					&& !(getSender() instanceof nl.nn.adapterframework.senders.IbisLocalSender)
+					&& !(getSender() instanceof nl.nn.adapterframework.jdbc.MessageStoreSender)) { // sender is asynchronous and not a local sender or messageStoreSender, but has no messageLog
 				boolean suppressIntegrityCheckWarning = ConfigurationWarnings.isSuppressed(SuppressKeys.INTEGRITY_CHECK_SUPPRESS_KEY, getAdapter());
 				if (!suppressIntegrityCheckWarning) {
 					boolean legacyCheckMessageLog = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("messageLog.check", true);
@@ -301,8 +300,8 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					}
 				}
 				if (!suppressIntegrityCheckWarning) {
-					ConfigurationWarnings.add(this, log, "asynchronous sender [" + getSender().getName() + "] without sibling listener has no messageLog. " + 
-						"Service Managers will not be able to perform an integrity check (matching messages received by the adapter to messages sent by this pipe). " + 
+					ConfigurationWarnings.add(this, log, "asynchronous sender [" + getSender().getName() + "] without sibling listener has no messageLog. " +
+						"Service Managers will not be able to perform an integrity check (matching messages received by the adapter to messages sent by this pipe). " +
 						"This warning can be suppressed globally by setting property 'warnings.suppress.integrityCheck=true', "+
 						"or for this adapter only by setting property 'warnings.suppress.integrityCheck."+getAdapter().getName()+"=true'");
 				}
@@ -400,7 +399,6 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		propagateName();
 	}
 
-
 	@Override
 	public boolean supportsOutputStreamPassThrough() {
 		return false; // TODO to be implemented!
@@ -408,7 +406,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 
 	@Override
 	protected boolean canProvideOutputStream() {
-		return super.canProvideOutputStream() && 
+		return super.canProvideOutputStream() &&
 				getInputValidator()==null && getInputWrapper()==null && getOutputValidator()==null && getOutputWrapper()==null &&
 				!isStreamResultToServlet() && StringUtils.isEmpty(getStubFilename()) && getMessageLog()==null && getListener()==null;
 	}
@@ -529,7 +527,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 								}
 							} else {
 								replyIsValid = true;
-							} 
+							}
 						} else {
 							replyIsValid = true;
 						}
@@ -559,7 +557,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				if (sendResult.getPipeForward()!=null) {
 					forward = sendResult.getPipeForward();
 				}
-				
+
 				if (getSender().isSynchronous()) {
 					if (log.isInfoEnabled()) {
 						log.info(getLogPrefix(session)+ "sent message to ["+ getSender().getName()+ "] synchronously");
@@ -665,7 +663,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					return new PipeRunResult(timeoutForward,resultmsg);
 				}
 				throw new PipeRunException(this, getLogPrefix(session) + "caught timeout-exception", toe);
-	
+
 			} catch (Throwable t) {
 				throwEvent(PIPE_EXCEPTION_MONITOR_EVENT);
 				PipeForward exceptionForward = findForward(PipeForward.EXCEPTION_FORWARD_NAME);
@@ -676,7 +674,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				throw new PipeRunException(this, getLogPrefix(session) + "caught exception", t);
 			}
 		}
-		
+
 		try {
 			if (!validResult(result)) {
 				PipeForward illegalResultForward = findForward(ILLEGAL_RESULT_FORWARD);
@@ -705,14 +703,14 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			}
 			if (!wrapResult.isSuccessful()) {
 				return wrapResult;
-			} 
+			}
 			result = wrapResult.getResult();
 			log.debug(getLogPrefix(session)+"response after wrapping  ("+ClassUtils.nameOf(result)+") [" + result + "]");
 		}
 
 		if (isStreamResultToServlet()) {
 			Message mia = Message.asMessage(result);
-			
+
 			try {
 				InputStream resultStream=new Base64InputStream(mia.asInputStream(),false);
 				String contentType = session.getMessage("contentType").asString();
@@ -819,7 +817,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		}
 		return sendResult;
 	}
-	
+
 
 	public int increaseRetryIntervalAndWait(PipeLineSession session, int retryInterval, String description) throws InterruptedException {
 		long currentInterval;
@@ -848,7 +846,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				if (getListener() != null) {
 					getListener().open();
 				}
-	
+
 			} catch (Throwable t) {
 				PipeStartException pse = new PipeStartException(getLogPrefix(null)+"could not start", t);
 				pse.setPipeNameInError(getName());
@@ -944,7 +942,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 
 
 
-	/** 
+	/**
 	 * The sender that should send the message
 	 * @ff.mandatory
 	 */
@@ -1013,7 +1011,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	 * as the messageID as it is known in the Adapter is used as the correlationID. In the logging you should be able
 	 * to follow the message more clearly. When you use the method MESSAGEID, the messageID (unique for every
 	 * message) will be expected in the correlationID field of the returned message.
-	 * 
+	 *
 	 * @param method either MESSAGEID or CORRELATIONID
 	 */
 	@IbisDoc({"1", "For asynchronous communication, the server side may either use the messageID or the correlationID "
@@ -1043,12 +1041,12 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		correlationIDSessionKey = string;
 	}
 
-	
+
 	@IbisDoc({"6", "stylesheet to extract label from message", ""})
 	public void setLabelStyleSheet(String string) {
 		labelStyleSheet = string;
 	}
-	
+
 	@IbisDoc({"7", "xpath expression to extract label from message", ""})
 	public void setLabelXPath(String string) {
 		labelXPath = string;
@@ -1058,7 +1056,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	public void setLabelNamespaceDefs(String labelXNamespaceDefs) {
 		this.labelNamespaceDefs = labelXNamespaceDefs;
 	}
-	
+
 
 	@IbisDoc({"9", "xpath expression to extract audit trail from message", ""})
 	public void setAuditTrailXPath(String string) {

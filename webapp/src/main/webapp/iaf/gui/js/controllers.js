@@ -158,9 +158,9 @@ angular.module('iaf.beheerconsole')
 			case "Available":
 				return "fa-server";
 			case "InProcess":
-				return "fa-share";
+				return "fa-gears";
 			case "Done":
-				return "fa-envelope-o";
+				return "fa-sign-in";
 			case "Error":
 				return "fa-times-circle";
 			case "Hold":
@@ -260,19 +260,36 @@ angular.module('iaf.beheerconsole')
 
 					for(x in adapter.receivers) {
 						var adapterReceiver = adapter.receivers[x];
-						if(adapterReceiver.started == false)
+						if(adapterReceiver.started === false)
 							adapter.status = 'warning';
 
-						if(adapterReceiver.hasErrorStorage && adapterReceiver.errorStorageCount > 0)
-							adapter.status = 'warning';
+						if(adapterReceiver.transactionalStores) {
+							let store = adapterReceiver.transactionalStores["ERROR"];
+							if(store && store.numberOfMessages > 0) {
+								adapter.status = 'warning';
+							}
+						}
 					}
 					if(adapter.receiverReachedMaxExceptions){
 						adapter.status = 'warning';
 					}
 					adapter.hasSender = false;
+					adapter.sendersMessageLogCount=0;
+					adapter.senderTransactionalStorageMessageCount=0;
 					for(x in adapter.pipes) {
-						if(adapter.pipes[x].sender) {
+						let pipe = adapter.pipes[x];
+						if(pipe.sender) {
 							adapter.hasSender = true;
+							if(pipe.hasMessageLog) {
+								let count = parseInt(pipe.messageLogCount);
+								if (!Number.isNaN(count)){
+									if(pipe.isSenderTransactionalStorage) {
+										adapter.senderTransactionalStorageMessageCount += count;
+									} else {
+										adapter.sendersMessageLogCount += count;
+									}
+								}
+							}
 						}
 					}
 /*					//If last message is WARN or ERROR change adapter status to warning.
@@ -320,6 +337,8 @@ angular.module('iaf.beheerconsole')
 			stopped:0,
 			starting:0,
 			stopping:0,
+			exception_starting:0,
+			exception_stopping:0,
 			error:0
 		};
 		var receiverSummary = {
@@ -327,6 +346,8 @@ angular.module('iaf.beheerconsole')
 			stopped:0,
 			starting:0,
 			stopping:0,
+			exception_starting:0,
+			exception_stopping:0,
 			error:0
 		};
 		var messageSummary = {
@@ -537,6 +558,15 @@ angular.module('iaf.beheerconsole')
 			});
 		});
 	}
+}])
+
+.controller('FlowDiagramModalCtrl', ['$scope', '$uibModalInstance', 'xhr', function($scope, $uibModalInstance, xhr) {
+	$scope.adapter = xhr.adapter;
+	$scope.flow = xhr.data;
+
+	$scope.close = function () {
+		$uibModalInstance.close();
+	};
 }])
 
 .controller('CookieModalCtrl', ['$scope', 'GDPR', 'appConstants', '$rootScope', '$uibModalInstance', function($scope, GDPR, appConstants, $rootScope, $uibModalInstance) {
@@ -848,27 +878,27 @@ angular.module('iaf.beheerconsole')
 
 	$scope.startAdapter = function(adapter) {
 		adapter.state = 'starting';
-		Api.Put("adapters/" + adapter.name, {"action": "start"});
+		Api.Put("adapters/" + Misc.escapeURL(adapter.name), {"action": "start"});
 	};
 	$scope.stopAdapter = function(adapter) {
 		adapter.state = 'stopping';
-		Api.Put("adapters/" + adapter.name, {"action": "stop"});
+		Api.Put("adapters/" + Misc.escapeURL(adapter.name), {"action": "stop"});
 	};
 	$scope.startReceiver = function(adapter, receiver) {
 		receiver.state = 'loading';
-		Api.Put("adapters/" + adapter.name + "/receivers/" + receiver.name, {"action": "start"});
+		Api.Put("adapters/" + Misc.escapeURL(adapter.name) + "/receivers/" + Misc.escapeURL(receiver.name), {"action": "start"});
 	};
 	$scope.stopReceiver = function(adapter, receiver) {
 		receiver.state = 'loading';
-		Api.Put("adapters/" + adapter.name + "/receivers/" + receiver.name, {"action": "stop"});
+		Api.Put("adapters/" + Misc.escapeURL(adapter.name) + "/receivers/" + Misc.escapeURL(receiver.name), {"action": "stop"});
 	};
 	$scope.addThread = function(adapter, receiver) {
 		receiver.state = 'loading';
-		Api.Put("adapters/" + adapter.name + "/receivers/" + receiver.name, {"action": "incthread"});
+		Api.Put("adapters/" + Misc.escapeURL(adapter.name) + "/receivers/" + Misc.escapeURL(receiver.name), {"action": "incthread"});
 	};
 	$scope.removeThread = function(adapter, receiver) {
 		receiver.state = 'loading';
-		Api.Put("adapters/" + adapter.name + "/receivers/" + receiver.name, {"action": "decthread"});
+		Api.Put("adapters/" + Misc.escapeURL(adapter.name) + "/receivers/" + Misc.escapeURL(receiver.name), {"action": "decthread"});
 	};
 
 }])
@@ -1182,7 +1212,7 @@ angular.module('iaf.beheerconsole')
 	}
 }])
 
-.controller('AdapterStatisticsCtrl', ['$scope', 'Api', '$stateParams', 'SweetAlert', '$timeout', '$filter', 'appConstants', 'Debug', function($scope, Api, $stateParams, SweetAlert, $timeout, $filter, appConstants, Debug) {
+.controller('AdapterStatisticsCtrl', ['$scope', 'Api', '$stateParams', 'SweetAlert', '$timeout', '$filter', 'appConstants', 'Debug', 'Misc', function($scope, Api, $stateParams, SweetAlert, $timeout, $filter, appConstants, Debug, Misc) {
 	var adapterName = $stateParams.name;
 	if(!adapterName)
 		return SweetAlert.Warning("Adapter not found!");
@@ -1228,7 +1258,7 @@ angular.module('iaf.beheerconsole')
 	$scope.statisticsNames = [];
 	$scope.refresh = function() {
 		$scope.refreshing = true;
-		Api.Get("adapters/"+adapterName+"/statistics", function(data) {
+		Api.Get("adapters/"+Misc.escapeURL(adapterName)+"/statistics", function(data) {
 			$scope.stats = data;
 
 			var labels = [];
@@ -1341,7 +1371,7 @@ angular.module('iaf.beheerconsole')
 		Api.Put($scope.base_url+"/messages/"+encodeURIComponent(encodeURIComponent(messageId)), false, function() {
 			if(callback != undefined && typeof callback == 'function')
 				callback(message.id);
-			$scope.addNote("success", "Successfully resent message with ID: "+messageId);
+			$scope.addNote("success", "Message with ID: "+messageId+" will be reprocessed");
 			$scope.updateTable();
 		}, function(data) {
 			message.resending = false;
@@ -1583,7 +1613,7 @@ angular.module('iaf.beheerconsole')
 			$scope.messagesResending = true;
 			Api.Post($scope.base_url, fd, function() {
 				$scope.messagesResending = false;
-				$scope.addNote("success", "Successfully resent messages");
+				$scope.addNote("success", "Selected messages will be reprocessed");
 				$scope.updateTable();
 			}, function(data) {
 				$scope.messagesResending = false;
@@ -1749,6 +1779,9 @@ angular.module('iaf.beheerconsole')
 }])
 .controller('WebservicesCtrl', ['$scope', 'Api', 'Misc', function($scope, Api, Misc) {
 	$scope.rootURL = Misc.getServerPath();
+	$scope.compileURL = function(apiListener) {
+		return $scope.rootURL + "api/openapi.json?uri=" + encodeURI(apiListener.uriPattern);
+	}
 	Api.Get("webservices", function(data) {
 		$.extend($scope, data);
 	});

@@ -10,14 +10,22 @@
 		<revision>7.8-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<log4j2.version>2.17.2</log4j2.version>
-		<h2.version>2.1.210</h2.version>
+		<cxf.version>3.5.3</cxf.version>
 		<btm.version>3.0.0-mk1</btm.version>
-		<narayana.version>5.11.0.Final</narayana.version>
+		<narayana.version>5.11.4.Final</narayana.version>
 		<jboss-logging.version>3.4.2.Final</jboss-logging.version>
 		<argLine /> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
-		<!-- Override this property to use another version of the Frank!Doc -->
 		<frankdoc.version>1.1-SNAPSHOT</frankdoc.version>
+
+		<!-- DB Driver Versions -->
+		<h2.driver.version>2.1.212</h2.driver.version>
+		<oracle.driver.version>18.3.0.0</oracle.driver.version>
+		<oracle.driver.jdkversion>8</oracle.driver.jdkversion>
+		<mssql.driver.version>7.2.2.jre8</mssql.driver.version>
+		<mysql.driver.version>8.0.29</mysql.driver.version>
+		<mariadb.driver.version>2.7.5</mariadb.driver.version>
+		<postgresql.driver.version>42.3.3</postgresql.driver.version>
 	</properties>
 
 	<name>Ibis AdapterFramework parent</name>
@@ -51,8 +59,8 @@
 			<organizationUrl>https://frankframework.org</organizationUrl>
 		</developer>
 		<developer>
-			<name>Peter Leeuwenburgh</name>
-			<email>peter@ibissource.org</email>
+			<name>Ali Sihab Akcan</name>
+			<email>ali@ibissource.org</email>
 			<organization>Frank!Framework</organization>
 			<organizationUrl>https://frankframework.org</organizationUrl>
 		</developer>
@@ -198,7 +206,7 @@
 			<dependency>
 				<groupId>org.apache.geronimo.specs</groupId>
 				<artifactId>geronimo-jms_1.1_spec</artifactId>
-				<version>1.1</version>
+				<version>1.1.1</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
@@ -215,7 +223,7 @@
 			<dependency>
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-pool2</artifactId>
-				<version>2.10.0</version>
+				<version>2.11.1</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.commons</groupId>
@@ -235,7 +243,7 @@
 			<dependency>
 				<groupId>commons-io</groupId>
 				<artifactId>commons-io</artifactId>
-				<version>2.10.0</version>
+				<version>2.11.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.sun.mail</groupId>
@@ -245,8 +253,7 @@
 			<dependency>
 				<groupId>org.projectlombok</groupId>
 				<artifactId>lombok</artifactId>
-				<!-- If you update this version number, please update it in CONTRIBUTING.md  as well! -->
-				<version>1.18.22</version>
+				<version>1.18.24</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
@@ -257,7 +264,7 @@
 			<dependency>
 				<groupId>org.mockito</groupId>
 				<artifactId>mockito-core</artifactId>
-				<version>2.24.5</version>
+				<version>4.5.1</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hamcrest</groupId>
@@ -294,6 +301,39 @@
 				<artifactId>glassfish-copyright-maven-plugin</artifactId>
 			</plugin>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<version>3.1.0</version>
+				<executions>
+					<execution>
+						<id>enforce-lib-ban</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<bannedDependencies>
+									<!-- the activation framework was renamed to the jarkata activation framework -->
+									<excludes>
+										<exclude>javax.activation:javax.activation-api</exclude>
+										<exclude>com.sun.activation:javax.activation</exclude>
+								<!-- 	<exclude>javax.activation:activation</exclude> -->
+									</excludes>
+									<message>use com.sun.activation:jakarta.activation instead of jakarta.activation:jakarta.activation-api</message>
+								</bannedDependencies>
+								<bannedDependencies>
+									<!-- the implementation com.sun.activation:jakarta.activation contains the api classes too -->
+									<excludes>
+										<exclude>jakarta.activation:jakarta.activation-api</exclude>
+									</excludes>
+									<message>the implementation com.sun.activation:jakarta.activation is included and it contains the api classes too</message>
+								</bannedDependencies>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>2.22.2</version>
 				<configuration>
@@ -311,7 +351,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-deploy-plugin</artifactId>
-				<version>2.7</version>
+				<version>2.8.2</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -338,7 +378,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.8.1</version>
+					<version>3.10.1</version>
 					<configuration>
 						<source>1.8</source>
 						<target>1.8</target>
@@ -347,7 +387,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-jar-plugin</artifactId>
-					<version>3.2.0</version>
+					<version>3.2.2</version>
 					<configuration>
 						<archive>
 							<addMavenDescriptor>true</addMavenDescriptor>
@@ -361,7 +401,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-war-plugin</artifactId>
-					<version>3.3.0</version>
+					<version>3.3.2</version>
 					<configuration>
 						<packagingExcludes>.gitignore</packagingExcludes>
 					</configuration>
@@ -383,7 +423,7 @@
 				<plugin>
 					<groupId>org.projectlombok</groupId>
 					<artifactId>lombok-maven-plugin</artifactId>
-					<version>1.18.16.0</version>
+					<version>1.18.20.0</version>
 					<executions>
 						<execution>
 							<phase>generate-sources</phase>
@@ -414,7 +454,7 @@
 					<configuration>
 						<excludeFile>${iaf.rootdir}/copyrightExcludeFile.txt</excludeFile>
 						<exclude>
-							DataSourceXAResourceRecoveryHelper.java,NarayanaRecoveryManager.java,FilenameUtils.java,PasswordHash.java
+							DataSourceXAResourceRecoveryHelper.java,NarayanaRecoveryManager.java,FilenameUtils.java,PasswordHash.java,FrankJ2V8LibraryLoader.java
 						</exclude>
 						<ignoreYear>true</ignoreYear>
 						<useDash>true</useDash>
@@ -445,7 +485,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
-					<version>3.2.0</version>
+					<version>3.4.0</version>
 					<configuration>
 						<doclint>none</doclint>
 						<tags>
@@ -517,7 +557,6 @@
 					</configuration>
 					<executions>
 						<execution>
-							<?m2e ignore?>
 							<id>verify-code-style</id>
 							<phase>process-classes</phase>
 							<goals>
@@ -543,7 +582,6 @@
 					</configuration>
 					<executions>
 						<execution>
-							<?m2e ignore?>
 							<id>clean-and-flatten</id>
 							<phase>process-resources</phase>
 							<goals>
@@ -580,7 +618,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore></ignore>
+										<ignore />
 									</action>
 								</pluginExecution>
 								<pluginExecution>
@@ -593,7 +631,20 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore></ignore>
+										<ignore />
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-checkstyle-plugin</artifactId>
+										<versionRange>[3.1.2,)</versionRange>
+										<goals>
+											<goal>check</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
 									</action>
 								</pluginExecution>
 							</pluginExecutions>
@@ -618,7 +669,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.2.0</version>
+				<version>3.4.0</version>
 				<inherited>false</inherited>
 				<reportSets>
 					<reportSet>
@@ -812,7 +863,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-javadoc-plugin</artifactId>
-						<version>3.2.0</version>
+						<version>3.4.0</version>
 						<configuration>
 							<sourcepath>${project.build.directory}/generated-sources/delombok</sourcepath>
 						</configuration>
@@ -905,7 +956,7 @@
 					<plugin>
 						<groupId>org.jacoco</groupId>
 						<artifactId>jacoco-maven-plugin</artifactId>
-						<version>0.8.6</version>
+						<version>0.8.8</version>
 						<executions>
 							<execution>
 								<id>prepare-jacoco</id>
@@ -930,7 +981,7 @@
 					<plugin>
 						<groupId>org.jacoco</groupId>
 						<artifactId>jacoco-maven-plugin</artifactId>
-						<version>0.8.6</version>
+						<version>0.8.8</version>
 						<reportSets>
 							<reportSet>
 								<reports>

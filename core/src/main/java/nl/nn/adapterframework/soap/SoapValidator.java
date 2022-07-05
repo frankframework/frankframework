@@ -23,7 +23,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
 import nl.nn.adapterframework.validation.RootValidation;
@@ -32,7 +31,6 @@ import nl.nn.adapterframework.validation.RootValidations;
 /**
  * XmlValidator that will automatically add the SOAP envelope XSD to the set of XSD's used for validation.
  *
- * <b><A name="note1">Note 1:</A></b>
  * Before the <code>outputSoapBody</code> attribute was introduced, two validators were used for a request-reply pattern (an inputValidator for the request and an outputValidator for the reply).
  * These inputValidator and outputValidator were identical except for the child element of the SOAP body. Because validators use relatively a lot of memory, the <code>outputSoapBody</code> attribute was added which replaces the outputValidator.
  * Both the request and the reply are then validated by the inputValidator.
@@ -75,16 +73,14 @@ public class SoapValidator extends Json2XmlValidator {
 			}
 			super.setSchemaLocation(getSchemaLocation() + (getSchemaLocation().length() > 0 ? " " : "") + soapVersion.getSchemaLocation());
 		}
-		if (StringUtils.isEmpty(soapBody)) {
-			ConfigurationWarnings.add(this, log, "soapBody not specified");
-		}
+
 		if (!isAllowPlainXml()) {
 			addRequestRootValidation(new RootValidation(SOAP_ENVELOPE, SOAP_BODY, soapBody));
 			if (StringUtils.isNotEmpty(outputSoapBody)) {
 				addResponseRootValidation(new RootValidation(SOAP_ENVELOPE, SOAP_BODY, outputSoapBody));
 			}
 			addRequestRootValidation(new RootValidation(SOAP_ENVELOPE, SOAP_HEADER, soapHeader));
-			List<String> invalidRootNamespaces = new ArrayList<String>();
+			List<String> invalidRootNamespaces = new ArrayList<>();
 			for (String namespace:soapVersion.getNamespaces()) {
 				invalidRootNamespaces.add(namespace);
 			}

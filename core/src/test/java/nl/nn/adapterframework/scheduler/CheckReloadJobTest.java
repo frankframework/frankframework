@@ -27,6 +27,8 @@ public class CheckReloadJobTest extends JdbcTestBase {
 			}
 		};
 
+		getConfiguration().getIbisManager(); //call once to ensure it exists.
+
 		jobDef.setName("CheckReloadJob");
 		getConfiguration().autowireByName(jobDef);
 	}

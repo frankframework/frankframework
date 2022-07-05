@@ -21,7 +21,8 @@ LICENSE
 .travis
 .project
 .classpath
-org.eclipse.
+.settings/
+.settings\
 .gitignore
 .cvsignore
 .gif
@@ -50,6 +51,7 @@ org.eclipse.
 .git
 .yml
 .txt
+.css
 .properties
 .log
 .xml
@@ -62,3 +64,4 @@ overview.html
 .editorconfig
 .checkstyle
 checkstyle.xml
+.template

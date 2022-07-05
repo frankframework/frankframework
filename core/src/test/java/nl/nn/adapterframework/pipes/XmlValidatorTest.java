@@ -41,7 +41,7 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		this.implementation = implementation;
 	}
 
-	@Parameterized.Parameters
+	@Parameterized.Parameters(name= "{0}")
 	public static Collection<Object[]> data() {
 		Object[][] data = new Object[][]{
 			{XercesXmlValidator.class}
@@ -381,4 +381,45 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 
 		assertEquals("failure", forward.getName());
 	}
+
+	@Test //copied from iaf-test /XmlValidator/scenario05a, then simplified
+	public void testIncludeOK() throws Exception {
+		XmlValidator validator = new XmlValidator();
+		validator.registerForward(createSuccessForward());
+		validator.registerForward(createFailureForward());
+		validator.setRoot("GetParties");
+		validator.setSchemaLocation("http://www.ibissource.org/tom /Validation/Include/xsd/main.xsd");
+		validator.setAddNamespaceToSchema(true);
+		validator.setThrowException(true);
+		validator.configure();
+		validator.start();
+
+		String testXml = getTestXml("/Validation/Include/in-ok.xml");
+		PipeLineSession session = new PipeLineSession();
+		PipeRunResult result = validator.validate(new Message(testXml), session, "GetParties");
+		PipeForward forward = result.getPipeForward();
+
+		assertEquals("success", forward.getName());
+	}
+
+	@Test //copied from iaf-test /XmlValidator/scenario05b, then simplified
+	public void testIncludeError() throws Exception {
+		XmlValidator validator = new XmlValidator();
+		validator.registerForward(createSuccessForward());
+		validator.registerForward(createFailureForward());
+		validator.setRoot("GetParties");
+		validator.setSchemaLocation("http://www.ibissource.org/tom /Validation/Include/xsd/main.xsd");
+		validator.setAddNamespaceToSchema(true);
+		validator.configure();
+		validator.start();
+
+		String testXml = getTestXml("/Validation/Include/in-err.xml");
+		PipeLineSession session = new PipeLineSession();
+		PipeRunResult result = validator.validate(new Message(testXml), session, "GetParties");
+		PipeForward forward = result.getPipeForward();
+
+		assertEquals("failure", forward.getName());
+	}
+
+
 }

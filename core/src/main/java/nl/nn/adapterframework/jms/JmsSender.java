@@ -49,6 +49,7 @@ import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * This class sends messages with JMS.
@@ -95,7 +96,10 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isNotEmpty(getSoapAction()) && (paramList==null || paramList.findParameter("SoapAction")==null)) {
-			addParameter(new Parameter("SoapAction", getSoapAction()));
+			Parameter p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+			p.setName("SoapAction");
+			p.setValue(getSoapAction());
+			addParameter(p);
 		}
 		if (paramList!=null) {
 			paramList.configure();

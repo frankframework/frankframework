@@ -10,7 +10,7 @@ The Frank!Doc provides reference information for Frank developers as explained i
 | `@ff.forward` | | Class | Describes a forward (e.g. `success`, `failure`). First argument is name of forward. Second argument is description. |
 | `@ff.tag` | | Class | Tag that classifies the Java class. First argument is tag name, second argument is tag value. |
 | `@ff.default` | `@Default` | Attribute setter | Describes default value. |
-| `@ff.protected` | `@Protected` | Attribute setter or child setter | Suppresses declaration and inheritance of attribute or child. Annotation is inherited. |
+| `@ff.protected` | `@Protected` | Attribute setter, child setter or class | Suppresses declaration and inheritance of attribute, child or element. Annotation is inherited. |
 | `@ff.mandatory` | `@Mandatory` | Attribute or child setter | Makes attribute or child mandatory in Frank config. |
 | `@ff.optional` | `@Optional` | Attribute or child setter | Undoes inherited `@ff.mandatory`, making the attribute or child optional even if it overrides a mandatory attribute or child.
 | `@ff.defaultElement` | | Child setter | Set default value of `className` attribute in XSD syntax 1 element. |
@@ -21,3 +21,5 @@ The Frank!Doc provides reference information for Frank developers as explained i
 **Annotation @FrankDocGroup, on class:** When a class has a `@FrankDocGroup` annotation, then the class only belongs to that group. `@FrankDocGroup` annotations on classes are inherited by descendant classes, so descendant classes are also in the specified group exclusively.
 
 **@ff.mandatory and @Mandatory:** If you give the JavaDoc tag the value `ignoreInCompatibilityMode`, the attribute or config child will not be mandatory in `FrankConfig-compatibility.xsd`. This behavior may be useful for backward compatibility. The annotation has a Boolean field `ignoreInCompatibilityMode` that does the same.
+
+**@ff.protected and @Protected:** If a config child setter has a non-interface Java class as its argument and if that class has or inherits this annotation, then no config child is created.

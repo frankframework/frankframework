@@ -10,9 +10,9 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.stream.Message;
 
 public class CmisDeleteAction extends CmisSenderTestBase {
-	private final static String ALLOWED_SELECTOR = "<cmis><id>ALLOWED</id></cmis>";
-	private final static String NOT_ALLOWED_SELECTOR = "<cmis><id>NOT_ALLOWED</id></cmis>";
-	private final static String NOT_FOUND_SELECTOR = "<cmis><id>NOT_FOUND</id></cmis>";
+	private static final String ALLOWED_SELECTOR = "<cmis><id>ALLOWED</id></cmis>";
+	private static final String NOT_ALLOWED_SELECTOR = "<cmis><id>NOT_ALLOWED</id></cmis>";
+	private static final String NOT_FOUND_SELECTOR = "<cmis><id>NOT_FOUND</id></cmis>";
 
 	@Test
 	public void canConfigure() throws Exception {

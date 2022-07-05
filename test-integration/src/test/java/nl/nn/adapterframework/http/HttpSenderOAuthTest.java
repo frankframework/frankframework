@@ -5,14 +5,17 @@ import static org.junit.Assert.assertEquals;
 import java.net.URLEncoder;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.PropertyUtil;
+import nl.nn.adapterframework.util.LogUtil;
 
 public class HttpSenderOAuthTest {
+	protected Logger log = LogUtil.getLogger(this);
 
 	protected String PROPERTY_FILE = "HttpSenderOAuth.properties";
 
@@ -20,9 +23,9 @@ public class HttpSenderOAuthTest {
 	protected String tokenBaseUrl  = PropertyUtil.getProperty(PROPERTY_FILE, "tokenBaseUrl");
 	protected String dataBaseUrl   = PropertyUtil.getProperty(PROPERTY_FILE, "dataBaseUrl");
 	protected String apiContext    = PropertyUtil.getProperty(PROPERTY_FILE, "apiContext");
-	protected String oauthService  = PropertyUtil.getProperty(PROPERTY_FILE, "oauthService");
+	protected String tokenContext  = PropertyUtil.getProperty(PROPERTY_FILE, "tokenContext");
 	protected String url           = dataBaseUrl + apiContext;
-	protected String tokenEndpoint = tokenBaseUrl + oauthService;
+	protected String tokenEndpoint = tokenBaseUrl + tokenContext;
 	protected String client_id     = PropertyUtil.getProperty(PROPERTY_FILE, "client_id");
 	protected String client_secret = PropertyUtil.getProperty(PROPERTY_FILE, "client_secret");
 	protected String username      = PropertyUtil.getProperty(PROPERTY_FILE, "username");
@@ -77,7 +80,7 @@ public class HttpSenderOAuthTest {
 		
 		Message result = sender.sendMessage(new Message("<dummy/>"), session);
 		
-		System.out.println("result: "+result.asString());
+		//log.debug("result: "+result.asString());
 		assertEquals("200", session.getMessage("StatusCode").asString());
 	}
 	
@@ -111,8 +114,15 @@ public class HttpSenderOAuthTest {
 		PipeLineSession session = new PipeLineSession();
 		
 		Message result = sender.sendMessage(new Message(""), session);
+		log.debug("result: "+result.asString());
+		assertEquals("200", session.getMessage("StatusCode").asString());
 		
-		System.out.println("result: "+result.asString());
+		log.debug("Wait 1 second");
+		Thread.sleep(1000);
+		log.debug("Test again");
+
+		result = sender.sendMessage(new Message(""), session);
+		log.debug("result: "+result.asString());
 		assertEquals("200", session.getMessage("StatusCode").asString());
 	}
 }

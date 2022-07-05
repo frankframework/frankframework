@@ -17,6 +17,7 @@ import java.util.TreeMap;
 import javax.json.Json;
 import javax.json.JsonStructure;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.custommonkey.xmlunit.DetailedDiff;
 import org.custommonkey.xmlunit.Diff;
@@ -64,9 +65,12 @@ public class MatchUtils {
 		assertEquals(expStr,actStr);
 	}
  
-	public static String xmlPretty(String xml, boolean removeNamespaces) {
+	public static String xmlPretty(String xml, boolean removeNamespaces, boolean includeComments) {
+		if (StringUtils.isAllBlank(xml)) {
+			return "";
+		}
 		XmlWriter xmlWriter = new XmlWriter();
-		xmlWriter.setIncludeComments(false);
+		xmlWriter.setIncludeComments(includeComments);
 		ContentHandler contentHandler = new PrettyPrintFilter(xmlWriter, true);
 		if (removeNamespaces) {
 			contentHandler = new NamespaceRemovingFilter(contentHandler);
@@ -86,10 +90,14 @@ public class MatchUtils {
 	public static void assertXmlEquals(String description, String xmlExp, String xmlAct) {
 		assertXmlEquals(description, xmlExp, xmlAct, false);
 	}
-	
+
 	public static void assertXmlEquals(String description, String xmlExp, String xmlAct, boolean ignoreNamespaces) {
-		String xmlExpPretty = xmlPretty(xmlExp, ignoreNamespaces);
-		String xmlActPretty = xmlPretty(xmlAct, ignoreNamespaces);
+		assertXmlEquals(description, xmlExp, xmlAct, ignoreNamespaces, false);
+	}
+	
+	public static void assertXmlEquals(String description, String xmlExp, String xmlAct, boolean ignoreNamespaces, boolean includeComments) {
+		String xmlExpPretty = xmlPretty(xmlExp, ignoreNamespaces, includeComments);
+		String xmlActPretty = xmlPretty(xmlAct, ignoreNamespaces, includeComments);
 		assertEquals(description,xmlExpPretty,xmlActPretty);
 	}
 

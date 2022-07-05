@@ -52,7 +52,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	private final @Getter(onMethod = @__(@Override)) String domain = "Http";
 	private @Getter String uriPattern;
-	private @Getter boolean updateEtag = true;
+	private @Getter boolean updateEtag = true; //Consider setting this to false
 	private @Getter String operationId;
 
 	private @Getter HttpMethod method = HttpMethod.GET;
@@ -72,6 +72,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	private @Getter String messageIdHeader = AppConstants.getInstance(getConfigurationClassLoader()).getString("apiListener.messageIdHeader", "Message-Id");
 	private @Getter String headerParams = null;
+	private @Getter String contentDispositionHeaderSessionKey;
 	private @Getter String charset = null;
 
 	// for jwt validation
@@ -82,6 +83,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter String roleClaim;
 
 	private @Getter JwtValidator<SecurityContext> jwtValidator;
+	private String servletUrlMapping = AppConstants.getInstance().getString("servlet.ApiListenerServlet.urlMapping", "api");
 
 	public enum AuthenticationMethods {
 		NONE, COOKIE, HEADER, AUTHROLE, JWT;
@@ -132,6 +134,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		ApiServiceDispatcher.getInstance().unregisterServiceClient(this);
 	}
 
+	@Override
 	public Message processRequest(String correlationId, Message message, PipeLineSession requestContext) throws ListenerException {
 		Message result = super.processRequest(correlationId, message, requestContext);
 
@@ -145,7 +148,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	@Override
 	public String getPhysicalDestinationName() {
-		String destinationName = "uriPattern: "+getUriPattern()+"; method: "+getMethod();
+		String destinationName = "uriPattern: /"+servletUrlMapping+getUriPattern()+"; method: "+getMethod();
 		if(!MediaTypes.ANY.equals(consumes))
 			destinationName += "; consumes: "+getConsumes();
 		if(!MediaTypes.ANY.equals(produces))
@@ -249,7 +252,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	//TODO add authenticationType
 
 	/** 
-	 * Enables security for this listener. If you wish to use the application servers authorisation roles [AUTHROLE], you need to enable them globally for all ApiListeners with the `servlet.ApiListenerServlet.securityroles=ibistester,ibiswebservice` property
+	 * Enables security for this listener. If you wish to use the application servers authorisation roles [AUTHROLE], you need to enable them globally for all ApiListeners with the `servlet.ApiListenerServlet.securityRoles=IbisTester,IbisWebService` property
 	 * @ff.default <code>NONE</code>
 	 */
 	public void setAuthenticationMethod(AuthenticationMethods authenticationMethod) {
@@ -310,6 +313,11 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 */
 	public void setHeaderParams(String headerParams) {
 		this.headerParams = headerParams;
+	}
+
+	/** Session key that provides the Content-disposition header in the response */
+	public void setContentDispositionHeaderSessionKey(String key) {
+		this.contentDispositionHeaderSessionKey = key;
 	}
 
 	/** issuer to validate jwt */

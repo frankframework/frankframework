@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2019 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -40,10 +40,10 @@ import org.apache.commons.lang3.StringUtils;
  * @since   4.2c
  */
 public class PutSystemDateInSession extends FixedForwardPipe {
-	public final static Object OBJECT = new Object();
-	public final static String FIXEDDATETIME  ="2001-12-17 09:30:47";
-	public final static String FORMAT_FIXEDDATETIME  ="yyyy-MM-dd HH:mm:ss";
-	public final static String FIXEDDATE_STUB4TESTTOOL_KEY  ="stub4testtool.fixeddate";
+	public static final Object OBJECT = new Object();
+	public static final String FIXEDDATETIME  ="2001-12-17 09:30:47";
+	public static final String FORMAT_FIXEDDATETIME  ="yyyy-MM-dd HH:mm:ss";
+	public static final String FIXEDDATE_STUB4TESTTOOL_KEY  ="stub4testtool.fixeddate";
 
 	private String sessionKey="systemDate";
 	private String dateFormat=DateUtils.fullIsoFormat;
@@ -151,7 +151,7 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 		return new PipeRunResult(getSuccessForward(), message);
 	}
 	
-	@IbisDoc({"Key of session variable to store systemdate in", "systemdate"})
+	@IbisDoc({"Key of session variable to store systemdate in", "systemDate"})
 	public void setSessionKey(String newSessionKey) {
 		sessionKey = newSessionKey;
 	}

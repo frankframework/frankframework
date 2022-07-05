@@ -27,7 +27,7 @@ import nl.nn.testtool.metadata.DefaultValueMetadataFieldExtractor;
  */
 public class JuiceServiceName extends DefaultValueMetadataFieldExtractor {
 	private MetadataFieldExtractor serviceTypeExtractor;
-	private final static Map serviceNames = new HashMap();
+	private static final Map serviceNames = new HashMap();
 	static {
 		// Based on ING_REQ_tabel.doc received from Hou, K.W. (Kwok Wah) on 20100616
 		// Updated by Dorus van der Kroft on 20101228

@@ -41,7 +41,6 @@ import javax.xml.ws.handler.MessageContext;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.binding.soap.SoapBindingConstants;
 import org.apache.logging.log4j.Logger;
-import org.apache.soap.util.mime.ByteArrayDataSource;
 import org.springframework.util.MimeType;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -52,6 +51,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.MessageDataSource;
 import nl.nn.adapterframework.util.MessageUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -208,28 +208,25 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 						Iterator<Node> iter = parts.iterator();
 						while (iter.hasNext()) {
 							Element partElement = (Element) iter.next();
-							//String partType = partElement.getAttribute("type");
-							String partName = partElement.getAttribute("name");
-							String partSessionKey = partElement.getAttribute("sessionKey");
-							String partMimeType = partElement.getAttribute("mimeType");
-							Message partObject = pipelineSession.getMessage(partSessionKey);
-							DataHandler dataHander;
-							try {
-								if (partObject.isBinary()) {
-									dataHander = new DataHandler(new ByteArrayDataSource(partObject.asByteArray(), partMimeType));
-								} else {
-									dataHander = new DataHandler(new ByteArrayDataSource(partObject.asString(), partMimeType));
-								}
-							} catch (IOException e) {
-								String m = "Unable to add session key '" + partSessionKey + "' as attachment";
-								log.error(m, e);
-								throw new WebServiceException(m, e);
-							}
-							AttachmentPart attachmentPart = soapMessage.createAttachmentPart(dataHander);
-							attachmentPart.setContentId(partName);
-							soapMessage.addAttachmentPart(attachmentPart);
 
-							log.debug(getLogPrefix(correlationId)+"appended filepart ["+partSessionKey+"] name ["+partName+"]");
+							if(StringUtils.isNotEmpty(partElement.getAttribute("name"))) {
+								log.info("multipart xml attribute name is no longer used!");
+							}
+
+							String partSessionKey = partElement.getAttribute("sessionKey");
+							Message partObject = pipelineSession.getMessage(partSessionKey);
+
+							if(!partObject.isNull()) {
+								String mimeType = partElement.getAttribute("mimeType");
+								DataHandler dataHander = new DataHandler(new MessageDataSource(partObject, mimeType));
+								AttachmentPart attachmentPart = soapMessage.createAttachmentPart(dataHander);
+								attachmentPart.setContentId(partSessionKey);
+								soapMessage.addAttachmentPart(attachmentPart);
+
+								log.debug(getLogPrefix(correlationId)+"appended filepart ["+partSessionKey+"] key ["+partSessionKey+"]");
+							} else {
+								log.debug(getLogPrefix(correlationId)+"skipping filepart ["+partSessionKey+"] key ["+partSessionKey+"], content is <NULL>");
+							}
 						}
 					}
 				}

@@ -24,7 +24,7 @@ if(version.isEmpty()) {
 	<title page-title></title>
 
 	<link href="css/bootstrap.min.css" rel="stylesheet">
-	<link href="font-awesome/css/font-awesome.css" rel="stylesheet">
+	<link href="font-awesome-4.7.0/css/font-awesome.css" rel="stylesheet">
 	<link href="css/animate.css" rel="stylesheet">
 
 	<link href="css/plugins/sweetalert/sweetalert.css" rel="stylesheet">

@@ -21,7 +21,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
@@ -44,14 +44,15 @@ import org.apache.commons.lang3.StringUtils;
  *
  * @author     Richard Punt / Gerrit van Brakel
  */
+@Category("Basic")
 public class CompareIntegerPipe extends AbstractPipe {
 
-	private final static String LESSTHANFORWARD = "lessthan";
-	private final static String GREATERTHANFORWARD = "greaterthan";
-	private final static String EQUALSFORWARD = "equals";
+	private static final String LESSTHANFORWARD = "lessthan";
+	private static final String GREATERTHANFORWARD = "greaterthan";
+	private static final String EQUALSFORWARD = "equals";
 
-	private final static String OPERAND1 = "operand1";
-	private final static String OPERAND2 = "operand2";
+	private static final String OPERAND1 = "operand1";
+	private static final String OPERAND2 = "operand2";
 
 	private String sessionKey1 = null;
 	private String sessionKey2 = null;

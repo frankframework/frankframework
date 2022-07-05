@@ -37,6 +37,7 @@ import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.Resource;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.http.RestListenerUtils;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.receivers.Receiver;
@@ -49,6 +50,7 @@ import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
+@Category("NN-Special")
 public class WsdlGeneratorPipe extends FixedForwardPipe {
 
 	private @Getter @Setter String sessionKey = "file";

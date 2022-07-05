@@ -23,9 +23,9 @@ import org.xml.sax.SAXException;
 public class SaxDocumentBuilder extends SaxElementBuilder {
 
 	public SaxDocumentBuilder(String elementName) throws SAXException {
-		this(elementName,  new XmlWriter());
+		this(elementName, new XmlWriter());
 	}
-	
+
 	public SaxDocumentBuilder(String elementName, Writer writer) throws SAXException {
 		this(elementName, new XmlWriter(writer));
 	}
@@ -43,5 +43,4 @@ public class SaxDocumentBuilder extends SaxElementBuilder {
 			getHandler().endDocument();
 		}
 	}
-	
 }

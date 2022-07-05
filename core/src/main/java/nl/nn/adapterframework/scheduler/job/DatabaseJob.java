@@ -18,6 +18,9 @@ package nl.nn.adapterframework.scheduler.job;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * @ff.protected
+ */
 public class DatabaseJob extends SendMessageJob {
 	private @Getter @Setter String adapterName; //Allow for easily selecting a JavaListener in the console
 }

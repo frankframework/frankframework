@@ -15,6 +15,9 @@
 */
 package nl.nn.adapterframework.receivers;
 
+import nl.nn.adapterframework.doc.Category;
+
+@Category("Advanced")
 public class SambaListener extends Samba2Listener {
 
 }

@@ -39,7 +39,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 
 		sender.configure();
 		sender.open();
-		
+
 		Message result = sendMessage("");
 		assertEquals("200", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
 		assertNotNull(result.asString());
@@ -54,7 +54,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 
 		sender.configure();
 		sender.open();
-		
+
 		Message result = sendMessage("");
 		assertEquals("200", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
 		assertNotNull(result.asString());
@@ -67,7 +67,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 
 		sender.configure();
 		sender.open();
-		
+
 		Message result = sendMessage("");
 		assertEquals("401", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
 		assertNotNull(result.asString());
@@ -85,7 +85,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 
 		sender.configure();
 		sender.open();
-		
+
 		Message result = sendMessage("");
 		assertEquals("200", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
 		assertNotNull(result.asString());
@@ -101,7 +101,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 
 		sender.configure();
 		sender.open();
-		
+
 		Message result = sendMessage("");
 		assertEquals("200", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
 		assertNotNull(result.asString());
@@ -127,7 +127,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 
 		sender.configure();
 		sender.open();
-		
+
 		Message result = sendMessage("");
 		assertEquals("200", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
 		assertNotNull(result.asString());
@@ -144,7 +144,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 
 		sender.configure();
 		sender.open();
-		
+
 		Message result = sendMessage("");
 		assertEquals("200", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
 		assertNotNull(result.asString());
@@ -161,7 +161,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 
 		sender.configure();
 		sender.open();
-		
+
 		Message result = sendMessage("");
 		assertEquals("401", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
 		assertNotNull(result.asString());
@@ -178,7 +178,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 
 		sender.configure();
 		sender.open();
-		
+
 		Message result = sendMessage("");
 		assertEquals("200", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
 		assertNotNull(result.asString());
@@ -191,7 +191,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 
 		sender.configure();
 		sender.open();
-		
+
 		Message result = sendMessage("");
 		assertEquals("401", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
 		assertNotNull(result.asString());
@@ -207,10 +207,69 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 
 		sender.configure();
 		sender.open();
-		
+
 		Message result = sendMessage("");
 		assertEquals("200", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
 		assertNotNull(result.asString());
 	}
-	
+
+
+	@Test
+	public void testRetryPayloadOnResetBasicAuth() throws Exception {
+		sender.setUrl(authtenticatedService.getBasicEndpoint());
+		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
+		sender.setUsername(tokenServer.getClientId());
+		sender.setPassword(tokenServer.getClientSecret());
+
+		sender.configure();
+		sender.open();
+
+		authtenticatedService.setScenarioState(authtenticatedService.SCENARIO_CONNECTION_RESET, authtenticatedService.SCENARIO_STATE_RESET_CONNECTION);
+
+		Message result = sendMessage("");
+		assertEquals("200", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
+		assertNotNull(result.asString());
+	}
+
+
+	@Test
+	public void testRetryPayloadOnResetOAuth() throws Exception {
+		sender.setUrl(authtenticatedService.getOAuthEndpoint());
+		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
+		sender.setTokenEndpoint(tokenServer.getEndpoint());
+		sender.setClientId(tokenServer.getClientId());
+		sender.setClientSecret(tokenServer.getClientSecret());
+
+		sender.configure();
+		sender.open();
+
+		authtenticatedService.setScenarioState(authtenticatedService.SCENARIO_CONNECTION_RESET, authtenticatedService.SCENARIO_STATE_RESET_CONNECTION);
+
+		Message result = sendMessage("");
+		assertEquals("200", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
+		assertNotNull(result.asString());
+	}
+
+
+	@Test
+	public void testRetryOnResetAuthenticated() throws Exception {
+		sender.setUrl(authtenticatedService.getOAuthEndpoint());
+		sender.setTokenEndpoint(tokenServer.getEndpoint());
+		sender.setClientId(tokenServer.getClientId());
+		sender.setClientSecret(tokenServer.getClientSecret());
+		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
+		sender.setTimeout(100000);
+
+		sender.configure();
+		sender.open();
+
+		tokenServer.setScenarioState(tokenServer.SCENARIO_CONNECTION_RESET, tokenServer.SCENARIO_STATE_RESET_CONNECTION);
+
+		Message result = sendMessage("");
+		assertEquals("200", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
+		assertNotNull(result.asString());
+	}
+
+
+
 }

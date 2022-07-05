@@ -1391,7 +1391,7 @@ public class Misc {
 			count++;
 		return count;
 	}
-	
+
 	public static String urlDecode(String input) {
 		try {
 			return URLDecoder.decode(input, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
@@ -1410,7 +1410,7 @@ public class Misc {
 
 	public static <T> void addToSortedListNonUnique(List<T> list, T item) {
 		int index = Misc.binarySearchResultToInsertionPoint(Collections.binarySearch(list, item, null));
-		list.add(index, item);		
+		list.add(index, item);
 	}
 
 	private static int binarySearchResultToInsertionPoint(int index) {

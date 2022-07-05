@@ -48,7 +48,7 @@ public class IbisExceptionTest {
 
 		assertEquals(msg5, result);
 	}
-	
+
 	@Test
 	public void noMessageInException() {
 		SenderException exception = new SenderException(new SenderException());
@@ -64,7 +64,7 @@ public class IbisExceptionTest {
 
 		assertEquals("(AddressException) some text", result);
 	}
-	
+
 	@Test
 	public void exceptionWithSpecificDetails() {
 		SenderException exception = new SenderException(new AddressException("test","ref",14));
@@ -72,7 +72,7 @@ public class IbisExceptionTest {
 
 		assertEquals("(AddressException) [ref] at column [15]: test", result);
 	}
-	
+
 	@Test
 	public void sqlExceptionWithSpecificDetails() {
 		SenderException exception = new SenderException("text" ,new SQLException("reason", "state", new SenderException("test")));
@@ -80,7 +80,7 @@ public class IbisExceptionTest {
 
 		assertEquals("text: (SQLException) SQLState [state]: reason: test", result);
 	}
-	
+
 	@Test
 	public void sqlExceptionWithSpecificDetailsAsTheMessageOfInnerException() {
 		SenderException exception = new SenderException("SQLState [state]" ,new SQLException("reason", "state", new SenderException("SQLState [state]")));
@@ -119,12 +119,12 @@ public class IbisExceptionTest {
 		JMSException jmse = new JMSException("reason", "errorCode");
 		jmse.setLinkedException(root);
 		Exception ibisException = new IbisException("wrapper", jmse);
-		
+
 		String result = ibisException.getMessage();
 
 		assertEquals("wrapper: (JMSException) reason: (IOException) rootMsg", result);
 	}
-	
+
 	@Test
 	public void testListenerPipeRunOther() {
 		IPipe pipe = new FixedResultPipe();

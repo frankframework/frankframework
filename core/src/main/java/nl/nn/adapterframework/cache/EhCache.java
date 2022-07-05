@@ -38,16 +38,16 @@ import nl.nn.adapterframework.util.AppConstants;
  */
 public class EhCache<V> extends CacheAdapterBase<V> {
 
-	private final String KEY_PREFIX = "cache.default.";
-	private final String KEY_MAX_ELEMENTS_IN_MEMORY = KEY_PREFIX + "maxElementsInMemory";
-	private final String KEY_MEMORYSTORE_EVICTION_POLICY = KEY_PREFIX + "memoryStoreEvictionPolicy";
-	private final String KEY_ETERNAL = KEY_PREFIX + "eternal";
-	private final String KEY_TIME_TO_LIVE_SECONDS = KEY_PREFIX + "timeToLiveSeconds";
-	private final String KEY_TIME_TO_IDLE_SECONDS = KEY_PREFIX + "timeToIdleSeconds";
-	private final String KEY_OVERFLOW_TO_DISK = KEY_PREFIX + "overflowToDisk";
-	private final String KEY_MAX_ELEMENTS_ON_DISK = KEY_PREFIX + "maxElementsOnDisk";
-	private final String KEY_DISK_PERSISTENT = KEY_PREFIX + "diskPersistent";
-	private final String KEY_DISK_EXPIRY_THREAD_INTERVAL_SECONDS = KEY_PREFIX + "diskExpiryThreadIntervalSeconds";
+	private static final String KEY_PREFIX = "cache.default.";
+	private static final String KEY_MAX_ELEMENTS_IN_MEMORY = KEY_PREFIX + "maxElementsInMemory";
+	private static final String KEY_MEMORYSTORE_EVICTION_POLICY = KEY_PREFIX + "memoryStoreEvictionPolicy";
+	private static final String KEY_ETERNAL = KEY_PREFIX + "eternal";
+	private static final String KEY_TIME_TO_LIVE_SECONDS = KEY_PREFIX + "timeToLiveSeconds";
+	private static final String KEY_TIME_TO_IDLE_SECONDS = KEY_PREFIX + "timeToIdleSeconds";
+	private static final String KEY_OVERFLOW_TO_DISK = KEY_PREFIX + "overflowToDisk";
+	private static final String KEY_MAX_ELEMENTS_ON_DISK = KEY_PREFIX + "maxElementsOnDisk";
+	private static final String KEY_DISK_PERSISTENT = KEY_PREFIX + "diskPersistent";
+	private static final String KEY_DISK_EXPIRY_THREAD_INTERVAL_SECONDS = KEY_PREFIX + "diskExpiryThreadIntervalSeconds";
 
 	private int maxElementsInMemory=100;
 	private String memoryStoreEvictionPolicy="LRU";

@@ -1,8 +1,8 @@
 package nl.nn.adapterframework.extensions.cmis;
 
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -14,40 +14,37 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestAssertions;
 
 @RunWith(Parameterized.class)
 public class TestBindingTypes extends CmisSenderTestBase {
 
-	private final static String INPUT = "<cmis><id>id</id><objectId>dummy</objectId><objectTypeId>cmis:document</objectTypeId>"
-			+ "<fileName>fileInput.txt</fileName>" + 
-			" <properties><property name=\"project:number\" type=\"integer\">123456789</property>" + 
-			"<property name=\"project:lastModified\" type=\"datetime\">2019-02-26T16:31:15</property>" + 
+	private static final String INPUT = "<cmis><id>id</id><objectId>dummy</objectId><objectTypeId>cmis:document</objectTypeId>"
+			+ "<fileName>fileInput.txt</fileName>" +
+			" <properties><property name=\"project:number\" type=\"integer\">123456789</property>" +
+			"<property name=\"project:lastModified\" type=\"datetime\">2019-02-26T16:31:15</property>" +
 			"<property name=\"project:onTime\" type=\"boolean\">true</property></properties></cmis>";
-	private final static String FIND_INPUT = "<query><name>dummy</name>\n" + 
-			"	<objectId>dummy</objectId>\n" + 
-			"	<objectTypeId>dummy</objectTypeId>\n" + 
-			"	<maxItems>15</maxItems>\n" + 
-			"	<skipCount>0</skipCount>\n" + 
-			"	<searchAllVersions>true</searchAllVersions>\n" + 
-			"	<properties>\n" + 
-			"		<property name=\"cmis:name\">dummy</property>\n" + 
-			"		<property name=\"project:number\" type=\"integer\">123456789</property>\n" + 
-			"		<property name=\"project:onTime\" type=\"boolean\">true</property>\n" + 
-			"		<property name=\"project:lastModified\" type=\"datetime\">2019-02-26T16:29:46</property>\n" + 
-			"	</properties>\n" + 
-			"	<statement>SELECT * from cmis:document</statement>\n" + 
-			"	<filter>cmis:objectId</filter>\n" + 
-			"	<includeAllowableActions>true</includeAllowableActions>\n" + 
-			"	<includePolicies>true</includePolicies>\n" + 
+	private static final String FIND_INPUT = "<query><name>dummy</name>\n" +
+			"	<objectId>dummy</objectId>\n" +
+			"	<objectTypeId>dummy</objectTypeId>\n" +
+			"	<maxItems>15</maxItems>\n" +
+			"	<skipCount>0</skipCount>\n" +
+			"	<searchAllVersions>true</searchAllVersions>\n" +
+			"	<properties>\n" +
+			"		<property name=\"cmis:name\">dummy</property>\n" +
+			"		<property name=\"project:number\" type=\"integer\">123456789</property>\n" +
+			"		<property name=\"project:onTime\" type=\"boolean\">true</property>\n" +
+			"		<property name=\"project:lastModified\" type=\"datetime\">2019-02-26T16:29:46</property>\n" +
+			"	</properties>\n" +
+			"	<statement>SELECT * from cmis:document</statement>\n" +
+			"	<filter>cmis:objectId</filter>\n" +
+			"	<includeAllowableActions>true</includeAllowableActions>\n" +
+			"	<includePolicies>true</includePolicies>\n" +
 			"	<includeAcl>true</includeAcl> </query>";
-	private final static String FIND_RESULT = "<cmis totalNumItems=\"0\">  <rowset /></cmis>";
-	private final static String FETCH_RESULT = "<cmis>  <properties>    "
+	private static final String FIND_RESULT = "<cmis totalNumItems=\"0\">  <rowset /></cmis>";
+	private static final String FETCH_RESULT = "<cmis>  <properties>    "
 			+ "<property name=\"cmis:name\" type=\"id\">dummy</property>    "
 			+ "<property name=\"project:number\" type=\"integer\">123456789</property>    "
 			+ "<property name=\"project:lastModified\" type=\"datetime\">2019-02-26T16:31:15</property>    "
@@ -110,14 +107,15 @@ public class TestBindingTypes extends CmisSenderTestBase {
 	}
 
 	@Test
-	public void configure() throws ConfigurationException {
+	public void configure() throws Exception {
 		sender.setBindingType(bindingType);
 		sender.setAction(action);
 		sender.configure();
+		sender.open();
 	}
 
 	@Test
-	public void sendMessage() throws ConfigurationException, SenderException, TimeoutException, IOException {
+	public void sendMessage() throws Exception {
 
 		if(action.equals("get")) {
 			sender.setFileContentSessionKey("");
@@ -131,7 +129,7 @@ public class TestBindingTypes extends CmisSenderTestBase {
 	}
 
 	@Test
-	public void sendMessageWithContentStream() throws ConfigurationException, SenderException, TimeoutException, IOException {
+	public void sendMessageWithContentStream() throws Exception {
 		if(!action.equals("get")) return;
 
 		configure();

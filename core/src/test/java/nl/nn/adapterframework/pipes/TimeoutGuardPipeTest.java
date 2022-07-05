@@ -15,7 +15,7 @@ import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.stream.Message;
 
 public class TimeoutGuardPipeTest extends PipeTestBase<TimeoutGuardPipe> {
-	private final static String SUCCESS_MESSAGE = "did not timeout!";
+	private static final String SUCCESS_MESSAGE = "did not timeout!";
 
 	public class GuardTestPipe extends TimeoutGuardPipe {
 		public GuardTestPipe() {

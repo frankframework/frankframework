@@ -72,7 +72,7 @@ public class PutInSession extends FixedForwardPipe {
 		ParameterList parameterList = getParameterList();
 		if (!parameterList.isEmpty()) {
 			try {
-				ParameterValueList pvl = parameterList.getValues(message, session, isNamespaceAware());
+				ParameterValueList pvl = parameterList.getValues(message, session);
 				if (pvl != null) {
 					for(ParameterValue pv : pvl) {
 						String name  = pv.getName();

@@ -22,6 +22,7 @@ import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
@@ -36,13 +37,14 @@ import nl.nn.adapterframework.validation.XercesXmlValidator;
  * @author  Gerrit van Brakel
  * @since
  */
+@Category("Advanced")
 public class XmlValidatorSender extends XercesXmlValidator implements ISenderWithParameters {
 
 	private @Getter @Setter String name;
 
 	@Override
 	public void configure() throws ConfigurationException {
-		configure(getLogPrefix());
+		configure(this);
 	}
 
 	@Override
@@ -68,7 +70,7 @@ public class XmlValidatorSender extends XercesXmlValidator implements ISenderWit
 		String fullReasons="tja";
 		try {
 			ValidationResult validationResult = validate(message, session, getLogPrefix(),null,null);
-	
+
 			if (validationResult == ValidationResult.VALID || validationResult == ValidationResult.VALID_WITH_WARNINGS) {
 				return message;
 			}

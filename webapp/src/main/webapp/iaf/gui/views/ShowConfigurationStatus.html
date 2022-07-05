@@ -60,7 +60,7 @@
                                         <th title="Stopping" ng-class="{'text-danger': (adapterSummary.stopping > 0 || receiverSummary.stopping > 0) }">
                                             <i class="fa fa-stop-circle-o"></i>
                                         </th>
-                                        <th title="Error" ng-class="{'text-warning': (adapterSummary.error > 0 || receiverSummary.error > 0) }">
+                                        <th title="Error" ng-class="{'text-warning': (adapterSummary.error > 0 || receiverSummary.error > 0 || adapterSummary.exception_starting > 0 || receiverSummary.exception_starting > 0 || adapterSummary.exception_stopping > 0 || receiverSummary.exception_stopping > 0) }">
                                             <i class="fa fa-warning"></i>
                                         </th>
                                     </tr>
@@ -72,7 +72,7 @@
                                         <td>{{adapterSummary.starting}}</td>
                                         <td>{{adapterSummary.stopped}}</td>
                                         <td>{{adapterSummary.stopping}}</td>
-                                        <td>{{adapterSummary.error}}</td>
+                                        <td>{{adapterSummary.error + adapterSummary.exception_starting + adapterSummary.exception_stopping}}</td>
                                     </tr>
                                     <tr>
                                         <td><strong>Receivers</strong></td>
@@ -80,7 +80,7 @@
                                         <td>{{receiverSummary.starting}}</td>
                                         <td>{{receiverSummary.stopped}}</td>
                                         <td>{{receiverSummary.stopping}}</td>
-                                        <td>{{receiverSummary.error}}</td>
+                                        <td>{{receiverSummary.error + receiverSummary.exception_starting + receiverSummary.exception_stopping}}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -233,11 +233,17 @@
                                     <span ng-if="adapter.messagesInError > 0">| {{adapter.messagesInError}} <i class="fa fa-exclamation-triangle" aria-hidden="true"></i></span>
                                 </div>
                                 <div class="col-sm-2" title="Adapter Store" ng-if="!showContent">
-                                	<span ng-if="adapter.messageLogMessageCount > 0" class="text-success" title="Total # of processed messages">
-                                         <i class="fa fa-envelope-o"></i> ({{adapter.messageLogMessageCount}})
+                                	<span ng-if="adapter.messageLogMessageCount > 0" class="text-success" title="Total # of processed messages by the adapter">
+                                         <i class="fa fa-sign-in"></i> ({{adapter.messageLogMessageCount}})
                                    	</span>
                                    	<span ng-if="adapter.errorStoreMessageCount > 0" class="text-danger" title="Total # of messages in Error">
                                     &nbsp<i class="fa fa-times-circle"></i> ({{adapter.errorStoreMessageCount}})
+                                   </span>
+                                   	<span ng-if="adapter.sendersMessageLogCount > 0" class="text-success" title="Total # of messages processed by senders that have a messagelog">
+                                    &nbsp<i class="fa fa-database"></i> ({{adapter.sendersMessageLogCount}})
+                                   </span>
+                                   	<span ng-if="adapter.senderTransactionalStorageMessageCount > 0" class="text-primary" title="Total # of messages in messageStoreSenders">
+                                    &nbsp<i class="fa fa-sign-out"></i> ({{adapter.senderTransactionalStorageMessageCount}})
                                    </span>
                                 </div>
                             </div>
@@ -358,9 +364,9 @@
 	                                                        </button>
 	                                                    </span>
                                                 	</span>
-                                                    <button title="Stop receiver" class="btn btn-xs danger-hover" ng-show="receiver.state =='started'" type="button" ng-click="stopReceiver(adapter, receiver)"><i class="fa fa-stop"></i></button>
-                                                    <button title="Start receiver" class="btn btn-xs primary-hover" ng-show="receiver.state =='stopped'" type="button" ng-click="startReceiver(adapter, receiver)"><i class="fa fa-play"></i></button>
-                                                    <button title="Loading..." class="btn btn-warning btn-xs" ng-show="receiver.state =='starting' || receiver.state =='stopping'" type="button"><i class="fa fa-cog fa-spin"></i></button>
+                                                    <button title="Stop receiver" class="btn btn-xs danger-hover" ng-show="receiver.state =='started' || receiver.state =='exception_starting'" type="button" ng-click="stopReceiver(adapter, receiver)"><i class="fa fa-stop"></i></button>
+                                                    <button title="Start receiver" class="btn btn-xs primary-hover" ng-show="receiver.state =='stopped' || receiver.state =='exception_stopping'" type="button" ng-click="startReceiver(adapter, receiver)"><i class="fa fa-play"></i></button>
+                                                    <button title="Loading..." class="btn btn-warning btn-xs" ng-show="receiver.state =='loading' || receiver.state =='starting' || receiver.state =='stopping'" type="button"><i class="fa fa-cog fa-spin"></i></button>
                                                     <button title="RECEIVER IN ERROR STATE" class="btn btn-warning btn-xs" ng-show="receiver.state =='error'" type="button" disabled><i class="fa fa-warning"></i></button>
                                                 </span>
                                             </td>
@@ -385,12 +391,12 @@
                                     <tbody>
                                         <tr ng-repeat="pipes in adapter.pipes" ng-if="pipes.sender">
                                             <td>{{::pipes.name}}</td>
-                                            <td>{{::pipes.sender}}<span ng-if="pipes.destination" title="{{::pipes.destination}"> ({{::pipes.destination|truncate:150}})</span></td>
+                                            <td>{{::pipes.sender}}<span ng-if="pipes.destination" title="{{::pipes.destination}}"> ({{::pipes.destination|truncate:150}})</span></td>
                                             <td>
                                                 <span class="pull-right">
-                                                    <span class="text-success">
+                                                    <span ng-class="pipes.isSenderTransactionalStorage ? 'text-primary' : 'text-success'">
                                                         <button ng-show="{{pipes.hasMessageLog}}" ui-lref="pages.storage.list({adapter: adapter.name, storageSource: 'pipes', storageSourceName: pipes.name, processState: 'Done'})" class="btn btn-xs btn-default m-l-xs" type="button">
-                                                            <i class="fa fa-envelope-o"></i> ({{::pipes.messageLogCount}})
+                                                            <i ng-class="pipes.isSenderTransactionalStorage ? 'fa fa-sign-out' : 'fa fa-database'"></i> ({{::pipes.messageLogCount}})
                                                         </button>
                                                     </span>
                                                 </span>

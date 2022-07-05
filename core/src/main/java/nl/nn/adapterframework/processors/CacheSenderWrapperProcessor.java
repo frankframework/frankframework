@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2017 Nationale-Nederlanden, 2020,2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,14 +31,14 @@ import nl.nn.adapterframework.stream.Message;
  * @since   4.11
  */
 public class CacheSenderWrapperProcessor extends SenderWrapperProcessorBase {
-	
+
 	@Override
 	public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		ICache<String,String> cache=senderWrapperBase.getCache();
 		if (cache==null) {
 			return senderWrapperProcessor.sendMessage(senderWrapperBase, message, session);
 		}
-		
+
 		String key;
 		try {
 			key=cache.transformKey(message.asString(), session);
@@ -49,16 +49,16 @@ public class CacheSenderWrapperProcessor extends SenderWrapperProcessorBase {
 			if (log.isDebugEnabled()) log.debug("cache key is null, will not use cache");
 			return senderWrapperProcessor.sendMessage(senderWrapperBase, message, session);
 		}
-		if (log.isDebugEnabled()) log.debug("cache key ["+key+"]");
+		if (log.isDebugEnabled()) log.debug("cache key [{}]", key);
 		Message result;
 		String cacheResult=cache.get(key);
 		if (cacheResult!=null) {
-			if (log.isDebugEnabled()) log.debug("retrieved result from cache using key ["+key+"]");
-			result= new Message(cacheResult);
+			if (log.isDebugEnabled()) log.debug("retrieved result from cache using key [{}]", key);
+			result = new Message(cacheResult);
 		} else {
-			if (log.isDebugEnabled()) log.debug("no cached results found using key ["+key+"]");
-			result=senderWrapperProcessor.sendMessage(senderWrapperBase, message, session);
-			if (log.isDebugEnabled()) log.debug("caching result using key ["+key+"]");
+			if (log.isDebugEnabled()) log.debug("no cached results found using key [{}]", key);
+			result = senderWrapperProcessor.sendMessage(senderWrapperBase, message, session);
+			if (log.isDebugEnabled()) log.debug("caching result using key [{}]", key);
 			String cacheValue = cache.transformValue(result, session);
 			if (cacheValue==null) {
 				if (log.isDebugEnabled()) log.debug("transformed cache value is null, will not cache");

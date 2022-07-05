@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<wsdl:definitions xmlns:impl="http://test.example.com" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://test.example.com">
+	<wsdl:types>
+		<schema xmlns="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://test.example.com">
+			<element name="add">
+				<complexType>
+					<sequence>
+						<element name="numA" type="xsd:double"/>
+						<element name="numB" type="xsd:double"/>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="addResponse">
+				<complexType>
+					<sequence>
+						<element name="addReturn" type="xsd:double"/>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="sub">
+				<complexType>
+					<sequence>
+						<element name="numA" type="xsd:double"/>
+						<element name="numC" type="xsd:double"/>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="subResponse">
+				<complexType>
+					<sequence>
+						<element name="subReturn" type="xsd:double"/>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="mod">
+				<complexType>
+					<sequence>
+						<element name="numA" type="xsd:double"/>
+						<element name="numB" type="xsd:double"/>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="modResponse">
+				<complexType>
+					<sequence>
+						<element name="modReturn" type="xsd:double"/>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="mul">
+				<complexType>
+					<sequence>
+						<element name="numA" type="xsd:double"/>
+						<element name="numB" type="xsd:double"/>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="mulResponse">
+				<complexType>
+					<sequence>
+						<element name="mulReturn" type="xsd:double"/>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="div">
+				<complexType>
+					<sequence>
+						<element name="numA" type="xsd:double"/>
+						<element name="numB" type="xsd:double"/>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="divResponse">
+				<complexType>
+					<sequence>
+						<element name="divReturn" type="xsd:double"/>
+					</sequence>
+				</complexType>
+			</element>
+		</schema>
+	</wsdl:types>
+	<wsdl:message name="divRequest">
+		<wsdl:part element="impl:div" name="parameters"/>
+	</wsdl:message>
+	<wsdl:message name="modRequest">
+		<wsdl:part element="impl:mod" name="parameters"/>
+	</wsdl:message>
+	<wsdl:message name="mulResponse">
+		<wsdl:part element="impl:mulResponse" name="parameters"/>
+	</wsdl:message>
+	<wsdl:message name="modResponse">
+		<wsdl:part element="impl:modResponse" name="parameters"/>
+	</wsdl:message>
+	<wsdl:message name="addResponse">
+		<wsdl:part element="impl:addResponse" name="parameters"/>
+	</wsdl:message>
+	<wsdl:message name="subResponse">
+		<wsdl:part element="impl:subResponse" name="parameters"/>
+		<wsdl:part element="impl:addResponse" name="parameters1"/>
+	</wsdl:message>
+	<wsdl:message name="mulRequest">
+		<wsdl:part element="impl:mul" name="parameters"/>
+	</wsdl:message>
+	<wsdl:message name="divResponse">
+		<wsdl:part element="impl:divResponse" name="parameters"/>
+	</wsdl:message>
+	<wsdl:message name="subRequest">
+		<wsdl:part element="impl:sub" name="parameters"/>
+	</wsdl:message>
+	<wsdl:message name="addRequest">
+		<wsdl:part element="impl:add" name="parameters"/>
+	</wsdl:message>
+	<wsdl:portType name="LNNCalculator">
+		<wsdl:operation name="add">
+			<wsdl:input message="impl:addRequest" name="addRequest"/>
+			<wsdl:output message="impl:addResponse" name="addResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="sub">
+			<wsdl:input message="impl:subRequest" name="subRequest"/>
+			<wsdl:output message="impl:subResponse" name="subResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="mod">
+			<wsdl:input message="impl:modRequest" name="modRequest"/>
+			<wsdl:output message="impl:modResponse" name="modResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="mul">
+			<wsdl:input message="impl:mulRequest" name="mulRequest"/>
+			<wsdl:output message="impl:mulResponse" name="mulResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="div">
+			<wsdl:input message="impl:divRequest" name="divRequest"/>
+			<wsdl:output message="impl:divResponse" name="divResponse"/>
+		</wsdl:operation>
+	</wsdl:portType>
+	<wsdl:binding name="LNNCalculatorSoapBinding" type="impl:LNNCalculator">
+		<wsdlsoap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+		<wsdl:operation name="add">
+			<wsdlsoap:operation soapAction="add"/>
+			<wsdl:input name="addRequest">
+				<wsdlsoap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output name="addResponse">
+				<wsdlsoap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="sub">
+			<wsdlsoap:operation soapAction="sub"/>
+			<wsdl:input name="subRequest">
+				<wsdlsoap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output name="subResponse">
+				<wsdlsoap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="mod">
+			<wsdlsoap:operation soapAction=""/>
+			<wsdl:input name="modRequest">
+				<wsdlsoap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output name="modResponse">
+				<wsdlsoap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="mul">
+			<wsdlsoap:operation soapAction=""/>
+			<wsdl:input name="mulRequest">
+				<wsdlsoap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output name="mulResponse">
+				<wsdlsoap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="div">
+			<wsdlsoap:operation soapAction=""/>
+			<wsdl:input name="divRequest">
+				<wsdlsoap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output name="divResponse">
+				<wsdlsoap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+	</wsdl:binding>
+	<wsdl:service name="LNNCalculatorService">
+		<wsdl:port binding="impl:LNNCalculatorSoapBinding" name="LNNCalculator">
+			<wsdlsoap:address location="http://localhost:8080/king/services/LNNCalculator"/>
+		</wsdl:port>
+	</wsdl:service>
+</wsdl:definitions>

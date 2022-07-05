@@ -510,6 +510,7 @@ public final class ShowConfigurationStatus extends Base {
 				} else if(sender instanceof ITransactionalStorage) { // in case no message log specified
 					ITransactionalStorage<?> store = (ITransactionalStorage<?>) sender;
 					mapPipeMessageLog(store, pipesInfo);
+					pipesInfo.put("isSenderTransactionalStorage", true);
 				}
 			}
 			pipes.add(pipesInfo);
@@ -539,6 +540,7 @@ public final class ShowConfigurationStatus extends Base {
 		message.put("count", messageLogCount);
 		data.put("message", message);
 	}
+
 	private ArrayList<Object> mapAdapterReceivers(Adapter adapter, boolean showPendingMsgCount) {
 		ArrayList<Object> receivers = new ArrayList<>();
 
@@ -674,7 +676,7 @@ public final class ShowConfigurationStatus extends Base {
 			message.put("date", msg.getMessageDate());
 			message.put("level", msg.getMessageLevel());
 			message.put("capacity", adapter.getMessageKeeper().capacity());
-			
+
 			messages.add(message);
 		}
 		return messages;
@@ -688,9 +690,6 @@ public final class ShowConfigurationStatus extends Base {
 		adapterInfo.put("name", adapterName);
 		adapterInfo.put("description", adapter.getDescription());
 		adapterInfo.put("configuration", config.getName() );
-		// replace low line (x'5f') by asterisk (x'2a) so it's sorted before any digit and letter
-		String nameUC = StringUtils.upperCase(StringUtils.replace(adapterName,"_", "*"));
-		adapterInfo.put("nameUC", nameUC);
 		RunState adapterRunState = adapter.getRunState();
 		adapterInfo.put("started", adapterRunState==RunState.STARTED);
 		String state = adapterRunState.toString().toLowerCase().replace("*", "");

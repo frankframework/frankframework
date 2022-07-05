@@ -49,6 +49,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.soap.SoapVersion;
@@ -85,6 +86,7 @@ import nl.nn.adapterframework.xml.RootElementToSessionKeyFilter;
  * @author Johan Verrips IOS
  * @author Jaco de Groot
  */
+@Category("Basic")
 public class XmlValidator extends FixedForwardPipe implements SchemasProvider, HasSpecialDefaultValues, IDualModeValidator, IXmlValidator, InitializingBean {
 
 	private @Getter String schemaLocation;
@@ -118,14 +120,9 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	private TransformerPool transformerPoolGetRootNamespace; // only used in getMessageToValidate(), TODO: avoid setting it up when not necessary
 	private TransformerPool transformerPoolRemoveNamespaces; // only used in getMessageToValidate(), TODO: avoid setting it up when not necessary
 
-	protected boolean combineSchemas = false;
-
 	protected ConfigurationException configurationException;
 
 	protected final String ABSTRACTXMLVALIDATOR="nl.nn.adapterframework.validation.AbstractXmlValidator";
-	{
-		setNamespaceAware(true);
-	}
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -185,16 +182,12 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			}
 			validator.setSchemasProvider(this);
 
-			if (StringUtils.isNotEmpty(getImportedSchemaLocationsToIgnore())) {
-				combineSchemas = true;
-			}
-
 			//do initial schema check
 			if (getSchemasId()!=null) {
 				getSchemas(true);
 			}
 
-			validator.configure(getLogPrefix(null));
+			validator.configure(this);
 			registerEvent(ValidationResult.PARSER_ERROR.getEvent());
 			registerEvent(ValidationResult.INVALID.getEvent());
 			registerEvent(ValidationResult.VALID_WITH_WARNINGS.getEvent());
@@ -483,24 +476,16 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 				checkOutputRootValidations(xsds_temp);
 			}
 		} else {
-			if (StringUtils.isNotEmpty(getImportedSchemaLocationsToIgnore())) {
-				xsds = SchemaUtils.getXsdsRecursive(xsds);
-			}
+			xsds = SchemaUtils.getXsdsRecursive(xsds);
 			if (checkRootValidations) {
 				checkInputRootValidations(xsds);
 				checkOutputRootValidations(xsds);
 			}
-			if (combineSchemas) {
-				try {
-					Map<String, Set<XSD>> xsdsGroupedByNamespace = SchemaUtils.getXsdsGroupedByNamespace(xsds, false);
-					xsds = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(this, xsdsGroupedByNamespace, null); // also handles addNamespaceToSchema
-				} catch(Exception e) {
-					throw new ConfigurationException(getLogPrefix(null) + "could not merge schema's", e);
-				}
-			} else {
-				if (isAddNamespaceToSchema()) {
-					SchemaUtils.addTargetNamespaceToXsds(xsds);
-				}
+			try {
+				Map<String, Set<XSD>> xsdsGroupedByNamespace = SchemaUtils.getXsdsGroupedByNamespace(xsds, false);
+				xsds = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(this, xsdsGroupedByNamespace, null); // also handles addNamespaceToSchema
+			} catch(Exception e) {
+				throw new ConfigurationException(getLogPrefix(null) + "could not merge schema's", e);
 			}
 		}
 		List<Schema> schemas = new ArrayList<Schema>();

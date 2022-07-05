@@ -28,32 +28,44 @@ import org.apache.http.util.CharArrayBuffer;
 
 /**
  * HttpClient AuthScheme that uses OAuthAccessTokenManager to obtain an access token (via Client Credentials flow).
- * 
+ *
  * @author Gerrit van Brakel
  *
  */
 public class OAuthAuthenticationScheme extends BasicScheme {
 
-	public final static String SCHEME_NAME = "OAUTH2";
-	public final static String ACCESSTOKEN_MANAGER_KEY="AccessTokenManager";
-	
+	public static final String SCHEME_NAME_AUTO = "OAUTH2";
+	public static final String SCHEME_NAME_FORCE_REFRESH = "OAUTH2-REFRESHED";
+	public static final String ACCESSTOKEN_MANAGER_KEY="AccessTokenManager";
+
+	private boolean forceRefresh;
+
+	public OAuthAuthenticationScheme() {
+		this(false);
+	}
+
+	public OAuthAuthenticationScheme(boolean forceRefresh) {
+		super();
+		this.forceRefresh = forceRefresh;
+	}
+
 	@Override
 	public String getSchemeName() {
-		return SCHEME_NAME;
+		return forceRefresh ? SCHEME_NAME_FORCE_REFRESH : SCHEME_NAME_AUTO;
 	}
 
 	@Override
 	public Header authenticate(Credentials credentials, HttpRequest request, final HttpContext context) throws AuthenticationException {
 		Args.notNull(credentials, "Credentials");
 		Args.notNull(request, "HTTP request");
-		
+
 		OAuthAccessTokenManager accessTokenManager = (OAuthAccessTokenManager)context.getAttribute(ACCESSTOKEN_MANAGER_KEY);
 		if (accessTokenManager==null) {
 			throw new AuthenticationException("no accessTokenManager found");
 		}
 
 		try {
-			String accessToken = accessTokenManager.getAccessToken(credentials);
+			String accessToken = accessTokenManager.getAccessToken(credentials, forceRefresh);
 			final CharArrayBuffer buffer = new CharArrayBuffer(32);
 			if (isProxy()) {
 				buffer.append(AUTH.PROXY_AUTH_RESP);

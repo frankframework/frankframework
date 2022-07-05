@@ -88,7 +88,7 @@ public class CommandSender extends SenderWithParametersBase {
 		return synchronous;
 	}
 
-	@IbisDoc({ "1", "The command to be executed. Note: Executing a command in WAS requires <<ALL FILES>> execute permission to avoid that provide the absolute path of the command. Absolute path can be found with the following command 'which -a {commandName}'", "" })
+	@IbisDoc({ "1", "The command to be executed. Note: Executing a command in WAS requires &lt;&lt;ALL FILES&gt;&gt; execute permission to avoid that provide the absolute path of the command. Absolute path can be found with the following command 'which -a {commandName}'", "" })
 	public void setCommand(String string) {
 		command = string;
 	}

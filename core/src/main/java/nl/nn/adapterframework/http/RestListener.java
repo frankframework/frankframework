@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2015 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.http.rest.ApiCacheManager;
 import nl.nn.adapterframework.pipes.JsonPipe;
 import nl.nn.adapterframework.pipes.JsonPipe.Direction;
 import nl.nn.adapterframework.stream.Message;
@@ -104,13 +103,13 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	}
 
 	@Override
-	public Message processRequest(String correlationId, Message message, Map<String, Object> requestContext) throws ListenerException {
-		HttpServletRequest httpServletRequest = (HttpServletRequest) requestContext.get(PipeLineSession.HTTP_REQUEST_KEY);
+	public Message processRequest(String correlationId, Message message, PipeLineSession session) throws ListenerException {
+		HttpServletRequest httpServletRequest = (HttpServletRequest) session.get(PipeLineSession.HTTP_REQUEST_KEY);
 		Message response;
-		String contentType = (String) requestContext.get("contentType");
+		String contentType = (String) session.get("contentType");
 
 		//Check if valid path
-		String requestRestPath = (String) requestContext.get("restPath");
+		String requestRestPath = (String) session.get("restPath");
 		if (!getRestPath().equals(requestRestPath)) {
 			throw new ListenerException("illegal restPath value [" + requestRestPath + "], must be [" + getRestPath() + "]");
 		}
@@ -129,19 +128,19 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		if(contentType == null || StringUtils.isEmpty(contentType) || contentType.equalsIgnoreCase("*/*")) {
 			switch(getProduces()) {
 				case XML:
-					requestContext.put("contentType", "application/xml");
+					session.put("contentType", "application/xml");
 					break;
 				case JSON:
-					requestContext.put("contentType", "application/json");
+					session.put("contentType", "application/json");
 					break;
 				case TEXT:
-					requestContext.put("contentType", "text/plain");
+					session.put("contentType", "text/plain");
 					break;
 				default:
 					throw new IllegalStateException("Unknown mediatype ["+getProduces()+"]");
 			}
 
-			response = super.processRequest(correlationId, message, requestContext);
+			response = super.processRequest(correlationId, message, session);
 			if(response != null && !response.isEmpty())
 				eTag = response.hashCode();
 
@@ -154,13 +153,13 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 			}
 		}
 		else {
-			response = super.processRequest(correlationId, message, requestContext);
+			response = super.processRequest(correlationId, message, session);
 			if(response != null && !response.isEmpty())
 				eTag = response.hashCode();
 		}
 
-		if(!requestContext.containsKey("etag") && isGenerateEtag() && eTag != 0) { //The etag can be a negative integer...
-			requestContext.put("etag", ApiCacheManager.buildEtag(getRestPath()+"/"+getUriPattern(), eTag));
+		if(!session.containsKey("etag") && isGenerateEtag() && eTag != 0) { //The etag can be a negative integer...
+			session.put("etag", "rest_"+eTag);
 		}
 
 		return response;

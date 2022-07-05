@@ -30,6 +30,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * Registers a trigger in the scheduler so that the message is send to a javalistener
@@ -54,13 +55,13 @@ public class SchedulerSender extends SenderWithParametersBase {
 			throw new ConfigurationException("Property [cronExpressionPattern] is empty");
 		}
 		
-		Parameter p = new Parameter();
+		Parameter p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 		p.setName("_cronexpression");
 		p.setPattern(cronExpressionPattern);
 		addParameter(p);
 
 		if (StringUtils.isNotEmpty(jobNamePattern)) {
-			p = new Parameter();
+			p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 			p.setName("_jobname");
 			p.setPattern(jobNamePattern);
 			addParameter(p);

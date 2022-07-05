@@ -1,5 +1,8 @@
 package nl.nn.adapterframework.filesystem;
 
+import org.junit.Ignore;
+import org.junit.Test;
+
 public class MockFileSystemActorTest extends FileSystemActorExtraTest <MockFile,MockFileSystem<MockFile>>{
 
 	
@@ -13,4 +16,10 @@ public class MockFileSystemActorTest extends FileSystemActorExtraTest <MockFile,
 		return ((MockFileSystemTestHelper<MockFile>)helper).getFileSystem();
 	}
 
+	@Ignore("does not support throwing exceptions by attempting to remove non empty folder.")
+	@Override
+	@Test
+	public void fileSystemActorDeleteActionWithDeleteEmptyFolderRootContainsEmptyFoldersTest() throws Exception {
+		
+	}
 }

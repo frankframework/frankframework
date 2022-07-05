@@ -29,9 +29,15 @@
 			</modules>
 		</profile>
 		<profile>
-			<id>Jboss-WildFly</id>
+			<id>WildFly</id>
 			<modules>
-				<module>Jboss-WildFly</module>
+				<module>WildFly</module>
+			</modules>
+		</profile>
+		<profile>
+			<id>JBoss</id>
+			<modules>
+				<module>JBoss</module>
 			</modules>
 		</profile>
 		<profile>
@@ -39,7 +45,8 @@
 			<modules>
 				<module>Tomcat</module>
 				<module>WebSphere</module>
-				<module>Jboss-WildFly</module>
+				<module>WildFly</module>
+				<module>JBoss</module>
 			</modules>
 		</profile>
 	</profiles>

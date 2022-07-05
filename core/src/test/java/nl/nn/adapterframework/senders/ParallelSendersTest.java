@@ -3,6 +3,8 @@ package nl.nn.adapterframework.senders;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
+
 import org.junit.Test;
 
 import nl.nn.adapterframework.stream.Message;
@@ -11,6 +13,7 @@ import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 
+	private static final String BASEPATH = "/Senders/ParallelSenders/";
 	private static final int DELAY = 2000;
 
 	@Override
@@ -19,7 +22,11 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 		return ps;
 	}
 
-	private class TestSender extends DelaySender {
+	protected String getExpectedTestFile(String path) throws IOException {
+		return TestFileUtils.getTestFile(BASEPATH+path);
+	}
+
+	protected static class TestSender extends DelaySender {
 		public TestSender(String name) {
 			setName(name);
 			setDelayTime(DELAY);
@@ -36,7 +43,7 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 		sender.configure();
 		sender.open();
 
-		String expected = TestFileUtils.getTestFile("/Senders/ParallelSenders/test10SubSenders.txt");
+		String expected = getExpectedTestFile("test10SubSenders.txt");
 		assertNotNull("cannot find expected result file", expected);
 
 		Message message = new Message("<dummy/>");
@@ -44,8 +51,8 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
 
 		long duration = System.currentTimeMillis() - startTime;
-		System.err.println(duration);
-		assertTrue(duration < DELAY + 1000);
+		int maxDuration = DELAY + 1000;
+		assertTrue("Test took ["+duration+"]s, maxDuration ["+maxDuration+"]s", duration < maxDuration);
 	}
 
 	@Test
@@ -65,7 +72,7 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 		sender.configure();
 		sender.open();
 
-		String expected = TestFileUtils.getTestFile("/Senders/ParallelSenders/test5wrappersWith10SubSenders.txt");
+		String expected = getExpectedTestFile("test5wrappersWith10SubSenders.txt");
 		assertNotNull("cannot find expected result file", expected);
 
 		Message message = new Message("<dummy/>");
@@ -73,7 +80,6 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
 
 		long duration = System.currentTimeMillis() - startTime;
-		System.err.println(duration);
 		int maxDuration = (DELAY * amountOfDelaySendersInWrapper) + 1000;
 		assertTrue("Test took ["+duration+"]s, maxDuration ["+maxDuration+"]s", duration < maxDuration);
 	}

@@ -98,10 +98,8 @@ public class MessageTest {
 	private SerializationTester<Message> serializationTester=new SerializationTester<Message>();
 
 	protected void testAsInputStream(Message message) throws IOException {
-		if(message.isBinary()) {
-			byte[] header = message.getMagic(6);
-			assertEquals("<root>", new String(header));
-		}
+		byte[] header = message.getMagic(6);
+		assertEquals("<root>", new String(header));
 
 		InputStream result = message.asInputStream();
 		String actual = StreamUtil.streamToString(result, null, "UTF-8");
@@ -124,20 +122,16 @@ public class MessageTest {
 	}
 
 	protected void testAsString(Message message) throws IOException {
-		if(message.isBinary()) {
-			byte[] header = message.getMagic(6);
-			assertEquals("<root>", new String(header));
-		}
+		byte[] header = message.getMagic(6);
+		assertEquals("<root>", new String(header));
 
 		String actual = message.asString();
 		MatchUtils.assertXmlEquals(testString, actual);
 	}
 
 	protected void testAsByteArray(Message message) throws IOException {
-		if(message.isBinary()) {
-			byte[] header = message.getMagic(6);
-			assertEquals("<root>", new String(header));
-		}
+		byte[] header = message.getMagic(6);
+		assertEquals("<root>", new String(header));
 
 		byte[] actual = message.asByteArray();
 		byte[] expected = testString.getBytes("UTF-8");
@@ -156,6 +150,7 @@ public class MessageTest {
 		System.out.println("toString [" + actual + "] class typename [" + clazz.getSimpleName() + "]");
 		// remove the toStringPrefix(), if it is present
 		String valuePart = actual.contains("value:\n") ? actual.split("value:\n")[1] : actual;
+		valuePart = valuePart.replaceAll("\\sMessage\\[[a-fA-F0-9]+\\]", "");
 		assertEquals(clazz.getSimpleName(), valuePart.substring(0, valuePart.indexOf(": ")));
 		if (wrapperClass == null) {
 			assertEquals(clazz.getSimpleName(), adapter.getRequestClass());

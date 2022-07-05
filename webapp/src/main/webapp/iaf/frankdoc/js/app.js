@@ -172,7 +172,7 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 				return name;
 			}
 
-			return '<a href="#!/All/'+element.name+'">'+name+'</a>';
+			return '<span title="'+element.description+'"><a href="#!/All/'+element.name+'">'+name+'</a></span>';
 		});
 
 		return $sce.trustAsHtml(input);
