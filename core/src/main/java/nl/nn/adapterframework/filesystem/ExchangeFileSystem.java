@@ -412,7 +412,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		ExchangeService exchangeService = getConnection(reference);
 		boolean invalidateConnectionOnRelease = false;
 		try {
-			// foldername is filename here
 			ItemId itemId = ItemId.getItemIdFromString(reference.getObjectName());
 			return EmailMessage.bind(exchangeService,itemId);
 		} catch (Exception e) {
