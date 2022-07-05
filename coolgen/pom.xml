@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.ibissource</groupId>
     <artifactId>ibis-adapterframework-parent</artifactId>
-    <version>7.6.5</version>
+    <version>7.6.6-SNAPSHOT</version>
   </parent>
 
   <artifactId>ibis-adapterframework-coolgen</artifactId>
