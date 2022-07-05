@@ -121,7 +121,7 @@ import nl.nn.adapterframework.xml.SaxElementBuilder;
 public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachment,ExchangeService> {
 	private final @Getter(onMethod = @__(@Override)) String domain = "Exchange";
 	private @Getter String mailAddress;
-	private @Getter String mailboxFolderSeparator="|";
+	private @Getter String mailboxObjectSeparator="|";
 	private @Getter boolean validateAllRedirectUrls=true;
 	private @Getter String url;
 	private @Getter String filter;
@@ -1042,8 +1042,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		service.setImpersonatedUserId(new ImpersonatedUserId(ConnectingIdType.SmtpAddress, mailbox));
 	}
 
-	private ExchangeObjectReference asObjectReference(String folderName) throws FileSystemException {
-		ExchangeObjectReference reference = new ExchangeObjectReference(folderName, getMailAddress(), basefolderId, getMailboxFolderSeparator());
+	private ExchangeObjectReference asObjectReference(String objectName) throws FileSystemException {
+		ExchangeObjectReference reference = new ExchangeObjectReference(objectName, getMailAddress(), basefolderId, getMailboxObjectSeparator());
 		if(!reference.isStatic()){
 			reference.setBaseFolderId(getBaseFolderId(reference.getMailbox(), getBaseFolder()));
 		}
@@ -1166,11 +1166,11 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	}
 
 	/**
-	 * Separator character used when working with multiple mailboxes, specified before the separator in the folder name <code>test@organisation.com|My sub folder</code>.
+	 * Separator character used when working with multiple mailboxes, specified before the separator in the object name <code>test@organisation.com|My sub folder</code> or <code>test@organisation.com|AAMkADljZDMxYzIzLTFlMjYtNGY4Mi1hM2Y1LTc2MjE5ZjIyZmMyNABGAAAAAAAu/9EmV5M6QokBRZwID1Q6BwDXQXY+F44hRbDfTB9v8jRfAAAEUqUVAADXQXY+F44hRbDfTB9v8jRfAAKA4F+pAAA=</code>.
 	 * Please consider when moving emails across mailboxes that there will be a null value returned instead of the newly created identifier.
 	 * @ff.default |
 	 */
-	public void setMailboxFolderSeparator(String separator) {
-		this.mailboxFolderSeparator = separator;
+	public void setMailboxObjectSeparator(String separator) {
+		this.mailboxObjectSeparator = separator;
 	}
 }
