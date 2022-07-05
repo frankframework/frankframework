@@ -23,6 +23,7 @@ import microsoft.exchange.webservices.data.property.complex.FolderId;
 
 public class ExchangeObjectReference {
 
+	private final @Getter boolean isStatic;
 	private final @Getter String mailbox;
 	private final @Getter String objectName;
 	private final @Getter String originalReference;
@@ -37,6 +38,7 @@ public class ExchangeObjectReference {
 		if (items.length > 1) {
 			this.mailbox = items[0];
 			this.objectName = items[1];
+			this.isStatic = false;
 		} else {
 			if(staticMailAddress == null){
 				throw new IllegalArgumentException("Cannot create ExchangeObjectReference when staticMailAddress is null " +
@@ -45,6 +47,7 @@ public class ExchangeObjectReference {
 			this.mailbox = staticMailAddress;
 			this.objectName = objectName;
 			this.baseFolderId = defaultBaseFolderId;
+			this.isStatic = true;
 		}
 	}
 

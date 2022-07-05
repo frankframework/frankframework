@@ -1066,7 +1066,9 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	private ExchangeObjectReference asObjectReference(String folderName) throws FileSystemException {
 		ExchangeObjectReference reference = new ExchangeObjectReference(folderName, getMailAddress(), basefolderId, getMailboxFolderSeparator());
-		reference.setBaseFolderId(getBaseFolderId(reference.getMailbox(), getBaseFolder()));
+		if(!reference.isStatic()){
+			reference.setBaseFolderId(getBaseFolderId(reference.getMailbox(), getBaseFolder()));
+		}
 
 		return reference;
 	}
