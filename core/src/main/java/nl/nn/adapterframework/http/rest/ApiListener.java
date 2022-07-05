@@ -21,14 +21,14 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.nimbusds.jose.proc.SecurityContext;
-
 import lombok.Getter;
 import lombok.Setter;
+import com.nimbusds.jose.proc.SecurityContext;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.PushingListenerAdapter;
 import nl.nn.adapterframework.jwt.JwtValidator;
 import nl.nn.adapterframework.receivers.Receiver;
@@ -44,15 +44,15 @@ import nl.nn.adapterframework.util.AppConstants;
  * also an OpenAPI specification for all ApiListeners in all configurations. You can
  * find them in the Frank!Console under main menu item Webservices, heading Available ApiListeners.
  * The generated OpenAPI specifications have <code>servers</code> and <code>paths</code> objects and
- * therefore they document the full URLs of the provided services.
- *
+ * therefore they document the full URLs of the provided services. 
+ * 
  * @author Niels Meijer
  *
  */
 public class ApiListener extends PushingListenerAdapter implements HasPhysicalDestination, ReceiverAware<String> {
 
 	private @Getter String uriPattern;
-	private @Getter boolean updateEtag = false;
+	private @Getter boolean updateEtag = true;
 	private @Getter String operationId;
 
 	private @Getter HttpMethod method = HttpMethod.GET;
@@ -184,7 +184,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		return producedContentType;
 	}
 
-	/**
+	/** 
 	 * HTTP method to listen to
 	 * @ff.default GET
 	 */
@@ -195,7 +195,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		}
 	}
 
-	/**
+	/** 
 	 * URI pattern to register this listener on, eq. `/my-listener/{something}/here`
 	 * @ff.mandatory
 	 */
@@ -209,7 +209,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		this.uriPattern = uriPattern;
 	}
 
-	/**
+	/** 
 	 * The required contentType on requests, if it doesn't match the request will fail
 	 * @ff.default ANY
 	 */
@@ -217,7 +217,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		this.consumes = value;
 	}
 
-	/**
+	/** 
 	 * The specified contentType on response
 	 * @ff.default ANY
 	 */
@@ -225,7 +225,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		this.produces = value;
 	}
 
-	/**
+	/** 
 	 * The specified character encoding on the response contentType header
 	 * @ff.default UTF-8
 	 */
@@ -238,7 +238,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		return charset;
 	}
 
-	/**
+	/** 
 	 * Automatically generate and validate etags
 	 * @ff.default <code>true</code>
 	 */
@@ -248,7 +248,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	//TODO add authenticationType
 
-	/**
+	/** 
 	 * Enables security for this listener. If you wish to use the application servers authorisation roles [AUTHROLE], you need to enable them globally for all ApiListeners with the `servlet.ApiListenerServlet.securityroles=ibistester,ibiswebservice` property
 	 * @ff.default <code>NONE</code>
 	 */
@@ -256,7 +256,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		this.authenticationMethod = authenticationMethod;
 	}
 
-	/**
+	/** 
 	 * Only active when AuthenticationMethod=AUTHROLE. Comma separated list of authorization roles which are granted for this service, eq. IbisTester,IbisObserver", ""})
 	 */
 	public void setAuthenticationRoles(String authRoles) {
@@ -276,7 +276,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		return authenticationRoles;
 	}
 
-	/**
+	/** 
 	 * Specify the form-part you wish to enter the pipeline
 	 * @ff.default name of the first form-part
 	 */
@@ -290,7 +290,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		return null;
 	}
 
-	/**
+	/** 
 	 * Name of the header which contains the message-id
 	 * @ff.default message-id
 	 */
@@ -298,14 +298,14 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		this.messageIdHeader = messageIdHeader;
 	}
 
-	/**
+	/** 
 	 * Unique string used to identify the operation. The id MUST be unique among all operations described in the OpenApi schema
 	 */
 	public void setOperationId(String operationId) {
 		this.operationId = operationId;
 	}
 
-	/**
+	/** 
 	 * Comma separated list of parameters passed as http header. Parameters will be stored in 'headers' sessionkey.
 	 */
 	public void setHeaderParams(String headerParams) {
@@ -313,27 +313,27 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	/** issuer to validate jwt */
-	public void setRequiredIssuer(String issuer) {
+	public void setRequiredIssuer(String issuer) { 
 		this.requiredIssuer = issuer;
 	}
 
 	/** keysource url to validate jwt */
-	public void setJwksURL(String string) {
+	public void setJwksURL(String string) { 
 		this.jwksUrl = string;
 	}
 
 	/** comma separated list of required claims */
-	public void setRequiredClaims(String string) {
+	public void setRequiredClaims(String string) { 
 		this.requiredClaims = string;
 	}
 
 	/** comma separated key value pairs to match with jwt payload. e.g. "sub=UnitTest, aud=test" */
-	public void setExactMatchClaims(String string) {
+	public void setExactMatchClaims(String string) { 
 		this.exactMatchClaims = string;
 	}
 
 	/** claim name which specifies the role */
-	public void setRoleClaim(String roleClaim) {
+	public void setRoleClaim(String roleClaim) { 
 		this.roleClaim = roleClaim;
 	}
 
