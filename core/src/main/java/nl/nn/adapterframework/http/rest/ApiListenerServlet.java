@@ -392,7 +392,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						}
 					}
 				}
-				messageContext.put(UPDATE_ETAG_CONTEXT_KEY, listener.isUpdateEtag());
+				messageContext.put(UPDATE_ETAG_CONTEXT_KEY, listener.getUpdateEtag());
 
 				/**
 				 * Check authorization
@@ -550,7 +550,14 @@ public class ApiListenerServlet extends HttpServletBase {
 				/**
 				 * Calculate an eTag over the processed result and store in cache
 				 */
-				if(messageContext.get(UPDATE_ETAG_CONTEXT_KEY, true)) {
+				Boolean updateEtag = messageContext.getBoolean(UPDATE_ETAG_CONTEXT_KEY);
+				if (updateEtag==null) {
+					updateEtag=listener.getUpdateEtag();
+				}
+				if (updateEtag==null) {
+					updateEtag=result.isRepeatable();
+				}
+				if(updateEtag) {
 					log.debug("calculating etags over processed result");
 					String cleanPattern = listener.getCleanPattern();
 					if(!Message.isEmpty(result) && method == HttpMethod.GET && cleanPattern != null) { //If the data has changed, generate a new eTag
