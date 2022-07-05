@@ -162,6 +162,18 @@
 				<version>${project.version}</version>
 			</dependency>
 
+			<!-- explicit dependency to force version 1.1.1 -->
+			<dependency><!-- this dependency handles javax.activation.* imports, compatible with the IBM JRE -->
+				<groupId>javax.activation</groupId>
+				<artifactId>activation</artifactId>
+				<version>1.1.1</version>
+			</dependency>
+			<dependency><!-- this dependency handles jakarta.activation.* imports -->
+				<groupId>com.sun.activation</groupId>
+				<artifactId>jakarta.activation</artifactId>
+				<version>2.0.1</version>
+			</dependency>
+
 			<dependency>
 				<groupId>org.apache.logging.log4j</groupId>
 				<artifactId>log4j-core</artifactId>
@@ -312,6 +324,15 @@
 						</goals>
 						<configuration>
 							<rules>
+								<bannedDependencies>
+									<!-- Java Annotations was renamed to the Jakarta Annotations -->
+									<excludes>
+										<exclude>javax.annotation:javax.annotation-api</exclude>
+										<exclude>javax.xml.ws:javax.xml.ws-api</exclude>
+										<exclude>javax.xml.soap:javax.xml.soap-api</exclude>
+									</excludes>
+									<message>Prevent the use of both javax and jakarta packages</message>
+								</bannedDependencies>
 								<bannedDependencies>
 									<!-- the activation framework was renamed to the jarkata activation framework -->
 									<excludes>

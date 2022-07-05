@@ -95,14 +95,11 @@
 		<dependency><!-- this dependency handles javax.activation.* imports, compatible with the IBM JRE -->
 			<groupId>javax.activation</groupId>
 			<artifactId>activation</artifactId>
-			<version>1.1.1</version>
 		</dependency>
 		<dependency><!-- this dependency handles jakarta.activation.* imports -->
 			<groupId>com.sun.activation</groupId>
 			<artifactId>jakarta.activation</artifactId>
-			<version>2.0.1</version>
 		</dependency>
-
 
 		<dependency>
 			<groupId>org.apache.geronimo.specs</groupId>
@@ -636,6 +633,12 @@
 			<groupId>javax.xml.ws</groupId>
 			<artifactId>jaxws-api</artifactId>
 			<version>2.3.0</version> <!-- 2.3.1 contains javax.activation 1.2.0 that conflicts with the jdk javax.activation (1.1.1) package. -->
+			<exclusions>
+				<exclusion>
+					<groupId>javax.xml.soap</groupId>
+					<artifactId>javax.xml.soap-api</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<!--

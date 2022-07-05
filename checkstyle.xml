@@ -28,7 +28,7 @@
 		<module name="AvoidStarImport">
 			<property name="allowStaticMemberImports" value="true" />
 		</module>
-		
+
 		<module name="EmptyBlock" />
 		<module name="ModifierOrder" />
 		<module name="RedundantModifier">
@@ -64,6 +64,11 @@
 			<property name="id" value="systemout"/>
 			<property name="format" value="^.*System\.(out|err).*$"/>
 			<property name="message" value="Don't use System.out/err, use LOG4J2 instead."/>
+		</module>
+
+		<module name="IllegalImport">
+		<!-- javax.activation -->
+			<property name="illegalPkgs" value="javax.annotation, javax.xml.soap, javax.xml.ws." />
 		</module>
 	</module>
 </module>
