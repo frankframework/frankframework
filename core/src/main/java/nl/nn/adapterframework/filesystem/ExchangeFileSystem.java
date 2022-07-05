@@ -330,7 +330,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		if (StringUtils.isEmpty(folderName)) {
 			return baseFolderId;
 		}
-		ExchangeFolderReference targetFolder = asFolderReference(folderName);;
+		ExchangeObjectReference targetFolder = asObjectReference(folderName);;
 		ExchangeService exchangeService = getConnection(targetFolder);
 		boolean invalidateConnectionOnRelease = false;
 		try {
@@ -343,11 +343,11 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		}
 	}
 
-	private FolderId findFolder(ExchangeService exchangeService, ExchangeFolderReference targetFolder) throws FileSystemException {
+	private FolderId findFolder(ExchangeService exchangeService, ExchangeObjectReference targetFolder) throws FileSystemException {
 		return findFolder(exchangeService, targetFolder, false);
 	}
 
-	private FolderId findFolder(ExchangeService exchangeService, ExchangeFolderReference targetFolder, boolean createFolder) throws FileSystemException {
+	private FolderId findFolder(ExchangeService exchangeService, ExchangeObjectReference targetFolder, boolean createFolder) throws FileSystemException {
 		FindFoldersResults findFoldersResultsIn;
 		FolderView folderViewIn = new FolderView(10);
 		SearchFilter searchFilterIn = new SearchFilter.IsEqualTo(FolderSchema.DisplayName, targetFolder.getFolderName());
@@ -383,14 +383,13 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		}
 		return findFoldersResultsIn.getFolders().get(0).getId();
 	}
-
 	/**
 	 * Find a folder when it is to be used as target, e.g. for copyFile(), moveFile() and removeFolder().
 	 * Folder is subfolder of the basefolder.
 	 * @throws FileNotFoundException If the folder is not present (and not created)
 	 */
 	public FolderId getFolderIdByFolderName(ExchangeService exchangeService, String folderName, boolean create) throws Exception{
-		ExchangeFolderReference targetFolder = new ExchangeFolderReference(folderName, getMailAddress(), basefolderId, getMailboxFolderSeparator());
+		ExchangeObjectReference targetFolder = new ExchangeObjectReference(folderName, getMailAddress(), basefolderId, getMailboxFolderSeparator());
 		FolderId folderId = findFolder(exchangeService, targetFolder);
 		if (folderId==null && create) {
 			log.debug("creating folder [" + folderName + "]");
@@ -409,12 +408,12 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public EmailMessage toFile(String filename) throws FileSystemException {
-		ExchangeFolderReference reference = asFolderReference(filename);
+		ExchangeObjectReference reference = asObjectReference(filename);
 		ExchangeService exchangeService = getConnection(reference);
 		boolean invalidateConnectionOnRelease = false;
 		try {
 			// foldername is filename here
-			ItemId itemId = ItemId.getItemIdFromString(reference.getFolderName());
+			ItemId itemId = ItemId.getItemIdFromString(reference.getObjectName());
 			return EmailMessage.bind(exchangeService,itemId);
 		} catch (Exception e) {
 			invalidateConnectionOnRelease = true;
@@ -466,7 +465,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		if (!isOpen()) {
 			return null;
 		}
-		ExchangeFolderReference reference = asFolderReference(folder);
+		ExchangeObjectReference reference = asObjectReference(folder);
 		ExchangeService exchangeService = getConnection(reference);
 		boolean invalidateConnectionOnRelease = false;
 		boolean closeConnectionOnExit = true;
@@ -592,7 +591,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	}
 	@Override
 	public EmailMessage moveFile(EmailMessage f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
-		ExchangeFolderReference reference = asFolderReference(destinationFolder);
+		ExchangeObjectReference reference = asObjectReference(destinationFolder);
 		ExchangeService exchangeService = getConnection(reference);
 		boolean invalidateConnectionOnRelease = false;
 		try {
@@ -608,7 +607,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public EmailMessage copyFile(EmailMessage f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
-		ExchangeFolderReference reference = asFolderReference(destinationFolder);
+		ExchangeObjectReference reference = asObjectReference(destinationFolder);
 		ExchangeService exchangeService = getConnection(reference);
 		boolean invalidateConnectionOnRelease = false;
 		try {
@@ -885,16 +884,16 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public void createFolder(String folderName) throws FileSystemException {
-		ExchangeFolderReference reference = asFolderReference(folderName);
+		ExchangeObjectReference reference = asObjectReference(folderName);
 		ExchangeService exchangeService = getConnection(reference);
 		boolean invalidateConnectionOnRelease = false;
 		try {
 			Folder folder = new Folder(exchangeService);
-			folder.setDisplayName(reference.getFolderName());
+			folder.setDisplayName(reference.getObjectName());
 			folder.save(reference.getBaseFolderId());
 		} catch (Exception e) {
 			invalidateConnectionOnRelease = true;
-			throw new FileSystemException("cannot create folder ["+reference.getFolderName()+"]", e);
+			throw new FileSystemException("cannot create folder ["+reference.getObjectName()+"]", e);
 		} finally {
 			releaseConnection(exchangeService, invalidateConnectionOnRelease);
 		}
@@ -903,7 +902,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public void removeFolder(String folderName, boolean removeNonEmptyFolder) throws FileSystemException {
-		ExchangeFolderReference reference = asFolderReference(folderName);
+		ExchangeObjectReference reference = asObjectReference(folderName);
 		ExchangeService exchangeService = getConnection(reference);
 		boolean invalidateConnectionOnRelease = false;
 		try {
@@ -1056,14 +1055,14 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		service.setImpersonatedUserId(new ImpersonatedUserId(ConnectingIdType.SmtpAddress, mailbox));
 	}
 
-	private ExchangeFolderReference asFolderReference(String folderName) throws FileSystemException {
-		ExchangeFolderReference reference = new ExchangeFolderReference(folderName, getMailAddress(), null, getMailboxFolderSeparator());
+	private ExchangeObjectReference asObjectReference(String folderName) throws FileSystemException {
+		ExchangeObjectReference reference = new ExchangeObjectReference(folderName, getMailAddress(), basefolderId, getMailboxFolderSeparator());
 		reference.setBaseFolderId(getBaseFolderId(reference.getMailbox(), getBaseFolder()));
 
 		return reference;
 	}
 
-	private ExchangeService getConnection(ExchangeFolderReference reference) throws FileSystemException {
+	private ExchangeService getConnection(ExchangeObjectReference reference) throws FileSystemException {
 		ExchangeService service = super.getConnection();
 		setMailboxOnService(service, reference.getMailbox());
 

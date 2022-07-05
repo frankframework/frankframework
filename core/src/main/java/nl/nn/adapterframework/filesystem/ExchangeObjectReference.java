@@ -21,29 +21,29 @@ import org.apache.commons.lang3.StringUtils;
 import lombok.Getter;
 import microsoft.exchange.webservices.data.property.complex.FolderId;
 
-public class ExchangeFolderReference {
+public class ExchangeObjectReference {
 
 	private final @Getter String mailbox;
-	private final @Getter String folderName;
+	private final @Getter String objectName;
 	private final @Getter String originalReference;
 	private @Getter @Setter FolderId baseFolderId;
 
-	public ExchangeFolderReference(String folderName, String staticMailAddress, FolderId defaultBaseFolderId, String separator) {
-		if(folderName == null){
-			throw new IllegalArgumentException("Cannot create ExchangeFolderReference when folderName is null!");
+	public ExchangeObjectReference(String objectName, String staticMailAddress, FolderId defaultBaseFolderId, String separator) {
+		if(objectName == null){
+			throw new IllegalArgumentException("Cannot create ExchangeObjectReference when folderName is null!");
 		}
-		this.originalReference = folderName;
-		String[] items = StringUtils.split(folderName, separator);
+		this.originalReference = objectName;
+		String[] items = StringUtils.split(objectName, separator);
 		if (items.length > 1) {
 			this.mailbox = items[0];
-			this.folderName = items[1];
+			this.objectName = items[1];
 		} else {
 			if(staticMailAddress == null){
-				throw new IllegalArgumentException("Cannot create ExchangeFolderReference when staticMailAddress is null " +
-					"and folderName ["+folderName+"] does not contain separator ["+separator+"]!");
+				throw new IllegalArgumentException("Cannot create ExchangeObjectReference when staticMailAddress is null " +
+					"and objectName ["+objectName+"] does not contain separator ["+separator+"]!");
 			}
 			this.mailbox = staticMailAddress;
-			this.folderName = folderName;
+			this.objectName = objectName;
 			this.baseFolderId = defaultBaseFolderId;
 		}
 	}
