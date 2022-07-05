@@ -30,7 +30,7 @@ public class ExchangeObjectReference {
 
 	public ExchangeObjectReference(String objectName, String staticMailAddress, FolderId defaultBaseFolderId, String separator) {
 		if(objectName == null){
-			throw new IllegalArgumentException("Cannot create ExchangeObjectReference when folderName is null!");
+			throw new IllegalArgumentException("Cannot create ExchangeObjectReference when objectName is null!");
 		}
 		this.originalReference = objectName;
 		String[] items = StringUtils.split(objectName, separator);
