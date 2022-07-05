@@ -43,11 +43,11 @@ abstract class AbstractConvertor implements Convertor {
 
 	private static final Logger LOGGER = LogUtil.getLogger(AbstractConvertor.class);
 	private List<MediaType> supportedMediaTypes;
-	protected CisConfiguration options;
+	protected CisConfiguration configuration;
 	private static AtomicInteger atomicCount = new AtomicInteger(1);
 
-	protected AbstractConvertor(CisConfiguration options, MediaType... args) {
-		this.options = options;
+	protected AbstractConvertor(CisConfiguration configuration, MediaType... args) {
+		this.configuration = configuration;
 		supportedMediaTypes = Arrays.asList(args);
 	}
 
@@ -103,7 +103,7 @@ abstract class AbstractConvertor implements Convertor {
 		CisConversionResult result = new CisConversionResult();
 		File resultFile = null;
 		try {
-			resultFile = UniqueFileGenerator.getUniqueFile(getPdfOutputlocation(), this.getClass().getSimpleName(), "pdf");
+			resultFile = UniqueFileGenerator.getUniqueFile(configuration.getPdfOutputLocation(), this.getClass().getSimpleName(), "pdf");
 			result.setConversionOption(conversionOption);
 			result.setMediaType(mediaType);
 			result.setDocumentName(ConvertorUtil.createTidyNameWithoutExtension(filename));
@@ -124,10 +124,6 @@ abstract class AbstractConvertor implements Convertor {
 			result.setPdfResultFile(null);
 		}
 		return result;
-	}
-
-	protected String getPdfOutputlocation() {
-		return options.getPdfOutputlocation();
 	}
 
 	protected int getNumberOfPages(File file) throws IOException {
@@ -169,7 +165,7 @@ abstract class AbstractConvertor implements Convertor {
 
 		String fileNamePdf = String.format("conv_%s_%s_%05d%s", this.getClass().getSimpleName(),
 				format.format(new Date()), count, ".bin");
-		return new File(getPdfOutputlocation(), fileNamePdf);
+		return new File(configuration.getPdfOutputLocation(), fileNamePdf);
 	}
 
 	protected abstract boolean isPasswordException(Exception e);

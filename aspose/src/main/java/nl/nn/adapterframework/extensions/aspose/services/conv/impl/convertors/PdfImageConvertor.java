@@ -73,9 +73,9 @@ public class PdfImageConvertor extends AbstractConvertor {
 		MEDIA_TYPE_LOAD_FORMAT_MAPPING = Collections.unmodifiableMap(map);
 	}
 
-	protected PdfImageConvertor(CisConfiguration options) {
+	protected PdfImageConvertor(CisConfiguration configuration) {
 		// Give the supported media types.
-		super(options, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[MEDIA_TYPE_LOAD_FORMAT_MAPPING.size()]));
+		super(configuration, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[MEDIA_TYPE_LOAD_FORMAT_MAPPING.size()]));
 	}
 
 	@Override
@@ -98,7 +98,7 @@ public class PdfImageConvertor extends AbstractConvertor {
 
 			// Temporary file (because first we need to get image information (the size) and than load it into
 			// the pdf. The image itself can not be loaded into the pdf because it will be blured with orange.
-			tmpImageFile = UniqueFileGenerator.getUniqueFile(getPdfOutputlocation(), this.getClass().getSimpleName(), mediaType.getSubtype());
+			tmpImageFile = UniqueFileGenerator.getUniqueFile(configuration.getPdfOutputLocation(), this.getClass().getSimpleName(), mediaType.getSubtype());
 			image =  com.aspose.imaging.Image.load(message.asInputStream());
 			if(mediaType.getSubtype().equalsIgnoreCase(TIFF)) {
 				TiffFrame[] frames = ((TiffImage)image).getFrames();

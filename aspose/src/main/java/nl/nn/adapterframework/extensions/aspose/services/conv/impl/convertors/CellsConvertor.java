@@ -47,8 +47,8 @@ class CellsConvertor extends AbstractConvertor {
 		FILE_TYPE_MAP.put(XLSX_MEDIA_TYPE, "xlsx");
 	}
 
-	protected CellsConvertor(CisConfiguration options) {
-		super(options, XLS_MEDIA_TYPE, XLS_MEDIA_TYPE_MACRO_ENABLED, XLSX_MEDIA_TYPE);
+	protected CellsConvertor(CisConfiguration configuration) {
+		super(configuration, XLS_MEDIA_TYPE, XLS_MEDIA_TYPE_MACRO_ENABLED, XLSX_MEDIA_TYPE);
 	}
 
 	@Override

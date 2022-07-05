@@ -18,16 +18,16 @@ package nl.nn.adapterframework.extensions.aspose.services.conv;
 import lombok.Getter;
 
 public class CisConfiguration {
-	private @Getter boolean loadExternalResources;
+	private @Getter String fontsDirectory;
 	private @Getter String pdfOutputLocation;
 	private @Getter String charset;
-	private @Getter String fontsDirectory;
+	private @Getter boolean loadExternalResources;
 
 	public CisConfiguration(boolean loadExternalResources, String pdfOutputLocation, String charset, String fontsDirectory){
-		this.loadExternalResources = loadExternalResources;
+		this.fontsDirectory = fontsDirectory;
 		this.pdfOutputLocation = pdfOutputLocation;
 		this.charset = charset;
-		this.fontsDirectory = fontsDirectory;
+		this.loadExternalResources = loadExternalResources;
 	}
 
 }

@@ -32,8 +32,8 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class PdfStandaardConvertor extends AbstractConvertor {
 
-	protected PdfStandaardConvertor(CisConfiguration options) {
-		super(options, new MediaType("application", "pdf"));
+	protected PdfStandaardConvertor(CisConfiguration configuration) {
+		super(configuration, new MediaType("application", "pdf"));
 	}
 
 	@Override

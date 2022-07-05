@@ -76,8 +76,8 @@ class MailConvertor extends AbstractConvertor {
 		MEDIA_TYPE_LOAD_FORMAT_MAPPING = Collections.unmodifiableMap(map);
 	}
 
-	protected MailConvertor(CisConversionService cisConversionService, CisConfiguration options) {
-		super(options, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[MEDIA_TYPE_LOAD_FORMAT_MAPPING.size()]));
+	protected MailConvertor(CisConversionService cisConversionService, CisConfiguration configuration) {
+		super(configuration, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[MEDIA_TYPE_LOAD_FORMAT_MAPPING.size()]));
 		this.cisConversionService = cisConversionService;
 	}
 
@@ -107,7 +107,7 @@ class MailConvertor extends AbstractConvertor {
 			// Overrules the default documentname.
 			result.setDocumentName(ConvertorUtil.createTidyNameWithoutExtension(eml.getSubject()));
 
-			File tempMHtmlFile = UniqueFileGenerator.getUniqueFile(getPdfOutputlocation(), this.getClass().getSimpleName(), null);
+			File tempMHtmlFile = UniqueFileGenerator.getUniqueFile(configuration.getPdfOutputLocation(), this.getClass().getSimpleName(), null);
 			eml.getHeaders().set_Item("Date", new SimpleDateFormat(eMailHeaderDateFormat).format(eml.getDate()));
 			eml.save(tempMHtmlFile.getAbsolutePath(), options);
 

@@ -38,11 +38,11 @@ public class CisConversionServiceImpl implements CisConversionService {
 
 	private static final Logger LOGGER = LogUtil.getLogger(CisConversionServiceImpl.class);
 
-	private CisConfiguration options;
+	private CisConfiguration configuration;
 	private ConvertorFactory convertorFactory;
 	private MediaTypeValidator mediaTypeValidator = new MediaTypeValidator();
 
-	public CisConversionServiceImpl(CisConfiguration options){
+	public CisConversionServiceImpl(CisConfiguration configuration){
 		this.options = options;
 		convertorFactory = new ConvertorFactory(this, options);
 	}
