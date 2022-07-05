@@ -100,6 +100,17 @@
 			<groupId>com.sun.activation</groupId>
 			<artifactId>jakarta.activation</artifactId>
 		</dependency>
+		<dependency><!-- javax based dependency -->
+			<groupId>jakarta.xml.soap</groupId>
+			<artifactId>jakarta.xml.soap-api</artifactId>
+			<version>1.4.2</version>
+			<exclusions>
+				<exclusion>
+					<groupId>jakarta.activation</groupId>
+					<artifactId>jakarta.activation-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 
 		<dependency>
 			<groupId>org.apache.geronimo.specs</groupId>
@@ -634,7 +645,7 @@
 			<artifactId>jaxws-api</artifactId>
 			<version>2.3.0</version> <!-- 2.3.1 contains javax.activation 1.2.0 that conflicts with the jdk javax.activation (1.1.1) package. -->
 			<exclusions>
-				<exclusion>
+				<exclusion><!-- excluded because we use the jakarta based com.sun.xml.soap instead -->
 					<groupId>javax.xml.soap</groupId>
 					<artifactId>javax.xml.soap-api</artifactId>
 				</exclusion>
