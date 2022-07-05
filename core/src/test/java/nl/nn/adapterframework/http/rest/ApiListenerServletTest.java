@@ -583,7 +583,8 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void apiListenerShouldReturnEtag() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri="/etag1";
-		new ApiListenerBuilder(uri, Methods.GET).build();
+		new ApiListenerBuilder(uri, Methods.GET).setUpdateEtag(true).build();
+
 
 		Map<String, String> headers = new HashMap<String, String>();
 		headers.put("Accept", "application/json");
@@ -1047,6 +1048,11 @@ public class ApiListenerServletTest extends Mockito {
 				listener.setAuthenticationRoles("IbisObserver,TestRole");
 			}
 
+		}
+
+		public ApiListenerBuilder setUpdateEtag(boolean updateEtag) {
+			listener.setUpdateEtag(updateEtag);
+			return this;
 		}
 
 		public ApiListenerBuilder setAuthenticationRoles(String roles) {
