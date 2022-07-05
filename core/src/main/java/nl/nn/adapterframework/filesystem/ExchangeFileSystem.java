@@ -330,7 +330,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		if (StringUtils.isEmpty(folderName)) {
 			return baseFolderId;
 		}
-		ExchangeObjectReference targetFolder = asObjectReference(folderName);;
+		ExchangeObjectReference targetFolder = asObjectReference(folderName);
 		ExchangeService exchangeService = getConnection(targetFolder);
 		boolean invalidateConnectionOnRelease = false;
 		try {
@@ -350,7 +350,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	private FolderId findFolder(ExchangeService exchangeService, ExchangeObjectReference targetFolder, boolean createFolder) throws FileSystemException {
 		FindFoldersResults findFoldersResultsIn;
 		FolderView folderViewIn = new FolderView(10);
-		SearchFilter searchFilterIn = new SearchFilter.IsEqualTo(FolderSchema.DisplayName, targetFolder.getFolderName());
+		SearchFilter searchFilterIn = new SearchFilter.IsEqualTo(FolderSchema.DisplayName, targetFolder.getObjectName());
 		try {
 			if (targetFolder.getBaseFolderId()!=null) {
 				findFoldersResultsIn = exchangeService.findFolders(targetFolder.getBaseFolderId(), searchFilterIn, folderViewIn);
@@ -358,12 +358,12 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 				findFoldersResultsIn = exchangeService.findFolders(WellKnownFolderName.MsgFolderRoot, searchFilterIn, folderViewIn);
 			}
 		} catch (Exception e) {
-			throw new FileSystemException("Cannot find folder ["+targetFolder.getFolderName()+"]", e);
+			throw new FileSystemException("Cannot find folder ["+targetFolder.getObjectName()+"]", e);
 		}
 		if (findFoldersResultsIn.getTotalCount() == 0) {
-			if(log.isDebugEnabled()) log.debug("no folder found with name [" + targetFolder.getFolderName() + "] in basefolder ["+targetFolder.getBaseFolderId()+"]");
+			if(log.isDebugEnabled()) log.debug("no folder found with name [" + targetFolder.getObjectName() + "] in basefolder ["+targetFolder.getBaseFolderId()+"]");
 			if(createFolder){
-				if(log.isDebugEnabled()) log.debug("creating folder with name [" + targetFolder.getFolderName() + "] in basefolder ["+targetFolder.getBaseFolderId()+"]");
+				if(log.isDebugEnabled()) log.debug("creating folder with name [" + targetFolder.getObjectName() + "] in basefolder ["+targetFolder.getBaseFolderId()+"]");
 				createFolder(targetFolder.getOriginalReference());
 				return findFolder(exchangeService, targetFolder, false);
 			}
@@ -379,7 +379,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 					}
 				}
 			}
-			throw new FileSystemException("multiple folders found with name ["+ targetFolder.getFolderName() + "]");
+			throw new FileSystemException("multiple folders found with name ["+ targetFolder.getObjectName() + "]");
 		}
 		return findFoldersResultsIn.getFolders().get(0).getId();
 	}
