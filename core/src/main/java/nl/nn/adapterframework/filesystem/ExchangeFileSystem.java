@@ -523,13 +523,10 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public Message readFile(EmailMessage f, String charset) throws FileSystemException, IOException {
-		EmailMessage emailMessage;
+		EmailMessage emailMessage = f;
 
-		ExchangeService exchangeService = getConnection();
-		boolean invalidateConnectionOnRelease = false;
 		try {
-			setMailboxOnService(exchangeService, getReceivedBy(f));
-			if (f.getId()!=null) {
+			if (emailMessage.getId()!=null) {
 				PropertySet ps = new PropertySet(EmailMessageSchema.DateTimeReceived,
 						EmailMessageSchema.From, EmailMessageSchema.Subject,
 						EmailMessageSchema.DateTimeSent,
@@ -540,9 +537,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 				} else {
 					ps.add(ItemSchema.Body);
 				}
-				emailMessage = EmailMessage.bind(exchangeService, f.getId(), ps);
-			} else {
-				emailMessage = f;
+				emailMessage.load(ps);
 			}
 			if (isReadMimeContents()) {
 				MimeContent mc = emailMessage.getMimeContent();
@@ -550,13 +545,9 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			}
 			return new Message(MessageBody.getStringFromMessageBody(emailMessage.getBody()), FileSystemUtils.getContext(this, emailMessage));
 		} catch (FileSystemException e) {
-			invalidateConnectionOnRelease = true;
 			throw e;
 		} catch (Exception e) {
-			invalidateConnectionOnRelease = true;
 			throw new FileSystemException(e);
-		} finally {
-			releaseConnection(exchangeService, invalidateConnectionOnRelease);
 		}
 	}
 
@@ -679,13 +670,11 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public Map<String, Object> getAdditionalFileProperties(EmailMessage f) throws FileSystemException {
-		EmailMessage emailMessage;
-		ExchangeService exchangeService = getConnection();
-		boolean invalidateConnectionOnRelease = false;
+		EmailMessage emailMessage = f;
 		try {
-			f.load(PropertySet.FirstClassProperties);
-			emailMessage = f;
-			setMailboxOnService(exchangeService, getReceivedBy(f));
+			if (emailMessage.getId()!=null) {
+				emailMessage.load(PropertySet.FirstClassProperties);
+			}
 
 			Map<String, Object> result=new LinkedHashMap<String,Object>();
 			result.put(IMailFileSystem.TO_RECEPIENTS_KEY, asList(emailMessage.getToRecipients()));
@@ -709,7 +698,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 						if (curEntry instanceof List) {
 							values = (List<Object>)curEntry;
 						} else {
-							values = new LinkedList<Object>();
+							values = new LinkedList<>();
 							values.add(curEntry);
 							result.put(internetMessageHeader.getName(),values);
 						}
@@ -722,10 +711,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			result.put(IMailFileSystem.BEST_REPLY_ADDRESS_KEY, MailFileSystemUtils.findBestReplyAddress(result,getReplyAddressFields()));
 			return result;
 		} catch (Exception e) {
-			invalidateConnectionOnRelease = true;
 			throw new FileSystemException(e);
-		} finally {
-			releaseConnection(exchangeService, invalidateConnectionOnRelease);
 		}
 	}
 
@@ -757,17 +743,12 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public Iterator<Attachment> listAttachments(EmailMessage f) throws FileSystemException {
-		List<Attachment> result=new LinkedList<Attachment>();
-		ExchangeService exchangeService = getConnection();
-		boolean invalidateConnectionOnRelease = false;
+		List<Attachment> result = new LinkedList<Attachment>();
+		EmailMessage emailMessage = f;
 		try {
-			setMailboxOnService(exchangeService, getReceivedBy(f));
-			EmailMessage emailMessage;
-			if (f.getId()!=null) {
+			if (emailMessage.getId()!=null) {
 				PropertySet ps = new PropertySet(EmailMessageSchema.Attachments);
-				emailMessage = EmailMessage.bind(exchangeService, f.getId(), ps);
-			} else {
-				emailMessage = f;
+				emailMessage.load(ps);
 			}
 			AttachmentCollection attachmentCollection = emailMessage.getAttachments();
 			for (Attachment attachment : attachmentCollection) {
@@ -775,10 +756,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			}
 			return result.iterator();
 		} catch (Exception e) {
-			invalidateConnectionOnRelease = true;
 			throw new FileSystemException("cannot read attachments",e);
-		} finally {
-			releaseConnection(exchangeService, invalidateConnectionOnRelease);
 		}
 	}
 
