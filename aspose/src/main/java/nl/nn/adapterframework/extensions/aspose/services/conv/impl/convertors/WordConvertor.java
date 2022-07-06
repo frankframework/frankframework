@@ -20,8 +20,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
-import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
 
@@ -33,6 +33,7 @@ import com.aspose.words.LoadOptions;
 import com.aspose.words.SaveFormat;
 import com.aspose.words.SaveOptions;
 
+import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionService;
 import nl.nn.adapterframework.stream.Message;
@@ -46,12 +47,13 @@ import nl.nn.adapterframework.util.LogUtil;
 class WordConvertor extends AbstractConvertor {
 
 	private static final Logger LOGGER = LogUtil.getLogger(WordConvertor.class);
-	private static final Map<MediaType, LoadOptions> MEDIA_TYPE_LOAD_FORMAT_MAPPING;
+	private static final Map<MediaType, Supplier<LoadOptions>> MEDIA_TYPE_LOAD_FORMAT_MAPPING;
 
 	private CisConversionService cisConversionService;
+	private CisConfiguration cisConfiguration;
 
 	static {
-		Map<MediaType, LoadOptions> map = new HashMap<>();
+		Map<MediaType, Supplier<LoadOptions>> map = new HashMap<>();
 
 		// Mapping to loadOptions
 		map.put(new MediaType("application", "msword"), null);
@@ -59,28 +61,23 @@ class WordConvertor extends AbstractConvertor {
 		map.put(new MediaType("application", "vnd.ms-word.document.macroenabled.12"), null);
 
 		// The string value is defined in com.aspose.words.LoadFormat.
-		map.put(new MediaType("text", "plain"), new LoadOptions(LoadFormat.fromName("TEXT"), null, null));
-		map.put(new MediaType("text", "x-log"), new LoadOptions(LoadFormat.fromName("TEXT"), null, null));
-		map.put(new MediaType("text", "csv"), new LoadOptions(LoadFormat.fromName("TEXT"), null, null));
+		map.put(new MediaType("text", "plain"), ()->new LoadOptions(LoadFormat.fromName("TEXT"), null, null));
+		map.put(new MediaType("text", "x-log"), ()->new LoadOptions(LoadFormat.fromName("TEXT"), null, null));
+		map.put(new MediaType("text", "csv"), ()->new LoadOptions(LoadFormat.fromName("TEXT"), null, null));
 
 		// The string value is defined in com.aspose.words.LoadFormat.
-		map.put(new MediaType("application", "rtf"), new LoadOptions(LoadFormat.fromName("RTF"), null, null));
+		map.put(new MediaType("application", "rtf"), ()->new LoadOptions(LoadFormat.fromName("RTF"), null, null));
 
-		map.put(new MediaType("application", "xml"), new LoadOptions(LoadFormat.fromName("TEXT"), null, null));
-		map.put(new MediaType("text", "html"), new HtmlLoadOptions());
-		map.put(new MediaType("application", "xhtml+xml"), new HtmlLoadOptions());
+		map.put(new MediaType("application", "xml"), ()->new LoadOptions(LoadFormat.fromName("TEXT"), null, null));
+		map.put(new MediaType("text", "html"), ()->new HtmlLoadOptions());
+		map.put(new MediaType("application", "xhtml+xml"), ()->new HtmlLoadOptions());
 		MEDIA_TYPE_LOAD_FORMAT_MAPPING = Collections.unmodifiableMap(map);
 	}
 
-	protected WordConvertor(CisConversionService cisConversionService, CisConfiguration configuration) {
-		super(configuration, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[MEDIA_TYPE_LOAD_FORMAT_MAPPING.size()]));
+	protected WordConvertor(CisConversionService cisConversionService, CisConfiguration cisConfiguration) {
+		super(cisConfiguration, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[MEDIA_TYPE_LOAD_FORMAT_MAPPING.size()]));
 		this.cisConversionService = cisConversionService;
-		if(configuration.isLoadExternalResources()){
-			OfflineResourceLoader resourceLoader = new OfflineResourceLoader();
-			for(LoadOptions loadOptions : MEDIA_TYPE_LOAD_FORMAT_MAPPING.values()){
-				loadOptions.setResourceLoadingCallback(resourceLoader);
-			}
-		}
+		this.cisConfiguration = cisConfiguration;
 	}
 
 	@Override
@@ -91,7 +88,15 @@ class WordConvertor extends AbstractConvertor {
 		}
 
 		try (InputStream inputStream = message.asInputStream(charset)) {
-			LoadOptions loadOptions = MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType);
+			LoadOptions loadOptions=null;
+			Supplier<LoadOptions> loadOptionsSupplier = MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType);
+			if (loadOptionsSupplier!=null) {
+				loadOptions = loadOptionsSupplier.get();
+				if(!cisConfiguration.isLoadExternalResources()){
+					OfflineResourceLoader resourceLoader = new OfflineResourceLoader();
+					loadOptions.setResourceLoadingCallback(resourceLoader);
+				}
+			}
 
 			Document doc = new Document(inputStream, loadOptions);
 			new Fontsetter(cisConversionService.getFontsDirectory()).setFontSettings(doc);
