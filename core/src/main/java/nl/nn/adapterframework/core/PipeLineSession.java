@@ -206,6 +206,21 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	}
 
 	/**
+	 * Retrieves a <code>Boolean</code> value from the PipeLineSession
+	 * @param key the referenced key
+	 * @return Boolean
+	 */
+	public Boolean getBoolean(String key) {
+		Object ob = this.get(key);
+		if (ob == null) return null;
+
+		if(ob instanceof Boolean) {
+			return (Boolean) ob;
+		}
+		return this.getString(key).equalsIgnoreCase("true");
+	}
+
+	/**
 	 * Retrieves an <code>int</code> value from the PipeLineSession
 	 * @param key the referenced key
 	 * @param defaultValue the value to return when the key cannot be found
