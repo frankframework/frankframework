@@ -75,7 +75,7 @@ class WordConvertor extends AbstractConvertor {
 	protected WordConvertor(CisConversionService cisConversionService, CisConfiguration configuration) {
 		super(configuration, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[MEDIA_TYPE_LOAD_FORMAT_MAPPING.size()]));
 		this.cisConversionService = cisConversionService;
-		if(!configuration.isLoadExternalResources()){
+		if(configuration.isLoadExternalResources()){
 			OfflineResourceLoader resourceLoader = new OfflineResourceLoader();
 			for(LoadOptions loadOptions : MEDIA_TYPE_LOAD_FORMAT_MAPPING.values()){
 				loadOptions.setResourceLoadingCallback(resourceLoader);
