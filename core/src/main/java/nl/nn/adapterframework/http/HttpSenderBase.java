@@ -457,6 +457,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		}
 
 		httpClientBuilder.setConnectionManager(connectionManager);
+		httpClientBuilder.setKeepAliveStrategy(new LimitedClientConnectionKeepAliveStrategy(getConnectionTimeToLive()));
 
 		if (transformerPool!=null) {
 			try {
