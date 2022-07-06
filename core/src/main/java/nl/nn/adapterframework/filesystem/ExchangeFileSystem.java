@@ -496,11 +496,12 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		if (!isOpen()) {
 			return -1;
 		}
-		FolderId folderId = findFolder(foldername);
+		ExchangeObjectReference reference = asObjectReference(foldername);
+		ExchangeService exchangeService = getConnection(reference);
+		FolderId folderId = findFolder(exchangeService, reference);
 		if (folderId==null) {
 			throw new FileSystemException("Cannot find folder ["+foldername+"]");
 		}
-		ExchangeService exchangeService = getConnection();
 		boolean invalidateConnectionOnRelease = false;
 		try {
 			Folder folder = Folder.bind(exchangeService,folderId);
