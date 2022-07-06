@@ -30,6 +30,8 @@ import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.util.Assert;
 
+import nl.nn.adapterframework.configuration.IbisManager;
+
 /**
  * We're using AnnotationUtils.findAnnotation(method, Deprecated.class);
  * This class has been rewritten in Spring 5 breaking inherited-native java-annotation lookups on interfaces.
@@ -232,6 +234,7 @@ public class TestAnnotationUtils {
 			if(interfaze.getCanonicalName().startsWith(frankFrameworkPackage)) {
 				for(Method method : interfaze.getDeclaredMethods()) {
 					for(Annotation annotation : method.getAnnotations()) {
+						if(IbisManager.class.getCanonicalName().equals(interfaze.getCanonicalName())) continue;
 						if(AnnotationFilter.PLAIN.matches(annotation) || AnnotationUtils.isInJavaLangAnnotationPackage(annotation)) {
 							fail("Found java annotation ["+annotation+"] on interface ["+interfaze.getTypeName()+"], is not seen by digester because it uses Spring AnnotationUtils");
 						}
