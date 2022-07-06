@@ -43,8 +43,8 @@ public class CisConversionServiceImpl implements CisConversionService {
 	private MediaTypeValidator mediaTypeValidator = new MediaTypeValidator();
 
 	public CisConversionServiceImpl(CisConfiguration configuration){
-		this.options = options;
-		convertorFactory = new ConvertorFactory(this, options);
+		this.configuration = configuration;
+		convertorFactory = new ConvertorFactory(this, configuration);
 	}
 
 	@Override
@@ -71,7 +71,7 @@ public class CisConversionServiceImpl implements CisConversionService {
 			} else {
 				long startTime = System.currentTimeMillis();
 				// Convertor found, convert the file
-				result = convertor.convertToPdf(mediaType, filename, message, conversionOption, options.getCharset());
+				result = convertor.convertToPdf(mediaType, filename, message, conversionOption, configuration.getCharset());
 				if(LOGGER.isDebugEnabled()) LOGGER.debug(String.format("Convert (in %d msec): mediatype: %s, filename: %s, attachmentoptions: %s", System.currentTimeMillis() - startTime, mediaType, filename, conversionOption));
 			}
 		}
@@ -113,7 +113,7 @@ public class CisConversionServiceImpl implements CisConversionService {
 
 	@Override
 	public String getFontsDirectory() {
-		return options.getFontsDirectory();
+		return configuration.getFontsDirectory();
 	}
 
 }
