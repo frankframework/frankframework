@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
 
@@ -40,7 +41,7 @@ import nl.nn.adapterframework.util.LogUtil;
 /**
  * Converts the files which are required and supported by the aspose words
  * library.
- * 
+ *
  */
 class WordConvertor extends AbstractConvertor {
 
@@ -71,9 +72,15 @@ class WordConvertor extends AbstractConvertor {
 		MEDIA_TYPE_LOAD_FORMAT_MAPPING = Collections.unmodifiableMap(map);
 	}
 
-	protected WordConvertor(CisConversionService cisConversionService, String pdfOutputLocation) {
-		super(pdfOutputLocation, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[MEDIA_TYPE_LOAD_FORMAT_MAPPING.size()]));
+	protected WordConvertor(CisConversionService cisConversionService, CisConfiguration configuration) {
+		super(configuration, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[MEDIA_TYPE_LOAD_FORMAT_MAPPING.size()]));
 		this.cisConversionService = cisConversionService;
+		if(!configuration.isLoadExternalResources()){
+			OfflineResourceLoader resourceLoader = new OfflineResourceLoader();
+			for(LoadOptions loadOptions : MEDIA_TYPE_LOAD_FORMAT_MAPPING.values()){
+				loadOptions.setResourceLoadingCallback(resourceLoader);
+			}
+		}
 	}
 
 	@Override
@@ -84,7 +91,9 @@ class WordConvertor extends AbstractConvertor {
 		}
 
 		try (InputStream inputStream = message.asInputStream(charset)) {
-			Document doc = new Document(inputStream, MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType));
+			LoadOptions loadOptions = MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType);
+
+			Document doc = new Document(inputStream, loadOptions);
 			new Fontsetter(cisConversionService.getFontsDirectory()).setFontSettings(doc);
 			SaveOptions saveOptions = SaveOptions.createSaveOptions(SaveFormat.PDF);
 			saveOptions.setMemoryOptimization(true);
