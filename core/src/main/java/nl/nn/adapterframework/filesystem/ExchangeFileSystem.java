@@ -912,8 +912,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		try {
 			return emailMessage.getReceivedBy().getAddress();
 		} catch (ServiceLocalException e) {
-			log.warn("Could not get ReceivedBy Address: "+ e.getMessage());
-			return null;
+			throw new FileSystemException("Could not extract ReceivedBy address", e);
 		}
 	}
 
