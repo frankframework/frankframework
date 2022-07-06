@@ -18,6 +18,8 @@ package nl.nn.adapterframework.pipes;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import lombok.Setter;
+import nl.nn.adapterframework.configuration.AdapterManager;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -37,12 +39,16 @@ import nl.nn.adapterframework.util.StreamUtil;
  */
 public class WsdlGeneratorPipe extends FixedForwardPipe {
 	private String from = "parent";
+	private @Setter AdapterManager adapterManager;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (!"parent".equals(getFrom()) && !"input".equals(getFrom())) {
 			throw new ConfigurationException("from should either be parent or input");
+		}
+		if(adapterManager == null) {
+			throw new ConfigurationException("unable to find AdapterManager");
 		}
 	}
 
@@ -53,7 +59,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		try {
 			if ("input".equals(getFrom())) {
 				String adapterName = message.asString();
-				adapter = getAdapter().getConfiguration().getIbisManager().getRegisteredAdapter(adapterName);
+				adapter = adapterManager.getAdapter(adapterName);
 				if (adapter == null) {
 					throw new PipeRunException(this, "Could not find adapter: " + adapterName);
 				}
@@ -61,7 +67,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 				adapter = getPipeLine().getAdapter();
 			}
 		} catch (IOException e) {
-			throw new PipeRunException(this, "Could not determine adapter name", e); 
+			throw new PipeRunException(this, "Could not determine adapter name", e);
 		}
 		try {
 			String generationInfo = "at " + RestListenerUtils.retrieveRequestURL(session);
@@ -71,7 +77,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			wsdl.wsdl(outputStream, null);
 			result = outputStream.toString(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 		} catch (Exception e) {
-			throw new PipeRunException(this, "Could not generate WSDL for adapter [" + adapter.getName() + "]", e); 
+			throw new PipeRunException(this, "Could not generate WSDL for adapter [" + adapter.getName() + "]", e);
 		}
 		return new PipeRunResult(getSuccessForward(), result);
 	}
@@ -80,7 +86,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		return from;
 	}
 
-	@IbisDoc({"either parent (adapter of pipeline which contains this pipe) or input (name of adapter specified by input of pipe)", "parent"})
+	@IbisDoc({"either parent (adapter of pipeline which contains this pipe) or input (name of adapter specified by input of pipe), adapter must be within the same Configuration", "parent"})
 	public void setFrom(String from) {
 		this.from = from;
 	}
