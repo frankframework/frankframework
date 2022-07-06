@@ -75,10 +75,11 @@ Upcoming (7.7)
 - JsonPipe produces json without root element by default. The previous behaviour can be obtained by setting version="1"
 - CompareStringPipe xml=true, now does an (actual) XML compare; ignoring attribute order and whitespaces.
 - Remove Struts management console (including the IAF-WebControl Configuration)
-- Server healthcheck at /iaf/api/server/health is now publicly accessible. 
+- Server healthcheck at /iaf/api/server/health is now publicly accessible.
   It will return 200 when all adapters are up, 503 when one or more are stopped. Previously, 401 was returned in all cases when called unauthenticated
-- Property references like `${property}` in configuration files are now resolved *after* the XML is parsed, and should therefor no longer contain characters that 
+- Property references like `${property}` in configuration files are now resolved *after* the XML is parsed, and should therefor no longer contain characters that
   are invalid in XML encoded as entities. So characters like '<', '>' and '"' should appear 'as is' in properties, not as '&lt;', '&gt' and '&quot'.
+- Etag generation for ApiListeners is not enabled anymore by default. If etag generation and handling is required, it can be enabled by setting updateEtag="true".
 
 
 7.6.2
@@ -178,7 +179,7 @@ Upcoming (7.7)
 - Add SignaturePipe
 - Support automatic closing of streams
 - Support generation of SQL update script from Liquibase
-- Rework Locker 
+- Rework Locker
 - Full DBMS support for H2, Oracle, MSSql, MySql, MariaDB and PostgreSQL
 - Use Message as primary input-output object for, e.g. for Pipes and Senders
 - Introduce RetryFlag, set as session variable if a message is retried
@@ -336,8 +337,8 @@ Upcoming (7.7)
 - Make attribute firstPipe in PipeLine optional. When empty, the first Pipe in the Pipeline configuration
   is considedred to be the first. Similarly the success forward defaults to the next Pipe in the PipeLine.
 - Enable to specify a namespace without a prefix in attribute namespaceDefs, to help simplify xpathExpressions e.g. into '/root/sub' instead of '/\*[local-name()='root']/\*[local-name()='sub'.
-- Make ForEachChildElementPipe optionally streaming when using elementXPathExpression too. N.B. This requires an XsltProcessor that properly supports streaming. The versions of Saxon and Xalan that we currently employ do not; 
-  Add options 'targetElement' and 'containerElement' to ForEachChildElementPipe to enable processing of very large files, avoiding memory problems that still exist with 
+- Make ForEachChildElementPipe optionally streaming when using elementXPathExpression too. N.B. This requires an XsltProcessor that properly supports streaming. The versions of Saxon and Xalan that we currently employ do not;
+  Add options 'targetElement' and 'containerElement' to ForEachChildElementPipe to enable processing of very large files, avoiding memory problems that still exist with
   xpath expressions for very large files;
   Make Xslt streaming default for xsltVersion=1
 - Bugfix (un)loading configs in JmxMbeanHelper
@@ -373,7 +374,7 @@ Upcoming (7.7)
 - Fix and Cleanup MailSender and MailSenderBase
 - Upgrade ladybug to version 2.0.9
 - Namespace support for skip empty tags
-- Base64 encode and decode option for FileSystemPipe, FileSystemSender and descendants 
+- Base64 encode and decode option for FileSystemPipe, FileSystemSender and descendants
 - Add option to rotate by size, number of files or number of days to FileSystemPipe, FileSystemSender and descendants
 - FileSystemSenders now return an InputStream when action=read
 - XsltSender, XsltPipe, JsonXsltSender, JsonXsltPipe accept streaming inputs
@@ -388,7 +389,7 @@ Upcoming (7.7)
 
 ### Non backwards compatible changes
 
-- Make DirectoryListener extend FileSystemListener. It no longer supports attributes fileList, 
+- Make DirectoryListener extend FileSystemListener. It no longer supports attributes fileList,
   fileListForcedAfter, outputFilenamePattern, passWithoutDirectory, numberOfBackups and random.
 - Remove attribute 'count' from result of iterating pipes like ForEachChildElementPipe, to enable streaming output.
 - The MailSender displayName element no longer exist, please use attribute `name` on the from/to elements instead.
@@ -516,7 +517,7 @@ Upcoming (7.7)
 - Fix some bugs in CMIS error handling
 - Update to latest Ladybug Test Tool version
     - Refactor code for errorLabel, okayLabel and getReport
-    - Fix NPE on Open report (from Test tab), Edit, Save 
+    - Fix NPE on Open report (from Test tab), Edit, Save
     - Show reports in child folders too in Test tab
     - Run reports in Test tab in background
     - Add (de)select all to Test tab
@@ -731,7 +732,7 @@ Upcoming (7.7)
 - Fix jsonpipe adding root elements when direction is xml2json
 - Fix JdbcQuery, TestService and SendJmsMessage pages to log messages when sec.log.includeMessage=true
 - First steps towards unit testing without application server
-- Add attribute soapBodyNamespace to WsdlXmlValidator 
+- Add attribute soapBodyNamespace to WsdlXmlValidator
 - Add Akamai Sender module
 - Support multiple configuration directories for DirectoryClassLoader
 - Add rootDir property to AkamaiSender
@@ -795,7 +796,7 @@ Upcoming (7.7)
 - Show "Test a PipeLine" pipeline logging (bugfix)
 - Hide strings in IBIS console messages too (same as in logging)
 - Move config warning "Element not in list of available root elements" to startup
-- Larva: add possibility to overwrite windiff command 
+- Larva: add possibility to overwrite windiff command
 - Add IbisWebService constraint to /rest/* endpoint
 - Remove "webContent.dir" bean from spring configuration
 - Larva: add possiblity to autosave TestTool differences
@@ -824,7 +825,7 @@ Upcoming (7.7)
 - Add attribute mtomEnabled to HttpSender (to support MTOM in requests)
 - Introduction of the pipe IfMultipart
 - Add attribute elseForwardOnEmptyInput to IsXmlIfPipe
-- Add attributes extractFirstStringPart and multipartXmlSessionKey to StreamPipe (to support multipart) 
+- Add attributes extractFirstStringPart and multipartXmlSessionKey to StreamPipe (to support multipart)
 - Fix splitting messagingLayer made configurable in EsbSoapWrapper
 - Add commons-validator dependency for Jboss servers
 - Fix fieldnames in query result are now automatically capitalized
@@ -840,7 +841,7 @@ Upcoming (7.7)
 - Avoid NPE in "Show Scheduler Status"
 - Add IbisTester role to IBIS LoginFilter
 - Add queueConnectionFactoryName to XmlJmsBrowserSender possible input elements
-- Make xmlStreamWriter in ScanTibcoSolutionPipe use central 
+- Make xmlStreamWriter in ScanTibcoSolutionPipe use central
 - Create XMLStreamWriter with XmlUtils.OUTPUT_FACTORY in all classes (ScanTibcoSolutionPipe didn't use XmlUtils.OUTPUT_FACTORY yet)
 - Set log.dir automatically for Vanilla/Eclipse Tomcat too
 - Add testtool.enabled property to enable the testtool on ACC and PRD
@@ -861,7 +862,7 @@ Upcoming (7.7)
 - Add custom SSLSocketFactory to CmisSender
 - Fix JDBC driver default date format to yyyy-MM-dd
 - Fix JDBC driver default timestamp format to yyyy-MM-dd HH:mm:ss
-- Bugfix in ShowIbisstoreSummary "(SQLServerException) SQLState [S00010], errorCode [195]: 'to_char' is not a recognized built-in function name." 
+- Bugfix in ShowIbisstoreSummary "(SQLServerException) SQLState [S00010], errorCode [195]: 'to_char' is not a recognized built-in function name."
 - Add DllServiceDispatcher see [ibis-servicedispatcher](https://github.com/ibissource/ibis-servicedispatcher/commit/f759f897b063757bcc7a50229715035159d79dd5)
 - Bugfix in ShowIbisstoreSummary (caused 2014-11-26)
 - Fix connection leak in DomainTransformerPipe
@@ -937,7 +938,7 @@ Upcoming (7.7)
 - Add DatabaseClassLoader
 - Improve special class loaders error handling
 - Instantiate all query senders with Spring (make Spring aware of all database actions) (make defaultDataSource of example webapp work for all database actions)
-- Add hideMethod attribute for masking strings in ErrorStore and MessageLog 
+- Add hideMethod attribute for masking strings in ErrorStore and MessageLog
 - Add hostname property to AppConstants properties
 - Improve PassordHash with PBKDF2WithHmacSHA1 after consulting security (SHA1 is not a problem in the context of PBKDF2, see OWASP.org)
 - Add roundsSessionKey attribute PasswordHashPipe and set to default value for Rounds to 40.000
@@ -1101,7 +1102,7 @@ Upcoming (7.7)
     - Merge springIbisTestTool.xml and springIbisTestToolTibet2.xml from IJA_Tibet2 (solve different rerunRoles on echo2Application in springIbisTestTool.xml in a different way)
     - Disable "Rerun didn't trigger any checkpoint" check when report generator is not enabled
     - Fix scope for instances of Views and View which implements BeanParent and should be prototype. Because View was singleton the isChangeReportGeneratorEnabledAllowed() call in TibetView was called on the wrong Echo2Application instance
-- Add possibility to write a record with specified sessionKeys to security log file after a successful pipe run 
+- Add possibility to write a record with specified sessionKeys to security log file after a successful pipe run
 - `(end of v6.1-RC2)`
 - Bugfix growing thread names (in logging and Ladybug TestTool)
 - Change xsd schemaLocations in spring files to classpath protocol to prevent 'failed to read schema document'
@@ -1115,7 +1116,7 @@ Upcoming (7.7)
 ### Non backwards compatible changes
 
 - Don't add namespace to schema by default when targetNamespace present and default namespace is not. This is probably rarely the case. It doesn't make sense to change the default value in this case (only). Explicitly set addNamespaceToSchema to true when needed
-	- ``src-resolve.4.1: Error resolving component '...'. It was detected that '...' has no namespace, but components with no target namespace are not referenceable from schema document 'null'. If '...' is intended to have a namespace, perhaps a prefix needs to be provided. If it is intended that '...' has no namespace, then an 'import' without a "namespace" attribute should be added to 'null'.``  
+	- ``src-resolve.4.1: Error resolving component '...'. It was detected that '...' has no namespace, but components with no target namespace are not referenceable from schema document 'null'. If '...' is intended to have a namespace, perhaps a prefix needs to be provided. If it is intended that '...' has no namespace, then an 'import' without a "namespace" attribute should be added to 'null'.``
 - When present remove springIbisTestTool[name].xml and add property ibistesttool.custom=[name] to DeploymentSpecifics.properties. The springIbisTestTool[name].xml should now be present in IAF jars, mail springIbisTestTool[name].xml to Jaco or Peter to double check
 
 
@@ -1138,7 +1139,7 @@ Upcoming (7.7)
 - Added parameter pattern 'uuid' (which can be used instead of the combination of 'hostname' and 'uid')
 - Add preemptive authentication to prevent “httpstatus 407: Proxy Authentication Required" when proxy is used without an user in a http call
 - Make the IBIS console function "Browse a Jdbc table" capable for MQ SQL (next to Oracle)
-- Performance fix for the IBIS console function "Browse a Jdbc table" 
+- Performance fix for the IBIS console function "Browse a Jdbc table"
 - Add queue info when getting queue messages (currently used in "ShowTibcoQueues" in IJA_TiBeT2)
 - Add possibility to wait for a database row to be locked (instead of always skipping locked records)
 - Add functionality to temporarily move and/or chomp received messages for memory purposes
@@ -1299,11 +1300,11 @@ Upcoming (7.7)
 ### Non backwards compatible changes
 
 - The use of 'xsd:import' and 'xsd:include' in xsd files in XmlValidator (and subclasses) has become more strictly.
-	- ~~``sch-props-correct.2: A schema cannot contain two global components with the same name; this schema contains two occurrences of 'http://nn/nl/XSD/Generic/MessageHeader/1, ...'.``  
+	- ~~``sch-props-correct.2: A schema cannot contain two global components with the same name; this schema contains two occurrences of 'http://nn/nl/XSD/Generic/MessageHeader/1, ...'.``
 	When using the EsbSoapValidator, don't import the CommonMessageHeader xsd in a main xsd but only import the namespace (because this xsd already exists within IAF). For using a deviating CommonMessageHeader xsd, use the SoapValidator.~~
-	- ``src-resolve: Cannot resolve the name 'cmh:Result' to a(n) 'element declaration' component.``  
+	- ``src-resolve: Cannot resolve the name 'cmh:Result' to a(n) 'element declaration' component.``
 	For validating ESB SOAP messages use the EsbSoapValidator and not the XmlValidator.
-	- ``Circural dependencies between schemas.``  
+	- ``Circural dependencies between schemas.``
 	Unused imported or included schemas can be ignored by using the validator attributes importedSchemaLocationsToIgnore and importedNamespacesToIgnore.
 - The use of 'xsd:redefine' doesn't work for schemaLocation anymore (still works for schema). It's deprecated in the latest specification (http://www.w3.org/TR/xmlschema11-1/#modify-schema) and difficult to support in WSDL generation.
 - (from RC5) From now all files in the log directory are in lower cases. This can affect applications which are case sensitive and use one or more files from the IBIS log directory.
@@ -1316,7 +1317,7 @@ Upcoming (7.7)
 [Commits](https://github.com/ibissource/iaf/compare/v5.6...v5.6.1)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v5.6.1)](https://travis-ci.org/ibissource/iaf)
 
-- Fixed bug in EsbSoapWrapper where Result element was inserted instead of Status element 
+- Fixed bug in EsbSoapWrapper where Result element was inserted instead of Status element
 
 
 
