@@ -1038,7 +1038,11 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	private void setMailboxOnService(ExchangeService service, String mailbox){
 		service.getHttpHeaders().put(ANCHOR_HEADER, mailbox);
-		service.setImpersonatedUserId(new ImpersonatedUserId(ConnectingIdType.SmtpAddress, mailbox));
+
+		// only set impersonated user in oauth situation
+		if (client != null) {
+			service.setImpersonatedUserId(new ImpersonatedUserId(ConnectingIdType.SmtpAddress, mailbox));
+		}
 	}
 
 	private ExchangeObjectReference asObjectReference(String objectName) throws FileSystemException {
