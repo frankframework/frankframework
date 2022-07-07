@@ -88,7 +88,7 @@ public class LarvaServlet extends HttpServletBase {
 		};
 
 		if(req.getPathInfo() == null) {
-			resp.sendRedirect(req.getContextPath() + SERVLET_PATH);
+			resp.sendRedirect(req.getContextPath() + SERVLET_PATH + "index.jsp"); //WebSphere removes the last slash of an url
 			return;
 		}
 
