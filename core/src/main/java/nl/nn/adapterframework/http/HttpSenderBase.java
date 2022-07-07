@@ -806,7 +806,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	public void setTimeout(int i) {
 		timeout = i;
 	}
-	
+
 	@IbisDoc({"The maximum number of concurrent connections", "10"})
 	public void setMaxConnections(int i) {
 		maxConnections = i;
