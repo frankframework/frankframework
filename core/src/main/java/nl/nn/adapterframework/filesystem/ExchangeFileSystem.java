@@ -330,7 +330,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		if (StringUtils.isEmpty(folderName)) {
 			return baseFolderId;
 		}
-		ExchangeObjectReference targetFolder = asObjectReference(folderName);
+		ExchangeObjectReference targetFolder = asObjectReference(folderName, baseFolderId);
 		ExchangeService exchangeService = getConnection(targetFolder);
 		boolean invalidateConnectionOnRelease = false;
 		try {
@@ -1035,6 +1035,15 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		ExchangeObjectReference reference = new ExchangeObjectReference(objectName, getMailAddress(), basefolderId, getMailboxObjectSeparator());
 		if(!reference.isStatic()){
 			reference.setBaseFolderId(getBaseFolderId(reference.getMailbox(), getBaseFolder()));
+		}
+
+		return reference;
+	}
+
+	private ExchangeObjectReference asObjectReference(String objectName, FolderId baseFolderId){
+		ExchangeObjectReference reference = new ExchangeObjectReference(objectName, getMailAddress(), baseFolderId, getMailboxObjectSeparator());
+		if(!reference.isStatic()){
+			reference.setBaseFolderId(baseFolderId);
 		}
 
 		return reference;
