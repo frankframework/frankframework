@@ -191,6 +191,10 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private @Getter int timeout = 10000;
 	private @Getter int maxConnections = 10;
 	private @Getter int maxExecuteRetries = 1;
+	private @Getter boolean staleChecking=true;
+	private @Getter int staleTimeout = 5000; // [ms]
+	private @Getter int connectionTimeToLive = 900; // [s]
+	private @Getter int connectionIdleTimeout = 10; // [s]
 	private HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
 	private HttpClientContext httpClientContext = HttpClientContext.create();
 	private @Getter CloseableHttpClient httpClient;
@@ -236,9 +240,6 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 	private @Getter String headersParams="";
 	private @Getter boolean followRedirects=true;
-	private @Getter boolean staleChecking=true;
-	private @Getter int staleTimeout = 5000;
-	private @Getter int connectionTimeToLive = 900;
 	private @Getter boolean xhtml=false;
 	private @Getter String styleSheetName=null;
 	private @Getter String protocol=null;
@@ -449,15 +450,15 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		connectionManager.setMaxTotal(getMaxConnections());
 		connectionManager.setDefaultMaxPerRoute(getMaxConnections());
 
-		log.debug(getLogPrefix()+"set up connectionManager, inactivity checking ["+connectionManager.getValidateAfterInactivity()+"]");
-		boolean staleChecking = (connectionManager.getValidateAfterInactivity() >= 0);
-		if (staleChecking != isStaleChecking()) {
+		if (isStaleChecking()) {
 			log.info(getLogPrefix()+"set up connectionManager, setting stale checking ["+isStaleChecking()+"]");
 			connectionManager.setValidateAfterInactivity(getStaleTimeout());
 		}
 
 		httpClientBuilder.setConnectionManager(connectionManager);
-		httpClientBuilder.setKeepAliveStrategy(new LimitedClientConnectionKeepAliveStrategy(getConnectionTimeToLive()));
+		httpClientBuilder.setKeepAliveStrategy(new LimitedClientConnectionKeepAliveStrategy(getConnectionIdleTimeout()));
+		httpClientBuilder.evictExpiredConnections();
+		httpClientBuilder.evictIdleConnections(getConnectionIdleTimeout(), TimeUnit.SECONDS);
 
 		if (transformerPool!=null) {
 			try {
@@ -778,7 +779,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		url = string;
 	}
 
-	@IbisDoc({"parameter that is used to obtain url; overrides url-attribute.", "url"})
+	@IbisDoc({"Parameter that is used to obtain URL; overrides url-attribute.", "url"})
 	public void setUrlParam(String urlParam) {
 		this.urlParam = urlParam;
 	}
@@ -791,27 +792,27 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	/**
 	 * This is a superset of mimetype + charset + optional payload metadata.
 	 */
-	@IbisDoc({"content-type (superset of mimetype + charset) of the request, for POST and PUT methods", "text/html"})
+	@IbisDoc({"Content-Type (superset of mimetype + charset) of the request, for POST and PUT methods", "text/html"})
 	public void setContentType(String string) {
 		contentType = string;
 	}
 
-	@IbisDoc({"charset of the request. Typically only used on PUT and POST requests.", "UTF-8"})
+	@IbisDoc({"Charset of the request. Typically only used on PUT and POST requests.", "UTF-8"})
 	public void setCharSet(String string) {
 		charSet = string;
 	}
 
-	@IbisDoc({"timeout in ms of obtaining a connection/result. 0 means no timeout", "10000"})
+	@IbisDoc({"Timeout in ms of obtaining a connection/result. 0 means no timeout", "10000"})
 	public void setTimeout(int i) {
 		timeout = i;
 	}
-
-	@IbisDoc({"the maximum number of concurrent connections", "10"})
+	
+	@IbisDoc({"The maximum number of concurrent connections", "10"})
 	public void setMaxConnections(int i) {
 		maxConnections = i;
 	}
 
-	@IbisDoc({"the maximum number of times it the execution is retried", "1"})
+	@IbisDoc({"The maximum number of times it the execution is retried", "1"})
 	public void setMaxExecuteRetries(int i) {
 		maxExecuteRetries = i;
 	}
@@ -889,22 +890,22 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	}
 
 
-	@IbisDoc({"proxy host", " "})
+	@IbisDoc({"Proxy host"})
 	public void setProxyHost(String string) {
 		proxyHost = string;
 	}
 
-	@IbisDoc({"proxy port", "80"})
+	@IbisDoc({"Proxy port", "80"})
 	public void setProxyPort(int i) {
 		proxyPort = i;
 	}
 
-	@IbisDoc({"alias used to obtain credentials for authentication to proxy", ""})
+	@IbisDoc({"Alias used to obtain credentials for authentication to proxy", ""})
 	public void setProxyAuthAlias(String string) {
 		proxyAuthAlias = string;
 	}
 
-	@IbisDoc({"proxy username", " "})
+	@IbisDoc({"Proxy username", " "})
 	public void setProxyUsername(String string) {
 		proxyUsername = string;
 	}
@@ -914,12 +915,12 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		setProxyUsername(string);
 	}
 
-	@IbisDoc({"proxy password", " "})
+	@IbisDoc({"Proxy password", " "})
 	public void setProxyPassword(String string) {
 		proxyPassword = string;
 	}
 
-	@IbisDoc({"proxy realm", " "})
+	@IbisDoc({"Proxy realm", " "})
 	public void setProxyRealm(String string) {
 		proxyRealm = StringUtils.isNotEmpty(string) ? string : null;
 	}
@@ -1064,7 +1065,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		staleChecking = b;
 	}
 
-	@IbisDoc({"Used when StaleChecking=<code>true</code>. Timeout when stale connections should be closed.", "5000 ms"})
+	@IbisDoc({"Used when StaleChecking=<code>true</code>. Timeout after which an idle connection will be validated before being used.", "5000 ms"})
 	public void setStaleTimeout(int timeout) {
 		staleTimeout = timeout;
 	}
@@ -1072,6 +1073,11 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	@IbisDoc({"Maximum Time to Live for connections in the pool. No connection will be re-used past its timeToLive value.", "900 s"})
 	public void setConnectionTimeToLive(int timeToLive) {
 		connectionTimeToLive = timeToLive;
+	}
+
+	@IbisDoc({"Maximum Time for connection to stay idle in the pool. Connections that are idle longer will periodically be evicted from the pool", "10 s"})
+	public void setConnectionIdleTimeout(int idleTimeout) {
+		connectionIdleTimeout = idleTimeout;
 	}
 
 	@IbisDoc({"If <code>true</code>, the HTML response is transformed to XHTML", "false"})
