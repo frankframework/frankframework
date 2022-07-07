@@ -240,7 +240,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	/**
 	 * Automatically generate and validate etags
-	 * @ff.default <code>true</code>
+	 * @ff.default <code>false</code>
 	 */
 	public void setUpdateEtag(boolean updateEtag) {
 		this.updateEtag = updateEtag;
