@@ -18,6 +18,7 @@ package nl.nn.adapterframework.pipes;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -53,7 +54,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		try {
 			if ("input".equals(getFrom())) {
 				String adapterName = message.asString();
-				adapter = getApplicationContext().getRegisteredAdapter(adapterName);
+				adapter = ((Configuration) getApplicationContext()).getRegisteredAdapter(adapterName);
 				if (adapter == null) {
 					throw new PipeRunException(this, "Could not find adapter: " + adapterName);
 				}

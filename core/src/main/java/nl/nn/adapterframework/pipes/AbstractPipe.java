@@ -84,7 +84,7 @@ import nl.nn.adapterframework.util.SpringUtils;
  */
 public abstract class AbstractPipe extends TransactionAttributes implements IExtendedPipe, EventThrowing, ApplicationContextAware {
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
-	private @Getter Configuration applicationContext;
+	private @Getter ApplicationContext applicationContext;
 
 	private @Getter String name;
 	private @Getter String getInputFromSessionKey=null;
@@ -166,7 +166,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 		if(!(applicationContext instanceof Configuration)) {
 			throw new IllegalArgumentException("ApplicationContext is not instance of Configuration");
 		}
-		this.applicationContext = (Configuration) applicationContext;
+		this.applicationContext = applicationContext;
 	}
 
 	protected <T> T createBean(Class<T> beanClass) {
