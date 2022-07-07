@@ -887,10 +887,17 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		}
 	}
 
-	protected String getReceivedBy(EmailMessage emailMessage) throws FileSystemException {
+	protected String getReceivedBy(EmailMessage emailMessage) throws ServiceResponseException, FileSystemException {
 		try {
+			emailMessage.load(PropertySet.FirstClassProperties);
 			return emailMessage.getReceivedBy().getAddress();
-		} catch (ServiceLocalException e) {
+		} catch (ServiceResponseException e) {
+			ServiceError errorCode = e.getErrorCode();
+			if (errorCode == ServiceError.ErrorItemNotFound) {
+				throw e;
+			}
+			throw new FileSystemException(e);
+		} catch (Exception e) {
 			throw new FileSystemException("Could not extract ReceivedBy address", e);
 		}
 	}
