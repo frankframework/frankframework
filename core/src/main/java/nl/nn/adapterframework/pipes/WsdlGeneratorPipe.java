@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2016, 2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,8 +18,6 @@ package nl.nn.adapterframework.pipes;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import lombok.Setter;
-import nl.nn.adapterframework.configuration.AdapterManager;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -39,16 +37,12 @@ import nl.nn.adapterframework.util.StreamUtil;
  */
 public class WsdlGeneratorPipe extends FixedForwardPipe {
 	private String from = "parent";
-	private @Setter AdapterManager adapterManager;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (!"parent".equals(getFrom()) && !"input".equals(getFrom())) {
 			throw new ConfigurationException("from should either be parent or input");
-		}
-		if(adapterManager == null) {
-			throw new ConfigurationException("unable to find AdapterManager");
 		}
 	}
 
@@ -59,7 +53,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		try {
 			if ("input".equals(getFrom())) {
 				String adapterName = message.asString();
-				adapter = adapterManager.getAdapter(adapterName);
+				adapter = getApplicationContext().getRegisteredAdapter(adapterName);
 				if (adapter == null) {
 					throw new PipeRunException(this, "Could not find adapter: " + adapterName);
 				}
