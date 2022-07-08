@@ -26,7 +26,7 @@
 		<dependency>
 			<groupId>org.javassist</groupId>
 			<artifactId>javassist</artifactId>
-			<version>3.23.2-GA</version>
+			<version>3.29.0-GA</version>
 		</dependency>
 
 		<dependency>
@@ -43,7 +43,7 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.7.31</version>
+			<version>1.7.36</version>
 		</dependency>
 		<dependency><!-- LOG4J SLF4J Binding -->
 			<groupId>org.apache.logging.log4j</groupId>
@@ -168,7 +168,7 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-csv</artifactId>
-			<version>1.8</version>
+			<version>1.9.0</version>
 		</dependency>
 
 <!-- 	(old) digester is used in the StatisticsParser -->
@@ -288,7 +288,7 @@
 			<artifactId>sjsxp</artifactId>
 			<version>1.0.2</version>
 			<exclusions>
-				<exclusion><!-- Exclude 1.0 as 1.0.1 is already included by xmlbeans. -->
+				<exclusion><!-- excluded because we want the stax2 api -->
 					<groupId>javax.xml.stream</groupId>
 					<artifactId>stax-api</artifactId>
 				</exclusion>
@@ -379,6 +379,8 @@
 			<artifactId>service-dispatcher</artifactId>
 			<version>1.5</version>
 		</dependency>
+
+		<!-- XSD.compareTo(..) -->
 		<dependency>
 			<groupId>xmlunit</groupId>
 			<artifactId>xmlunit</artifactId>
@@ -387,7 +389,7 @@
 		<dependency>
 			<groupId>org.apache.xmlbeans</groupId>
 			<artifactId>xmlbeans</artifactId>
-			<version>3.1.0</version>
+			<version>5.1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>cglib</groupId>
@@ -397,12 +399,12 @@
 		<dependency>
 			<groupId>com.sendgrid</groupId>
 			<artifactId>sendgrid-java</artifactId>
-			<version>4.8.2</version>
+			<version>4.9.3</version>
 		</dependency>
 		<dependency>
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-java-sdk-s3</artifactId>
-			<version>1.12.234</version>
+			<version>1.12.255</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
@@ -412,13 +414,14 @@
 		<dependency>
 			<groupId>com.hierynomus</groupId>
 			<artifactId>smbj</artifactId>
-			<version>0.9.1</version>
+			<version>0.11.5</version>
 		</dependency>
 		<dependency>
 			<groupId>jcifs</groupId>
 			<artifactId>jcifs</artifactId>
 			<version>1.3.17</version>
 			<exclusions>
+				<!-- this should never have been added as a compile dependency! -->
 				<exclusion>
 					<groupId>javax.servlet</groupId>
 					<artifactId>servlet-api</artifactId>
@@ -661,7 +664,7 @@
 			<artifactId>org.apache.servicemix.bundles.saaj-impl</artifactId>
 			<version>1.3.28_1</version>
 			<exclusions>
-				<exclusion>
+				<exclusion><!-- excluded because we want the stax2 api -->
 					<groupId>javax.xml.stream</groupId>
 					<artifactId>stax-api</artifactId>
 				</exclusion>
@@ -727,12 +730,12 @@
 		<dependency>
 			<groupId>com.ibm.icu</groupId>
 			<artifactId>icu4j</artifactId>
-			<version>70.1</version>
+			<version>71.1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.ibm.icu</groupId>
 			<artifactId>icu4j-charset</artifactId>
-			<version>70.1</version>
+			<version>71.1</version>
 		</dependency>
 
 		<!-- Test scoped dependencies -->
@@ -806,7 +809,7 @@
 		<dependency>
 			<groupId>com.networknt</groupId>
 			<artifactId>json-schema-validator</artifactId>
-			<version>1.0.69</version>
+			<version>1.0.71</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

@@ -334,6 +334,12 @@
 									<message>Prevent the use of both javax and jakarta packages</message>
 								</bannedDependencies>
 								<bannedDependencies>
+									<excludes>
+										<exclude>javax.xml.stream:stax-api</exclude>
+									</excludes>
+									<message>Prevent the use of STAX1, use STAX 2 (org.codehaus.woodstox:stax2-api) instead!</message>
+								</bannedDependencies>
+								<bannedDependencies>
 									<!-- the activation framework was renamed to the jarkata activation framework -->
 									<excludes>
 										<exclude>javax.activation:javax.activation-api</exclude>
