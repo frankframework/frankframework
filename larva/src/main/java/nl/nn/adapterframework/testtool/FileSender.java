@@ -17,6 +17,7 @@ package nl.nn.adapterframework.testtool;
 
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.testtool.queues.IQueue;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Dir2Xml;
 
@@ -34,7 +35,7 @@ import org.apache.tools.ant.helper.ProjectHelperImpl;
  * 
  * @author Jaco de Groot
  */
-public class FileSender {
+public class FileSender implements IQueue {
 	private String filename;
 	private String encoding = "UTF-8";
 	private boolean checkDelete = true;
@@ -44,7 +45,7 @@ public class FileSender {
 	private boolean deletePath = false;
 	private boolean createPath = false;
 	private boolean runAnt = false;
-	
+
 	/**
 	 * Send the message to the specified file. After writing the message to
 	 * file, this method will check if the file is deleted by another party
@@ -198,4 +199,5 @@ public class FileSender {
 	public void setRunAnt(boolean runAnt) {
 		this.runAnt = runAnt;
 	}
+
 }

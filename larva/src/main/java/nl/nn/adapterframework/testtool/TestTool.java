@@ -90,6 +90,8 @@ import nl.nn.adapterframework.senders.DelaySender;
 import nl.nn.adapterframework.senders.IbisJavaSender;
 import nl.nn.adapterframework.stream.FileMessage;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testtool.queues.IQueue;
+import nl.nn.adapterframework.testtool.queues.QueueUtils;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CaseInsensitiveComparator;
 import nl.nn.adapterframework.util.DomBuilderException;
@@ -1203,6 +1205,7 @@ public class TestTool {
 				String value = getAbsolutePath(propertiesDirectory, (String)properties.get(property));
 				if (value != null) {
 					absolutePathProperties.put(absolutePathProperty, value);
+					properties.put(property, value);
 				}
 			}
 		}
@@ -1954,76 +1957,19 @@ public class TestTool {
 		iterator = fileSenders.iterator();
 		while (queues != null && iterator.hasNext()) {
 			String queueName = (String)iterator.next();
-			String filename  = (String)properties.get(queueName + ".filename");
-			if (filename == null) {
-				closeQueues(queues, properties, writers, correlationId);
-				queues = null;
-				errorMessage("Could not find filename property for " + queueName, writers);
-			} else {
-				FileSender fileSender = new FileSender();
-				String filenameAbsolutePath = (String)properties.get(queueName + ".filename.absolutepath");
-				fileSender.setFilename(filenameAbsolutePath);
-				String encoding = (String)properties.get(queueName + ".encoding");
-				if (encoding != null) {
-					fileSender.setEncoding(encoding);
-					debugMessage("Encoding set to '" + encoding + "'", writers);
-				}
-				String deletePathString = (String)properties.get(queueName + ".deletePath");
-				if (deletePathString != null) {
-					boolean deletePath = Boolean.valueOf(deletePathString).booleanValue();
-					fileSender.setDeletePath(deletePath);
-					debugMessage("Delete path set to '" + deletePath + "'", writers);
-				}
-				String createPathString = (String)properties.get(queueName + ".createPath");
-				if (createPathString != null) {
-					boolean createPath = Boolean.valueOf(createPathString).booleanValue();
-					fileSender.setCreatePath(createPath);
-					debugMessage("Create path set to '" + createPath + "'", writers);
-				}
-				try {
-					String checkDeleteString = (String)properties.get(queueName + ".checkDelete");
-					if (checkDeleteString != null) {
-						boolean checkDelete = Boolean.valueOf(checkDeleteString).booleanValue();
-						fileSender.setCheckDelete(checkDelete);
-						debugMessage("Check delete set to '" + checkDelete + "'", writers);
-					}
-				} catch(Exception e) {
-				}
-				try {
-					String runAntString = (String)properties.get(queueName + ".runAnt");
-					if (runAntString != null) {
-						boolean runAnt = Boolean.valueOf(runAntString).booleanValue();
-						fileSender.setRunAnt(runAnt);
-						debugMessage("Run ant set to '" + runAnt + "'", writers);
-					}
-				} catch(Exception e) {
-				}
-				try {
-					long timeOut = Long.parseLong((String)properties.get(queueName + ".timeOut"));
-					fileSender.setTimeOut(timeOut);
-					debugMessage("Time out set to '" + timeOut + "'", writers);
-				} catch(Exception e) {
-				}
-				try {
-					long interval  = Long.parseLong((String)properties.get(queueName + ".interval"));
-					fileSender.setInterval(interval);
-					debugMessage("Interval set to '" + interval + "'", writers);
-				} catch(Exception e) {
-				}
-				try {
-					String overwriteString = (String)properties.get(queueName + ".overwrite");
-					if (overwriteString != null) {
-						debugMessage("OverwriteString = " + overwriteString, writers);
-						boolean overwrite = Boolean.valueOf(overwriteString).booleanValue();
-						fileSender.setOverwrite(overwrite);
-						debugMessage("Overwrite set to '" + overwrite + "'", writers);
-					}
-				} catch(Exception e) {
-				}
-				Map<String, Object> fileSenderInfo = new HashMap<String, Object>();
+
+			try {
+				IQueue fileSender = QueueUtils.createInstance(FileSender.class.getCanonicalName());
+				Properties queueProperties = QueueUtils.getSubProperties(properties, queueName);
+				QueueUtils.invokeSetters(fileSender, queueProperties);
+				fileSender.configure();
+
+				Map<String, Object> fileSenderInfo = new HashMap<>();
 				fileSenderInfo.put("fileSender", fileSender);
 				queues.put(queueName, fileSenderInfo);
 				debugMessage("Opened file sender '" + queueName + "'", writers);
+			} catch (Exception e) {
+				errorMessage("An error ["+e.getMessage()+"] occurred " + queueName, writers);
 			}
 		}
 
