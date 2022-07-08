@@ -84,7 +84,6 @@ import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.jms.PullingJmsListener;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.senders.DelaySender;
 import nl.nn.adapterframework.senders.IbisJavaSender;
@@ -1916,40 +1915,26 @@ public class TestTool {
 		iterator = javaListeners.iterator();
 		while (queues != null && iterator.hasNext()) {
 			String name = (String)iterator.next();
-			String serviceName = (String)properties.get(name + ".serviceName");
-			if (serviceName == null) {
-				closeQueues(queues, properties, writers, correlationId);
-				queues = null;
-				errorMessage("Could not find property '" + name + ".serviceName'", writers);
-			} else {
-				ListenerMessageHandler<String> listenerMessageHandler = new ListenerMessageHandler<>();
 
-				if(properties.contains(name + ".requestTimeOut") || properties.contains(name + ".responseTimeOut")) {
-					errorMessage("properties "+name+".requestTimeOut/"+name+".responseTimeOut have been replaced with "+name+".timeout", writers);
-				}
+			//Deprecation warning
+			if(properties.contains(name + ".requestTimeOut") || properties.contains(name + ".responseTimeOut")) {
+				errorMessage("properties "+name+".requestTimeOut/"+name+".responseTimeOut have been replaced with "+name+".timeout", writers);
+			}
 
-				try {
-					long timeout = Long.parseLong((String)properties.get(name + ".timeout"));
-					listenerMessageHandler.setTimeout(timeout);
-					debugMessage("Timeout set to '" + timeout + "'", writers);
-				} catch(Exception e) {
-				}
-				JavaListener javaListener = new JavaListener();
-				javaListener.setName("Test Tool JavaListener");
-				javaListener.setServiceName(serviceName);
-				javaListener.setHandler(listenerMessageHandler);
-				try {
-					javaListener.open();
-					Map<String, Object> javaListenerInfo = new HashMap<String, Object>();
-					javaListenerInfo.put("javaListener", javaListener);
-					javaListenerInfo.put("listenerMessageHandler", listenerMessageHandler);
-					queues.put(name, javaListenerInfo);
-					debugMessage("Opened java listener '" + name + "'", writers);
-				} catch(ListenerException e) {
-					closeQueues(queues, properties, writers, correlationId);
-					queues = null;
-					errorMessage("Could not open java listener '" + name + "': " + e.getMessage(), e, writers);
-				}
+			try {
+				JavaListener javaListener = QueueUtils.createInstance(JavaListener.class);
+				Properties queueProperties = QueueUtils.getSubProperties(properties, name);
+				QueueUtils.invokeSetters(javaListener, queueProperties);
+				javaListener.configure();
+				javaListener.open();
+
+				Map<String, Object> javaListenerInfo = new HashMap<String, Object>();
+				javaListenerInfo.put("javaListener", javaListener);
+				javaListenerInfo.put("listenerMessageHandler", javaListener.getHandler());
+				queues.put(name, javaListenerInfo);
+				debugMessage("Opened java listener '" + name + "'", writers);
+			} catch (Exception e) {
+				errorMessage("An error ["+e.getMessage()+"] occurred " + name, writers);
 			}
 		}
 

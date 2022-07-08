@@ -7,11 +7,16 @@ import java.util.Properties;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ClassLoaderException;
+import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class QueueUtils {
 	private static final Logger LOG = LogUtil.getLogger(QueueUtils.class);
+
+	public static <T extends IQueue> T createInstance(Class<T> clazz) throws Exception {
+		return (T) createInstance(clazz.getCanonicalName());
+	}
 
 	public static IQueue createInstance(String className) throws Exception {
 		LOG.debug("instantiating queue [{}]", className);
