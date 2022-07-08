@@ -35,6 +35,8 @@ import java.util.stream.Collectors;
 
 import javax.mail.internet.InternetAddress;
 
+import microsoft.exchange.webservices.data.core.response.ServiceResponse;
+import microsoft.exchange.webservices.data.misc.SoapFaultDetails;
 import org.apache.commons.lang3.StringUtils;
 
 import com.microsoft.aad.msal4j.ClientCredentialFactory;
