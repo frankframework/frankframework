@@ -60,7 +60,7 @@ public class JobFactory extends GenericFactory {
 
 	public static JobDef createJob(IAdapter adapter, String receiverName, String message, String functionName) {
 		JobDefFunctions function = StringUtils.isNotEmpty(functionName) ? EnumUtils.parse(JobDefFunctions.class, functionName) : JobDefFunctions.SEND_MESSAGE;
-		
+
 		switch(function) {
 		case SEND_MESSAGE:
 			SendMessageJob sendMessageJob = SpringUtils.createBean(adapter.getApplicationContext(), SendMessageJob.class);
@@ -81,7 +81,7 @@ public class JobFactory extends GenericFactory {
 			throw new IllegalArgumentException("Job function ["+function+"] is not supported as Database job");
 		}
 	}
-	
+
 	public static void mapFields(JobDef jobDef, Map<String, Object> jobData) {
 		if (jobDef instanceof SendMessageJob) {
 			SendMessageJob job = (SendMessageJob) jobDef;
