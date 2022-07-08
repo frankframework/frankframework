@@ -25,7 +25,9 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationListener;
 
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.INamedObject;
@@ -236,6 +238,28 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 		return testTool.outputpoint(correlationId, null, "PreserveInput", input);
 	}
 
+	/** Get all configurations */
+	private List<IAdapter> getRegisteredAdapters() {
+		List<IAdapter> registeredAdapters = new ArrayList<>();
+		for (Configuration configuration : ibisManager.getConfigurations()) {
+			if(configuration.isActive()) {
+				registeredAdapters.addAll(configuration.getRegisteredAdapters());
+			}
+		}
+		return registeredAdapters;
+	}
+
+	/** Best effort attempt to locate the adapter. */
+	private IAdapter getRegisteredAdapter(String name) {
+		List<IAdapter> adapters = getRegisteredAdapters();
+		for (IAdapter adapter : adapters) {
+			if (name.equals(adapter.getName())) {
+				return adapter;
+			}
+		}
+		return null;
+	}
+
 	@Override
 	public String rerun(String correlationId, Report originalReport, SecurityContext securityContext, ReportRunner reportRunner) {
 		String errorMessage = null;
@@ -247,7 +271,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 			if (checkpointName.startsWith("Pipeline ")) {
 				String pipelineName = checkpointName.substring("Pipeline ".length());
 				Message inputMessage = new Message(checkpoint.getMessageWithResolvedVariables(reportRunner));
-				IAdapter adapter = ibisManager.getRegisteredAdapter(pipelineName);
+				IAdapter adapter = getRegisteredAdapter(pipelineName);
 				if (adapter != null) {
 					synchronized(inRerun) {
 						inRerun.add(correlationId);

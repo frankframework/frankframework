@@ -27,6 +27,7 @@ import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.impl.matchers.GroupMatcher;
 
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
@@ -97,9 +98,14 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 
 							JobKey key = JobKey.jobKey(jobName, jobGroup);
 
-							Adapter adapter = ibisManager.getRegisteredAdapter(adapterName);
+							Configuration config = ibisManager.getConfiguration(jobGroup);
+							if(config == null) {
+								getMessageKeeper().add("unable to add schedule ["+key+"], configuration ["+jobGroup+"] not found!");
+								continue;
+							}
+							Adapter adapter = config.getRegisteredAdapter(adapterName);
 							if(adapter == null) {
-								getMessageKeeper().add("unable to add schedule ["+key+"], adapter ["+adapterName+"] not found");
+								getMessageKeeper().add("unable to add schedule ["+key+"], adapter ["+adapterName+"] not found!");
 								continue;
 							}
 
@@ -112,22 +118,22 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 							jobdef.setAdapterName(adapterName);
 							jobdef.setJavaListener(javaListener);
 							jobdef.setMessage(message);
-			
+
 							if(hasLocker) {
 								Locker locker = SpringUtils.createBean(getApplicationContext(), Locker.class);
-			
+
 								locker.setName(lockKey);
 								locker.setObjectId(lockKey);
 								locker.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 								jobdef.setLocker(locker);
 							}
-			
+
 							try {
 								jobdef.configure();
 							} catch (ConfigurationException e) {
 								getMessageKeeper().add("unable to configure DatabaseJobDef ["+jobdef+"] with key ["+key+"]", e);
 							}
-			
+
 							// If the job is found, find out if it is different from the existing one and update if necessarily
 							if(databaseJobDetails.containsKey(key)) {
 								IbisJobDetail oldJobDetails = databaseJobDetails.get(key);

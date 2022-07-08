@@ -25,6 +25,7 @@ import org.springframework.context.ApplicationContextAware;
 
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Adapter;
@@ -162,6 +163,9 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	 */
 	@Override
 	public final void setApplicationContext(ApplicationContext applicationContext) {
+		if(!(applicationContext instanceof Configuration)) {
+			throw new IllegalArgumentException("ApplicationContext is not instance of Configuration");
+		}
 		this.applicationContext = applicationContext;
 	}
 

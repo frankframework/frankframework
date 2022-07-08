@@ -205,18 +205,18 @@ public class CleanupDatabaseJob extends JobDef {
 					}
 				}
 			}
-		}
 
-		for (IAdapter adapter : ibisManager.getRegisteredAdapters()) {
-			PipeLine pipeLine = adapter.getPipeLine();
-			if (pipeLine != null) {
-				for (IPipe pipe : pipeLine.getPipes()) {
-					if (pipe instanceof IExtendedPipe) {
-						IExtendedPipe extendedPipe = (IExtendedPipe)pipe;
-						if (extendedPipe.getLocker() != null) {
-							String datasourceName = extendedPipe.getLocker().getDatasourceName();
-							if(StringUtils.isNotEmpty(datasourceName)) {
-								datasourceNames.add(datasourceName);
+			for (IAdapter adapter : configuration.getRegisteredAdapters()) {
+				PipeLine pipeLine = adapter.getPipeLine();
+				if (pipeLine != null) {
+					for (IPipe pipe : pipeLine.getPipes()) {
+						if (pipe instanceof IExtendedPipe) {
+							IExtendedPipe extendedPipe = (IExtendedPipe)pipe;
+							if (extendedPipe.getLocker() != null) {
+								String datasourceName = extendedPipe.getLocker().getDatasourceName();
+								if(StringUtils.isNotEmpty(datasourceName)) {
+									datasourceNames.add(datasourceName);
+								}
 							}
 						}
 					}
@@ -245,16 +245,18 @@ public class CleanupDatabaseJob extends JobDef {
 	protected List<MessageLogObject> getAllMessageLogs() {
 		List<MessageLogObject> messageLogs = new ArrayList<>();
 		IbisManager ibisManager = getIbisManager();
-		for(IAdapter adapter : ibisManager.getRegisteredAdapters()) {
-			for (Receiver<?> receiver: adapter.getReceivers()) {
-				collectMessageLogs(messageLogs, receiver.getMessageLog());
-			}
-			PipeLine pipeline = adapter.getPipeLine();
-			for (int i=0; i<pipeline.getPipes().size(); i++) {
-				IPipe pipe = pipeline.getPipe(i);
-				if (pipe instanceof MessageSendingPipe) {
-					MessageSendingPipe msp=(MessageSendingPipe)pipe;
-					collectMessageLogs(messageLogs, msp.getMessageLog());
+		for (Configuration configuration : ibisManager.getConfigurations()) {
+			for(IAdapter adapter : configuration.getRegisteredAdapters()) {
+				for (Receiver<?> receiver: adapter.getReceivers()) {
+					collectMessageLogs(messageLogs, receiver.getMessageLog());
+				}
+				PipeLine pipeline = adapter.getPipeLine();
+				for (int i=0; i<pipeline.getPipes().size(); i++) {
+					IPipe pipe = pipeline.getPipe(i);
+					if (pipe instanceof MessageSendingPipe) {
+						MessageSendingPipe msp=(MessageSendingPipe)pipe;
+						collectMessageLogs(messageLogs, msp.getMessageLog());
+					}
 				}
 			}
 		}

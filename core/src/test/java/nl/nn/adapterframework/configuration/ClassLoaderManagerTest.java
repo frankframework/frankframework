@@ -18,25 +18,13 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
-import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.PipeLine;
-import nl.nn.adapterframework.core.PipeLine.ExitState;
-import nl.nn.adapterframework.core.PipeLineExit;
-import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
 import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
-import nl.nn.adapterframework.pipes.EchoPipe;
-import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.MatchUtils;
-import nl.nn.adapterframework.testutil.TestConfiguration;
-import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Misc;
 
@@ -48,13 +36,11 @@ public class ClassLoaderManagerTest extends Mockito {
 
 	private static final String BASE_DIR = "/ClassLoader";
 	private static final String JAR_FILE = BASE_DIR+ "/zip/classLoader-test.zip";
-	private static final String ADAPTER_SERVICE_NAME = "getJarFileAdapter";
 
 	private static final String CONFIG_0_NAME = "config0";
 	private static final String CONFIG_1_NAME = "config1";
 	private static final String CONFIG_2_NAME = "config2";
 	private static final String CONFIG_3_NAME = "config3";
-	private static final String CONFIG_4_NAME = "config4";
 	private static final String CONFIG_5_NAME = "config5";
 	private static final String CONFIG_6_NAME = "config6";
 
@@ -71,13 +57,11 @@ public class ClassLoaderManagerTest extends Mockito {
 				{ "WebAppClassLoader", CONFIG_1_NAME },
 				{ "DirectoryClassLoader", CONFIG_2_NAME },
 				{ "JarFileClassLoader", CONFIG_3_NAME },
-				{ "ServiceClassLoader", CONFIG_4_NAME },
 				{ "DatabaseClassLoader", CONFIG_5_NAME },
 				{ "DummyClassLoader", CONFIG_6_NAME },
 				{ "nl.nn.adapterframework.configuration.classloaders.WebAppClassLoader", CONFIG_1_NAME },
 				{ "nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader", CONFIG_2_NAME },
 				{ "nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader", CONFIG_3_NAME },
-				{ "nl.nn.adapterframework.configuration.classloaders.ServiceClassLoader", CONFIG_4_NAME },
 				{ "nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader", CONFIG_5_NAME },
 				{ "nl.nn.adapterframework.configuration.classloaders.DummyClassLoader", CONFIG_6_NAME },
 				{ "nl.nn.adapterframework.configuration.classloaders.DefaultClassLoader", "tralla"}
@@ -86,7 +70,6 @@ public class ClassLoaderManagerTest extends Mockito {
 
 	@BeforeClass
 	public static void before() throws Exception {
-		createAdapter4ServiceClassLoader(ADAPTER_SERVICE_NAME);
 		mockDatabase();
 	}
 
@@ -111,10 +94,6 @@ public class ClassLoaderManagerTest extends Mockito {
 		if(type.endsWith("JarFileClassLoader")) {
 			URL file = this.getClass().getResource(JAR_FILE);
 			setLocalProperty("configurations."+configurationName+".jar", file.getFile());
-		}
-
-		if(type.endsWith("ServiceClassLoader")) {
-			setLocalProperty("configurations."+configurationName+".adapterName", ADAPTER_SERVICE_NAME);
 		}
 	}
 
@@ -164,45 +143,6 @@ public class ClassLoaderManagerTest extends Mockito {
 		doReturn(Misc.streamToBytes(file.openStream())).when(rs).getBytes(anyInt());
 		doReturn(rs).when(stmt).executeQuery();
 		doReturn(fq).when(ibisContext).createBeanAutowireByName(FixedQuerySender.class);
-	}
-
-	private static void createAdapter4ServiceClassLoader(String config4Adaptername) throws ConfigurationException {
-		// Mock a configuration with an adapter in it
-		IbisManager ibisManager = spy(new DefaultIbisManager());
-		ibisManager.setIbisContext(ibisContext);
-		Configuration configuration = new TestConfiguration();
-		configuration.setName("dummyConfiguration");
-		configuration.setVersion("1");
-		configuration.setIbisManager(ibisManager);
-
-		Adapter adapter = spy(new Adapter());
-		adapter.setName(config4Adaptername);
-		PipeLine pl = new PipeLine();
-		pl.setFirstPipe("dummy");
-		EchoPipe pipe = new EchoPipe();
-		pipe.setName("dummy");
-		pl.addPipe(pipe);
-		PipeLineExit ple = new PipeLineExit();
-		ple.setPath("success");
-		ple.setState(ExitState.SUCCESS);
-		pl.registerPipeLineExit(ple);
-		adapter.setPipeLine(pl);
-
-		doAnswer(new Answer<PipeLineResult>() {
-			@Override
-			public PipeLineResult answer(InvocationOnMock invocation) throws Throwable {
-				PipeLineSession session = (PipeLineSession) invocation.getArguments()[2];
-				URL file = this.getClass().getResource(JAR_FILE);
-				session.put("configurationJar", Misc.streamToBytes(file.openStream()));
-				return new PipeLineResult();
-			}
-		}).when(adapter).processMessage(anyString(), any(Message.class), any(PipeLineSession.class));
-
-		adapter.setConfiguration(configuration);
-		configuration.registerAdapter(adapter);
-
-		ibisManager.addConfiguration(configuration);
-		when(ibisContext.getIbisManager()).thenReturn(ibisManager);
 	}
 
 	private ClassLoader getClassLoader() throws Exception {
