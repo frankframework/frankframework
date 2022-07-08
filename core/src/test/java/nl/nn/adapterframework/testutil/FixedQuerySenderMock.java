@@ -15,19 +15,23 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import lombok.Setter;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 
 /**
  * Enables the ability to provide a mockable FixedQuerySender. In some places a new QuerySender is created to execute (custom) statements.
  * This allows the result to be mocked.
- * 
+ *
  * @See {@link TestConfiguration#mockQuery(String, ResultSet)}
- * 
+ *
  * @author Niels Meijer
  */
 public class FixedQuerySenderMock extends FixedQuerySender {
 	private Map<String, ResultSet> mocks = new HashMap<>();
+
+	private @Setter boolean allColumnsPresent;
 
 	@Override
 	public Connection getConnection() throws JdbcException {
@@ -107,5 +111,10 @@ public class FixedQuerySenderMock extends FixedQuerySender {
 
 	public void addMock(String query, ResultSet resultSet) {
 		mocks.put(query, resultSet);
+	}
+
+	@Override
+	public IDbmsSupport getDbmsSupport() {
+		return new DbmsSupportMock(allColumnsPresent);
 	}
 }
