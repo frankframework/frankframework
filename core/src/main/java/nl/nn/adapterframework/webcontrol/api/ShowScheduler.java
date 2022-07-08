@@ -547,9 +547,9 @@ public final class ShowScheduler extends Base {
 		SchedulerHelper sh = getSchedulerHelper();
 
 		//First try to create the schedule and run it on the local ibis before storing it in the database
-		
+
 		String action = null; // TODO support other actions ...
-		JobDef jobdef = JobFactory.createJob(adapter, listenerName, message, null);
+		JobDef jobdef = JobFactory.createJob(adapter, listenerName, message, action);
 		jobdef.setCronExpression(cronExpression);
 		jobdef.setName(name);
 		jobdef.setJobGroup(jobGroup);
