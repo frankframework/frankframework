@@ -1977,60 +1977,22 @@ public class TestTool {
 		iterator = fileListeners.iterator();
 		while (queues != null && iterator.hasNext()) {
 			String queueName = (String)iterator.next();
-			String filename  = (String)properties.get(queueName + ".filename");
-			String filename2  = (String)properties.get(queueName + ".filename2");
-			String directory = null;
-			String wildcard = null;
-			if (filename == null) {
-				directory = (String)properties.get(queueName + ".directory");
-				wildcard = (String)properties.get(queueName + ".wildcard");
-			}
-			if (filename == null && directory == null) {
-				closeQueues(queues, properties, writers, correlationId);
-				queues = null;
-				errorMessage("Could not find filename or directory property for " + queueName, writers);
-			} else if (directory != null && wildcard == null) {
-				closeQueues(queues, properties, writers, correlationId);
-				queues = null;
-				errorMessage("Could not find wildcard property for " + queueName, writers);
-			} else {
-				FileListener fileListener = new FileListener();
-				if (filename == null) {
-					String directoryAbsolutePath = (String)properties.get(queueName + ".directory.absolutepath");;
-					fileListener.setDirectory(directoryAbsolutePath);
-					fileListener.setWildcard(wildcard);
-				} else {
-					String filenameAbsolutePath = (String)properties.get(queueName + ".filename.absolutepath");;
-					fileListener.setFilename(filenameAbsolutePath);
-				}
-				try {
-					long waitBeforeRead = Long.parseLong((String)properties.get(queueName + ".waitBeforeRead"));
-					fileListener.setWaitBeforeRead(waitBeforeRead);
-					debugMessage("Wait before read set to '" + waitBeforeRead + "'", writers);
-				} catch(Exception e) {
-				}
-				try {
-					long timeOut = Long.parseLong((String)properties.get(queueName + ".timeOut"));
-					fileListener.setTimeOut(timeOut);
-					debugMessage("Time out set to '" + timeOut + "'", writers);
-				} catch(Exception e) {
-				}
-				try {
-					long interval  = Long.parseLong((String)properties.get(queueName + ".interval"));
-					fileListener.setInterval(interval);
-					debugMessage("Interval set to '" + interval + "'", writers);
-				} catch(Exception e) {
-				}
-				if (filename2!=null) {
-					fileListener.setFilename2(filename2);
-				}
+
+			try {
+				IQueue fileListener = QueueUtils.createInstance(FileListener.class.getCanonicalName());
+				Properties queueProperties = QueueUtils.getSubProperties(properties, queueName);
+				QueueUtils.invokeSetters(fileListener, queueProperties);
+				fileListener.configure();
+
 				Map<String, Object> fileListenerInfo = new HashMap<String, Object>();
 				fileListenerInfo.put("fileListener", fileListener);
 				queues.put(queueName, fileListenerInfo);
 				debugMessage("Opened file listener '" + queueName + "'", writers);
-				if (fileListenerCleanUp(queueName, fileListener, writers)) {
+				if (fileListenerCleanUp(queueName, (FileListener) fileListener, writers)) {
 					errorMessage("Found old messages on '" + queueName + "'", writers);
 				}
+			} catch (Exception e) {
+				errorMessage("An error ["+e.getMessage()+"] occurred " + queueName, writers);
 			}
 		}
 

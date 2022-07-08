@@ -19,8 +19,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.testtool.queues.IQueue;
 import nl.nn.adapterframework.util.FileUtils;
 
 /**
@@ -28,7 +30,7 @@ import nl.nn.adapterframework.util.FileUtils;
  * 
  * @author Jaco de Groot
  */
-public class FileListener {
+public class FileListener implements IQueue {
 	private String filename;
 	private String filename2;
 	private String directory;
@@ -36,6 +38,15 @@ public class FileListener {
 	private long waitBeforeRead = -1;
 	private long timeOut = 3000;
 	private long interval = 100;
+
+	@Override
+	public void configure() throws ConfigurationException {
+		if (filename == null && directory == null) {
+			throw new ConfigurationException("Could not find filename or directory property");
+		} else if (directory != null && wildcard == null) {
+			throw new ConfigurationException("Could not find wildcard property");
+		}
+	}
 
 	/**
 	 * Read the message from the specified file. If the file doesn't exist,
