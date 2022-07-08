@@ -30,12 +30,9 @@ public class ExchangeObjectReference {
 	private @Getter @Setter FolderId baseFolderId;
 
 	public ExchangeObjectReference(String objectName, String staticMailAddress, FolderId defaultBaseFolderId, String separator) {
-		if(objectName == null){
-			throw new IllegalArgumentException("Cannot create ExchangeObjectReference when objectName is null!");
-		}
 		this.originalReference = objectName;
 		String[] items = StringUtils.split(objectName, separator);
-		if (items.length > 1) {
+		if (items != null && items.length > 1) {
 			this.mailbox = items[0];
 			this.objectName = items[1];
 			this.isStatic = false;

@@ -316,8 +316,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	}
 
 
-	public FolderId findFolder(String folderName) throws FileSystemException {
-		return findFolder(basefolderId, folderName);
+	public FolderId findFolder(ExchangeObjectReference reference) throws FileSystemException {
+		return findFolder(reference.getBaseFolderId(), reference.getObjectName());
 	}
 
 	/**
@@ -448,7 +448,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		boolean invalidateConnectionOnRelease = false;
 		boolean closeConnectionOnExit = true;
 		try {
-			FolderId folderId = findFolder(folder);
+			FolderId folderId = findFolder(reference);
 			if (folderId==null) {
 				throw new FileSystemException("Cannot find folder ["+folder+"]");
 			}
@@ -517,10 +517,9 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public boolean folderExists(String folder) throws FileSystemException {
-		FolderId folderId = findFolder(folder);
+		FolderId folderId = findFolder(asObjectReference(folder));
 		return folderId!=null;
 	}
-
 
 	@Override
 	public Message readFile(EmailMessage f, String charset) throws FileSystemException, IOException {
