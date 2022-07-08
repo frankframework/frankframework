@@ -71,7 +71,6 @@ import nl.nn.adapterframework.scheduler.IbisJobDetail.JobType;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
 import nl.nn.adapterframework.scheduler.job.IJob;
-import nl.nn.adapterframework.scheduler.job.SendMessageJob;
 import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Locker;
@@ -225,15 +224,15 @@ public final class ShowScheduler extends Base {
 		jobData.put("properties", getJobData(jobMap));
 
 		if(expanded) {
-			IJob jobDef = (IJob) jobMap.get(ConfiguredJob.JOBDEF_KEY);
-			if(jobDef instanceof SendMessageJob) { // TODO arrange for a proper method to write expanded data
-				SendMessageJob dbJob = (SendMessageJob) jobDef;
-				jobData.put("adapter", dbJob.getAdapterName());
-				jobData.put("listener", dbJob.getJavaListener());
-				jobData.put("message", dbJob.getMessage());
+			IJob ijob = (IJob) jobMap.get(ConfiguredJob.JOBDEF_KEY);
+			if(ijob instanceof JobDef) {
+				JobDef jobDef = (JobDef)job;
+				if (jobDef.isCreatedFromDatabase()) {
+					JobFactory.mapFields(jobDef, jobData);
+				}
 			}
 
-			Locker locker = jobDef.getLocker();
+			Locker locker = ijob.getLocker();
 			if(locker != null) {
 				jobData.put("locker", true);
 				jobData.put("lockkey", locker.getObjectId());

@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.scheduler.JobDefFunctions;
+import nl.nn.adapterframework.scheduler.job.IbisActionJob;
 import nl.nn.adapterframework.scheduler.job.Job;
 import nl.nn.adapterframework.scheduler.job.SendMessageJob;
 import nl.nn.adapterframework.util.EnumUtils;
@@ -57,18 +58,46 @@ public class JobFactory extends GenericFactory {
 		return clazz.getCanonicalName();
 	}
 
-	public static JobDef createJob(IAdapter adapter, String receiverName, String message, String action) {
-		JobDef result = null;
-
-		if (action==null || action.equalsIgnoreCase("SENDMESSAGE")) {
-			SendMessageJob job = SpringUtils.createBean(adapter.getApplicationContext(), SendMessageJob.class);
-			job.setAdapterName(adapter.getName());
-			job.setJavaListener(receiverName);
-			job.setMessage(message);
-			result = job;
+	public static JobDef createJob(IAdapter adapter, String receiverName, String message, String functionName) {
+		JobDefFunctions function = StringUtils.isNotEmpty(functionName) ? EnumUtils.parse(JobDefFunctions.class, functionName) : JobDefFunctions.SEND_MESSAGE;
+		
+		switch(function) {
+		case SEND_MESSAGE:
+			SendMessageJob sendMessageJob = SpringUtils.createBean(adapter.getApplicationContext(), SendMessageJob.class);
+			sendMessageJob.setAdapterName(adapter.getName());
+			sendMessageJob.setJavaListener(receiverName);
+			sendMessageJob.setMessage(message);
+			return sendMessageJob;
+		case START_ADAPTER:
+		case STOP_ADAPTER:
+		case START_RECEIVER:
+		case STOP_RECEIVER:
+			IbisActionJob ibisActionJob = SpringUtils.createBean(adapter.getApplicationContext(), IbisActionJob.class);
+			ibisActionJob.setAdapterName(adapter.getName());
+			ibisActionJob.setReceiverName(receiverName);
+			ibisActionJob.setAction(EnumUtils.parse(IbisActionJob.Action.class, "function", function.name()));
+			return ibisActionJob;
+		default:
+			throw new IllegalArgumentException("Job function ["+function+"] is not supported as Database job");
 		}
-
-		return result;
+	}
+	
+	public static void mapFields(JobDef jobDef, Map<String, Object> jobData) {
+		if (jobDef instanceof SendMessageJob) {
+			SendMessageJob job = (SendMessageJob) jobDef;
+			jobData.put("adapter", job.getAdapterName());
+			jobData.put("listener", job.getJavaListener());
+			jobData.put("message", job.getMessage());
+			jobData.put("action", JobDefFunctions.SEND_MESSAGE);
+			return;
+		}
+		if (jobDef instanceof IbisActionJob) {
+			IbisActionJob job = (IbisActionJob) jobDef;
+			jobData.put("adapter", job.getAdapterName());
+			jobData.put("listener", job.getReceiverName());
+			jobData.put("action", job.getIbisAction());
+			return;
+		}
 	}
 
 }

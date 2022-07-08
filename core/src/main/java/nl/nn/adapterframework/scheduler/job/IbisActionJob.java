@@ -33,7 +33,7 @@ public class IbisActionJob extends JobDef {
 	private @Getter String adapterName;
 	private @Getter String receiverName;
 	private Action jobAction;
-	private IbisAction ibisAction;
+	private @Getter IbisAction ibisAction;
 
 	// Subset of the IbisAction enum as we do not want to expose all fields.
 	public enum Action {
