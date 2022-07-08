@@ -119,6 +119,12 @@ public class HttpServletResponseMock implements HttpServletResponse {
 		
 	}
 
+	// @Override // since servlet-api 3.1.0
+	public void setContentLength(long arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
 	@Override
 	public void setContentType(String arg0) {
 		// TODO Auto-generated method stub
