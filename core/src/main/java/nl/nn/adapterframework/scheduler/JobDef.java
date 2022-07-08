@@ -26,6 +26,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IConfigurationAware;
 import nl.nn.adapterframework.core.TransactionAttributes;
+import nl.nn.adapterframework.doc.Protected;
 import nl.nn.adapterframework.scheduler.job.IJob;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.task.TimeoutGuard;
@@ -290,6 +291,8 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Getter boolean configured;
+	private @Getter @Setter(onMethod = @__(@Protected)) String adapterName;
+	private @Getter @Setter(onMethod = @__(@Protected)) boolean createdFromDatabase=false;
 
 	private @Getter String name;
 	private @Getter String description;

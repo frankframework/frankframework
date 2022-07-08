@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.quartz.impl.matchers.GroupMatcher;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.configuration.digester.JobFactory;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
@@ -43,15 +44,17 @@ import nl.nn.adapterframework.util.SpringUtils;
 /**
  * 1. This method first stores all database jobs that can are found in the Quartz Scheduler in a Map.
  * 2. It then loops through all records found in the database.
- * 3. If the job is found, remove it from the Map and compares it with the already existing scheduled job. 
+ * 3. If the job is found, remove it from the Map and compares it with the already existing scheduled job.
  *    Only if they differ, it overwrites the current job.
  *    If it is not present it add the job to the scheduler.
  * 4. Once it's looped through all the database jobs, loop through the remaining jobs in the Map.
  *    Since they have been removed from the database, remove them from the Quartz Scheduler
- * 
+ *
  * @author Niels Meijer
  */
 public class LoadDatabaseSchedulesJob extends JobDef {
+
+	private static final String ACTION_FIELD = "ACTION";
 
 	@Override
 	public void execute() {
@@ -82,14 +85,16 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 			qs.configure();
 			qs.open();
 			try (Connection conn = qs.getConnection()) {
-				try (PreparedStatement stmt = conn.prepareStatement("SELECT JOBNAME,JOBGROUP,ADAPTER,RECEIVER,CRON,EXECUTIONINTERVAL,MESSAGE,LOCKER,LOCK_KEY FROM IBISSCHEDULES")) {
+				boolean actionFieldExists = qs.getDbmsSupport().isColumnPresent(conn, "IBISSCHEDULES", ACTION_FIELD);
+				try (PreparedStatement stmt = conn.prepareStatement("SELECT JOBNAME,JOBGROUP,ADAPTER,RECEIVER,"+(actionFieldExists?ACTION_FIELD+",":"")+"CRON,EXECUTIONINTERVAL,MESSAGE,LOCKER,LOCK_KEY FROM IBISSCHEDULES")) {
 					try (ResultSet rs = stmt.executeQuery()) {
 						IbisManager ibisManager = getIbisManager();
 						while(rs.next()) {
 							String jobName = rs.getString("JOBNAME");
 							String jobGroup = rs.getString("JOBGROUP");
 							String adapterName = rs.getString("ADAPTER");
-							String javaListener = rs.getString("RECEIVER");
+							String receiverName = rs.getString("RECEIVER");
+							String action = actionFieldExists ? rs.getString(ACTION_FIELD) : null;
 							String cronExpression = rs.getString("CRON");
 							int interval = rs.getInt("EXECUTIONINTERVAL");
 							String message = rs.getString("MESSAGE");
@@ -110,14 +115,12 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 							}
 
 							//Create a new JobDefinition so we can compare it with existing jobs
-							DatabaseJob jobdef = SpringUtils.createBean(adapter.getApplicationContext(), DatabaseJob.class);
+							JobDef jobdef = JobFactory.createJob(adapter, receiverName, message, action);
+							jobdef.setCreatedFromDatabase(true);
 							jobdef.setCronExpression(cronExpression);
 							jobdef.setName(jobName);
 							jobdef.setInterval(interval);
 							jobdef.setJobGroup(jobGroup);
-							jobdef.setAdapterName(adapterName);
-							jobdef.setJavaListener(javaListener);
-							jobdef.setMessage(message);
 
 							if(hasLocker) {
 								Locker locker = SpringUtils.createBean(getApplicationContext(), Locker.class);
@@ -176,4 +179,5 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 			}
 		}
 	}
+
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,9 +19,13 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
+import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.scheduler.JobDefFunctions;
 import nl.nn.adapterframework.scheduler.job.Job;
+import nl.nn.adapterframework.scheduler.job.SendMessageJob;
 import nl.nn.adapterframework.util.EnumUtils;
+import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * Factory for instantiating Schedules Jobs from the Digester framework.
@@ -52,4 +56,19 @@ public class JobFactory extends GenericFactory {
 
 		return clazz.getCanonicalName();
 	}
+
+	public static JobDef createJob(IAdapter adapter, String receiverName, String message, String action) {
+		JobDef result = null;
+
+		if (action==null || action.equalsIgnoreCase("SENDMESSAGE")) {
+			SendMessageJob job = SpringUtils.createBean(adapter.getApplicationContext(), SendMessageJob.class);
+			job.setAdapterName(adapter.getName());
+			job.setJavaListener(receiverName);
+			job.setMessage(message);
+			result = job;
+		}
+
+		return result;
+	}
+
 }

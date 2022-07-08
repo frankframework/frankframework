@@ -57,6 +57,7 @@ import org.quartz.impl.matchers.GroupMatcher;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.digester.JobFactory;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.SenderException;
@@ -67,9 +68,10 @@ import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.scheduler.ConfiguredJob;
 import nl.nn.adapterframework.scheduler.IbisJobDetail;
 import nl.nn.adapterframework.scheduler.IbisJobDetail.JobType;
+import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
-import nl.nn.adapterframework.scheduler.job.DatabaseJob;
 import nl.nn.adapterframework.scheduler.job.IJob;
+import nl.nn.adapterframework.scheduler.job.SendMessageJob;
 import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Locker;
@@ -224,8 +226,8 @@ public final class ShowScheduler extends Base {
 
 		if(expanded) {
 			IJob jobDef = (IJob) jobMap.get(ConfiguredJob.JOBDEF_KEY);
-			if(jobDef instanceof DatabaseJob) {
-				DatabaseJob dbJob = (DatabaseJob) jobDef;
+			if(jobDef instanceof SendMessageJob) { // TODO arrange for a proper method to write expanded data
+				SendMessageJob dbJob = (SendMessageJob) jobDef;
 				jobData.put("adapter", dbJob.getAdapterName());
 				jobData.put("listener", dbJob.getJavaListener());
 				jobData.put("message", dbJob.getMessage());
@@ -545,13 +547,12 @@ public final class ShowScheduler extends Base {
 		SchedulerHelper sh = getSchedulerHelper();
 
 		//First try to create the schedule and run it on the local ibis before storing it in the database
-		DatabaseJob jobdef = SpringUtils.createBean(applicationContext, DatabaseJob.class);
+		
+		String action = null; // TODO support other actions ...
+		JobDef jobdef = JobFactory.createJob(adapter, listenerName, message, null);
 		jobdef.setCronExpression(cronExpression);
 		jobdef.setName(name);
-		jobdef.setAdapterName(adapterName);
-		jobdef.setJavaListener(listenerName);
 		jobdef.setJobGroup(jobGroup);
-		jobdef.setMessage(message);
 		jobdef.setDescription(description);
 		jobdef.setInterval(interval);
 
