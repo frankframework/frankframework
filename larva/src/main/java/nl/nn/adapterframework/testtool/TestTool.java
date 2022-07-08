@@ -84,6 +84,7 @@ import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.jms.PullingJmsListener;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.senders.DelaySender;
 import nl.nn.adapterframework.senders.IbisJavaSender;
@@ -1922,15 +1923,20 @@ public class TestTool {
 			}
 
 			try {
-				JavaListener javaListener = QueueUtils.createInstance(JavaListener.class);
+				JavaListener javaListener = QueueUtils.createListener(JavaListener.class);
+				javaListener.setName("Test Tool JavaListener");
+				ListenerMessageHandler handler = new ListenerMessageHandler<>();
 				Properties queueProperties = QueueUtils.getSubProperties(properties, name);
+				QueueUtils.invokeSetters(handler, queueProperties); //timeout settings
+				queueProperties.remove("timeout"); //TODO make sure larva doesnt fail when it cannot set a value
 				QueueUtils.invokeSetters(javaListener, queueProperties);
+				javaListener.setHandler(handler);
 				javaListener.configure();
 				javaListener.open();
 
-				Map<String, Object> javaListenerInfo = new HashMap<String, Object>();
+				Map<String, Object> javaListenerInfo = new HashMap<>();
 				javaListenerInfo.put("javaListener", javaListener);
-				javaListenerInfo.put("listenerMessageHandler", javaListener.getHandler());
+				javaListenerInfo.put("listenerMessageHandler", handler);
 				queues.put(name, javaListenerInfo);
 				debugMessage("Opened java listener '" + name + "'", writers);
 			} catch (Exception e) {
@@ -1944,7 +1950,7 @@ public class TestTool {
 			String queueName = (String)iterator.next();
 
 			try {
-				IQueue fileSender = QueueUtils.createInstance(FileSender.class.getCanonicalName());
+				IQueue fileSender = QueueUtils.createQueue(FileSender.class);
 				Properties queueProperties = QueueUtils.getSubProperties(properties, queueName);
 				QueueUtils.invokeSetters(fileSender, queueProperties);
 				fileSender.configure();
@@ -1964,7 +1970,7 @@ public class TestTool {
 			String queueName = (String)iterator.next();
 
 			try {
-				IQueue fileListener = QueueUtils.createInstance(FileListener.class.getCanonicalName());
+				IQueue fileListener = QueueUtils.createQueue(FileListener.class);
 				Properties queueProperties = QueueUtils.getSubProperties(properties, queueName);
 				QueueUtils.invokeSetters(fileListener, queueProperties);
 				fileListener.configure();
