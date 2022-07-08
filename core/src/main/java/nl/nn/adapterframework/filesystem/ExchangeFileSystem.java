@@ -889,7 +889,16 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	protected String getReceivedBy(EmailMessage emailMessage) throws ServiceResponseException, FileSystemException {
 		try {
 			emailMessage.load(PropertySet.FirstClassProperties);
-			return emailMessage.getReceivedBy().getAddress();
+			EmailAddress receivedBy = emailMessage.getReceivedBy();
+			if (receivedBy == null) {
+				SoapFaultDetails soapFaultDetails = new SoapFaultDetails() {
+					public ServiceError getResponseCode() {
+						return ServiceError.ErrorItemNotFound;
+					}
+				};
+				throw new ServiceResponseException(new ServiceResponse(soapFaultDetails));
+			}
+			return receivedBy.getAddress();
 		} catch (ServiceResponseException e) {
 			ServiceError errorCode = e.getErrorCode();
 			if (errorCode == ServiceError.ErrorItemNotFound) {
