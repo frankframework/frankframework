@@ -6,11 +6,10 @@ import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.configuration.ClassLoaderException;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class QueueUtils {
@@ -75,23 +74,28 @@ public class QueueUtils {
 			try {
 				method.invoke(clazz, castValue);
 			} catch (Exception e) {
-				e.printStackTrace();
-				throw new Exception("error while calling method ["+setter+"] on Class ["+ClassUtils.nameOf(clazz)+"]", e);
+				throw new IllegalArgumentException("unable to set method ["+setter+"] on Class ["+ClassUtils.nameOf(clazz)+"]: "+e.getMessage(), e);
 			}
 		}
 	}
 
-	//TODO enums
-	private static Object getCastValue(Class<?> class1, String value) {
-		String className = class1.getName().toLowerCase();
+	private static Object getCastValue(Class<?> setterArgumentClass, String value) {
+		String className = setterArgumentClass.getName().toLowerCase();
 		if("boolean".equals(className))
 			return Boolean.parseBoolean(value);
 		else if("int".equals(className) || "integer".equals(className))
 			return Integer.parseInt(value);
 		else if("long".equals(className))
 			return Long.parseLong(value);
+		else if(setterArgumentClass.isEnum())
+			return parseAsEnum(setterArgumentClass, value);//Try to parse the value as an Enum
 		else
 			return value;
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <E extends Enum<E>> E parseAsEnum(Class<?> enumClass, String value) {
+		return EnumUtils.parse((Class<E>) enumClass, value);
 	}
 
 	private static String firstCharToLower(String input) {

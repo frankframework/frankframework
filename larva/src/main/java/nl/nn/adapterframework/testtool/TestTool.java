@@ -1742,105 +1742,50 @@ public class TestTool {
 		iterator = httpSenders.iterator();
 		while (queues != null && iterator.hasNext()) {
 			String name = (String)iterator.next();
-			Boolean convertExceptionToMessage = new Boolean((String)properties.get(name + ".convertExceptionToMessage"));
-			String url = (String)properties.get(name + ".url");
-			String userName = (String)properties.get(name + ".userName");
-			String password = (String)properties.get(name + ".password");
-			String authAlias = (String)properties.get(name + ".authAlias");
-			String headerParams = (String)properties.get(name + ".headersParams");
-			String xhtmlString = (String)properties.get(name + ".xhtml");
-			String methodtype = (String)properties.get(name + ".methodType");
-			String paramsInUrlString = (String)properties.get(name + ".paramsInUrl");
-			Boolean treatInputMessageAsParameters = new Boolean((String)properties.get(name + ".treatInputMessageAsParameters"));
-			String inputMessageParam = (String)properties.get(name + ".inputMessageParam");
-			String multipartString = (String)properties.get(name + ".multipart");
- 			String styleSheetName = (String)properties.get(name + ".styleSheetName");
- 			String allowSelfSignedCertificates = properties.getProperty(name + ".allowSelfSignedCertificates", "true");
- 			String verifyHostname = properties.getProperty(name + ".verifyHostname", "false");
-			if (url == null) {
+			ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+
+			try {
+				// Use directoryClassLoader to make it possible to specify
+				// styleSheetName relative to the scenarioDirectory.
+				//TODO create larva classloader without basepath
+				DirectoryClassLoader directoryClassLoader = new DirectoryClassLoader(originalClassLoader);
+				directoryClassLoader.setDirectory(scenarioDirectory);
+				directoryClassLoader.setBasePath(".");
+				directoryClassLoader.configure(null, "dummy");
+				Thread.currentThread().setContextClassLoader(directoryClassLoader);
+
+				// Create the actual sender
+				HttpSender httpSender = QueueUtils.createSender(HttpSender.class);
+				Properties queueProperties = QueueUtils.getSubProperties(properties, name);
+				QueueUtils.invokeSetters(httpSender, queueProperties);
+				httpSender.setName("Test Tool HttpSender");
+
+				PipeLineSession session = new PipeLineSession();
+				Map<String, Object> paramPropertiesMap = createParametersMapFromParamProperties(properties, name, writers, true, session);
+				Iterator<String> parameterNameIterator = paramPropertiesMap.keySet().iterator();
+				while (parameterNameIterator.hasNext()) {
+					String parameterName = parameterNameIterator.next();
+					Parameter parameter = (Parameter)paramPropertiesMap.get(parameterName);
+					httpSender.addParameter(parameter);
+				}
+
+				httpSender.configure();
+				httpSender.open();
+
+				Map<String, Object> httpSenderInfo = new HashMap<>();
+				httpSenderInfo.put("httpSender", httpSender);
+				httpSenderInfo.put("session", session);
+				Boolean convertExceptionToMessage = new Boolean((String)properties.get(name + ".convertExceptionToMessage"));
+				httpSenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
+				queues.put(name, httpSenderInfo);
+				debugMessage("Opened http sender '" + name + "'", writers);
+			} catch (Exception e) {
+				errorMessage("ERROR on ["+name+"]: "+e.getMessage(), writers);
 				closeQueues(queues, properties, writers, correlationId);
 				queues = null;
-				errorMessage("Could not find url property for " + name, writers);
-			} else {
-				HttpSender httpSender = null;
-				PipeLineSession session = null;
-				ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
-				try {
-					// Use directoryClassLoader to make it possible to specify
-					// styleSheetName relative to the scenarioDirectory.
-					//TODO create larva classloader without basepath
-					DirectoryClassLoader directoryClassLoader = new DirectoryClassLoader(originalClassLoader);
-					directoryClassLoader.setDirectory(scenarioDirectory);
-					directoryClassLoader.setBasePath(".");
-					directoryClassLoader.configure(ibisContext, "dummy");
-					Thread.currentThread().setContextClassLoader(directoryClassLoader);
-					httpSender = new HttpSender();
-					httpSender.setName("Test Tool HttpSender");
-					httpSender.setUrl(url);
-					httpSender.setUsername(userName);
-					httpSender.setPassword(password);
-					httpSender.setAuthAlias(authAlias);
-					httpSender.setHeadersParams(headerParams);
-					httpSender.setTreatInputMessageAsParameters(treatInputMessageAsParameters);
-					if (StringUtils.isNotEmpty(xhtmlString)) {
-						httpSender.setXhtml(Boolean.valueOf(xhtmlString).booleanValue());
-					}
-					if (StringUtils.isNotEmpty(methodtype)) {
-						HttpMethod method = EnumUtils.parse(HttpMethod.class, methodtype);
-						httpSender.setMethodType(method);
-					}
-					if (StringUtils.isNotEmpty(paramsInUrlString)) {
-						httpSender.setParamsInUrl(Boolean.valueOf(paramsInUrlString).booleanValue());
-					}
-					if (StringUtils.isNotEmpty(inputMessageParam)) {
-						httpSender.setInputMessageParam(inputMessageParam);
-					}
-					if (StringUtils.isNotEmpty(multipartString)) {
-						httpSender.setMultipart(Boolean.valueOf(multipartString).booleanValue());
-					}
-					if (StringUtils.isNotEmpty(styleSheetName)) {
-						httpSender.setStyleSheetName(styleSheetName);
-					}
-					httpSender.setAllowSelfSignedCertificates(new Boolean(allowSelfSignedCertificates));
-					httpSender.setVerifyHostname(new Boolean(verifyHostname));
-					session = new PipeLineSession();
-					Map<String, Object> paramPropertiesMap = createParametersMapFromParamProperties(properties, name, writers, true, session);
-					Iterator<String> parameterNameIterator = paramPropertiesMap.keySet().iterator();
-					while (parameterNameIterator.hasNext()) {
-						String parameterName = (String)parameterNameIterator.next();
-						Parameter parameter = (Parameter)paramPropertiesMap.get(parameterName);
-						httpSender.addParameter(parameter);
-					}
-					httpSender.configure();
-				} catch(ClassLoaderException e) {
-					errorMessage("Could not create classloader: " + e.getMessage(), e, writers);
-					closeQueues(queues, properties, writers, correlationId);
-					queues = null;
-				} catch(ConfigurationException e) {
-					errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
-					closeQueues(queues, properties, writers, correlationId);
-					queues = null;
-				} finally {
-					if (originalClassLoader != null) {
-						Thread.currentThread().setContextClassLoader(originalClassLoader);
-					}
-				}
-				if (queues != null) {
-					try {
-						httpSender.open();
-					} catch (SenderException e) {
-						closeQueues(queues, properties, writers, correlationId);
-						queues = null;
-						errorMessage("Could not open '" + name + "': " + e.getMessage(), e, writers);
-					}
-					if (queues != null) {
-						Map<String, Object> httpSenderInfo = new HashMap<String, Object>();
-						httpSenderInfo.put("httpSender", httpSender);
-						httpSenderInfo.put("session", session);
-						httpSenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
-						queues.put(name, httpSenderInfo);
-						debugMessage("Opened http sender '" + name + "'", writers);
-					}
+			} finally {
+				if (originalClassLoader != null) {
+					Thread.currentThread().setContextClassLoader(originalClassLoader);
 				}
 			}
 		}
@@ -1899,17 +1844,18 @@ public class TestTool {
 		while (queues != null && iterator.hasNext()) {
 			String name = (String)iterator.next();
 			Boolean convertExceptionToMessage = new Boolean((String)properties.get(name + ".convertExceptionToMessage"));
-			String delayTime = (String)properties.get(name + ".delayTime");
-			DelaySender delaySender = new DelaySender();
-			if (delayTime!=null) {
-				delaySender.setDelayTime(Long.parseLong(delayTime));
+			try {
+				DelaySender delaySender = QueueUtils.createSender(DelaySender.class);
+				delaySender.setName("Test Tool DelaySender");
+
+				Map<String, Object> delaySenderInfo = new HashMap<String, Object>();
+				delaySenderInfo.put("delaySender", delaySender);
+				delaySenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
+				queues.put(name, delaySenderInfo);
+				debugMessage("Opened delay sender '" + name + "'", writers);
+			} catch (Exception e) {
+				errorMessage("An error ["+e.getMessage()+"] occurred " + name, writers);
 			}
-			delaySender.setName("Test Tool DelaySender");
-			Map<String, Object> delaySenderInfo = new HashMap<String, Object>();
-			delaySenderInfo.put("delaySender", delaySender);
-			delaySenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
-			queues.put(name, delaySenderInfo);
-			debugMessage("Opened delay sender '" + name + "'", writers);
 		}
 
 		debugMessage("Initialize java listeners", writers);
