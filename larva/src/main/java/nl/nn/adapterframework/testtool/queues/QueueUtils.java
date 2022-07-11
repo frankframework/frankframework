@@ -7,7 +7,9 @@ import java.util.Properties;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.IListener;
+import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.http.HttpSenderBase;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -15,30 +17,38 @@ import nl.nn.adapterframework.util.LogUtil;
 public class QueueUtils {
 	private static final Logger LOG = LogUtil.getLogger(QueueUtils.class);
 
-	public static <T extends IQueue> T createQueue(Class<T> clazz) throws Exception {
+	public static <T extends IQueue> T createQueue(Class<T> clazz) {
 		return (T) createInstance(clazz.getCanonicalName());
 	}
 
-	public static <T extends IListener<String>> T createListener(Class<T> clazz) throws Exception {
+	public static <T extends IListener<M>, M> T createListener(Class<T> clazz) {
 		return (T) createInstance(clazz.getCanonicalName());
 	}
 
-	public static <T extends ISender> T createSender(Class<T> clazz) throws Exception {
+	public static <T extends ISender> T createSender(Class<T> clazz) {
 		return (T) createInstance(clazz.getCanonicalName());
 	}
 
-	private static Object createInstance(String className) throws Exception {
+	private static Object createInstance(String className) {
 		LOG.debug("instantiating queue [{}]", className);
 		try {
 			Class<?> clazz = ClassUtils.loadClass(className);
 			Constructor<?> con = ClassUtils.getConstructorOnType(clazz, new Class[] {});
-			return con.newInstance();
-		}
-		catch (ClassCastException e) {
-			throw new Exception("Queue ["+className+"] does not implement IQueue", e);
+			Object obj = con.newInstance();
+
+			if(obj instanceof INamedObject) { //Set the name
+				((INamedObject) obj).setName("Test Tool "+clazz.getSimpleName());
+			}
+
+			if(obj instanceof HttpSenderBase) { //Disable SSL capabilities
+				((HttpSenderBase) obj).setAllowSelfSignedCertificates(true);
+				((HttpSenderBase) obj).setVerifyHostname(false);
+			}
+
+			return obj;
 		}
 		catch (Exception e) {
-			throw new Exception("error initializing Queue ["+className+"]", e);
+			throw new IllegalStateException("unable to initialize class ["+className+"]", e);
 		}
 	}
 
@@ -80,17 +90,22 @@ public class QueueUtils {
 	}
 
 	private static Object getCastValue(Class<?> setterArgumentClass, String value) {
-		String className = setterArgumentClass.getName().toLowerCase();
-		if("boolean".equals(className))
-			return Boolean.parseBoolean(value);
-		else if("int".equals(className) || "integer".equals(className))
-			return Integer.parseInt(value);
-		else if("long".equals(className))
-			return Long.parseLong(value);
-		else if(setterArgumentClass.isEnum())
+		if(setterArgumentClass.isEnum())
 			return parseAsEnum(setterArgumentClass, value);//Try to parse the value as an Enum
-		else
-			return value;
+		else {
+			switch (setterArgumentClass.getTypeName()) {
+			case "int":
+			case "java.lang.Integer":
+				return Integer.parseInt(value);
+			case "boolean":
+			case "java.lang.Boolean":
+				return Boolean.parseBoolean(value);
+			case "long":
+				return Long.parseLong(value);
+			default:
+				return value;
+			}
+		}
 	}
 
 	@SuppressWarnings("unchecked")
