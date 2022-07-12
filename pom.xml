@@ -336,6 +336,7 @@
 								<bannedDependencies>
 									<excludes>
 										<exclude>javax.xml.stream:stax-api</exclude>
+										<exclude>xml-apis:xml-apis</exclude>
 									</excludes>
 									<message>Prevent the use of STAX1, use STAX 2 (org.codehaus.woodstox:stax2-api) instead!</message>
 								</bannedDependencies>
