@@ -205,11 +205,6 @@
 			</dependency>
 
 			<dependency>
-				<groupId>javax.ejb</groupId>
-				<artifactId>ejb-api</artifactId>
-				<version>3.0</version>
-			</dependency>
-			<dependency>
 				<groupId>javax.servlet</groupId>
 				<artifactId>javax.servlet-api</artifactId>
 				<version>3.1.0</version>
@@ -259,8 +254,8 @@
 			</dependency>
 			<dependency>
 				<groupId>com.sun.mail</groupId>
-				<artifactId>javax.mail</artifactId>
-				<version>1.6.2</version>
+				<artifactId>jakarta.mail</artifactId>
+				<version>1.6.7</version>
 			</dependency>
 			<dependency>
 				<groupId>org.projectlombok</groupId>
@@ -324,6 +319,13 @@
 						</goals>
 						<configuration>
 							<rules>
+								<bannedDependencies>
+									<excludes>
+										<exclude>com.sun.mail:javax.mail</exclude><!-- Java Mail was renamed to the Jakarta Mail -->
+										<exclude>javax.transaction:javax.transaction-api</exclude><!-- javax.transaction-api was renamed to the jakarta.transaction-api -->
+									</excludes>
+									<message>use jakarta packages instead</message>
+								</bannedDependencies>
 								<bannedDependencies>
 									<!-- Java Annotations was renamed to the Jakarta Annotations -->
 									<excludes>
