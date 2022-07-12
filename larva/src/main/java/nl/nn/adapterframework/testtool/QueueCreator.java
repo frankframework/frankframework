@@ -10,9 +10,11 @@ import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
 
+import nl.nn.adapterframework.configuration.ClassLoaderException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader;
+import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
@@ -21,15 +23,14 @@ import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.http.WebServiceSender;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
-import nl.nn.adapterframework.jms.JmsSender;
-import nl.nn.adapterframework.jms.PullingJmsListener;
 import nl.nn.adapterframework.jms.JMSFacade.DeliveryMode;
 import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
+import nl.nn.adapterframework.jms.JmsSender;
+import nl.nn.adapterframework.jms.PullingJmsListener;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.senders.DelaySender;
 import nl.nn.adapterframework.senders.IbisJavaSender;
-import nl.nn.adapterframework.testtool.queues.IQueue;
 import nl.nn.adapterframework.testtool.queues.QueueUtils;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.EnumUtils;
@@ -37,7 +38,7 @@ import nl.nn.adapterframework.util.EnumUtils;
 public class QueueCreator {
 
 	public static Map<String, Map<String, Object>> openQueues(String scenarioDirectory, Properties properties, IbisContext ibisContext, AppConstants appConstants, Map<String, Object> writers, int parameterTimeout, String correlationId) {
-		Map<String, Map<String, Object>> queues = new HashMap<String, Map<String, Object>>();
+		Map<String, Map<String, Object>> queues = new HashMap<>();
 		debugMessage("Get all queue names", writers);
 		List<String> jmsSenders = new ArrayList<String>();
 		List<String> jmsListeners = new ArrayList<String>();
@@ -106,10 +107,44 @@ public class QueueCreator {
 			}
 		}
 
+		try {
+			createJmsSenders(queues, jmsSenders, properties, writers, ibisContext, correlationId);
+
+			createJmsListeners(queues, jmsListeners, properties, writers, ibisContext, correlationId, parameterTimeout);
+
+			createFixedQuerySenders(queues, jdbcFixedQuerySenders, properties, writers, ibisContext, correlationId);
+
+			createWebServiceSenders(queues, webServiceSenders, properties, writers);
+
+			createWebServiceListeners(queues, webServiceListeners, properties, writers, parameterTimeout);
+
+			createHttpSenders(queues, httpSenders, properties, writers);
+
+			createIbisJavaSenders(queues, ibisJavaSenders, properties, writers, correlationId);
+
+			createDelaySenders(queues, delaySenders, properties, writers);
+
+			createJavaListeners(queues, javaListeners, properties, writers, parameterTimeout);
+
+			createFileSenders(queues, fileSenders, properties, writers);
+
+			createFileListeners(queues, fileListeners, properties, writers);
+
+			createXsltProviderListeners(queues, xsltProviderListeners, properties, writers);
+		} catch (Exception e) {
+			closeQueues(queues, properties, writers, null);
+			queues = null;
+			errorMessage(e.getClass().getSimpleName() + ": "+e.getMessage(), e, writers);
+		}
+
+		return queues;
+	}
+
+	private static void createJmsSenders(Map<String, Map<String, Object>> queues, List<String> jmsSenders, Properties properties, Map<String, Object> writers, IbisContext ibisContext, String correlationId) {
 		debugMessage("Initialize jms senders", writers);
-		iterator = jmsSenders.iterator();
+		Iterator<String> iterator = jmsSenders.iterator();
 		while (queues != null && iterator.hasNext()) {
-			String queueName = (String)iterator.next();
+			String queueName = iterator.next();
 			String queue = (String)properties.get(queueName + ".queue");
 			if (queue == null) {
 				closeQueues(queues, properties, writers, correlationId);
@@ -167,18 +202,20 @@ public class QueueCreator {
 				debugMessage("Opened jms sender '" + queueName + "'", writers);
 			}
 		}
+	}
 
+	private static void createJmsListeners(Map<String, Map<String, Object>> queues, List<String> jmsListeners, Properties properties, Map<String, Object> writers, IbisContext ibisContext, String correlationId, int defaultTimeout) {
 		debugMessage("Initialize jms listeners", writers);
-		iterator = jmsListeners.iterator();
+		Iterator<String> iterator = jmsListeners.iterator();
 		while (queues != null && iterator.hasNext()) {
-			String queueName = (String)iterator.next();
+			String queueName = iterator.next();
 			String queue = (String)properties.get(queueName + ".queue");
 			String timeout = (String)properties.get(queueName + ".timeout");
 
-			int nTimeout = parameterTimeout;
+			int nTimeout = defaultTimeout;
 			if (timeout != null && timeout.length() > 0) {
 				nTimeout = Integer.parseInt(timeout);
-				debugMessage("Overriding default timeout setting of "+parameterTimeout+" with "+ nTimeout, writers);
+				debugMessage("Overriding default timeout setting of "+defaultTimeout+" with "+ nTimeout, writers);
 			}
 
 			if (queue == null) {
@@ -231,11 +268,13 @@ public class QueueCreator {
 				}
 			}
 		}
+	}
 
+	private static void createFixedQuerySenders(Map<String, Map<String, Object>> queues, List<String> jdbcFixedQuerySenders, Properties properties, Map<String, Object> writers, IbisContext ibisContext, String correlationId) {
 		debugMessage("Initialize jdbc fixed query senders", writers);
-		iterator = jdbcFixedQuerySenders.iterator();
+		Iterator<String> iterator = jdbcFixedQuerySenders.iterator();
 		while (queues != null && iterator.hasNext()) {
-			String name = (String)iterator.next();
+			String name = iterator.next();
 
 			Properties queueProperties = QueueUtils.getSubProperties(properties, name);
 			boolean allFound = false;
@@ -246,7 +285,7 @@ public class QueueCreator {
 				queueProperties.setProperty("blobSmartGet", getBlobSmartString);
 			}
 
-			Map<String, Object> querySendersInfo = new HashMap<String, Object>();
+			Map<String, Object> querySendersInfo = new HashMap<>();
 			while (!allFound && queues != null) {
 				preDelete = (String)properties.get(name + ".preDel" + preDeleteIndex);
 				if (preDelete != null) {
@@ -364,68 +403,62 @@ public class QueueCreator {
 				debugMessage("Opened jdbc connection '" + name + "'", writers);
 			}
 		}
+	}
 
+	private static void createWebServiceSenders(Map<String, Map<String, Object>> queues, List<String> webServiceSenders, Properties properties, Map<String, Object> writers) throws ConfigurationException, SenderException {
 		debugMessage("Initialize web service senders", writers);
-		iterator = webServiceSenders.iterator();
+		Iterator<String> iterator = webServiceSenders.iterator();
 		while (queues != null && iterator.hasNext()) {
-			String name = (String)iterator.next();
+			String name = iterator.next();
 			Boolean convertExceptionToMessage = new Boolean((String)properties.get(name + ".convertExceptionToMessage"));
 
-			try {
-				WebServiceSender webServiceSender = QueueUtils.createSender(WebServiceSender.class);
-				Properties queueProperties = QueueUtils.getSubProperties(properties, name);
-				QueueUtils.invokeSetters(webServiceSender, queueProperties);
-				webServiceSender.configure();
-				webServiceSender.open();
+			WebServiceSender webServiceSender = QueueUtils.createQueue(WebServiceSender.class);
+			Properties queueProperties = QueueUtils.getSubProperties(properties, name);
+			QueueUtils.invokeSetters(webServiceSender, queueProperties);
+			webServiceSender.configure();
+			webServiceSender.open();
 
-				Map<String, Object> webServiceSenderInfo = new HashMap<>();
-				webServiceSenderInfo.put("webServiceSender", webServiceSender);
-				webServiceSenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
-				queues.put(name, webServiceSenderInfo);
-				debugMessage("Opened web service sender '" + name + "'", writers);
-			} catch (Exception e) {
-				closeQueues(queues, properties, writers, correlationId);
-				queues = null;
-				errorMessage("ERROR on ["+name+"]: "+e.getMessage(), writers);
-			}
+			Map<String, Object> webServiceSenderInfo = new HashMap<>();
+			webServiceSenderInfo.put("webServiceSender", webServiceSender);
+			webServiceSenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
+			queues.put(name, webServiceSenderInfo);
+			debugMessage("Opened web service sender '" + name + "'", writers);
 		}
+	}
 
+	private static void createWebServiceListeners(Map<String, Map<String, Object>> queues, List<String> webServiceListeners, Properties properties, Map<String, Object> writers, int defaultTimeout) throws ListenerException {
 		debugMessage("Initialize web service listeners", writers);
-		iterator = webServiceListeners.iterator();
+		Iterator<String> iterator = webServiceListeners.iterator();
 		while (queues != null && iterator.hasNext()) {
-			String name = (String)iterator.next();
+			String name = iterator.next();
 
 			//Deprecation warning
 			if(properties.contains(name + ".requestTimeOut") || properties.contains(name + ".responseTimeOut")) {
 				errorMessage("properties "+name+".requestTimeOut/"+name+".responseTimeOut have been replaced with "+name+".timeout", writers);
 			}
 
-			try {
-				WebServiceListener webServiceListener = QueueUtils.createListener(WebServiceListener.class);
-				ListenerMessageHandler handler = new ListenerMessageHandler<>();
-				handler.setTimeout(parameterTimeout);
-				Properties queueProperties = QueueUtils.getSubProperties(properties, name);
-				QueueUtils.invokeSetters(handler, queueProperties); //timeout settings
-				QueueUtils.invokeSetters(webServiceListener, queueProperties);
-				webServiceListener.setHandler(handler);
+			WebServiceListener webServiceListener = QueueUtils.createQueue(WebServiceListener.class);
+			ListenerMessageHandler handler = new ListenerMessageHandler<>();
+			handler.setTimeout(defaultTimeout);
+			Properties queueProperties = QueueUtils.getSubProperties(properties, name);
+			QueueUtils.invokeSetters(handler, queueProperties); //timeout settings
+			QueueUtils.invokeSetters(webServiceListener, queueProperties);
+			webServiceListener.setHandler(handler);
 //				webServiceListener.configure();//TODO why was configure never called?
-				webServiceListener.open();
+			webServiceListener.open();
 
-				Map<String, Object> webServiceListenerInfo = new HashMap<>();
-				webServiceListenerInfo.put("webServiceListener", webServiceListener);
-				webServiceListenerInfo.put("listenerMessageHandler", handler);
-				queues.put(name, webServiceListenerInfo);
-			} catch (Exception e) {
-				closeQueues(queues, properties, writers, correlationId);
-				queues = null;
-				errorMessage("ERROR on ["+name+"]: "+e.getMessage(), writers);
-			}
+			Map<String, Object> webServiceListenerInfo = new HashMap<>();
+			webServiceListenerInfo.put("webServiceListener", webServiceListener);
+			webServiceListenerInfo.put("listenerMessageHandler", handler);
+			queues.put(name, webServiceListenerInfo);
 		}
+	}
 
+	private static void createHttpSenders(Map<String, Map<String, Object>> queues, List<String> httpSenders, Properties properties, Map<String, Object> writers) throws ClassLoaderException, ConfigurationException, SenderException {
 		debugMessage("Initialize http senders", writers);
-		iterator = httpSenders.iterator();
+		Iterator<String> iterator = httpSenders.iterator();
 		while (queues != null && iterator.hasNext()) {
-			String name = (String)iterator.next();
+			String name = iterator.next();
 			ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
 
 			try {
@@ -433,13 +466,13 @@ public class QueueCreator {
 				// styleSheetName relative to the scenarioDirectory.
 				//TODO create larva classloader without basepath
 				DirectoryClassLoader directoryClassLoader = new DirectoryClassLoader(originalClassLoader);
-				directoryClassLoader.setDirectory(scenarioDirectory);
+//				directoryClassLoader.setDirectory(scenarioDirectory);
 				directoryClassLoader.setBasePath(".");
 				directoryClassLoader.configure(null, "dummy");
 				Thread.currentThread().setContextClassLoader(directoryClassLoader);
 
 				// Create the actual sender
-				HttpSender httpSender = QueueUtils.createSender(HttpSender.class);
+				HttpSender httpSender = QueueUtils.createQueue(HttpSender.class);
 				Properties queueProperties = QueueUtils.getSubProperties(properties, name);
 				QueueUtils.invokeSetters(httpSender, queueProperties);
 
@@ -462,143 +495,142 @@ public class QueueCreator {
 				httpSenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
 				queues.put(name, httpSenderInfo);
 				debugMessage("Opened http sender '" + name + "'", writers);
-			} catch (Exception e) {
-				errorMessage("ERROR on ["+name+"]: "+e.getMessage(), writers);
-				closeQueues(queues, properties, writers, correlationId);
-				queues = null;
 			} finally {
 				if (originalClassLoader != null) {
 					Thread.currentThread().setContextClassLoader(originalClassLoader);
 				}
 			}
 		}
+	}
 
+	private static void createIbisJavaSenders(Map<String, Map<String, Object>> queues, List<String> ibisJavaSenders, Properties properties, Map<String, Object> writers, String correlationId) throws ConfigurationException, SenderException {
 		debugMessage("Initialize ibis java senders", writers);
-		iterator = ibisJavaSenders.iterator();
+		Iterator<String> iterator = ibisJavaSenders.iterator();
 		while (queues != null && iterator.hasNext()) {
-			String name = (String)iterator.next();
-			String serviceName = (String)properties.get(name + ".serviceName");
-			Boolean convertExceptionToMessage = new Boolean((String)properties.get(name + ".convertExceptionToMessage"));
-			if (serviceName == null) {
-				closeQueues(queues, properties, writers, correlationId);
-				queues = null;
-				errorMessage("Could not find serviceName property for " + name, writers);
-			} else {
-				IbisJavaSender ibisJavaSender = QueueUtils.createSender(IbisJavaSender.class);
-				ibisJavaSender.setServiceName(serviceName);
-				PipeLineSession session = new PipeLineSession();
-				Map<String, Object> paramPropertiesMap = createParametersMapFromParamProperties(properties, name, writers, true, session);
-				Iterator<String> parameterNameIterator = paramPropertiesMap.keySet().iterator();
-				while (parameterNameIterator.hasNext()) {
-					String parameterName = parameterNameIterator.next();
-					Parameter parameter = (Parameter)paramPropertiesMap.get(parameterName);
-					ibisJavaSender.addParameter(parameter);
-				}
-				try {
-					ibisJavaSender.configure();
-				} catch(ConfigurationException e) {
-					errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
-					closeQueues(queues, properties, writers, correlationId);
-					queues = null;
-				}
-				if (queues != null) {
-					try {
-						ibisJavaSender.open();
-					} catch (SenderException e) {
-						closeQueues(queues, properties, writers, correlationId);
-						queues = null;
-						errorMessage("Could not open '" + name + "': " + e.getMessage(), e, writers);
-					}
-					if (queues != null) {
-						Map<String, Object> ibisJavaSenderInfo = new HashMap<String, Object>();
-						ibisJavaSenderInfo.put("ibisJavaSender", ibisJavaSender);
-						ibisJavaSenderInfo.put("session", session);
-						ibisJavaSenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
-						queues.put(name, ibisJavaSenderInfo);
-						debugMessage("Opened ibis java sender '" + name + "'", writers);
-					}
-				}
-			}
-		}
+			String name = iterator.next();
 
+			IbisJavaSender ibisJavaSender = QueueUtils.createQueue(IbisJavaSender.class);
+			Properties queueProperties = QueueUtils.getSubProperties(properties, name);
+			QueueUtils.invokeSetters(ibisJavaSender, queueProperties);
+
+			PipeLineSession session = new PipeLineSession();
+			Map<String, Object> paramPropertiesMap = createParametersMapFromParamProperties(properties, name, writers, true, session);
+			Iterator<String> parameterNameIterator = paramPropertiesMap.keySet().iterator();
+			while (parameterNameIterator.hasNext()) {
+				String parameterName = parameterNameIterator.next();
+				Parameter parameter = (Parameter)paramPropertiesMap.get(parameterName);
+				ibisJavaSender.addParameter(parameter);
+			}
+
+			ibisJavaSender.configure();
+			ibisJavaSender.open();
+
+			Map<String, Object> ibisJavaSenderInfo = new HashMap<>();
+			ibisJavaSenderInfo.put("ibisJavaSender", ibisJavaSender);
+			ibisJavaSenderInfo.put("session", session);
+			Boolean convertExceptionToMessage = new Boolean((String)properties.get(name + ".convertExceptionToMessage"));
+			ibisJavaSenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
+			queues.put(name, ibisJavaSenderInfo);
+			debugMessage("Opened ibis java sender '" + name + "'", writers);
+		}
+	}
+
+	private static void createDelaySenders(Map<String, Map<String, Object>> queues, List<String> delaySenders, Properties properties, Map<String, Object> writers) {
 		debugMessage("Initialize delay senders", writers);
-		iterator = delaySenders.iterator();
+		Iterator<String> iterator = delaySenders.iterator();
 		while (queues != null && iterator.hasNext()) {
-			String name = (String)iterator.next();
+			String name = iterator.next();
 			Boolean convertExceptionToMessage = new Boolean((String)properties.get(name + ".convertExceptionToMessage"));
-			try {
-				DelaySender delaySender = QueueUtils.createSender(DelaySender.class);
 
-				Map<String, Object> delaySenderInfo = new HashMap<String, Object>();
-				delaySenderInfo.put("delaySender", delaySender);
-				delaySenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
-				queues.put(name, delaySenderInfo);
-				debugMessage("Opened delay sender '" + name + "'", writers);
-			} catch (Exception e) {
-				errorMessage("ERROR on ["+name+"]: "+e.getMessage(), writers);
-			}
+			DelaySender delaySender = QueueUtils.createQueue(DelaySender.class);
+			Properties queueProperties = QueueUtils.getSubProperties(properties, name);
+			QueueUtils.invokeSetters(delaySender, queueProperties);
+
+			Map<String, Object> delaySenderInfo = new HashMap<>();
+			delaySenderInfo.put("delaySender", delaySender);
+			delaySenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
+//				queues.put(name, QueueWrapper.from(delaySender).setConvertExceptionToMessage(convertExceptionToMessage));
+			queues.put(name, delaySenderInfo);
+			debugMessage("Opened delay sender '" + name + "'", writers);
 		}
+	}
 
+	private static void createJavaListeners(Map<String, Map<String, Object>> queues, List<String> javaListeners, Properties properties, Map<String, Object> writers, int defaultTimeout) throws ConfigurationException, ListenerException {
 		debugMessage("Initialize java listeners", writers);
-		iterator = javaListeners.iterator();
+		Iterator<String> iterator = javaListeners.iterator();
 		while (queues != null && iterator.hasNext()) {
-			String name = (String)iterator.next();
+			String name = iterator.next();
 
 			//Deprecation warning
 			if(properties.contains(name + ".requestTimeOut") || properties.contains(name + ".responseTimeOut")) {
 				errorMessage("properties "+name+".requestTimeOut/"+name+".responseTimeOut have been replaced with "+name+".timeout", writers);
 			}
 
-			try {
-				JavaListener javaListener = QueueUtils.createListener(JavaListener.class);
-				ListenerMessageHandler handler = new ListenerMessageHandler<>();
-				handler.setTimeout(parameterTimeout);
-				Properties queueProperties = QueueUtils.getSubProperties(properties, name);
-				QueueUtils.invokeSetters(handler, queueProperties); //timeout settings
-				QueueUtils.invokeSetters(javaListener, queueProperties);
-				javaListener.setHandler(handler);
-				javaListener.configure();
-				javaListener.open();
+			JavaListener javaListener = QueueUtils.createQueue(JavaListener.class);
+			ListenerMessageHandler handler = new ListenerMessageHandler<>();
+			handler.setTimeout(defaultTimeout);
+			Properties queueProperties = QueueUtils.getSubProperties(properties, name);
+			QueueUtils.invokeSetters(handler, queueProperties); //timeout settings
+			QueueUtils.invokeSetters(javaListener, queueProperties);
+			javaListener.setHandler(handler);
+			javaListener.configure();
+			javaListener.open();
 
-				Map<String, Object> javaListenerInfo = new HashMap<>();
-				javaListenerInfo.put("javaListener", javaListener);
-				javaListenerInfo.put("listenerMessageHandler", handler);
-				queues.put(name, javaListenerInfo);
-				debugMessage("Opened java listener '" + name + "'", writers);
-			} catch (Exception e) {
-				errorMessage("ERROR on ["+name+"]: "+e.getMessage(), writers);
-			}
+			Map<String, Object> javaListenerInfo = new HashMap<>();
+			javaListenerInfo.put("javaListener", javaListener);
+			javaListenerInfo.put("listenerMessageHandler", handler);
+			queues.put(name, javaListenerInfo);
+			debugMessage("Opened java listener '" + name + "'", writers);
 		}
+	}
 
+	private static void createFileSenders(Map<String, Map<String, Object>> queues, List<String> fileSenders, Properties properties, Map<String, Object> writers) throws ConfigurationException {
 		debugMessage("Initialize file senders", writers);
-		iterator = fileSenders.iterator();
+		Iterator<String>iterator = fileSenders.iterator();
 		while (queues != null && iterator.hasNext()) {
-			String queueName = (String)iterator.next();
+			String queueName = iterator.next();
 
-			try {
-				IQueue fileSender = QueueUtils.createQueue(FileSender.class);
-				Properties queueProperties = QueueUtils.getSubProperties(properties, queueName);
-				QueueUtils.invokeSetters(fileSender, queueProperties);
-				fileSender.configure();
+			IConfigurable fileSender = QueueUtils.createQueue(FileSender.class);
+			Properties queueProperties = QueueUtils.getSubProperties(properties, queueName);
+			QueueUtils.invokeSetters(fileSender, queueProperties);
+			fileSender.configure();
 
-				Map<String, Object> fileSenderInfo = new HashMap<>();
-				fileSenderInfo.put("fileSender", fileSender);
-				queues.put(queueName, fileSenderInfo);
-				debugMessage("Opened file sender '" + queueName + "'", writers);
-			} catch (Exception e) {
-				errorMessage("ERROR on ["+queueName+"]: "+e.getMessage(), writers);
+			Map<String, Object> fileSenderInfo = new HashMap<>();
+			fileSenderInfo.put("fileSender", fileSender);
+			queues.put(queueName, fileSenderInfo);
+			debugMessage("Opened file sender '" + queueName + "'", writers);
+		}
+	}
+
+	private static void createFileListeners(Map<String, Map<String, Object>> queues, List<String> fileListeners, Properties properties, Map<String, Object> writers) throws ConfigurationException {
+		debugMessage("Initialize file listeners", writers);
+		Iterator<String> iterator = fileListeners.iterator();
+		while (queues != null && iterator.hasNext()) {
+			String queueName = iterator.next();
+
+			IConfigurable fileListener = QueueUtils.createQueue(FileListener.class);
+			Properties queueProperties = QueueUtils.getSubProperties(properties, queueName);
+			QueueUtils.invokeSetters(fileListener, queueProperties);
+			fileListener.configure();
+
+			Map<String, Object> fileListenerInfo = new HashMap<String, Object>();
+			fileListenerInfo.put("fileListener", fileListener);
+			queues.put(queueName, fileListenerInfo);
+			debugMessage("Opened file listener '" + queueName + "'", writers);
+			if (fileListenerCleanUp(queueName, (FileListener) fileListener, writers)) {
+				errorMessage("Found old messages on '" + queueName + "'", writers);
 			}
 		}
+	}
 
-		createFileListeners(queues, fileListeners, properties, writers);
-
+	private static void createXsltProviderListeners(Map<String, Map<String, Object>> queues, List<String> xsltProviderListeners, Properties properties, Map<String, Object> writers) {
 		debugMessage("Initialize xslt provider listeners", writers);
-		iterator = xsltProviderListeners.iterator();
+		Iterator<String> iterator = xsltProviderListeners.iterator();
 		while (queues != null && iterator.hasNext()) {
-			String queueName = (String)iterator.next();
+			String queueName = iterator.next();
 			String filename  = (String)properties.get(queueName + ".filename");
 			if (filename == null) {
-				closeQueues(queues, properties, writers, correlationId);
+				closeQueues(queues, properties, writers, null);
 				queues = null;
 				errorMessage("Could not find filename property for " + queueName, writers);
 			} else {
@@ -643,40 +675,17 @@ public class QueueCreator {
 					queues.put(queueName, xsltProviderListenerInfo);
 					debugMessage("Opened xslt provider listener '" + queueName + "'", writers);
 				} catch(ListenerException e) {
-					closeQueues(queues, properties, writers, correlationId);
+					closeQueues(queues, properties, writers, null);
 					queues = null;
 					errorMessage("Could not create xslt provider listener for '" + queueName + "': " + e.getMessage(), e, writers);
 				}
 			}
 		}
-
-		return queues;
 	}
 
-	private static void createFileListeners(Map<String, Map<String, Object>> queues, List<String> fileListeners, Properties properties, Map<String, Object> writers) {
-		debugMessage("Initialize file listeners", writers);
-		Iterator<String> iterator = fileListeners.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String queueName = iterator.next();
 
-			try {
-				IQueue fileListener = QueueUtils.createQueue(FileListener.class);
-				Properties queueProperties = QueueUtils.getSubProperties(properties, queueName);
-				QueueUtils.invokeSetters(fileListener, queueProperties);
-				fileListener.configure();
 
-				Map<String, Object> fileListenerInfo = new HashMap<String, Object>();
-				fileListenerInfo.put("fileListener", fileListener);
-				queues.put(queueName, fileListenerInfo);
-				debugMessage("Opened file listener '" + queueName + "'", writers);
-				if (fileListenerCleanUp(queueName, (FileListener) fileListener, writers)) {
-					errorMessage("Found old messages on '" + queueName + "'", writers);
-				}
-			} catch (Exception e) {
-				errorMessage("ERROR on ["+queueName+"]: "+e.getMessage(), writers);
-			}
-		}
-	}
+
 
 	private static boolean fileListenerCleanUp(String queueName, FileListener fileListener, Map<String, Object> writers) {
 		return TestTool.fileListenerCleanUp(queueName, fileListener, writers);

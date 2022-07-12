@@ -19,10 +19,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+import org.springframework.context.ApplicationContext;
+
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.testtool.queues.IQueue;
 import nl.nn.adapterframework.util.FileUtils;
 
 /**
@@ -30,7 +34,11 @@ import nl.nn.adapterframework.util.FileUtils;
  * 
  * @author Jaco de Groot
  */
-public class FileListener implements IQueue {
+public class FileListener implements IConfigurable {
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
+	private @Getter @Setter String name;
+
 	private String filename;
 	private String filename2;
 	private String directory;

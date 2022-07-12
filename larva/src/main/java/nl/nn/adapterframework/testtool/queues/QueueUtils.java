@@ -6,9 +6,8 @@ import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.core.IListener;
+import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.http.HttpSenderBase;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.EnumUtils;
@@ -17,15 +16,7 @@ import nl.nn.adapterframework.util.LogUtil;
 public class QueueUtils {
 	private static final Logger LOG = LogUtil.getLogger(QueueUtils.class);
 
-	public static <T extends IQueue> T createQueue(Class<T> clazz) {
-		return (T) createInstance(clazz.getCanonicalName());
-	}
-
-	public static <T extends IListener<M>, M> T createListener(Class<T> clazz) {
-		return (T) createInstance(clazz.getCanonicalName());
-	}
-
-	public static <T extends ISender> T createSender(Class<T> clazz) {
+	public static <T extends IConfigurable> T createQueue(Class<T> clazz) {
 		return (T) createInstance(clazz.getCanonicalName());
 	}
 
@@ -67,7 +58,7 @@ public class QueueUtils {
 		return filteredProperties;
 	}
 
-	public static void invokeSetters(Object clazz, Properties queueProperties) throws Exception {
+	public static void invokeSetters(Object clazz, Properties queueProperties) {
 		for(Method method: clazz.getClass().getMethods()) {
 			if(!method.getName().startsWith("set") || method.getParameterTypes().length != 1)
 				continue;

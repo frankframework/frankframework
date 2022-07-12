@@ -15,12 +15,6 @@
 */
 package nl.nn.adapterframework.testtool;
 
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.testtool.queues.IQueue;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.Dir2Xml;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Enumeration;
@@ -29,13 +23,27 @@ import org.apache.tools.ant.DefaultLogger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.ProjectHelper;
 import org.apache.tools.ant.helper.ProjectHelperImpl;
+import org.springframework.context.ApplicationContext;
+
+import lombok.Getter;
+import lombok.Setter;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IConfigurable;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.Dir2Xml;
 
 /**
  * File sender for the Test Tool.
  * 
  * @author Jaco de Groot
  */
-public class FileSender implements IQueue {
+public class FileSender implements IConfigurable {
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
+	private @Getter @Setter String name;
+
 	private String filename;
 	private String encoding = "UTF-8";
 	private boolean checkDelete = true;
@@ -45,6 +53,11 @@ public class FileSender implements IQueue {
 	private boolean deletePath = false;
 	private boolean createPath = false;
 	private boolean runAnt = false;
+
+	@Override
+	public void configure() throws ConfigurationException {
+		//nothing to do there
+	}
 
 	/**
 	 * Send the message to the specified file. After writing the message to
