@@ -1,3 +1,18 @@
+/*
+   Copyright 2022 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ */
 package nl.nn.adapterframework.testtool.queues;
 
 import java.lang.reflect.Constructor;
@@ -13,6 +28,14 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
+/**
+ * Reflection helper to create Larva Queues'
+ * 
+ * When a class is created it will attempt to set the name and disable HTTP SSL capabilities by default
+ * When setting the bean properties it loops through the available setter methods and looks for a matching property.
+ * 
+ * @author Niels Meijer
+ */
 public class QueueUtils {
 	private static final Logger LOG = LogUtil.getLogger(QueueUtils.class);
 

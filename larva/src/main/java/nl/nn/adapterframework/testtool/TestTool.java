@@ -1,5 +1,5 @@
 /*
-   Copyright 2014-2019 Nationale-Nederlanden, 2020-2022 WeAreFrank
+   Copyright 2014-2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -63,7 +63,6 @@ import org.apache.logging.log4j.Logger;
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
 
-import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.ISender;
@@ -136,16 +135,6 @@ public class TestTool {
 		return IbisApplicationServlet.getIbisContext(application);
 	}
 
-	public static AppConstants getAppConstants(IbisContext ibisContext) {
-		// Load AppConstants using a class loader to get an instance that has
-		// resolved application.server.type in ServerSpecifics*.properties,
-		// SideSpecifics*.properties and StageSpecifics*.properties filenames
-		// See IbisContext.setDefaultApplicationServerType() and userstory
-		// 'Refactor ConfigurationServlet en AppConstants' too.
-		Configuration configuration = ibisContext.getIbisManager().getConfigurations().get(0);
-		return AppConstants.getInstance(configuration.getClassLoader());
-	}
-
 	public static void runScenarios(ServletContext application, HttpServletRequest request, Writer out) {
 		runScenarios(application, request, out, false);
 	}
@@ -168,8 +157,7 @@ public class TestTool {
 		String realPath = application.getRealPath(servletPath.substring(0, i));
 		String paramScenariosRootDirectory = request.getParameter("scenariosrootdirectory");
 		IbisContext ibisContext = getIbisContext(application);
-		AppConstants appConstants = getAppConstants(ibisContext);
-		runScenarios(ibisContext, appConstants, paramLogLevel,
+		runScenarios(ibisContext, paramLogLevel,
 				paramAutoScroll, paramExecute, paramWaitBeforeCleanUp, timeout,
 				realPath, paramScenariosRootDirectory, out, silent);
 	}
@@ -181,10 +169,11 @@ public class TestTool {
 	 * 		   0: all scenarios passed
 	 * 		   positive: number of scenarios that failed
 	 */
-	public static int runScenarios(IbisContext ibisContext, AppConstants appConstants, String paramLogLevel,
+	public static int runScenarios(IbisContext ibisContext, String paramLogLevel,
 			String paramAutoScroll, String paramExecute, String paramWaitBeforeCleanUp,
 			int timeout, String realPath, String paramScenariosRootDirectory,
 			Writer out, boolean silent) {
+		AppConstants appConstants = AppConstants.getInstance();
 		String logLevel = "wrong pipeline messages";
 		String autoScroll = "true";
 		if (paramLogLevel != null && LOG_LEVEL_ORDER.indexOf("[" + paramLogLevel + "]") > -1) {
@@ -219,7 +208,7 @@ public class TestTool {
 		List<String> scenariosRootDirectories = new ArrayList<String>();
 		List<String> scenariosRootDescriptions = new ArrayList<String>();
 		String currentScenariosRootDirectory = initScenariosRootDirectories(
-				appConstants, realPath,
+				realPath,
 				paramScenariosRootDirectory, scenariosRootDirectories,
 				scenariosRootDescriptions, writers);
 		if (scenariosRootDirectories.size() == 0) {
@@ -990,11 +979,8 @@ public class TestTool {
 		}
 	}
 
-	public static String initScenariosRootDirectories(
-			AppConstants appConstants, String realPath,
-			String paramScenariosRootDirectory,
-			List<String> scenariosRootDirectories, List<String> scenariosRootDescriptions,
-			Map<String, Object> writers) {
+	public static String initScenariosRootDirectories(String realPath, String paramScenariosRootDirectory, List<String> scenariosRootDirectories, List<String> scenariosRootDescriptions, Map<String, Object> writers) {
+		AppConstants appConstants = AppConstants.getInstance();
 		String currentScenariosRootDirectory = null;
 		if (realPath == null) {
 			errorMessage("Could not read webapp real path", writers);
@@ -2092,8 +2078,7 @@ public class TestTool {
 
 	// Used by saveResultToFile.jsp
 	public static void windiff(ServletContext application, HttpServletRequest request, String expectedFileName, String result, String expected) throws IOException, SenderException {
-		IbisContext ibisContext = getIbisContext(application);
-		AppConstants appConstants = getAppConstants(ibisContext);
+		AppConstants appConstants = AppConstants.getInstance();
 		String windiffCommand = appConstants.getResolvedProperty("larva.windiff.command");
 		if (windiffCommand == null) {
 			String servletPath = request.getServletPath();
@@ -2102,7 +2087,7 @@ public class TestTool {
 			List<String> scenariosRootDirectories = new ArrayList<String>();
 			List<String> scenariosRootDescriptions = new ArrayList<String>();
 			String currentScenariosRootDirectory = TestTool.initScenariosRootDirectories(
-					appConstants, realPath,
+					realPath,
 					null, scenariosRootDirectories,
 					scenariosRootDescriptions, null);
 			windiffCommand = currentScenariosRootDirectory + "..\\..\\IbisAlgemeenWasbak\\WinDiff\\WinDiff.Exe";

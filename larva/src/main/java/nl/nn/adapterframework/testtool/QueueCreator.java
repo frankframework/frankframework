@@ -1,3 +1,18 @@
+/*
+   Copyright 2022 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ */
 package nl.nn.adapterframework.testtool;
 
 import java.io.IOException;
@@ -10,7 +25,6 @@ import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.configuration.ClassLoaderException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader;
@@ -107,7 +121,17 @@ public class QueueCreator {
 			}
 		}
 
+		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
 		try {
+			// Use directoryClassLoader to make it possible to specify
+			// styleSheetName relative to the scenarioDirectory.
+			//TODO Run larva in it's own Configuration
+			DirectoryClassLoader directoryClassLoader = new DirectoryClassLoader(originalClassLoader);
+			directoryClassLoader.setDirectory(scenarioDirectory);
+			directoryClassLoader.setBasePath(".");
+			directoryClassLoader.configure(null, "dummy");
+			Thread.currentThread().setContextClassLoader(directoryClassLoader);
+
 			createJmsSenders(queues, jmsSenders, properties, writers, ibisContext, correlationId);
 
 			createJmsListeners(queues, jmsListeners, properties, writers, ibisContext, correlationId, parameterTimeout);
@@ -135,6 +159,10 @@ public class QueueCreator {
 			closeQueues(queues, properties, writers, null);
 			queues = null;
 			errorMessage(e.getClass().getSimpleName() + ": "+e.getMessage(), e, writers);
+		} finally {
+			if (originalClassLoader != null) {
+				Thread.currentThread().setContextClassLoader(originalClassLoader);
+			}
 		}
 
 		return queues;
@@ -454,52 +482,36 @@ public class QueueCreator {
 		}
 	}
 
-	private static void createHttpSenders(Map<String, Map<String, Object>> queues, List<String> httpSenders, Properties properties, Map<String, Object> writers) throws ClassLoaderException, ConfigurationException, SenderException {
+	private static void createHttpSenders(Map<String, Map<String, Object>> queues, List<String> httpSenders, Properties properties, Map<String, Object> writers) throws ConfigurationException, SenderException {
 		debugMessage("Initialize http senders", writers);
 		Iterator<String> iterator = httpSenders.iterator();
 		while (queues != null && iterator.hasNext()) {
 			String name = iterator.next();
-			ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
 
-			try {
-				// Use directoryClassLoader to make it possible to specify
-				// styleSheetName relative to the scenarioDirectory.
-				//TODO create larva classloader without basepath
-				DirectoryClassLoader directoryClassLoader = new DirectoryClassLoader(originalClassLoader);
-//				directoryClassLoader.setDirectory(scenarioDirectory);
-				directoryClassLoader.setBasePath(".");
-				directoryClassLoader.configure(null, "dummy");
-				Thread.currentThread().setContextClassLoader(directoryClassLoader);
+			// Create the actual sender
+			HttpSender httpSender = QueueUtils.createQueue(HttpSender.class);
+			Properties queueProperties = QueueUtils.getSubProperties(properties, name);
+			QueueUtils.invokeSetters(httpSender, queueProperties);
 
-				// Create the actual sender
-				HttpSender httpSender = QueueUtils.createQueue(HttpSender.class);
-				Properties queueProperties = QueueUtils.getSubProperties(properties, name);
-				QueueUtils.invokeSetters(httpSender, queueProperties);
-
-				PipeLineSession session = new PipeLineSession();
-				Map<String, Object> paramPropertiesMap = createParametersMapFromParamProperties(properties, name, writers, true, session);
-				Iterator<String> parameterNameIterator = paramPropertiesMap.keySet().iterator();
-				while (parameterNameIterator.hasNext()) {
-					String parameterName = parameterNameIterator.next();
-					Parameter parameter = (Parameter)paramPropertiesMap.get(parameterName);
-					httpSender.addParameter(parameter);
-				}
-
-				httpSender.configure();
-				httpSender.open();
-
-				Map<String, Object> httpSenderInfo = new HashMap<>();
-				httpSenderInfo.put("httpSender", httpSender);
-				httpSenderInfo.put("session", session);
-				Boolean convertExceptionToMessage = new Boolean((String)properties.get(name + ".convertExceptionToMessage"));
-				httpSenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
-				queues.put(name, httpSenderInfo);
-				debugMessage("Opened http sender '" + name + "'", writers);
-			} finally {
-				if (originalClassLoader != null) {
-					Thread.currentThread().setContextClassLoader(originalClassLoader);
-				}
+			PipeLineSession session = new PipeLineSession();
+			Map<String, Object> paramPropertiesMap = createParametersMapFromParamProperties(properties, name, writers, true, session);
+			Iterator<String> parameterNameIterator = paramPropertiesMap.keySet().iterator();
+			while (parameterNameIterator.hasNext()) {
+				String parameterName = parameterNameIterator.next();
+				Parameter parameter = (Parameter)paramPropertiesMap.get(parameterName);
+				httpSender.addParameter(parameter);
 			}
+
+			httpSender.configure();
+			httpSender.open();
+
+			Map<String, Object> httpSenderInfo = new HashMap<>();
+			httpSenderInfo.put("httpSender", httpSender);
+			httpSenderInfo.put("session", session);
+			Boolean convertExceptionToMessage = new Boolean((String)properties.get(name + ".convertExceptionToMessage"));
+			httpSenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
+			queues.put(name, httpSenderInfo);
+			debugMessage("Opened http sender '" + name + "'", writers);
 		}
 	}
 
