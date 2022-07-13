@@ -20,23 +20,14 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 import javax.json.Json;
-import javax.json.JsonObject;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonStructure;
 
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.DistributionSummary;
@@ -52,10 +43,11 @@ import io.micrometer.core.instrument.simple.SimpleConfig;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipe;
+import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.pipes.SenderPipe;
 
 public class FrankStatisticsRegistry extends SimpleMeterRegistry {
 	private static final NumberFormat keyFormat = new DecimalFormat("#");
-	private AtomicInteger order = new AtomicInteger();
 
 	public FrankStatisticsRegistry(SimpleConfig config) {
 		super(config, Clock.SYSTEM);
@@ -64,33 +56,22 @@ public class FrankStatisticsRegistry extends SimpleMeterRegistry {
 	@Override
 	protected DistributionSummary newDistributionSummary(Id id, DistributionStatisticConfig distributionStatisticConfig, double scale) {
 		DistributionStatisticConfig merged = distributionStatisticConfig.merge(DistributionStatisticConfig.builder().expiry(Duration.ofHours(1)).build());
-		DistributionSummary summary = new FrankDistributionSummary(id, clock, merged, scale, false, order.getAndIncrement());
+		DistributionSummary summary = new FrankDistributionSummary(id, clock, merged, scale, false);
 
 		HistogramGauges.registerWithCommonFormat(summary, this);
 
 		return summary;
 	}
 
-	public Map<String, Object> doSomething(IAdapter adapter) {
+	public JsonStructure scrape(IAdapter adapter) {
 		List<Tag> searchTags = new ArrayList<>();
 		searchTags.add(Tag.of("type", "application"));
 		if(adapter != null) {
 			searchTags.add(Tag.of("adapter", adapter.getName()));
 		}
 
-//		JsonObjectBuilder root = Json.createObjectBuilder();
-//		JsonObjectBuilder pipeline = Json.createObjectBuilder();
-//		root.add("pipeline", pipeline);
-//		JsonArrayBuilder duration = Json.createArrayBuilder();
-//		pipeline.add("duration", duration);
-
-//		JsonArrayBuilder pipes = Json.createArrayBuilder();
-//		JsonObjectBuilder pipe = Json.createObjectBuilder();
-//		pipe.add("name", name);
-//		duration.add(pipe);
-
+		List<IPipe> pipes = adapter.getPipeLine().getPipes();
 		Search search = Search.in(this).tags(searchTags);
-		Map<String, Object> root = new LinkedHashMap<>();
 
 //		for(DistributionSummary meter : search.name("frank.pipeline.duration").summaries()) { //n -> true
 //			System.err.println(meter.getClass());
@@ -108,70 +89,92 @@ public class FrankStatisticsRegistry extends SimpleMeterRegistry {
 //		frank.receivers.messagesReceived
 //		frank.receivers.messagesRejected
 //		frank.receivers.messagesRetried
-		try {
 
-		root.put("durationPerPipe", getDistributionSummary(search, "frank.pipeline.duration"));
-
-		List<JsonObject> adapterStats = getDistributionSummary(search, "frank");
-		if(adapterStats.isEmpty()) {
-			return null;
-		}
-
-		root.put("totalMessageProccessingTime", adapterStats.get(0));
+		JsonObjectBuilder root = Json.createObjectBuilder();
+		root.add("totalMessageProccessingTime", getDistributionSummary(search));
 //		root.put("receivers", getReceivers(search, "frank.receivers.messagesReceived"));
-//		root.put("durationPerPipe2", getDistributionSummary(search, "frank.pipeline.duration"));
-//		root.put("sizePerPipe", getDistributionSummary(search, "frank.pipeline.size"));
-		} catch (Throwable t) {t.printStackTrace();}
+		root.add("durationPerPipe", getDistributionSummary(pipes, search, "frank.pipeline.duration"));
+		root.add("sizePerPipe", getDistributionSummary(pipes, search, "frank.pipeline.size"));
+
+		return root.build();
+	}
+
+	private JsonObjectBuilder getDistributionSummary(Search search) {
+		DistributionSummary summary = search.name("frank").summary();
+		return readSummary((FrankDistributionSummary) summary);
+	}
+
+	private JsonArrayBuilder getDistributionSummary(Search search, String summaryName) {
+		JsonArrayBuilder root = Json.createArrayBuilder();
+		Collection<DistributionSummary> summaries = search.name(summaryName).summaries();
+
+		for(DistributionSummary distSum : summaries) { //n -> true
+			root.add(readSummary((FrankDistributionSummary) distSum));
+		}
 
 		return root;
 	}
 
-	private Map<String, Map<String, Object>> getMeters(Search search, String meterName) {
-		return null;
-	}
+	//This feels too complicated still...
+	private JsonArrayBuilder getDistributionSummary(List<IPipe> pipes, Search search, String summaryName) {
+		//See PipeLine.iterateOverStatistics(...)
+		List<String> metricOrder = new ArrayList<>();
+		for (IPipe pipe : pipes) {
+			metricOrder.add(pipe.getName());
 
-//	private List getDistributionSummary(Search search, String summaryName) {
-	private List<JsonObject> getDistributionSummary(Search search, String summaryName) {
-//		Map<Integer, JsonObject> root = new HashMap<>();
-//		List<Map<String, Object>> root = new LinkedList<>();
-		Collection<DistributionSummary> summaries = search.name(summaryName).summaries();
-		JsonObject[] root = new JsonObject[summaries.size()];
-		for(DistributionSummary distSum : summaries) { //n -> true
-			FrankDistributionSummary summary = (FrankDistributionSummary) distSum;
-			String name = summary.getId().getTag("name");
-			JsonObjectBuilder jsonSummary = Json.createObjectBuilder();
-//			Map<String, Object> values = root.computeIfAbsent(name, e -> new LinkedHashMap<>());
-//			Map<String, Object> values = new LinkedHashMap<>();
-			String unit = summary.getId().getBaseUnit();
-			HistogramSnapshot snapshot = summary.takeSnapshot();//abstractTimeWindowHistogram
-
-			long total = summary.count();
-			jsonSummary.add("name", name);
-			jsonSummary.add("count", total);
-			jsonSummary.add("min", summary.getMin());
-			jsonSummary.add("max", format(summary.max()));
-			jsonSummary.add("avg", format(summary.mean()));
-			jsonSummary.add("stdDev", format(summary.getStdDev()));
-			jsonSummary.add("sum", format(summary.totalAmount()));
-			jsonSummary.add("first", summary.getFirst());
-			jsonSummary.add("last", summary.getLast());
-
-			//le tags, 100/1000/2000/10000
-			for (CountAtBucket bucket : snapshot.histogramCounts()) {
-				String key = keyFormat.format(bucket.bucket()) + unit;
-				jsonSummary.add(key, bucket.count());
+			if(pipe instanceof SenderPipe) {
+				//TODO validators/wrappers
+				ISender sender = ((SenderPipe) pipe).getSender();
+				metricOrder.add("getConnection for "+sender.getName()); //TODO implement getStatisticName
 			}
-
-			//phi tags, 50/90/95/98
-			for (ValueAtPercentile percentile : snapshot.percentileValues()) {
-				String key = "p" + keyFormat.format(percentile.percentile() * 100);
-				jsonSummary.add(key, format(percentile.value()));
-			}
-//			root.put(summary.getOrder(), jsonSummary.build());
-			root[summary.getOrder()] = jsonSummary.build();
 		}
 
-		return Arrays.asList(root);
+		List<FrankDistributionSummary> sum = new ArrayList<>();
+		Collection<DistributionSummary> summaries = search.name(summaryName).summaries();
+		for(DistributionSummary summary : summaries) {
+			sum.add((FrankDistributionSummary) summary);
+		}
+		sum.sort(Comparator.comparing(FrankDistributionSummary::getId, (s1, s2) -> {
+			return metricOrder.indexOf(s1.getName());
+		}));
+
+		JsonArrayBuilder root = Json.createArrayBuilder();
+		for(FrankDistributionSummary summary : sum) {
+			root.add(readSummary(summary));
+		}
+		return root;
+	}
+
+	private JsonObjectBuilder readSummary(FrankDistributionSummary summary) {
+		String name = summary.getId().getTag("name");
+		JsonObjectBuilder jsonSummary = Json.createObjectBuilder();
+		String unit = summary.getId().getBaseUnit();
+		HistogramSnapshot snapshot = summary.takeSnapshot();//abstractTimeWindowHistogram
+
+		long total = summary.count();
+		jsonSummary.add("name", name);
+		jsonSummary.add("count", total);
+		jsonSummary.add("min", summary.getMin());
+		jsonSummary.add("max", format(summary.max()));
+		jsonSummary.add("avg", format(summary.mean()));
+		jsonSummary.add("stdDev", format(summary.getStdDev()));
+		jsonSummary.add("sum", format(summary.totalAmount()));
+		jsonSummary.add("first", summary.getFirst());
+		jsonSummary.add("last", summary.getLast());
+
+		//le tags, 100/1000/2000/10000
+		for (CountAtBucket bucket : snapshot.histogramCounts()) {
+			String key = keyFormat.format(bucket.bucket()) + unit;
+			jsonSummary.add(key, bucket.count());
+		}
+
+		//phi tags, 50/90/95/98
+		for (ValueAtPercentile percentile : snapshot.percentileValues()) {
+			String key = "p" + keyFormat.format(percentile.percentile() * 100);
+			jsonSummary.add(key, format(percentile.value()));
+		}
+
+		return jsonSummary;
 	}
 
 	private double format(double val) {

@@ -76,6 +76,6 @@ public class Metrics extends Base implements InitializingBean {
 			throw new ApiException("Adapter not found!");
 		}
 
-		return Response.status(Response.Status.OK).entity(frankRegistry.doSomething(adapter)).build();
+		return Response.status(Response.Status.OK).entity(frankRegistry.scrape(adapter)).build();
 	}
 }

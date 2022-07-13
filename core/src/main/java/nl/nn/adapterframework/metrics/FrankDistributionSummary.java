@@ -39,13 +39,8 @@ public class FrankDistributionSummary extends AbstractDistributionSummary {
 	private final AtomicLong first;
 	private final AtomicLong last;
 	private final Histogram histogram;
-	private final int order;
 
 	public FrankDistributionSummary(Id id, Clock clock, DistributionStatisticConfig distributionStatisticConfig, double scale, boolean supportsAggregablePercentiles) {
-		this(id, clock, distributionStatisticConfig, scale, supportsAggregablePercentiles, 0);
-	}
-
-	public FrankDistributionSummary(Id id, Clock clock, DistributionStatisticConfig distributionStatisticConfig, double scale, boolean supportsAggregablePercentiles, int order) {
 		super(id, clock, distributionStatisticConfig, scale, supportsAggregablePercentiles);
 
 		histogram = new TimeWindowFixedBoundaryHistogram(clock, DistributionStatisticConfig.builder()
@@ -61,7 +56,6 @@ public class FrankDistributionSummary extends AbstractDistributionSummary {
 		this.count = new LongAdder();
 		this.amount = new DoubleAdder();
 		this.max = new TimeWindowMax(clock, distributionStatisticConfig);
-		this.order = order;
 	}
 
 	@Override
@@ -138,10 +132,6 @@ public class FrankDistributionSummary extends AbstractDistributionSummary {
 
 	public long getLast() {
 		return last.get();
-	}
-
-	public int getOrder() {
-		return order;
 	}
 
 	public TimeWindowFixedBoundaryHistogram getHistogram() {
