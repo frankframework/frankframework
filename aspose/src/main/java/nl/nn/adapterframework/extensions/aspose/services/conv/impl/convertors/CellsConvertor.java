@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
 
@@ -46,8 +47,8 @@ class CellsConvertor extends AbstractConvertor {
 		FILE_TYPE_MAP.put(XLSX_MEDIA_TYPE, "xlsx");
 	}
 
-	protected CellsConvertor(String pdfOutputLocation) {
-		super(pdfOutputLocation, XLS_MEDIA_TYPE, XLS_MEDIA_TYPE_MACRO_ENABLED, XLSX_MEDIA_TYPE);
+	protected CellsConvertor(CisConfiguration configuration) {
+		super(configuration, XLS_MEDIA_TYPE, XLS_MEDIA_TYPE_MACRO_ENABLED, XLSX_MEDIA_TYPE);
 	}
 
 	@Override

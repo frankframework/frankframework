@@ -72,7 +72,7 @@ public class ConfigurationUtils {
 	public static final String STUB4TESTTOOL_VALIDATORS_DISABLED_KEY = "validators.disabled";
 	public static final String STUB4TESTTOOL_XSLT_VALIDATORS_PARAM = "disableValidators";
 	public static final String STUB4TESTTOOL_XSLT = "/xml/xsl/stub4testtool.xsl";
-	
+
 	private static final String ACTIVE_XSLT = "/xml/xsl/active.xsl";
 	private static final String CANONICALIZE_XSLT = "/xml/xsl/canonicalize.xsl";
 	public static final String FRANK_CONFIG_XSD = "/xml/xsd/FrankConfig-compatibility.xsd";
@@ -247,7 +247,7 @@ public class ConfigurationUtils {
 	}
 
 	public static Map<String, String> processMultiConfigZipFile(IbisContext ibisContext, String datasource, boolean activate_config, boolean automatic_reload, InputStream file, String ruser) throws IOException, ConfigurationException {
-		Map<String, String> result = new LinkedHashMap<String, String>();
+		Map<String, String> result = new LinkedHashMap<>();
 		if (file.available() > 0) {
 			try (ZipInputStream zipInputStream = new ZipInputStream(file)) {
 				ZipEntry zipEntry;
@@ -329,7 +329,7 @@ public class ConfigurationUtils {
 	public static void removeConfigFromDatabase(IbisContext ibisContext, String name, String jmsRealm, String version) throws ConfigurationException {
 		Connection conn = null;
 		ResultSet rs = null;
-		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+		FixedQuerySender qs = ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 		qs.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
@@ -344,9 +344,7 @@ public class ConfigurationUtils {
 			stmt.execute();
 		} catch (SenderException e) {
 			throw new ConfigurationException(e);
-		} catch (JdbcException e) {
-			throw new ConfigurationException(e);
-		} catch (SQLException e) {
+		} catch (JdbcException | SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {
 			JdbcUtil.fullClose(conn, rs);
@@ -366,7 +364,7 @@ public class ConfigurationUtils {
 
 		Connection conn = null;
 		ResultSet rs = null;
-		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+		FixedQuerySender qs = ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 		qs.setDatasourceName(workdataSourceName);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
@@ -416,7 +414,7 @@ public class ConfigurationUtils {
 
 		Connection conn = null;
 		ResultSet rs = null;
-		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+		FixedQuerySender qs = ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 		qs.setDatasourceName(workdataSourceName);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
@@ -462,13 +460,13 @@ public class ConfigurationUtils {
 				String configDir = AppConstants.getInstance().getProperty("configurations.directory");
 				if(StringUtils.isEmpty(configDir))
 					throw new IOException("property [configurations.directory] not set");
-	
+
 				File directory = new File(configDir);
 				if(!directory.exists())
 					throw new IOException("failed to open configurations.directory ["+configDir+"]");
 				if(!directory.isDirectory())
 					throw new IOException("configurations.directory ["+configDir+"] is not a valid directory");
-	
+
 				for (File subFolder : directory.listFiles()) {
 					if(subFolder.isDirectory()) {
 						allConfigNameItems.put(subFolder.getName(), "DirectoryClassLoader");

@@ -14,11 +14,15 @@
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-ladybug</artifactId>
-			<version>2.2-20220527.183300</version>
+			<version>2.2-20220622.181953</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.codehaus.woodstox</groupId>
 					<artifactId>woodstox-core-asl</artifactId>
+				</exclusion>
+				<exclusion><!-- excluded because it uses an old cxf version that introduces javax.annotation -->
+					<groupId>org.apache.cxf</groupId>
+					<artifactId>cxf-rt-rs-client</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>

@@ -90,7 +90,7 @@ public final class AppConstants extends Properties implements Serializable {
 	 * because the configuration might be loaded from outside the webapp
 	 * classpath. Hence the Thread.currentThread().getContextClassLoader() at
 	 * the time the class was instantiated should be used.
-	 * 
+	 *
 	 * @see IbisContext#init()
 	 * @param cl ClassLoader to retrieve AppConstants from
 	 * @return AppConstants instance
@@ -127,7 +127,7 @@ public final class AppConstants extends Properties implements Serializable {
 	/**
 	 * Very similar to <code>System.getProperty</code> except
 	 * that the {@link SecurityException} is hidden.
-	 * 
+	 *
 	 * @param key The key to search for.
 	 * @return the string value of the system property, or NULL if there is no property with that key.
 	 */
@@ -223,7 +223,6 @@ public final class AppConstants extends Properties implements Serializable {
 	public Properties getAppConstants(String keyBase) {
 		return getAppConstants(keyBase, true, true);
 	}
-	
 
 	/**
 	 * Returns a list of {@link AppConstants#getInstance() AppConstants} which names begin with the keyBase
@@ -336,8 +335,8 @@ public final class AppConstants extends Properties implements Serializable {
 	/**
 	 * Add property only in the local AppConstants!
 	 * Try to avoid using this method and use {@link #setProperty(String, String)} if you want to set the property globally!
-	 * 
-	 * This method is used by {@link Properties#load(InputStream)} to add all properties found (in a file/stream) 
+	 *
+	 * This method is used by {@link Properties#load(InputStream)} to add all properties found (in a file/stream)
 	 * to the {@link Hashtable}.
 	 * @deprecated Use {@link #setProperty(String, String)} instead!
 	 */
@@ -421,7 +420,7 @@ public final class AppConstants extends Properties implements Serializable {
 		return ob;
 	}
 
-	 /**
+	/**
 	 * Gets a <code>boolean</code> value
 	 * Returns "true" if the retrieved value is "true", otherwise "false"
 	 * Uses the {@link #getResolvedProperty(String)} method.
@@ -429,7 +428,7 @@ public final class AppConstants extends Properties implements Serializable {
 	 * @param dfault the default value
 	 * @return double
 	 */
-	 public boolean getBoolean(String key, boolean dfault) {
+	public boolean getBoolean(String key, boolean dfault) {
 		String ob = this.getResolvedProperty(key);
 		if (ob == null)return dfault;
 

@@ -51,6 +51,7 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.StartElement;
+import javax.xml.transform.ErrorListener;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -93,7 +94,6 @@ import org.xml.sax.ext.LexicalHandler;
 import com.ctc.wstx.api.ReaderConfig;
 import com.ctc.wstx.stax.WstxInputFactory;
 
-import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.Resource;
@@ -515,12 +515,12 @@ public class XmlUtils {
 		return getXMLReader(null, handler);
 	}
 
-	public static XMLReader getXMLReader(Configuration scopeProvider) throws ParserConfigurationException, SAXException {
+	public static XMLReader getXMLReader(IScopeProvider scopeProvider) throws ParserConfigurationException, SAXException {
 		return getXMLReader(true, scopeProvider);
 	}
 
-	private static XMLReader getXMLReader(Resource resource, ContentHandler handler) throws ParserConfigurationException, SAXException {
-		XMLReader xmlReader = getXMLReader(true, resource);
+	private static XMLReader getXMLReader(IScopeProvider scopeProvider, ContentHandler handler) throws ParserConfigurationException, SAXException {
+		XMLReader xmlReader = getXMLReader(true, scopeProvider);
 		xmlReader.setContentHandler(handler);
 		if (handler instanceof LexicalHandler) {
 			xmlReader.setProperty("http://xml.org/sax/properties/lexical-handler", handler);
@@ -1018,26 +1018,30 @@ public class XmlUtils {
 	}
 
 	public static TransformerFactory getTransformerFactory() {
-		return getTransformerFactory(0);
+		return getTransformerFactory(1);
 	}
 
 	public static TransformerFactory getTransformerFactory(int xsltVersion) {
+		return getTransformerFactory(xsltVersion, new TransformerErrorListener());
+	}
+
+	public static TransformerFactory getTransformerFactory(int xsltVersion, ErrorListener errorListener) {
 		TransformerFactory factory;
 		switch (xsltVersion) {
-		case 2:
+		case 1:
+			factory=new org.apache.xalan.processor.TransformerFactoryImpl();
+			factory.setErrorListener(errorListener);
+			if (isXsltStreamingByDefault()) {
+				factory.setAttribute(org.apache.xalan.processor.TransformerFactoryImpl.FEATURE_INCREMENTAL, Boolean.TRUE);
+			}
+			return factory;
+		default:
 			factory = new net.sf.saxon.TransformerFactoryImpl();
 			// Use ErrorListener to prevent warning "Stylesheet module ....xsl
 			// is included or imported more than once. This is permitted, but
 			// may lead to errors or unexpected behavior" written to System.err
 			// (https://stackoverflow.com/questions/10096086/how-to-handle-duplicate-imports-in-xslt)
-			factory.setErrorListener(new TransformerErrorListener());
-			return factory;
-		default:
-			factory=new org.apache.xalan.processor.TransformerFactoryImpl();
-			factory.setErrorListener(new TransformerErrorListener());
-			if (isXsltStreamingByDefault()) {
-				factory.setAttribute(org.apache.xalan.processor.TransformerFactoryImpl.FEATURE_INCREMENTAL, Boolean.TRUE);
-			}
+			factory.setErrorListener(errorListener);
 			return factory;
 		}
 	}

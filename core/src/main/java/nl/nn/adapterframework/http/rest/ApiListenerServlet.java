@@ -62,7 +62,7 @@ import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
- * 
+ *
  * @author Niels Meijer
  *
  */
@@ -73,7 +73,7 @@ public class ApiListenerServlet extends HttpServletBase {
 
 	public static final String AUTHENTICATION_COOKIE_NAME = "authenticationToken";
 
-	private List<String> IGNORE_HEADERS = Arrays.asList("connection", "transfer-encoding", "content-type", "authorization");
+	private static final List<String> IGNORE_HEADERS = Arrays.asList("connection", "transfer-encoding", "content-type", "authorization");
 
 	private int authTTL = AppConstants.getInstance().getInt("api.auth.token-ttl", 60 * 60 * 24 * 7); //Defaults to 7 days
 	private String CorsAllowOrigin = AppConstants.getInstance().getString("api.auth.cors.allowOrigin", "*"); //Defaults to everything
@@ -124,7 +124,7 @@ public class ApiListenerServlet extends HttpServletBase {
 			method = EnumUtils.parse(HttpMethod.class, request.getMethod());
 		} catch (IllegalArgumentException e) {
 			response.setStatus(405);
-			log.warn(createAbortingMessage(remoteUser, 405) + "method ["+request.getMethod()+"] not allowed");
+			log.warn(createAbortMessage(remoteUser, 405) + "method ["+request.getMethod()+"] not allowed");
 			return;
 		}
 
@@ -135,7 +135,7 @@ public class ApiListenerServlet extends HttpServletBase {
 
 		if (uri==null) {
 			response.setStatus(400);
-			log.warn(createAbortingMessage(remoteUser, 400) + "empty uri");
+			log.warn(createAbortMessage(remoteUser, 400) + "empty uri");
 			return;
 		}
 		if(uri.endsWith("/")) {
@@ -143,16 +143,30 @@ public class ApiListenerServlet extends HttpServletBase {
 		}
 
 		/**
-		 * Generate an OpenApi json file
+		 * Generate OpenApi specification
 		 */
 		if(uri.equalsIgnoreCase("/openapi.json")) {
-			JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(request);
-			returnJson(response, 200, jsonSchema);
+			String specUri = request.getParameter("uri");
+			JsonObject jsonSchema = null;
+			if(specUri != null) {
+				ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(specUri);
+				if(apiConfig != null) {
+					jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, request);
+				}
+			} else {
+				jsonSchema = dispatcher.generateOpenApiJsonSchema(request);
+			}
+			if(jsonSchema != null) {
+				returnJson(response, 200, jsonSchema);
+				return;
+			}
+			response.sendError(404, "OpenApi specification not found");
 			return;
 		}
 
 		/**
 		 * Generate an OpenApi json file for a set of ApiDispatchConfigs
+		 * @Deprecated This is here to support old url's
 		 */
 		if(uri.endsWith("openapi.json")) {
 			uri = uri.substring(0, uri.lastIndexOf("/"));
@@ -162,7 +176,15 @@ public class ApiListenerServlet extends HttpServletBase {
 				returnJson(response, 200, jsonSchema);
 				return;
 			}
+			response.sendError(404, "OpenApi specification not found");
+			return;
 		}
+
+		handleRequest(request, response, method, uri);
+	}
+
+	private void handleRequest(HttpServletRequest request, HttpServletResponse response, HttpMethod method, String uri) {
+		String remoteUser = request.getRemoteUser();
 
 		/**
 		 * Initiate and populate messageContext
@@ -177,7 +199,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				ApiDispatchConfig config = dispatcher.findConfigForUri(uri);
 				if(config == null) {
 					response.setStatus(404);
-					log.warn(createAbortingMessage(remoteUser, 404) + "no ApiListener configured for ["+uri+"]");
+					log.warn(createAbortMessage(remoteUser, 404) + "no ApiListener configured for ["+uri+"]");
 					return;
 				}
 
@@ -214,7 +236,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				ApiListener listener = config.getApiListener(method);
 				if(listener == null) {
 					response.setStatus(405);
-					log.warn(createAbortingMessage(remoteUser, 405) + "method ["+method+"] not allowed");
+					log.warn(createAbortMessage(remoteUser, 405) + "method ["+method+"] not allowed");
 					return;
 				}
 
@@ -307,7 +329,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						}
 
 						response.setStatus(401);
-						log.warn(createAbortingMessage(remoteUser, 401) + "no (valid) credentials supplied");
+						log.warn(createAbortMessage(remoteUser, 401) + "no (valid) credentials supplied");
 						return;
 					}
 
@@ -336,14 +358,14 @@ public class ApiListenerServlet extends HttpServletBase {
 					if(!listener.accepts(acceptHeader)) {
 						response.setStatus(406);
 						response.getWriter().print("It appears you expected the MediaType ["+acceptHeader+"] but I only support the MediaType ["+listener.getContentType()+"] :)");
-						log.warn(createAbortingMessage(remoteUser, 406) + "client expects ["+acceptHeader+"] got ["+listener.getContentType()+"] instead");
+						log.warn(createAbortMessage(remoteUser, 406) + "client expects ["+acceptHeader+"] got ["+listener.getContentType()+"] instead");
 						return;
 					}
 				}
 
 				if(request.getContentType() != null && !listener.isConsumable(request.getContentType())) {
 					response.setStatus(415);
-					log.warn(createAbortingMessage(remoteUser, 415) + "did not match consumes ["+listener.getConsumes()+"] got ["+request.getContentType()+"] instead");
+					log.warn(createAbortMessage(remoteUser, 415) + "did not match consumes ["+listener.getConsumes()+"] got ["+request.getContentType()+"] instead");
 					return;
 				}
 
@@ -357,7 +379,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						String ifNoneMatch = request.getHeader("If-None-Match");
 						if(ifNoneMatch != null && ifNoneMatch.equals(cachedEtag)) {
 							response.setStatus(304);
-							if (log.isDebugEnabled()) log.debug(createAbortingMessage(remoteUser, 304) + "matched if-none-match ["+ifNoneMatch+"]");
+							if (log.isDebugEnabled()) log.debug(createAbortMessage(remoteUser, 304) + "matched if-none-match ["+ifNoneMatch+"]");
 							return;
 						}
 					}
@@ -365,12 +387,12 @@ public class ApiListenerServlet extends HttpServletBase {
 						String ifMatch = request.getHeader("If-Match");
 						if(ifMatch != null && !ifMatch.equals(cachedEtag)) {
 							response.setStatus(412);
-							log.warn(createAbortingMessage(remoteUser, 412) + "matched if-match ["+ifMatch+"] method ["+method+"]");
+							log.warn(createAbortMessage(remoteUser, 412) + "matched if-match ["+ifMatch+"] method ["+method+"]");
 							return;
 						}
 					}
 				}
-				messageContext.put(UPDATE_ETAG_CONTEXT_KEY, listener.isUpdateEtag());
+				messageContext.put(UPDATE_ETAG_CONTEXT_KEY, listener.getUpdateEtag());
 
 				/**
 				 * Check authorization
@@ -378,7 +400,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				//TODO: authentication implementation
 
 				/**
-				 * Map uriIdentifiers into messageContext 
+				 * Map uriIdentifiers into messageContext
 				 */
 				String[] patternSegments = listener.getUriPattern().split("/");
 				String[] uriSegments = uri.split("/");
@@ -528,7 +550,14 @@ public class ApiListenerServlet extends HttpServletBase {
 				/**
 				 * Calculate an eTag over the processed result and store in cache
 				 */
-				if(messageContext.get(UPDATE_ETAG_CONTEXT_KEY, true)) {
+				Boolean updateEtag = messageContext.getBoolean(UPDATE_ETAG_CONTEXT_KEY);
+				if (updateEtag==null) {
+					updateEtag=listener.getUpdateEtag();
+				}
+				if (updateEtag==null) {
+					updateEtag=result==null || result.isRepeatable();
+				}
+				if(updateEtag) {
 					log.debug("calculating etags over processed result");
 					String cleanPattern = listener.getCleanPattern();
 					if(!Message.isEmpty(result) && method == HttpMethod.GET && cleanPattern != null) { //If the data has changed, generate a new eTag
@@ -615,7 +644,8 @@ public class ApiListenerServlet extends HttpServletBase {
 					response.reset();
 					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 				}
-				catch (IllegalStateException ex) {
+				catch (IOException | IllegalStateException ex) {
+					log.warn("an error occured while tyring to handle exception ["+e.getMessage()+"]", ex);
 					//We're only informing the end user(s), no need to catch this error...
 					response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 				}
@@ -628,7 +658,7 @@ public class ApiListenerServlet extends HttpServletBase {
 		return "/api/*";
 	}
 
-	private String createAbortingMessage(String remoteUser, int statusCode) {
+	private String createAbortMessage(String remoteUser, int statusCode) {
 		StringBuilder message = new StringBuilder("");
 		message.append("Aborting request ");
 		if(StringUtils.isNotEmpty(remoteUser)) {

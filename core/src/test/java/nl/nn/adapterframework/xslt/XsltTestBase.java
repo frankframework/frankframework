@@ -41,6 +41,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 	protected abstract void setRemoveNamespaces(boolean removeNamespaces);
 	protected abstract void setXslt2(boolean xslt2);
 	protected abstract void setOutputType(OutputType outputType);
+	protected abstract void setHandleLexicalEvents(boolean handleLexicalEvents);
 
 
 	@Override
@@ -367,6 +368,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 
 		setStyleSheetName("/Xslt/AnyXml/Copy.xsl");
 		setOmitXmlDeclaration(true);
+		setHandleLexicalEvents(true);
 		pipe.configure();
 		pipe.start();
 
@@ -383,6 +385,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 
 		setStyleSheetName("/Xslt/AnyXml/CopyNoMethodConfigured.xsl");
 		setOmitXmlDeclaration(true);
+		setHandleLexicalEvents(true);
 		pipe.configure();
 		pipe.start();
 
@@ -399,6 +402,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 
 		setStyleSheetName("/Xslt/AnyXml/Copy.xsl");
 		setOmitXmlDeclaration(true);
+		setHandleLexicalEvents(true);
 		setIndent(true);
 		pipe.configure();
 		pipe.start();
@@ -421,6 +425,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/AsText.txt");
 
 		setStyleSheetName("/Xslt/AnyXml/CopyAsText.xsl");
+		setHandleLexicalEvents(true);
 		pipe.configure();
 		pipe.start();
 
@@ -454,6 +459,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		setXslt2(false);
 		setSkipEmptyTags(true);
 		setOmitXmlDeclaration(true);
+		setHandleLexicalEvents(true);
 		setIndent(true);
 		pipe.configure();
 		pipe.start();
@@ -470,6 +476,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		setXslt2(true);
 		setSkipEmptyTags(true);
 		setOmitXmlDeclaration(true);
+		setHandleLexicalEvents(true);
 		setIndent(true);
 		pipe.configure();
 		pipe.start();

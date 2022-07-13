@@ -32,6 +32,8 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.SupportsOutputStreaming;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
@@ -47,6 +49,8 @@ import nl.nn.adapterframework.util.StreamUtil;
  * @author  Niels Meijer
  * @version 2.0
  */
+@Category("Basic")
+@SupportsOutputStreaming
 public class Base64Pipe extends StreamingPipe {
 
 	private @Getter Direction direction = Direction.ENCODE;

@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.PipeLineResult;
@@ -55,7 +56,8 @@ import nl.nn.testtool.util.SearchUtil;
  */
 public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudStorage {
 	private static final String TIMESTAMP_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS";
-	private static final String DELETE_ADAPTER = "DeleteFromExceptionLog";
+	private static final String DELETE_ADAPTER_NAME = "DeleteFromExceptionLog";
+	private static final String DELETE_ADAPTER_CONFIG = "main";
 	private String name;
 	private String table;
 	private List<String> reportColumnNames;
@@ -544,37 +546,36 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 
 	@Override
 	public void delete(Report report) throws StorageException {
-		String errorMessage = null;
-		if ("Table EXCEPTIONLOG".equals(report.getName())) {
-			List checkpoints = report.getCheckpoints();
-			Checkpoint checkpoint = (Checkpoint)checkpoints.get(0);
-			Message message = Message.asMessage(checkpoint.getMessage());
-			IAdapter adapter = ibisManager.getRegisteredAdapter(DELETE_ADAPTER);
-			if (adapter != null) {
-				PipeLineSession pipeLineSession = new PipeLineSession();
-				if(securityContext.getUserPrincipal() != null)
-					pipeLineSession.put("principal", securityContext.getUserPrincipal().getName());
-				PipeLineResult processResult = adapter.processMessage(TestTool.getCorrelationId(), message, pipeLineSession);
-				if (!processResult.isSuccessful()) {
-					errorMessage = "Delete failed (see logging for more details)";
-				} else {
-					try {
-						String result = processResult.getResult().asString();
-						if (!result.equalsIgnoreCase("<ok/>")) {
-							errorMessage = "Delete failed: " + result;
-						}
-					} catch (IOException e) {
-						throw new StorageException("Delete failed", e);
-					}
-				}
-			} else {
-				errorMessage = "Adapter '" + DELETE_ADAPTER + "' not found";
-			}
-		} else {
-			errorMessage = "Delete method is not implemented for '" + report.getName() + "'";
+		if (!"Table EXCEPTIONLOG".equals(report.getName())) {
+			throw new StorageException("Delete method is not implemented for '" + report.getName() + "'");
 		}
-		if (errorMessage != null) {
-			throw new StorageException(errorMessage);
+		List checkpoints = report.getCheckpoints();
+		Checkpoint checkpoint = (Checkpoint)checkpoints.get(0);
+		Message message = Message.asMessage(checkpoint.getMessage());
+		Configuration config = ibisManager.getConfiguration(DELETE_ADAPTER_CONFIG);
+		if (config == null) {
+			throw new StorageException("Configuration '" + DELETE_ADAPTER_CONFIG + "' not found");
+		}
+		IAdapter adapter = config.getRegisteredAdapter(DELETE_ADAPTER_NAME);
+		if (adapter == null) {
+			throw new StorageException("Adapter '" + DELETE_ADAPTER_NAME + "' not found");
+		}
+
+		PipeLineSession pipeLineSession = new PipeLineSession();
+		if(securityContext.getUserPrincipal() != null)
+			pipeLineSession.put("principal", securityContext.getUserPrincipal().getName());
+		PipeLineResult processResult = adapter.processMessage(TestTool.getCorrelationId(), message, pipeLineSession);
+		if (!processResult.isSuccessful()) {
+			throw new StorageException("Delete failed (see logging for more details)");
+		}
+
+		try {
+			String result = processResult.getResult().asString();
+			if (!result.equalsIgnoreCase("<ok/>")) {
+				throw new StorageException("Delete failed: " + result);
+			}
+		} catch (IOException e) {
+			throw new StorageException("Delete failed", e);
 		}
 	}
 

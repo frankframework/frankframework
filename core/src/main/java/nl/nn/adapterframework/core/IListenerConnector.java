@@ -29,7 +29,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
  */
 public interface IListenerConnector<M> {
 
-	public final static String THREAD_CONTEXT_SESSION_KEY="JmsSession";
+	public static final String THREAD_CONTEXT_SESSION_KEY="JmsSession";
 
 	void configureEndpointConnection(IPortConnectedListener<M> listener, ConnectionFactory connectionFactory,
 			CredentialFactory credentialFactory, Destination destination, IbisExceptionListener exceptionListener, String cacheMode,
@@ -40,7 +40,7 @@ public interface IListenerConnector<M> {
 	 * Start Listener-port to which the Listener is connected.
 	 */
 	void start() throws ListenerException;
- 
+
 	/**
 	 * Stop Listener-port to which the Listener is connected.
 	 */

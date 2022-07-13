@@ -14,7 +14,7 @@ import nl.nn.adapterframework.util.LogUtil;
 public abstract class ConfiguredTestBase {
 	protected Logger log = LogUtil.getLogger(this);
 
-	protected PipeLineSession session = new PipeLineSession();
+	protected PipeLineSession session;
 
 	protected PipeLine pipeline;
 	protected Adapter adapter;
@@ -38,6 +38,7 @@ public abstract class ConfiguredTestBase {
 		adapter = getConfiguration().createBean(Adapter.class);
 		adapter.setName("TestAdapter of "+getClass().getSimpleName());
 		adapter.setPipeLine(pipeline);
+		session = new PipeLineSession();
 	}
 
 	@After
@@ -46,6 +47,9 @@ public abstract class ConfiguredTestBase {
 		getConfigurationWarnings().afterPropertiesSet();
 		pipeline = null;
 		adapter = null;
+		if(session != null) {
+			session.close();
+		}
 	}
 
 	protected void autowireByType(Object bean) {

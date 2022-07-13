@@ -60,23 +60,20 @@ public interface IbisManager extends ApplicationEventPublisherAware {
 	void handleAction(IbisAction action, String configurationName, String adapterName, String receiverName, String commandIssuedBy, boolean isAdmin);
 
 	/**
-	 * Start an already configured Configuration
-	 */
-	void startConfiguration(Configuration configuration);
-
-	/**
 	 * Unload specified configuration.
 	 */
 	void unload(String configurationName);
 
 	/**
 	 * Shut down the IBIS instance. After execution of this method, the IBIS
-	 * instance is not useable anymore: it will need to be recreated.
+	 * instance is not usable anymore: it will need to be recreated.
 	 */
 	void shutdown();
 
+	@Deprecated
 	public Adapter getRegisteredAdapter(String name);
 
+	@Deprecated
 	public List<Adapter> getRegisteredAdapters();
 
 	/**

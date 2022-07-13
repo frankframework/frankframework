@@ -1,5 +1,4 @@
 /*
-
    Copyright 2017-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,6 +25,7 @@ import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -191,6 +191,10 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private @Getter int timeout = 10000;
 	private @Getter int maxConnections = 10;
 	private @Getter int maxExecuteRetries = 1;
+	private @Getter boolean staleChecking=true;
+	private @Getter int staleTimeout = 5000; // [ms]
+	private @Getter int connectionTimeToLive = 900; // [s]
+	private @Getter int connectionIdleTimeout = 10; // [s]
 	private HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
 	private HttpClientContext httpClientContext = HttpClientContext.create();
 	private @Getter CloseableHttpClient httpClient;
@@ -236,13 +240,11 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 	private @Getter String headersParams="";
 	private @Getter boolean followRedirects=true;
-	private @Getter boolean staleChecking=true;
-	private @Getter int staleTimeout = 5000;
-	private @Getter int connectionTimeToLive = 900;
 	private @Getter boolean xhtml=false;
 	private @Getter String styleSheetName=null;
 	private @Getter String protocol=null;
 	private @Getter String resultStatusCodeSessionKey;
+	private @Getter String parametersToSkipWhenEmpty;
 
 	private final boolean APPEND_MESSAGEID_HEADER = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("http.headers.messageid", true);
 	private boolean disableCookies = false;
@@ -254,22 +256,9 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	protected URI staticUri;
 	private CredentialFactory credentials;
 
-	private Set<String> parametersToSkip=new HashSet<String>();
-
-	protected void addParameterToSkip(String parameterName) {
-		if (parameterName != null) {
-			parametersToSkip.add(parameterName);
-		}
-	}
-
-	protected boolean skipParameter(String parameterName) {
-		for(String param : parametersToSkip) {
-			if(param.equalsIgnoreCase(parameterName))
-				return true;
-		}
-
-		return false;
-	}
+	protected Set<String> requestOrBodyParamsSet=new HashSet<>();
+	protected Set<String> headerParamsSet=new LinkedHashSet<>();
+	protected Set<String> parametersToSkipWhenEmptySet=new HashSet<>();
 
 	/**
 	 * Makes sure only http(s) requests can be performed.
@@ -323,16 +312,37 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 		if (paramList!=null) {
 			paramList.configure();
-			if (StringUtils.isNotEmpty(getUrlParam())) {
-				urlParameter = paramList.findParameter(getUrlParam());
-				if(urlParameter != null)
-					addParameterToSkip(urlParameter.getName());
+			if (StringUtils.isNotEmpty(getHeadersParams())) {
+				StringTokenizer st = new StringTokenizer(getHeadersParams(), ",");
+				while (st.hasMoreElements()) {
+					String paramName = st.nextToken().trim();
+					headerParamsSet.add(paramName);
+				}
+			}
+			for (Parameter p: paramList) {
+				String paramName = p.getName();
+				if (!headerParamsSet.contains(paramName)) {
+					requestOrBodyParamsSet.add(paramName);
+				}
 			}
 
-			//Add all HeaderParams to paramIgnoreList
-			StringTokenizer st = new StringTokenizer(getHeadersParams(), ",");
-			while (st.hasMoreElements()) {
-				addParameterToSkip(st.nextToken());
+			if (StringUtils.isNotEmpty(getUrlParam())) {
+				headerParamsSet.remove(getUrlParam());
+				requestOrBodyParamsSet.remove(getUrlParam());
+				urlParameter = paramList.findParameter(getUrlParam());
+			}
+
+			if (StringUtils.isNotEmpty(getParametersToSkipWhenEmpty())) {
+				if (getParametersToSkipWhenEmpty().equals("*")) {
+					parametersToSkipWhenEmptySet.addAll(headerParamsSet);
+					parametersToSkipWhenEmptySet.addAll(requestOrBodyParamsSet);
+				} else {
+					StringTokenizer st = new StringTokenizer(getParametersToSkipWhenEmpty(), ",");
+					while (st.hasMoreElements()) {
+						String paramName = st.nextToken().trim();
+						parametersToSkipWhenEmptySet.add(paramName);
+					}
+				}
 			}
 		}
 
@@ -440,14 +450,13 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		connectionManager.setMaxTotal(getMaxConnections());
 		connectionManager.setDefaultMaxPerRoute(getMaxConnections());
 
-		log.debug(getLogPrefix()+"set up connectionManager, inactivity checking ["+connectionManager.getValidateAfterInactivity()+"]");
-		boolean staleChecking = (connectionManager.getValidateAfterInactivity() >= 0);
-		if (staleChecking != isStaleChecking()) {
+		if (isStaleChecking()) {
 			log.info(getLogPrefix()+"set up connectionManager, setting stale checking ["+isStaleChecking()+"]");
 			connectionManager.setValidateAfterInactivity(getStaleTimeout());
 		}
 
 		httpClientBuilder.setConnectionManager(connectionManager);
+		httpClientBuilder.evictIdleConnections(getConnectionIdleTimeout(), TimeUnit.SECONDS);
 
 		if (transformerPool!=null) {
 			try {
@@ -568,23 +577,24 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		if (parameters != null) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appending ["+parameters.size()+"] parameters");
 			for(ParameterValue pv : parameters) {
-				if (skipParameter(pv.getName())) {
-					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"skipping ["+pv.getName()+"]");
-					continue;
-				}
-				try {
-					if (parametersAppended) {
-						path.append("&");
-					} else {
-						path.append("?");
-						parametersAppended = true;
-					}
+				if (requestOrBodyParamsSet.contains(pv.getName())) {
+					String value = pv.asStringValue("");
+					if (StringUtils.isNotEmpty(value) || !parametersToSkipWhenEmptySet.contains(pv.getName())) {
+						try {
+							if (parametersAppended) {
+								path.append("&");
+							} else {
+								path.append("?");
+								parametersAppended = true;
+							}
 
-					String parameterToAppend = pv.getDefinition().getName() +"="+ URLEncoder.encode(pv.asStringValue(""), getCharSet());
-					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appending parameter ["+parameterToAppend+"]");
-					path.append(parameterToAppend);
-				} catch (UnsupportedEncodingException e) {
-					throw new SenderException(getLogPrefix()+"["+getCharSet()+"] encoding error. Failed to add parameter ["+pv.getDefinition().getName()+"]", e);
+							String parameterToAppend = pv.getDefinition().getName() +"="+ URLEncoder.encode(value, getCharSet());
+							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appending parameter ["+parameterToAppend+"]");
+							path.append(parameterToAppend);
+						} catch (UnsupportedEncodingException e) {
+							throw new SenderException(getLogPrefix()+"["+getCharSet()+"] encoding error. Failed to add parameter ["+pv.getDefinition().getName()+"]", e);
+						}
+					}
 				}
 			}
 		}
@@ -635,14 +645,16 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 			// Resolve HeaderParameters
 			Map<String, String> headersParamsMap = new HashMap<>();
-			if (headersParams != null && pvl!=null) {
+			if (!headerParamsSet.isEmpty() && pvl!=null) {
 				log.debug("appending header parameters "+headersParams);
-				StringTokenizer st = new StringTokenizer(getHeadersParams(), ",");
-				while (st.hasMoreElements()) {
-					String paramName = st.nextToken();
+				for (String paramName:headerParamsSet) {
 					ParameterValue paramValue = pvl.get(paramName);
-					if(paramValue != null)
-						headersParamsMap.put(paramName, paramValue.asStringValue(null));
+					if(paramValue != null) {
+						String value = paramValue.asStringValue(null);
+						if (StringUtils.isNotEmpty(value) || !parametersToSkipWhenEmptySet.contains(paramName)) {
+							headersParamsMap.put(paramName, value);
+						}
+					}
 				}
 			}
 
@@ -668,7 +680,6 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 		Message result = null;
 		int statusCode = -1;
-		String msg = null;
 		HttpHost targetHost = new HttpHost(targetUri.getHost(), getPort(targetUri), targetUri.getScheme());
 
 		TimeoutGuard tg = new TimeoutGuard(1+getTimeout()/1000, getName()) {
@@ -725,10 +736,6 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		}
 
 		if (statusCode == -1){
-			if (msg != null && StringUtils.contains(msg.toUpperCase(), "TIMEOUTEXCEPTION")) {
-				//java.net.SocketTimeoutException: Read timed out
-				throw new TimeoutException("Failed to recover from timeout exception");
-			}
 			throw new SenderException("Failed to recover from exception");
 		}
 
@@ -770,7 +777,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		url = string;
 	}
 
-	@IbisDoc({"parameter that is used to obtain url; overrides url-attribute.", "url"})
+	@IbisDoc({"Parameter that is used to obtain URL; overrides url-attribute.", "url"})
 	public void setUrlParam(String urlParam) {
 		this.urlParam = urlParam;
 	}
@@ -783,27 +790,27 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	/**
 	 * This is a superset of mimetype + charset + optional payload metadata.
 	 */
-	@IbisDoc({"content-type (superset of mimetype + charset) of the request, for POST and PUT methods", "text/html"})
+	@IbisDoc({"Content-Type (superset of mimetype + charset) of the request, for POST and PUT methods", "text/html"})
 	public void setContentType(String string) {
 		contentType = string;
 	}
 
-	@IbisDoc({"charset of the request. Typically only used on PUT and POST requests.", "UTF-8"})
+	@IbisDoc({"Charset of the request. Typically only used on PUT and POST requests.", "UTF-8"})
 	public void setCharSet(String string) {
 		charSet = string;
 	}
 
-	@IbisDoc({"timeout in ms of obtaining a connection/result. 0 means no timeout", "10000"})
+	@IbisDoc({"Timeout in ms of obtaining a connection/result. 0 means no timeout", "10000"})
 	public void setTimeout(int i) {
 		timeout = i;
 	}
 
-	@IbisDoc({"the maximum number of concurrent connections", "10"})
+	@IbisDoc({"The maximum number of concurrent connections", "10"})
 	public void setMaxConnections(int i) {
 		maxConnections = i;
 	}
 
-	@IbisDoc({"the maximum number of times it the execution is retried", "1"})
+	@IbisDoc({"The maximum number of times it the execution is retried", "1"})
 	public void setMaxExecuteRetries(int i) {
 		maxExecuteRetries = i;
 	}
@@ -856,6 +863,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	 * If set to a non-negative value, then determines the time (in seconds) after which the token will be refreshed. Otherwise the token
 	 * will be refreshed when it is half way its lifetime as defined by the <code>expires_in</code> clause of the token response,
 	 * or when the regular server returns a 401 status with a challenge.
+	 * If not specified, and the accessTokens lifetime is not found in the token response, the accessToken will not be refreshed preemptively.
 	 * @ff.default -1
 	 */
 	public void setTokenExpiry(int value) {
@@ -880,22 +888,22 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	}
 
 
-	@IbisDoc({"proxy host", " "})
+	@IbisDoc({"Proxy host"})
 	public void setProxyHost(String string) {
 		proxyHost = string;
 	}
 
-	@IbisDoc({"proxy port", "80"})
+	@IbisDoc({"Proxy port", "80"})
 	public void setProxyPort(int i) {
 		proxyPort = i;
 	}
 
-	@IbisDoc({"alias used to obtain credentials for authentication to proxy", ""})
+	@IbisDoc({"Alias used to obtain credentials for authentication to proxy", ""})
 	public void setProxyAuthAlias(String string) {
 		proxyAuthAlias = string;
 	}
 
-	@IbisDoc({"proxy username", " "})
+	@IbisDoc({"Proxy username", " "})
 	public void setProxyUsername(String string) {
 		proxyUsername = string;
 	}
@@ -905,12 +913,12 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		setProxyUsername(string);
 	}
 
-	@IbisDoc({"proxy password", " "})
+	@IbisDoc({"Proxy password", " "})
 	public void setProxyPassword(String string) {
 		proxyPassword = string;
 	}
 
-	@IbisDoc({"proxy realm", " "})
+	@IbisDoc({"Proxy realm", " "})
 	public void setProxyRealm(String string) {
 		proxyRealm = StringUtils.isNotEmpty(string) ? string : null;
 	}
@@ -1039,6 +1047,12 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		this.headersParams = headersParams;
 	}
 
+	@IbisDoc({"Comma separated list of parameter names that should not be added as request or body parameter, or as HTTP header, if they are empty. Set to '*' for this behaviour for all parameters", ""})
+	public void setParametersToSkipWhenEmpty(String parametersToSkipWhenEmpty) {
+		this.parametersToSkipWhenEmpty = parametersToSkipWhenEmpty;
+	}
+
+
 	@IbisDoc({"If <code>true</code>, a redirect request will be honoured, e.g. to switch to HTTPS", "true"})
 	public void setFollowRedirects(boolean b) {
 		followRedirects = b;
@@ -1049,7 +1063,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		staleChecking = b;
 	}
 
-	@IbisDoc({"Used when StaleChecking=<code>true</code>. Timeout when stale connections should be closed.", "5000 ms"})
+	@IbisDoc({"Used when StaleChecking=<code>true</code>. Timeout after which an idle connection will be validated before being used.", "5000 ms"})
 	public void setStaleTimeout(int timeout) {
 		staleTimeout = timeout;
 	}
@@ -1057,6 +1071,11 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	@IbisDoc({"Maximum Time to Live for connections in the pool. No connection will be re-used past its timeToLive value.", "900 s"})
 	public void setConnectionTimeToLive(int timeToLive) {
 		connectionTimeToLive = timeToLive;
+	}
+
+	@IbisDoc({"Maximum Time for connection to stay idle in the pool. Connections that are idle longer will periodically be evicted from the pool", "10 s"})
+	public void setConnectionIdleTimeout(int idleTimeout) {
+		connectionIdleTimeout = idleTimeout;
 	}
 
 	@IbisDoc({"If <code>true</code>, the HTML response is transformed to XHTML", "false"})

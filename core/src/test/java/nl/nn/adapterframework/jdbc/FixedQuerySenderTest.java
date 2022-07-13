@@ -12,7 +12,9 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.ParameterBuilder;
 
 public class FixedQuerySenderTest extends JdbcSenderTestBase<FixedQuerySender> {
 
@@ -192,4 +194,15 @@ public class FixedQuerySenderTest extends JdbcSenderTestBase<FixedQuerySender> {
 		assertColumnsReturned(result);
 	}
 
+	@Test
+	public void testAddMonth() throws Exception {
+		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (tKEY, tDATE) VALUES ('1', ADD_MONTHS(SYSTIMESTAMP,?))");
+		sender.addParameter(ParameterBuilder.create("param", "7").withType(ParameterType.INTEGER));
+		sender.setSqlDialect("Oracle");
+		sender.configure();
+		sender.open();
+
+		Message result=sendMessage("dummy");
+		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
+	}
 }

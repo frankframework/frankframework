@@ -2,17 +2,17 @@
 <jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.2"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<deployment>
-		<exclusions />
+		<exclusions/>
 		<exports />
 		<module-alias name="deployment.iaf" />
 		<dependencies>
 			<module name="javax.jws.api" export="true"/>	<!-- java.lang.NoClassDefFoundError: javax/jws/WebService -->
-			<module name="org.codehaus.jackson.jackson-xc" />	<!-- java.lang.NoClassDefFoundError: Could not initialize class org.codehaus.jackson.map.ObjectMapper  -->
-			<module name="org.codehaus.jackson.jackson-mapper-asl" />
-			<module name="module.nl.nn.adapterframework" />
+			<module name="javax.jms.api" export="true"/>
+			<module name="module.frank-framework" />
 		</dependencies>
 		<exclude-subsystems>
 			<subsystem name="webservices" />	<!-- To avoid apache CXF conflict -->
+			<subsystem name="logging" /> <!-- To avoid java.lang.ClassCastException: class org.jboss.logmanager.log4j.JBossLoggerContext cannot be cast to class org.apache.logging.log4j.core.LoggerContext -->
 		</exclude-subsystems>
 		<local-last value="true" />
 		<resources/>

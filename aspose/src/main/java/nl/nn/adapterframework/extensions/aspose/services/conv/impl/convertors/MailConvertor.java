@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
 
@@ -75,8 +76,8 @@ class MailConvertor extends AbstractConvertor {
 		MEDIA_TYPE_LOAD_FORMAT_MAPPING = Collections.unmodifiableMap(map);
 	}
 
-	protected MailConvertor(CisConversionService cisConversionService, String pdfOutputLocation) {
-		super(pdfOutputLocation, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[MEDIA_TYPE_LOAD_FORMAT_MAPPING.size()]));
+	protected MailConvertor(CisConversionService cisConversionService, CisConfiguration configuration) {
+		super(configuration, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[MEDIA_TYPE_LOAD_FORMAT_MAPPING.size()]));
 		this.cisConversionService = cisConversionService;
 	}
 
@@ -98,15 +99,15 @@ class MailConvertor extends AbstractConvertor {
 			LOGGER.debug("subject : " + eml.getSubject());
 
 			MhtSaveOptions options = MhtSaveOptions.getDefaultMhtml();
-			options.setMhtFormatOptions(MhtFormatOptions.HideExtraPrintHeader | MhtFormatOptions.WriteHeader | 
-					MhtFormatOptions.WriteCompleteBccEmailAddress | MhtFormatOptions.WriteCompleteCcEmailAddress | 
-					MhtFormatOptions.WriteCompleteEmailAddress | MhtFormatOptions.WriteCompleteFromEmailAddress | 
+			options.setMhtFormatOptions(MhtFormatOptions.HideExtraPrintHeader | MhtFormatOptions.WriteHeader |
+					MhtFormatOptions.WriteCompleteBccEmailAddress | MhtFormatOptions.WriteCompleteCcEmailAddress |
+					MhtFormatOptions.WriteCompleteEmailAddress | MhtFormatOptions.WriteCompleteFromEmailAddress |
 					MhtFormatOptions.WriteCompleteToEmailAddress);
 			options.setPreserveOriginalDate(true);
 			// Overrules the default documentname.
 			result.setDocumentName(ConvertorUtil.createTidyNameWithoutExtension(eml.getSubject()));
 
-			File tempMHtmlFile = UniqueFileGenerator.getUniqueFile(getPdfOutputlocation(), this.getClass().getSimpleName(), null);
+			File tempMHtmlFile = UniqueFileGenerator.getUniqueFile(configuration.getPdfOutputLocation(), this.getClass().getSimpleName(), null);
 			eml.getHeaders().set_Item("Date", new SimpleDateFormat(eMailHeaderDateFormat).format(eml.getDate()));
 			eml.save(tempMHtmlFile.getAbsolutePath(), options);
 
@@ -144,11 +145,11 @@ class MailConvertor extends AbstractConvertor {
 						pdfAttachmentUtil.addAttachmentInSinglePdf();
 					} finally {
 						deleteFile(cisConversionResultAttachment.getPdfResultFile());
-						// Clear the file because it is now incorporated in the file it self. 
+						// Clear the file because it is now incorporated in the file it self.
 						cisConversionResultAttachment.setPdfResultFile(null);
 						cisConversionResultAttachment.setResultFilePath(null);
 					}
-					
+
 				}
 				result.addAttachment(cisConversionResultAttachment);
 			}

@@ -257,7 +257,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 			if (getParameterList().findParameter("userName") != null) {
 				ConfigurationWarnings.add(this, log, "parameter 'userName' has been replaced by 'username'");
 			}
-			
+
 			// Legacy; check if the session should be created runtime (and thus for each call)
 			if(getParameterList().findParameter("authAlias") != null || getParameterList().findParameter("username") != null || getParameterList().findParameter("userName") != null ) {
 				runtimeSession = true;
@@ -534,7 +534,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		try {
 			Message inputFromSessionKey = session.getMessage( getParameterOverriddenAttributeValue(pvl, "fileSessionKey", getFileSessionKey()) );
 
-			if(convert2Base64 && inputFromSessionKey.asObject() instanceof String) {
+			if(convert2Base64 && !inputFromSessionKey.isBinary()) {
 				inputFromSessionKey = new Message(Base64.decodeBase64(inputFromSessionKey.asByteArray()));
 			}
 
@@ -893,7 +893,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 //				context.setIncludeRelationships(includeRelationships);
 //				context.setRenditionFilterString(renditionFilter);
 
-				ObjectList result = cmisSession.getBinding().getDiscoveryService().query(repositoryQueryId, statement, 
+				ObjectList result = cmisSession.getBinding().getDiscoveryService().query(repositoryQueryId, statement,
 						searchAllVersions, includeAllowableActions, includeRelationships, renditionFilter, maxItems, skipCount, null);
 				resultXml.addSubElement(CmisUtils.objectList2xml(result));
 				break;
@@ -910,8 +910,8 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 				BigInteger getChildren_maxItems = BigInteger.valueOf(XmlUtils.getChildTagAsLong(requestElement, "maxItems"));
 				BigInteger getChildren_skipCount = BigInteger.valueOf(XmlUtils.getChildTagAsLong(requestElement, "skipCount"));
 
-				ObjectInFolderList oifs = cmisSession.getBinding().getNavigationService().getChildren(rid, fid, getChildren_repositoryFilter, 
-						getChildren_repositoryOrderBy, getChildren_includeAllowableActions, getChildren_includeRelationships, 
+				ObjectInFolderList oifs = cmisSession.getBinding().getNavigationService().getChildren(rid, fid, getChildren_repositoryFilter,
+						getChildren_repositoryOrderBy, getChildren_includeAllowableActions, getChildren_includeRelationships,
 						getChildren_renditionFilter, getChildren_includePathSegment, getChildren_maxItems, getChildren_skipCount, null);
 
 				resultXml.addSubElement(CmisUtils.objectInFolderList2xml(oifs));
@@ -1064,7 +1064,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		return sessionBuilder.getKeyManagerAlgorithm();
 	}
 
-	
+
 	@Override
 	public void setTruststore(String truststore) {
 		sessionBuilder.setTruststore(truststore);

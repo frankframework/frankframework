@@ -19,7 +19,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.function.BiConsumer;
 
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -36,12 +39,16 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.SuppressKeys;
+import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.jta.IThreadConnectableTransactionManager;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.IThreadCreator;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
@@ -51,6 +58,7 @@ import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.ThreadConnector;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerErrorListener;
 import nl.nn.adapterframework.util.TransformerPool;
@@ -68,9 +76,13 @@ import nl.nn.adapterframework.xml.XmlWriter;
  * Sends a message to a Sender for each child element of the input XML.
  * Input can be a String containing XML, a filename (set processFile true), an InputStream or a Reader.
  *
+ * @ff.parameters all parameters will be applied to the xslt if an elementXPathExpression is specified
+ *
  * @author Gerrit van Brakel
  * @since 4.6.1
  */
+@Category("Basic")
+@SupportsOutputStreaming
 public class ForEachChildElementPipe extends StringIteratorPipe implements IThreadCreator {
 
 	public final int DEFAULT_XSLT_VERSION = 1; // currently only Xalan supports XSLT Streaming
@@ -134,11 +146,18 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 	}
 
 	protected String makeEncapsulatingXslt(String rootElementname, String xpathExpression, int xsltVersion, String namespaceDefs) {
+		String paramsString = "";
+		if (getParameterList() != null) {
+			for (Parameter param: getParameterList()) {
+				paramsString = paramsString + "<xsl:param name=\"" + param.getName() + "\"/>";
+			}
+		}
 		String namespaceClause = XmlUtils.getNamespaceClause(namespaceDefs);
 		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\""+xsltVersion+".0\" xmlns:xalan=\"http://xml.apache.org/xslt\">" +
 		"<xsl:output method=\"xml\" omit-xml-declaration=\"yes\"/>" +
 		"<xsl:strip-space elements=\"*\"/>" +
+		paramsString +
 		"<xsl:template match=\"/\">" +
 		"<xsl:element "+namespaceClause+" name=\"" + rootElementname + "\">" +
 		"<xsl:copy-of select=\"" + XmlUtils.encodeChars(xpathExpression) + "\"/>" +
@@ -288,7 +307,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		private TransformerErrorListener transformerErrorListener=null;
 	}
 
-	protected void createHandler(HandlerRecord result, ThreadConnector<?> threadConnector, PipeLineSession session, ItemCallback callback) throws TransformerConfigurationException {
+	protected void createHandler(HandlerRecord result, ThreadConnector<?> threadConnector, Message input, PipeLineSession session, ItemCallback callback, BiConsumer<AutoCloseable,String> closeOnCloseRegister) throws TransformerConfigurationException {
 		result.itemHandler = new ItemCallbackCallingHandler(callback);
 		result.inputHandler=result.itemHandler;
 
@@ -297,7 +316,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			String targetElementString = StringUtils.isNotEmpty(getTargetElement()) ? "filter to targetElement '"+getTargetElement()+"'" :null;
 			String xpathString = getExtractElementsTp()!=null ? "filter XPath '"+getElementXPathExpression()+"'": null;
 			String label = "XML after preprocessing: " + Misc.concat(", ",containerElementString, targetElementString, xpathString);
-			result.inputHandler=getXmlDebugger().inspectXml(session, label, result.inputHandler);
+			result.inputHandler=getXmlDebugger().inspectXml(session, label, result.inputHandler, closeOnCloseRegister);
 		}
 
 		if (isRemoveNamespaces()) {
@@ -307,6 +326,13 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		if (getExtractElementsTp()!=null) {
 			if (log.isDebugEnabled()) log.debug("transforming input to obtain list of elements using xpath ["+getElementXPathExpression()+"]");
 			TransformerFilter transformerFilter = getExtractElementsTp().getTransformerFilter(threadConnector, result.inputHandler);
+			if (getParameterList()!=null) {
+				try {
+					XmlUtils.setTransformerParameters(transformerFilter.getTransformer(), getParameterList().getValues(input, session).getValueMap());
+				} catch (ParameterException | IOException e) {
+					throw new TransformerConfigurationException("Cannot apply parameters", e);
+				}
+			}
 			result.inputHandler=transformerFilter;
 			result.transformerErrorListener=(TransformerErrorListener)transformerFilter.getErrorListener();
 			result.errorMessage="Could not process list of elements using xpath ["+getElementXPathExpression()+"]";
@@ -362,7 +388,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			MessageOutputStream target=getTargetStream(session);
 			Writer resultWriter = target.asWriter();
 			ItemCallback callback = createItemCallBack(session, getSender(), resultWriter);
-			createHandler(handlerRecord, threadConnector, session, callback);
+			createHandler(handlerRecord, threadConnector, null, session, callback, (resource,label)->target.closeOnClose(resource));
 			return new MessageOutputStream(this, handlerRecord.inputHandler, target, threadLifeCycleEventListener, txManager, session, threadConnector);
 		} catch (TransformerException e) {
 			throw new StreamingException(handlerRecord.errorMessage, e);
@@ -392,9 +418,11 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			}
 		}
 		HandlerRecord handlerRecord = new HandlerRecord();
+		Map<AutoCloseable,String> closeables = new LinkedHashMap<>();
+		SenderException mainException = null;
 		try (ThreadConnector<?> threadConnector = streamingXslt ? new ThreadConnector<>(this, threadLifeCycleEventListener, txManager, session) : null) {
 			try {
-				createHandler(handlerRecord, threadConnector, session, callback);
+				createHandler(handlerRecord, threadConnector, input, session, callback, closeables::put);
 			} catch (TransformerException e) {
 				throw new SenderException(handlerRecord.errorMessage, e);
 			}
@@ -421,7 +449,24 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 				}
 			}
 		} catch (IOException e) {
-			throw new SenderException(e);
+			mainException = new SenderException(e);
+		} finally {
+			for(Entry<AutoCloseable,String> entry:closeables.entrySet()) {
+				String label = entry.getValue();
+				try (AutoCloseable resource = entry.getKey()) {
+					log.debug("Closing resource "+label);
+				} catch (Exception e) {
+					if (mainException==null) {
+						mainException = new SenderException("Could not close resource "+label, e);
+					} else {
+						log.warn("caught secondary exception closing resource "+label+": ("+ClassUtils.nameOf(e)+") "+e.getMessage());
+						mainException.addSuppressed(e);
+					}
+				}
+			}
+			if (mainException!=null) {
+				throw mainException;
+			}
 		}
 		return handlerRecord.itemHandler.stopReason;
 	}

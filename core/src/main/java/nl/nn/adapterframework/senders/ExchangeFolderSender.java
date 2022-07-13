@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners, 2020 WeAreFrank!
+   Copyright 2019-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -126,4 +126,8 @@ public class ExchangeFolderSender extends FileSystemSender<EmailMessage,Exchange
 		getFileSystem().setProxyDomain(domain);
 	}
 
+	@IbisDocRef({EXCHANGE_FILE_SYSTEM})
+	public void setMailboxFolderSeparator(String separator) {
+		getFileSystem().setMailboxFolderSeparator(separator);
+	}
 }

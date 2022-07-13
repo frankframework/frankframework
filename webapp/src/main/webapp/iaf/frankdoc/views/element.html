@@ -2,9 +2,7 @@
 	<div class="version">{{::version}}</div>
 	<h1 class="element__name">{{element.name}} <span class="label label-warning" ng-if="element.deprecated">Deprecated</span></h1>
 	<h4 class="element__fullname">
-		<a ng-if="javaDocURL" href="{{javaDocURL}}" target="_blank" rel="noreferrer">
-			{{element.fullName}}
-		</a>
+		<a ng-if="element.name != 'Module'" ng-href="{{javaDocUrlOf(element.fullName)}}" target="_blank" rel="noreferrer">{{element.fullName}}</a>
 	</h4>
 	<p class="element__tags">Elements: <span ng-repeat="tag in element.elementNames"><a href="https://github.com/ibissource/iaf/wiki/{{tag}}" target="_blank" rel="noreferrer"><code>{{tag}}</code></a><span ng-if="!$last">, </span></span></p>
 

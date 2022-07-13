@@ -63,11 +63,13 @@ public class ResultBlock2Sender extends Result2StringWriter {
 		}
 		sender.configure();
 	}
+
 	@Override
 	public void open() throws SenderException {
 		super.open();
 		sender.open();
 	}
+
 	@Override
 	public void close() throws SenderException {
 		super.close();
@@ -82,13 +84,13 @@ public class ResultBlock2Sender extends Result2StringWriter {
 		levels.put(streamId,new Integer(0));
 		super.openDocument(session, streamId);
 	}
+
 	@Override
 	public void closeDocument(PipeLineSession session, String streamId) {
 		super.closeDocument(session,streamId);
 		counters.remove(streamId);
 		levels.remove(streamId);
 	}
-
 
 	protected int getCounter(String streamId) throws SenderException {
 		Integer counter = counters.get(streamId);
@@ -97,6 +99,7 @@ public class ResultBlock2Sender extends Result2StringWriter {
 		}
 		return counter.intValue();
 	}
+
 	protected int incCounter(String streamId) throws SenderException {
 		Integer counter = counters.get(streamId);
 		if (counter==null) {
@@ -114,6 +117,7 @@ public class ResultBlock2Sender extends Result2StringWriter {
 		}
 		return level.intValue();
 	}
+
 	protected int incLevel(String streamId) throws SenderException {
 		Integer level = levels.get(streamId);
 		if (level==null) {
@@ -123,6 +127,7 @@ public class ResultBlock2Sender extends Result2StringWriter {
 		levels.put(streamId,new Integer(result));
 		return result;
 	}
+
 	protected int decLevel(String streamId) throws SenderException {
 		Integer level = levels.get(streamId);
 		if (level==null) {
@@ -133,16 +138,15 @@ public class ResultBlock2Sender extends Result2StringWriter {
 		return result;
 	}
 
-
-
 	@Override
-	public void openBlock(PipeLineSession session, String streamId, String blockName) throws Exception {
-		super.openBlock(session,streamId,blockName);
+	public void openBlock(PipeLineSession session, String streamId, String blockName, Map<String, Object> blocks) throws Exception {
+		super.openBlock(session,streamId,blockName,blocks);
 		incLevel(streamId);
 	}
+
 	@Override
-	public void closeBlock(PipeLineSession session, String streamId, String blockName) throws Exception {
-		super.closeBlock(session,streamId,blockName);
+	public void closeBlock(PipeLineSession session, String streamId, String blockName, Map<String, Object> blocks) throws Exception {
+		super.closeBlock(session,streamId,blockName,blocks);
 		int level=decLevel(streamId);
 		if (level==0) {
 			StringWriter writer=(StringWriter)getWriter(session,streamId,false);
@@ -155,11 +159,10 @@ public class ResultBlock2Sender extends Result2StringWriter {
 				 * getSender().sendMessage(streamId+"-"+incCounter(streamId),message, session); 
 				 * Be aware that 'correlationId' no longer reflects streamId and counter
 				 */
-				getSender().sendMessage(message,session); 
+				getSender().sendMessage(message,session);
 			}
 		}
 	}
-
 
 	@IbisDoc({"10", "Sender to which each block of results is sent"})
 	public void setSender(ISender sender) {

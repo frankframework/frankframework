@@ -48,7 +48,8 @@ public class XmlValidatorExtraTest extends PipeTestBase<XmlValidator> {
 			{ "Test Wildcard", 			"/Validation/Xsd1.1/Wildcard/wildcard.xsd", 				"/Validation/Xsd1.1/Wildcard/in_OK.xml", "success", "1.1" },
 			{ "Test Negative Wildcard", "/Validation/Xsd1.1/NegativeWildcard/negativeWildcard.xsd", "/Validation/Xsd1.1/NegativeWildcard/in_OK.xml", "nl.nn.adapterframework.core.PipeRunException", "1.1" },
 			{ "Test Assert", 			"/Validation/Xsd1.1/Assert/assert.xsd", 					"/Validation/Xsd1.1/Assert/in_OK.xml", "success", "1.1" },
-			{ "Test Assert Fail", 		"/Validation/Xsd1.1/Assert/assert.xsd", 					"/Validation/Xsd1.1/Assert/in_ERROR.xml", "java.lang.Exception", "1.1" }, });
+			{ "Test Assert Fail", 		"/Validation/Xsd1.1/Assert/assert.xsd", 					"/Validation/Xsd1.1/Assert/in_ERROR.xml", "java.lang.Exception", "1.1" },
+			{ "Test Year 0000", 		"/Validation/Xsd1.1/Year0000/dateTime.xsd", 				"/Validation/Xsd1.1/Year0000/in_OK.xml", "success", "1.1" }, });
 	}
 
 	public XmlValidatorExtraTest(String testName, String xsdLocation, String xmlLocation, String expectedOutcome, String xmlSchemaVersion) {

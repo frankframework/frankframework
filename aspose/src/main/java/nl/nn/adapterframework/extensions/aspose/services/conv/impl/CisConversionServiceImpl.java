@@ -17,6 +17,7 @@ package nl.nn.adapterframework.extensions.aspose.services.conv.impl;
 
 import java.io.IOException;
 
+import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
@@ -37,22 +38,17 @@ public class CisConversionServiceImpl implements CisConversionService {
 
 	private static final Logger LOGGER = LogUtil.getLogger(CisConversionServiceImpl.class);
 
-	private String pdfOutputlocation = "";
+	private CisConfiguration configuration;
 	private ConvertorFactory convertorFactory;
-	private MediaTypeValidator mediaTypeValidator;
-	private String fontsDirectory;
-	private String charset;
+	private MediaTypeValidator mediaTypeValidator = new MediaTypeValidator();
 
-	public CisConversionServiceImpl(String pdfOutputLocation, String fontsDirectory, String charset) {
-		this.pdfOutputlocation = pdfOutputLocation;
-		this.setFontsDirectory(fontsDirectory);
-		convertorFactory = new ConvertorFactory(this, pdfOutputlocation);
-		mediaTypeValidator = new MediaTypeValidator();
-		this.charset=charset;
+	public CisConversionServiceImpl(CisConfiguration configuration){
+		this.configuration = configuration;
+		convertorFactory = new ConvertorFactory(this, configuration);
 	}
 
 	@Override
-	public CisConversionResult convertToPdf(Message message, String filename, ConversionOption conversionOption) throws IOException {
+	public CisConversionResult convertToPdf(Message message, String filename, ConversionOption conversionOption) {
 
 		CisConversionResult result = null;
 		MimeType mimeType = MessageUtils.computeMimeType(message, filename);
@@ -75,7 +71,7 @@ public class CisConversionServiceImpl implements CisConversionService {
 			} else {
 				long startTime = System.currentTimeMillis();
 				// Convertor found, convert the file
-				result = convertor.convertToPdf(mediaType, filename, message, conversionOption, charset);
+				result = convertor.convertToPdf(mediaType, filename, message, conversionOption, configuration.getCharset());
 				if(LOGGER.isDebugEnabled()) LOGGER.debug(String.format("Convert (in %d msec): mediatype: %s, filename: %s, attachmentoptions: %s", System.currentTimeMillis() - startTime, mediaType, filename, conversionOption));
 			}
 		}
@@ -115,17 +111,9 @@ public class CisConversionServiceImpl implements CisConversionService {
 		return mediaType;
 	}
 
-	public void setPdfOutputLocation(String pdfOutputLocation) {
-		this.pdfOutputlocation = pdfOutputLocation;
-	}
-
 	@Override
 	public String getFontsDirectory() {
-		return fontsDirectory;
-	}
-
-	public void setFontsDirectory(String fontsDirectory) {
-		this.fontsDirectory = fontsDirectory;
+		return configuration.getFontsDirectory();
 	}
 
 }

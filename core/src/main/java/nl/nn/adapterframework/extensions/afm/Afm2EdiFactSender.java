@@ -15,13 +15,10 @@
 */
 package nl.nn.adapterframework.extensions.afm;
 
-import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.util.LogUtil;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.w3c.dom.Document;
@@ -30,27 +27,32 @@ import org.w3c.dom.NodeList;
 
 import lombok.Getter;
 import lombok.Setter;
-
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.Category;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Domparser om AFM-XML berichten om te zetten in edifactberichten (voor de backoffice).
  *
  * @author Erik van de Wetering, fine tuned and wrapped for Ibis by Gerrit van Brakel
  */
+@Category("NN-Special")
 public class Afm2EdiFactSender implements ISender {
 	protected Logger logger = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
-	public final static String VERWERKTAG = "VRWRKCD";
-	public final static String TPNRTAG = "AL_RECCRT";
+	public static final String VERWERKTAG = "VRWRKCD";
+	public static final String TPNRTAG = "AL_RECCRT";
 	
-	private final static String contractRoot = "Contractdocument";
-	private final static String mantelRoot = "Mantel";
-	private final static String onderdeelRoot = "Onderdeel";
+	private static final String contractRoot = "Contractdocument";
+	private static final String mantelRoot = "Mantel";
+	private static final String onderdeelRoot = "Onderdeel";
 
 	private String destination = "   "; // 3 tekens
 	private String tpnummer = "999999";

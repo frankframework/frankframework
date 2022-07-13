@@ -31,7 +31,8 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 			//Add separator where attributes inherit from
 			if(parent.attributes && parent.attributes.length > 0) {
 				if(!el.attributes) { el.attributes = []; } //Make sure an array exists
-				el.attributes.push({from: parent.name});
+
+				el.attributes.push({from: parent});
 			}
 
 			el.attributes = copyOf(el.attributes, parent.attributes, 'name');
@@ -98,18 +99,23 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 	$scope.element = null;
 	$scope.$on('element', function(_, element) {
 		$scope.element = element;
-
-		if(element != null) {
-			$scope.javaDocURL = javaDocUrlOf(element);
-		}
 	});
+
+	$scope.javaDocUrlOf = function(fullElementName) {
+		if(fullElementName && fullElementName.includes(".")) {
+			return 'https://javadoc.frankframework.org/' + fullElementName.replaceAll(".", "/") + '.html';
+		} else {
+			// We only have a JavaDoc URL if we have an element with a Java class. The
+			// exception we handle here is <Module>.
+			return null;
+		}
+	}
 }])
 .controller('parent-element', ['$scope', function($scope) {
 	if(!$scope.element || !$scope.element.parent) return;
 
 	var parent = $scope.element.parent;
 	$scope.element = $scope.elements[parent]; //Update element to the parent's element
-	$scope.javaDocURL = javaDocUrlOf($scope.element);
 }]).controller('element-children', ['$scope', function($scope) {
 	$scope.getTitle = function(child) {
 		let title = '';
@@ -155,16 +161,6 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 		}
 	}
 }]);
-
-function javaDocUrlOf(element) {
-	if(element.fullName && element.fullName.includes(".")) {
-		return 'https://javadoc.frankframework.org/' + element.fullName.replaceAll(".", "/") + '.html';
-	} else {
-		// We only have a JavaDoc URL if we have an element with a Java class. The
-		// exception we handle here is <Module>.
-		return null;
-	}
-}
 function copyOf(attr1, attr2, fieldName) {
 	if(attr1 && !attr2) {
 		return attr1;

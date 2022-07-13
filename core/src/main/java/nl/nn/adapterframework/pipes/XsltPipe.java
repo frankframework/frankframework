@@ -28,6 +28,8 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.SupportsOutputStreaming;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -48,7 +50,8 @@ import nl.nn.adapterframework.util.TransformerPool.OutputType;
  *
  * @author Johan Verrips
  */
-
+@Category("Basic")
+@SupportsOutputStreaming
 public class XsltPipe extends StreamingPipe implements InitializingBean {
 
 	private String sessionKey=null;
@@ -166,22 +169,22 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 
 
 
-	@IbisDocRef({"1", XSLTSENDER})
+	@IbisDocRef({XSLTSENDER})
 	public void setStyleSheetName(String stylesheetName) {
 		sender.setStyleSheetName(stylesheetName);
 	}
 
-	@IbisDocRef({"2", XSLTSENDER})
+	@IbisDocRef({XSLTSENDER})
 	public void setStyleSheetNameSessionKey(String newSessionKey) {
 		sender.setStyleSheetNameSessionKey(newSessionKey);
 	}
 
-	@IbisDocRef({"3", XSLTSENDER})
+	@IbisDocRef({XSLTSENDER})
 	public void setStyleSheetCacheSize(int size) {
 		sender.setStyleSheetCacheSize(size);
 	}
 
-	@IbisDocRef({"4", XSLTSENDER})
+	@IbisDocRef({XSLTSENDER})
 	public void setXpathExpression(String string) {
 		sender.setXpathExpression(string);
 	}
@@ -189,17 +192,17 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 		return sender.getXpathExpression();
 	}
 
-	@IbisDocRef({"5", XSLTSENDER})
+	@IbisDocRef({XSLTSENDER})
 	public void setOmitXmlDeclaration(boolean b) {
 		sender.setOmitXmlDeclaration(b);
 	}
 
-	@IbisDocRef({"5", XSLTSENDER})
+	@IbisDocRef({XSLTSENDER})
 	public void setDisableOutputEscaping(boolean b) {
 		sender.setDisableOutputEscaping(b);
 	}
 
-	@IbisDocRef({"6", XSLTSENDER})
+	@IbisDocRef({XSLTSENDER})
 	public void setNamespaceDefs(String namespaceDefs) {
 		sender.setNamespaceDefs(namespaceDefs);
 	}
@@ -207,31 +210,36 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 		return sender.getNamespaceDefs();
 	}
 
-	@IbisDocRef({"7", XSLTSENDER})
+	@IbisDocRef({XSLTSENDER})
 	public void setOutputType(OutputType outputType) {
 		sender.setOutputType(outputType);
 	}
 
-	@IbisDocRef({"8", XSLTSENDER})
+	@IbisDocRef({XSLTSENDER})
 	public void setIndentXml(boolean b) {
 		sender.setIndentXml(b);
 	}
 
-	@IbisDocRef({"9", XSLTSENDER})
+	@IbisDocRef({XSLTSENDER})
 	public void setRemoveNamespaces(boolean b) {
 		sender.setRemoveNamespaces(b);
 	}
 
-	@IbisDocRef({"10", XSLTSENDER})
+	@IbisDocRef({XSLTSENDER})
+	public void setHandleLexicalEvents(boolean b) {
+		sender.setHandleLexicalEvents(b);
+	}
+
+	@IbisDocRef({XSLTSENDER})
 	public void setSkipEmptyTags(boolean b) {
 		sender.setSkipEmptyTags(b);
 	}
 
-	@IbisDocRef({"11", XSLTSENDER})
+	@IbisDocRef({XSLTSENDER})
 	public void setXsltVersion(int xsltVersion) {
 		sender.setXsltVersion(xsltVersion);
 	}
-	@IbisDocRef({"12", XSLTSENDER})
+	@IbisDocRef({XSLTSENDER})
 	/**
 	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
 	 */
@@ -241,14 +249,16 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 		sender.setXslt2(b);
 	}
 
-	@IbisDocRef({"14", XSLTSENDER})
+	@IbisDocRef({XSLTSENDER})
+	@Deprecated
+	@ConfigurationWarning("please use attribute 'removeNamespaces' instead")
 	public void setNamespaceAware(boolean b) {
 		sender.setNamespaceAware(b);
 	}
 
 	@Deprecated
 	@ConfigurationWarning("Please use 'storeResultInSessionKey' with preserveInput=true")
-	@IbisDoc({"15", "If set, then the XsltPipe stores it result in the session using the supplied sessionKey, and returns its input as result"})
+	@IbisDoc({"If set, then the XsltPipe stores it result in the session using the supplied sessionKey, and returns its input as result"})
 	public void setSessionKey(String newSessionKey) {
 		sessionKey = newSessionKey;
 	}
