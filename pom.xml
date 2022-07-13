@@ -22,7 +22,7 @@
 		<h2.driver.version>2.1.214</h2.driver.version>
 		<oracle.driver.version>18.3.0.0</oracle.driver.version>
 		<oracle.driver.jdkversion>8</oracle.driver.jdkversion>
-		<mssql.driver.version>7.2.2.jre8</mssql.driver.version>
+		<mssql.driver.version>7.4.1.jre8</mssql.driver.version>
 		<mysql.driver.version>8.0.29</mysql.driver.version>
 		<mariadb.driver.version>2.7.5</mariadb.driver.version>
 		<postgresql.driver.version>42.4.0</postgresql.driver.version>
@@ -217,11 +217,6 @@
 			</dependency>
 
 			<dependency>
-				<groupId>javax.ejb</groupId>
-				<artifactId>ejb-api</artifactId>
-				<version>3.0</version>
-			</dependency>
-			<dependency>
 				<groupId>javax.servlet</groupId>
 				<artifactId>javax.servlet-api</artifactId>
 				<version>3.1.0</version>
@@ -271,8 +266,8 @@
 			</dependency>
 			<dependency>
 				<groupId>com.sun.mail</groupId>
-				<artifactId>javax.mail</artifactId>
-				<version>1.6.2</version>
+				<artifactId>jakarta.mail</artifactId>
+				<version>1.6.7</version>
 			</dependency>
 			<dependency>
 				<groupId>org.projectlombok</groupId>
@@ -336,6 +331,13 @@
 						</goals>
 						<configuration>
 							<rules>
+								<bannedDependencies>
+									<excludes>
+										<exclude>com.sun.mail:javax.mail</exclude><!-- Java Mail was renamed to the Jakarta Mail -->
+										<exclude>javax.transaction:javax.transaction-api</exclude><!-- javax.transaction-api was renamed to the jakarta.transaction-api -->
+									</excludes>
+									<message>use jakarta packages instead</message>
+								</bannedDependencies>
 								<bannedDependencies>
 									<!-- Java Annotations was renamed to the Jakarta Annotations -->
 									<excludes>
