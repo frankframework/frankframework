@@ -171,6 +171,30 @@
 						</table>
 					</div>
 				</div>
+				<div class="col-md-12 m-t-md table-responsive" ng-if="datasources.length > 0">
+					<div class="ibox-title">
+						<h4>Used DataSources</h4>
+					</div>
+					<div class="ibox-content">
+						<table class="table">
+							<thead>
+								<tr>
+									<th>Datasource</th>
+									<th>Info</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr ng-repeat-start="datasource in datasources">
+									<td rowspan="2">{{datasource.datasourceName}}</td>
+									<td>{{datasource.info}}</td>
+								</tr>
+								<tr ng-repeat-end>
+									<td>{{datasource.connectionPoolProperties}}</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>

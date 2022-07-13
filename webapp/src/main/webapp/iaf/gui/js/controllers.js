@@ -1017,12 +1017,17 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('UploadConfigurationsCtrl', ['$scope', 'Api', function($scope, Api) {
+.controller('UploadConfigurationsCtrl', ['$scope', 'Api', 'appConstants', function($scope, Api, appConstants) {
 	$scope.datasources = {};
+	$scope.form = {};
+
+	$scope.$on('appConstants', function() {
+		$scope.form.datasource = appConstants['jdbc.datasource.default'];
+	});
 
 	Api.Get("jdbc", function(data) {
 		$.extend($scope, data);
-		$scope.form.datasource = data.datasources[0];
+		$scope.form.datasource = (appConstants['jdbc.datasource.default'] != undefined) ? appConstants['jdbc.datasource.default'] : data.datasources[0];
 	});
 
 	$scope.form = {
@@ -2165,12 +2170,17 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('IBISstoreSummaryCtrl', ['$scope', 'Api', '$location', function($scope, Api, $location) {
+.controller('IBISstoreSummaryCtrl', ['$scope', 'Api', '$location', 'appConstants', function($scope, Api, $location, appConstants) {
 	$scope.datasources = {};
+	$scope.form = {};
+
+	$scope.$on('appConstants', function() {
+		$scope.form.datasource = appConstants['jdbc.datasource.default'];
+	});
 
 	Api.Get("jdbc", function(data) {
 		$.extend($scope, data);
-		$scope.form = {datasource: data.datasources[0]};
+		$scope.form.datasource = (appConstants['jdbc.datasource.default'] != undefined) ? appConstants['jdbc.datasource.default'] : data.datasources[0];
 	});
 
 	if($location.search() && $location.search().datasource != null) {
@@ -2375,18 +2385,22 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('ExecuteJdbcQueryCtrl', ['$scope', 'Api', '$timeout', '$state', 'Cookies', function($scope, Api, $timeout, $state, Cookies) {
+.controller('ExecuteJdbcQueryCtrl', ['$scope', 'Api', '$timeout', '$state', 'Cookies', 'appConstants', function($scope, Api, $timeout, $state, Cookies, appConstants) {
 	$scope.datasources = {};
 	$scope.resultTypes = {};
 	$scope.error = "";
 	$scope.processingMessage = false;
 	$scope.form = {};
 
+	$scope.$on('appConstants', function() {
+		$scope.form.datasource = appConstants['jdbc.datasource.default'];
+	});
+
 	var executeQueryCookie = Cookies.get("executeQuery");
 
 	Api.Get("jdbc", function(data) {
 		$.extend($scope, data);
-		$scope.form.datasource = data.datasources[0];
+		$scope.form.datasource = (appConstants['jdbc.datasource.default'] != undefined) ? appConstants['jdbc.datasource.default'] : data.datasources[0];
 		$scope.form.queryType = data.queryTypes[0];
 		$scope.form.resultType = data.resultTypes[0];
 		if(executeQueryCookie) {
@@ -2437,15 +2451,20 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('BrowseJdbcTablesCtrl', ['$scope', 'Api', '$timeout', '$state', function($scope, Api, $timeout, $state) {
+.controller('BrowseJdbcTablesCtrl', ['$scope', 'Api', '$timeout', '$state', 'appConstants', function($scope, Api, $timeout, $state, appConstants) {
 	$scope.datasources = {};
 	$scope.resultTypes = {};
 	$scope.error = "";
 	$scope.processingMessage = false;
+	$scope.form = {};
+
+	$scope.$on('appConstants', function() {
+		$scope.form.datasource = appConstants['jdbc.datasource.default'];
+	});
 
 	Api.Get("jdbc", function(data) {
 		$scope.datasources = data.datasources;
-		$scope.form = {datasource: data.datasources[0]};
+		$scope.form.datasource = (appConstants['jdbc.datasource.default'] != undefined) ? appConstants['jdbc.datasource.default'] : data.datasources[0];
 	});
 	$scope.submit = function(formData) {
 		$scope.processingMessage = true;
