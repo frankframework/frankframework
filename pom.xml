@@ -24,7 +24,7 @@
 		<oracle.driver.jdkversion>8</oracle.driver.jdkversion>
 		<mssql.driver.version>7.4.1.jre8</mssql.driver.version>
 		<mysql.driver.version>8.0.29</mysql.driver.version>
-		<mariadb.driver.version>2.7.5</mariadb.driver.version>
+		<mariadb.driver.version>2.7.6</mariadb.driver.version>
 		<postgresql.driver.version>42.4.0</postgresql.driver.version>
 	</properties>
 
