@@ -14,7 +14,7 @@
 		<spring.version>5.3.21</spring.version>
 		<j2v8.version>4.6.0</j2v8.version>
 		<jackson.version>2.13.3</jackson.version>
-		<micrometer.version>1.9.1</micrometer.version>
+		<micrometer.version>1.9.2</micrometer.version>
 		<saxon.version>10.8</saxon.version>
 	</properties>
 
@@ -43,7 +43,6 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.7.36</version>
 		</dependency>
 		<dependency><!-- LOG4J SLF4J Binding -->
 			<groupId>org.apache.logging.log4j</groupId>
@@ -412,7 +411,7 @@
 		<dependency>
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-java-sdk-s3</artifactId>
-			<version>1.12.255</version>
+			<version>1.12.258</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
@@ -469,7 +468,7 @@
 		<dependency>
 			<groupId>com.nimbusds</groupId>
 			<artifactId>oauth2-oidc-sdk</artifactId>
-			<version>9.37.2</version>
+			<version>9.38</version>
 		</dependency>
 
 		<!-- TransactionManagers: BTM + NARAYANA -->
@@ -519,7 +518,7 @@
 		<dependency>
 			<groupId>org.liquibase</groupId>
 			<artifactId>liquibase-core</artifactId>
-			<version>4.10.0</version>
+			<version>4.13.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
