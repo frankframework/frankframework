@@ -664,7 +664,8 @@
 										<!-- Java Annotations was renamed to the Jakarta Annotations -->
 										<excludes>
 											<exclude>javax.annotation:javax.annotation-api</exclude>
-											<exclude>javax.xml.ws:javax.xml.ws-api</exclude>
+											<exclude>javax.xml.ws:jaxws-api</exclude>
+											<exclude>javax.xml.bind:jaxb-api</exclude>
 											<exclude>javax.xml.soap:javax.xml.soap-api</exclude>
 										</excludes>
 										<message>Prevent the use of both javax and jakarta packages</message>
