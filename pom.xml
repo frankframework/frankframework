@@ -322,58 +322,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
-				<version>3.1.0</version>
-				<executions>
-					<execution>
-						<id>enforce-lib-ban</id>
-						<goals>
-							<goal>enforce</goal>
-						</goals>
-						<configuration>
-							<rules>
-								<bannedDependencies>
-									<excludes>
-										<exclude>com.sun.mail:javax.mail</exclude><!-- Java Mail was renamed to the Jakarta Mail -->
-										<exclude>javax.transaction:javax.transaction-api</exclude><!-- javax.transaction-api was renamed to the jakarta.transaction-api -->
-									</excludes>
-									<message>use jakarta packages instead</message>
-								</bannedDependencies>
-								<bannedDependencies>
-									<!-- Java Annotations was renamed to the Jakarta Annotations -->
-									<excludes>
-										<exclude>javax.annotation:javax.annotation-api</exclude>
-										<exclude>javax.xml.ws:javax.xml.ws-api</exclude>
-										<exclude>javax.xml.soap:javax.xml.soap-api</exclude>
-									</excludes>
-									<message>Prevent the use of both javax and jakarta packages</message>
-								</bannedDependencies>
-								<bannedDependencies>
-									<excludes>
-										<exclude>javax.xml.stream:stax-api</exclude>
-										<exclude>xml-apis:xml-apis</exclude>
-									</excludes>
-									<message>Prevent the use of STAX1, use STAX 2 (org.codehaus.woodstox:stax2-api) instead!</message>
-								</bannedDependencies>
-								<bannedDependencies>
-									<!-- the activation framework was renamed to the jarkata activation framework -->
-									<excludes>
-										<exclude>javax.activation:javax.activation-api</exclude>
-										<exclude>com.sun.activation:javax.activation</exclude>
-								<!-- 	<exclude>javax.activation:activation</exclude> -->
-									</excludes>
-									<message>use com.sun.activation:jakarta.activation instead of jakarta.activation:jakarta.activation-api</message>
-								</bannedDependencies>
-								<bannedDependencies>
-									<!-- the implementation com.sun.activation:jakarta.activation contains the api classes too -->
-									<excludes>
-										<exclude>jakarta.activation:jakarta.activation-api</exclude>
-									</excludes>
-									<message>the implementation com.sun.activation:jakarta.activation is included and it contains the api classes too</message>
-								</bannedDependencies>
-							</rules>
-						</configuration>
-					</execution>
-				</executions>
 			</plugin>
 			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
@@ -610,7 +558,7 @@
 						<dependency>
 							<groupId>com.puppycrawl.tools</groupId>
 							<artifactId>checkstyle</artifactId>
-							<version>10.3.1</version>
+							<version>9.3</version>
 						</dependency>
 					</dependencies>
 				</plugin>
@@ -692,6 +640,62 @@
 							</pluginExecutions>
 						</lifecycleMappingMetadata>
 					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-enforcer-plugin</artifactId>
+					<version>3.1.0</version>
+					<executions>
+						<execution>
+							<id>enforce-lib-ban</id>
+							<goals>
+								<goal>enforce</goal>
+							</goals>
+							<configuration>
+								<rules>
+									<bannedDependencies>
+										<excludes>
+											<exclude>com.sun.mail:javax.mail</exclude><!-- Java Mail was renamed to the Jakarta Mail -->
+											<exclude>javax.transaction:javax.transaction-api</exclude><!-- javax.transaction-api was renamed to the jakarta.transaction-api -->
+										</excludes>
+										<message>use jakarta packages instead</message>
+									</bannedDependencies>
+									<bannedDependencies>
+										<!-- Java Annotations was renamed to the Jakarta Annotations -->
+										<excludes>
+											<exclude>javax.annotation:javax.annotation-api</exclude>
+											<exclude>javax.xml.ws:javax.xml.ws-api</exclude>
+											<exclude>javax.xml.soap:javax.xml.soap-api</exclude>
+										</excludes>
+										<message>Prevent the use of both javax and jakarta packages</message>
+									</bannedDependencies>
+									<bannedDependencies>
+										<excludes>
+											<exclude>javax.xml.stream:stax-api</exclude>
+											<exclude>xml-apis:xml-apis</exclude>
+										</excludes>
+										<message>Prevent the use of STAX1, use STAX 2 (org.codehaus.woodstox:stax2-api) instead!</message>
+									</bannedDependencies>
+									<bannedDependencies>
+										<!-- the activation framework was renamed to the jarkata activation framework -->
+										<excludes>
+											<exclude>javax.activation:javax.activation-api</exclude>
+											<exclude>com.sun.activation:javax.activation</exclude>
+									<!-- 	<exclude>javax.activation:activation</exclude> -->
+										</excludes>
+										<message>use com.sun.activation:jakarta.activation instead of jakarta.activation:jakarta.activation-api</message>
+									</bannedDependencies>
+									<bannedDependencies>
+										<!-- the implementation com.sun.activation:jakarta.activation contains the api classes too -->
+										<excludes>
+											<exclude>jakarta.activation:jakarta.activation-api</exclude>
+										</excludes>
+										<message>the implementation com.sun.activation:jakarta.activation is included and it contains the api classes too</message>
+									</bannedDependencies>
+								</rules>
+							</configuration>
+						</execution>
+					</executions>
 				</plugin>
 			</plugins>
 		</pluginManagement>
