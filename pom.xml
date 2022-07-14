@@ -19,13 +19,13 @@
 		<frankdoc.version>1.1-SNAPSHOT</frankdoc.version>
 
 		<!-- DB Driver Versions -->
-		<h2.driver.version>2.1.212</h2.driver.version>
+		<h2.driver.version>2.1.214</h2.driver.version>
 		<oracle.driver.version>18.3.0.0</oracle.driver.version>
 		<oracle.driver.jdkversion>8</oracle.driver.jdkversion>
-		<mssql.driver.version>7.2.2.jre8</mssql.driver.version>
+		<mssql.driver.version>7.4.1.jre8</mssql.driver.version>
 		<mysql.driver.version>8.0.29</mysql.driver.version>
-		<mariadb.driver.version>2.7.5</mariadb.driver.version>
-		<postgresql.driver.version>42.3.3</postgresql.driver.version>
+		<mariadb.driver.version>2.7.6</mariadb.driver.version>
+		<postgresql.driver.version>42.4.0</postgresql.driver.version>
 	</properties>
 
 	<name>Ibis AdapterFramework parent</name>
@@ -191,24 +191,31 @@
 				<artifactId>log4j-slf4j-impl</artifactId>
 				<version>${log4j2.version}</version>
 			</dependency>
-			<!-- Apache Commons Logging Binding-->
+			<!-- Apache Commons Logging Binding -->
 			<dependency>
 				<groupId>org.apache.logging.log4j</groupId>
 				<artifactId>log4j-jcl</artifactId>
 				<version>${log4j2.version}</version>
 			</dependency>
-			<!-- Java Util Logging Binding-->
+			<!-- Java Util Logging Binding -->
 			<dependency>
 				<groupId>org.apache.logging.log4j</groupId>
 				<artifactId>log4j-jul</artifactId>
 				<version>${log4j2.version}</version>
 			</dependency>
 
+			<!-- SLF4J Log bindings -->
 			<dependency>
-				<groupId>javax.ejb</groupId>
-				<artifactId>ejb-api</artifactId>
-				<version>3.0</version>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-api</artifactId>
+				<version>1.7.36</version>
 			</dependency>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-jcl</artifactId>
+				<version>1.7.36</version>
+			</dependency>
+
 			<dependency>
 				<groupId>javax.servlet</groupId>
 				<artifactId>javax.servlet-api</artifactId>
@@ -259,8 +266,8 @@
 			</dependency>
 			<dependency>
 				<groupId>com.sun.mail</groupId>
-				<artifactId>javax.mail</artifactId>
-				<version>1.6.2</version>
+				<artifactId>jakarta.mail</artifactId>
+				<version>1.6.7</version>
 			</dependency>
 			<dependency>
 				<groupId>org.projectlombok</groupId>
@@ -276,7 +283,7 @@
 			<dependency>
 				<groupId>org.mockito</groupId>
 				<artifactId>mockito-core</artifactId>
-				<version>4.5.1</version>
+				<version>4.6.1</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hamcrest</groupId>
@@ -315,50 +322,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
-				<version>3.1.0</version>
-				<executions>
-					<execution>
-						<id>enforce-lib-ban</id>
-						<goals>
-							<goal>enforce</goal>
-						</goals>
-						<configuration>
-							<rules>
-								<bannedDependencies>
-									<!-- Java Annotations was renamed to the Jakarta Annotations -->
-									<excludes>
-										<exclude>javax.annotation:javax.annotation-api</exclude>
-										<exclude>javax.xml.ws:javax.xml.ws-api</exclude>
-										<exclude>javax.xml.soap:javax.xml.soap-api</exclude>
-									</excludes>
-									<message>Prevent the use of both javax and jakarta packages</message>
-								</bannedDependencies>
-								<bannedDependencies>
-									<excludes>
-										<exclude>javax.xml.stream:stax-api</exclude>
-									</excludes>
-									<message>Prevent the use of STAX1, use STAX 2 (org.codehaus.woodstox:stax2-api) instead!</message>
-								</bannedDependencies>
-								<bannedDependencies>
-									<!-- the activation framework was renamed to the jarkata activation framework -->
-									<excludes>
-										<exclude>javax.activation:javax.activation-api</exclude>
-										<exclude>com.sun.activation:javax.activation</exclude>
-								<!-- 	<exclude>javax.activation:activation</exclude> -->
-									</excludes>
-									<message>use com.sun.activation:jakarta.activation instead of jakarta.activation:jakarta.activation-api</message>
-								</bannedDependencies>
-								<bannedDependencies>
-									<!-- the implementation com.sun.activation:jakarta.activation contains the api classes too -->
-									<excludes>
-										<exclude>jakarta.activation:jakarta.activation-api</exclude>
-									</excludes>
-									<message>the implementation com.sun.activation:jakarta.activation is included and it contains the api classes too</message>
-								</bannedDependencies>
-							</rules>
-						</configuration>
-					</execution>
-				</executions>
 			</plugin>
 			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
@@ -677,6 +640,63 @@
 							</pluginExecutions>
 						</lifecycleMappingMetadata>
 					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-enforcer-plugin</artifactId>
+					<version>3.1.0</version>
+					<executions>
+						<execution>
+							<id>enforce-lib-ban</id>
+							<goals>
+								<goal>enforce</goal>
+							</goals>
+							<configuration>
+								<rules>
+									<bannedDependencies>
+										<excludes>
+											<exclude>com.sun.mail:javax.mail</exclude><!-- Java Mail was renamed to the Jakarta Mail -->
+											<exclude>javax.transaction:javax.transaction-api</exclude><!-- javax.transaction-api was renamed to the jakarta.transaction-api -->
+										</excludes>
+										<message>use jakarta packages instead</message>
+									</bannedDependencies>
+									<bannedDependencies>
+										<!-- Java Annotations was renamed to the Jakarta Annotations -->
+										<excludes>
+											<exclude>javax.annotation:javax.annotation-api</exclude>
+											<exclude>javax.xml.ws:jaxws-api</exclude>
+											<exclude>javax.xml.bind:jaxb-api</exclude>
+											<exclude>javax.xml.soap:javax.xml.soap-api</exclude>
+										</excludes>
+										<message>Prevent the use of both javax and jakarta packages</message>
+									</bannedDependencies>
+									<bannedDependencies>
+										<excludes>
+											<exclude>javax.xml.stream:stax-api</exclude>
+											<exclude>xml-apis:xml-apis</exclude>
+										</excludes>
+										<message>Prevent the use of STAX1, use STAX 2 (org.codehaus.woodstox:stax2-api) instead!</message>
+									</bannedDependencies>
+									<bannedDependencies>
+										<!-- the activation framework was renamed to the jarkata activation framework -->
+										<excludes>
+											<exclude>javax.activation:javax.activation-api</exclude>
+											<exclude>com.sun.activation:javax.activation</exclude>
+									<!-- 	<exclude>javax.activation:activation</exclude> -->
+										</excludes>
+										<message>use com.sun.activation:jakarta.activation instead of jakarta.activation:jakarta.activation-api</message>
+									</bannedDependencies>
+									<bannedDependencies>
+										<!-- the implementation com.sun.activation:jakarta.activation contains the api classes too -->
+										<excludes>
+											<exclude>jakarta.activation:jakarta.activation-api</exclude>
+										</excludes>
+										<message>the implementation com.sun.activation:jakarta.activation is included and it contains the api classes too</message>
+									</bannedDependencies>
+								</rules>
+							</configuration>
+						</execution>
+					</executions>
 				</plugin>
 			</plugins>
 		</pluginManagement>
