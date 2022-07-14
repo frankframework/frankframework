@@ -40,17 +40,17 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Niels Meijer
  */
 public class TestAssertions extends org.junit.Assert {
-	private final static Logger LOG = LogUtil.getLogger(TestAssertions.class);
+	private static final Logger LOG = LogUtil.getLogger(TestAssertions.class);
 
-	static public void assertEqualsIgnoreWhitespaces(String expected, String actual) throws IOException {
+	public static void assertEqualsIgnoreWhitespaces(String expected, String actual) throws IOException {
 		assertEqualsIgnoreWhitespaces(null, trimMultilineString(expected), trimMultilineString(actual));
 	}
 
-	static public void assertEqualsIgnoreWhitespaces(String message, String expected, String actual) throws IOException {
+	public static void assertEqualsIgnoreWhitespaces(String message, String expected, String actual) throws IOException {
 		assertEquals(message, trimMultilineString(expected), trimMultilineString(actual));
 	}
 
-	static public void assertEqualsIgnoreRNTSpace(String a, String b) {
+	public static void assertEqualsIgnoreRNTSpace(String a, String b) {
 		assertEquals(removeRegexCharactersFromInput(a, "[\\n\\t\\r ]"), removeRegexCharactersFromInput(b, "[\\n\\t\\r ]"));
 	}
 
@@ -77,15 +77,15 @@ public class TestAssertions extends org.junit.Assert {
 		return buffer.toString();
 	}
 
-	static public void assertEqualsIgnoreCRLF(String expected, String actual) {
+	public static void assertEqualsIgnoreCRLF(String expected, String actual) {
 		assertEqualsIgnoreCRLF(null, expected, actual);
 	}
 
-	static public void assertEqualsIgnoreCRLF(String message, String expected, String actual) {
+	public static void assertEqualsIgnoreCRLF(String message, String expected, String actual) {
 		assertEquals(message, expected.trim().replace("\r",""), actual.trim().replace("\r",""));
 	}
 
-	static public void assertXpathValueEquals(String expected, String source, String xpathExpr) throws SAXException, XPathExpressionException, TransformerException, IOException {
+	public static void assertXpathValueEquals(String expected, String source, String xpathExpr) throws SAXException, XPathExpressionException, TransformerException, IOException {
 		String xslt=XmlUtils.createXPathEvaluatorSource(xpathExpr);
 		Transformer transformer = XmlUtils.createTransformer(xslt);
 
@@ -94,7 +94,7 @@ public class TestAssertions extends org.junit.Assert {
 		assertEquals(xpathExpr,expected,result);
 	}
 
-	static public void assertXpathValueEquals(int expected, String source, String xpathExpr) throws SAXException, XPathExpressionException, TransformerException, IOException {
+	public static void assertXpathValueEquals(int expected, String source, String xpathExpr) throws SAXException, XPathExpressionException, TransformerException, IOException {
 		String xslt=XmlUtils.createXPathEvaluatorSource(xpathExpr);
 		Transformer transformer = XmlUtils.createTransformer(xslt);
 
