@@ -35,7 +35,6 @@ public class SendMessageJob extends JobDef {
 	private @Getter String javaListener;
 	private @Getter String message = null;
 
-
 	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getJavaListener())) {

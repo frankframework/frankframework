@@ -69,8 +69,11 @@ import nl.nn.adapterframework.scheduler.ConfiguredJob;
 import nl.nn.adapterframework.scheduler.IbisJobDetail;
 import nl.nn.adapterframework.scheduler.IbisJobDetail.JobType;
 import nl.nn.adapterframework.scheduler.JobDef;
+import nl.nn.adapterframework.scheduler.JobDefFunctions;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
 import nl.nn.adapterframework.scheduler.job.IJob;
+import nl.nn.adapterframework.scheduler.job.IbisActionJob;
+import nl.nn.adapterframework.scheduler.job.SendMessageJob;
 import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Locker;
@@ -228,7 +231,7 @@ public final class ShowScheduler extends Base {
 			if(ijob instanceof JobDef) {
 				JobDef jobDef = (JobDef)job;
 				if (jobDef.isCreatedFromDatabase()) {
-					JobFactory.mapFields(jobDef, jobData);
+					mapFields(jobDef, jobData);
 				}
 			}
 
@@ -242,6 +245,23 @@ public final class ShowScheduler extends Base {
 		}
 
 		return jobData;
+	}
+
+	private void mapFields(JobDef jobDef, Map<String, Object> jobData) {
+		jobData.put("adapter", jobDef.getAdapterName());
+		if (jobDef instanceof SendMessageJob) {
+			SendMessageJob job = (SendMessageJob) jobDef;
+			jobData.put("listener", job.getJavaListener());
+			jobData.put("message", job.getMessage());
+			jobData.put("action", JobDefFunctions.SEND_MESSAGE);
+			return;
+		}
+		if (jobDef instanceof IbisActionJob) {
+			IbisActionJob job = (IbisActionJob) jobDef;
+			jobData.put("listener", job.getReceiverName());
+			jobData.put("action", job.getAction());
+			return;
+		}
 	}
 
 	private List<Map<String, Object>> getJobTriggers(List<? extends Trigger> triggers) throws ApiException {
@@ -548,7 +568,7 @@ public final class ShowScheduler extends Base {
 		//First try to create the schedule and run it on the local ibis before storing it in the database
 
 		String action = null; // TODO support other actions ...
-		JobDef jobdef = JobFactory.createJob(adapter, listenerName, message, action);
+		JobDef jobdef = JobFactory.createDatabaseJob(adapter, listenerName, message, action);
 		jobdef.setCronExpression(cronExpression);
 		jobdef.setName(name);
 		jobdef.setJobGroup(jobGroup);

@@ -149,7 +149,7 @@ TagDatabase
 	<changeSet id="IAF_Util:8" author="Gerrit van Brakel">
 		<comment>Add action column to IBISSCHEDULES Table</comment>
 		<addColumn tableName="IBISSCHEDULES" >
-			<column afterColumn="RECEIVER" name="ACTION"  type="java.sql.Types.VARCHAR(32)"/> 
+			<column name="ACTION" type="java.sql.Types.VARCHAR(32)"/> 
 		</addColumn>
 	</changeSet>
 

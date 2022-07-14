@@ -58,15 +58,20 @@ public class JobFactory extends GenericFactory {
 		return clazz.getCanonicalName();
 	}
 
-	public static JobDef createJob(IAdapter adapter, String receiverName, String message, String functionName) {
+	/** 
+	 * Convenience method to create a new DatabaseJob.
+	 * The JobDefinition is based on the Configuration in which it's created.
+	 */
+	public static JobDef createDatabaseJob(IAdapter adapter, String listenerOrReceiverName, String message, String functionName) {
 		JobDefFunctions function = StringUtils.isNotEmpty(functionName) ? EnumUtils.parse(JobDefFunctions.class, functionName) : JobDefFunctions.SEND_MESSAGE;
 
 		switch(function) {
 		case SEND_MESSAGE:
 			SendMessageJob sendMessageJob = SpringUtils.createBean(adapter.getApplicationContext(), SendMessageJob.class);
 			sendMessageJob.setAdapterName(adapter.getName());
-			sendMessageJob.setJavaListener(receiverName);
+			sendMessageJob.setJavaListener(listenerOrReceiverName);
 			sendMessageJob.setMessage(message);
+			sendMessageJob.setCreatedFromDatabase(true);
 			return sendMessageJob;
 		case START_ADAPTER:
 		case STOP_ADAPTER:
@@ -74,30 +79,12 @@ public class JobFactory extends GenericFactory {
 		case STOP_RECEIVER:
 			IbisActionJob ibisActionJob = SpringUtils.createBean(adapter.getApplicationContext(), IbisActionJob.class);
 			ibisActionJob.setAdapterName(adapter.getName());
-			ibisActionJob.setReceiverName(receiverName);
+			ibisActionJob.setReceiverName(listenerOrReceiverName);
 			ibisActionJob.setAction(EnumUtils.parse(IbisActionJob.Action.class, "function", function.name()));
+			ibisActionJob.setCreatedFromDatabase(true);
 			return ibisActionJob;
 		default:
 			throw new IllegalArgumentException("Job function ["+function+"] is not supported as Database job");
 		}
 	}
-
-	public static void mapFields(JobDef jobDef, Map<String, Object> jobData) {
-		if (jobDef instanceof SendMessageJob) {
-			SendMessageJob job = (SendMessageJob) jobDef;
-			jobData.put("adapter", job.getAdapterName());
-			jobData.put("listener", job.getJavaListener());
-			jobData.put("message", job.getMessage());
-			jobData.put("action", JobDefFunctions.SEND_MESSAGE);
-			return;
-		}
-		if (jobDef instanceof IbisActionJob) {
-			IbisActionJob job = (IbisActionJob) jobDef;
-			jobData.put("adapter", job.getAdapterName());
-			jobData.put("listener", job.getReceiverName());
-			jobData.put("action", job.getIbisAction());
-			return;
-		}
-	}
-
 }

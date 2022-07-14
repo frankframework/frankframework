@@ -291,7 +291,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Getter boolean configured;
-	private @Getter @Setter(onMethod = @__(@Protected)) String adapterName;
+	private @Getter @Setter(onMethod = @__(@Protected)) String adapterName; //In case of a DatabaseJob, allows for easily selecting a JavaListener in the console
 	private @Getter @Setter(onMethod = @__(@Protected)) boolean createdFromDatabase=false;
 
 	private @Getter String name;

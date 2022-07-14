@@ -93,7 +93,7 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 							String jobName = rs.getString("JOBNAME");
 							String jobGroup = rs.getString("JOBGROUP");
 							String adapterName = rs.getString("ADAPTER");
-							String receiverName = rs.getString("RECEIVER");
+							String listenerOrReceiverName = rs.getString("RECEIVER");
 							String action = actionFieldExists ? rs.getString(ACTION_FIELD) : null;
 							String cronExpression = rs.getString("CRON");
 							int interval = rs.getInt("EXECUTIONINTERVAL");
@@ -115,8 +115,7 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 							}
 
 							//Create a new JobDefinition so we can compare it with existing jobs
-							JobDef jobdef = JobFactory.createJob(adapter, receiverName, message, action);
-							jobdef.setCreatedFromDatabase(true);
+							JobDef jobdef = JobFactory.createDatabaseJob(adapter, listenerOrReceiverName, message, action);
 							jobdef.setCronExpression(cronExpression);
 							jobdef.setName(jobName);
 							jobdef.setInterval(interval);
@@ -132,7 +131,7 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 							}
 
 							try {
-								jobdef.configure();
+								jobdef.configure(); //Ensure the job is valid
 							} catch (ConfigurationException e) {
 								getMessageKeeper().add("unable to configure DatabaseJobDef ["+jobdef+"] with key ["+key+"]", e);
 							}

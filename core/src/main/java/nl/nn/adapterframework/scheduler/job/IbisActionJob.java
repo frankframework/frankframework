@@ -29,11 +29,9 @@ import nl.nn.adapterframework.util.EnumUtils;
 
 public class IbisActionJob extends JobDef {
 	private @Getter @Setter AdapterManager adapterManager;
-	private @Getter String configurationName;
-	private @Getter String adapterName;
 	private @Getter String receiverName;
-	private Action jobAction;
-	private @Getter IbisAction ibisAction;
+	private @Getter Action action;
+	private IbisAction ibisAction;
 
 	// Subset of the IbisAction enum as we do not want to expose all fields.
 	public enum Action {
@@ -47,7 +45,7 @@ public class IbisActionJob extends JobDef {
 	public void configure() throws ConfigurationException {
 		super.configure();
 
-		this.ibisAction = EnumUtils.parse(IbisAction.class, "function", jobAction.name()); // Try and parse the Action as an IbisAction
+		this.ibisAction = EnumUtils.parse(IbisAction.class, "function", action.name()); // Try and parse the Action as an IbisAction
 
 		if (StringUtils.isEmpty(getAdapterName())) {
 			throw new ConfigurationException("an adapterName must be specified");
@@ -58,7 +56,7 @@ public class IbisActionJob extends JobDef {
 			throw new ConfigurationException(msg);
 		}
 
-		if (jobAction == Action.STOPRECEIVER || jobAction == Action.STARTRECEIVER) {
+		if (action == Action.STOPRECEIVER || action == Action.STARTRECEIVER) {
 			if (StringUtils.isEmpty(getReceiverName())) {
 				throw new ConfigurationException("a receiverName must be specified");
 			}
@@ -71,12 +69,12 @@ public class IbisActionJob extends JobDef {
 
 	@Override
 	public void execute() {
-		getIbisManager().handleAction(ibisAction, getConfigurationName(), getAdapterName(), getReceiverName(), "scheduled job ["+getName()+"]", true);
+		getIbisManager().handleAction(ibisAction, getApplicationContext().getId(), getAdapterName(), getReceiverName(), "scheduled job ["+getName()+"]", true);
 	}
 
 	@Mandatory
 	public void setAction(Action action) {
-		this.jobAction = action;
+		this.action = action;
 	}
 
 	@Deprecated
@@ -84,16 +82,12 @@ public class IbisActionJob extends JobDef {
 		setAction(function);
 	}
 
-	/** Configuration on which job operates */
-	public void setConfigurationName(String configurationName) {
-		this.configurationName = configurationName;
-	}
-
 	/** Adapter on which job operates
 	 * @ff.mandatory
 	 */
+	@Override
 	public void setAdapterName(String adapterName) {
-		this.adapterName = adapterName;
+		super.setAdapterName(adapterName);
 	}
 
 	/** Receiver on which job operates */
