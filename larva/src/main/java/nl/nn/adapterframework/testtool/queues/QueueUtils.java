@@ -127,7 +127,7 @@ public class QueueUtils {
 		return EnumUtils.parse((Class<E>) enumClass, value);
 	}
 
-	private static String firstCharToLower(String input) {
+	public static String firstCharToLower(String input) {
 		return input.substring(0, 1).toLowerCase() + input.substring(1);
 	}
 

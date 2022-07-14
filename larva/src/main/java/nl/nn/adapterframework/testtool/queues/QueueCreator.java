@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package nl.nn.adapterframework.testtool;
+package nl.nn.adapterframework.testtool.queues;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -45,7 +45,11 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.senders.DelaySender;
 import nl.nn.adapterframework.senders.IbisJavaSender;
-import nl.nn.adapterframework.testtool.queues.QueueUtils;
+import nl.nn.adapterframework.testtool.FileListener;
+import nl.nn.adapterframework.testtool.FileSender;
+import nl.nn.adapterframework.testtool.ListenerMessageHandler;
+import nl.nn.adapterframework.testtool.TestTool;
+import nl.nn.adapterframework.testtool.XsltProviderListener;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.EnumUtils;
 
