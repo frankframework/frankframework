@@ -14,10 +14,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
+import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
 
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
+import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 
@@ -37,14 +39,12 @@ public class TestXmlSchema2JsonSchema extends AlignTestBase {
 		testXml2JsonSchema(schemaFile, namespace, inputFile, rootElement, true, true, expectValidRoundTrip,	expectedFailureReason);
 	}
 
-	public void testXml2JsonSchema(String schemaFile, String namespace, String xml, String rootElement, boolean compactArrays, boolean skipJsonRootElements, boolean expectValidRoundTrip, String expectedFailureReason) throws Exception {
+	public void testXml2JsonSchema(String schemaFile, String namespace, String inputFile, String rootElement, boolean compactArrays, boolean skipJsonRootElements, boolean expectValidRoundTrip, String expectedFailureReason) throws Exception {
 
-		URL schemaUrl = getSchemaURL(schemaFile);
 		String jsonSchemaFile = schemaFile.replace(".xsd", (skipJsonRootElements ? "-compact-" : "-full-") + rootElement + ".jsd");
 		URL jsonSchemaUrl = getSchemaURL(jsonSchemaFile);
 		String expectedJsonSchema = jsonSchemaUrl == null ? null : StreamUtil.streamToString(jsonSchemaUrl.openStream(), "\n", "utf-8");
-		String xmlString = getTestFile(xml + ".xml");
-		String jsonString = getTestFile(xml + (skipJsonRootElements ? "-compact" : "-full") + ".json");
+		String jsonString = getTestFile(inputFile + (skipJsonRootElements ? "-compact" : "-full") + ".json");
 
 		Json2XmlValidator validator = new Json2XmlValidator();
 		validator.registerForward(new PipeForward("success", null));
@@ -84,9 +84,9 @@ public class TestXmlSchema2JsonSchema extends AlignTestBase {
 			//String schemaPretty = jsonPrettyPrint("{" + jsonSchemaContent + "}");
 			//schemaPretty = schemaPretty.substring(1, schemaPretty.length() - 1).trim();
 
-			//System.out.println("expected [" + expectedJsonSchema + "]");
-			//System.out.println("actual   [" + jsonSchemaContent + "]");
-			assertEquals("generated does not match [" + jsonSchemaFile + "]", expectedJsonSchema, jsonSchemaContent);
+			LOG.debug("expected [{}]", expectedJsonSchema);
+			LOG.debug("actual [{}]", jsonSchemaContent);
+			MatchUtils.assertJsonEquals("generated does not match [" + jsonSchemaFile + "]", expectedJsonSchema, jsonSchemaContent);
 
 //	    	if (!expectValid) {
 //				fail("expected to fail with reason ["+ expectedFailureReason +"]");
@@ -97,7 +97,7 @@ public class TestXmlSchema2JsonSchema extends AlignTestBase {
 		// validate the json against the generated schema
 		if (compactArrays==skipJsonRootElements) {
 			if (StringUtils.isNotEmpty(jsonString)) {
-				JsonSchemaFactory factory = JsonSchemaFactory.getInstance();
+				JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4);
 				JsonSchema schema = factory.getSchema(jsonSchemaContent);
 
 				ObjectMapper mapper = new ObjectMapper();

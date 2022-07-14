@@ -122,7 +122,11 @@ public class MatchUtils {
 		return jsonStructure;
 	}
 
-	public static void assertJsonEqual(String description, String jsonExp, String jsonAct) {
+	public static void assertJsonEquals(String jsonExp, String jsonAct) {
+		assertEquals(Misc.jsonPretty(jsonExp), Misc.jsonPretty(jsonAct));
+	}
+
+	public static void assertJsonEquals(String description, String jsonExp, String jsonAct) {
 		assertEquals(description, Misc.jsonPretty(jsonExp), Misc.jsonPretty(jsonAct));
 	}
 
