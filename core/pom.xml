@@ -348,11 +348,10 @@
 			<artifactId>json</artifactId>
 			<version>20080701</version>
 		</dependency>
-		<!-- javax.json is included in java 7SE -->
 		<dependency>
 			<groupId>org.glassfish</groupId>
-			<artifactId>javax.json</artifactId>
-			<version>1.0.4</version>
+			<artifactId>jakarta.json</artifactId>
+			<version>2.0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>xalan</groupId>

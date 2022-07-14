@@ -23,11 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonWriter;
-import javax.json.JsonWriterFactory;
-import javax.json.stream.JsonGenerator;
 import javax.mail.BodyPart;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMultipart;
@@ -41,6 +36,11 @@ import org.apache.logging.log4j.Logger;
 
 import com.nimbusds.jose.util.JSONObjectUtils;
 
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonWriter;
+import jakarta.json.JsonWriterFactory;
+import jakarta.json.stream.JsonGenerator;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.http.HttpServletBase;

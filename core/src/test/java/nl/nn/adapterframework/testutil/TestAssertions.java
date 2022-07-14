@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2021-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,10 +25,12 @@ import javax.xml.transform.TransformerException;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -38,6 +40,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Niels Meijer
  */
 public class TestAssertions extends org.junit.Assert {
+	private final static Logger LOG = LogUtil.getLogger(TestAssertions.class);
 
 	static public void assertEqualsIgnoreWhitespaces(String expected, String actual) throws IOException {
 		assertEqualsIgnoreWhitespaces(null, trimMultilineString(expected), trimMultilineString(actual));
@@ -85,21 +88,21 @@ public class TestAssertions extends org.junit.Assert {
 	static public void assertXpathValueEquals(String expected, String source, String xpathExpr) throws SAXException, XPathExpressionException, TransformerException, IOException {
 		String xslt=XmlUtils.createXPathEvaluatorSource(xpathExpr);
 		Transformer transformer = XmlUtils.createTransformer(xslt);
-		
+
 		String result=XmlUtils.transformXml(transformer, source);
-		//System.out.println("xpath ["+xpathExpr+"] result ["+result+"]");
+		LOG.debug("xpath [{}] result [{}]", xpathExpr, result);
 		assertEquals(xpathExpr,expected,result);
 	}
 
 	static public void assertXpathValueEquals(int expected, String source, String xpathExpr) throws SAXException, XPathExpressionException, TransformerException, IOException {
 		String xslt=XmlUtils.createXPathEvaluatorSource(xpathExpr);
 		Transformer transformer = XmlUtils.createTransformer(xslt);
-		
+
 		String result=XmlUtils.transformXml(transformer, source);
-		System.out.println("xpath ["+xpathExpr+"] result ["+result+"]");
+		LOG.debug("xpath [{}] result [{}]", xpathExpr, result);
 		assertEquals(xpathExpr,expected+"",result);
 	}
-	
+
 	@Test
 	public void testAssertEqualsIgnoreWhitespacesNull() throws IOException {
 		assertEqualsIgnoreWhitespaces(null, null);

@@ -6,7 +6,7 @@ import static org.junit.Assert.fail;
 import java.net.URL;
 import java.util.Set;
 
-import javax.json.JsonStructure;
+import jakarta.json.JsonStructure;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -74,7 +74,7 @@ public class TestXmlSchema2JsonSchema extends AlignTestBase {
 			fail("no schema generated for [" + rootElement + "]");
 		}
 		String jsonSchemaContent = Misc.jsonPretty(jsonschema.toString());
-		System.out.println("result compactArrays [" + compactArrays + "] skipJsonRootElements [" + skipJsonRootElements + "] json:\n" + jsonSchemaContent);
+		LOG.info("result compactArrays [{}] skipJsonRootElements [{}] json:\n{}", compactArrays, skipJsonRootElements, jsonSchemaContent);
 		if (StringUtils.isEmpty(jsonSchemaContent)) {
 			fail("json schema is empty");
 		}
@@ -105,8 +105,8 @@ public class TestXmlSchema2JsonSchema extends AlignTestBase {
 
 				Set<ValidationMessage> errors = schema.validate(node);
 
-				System.out.println(jsonString);
-				System.out.println(errors);
+				LOG.debug("jsonString: {}", jsonString);
+				LOG.debug("errors: {}", errors);
 				assertEquals(errors.toString(), 0, errors.size());
 			}
 		}
