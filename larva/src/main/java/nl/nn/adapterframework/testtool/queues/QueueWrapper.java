@@ -36,6 +36,7 @@ import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.FileMessage;
 import nl.nn.adapterframework.stream.Message;
@@ -94,14 +95,14 @@ public class QueueWrapper extends HashMap<String, Object> {
 		}
 
 		String convertException = properties.getProperty(CONVERT_MESSAGE_TO_EXCEPTION_KEY);
-		put(CONVERT_MESSAGE_TO_EXCEPTION_KEY, new Boolean(convertException));
+		put(CONVERT_MESSAGE_TO_EXCEPTION_KEY, Boolean.valueOf(convertException));
 
-		a(properties);
+		mapParameters(properties);
 
 		return this;
 	}
 
-	private void a(Properties properties) {
+	private void mapParameters(Properties properties) {
 		if(get() instanceof IWithParameters) {
 			Map<String, Object> paramPropertiesMap = createParametersMapFromParamProperties(properties, true, getSession());
 			Iterator<String> parameterNameIterator = paramPropertiesMap.keySet().iterator();
@@ -241,7 +242,9 @@ public class QueueWrapper extends HashMap<String, Object> {
 	}
 
 	public void configure() throws ConfigurationException {
-		get().configure();
+		if(!(get() instanceof WebServiceListener)) {//requires a configuration as parent
+			get().configure();
+		}
 	}
 
 	public void open() throws ConfigurationException {
