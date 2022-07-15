@@ -39,11 +39,12 @@ import nl.nn.adapterframework.util.LogUtil;
 public class QueueUtils {
 	private static final Logger LOG = LogUtil.getLogger(QueueUtils.class);
 
-	public static <T extends IConfigurable> T createQueue(Class<T> clazz) {
+	@SuppressWarnings("unchecked")
+	public static <T extends IConfigurable> T createInstance(Class<T> clazz) {
 		return (T) createInstance(clazz.getCanonicalName());
 	}
 
-	private static Object createInstance(String className) {
+	public static IConfigurable createInstance(String className) {
 		LOG.debug("instantiating queue [{}]", className);
 		try {
 			Class<?> clazz = ClassUtils.loadClass(className);
@@ -59,7 +60,7 @@ public class QueueUtils {
 				((HttpSenderBase) obj).setVerifyHostname(false);
 			}
 
-			return obj;
+			return (IConfigurable) obj;
 		}
 		catch (Exception e) {
 			throw new IllegalStateException("unable to initialize class ["+className+"]", e);
@@ -130,5 +131,4 @@ public class QueueUtils {
 	public static String firstCharToLower(String input) {
 		return input.substring(0, 1).toLowerCase() + input.substring(1);
 	}
-
 }
