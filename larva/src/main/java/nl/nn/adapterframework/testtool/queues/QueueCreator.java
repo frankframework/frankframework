@@ -28,164 +28,84 @@ import org.apache.commons.lang3.StringUtils;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader;
-import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.http.HttpSender;
-import nl.nn.adapterframework.http.WebServiceListener;
-import nl.nn.adapterframework.http.WebServiceSender;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jms.JMSFacade.DeliveryMode;
 import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.jms.PullingJmsListener;
-import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.receivers.JavaListener;
-import nl.nn.adapterframework.senders.DelaySender;
-import nl.nn.adapterframework.senders.IbisJavaSender;
-import nl.nn.adapterframework.testtool.FileListener;
-import nl.nn.adapterframework.testtool.FileSender;
-import nl.nn.adapterframework.testtool.ListenerMessageHandler;
 import nl.nn.adapterframework.testtool.TestTool;
 import nl.nn.adapterframework.testtool.XsltProviderListener;
-import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.EnumUtils;
 
 public class QueueCreator {
 
-	public static Map<String, Map<String, Object>> openQueues(String scenarioDirectory, Properties properties, IbisContext ibisContext, AppConstants appConstants, Map<String, Object> writers, int parameterTimeout, String correlationId) {
+	public static Map<String, Map<String, Object>> openQueues(String scenarioDirectory, Properties properties, IbisContext ibisContext, Map<String, Object> writers, int parameterTimeout, String correlationId) {
 		Map<String, Map<String, Object>> queues = new HashMap<>();
 		debugMessage("Get all queue names", writers);
-		List<String> jmsSenders = new ArrayList<String>();
-		List<String> jmsListeners = new ArrayList<String>();
-		List<String> jdbcFixedQuerySenders = new ArrayList<String>();
-		List<String> ibisWebServiceSenders = new ArrayList<String>();
-		List<String> webServiceSenders = new ArrayList<String>();
-		List<String> webServiceListeners = new ArrayList<String>();
-		List<String> httpSenders = new ArrayList<String>();
-		List<String> ibisJavaSenders = new ArrayList<String>();
-		List<String> delaySenders = new ArrayList<String>();
-		List<String> javaListeners = new ArrayList<String>();
-		List<String> fileSenders = new ArrayList<String>();
-		List<String> fileListeners = new ArrayList<String>();
-		List<String> xsltProviderListeners = new ArrayList<String>();
 
-		List<String> manuallyCreatedQueues = new ArrayList<String>();
+		List<String> jmsSenders = new ArrayList<>();
+		List<String> jmsListeners = new ArrayList<>();
+		List<String> jdbcFixedQuerySenders = new ArrayList<>();
+		List<String> xsltProviderListeners = new ArrayList<>();
 
-		Iterator iterator = properties.keySet().iterator();
-		while (iterator.hasNext()) {
-			String key = (String)iterator.next();
-			int i = key.indexOf('.');
-			if (i != -1) {
-				int j = key.indexOf('.', i + 1);
-				if (j != -1) {
-					String queueName = key.substring(0, j);
-					if(manuallyCreatedQueues.contains(queueName)) continue;
-					manuallyCreatedQueues.add(queueName);
+		List<String> manuallyCreatedQueues = new ArrayList<>();
 
-					debugMessage("queuename openqueue: " + queueName, writers);
-					if ("nl.nn.adapterframework.jms.JmsSender".equals(properties.get(queueName + ".className")) && !jmsSenders.contains(queueName)) {
-						debugMessage("Adding jmsSender queue: " + queueName, writers);
-						jmsSenders.add(queueName);
-					} else if ("nl.nn.adapterframework.jms.JmsListener".equals(properties.get(queueName + ".className")) && !jmsListeners.contains(queueName)) {
-						debugMessage("Adding jmsListener queue: " + queueName, writers);
-						jmsListeners.add(queueName);
-					} else if ("nl.nn.adapterframework.jdbc.FixedQuerySender".equals(properties.get(queueName + ".className")) && !jdbcFixedQuerySenders.contains(queueName)) {
-						debugMessage("Adding jdbcFixedQuerySender queue: " + queueName, writers);
-						jdbcFixedQuerySenders.add(queueName);
-					} else if ("nl.nn.adapterframework.http.IbisWebServiceSender".equals(properties.get(queueName + ".className")) && !ibisWebServiceSenders.contains(queueName)) {
-						debugMessage("Adding ibisWebServiceSender queue: " + queueName, writers);
-						ibisWebServiceSenders.add(queueName);
-//					} else if ("nl.nn.adapterframework.http.WebServiceSender".equals(properties.get(queueName + ".className")) && !webServiceSenders.contains(queueName)) {
-//						debugMessage("Adding webServiceSender queue: " + queueName, writers);
-//						webServiceSenders.add(queueName);
-					} else if ("nl.nn.adapterframework.http.WebServiceListener".equals(properties.get(queueName + ".className")) && !webServiceListeners.contains(queueName)) {
-						debugMessage("Adding webServiceListener queue: " + queueName, writers);
-						webServiceListeners.add(queueName);
-					} else if ("nl.nn.adapterframework.http.HttpSender".equals(properties.get(queueName + ".className")) && !httpSenders.contains(queueName)) {
-						debugMessage("Adding httpSender queue: " + queueName, writers);
-						httpSenders.add(queueName);
-					} else if ("nl.nn.adapterframework.senders.IbisJavaSender".equals(properties.get(queueName + ".className")) && !ibisJavaSenders.contains(queueName)) {
-						debugMessage("Adding ibisJavaSender queue: " + queueName, writers);
-						ibisJavaSenders.add(queueName);
-//					} else if ("nl.nn.adapterframework.senders.DelaySender".equals(properties.get(queueName + ".className")) && !delaySenders.contains(queueName)) {
-//						debugMessage("Adding delaySender queue: " + queueName, writers);
-//						delaySenders.add(queueName);
-//					} else if ("nl.nn.adapterframework.receivers.JavaListener".equals(properties.get(queueName + ".className")) && !javaListeners.contains(queueName)) {
-//						debugMessage("Adding javaListener queue: " + queueName, writers);
-//						javaListeners.add(queueName);
-//					} else if ("nl.nn.adapterframework.testtool.FileSender".equals(properties.get(queueName + ".className")) && !fileSenders.contains(queueName)) {
-//						debugMessage("Adding fileSender queue: " + queueName, writers);
-//						fileSenders.add(queueName);
-//					} else if ("nl.nn.adapterframework.testtool.FileListener".equals(properties.get(queueName + ".className")) && !fileListeners.contains(queueName)) {
-//						debugMessage("Adding fileListener queue: " + queueName, writers);
-//						fileListeners.add(queueName);
-					} else if ("nl.nn.adapterframework.testtool.XsltProviderListener".equals(properties.get(queueName + ".className")) && !xsltProviderListeners.contains(queueName)) {
-						debugMessage("Adding xsltProviderListeners queue: " + queueName, writers);
-						xsltProviderListeners.add(queueName);
-					} else {
-						String className = properties.getProperty(queueName+".className");
-						if(StringUtils.isEmpty(className)) continue;
-						System.out.println("adding queue ["+queueName+"]");
-						Properties queueProperties = QueueUtils.getSubProperties(properties, queueName);
+		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+		try {
+			// Use DirectoryClassLoader to make it possible to retrieve resources (such as styleSheetName) relative to the scenarioDirectory.
+			DirectoryClassLoader directoryClassLoader = new DirectoryClassLoader(originalClassLoader);
+			directoryClassLoader.setDirectory(scenarioDirectory);
+			directoryClassLoader.setBasePath(".");
+			directoryClassLoader.configure(null, "TestTool");
+			Thread.currentThread().setContextClassLoader(directoryClassLoader);
 
-						//Deprecation warning
-						if(queueProperties.contains("requestTimeOut") || queueProperties.contains("responseTimeOut")) {
-							errorMessage("properties "+queueName+".requestTimeOut/"+queueName+".responseTimeOut have been replaced with "+queueName+".timeout", writers);
-						}
+			Iterator iterator = properties.keySet().iterator();
+			while (iterator.hasNext()) {
+				String key = (String)iterator.next();
+				int i = key.indexOf('.');
+				if (i != -1) {
+					int j = key.indexOf('.', i + 1);
+					if (j != -1) {
+						String queueName = key.substring(0, j);
+						if(manuallyCreatedQueues.contains(queueName)) continue;
+						manuallyCreatedQueues.add(queueName);
 
-						try {
-							QueueWrapper queue = QueueWrapper.createQueue(className, queueProperties, parameterTimeout);
+						debugMessage("queuename openqueue: " + queueName, writers);
+						if ("nl.nn.adapterframework.jms.JmsSender".equals(properties.get(queueName + ".className")) && !jmsSenders.contains(queueName)) {
+							debugMessage("Adding jmsSender queue: " + queueName, writers);
+							jmsSenders.add(queueName);
+						} else if ("nl.nn.adapterframework.jms.JmsListener".equals(properties.get(queueName + ".className")) && !jmsListeners.contains(queueName)) {
+							debugMessage("Adding jmsListener queue: " + queueName, writers);
+							jmsListeners.add(queueName);
+						} else if ("nl.nn.adapterframework.jdbc.FixedQuerySender".equals(properties.get(queueName + ".className")) && !jdbcFixedQuerySenders.contains(queueName)) {
+							debugMessage("Adding jdbcFixedQuerySender queue: " + queueName, writers);
+							jdbcFixedQuerySenders.add(queueName);
+						} else if ("nl.nn.adapterframework.testtool.XsltProviderListener".equals(properties.get(queueName + ".className")) && !xsltProviderListeners.contains(queueName)) {
+							debugMessage("Adding xsltProviderListeners queue: " + queueName, writers);
+							xsltProviderListeners.add(queueName);
+						} else {
+							String className = properties.getProperty(queueName+".className");
+							if(StringUtils.isEmpty(className)) continue;
+							Properties queueProperties = QueueUtils.getSubProperties(properties, queueName);
+
+							//Deprecation warning
+							if(queueProperties.contains("requestTimeOut") || queueProperties.contains("responseTimeOut")) {
+								errorMessage("properties "+queueName+".requestTimeOut/"+queueName+".responseTimeOut have been replaced with "+queueName+".timeout", writers);
+							}
+
+							QueueWrapper queue = QueueWrapper.createQueue(className, queueProperties, parameterTimeout, correlationId);
 							queue.configure();
 							queue.open();
 							queues.put(queueName, queue);
 							debugMessage("Opened ["+className+"] '" + queueName + "'", writers);
-						} catch (Exception e) {
-							closeQueues(queues, properties, writers, null);
-							queues = null;
-							errorMessage(e.getClass().getSimpleName() + ": "+e.getMessage(), e, writers);
 						}
 					}
 				}
 			}
-		}
-
-		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
-		try {
-			// Use directoryClassLoader to make it possible to specify
-			// styleSheetName relative to the scenarioDirectory.
-			//TODO Run larva in it's own Configuration
-			DirectoryClassLoader directoryClassLoader = new DirectoryClassLoader(originalClassLoader);
-			directoryClassLoader.setDirectory(scenarioDirectory);
-			directoryClassLoader.setBasePath(".");
-			directoryClassLoader.configure(null, "dummy");
-			Thread.currentThread().setContextClassLoader(directoryClassLoader);
-
-			createJmsSenders(queues, jmsSenders, properties, writers, ibisContext, correlationId);
-
-			createJmsListeners(queues, jmsListeners, properties, writers, ibisContext, correlationId, parameterTimeout);
-
-			createFixedQuerySenders(queues, jdbcFixedQuerySenders, properties, writers, ibisContext, correlationId);
-
-			createWebServiceSenders(queues, webServiceSenders, properties, writers);
-
-			createWebServiceListeners(queues, webServiceListeners, properties, writers, parameterTimeout);
-
-			createHttpSenders(queues, httpSenders, properties, writers);
-
-			createIbisJavaSenders(queues, ibisJavaSenders, properties, writers, correlationId);
-
-			createDelaySenders(queues, delaySenders, properties, writers);
-
-			createJavaListeners(queues, javaListeners, properties, writers, parameterTimeout);
-
-			createFileSenders(queues, fileSenders, properties, writers);
-
-			createFileListeners(queues, fileListeners, properties, writers);
-
-			createXsltProviderListeners(queues, xsltProviderListeners, properties, writers);
 		} catch (Exception e) {
 			closeQueues(queues, properties, writers, null);
 			queues = null;
@@ -195,6 +115,14 @@ public class QueueCreator {
 				Thread.currentThread().setContextClassLoader(originalClassLoader);
 			}
 		}
+
+		createJmsSenders(queues, jmsSenders, properties, writers, ibisContext, correlationId);
+
+		createJmsListeners(queues, jmsListeners, properties, writers, ibisContext, correlationId, parameterTimeout);
+
+		createFixedQuerySenders(queues, jdbcFixedQuerySenders, properties, writers, ibisContext, correlationId);
+
+		createXsltProviderListeners(queues, xsltProviderListeners, properties, writers);
 
 		return queues;
 	}
@@ -322,7 +250,7 @@ public class QueueCreator {
 				jmsListenerInfo.put("jmsListener", pullingJmsListener);
 				queues.put(queueName, jmsListenerInfo);
 				debugMessage("Opened jms listener '" + queueName + "'", writers);
-				if (jmsCleanUp(queueName, pullingJmsListener, writers)) {
+				if (TestTool.jmsCleanUp(queueName, pullingJmsListener, writers)) {
 					errorMessage("Found one or more old messages on queue '" + queueName + "', you might want to run your tests with a higher 'wait before clean up' value", writers);
 				}
 			}
@@ -464,185 +392,6 @@ public class QueueCreator {
 		}
 	}
 
-	private static void createWebServiceSenders(Map<String, Map<String, Object>> queues, List<String> webServiceSenders, Properties properties, Map<String, Object> writers) throws ConfigurationException, SenderException {
-		debugMessage("Initialize web service senders", writers);
-		Iterator<String> iterator = webServiceSenders.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String name = iterator.next();
-			Boolean convertExceptionToMessage = new Boolean((String)properties.get(name + ".convertExceptionToMessage"));
-
-			WebServiceSender webServiceSender = QueueUtils.createInstance(WebServiceSender.class);
-			Properties queueProperties = QueueUtils.getSubProperties(properties, name);
-			QueueUtils.invokeSetters(webServiceSender, queueProperties);
-			webServiceSender.configure();
-			webServiceSender.open();
-
-			Map<String, Object> webServiceSenderInfo = new HashMap<>();
-			webServiceSenderInfo.put("webServiceSender", webServiceSender);
-			webServiceSenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
-			queues.put(name, webServiceSenderInfo);
-			debugMessage("Opened web service sender '" + name + "'", writers);
-		}
-	}
-
-	private static void createWebServiceListeners(Map<String, Map<String, Object>> queues, List<String> webServiceListeners, Properties properties, Map<String, Object> writers, int defaultTimeout) throws ListenerException {
-		debugMessage("Initialize web service listeners", writers);
-		Iterator<String> iterator = webServiceListeners.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String name = iterator.next();
-
-			//Deprecation warning
-			if(properties.contains(name + ".requestTimeOut") || properties.contains(name + ".responseTimeOut")) {
-				errorMessage("properties "+name+".requestTimeOut/"+name+".responseTimeOut have been replaced with "+name+".timeout", writers);
-			}
-
-			WebServiceListener webServiceListener = QueueUtils.createInstance(WebServiceListener.class);
-			ListenerMessageHandler handler = new ListenerMessageHandler<>();
-			handler.setTimeout(defaultTimeout);
-			Properties queueProperties = QueueUtils.getSubProperties(properties, name);
-			QueueUtils.invokeSetters(handler, queueProperties); //timeout settings
-			QueueUtils.invokeSetters(webServiceListener, queueProperties);
-			webServiceListener.setHandler(handler);
-//				webServiceListener.configure();//TODO why was configure never called?
-			webServiceListener.open();
-
-			Map<String, Object> webServiceListenerInfo = new HashMap<>();
-			webServiceListenerInfo.put("webServiceListener", webServiceListener);
-			webServiceListenerInfo.put("listenerMessageHandler", handler);
-			queues.put(name, webServiceListenerInfo);
-		}
-	}
-
-	private static void createHttpSenders(Map<String, Map<String, Object>> queues, List<String> httpSenders, Properties properties, Map<String, Object> writers) throws ConfigurationException, SenderException {
-		debugMessage("Initialize http senders", writers);
-		Iterator<String> iterator = httpSenders.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String name = iterator.next();
-
-			// Create the actual sender
-			HttpSender httpSender = QueueUtils.createInstance(HttpSender.class);
-			Properties queueProperties = QueueUtils.getSubProperties(properties, name);
-			QueueUtils.invokeSetters(httpSender, queueProperties);
-			QueueWrapper queue = QueueWrapper.create(httpSender).invokeSetters(queueProperties);
-
-			Map<String, Object> paramPropertiesMap = createParametersMapFromParamProperties(properties, name, writers, true, queue.getSession());
-			Iterator<String> parameterNameIterator = paramPropertiesMap.keySet().iterator();
-			while (parameterNameIterator.hasNext()) {
-				String parameterName = parameterNameIterator.next();
-				Parameter parameter = (Parameter)paramPropertiesMap.get(parameterName);
-				httpSender.addParameter(parameter);
-			}
-
-			httpSender.configure();
-			httpSender.open();
-
-			queues.put(name, queue);
-			debugMessage("Opened http sender '" + name + "'", writers);
-		}
-	}
-
-	private static void createIbisJavaSenders(Map<String, Map<String, Object>> queues, List<String> ibisJavaSenders, Properties properties, Map<String, Object> writers, String correlationId) throws ConfigurationException, SenderException {
-		debugMessage("Initialize ibis java senders", writers);
-		Iterator<String> iterator = ibisJavaSenders.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String name = iterator.next();
-
-			IbisJavaSender ibisJavaSender = QueueUtils.createInstance(IbisJavaSender.class);
-			Properties queueProperties = QueueUtils.getSubProperties(properties, name);
-			QueueUtils.invokeSetters(ibisJavaSender, queueProperties);
-			QueueWrapper queue = QueueWrapper.create(ibisJavaSender).invokeSetters(queueProperties);
-
-			Map<String, Object> paramPropertiesMap = createParametersMapFromParamProperties(properties, name, writers, true, queue.getSession());
-			Iterator<String> parameterNameIterator = paramPropertiesMap.keySet().iterator();
-			while (parameterNameIterator.hasNext()) {
-				String parameterName = parameterNameIterator.next();
-				Parameter parameter = (Parameter)paramPropertiesMap.get(parameterName);
-				ibisJavaSender.addParameter(parameter);
-			}
-
-			ibisJavaSender.configure();
-			ibisJavaSender.open();
-
-			queues.put(name, queue);
-			debugMessage("Opened ibis java sender '" + name + "'", writers);
-		}
-	}
-
-	private static void createDelaySenders(Map<String, Map<String, Object>> queues, List<String> delaySenders, Properties properties, Map<String, Object> writers) {
-		debugMessage("Initialize delay senders", writers);
-		Iterator<String> iterator = delaySenders.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String name = iterator.next();
-
-			DelaySender delaySender = QueueUtils.createInstance(DelaySender.class);
-			Properties queueProperties = QueueUtils.getSubProperties(properties, name);
-			QueueUtils.invokeSetters(delaySender, queueProperties);
-			QueueWrapper queue = QueueWrapper.create(delaySender).invokeSetters(queueProperties);
-
-			queues.put(name, queue);
-			debugMessage("Opened delay sender '" + name + "'", writers);
-		}
-	}
-
-	private static void createJavaListeners(Map<String, Map<String, Object>> queues, List<String> javaListeners, Properties properties, Map<String, Object> writers, int defaultTimeout) throws ConfigurationException, ListenerException {
-		debugMessage("Initialize java listeners", writers);
-		Iterator<String> iterator = javaListeners.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String name = iterator.next();
-
-			//Deprecation warning
-//			if(properties.contains("requestTimeOut") || properties.contains("responseTimeOut")) {
-//				errorMessage("properties "+name+".requestTimeOut/"+name+".responseTimeOut have been replaced with "+name+".timeout", writers);
-//			}
-
-			QueueWrapper queue = QueueWrapper.createQueue(JavaListener.class.getCanonicalName(), properties, -1, name);
-			queue.configure();
-			queue.open();
-
-			queues.put(name, queue);
-			debugMessage("Opened java listener '" + name + "'", writers);
-		}
-	}
-
-	private static void createFileSenders(Map<String, Map<String, Object>> queues, List<String> fileSenders, Properties properties, Map<String, Object> writers) throws ConfigurationException {
-		debugMessage("Initialize file senders", writers);
-		Iterator<String>iterator = fileSenders.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String queueName = iterator.next();
-
-			IConfigurable fileSender = QueueUtils.createInstance(FileSender.class);
-			Properties queueProperties = QueueUtils.getSubProperties(properties, queueName);
-			QueueUtils.invokeSetters(fileSender, queueProperties);
-			fileSender.configure();
-
-			Map<String, Object> fileSenderInfo = new HashMap<>();
-			fileSenderInfo.put("fileSender", fileSender);
-			queues.put(queueName, fileSenderInfo);
-			debugMessage("Opened file sender '" + queueName + "'", writers);
-		}
-	}
-
-	private static void createFileListeners(Map<String, Map<String, Object>> queues, List<String> fileListeners, Properties properties, Map<String, Object> writers) throws ConfigurationException {
-		debugMessage("Initialize file listeners", writers);
-		Iterator<String> iterator = fileListeners.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String queueName = iterator.next();
-
-			IConfigurable fileListener = QueueUtils.createInstance(FileListener.class);
-			Properties queueProperties = QueueUtils.getSubProperties(properties, queueName);
-			QueueUtils.invokeSetters(fileListener, queueProperties);
-			fileListener.configure();
-
-			Map<String, Object> fileListenerInfo = new HashMap<String, Object>();
-			fileListenerInfo.put("fileListener", fileListener);
-			queues.put(queueName, fileListenerInfo);
-			debugMessage("Opened file listener '" + queueName + "'", writers);
-			if (fileListenerCleanUp(queueName, (FileListener) fileListener, writers)) {
-				errorMessage("Found old messages on '" + queueName + "'", writers);
-			}
-		}
-	}
-
 	private static void createXsltProviderListeners(Map<String, Map<String, Object>> queues, List<String> xsltProviderListeners, Properties properties, Map<String, Object> writers) {
 		debugMessage("Initialize xslt provider listeners", writers);
 		Iterator<String> iterator = xsltProviderListeners.iterator();
@@ -704,20 +453,6 @@ public class QueueCreator {
 	}
 
 
-
-
-
-	private static boolean fileListenerCleanUp(String queueName, FileListener fileListener, Map<String, Object> writers) {
-		return TestTool.fileListenerCleanUp(queueName, fileListener, writers);
-	}
-
-	private static boolean jmsCleanUp(String queueName, PullingJmsListener pullingJmsListener, Map<String, Object> writers) {
-		return TestTool.jmsCleanUp(queueName, pullingJmsListener, writers);
-	}
-
-	private static Map<String, Object> createParametersMapFromParamProperties(Properties properties, String property, Map<String, Object> writers, boolean createParameterObjects, PipeLineSession session) {
-		return TestTool.createParametersMapFromParamProperties(properties, property, writers, createParameterObjects, session);
-	}
 
 	private static void closeQueues(Map<String, Map<String, Object>> queues, Properties properties, Map<String, Object> writers, String correlationId) {
 		TestTool.closeQueues(queues, properties, writers, correlationId);

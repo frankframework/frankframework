@@ -15,7 +15,16 @@
  */
 package nl.nn.adapterframework.testtool.queues;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -23,10 +32,17 @@ import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.stream.FileMessage;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testtool.HttpServletResponseMock;
 import nl.nn.adapterframework.testtool.ListenerMessageHandler;
+import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.XmlUtils;
 
 public class QueueWrapper extends HashMap<String, Object> {
 	private static final String CONVERT_MESSAGE_TO_EXCEPTION_KEY = "convertExceptionToMessage";
@@ -80,19 +96,145 @@ public class QueueWrapper extends HashMap<String, Object> {
 		String convertException = properties.getProperty(CONVERT_MESSAGE_TO_EXCEPTION_KEY);
 		put(CONVERT_MESSAGE_TO_EXCEPTION_KEY, new Boolean(convertException));
 
+		a(properties);
+
 		return this;
 	}
+
+	private void a(Properties properties) {
+		if(get() instanceof IWithParameters) {
+			Map<String, Object> paramPropertiesMap = createParametersMapFromParamProperties(properties, true, getSession());
+			Iterator<String> parameterNameIterator = paramPropertiesMap.keySet().iterator();
+			while (parameterNameIterator.hasNext()) {
+				String parameterName = parameterNameIterator.next();
+				Parameter parameter = (Parameter)paramPropertiesMap.get(parameterName);
+				((IWithParameters) get()).addParameter(parameter);
+			}
+		}
+	}
+
+	public static Map<String, Object> createParametersMapFromParamProperties(Properties properties, boolean createParameterObjects, PipeLineSession session) {
+		final String _name = ".name";
+		final String _param = "param";
+		final String _type = ".type";
+		Map<String, Object> result = new HashMap<>();
+		boolean processed = false;
+		int i = 1;
+		while (!processed) {
+			String name = properties.getProperty(_param + i + _name);
+			if (name != null) {
+				Object value;
+				String type = properties.getProperty(_param + i + _type);
+				if ("httpResponse".equals(type)) {
+					String outputFile;
+					String filename = properties.getProperty(_param + i + ".filename");
+					if (filename != null) {
+						outputFile = properties.getProperty(_param + i + ".filename.absolutepath");
+					} else {
+						outputFile = properties.getProperty(_param + i + ".outputfile");
+					}
+					HttpServletResponseMock httpServletResponseMock = new HttpServletResponseMock();
+					httpServletResponseMock.setOutputFile(outputFile);
+					value = httpServletResponseMock;
+				}
+				else {
+					value = properties.getProperty(_param + i + ".value");
+					if (value == null) {
+						String filename = properties.getProperty(_param + i + ".valuefile.absolutepath");
+						if (filename != null) {
+							value = new FileMessage(new File(filename));
+						} else {
+							String inputStreamFilename = properties.getProperty(_param + i + ".valuefileinputstream.absolutepath");
+							if (inputStreamFilename != null) {
+								throw new IllegalStateException("valuefileinputstream is no longer supported use valuefile instead");
+							}
+						}
+					}
+				}
+				if ("node".equals(type)) {
+					try {
+						value = XmlUtils.buildNode(Message.asString(value), true);
+					} catch (DomBuilderException | IOException e) {
+						throw new IllegalStateException("Could not build node for parameter '" + name + "' with value: " + value, e);
+					}
+				} else if ("domdoc".equals(type)) {
+					try {
+						value = XmlUtils.buildDomDocument(Message.asString(value), true);
+					} catch (DomBuilderException | IOException e) {
+						throw new IllegalStateException("Could not build node for parameter '" + name + "' with value: " + value, e);
+					}
+				} else if ("list".equals(type)) {
+					try {
+						List<String> parts = new ArrayList<>(Arrays.asList(Message.asString(value).split("\\s*(,\\s*)+")));
+						List<String> list = new LinkedList<>();
+						for (String part : parts) {
+							list.add(part);
+						}
+						value = list;
+					} catch (IOException e) {
+						throw new IllegalStateException("Could not build a list for parameter '" + name + "' with value: " + value, e);
+					}
+				} else if ("map".equals(type)) {
+					try {
+						List<String> parts = new ArrayList<>(Arrays.asList(Message.asString(value).split("\\s*(,\\s*)+")));
+						Map<String, String> map = new LinkedHashMap<>();
+						for (String part : parts) {
+							String[] splitted = part.split("\\s*(=\\s*)+", 2);
+							if (splitted.length==2) {
+								map.put(splitted[0], splitted[1]);
+							} else {
+								map.put(splitted[0], "");
+							}
+						}
+						value = map;
+					} catch (IOException e) {
+						throw new IllegalStateException("Could not build a map for parameter '" + name + "' with value: " + value, e);
+					}
+				}
+				if (createParameterObjects) {
+					String  pattern = properties.getProperty(_param + i + ".pattern");
+					if (value == null && pattern == null) {
+						throw new IllegalStateException("Property '" + _param + i + " doesn't have a value or pattern");
+					} else {
+						try {
+							Parameter parameter = new Parameter();
+							parameter.setName(name);
+							if (value != null && !(value instanceof String)) {
+								parameter.setSessionKey(name);
+								session.put(name, value);
+							} else {
+								parameter.setValue((String)value);
+								parameter.setPattern(pattern);
+							}
+							parameter.configure();
+							result.put(name, parameter);
+//							debugMessage("Add param with name '" + name + "', value '" + value + "' and pattern '" + pattern + "' for property '" + property + "'", writers);
+						} catch (ConfigurationException e) {
+							throw new IllegalStateException("Parameter '" + name + "' could not be configured");
+						}
+					}
+				} else {
+					if (value == null) {
+						throw new IllegalStateException("Property '" + _param + i + ".value' or '" + _param + i + ".valuefile' not found while property '" + _param + i + ".name' exist");
+					} else {
+						result.put(name, value);
+//						debugMessage("Add param with name '" + name + "' and value '" + value + "' for property '" + property + "'", writers);
+					}
+				}
+				i++;
+			} else {
+				processed = true;
+			}
+		}
+		return result;
+	}
+
 
 	public IConfigurable get() {
 		return (IConfigurable) get(queueKey);
 	}
 
-	public static QueueWrapper createQueue(String className, Properties properties, int defaultTimeout, String queueName) {
-		Properties queueProperties = QueueUtils.getSubProperties(properties, queueName);
-		return createQueue(className, queueProperties, defaultTimeout);
-	}
-
-	public static QueueWrapper createQueue(String className, Properties queueProperties, int defaultTimeout) {
+	public static QueueWrapper createQueue(String className, Properties queueProperties, int defaultTimeout, String correlationId) { //TODO use correlationId
 		IConfigurable configurable = QueueUtils.createInstance(className);
 		QueueUtils.invokeSetters(configurable, queueProperties);
 		return create(configurable).invokeSetters(defaultTimeout, queueProperties);

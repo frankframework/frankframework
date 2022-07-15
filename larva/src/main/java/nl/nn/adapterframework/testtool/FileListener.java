@@ -54,6 +54,31 @@ public class FileListener implements IConfigurable {
 		} else if (directory != null && wildcard == null) {
 			throw new ConfigurationException("Could not find wildcard property");
 		}
+
+		checkRemainingMessages();
+	}
+
+	private void checkRemainingMessages() throws ConfigurationException {
+		if (getFilename2() != null) {
+			return;
+		}
+
+		long oldTimeOut = getTimeOut();
+		try {
+			setTimeOut(0);
+			try {
+				String message = getMessage();
+				if (message != null) {
+					throw new ConfigurationException("Found remaining message on fileListener ["+getName()+"]");
+				}
+			} catch(ListenerException e) {
+				throw new ConfigurationException("Could read message from fileListener ["+getName()+"]: " + e.getMessage(), e);
+			} catch (TimeoutException e) {
+				//Simply means no message was found
+			}
+		} finally {
+			setTimeOut(oldTimeOut);
+		}
 	}
 
 	/**
