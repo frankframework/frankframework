@@ -27,6 +27,12 @@ import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.util.LogUtil;
 
+/**
+ * Only retries if no HttpEntity is present, or if the HttpEntity is repeatable.
+ * This avoids a NonRepeatableRequestException and returns the original exception.
+ * 
+ * @author Niels Meijer
+ */
 public class HttpRequestRetryHandler extends DefaultHttpRequestRetryHandler {
 	Logger log = LogUtil.getLogger(this);
 
