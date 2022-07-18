@@ -59,13 +59,13 @@
 		<dependency>
 			<groupId>org.mongodb</groupId>
 			<artifactId>mongodb-driver-sync</artifactId>
-			<version>4.6.1</version>
+			<version>${mongodb.driver.version}</version>
 		</dependency>
 		<dependency>
-		    <groupId>org.apache.activemq</groupId>
-		    <artifactId>activemq-rar</artifactId>
-		    <version>${activemq.driver.version}</version>
-		    <type>rar</type>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-rar</artifactId>
+			<version>${activemq.driver.version}</version>
+			<type>rar</type>
 		</dependency>
 		<!-- Artemis is already part of JBOSS, so not added explicitly -->
 	</dependencies>
