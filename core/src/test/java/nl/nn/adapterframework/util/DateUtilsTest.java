@@ -20,32 +20,29 @@ public class DateUtilsTest {
 
 	private static final TimeZone CI_TZ = Calendar.getInstance().getTimeZone();
 	private static final TimeZone TEST_TZ = TimeZone.getTimeZone("UTC");
-	private static final int TZ_DIFF = (CI_TZ.getRawOffset() - CI_TZ.getDSTSavings());
 
 	@BeforeClass
 	public static void setUp() {
-		if(TZ_DIFF != 0) {
-			System.out.println("adjusting date settings from ["+CI_TZ.getDisplayName()+"] to [" + TEST_TZ.getDisplayName() + "] offset ["+TZ_DIFF+"]");
-		}
+		System.out.println("adjusting date settings from ["+CI_TZ.getDisplayName()+"] to [" + TEST_TZ.getDisplayName() + "]");
 	}
 
 	/**
-	 * Tests have been written in UTC, adjust the TimeZone so Travis/Azure/GitHub CI don't fail when running in other TimeZones
+	 * Tests have been written in UTC, adjust the TimeZone for CI running with a different default TimeZone
 	 */
 	private Date getCorrectedDate(Date date) {
-		if(TZ_DIFF != 0) {
+		if (CI_TZ.hasSameRules(TEST_TZ)) {
+			return date;
+		} else {
 			Calendar calendar = Calendar.getInstance();
 			calendar.setTime(date);
-			calendar.add(Calendar.MILLISECOND, -TZ_DIFF);
+			calendar.add(Calendar.MILLISECOND, - CI_TZ.getOffset(calendar.getTime().getTime()));
 			calendar.setTimeZone(TEST_TZ);
 			return calendar.getTime();
-		} else {
-			return date;
 		}
 	}
 
 	/**
-	 * Tests have been written in UTC, adjust the TimeZone so Travis/Azure/GitHub CI don't fail when running in other TimeZones
+	 * Tests have been written in UTC, adjust the TimeZone for CI running with a different default TimeZone
 	 */
 	private long getCorrectedDate(long l) {
 		Date date = new Date(l);
@@ -54,19 +51,19 @@ public class DateUtilsTest {
 
 	@Test
 	public void testFormatLong() throws Exception {
-		String date = DateUtils.format(getCorrectedDate(1380924000000L));
+		String date = DateUtils.format(getCorrectedDate(1380931200000L));
 		assertEquals("2013-10-05 00:00:00.000", date);
 	}
 
 	@Test
 	public void testFormatDate() throws Exception {
-		String date = DateUtils.format(getCorrectedDate(new Date(1380924000000L)));
+		String date = DateUtils.format(getCorrectedDate(new Date(1380931200000L)));
 		assertEquals("2013-10-05 00:00:00.000", date);
 	}
 
 	@Test
 	public void testFormatForDateDateFormat() throws Exception {
-		Date d = getCorrectedDate(new Date(1500000000));
+		Date d = getCorrectedDate(new Date(1503600000));
 		String time = DateUtils.format(d, DateUtils.FORMAT_FULL_GENERIC);
 		assertEquals("1970-01-18 09:40:00.000", time);
 
@@ -75,13 +72,13 @@ public class DateUtilsTest {
 	@Test
 	public void testParseToDate() throws Exception {
 		Date date = DateUtils.parseToDate("05-10-13", DateUtils.FORMAT_DATE);
-		assertEquals(getCorrectedDate(1380924000000L), date.getTime());
+		assertEquals(getCorrectedDate(1380931200000L), date.getTime());
 	}
 
 	@Test
 	public void testParseToDateFullYear() throws Exception {
 		Date date = DateUtils.parseToDate("05-10-2014", DateUtils.FORMAT_DATE);
-		assertEquals(getCorrectedDate(1412460000000L), date.getTime());
+		assertEquals(getCorrectedDate(1412467200000L), date.getTime());
 	}
 
 	@Test
@@ -99,13 +96,13 @@ public class DateUtilsTest {
 	@Test
 	public void testParseXmlDate() throws Exception {
 		Date date = DateUtils.parseXmlDateTime("2013-12-10");
-		assertEquals(getCorrectedDate(1386630000000L), date.getTime());
+		assertEquals(getCorrectedDate(1386633600000L), date.getTime());
 	}
 
 	@Test
 	public void testParseXmlDateTime() throws Exception {
 		Date date = DateUtils.parseXmlDateTime("2013-12-10T12:41:43");
-		assertEquals(getCorrectedDate(1386675703000L), date.getTime());
+		assertEquals(getCorrectedDate(1386679303000L), date.getTime());
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -116,19 +113,19 @@ public class DateUtilsTest {
 	@Test
 	public void testParseAnyDate1() throws Exception {
 		Date date = DateUtils.parseAnyDate("12-2013-10");
-		assertEquals(getCorrectedDate(1386630000000L), date.getTime());
+		assertEquals(getCorrectedDate(1386633600000L), date.getTime());
 	}
 
 	@Test
 	public void testParseAnyDate2() throws Exception {
 		Date date = DateUtils.parseAnyDate("2013-12-10 12:41:43");
-		assertEquals(getCorrectedDate(1386675703000L), date.getTime());
+		assertEquals(getCorrectedDate(1386679303000L), date.getTime());
 	}
 
 	@Test
 	public void testParseAnyDate3() throws Exception {
 		Date date = DateUtils.parseAnyDate("05/10/98 05:47:13");
-		assertEquals(getCorrectedDate(907559233000L), date.getTime());
+		assertEquals(getCorrectedDate(907566433000L), date.getTime());
 	}
 
 	@Test
