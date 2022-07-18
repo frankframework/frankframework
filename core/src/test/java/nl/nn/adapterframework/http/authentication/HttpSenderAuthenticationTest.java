@@ -41,23 +41,21 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 	}
 
 	//Send message
-	public Message sendMessage() throws SenderException, TimeoutException {
+	private Message sendMessage() throws SenderException, TimeoutException {
 		return super.sendMessage("");
 	}
 
 	//Send non-repeatable message
-	public Message sendNonRepeatableMessage() throws SenderException, TimeoutException, IOException {
+	private Message sendNonRepeatableMessage() throws SenderException, TimeoutException, IOException {
 		if(sender.getHttpMethod() == HttpMethod.GET) fail("method not allowed when using no HttpEntity");
 		InputStream is = new Message("dummy-string").asInputStream();
-		return super.sendMessage(Message.asMessage(new FilterInputStream(is) {}));
+		return sendMessage(Message.asMessage(new FilterInputStream(is) {}));
 	}
 
 	//Send repeatable message
-	public Message sendRepeatableMessage() throws SenderException, TimeoutException, IOException {
+	private Message sendRepeatableMessage() throws SenderException, TimeoutException, IOException {
 		if(sender.getHttpMethod() == HttpMethod.GET) fail("method not allowed when using no HttpEntity");
-		Message msg = sendNonRepeatableMessage();
-		msg.preserve();
-		return msg;
+		return sendMessage(Message.asMessage(new Message("dummy-string").asByteArray()));
 	}
 
 	@Test

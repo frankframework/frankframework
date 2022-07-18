@@ -8,8 +8,12 @@ import org.apache.http.HttpRequest;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.protocol.HttpContext;
+import org.apache.logging.log4j.Logger;
+
+import nl.nn.adapterframework.util.LogUtil;
 
 public class HttpRequestRetryHandler extends DefaultHttpRequestRetryHandler {
+	Logger log = LogUtil.getLogger(this);
 
 	public HttpRequestRetryHandler(int retryCount) {
 		super(retryCount, true);
@@ -17,12 +21,14 @@ public class HttpRequestRetryHandler extends DefaultHttpRequestRetryHandler {
 
 	@Override
 	public boolean retryRequest(IOException exception, int executionCount, HttpContext context) {
-		if(super.retryRequest(exception, executionCount, context)) {
-			final HttpClientContext clientContext = HttpClientContext.adapt(context);
-			final HttpRequest request = clientContext.getRequest();
-			return isRepeatable(request);
+		final HttpClientContext clientContext = HttpClientContext.adapt(context);
+		final HttpRequest request = clientContext.getRequest();
+		if(isRepeatable(request)) {
+			log.info("attempt to retry message to [{}] count [{}]", request.getRequestLine(), executionCount);
+			return super.retryRequest(exception, executionCount, context);
 		}
 
+		log.info("unable to retry message to [{}] message is not repeatable!", request::getRequestLine);
 		return false;
 	}
 
@@ -34,6 +40,6 @@ public class HttpRequestRetryHandler extends DefaultHttpRequestRetryHandler {
 			final HttpEntity entity = ((HttpEntityEnclosingRequest) request).getEntity();
 			return entity.isRepeatable();
 		}
-		return false;
+		return true;
 	}
 }

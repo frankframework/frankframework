@@ -809,7 +809,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		maxConnections = i;
 	}
 
-	@IbisDoc({"The maximum number of times it the execution is retried", "1"})
+	@IbisDoc({"The maximum number of times the execution is retried", "1 (for repeatable messages) else 0"})
 	public void setMaxExecuteRetries(int i) {
 		maxExecuteRetries = i;
 	}
