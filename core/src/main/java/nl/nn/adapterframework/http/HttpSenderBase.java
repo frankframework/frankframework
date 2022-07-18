@@ -64,7 +64,6 @@ import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
@@ -409,7 +408,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 		httpClientBuilder.setDefaultRequestConfig(requestConfigBuilder.build());
 
-		httpClientBuilder.setRetryHandler(new DefaultHttpRequestRetryHandler(getMaxExecuteRetries(), true));
+		httpClientBuilder.setRetryHandler(new HttpRequestRetryHandler(getMaxExecuteRetries()));
 
 		if(areCookiesDisabled()) {
 			httpClientBuilder.disableCookieManagement();
