@@ -32,6 +32,7 @@ import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.ITransactionRequirements;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.jms.JmsListener;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -43,7 +44,7 @@ import nl.nn.adapterframework.util.TransformerPool.OutputType;
  * <p><b>Configuration </b><i>(where deviating from JmsListener)</i><b>:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setMessageProtocol(String) messageProtocol}</td><td>protocol of ESB service to be called. Possible values 
+ * <tr><td>{@link #setMessageProtocol(String) messageProtocol}</td><td>protocol of ESB service to be called. Possible values
  * <ul>
  *   <li>"FF": Fire & Forget protocol</li>
  *   <li>"RR": Request-Reply protocol</li>
@@ -52,9 +53,10 @@ import nl.nn.adapterframework.util.TransformerPool.OutputType;
  * <tr><td>{@link #setForceMessageIdAsCorrelationId(boolean) forceMessageIdAsCorrelationId}</td><td>if messageProtocol=<code>RR</code>: </td><td><code>true</code></td></tr>
  * <tr><td>{@link #setCopyAEProperties(boolean) copyAEProperties}</td><td>if <code>true</code>, all JMS properties in the request starting with "ae_" are copied to the reply</td><td><code>false</code></td></tr>
  * </table></p>
- * 
+ *
  * @author  Peter Leeuwenburgh
  */
+@Category("NN-Special")
 public class EsbJmsListener extends JmsListener implements ITransactionRequirements {
 	private static final String REQUEST_REPLY = "RR";
 	private static final String FIRE_AND_FORGET = "FF";
@@ -62,7 +64,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 
 	private String messageProtocol = null;
 	private boolean copyAEProperties = false;
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		if (getMessageProtocol() == null) {
@@ -138,7 +140,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 				try {
 					TransformerPool test = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource("", xPathExpression, OutputType.TEXT, false));
 					found = test.transform(message, null);
-					
+
 					//xPath not found and message length is 0 but not null nor ""
 					if(found.length() == 0) found = "";
 				} catch (Exception e) {

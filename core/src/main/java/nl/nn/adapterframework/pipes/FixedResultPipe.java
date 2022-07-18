@@ -31,9 +31,11 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.UrlMessage;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
@@ -60,11 +62,11 @@ import nl.nn.adapterframework.util.TransformerPool;
  * no <code>${...}</code> patterns are left if the initial string came from attribute <code>returnString</code>, because
  * any <code>${...}</code> pattern in attribute <code>returnString</code> is substituted when the configuration is loaded.
  * <li>If attribute <code>styleSheetName</code> is set, then the referenced XSLT stylesheet is applied to the resulting string.
- * </ol>  
+ * </ol>
  * <br/><br/>
  * Many attributes of this pipe reference file names. If a file is referenced by a relative path, the path
  * is relative to the configuration's root directory.
- * 
+ *
  * @ff.parameters Used for substitution. For a parameter named <code>xyz</code>, the string <code>${xyz}</code> or
  * <code>xyz</code> (if <code>replaceFixedParams</code> is true) is substituted by the parameter's value.
  *
@@ -72,6 +74,7 @@ import nl.nn.adapterframework.util.TransformerPool;
  *
  * @author Johan Verrips
  */
+@Category("Basic")
 public class FixedResultPipe extends FixedForwardPipe {
 
 	private static final String FILE_NOT_FOUND_FORWARD = "filenotfound";
@@ -151,7 +154,8 @@ public class FixedResultPipe extends FixedForwardPipe {
 				throw new PipeRunException(this,getLogPrefix(session)+"cannot find resource ["+filename+"]");
 			}
 			try {
-				result = Misc.resourceToString(resource, Misc.LINE_SEPARATOR);
+				Message msg = new UrlMessage(resource);
+				result = msg.asString();
 			} catch (Throwable e) {
 				throw new PipeRunException(this,getLogPrefix(session)+"got exception loading ["+filename+"]", e);
 			}
@@ -172,7 +176,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 					result=replace(result, replaceFrom, pv.asStringValue(""));
 				}
 			} catch (ParameterException e) {
-				throw new PipeRunException(this,getLogPrefix(session)+"exception extracting parameters",e);
+				throw new PipeRunException(this, getLogPrefix(session)+"exception extracting parameters", e);
 			}
 		}
 
@@ -185,13 +189,13 @@ public class FixedResultPipe extends FixedForwardPipe {
 			try{
 				result = transformerPool.transform(Message.asSource(result));
 			} catch (SAXException e) {
-				throw new PipeRunException(this,getLogPrefix(session)+"got error converting string [" + result + "] to source", e);
+				throw new PipeRunException(this, getLogPrefix(session)+"got error converting string [" + result + "] to source", e);
 			} catch (IOException | TransformerException e) {
-				throw new PipeRunException(this,getLogPrefix(session)+"got error transforming message [" + result + "] with [" + getStyleSheetName() + "]", e);
+				throw new PipeRunException(this, getLogPrefix(session)+"got error transforming message [" + result + "] with [" + getStyleSheetName() + "]", e);
 			}
 		}
-		log.debug(getLogPrefix(session)+ " returning fixed result [" + result + "]");
 
+		log.debug("{}returning fixed result [{}]", getLogPrefix(session), result);
 		return new PipeRunResult(getSuccessForward(), result);
 	}
 
@@ -218,7 +222,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 	/**
 	 * Should values between ${ and } be resolved. If true, the search order of replacement values is:
 	 * system properties (1), pipelinesession variables (2), application properties (3).
-	 * 
+	 *
 	 * @ff.default false
 	 */
 	public void setSubstituteVars(boolean substitute){

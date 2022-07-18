@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017-2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2017-2020 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -35,8 +35,8 @@ import nl.nn.adapterframework.util.CredentialFactory;
 
 /**
  * Sender that sends a message via a WebService.
- * 
- * 
+ *
+ *
  * @author Gerrit van Brakel
  * @author Niels Meijer
  * @since 7.0
@@ -50,7 +50,7 @@ public class WebServiceSender extends HttpSender {
 	private @Getter String encodingStyle=null;
 	private @Getter String serviceNamespace=null;
 	private @Getter String serviceNamespaceParam="serviceNamespace";
-	private @Getter String namespaceDefs = null; 
+	private @Getter String namespaceDefs = null;
 	private @Getter boolean throwApplicationFaults=true;
 	private @Getter String wssAuthAlias;
 	private @Getter String wssUserName;
@@ -86,16 +86,19 @@ public class WebServiceSender extends HttpSender {
 
 		if (paramList!=null && StringUtils.isNotEmpty(getSoapActionParam())) {
 			soapActionParameter=paramList.findParameter(getSoapActionParam());
-			if(soapActionParameter != null)
-				addParameterToSkip(soapActionParameter.getName());
+			if(soapActionParameter != null) {
+				requestOrBodyParamsSet.remove(soapActionParameter.getName());
+				headerParamsSet.remove(soapActionParameter.getName());
+			}
 			serviceNamespaceURIParameter=paramList.findParameter(getServiceNamespaceParam());
-			if(serviceNamespaceURIParameter != null)
-				addParameterToSkip(serviceNamespaceURIParameter.getName());
+			if(serviceNamespaceURIParameter != null) {
+				requestOrBodyParamsSet.remove(serviceNamespaceURIParameter.getName());
+				headerParamsSet.remove(serviceNamespaceURIParameter.getName());
+			}
 		}
 
-		if (StringUtils.isNotEmpty(getWssAuthAlias()) || 
-			StringUtils.isNotEmpty(getWssUserName())) {
-				wsscf = new CredentialFactory(getWssAuthAlias(), getWssUserName(), getWssPassword());
+		if (StringUtils.isNotEmpty(getWssAuthAlias()) || StringUtils.isNotEmpty(getWssUserName())) {
+			wsscf = new CredentialFactory(getWssAuthAlias(), getWssUserName(), getWssPassword());
 			log.debug(getLogPrefix()+"created CredentialFactory for username=["+wsscf.getUsername()+"]");
 		}
 	}

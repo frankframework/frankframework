@@ -25,29 +25,31 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 
 /**
- * Pipe that checks if the calling user has a specified role. 
+ * Pipe that checks if the calling user has a specified role.
  * Uses the PipeLineSessions methods.
  * <p>
  * If the role is not specified by the role attribute, the input of
  * the pipe is used as role.
- * 
+ *
  * N.B. The role itself must be specified by hand in the deployement descriptors web.xml and application.xml.
- * 
+ *
  * @ff.forward notInRole user may not assume role
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.4.3
  */
+@Category("Advanced")
 public class IsUserInRolePipe extends FixedForwardPipe {
 
 	private String role=null;
 	private @Getter String notInRoleForwardName="notInRole";
 	protected PipeForward notInRoleForward;
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -58,13 +60,13 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 			}
 		}
 	}
-	
+
 	protected void assertUserIsInRole(PipeLineSession session, String role) throws SecurityException {
 		if (!session.isUserInRole(role)) {
 			throw new SecurityException(getLogPrefix(session)+"user is not in role ["+role+"]");
 		}
 	}
-	
+
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
@@ -85,12 +87,12 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 		} catch (SecurityException e) {
 			if (notInRoleForward!=null) {
 				return new PipeRunResult(notInRoleForward, message);
-			} 
+			}
 			throw new PipeRunException(this,"",e);
 		}
 		return new PipeRunResult(getSuccessForward(),message);
 	}
-	
+
 	public String getRole() {
 		return role;
 	}

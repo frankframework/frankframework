@@ -77,7 +77,7 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 			JsonObject root = (JsonObject)node;
 			if (StringUtils.isEmpty(getRootElement())) {
 				if (root.isEmpty()) {
-					throw new SAXException("no names found");
+					throw new SAXException("Cannot determine XML root element, neither from attribute rootElement, nor from JSON node");
 				}
 				if (root.size()>1) {
 					String namesList=null;
@@ -93,7 +93,7 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 							break;
 						}
 					}
-					throw new SAXException("too many names ["+namesList+"]");
+					throw new SAXException("Cannot determine XML root element, too many names ["+namesList+"] in JSON");
 				}
 				setRootElement((String)root.keySet().toArray()[0]);
 			}

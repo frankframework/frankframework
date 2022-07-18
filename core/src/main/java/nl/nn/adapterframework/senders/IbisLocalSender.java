@@ -31,6 +31,7 @@ import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.IsolatedServiceCaller;
 import nl.nn.adapterframework.receivers.JavaListener;
@@ -81,6 +82,7 @@ import nl.nn.adapterframework.util.Misc;
  * @author Gerrit van Brakel
  * @since  4.2
  */
+@Category("Basic")
 public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination {
 
 	private final @Getter(onMethod = @__(@Override)) String domain = "Local";

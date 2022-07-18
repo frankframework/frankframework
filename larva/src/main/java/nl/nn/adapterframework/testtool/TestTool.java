@@ -1,5 +1,5 @@
 /*
-   Copyright 2014-2019 Nationale-Nederlanden, 2020-2021 WeAreFrank
+   Copyright 2014-2019 Nationale-Nederlanden, 2020-2022 WeAreFrank
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Reader;
@@ -76,7 +75,6 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
-import nl.nn.adapterframework.http.IbisWebServiceSender;
 import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.http.WebServiceSender;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
@@ -100,6 +98,7 @@ import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.ProcessUtil;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -1620,33 +1619,6 @@ public class TestTool {
 				closeQueues(queues, properties, writers, correlationId);
 				queues = null;
 				errorMessage("Could not find serviceName property for " + name, writers);
-			} else {
-				IbisWebServiceSender ibisWebServiceSender = new IbisWebServiceSender();
-				ibisWebServiceSender.setName("Test Tool IbisWebServiceSender");
-				ibisWebServiceSender.setIbisHost(ibisHost);
-				ibisWebServiceSender.setIbisInstance(ibisInstance);
-				ibisWebServiceSender.setServiceName(serviceName);
-				try {
-					ibisWebServiceSender.configure();
-				} catch(ConfigurationException e) {
-					errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
-					closeQueues(queues, properties, writers, correlationId);
-					queues = null;
-				}
-				try {
-					ibisWebServiceSender.open();
-				} catch (SenderException e) {
-					closeQueues(queues, properties, writers, correlationId);
-					queues = null;
-					errorMessage("Could not open '" + name + "': " + e.getMessage(), e, writers);
-				}
-				if (queues != null) {
-					Map<String, Object> ibisWebServiceSenderInfo = new HashMap<String, Object>();
-					ibisWebServiceSenderInfo.put("ibisWebServiceSender", ibisWebServiceSender);
-					ibisWebServiceSenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
-					queues.put(name, ibisWebServiceSenderInfo);
-					debugMessage("Opened ibis web service sender '" + name + "'", writers);
-				}
 			}
 		}
 
@@ -2250,42 +2222,6 @@ public class TestTool {
 				}
 				FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)querySendersInfo.get("readQueryQueryFixedQuerySender");
 				readQueryFixedQuerySender.close();
-			}
-		}
-		debugMessage("Close ibis webservice senders", writers);
-		iterator = queues.keySet().iterator();
-		while (iterator.hasNext()) {
-			String queueName = (String)iterator.next();
-			if ("nl.nn.adapterframework.http.IbisWebServiceSender".equals(properties.get(queueName + ".className"))) {
-				IbisWebServiceSender ibisWebServiceSender = (IbisWebServiceSender)((Map<?, ?>)queues.get(queueName)).get("ibisWebServiceSender");
-				Map<?, ?> ibisWebServiceSenderInfo = (Map<?, ?>)queues.get(queueName);
-				SenderThread senderThread = (SenderThread)ibisWebServiceSenderInfo.remove("ibisWebServiceSenderThread");
-				if (senderThread != null) {
-					debugMessage("Found remaining SenderThread", writers);
-					SenderException senderException = senderThread.getSenderException();
-					if (senderException != null) {
-						errorMessage("Found remaining SenderException: " + senderException.getMessage(), senderException, writers);
-					}
-					IOException ioException = senderThread.getIOException();
-					if (ioException != null) {
-						errorMessage("Found remaining IOException: " + ioException.getMessage(), ioException, writers);
-					}
-					TimeoutException timeOutException = senderThread.getTimeOutException();
-					if (timeOutException != null) {
-						errorMessage("Found remaining TimeOutException: " + timeOutException.getMessage(), timeOutException, writers);
-					}
-					String message = senderThread.getResponse();
-					if (message != null) {
-						wrongPipelineMessage("Found remaining message on '" + queueName + "'", message, writers);
-					}
-				}
-
-				try {
-					ibisWebServiceSender.close();
-					debugMessage("Closed ibis webservice sender '" + queueName + "'", writers);
-				} catch(SenderException e) {
-					errorMessage("Could not close '" + queueName + "': " + e.getMessage(), e, writers);
-				}
 			}
 		}
 
@@ -3043,16 +2979,16 @@ public class TestTool {
 			} catch (IOException | XMLStreamException e) {
 				errorMessage("Could not determine encoding for file '" + fileName + "': " + e.getMessage(), e, writers);
 			}
-		} else if (fileName.endsWith(".utf8")) {
+		} else if (fileName.endsWith(".utf8") || fileName.endsWith(".json")) {
 			encoding = "UTF-8";
 		} else {
 			encoding = "ISO-8859-1";
 		}
 		if (encoding != null) {
-			InputStreamReader inputStreamReader = null;
+			Reader inputStreamReader = null;
 			try {
 				StringBuffer stringBuffer = new StringBuffer();
-				inputStreamReader = new InputStreamReader(new FileInputStream(fileName), encoding);
+				inputStreamReader = StreamUtil.getCharsetDetectingInputStreamReader(new FileInputStream(fileName), encoding);
 				char[] cbuf = new char[4096];
 				int len = inputStreamReader.read(cbuf);
 				while (len != -1) {

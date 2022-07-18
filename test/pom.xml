@@ -27,6 +27,10 @@
 			<artifactId>ibis-adapterframework-webapp</artifactId>
 			<type>war</type>
 		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>

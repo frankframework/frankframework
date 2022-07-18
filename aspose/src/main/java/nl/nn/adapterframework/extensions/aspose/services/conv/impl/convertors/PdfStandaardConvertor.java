@@ -18,6 +18,7 @@ package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import org.springframework.http.MediaType;
 
 import com.aspose.pdf.exceptions.InvalidPasswordException;
@@ -31,8 +32,8 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class PdfStandaardConvertor extends AbstractConvertor {
 
-	protected PdfStandaardConvertor(String pdfOutputLocation) {
-		super(pdfOutputLocation, new MediaType("application", "pdf"));
+	protected PdfStandaardConvertor(CisConfiguration configuration) {
+		super(configuration, new MediaType("application", "pdf"));
 	}
 
 	@Override

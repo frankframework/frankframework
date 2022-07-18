@@ -57,11 +57,11 @@ public class OAuthPreferringAuthenticationStrategy extends TargetAuthenticationS
 			return options;
 		}
 
-		final AuthScope authScope = new AuthScope(authhost, "", OAuthAuthenticationScheme.SCHEME_NAME);
+		final AuthScope authScope = new AuthScope(authhost, "", OAuthAuthenticationScheme.SCHEME_NAME_AUTO);
 		final Credentials credentials = credsProvider.getCredentials(authScope);
 		if (credentials != null) {
 			// always add OAuth as an authentication option, if any challenges are returned by server
-			options.add(new AuthOption(new OAuthAuthenticationScheme(), credentials));
+			options.add(new AuthOption(new OAuthAuthenticationScheme(true), credentials));  // refresh token if preemptive authentication with 'auto' token did not work
 		}
 
 		options.addAll(super.select(challenges, authhost, response, clientContext));

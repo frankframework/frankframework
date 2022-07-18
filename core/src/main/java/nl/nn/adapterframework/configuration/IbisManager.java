@@ -66,12 +66,14 @@ public interface IbisManager extends ApplicationEventPublisherAware {
 
 	/**
 	 * Shut down the IBIS instance. After execution of this method, the IBIS
-	 * instance is not useable anymore: it will need to be recreated.
+	 * instance is not usable anymore: it will need to be recreated.
 	 */
 	void shutdown();
 
+	@Deprecated
 	public Adapter getRegisteredAdapter(String name);
 
+	@Deprecated
 	public List<Adapter> getRegisteredAdapters();
 
 	/**

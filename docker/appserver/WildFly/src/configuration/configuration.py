@@ -1,7 +1,7 @@
 import os
 
 # name of the module that war file will depend on
-moduleName = "module.nl.nn.adapterframework"
+moduleName = "module.frank-framework"
 
 # list of jar files
 path_to_jars="/opt/jboss/wildfly/standalone/lib/ext/"

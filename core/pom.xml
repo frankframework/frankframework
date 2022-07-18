@@ -11,11 +11,10 @@
 	<name>Ibis AdapterFramework core</name>
 
 	<properties>
-		<spring.version>5.3.21</spring.version>
+		<spring.version>5.3.22</spring.version>
 		<j2v8.version>4.6.0</j2v8.version>
-		<cxf.version>3.4.7</cxf.version>
 		<jackson.version>2.13.3</jackson.version>
-		<micrometer.version>1.9.0</micrometer.version>
+		<micrometer.version>1.9.2</micrometer.version>
 		<saxon.version>10.8</saxon.version>
 	</properties>
 
@@ -27,7 +26,7 @@
 		<dependency>
 			<groupId>org.javassist</groupId>
 			<artifactId>javassist</artifactId>
-			<version>3.23.2-GA</version>
+			<version>3.29.0-GA</version>
 		</dependency>
 
 		<dependency>
@@ -44,7 +43,6 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.7.31</version>
 		</dependency>
 		<dependency><!-- LOG4J SLF4J Binding -->
 			<groupId>org.apache.logging.log4j</groupId>
@@ -92,38 +90,42 @@
 			<version>${micrometer.version}</version>
 		</dependency>
 
+		<!-- explicit dependency to force version 1.1.1 -->
+		<dependency><!-- this dependency handles javax.activation.* imports, compatible with the IBM JRE -->
+			<groupId>javax.activation</groupId>
+			<artifactId>activation</artifactId>
+		</dependency>
+		<dependency><!-- this dependency handles jakarta.activation.* imports -->
+			<groupId>com.sun.activation</groupId>
+			<artifactId>jakarta.activation</artifactId>
+		</dependency>
+		<dependency><!-- javax based dependency -->
+			<groupId>jakarta.xml.soap</groupId>
+			<artifactId>jakarta.xml.soap-api</artifactId>
+			<version>1.4.2</version>
+			<exclusions>
+				<exclusion>
+					<groupId>jakarta.activation</groupId>
+					<artifactId>jakarta.activation-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
 		<dependency>
 			<groupId>org.apache.geronimo.specs</groupId>
 			<artifactId>geronimo-jms_1.1_spec</artifactId>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>javax.transaction</groupId>
-			<artifactId>javax.transaction-api</artifactId>
-			<version>1.3</version>
+			<groupId>jakarta.transaction</groupId>
+			<artifactId>jakarta.transaction-api</artifactId>
+			<version>1.3.3</version>
 			<scope>provided</scope>
 		</dependency>
-		<dependency>
-			<!-- to be able to extract Oracle error messages in IbisException.getExceptionSpecificDetails() -->
-			<groupId>com.oracle.database.jdbc</groupId>
-			<artifactId>ojdbc8</artifactId>
-			<version>12.2.0.1</version>
-			<scope>provided</scope>
-		</dependency>
+
 		<dependency>
 			<groupId>com.sun.mail</groupId>
-			<artifactId>javax.mail</artifactId>
-			<exclusions>
-				<exclusion> <!-- conflicts with the javax.activation package from jdk see https://github.com/ibissource/iaf/issues/2372 -->
-					<groupId>javax.activation</groupId>
-					<artifactId>activation</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>javax.xml</groupId>
-			<artifactId>jaxrpc-api</artifactId>
-			<version>1.1</version>
+			<artifactId>jakarta.mail</artifactId>
 		</dependency>
 
 		<!-- Apache Commons -->
@@ -160,7 +162,7 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-csv</artifactId>
-			<version>1.8</version>
+			<version>1.9.0</version>
 		</dependency>
 
 <!-- 	(old) digester is used in the StatisticsParser -->
@@ -285,7 +287,7 @@
 			<artifactId>sjsxp</artifactId>
 			<version>1.0.2</version>
 			<exclusions>
-				<exclusion><!-- Exclude 1.0 as 1.0.1 is already included by xmlbeans. -->
+				<exclusion><!-- excluded because we want the stax2 api -->
 					<groupId>javax.xml.stream</groupId>
 					<artifactId>stax-api</artifactId>
 				</exclusion>
@@ -317,13 +319,13 @@
 					<groupId>org.apache.geronimo.javamail</groupId>
 					<artifactId>geronimo-javamail_1.4_mail</artifactId>
 				</exclusion>
+				<exclusion><!-- excluded because we want to ignore this (1.2.2) version! this dependency handles javax.activation.* imports, and is NOT compatible with the IBM JRE -->
+					<groupId>jakarta.activation</groupId>
+					<artifactId>jakarta.activation-api</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
-		<dependency>
-			<groupId>soap</groupId>
-			<artifactId>soap</artifactId>
-			<version>2.3.1</version>
-		</dependency>
+
 		<dependency>
 			<groupId>wsdl4j</groupId>
 			<artifactId>wsdl4j</artifactId>
@@ -344,6 +346,8 @@
 			<artifactId>ehcache</artifactId>
 			<version>2.10.9.2</version>
 		</dependency>
+
+		<!-- JsonPipe -->
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
@@ -376,6 +380,8 @@
 			<artifactId>service-dispatcher</artifactId>
 			<version>1.5</version>
 		</dependency>
+
+		<!-- XSD.compareTo(..) -->
 		<dependency>
 			<groupId>xmlunit</groupId>
 			<artifactId>xmlunit</artifactId>
@@ -384,7 +390,13 @@
 		<dependency>
 			<groupId>org.apache.xmlbeans</groupId>
 			<artifactId>xmlbeans</artifactId>
-			<version>3.0.1</version>
+			<version>5.1.0</version>
+			<exclusions>
+				<exclusion><!-- Java 8 scoped profile -->
+					<groupId>xml-apis</groupId>
+					<artifactId>xml-apis</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>cglib</groupId>
@@ -394,12 +406,12 @@
 		<dependency>
 			<groupId>com.sendgrid</groupId>
 			<artifactId>sendgrid-java</artifactId>
-			<version>4.8.2</version>
+			<version>4.9.3</version>
 		</dependency>
 		<dependency>
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-java-sdk-s3</artifactId>
-			<version>1.12.234</version>
+			<version>1.12.258</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
@@ -409,13 +421,14 @@
 		<dependency>
 			<groupId>com.hierynomus</groupId>
 			<artifactId>smbj</artifactId>
-			<version>0.9.1</version>
+			<version>0.11.5</version>
 		</dependency>
 		<dependency>
 			<groupId>jcifs</groupId>
 			<artifactId>jcifs</artifactId>
 			<version>1.3.17</version>
 			<exclusions>
+				<!-- this should never have been added as a compile dependency! -->
 				<exclusion>
 					<groupId>javax.servlet</groupId>
 					<artifactId>servlet-api</artifactId>
@@ -455,7 +468,7 @@
 		<dependency>
 			<groupId>com.nimbusds</groupId>
 			<artifactId>oauth2-oidc-sdk</artifactId>
-			<version>9.35</version>
+			<version>9.38</version>
 		</dependency>
 
 		<!-- TransactionManagers: BTM + NARAYANA -->
@@ -485,7 +498,7 @@
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
 			<artifactId>msal4j</artifactId>
-			<version>1.12.0</version>
+			<version>1.13.0</version>
 		</dependency>
 		<dependency>
 			<groupId>joda-time</groupId>
@@ -505,7 +518,13 @@
 		<dependency>
 			<groupId>org.liquibase</groupId>
 			<artifactId>liquibase-core</artifactId>
-			<version>4.10.0</version>
+			<version>4.13.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>javax.xml.bind</groupId>
+					<artifactId>jaxb-api</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -561,6 +580,10 @@
 					<groupId>org.apache.geronimo.specs</groupId>
 					<artifactId>geronimo-jta_1.1_spec</artifactId>
 				</exclusion>
+				<exclusion><!-- excluded because we want to ignore this (1.2.2) version! this dependency handles javax.activation.* imports, and is NOT compatible with the IBM JRE -->
+					<groupId>jakarta.activation</groupId>
+					<artifactId>jakarta.activation-api</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -593,6 +616,13 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+
+		<!-- Jackson dependencies -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+			<version>${jackson.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.jaxrs</groupId>
 			<artifactId>jackson-jaxrs-json-provider</artifactId>
@@ -609,12 +639,17 @@
 			<artifactId>jackson-databind</artifactId>
 			<version>${jackson.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
+			<version>${jackson.version}</version>
+		</dependency>
 
 		<!-- Use our own JaxB and JaxWS implementations to run on the IBM JDK -->
 		<dependency>
 			<groupId>com.sun.xml.bind</groupId>
 			<artifactId>jaxb-core</artifactId>
-			<version>3.0.1</version>
+			<version>3.0.2</version>
 		</dependency>
 		<dependency>
 			<groupId>com.sun.xml.bind</groupId>
@@ -622,10 +657,22 @@
 			<version>3.0.2</version>
 		</dependency>
 		<dependency>
-			<groupId>javax.xml.ws</groupId>
-			<artifactId>jaxws-api</artifactId>
-			<version>2.3.0</version> <!-- 2.3.1 contains javax.activation package that conflicts with the jdk javax.activation package. -->
+			<groupId>jakarta.xml.ws</groupId>
+			<artifactId>jakarta.xml.ws-api</artifactId>
+			<version>2.3.3</version>
 		</dependency>
+		<dependency>
+			<groupId>jakarta.xml.bind</groupId>
+			<artifactId>jakarta.xml.bind-api</artifactId>
+			<version>2.3.3</version>
+			<exclusions>
+				<exclusion>
+					<groupId>jakarta.activation</groupId>
+					<artifactId>jakarta.activation-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
 
 		<!--
 			We cannot upgrade to a later version due to it forcing us to use com.sun.xerces
@@ -636,13 +683,9 @@
 			<artifactId>org.apache.servicemix.bundles.saaj-impl</artifactId>
 			<version>1.3.28_1</version>
 			<exclusions>
-				<exclusion>
+				<exclusion><!-- excluded because we want the stax2 api -->
 					<groupId>javax.xml.stream</groupId>
 					<artifactId>stax-api</artifactId>
-				</exclusion>
-				<exclusion> <!-- conflicts with the javax.activation package from jdk see https://github.com/ibissource/iaf/issues/2372 -->
-					<groupId>javax.activation</groupId>
-					<artifactId>activation</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -688,24 +731,30 @@
 		<dependency>
 			<groupId>com.nimbusds</groupId>
 			<artifactId>nimbus-jose-jwt</artifactId>
-			<version>9.15.2</version>
+			<version>9.23</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.tika</groupId>
 			<artifactId>tika-core</artifactId>
-			<version>1.28.3</version>
+			<version>1.28.4</version>
+			<exclusions>
+				<exclusion><!-- excluded because we want to ignore this (1.2.2) version! this dependency handles javax.activation.* imports, and is NOT compatible with the IBM JRE -->
+					<groupId>jakarta.activation</groupId>
+					<artifactId>jakarta.activation-api</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<!-- explicitly defined because of dependency inheritance -->
 		<dependency>
 			<groupId>com.ibm.icu</groupId>
 			<artifactId>icu4j</artifactId>
-			<version>70.1</version>
+			<version>71.1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.ibm.icu</groupId>
 			<artifactId>icu4j-charset</artifactId>
-			<version>70.1</version>
+			<version>71.1</version>
 		</dependency>
 
 		<!-- Test scoped dependencies -->
@@ -730,47 +779,56 @@
 			<version>2.33.2</version>
 			<scope>test</scope>
 		</dependency>
+
+		<!-- DATABASE DRIVERS  -->
+		<dependency>
+			<!-- to be able to extract Oracle error messages in IbisException.getExceptionSpecificDetails() -->
+			<groupId>com.oracle.database.jdbc</groupId>
+			<artifactId>ojdbc${oracle.driver.jdkversion}</artifactId>
+			<version>${oracle.driver.version}</version>
+			<scope>provided</scope>
+		</dependency>
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
-			<version>${h2.version}</version>
+			<version>${h2.driver.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.microsoft.sqlserver</groupId>
 			<artifactId>mssql-jdbc</artifactId>
-			<version>7.2.2.jre8</version>
+			<version>${mssql.driver.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
-			<version>8.0.21</version>
+			<version>${mysql.driver.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mariadb.jdbc</groupId>
 			<artifactId>mariadb-java-client</artifactId>
-			<version>2.6.2</version>
+			<version>${mariadb.driver.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
-			<version>42.3.3</version>
+			<version>${postgresql.driver.version}</version>
 			<scope>test</scope>
 		</dependency>
-
+		<!-- LdapSenderTest -->
 		<dependency>
 			<groupId>com.unboundid</groupId>
 			<artifactId>unboundid-ldapsdk</artifactId>
-			<version>2.3.5</version>
+			<version>4.0.14</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.networknt</groupId>
 			<artifactId>json-schema-validator</artifactId>
-			<version>1.0.69</version>
+			<version>1.0.71</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

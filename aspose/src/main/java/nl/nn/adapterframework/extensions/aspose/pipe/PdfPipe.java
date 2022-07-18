@@ -21,6 +21,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -47,8 +48,8 @@ import nl.nn.adapterframework.util.XmlBuilder;
 
 
 /**
- * Converts files to pdf type. This pipe has two actions convert and combine. 
- * With combine action you can attach files into main pdf file. 
+ * Converts files to pdf type. This pipe has two actions convert and combine.
+ * With combine action you can attach files into main pdf file.
  *
  */
 public class PdfPipe extends FixedForwardPipe {
@@ -65,6 +66,7 @@ public class PdfPipe extends FixedForwardPipe {
 	private @Getter String charset = null;
 	private AsposeFontManager fontManager;
 	private @Getter boolean unpackDefaultFonts = false;
+	private @Getter boolean loadExternalResources = false;
 
 	private CisConversionService cisConversionService;
 
@@ -122,8 +124,9 @@ public class PdfPipe extends FixedForwardPipe {
 		} catch (IOException e) {
 			throw new ConfigurationException("an error occured while loading fonts", e);
 		}
-		
-		cisConversionService = new CisConversionServiceImpl(getPdfOutputLocation(), fontManager.getFontsPath(), getCharset());
+
+		CisConfiguration configuration = new CisConfiguration(loadExternalResources, getPdfOutputLocation(), getCharset(), fontManager.getFontsPath());
+		cisConversionService = new CisConversionServiceImpl(configuration);
 	}
 
 	@Override
@@ -208,5 +211,10 @@ public class PdfPipe extends FixedForwardPipe {
 	@IbisDoc({ "directory to save resulting pdf files after conversion. If not set then a temporary directory will be created and the conversion results will be stored in that directory.", "null" })
 	public void setPdfOutputLocation(String pdfOutputLocation) {
 		this.pdfOutputLocation = pdfOutputLocation;
+	}
+
+	@IbisDoc({ "when set to true, external resources, such as stylesheets and images found in HTML pages, will be loaded from the internet", "false" })
+	public void setLoadExternalResources(boolean loadExternalResources) {
+		this.loadExternalResources = loadExternalResources;
 	}
 }

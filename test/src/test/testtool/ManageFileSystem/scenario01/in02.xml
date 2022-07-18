@@ -1,0 +1,30 @@
+<manageFileSystemREQ>
+	<readDelete>
+		<filename>${testdata.dir}/ManageFileSystem/myNewFolder1/test.txt</filename>
+	</readDelete>
+
+	<rename>
+		<filename>${testdata.dir}/ManageFileSystem/myNewFolder2/test.txt</filename>
+		<destination>${testdata.dir}/ManageFileSystem/myNewFolder1/README.MD</destination>
+	</rename>
+
+	<list>
+		<inputFolder>${testdata.dir}/ManageFileSystem/myNewFolder1</inputFolder>
+	</list>
+	
+	<delete>
+		<filename>${testdata.dir}/ManageFileSystem/myNewFolder1/README.MD</filename>
+	</delete>
+
+	<rmdir>
+		<inputFolder>${testdata.dir}/ManageFileSystem/myNewFolder1</inputFolder>
+	</rmdir>
+
+	<rmdir>
+		<inputFolder>${testdata.dir}/ManageFileSystem/myNewFolder2</inputFolder>
+	</rmdir>
+
+	<rmdir>
+		<inputFolder>${testdata.dir}/ManageFileSystem</inputFolder>
+	</rmdir>
+</manageFileSystemREQ>

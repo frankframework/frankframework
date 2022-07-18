@@ -31,6 +31,7 @@ import nl.nn.adapterframework.cache.ICache;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.jms.JmsException;
@@ -86,6 +87,7 @@ import nl.nn.adapterframework.util.Misc;
  *
  * @author  Johan Verrips
  */
+@Category("Basic")
 public class PipeLine extends TransactionAttributes implements ICacheEnabled<String,String>, HasStatistics, IConfigurationAware {
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
@@ -758,7 +760,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	/**
 	 * If messageSizeWarn>=0 and the size of the input or result pipe message exceeds the value specified a warning message is logged. You can specify the value with the suffixes <code>KB</code>, <code>MB</code> or <code>GB</code>
-	 * @ff.default application default (3MB)"
+	 * @ff.default application default (3MB)
 	 */
 	public void setMessageSizeWarn(String s) {
 		messageSizeWarn = Misc.toFileSize(s, messageSizeWarn + 1);

@@ -94,7 +94,6 @@ import org.xml.sax.ext.LexicalHandler;
 import com.ctc.wstx.api.ReaderConfig;
 import com.ctc.wstx.stax.WstxInputFactory;
 
-import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.Resource;
@@ -516,12 +515,12 @@ public class XmlUtils {
 		return getXMLReader(null, handler);
 	}
 
-	public static XMLReader getXMLReader(Configuration scopeProvider) throws ParserConfigurationException, SAXException {
+	public static XMLReader getXMLReader(IScopeProvider scopeProvider) throws ParserConfigurationException, SAXException {
 		return getXMLReader(true, scopeProvider);
 	}
 
-	private static XMLReader getXMLReader(Resource resource, ContentHandler handler) throws ParserConfigurationException, SAXException {
-		XMLReader xmlReader = getXMLReader(true, resource);
+	private static XMLReader getXMLReader(IScopeProvider scopeProvider, ContentHandler handler) throws ParserConfigurationException, SAXException {
+		XMLReader xmlReader = getXMLReader(true, scopeProvider);
 		xmlReader.setContentHandler(handler);
 		if (handler instanceof LexicalHandler) {
 			xmlReader.setProperty("http://xml.org/sax/properties/lexical-handler", handler);

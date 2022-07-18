@@ -25,6 +25,7 @@ import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -233,6 +234,7 @@ import nl.nn.adapterframework.util.SpringUtils;
  * </p>
  * @author Peter Leeuwenburgh
  */
+@Category("NN-Special")
 public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 	protected static final String OUTPUTNAMESPACEBASEURI = "http://nn.nl/XSD";
 	protected static final String BUSINESSDOMAIN = "businessDomain";
@@ -416,7 +418,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			}
 		}
 		Parameter p;
-		if (StringUtils.isNotEmpty(destination)) { 
+		if (StringUtils.isNotEmpty(destination)) {
 			if(destination.startsWith("ESB.") || destination.startsWith("P2P.")
 					|| (StringUtils.isNotEmpty(esbAlias) && destination.startsWith(esbAlias + "."))
 					|| (StringUtils.isNotEmpty(p2pAlias) && destination.startsWith(p2pAlias + "."))
@@ -719,7 +721,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		int slashCount = StringUtils.countMatches(namespace, "/");
 		return slashCount < 9;
 	}
-	/** 
+	/**
 	 * @ff.default REG
 	 */
 	public void setMode(Mode mode) {

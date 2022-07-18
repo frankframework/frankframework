@@ -18,6 +18,12 @@
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-test</artifactId>
 			<version>${project.version}</version>
+			<classifier>scenarios</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-test</artifactId>
+			<version>${project.version}</version>
 			<type>war</type>
 		</dependency>
 		<dependency>
@@ -28,7 +34,7 @@
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
-			<version>${h2.version}</version>
+			<version>${h2.driver.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.microsoft.sqlserver</groupId>
@@ -85,6 +91,24 @@
 							<excludeTransitive>true</excludeTransitive>
 							<stripVersion>true</stripVersion>
 							<excludeClassifiers>configurations,resources,scenarios</excludeClassifiers>
+						</configuration>
+					</execution>
+					<execution>
+						<id>unpack-tests</id>
+						<phase>package</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>org.ibissource</groupId>
+									<artifactId>ibis-adapterframework-test</artifactId>
+									<classifier>scenarios</classifier>
+								</artifactItem>
+							</artifactItems>
+							<excludeTransitive>true</excludeTransitive>
+							<outputDirectory>${project.build.directory}/dependencies/frank/testtool</outputDirectory>
 						</configuration>
 					</execution>
 				</executions>

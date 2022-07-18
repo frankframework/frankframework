@@ -26,7 +26,7 @@
 		<dependency>
 			<groupId>de.rtner</groupId>
 			<artifactId>PBKDF2</artifactId>
-			<version>1.1.0</version>
+			<version>1.1.4</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.picketbox</groupId>
@@ -49,18 +49,18 @@
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.7.30</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-jcl</artifactId>
-			<version>1.7.30</version>
 			<scope>test</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>org.apache.directory.server</groupId>
 			<artifactId>apacheds-test-framework</artifactId>
