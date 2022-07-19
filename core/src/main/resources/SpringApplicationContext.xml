@@ -14,6 +14,9 @@
 	<integration:service-activator input-channel="frank-management-bus" ref="ConfigurationMessageListener" method="onMessage" />
 	<bean name="ConfigurationMessageListener" class="nl.nn.adapterframework.lifecycle.ConfigurationMessageListener" scope="singleton" />
 
+	<integration:service-activator input-channel="frank-management-bus" ref="ApplicationMessageListener" method="onMessage" />
+	<bean name="ApplicationMessageListener" class="nl.nn.adapterframework.lifecycle.ApplicationMessageListener" scope="singleton" />
+
 	<context:property-placeholder />
 
 	<import resource="springUnmanagedDeployment.xml"/>

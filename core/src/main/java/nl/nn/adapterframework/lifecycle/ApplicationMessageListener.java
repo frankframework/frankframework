@@ -14,30 +14,24 @@ import org.springframework.messaging.support.GenericMessage;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
 import nl.nn.adapterframework.management.bus.RequestMessage;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.util.EnumUtils;
 
-public class ConfigurationMessageListener extends AbstractReplyProducingMessageHandler implements ApplicationContextAware {
+public class ApplicationMessageListener extends AbstractReplyProducingMessageHandler implements ApplicationContextAware {
 	private @Setter ApplicationContext applicationContext;
+	private @Setter IbisManager ibisManager;
 
-	public Message<?> onMessage2(String payload) {
-		if(payload == "getConfigurations") {
-			String result = "";
-			IbisManager ibisManager = applicationContext.getBean("ibisManager", IbisManager.class);
-			for (Configuration configuration : ibisManager.getConfigurations()) {
-				result += configuration.getOriginalConfiguration();
-			}
-			Map<String, Object> headers = new HashMap<>();
-			headers.put("test123", "s");
-			return new GenericMessage<>(result, headers);
-		}
-
-		return new ErrorMessage(new IllegalArgumentException("error"));
-	}
-
-	public ResponseMessage onMessage(Message<?> action) {
-		System.out.println(action.getClass().getCanonicalName());
-		System.out.println("execute action " + action);
+	public ResponseMessage onMessage(Message<?> message) {
+//		IbisAction action = EnumUtils.parse(IbisAction.class, (String) message.getPayload());
+		IbisAction action = (IbisAction) message.getPayload();
+		MessageHeaders headers = message.getHeaders();
+		String configurationName = (String) headers.get("configurationName");
+		String adapterName = (String) headers.get("adapterName");
+		String receiverName = (String) headers.get("receiverName");
+		String issuedBy = (String) headers.get("issuedBy");
+		ibisManager.handleAction(action, configurationName, adapterName, receiverName, issuedBy, true);
 		return ResponseMessage.create("test");
 	}
 
@@ -51,7 +45,7 @@ public class ConfigurationMessageListener extends AbstractReplyProducingMessageH
 			result = result + configuration.getOriginalConfiguration();
 		}
 		Map<String, Object> headers = new HashMap<>();
-		headers.put("test123", "s");
+		headers.put("test123", "asdf");
 		return new GenericMessage<>(result, headers);
 	}
 }

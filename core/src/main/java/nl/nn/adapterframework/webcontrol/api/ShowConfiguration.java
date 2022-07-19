@@ -56,6 +56,7 @@ import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
+import nl.nn.adapterframework.management.bus.RequestMessage;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
@@ -117,7 +118,9 @@ public final class ShowConfiguration extends Base {
 	@Produces(MediaType.APPLICATION_XML)
 	public Response getXMLConfiguration2(@QueryParam("loadedConfiguration") boolean loaded, @QueryParam("flow") String flow) throws ApiException {
 //		ApiMessageRequest request = new ApiMessageRequest(Action.GET_CONFIGURATION, IbisContext.ALL_CONFIGS_KEY);//json bericht!
-		Message<String> input = MessageBuilder.withPayload("GET:configurations").build();
+//		Message request = ActionMessage.create(this, IbisAction.FULLRELOAD)
+//		return callGateway(ApiMessageRequest.newAction(ApiAction.GET_CONFIGURATION));
+		Message<?> input = MessageBuilder.withPayload("GET:configurations").build();
 		return callGateway(input);
 	}
 
@@ -135,7 +138,8 @@ public final class ShowConfiguration extends Base {
 			Object value = entry.getValue();
 			if(key.equalsIgnoreCase("action")) {
 				if(value.equals("reload")) {
-					getIbisManager().handleAction(IbisAction.FULLRELOAD, "", "", "", getUserPrincipalName(), true);
+//					getIbisManager().handleAction(IbisAction.FULLRELOAD, "", "", "", getUserPrincipalName(), true);
+					callGateway(RequestMessage.create(this, IbisAction.FULLRELOAD));
 				}
 				response.entity("{\"status\":\"ok\"}");
 			}

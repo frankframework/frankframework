@@ -61,7 +61,7 @@ import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 public abstract class Base implements ApplicationContextAware {
 	@Context protected ServletConfig servletConfig;
-	@Context protected SecurityContext securityContext;
+	@Context protected @Getter SecurityContext securityContext;
 	@Context protected HttpServletRequest request;
 	private @Getter ApplicationContext applicationContext;
 
@@ -71,11 +71,14 @@ public abstract class Base implements ApplicationContextAware {
 	protected Logger log = LogUtil.getLogger(this);
 	protected static String HATEOASImplementation = AppConstants.getInstance().getString("ibis-api.hateoasImplementation", "default");
 
-	public Response callGateway(Message<String> input) throws ApiException {
-		Gateway<String> gateway = getApplicationContext().getBean("gateway", Gateway.class);
-		Message<String> response = gateway.execute(input);
+	public Response callGateway(Message<?> input) throws ApiException { //todo add getUserPrincipalName header
+		Gateway gateway = getApplicationContext().getBean("gateway", Gateway.class);
+		Message<?> response = gateway.execute(input);
 		MessageHeaders headers = response.getHeaders();
 		System.out.println(headers.keySet());
+		if(response.getPayload() instanceof Response) {
+			return (Response) response.getPayload();
+		}
 		return Response.status(Response.Status.OK).entity(response.getPayload()).build();
 	}
 
