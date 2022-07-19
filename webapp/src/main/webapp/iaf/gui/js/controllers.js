@@ -1865,26 +1865,13 @@ angular.module('iaf.beheerconsole')
 		$scope.state.push({type:type, message: message});
 	};
 
-	let adapters = $scope.adapters;
-	let schedulerEligibleAdapters={};
-	for(adapter in adapters) {
-		let receivers = adapters[adapter].receivers;
-		for(r in receivers) {
-			let receiver=receivers[r];
-			if(receiver.listener.class.startsWith('JavaListener')){
-				schedulerEligibleAdapters[adapter] = adapters[adapter];
-			}
-		}
-	}
-	$scope.schedulerEligibleAdapters = schedulerEligibleAdapters;
-
 	$scope.form = {
 			name:"",
 			group:"",
 			adapter:"",
 			receiver:"",
 			cron:"",
-			interval:-1,
+			interval:"",
 			message:"",
 			description:"",
 			locker:false,
@@ -1916,7 +1903,7 @@ angular.module('iaf.beheerconsole')
 					adapter:"",
 					receiver:"",
 					cron:"",
-					interval:-1,
+					interval:"",
 					message:"",
 					description:"",
 					locker:false,
@@ -1944,7 +1931,7 @@ angular.module('iaf.beheerconsole')
 			adapter:"",
 			receiver:"",
 			cron:"",
-			interval:-1,
+			interval:"",
 			message:"",
 			description:"",
 			locker:false,
@@ -1952,20 +1939,36 @@ angular.module('iaf.beheerconsole')
 			persistent:true,
 	};
 
+	function findReceiver() {
+		let adapter = $scope.form.adapter;
+		let listener = $scope.form.listener;
+		let receivers = ($scope.adapters && $scope.adapters[adapter]) ? $scope.adapters[adapter].receivers : null;
+		if(receivers != null) {
+			for(i in receivers) {
+				let receiver = receivers[i];
+				if(listener == receiver.listener.name) {
+					$scope.form.receiver = receiver.name;
+				}
+			}
+		}
+	}
+
 	Api.Get(url, function(data) {
 		$scope.form = {
 				name: data.name,
 				group: data.group,
 				adapter: data.adapter,
-				receiver: "",
-				cron: data.triggers[0].cronExpression,
-				interval: data.triggers[0].repeatInterval,
+				listener: data.listener,
+				receiver: null,
+				cron: data.triggers[0].cronExpression || "",
+				interval: data.triggers[0].repeatInterval || "",
 				message: data.message,
 				description: data.description,
 				locker: data.locker,
 				lockkey: data.lockkey,
 				persistent: true,
 		};
+		findReceiver();
 	});
 
 	$scope.submit = function(form) {

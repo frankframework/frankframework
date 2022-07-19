@@ -18,7 +18,9 @@ package nl.nn.adapterframework.scheduler.job;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -98,12 +100,7 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 
 							JobKey key = JobKey.jobKey(jobName, jobGroup);
 
-							Configuration config = ibisManager.getConfiguration(jobGroup);
-							if(config == null) {
-								getMessageKeeper().add("unable to add schedule ["+key+"], configuration ["+jobGroup+"] not found!");
-								continue;
-							}
-							Adapter adapter = config.getRegisteredAdapter(adapterName);
+							Adapter adapter = findAdapter(adapterName);
 							if(adapter == null) {
 								getMessageKeeper().add("unable to add schedule ["+key+"], adapter ["+adapterName+"] not found!");
 								continue;
@@ -175,5 +172,27 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 				getMessageKeeper().add("unable to remove schedule ["+key+"]", e);
 			}
 		}
+	}
+
+	//Loops through all configurations
+	private Adapter findAdapter(String adapterName) {
+		List<Adapter> adapters = new ArrayList<>();
+		for(Configuration config : getIbisManager().getConfigurations()) {
+			if(config.isActive()) {
+				for(Adapter adapter : config.getRegisteredAdapters()) {
+					if (adapterName.equals(adapter.getName())) {
+						adapters.add(adapter);
+					}
+				}
+			}
+		}
+
+		if(adapters.isEmpty()) {
+			return null;
+		}
+		if(adapters.size() > 1) {
+			throw new IllegalStateException("found more then 1 adapter matching name ["+adapterName+"]");
+		}
+		return adapters.get(0);
 	}
 }
