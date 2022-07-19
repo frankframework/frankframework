@@ -28,13 +28,12 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.entity.InputStreamEntity;
 import org.apache.logging.log4j.Logger;
 
 import lombok.Setter;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.extensions.akamai.NetStorageSender.Action;
+import nl.nn.adapterframework.http.HttpMessageEntity;
 import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -112,11 +111,7 @@ public class NetStorageRequest {
 				}
 			}
 
-			try {
-				setEntity(file);
-			} catch (IOException e) {
-				throw new SenderException("unable to parse file", e);
-			}
+			setEntity(file);
 
 			if(pvl.contains("size")) {
 				int size = pvl.getParameterValue("size").asIntegerValue(0);
@@ -157,16 +152,9 @@ public class NetStorageRequest {
 		return EnumUtils.parse(HttpMethod.class, method.getMethod());
 	}
 
-	private void setEntity(Message file) throws IOException {
-		HttpEntity entity = toEntity(file);
+	private void setEntity(Message file) {
+		HttpEntity entity = new HttpMessageEntity(file);
 		((HttpEntityEnclosingRequestBase) method).setEntity(entity);
-	}
-
-	private HttpEntity toEntity(Message file) throws IOException {
-		if(file.requiresStream()) {
-			return new InputStreamEntity(file.asInputStream());
-		}
-		return new ByteArrayEntity(file.asByteArray());
 	}
 
 	public void sign(NetStorageCmsSigner signer) {
