@@ -737,6 +737,21 @@ angular.module('iaf.beheerconsole')
 			input = input.replace(/\[(.*?)\]\((.+?)\)/g, '<a target="_blank" href="$2" alt="$1">$1</a>');
 			return input;
 		};
+	}).filter('withJavaListener', function() {
+		return function(adapters) {
+			if(!adapters) return;
+			let schedulerEligibleAdapters={};
+			for(adapter in adapters) {
+				let receivers = adapters[adapter].receivers;
+				for(r in receivers) {
+					let receiver=receivers[r];
+					if(receiver.listener.class.startsWith('JavaListener')){
+						schedulerEligibleAdapters[adapter] = adapters[adapter];
+					}
+				}
+			}
+			return schedulerEligibleAdapters;
+		};
 	}).filter('dash', function() {
 		return function(input) {
 			if(input || input === 0) return input;
