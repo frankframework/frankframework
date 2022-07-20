@@ -139,6 +139,7 @@ public final class ShowConfiguration extends Base {
 			if(key.equalsIgnoreCase("action")) {
 				if(value.equals("reload")) {
 //					getIbisManager().handleAction(IbisAction.FULLRELOAD, "", "", "", getUserPrincipalName(), true);
+//					RequestMessage.ibisAction()
 					callGateway(RequestMessage.create(this, IbisAction.FULLRELOAD));
 				}
 				response.entity("{\"status\":\"ok\"}");

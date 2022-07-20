@@ -27,9 +27,9 @@ public class ApplicationMessageListener extends AbstractReplyProducingMessageHan
 //		IbisAction action = EnumUtils.parse(IbisAction.class, (String) message.getPayload());
 		IbisAction action = (IbisAction) message.getPayload();
 		MessageHeaders headers = message.getHeaders();
-		String configurationName = (String) headers.get("configurationName");
-		String adapterName = (String) headers.get("adapterName");
-		String receiverName = (String) headers.get("receiverName");
+		String configurationName = (String) headers.get("configuration");
+		String adapterName = (String) headers.get("adapter");
+		String receiverName = (String) headers.get("receiver");
 		String issuedBy = (String) headers.get("issuedBy");
 		ibisManager.handleAction(action, configurationName, adapterName, receiverName, issuedBy, true);
 		return ResponseMessage.create("test");

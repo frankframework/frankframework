@@ -7,26 +7,33 @@ import java.util.Map;
 import javax.ws.rs.core.SecurityContext;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.integration.support.AbstractIntegrationMessageBuilder;
+import org.springframework.integration.support.DefaultMessageBuilderFactory;
+import org.springframework.integration.support.MessageBuilder;
+import org.springframework.integration.support.MessageBuilderFactory;
+import org.springframework.messaging.Message;
 import org.springframework.messaging.support.GenericMessage;
 
 import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
+import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.webcontrol.api.Base;
 
 public class RequestMessage extends GenericMessage<IbisAction> {
 
-	private static final long serialVersionUID = 4268801052358035098L;
+	private static final long serialVersionUID = 1L;
 
 	public RequestMessage(IbisAction action, Map<String, Object> headers) {
 		super(action, headers);
 	}
 
-	public static RequestMessage create(Base base, IbisAction action) {
+	public static Message<?> create(Base base, IbisAction action) {
+		MessageBuilder<?> builder = base.getApplicationContext().getBean("messageBuilderFactory", MessageBuilder.class);
 		String user = getUserPrincipalName(base.getSecurityContext());
-		Map<String, Object> headers = new HashMap<>();
 		if(StringUtils.isNotEmpty(user)) {
-			headers.put("issuedBy", user);
+			builder.setHeader("issuedBy", user);
 		}
-		return new RequestMessage(action, headers);
+		builder.withPayload(action);
+		return builder.build();
 	}
 
 	private static String getUserPrincipalName(SecurityContext securityContext) {
@@ -36,4 +43,6 @@ public class RequestMessage extends GenericMessage<IbisAction> {
 		}
 		return null;
 	}
+
+	//public void handleAction(IbisAction action, String configurationName, String adapterName, String receiverName, String commandIssuedBy) {
 }
