@@ -53,7 +53,7 @@ public class TestJson2Xml extends AlignTestBase {
 				fail("msg == null ("+e.getClass().getSimpleName()+")");
 			}
 			if (!msg.contains(expectedFailureReason)) {
-				LOG.error("expected reason ["+expectedFailureReason+"] in msg ["+msg+"]", e);
+				LOG.error("expected reason [{}] in msg [{}]", expectedFailureReason, msg, e);
 				fail("expected reason ["+expectedFailureReason+"] in msg ["+msg+"]");
 			}
 		}
