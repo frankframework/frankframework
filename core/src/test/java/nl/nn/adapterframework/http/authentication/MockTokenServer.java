@@ -14,30 +14,30 @@ import lombok.Getter;
 public class MockTokenServer extends WireMockRule {
 
 	private boolean mockServer = true;
-	
-	String KEYCLOAK_SERVER="http://localhost:8888";
-	String KEYCLOAK_PATH="/auth/realms/iaf-test/protocol/openid-connect/token";
-	
-	public String SCENARIO_CONNECTION_RESET="Connection Reset";
-	public String SCENARIO_STATE_RESET_CONNECTION="Reset Connection";
 
-	String LOCAL_PATH="/token";
-	
-	public static final String VALID_TOKEN	="fakeValidAccessToken";
-	public static final String EXPIRED_TOKEN="fakeExpiredAccessToken";
-	
-	private @Getter String path		 = mockServer ? LOCAL_PATH	 : KEYCLOAK_PATH;
-	
+	String KEYCLOAK_SERVER = "http://localhost:8888";
+	String KEYCLOAK_PATH = "/auth/realms/iaf-test/protocol/openid-connect/token";
+
+	public String SCENARIO_CONNECTION_RESET = "Connection Reset";
+	public String SCENARIO_STATE_RESET_CONNECTION = "Reset Connection";
+
+	String LOCAL_PATH = "/token";
+
+	public static final String VALID_TOKEN = "fakeValidAccessToken";
+	public static final String EXPIRED_TOKEN = "fakeExpiredAccessToken";
+
+	private @Getter String path = mockServer ? LOCAL_PATH : KEYCLOAK_PATH;
+
 	private @Getter String clientId = "testiaf-client";
 	private @Getter String clientSecret = "testiaf-client-pwd";
 
 	private String accessTokenResponseValid	 = "{\"access_token\":\""+VALID_TOKEN+"\",	\"refresh_expires_in\":0,\"scope\":\"profile email\",\"not-before-policy\":0,\"token_type\":\"Bearer\",\"expires_in\":300}";
 	private String accessTokenResponseExpired = "{\"access_token\":\""+EXPIRED_TOKEN+"\",\"refresh_expires_in\":0,\"scope\":\"profile email\",\"not-before-policy\":0,\"token_type\":\"Bearer\",\"expires_in\":0}";
-	
+
 	public MockTokenServer() {
-		super(wireMockConfig()
-				.dynamicPort());
+		super(wireMockConfig().dynamicPort());
 	}
+
 	public MockTokenServer(int port) {
 		super(port);
 	}
@@ -70,8 +70,7 @@ public class MockTokenServer extends WireMockRule {
 						.withStatus(404)));
 		super.start();
 	}
-	
-	
+
 	public String getServer() {
 		return mockServer ? "http://localhost:"+port() : KEYCLOAK_SERVER;
 	}
