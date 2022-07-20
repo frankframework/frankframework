@@ -123,7 +123,7 @@ public class MatchUtils {
 	}
 
 	public static void assertJsonEquals(String jsonExp, String jsonAct) {
-		assertEquals(Misc.jsonPretty(jsonExp), Misc.jsonPretty(jsonAct));
+		assertJsonEquals(null, jsonExp, jsonAct);
 	}
 
 	public static void assertJsonEquals(String description, String jsonExp, String jsonAct) {
