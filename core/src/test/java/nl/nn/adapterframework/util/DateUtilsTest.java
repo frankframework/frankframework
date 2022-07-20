@@ -7,6 +7,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -20,10 +21,11 @@ public class DateUtilsTest {
 
 	private static final TimeZone CI_TZ = Calendar.getInstance().getTimeZone();
 	private static final TimeZone TEST_TZ = TimeZone.getTimeZone("UTC");
+	private static Logger LOG = LogUtil.getLogger(DateUtilsTest.class);
 
 	@BeforeClass
 	public static void setUp() {
-		System.out.println("adjusting date settings from ["+CI_TZ.getDisplayName()+"] to [" + TEST_TZ.getDisplayName() + "]");
+		LOG.info("adjusting date settings from [{}] to [{}]", CI_TZ::getDisplayName, TEST_TZ::getDisplayName);
 	}
 
 	/**
@@ -36,8 +38,9 @@ public class DateUtilsTest {
 			Calendar calendar = Calendar.getInstance();
 			calendar.setTime(date);
 			calendar.add(Calendar.MILLISECOND, - CI_TZ.getOffset(calendar.getTime().getTime()));
-			calendar.setTimeZone(TEST_TZ);
 			return calendar.getTime();
+//			ZoneOffset zoneOffSet= ZoneOffset.of("+02:00");
+//			OffsetDateTime offsetDateTime = OffsetDateTime.now(zoneOffSet);
 		}
 	}
 
