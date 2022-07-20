@@ -31,13 +31,13 @@ import nl.nn.adapterframework.xml.SaxException;
 public class JsonWriter implements JsonEventHandler {
 
 	private Writer writer;
-	
+
 	private Stack<NodeState> stateStack = new Stack<>();
-	
+
 	private class NodeState {
 		private boolean firstElemSeen;
 		private boolean inArray;
-		
+
 		private NodeState(boolean inArray) {
 			this.inArray=inArray;
 		}
@@ -50,7 +50,7 @@ public class JsonWriter implements JsonEventHandler {
 	public JsonWriter(OutputStream stream) {
 		this(new OutputStreamWriter(stream, StreamUtil.DEFAULT_CHARSET));
 	}
-	
+
 	public JsonWriter(Writer writer) {
 		this.writer=writer;
 		stateStack.push(new NodeState(false));
@@ -80,7 +80,7 @@ public class JsonWriter implements JsonEventHandler {
 			}
 		}
 	}
-	
+
 	@Override
 	public void startObject() throws SAXException {
 		try {
@@ -146,7 +146,6 @@ public class JsonWriter implements JsonEventHandler {
 			throw new SaxException(e);
 		}
 	}
-
 
 
 	@Override

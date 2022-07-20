@@ -310,15 +310,14 @@ public class MiscTest {
 		String res = Misc.concatStrings(a, seperator, b);
 		assertEquals("LeBron", res);
 	}
-	
+
 	@Test
 	public void testConcat() throws Exception {
 		String seperator = "|";
 		String res = Misc.concat(seperator, null, "a", "b", null, "c", null);
 		assertEquals("a|b|c", res);
 	}
-	
-	
+
 	/**
 	 * Method: hide(String string)
 	 */
@@ -478,7 +477,7 @@ public class MiscTest {
 		arrayList.add("a");
 		arrayList.add("b");
 		arrayList.add("c");
-		assertTrue(stringCollection.size() == 3);
+		assertEquals(3, stringCollection.size());
 		assertEquals("c", stringCollection.get(stringCollection.size() - 1));
 	}
 
@@ -602,7 +601,7 @@ public class MiscTest {
 		String expectedString = Misc.resourceToString(expected);
 		TestAssertions.assertEqualsIgnoreCRLF(expectedString, Misc.jsonPretty(inputString));
 	}
-	
+
 	@Test
 	public void testPrettyJsonArray() throws IOException {
 		URL input = TestFileUtils.getTestFileURL("/Misc/minifiedJsonArray.json");

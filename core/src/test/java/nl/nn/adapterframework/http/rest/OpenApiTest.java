@@ -8,8 +8,8 @@ import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
-import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.testutil.threading.IsolatedThread;
 import nl.nn.adapterframework.testutil.threading.RunInThreadRule;
@@ -37,7 +37,7 @@ public class OpenApiTest extends OpenApiTestBase {
 		String result = callOpenApi(uri);
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/simple.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 	}
 
 	@Test
@@ -57,7 +57,7 @@ public class OpenApiTest extends OpenApiTestBase {
 		String result = callOpenApi(uri);
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/simplePost.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 	}
 
 	@Test
@@ -77,7 +77,7 @@ public class OpenApiTest extends OpenApiTestBase {
 		String result = callOpenApi(uri);
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/transaction.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 	}
 
 	@Test
@@ -97,7 +97,7 @@ public class OpenApiTest extends OpenApiTestBase {
 		String result = callOpenApi(uri);
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/Options.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 	}
 
 	@Test
@@ -117,7 +117,7 @@ public class OpenApiTest extends OpenApiTestBase {
 		String result = callOpenApi(uri);
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/multipleChoices.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 	}
 
 	@Test
@@ -138,7 +138,7 @@ public class OpenApiTest extends OpenApiTestBase {
 		String result = callOpenApi(uri);
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/simplePostWithEmptyExit.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 	}
 
 	@Test
@@ -158,7 +158,7 @@ public class OpenApiTest extends OpenApiTestBase {
 		String result = callOpenApi(uri);
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/envelope.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 	}
 
 	@Test
@@ -185,7 +185,7 @@ public class OpenApiTest extends OpenApiTestBase {
 		String result = callOpenApi(uri);
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/envelopeQueryParam.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 	}
 
 	@Test
@@ -216,10 +216,10 @@ public class OpenApiTest extends OpenApiTestBase {
 		String expected = TestFileUtils.getTestFile("/OpenApi/envelopePathParamQueryParam.json");
 
 		String result = callOpenApi(uri+"/{pattern}");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 
 		String encodedResult = callOpenApi(uri+"/%7Bpattern%7D");
-		TestAssertions.assertEqualsIgnoreCRLF("Test should pass in escaped form!", expected, encodedResult);
+		MatchUtils.assertJsonEquals("Test should pass in escaped form!", expected, encodedResult);
 	}
 
 	@Test
@@ -267,7 +267,7 @@ public class OpenApiTest extends OpenApiTestBase {
 		String result = callOpenApi(uri);
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/envelopeExits.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 	}
 
 	@Test
@@ -311,7 +311,7 @@ public class OpenApiTest extends OpenApiTestBase {
 		String result = callOpenApi(uriBase);
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/petstore.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 	}
 
 	@Test
@@ -339,7 +339,7 @@ public class OpenApiTest extends OpenApiTestBase {
 		String result = callOpenApi(uri+"users");
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/simpleRoot.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 	}
 
 	@Test
@@ -366,7 +366,7 @@ public class OpenApiTest extends OpenApiTestBase {
 		String result = callOpenApi(uri+"/validator");
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/noValidatorForOneEndpoint.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 	}
 
 	@Test
@@ -392,7 +392,7 @@ public class OpenApiTest extends OpenApiTestBase {
 		String result = service(request);
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/twoHeaderParams.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 	}
 
 //	@Test
@@ -475,7 +475,7 @@ public class OpenApiTest extends OpenApiTestBase {
 		String result = service(request);
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/validatorParamFromHeaderNotQuery.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 	}
 
 	@Test
@@ -500,7 +500,7 @@ public class OpenApiTest extends OpenApiTestBase {
 		String result = service(request);
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/messageIdHeaderTest.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 	}
 
 	@Test
@@ -528,7 +528,7 @@ public class OpenApiTest extends OpenApiTestBase {
 		String result = service(request);
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/twoHeaderParams.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 	}
 
 	@Test
@@ -549,7 +549,7 @@ public class OpenApiTest extends OpenApiTestBase {
 
 		String result = callOpenApi(uri);
 		String expected = TestFileUtils.getTestFile("/OpenApi/outputValidator.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 	}
 
 	@Test
@@ -571,7 +571,7 @@ public class OpenApiTest extends OpenApiTestBase {
 
 		String result = callOpenApi(uri);
 		String expected = TestFileUtils.getTestFile("/OpenApi/inputOutputValidators.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 	}
 
 	@Test
@@ -591,6 +591,6 @@ public class OpenApiTest extends OpenApiTestBase {
 
 		String result = callOpenApi(uri);
 		String expected = TestFileUtils.getTestFile("/OpenApi/noValidator.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 	}
 }

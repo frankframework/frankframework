@@ -152,7 +152,8 @@ public class ShadowSenderTest extends ParallelSendersTest {
 		Element origResult = XmlUtils.getFirstChildTag(el, "originalResult");
 		assertEquals(ORIGINAL_SENDER_RESULT, XmlUtils.getStringValue(origResult, true));
 		assertEquals(ORIGINAL_SENDER_NAME, origResult.getAttribute("senderName"));
-		assertTrue(Integer.parseInt(origResult.getAttribute("duration")) < 10);
+		int duration = Integer.parseInt(origResult.getAttribute("duration"));
+		assertTrue("test took more then [10s] duration ["+duration+"]", duration < 10);
 
 		Collection<Node> shadowResults = XmlUtils.getChildTags(el, "shadowResult");
 		assertEquals(0, shadowResults.size());

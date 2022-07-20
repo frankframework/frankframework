@@ -52,7 +52,6 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
-import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.mime.FormBodyPart;
 import org.apache.http.entity.mime.FormBodyPartBuilder;
 import org.apache.http.entity.mime.MIME;
@@ -309,7 +308,7 @@ public class HttpSender extends HttpSenderBase {
 					}
 					entity = new ByteArrayEntity(messageString.getBytes(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING), getFullContentType());
 				} else if(postType.equals(PostType.BINARY)) {
-					entity = new InputStreamEntity(message.asInputStream(), getFullContentType());
+					entity = new HttpMessageEntity(message, getFullContentType());
 				} else {
 					throw new SenderException("PostType ["+postType.name()+"] not allowed!");
 				}
