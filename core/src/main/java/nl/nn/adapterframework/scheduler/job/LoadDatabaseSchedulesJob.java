@@ -31,7 +31,6 @@ import org.quartz.impl.matchers.GroupMatcher;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
@@ -86,7 +85,6 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 			try (Connection conn = qs.getConnection()) {
 				try (PreparedStatement stmt = conn.prepareStatement("SELECT JOBNAME,JOBGROUP,ADAPTER,RECEIVER,CRON,EXECUTIONINTERVAL,MESSAGE,LOCKER,LOCK_KEY FROM IBISSCHEDULES")) {
 					try (ResultSet rs = stmt.executeQuery()) {
-						IbisManager ibisManager = getIbisManager();
 						while(rs.next()) {
 							String jobName = rs.getString("JOBNAME");
 							String jobGroup = rs.getString("JOBGROUP");
@@ -100,9 +98,11 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 
 							JobKey key = JobKey.jobKey(jobName, jobGroup);
 
-							Adapter adapter = findAdapter(adapterName);
-							if(adapter == null) {
-								getMessageKeeper().add("unable to add schedule ["+key+"], adapter ["+adapterName+"] not found!");
+							Adapter adapter;
+							try {
+								adapter = findAdapter(adapterName);
+							} catch (IllegalStateException e) {
+								getMessageKeeper().add("unable to add schedule ["+key+"]", e);
 								continue;
 							}
 
@@ -188,7 +188,7 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 		}
 
 		if(adapters.isEmpty()) {
-			return null;
+			throw new IllegalStateException("adapter ["+adapterName+"] not found");
 		}
 		if(adapters.size() > 1) {
 			throw new IllegalStateException("found more then 1 adapter matching name ["+adapterName+"]");
