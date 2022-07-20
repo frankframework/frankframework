@@ -15,7 +15,8 @@ import org.junit.Test;
  * DateUtils Tester.
  * The assertions are in the form of testing the date in most cases, not the time
  * because of the time difference between the EU and US where Travis servers are located.
- * @author <Sina Sen>
+ * 
+ * @author Ricardo
  */
 public class DateUtilsTest {
 
@@ -25,22 +26,24 @@ public class DateUtilsTest {
 
 	@BeforeClass
 	public static void setUp() {
-		LOG.info("adjusting date settings from [{}] to [{}]", CI_TZ::getDisplayName, TEST_TZ::getDisplayName);
+		if(!CI_TZ.hasSameRules(TEST_TZ)) {
+			LOG.warn("CI TimeZone [{}] differs from test TimeZone [{}]", CI_TZ::getDisplayName, TEST_TZ::getDisplayName);
+		}
 	}
 
 	/**
 	 * Tests have been written in UTC, adjust the TimeZone for CI running with a different default TimeZone
 	 */
 	private Date getCorrectedDate(Date date) {
-		if (CI_TZ.hasSameRules(TEST_TZ)) {
+		if(CI_TZ.hasSameRules(TEST_TZ)) {
 			return date;
 		} else {
 			Calendar calendar = Calendar.getInstance();
 			calendar.setTime(date);
-			calendar.add(Calendar.MILLISECOND, - CI_TZ.getOffset(calendar.getTime().getTime()));
+			int offset = CI_TZ.getOffset(calendar.getTime().getTime());
+			calendar.add(Calendar.MILLISECOND, - offset);
+			LOG.info("adjusting date [{}] with offset [{}] to [{}]", ()->date, ()->offset, calendar::getTime);
 			return calendar.getTime();
-//			ZoneOffset zoneOffSet= ZoneOffset.of("+02:00");
-//			OffsetDateTime offsetDateTime = OffsetDateTime.now(zoneOffSet);
 		}
 	}
 
