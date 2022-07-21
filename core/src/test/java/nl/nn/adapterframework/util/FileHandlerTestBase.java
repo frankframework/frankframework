@@ -41,8 +41,7 @@ public abstract class FileHandlerTestBase {
 
 	protected abstract IFileHandler createFileHandler() throws IllegalAccessException, InstantiationException;
 
-	public String CHARSET_UTF8 = "UTF-8";
-	public String charset = CHARSET_UTF8;
+	public String charset = "UTF-8";
 
 	@Before
 	public void setup() throws ConfigurationException, IllegalAccessException, InstantiationException {
