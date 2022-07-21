@@ -172,25 +172,6 @@
 		</user-data-constraint>
 	</security-constraint>
 
-	<security-constraint>
-		<display-name>WebServiceAccess</display-name>
-		<web-resource-collection>
-			<web-resource-name>WebServiceAccessResourceCollection</web-resource-name>
-			<description>collection of url's for webservice access</description>
-			<url-pattern>/servlet/rpcrouter/*</url-pattern>
-			<url-pattern>/servlet/messagerouter</url-pattern>
-			<url-pattern>/services/*</url-pattern>
-		</web-resource-collection>
-		<auth-constraint>
-			<description></description>
-			<role-name>IbisWebService</role-name>
-			<role-name>IbisTester</role-name>
-		</auth-constraint>
-		<user-data-constraint>
-			<transport-guarantee>NONE</transport-guarantee>
-		</user-data-constraint>
-	</security-constraint>
-
 	<security-role>
 		<description>can call Ibis WebServices</description>
 		<role-name>IbisWebService</role-name>
