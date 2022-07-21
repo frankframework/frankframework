@@ -38,10 +38,9 @@ public abstract class FileHandlerTestBase {
 
 	private IFileHandler handler;
 	private PipeLineSession session = new PipeLineSession();
+	public String charset = "UTF-8";
 
 	protected abstract IFileHandler createFileHandler() throws IllegalAccessException, InstantiationException;
-
-	public String charset = "UTF-8";
 
 	@Before
 	public void setup() throws ConfigurationException, IllegalAccessException, InstantiationException {
@@ -249,8 +248,7 @@ public abstract class FileHandlerTestBase {
 		// String contents=TestFileUtils.getTestFile(contentFile, charset);
 
 		String actualContents = (String) handler.handle(null, session, null);
-		if(read)
-			assertEquals("file contents", expectedContents, actualContents);
+		if(read) assertEquals("file contents", expectedContents, actualContents);
 		File f2 = new File(filepath);
 		assertFalse("file [" + filepath + "] should have been deleted", f2.exists());
 	}
@@ -286,8 +284,7 @@ public abstract class FileHandlerTestBase {
 	@Test
 	public void testReadXml() throws Exception {
 		testRead("smiley.xml", charset, false, false);
-		// TODO: fix the below tests. On Azure, filesize is based on CRLF line endings,
-		// instead of LF
+		// TODO: fix the below tests. On Azure, filesize is based on CRLF line endings, instead of LF
 //		testRead("smiley.xml",charset,false,false,true,"bytes");
 //		testRead("smiley.xml",charset,false,false,false,"bytes");
 	}
@@ -300,8 +297,7 @@ public abstract class FileHandlerTestBase {
 	@Test
 	public void testReadTxt() throws Exception {
 		testRead("smiley.txt", charset, false, false);
-		// TODO: fix the below tests. On Azure, filesize is based on CRLF line endings,
-		// instead of LF
+		// TODO: fix the below tests. On Azure, filesize is based on CRLF line endings, instead of LF
 //		testRead("smiley.txt",charset,false,false,true,"bytes");
 //		testRead("smiley.txt",charset,false,false,false,"bytes");
 	}
