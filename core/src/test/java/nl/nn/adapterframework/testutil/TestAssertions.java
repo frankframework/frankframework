@@ -150,7 +150,7 @@ public class TestAssertions extends org.junit.Assert {
 	public static boolean isTestRunningOnWindows() {
 		return System.getProperty("os.name").startsWith("Windows");
 	}
-	
+
 	public static boolean isTimeZone(String timeZone) {
 		return TimeZone.getDefault().hasSameRules(TimeZone.getTimeZone(timeZone));
 	}
