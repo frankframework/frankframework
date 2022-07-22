@@ -835,7 +835,6 @@
 				<module>akamai</module>
 				<module>example</module>
 				<module>credentialProvider</module>
-				<module>aspose</module>
 			</modules>
 		</profile>
 		<profile>
@@ -858,6 +857,17 @@
 			</activation>
 			<modules>
 				<module>cmis</module>
+			</modules>
+		</profile>
+		<profile>
+			<id>aspose</id>
+			<activation>
+				<property>
+					<name>!no-aspose</name>
+				</property>
+			</activation>
+			<modules>
+				<module>aspose</module>
 			</modules>
 		</profile>
 		<profile>
