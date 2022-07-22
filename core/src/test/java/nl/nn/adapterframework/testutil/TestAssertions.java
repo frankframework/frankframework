@@ -19,6 +19,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
+import java.util.TimeZone;
 
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
@@ -152,5 +153,9 @@ public class TestAssertions extends org.junit.Assert {
 
 	public static boolean isTestRunningOnWindows() {
 		return System.getProperty("os.name").startsWith("Windows");
+	}
+	
+	public static boolean isTimeZone(String timeZone) {
+		return TimeZone.getDefault().hasSameRules(TimeZone.getTimeZone(timeZone));
 	}
 }
