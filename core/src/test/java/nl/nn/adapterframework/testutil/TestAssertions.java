@@ -139,16 +139,12 @@ public class TestAssertions extends org.junit.Assert {
 		assertEqualsIgnoreWhitespaces(str1, str2);
 	}
 
-	public static boolean isTestRunningOnTravis() {
-		return "TRAVIS".equalsIgnoreCase(System.getProperty("CI_SERVICE")) || "TRAVIS".equalsIgnoreCase(System.getenv("CI_SERVICE"));
-	}
-
 	public static boolean isTestRunningOnGitHub() {
 		return "GITHUB".equalsIgnoreCase(System.getProperty("CI_SERVICE")) || "GITHUB".equalsIgnoreCase(System.getenv("CI_SERVICE"));
 	}
 
 	public static boolean isTestRunningOnCI() {
-		return StringUtils.isNotEmpty(System.getProperty("CI")) || StringUtils.isNotEmpty(System.getenv("CI")) || isTestRunningOnGitHub() || isTestRunningOnTravis();
+		return StringUtils.isNotEmpty(System.getProperty("CI")) || StringUtils.isNotEmpty(System.getenv("CI")) || isTestRunningOnGitHub();
 	}
 
 	public static boolean isTestRunningOnWindows() {
