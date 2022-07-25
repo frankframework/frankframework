@@ -1,5 +1,9 @@
 package nl.nn.adapterframework.pipes;
 
+import static org.junit.Assert.assertNotNull;
+
+import java.net.URL;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ConfiguredTestBase;
 import nl.nn.adapterframework.core.IPipe;
@@ -9,6 +13,8 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.UrlMessage;
+import nl.nn.adapterframework.util.FilenameUtils;
 
 public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 
@@ -68,4 +74,15 @@ public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 		return doPipe(pipe, Message.asMessage(input), session);
 	}
 
+	/**
+	 * Retrieves a file from the test-classpath, with the pipe's classname as basepath.
+	 */
+	protected Message getResource(String resource) {
+		String base = pipe.getClass().getSimpleName();
+		String relativeUrl = FilenameUtils.normalize("/Pipes/" + base + "/" + resource, true);
+
+		URL url = PipeTestBase.class.getResource(relativeUrl);
+		assertNotNull("unable to find resource ["+resource+"] in path ["+relativeUrl+"]", url);
+		return new UrlMessage(url);
+	}
 }
