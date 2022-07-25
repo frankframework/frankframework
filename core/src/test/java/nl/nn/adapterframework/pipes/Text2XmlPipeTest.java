@@ -3,10 +3,12 @@ package nl.nn.adapterframework.pipes;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
+import org.springframework.http.MediaType;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.testutil.MatchUtils;
 
 public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
@@ -28,7 +30,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 					+ "</address>";
 
 		PipeRunResult res = doPipe(pipe, "this is an example\nim in cdata", session);
-		assertEquals(expectedOutput, res.getResult().asString());
+		MatchUtils.assertXmlEquals(expectedOutput, res.getResult().asString());
 	}
 
 	@Test
@@ -70,7 +72,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 					+ "</address>";
 
 		PipeRunResult res = doPipe(pipe, "this is an example\nim not in cdata", session);
-		assertEquals(expectedOutput, res.getResult().asString());
+		MatchUtils.assertXmlEquals(expectedOutput, res.getResult().asString());
 	}
 
 	@Test
@@ -81,7 +83,8 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 
 		String expectedOutput = "<root><normal><xml/><input/></normal></root>";
 
-		PipeRunResult res = doPipe(pipe, "<normal><xml/><input/></normal>", session);
+		Message message = new Message("<normal><xml/><input/></normal>", new MessageContext().withMimeType(MediaType.APPLICATION_XML));
+		PipeRunResult res = doPipe(pipe, message, session);
 		assertEquals(expectedOutput, res.getResult().asString());
 		MatchUtils.assertXmlEquals(expectedOutput, res.getResult().asString()); //Parses both strings as XML, uses pretty print filter
 	}
@@ -94,7 +97,8 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 
 		String expectedOutput = "<root><normal>\n<xml/>\n<input/>\n</normal></root>";
 
-		PipeRunResult res = doPipe(pipe, "<normal>\n<xml/>\n<input/>\n</normal>", session);
+		Message message = new Message("<normal>\n<xml/>\n<input/>\n</normal>", new MessageContext().withMimeType(MediaType.APPLICATION_XML));
+		PipeRunResult res = doPipe(pipe, message, session);
 		assertEquals(expectedOutput, res.getResult().asString());
 		MatchUtils.assertXmlEquals(expectedOutput, res.getResult().asString()); //Parses both strings as XML, uses pretty print filter
 	}
@@ -145,7 +149,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 		String expectedOutput = "<address/>";
 
 		PipeRunResult res = doPipe(pipe, "", session);
-		assertEquals(expectedOutput, res.getResult().asString());
+		MatchUtils.assertXmlEquals(expectedOutput, res.getResult().asString());
 	}
 
 	@Test
@@ -169,7 +173,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 				+ "<line><![CDATA[im in cdata]]></line></address>";
 
 		PipeRunResult res = doPipe(pipe, "this is an example\nim in cdata", session);
-		assertEquals(expectedOutput, res.getResult().asString());
+		MatchUtils.assertXmlEquals(expectedOutput, res.getResult().asString());
 	}
 
 	@Test
@@ -187,7 +191,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 		configureAndStartPipe();
 
 		PipeRunResult res = doPipe(Message.asMessage(""));
-		assertEquals("<tests/>", res.getResult().asString());
+		MatchUtils.assertXmlEquals("<tests/>", res.getResult().asString());
 	}
 
 	@Test

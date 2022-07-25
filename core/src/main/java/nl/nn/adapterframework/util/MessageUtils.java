@@ -45,8 +45,12 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
 
 public abstract class MessageUtils {
-	private static Logger LOG = LogUtil.getLogger(MessageUtils.class);
+	private static final Logger LOG = LogUtil.getLogger(MessageUtils.class);
 	private static int charsetConfidenceLevel = AppConstants.getInstance().getInt("charset.confidenceLevel", 65);
+
+	private MessageUtils() { //java:S1118
+		throw new IllegalStateException("Utility class should not be instantiated directly");
+	}
 
 	/**
 	 * Fetch metadata from the {@link HttpServletRequest} such as Content-Length, Content-Type (mimetype + charset)
@@ -197,6 +201,12 @@ public abstract class MessageUtils {
 		return (MimeType) context.get(MessageContext.METADATA_MIMETYPE);
 	}
 
+	public static boolean isMimeType(Message message, MimeType compareTo) {
+		Map<String, Object> context = message.getContext();
+		MimeType mimeType = (MimeType) context.get(MessageContext.METADATA_MIMETYPE);
+		return (mimeType != null && mimeType.includes(compareTo));
+	}
+
 	/**
 	 * Computes the {@link MimeType} when not available.
 	 * <p>
@@ -238,7 +248,7 @@ public abstract class MessageUtils {
 			}
 			org.apache.tika.mime.MediaType tikaMediaType = tika.getDetector().detect(new ByteArrayInputStream(magic), metadata);
 			return MimeType.valueOf(tikaMediaType.toString());
-		} catch (Throwable t) {
+		} catch (Exception t) { //java:S1181
 			LOG.warn("error parsing message to determine mimetype", t);
 		}
 
