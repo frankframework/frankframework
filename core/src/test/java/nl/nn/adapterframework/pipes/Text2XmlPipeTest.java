@@ -2,7 +2,13 @@ package nl.nn.adapterframework.pipes;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.Arrays;
+import java.util.Collection;
+
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 import org.springframework.http.MediaType;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -11,11 +17,22 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.testutil.MatchUtils;
 
+@RunWith(Parameterized.class)
 public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
+
+	@Parameterized.Parameter(0)
+	public boolean legacyMode = false;
+
+	@Parameters(name = "Legacymode: {0}")
+	public static Collection<Object> data() {
+		return Arrays.asList(new Object[] {true, false});
+	}
 
 	@Override
 	public Text2XmlPipe createPipe() {
-		return new Text2XmlPipe();
+		Text2XmlPipe pipe = new Text2XmlPipe();
+		pipe.setToValidXML(!legacyMode);
+		return pipe;
 	}
 
 	@Test
@@ -110,6 +127,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 		configureAndStartPipe();
 
 		String expectedOutput = "<root>&lt;invalid&gt;\n&lt;xml&gt;\n&lt;input&gt;\n&lt;/invalid&gt;</root>";
+		if(legacyMode) expectedOutput = "<root><invalid>\n<xml>\n<input>\n</invalid></root>";
 
 		PipeRunResult res = doPipe(pipe, "<invalid>\n<xml>\n<input>\n</invalid>", session);
 		assertEquals(expectedOutput, res.getResult().asString());
@@ -122,6 +140,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 		configureAndStartPipe();
 
 		String expectedOutput = "<root>&lt;invalid&gt;&lt;xml&gt;&lt;input&gt;&lt;/invalid&gt;</root>";
+		if(legacyMode) expectedOutput = "<root><invalid><xml><input></invalid></root>";
 
 		PipeRunResult res = doPipe(pipe, "<invalid><xml><input></invalid>", session);
 		assertEquals(expectedOutput, res.getResult().asString());
@@ -177,6 +196,31 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 	}
 
 	@Test
+	public void testCdataWithoutReplacingNonXMLChars() throws Exception {
+		pipe.setXmlTag("address");
+		pipe.setUseCdataSection(true);
+		pipe.setReplaceNonXmlChars(false);
+		configureAndStartPipe();
+
+		String expectedOutput = "<address><![CDATA[this is an example\nim in cdata]]></address>";
+
+		PipeRunResult res = doPipe(pipe, "this is an example\nim in cdata", session);
+		MatchUtils.assertXmlEquals(expectedOutput, res.getResult().asString());
+	}
+
+	@Test
+	public void testCdataWithReplacingNonXMLChars() throws Exception {
+		pipe.setXmlTag("address");
+		pipe.setUseCdataSection(true);
+		configureAndStartPipe();
+
+		String expectedOutput = "<address><![CDATA[this is an¿ example\nim in cdata]]></address>";
+
+		PipeRunResult res = doPipe(pipe, "this is an\b example\nim in cdata", session);
+		MatchUtils.assertXmlEquals(expectedOutput, res.getResult().asString());
+	}
+
+	@Test
 	public void testEmptyXmlTag() throws Exception {
 		exception.expect(ConfigurationException.class);
 		exception.expectMessage("Attribute [xmlTag] must be specified");
@@ -213,5 +257,4 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 		PipeRunResult res = doPipe(Message.nullMessage());
 		assertEquals("<tests nil=\"true\" />", res.getResult().asString());
 	}
-
 }

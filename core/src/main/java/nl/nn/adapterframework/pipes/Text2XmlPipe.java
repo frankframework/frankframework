@@ -49,7 +49,7 @@ public class Text2XmlPipe extends StreamingPipe {
 	private @Getter boolean splitLines = false;
 	private @Getter boolean replaceNonXmlChars = true;
 	private @Getter boolean useCdataSection = true;
-	private @Getter boolean toValidXML = true;
+	private boolean toValidXML = true; //legacy mode
 
 	private static final String SPLITTED_LINE_TAG="line";
 
@@ -100,6 +100,10 @@ public class Text2XmlPipe extends StreamingPipe {
 	}
 
 	private void handleMessageAsCharacters(Message message, ContentHandler handler) throws IOException, SAXException {
+		if (!isSplitLines() && isUseCdataSection()) {
+			((LexicalHandler) handler).startCDATA();
+		}
+
 		try (BufferedReader reader = new BufferedReader(message.asReader())) {
 			String line;
 			boolean lineWritten=false;
@@ -109,25 +113,35 @@ public class Text2XmlPipe extends StreamingPipe {
 				}
 				if (isSplitLines()) {
 					handler.startElement("", SPLITTED_LINE_TAG, SPLITTED_LINE_TAG, new AttributesImpl());
-				}
-				if(isUseCdataSection()) { //TODO FIX THIS, NOT BACKWARDS COMPATIBLE
-					((LexicalHandler) handler).startCDATA();
+					if(isUseCdataSection()) {
+						((LexicalHandler) handler).startCDATA();
+					}
 				}
 				line = isReplaceNonXmlChars() ? XmlUtils.encodeCdataString(line) : line;
 				handler.characters(line.toCharArray(), 0, line.length());
 				lineWritten=true;
-				if(isUseCdataSection()) {
-					((LexicalHandler) handler).endCDATA();
-				}
 				if (isSplitLines()) {
+					if(isUseCdataSection()) {
+						((LexicalHandler) handler).endCDATA();
+					}
+
 					handler.endElement("", SPLITTED_LINE_TAG, SPLITTED_LINE_TAG);
 				}
 			}
+		}
+
+		if (!isSplitLines() && isUseCdataSection()) {
+			((LexicalHandler) handler).endCDATA();
 		}
 	}
 
 	private void justApplyRootTags(Message message, MessageOutputStream target) throws StreamingException, IOException {
 		try(Writer writer = target.asWriter()) {
+			writer.write("<" + getXmlTag() + ">");
+			if (!isSplitLines() && isUseCdataSection()) {
+				writer.write("<![CDATA[");
+			}
+
 			try (BufferedReader reader = new BufferedReader(message.asReader())) {
 				String line;
 				boolean lineWritten=false;
@@ -135,28 +149,25 @@ public class Text2XmlPipe extends StreamingPipe {
 					if(lineWritten) {
 						writer.write("\n".toCharArray(), 0, "\n".length());
 					}
+					line = isReplaceNonXmlChars() ? XmlUtils.encodeCdataString(line) : line;
 					if (isSplitLines()) {
 						writer.write("<"+SPLITTED_LINE_TAG+">");
+
+						line = isUseCdataSection() ? "<![CDATA["+ line +"]]>" : line;
 					}
-					if(isUseCdataSection()) {
-//						((LexicalHandler) handler).startCDATA();
-					}
-					line = isReplaceNonXmlChars() ? XmlUtils.encodeCdataString(line) : line;
 					writer.write(line.toCharArray(), 0, line.length());
+
 					lineWritten=true;
-					if(isUseCdataSection()) {
-//						((LexicalHandler) handler).endCDATA();
-					}
 					if (isSplitLines()) {
 						writer.write("</"+SPLITTED_LINE_TAG+">");
 					}
 				}
 			}
+			if (!isSplitLines() && isUseCdataSection()) {
+				writer.write("]]>");
+			}
+			writer.write("</" + getXmlTag() + ">");
 		}
-	}
-
-	private String addCdataSection(String input) {
-		return isUseCdataSection() ? "<![CDATA["+ input +"]]>" : input;
 	}
 
 	@Override
