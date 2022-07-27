@@ -10,7 +10,7 @@ Content-ID: <request>
 
 <xml>input</xml>
 --IGNORE
-Content-Type: application/xop+xml; charset=UTF-8
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Content-ID: <string-part>
 

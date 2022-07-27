@@ -670,7 +670,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.open();
 
 		String result = sender.sendMessage(input, pls).asString();
-		assertEqualsIgnoreCRLF(getFile("multipartwithoutFirstBodyPartName.txt"), result.trim());
+		assertEqualsIgnoreCRLF(getFile("multipartWithoutFirstBodyPartName.txt"), result.trim());
 	}
 
 	@Test

@@ -391,14 +391,7 @@ public class HttpSender extends HttpSenderBase {
 		return hmethod;
 	}
 
-	protected FormBodyPart createMultipartBodypart(String name, String message) {
-		if(postType.equals(PostType.MTOM)) {
-			return createMultipartBodypart(name, message, "application/xop+xml");
-		}
-		return createMultipartBodypart(name, message, null);
-	}
-
-	protected FormBodyPart createMultipartBodypart(String name, String message, String contentType) {
+	protected FormBodyPart createStringBodypart(String name, String message, String contentType) {
 		ContentType cType = ContentType.create("text/plain", getCharSet());
 		if(StringUtils.isNotEmpty(contentType))
 			cType = ContentType.create(contentType, getCharSet());
@@ -435,7 +428,8 @@ public class HttpSender extends HttpSenderBase {
 			entity.setMtomMultipart();
 
 		if (StringUtils.isNotEmpty(getFirstBodyPartName())) {
-			entity.addPart(createMultipartBodypart(getFirstBodyPartName(), message));
+			String mimeType = (postType.equals(PostType.MTOM)) ? "application/xop+xml" : "text/plain"; // only the first part is XOP+XML, other parts should use their own content-type
+			entity.addPart(createStringBodypart(getFirstBodyPartName(), message, mimeType));
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+getFirstBodyPartName()+"] with value ["+message+"]");
 		}
 		if (parameters!=null) {
@@ -456,7 +450,7 @@ public class HttpSender extends HttpSenderBase {
 							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended filepart ["+name+"] with value ["+msg+"] and name ["+fileName+"]");
 						} else {
 							String value = msg.asString();
-							entity.addPart(createMultipartBodypart(name, value));
+							entity.addPart(createStringBodypart(name, value, "text/plain"));
 							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+name+"] with value ["+value+"]");
 						}
 					}
@@ -501,7 +495,7 @@ public class HttpSender extends HttpSenderBase {
 		if (partObject.isBinary()) {
 			return createMultipartBodypart(partSessionKey, partObject.asInputStream(), partName, partMimeType);
 		}
-		return createMultipartBodypart(partName, partObject.asString(), partMimeType);
+		return createStringBodypart(partName, partObject.asString(), partMimeType);
 	}
 
 	protected boolean validateResponseCode(int statusCode) {

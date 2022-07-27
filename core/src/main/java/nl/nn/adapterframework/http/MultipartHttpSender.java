@@ -61,7 +61,7 @@ public class MultipartHttpSender extends HttpSender {
 			if(StringUtils.isEmpty(value))
 				value = partValue;
 
-			return createMultipartBodypart(partName, value, mimeType);
+			return createStringBodypart(partName, value, mimeType);
 		}
 	}
 }
