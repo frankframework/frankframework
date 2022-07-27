@@ -83,6 +83,7 @@ import nl.nn.adapterframework.http.mime.MultipartEntityBuilder;
 import nl.nn.adapterframework.http.rest.ApiListener.AuthenticationMethods;
 import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.UrlMessage;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -401,10 +402,10 @@ public class ApiListenerServletTest extends Mockito {
 		builder.addTextBody("string1", "<hello>â¬ Ã¨</hello>");//Defaults to ISO_8859_1
 
 		URL url1 = ClassUtils.getResourceURL("/Documents/doc001.pdf");
-		builder.addBinaryBody("file1", url1.openStream(), ContentType.APPLICATION_OCTET_STREAM, "file1");
+		builder.addPart("file1", new UrlMessage(url1));
 
 		URL url2 = ClassUtils.getResourceURL("/Documents/doc002.pdf");
-		builder.addBinaryBody("file2", url2.openStream(), ContentType.APPLICATION_OCTET_STREAM, "file2");
+		builder.addPart("file2", new UrlMessage(url2));
 
 		Response result = service(createRequest(uri, Methods.POST, builder.build()));
 		assertEquals(200, result.getStatus());

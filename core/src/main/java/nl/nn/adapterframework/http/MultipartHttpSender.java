@@ -25,6 +25,7 @@ import org.w3c.dom.Element;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 
+@Deprecated
 public class MultipartHttpSender extends HttpSender {
 
 	public MultipartHttpSender() {

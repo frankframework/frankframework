@@ -44,7 +44,7 @@ public class MultipartEntity extends BasicHttpEntity implements HttpEntity {
 
 	@Override
 	public boolean isRepeatable() {
-		//TODO check if it's repeatable!
+		//TODO loop through each part and check if it's repeatable!
 		return getContentLength() != -1;
 	}
 
