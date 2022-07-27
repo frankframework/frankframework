@@ -151,6 +151,17 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 		return false;
 	}
 
+	/**
+	 * If true, then this pipe can provide an OutputStream to the previous pipe, to write its output to. Can be used to switch streaming off for debugging purposes.
+	 * NB: this also disables xslt.streaming
+	 * @ff.default set by appconstant streaming.auto
+	 */
+	@Override
+	public void setStreamingActive(boolean streamingActive) {
+		super.setStreamingActive(streamingActive);
+		sender.setStreamingActive(streamingActive);
+	}
+
 
 	@Override
 	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
