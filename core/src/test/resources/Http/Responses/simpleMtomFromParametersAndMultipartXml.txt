@@ -4,14 +4,14 @@ custom-header: value
 Content-Type: multipart/related; boundary="IGNORE"; charset=UTF-8; type="application/xop+xml"; start="<request>"; start-info="text/xml"
 
 --IGNORE
-Content-Transfer-Encoding: binary
+Content-Transfer-Encoding: base64
 Content-Type: application/xop+xml; charset=UTF-8
 Content-ID: <request>
 
 <xml>input</xml>
 --IGNORE
-Content-Transfer-Encoding: binary
 Content-Type: application/xop+xml; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Content-ID: <string-part>
 
 <string content/>
@@ -29,8 +29,8 @@ Content-ID: <document.pdf>
 
 <dummy xml file/>
 --IGNORE
-Content-Transfer-Encoding: binary
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Content-ID: <string.txt>
 
 mock pdf content

@@ -407,8 +407,10 @@ public class HttpSender extends HttpSenderBase {
 			.setName(name)
 			.setBody(new StringBody(message, cType));
 
-		if (StringUtils.isNotEmpty(getMtomContentTransferEncoding()))
+		// Should only be set when request is MTOM and it's the first BodyPart
+		if (postType.equals(PostType.MTOM) && StringUtils.isNotEmpty(getMtomContentTransferEncoding()) && name.equals(getFirstBodyPartName())) {
 			bodyPart.setField(MIME.CONTENT_TRANSFER_ENC, getMtomContentTransferEncoding());
+		}
 
 		return bodyPart.build();
 	}

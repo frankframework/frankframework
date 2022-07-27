@@ -4,15 +4,15 @@ custom-header: value
 Content-Type: multipart/form-data; boundary=IGNORE; charset=UTF-8
 
 --IGNORE
-Content-Transfer-Encoding: binary
 Content-Disposition: form-data; name="request"
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
 <xml>input</xml>
 --IGNORE
-Content-Transfer-Encoding: binary
 Content-Disposition: form-data; name="string-part"
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
 <string content/>
 --IGNORE
@@ -28,9 +28,9 @@ Content-Transfer-Encoding: binary
 
 <dummy xml file/>
 --IGNORE
-Content-Transfer-Encoding: binary
 Content-Disposition: form-data; name="string.txt"
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
 mock pdf content
 --IGNORE--

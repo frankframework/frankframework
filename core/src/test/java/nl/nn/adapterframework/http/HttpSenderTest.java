@@ -741,7 +741,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.setParamsInUrl(false);
 		sender.setInputMessageParam("request");
 		sender.setPostType(PostType.MTOM);
-		sender.setMtomContentTransferEncoding("binary");
+		sender.setMtomContentTransferEncoding("base64");
 
 		String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
 				+ "sessionKey=\"part_file\" size=\"72833\" "

@@ -8,7 +8,6 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.ByteArrayInputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -340,12 +339,11 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 				+ "sessionKey=\"part_file\" size=\"72833\" "
 				+ "mimeType=\"application/pdf\"/></parts>";
 		session.put("multipartXml", xmlMultipart);
-		session.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes())); //repeatable
+		session.put("part_file", "<dummy xml file/>"); // as it stands, only text is repeatable
 
 		sender.setMultipartXmlSessionKey("multipartXml");
-		session.put("binaryPart", Message.asMessage(new Message("data").asByteArray())); //repeatable
 		sender.addParameter(ParameterBuilder.create("xml-part", "<ik><ben/><xml/></ik>"));
-		sender.addParameter(ParameterBuilder.create().withName("binary-part").withSessionKey("binaryPart"));
+		sender.addParameter(ParameterBuilder.create().withName("binary-part").withSessionKey("part_file"));
 
 		sender.setPostType(PostType.MTOM);
 		sender.setMethodType(HttpMethod.POST);
