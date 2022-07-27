@@ -51,6 +51,4 @@ public class ParameterBuilder extends Parameter {
 
 		return params.getValues(Message.nullMessage(), new PipeLineSession());
 	}
-
-	
 }

@@ -475,7 +475,7 @@ public class HttpSender extends HttpSenderBase {
 					throw new SenderException(getLogPrefix()+"error building multipart xml", e);
 				}
 				Collection<Node> parts = XmlUtils.getChildTags(partsElement, "part");
-				if (parts==null || parts.size()==0) {
+				if (parts==null || parts.isEmpty()) {
 					log.warn(getLogPrefix()+"no part(s) in multipart xml [" + multipartXml + "]");
 				} else {
 					Iterator<Node> iter = parts.iterator();
