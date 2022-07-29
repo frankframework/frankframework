@@ -593,7 +593,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					try {
 						mimeType.setCharset(result.getCharset());
 					} catch (UnsupportedCharsetException e) {
-						log.warn("unable to set charset attribute on mimetype ["+mimeType.getContentType()+"]", e);
+						log.warn("unable to set charset [{}] attribute on mimetype [{}]", result.getCharset(), mimeType.getContentType(), e);
 					}
 				}
 				String contentType = mimeType.getContentType();
