@@ -54,6 +54,7 @@ import nl.nn.adapterframework.stream.ThreadConnector;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.stream.xml.XmlTap;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
@@ -325,28 +326,29 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		if (message==null) {
 			throw new SenderException(getLogPrefix()+"got null input");
 		}
-		try {
-			try (ThreadConnector threadConnector = streamingActive ? new ThreadConnector(this, threadLifeCycleEventListener, txManager, session) : null) {
-				try (MessageOutputStream target=MessageOutputStream.getTargetStream(this, session, next)) {
-					TransformerPool poolToUse = getTransformerPoolToUse(session);
-					ContentHandler handler = createHandler(message, threadConnector, session, poolToUse, target);
-					if (isDebugInput() && log.isDebugEnabled()) {
-						handler = new XmlTap(handler) {
-							@Override
-							public void endDocument() throws SAXException {
-								super.endDocument();
-								log.debug(getLogPrefix()+" xml input ["+getWriter()+"]");
-							}
-						};
-					}
-					XMLReader reader = getXmlReader(session, handler, (resource,label)->target.closeOnClose(resource));
-					InputSource source = message.asInputSource();
-					reader.parse(source);
-					return target.getPipeRunResult();
+
+		try (ThreadConnector threadConnector = streamingActive ? new ThreadConnector(this, threadLifeCycleEventListener, txManager, session) : null) {
+			try (MessageOutputStream target=MessageOutputStream.getTargetStream(this, session, next)) {
+				TransformerPool poolToUse = getTransformerPoolToUse(session);
+				ContentHandler handler = createHandler(message, threadConnector, session, poolToUse, target);
+				if (isDebugInput() && log.isDebugEnabled()) {
+					handler = new XmlTap(handler) {
+						@Override
+						public void endDocument() throws SAXException {
+							super.endDocument();
+							log.debug(getLogPrefix()+" xml input ["+getWriter()+"]");
+						}
+					};
 				}
+				XMLReader reader = getXmlReader(session, handler, (resource,label)->target.closeOnClose(resource));
+				InputSource source = message.asInputSource();
+				reader.parse(source);
+				return target.getPipeRunResult();
 			}
-		} catch (Exception e) {
+		} catch (ParserConfigurationException | SAXException | IOException | ConfigurationException e) {
 			throw new SenderException(getLogPrefix()+"Exception on transforming input", e);
+		} catch (Exception e) { //StreamingException | IllegalStateException
+			throw new SenderException(getLogPrefix()+"Exception retrieving targetstream"+ (next!=null?" from ["+ClassUtils.nameOf(next)+"]": ""), e);
 		}
 	}
 
