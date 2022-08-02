@@ -79,10 +79,12 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.encryption.KeystoreType;
 import nl.nn.adapterframework.encryption.PkiUtil;
+import nl.nn.adapterframework.http.HttpMessageEntity;
 import nl.nn.adapterframework.http.mime.MultipartEntityBuilder;
 import nl.nn.adapterframework.http.rest.ApiListener.AuthenticationMethods;
 import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.UrlMessage;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -153,10 +155,14 @@ public class ApiListenerServletTest extends Mockito {
 		headers.put("Content-Type", entity.getContentType().getValue());
 		headers.put("Content-Length", entity.getContentLength()+"");
 
-		return createRequest(uriPattern, method, new String(requestContent.toByteArray()), headers);
+		return doCreateRequest(uriPattern, method, requestContent.toByteArray(), headers);
 	}
 
 	private MockHttpServletRequest createRequest(String uriPattern, Methods method, String content, Map<String, String> headers) {
+		return doCreateRequest(uriPattern, method, (content==null)? "".getBytes():content.getBytes(), headers);
+	}
+
+	private MockHttpServletRequest doCreateRequest(String uriPattern, Methods method, byte[] content, Map<String, String> headers) {
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		request.setMethod(method.name());
 		if(uriPattern == null) return request; // there's no path nor any params, return a blank ServletRequest
@@ -192,10 +198,7 @@ public class ApiListenerServletTest extends Mockito {
 		}
 
 		if(!method.equals(Methods.GET)) {
-			if(content != null)
-				request.setContent(content.getBytes());
-			else
-				request.setContent("".getBytes()); //Empty content
+			request.setContent(content);
 		}
 
 		return request;
@@ -372,7 +375,6 @@ public class ApiListenerServletTest extends Mockito {
 		headers.put("content-type", "application/json");
 		Response result = service(createRequest(uri, Methods.POST, "{}", headers));
 		assertEquals(415, result.getStatus());
-		System.out.println(result);
 	}
 
 	@Test
@@ -392,13 +394,54 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	@Test
+	public void listenerDetectContentTypeAndCharsetISO8859() throws ServletException, IOException, ListenerException, ConfigurationException {
+		String uri="/listenerDetectMimeType";
+		new ApiListenerBuilder(uri, Methods.POST, MediaTypes.TEXT, MediaTypes.DETECT).build();
+
+		URL url = ClassUtils.getResourceURL("/Util/MessageUtils/iso-8859-1.txt");
+		Message message = new UrlMessage(url);
+
+		Response result = service(createRequest(uri, Methods.POST, new HttpMessageEntity(message, ContentType.parse("text/plain;charset=iso-8859-1"))));
+		assertEquals(200, result.getStatus());
+		assertTrue("Content-Type header does not contain [application/json]", result.getContentType().contains("text/plain"));
+		assertTrue("Content-Type header does not contain correct [charset]", result.getContentType().contains("charset=ISO-8859-1"));
+		assertEquals(message.asString("ISO-8859-1"), result.getContentAsString());
+		assertEquals("OPTIONS, POST", result.getHeader("Allow"));
+		assertNull(result.getErrorMessage());
+	}
+
+	@Test
+	public void listenerMultipartContentDetectContentTypeAndCharsetISO8859() throws ServletException, IOException, ListenerException, ConfigurationException {
+		String uri="/listenerMultipartContent";
+		new ApiListenerBuilder(uri, Methods.POST, MediaTypes.MULTIPART, MediaTypes.DETECT).build();
+
+		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+		builder.setBoundary("gc0p4Jq0M2Yt08jU534c0p");
+		builder.addTextBody("string1", "<hello>â¬ Ã¨</hello>");//Defaults to 'text/plain;charset=ISO-8859-1'
+
+		URL url1 = ClassUtils.getResourceURL("/Documents/doc001.pdf");
+		builder.addBinaryBody("file1", url1.openStream(), ContentType.APPLICATION_OCTET_STREAM, "file1");
+
+		URL url2 = ClassUtils.getResourceURL("/Documents/doc002.pdf");
+		builder.addBinaryBody("file2", url2.openStream(), ContentType.APPLICATION_OCTET_STREAM, "file2");
+
+		Response result = service(createRequest(uri, Methods.POST, builder.build()));
+		assertEquals(200, result.getStatus());
+		assertTrue("Content-Type header does not contain [application/json]", result.getContentType().contains("text/plain"));
+		assertTrue("Content-Type header does not contain correct [charset]", result.getContentType().contains("charset=ISO-8859-1"));
+		assertEquals("<hello>â¬ Ã¨</hello>", result.getContentAsString());
+		assertEquals("OPTIONS, POST", result.getHeader("Allow"));
+		assertNull(result.getErrorMessage());
+	}
+
+	@Test
 	public void listenerMultipartContentISO8859() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri="/listenerMultipartContent";
 		new ApiListenerBuilder(uri, Methods.POST, MediaTypes.MULTIPART, MediaTypes.JSON).build();
 
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 		builder.setBoundary("gc0p4Jq0M2Yt08jU534c0p");
-		builder.addTextBody("string1", "<hello>â¬ Ã¨</hello>");//Defaults to ISO_8859_1
+		builder.addTextBody("string1", "<hello>â¬ Ã¨</hello>");// ISO_8859_1 encoded but is since we don't set the charset, it will be parsed as UTF-8 (€ è)
 
 		URL url1 = ClassUtils.getResourceURL("/Documents/doc001.pdf");
 		builder.addBinaryBody("file1", url1.openStream(), ContentType.APPLICATION_OCTET_STREAM, "file1");
@@ -409,8 +452,8 @@ public class ApiListenerServletTest extends Mockito {
 		Response result = service(createRequest(uri, Methods.POST, builder.build()));
 		assertEquals(200, result.getStatus());
 		assertTrue("Content-Type header does not contain [application/json]", result.getContentType().contains("application/json"));
-		assertTrue("Content-Type header does not contain correct [charset]", result.getContentType().contains("charset=ISO-8859-1"));
-		assertEquals("<hello>â¬ Ã¨</hello>", result.getContentAsString()); //Parsed as UTF-8
+		assertTrue("Content-Type header does not contain correct [charset]", result.getContentType().contains("charset=UTF-8"));
+		assertEquals("<hello>€ è</hello>", result.getContentAsString()); //Parsed as UTF-8
 		assertEquals("OPTIONS, POST", result.getHeader("Allow"));
 		assertNull(result.getErrorMessage());
 	}
@@ -555,7 +598,6 @@ public class ApiListenerServletTest extends Mockito {
 		headers.put("Accept", "application/json");
 		headers.put("content-type", "application/json");
 		Response result = service(createRequest(uri+"tralala", Methods.GET, null, headers));
-		System.out.println(session);
 
 		assertEquals(200, result.getStatus());
 		assertEquals("tralala", session.get("uriIdentifier_0"));

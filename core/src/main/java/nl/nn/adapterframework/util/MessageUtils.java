@@ -107,28 +107,6 @@ public abstract class MessageUtils {
 		return new Message(soapAttachment.getRawContentBytes(), getContext(soapAttachment.getAllMimeHeaders()));
 	}
 
-	public static String computeContentType(Message message) {
-		if(Message.isEmpty(message) || message.getContext() == null) {
-			return null;
-		}
-
-		MimeType mimeType = (MimeType)message.getContext().get(MessageContext.METADATA_MIMETYPE);
-		if(mimeType == null) {
-			return null;
-		}
-
-		StringBuilder contentType = new StringBuilder();
-		contentType.append(mimeType.getType());
-		contentType.append('/');
-		contentType.append(mimeType.getSubtype());
-
-		if(message.getCharset() != null) {
-			contentType.append(";charset=");
-			contentType.append(message.getCharset());
-		}
-		return contentType.toString();
-	}
-
 	/**
 	 * Reads the first 10k bytes of (binary) messages to determine the charset when not present in the {@link MessageContext}.
 	 * @throws IOException when it cannot read the first 10k bytes.
@@ -193,8 +171,20 @@ public abstract class MessageUtils {
 	 * Returns the {@link MimeType} if present in the {@link MessageContext}.
 	 */
 	public static MimeType getMimeType(Message message) {
-		Map<String, Object> context = message.getContext();
-		return (MimeType) context.get(MessageContext.METADATA_MIMETYPE);
+		if(Message.isEmpty(message) || message.getContext() == null) {
+			return null;
+		}
+
+		MimeType mimeType = (MimeType)message.getContext().get(MessageContext.METADATA_MIMETYPE);
+		if(mimeType == null) {
+			return null;
+		}
+
+		if(message.getCharset() != null) { //and is character data?
+			return new MimeType(mimeType, Charset.forName(message.getCharset()));
+		}
+
+		return mimeType;
 	}
 
 	/**

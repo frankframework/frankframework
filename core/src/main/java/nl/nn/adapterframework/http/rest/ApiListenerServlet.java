@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.http.rest;
 
 import java.io.IOException;
-import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -33,6 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.util.MimeType;
 
 import com.nimbusds.jose.util.JSONObjectUtils;
 
@@ -588,27 +588,19 @@ public class ApiListenerServlet extends HttpServletBase {
 				 */
 				response.addHeader("Allow", (String) messageContext.get("allowedMethods"));
 
-				ContentType mimeType = listener.getContentType();
-				if(!Message.isEmpty(result) && StringUtils.isNotEmpty(result.getCharset())) {
-					try {
-						mimeType.setCharset(result.getCharset());
-					} catch (UnsupportedCharsetException e) {
-						log.warn("unable to set charset [{}] attribute on mimetype [{}]", result.getCharset(), mimeType.getContentType(), e);
-					}
-				}
-				String contentType = mimeType.getContentType();
+				MimeType contentType = listener.getContentType();
 				if(listener.getProduces() == MediaTypes.ANY) {
 					Message parsedContentType = messageContext.getMessage("contentType");
 					if(!Message.isEmpty(parsedContentType)) {
-						contentType = parsedContentType.asString();
-					} else {
-						String computedContentType = MessageUtils.computeContentType(result); //if produces=ANY and no sessionkey override
-						if(StringUtils.isNotEmpty(computedContentType)) {
-							contentType = computedContentType;
-						}
+						contentType = MimeType.valueOf(parsedContentType.asString());
+					}
+				} else if(listener.getProduces() == MediaTypes.DETECT) {
+					MimeType computedContentType = MessageUtils.computeMimeType(result);
+					if(computedContentType != null) {
+						contentType = computedContentType;
 					}
 				}
-				response.setHeader("Content-Type", contentType);
+				response.setHeader("Content-Type", contentType.toString());
 
 				if(StringUtils.isNotEmpty(listener.getContentDispositionHeaderSessionKey())) {
 					String contentDisposition = messageContext.getMessage(listener.getContentDispositionHeaderSessionKey()).asString();
