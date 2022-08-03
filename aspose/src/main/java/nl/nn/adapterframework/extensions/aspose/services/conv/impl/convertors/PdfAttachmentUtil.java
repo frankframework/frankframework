@@ -54,7 +54,7 @@ public class PdfAttachmentUtil {
 	private Document pdfDocument;
 
 	public PdfAttachmentUtil(CisConversionResult cisConversionResultAttachment, File rootFile) {
-		this.cisConversionResultList = new ArrayList<CisConversionResult>();
+		this.cisConversionResultList = new ArrayList<>();
 		cisConversionResultList.add(cisConversionResultAttachment);
 		this.rootPdf = rootFile;
 	}
@@ -92,7 +92,7 @@ public class PdfAttachmentUtil {
 					LOGGER.debug("Skipping file because it is not available.");
 				}
 			}
-		}finally {
+		} finally {
 			finish();
 		}
 	}

@@ -34,6 +34,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.aspose.AsposeFontManager;
 import nl.nn.adapterframework.extensions.aspose.AsposeLicenseLoader;
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
+import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionService;
 import nl.nn.adapterframework.extensions.aspose.services.conv.impl.CisConversionServiceImpl;
@@ -65,6 +66,7 @@ public class PdfPipe extends FixedForwardPipe {
 	private @Getter String charset = null;
 	private AsposeFontManager fontManager;
 	private @Getter boolean unpackDefaultFonts = false;
+	private @Getter boolean loadExternalResources = false;
 
 	private CisConversionService cisConversionService;
 
@@ -122,8 +124,9 @@ public class PdfPipe extends FixedForwardPipe {
 		} catch (IOException e) {
 			throw new ConfigurationException("an error occured while loading fonts", e);
 		}
-		
-		cisConversionService = new CisConversionServiceImpl(getPdfOutputLocation(), fontManager.getFontsPath(), getCharset());
+
+		CisConfiguration configuration = new CisConfiguration(loadExternalResources, getPdfOutputLocation(), getCharset(), fontManager.getFontsPath());
+		cisConversionService = new CisConversionServiceImpl(configuration);
 	}
 
 	@Override
@@ -208,5 +211,10 @@ public class PdfPipe extends FixedForwardPipe {
 	@IbisDoc({ "directory to save resulting pdf files after conversion. If not set then a temporary directory will be created and the conversion results will be stored in that directory.", "null" })
 	public void setPdfOutputLocation(String pdfOutputLocation) {
 		this.pdfOutputLocation = pdfOutputLocation;
+	}
+
+	@IbisDoc({ "when set to true, external resources, such as stylesheets and images found in HTML pages, will be loaded from the internet", "false" })
+	public void setLoadExternalResources(boolean loadExternalResources) {
+		this.loadExternalResources = loadExternalResources;
 	}
 }
