@@ -16,7 +16,7 @@
 			<pipe name="InitSessionKeyDefaults" 
 				className="nl.nn.adapterframework.pipes.PutInSession">
 				<param name="expectedNumberOfResults" sessionKey="expectedNumberOfResults" defaultValue="-1"/>
-				<param name="numberOfIterations" sessionKey="numberOfIterations" defaultValue="1"/>
+				<param name="numberOfAttempts" sessionKey="numberOfAttempts" defaultValue="1"/>
 				<forward name="success" path="SendToManageDatabase"/>
 			</pipe>
 			
@@ -49,14 +49,14 @@
 			
 			<pipe name="PrepareNextIteration"
 				className="nl.nn.adapterframework.pipes.IncreaseIntegerPipe"
-				sessionKey="numberOfIterations"
+				sessionKey="numberOfAttempts"
 				increment="-1">
-				<forward name="success" path="CheckNumberOfIterations" />
+				<forward name="success" path="ChecknumberOfAttempts" />
 			</pipe>
 			
-			<pipe name="CheckNumberOfIterations" 
+			<pipe name="ChecknumberOfAttempts" 
 				className="nl.nn.adapterframework.pipes.CompareIntegerPipe">
-				<param name="operand1" sessionKey="numberOfIterations"/>
+				<param name="operand1" sessionKey="numberOfAttempts"/>
 				<param name="operand2" value="0"/>
 				<forward name="lessthan" path="EXIT" />
 				<forward name="greaterthan" path="Wait" />
