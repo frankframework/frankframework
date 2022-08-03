@@ -197,7 +197,7 @@ public abstract class MessageUtils {
 	}
 
 	/**
-	 * Computes the {@link MimeType} when not available.
+	 * Computes the {@link MimeType} when not available, attempts to resolve the Charset when of type TEXT.
 	 * <p>
 	 * NOTE: This is a resource intensive operation, the first 64k is being read and stored in memory.
 	 */
@@ -227,7 +227,15 @@ public abstract class MessageUtils {
 				return null;
 			}
 			org.apache.tika.mime.MediaType tikaMediaType = tika.getDetector().detect(new ByteArrayInputStream(magic), metadata);
-			return MimeType.valueOf(tikaMediaType.toString());
+			mimeType = MimeType.valueOf(tikaMediaType.toString());
+			context.put(MessageContext.METADATA_MIMETYPE, mimeType);
+			if("text".equals(mimeType.getType()) || message.getCharset() != null) { // is of type 'text' or message has charset
+				Charset charset = computeDecodingCharset(message);
+				if(charset != null) {
+					return new MimeType(mimeType, charset);
+				}
+			}
+			return mimeType;
 		} catch (Throwable t) {
 			LOG.warn("error parsing message to determine mimetype", t);
 		}

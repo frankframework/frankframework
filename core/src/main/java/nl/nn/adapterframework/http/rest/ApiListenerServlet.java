@@ -593,9 +593,14 @@ public class ApiListenerServlet extends HttpServletBase {
 					Message parsedContentType = messageContext.getMessage("contentType");
 					if(!Message.isEmpty(parsedContentType)) {
 						contentType = MimeType.valueOf(parsedContentType.asString());
+					} else {
+						MimeType providedContentType = MessageUtils.getMimeType(result); // MimeType might be known
+						if(providedContentType != null) {
+							contentType = providedContentType;
+						}
 					}
 				} else if(listener.getProduces() == MediaTypes.DETECT) {
-					MimeType computedContentType = MessageUtils.computeMimeType(result);
+					MimeType computedContentType = MessageUtils.computeMimeType(result); // Calculate MimeType
 					if(computedContentType != null) {
 						contentType = computedContentType;
 					}

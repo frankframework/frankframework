@@ -208,7 +208,6 @@ public class ApiServiceDispatcher {
 					}
 					mapParamsInRequest(request, adapter, listener, methodBuilder);
 
-					//ContentType may have more parameters such as charset and formdata-boundry
 					methodBuilder.add("responses", mapResponses(adapter, listener.getContentType(), schemas));
 				}
 				methods.add(method.name().toLowerCase(), methodBuilder);

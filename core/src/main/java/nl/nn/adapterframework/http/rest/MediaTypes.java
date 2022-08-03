@@ -80,7 +80,7 @@ public enum MediaTypes {
 	/**
 	 * Checks if this enum match a value in the provided 'Accept' header.
 	 */
-	boolean accepts(String acceptHeader) { // Needs to be able to deal with; text/html, application/xhtml+xml, application/xml;q=0.9, */*;q=0.8
+	public boolean accepts(String acceptHeader) { // Needs to be able to deal with; text/html, application/xhtml+xml, application/xml;q=0.9, */*;q=0.8
 		return (!mimeType.isConcrete()) || acceptHeader.contains("*/*") || acceptHeader.contains(mimeType.toString());
 	}
 
