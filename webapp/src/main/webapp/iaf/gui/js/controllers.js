@@ -260,7 +260,7 @@ angular.module('iaf.beheerconsole')
 
 					for(x in adapter.receivers) {
 						var adapterReceiver = adapter.receivers[x];
-						if(adapterReceiver.started === false)
+						if(adapterReceiver.state != 'started')
 							adapter.status = 'warning';
 
 						if(adapterReceiver.transactionalStores) {
