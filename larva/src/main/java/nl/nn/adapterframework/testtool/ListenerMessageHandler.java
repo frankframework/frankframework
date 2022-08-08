@@ -111,6 +111,14 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 		this.defaultTimeout = defaultTimeout;
 	}
 
+	public void setRequestTimeOut(int timeout) {
+		setTimeout(timeout);
+	}
+
+	public void setResponseTimeOut(int timeout) {
+		setTimeout(timeout);
+	}
+
 	@Override
 	public void processRawMessage(IListener<M> origin, M rawMessage) throws ListenerException {
 		processRawMessage(origin, rawMessage, null, false);

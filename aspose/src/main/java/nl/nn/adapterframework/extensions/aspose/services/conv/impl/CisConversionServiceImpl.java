@@ -110,10 +110,4 @@ public class CisConversionServiceImpl implements CisConversionService {
 
 		return mediaType;
 	}
-
-	@Override
-	public String getFontsDirectory() {
-		return configuration.getFontsDirectory();
-	}
-
 }

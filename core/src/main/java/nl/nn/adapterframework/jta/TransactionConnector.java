@@ -42,7 +42,7 @@ public class TransactionConnector<T,R> implements AutoCloseable {
 	private Thread parentThread;
 	private Thread childThread;
 	private ThrowingRunnable<?> onEndChildThreadAction;
-	
+
 	private boolean childThreadTransactionSuspended;
 
 	private TransactionConnector(TransactionConnectorCoordinator<T,R> coordinator, Object owner) {
@@ -51,7 +51,7 @@ public class TransactionConnector<T,R> implements AutoCloseable {
 		this.coordinator = coordinator;
 		this.owner = owner;
 	}
-	
+
 	/**
 	 * factory method, to be called from 'main' thread.
 	 * 
@@ -72,7 +72,7 @@ public class TransactionConnector<T,R> implements AutoCloseable {
 		coordinator.setLastInThread(instance);
 		return instance;
 	}
-	
+
 	/**
 	 * resume transaction, that was saved in parent thread, in the child thread.
 	 * After beginChildThread() has been called, new transactional resources cannot be enlisted in the parentThread, 

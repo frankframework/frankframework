@@ -58,7 +58,7 @@ public class ApiListenerTest {
 		listener.configure();
 
 		assertEquals(MediaTypes.TEXT, listener.getProduces());
-		assertEquals("text/plain;charset=UTF-8", listener.getContentType().getContentType());
+		assertEquals("text/plain;charset=UTF-8", listener.getContentType().toString());
 	}
 
 
@@ -68,7 +68,7 @@ public class ApiListenerTest {
 			listener.setProduces(type);
 			listener.configure(); //Check if the mediatype passes the configure checks
 
-			assertTrue(listener.getContentType().getContentType().startsWith(type.getContentType()));
+			assertTrue(listener.getContentType().includes(type.getMimeType()));
 		}
 	}
 
@@ -79,30 +79,30 @@ public class ApiListenerTest {
 //		listener.setConsumes(null);
 		listener.configure();
 
-		assertEquals("*/*", listener.getContentType().getContentType());
+		assertEquals("*/*", listener.getContentType().toString());
 		assertEquals(MediaTypes.ANY, listener.getConsumes());
 	}
 
 	@Test
 	public void isConsumableXML() {
-		String acceptHeader = "text/html, application/xhtml+xml, application/xml;q=0.9, */*;q=0.8";
+		String contentType = "application/xml;charset=UTF8;level=2";
 
 		listener.setConsumes(MediaTypes.XML);
-		assertTrue("can parse [XML]", listener.isConsumable(acceptHeader));
+		assertTrue("can parse [XML]", listener.isConsumable(contentType));
 
 		listener.setConsumes(MediaTypes.JSON);
-		assertFalse("can parse [JSON]", listener.isConsumable(acceptHeader));
+		assertFalse("can parse [JSON]", listener.isConsumable(contentType));
 	}
 
 	@Test
 	public void isConsumableJSON() {
-		String acceptHeader = "text/html, application/json;q=0.9, */*;q=0.8";
+		String contentType = "application/json;charset=UTF8;level=2";
 
 		listener.setConsumes(MediaTypes.XML);
-		assertFalse("can parse [XML]", listener.isConsumable(acceptHeader));
+		assertFalse("can parse [XML]", listener.isConsumable(contentType));
 
 		listener.setConsumes(MediaTypes.JSON);
-		assertTrue("can parse [JSON]", listener.isConsumable(acceptHeader));
+		assertTrue("can parse [JSON]", listener.isConsumable(contentType));
 	}
 
 	@Test
@@ -124,7 +124,7 @@ public class ApiListenerTest {
 
 		listener.setConsumes(MediaTypes.MULTIPART);
 		for(String header : acceptHeaders) {
-			String acceptHeader = header + "; type=text/html; q=0.7, "+header+"; level=2; q=0.4; boundary=--my-top-notch-boundary-";
+			String acceptHeader = header + "; type=text; q=0.7, "+header+"; level=2; q=0.4; boundary=--my-top-notch-boundary-";
 
 			assertTrue("can parse ["+header+"]", listener.isConsumable(acceptHeader));
 		}
@@ -142,6 +142,15 @@ public class ApiListenerTest {
 	@Test
 	public void clientAcceptsAll() {
 		String contentType = "application/xhtml+xml, application/xml";
+		String acceptHeader = contentType + "; type=text; q=0.7, */*; level=2; q=0.4";
+
+		listener.setProduces(MediaTypes.JSON);
+		assertTrue("accepts anything", listener.accepts(acceptHeader));
+	}
+
+	@Test
+	public void clientInvalidAcceptHeader() {
+		String contentType = "application/xhtml+xml, application/xml";
 		String acceptHeader = contentType + "; type=text/html; q=0.7, */*; level=2; q=0.4";
 
 		listener.setProduces(MediaTypes.JSON);
@@ -151,7 +160,7 @@ public class ApiListenerTest {
 	@Test
 	public void doesNotAcceptOctetStreamWhenJSON() {
 		String contentType = "application/octet-stream";
-		String acceptHeader = contentType + "; type=text/html; q=0.7, "+contentType+"; level=2; q=0.4";
+		String acceptHeader = contentType + "; type=text; q=0.7, "+contentType+"; level=2; q=0.4";
 
 		listener.setProduces(MediaTypes.JSON);
 		assertFalse("does not accept an octet-stream when set to JSON", listener.accepts(acceptHeader));
@@ -160,7 +169,7 @@ public class ApiListenerTest {
 	@Test
 	public void acceptsJson() {
 		String contentType = "application/json";
-		String acceptHeader = contentType + "; type=text/html; q=0.7, "+contentType+"; level=2; q=0.4";
+		String acceptHeader = contentType + "; type=text; q=0.7, "+contentType+"; level=2; q=0.4";
 
 		listener.setProduces(MediaTypes.JSON);
 		assertTrue("accepts JSON", listener.accepts(acceptHeader));

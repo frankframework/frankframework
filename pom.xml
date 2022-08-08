@@ -860,6 +860,17 @@
 			</modules>
 		</profile>
 		<profile>
+			<id>aspose</id>
+			<activation>
+				<property>
+					<name>!no-aspose</name>
+				</property>
+			</activation>
+			<modules>
+				<module>aspose</module>
+			</modules>
+		</profile>
+		<profile>
 			<id>proprietary</id>
 			<activation>
 				<property>
@@ -873,7 +884,6 @@
 				<module>sap</module>
 				<module>tibco</module>
 				<module>idin</module>
-				<module>aspose</module>
 			</modules>
 			<repositories>
 				<repository>

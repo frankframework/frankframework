@@ -34,6 +34,7 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.xerces.xs.XSModel;
+import org.springframework.util.MimeType;
 
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
@@ -207,9 +208,7 @@ public class ApiServiceDispatcher {
 					}
 					mapParamsInRequest(request, adapter, listener, methodBuilder);
 
-					//ContentType may have more parameters such as charset and formdata-boundry
-					MediaTypes produces = listener.getProduces();
-					methodBuilder.add("responses", mapResponses(adapter, produces, schemas));
+					methodBuilder.add("responses", mapResponses(adapter, listener.getContentType(), schemas));
 				}
 				methods.add(method.name().toLowerCase(), methodBuilder);
 			}
@@ -326,12 +325,17 @@ public class ApiServiceDispatcher {
 		if(inputValidator != null && StringUtils.isNotEmpty(inputValidator.getRoot())) {
 			JsonObjectBuilder requestBodyContent = Json.createObjectBuilder();
 			JsonObjectBuilder schemaBuilder = Json.createObjectBuilder().add("schema", Json.createObjectBuilder().add("$ref", XmlTypeToJsonSchemaConverter.SCHEMA_DEFINITION_PATH+inputValidator.getRoot()));
-			requestBodyContent.add("content", Json.createObjectBuilder().add(consumes.getContentType(), schemaBuilder));
+			requestBodyContent.add("content", Json.createObjectBuilder().add(mimeTypeToString(consumes.getMimeType()), schemaBuilder));
 			methodBuilder.add("requestBody", requestBodyContent);
 		}
 	}
 
-	private JsonObjectBuilder mapResponses(IAdapter adapter, MediaTypes contentType, JsonObjectBuilder schemas) {
+	//ContentType may have more parameters such as charset and formdata-boundry, strip those
+	private String mimeTypeToString(MimeType mimeType) {
+		return mimeType.getType() + "/" + mimeType.getSubtype();
+	}
+
+	private JsonObjectBuilder mapResponses(IAdapter adapter, MimeType contentType, JsonObjectBuilder schemas) {
 		JsonObjectBuilder responses = Json.createObjectBuilder();
 
 		PipeLine pipeline = adapter.getPipeLine();
@@ -383,7 +387,7 @@ public class ApiServiceDispatcher {
 					}
 					// JsonObjectBuilder add method consumes the schema
 					schema.add("schema", Json.createObjectBuilder().add("$ref", XmlTypeToJsonSchemaConverter.SCHEMA_DEFINITION_PATH+reference));
-					content.add(contentType.getContentType(), schema);
+					content.add(mimeTypeToString(contentType), schema);
 				}
 				exit.add("content", content);
 			}
