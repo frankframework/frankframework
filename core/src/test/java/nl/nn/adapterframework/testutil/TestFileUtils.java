@@ -9,6 +9,7 @@ import java.net.URL;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.FilenameUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 
@@ -36,7 +37,10 @@ public class TestFileUtils {
 	}
 
 	public static URL getTestFileURL(String file) throws IOException {
-		return TestFileUtils.class.getResource(file);
+		String normalizedFilename = FilenameUtils.normalize(file, true);
+		URL url = TestFileUtils.class.getResource(normalizedFilename);
+		if(url == null) LOG.warn("unable to find testfile [{}]", normalizedFilename);
+		return url;
 	}
 
 	public static Message getNonRepeatableTestFileMessage(String file) throws IOException {
