@@ -49,6 +49,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.soap.SoapVersion;
@@ -85,6 +86,7 @@ import nl.nn.adapterframework.xml.RootElementToSessionKeyFilter;
  * @author Johan Verrips IOS
  * @author Jaco de Groot
  */
+@Category("Basic")
 public class XmlValidator extends FixedForwardPipe implements SchemasProvider, HasSpecialDefaultValues, IDualModeValidator, IXmlValidator, InitializingBean {
 
 	private @Getter String schemaLocation;

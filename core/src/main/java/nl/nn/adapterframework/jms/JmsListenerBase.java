@@ -59,20 +59,20 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	private @Getter int replyPriority=-1;
 	private @Getter DeliveryMode replyDeliveryMode=DeliveryMode.NON_PERSISTENT;
 	private ISender sender;
-	
+
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private final String MSGLOG_KEYS = APP_CONSTANTS.getResolvedProperty("msg.log.keys");
 	private final Map<String, String> xPathLogMap = new HashMap<String, String>();
 	private @Getter String xPathLoggingKeys=null;
-	
+
 	private @Getter boolean forceMessageIdAsCorrelationId=false;
- 
+
 	private @Getter boolean soap=false;
 	private @Getter String replyEncodingStyleURI=null;
 	private @Getter String replyNamespaceURI=null;
 	private @Getter String replySoapAction=null;
 	private @Getter String soapHeaderSessionKey="soapHeader";
-	
+
 	private SoapWrapper soapWrapper=null;
 
 	private ParameterList paramList = null;
@@ -96,11 +96,11 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 			paramList.configure();
 		}
 	}
-	
+
 	protected Map<String, String> getxPathLogMap() {
 		return xPathLogMap;
 	}
-	
+
 	private void configurexPathLogging() {
 		String logKeys = MSGLOG_KEYS;
 		if(getXPathLoggingKeys() != null) //Override on listener level
@@ -160,8 +160,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		}
 		return retrieveIdFromMessage(message, threadContext);
 	}
-	
-	
+
 	protected String retrieveIdFromMessage(javax.jms.Message message, Map<String, Object> threadContext) throws ListenerException {
 		String cid = "unset";
 		DeliveryMode mode = null;
@@ -192,8 +191,8 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 			else {
 				cid = message.getJMSCorrelationID();
 				if (cid==null) {
-				  cid = id;
-				  log.debug("Setting correlation ID to MessageId");
+					cid = id;
+					log.debug("Setting correlation ID to MessageId");
 				}
 			}
 		} catch (JMSException ignore) {
@@ -220,15 +219,16 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		}
 
 		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix()+"listener on ["+ getDestinationName() 
+			log.debug(getLogPrefix()+"listener on ["+ getDestinationName()
 				+ "] got message with JMSDeliveryMode=[" + mode
 				+ "] \n  JMSMessageID=[" + id
 				+ "] \n  JMSCorrelationID=[" + cid
-				+ "] \n  Timestamp Sent=[" + DateUtils.format(tsSent) 
+				+ "] \n  Timestamp Sent=[" + DateUtils.format(tsSent)
 				+ "] \n  ReplyTo=[" + ((replyTo==null)?"none" : replyTo.toString())
 				+ "] \n Message=[" + message.toString()
 				+ "]");
-		}    
+		}
+
 		PipeLineSession.setListenerParameters(threadContext, id, cid, null, tsSent);
 		threadContext.put("timestamp",tsSent);
 		threadContext.put("replyTo",replyTo);
@@ -282,9 +282,9 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 
 	public void setSender(ISender newSender) {
 		sender = newSender;
-			log.debug("["+getName()+"] ** registered sender ["+sender.getName()+"] with properties ["+sender.toString()+"]");
-    
+		log.debug("["+getName()+"] ** registered sender ["+sender.getName()+"] with properties ["+sender.toString()+"]");
 	}
+
 	@Override
 	public ISender getSender() {
 		return sender;
@@ -354,12 +354,15 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	 * When set to <code>true</code>, the messageID is used as Correlation-ID of the reply.
 	 */
 	public void setForceMessageIdAsCorrelationId(boolean force){
-	   forceMessageIdAsCorrelationId=force;
+		forceMessageIdAsCorrelationId = force;
 	}
 
-
-	@IbisDoc({"Receive timeout <i>in milliseconds</i> as specified by the JMS API, see https://docs.oracle.com/javaee/7/api/javax/jms/MessageConsumer.html#receive-long-", "1000"})
+	@Deprecated
 	public void setTimeOut(long newTimeOut) {
+		timeOut = newTimeOut;
+	}
+	@IbisDoc({"Receive timeout <i>in milliseconds</i> as specified by the JMS API, see https://docs.oracle.com/javaee/7/api/javax/jms/MessageConsumer.html#receive-long-", "1000"})
+	public void setTimeout(long newTimeOut) {
 		timeOut = newTimeOut;
 	}
 
@@ -417,5 +420,4 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	public void setxPathLoggingKeys(String string) {
 		xPathLoggingKeys = string;
 	}
-	
 }

@@ -52,7 +52,6 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
-import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.mime.FormBodyPart;
 import org.apache.http.entity.mime.FormBodyPartBuilder;
 import org.apache.http.entity.mime.MIME;
@@ -85,7 +84,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Sender for the HTTP protocol using GET, POST, PUT or DELETE.
- * 
+ *
  * <p><b>Expected message format:</b></p>
  * <p>GET methods expect a message looking like this</p>
  * <pre>
@@ -99,7 +98,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  *
  * <p>
  * Note 1:
- * Some certificates require the &lt;java_home&gt;/jre/lib/security/xxx_policy.jar files to be upgraded to unlimited strength. Typically, in such a case, an error message like 
+ * Some certificates require the &lt;java_home&gt;/jre/lib/security/xxx_policy.jar files to be upgraded to unlimited strength. Typically, in such a case, an error message like
  * <code>Error in loading the keystore: Private key decryption error: (java.lang.SecurityException: Unsupported keysize or algorithm parameters</code> is observed.
  * For IBM JDKs these files can be downloaded from http://www.ibm.com/developerworks/java/jdk/security/50/ (scroll down to 'IBM SDK Policy files')
  * </p>
@@ -118,7 +117,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </p>
  * <p>
  * Note 3:
- * In case <code>javax.net.ssl.SSLHandshakeException: unknown certificate</code>-exceptions are thrown, 
+ * In case <code>javax.net.ssl.SSLHandshakeException: unknown certificate</code>-exceptions are thrown,
  * probably the certificate of the other party is not trusted. Try to use one of the certificates in the path as your truststore by doing the following:
  * <ul>
  *   <li>open the URL you are trying to reach in InternetExplorer</li>
@@ -137,15 +136,15 @@ import nl.nn.adapterframework.util.XmlUtils;
  *   <li>if you didn't use the standard keydatabase, then reference the file in the truststore-attribute in Configuration.xml (include the file as a resource)</li>
  *   <li>use jks for the truststoreType-attribute</li>
  *   <li>restart your application</li>
- *   <li>instead of IBM ikeyman you can use the standard java tool <code>keytool</code> as follows: 
+ *   <li>instead of IBM ikeyman you can use the standard java tool <code>keytool</code> as follows:
  *      <code>keytool -import -alias <i>yourAlias</i> -file <i>pathToSavedCertificate</i></code></li>
  * </ul>
  * <p>
  * Note 4:
  * In case <code>cannot create or initialize SocketFactory: (IOException) Unable to verify MAC</code>-exceptions are thrown,
- * please check password or authAlias configuration of the correspondig certificate. 
+ * please check password or authAlias configuration of the correspondig certificate.
  * </p>
- * 
+ *
  * <p>
  * Note 5:
  * When used as MTOM sender and MTOM receiver doesn't support Content-Transfer-Encoding "base64", messages without line feeds will give an error.
@@ -309,7 +308,7 @@ public class HttpSender extends HttpSenderBase {
 					}
 					entity = new ByteArrayEntity(messageString.getBytes(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING), getFullContentType());
 				} else if(postType.equals(PostType.BINARY)) {
-					entity = new InputStreamEntity(message.asInputStream(), getFullContentType());
+					entity = new HttpMessageEntity(message, getFullContentType());
 				} else {
 					throw new SenderException("PostType ["+postType.name()+"] not allowed!");
 				}
@@ -355,7 +354,7 @@ public class HttpSender extends HttpSenderBase {
 
 	/**
 	 * Returns a multi-parted message, either as X-WWW-FORM-URLENCODED, FORM-DATA or MTOM
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	protected HttpPost getMultipartPostMethodWithParamsInBody(URI uri, String message, ParameterValueList parameters, PipeLineSession session) throws SenderException, IOException {
 		HttpPost hmethod = new HttpPost(uri);
@@ -372,12 +371,10 @@ public class HttpSender extends HttpSenderBase {
 					String name = pv.getDefinition().getName();
 					String value = pv.asStringValue("");
 
-					// Skip parameters that are configured as ignored
-					if (skipParameter(name))
-						continue;
-
-					requestFormElements.add(new BasicNameValuePair(name,value));
-					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended parameter ["+name+"] with value ["+value+"]");
+					if (requestOrBodyParamsSet.contains(name) && (StringUtils.isNotEmpty(value) || !parametersToSkipWhenEmptySet.contains(name))) {
+						requestFormElements.add(new BasicNameValuePair(name,value));
+						if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended parameter ["+name+"] with value ["+value+"]");
+					}
 				}
 			}
 			try {
@@ -394,14 +391,7 @@ public class HttpSender extends HttpSenderBase {
 		return hmethod;
 	}
 
-	protected FormBodyPart createMultipartBodypart(String name, String message) {
-		if(postType.equals(PostType.MTOM)) {
-			return createMultipartBodypart(name, message, "application/xop+xml");
-		}
-		return createMultipartBodypart(name, message, null);
-	}
-
-	protected FormBodyPart createMultipartBodypart(String name, String message, String contentType) {
+	protected FormBodyPart createStringBodypart(String name, String message, String contentType) {
 		ContentType cType = ContentType.create("text/plain", getCharSet());
 		if(StringUtils.isNotEmpty(contentType))
 			cType = ContentType.create(contentType, getCharSet());
@@ -410,8 +400,10 @@ public class HttpSender extends HttpSenderBase {
 			.setName(name)
 			.setBody(new StringBody(message, cType));
 
-		if (StringUtils.isNotEmpty(getMtomContentTransferEncoding()))
+		// Should only be set when request is MTOM and it's the first BodyPart
+		if (postType.equals(PostType.MTOM) && StringUtils.isNotEmpty(getMtomContentTransferEncoding()) && name.equals(getFirstBodyPartName())) {
 			bodyPart.setField(MIME.CONTENT_TRANSFER_ENC, getMtomContentTransferEncoding());
+		}
 
 		return bodyPart.build();
 	}
@@ -436,32 +428,32 @@ public class HttpSender extends HttpSenderBase {
 			entity.setMtomMultipart();
 
 		if (StringUtils.isNotEmpty(getFirstBodyPartName())) {
-			entity.addPart(createMultipartBodypart(getFirstBodyPartName(), message));
+			String mimeType = (postType.equals(PostType.MTOM)) ? "application/xop+xml" : "text/plain"; // only the first part is XOP+XML, other parts should use their own content-type
+			entity.addPart(createStringBodypart(getFirstBodyPartName(), message, mimeType));
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+getFirstBodyPartName()+"] with value ["+message+"]");
 		}
 		if (parameters!=null) {
 			for(ParameterValue pv : parameters) {
 				String name = pv.getDefinition().getName();
+				if (requestOrBodyParamsSet.contains(name)) {
+					Message msg = pv.asMessage();
+					if (!msg.isEmpty() || !parametersToSkipWhenEmptySet.contains(name)) {
+						if (msg.isBinary()) {
+							InputStream fis = msg.asInputStream();
+							String fileName = null;
+							String sessionKey = pv.getDefinition().getSessionKey();
+							if (sessionKey != null) {
+								fileName = session.getMessage(sessionKey + "Name").asString();
+							}
 
-				// Skip parameters that are configured as ignored
-				if (skipParameter(name))
-					continue;
-
-				Message msg = pv.asMessage();
-				if (msg.isBinary()) {
-					InputStream fis = msg.asInputStream();
-					String fileName = null;
-					String sessionKey = pv.getDefinition().getSessionKey();
-					if (sessionKey != null) {
-						fileName = session.getMessage(sessionKey + "Name").asString();
+							entity.addPart(createMultipartBodypart(name, fis, fileName));
+							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended filepart ["+name+"] with value ["+msg+"] and name ["+fileName+"]");
+						} else {
+							String value = msg.asString();
+							entity.addPart(createStringBodypart(name, value, "text/plain"));
+							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+name+"] with value ["+value+"]");
+						}
 					}
-
-					entity.addPart(createMultipartBodypart(name, fis, fileName));
-					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended filepart ["+name+"] with value ["+msg+"] and name ["+fileName+"]");
-				} else {
-					String value = msg.asString();
-					entity.addPart(createMultipartBodypart(name, value));
-					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+name+"] with value ["+value+"]");
 				}
 			}
 		}
@@ -479,7 +471,7 @@ public class HttpSender extends HttpSenderBase {
 					throw new SenderException(getLogPrefix()+"error building multipart xml", e);
 				}
 				Collection<Node> parts = XmlUtils.getChildTags(partsElement, "part");
-				if (parts==null || parts.size()==0) {
+				if (parts==null || parts.isEmpty()) {
 					log.warn(getLogPrefix()+"no part(s) in multipart xml [" + multipartXml + "]");
 				} else {
 					Iterator<Node> iter = parts.iterator();
@@ -503,7 +495,7 @@ public class HttpSender extends HttpSenderBase {
 		if (partObject.isBinary()) {
 			return createMultipartBodypart(partSessionKey, partObject.asInputStream(), partName, partMimeType);
 		}
-		return createMultipartBodypart(partName, partObject.asString(), partMimeType);
+		return createStringBodypart(partName, partObject.asString(), partMimeType);
 	}
 
 	protected boolean validateResponseCode(int statusCode) {

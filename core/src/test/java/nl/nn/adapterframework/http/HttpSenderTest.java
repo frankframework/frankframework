@@ -34,6 +34,7 @@ import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.UrlMessage;
+import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
@@ -648,6 +649,124 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	}
 
 	@Test
+	public void multipartithoutFirstBodyPartName() throws Throwable {
+		sender = getSender();
+		Message input = new Message("<xml>input</xml>");
+
+		PipeLineSession pls = new PipeLineSession(session);
+
+		sender.setMethodType(HttpMethod.POST);
+		sender.setParamsInUrl(false);
+
+		String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
+				+ "sessionKey=\"part_file\" size=\"72833\" "
+				+ "mimeType=\"application/pdf\"/></parts>";
+		pls.put("multipartXml", xmlMultipart);
+		pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
+
+		sender.setMultipartXmlSessionKey("multipartXml");
+
+		sender.configure();
+		sender.open();
+
+		String result = sender.sendMessage(input, pls).asString();
+		assertEqualsIgnoreCRLF(getFile("multipartWithoutFirstBodyPartName.txt"), result.trim());
+	}
+
+	@Test
+	public void mtomWithoutFirstBodyPartName() throws Throwable {
+		sender = getSender();
+		Message input = new Message("<xml>input</xml>");
+
+		PipeLineSession pls = new PipeLineSession(session);
+
+		sender.setMethodType(HttpMethod.POST);
+		sender.setParamsInUrl(false);
+
+		String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
+				+ "sessionKey=\"part_file\" size=\"72833\" "
+				+ "mimeType=\"application/pdf\"/></parts>";
+		pls.put("multipartXml", xmlMultipart);
+		pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
+
+		sender.setMtomEnabled(true);
+		sender.setMultipartXmlSessionKey("multipartXml");
+
+		sender.configure();
+		sender.open();
+
+		String result = sender.sendMessage(input, pls).asString();
+		assertEqualsIgnoreCRLF(getFile("mtomWithoutFirstBodyPartName.txt"), result.trim());
+	}
+
+	@Test
+	public void simpleMultipartFromParameters() throws Throwable {
+		sender = getSender();
+		Message input = new Message("<xml>input</xml>");
+
+		sender.setMethodType(HttpMethod.POST);
+		sender.setParamsInUrl(false);
+		sender.setInputMessageParam("request");
+		sender.setMtomContentTransferEncoding("binary");
+
+		String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
+				+ "sessionKey=\"part_file\" size=\"72833\" "
+				+ "mimeType=\"application/pdf\"/>"
+				+ "<part name=\"string.txt\" "
+				+ "sessionKey=\"stringPart\" "
+				+ "mimeType=\"text/plain\"/></parts>";
+		session.put("multipartXml", xmlMultipart);
+		session.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
+
+		sender.setMultipartXmlSessionKey("multipartXml");
+		sender.addParameter(new Parameter("string-part", "<string content/>"));
+
+		session.put("stringPart", new Message("mock pdf content"));
+		session.put("binaryPart", Message.asMessage(new Message("mock pdf content").asInputStream()));
+		sender.addParameter(ParameterBuilder.create().withName("binary-part").withSessionKey("binaryPart"));
+
+		sender.configure();
+		sender.open();
+
+		String result = sendMessage(input).asString();
+		assertEqualsIgnoreCRLF(getFile("simpleMultipartFromParametersAndMultipartXml.txt"), result.trim());
+	}
+
+	@Test
+	public void simpleMtomFromParameters() throws Throwable {
+		sender = getSender();
+		Message input = new Message("<xml>input</xml>");
+
+		sender.setMethodType(HttpMethod.POST);
+		sender.setParamsInUrl(false);
+		sender.setInputMessageParam("request");
+		sender.setPostType(PostType.MTOM);
+		sender.setMtomContentTransferEncoding("base64");
+
+		String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
+				+ "sessionKey=\"part_file\" size=\"72833\" "
+				+ "mimeType=\"application/pdf\"/>"
+				+ "<part name=\"string.txt\" "
+				+ "sessionKey=\"stringPart\" "
+				+ "mimeType=\"text/plain\"/></parts>";
+		session.put("multipartXml", xmlMultipart);
+		session.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
+
+		sender.setMultipartXmlSessionKey("multipartXml");
+		sender.addParameter(new Parameter("string-part", "<string content/>"));
+
+		session.put("stringPart", new Message("mock pdf content"));
+		session.put("binaryPart", Message.asMessage(new Message("mock pdf content").asInputStream()));
+		sender.addParameter(ParameterBuilder.create().withName("binary-part").withSessionKey("binaryPart"));
+
+		sender.configure();
+		sender.open();
+
+		String result = sendMessage(input).asString();
+		assertEqualsIgnoreCRLF(getFile("simpleMtomFromParametersAndMultipartXml.txt"), result.trim());
+	}
+
+	@Test
 	public void postTypeMtom() throws Throwable {
 		sender = getSender();
 		Message input = new Message("<xml>input</xml>");
@@ -675,7 +794,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	}
 
 	@Test
-	public void parametersToSkip() throws Throwable {
+	public void skipUrlParameter() throws Throwable {
 		sender = getSender();
 		Message input = new Message("<xml>input</xml>");
 
@@ -694,7 +813,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.setMtomEnabled(true);
 		sender.setMultipartXmlSessionKey("multipartXml");
 
-		sender.addParameter(new Parameter("url", "http://ignore.me"));
+		sender.addParameter(new Parameter("url", "http://ignore.me")); //skip this
 
 		sender.addParameter(new Parameter("my-beautiful-part", "<partContent/>"));
 
@@ -705,6 +824,67 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		assertEqualsIgnoreCRLF(getFile("parametersToSkip.txt"), result.trim());
 	}
 
+	@Test
+	public void skipEmptyParameter() throws Throwable {
+		sender = getSender();
+		Message input = new Message("<xml>input</xml>");
+
+		PipeLineSession pls = new PipeLineSession(session);
+
+		sender.setMethodType(HttpMethod.POST);
+		sender.setParamsInUrl(false);
+		sender.setInputMessageParam("request");
+		sender.setParametersToSkipWhenEmpty("empty-param");
+
+		String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
+				+ "sessionKey=\"part_file\" size=\"72833\" "
+				+ "mimeType=\"application/pdf\"/></parts>";
+		pls.put("multipartXml", xmlMultipart);
+		pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
+
+		sender.setMtomEnabled(true);
+		sender.setMultipartXmlSessionKey("multipartXml");
+
+		sender.addParameter(new Parameter("url", "http://ignore.me")); //skip this
+
+		Parameter emptyParam = new Parameter("empty-param", "");
+		emptyParam.setSessionKey("empty-does-not-exist");
+		sender.addParameter(emptyParam);
+		sender.addParameter(new Parameter("my-beautiful-part", "<partContent/>"));
+
+		sender.configure();
+		sender.open();
+
+		String result = sender.sendMessage(input, pls).asString();
+		assertEqualsIgnoreCRLF(getFile("parametersToSkip.txt"), result.trim());
+	}
+
+	@Test
+	public void skipEmptyMultipartXmlSessionKey() throws Throwable {
+		sender = getSender();
+		Message input = new Message("<xml>input</xml>");
+
+		sender.setMethodType(HttpMethod.POST);
+		sender.setParamsInUrl(false);
+		sender.setInputMessageParam("request");
+		sender.setParametersToSkipWhenEmpty("empty-param");
+
+		session.put("multipartXml", ""); //empty!
+		sender.setMultipartXmlSessionKey("multipartXml");
+
+		sender.addParameter(new Parameter("url", "http://ignore.me")); //skip this
+
+		Parameter emptyParam = new Parameter("empty-param", "");
+		emptyParam.setSessionKey("empty-does-not-exist");
+		sender.addParameter(emptyParam);
+		sender.addParameter(new Parameter("my-beautiful-part", "<partContent/>"));
+
+		sender.configure();
+		sender.open();
+
+		String result = sendMessage(input).asString();
+		assertEqualsIgnoreCRLF(getFile("skipEmptyMultipartXmlSessionKey.txt"), result.trim());
+	}
 
 	@Test
 	public void specialCharactersInURLParam() throws Throwable {
@@ -769,21 +949,51 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	@Test
 	public void paramsWithoutValue() throws Throwable {
 		sender = getSender();
-		Message input = new Message("paramterValue");
-
-		PipeLineSession pls = new PipeLineSession(session);
-
 		sender.addParameter(new Parameter("url", "http://127.0.0.1/value%2Fvalue?emptyParam"));
-
 		sender.addParameter(new Parameter("myParam", ""));
-
 		sender.setMethodType(HttpMethod.GET);
-
 		sender.configure();
 		sender.open();
 
+		Message input = new Message("");
+		PipeLineSession pls = new PipeLineSession(session);
+
 		String result = sender.sendMessage(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("paramsWithoutValue.txt"), result.trim());
+	}
+
+	@Test
+	public void paramsWithoutValueSkipped() throws Throwable {
+		sender = getSender();
+		sender.addParameter(new Parameter("url", "http://127.0.0.1/value%2Fvalue?emptyParam"));
+		sender.addParameter(new Parameter("myParam", ""));
+		sender.setMethodType(HttpMethod.GET);
+		sender.setParametersToSkipWhenEmpty("myParam");
+		sender.configure();
+		sender.open();
+
+		Message input = new Message("");
+		PipeLineSession pls = new PipeLineSession(session);
+
+		String result = sender.sendMessage(input, pls).asString();
+		assertEqualsIgnoreCRLF(getFile("paramsWithoutValue-skipped.txt"), result.trim());
+	}
+
+	@Test
+	public void paramsWithoutValueSkippedAll() throws Throwable {
+		sender = getSender();
+		sender.addParameter(new Parameter("url", "http://127.0.0.1/value%2Fvalue?emptyParam"));
+		sender.addParameter(new Parameter("myParam", ""));
+		sender.setMethodType(HttpMethod.GET);
+		sender.setParametersToSkipWhenEmpty("*");
+		sender.configure();
+		sender.open();
+
+		Message input = new Message("");
+		PipeLineSession pls = new PipeLineSession(session);
+
+		String result = sender.sendMessage(input, pls).asString();
+		assertEqualsIgnoreCRLF(getFile("paramsWithoutValue-skipped.txt"), result.trim());
 	}
 
 	@Test

@@ -22,9 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
 import javax.naming.NamingException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -47,6 +44,9 @@ import com.mongodb.client.result.InsertOneResult;
 import com.mongodb.client.result.UpdateResult;
 import com.mongodb.connection.ServerDescription;
 
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
 import lombok.Getter;
 import lombok.Lombok;
 import lombok.Setter;

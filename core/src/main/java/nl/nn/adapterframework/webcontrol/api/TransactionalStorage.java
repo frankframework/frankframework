@@ -64,11 +64,10 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
-import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.receivers.Receiver;
-import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.MessageBrowsingFilter;
+import nl.nn.adapterframework.util.MessageBrowsingUtil;
 import nl.nn.adapterframework.util.Misc;
 
 @Path("/")
@@ -623,42 +622,12 @@ public class TransactionalStorage extends Base {
 	}
 
 	private String getMessageText(IMessageBrowser<?> messageBrowser, IListener listener, String messageId) throws IOException {
-		Object rawmsg = null;
-		try {
-			rawmsg = messageBrowser.browseMessage(messageId);
-		}
-		catch(ListenerException e) {
-			throw new ApiException("unable to find or read message ["+messageId+"]", e);
-		}
-
 		String msg = null;
-		if (rawmsg != null) {
-			if(rawmsg instanceof MessageWrapper) {
-					MessageWrapper<?> msgsgs = (MessageWrapper<?>) rawmsg;
-					msg = msgsgs.getMessage().asString();
-			} else if(rawmsg instanceof Message) { // For backwards compatibility: earlier MessageLog messages were stored as Message.
-				try {
-					msg = ((Message)rawmsg).asString();
-				} catch (IOException e) {
-					throw new ApiException(e);
-				}
-			} else {
-				try {
-					if (listener!=null) {
-						msg = listener.extractMessage(rawmsg, null).asString();
-					}
-				} catch (Exception e) {
-					log.warn("Exception reading value raw message", e);
-				}
-				try {
-					if (StringUtils.isEmpty(msg)) {
-						msg = Message.asString(rawmsg);
-					}
-				} catch (Exception e) {
-					log.warn("Cannot convert message", e);
-					msg = rawmsg.toString();
-				}
-			}
+		try {
+			Object rawmsg = messageBrowser.browseMessage(messageId);
+			msg = MessageBrowsingUtil.getMessageText(rawmsg, listener);
+		} catch(ListenerException e) {
+			throw new ApiException("unable to find or read message ["+messageId+"]", e);
 		}
 		if (StringUtils.isEmpty(msg)) {
 			msg = "<no message found/>";

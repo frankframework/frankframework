@@ -21,6 +21,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
@@ -33,6 +34,7 @@ import nl.nn.adapterframework.util.SpringUtils;
  * @author Peter Leeuwenburgh
  */
 
+@Category("NN-Special")
 public class DirectWrapperPipe extends TimeoutGuardPipe {
 	protected static final String DESTINATION = "destination";
 	protected static final String CMHVERSION = "cmhVersion";

@@ -20,6 +20,7 @@ import java.io.StringReader;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -39,6 +40,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
+import nl.nn.adapterframework.jdbc.IDataSourceFactory;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
 import nl.nn.adapterframework.jms.JmsException;
@@ -77,10 +79,11 @@ public final class ShowSecurityItems extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getSecurityItems() throws ApiException {
 
-		Map<String, Object> returnMap = new HashMap<String, Object>();
+		Map<String, Object> returnMap = new HashMap<>();
 		returnMap.put("securityRoles", addApplicationDeploymentDescriptor());
 		returnMap.put("securityRoleBindings", getSecurityRoleBindings());
 		returnMap.put("jmsRealms", addJmsRealms());
+		returnMap.put("datasources", addDataSources());
 		returnMap.put("sapSystems", addSapSystems());
 		returnMap.put("authEntries", addAuthEntries());
 		returnMap.put("serverProps", addServerProps());
@@ -211,20 +214,22 @@ public final class ShowSecurityItems extends Base {
 		return resultList;
 	}
 
-	private ArrayList<Object> addJmsRealms() {
-		List<String> jmsRealms = JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
-		ArrayList<Object> jmsRealmList = new ArrayList<>();
-		String confResString;
-
+	private String getConfigurationResources() {
 		try {
-			confResString = Misc.getConfigurationResources();
-			if (confResString!=null) {
-				confResString = XmlUtils.removeNamespaces(confResString);
+			String confResString = Misc.getConfigurationResources();
+			if (confResString != null) {
+				return XmlUtils.removeNamespaces(confResString);
 			}
 		} catch (IOException e) {
 			log.warn("error getting configuration resources ["+e+"]");
-			confResString = null;
 		}
+		return null;
+	}
+
+	private ArrayList<Object> addJmsRealms() {
+		List<String> jmsRealms = JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
+		ArrayList<Object> jmsRealmList = new ArrayList<>();
+		String confResString = getConfigurationResources();
 
 		for (String realmName : jmsRealms) {
 			Map<String, Object> realm = new HashMap<>();
@@ -233,28 +238,10 @@ public final class ShowSecurityItems extends Base {
 			String dsName = jmsRealm.getDatasourceName();
 			String qcfName = jmsRealm.getQueueConnectionFactoryName();
 			String tcfName = jmsRealm.getTopicConnectionFactoryName();
-			String dsInfo = null;
 			String cfInfo = null;
 
 			if(StringUtils.isNotEmpty(dsName)) {
-				DirectQuerySender qs = getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
-				qs.setJmsRealm(realmName);
-				try {
-					qs.configure();
-					dsInfo = qs.getDatasourceInfo();
-				} catch (JdbcException | ConfigurationException e) {
-					log.debug("no datasource ("+ClassUtils.nameOf(e)+"): "+e.getMessage());
-				}
-				realm.put("name", realmName);
-				realm.put("datasourceName", dsName);
-				realm.put("info", dsInfo);
-
-				if (confResString!=null) {
-					String connectionPoolProperties = Misc.getConnectionPoolProperties(confResString, "JDBC", dsName);
-					if (StringUtils.isNotEmpty(connectionPoolProperties)) {
-						realm.put("connectionPoolProperties", connectionPoolProperties);
-					}
-				}
+				realm = mapDataSource(realmName, dsName, confResString);
 			} else {
 				JmsSender js = new JmsSender();
 				js.setJmsRealm(realmName);
@@ -287,6 +274,49 @@ public final class ShowSecurityItems extends Base {
 		}
 
 		return jmsRealmList;
+	}
+
+	private ArrayList<Object> addDataSources() {
+		IDataSourceFactory dataSourceFactory = getIbisContext().getBean("dataSourceFactory", IDataSourceFactory.class);
+		List<String> dataSourceNames = dataSourceFactory.getDataSourceNames();
+		dataSourceNames.sort(Comparator.naturalOrder()); //AlphaNumeric order
+		String confResString = getConfigurationResources();
+
+		ArrayList<Object> dsList = new ArrayList<>();
+		for(String datasourceName : dataSourceNames) {
+			dsList.add(mapDataSource(null, datasourceName, confResString));
+		}
+		return dsList;
+	}
+
+	private Map<String, Object> mapDataSource(String jmsRealm, String datasourceName, String confResString) {
+		Map<String, Object> realm = new HashMap<>();
+		DirectQuerySender qs = getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
+
+		if(StringUtils.isNotEmpty(jmsRealm)) {
+			realm.put("name", jmsRealm);
+			qs.setJmsRealm(jmsRealm);
+		} else {
+			qs.setDatasourceName(datasourceName);
+		}
+
+		String dsInfo = null;
+		try {
+			qs.configure();
+			dsInfo = qs.getDatasourceInfo();
+		} catch (JdbcException | ConfigurationException e) {
+			log.debug("no datasource ("+ClassUtils.nameOf(e)+"): "+e.getMessage());
+		}
+		realm.put("datasourceName", datasourceName);
+		realm.put("info", dsInfo);
+
+		if (confResString!=null) {
+			String connectionPoolProperties = Misc.getConnectionPoolProperties(confResString, "JDBC", datasourceName);
+			if (StringUtils.isNotEmpty(connectionPoolProperties)) {
+				realm.put("connectionPoolProperties", connectionPoolProperties);
+			}
+		}
+		return realm;
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })

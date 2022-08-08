@@ -50,7 +50,7 @@ public class TransformerPoolNamespaceUnawarenessTest {
 
 		XmlWriter writer = new XmlWriter();
 		writer.setTextMode(true);
-		ContentHandler handler = tp.getTransformerFilter(null, writer, !namespaceAware);
+		ContentHandler handler = tp.getTransformerFilter(null, writer, !namespaceAware, false);
 		XmlUtils.parseXml(NAMESPACED_INPUT_MESSAGE, handler);
 
 		assertEquals(expectedResult, writer.toString());

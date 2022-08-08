@@ -34,11 +34,8 @@ import nl.nn.adapterframework.senders.MailSenderBase.MailSession;
 import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestAssertions;
-import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public abstract class MailSenderTestBase<S extends MailSenderBase> extends SenderTestBase<S> {
-
-	protected abstract String getTestRootFolder();
 
 	@Test(expected = SenderException.class)
 	public void noRecipient() throws Exception {
@@ -68,8 +65,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		ByteArrayOutputStream boas = new ByteArrayOutputStream();
 		message.writeTo(boas);
 		String rawResult = new String(boas.toByteArray());
-		String expected = TestFileUtils.getTestFile(getTestRootFolder()+file);
-		assertNotNull("expected folder ["+getTestRootFolder()+"] file ["+file+"] not found", expected);
+		String expected = getResource(file).asString();
 		rawResult = rawResult.replace(message.getMessageID(), "MESSAGE-ID");
 		rawResult = rawResult.replaceFirst("Date: (.+)", "Date: DATE");
 		int i = rawResult.indexOf("boundary=\"----");
@@ -140,13 +136,13 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		validateAddress(mailSession.getRecipientList().get(5),"bcc", "personalpart2","addresspart2@address.org");
 		validateAddress(mailSession.getFrom(),"from", "Me, Myself and I","myself@address.org");
 	}
-	
+
 	public void validateAddress(EMail address, String expectedType, String expectedPersonal, String expectedAddress) {
 		assertEquals(expectedAddress, address.getAddress());
 		assertEquals(expectedPersonal, address.getName());
 		assertEquals(expectedType, address.getType());
 	}
-	
+
 	@Test
 	public void mailWithMultipleRecipients() throws Exception {
 		String mailInput = "<email>"
@@ -376,7 +372,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		validateAuthentication(mailSession);
 		compare("mailWithBase64MessageAndAttachmentWithContentType.txt", message);
 	}
-	
+
 	@Test
 	public void mailWithBase64MessageAndAttachmentWithIllegalContentType() throws Exception {
 		String mailInput = "<email>"
@@ -401,7 +397,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		exception.expectMessage("mimeType [messageTypeWithoutASlash] of attachment [test.txt] must contain a forward slash ('/')");
 		sender.sendMessage(new Message(mailInput), session);
 	}
-	
+
 	@Test
 	public void mailWithPRC() throws Exception {
 		String mailInput = "<email/>";

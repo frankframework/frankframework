@@ -4,6 +4,7 @@
 	<!ENTITY Cache SYSTEM "./ConfigurationCache.xml">
 	<!ENTITY Checksum SYSTEM "./ConfigurationChecksum.xml">
 	<!ENTITY Zip SYSTEM "./ConfigurationZip.xml">
+	<!ENTITY Echo SYSTEM "./ConfigurationEcho.xml">
 	<!ENTITY ErrorMessageFormatter SYSTEM "./ConfigurationErrorMessageFormatter.xml">
 	<!ENTITY ExceptionPipe SYSTEM "./ConfigurationExceptionPipe.xml">
 	<!ENTITY ExchangeMail SYSTEM "./ConfigurationExchangeMail.xml">
@@ -69,6 +70,7 @@
 	&Cache;
 	&Checksum;
 	&Zip;
+	&Echo;
 	&ErrorMessageFormatter;
 	&ExceptionPipe;
 	&ExchangeMail;

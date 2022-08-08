@@ -29,7 +29,6 @@ import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.entity.ByteArrayEntity;
 import org.apache.logging.log4j.Logger;
 
 import com.microsoft.aad.msal4j.HttpRequest;
@@ -38,6 +37,7 @@ import com.microsoft.aad.msal4j.IHttpResponse;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.http.HttpMessageEntity;
 import nl.nn.adapterframework.http.HttpResponseHandler;
 import nl.nn.adapterframework.http.HttpSenderBase;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -45,12 +45,11 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * This class ensures that Microsoft Authentication Library (MSAL) requests are sent through the configured proxy and the correct SSLSocketFactory.
  * @see ExchangeFileSystem
- * 
+ *
  * @ff.protected
  */
 public class MsalClientAdapter extends HttpSenderBase implements IHttpClient {
@@ -110,23 +109,19 @@ public class MsalClientAdapter extends HttpSenderBase implements IHttpClient {
 			throw new SenderException("No URI to connect to!");
 		}
 
-		try {
-			switch (httpMethod) {
-			case GET:
-				HttpGet getMethod = new HttpGet(uri.getRawPath());
+		switch (httpMethod) {
+		case GET:
+			HttpGet getMethod = new HttpGet(uri.toString());
 
-				return appendHeaders(headers, getMethod);
-			case POST:
-				HttpEntityEnclosingRequestBase method = new HttpPost(uri.getRawPath());
-				HttpEntity entity = new ByteArrayEntity(message.asByteArray(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING)); //MSAL sets application/soap+xml later on
+			return appendHeaders(headers, getMethod);
+		case POST:
+			HttpEntityEnclosingRequestBase method = new HttpPost(uri.toString());
+			HttpEntity entity = new HttpMessageEntity(message); //No need to set the content-type, MSAL sets it to application/soap+xml later on
 
-				method.setEntity(entity);
-				return appendHeaders(headers, method);
-			default:
-					throw new NotImplementedException("method ["+httpMethod+"] has not been implemented");
-			}
-		} catch (IOException e) {
-			throw new SenderException("unable to parse message as bytearray", e);
+			method.setEntity(entity);
+			return appendHeaders(headers, method);
+		default:
+				throw new NotImplementedException("method ["+httpMethod+"] has not been implemented");
 		}
 	}
 

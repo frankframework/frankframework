@@ -31,19 +31,19 @@ import org.apache.logging.log4j.Logger;
  * 
  * @author Gerrit van Brakel
  */
-public abstract class MessagingSourceFactory  {
+public abstract class MessagingSourceFactory {
 	protected Logger log = LogUtil.getLogger(this);
 
 	protected abstract Map getMessagingSourceMap();
 	protected abstract Context createContext() throws NamingException;
 	protected abstract ConnectionFactory createConnectionFactory(Context context, String id, boolean createDestination, boolean useJms102) throws IbisException, NamingException;
-	
+
 	protected MessagingSource createMessagingSource(String id, String authAlias, boolean createDestination, boolean useJms102) throws IbisException {
 		Context context = getContext();
-		ConnectionFactory connectionFactory = getConnectionFactory(context, id, createDestination, useJms102); 
+		ConnectionFactory connectionFactory = getConnectionFactory(context, id, createDestination, useJms102);
 		return new MessagingSource(id, context, connectionFactory, getMessagingSourceMap(), authAlias, createDestination, useJms102);
 	}
-	
+
 	public synchronized MessagingSource getMessagingSource(String id, String authAlias, boolean createDestination, boolean useJms102) throws IbisException {
 		Map messagingSourceMap = getMessagingSourceMap();
 		MessagingSource result = (MessagingSource)messagingSourceMap.get(id);
@@ -54,7 +54,7 @@ public abstract class MessagingSourceFactory  {
 		result.increaseReferences();
 		return result;
 	}
-	
+
 	protected Context getContext() throws IbisException {
 		try {
 			return createContext();
@@ -70,5 +70,4 @@ public abstract class MessagingSourceFactory  {
 			throw new IbisException("could not obtain connectionFactory ["+id+"]", t);
 		}
 	}
-	
 }

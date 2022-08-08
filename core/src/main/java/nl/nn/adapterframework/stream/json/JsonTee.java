@@ -23,7 +23,7 @@ public class JsonTee implements JsonEventHandler {
 
 	private JsonEventHandler first;
 	private JsonEventHandler second;
-	
+
 	public JsonTee(JsonEventHandler first, JsonEventHandler second) {
 		this.first=first;
 		this.second=second;
@@ -76,5 +76,5 @@ public class JsonTee implements JsonEventHandler {
 		first.primitive(value);
 		second.primitive(value);
 	}
-	
+
 }

@@ -39,6 +39,7 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.PipeLine.ExitState;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
 import nl.nn.adapterframework.jmx.JmxAttribute;
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
@@ -79,6 +80,7 @@ import nl.nn.adapterframework.util.RunStateManager;
  *
  * @author Johan Verrips
  */
+@Category("Basic")
 public class Adapter implements IAdapter, NamedBean {
 	private @Getter @Setter ApplicationContext applicationContext;
 
@@ -237,7 +239,7 @@ public class Adapter implements IAdapter, NamedBean {
 		return configurationSucceeded;
 	}
 
-	/** 
+	/**
 	 * sends a warning to the log and to the messagekeeper of the adapter
 	 */
 	protected void warn(String msg) {
@@ -245,7 +247,7 @@ public class Adapter implements IAdapter, NamedBean {
 		getMessageKeeper().warn(msg);
 	}
 
-	/** 
+	/**
 	 * sends a warning to the log and to the messagekeeper of the adapter
 	 */
 	protected void addErrorMessageToMessageKeeper(String msg, Throwable t) {
@@ -717,7 +719,7 @@ public class Adapter implements IAdapter, NamedBean {
 
 	/**
 	 * The {@link PipeLine}.
-	 * 
+	 *
 	 * @ff.mandatory
 	 */
 	@Override
@@ -951,7 +953,7 @@ public class Adapter implements IAdapter, NamedBean {
 		return name;
 	}
 
-	/** 
+	/**
 	 * name of the adapter
 	 * @ff.mandatory
 	 */

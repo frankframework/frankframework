@@ -460,11 +460,11 @@ public class TransformerPool {
 	}
 
 	public TransformerFilter getTransformerFilter(ThreadConnector<?> threadConnector, ContentHandler handler) throws TransformerConfigurationException {
-		return getTransformerFilter(threadConnector, handler, false);
+		return getTransformerFilter(threadConnector, handler, false, false);
 	}
 
-	public TransformerFilter getTransformerFilter(ThreadConnector<?> threadConnector, ContentHandler handler, boolean removeNamespacesFromInput) throws TransformerConfigurationException {
-		return new TransformerFilter(threadConnector, getTransformerHandler(), handler, removeNamespacesFromInput);
+	public TransformerFilter getTransformerFilter(ThreadConnector<?> threadConnector, ContentHandler handler, boolean removeNamespacesFromInput, boolean handleLexicalEvents) throws TransformerConfigurationException {
+		return new TransformerFilter(threadConnector, getTransformerHandler(), handler, removeNamespacesFromInput, handleLexicalEvents);
 	}
 
 	public Map<String,String> getConfigMap() throws TransformerException, IOException, SAXException {

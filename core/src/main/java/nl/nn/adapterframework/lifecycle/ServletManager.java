@@ -93,7 +93,7 @@ public class ServletManager {
 	protected static void setupDefaultSecuritySettings(Properties properties) {
 		boolean isDtapStageLoc = "LOC".equalsIgnoreCase(properties.getProperty("dtap.stage"));
 		String isAuthEnabled = properties.getProperty(AUTH_ENABLED_KEY);
-		webSecurityEnabled = (isAuthEnabled != null) ? Boolean.parseBoolean(isAuthEnabled) : !isDtapStageLoc;
+		webSecurityEnabled = StringUtils.isNotEmpty(isAuthEnabled) ? Boolean.parseBoolean(isAuthEnabled) : !isDtapStageLoc;
 
 		String constraintType = properties.getProperty(HTTPS_ENABLED_KEY);
 		if (StringUtils.isNotEmpty(constraintType)) {
@@ -105,6 +105,10 @@ public class ServletManager {
 		} else if(isDtapStageLoc) {
 			defaultTransportGuarantee = TransportGuarantee.NONE;
 		}
+	}
+
+	public boolean isWebSecurityEnabled() {
+		return webSecurityEnabled;
 	}
 
 	/**

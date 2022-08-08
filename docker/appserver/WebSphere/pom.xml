@@ -45,7 +45,7 @@
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
-			<version>${h2.version}</version>
+			<version>${h2.driver.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.microsoft.sqlserver</groupId>
@@ -70,11 +70,11 @@
 		<dependency>
 			<groupId>org.mongodb</groupId>
 			<artifactId>mongodb-driver-sync</artifactId>
-			<version>4.2.3</version>
+			<version>${mongodb.driver.version}</version>
 		</dependency>
 		<dependency>
-		    <groupId>org.apache.activemq</groupId>
-		    <artifactId>artemis-jms-client-all</artifactId>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>artemis-jms-client-all</artifactId>
 			<version>${artemis.driver.version}</version>
 		</dependency>
 		<!-- required for ActiveMQ classic-->
@@ -86,7 +86,6 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.7.31</version>
 		</dependency>
 		<dependency>
 			<groupId>org.fusesource.hawtbuf</groupId>

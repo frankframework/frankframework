@@ -2,12 +2,39 @@ package nl.nn.adapterframework.pipes;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.Arrays;
+import java.util.Collection;
+
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunResult;
 
-public class JsonWellFormedCheckerTest extends PipeTestBase<JsonWellFormedChecker>{
+@RunWith(Parameterized.class)
+public class JsonWellFormedCheckerTest extends PipeTestBase<JsonWellFormedChecker> {
+
+	@Parameter(0)
+	public String input = null;
+	@Parameter(1)
+	public String forward = null;
+
+	@Parameters(name = "{index}: input [ {0} ] forward [{1}]")
+	public static Collection<Object[]> data() {
+		return Arrays.asList(new Object[][] {
+			{ "", "failure" },
+			{ "{\"input\":\"ok\"}", "success" },
+			{ "input=ok", "failure" },
+			{ "[]", "success" },
+			{ "[\"input\":{}]", "failure" },
+			{ "[\"input\"]", "success" },
+			{ "[\"input\", \"text\"]", "success" },
+			{ "[{}]", "success" },
+		});
+	}
 
 	@Override
 	public JsonWellFormedChecker createPipe() {
@@ -15,36 +42,11 @@ public class JsonWellFormedCheckerTest extends PipeTestBase<JsonWellFormedChecke
 	}
 
 	@Test
-	public void doFailureEmptyInputTest() throws Exception {
-		pipe.registerForward(createPipeFailureForward());
+	public void runTest() throws Exception {
+		pipe.registerForward( new PipeForward("failure", "path") );
 		pipe.configure();
 		pipe.start();
-		PipeRunResult pipeRunResult = doPipe(pipe, "", session);
-		assertEquals("failure", pipeRunResult.getPipeForward().getName());
+		PipeRunResult pipeRunResult = doPipe(pipe, input, session);
+		assertEquals(forward, pipeRunResult.getPipeForward().getName());
 	}
-
-	@Test
-	public void doSuccessTest() throws Exception {
-		pipe.registerForward(createPipeFailureForward());
-		pipe.configure();
-		pipe.start();
-		PipeRunResult pipeRunResult = doPipe(pipe, "{\"input\":\"ok\"}", session);
-		assertEquals("success", pipeRunResult.getPipeForward().getName());
-	}
-
-	@Test
-	public void doFailureNonWellFormedInputTest() throws Exception {
-		pipe.registerForward(createPipeFailureForward());
-		pipe.configure();
-		pipe.start();
-		PipeRunResult pipeRunResult = doPipe(pipe, "input=ok", session);
-		assertEquals("failure", pipeRunResult.getPipeForward().getName());
-	}
-
-	private PipeForward createPipeFailureForward() {
-		PipeForward pipeForward = new PipeForward();
-		pipeForward.setName("failure");
-		return pipeForward;
-	}
-
 }

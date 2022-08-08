@@ -18,6 +18,7 @@ package nl.nn.adapterframework.senders;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -38,6 +39,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.jta.IThreadConnectableTransactionManager;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
@@ -69,6 +71,7 @@ import nl.nn.adapterframework.xml.XmlWriter;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
+@SupportsOutputStreaming
 public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 
 	public final OutputType DEFAULT_OUTPUT_METHOD=OutputType.XML;
@@ -84,6 +87,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	private @Getter Boolean omitXmlDeclaration;
 	private @Getter Boolean indentXml=null;
 	private @Getter Boolean disableOutputEscaping=null;
+	private @Getter boolean handleLexicalEvents=false;
 	private @Getter boolean removeNamespaces=false;
 	private @Getter boolean skipEmptyTags=false;
 	private @Getter int xsltVersion=0; // set to 0 for auto detect.
@@ -96,8 +100,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 
 	protected ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
 	protected @Setter IThreadConnectableTransactionManager txManager;
-	private @Getter boolean streamingXslt;
-
+	private @Getter Boolean streamingXslt = null;
 
 	/**
 	 * The <code>configure()</code> method instantiates a transformer for the specified
@@ -108,7 +111,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		parameterNamesMustBeUnique = true;
 		super.configure();
 
-		streamingXslt = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, false);
+		if(streamingXslt == null) streamingXslt = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, false);
 		dynamicTransformerPoolMap = Collections.synchronizedMap(new LRUMap(transformerPoolMapSize));
 
 		if(StringUtils.isNotEmpty(getXpathExpression()) && getOutputType()==null) {
@@ -295,7 +298,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 			}
 
 
-			TransformerFilter mainFilter = poolToUse.getTransformerFilter(threadConnector, handler, isRemoveNamespaces());
+			TransformerFilter mainFilter = poolToUse.getTransformerFilter(threadConnector, handler, isRemoveNamespaces(), isHandleLexicalEvents());
 			if (pvl!=null) {
 				XmlUtils.setTransformerParameters(mainFilter.getTransformer(), pvl.getValueMap());
 			}
@@ -309,7 +312,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	}
 
 
-	protected XMLReader getXmlReader(PipeLineSession session, ContentHandler handler) throws ParserConfigurationException, SAXException {
+	protected XMLReader getXmlReader(PipeLineSession session, ContentHandler handler, BiConsumer<AutoCloseable,String> closeOnCloseRegister) throws ParserConfigurationException, SAXException {
 		return XmlUtils.getXMLReader(handler);
 	}
 
@@ -322,79 +325,82 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		if (message==null) {
 			throw new SenderException(getLogPrefix()+"got null input");
 		}
-		try {
-			try (ThreadConnector threadConnector = streamingXslt ? new ThreadConnector(this, threadLifeCycleEventListener, txManager, session) : null) {
-				try (MessageOutputStream target=MessageOutputStream.getTargetStream(this, session, next)) {
-					TransformerPool poolToUse = getTransformerPoolToUse(session);
-					ContentHandler handler = createHandler(message, threadConnector, session, poolToUse, target);
-					if (isDebugInput() && log.isDebugEnabled()) {
-						handler = new XmlTap(handler) {
-							@Override
-							public void endDocument() throws SAXException {
-								super.endDocument();
-								log.debug(getLogPrefix()+" xml input ["+getWriter()+"]");
-							}
-						};
-					}
-					XMLReader reader = getXmlReader(session, handler);
-					InputSource source = message.asInputSource();
-					reader.parse(source);
-					return target.getPipeRunResult();
+
+		try (ThreadConnector threadConnector = streamingXslt ? new ThreadConnector(this, threadLifeCycleEventListener, txManager, session) : null) {
+			try (MessageOutputStream target=MessageOutputStream.getTargetStream(this, session, next)) {
+				TransformerPool poolToUse = getTransformerPoolToUse(session);
+				ContentHandler handler = createHandler(message, threadConnector, session, poolToUse, target);
+				if (isDebugInput() && log.isDebugEnabled()) {
+					handler = new XmlTap(handler) {
+						@Override
+						public void endDocument() throws SAXException {
+							super.endDocument();
+							log.debug(getLogPrefix()+" xml input ["+getWriter()+"]");
+						}
+					};
 				}
+				XMLReader reader = getXmlReader(session, handler, (resource,label)->target.closeOnClose(resource));
+				InputSource source = message.asInputSource();
+				reader.parse(source);
+				return target.getPipeRunResult();
 			}
 		} catch (Exception e) {
-			throw new SenderException(getLogPrefix()+"Exception on transforming input", e);
+			throw new SenderException(getLogPrefix()+"Cannot transform input", e);
 		}
 	}
 
+	@IbisDoc({"If true, then this sender will process the XSLT while streaming in a different thread. Can be used to switch streaming off for debugging purposes","set by appconstant xslt.streaming.default"})
+	public void setStreamingXslt(Boolean streamingActive) {
+		this.streamingXslt = streamingActive;
+	}
 
 	@Override
 	public boolean isSynchronous() {
 		return true;
 	}
 
-	@IbisDoc({"1", "Location of stylesheet to apply to the input message", ""})
+	@IbisDoc({"Location of stylesheet to apply to the input message", ""})
 	public void setStyleSheetName(String stylesheetName){
 		this.styleSheetName=stylesheetName;
 	}
 
-	@IbisDoc({"2", "Session key to retrieve stylesheet location. Overrides stylesheetName or xpathExpression attribute", ""})
+	@IbisDoc({"Session key to retrieve stylesheet location. Overrides stylesheetName or xpathExpression attribute", ""})
 	public void setStyleSheetNameSessionKey(String newSessionKey) {
 		styleSheetNameSessionKey = newSessionKey;
 	}
 
-	@IbisDoc({"3", "Size of cache of stylesheets retrieved from styleSheetNameSessionKey", "100"})
+	@IbisDoc({"Size of cache of stylesheets retrieved from styleSheetNameSessionKey", "100"})
 	public void setStyleSheetCacheSize(int size) {
 		transformerPoolMapSize = size;
 	}
 
-	@IbisDoc({"4", "Alternatively: xpath-expression to create stylesheet from", ""})
+	@IbisDoc({"Alternatively: XPath-expression to create stylesheet from", ""})
 	public void setXpathExpression(String string) {
 		xpathExpression = string;
 	}
 
-	@IbisDoc({"5", "omit the xml declaration on top of the output. When not set, the value specified in the stylesheet is followed", "false, if not set in stylesheet"})
+	@IbisDoc({"Omit the XML declaration on top of the output. If not set, the value specified in the stylesheet is followed", "false, if not set in stylesheet"})
 	public void setOmitXmlDeclaration(Boolean b) {
 		omitXmlDeclaration = b;
 	}
 
-	@IbisDoc({"5", "when set <code>true</code>, any output is reparsed before being handled as XML again. When not set, the stylesheet is searched for <code>@disable-output-escaping='yes'</code> and the value is set accordingly", "false, if not set in stylesheet"})
+	@IbisDoc({"If set <code>true</code>, any output is reparsed before being handled as XML again. If not set, the stylesheet is searched for <code>@disable-output-escaping='yes'</code> and the value is set accordingly", "false, if not set in stylesheet"})
 	public void setDisableOutputEscaping(Boolean b) {
 		disableOutputEscaping = b;
 	}
 
-	@IbisDoc({"6", "Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions. For some use other cases (NOT xpathExpression), one entry can be without a prefix, that will define the default namespace. "+
+	@IbisDoc({"Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions. For some other use cases (NOT xpathExpression), one entry can be without a prefix, that will define the default namespace. "+
 				"If left empty, an the xpathExpression will match any namespace", ""})
 	public void setNamespaceDefs(String namespaceDefs) {
 		this.namespaceDefs = namespaceDefs;
 	}
 
-	@IbisDoc({"7", "For xpathExpression only", "text"})
+	@IbisDoc({"For xpathExpression only", "text"})
 	public void setOutputType(OutputType string) {
 		outputType = string;
 	}
 
-	@IbisDoc({"8", "when set <code>true</code>, result is pretty-printed. When not set, the value specified in the stylesheet is followed", "false, if not set in stylesheet"})
+	@IbisDoc({"If set <code>true</code>, result is pretty-printed. If not set, the value specified in the stylesheet is followed", "false, if not set in stylesheet"})
 	public void setIndentXml(Boolean b) {
 		indentXml = b;
 	}
@@ -405,27 +411,33 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		setRemoveNamespaces(!b);
 	}
 
-	@IbisDoc({"9", "when set <code>true</code> namespaces (and prefixes) in the input message are removed before transformation", "false"})
+	@IbisDoc({"If set <code>true</code> namespaces (and prefixes) in the input message are removed before transformation", "false"})
 	public void setRemoveNamespaces(boolean b) {
 		removeNamespaces = b;
 	}
 
-	@IbisDoc({"10", "when set <code>true</code> empty tags in the output are removed after transformation", "false"})
+	@IbisDoc({"If set <code>true</code>, the transformer is enabled to handle lexical events, allowing it for example to process comments and to distinghuish CDATA from escaped text. " +
+			"Beware that this option can cause spurious NullPointerExceptions due to a race condition in streaming XSLT 1.0 processing in Xalan 2.7.2", "false"})
+	public void setHandleLexicalEvents(boolean b) {
+		handleLexicalEvents = b;
+	}
+
+	@IbisDoc({"If set <code>true</code> empty tags in the output are removed after transformation", "false"})
 	public void setSkipEmptyTags(boolean b) {
 		skipEmptyTags = b;
 	}
 
-	@IbisDoc({"11", "when set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto detect", "0"})
+	@IbisDoc({"If set to <code>1</code> xslt processor 1.0 (org.apache.xalan) will be used, otherwise xslt processor 2.0 (net.sf.saxon). <code>0</code> will auto detect", "0"})
 	public void setXsltVersion(int xsltVersion) {
 		this.xsltVersion=xsltVersion;
 	}
 
-	@IbisDoc({"13", "when set <code>true</code> the input is written to the log file, at DEBUG level", "false"})
+	@IbisDoc({"If set <code>true</code> the input is written to the log file, at DEBUG level", "false"})
 	public void setDebugInput(boolean debugInput) {
 		this.debugInput = debugInput;
 	}
 
-	@IbisDoc({"14", "when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
+	@IbisDoc({"If set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
 	/**
 	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
 	 */

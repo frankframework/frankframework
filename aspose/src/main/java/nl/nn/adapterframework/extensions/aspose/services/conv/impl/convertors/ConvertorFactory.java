@@ -18,6 +18,7 @@ package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 import java.util.HashMap;
 import java.util.Map;
 
+import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
 
@@ -26,7 +27,7 @@ import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Convertor factory instantiates all convertor types and keeps them in a map.
- * 
+ *
  * @author Gerard van der Hoorn
  *
  */
@@ -36,14 +37,14 @@ public class ConvertorFactory {
 
 	private Map<MediaType, Convertor> convertorLookupMap = new HashMap<>();
 
-	public ConvertorFactory(CisConversionService cisConversionService, String pdfOutputlocation) {
-		addToConvertorLookupMap(new MailConvertor(cisConversionService, pdfOutputlocation));
-		addToConvertorLookupMap(new PdfStandaardConvertor(pdfOutputlocation));
-		addToConvertorLookupMap(new PdfConvertor(pdfOutputlocation));
-		addToConvertorLookupMap(new PdfImageConvertor(pdfOutputlocation));
-		addToConvertorLookupMap(new WordConvertor(cisConversionService, pdfOutputlocation));
-		addToConvertorLookupMap(new CellsConvertor(pdfOutputlocation));
-		addToConvertorLookupMap(new SlidesConvertor(pdfOutputlocation));
+	public ConvertorFactory(CisConversionService cisConversionService, CisConfiguration configuration) {
+		addToConvertorLookupMap(new MailConvertor(cisConversionService, configuration));
+		addToConvertorLookupMap(new PdfStandaardConvertor(configuration));
+		addToConvertorLookupMap(new PdfConvertor(configuration));
+		addToConvertorLookupMap(new PdfImageConvertor(configuration));
+		addToConvertorLookupMap(new WordConvertor(configuration));
+		addToConvertorLookupMap(new CellsConvertor(configuration));
+		addToConvertorLookupMap(new SlidesConvertor(configuration));
 	}
 
 	private void addToConvertorLookupMap(Convertor convertor) {

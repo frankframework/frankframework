@@ -151,49 +151,49 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		MailSession mail = new MailSession();
 		try {
 			pvl = paramList.getValues(input, session);
-			pv = pvl.getParameterValue("from");
+			pv = pvl.get("from");
 			if (pv != null) {
 				from = new EMail(pv.asStringValue(null));
 				log.debug("MailSender [" + getName() + "] retrieved from-parameter [" + from + "]");
 				mail.setFrom(from);
 			}
-			pv = pvl.getParameterValue("subject");
+			pv = pvl.get("subject");
 			if (pv != null) {
 				subject = pv.asStringValue(null);
 				log.debug("MailSender [" + getName() + "] retrieved subject-parameter [" + subject + "]");
 				mail.setSubject(subject);
 			}
-			pv = pvl.getParameterValue("threadTopic");
+			pv = pvl.get("threadTopic");
 			if (pv != null) {
 				threadTopic = pv.asStringValue(null);
 				log.debug("MailSender [" + getName() + "] retrieved threadTopic-parameter [" + threadTopic + "]");
 				mail.setThreadTopic(threadTopic);
 			}
-			pv = pvl.getParameterValue("message");
+			pv = pvl.get("message");
 			if (pv != null) {
 				String message = pv.asStringValue("message");
 				log.debug("MailSender [" + getName() + "] retrieved message-parameter [" + message + "]");
 				mail.setMessage(message);
 			}
-			pv = pvl.getParameterValue("messageType");
+			pv = pvl.get("messageType");
 			if (pv != null) {
 				messageType = pv.asStringValue(null);
 				log.debug("MailSender [" + getName() + "] retrieved messageType-parameter [" + messageType + "]");
 				mail.setMessageType(messageType);
 			}
-			pv = pvl.getParameterValue("messageBase64");
+			pv = pvl.get("messageBase64");
 			if (pv != null) {
 				messageBase64 = pv.asBooleanValue(false);
 				log.debug("MailSender [" + getName() + "] retrieved messageBase64-parameter [" + messageBase64 + "]");
 				mail.setMessageBase64(messageBase64);
 			}
-			pv = pvl.getParameterValue("charset");
+			pv = pvl.get("charset");
 			if (pv != null) {
 				charset = pv.asStringValue(null);
 				log.debug("MailSender [" + getName() + "] retrieved charset-parameter [" + charset + "]");
 				mail.setCharSet(charset);
 			}
-			pv = pvl.getParameterValue("recipients");
+			pv = pvl.get("recipients");
 			Collection<EMail> recipientsCollection = retrieveRecipientsFromParameterList(pv);
 			if (recipientsCollection != null && !recipientsCollection.isEmpty()) {
 				recipients = new ArrayList<EMail>(recipientsCollection);
@@ -202,7 +202,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 				throw new SenderException("Recipients cannot be empty. At least one recipient is required");
 			}
 
-			pv = pvl.getParameterValue("attachments");
+			pv = pvl.get("attachments");
 			Collection<MailAttachmentStream> attachmentsCollection = retrieveAttachmentsFromParamList(pv, session);
 			if (attachmentsCollection != null && !attachmentsCollection.isEmpty()) {
 				attachments = new ArrayList<MailAttachmentStream>(attachmentsCollection);

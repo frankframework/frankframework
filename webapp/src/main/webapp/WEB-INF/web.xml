@@ -171,63 +171,6 @@
 			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
 		</user-data-constraint>
 	</security-constraint>
-	<security-constraint>
-		<display-name>ObserverAccess</display-name>
-		<web-resource-collection>
-			<web-resource-name>ObserverAccessResourceCollection</web-resource-name>
-			<description>collection of url's for observer access</description>
-			<url-pattern>/FileViewerServlet</url-pattern>
-			<url-pattern>/testtool</url-pattern>
-			<url-pattern>/rest/*</url-pattern>
-		</web-resource-collection>
-		<auth-constraint>
-			<description></description>
-			<role-name>IbisObserver</role-name>
-			<role-name>IbisAdmin</role-name>
-			<role-name>IbisDataAdmin</role-name>
-			<role-name>IbisTester</role-name>
-		</auth-constraint>
-		<user-data-constraint>
-			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
-		</user-data-constraint>
-	</security-constraint>
-	<security-constraint>
-		<display-name>TesterAccess</display-name>
-		<web-resource-collection>
-			<web-resource-name>TesterAccessResourceCollection</web-resource-name>
-			<description>collection of url's for tester access</description>
-			<url-pattern>/larva/*</url-pattern>
-		</web-resource-collection>
-		<auth-constraint>
-			<description></description>
-			<role-name>IbisTester</role-name>
-		</auth-constraint>
-		<user-data-constraint>
-			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
-		</user-data-constraint>
-	</security-constraint>
-
-	<security-constraint>
-		<display-name>WebServiceAccess</display-name>
-		<web-resource-collection>
-			<web-resource-name>WebServiceAccessResourceCollection</web-resource-name>
-			<description>collection of url's for webservice access</description>
-			<url-pattern>/servlet/rpcrouter/*</url-pattern>
-			<url-pattern>/servlet/messagerouter</url-pattern>
-			<url-pattern>/services/*</url-pattern>
-			<url-pattern>/HttpListener</url-pattern>
-			<url-pattern>/rest/*</url-pattern>
-			<url-pattern>/cmis/*</url-pattern>
-		</web-resource-collection>
-		<auth-constraint>
-			<description></description>
-			<role-name>IbisWebService</role-name>
-			<role-name>IbisTester</role-name>
-		</auth-constraint>
-		<user-data-constraint>
-			<transport-guarantee>NONE</transport-guarantee>
-		</user-data-constraint>
-	</security-constraint>
 
 	<security-role>
 		<description>can call Ibis WebServices</description>

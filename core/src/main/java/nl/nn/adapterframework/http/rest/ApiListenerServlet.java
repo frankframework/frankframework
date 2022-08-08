@@ -16,18 +16,12 @@
 package nl.nn.adapterframework.http.rest;
 
 import java.io.IOException;
-import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonWriter;
-import javax.json.JsonWriterFactory;
-import javax.json.stream.JsonGenerator;
 import javax.mail.BodyPart;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMultipart;
@@ -38,9 +32,15 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.util.MimeType;
 
 import com.nimbusds.jose.util.JSONObjectUtils;
 
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonWriter;
+import jakarta.json.JsonWriterFactory;
+import jakarta.json.stream.JsonGenerator;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.http.HttpServletBase;
@@ -62,7 +62,7 @@ import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
- * 
+ *
  * @author Niels Meijer
  *
  */
@@ -392,7 +392,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						}
 					}
 				}
-				messageContext.put(UPDATE_ETAG_CONTEXT_KEY, listener.isUpdateEtag());
+				messageContext.put(UPDATE_ETAG_CONTEXT_KEY, listener.getUpdateEtag());
 
 				/**
 				 * Check authorization
@@ -400,7 +400,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				//TODO: authentication implementation
 
 				/**
-				 * Map uriIdentifiers into messageContext 
+				 * Map uriIdentifiers into messageContext
 				 */
 				String[] patternSegments = listener.getUriPattern().split("/");
 				String[] uriSegments = uri.split("/");
@@ -550,7 +550,14 @@ public class ApiListenerServlet extends HttpServletBase {
 				/**
 				 * Calculate an eTag over the processed result and store in cache
 				 */
-				if(messageContext.get(UPDATE_ETAG_CONTEXT_KEY, true)) {
+				Boolean updateEtag = messageContext.getBoolean(UPDATE_ETAG_CONTEXT_KEY);
+				if (updateEtag==null) {
+					updateEtag=listener.getUpdateEtag();
+				}
+				if (updateEtag==null) {
+					updateEtag=result==null || result.isRepeatable();
+				}
+				if(updateEtag) {
 					log.debug("calculating etags over processed result");
 					String cleanPattern = listener.getCleanPattern();
 					if(!Message.isEmpty(result) && method == HttpMethod.GET && cleanPattern != null) { //If the data has changed, generate a new eTag
@@ -581,27 +588,24 @@ public class ApiListenerServlet extends HttpServletBase {
 				 */
 				response.addHeader("Allow", (String) messageContext.get("allowedMethods"));
 
-				ContentType mimeType = listener.getContentType();
-				if(!Message.isEmpty(result) && StringUtils.isNotEmpty(result.getCharset())) {
-					try {
-						mimeType.setCharset(result.getCharset());
-					} catch (UnsupportedCharsetException e) {
-						log.warn("unable to set charset attribute on mimetype ["+mimeType.getContentType()+"]", e);
-					}
-				}
-				String contentType = mimeType.getContentType();
+				MimeType contentType = listener.getContentType();
 				if(listener.getProduces() == MediaTypes.ANY) {
 					Message parsedContentType = messageContext.getMessage("contentType");
 					if(!Message.isEmpty(parsedContentType)) {
-						contentType = parsedContentType.asString();
+						contentType = MimeType.valueOf(parsedContentType.asString());
 					} else {
-						String computedContentType = MessageUtils.computeContentType(result); //if produces=ANY and no sessionkey override
-						if(StringUtils.isNotEmpty(computedContentType)) {
-							contentType = computedContentType;
+						MimeType providedContentType = MessageUtils.getMimeType(result); // MimeType might be known
+						if(providedContentType != null) {
+							contentType = providedContentType;
 						}
 					}
+				} else if(listener.getProduces() == MediaTypes.DETECT) {
+					MimeType computedContentType = MessageUtils.computeMimeType(result); // Calculate MimeType
+					if(computedContentType != null) {
+						contentType = computedContentType;
+					}
 				}
-				response.setHeader("Content-Type", contentType);
+				response.setHeader("Content-Type", contentType.toString());
 
 				if(StringUtils.isNotEmpty(listener.getContentDispositionHeaderSessionKey())) {
 					String contentDisposition = messageContext.getMessage(listener.getContentDispositionHeaderSessionKey()).asString();
