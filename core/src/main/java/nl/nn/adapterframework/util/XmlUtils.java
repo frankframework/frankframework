@@ -1483,21 +1483,39 @@ public class XmlUtils {
 		int c;
 		int charCount = 0;
 		int counter = 0;
-		int pos = 0;
-		for(int i=0; i<len; i += charCount) {
-			c=Character.codePointAt(buf, i+offset);
+		int readPos = 0;
+		int writePos = 0;
+		while(readPos<len) { // while no shift needs to be made, loop and replace where necessary
+			c=Character.codePointAt(buf, readPos+offset);
+			charCount = Character.charCount(c);
+			if (isPrintableUnicodeChar(c, true)) {
+				readPos += charCount;
+			} else {
+				buf[offset+readPos]=REPLACE_NON_XML_CHAR;
+				if (charCount==1) {
+					readPos++;
+				} else {
+					writePos = readPos+1;
+					readPos += charCount;
+					break;
+				}
+			}
+		}
+		while(readPos<len) { // continue with loop and shift after replacement was shorter than original
+			c=Character.codePointAt(buf, readPos+offset);
 			charCount = Character.charCount(c);
 			if (isPrintableUnicodeChar(c, true)) {
 				for(int j=0;j<charCount;j++) {
-					buf[offset+pos++]=buf[offset+i+j];
+					buf[offset+writePos++]=buf[offset+readPos++];
 				}
 			} else {
-				buf[offset+pos++]=REPLACE_NON_XML_CHAR;
+				buf[offset+writePos++]=REPLACE_NON_XML_CHAR;
+				readPos+=charCount;
 				counter++;
 			}
 		}
 		if (counter>0 && log.isDebugEnabled()) log.debug("replaced ["+counter+"] non valid xml characters to ["+REPLACE_NON_XML_CHAR+"] in char array of length ["+len+"]");
-		return pos;
+		return writePos>0 ? writePos : readPos;
 	}
 
 	/**
