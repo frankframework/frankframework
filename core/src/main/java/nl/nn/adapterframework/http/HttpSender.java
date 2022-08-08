@@ -391,14 +391,7 @@ public class HttpSender extends HttpSenderBase {
 		return hmethod;
 	}
 
-	protected FormBodyPart createMultipartBodypart(String name, String message) {
-		if(postType.equals(PostType.MTOM)) {
-			return createMultipartBodypart(name, message, "application/xop+xml");
-		}
-		return createMultipartBodypart(name, message, null);
-	}
-
-	protected FormBodyPart createMultipartBodypart(String name, String message, String contentType) {
+	protected FormBodyPart createStringBodypart(String name, String message, String contentType) {
 		ContentType cType = ContentType.create("text/plain", getCharSet());
 		if(StringUtils.isNotEmpty(contentType))
 			cType = ContentType.create(contentType, getCharSet());
@@ -407,8 +400,10 @@ public class HttpSender extends HttpSenderBase {
 			.setName(name)
 			.setBody(new StringBody(message, cType));
 
-		if (StringUtils.isNotEmpty(getMtomContentTransferEncoding()))
+		// Should only be set when request is MTOM and it's the first BodyPart
+		if (postType.equals(PostType.MTOM) && StringUtils.isNotEmpty(getMtomContentTransferEncoding()) && name.equals(getFirstBodyPartName())) {
 			bodyPart.setField(MIME.CONTENT_TRANSFER_ENC, getMtomContentTransferEncoding());
+		}
 
 		return bodyPart.build();
 	}
@@ -433,7 +428,8 @@ public class HttpSender extends HttpSenderBase {
 			entity.setMtomMultipart();
 
 		if (StringUtils.isNotEmpty(getFirstBodyPartName())) {
-			entity.addPart(createMultipartBodypart(getFirstBodyPartName(), message));
+			String mimeType = (postType.equals(PostType.MTOM)) ? "application/xop+xml" : "text/plain"; // only the first part is XOP+XML, other parts should use their own content-type
+			entity.addPart(createStringBodypart(getFirstBodyPartName(), message, mimeType));
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+getFirstBodyPartName()+"] with value ["+message+"]");
 		}
 		if (parameters!=null) {
@@ -454,7 +450,7 @@ public class HttpSender extends HttpSenderBase {
 							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended filepart ["+name+"] with value ["+msg+"] and name ["+fileName+"]");
 						} else {
 							String value = msg.asString();
-							entity.addPart(createMultipartBodypart(name, value));
+							entity.addPart(createStringBodypart(name, value, "text/plain"));
 							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+name+"] with value ["+value+"]");
 						}
 					}
@@ -475,7 +471,7 @@ public class HttpSender extends HttpSenderBase {
 					throw new SenderException(getLogPrefix()+"error building multipart xml", e);
 				}
 				Collection<Node> parts = XmlUtils.getChildTags(partsElement, "part");
-				if (parts==null || parts.size()==0) {
+				if (parts==null || parts.isEmpty()) {
 					log.warn(getLogPrefix()+"no part(s) in multipart xml [" + multipartXml + "]");
 				} else {
 					Iterator<Node> iter = parts.iterator();
@@ -499,7 +495,7 @@ public class HttpSender extends HttpSenderBase {
 		if (partObject.isBinary()) {
 			return createMultipartBodypart(partSessionKey, partObject.asInputStream(), partName, partMimeType);
 		}
-		return createMultipartBodypart(partName, partObject.asString(), partMimeType);
+		return createStringBodypart(partName, partObject.asString(), partMimeType);
 	}
 
 	protected boolean validateResponseCode(int statusCode) {

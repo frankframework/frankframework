@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.http.mime;
 
-import java.io.File;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -29,13 +28,15 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.FormBodyPart;
 import org.apache.http.entity.mime.FormBodyPartBuilder;
 import org.apache.http.entity.mime.Header;
-import org.apache.http.entity.mime.content.ByteArrayBody;
 import org.apache.http.entity.mime.content.ContentBody;
-import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.InputStreamBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.Args;
+import org.springframework.util.MimeType;
+
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.MessageUtils;
 
 /**
  * Builder for (mtom-)multipart {@link HttpEntity}s.
@@ -129,37 +130,32 @@ public class MultipartEntityBuilder {
 		return addPart(FormBodyPartBuilder.create(name, contentBody).build());
 	}
 
-	public MultipartEntityBuilder addTextBody(String name, String text, ContentType contentType) {
-		return addPart(name, new StringBody(text, contentType));
+	public void addPart(String name, Message message) {
+		MimeType mimeType = MessageUtils.getMimeType(message);
+		ContentType contentType;
+		if(mimeType != null) {
+			contentType = ContentType.parse(mimeType.toString());
+		} else {
+			contentType = message.isBinary() ? ContentType.APPLICATION_OCTET_STREAM : ContentType.DEFAULT_TEXT;
+		}
+		addPart(name, new MessageContentBody(message, contentType));
 	}
 
+	/* utility methods */
 	public MultipartEntityBuilder addTextBody(String name, final String text) {
 		return addTextBody(name, text, ContentType.DEFAULT_TEXT);
 	}
-
-	public MultipartEntityBuilder addBinaryBody(String name, byte[] b, ContentType contentType, String filename) {
-		return addPart(name, new ByteArrayBody(b, contentType, filename));
-	}
-
-	public MultipartEntityBuilder addBinaryBody(String name, byte[] b) {
-		return addBinaryBody(name, b, ContentType.DEFAULT_BINARY, null);
-	}
-
-	public MultipartEntityBuilder addBinaryBody(String name, File file, ContentType contentType, String filename) {
-		return addPart(name, new FileBody(file, contentType, filename));
-	}
-
-	public MultipartEntityBuilder addBinaryBody(String name, File file) {
-		return addBinaryBody(name, file, ContentType.DEFAULT_BINARY, file != null ? file.getName() : null);
-	}
-
-	public MultipartEntityBuilder addBinaryBody(String name, InputStream stream, ContentType contentType, String filename) {
-		return addPart(name, new InputStreamBody(stream, contentType, filename));
+	public MultipartEntityBuilder addTextBody(String name, String text, ContentType contentType) {
+		return addPart(name, new StringBody(text, contentType));
 	}
 
 	public MultipartEntityBuilder addBinaryBody(String name, InputStream stream) {
 		return addBinaryBody(name, stream, ContentType.DEFAULT_BINARY, null);
 	}
+	public MultipartEntityBuilder addBinaryBody(String name, InputStream stream, ContentType contentType, String filename) {
+		return addPart(name, new InputStreamBody(stream, contentType, filename));
+	}
+	/* end utility methods */
 
 	private String generateBoundary() {
 		//See: https://tools.ietf.org/html/rfc2046#section-5.1.1

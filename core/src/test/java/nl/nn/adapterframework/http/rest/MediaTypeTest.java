@@ -20,6 +20,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,7 +43,7 @@ public class MediaTypeTest {
 
 	@Test
 	public void isConsumableXML() {
-		String acceptHeader = "text/html, application/xhtml+xml, application/xml;q=0.9, */*;q=0.8";
+		String acceptHeader = "application/xml;q=0.9";
 
 		assertTrue("can parse [XML]", MediaTypes.XML.isConsumable(acceptHeader));
 
@@ -51,7 +52,7 @@ public class MediaTypeTest {
 
 	@Test
 	public void isConsumableJSON() {
-		String acceptHeader = "text/html, application/json;q=0.9, */*;q=0.8";
+		String acceptHeader = "application/json;q=0.8";
 
 		assertFalse("can parse [XML]", MediaTypes.XML.isConsumable(acceptHeader));
 
@@ -75,7 +76,7 @@ public class MediaTypeTest {
 		acceptHeaders.add("multipart/mixed");
 
 		for(String header : acceptHeaders) {
-			String acceptHeader = header + "; type=text/html; q=0.7, "+header+"; level=2; q=0.4; boundary=--my-top-notch-boundary-";
+			String acceptHeader = header + "; type=text; q=0.7; boundary=--my-top-notch-boundary-";
 
 			assertTrue("can parse ["+header+"]", MediaTypes.MULTIPART.isConsumable(acceptHeader));
 		}
@@ -90,5 +91,37 @@ public class MediaTypeTest {
 	public void noCharsetOnOctetstreams() {
 		assertNull("octet-stream should not have a charset", MediaTypes.OCTET.getDefaultCharset());
 		assertNull("pdf should not have a charset", MediaTypes.PDF.getDefaultCharset());
+	}
+
+	@Test
+	public void toMimetype() {
+		assertNull("MediaType should not have a charset by default", MediaTypes.ANY.getDefaultCharset());
+		assertEquals("ContentType should be */* without charset", "*/*", MediaTypes.ANY.getMimeType().toString());
+	}
+
+	@Test
+	public void toMimetypeUtf8Charset() {
+		assertEquals("ContentType should have a charset UTF-8", "UTF-8", MediaTypes.TEXT.getDefaultCharset().name());
+		assertEquals("ContentType should be text/plain with utf-8 charset", "text/plain;charset=UTF-8", MediaTypes.TEXT.getMimeType(null).toString());
+	}
+
+	@Test
+	public void toMimetypeIsoCharset() {
+		assertEquals("text/plain;charset=ISO-8859-1", MediaTypes.TEXT.getMimeType("ISO-8859-1").toString());
+	}
+
+	@Test
+	public void toMimetypeAsciiCharset() {
+		assertEquals("text/plain;charset=US-ASCII", MediaTypes.TEXT.getMimeType("US-ASCII").toString());
+	}
+
+	@Test(expected=UnsupportedCharsetException.class)
+	public void faultyCharset() {
+		MediaTypes.TEXT.getMimeType("ISO-1234");
+	}
+
+	@Test(expected=UnsupportedCharsetException.class)
+	public void mimeTypeDoesNotSupportCharset() {
+		MediaTypes.PDF.getMimeType("ISO-8859-1");
 	}
 }
