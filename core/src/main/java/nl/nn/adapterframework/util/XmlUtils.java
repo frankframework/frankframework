@@ -1613,15 +1613,15 @@ public class XmlUtils {
 		}
 	}
 
-	static public boolean isWellFormed(String input) {
+	public static boolean isWellFormed(String input) {
 		return isWellFormed(input, null);
 	}
 
-	static public boolean isWellFormed(String input, String root) {
+	public static boolean isWellFormed(String input, String root) {
 		return isWellFormed(Message.asMessage(input), root);
 	}
 
-	static public boolean isWellFormed(Message input, String root) {
+	public static boolean isWellFormed(Message input, String root) {
 		RootValidations rootValidations = null;
 		if (StringUtils.isNotEmpty(root)) {
 			rootValidations = new RootValidations(root);

@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.MimeType;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -65,7 +66,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	private @Getter MediaTypes consumes = MediaTypes.ANY;
 	private @Getter MediaTypes produces = MediaTypes.ANY;
-	private @Getter ContentType producedContentType;
+	private @Getter MimeType contentType;
 	private String multipartBodyName = null;
 
 	private @Getter @Setter Receiver<String> receiver;
@@ -108,10 +109,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 			throw new ConfigurationException("jwksUrl cannot be empty");
 		}
 
-		producedContentType = new ContentType(produces);
-		if(charset != null) {
-			producedContentType.setCharset(charset);
-		}
+		contentType = produces.getMimeType(charset);
 	}
 
 	@Override
@@ -170,21 +168,17 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	/**
-	 * Match request ContentType to consumes enum to see if the listener accepts the message
+	 * Match request 'Content-Type' (eg. on POST) to consumes enum to see if the listener accepts the message
 	 */
 	public boolean isConsumable(String contentType) {
 		return consumes.isConsumable(contentType);
 	}
 
 	/**
-	 * Match accept header to produces enum to see if the client accepts the message
+	 * Match request 'Accept' header to produces enum to see if the client accepts the message
 	 */
 	public boolean accepts(String acceptHeader) {
-		return produces.equals(MediaTypes.ANY) || acceptHeader.contains("*/*") || acceptHeader.contains(produces.getContentType());
-	}
-
-	public ContentType getContentType() {
-		return producedContentType;
+		return produces.accepts(acceptHeader);
 	}
 
 	/**
@@ -236,9 +230,6 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		if(StringUtils.isNotEmpty(charset)) {
 			this.charset = charset;
 		}
-	}
-	public String getCharacterEncoding() {
-		return charset;
 	}
 
 	/**

@@ -32,7 +32,7 @@ public abstract class StreamingSenderBase extends SenderWithParametersBase imple
 		super.configure();
 		canProvideOutputStream = getParameterList()==null || !getParameterList().isInputValueOrContextRequiredForResolution();
 	}
-	
+
 	@Override
 	// can make this sendMessage() 'final', debugging handled by IStreamingSender.sendMessage(), that includes the MessageOutputStream
 	public final Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
@@ -52,5 +52,4 @@ public abstract class StreamingSenderBase extends SenderWithParametersBase imple
 	public boolean supportsOutputStreamPassThrough() {
 		return true;
 	}
-	
 }

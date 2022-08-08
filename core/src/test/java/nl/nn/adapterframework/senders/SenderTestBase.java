@@ -15,12 +15,22 @@
 */
 package nl.nn.adapterframework.senders;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.net.URL;
+
+import org.apache.commons.lang3.StringUtils;
+
 import nl.nn.adapterframework.core.ConfiguredTestBase;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.pipes.PipeTestBase;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.UrlMessage;
+import nl.nn.adapterframework.util.FilenameUtils;
 
 public abstract class SenderTestBase<S extends ISender> extends ConfiguredTestBase {
 
@@ -57,5 +67,24 @@ public abstract class SenderTestBase<S extends ISender> extends ConfiguredTestBa
 	}
 	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		return sender.sendMessage(message, session);
+	}
+
+	/**
+	 * Retrieves a file from the test-classpath, with the senders' classname as basepath.
+	 */
+	protected Message getResource(String resource) {
+		String base = sender.getClass().getSimpleName();
+		if(StringUtils.isEmpty(base)) {
+			Class<?> superClass = sender.getClass().getSuperclass();
+			if(superClass != null) {
+				base = superClass.getSimpleName();
+			}
+		}
+		assertTrue("unable to determine ["+sender+"] name", StringUtils.isNotEmpty(base));
+		String relativeUrl = FilenameUtils.normalize("/Senders/" + base + "/" + resource, true);
+
+		URL url = PipeTestBase.class.getResource(relativeUrl);
+		assertNotNull("unable to find resource ["+resource+"] in path ["+relativeUrl+"]", url);
+		return new UrlMessage(url);
 	}
 }

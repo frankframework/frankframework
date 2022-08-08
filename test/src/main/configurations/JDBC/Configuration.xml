@@ -2,9 +2,11 @@
 	<!ENTITY JdbcListener SYSTEM "./ConfigurationJdbcListener.xml">
 	<!ENTITY JdbcSenders SYSTEM "./ConfigurationJdbcSenders.xml">
 	<!ENTITY ConfigurationResultSetIteratingPipe SYSTEM "./ConfigurationResultSetIteratingPipe.xml">
+	<!ENTITY ManageDatabaseWrapper SYSTEM "./ConfigurationManageDatabaseWrapper.xml">
 ]>
 <configuration name="JDBC">
 	&JdbcListener;
 	&JdbcSenders;
 	&ConfigurationResultSetIteratingPipe;
+	&ManageDatabaseWrapper;
 </configuration>

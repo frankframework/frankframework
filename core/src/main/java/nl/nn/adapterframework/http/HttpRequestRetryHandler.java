@@ -54,6 +54,8 @@ public class HttpRequestRetryHandler extends DefaultHttpRequestRetryHandler {
 	}
 
 	/**
+	 * Only attempt to retry the request if the request supports it!
+	 * 
 	 * See org.apache.http.impl.execchain.RequestEntityProxy#isRepeatable(HttpRequest)
 	 */
 	public boolean isRepeatable(HttpRequest request) {
