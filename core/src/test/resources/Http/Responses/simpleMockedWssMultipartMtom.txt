@@ -11,7 +11,7 @@ Content-ID: <file>
 
 <xml>hello world</xml>
 --IGNORE
-Content-Type: application/xop+xml; charset=UTF-8
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Content-ID: <file>
 

@@ -417,7 +417,7 @@ public class Message implements Serializable {
 	 * Only works for binary messages
 	 * @param readLimit amount of bytes to read.
 	 */
-	public byte[] getMagic(int readLimit) throws IOException {
+	public synchronized byte[] getMagic(int readLimit) throws IOException {
 		if(!isBinary()) {
 			return readBytesFromCharacterData(readLimit);
 		}
