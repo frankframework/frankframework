@@ -22,6 +22,7 @@ import org.apache.tika.mime.MediaType;
 
 import com.aspose.pdf.exceptions.InvalidPasswordException;
 
+import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
 import nl.nn.adapterframework.stream.Message;
 
@@ -31,8 +32,8 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class PdfStandaardConvertor extends AbstractConvertor {
 
-	protected PdfStandaardConvertor(String pdfOutputLocation) {
-		super(pdfOutputLocation, new MediaType("application", "pdf"));
+	protected PdfStandaardConvertor(CisConfiguration configuration) {
+		super(configuration, new MediaType("application", "pdf"));
 	}
 
 	@Override

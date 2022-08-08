@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,13 +21,14 @@ import java.util.Map;
 import org.apache.logging.log4j.Logger;
 import org.apache.tika.mime.MediaType;
 
+import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionService;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Convertor factory instantiates all convertor types and keeps them in a map.
- * 
- * @author M64D844
+ *
+ * @author Gerard van der Hoorn
  *
  */
 public class ConvertorFactory {
@@ -36,14 +37,14 @@ public class ConvertorFactory {
 
 	private Map<MediaType, Convertor> convertorLookupMap = new HashMap<>();
 
-	public ConvertorFactory(CisConversionService cisConversionService, String pdfOutputlocation) {
-		addToConvertorLookupMap(new MailConvertor(cisConversionService, pdfOutputlocation));
-		addToConvertorLookupMap(new PdfStandaardConvertor(pdfOutputlocation));
-		addToConvertorLookupMap(new PdfConvertor(pdfOutputlocation));
-		addToConvertorLookupMap(new PdfImageConvertor(pdfOutputlocation));
-		addToConvertorLookupMap(new WordConvertor(cisConversionService, pdfOutputlocation));
-		addToConvertorLookupMap(new CellsConvertor(pdfOutputlocation));
-		addToConvertorLookupMap(new SlidesConvertor(pdfOutputlocation));
+	public ConvertorFactory(CisConversionService cisConversionService, CisConfiguration configuration) {
+		addToConvertorLookupMap(new MailConvertor(cisConversionService, configuration));
+		addToConvertorLookupMap(new PdfStandaardConvertor(configuration));
+		addToConvertorLookupMap(new PdfConvertor(configuration));
+		addToConvertorLookupMap(new PdfImageConvertor(configuration));
+		addToConvertorLookupMap(new WordConvertor(configuration));
+		addToConvertorLookupMap(new CellsConvertor(configuration));
+		addToConvertorLookupMap(new SlidesConvertor(configuration));
 	}
 
 	private void addToConvertorLookupMap(Convertor convertor) {

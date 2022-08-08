@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021 WeAreFrank!
+   Copyright 2019, 2021-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import com.aspose.cells.SaveFormat;
 import com.aspose.cells.Style;
 import com.aspose.cells.Workbook;
 
+import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
@@ -46,8 +47,8 @@ class CellsConvertor extends AbstractConvertor {
 		FILE_TYPE_MAP.put(XLSX_MEDIA_TYPE, "xlsx");
 	}
 
-	protected CellsConvertor(String pdfOutputLocation) {
-		super(pdfOutputLocation, XLS_MEDIA_TYPE, XLS_MEDIA_TYPE_MACRO_ENABLED, XLSX_MEDIA_TYPE);
+	protected CellsConvertor(CisConfiguration configuration) {
+		super(configuration, XLS_MEDIA_TYPE, XLS_MEDIA_TYPE_MACRO_ENABLED, XLSX_MEDIA_TYPE);
 	}
 
 	@Override
