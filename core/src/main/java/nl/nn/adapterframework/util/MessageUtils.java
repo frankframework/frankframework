@@ -45,7 +45,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
 
 public abstract class MessageUtils {
-	private static Logger LOG = LogUtil.getLogger(MessageUtils.class);
+	private static final Logger LOG = LogUtil.getLogger(MessageUtils.class);
 	private static int charsetConfidenceLevel = AppConstants.getInstance().getInt("charset.confidenceLevel", 65);
 
 	/**
@@ -187,6 +187,12 @@ public abstract class MessageUtils {
 		return mimeType;
 	}
 
+	public static boolean isMimeType(Message message, MimeType compareTo) {
+		Map<String, Object> context = message.getContext();
+		MimeType mimeType = (MimeType) context.get(MessageContext.METADATA_MIMETYPE);
+		return (mimeType != null && mimeType.includes(compareTo));
+	}
+
 	/**
 	 * Computes the {@link MimeType} when not available.
 	 * <p>
@@ -236,7 +242,7 @@ public abstract class MessageUtils {
 				}
 			}
 			return mimeType;
-		} catch (Throwable t) {
+		} catch (Exception t) {
 			LOG.warn("error parsing message to determine mimetype", t);
 		}
 
