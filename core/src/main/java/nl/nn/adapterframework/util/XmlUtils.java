@@ -237,7 +237,7 @@ public class XmlUtils {
 	public static Map<String,String> getXsltConfig(Resource source) throws TransformerException, IOException, SAXException {
 			return getXsltConfig(source.asSource());
 	}
-	public static Map<String,String> getXsltConfig(Source source) throws TransformerException, IOException, SAXException {
+	public static Map<String,String> getXsltConfig(Source source) throws TransformerException, IOException {
 		TransformerPool tp = getGetXsltConfigTransformerPool();
 		String metadataString = tp.transform(source);
 		StringTokenizer st1 = new StringTokenizer(metadataString,";");
@@ -673,9 +673,8 @@ public class XmlUtils {
 					log.debug("ignoring IndexOutOfBoundsException, as this only happens for an xml document that contains only the xml declartion, and not any body");
 				}
 				return xmlString.substring(endPos);
-			} else {
-				throw new IllegalArgumentException("no valid xml declaration in string ["+xmlString+"]");
 			}
+			throw new IllegalArgumentException("no valid xml declaration in string ["+xmlString+"]");
 		}
 		return xmlString;
 	}
@@ -692,9 +691,8 @@ public class XmlUtils {
 					log.debug("ignoring IndexOutOfBoundsException, as this only happens for an xml document that contains only the DocType declartion, and not any body");
 				}
 				return xmlString.substring(endPos);
-			} else {
-				throw new IllegalArgumentException("no valid xml declaration in string ["+xmlString+"]");
 			}
+			throw new IllegalArgumentException("no valid xml declaration in string ["+xmlString+"]");
 		}
 		return xmlString;
 	}
@@ -786,7 +784,7 @@ public class XmlUtils {
 		return namespaceMap;
 	}
 
-	public static String createXPathEvaluatorSource(String XPathExpression)	throws TransformerConfigurationException {
+	public static String createXPathEvaluatorSource(String XPathExpression) {
 		return createXPathEvaluatorSource(XPathExpression, OutputType.TEXT);
 	}
 
@@ -991,7 +989,7 @@ public class XmlUtils {
 		return createTransformer(stylesource, xsltVersion);
 	}
 
-	public static Transformer createTransformer(URL url) throws TransformerConfigurationException, IOException {
+	public static Transformer createTransformer(URL url) throws TransformerConfigurationException {
 		try {
 			return createTransformer(url, detectXsltVersion(url));
 		} catch (Exception e) {
@@ -1226,10 +1224,10 @@ public class XmlUtils {
 	}
 
 	static private char toHexChar(int digitValue) {
-		if (digitValue < 10)
+		if (digitValue < 10) {
 			return (char) ('0' + digitValue);
-		else
-			return (char) ('A' + (digitValue - 10));
+		}
+		return (char) ('A' + (digitValue - 10));
 	}
 
 	/**
@@ -1478,8 +1476,28 @@ public class XmlUtils {
 	/**
 	 * Replaces non-unicode-characters by '0x00BF' (inverted question mark).
 	 */
-	public static String encodeCdataString(String string) {
-		return replaceNonValidXmlCharacters(string, REPLACE_NON_XML_CHAR, false, true);
+	public static int replaceNonPrintableCharacters(char[] buf, int offset, int len) {
+		if (len<0) {
+			return len;
+		}
+		int c;
+		int charCount = 0;
+		int counter = 0;
+		int pos = 0;
+		for(int i=0; i<len; i += charCount) {
+			c=Character.codePointAt(buf, i+offset);
+			charCount = Character.charCount(c);
+			if (isPrintableUnicodeChar(c, true)) {
+				for(int j=0;j<charCount;j++) {
+					buf[offset+pos++]=buf[offset+i+j];
+				}
+			} else {
+				buf[offset+pos++]=REPLACE_NON_XML_CHAR;
+				counter++;
+			}
+		}
+		if (counter>0 && log.isDebugEnabled()) log.debug("replaced ["+counter+"] non valid xml characters to ["+REPLACE_NON_XML_CHAR+"] in char array of length ["+len+"]");
+		return pos;
 	}
 
 	/**
@@ -1493,30 +1511,30 @@ public class XmlUtils {
 	public static String replaceNonValidXmlCharacters(String string, char to, boolean appendCharNum, boolean allowUnicodeSupplementaryCharacters) {
 		if (string==null) {
 			return null;
-		} else {
-			int length = string.length();
-			StringBuilder encoded = new StringBuilder(length);
-			int c;
-			int counter = 0;
-			for (int i = 0; i < length; i += Character.charCount(c)) {
-				c=string.codePointAt(i);
-				if (isPrintableUnicodeChar(c, allowUnicodeSupplementaryCharacters)) {
-					encoded.appendCodePoint(c);
-				} else {
-					if (appendCharNum) {
-						encoded.append(to + "#" + c + ";");
-					} else {
-						encoded.append(to);
-					}
-					counter++;
-				}
-			}
-			if (counter>0) {
-				if (log.isDebugEnabled()) log.debug("replaced ["+counter+"] non valid xml characters to ["+to+"] in string of length ["+length+"]");
-			}
-			return encoded.toString();
 		}
+		int length = string.length();
+		StringBuilder encoded = new StringBuilder(length);
+		int c;
+		int counter = 0;
+		for (int i = 0; i < length; i += Character.charCount(c)) {
+			c=string.codePointAt(i);
+			if (isPrintableUnicodeChar(c, allowUnicodeSupplementaryCharacters)) {
+				encoded.appendCodePoint(c);
+			} else {
+				if (appendCharNum) {
+					encoded.append(to + "#" + c + ";");
+				} else {
+					encoded.append(to);
+				}
+				counter++;
+			}
+		}
+		if (counter>0) {
+			if (log.isDebugEnabled()) log.debug("replaced ["+counter+"] non valid xml characters to ["+to+"] in string of length ["+length+"]");
+		}
+		return encoded.toString();
 	}
+
 
 	public static String stripNonValidXmlCharacters(String string, boolean allowUnicodeSupplementaryCharacters) {
 		int length = string.length();
@@ -1587,7 +1605,7 @@ public class XmlUtils {
 		return transformXml(t, stringToSourceForSingleUse(s, namespaceAware));
 	}
 
-	public static void transformXml(Transformer t, String s, Result result) throws TransformerException, IOException, SAXException {
+	public static void transformXml(Transformer t, String s, Result result) throws TransformerException, SAXException {
 		synchronized (t) {
 			t.transform(stringToSourceForSingleUse(s), result);
 		}
@@ -1604,8 +1622,7 @@ public class XmlUtils {
 
 	}
 
-	public static void transformXml(Transformer t, Source s, Writer out)
-		throws TransformerException, IOException {
+	public static void transformXml(Transformer t, Source s, Writer out) throws TransformerException {
 
 		Result result = new StreamResult(out);
 		synchronized (t) {

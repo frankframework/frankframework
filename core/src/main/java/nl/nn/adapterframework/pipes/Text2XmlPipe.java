@@ -78,11 +78,7 @@ public class Text2XmlPipe extends StreamingPipe {
 					@Override
 					public int read(char[] cbuf, int off, int len) throws IOException {
 						int lenRead = super.read(cbuf, off, len);
-						if (lenRead>0) {
-							String out = XmlUtils.encodeCdataString(new String(cbuf, off, lenRead)); // replacement is always a single character
-							System.arraycopy(out.toCharArray(),0,cbuf,off,lenRead);
-						}
-						return lenRead;
+						return XmlUtils.replaceNonPrintableCharacters(cbuf, off, lenRead);
 					}
 					
 				} : new EncapsulatingReader(message.asReader(), prefix, suffix);
@@ -105,8 +101,11 @@ public class Text2XmlPipe extends StreamingPipe {
 							if(isUseCdataSection()) {
 								((LexicalHandler) handler).startCDATA();
 							}
-							line = isReplaceNonXmlChars() ? XmlUtils.encodeCdataString(line) : line;
-							handler.characters(line.toCharArray(), 0, line.length());
+							char[] characters = line.toCharArray();
+							if (isReplaceNonXmlChars()) {
+								XmlUtils.replaceNonPrintableCharacters(characters, 0, characters.length);
+							}
+							handler.characters(characters, 0, characters.length);
 							lineWritten=true;
 							if(isUseCdataSection()) {
 								((LexicalHandler) handler).endCDATA();
