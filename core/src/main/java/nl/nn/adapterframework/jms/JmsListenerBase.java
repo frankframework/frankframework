@@ -357,9 +357,12 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		forceMessageIdAsCorrelationId = force;
 	}
 
-
-	@IbisDoc({"Receive timeout <i>in milliseconds</i> as specified by the JMS API, see https://docs.oracle.com/javaee/7/api/javax/jms/MessageConsumer.html#receive-long-", "1000"})
+	@Deprecated
 	public void setTimeOut(long newTimeOut) {
+		timeOut = newTimeOut;
+	}
+	@IbisDoc({"Receive timeout <i>in milliseconds</i> as specified by the JMS API, see https://docs.oracle.com/javaee/7/api/javax/jms/MessageConsumer.html#receive-long-", "1000"})
+	public void setTimeout(long newTimeOut) {
 		timeOut = newTimeOut;
 	}
 
