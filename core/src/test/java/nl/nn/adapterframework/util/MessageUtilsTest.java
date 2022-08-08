@@ -2,6 +2,8 @@ package nl.nn.adapterframework.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.net.URL;
 
@@ -35,6 +37,56 @@ public class MessageUtilsTest {
 		String hash = MessageUtils.generateMD5Hash(message);
 		assertNotNull(hash);
 		assertEquals("hash should be the same", MessageUtils.generateMD5Hash(message), hash);
+	}
+
+	@Test
+	public void testComputeMimeTypeWithISO8559Charset() throws Exception {
+		URL url = ClassUtils.getResourceURL("/Util/MessageUtils/iso-8859-1.txt");
+		Message message = new UrlMessage(url);
+		MimeType mimeType = MessageUtils.computeMimeType(message);
+		assertTrue("Content-Type header ["+mimeType.toString()+"] does not contain [text/plain]", mimeType.toString().contains("text/plain"));
+		assertTrue("Content-Type header ["+mimeType.toString()+"] does not contain correct [charset]", mimeType.toString().contains("charset=ISO-8859-1"));
+	}
+
+	@Test
+	public void testComputeMimeTypeBinaryContent() throws Exception {
+		URL url = ClassUtils.getResourceURL("/Logging/pdf-parsed-with-wrong-charset.pdf");
+		Message message = new UrlMessage(url);
+		MimeType mimeType = MessageUtils.computeMimeType(message);
+		assertTrue("Content-Type header ["+mimeType.toString()+"] does not contain [application/pdf]", mimeType.toString().contains("application/pdf"));
+		assertNull("Content-Type header ["+mimeType.toString()+"] may not contain a charset", mimeType.getParameter("charset"));
+	}
+
+	@Test
+	public void testComputeMimeTypeBinaryContentTwice() throws Exception {
+		URL url = ClassUtils.getResourceURL("/Logging/pdf-parsed-with-wrong-charset.pdf");
+		Message message = new UrlMessage(url);
+		MimeType mimeType = MessageUtils.computeMimeType(message);
+		MessageUtils.computeMimeType(message);
+		assertTrue("Content-Type header ["+mimeType.toString()+"] does not contain [application/pdf]", mimeType.toString().contains("application/pdf"));
+		assertNull("Content-Type header ["+mimeType.toString()+"] may not contain a charset", mimeType.getParameter("charset"));
+	}
+
+	@Test
+	public void testComputeMimeTypeWithISO8559CharsetAuto() throws Exception {
+		URL url = ClassUtils.getResourceURL("/Util/MessageUtils/iso-8859-1.txt");
+		Message message = new UrlMessage(url);
+		message.getContext().put(MessageContext.METADATA_CHARSET, "auto");
+
+		MimeType mimeType = MessageUtils.computeMimeType(message);
+		assertTrue("Content-Type header ["+mimeType.toString()+"] does not contain [text/plain]", mimeType.toString().contains("text/plain"));
+		assertTrue("Content-Type header ["+mimeType.toString()+"] does not contain correct [charset]", mimeType.toString().contains("charset=ISO-8859-1"));
+	}
+
+	@Test
+	public void testComputeMimeTypeWithISO8559CharsetUTF8() throws Exception {
+		URL url = ClassUtils.getResourceURL("/Util/MessageUtils/iso-8859-1.txt");
+		Message message = new UrlMessage(url);
+		message.getContext().put(MessageContext.METADATA_CHARSET, "utf-8"); //Is wrong, but it's been set, to must be used...
+
+		MimeType mimeType = MessageUtils.computeMimeType(message);
+		assertTrue("Content-Type header ["+mimeType.toString()+"] does not contain [text/plain]", mimeType.toString().contains("text/plain"));
+		assertTrue("Content-Type header ["+mimeType.toString()+"] does not contain correct [charset]", mimeType.toString().contains("charset=UTF-8"));
 	}
 
 	@Test

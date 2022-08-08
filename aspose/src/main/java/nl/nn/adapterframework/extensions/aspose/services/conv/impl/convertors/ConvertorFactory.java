@@ -42,7 +42,7 @@ public class ConvertorFactory {
 		addToConvertorLookupMap(new PdfStandaardConvertor(configuration));
 		addToConvertorLookupMap(new PdfConvertor(configuration));
 		addToConvertorLookupMap(new PdfImageConvertor(configuration));
-		addToConvertorLookupMap(new WordConvertor(cisConversionService, configuration));
+		addToConvertorLookupMap(new WordConvertor(configuration));
 		addToConvertorLookupMap(new CellsConvertor(configuration));
 		addToConvertorLookupMap(new SlidesConvertor(configuration));
 	}

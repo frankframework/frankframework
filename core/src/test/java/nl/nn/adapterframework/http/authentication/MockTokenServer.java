@@ -3,6 +3,7 @@ package nl.nn.adapterframework.http.authentication;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.any;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 
 import com.github.tomakehurst.wiremock.http.Fault;
@@ -61,7 +62,7 @@ public class MockTokenServer extends WireMockRule {
 						.withStatus(200)
 						.withHeader("Content-Type", "application/json")
 						.withBody(accessTokenResponseExpired)));
-		stubFor(any(urlEqualTo(path)).inScenario(SCENARIO_CONNECTION_RESET)
+		stubFor(any(urlPathMatching(path)).inScenario(SCENARIO_CONNECTION_RESET)
 					.whenScenarioStateIs(SCENARIO_STATE_RESET_CONNECTION)
 					.willSetStateTo(Scenario.STARTED)
 					.willReturn(aResponse().withFault(Fault.CONNECTION_RESET_BY_PEER)));

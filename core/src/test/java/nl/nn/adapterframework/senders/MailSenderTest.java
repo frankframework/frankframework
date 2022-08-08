@@ -25,7 +25,7 @@ public class MailSenderTest extends MailSenderTestBase<MailSender> {
 					mailSession = super.createSession();
 					Provider provider = new Provider(Type.TRANSPORT, "smtp", TransportMock.class.getCanonicalName(), "IbisSource.org", "1.0");
 					mailSession.setProvider(provider);
-	
+
 					return mailSession;
 				} catch(Exception e) {
 					e.printStackTrace();
@@ -45,11 +45,6 @@ public class MailSenderTest extends MailSenderTestBase<MailSender> {
 		mailSender.setSmtpUserid("user123");
 		mailSender.setSmtpPassword("secret321");
 		return mailSender;
-	}
-
-	@Override
-	protected String getTestRootFolder() {
-		return "/MailSender/";
 	}
 
 	@Override

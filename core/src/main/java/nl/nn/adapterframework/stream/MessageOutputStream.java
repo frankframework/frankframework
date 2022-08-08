@@ -48,21 +48,21 @@ import nl.nn.adapterframework.xml.XmlWriter;
 
 public class MessageOutputStream implements AutoCloseable {
 	protected static Logger log = LogUtil.getLogger(MessageOutputStream.class);
-	
+
 	private INamedObject owner;
 	protected Object requestStream;
 	private Message response;
 	private PipeForward forward;
 	private String conversionCharset;
-	
+
 	private MessageOutputStream nextStream;
 	private MessageOutputStream tail;
-	
+
 	private Set<AutoCloseable> resourcesToClose;
-	
+
 	private ThreadConnector<?> threadConnector;
 	private ThreadConnector<?> targetThreadConnector;
-	
+
 	protected MessageOutputStream(INamedObject owner, IForwardTarget next, String conversionCharset) {
 		this.owner=owner;
 		this.conversionCharset=conversionCharset;
@@ -74,7 +74,7 @@ public class MessageOutputStream implements AutoCloseable {
 		this.conversionCharset=conversionCharset;
 		connect(nextStream);
 	}
-	
+
 	public MessageOutputStream(INamedObject owner, OutputStream stream, IForwardTarget next) {
 		this(owner, stream, next, null);
 	}
@@ -89,7 +89,7 @@ public class MessageOutputStream implements AutoCloseable {
 		this(owner, nextStream, conversionCharset);
 		this.requestStream=stream;
 	}
-	
+
 	public MessageOutputStream(INamedObject owner, Writer writer, IForwardTarget next) {
 		this(owner, writer, next, null);
 	}
@@ -104,7 +104,7 @@ public class MessageOutputStream implements AutoCloseable {
 		this(owner, nextStream, conversionCharset);
 		this.requestStream=writer;
 	}
-	
+
 	// this constructor for testing only
 	<T> MessageOutputStream(ContentHandler handler) {
 		this(null, (IForwardTarget)null, null);
@@ -117,7 +117,7 @@ public class MessageOutputStream implements AutoCloseable {
 		threadConnector = new ThreadConnector<T>(owner, threadLifeCycleEventListener, txManager, session);
 		this.targetThreadConnector = targetThreadConnector;
 	}
-	
+
 	// this constructor for testing only
 	<T> MessageOutputStream(JsonEventHandler handler) {
 		this(null, (IForwardTarget)null, null);
@@ -141,7 +141,7 @@ public class MessageOutputStream implements AutoCloseable {
 			tail=nextStream.tail;
 		}
 	}
-	
+
 	protected void setRequestStream(Object requestStream) {
 		this.requestStream = requestStream;
 	}
@@ -159,14 +159,14 @@ public class MessageOutputStream implements AutoCloseable {
 	public void afterClose() throws Exception {
 		// can be overridden when necessary
 	}
-	
+
 	public void closeOnClose(AutoCloseable resource) {
 		if (resourcesToClose==null) {
 			resourcesToClose = new LinkedHashSet<>();
 		}
 		resourcesToClose.add(resource);
 	}
-	
+
 	@Override
 	public final void close() throws Exception {
 		try {
@@ -220,11 +220,11 @@ public class MessageOutputStream implements AutoCloseable {
 		}
 		return "MessageOutputStream of "+ClassUtils.nameOf(owner)+" ";
 	}
-	
+
 	public OutputStream asStream() throws StreamingException {
 		return asStream(null);
 	}
-	
+
 	public OutputStream asStream(String charset) throws StreamingException {
 		if (requestStream instanceof OutputStream) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix() + "returning OutputStream as OutputStream");
@@ -347,7 +347,7 @@ public class MessageOutputStream implements AutoCloseable {
 		}
 		log.warn("captureCharacterStream() called before stream is installed.");
 	}
-	
+
 	public ByteArrayOutputStream captureBinaryStream() {
 		ByteArrayOutputStream result = new ByteArrayOutputStream();
 		captureBinaryStream(result);
@@ -378,7 +378,7 @@ public class MessageOutputStream implements AutoCloseable {
 		}
 		log.warn("captureBinaryStream() called before stream is installed.");
 	}
-	
+
 	/**
 	 * Response message, e.g. the filename, of the {IOutputStreamTarget target}
 	 * after processing the stream. It is the responsibility of the
