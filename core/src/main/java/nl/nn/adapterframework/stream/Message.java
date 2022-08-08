@@ -241,7 +241,7 @@ public class Message implements Serializable {
 	}
 
 	public boolean isRepeatable() {
-		return request instanceof String || request instanceof ThrowingSupplier || request instanceof byte[] || request instanceof ByteArrayInputStream || request instanceof Node;
+		return request instanceof String || request instanceof ThrowingSupplier || request instanceof byte[] || request instanceof Node;
 	}
 
 	/**

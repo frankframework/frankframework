@@ -91,31 +91,26 @@ public class HttpMessageEntity extends AbstractHttpEntity {
 	@Override
 	public void writeTo(OutputStream outStream) throws IOException {
 		int length = Math.toIntExact(getContentLength());
-		if(message.requiresStream()) {
-			try (InputStream inStream = message.asInputStream()) {
-				final byte[] buffer = new byte[OUTPUT_BUFFER_SIZE];
-				int readLen;
-				if(length < 0) {
-					// consume until EOF
-					while((readLen = inStream.read(buffer)) != -1) {
-						outStream.write(buffer, 0, readLen);
+		try (InputStream inStream = message.asInputStream()) {
+			final byte[] buffer = new byte[OUTPUT_BUFFER_SIZE];
+			int readLen;
+			if(length < 0) {
+				// consume until EOF
+				while((readLen = inStream.read(buffer)) != -1) {
+					outStream.write(buffer, 0, readLen);
+				}
+			} else {
+				// consume no more than length
+				long remaining = length;
+				while(remaining > 0) {
+					readLen = inStream.read(buffer, 0, (int) Math.min(OUTPUT_BUFFER_SIZE, remaining));
+					if(readLen == -1) {
+						break;
 					}
-				} else {
-					// consume no more than length
-					long remaining = length;
-					while(remaining > 0) {
-						readLen = inStream.read(buffer, 0, (int) Math.min(OUTPUT_BUFFER_SIZE, remaining));
-						if(readLen == -1) {
-							break;
-						}
-						outStream.write(buffer, 0, readLen);
-						remaining -= readLen;
-					}
+					outStream.write(buffer, 0, readLen);
+					remaining -= readLen;
 				}
 			}
-		} else {
-			outStream.write(message.asByteArray(), 0, length);
-			outStream.flush();
 		}
 	}
 }
