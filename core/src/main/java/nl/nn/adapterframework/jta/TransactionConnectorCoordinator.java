@@ -47,7 +47,7 @@ public class TransactionConnectorCoordinator<T,R> implements AutoCloseable {
 		transaction = this.txManager.getCurrentTransaction();
 		suspendTransaction();
 	}
-	
+
 	public static <T,R> TransactionConnectorCoordinator<T,R> getInstance(IThreadConnectableTransactionManager<T,R> txManager) {
 		if (txManager==null) {
 			throw new IllegalStateException("txManager is null");
@@ -68,12 +68,12 @@ public class TransactionConnectorCoordinator<T,R> implements AutoCloseable {
 		log.debug("setting lastInThread [{}] to target [{}]", lastInThread, target);
 		lastInThread = target;
 	}
-	
+
 	public boolean isLastInThread(TransactionConnector<T,R> target) {
 		log.debug("comparing lastInThread [{}] to target [{}]", lastInThread, target);
 		return lastInThread==target;
 	}
-	
+
 	/**
 	 * Execute an action with the thread prepared for enlisting transactional resources.
 	 * To be called for obtaining transactional resources (like JDBC connections) if a TransactionConnector might already have been created on the thread.
@@ -106,8 +106,8 @@ public class TransactionConnectorCoordinator<T,R> implements AutoCloseable {
 		}
 		return false;
 	}
-	
-	
+
+
 	public void resumeTransactionInChildThread(TransactionConnector<T,R> requester) {
 		Thread thread = Thread.currentThread();
 		if (thread!=parentThread) {
@@ -128,21 +128,21 @@ public class TransactionConnectorCoordinator<T,R> implements AutoCloseable {
 			log.debug("suspending transaction of parent thread [{}], current thread [{}]", ()->parentThread.getName(), ()->Thread.currentThread().getName());
 			resourceHolder = this.txManager.suspendTransaction(transaction);
 			suspended = true;
-		} else {	
+		} else {
 			log.debug("transaction of parent thread [{}] was already suspended, current thread [{}]", ()->parentThread.getName(), ()->Thread.currentThread().getName());
 		}
 	}
-	
+
 	public void resumeTransaction() {
 		resumeTransaction(false);
 	}
 	public void resumeTransaction(boolean force) {
 		if (suspended || force) {
 			log.debug("resumeTransaction() resuming transaction of parent thread [{}], current thread [{}]", ()->parentThread.getName(), ()->Thread.currentThread().getName());
-			if (!force || !TransactionSynchronizationManager.isSynchronizationActive()) {
+			if (!TransactionSynchronizationManager.isSynchronizationActive()) {
 				txManager.resumeTransaction(transaction, resourceHolder);
 			}
-		} else {	
+		} else {
 			log.debug("resumeTransaction() transaction of parent thread [{}] was already resumed, current thread [{}]", ()->parentThread.getName(), ()->Thread.currentThread().getName());
 		}
 		suspended = false;
