@@ -29,6 +29,7 @@ import nl.nn.adapterframework.util.EnumUtils;
 public enum MediaTypes {
 
 	ANY("*/*", null),
+	/** (Only for produces) Attempts to detect the MimeType as well as charset when not known */
 	DETECT("*/*"),
 	TEXT("text/plain"),
 	XML("application/xml"),
