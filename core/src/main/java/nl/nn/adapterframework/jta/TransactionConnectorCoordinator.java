@@ -139,7 +139,7 @@ public class TransactionConnectorCoordinator<T,R> implements AutoCloseable {
 	public void resumeTransaction(boolean force) {
 		if (suspended || force) {
 			log.debug("resumeTransaction() resuming transaction of parent thread [{}], current thread [{}]", ()->parentThread.getName(), ()->Thread.currentThread().getName());
-			if (force || !TransactionSynchronizationManager.isSynchronizationActive()) {
+			if (!TransactionSynchronizationManager.isSynchronizationActive()) {
 				txManager.resumeTransaction(transaction, resourceHolder);
 			}
 		} else {
