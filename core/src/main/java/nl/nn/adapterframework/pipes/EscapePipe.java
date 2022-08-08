@@ -99,8 +99,9 @@ public class EscapePipe extends FixedForwardPipe {
 			return XmlUtils.decodeChars(input);
 		case CDATA2TEXT:
 			return XmlUtils.cdataToText(input);
+		default:
+			throw new NotImplementedException("unknown direction ["+getDirection()+"]");
 		}
-		throw new NotImplementedException("unknown direction ["+getDirection()+"]");
 	}
 
 	// ESCAPE BETWEEN
