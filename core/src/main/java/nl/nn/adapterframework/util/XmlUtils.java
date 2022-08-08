@@ -1979,16 +1979,17 @@ public class XmlUtils {
 
 	public static String toXhtml(Message message) throws IOException {
 		if (!Message.isEmpty(message)) {
-//			message.getMagic()
-
-			CleanerProperties props = new CleanerProperties();
-			props.setOmitDoctypeDeclaration(true);
-			if(message.getCharset() != null) {
-				props.setCharset(message.getCharset());
+			String xhtmlString = new String(message.getMagic(512));
+			if (xhtmlString.contains("<html>") || xhtmlString.contains("<html ")) {
+				CleanerProperties props = new CleanerProperties();
+				props.setOmitDoctypeDeclaration(true);
+				if(message.getCharset() != null) {
+					props.setCharset(message.getCharset());
+				}
+				HtmlCleaner cleaner = new HtmlCleaner(props);
+				TagNode tagNode = cleaner.clean(message.asReader());
+				return new SimpleXmlSerializer(props).getAsString(tagNode);
 			}
-			HtmlCleaner cleaner = new HtmlCleaner(props);
-			TagNode tagNode = cleaner.clean(message.asReader());
-			return new SimpleXmlSerializer(props).getAsString(tagNode);
 		}
 		return null;
 	}
