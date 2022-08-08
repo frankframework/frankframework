@@ -61,31 +61,26 @@ public class MessageContentBody extends AbstractContentBody {
 	@Override
 	public void writeTo(OutputStream out) throws IOException {
 		int length = Math.toIntExact(getContentLength());
-		if(message.requiresStream()) {
-			try (InputStream inStream = message.asInputStream()) {
-				final byte[] buffer = new byte[OUTPUT_BUFFER_SIZE];
-				int readLen;
-				if(length < 0) {
-					// consume until EOF
-					while((readLen = inStream.read(buffer)) != -1) {
-						out.write(buffer, 0, readLen);
+		try (InputStream inStream = message.asInputStream()) {
+			final byte[] buffer = new byte[OUTPUT_BUFFER_SIZE];
+			int readLen;
+			if(length < 0) {
+				// consume until EOF
+				while((readLen = inStream.read(buffer)) != -1) {
+					out.write(buffer, 0, readLen);
+				}
+			} else {
+				// consume no more than length
+				long remaining = length;
+				while(remaining > 0) {
+					readLen = inStream.read(buffer, 0, (int) Math.min(OUTPUT_BUFFER_SIZE, remaining));
+					if(readLen == -1) {
+						break;
 					}
-				} else {
-					// consume no more than length
-					long remaining = length;
-					while(remaining > 0) {
-						readLen = inStream.read(buffer, 0, (int) Math.min(OUTPUT_BUFFER_SIZE, remaining));
-						if(readLen == -1) {
-							break;
-						}
-						out.write(buffer, 0, readLen);
-						remaining -= readLen;
-					}
+					out.write(buffer, 0, readLen);
+					remaining -= readLen;
 				}
 			}
-		} else {
-			out.write(message.asByteArray(), 0, length);
-			out.flush();
 		}
 	}
 
