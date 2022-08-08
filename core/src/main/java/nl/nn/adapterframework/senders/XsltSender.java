@@ -101,7 +101,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 
 	protected ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
 	protected @Setter IThreadConnectableTransactionManager txManager;
-	private @Getter Boolean streamingActive = null;
+	private @Getter Boolean streamingXslt = null;
 
 	/**
 	 * The <code>configure()</code> method instantiates a transformer for the specified
@@ -112,7 +112,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		parameterNamesMustBeUnique = true;
 		super.configure();
 
-		if(streamingActive == null) streamingActive = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, false);
+		if(streamingXslt == null) streamingXslt = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, false);
 		dynamicTransformerPoolMap = Collections.synchronizedMap(new LRUMap(transformerPoolMapSize));
 
 		if(StringUtils.isNotEmpty(getXpathExpression()) && getOutputType()==null) {
@@ -184,7 +184,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		}
 		try {
 			TransformerPool poolToUse = getTransformerPoolToUse(session);
-			boolean canStreamOut = streamingActive && !isDisableOutputEscaping(poolToUse); // TODO fix problem in TransactionConnecor that currently inhibits streaming out when disable-output-escaping is used
+			boolean canStreamOut = streamingXslt && !isDisableOutputEscaping(poolToUse); // TODO fix problem in TransactionConnecor that currently inhibits streaming out when disable-output-escaping is used
 			ThreadConnector threadConnector = canStreamOut ? new ThreadConnector(this, threadLifeCycleEventListener, txManager, session) : null;
 			MessageOutputStream target = MessageOutputStream.getTargetStream(this, session, next);
 			ContentHandler handler = createHandler(null, threadConnector, session, poolToUse, target);
@@ -327,7 +327,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 			throw new SenderException(getLogPrefix()+"got null input");
 		}
 
-		try (ThreadConnector threadConnector = streamingActive ? new ThreadConnector(this, threadLifeCycleEventListener, txManager, session) : null) {
+		try (ThreadConnector threadConnector = streamingXslt ? new ThreadConnector(this, threadLifeCycleEventListener, txManager, session) : null) {
 			try (MessageOutputStream target=MessageOutputStream.getTargetStream(this, session, next)) {
 				TransformerPool poolToUse = getTransformerPoolToUse(session);
 				ContentHandler handler = createHandler(message, threadConnector, session, poolToUse, target);
@@ -352,9 +352,9 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		}
 	}
 
-	@IbisDoc({"If true, then this pipe will process the XSLT while streaming in a different thread. Can be used to switch streaming off for debugging purposes","set by appconstant xslt.streaming.default"})
-	public void setStreamingActive(Boolean streamingActive) {
-		this.streamingActive = streamingActive;
+	@IbisDoc({"If true, then this sender will process the XSLT while streaming in a different thread. Can be used to switch streaming off for debugging purposes","set by appconstant xslt.streaming.default"})
+	public void setStreamingXslt(Boolean streamingActive) {
+		this.streamingXslt = streamingActive;
 	}
 
 	@Override
