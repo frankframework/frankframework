@@ -17,13 +17,9 @@ import nl.nn.adapterframework.testutil.MatchUtils;
 
 public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 
-	public boolean legacyMode = true;
-
 	@Override
 	public Text2XmlPipe createPipe() {
-		Text2XmlPipe pipe = new Text2XmlPipe();
-		//pipe.setToValidXML(!legacyMode);
-		return pipe;
+		return new Text2XmlPipe();
 	}
 
 	@Test
