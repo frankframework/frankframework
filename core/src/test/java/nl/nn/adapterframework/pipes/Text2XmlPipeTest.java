@@ -1,37 +1,28 @@
 package nl.nn.adapterframework.pipes;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
-
-import java.util.Arrays;
-import java.util.Collection;
+import static org.junit.Assert.assertThrows;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
 import org.springframework.http.MediaType;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.testutil.MatchUtils;
 
-@RunWith(Parameterized.class)
 public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 
-	@Parameterized.Parameter(0)
-	public boolean legacyMode = false;
-
-	@Parameters(name = "Legacymode: {0}")
-	public static Collection<Object> data() {
-		return Arrays.asList(new Object[] {true, false});
-	}
+	public boolean legacyMode = true;
 
 	@Override
 	public Text2XmlPipe createPipe() {
 		Text2XmlPipe pipe = new Text2XmlPipe();
-		pipe.setToValidXML(!legacyMode);
+		//pipe.setToValidXML(!legacyMode);
 		return pipe;
 	}
 
@@ -126,11 +117,8 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 		pipe.setUseCdataSection(false);
 		configureAndStartPipe();
 
-		String expectedOutput = "<root>&lt;invalid&gt;\n&lt;xml&gt;\n&lt;input&gt;\n&lt;/invalid&gt;</root>";
-		if(legacyMode) expectedOutput = "<root><invalid>\n<xml>\n<input>\n</invalid></root>";
-
-		PipeRunResult res = doPipe(pipe, "<invalid>\n<xml>\n<input>\n</invalid>", session);
-		assertEquals(expectedOutput, res.getResult().asString());
+		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, "<invalid>\n<xml>\n<input>\n</invalid>", session));
+		assertThat(e.getMessage(), containsString("The element type \"input\" must be terminated by the matching end-tag \"</input>\""));
 	}
 
 	@Test
@@ -139,11 +127,8 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 		pipe.setUseCdataSection(false);
 		configureAndStartPipe();
 
-		String expectedOutput = "<root>&lt;invalid&gt;&lt;xml&gt;&lt;input&gt;&lt;/invalid&gt;</root>";
-		if(legacyMode) expectedOutput = "<root><invalid><xml><input></invalid></root>";
-
-		PipeRunResult res = doPipe(pipe, "<invalid><xml><input></invalid>", session);
-		assertEquals(expectedOutput, res.getResult().asString());
+		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, "<invalid><xml><input></invalid>", session));
+		assertThat(e.getMessage(), containsString("The element type \"input\" must be terminated by the matching end-tag \"</input>\""));
 	}
 
 	@Test
