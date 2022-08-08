@@ -54,7 +54,6 @@ import nl.nn.adapterframework.stream.ThreadConnector;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.stream.xml.XmlTap;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
@@ -345,10 +344,8 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 				reader.parse(source);
 				return target.getPipeRunResult();
 			}
-		} catch (ParserConfigurationException | SAXException | IOException | ConfigurationException e) {
-			throw new SenderException(getLogPrefix()+"Exception on transforming input", e);
-		} catch (Exception e) { //StreamingException | IllegalStateException
-			throw new SenderException(getLogPrefix()+"Exception retrieving targetstream"+ (next!=null?" from ["+ClassUtils.nameOf(next)+"]": ""), e);
+		} catch (Exception e) {
+			throw new SenderException(getLogPrefix()+"Cannot transform input", e);
 		}
 	}
 

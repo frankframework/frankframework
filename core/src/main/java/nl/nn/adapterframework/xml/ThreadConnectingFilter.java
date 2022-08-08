@@ -35,9 +35,6 @@ public class ThreadConnectingFilter extends ExceptionCatchingFilter {
 		if (t instanceof SAXException) {
 			throw (SAXException) t;
 		}
-		if (t instanceof IllegalStateException) { //Transaction Exceptions
-			throw (IllegalStateException) t;
-		}
 		if (t instanceof Exception) {
 			throw new SaxException((Exception)t);
 		}
