@@ -1,11 +1,11 @@
 /*
-   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2020, 2022WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-	   http://www.apache.org/licenses/LICENSE-2.0
+   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -69,6 +69,7 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
 		super.configure();
 		createTransformers();
 	}
+
 	@Override
 	public void start() throws PipeStartException{
 		log.debug(getLogPrefix(null)+"creates proxy with class [" + proxyClassName + "]");
