@@ -276,7 +276,7 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
 				try {
 					proxy = createProxy(proxyClassName);
 				} catch (ConfigurationException ce) {
-					log.error(getLogPrefix(session)+"cannot recreate proxy", xpe);
+					log.error(getLogPrefix(session)+"cannot recreate proxy", ce);
 				}
 				throw new PipeRunException(this,  getLogPrefix(session)+"error excecuting proxy", xpe);
 			}
