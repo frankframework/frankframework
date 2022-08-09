@@ -190,8 +190,8 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
 		String proxypreProc = null;
 		String wrapperResult = "";
 		CoolGenXMLProxy proxy;
-	
-	
+
+
 		ActionListener actionListener = new ActionListener() {
 			/**
 			 * @see java.awt.event.ActionListener#actionPerformed(ActionEvent)
@@ -200,21 +200,21 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				errorMessage = e.toString();
-	
+
 			}
-	
+
 			@Override
 			public String toString() {
 				return errorMessage;
 			}
 		};
-	
+
 		Source in;
-	
+
 		// TEMPORARY FIX:
 		// create proxy before every request, to work around broken connections caused by restarting the comm-bridge
 		// should be solved in another way in a more definitive implementation
-	
+
 		try {
 			log.info(getLogPrefix(session)+"instantiating proxy ["+proxyClassName+"] as a temporary fix for broken comm-bridge connections");
 			proxy = createProxy(proxyClassName);
@@ -223,13 +223,13 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
 			log.error(msg, ce);
 			throw new PipeRunException(this, msg, ce);
 		}
-	
-	
+
+
 		proxy.addExceptionListener(actionListener);
-	
+
 		try {
 			in = message.asSource();
-	
+
 			if (preProcTransformer != null) {
 				proxypreProc = XmlUtils.transformXml(preProcTransformer, in);
 				log.debug(
@@ -239,15 +239,15 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
 						+ "]");
 			} else
 				proxypreProc = message.asString();
-	
+
 			if (proxyInputFixTransformer != null)
 				proxypreProc = XmlUtils.transformXml(proxyInputFixTransformer, proxypreProc);
-	
+
 			proxyResult = new StringWriter(10 * 1024);
-	
-	
+
+
 			// Try to execute the service-preProc as per proxy
-	
+
 			try {
 				proxy.clear();
 			} catch (PropertyVetoException e) {
@@ -256,7 +256,7 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
 			try {
 			proxy.executeXML(new StringReader(proxypreProc), proxyResult);
 			proxy.removeExceptionListener(actionListener);
-	
+
 			String err = actionListener.toString();
 			if (err != null) {
 				// if an error occurs, recreate the proxy and throw an exception
@@ -280,7 +280,7 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
 				}
 				throw new PipeRunException(this,  getLogPrefix(session)+"error excecuting proxy", xpe);
 			}
-	
+
 			if (postProcTransformer != null) {
 				log.debug(getLogPrefix(session)+" CoolGen proxy returned: [" + proxyResult.toString() + "]");
 				wrapperResult = XmlUtils.transformXml(postProcTransformer, proxyResult.toString());
@@ -293,7 +293,7 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
 		} catch (TransformerException e) {
 			throw new PipeRunException(this, getLogPrefix(session)+"TransformerException excecuting proxy", e);
 		}
-	
+
 		return new PipeRunResult(getSuccessForward(),wrapperResult) ;
 	}
 

@@ -80,7 +80,7 @@ public class Text2XmlPipe extends StreamingPipe {
 						int lenRead = super.read(cbuf, off, len);
 						return XmlUtils.replaceNonPrintableCharacters(cbuf, off, lenRead);
 					}
-					
+
 				} : new EncapsulatingReader(message.asReader(), prefix, suffix);
 				Message encapsulatedMessage = new Message(encapsulatingReader);
 				XmlUtils.parseXml(encapsulatedMessage.asInputSource(), handler);
@@ -148,7 +148,7 @@ public class Text2XmlPipe extends StreamingPipe {
 	}
 
 	/**
-	 * Replace all non xml chars (not in the <a href=\"http://www.w3.org/tr/2006/rec-xml-20060816/#nt-char\">character range as specified by the xml specification</a>) 
+	 * Replace all non xml chars (not in the <a href=\"http://www.w3.org/tr/2006/rec-xml-20060816/#nt-char\">character range as specified by the xml specification</a>)
 	 * with the inverted question mark (0x00bf)
 	 * @ff.default true
 	 */
