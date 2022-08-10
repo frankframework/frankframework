@@ -22,10 +22,10 @@ public class JsonValidatorTest extends PipeTestBase<JsonValidator>{
 	public void basic() throws Exception {
 		pipe.setSchemaLocation("/Align/FamilyTree/family-compact-family.jsd");
 		configureAndStartPipe();
-		
+
 		String input = TestFileUtils.getTestFile("/Align/FamilyTree/family-compact.json");
 		PipeRunResult result = doPipe(input);
-		
+
 		assertEquals("success", result.getPipeForward().getName());
 		assertEquals(input, result.getResult().asString());
 	}
@@ -35,13 +35,13 @@ public class JsonValidatorTest extends PipeTestBase<JsonValidator>{
 		pipe.setSchemaLocation("/Align/FamilyTree/family-compact-family.jsd");
 		pipe.registerForward(new PipeForward("failure", null));
 		configureAndStartPipe();
-		
+
 		String input = "{}";
 		PipeRunResult result = doPipe(input);
-		
+
 		assertEquals("failure", result.getPipeForward().getName());
 		assertEquals(input, result.getResult().asString());
-		
+
 		String reason = (String)session.get("failureReason");
 		assertThat(reason, containsString("The object must have a property whose name is \"members\""));
 	}
@@ -52,25 +52,25 @@ public class JsonValidatorTest extends PipeTestBase<JsonValidator>{
 		pipe.registerForward(new PipeForward("failure", null));
 		pipe.registerForward(new PipeForward("parserError", null));
 		configureAndStartPipe();
-		
+
 		String input = "{asdf";
 		PipeRunResult result = doPipe(input);
-		
+
 		assertEquals("parserError", result.getPipeForward().getName());
 		assertEquals(input, result.getResult().asString());
-		
+
 		String reason = (String)session.get("failureReason");
 		assertThat(reason, containsString("[Unexpected char 97 at (line no=1, column no=2, offset=1)]"));
 	}
-	
+
 	@Test
 	public void basicWithRootElementSpecified() throws Exception {
 		pipe.setSchemaLocation("/Align/FamilyTree/family-compact-family.jsd");
 		configureAndStartPipe();
-		
+
 		String input = TestFileUtils.getTestFile("/Align/FamilyTree/family-compact.json");
 		PipeRunResult result = pipe.validate(new Message(input), session, "family");
-		
+
 		assertEquals("success", result.getPipeForward().getName());
 		assertEquals(input, result.getResult().asString());
 	}
@@ -80,10 +80,10 @@ public class JsonValidatorTest extends PipeTestBase<JsonValidator>{
 		pipe.setSchemaLocation("/Align/FamilyTree/family-compact-family.jsd");
 		pipe.registerForward(new PipeForward("failure", null));
 		configureAndStartPipe();
-		
+
 		String input = TestFileUtils.getTestFile("/Align/FamilyTree/address.json");
 		PipeRunResult result = pipe.validate(new Message(input), session, "address");
-		
+
 		assertEquals("success", result.getPipeForward().getName());
 		assertEquals(input, result.getResult().asString());
 	}
@@ -94,13 +94,13 @@ public class JsonValidatorTest extends PipeTestBase<JsonValidator>{
 //		pipe.setRoot("address");
 //		pipe.registerForward(new PipeForward("failure", null));
 //		configureAndStartPipe();
-//		
+//
 //		String input = "{}";
 //		PipeRunResult result = doPipe(input);
-//		
+//
 //		assertEquals("failure", result.getPipeForward().getName());
 //		assertEquals(input, result.getResult().asString());
-//		
+//
 //		String reason = (String)session.get("failureReason");
 //		assertThat(reason, containsString("The object must have a property whose name is \"members\""));
 //	}

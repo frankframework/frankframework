@@ -71,15 +71,15 @@ public class JsonValidator extends FixedForwardPipe implements IDualModeValidato
 	private @Getter String rootElementSessionKey;
 	private @Getter String importedSchemaLocationsToIgnore;
 	private @Getter boolean useBaseImportedSchemaLocationsToIgnore = false;
-	
+
 	private @Getter boolean throwException = false;
 	private @Getter String reasonSessionKey = "failureReason";
 	private @Getter String jsonSchemaVersion=null;
-	
+
 
 	private JsonValidationService service = JsonValidationService.newInstance();
 	private JsonSchema schema;
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -235,7 +235,7 @@ public class JsonValidator extends FixedForwardPipe implements IDualModeValidato
 		return service.readSchema(schemaRes.openStream());
 	}
 
-	
+
 	protected boolean isConfiguredForMixedValidation() {
 		return StringUtils.isNotEmpty(responseRoot);
 	}
