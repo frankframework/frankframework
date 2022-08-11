@@ -2012,13 +2012,17 @@ public class XmlUtils {
 		return null;
 	}
 
-	public static String toXhtml(String htmlString) {
-		if (StringUtils.isNotEmpty(htmlString)) {
-			String xhtmlString = skipDocTypeDeclaration(htmlString.trim());
-			if (xhtmlString.startsWith("<html>") || xhtmlString.startsWith("<html ")) {
+	public static String toXhtml(Message message) throws IOException {
+		if (!Message.isEmpty(message)) {
+			String xhtmlString = new String(message.getMagic(512));
+			if (xhtmlString.contains("<html>") || xhtmlString.contains("<html ")) {
 				CleanerProperties props = new CleanerProperties();
+				props.setOmitDoctypeDeclaration(true);
+				if(message.getCharset() != null) {
+					props.setCharset(message.getCharset());
+				}
 				HtmlCleaner cleaner = new HtmlCleaner(props);
-				TagNode tagNode = cleaner.clean(xhtmlString);
+				TagNode tagNode = cleaner.clean(message.asReader());
 				return new SimpleXmlSerializer(props).getAsString(tagNode);
 			}
 		}

@@ -739,14 +739,12 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		}
 
 		if (isXhtml() && !result.isEmpty()) {
-			String resultString;
+			String xhtml;
 			try {
-				resultString = result.asString();
+				xhtml = XmlUtils.toXhtml(result);
 			} catch (IOException e) {
 				throw new SenderException("error reading http response as String", e);
 			}
-
-			String xhtml = XmlUtils.toXhtml(resultString);
 
 			if (transformerPool != null && xhtml != null) {
 				log.debug(getLogPrefix() + " transforming result [" + xhtml + "]");
