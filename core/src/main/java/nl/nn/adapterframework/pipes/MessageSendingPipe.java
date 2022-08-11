@@ -760,8 +760,8 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				}
 			}
 			try {
-				if (sender instanceof IStreamingSender) {
-					sendResult =  ((IStreamingSender)sender).sendMessage(input, session, canStreamToNextPipe() ? getNextPipe() : null);
+				if (sender instanceof IStreamingSender && canStreamToNextPipe()) {
+					sendResult =  ((IStreamingSender)sender).sendMessage(input, session, getNextPipe());
 				} else if (sender instanceof IForwardNameProvidingSender) {
 					sendResult = ((IForwardNameProvidingSender)sender).sendMessageAndProvideForwardName(input, session);
 					PipeForward forward = null;
