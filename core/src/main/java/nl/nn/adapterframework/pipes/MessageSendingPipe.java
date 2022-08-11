@@ -39,6 +39,7 @@ import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
 import nl.nn.adapterframework.core.IDualModeValidator;
+import nl.nn.adapterframework.core.IForwardNameProvidingSender;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ISender;
@@ -56,8 +57,8 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.http.RestListenerUtils;
@@ -98,6 +99,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @ff.forward illegalResult
  * @ff.forward presumedTimeout
  * @ff.forward interrupt
+ * @ff.forward "&lt;defined-by-sender&gt;" any forward, as returned by name by a {@link IForwardNameProvidingSender}
  *
  * @author  Gerrit van Brakel
  */
@@ -758,10 +760,18 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				}
 			}
 			try {
-				if (sender instanceof IStreamingSender && canStreamToNextPipe() && getOutputValidator()==null && getOutputWrapper()==null && !isStreamResultToServlet()) {
-					sendResult =  ((IStreamingSender)sender).sendMessage(input, session, getNextPipe());
+				if (sender instanceof IStreamingSender) {
+					sendResult =  ((IStreamingSender)sender).sendMessage(input, session, canStreamToNextPipe() ? getNextPipe() : null);
+				} else if (sender instanceof IForwardNameProvidingSender) {
+					sendResult = ((IForwardNameProvidingSender)sender).sendMessageAndProvideForwardName(input, session);
+					PipeForward forward = null;
+					String forwardName = sendResult.getPipeForward().getName();
+					if (StringUtils.isNotEmpty(forwardName)) {
+						forward = findForward(forwardName);
+					}
+					sendResult.setPipeForward(forward);
 				} else {
-					// sendResult has a messageID for async senders, the result for sync senders
+					// result has a messageID for async senders, the result for sync senders
 					Message result = sender.sendMessage(input, session);
 					sendResult = new PipeRunResult(null,result);
 				}
