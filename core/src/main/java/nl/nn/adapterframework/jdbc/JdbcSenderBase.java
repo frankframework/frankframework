@@ -50,7 +50,7 @@ public abstract class JdbcSenderBase<H> extends JdbcFacade implements IBlockEnab
 	}
 
 	@Override
-	public void addParameter(Parameter p) { 
+	public void addParameter(Parameter p) {
 		if (paramList==null) {
 			paramList=new ParameterList();
 		}
@@ -101,7 +101,6 @@ public abstract class JdbcSenderBase<H> extends JdbcFacade implements IBlockEnab
 			super.close();
 		}
 	}
-	
 
 	@Override
 	// implements ISender.sendMessage()

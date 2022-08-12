@@ -389,6 +389,67 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 
 
 	@Test
+	public void testRetryRepeatableMultipartPayloadOnOAuthAuthenticationTokenExpired() throws Exception {
+		sender.setUrl(authtenticatedService.getOAuthEndpoint());
+		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
+		sender.setTokenEndpoint(tokenServer.getEndpointFirstExpired());
+		sender.setClientId(tokenServer.getClientId());
+		sender.setClientSecret(tokenServer.getClientSecret());
+
+		sender.configure();
+		sender.open();
+
+		Message repeatableMessage = Message.asMessage("dummy-string".getBytes());
+		session.put("binaryPart", repeatableMessage);
+		sender.addParameter(ParameterBuilder.create("xml-part", "<ik><ben/><xml/></ik>"));
+		sender.addParameter(ParameterBuilder.create().withName("binary-part").withSessionKey("binaryPart"));
+
+		sender.setPostType(PostType.MTOM);
+		sender.setMethodType(HttpMethod.POST);
+
+		sender.configure();
+		sender.open();
+
+		authtenticatedService.setScenarioState(authtenticatedService.SCENARIO_CONNECTION_RESET, authtenticatedService.SCENARIO_STATE_RESET_CONNECTION);
+
+		Message result = sendNonRepeatableMessage();
+		assertEquals("200", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
+		assertEquals("{}", result.asString());
+	}
+
+	@Test
+	public void testRetryNonRepeatableMultipartPayloadOnOAuthAuthenticationTokenExpired() throws Exception {
+		sender.setUrl(authtenticatedService.getOAuthEndpoint());
+		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
+		sender.setTokenEndpoint(tokenServer.getEndpointFirstExpired());
+		sender.setClientId(tokenServer.getClientId());
+		sender.setClientSecret(tokenServer.getClientSecret());
+
+		sender.configure();
+		sender.open();
+
+		Message nonRepeatableMessage = Message.asMessage(new FilterInputStream(new Message("dummy-string").asInputStream()) {});
+		session.put("binaryPart", nonRepeatableMessage);
+		sender.addParameter(ParameterBuilder.create("xml-part", "<ik><ben/><xml/></ik>"));
+		sender.addParameter(ParameterBuilder.create().withName("binary-part").withSessionKey("binaryPart"));
+
+		sender.setPostType(PostType.MTOM);
+		sender.setMethodType(HttpMethod.POST);
+
+		sender.configure();
+		sender.open();
+
+		authtenticatedService.setScenarioState(authtenticatedService.SCENARIO_CONNECTION_RESET, authtenticatedService.SCENARIO_STATE_RESET_CONNECTION);
+
+		SenderException exception = assertThrows(SenderException.class, () -> {
+			sendNonRepeatableMessage();
+		});
+		exception.printStackTrace();
+		assertTrue(exception.getCause() instanceof SocketException);
+		assertEquals("(SocketException) Connection reset", exception.getMessage());
+	}
+
+	@Test
 	public void testRetryOnResetAuthenticated() throws Exception {
 		sender.setUrl(authtenticatedService.getOAuthEndpoint());
 		sender.setTokenEndpoint(tokenServer.getEndpoint());

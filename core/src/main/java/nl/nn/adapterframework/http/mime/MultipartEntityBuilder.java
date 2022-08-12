@@ -33,10 +33,8 @@ import org.apache.http.entity.mime.content.InputStreamBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.Args;
-import org.springframework.util.MimeType;
 
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.MessageUtils;
 
 /**
  * Builder for (mtom-)multipart {@link HttpEntity}s.
@@ -131,19 +129,12 @@ public class MultipartEntityBuilder {
 	}
 
 	public void addPart(String name, Message message) {
-		MimeType mimeType = MessageUtils.getMimeType(message);
-		ContentType contentType;
-		if(mimeType != null) {
-			contentType = ContentType.parse(mimeType.toString());
-		} else {
-			contentType = message.isBinary() ? ContentType.APPLICATION_OCTET_STREAM : ContentType.DEFAULT_TEXT;
-		}
-		addPart(name, new MessageContentBody(message, contentType));
+		addPart(name, new MessageContentBody(message));
 	}
 
 	/* utility methods */
 	public MultipartEntityBuilder addTextBody(String name, final String text) {
-		return addTextBody(name, text, ContentType.DEFAULT_TEXT);
+		return addTextBody(name, text, ContentType.DEFAULT_TEXT); //ISO-8859-1
 	}
 	public MultipartEntityBuilder addTextBody(String name, String text, ContentType contentType) {
 		return addPart(name, new StringBody(text, contentType));
@@ -205,7 +196,7 @@ public class MultipartEntityBuilder {
 
 		List<FormBodyPart> bodyPartsCopy = bodyParts != null ? new ArrayList<>(bodyParts) : Collections.<FormBodyPart>emptyList();
 		MultipartForm form = new MultipartForm(charsetCopy, boundaryCopy, bodyPartsCopy);
-		return new MultipartEntity(form, contentTypeCopy, form.getTotalLength());
+		return new MultipartEntity(form, contentTypeCopy);
 	}
 
 	public HttpEntity build() {

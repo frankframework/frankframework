@@ -5,7 +5,7 @@ Content-Type: multipart/form-data; boundary=IGNORE; charset=UTF-8
 
 --IGNORE
 Content-Disposition: form-data; name="part_file"; filename="document.pdf"
-Content-Type: application/pdf; charset=UTF-8
+Content-Type: application/pdf
 Content-Transfer-Encoding: binary
 
 <dummy xml file/>

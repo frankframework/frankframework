@@ -51,8 +51,7 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 			throw new ConfigurationException(getLogPrefix()+"query must be specified");
 		}
 	}
-		
-	
+
 	@Override
 	protected String getQuery(Message message) {
 		return getQuery();
