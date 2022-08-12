@@ -1,5 +1,7 @@
 package nl.nn.adapterframework.jdbc.migration;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -74,8 +76,8 @@ public class MigratorTest extends TransactionManagerTestBase {
 		assertEquals(1, warnings.size());
 
 		String warning = warnings.get(0);
-		assertTrue(warning.contains("LiquibaseMigrator Error running LiquiBase update. Failed to execute [3] change(s)")); //Test ObjectName + Error
-		assertTrue(warning.contains("Migration failed for change set Migrator/DatabaseChangelogError.xml::error::Niels Meijer")); //Test liquibase exception
+		assertThat(warning, containsString("LiquibaseMigrator Error running LiquiBase update. Failed to execute [3] change(s)")); //Test ObjectName + Error
+		assertThat(warning, containsString("Migration failed for changeset Migrator/DatabaseChangelogError.xml::error::Niels Meijer")); //Test liquibase exception
 		//H2 logs 'Table \"DUMMYTABLE\" already exists' Oracle throws 'ORA-00955: name is already used by an existing object'
 		assertTrue("table ["+tableName+"] should exist", isTablePresent(tableName));
 	}
@@ -127,6 +129,10 @@ public class MigratorTest extends TransactionManagerTestBase {
 			return null;
 		}
 		sqlScript = sqlScript.replaceAll("\\'[4-9]\\.\\d+\\.\\d{1,3}\\'", "'VERSION'"); //Replace the Liquibase Version
+
+		sqlScript = sqlScript.replaceAll("SET SEARCH_PATH TO public, \"\\$user\",\"public\";", ""); //Remove search path setting
+		sqlScript = sqlScript.replaceAll("\r\n", "\n"); //change CRLF into LF
+		sqlScript = sqlScript.replaceAll("\n\n\n", "\n"); //remove duplicate linefeeds
 
 		return sqlScript.replaceAll("(LOCKEDBY = ')(.*)(WHERE)", "LOCKEDBY = 'IGNORE', LOCKGRANTED = 'IGNORE' WHERE");
 	}
