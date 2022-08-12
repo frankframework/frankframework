@@ -65,7 +65,7 @@
 					query="INSERT INTO IBISTEMP (TKEY, TCHAR) VALUES (2639,'A')"
 				/>
 			</SenderPipe>
-			<XsltPipe name="createDocument" styleSheetName="TransactedOutputStreaming/createDocument.xslt" />
+			<XsltPipe name="createDocument" styleSheetName="OutputStreaming/xsl/createDocument.xslt" />
 			<!-- ForEachChildElementPipe provides OutputStream to XsltPipe. Transaction connection must be properly handled  -->
 			<ForEachChildElementPipe name="iterate">
 				<FixedQuerySender 
