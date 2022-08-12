@@ -40,7 +40,6 @@
 	<!ENTITY ResultSetIteratingPipe SYSTEM "./ConfigurationResultSetIteratingPipe.xml">
 	<!ENTITY InputOutputWrapper SYSTEM "./ConfigurationInputOutputWrapper.xml">
 	<!ENTITY OutputStreaming SYSTEM "./ConfigurationOutputStreaming.xml">
-	<!ENTITY TransactedOutputStreaming SYSTEM "./ConfigurationTransactedOutputStreaming.xml">
 	<!ENTITY EsbSoapValidator SYSTEM "./ConfigurationEsbSoapValidator.xml">
 	<!ENTITY WsdlGeneratorPipe SYSTEM "./ConfigurationWsdlGeneratorPipe.xml">
 	<!ENTITY FxF3 SYSTEM "./ConfigurationFxF3.xml">
@@ -107,7 +106,6 @@
 	&ResultSetIteratingPipe;
 	&InputOutputWrapper;
 	&OutputStreaming;
-	&TransactedOutputStreaming;
 	&EsbSoapValidator;
 	&WsdlGeneratorPipe;
 	&FxF3;
