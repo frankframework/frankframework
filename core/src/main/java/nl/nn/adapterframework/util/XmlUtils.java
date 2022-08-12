@@ -1507,10 +1507,47 @@ public class XmlUtils {
 	/**
 	 * Replaces non-unicode-characters by '0x00BF' (inverted question mark).
 	 */
-	public static String encodeCdataString(String string) {
-		return replaceNonValidXmlCharacters(string, REPLACE_NON_XML_CHAR, false, true);
+	public static int replaceNonPrintableCharacters(char[] buf, int offset, int len) {
+		if (len<0) {
+			return len;
+		}
+		int c;
+		int charCount = 0;
+		int counter = 0;
+		int readPos = 0;
+		int writePos = 0;
+		while(readPos<len) { // while no shift needs to be made, loop and replace where necessary
+			c=Character.codePointAt(buf, readPos+offset);
+			charCount = Character.charCount(c);
+			if (isPrintableUnicodeChar(c, true)) {
+				readPos += charCount;
+			} else {
+				buf[offset+readPos]=REPLACE_NON_XML_CHAR;
+				if (charCount==1) {
+					readPos++;
+				} else {
+					writePos = readPos+1;
+					readPos += charCount;
+					break;
+				}
+			}
+		}
+		while(readPos<len) { // continue with loop and shift after replacement was shorter than original
+			c=Character.codePointAt(buf, readPos+offset);
+			charCount = Character.charCount(c);
+			if (isPrintableUnicodeChar(c, true)) {
+				for(int j=0;j<charCount;j++) {
+					buf[offset+writePos++]=buf[offset+readPos++];
+				}
+			} else {
+				buf[offset+writePos++]=REPLACE_NON_XML_CHAR;
+				readPos+=charCount;
+				counter++;
+			}
+		}
+		if (counter>0 && log.isDebugEnabled()) log.debug("replaced ["+counter+"] non valid xml characters to ["+REPLACE_NON_XML_CHAR+"] in char array of length ["+len+"]");
+		return writePos>0 ? writePos : readPos;
 	}
-
 	/**
 	 * Replaces non-unicode-characters by '0x00BF' (inverted question mark)
 	 * appended with #, the character number and ;.
