@@ -1,0 +1,30 @@
+<module>
+	<adapter name="TransactedOutputStreaming" >
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-TransactedOutputStreaming" />
+		</receiver>
+		<pipeline transactionAttribute="RequiresNew">
+			<SenderPipe name="prepareTable1" >
+				<FixedQuerySender 
+					queryType="other"
+					query="DELETE FROM IBISTEMP WHERE TKEY = 2639"
+				/>
+			</SenderPipe>
+			<SenderPipe name="prepareTable2" >
+				<FixedQuerySender 
+					queryType="other"
+					query="INSERT INTO IBISTEMP (TKEY, TCHAR) VALUES (2639,'A')"
+				/>
+			</SenderPipe>
+			<XsltPipe name="createDocument" styleSheetName="TransactedOutputStreaming/createDocument.xslt" />
+			<!-- ForEachChildElementPipe provides OutputStream to XsltPipe. Transaction connection must be properly handled  -->
+			<ForEachChildElementPipe name="iterate">
+				<FixedQuerySender 
+					queryType="other"
+					query="UPDATE IBISTEMP SET TCHAR='Y' WHERE TKEY=2639"
+				/>
+			</ForEachChildElementPipe>
+		</pipeline>
+	</adapter>
+	
+</module>

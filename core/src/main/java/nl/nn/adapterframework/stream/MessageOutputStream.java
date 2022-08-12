@@ -44,6 +44,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.xml.PrettyPrintFilter;
+import nl.nn.adapterframework.xml.ThreadConnectingFilter;
 import nl.nn.adapterframework.xml.XmlWriter;
 
 public class MessageOutputStream implements AutoCloseable {
@@ -108,13 +109,13 @@ public class MessageOutputStream implements AutoCloseable {
 	// this constructor for testing only
 	<T> MessageOutputStream(ContentHandler handler) {
 		this(null, (IForwardTarget)null, null);
-		this.requestStream=handler;
 		threadConnector = new ThreadConnector<T>(null, null, null, (PipeLineSession)null);
+		this.requestStream=new ThreadConnectingFilter(threadConnector, handler);
 	}
 	public <T> MessageOutputStream(INamedObject owner, ContentHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, PipeLineSession session, ThreadConnector<?> targetThreadConnector) {
 		this(owner, nextStream, null);
-		this.requestStream=handler;
 		threadConnector = new ThreadConnector<T>(owner, threadLifeCycleEventListener, txManager, session);
+		this.requestStream=new ThreadConnectingFilter(threadConnector, handler);
 		this.targetThreadConnector = targetThreadConnector;
 	}
 
@@ -129,6 +130,7 @@ public class MessageOutputStream implements AutoCloseable {
 		this.requestStream=handler;
 		threadConnector = new ThreadConnector<T>(owner, threadLifeCycleEventListener, txManager, session);
 		this.targetThreadConnector = targetThreadConnector;
+		//TODO apply ThreadConnectingFilter, to make sure transaction is properly resumed in child thread
 	}
 
 
@@ -244,7 +246,7 @@ public class MessageOutputStream implements AutoCloseable {
 		}
 		return null;
 	}
-	
+
 	public Writer asWriter() throws StreamingException {
 		if (requestStream instanceof Writer) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning Writer as Writer");
