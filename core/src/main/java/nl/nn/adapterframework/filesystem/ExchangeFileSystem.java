@@ -423,6 +423,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		boolean invalidateConnectionOnRelease = false;
 		try {
 			setMailboxOnService(exchangeService, getReceivedBy(f));
+			// TODO: check if this bind can be left out
 			EmailMessage emailMessage = EmailMessage.bind(exchangeService, f.getId());
 			return itemExistsInFolder(exchangeService, emailMessage.getParentFolderId(), f.getId().toString());
 		} catch (ServiceResponseException e) {
