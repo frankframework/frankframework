@@ -16,13 +16,13 @@ Content-ID: <string-part>
 
 <string content/>
 --IGNORE
-Content-Type: application/octet-stream; charset=UTF-8
+Content-Type: application/octet-stream
 Content-Transfer-Encoding: binary
 Content-ID: <binary-part>
 
 mock pdf content
 --IGNORE
-Content-Type: application/pdf; charset=UTF-8
+Content-Type: application/pdf
 Content-Transfer-Encoding: binary
 Content-Disposition: attachment; name="part_file"; filename="document.pdf"
 Content-ID: <document.pdf>
@@ -31,6 +31,7 @@ Content-ID: <document.pdf>
 --IGNORE
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+Content-Disposition: attachment; name="string.txt"; filename="string.txt"
 Content-ID: <string.txt>
 
 mock pdf content

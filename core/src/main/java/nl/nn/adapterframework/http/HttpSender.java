@@ -51,14 +51,13 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.FormBodyPart;
 import org.apache.http.entity.mime.FormBodyPartBuilder;
 import org.apache.http.entity.mime.MIME;
-import org.apache.http.entity.mime.content.InputStreamBody;
-import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.logging.log4j.Logger;
+import org.springframework.http.MediaType;
+import org.springframework.util.MimeType;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -71,6 +70,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.DocumentedEnum;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.http.mime.MessageContentBody;
 import nl.nn.adapterframework.http.mime.MultipartEntityBuilder;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -177,6 +177,8 @@ public class HttpSender extends HttpSenderBase {
 
 	private @Getter PostType postType = PostType.RAW;
 
+	private static final MimeType APPLICATION_XOP_XML = MimeType.valueOf("application/xop+xml");
+
 	public enum PostType implements DocumentedEnum {
 		RAW("raw text/xml/json"), // text/html;charset=UTF8
 		BINARY("binary content"), //application/octet-stream
@@ -237,7 +239,7 @@ public class HttpSender extends HttpSenderBase {
 
 		if(postType.equals(PostType.URLENCODED) || postType.equals(PostType.FORMDATA) || postType.equals(PostType.MTOM)) {
 			try {
-				return getMultipartPostMethodWithParamsInBody(uri, message.asString(), parameters, session);
+				return getMultipartPostMethodWithParamsInBody(uri, message, parameters, session);
 			} catch (IOException e) {
 				throw new SenderException(getLogPrefix()+"unable to read message", e);
 			}
@@ -356,14 +358,14 @@ public class HttpSender extends HttpSenderBase {
 	 * Returns a multi-parted message, either as X-WWW-FORM-URLENCODED, FORM-DATA or MTOM
 	 * @throws IOException
 	 */
-	protected HttpPost getMultipartPostMethodWithParamsInBody(URI uri, String message, ParameterValueList parameters, PipeLineSession session) throws SenderException, IOException {
+	private HttpPost getMultipartPostMethodWithParamsInBody(URI uri, Message message, ParameterValueList parameters, PipeLineSession session) throws SenderException, IOException {
 		HttpPost hmethod = new HttpPost(uri);
 
 		if (postType.equals(PostType.URLENCODED) && StringUtils.isEmpty(getMultipartXmlSessionKey())) { // x-www-form-urlencoded
-			List<NameValuePair> requestFormElements = new ArrayList<NameValuePair>();
+			List<NameValuePair> requestFormElements = new ArrayList<>();
 
 			if (StringUtils.isNotEmpty(getFirstBodyPartName())) {
-				requestFormElements.add(new BasicNameValuePair(getFirstBodyPartName(),message));
+				requestFormElements.add(new BasicNameValuePair(getFirstBodyPartName(), message.asString()));
 				log.debug(getLogPrefix()+"appended parameter ["+getFirstBodyPartName()+"] with value ["+message+"]");
 			}
 			if (parameters!=null) {
@@ -391,36 +393,19 @@ public class HttpSender extends HttpSenderBase {
 		return hmethod;
 	}
 
-	protected FormBodyPart createStringBodypart(String name, String message, String contentType) {
-		ContentType cType = ContentType.create("text/plain", getCharSet());
-		if(StringUtils.isNotEmpty(contentType))
-			cType = ContentType.create(contentType, getCharSet());
-
-		FormBodyPartBuilder bodyPart = FormBodyPartBuilder.create()
-			.setName(name)
-			.setBody(new StringBody(message, cType));
+	private FormBodyPart createStringBodypart(Message message) {
+		MimeType mimeType = (postType.equals(PostType.MTOM)) ? APPLICATION_XOP_XML : MediaType.TEXT_PLAIN; // only the first part is XOP+XML, other parts should use their own content-type
+		FormBodyPartBuilder bodyPart = FormBodyPartBuilder.create(getFirstBodyPartName(), new MessageContentBody(message, mimeType));
 
 		// Should only be set when request is MTOM and it's the first BodyPart
-		if (postType.equals(PostType.MTOM) && StringUtils.isNotEmpty(getMtomContentTransferEncoding()) && name.equals(getFirstBodyPartName())) {
+		if (postType.equals(PostType.MTOM) && StringUtils.isNotEmpty(getMtomContentTransferEncoding())) {
 			bodyPart.setField(MIME.CONTENT_TRANSFER_ENC, getMtomContentTransferEncoding());
 		}
 
 		return bodyPart.build();
 	}
 
-	protected FormBodyPart createMultipartBodypart(String name, InputStream is, String fileName) {
-		return createMultipartBodypart(name, is, fileName, ContentType.APPLICATION_OCTET_STREAM.getMimeType());
-	}
-
-	protected FormBodyPart createMultipartBodypart(String name, InputStream is, String fileName, String contentType) {
-		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appending filepart ["+name+"] with value ["+is+"] fileName ["+fileName+"] and contentType ["+contentType+"]");
-		FormBodyPartBuilder bodyPart = FormBodyPartBuilder.create()
-			.setName(name)
-			.setBody(new InputStreamBody(is, ContentType.create(contentType, getCharSet()), fileName));
-		return bodyPart.build();
-	}
-
-	protected HttpEntity createMultiPartEntity(String message, ParameterValueList parameters, PipeLineSession session) throws SenderException, IOException {
+	private HttpEntity createMultiPartEntity(Message message, ParameterValueList parameters, PipeLineSession session) throws SenderException, IOException {
 		MultipartEntityBuilder entity = MultipartEntityBuilder.create();
 
 		entity.setCharset(Charset.forName(getCharSet()));
@@ -428,8 +413,7 @@ public class HttpSender extends HttpSenderBase {
 			entity.setMtomMultipart();
 
 		if (StringUtils.isNotEmpty(getFirstBodyPartName())) {
-			String mimeType = (postType.equals(PostType.MTOM)) ? "application/xop+xml" : "text/plain"; // only the first part is XOP+XML, other parts should use their own content-type
-			entity.addPart(createStringBodypart(getFirstBodyPartName(), message, mimeType));
+			entity.addPart(createStringBodypart(message));
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+getFirstBodyPartName()+"] with value ["+message+"]");
 		}
 		if (parameters!=null) {
@@ -438,21 +422,8 @@ public class HttpSender extends HttpSenderBase {
 				if (requestOrBodyParamsSet.contains(name)) {
 					Message msg = pv.asMessage();
 					if (!msg.isEmpty() || !parametersToSkipWhenEmptySet.contains(name)) {
-						if (msg.isBinary()) {
-							InputStream fis = msg.asInputStream();
-							String fileName = null;
-							String sessionKey = pv.getDefinition().getSessionKey();
-							if (sessionKey != null) {
-								fileName = session.getMessage(sessionKey + "Name").asString();
-							}
-
-							entity.addPart(createMultipartBodypart(name, fis, fileName));
-							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended filepart ["+name+"] with value ["+msg+"] and name ["+fileName+"]");
-						} else {
-							String value = msg.asString();
-							entity.addPart(createStringBodypart(name, value, "text/plain"));
-							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+name+"] with value ["+value+"]");
-						}
+						entity.addPart(name, new MessageContentBody(msg));
+						if (log.isDebugEnabled()) log.debug("{}appended bodypart [{}] with message [{}]", getLogPrefix(), name, msg);
 					}
 				}
 			}
@@ -491,11 +462,13 @@ public class HttpSender extends HttpSenderBase {
 		String partSessionKey = element.getAttribute("sessionKey"); //SessionKey to retrieve data from
 		String partMimeType = element.getAttribute("mimeType"); //MimeType of the part
 		Message partObject = session.getMessage(partSessionKey);
-
-		if (partObject.isBinary()) {
-			return createMultipartBodypart(partSessionKey, partObject.asInputStream(), partName, partMimeType);
+		MimeType mimeType = null;
+		if(StringUtils.isNotEmpty(partMimeType)) {
+			mimeType = MimeType.valueOf(partMimeType);
 		}
-		return createStringBodypart(partName, partObject.asString(), partMimeType);
+
+		String name = partObject.isBinary() ? partSessionKey : partName;
+		return FormBodyPartBuilder.create(name, new MessageContentBody(partObject, mimeType, partName)).build();
 	}
 
 	protected boolean validateResponseCode(int statusCode) {
