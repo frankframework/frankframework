@@ -7,26 +7,11 @@
 		<pipeline>
 			<SenderPipe name="Call ForwardNameSelectable Child Adapter">
 				<IbisLocalSender javaListener="ibis4test-ForwardNameSelectable-Child"/>
-				<forward name="Exit1" path="fwd1" />
-				<forward name="Exit2" path="fwd2" />
-				<forward name="Exit3" path="fwd3" />
 				<forward name="200" path="fwd200" />
 				<forward name="400" path="fwd400" />
 			</SenderPipe>
 			
 			<FixedResultPipe name="default" returnString="default: [result]" replaceFixedParams="true" >
-				<param name="result" />
-				<forward name="success" path="READY" /> 
-			</FixedResultPipe>
-			<FixedResultPipe name="fwd1" returnString="fwd1: [result]" replaceFixedParams="true" >
-				<param name="result" />
-				<forward name="success" path="READY" /> 
-			</FixedResultPipe>
-			<FixedResultPipe name="fwd2" returnString="fwd2: [result]" replaceFixedParams="true" >
-				<param name="result" />
-				<forward name="success" path="READY" /> 
-			</FixedResultPipe>
-			<FixedResultPipe name="fwd3" returnString="fwd3: [result]" replaceFixedParams="true" >
 				<param name="result" />
 				<forward name="success" path="READY" /> 
 			</FixedResultPipe>
@@ -48,16 +33,12 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit name="READY" state="success"/>
 				<exit name="Exit1" state="success"/>
 				<exit name="Exit2" state="success" code="200" />
 				<exit name="Exit3" state="success" code="400" />
 			</exits>
 			<XmlSwitchPipe name="exitSelector" xpathExpression="*/@exit" />
 			
-			<FixedResultPipe name="default" returnString="default" >
-				<forward name="success" path="READY"/>
-			</FixedResultPipe>
 			<FixedResultPipe name="Pipe1" returnString="Pipe 1" >
 				<forward name="success" path="Exit1" />
 			</FixedResultPipe>
