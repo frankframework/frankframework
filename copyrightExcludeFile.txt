@@ -65,3 +65,4 @@ overview.html
 .checkstyle
 checkstyle.xml
 .template
+TransformerHandlerImpl.java
