@@ -15,20 +15,30 @@
 */
 package nl.nn.adapterframework.core;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.stream.Message;
 
-/* 
- * Interface to be implemented by Senders that beside their proper result return a state, 
- * that can be used to determine a forward. 
- * N.B. the state is provided in the form of a PipeForward, of which only the name is to be used.
+/**
+ * The SenderResult is a type to store both the result of the processing of a message by a Sender,
+ * as well as the exitState.
  */
-public interface IForwardNameProvidingSender extends ISenderWithParameters {
+public class SenderResult {
 
-	public SenderResult sendMessageAndProvideForwardName(Message message, PipeLineSession session) throws SenderException, TimeoutException;
+	private @Getter @Setter String forwardName;
+	private @Getter Message result;
 
-	@Override
-	default Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		return sendMessageAndProvideForwardName(message, session).getResult();
+	public SenderResult() {
+		super();
+	}
+
+	public SenderResult(String forwardName, Message result) {
+		this.forwardName = forwardName;
+		this.result = result;
+	}
+
+	public void setResult(Message result) {
+		this.result = result;
 	}
 
 }

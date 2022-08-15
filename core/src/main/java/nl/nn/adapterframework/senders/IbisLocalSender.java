@@ -28,11 +28,10 @@ import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IForwardNameProvidingSender;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -170,7 +169,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 	}
 
 	@Override
-	public PipeRunResult sendMessageAndProvideForwardName(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessageAndProvideForwardName(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		String correlationID = session==null ? null : session.getMessageId();
 		Message result = null;
 		try (PipeLineSession context = new PipeLineSession()) {
@@ -234,7 +233,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 							throw new SenderException(msg);
 						}
 						log.info(getLogPrefix()+msg);
-						return new PipeRunResult(new PipeForward("error", null), new Message("<error>"+msg+"</error>"));
+						return new SenderResult("error", new Message("<error>"+msg+"</error>"));
 					}
 					if (isIsolated()) {
 						if (isSynchronous()) {
@@ -271,7 +270,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 				throw new SenderException(getLogPrefix()+"call to "+serviceIndication+" resulted in exitState ["+exitState+"] exitCode ["+exitCode+"]");
 			}
 			String forwardName = exitCode !=null ? exitCode.toString() : null;
-			return new PipeRunResult(new PipeForward(forwardName, null), result);
+			return new SenderResult(forwardName, result);
 		}
 	}
 

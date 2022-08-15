@@ -56,6 +56,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.SupportsOutputStreaming;
@@ -763,13 +764,13 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				if (sender instanceof IStreamingSender && canStreamToNextPipe()) {
 					sendResult =  ((IStreamingSender)sender).sendMessage(input, session, getNextPipe());
 				} else if (sender instanceof IForwardNameProvidingSender) {
-					sendResult = ((IForwardNameProvidingSender)sender).sendMessageAndProvideForwardName(input, session);
+					SenderResult senderResult = ((IForwardNameProvidingSender)sender).sendMessageAndProvideForwardName(input, session);
 					PipeForward forward = null;
-					String forwardName = sendResult.getPipeForward().getName();
+					String forwardName = senderResult.getForwardName();
 					if (StringUtils.isNotEmpty(forwardName)) {
 						forward = findForward(forwardName);
 					}
-					sendResult.setPipeForward(forward);
+					sendResult = new PipeRunResult(forward, senderResult.getResult());
 				} else {
 					// result has a messageID for async senders, the result for sync senders
 					Message result = sender.sendMessage(input, session);
