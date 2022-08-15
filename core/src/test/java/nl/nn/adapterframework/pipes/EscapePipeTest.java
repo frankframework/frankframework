@@ -1,7 +1,5 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.junit.Assert.assertEquals;
-
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -40,7 +38,7 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
 
 		PipeRunResult result = doPipe(getResource("multi-line.xml"));
 		String expected = getResource("multi-line.escaped").asString();
-		assertEquals(expected, result.getResult().asString());
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result.getResult().asString());
 	}
 
 	@Test
@@ -49,7 +47,7 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
 
 		PipeRunResult result = doPipe(getResource("multi-line-partial-escaped.xml"));
 		String expected = getResource("multi-line-partial-escaped.result").asString();
-		assertEquals(expected, result.getResult().asString());
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result.getResult().asString());
 	}
 
 	@Test
@@ -61,7 +59,7 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
 
 		PipeRunResult result = doPipe(getResource("multi-line-partial-escaped.result2"));
 		String expected = getResource("multi-line-partial-escaped.xml").asString();
-		assertEquals(expected, result.getResult().asString());
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result.getResult().asString());
 	}
 
 	@Test
@@ -73,7 +71,7 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
 
 		PipeRunResult result = doPipe(getResource("multi-line-partial-escaped.xml"));
 		String expected = getResource("multi-line.xml").asString();
-		assertEquals(expected, result.getResult().asString());
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result.getResult().asString());
 	}
 
 	@Test //input-output is unchanged / substring is not found, nothing is being de/en-coded
@@ -86,7 +84,7 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
 
 		PipeRunResult result = doPipe(getResource("multi-line-partial-escaped.xml"));
 		String expected = getResource("multi-line-partial-escaped.xml").asString();
-		assertEquals(expected, result.getResult().asString());
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result.getResult().asString());
 	}
 
 	@Test
@@ -99,7 +97,7 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
 
 		PipeRunResult result = doPipe(getResource("multi-line-partial-escaped.xml"));
 		String expected = getResource("multi-line-partial-escaped.result2").asString();
-		assertEquals(expected, result.getResult().asString());
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result.getResult().asString());
 	}
 
 	@Test
@@ -109,7 +107,7 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
 
 		PipeRunResult result = doPipe(getResource("multi-line.escaped"));
 		String expected = getResource("multi-line.xml").asString();
-		assertEquals(expected, result.getResult().asString());
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result.getResult().asString());
 	}
 
 	@Test
@@ -119,7 +117,7 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
 
 		PipeRunResult result = doPipe(getResource("multi-line-partial-escaped.xml"));
 		String expected = getResource("multi-line.xml").asString();
-		assertEquals(expected, result.getResult().asString());
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result.getResult().asString());
 	}
 
 	@Test //input-output is unchanged / substring is not found, nothing is being de/en-coded
@@ -131,7 +129,7 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
 
 		PipeRunResult result = doPipe(getResource("multi-line-partial-escaped.xml"));
 		String expected = getResource("multi-line-partial-escaped.xml").asString();
-		assertEquals(expected, result.getResult().asString());
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result.getResult().asString());
 	}
 
 	@Test //input-output is unchanged / substring is not found, nothing is being de/en-coded
@@ -141,7 +139,7 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
 
 		PipeRunResult result = doPipe(getResource("multi-line-partial-escaped.result"));
 		String expected = getResource("multi-line-partial-escaped.xml").asString();
-		assertEquals(expected, result.getResult().asString());
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result.getResult().asString());
 	}
 
 	@Test
@@ -154,7 +152,7 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
 
 		PipeRunResult result = doPipe(getResource("multi-line-partial-escaped.xml"));
 		String expected = getResource("multi-line-partial-escaped.result2").asString();
-		assertEquals(expected, result.getResult().asString());
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result.getResult().asString());
 	}
 
 	@Test
