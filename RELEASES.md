@@ -17,6 +17,8 @@ Upcoming (7.8)
 - Parameter handling for types Node and DomDoc is namespace aware, starting from version 7.6. To remove namespaces, use set attribute removeNamespaces="true"
 - Larva uses different correlationId in the format *Test Tool correlation id(${counter})* for each scenario.
 - To use files in ZipIteratorPipe and UnzipPipe the attribute processFilename="true" must be set. Otherwise the data will not be interpreted as a filename, but as data.
+- JsonPipe version 1 has been removed
+
 
 7.7
 ---
@@ -84,7 +86,7 @@ Upcoming (7.8)
 
 - IbisTester is the only role that can execute test-a-pipeline
 - ManageDatabase adapter has been disabled by default on ACC and PRD environments
-- JsonPipe produces json without root element by default. The previous behaviour can be obtained by setting version="1"
+- JsonPipe produces json without root element by default. The previous behaviour can be obtained by setting version="1" (deprecated)
 - CompareStringPipe xml=true, now does an (actual) XML compare; ignoring attribute order and whitespaces.
 - Remove Struts management console (including the IAF-WebControl Configuration)
 - Server healthcheck at /iaf/api/server/health is now publicly accessible. 

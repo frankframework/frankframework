@@ -15,11 +15,32 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import java.io.StringReader;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.json.XML;
+import org.xml.sax.SAXException;
 
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonNumber;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
+import jakarta.json.JsonString;
+import jakarta.json.JsonStructure;
+import jakarta.json.JsonValue;
+import jakarta.json.JsonValue.ValueType;
+import jakarta.json.JsonWriter;
+import jakarta.json.JsonWriterFactory;
+import jakarta.json.stream.JsonGenerator;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -29,6 +50,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.xml.SaxElementBuilder;
 
 /**
  * JSON is not aware of the element order. This pipe performs a <strong>best effort</strong> JSON to XML transformation. 
@@ -39,7 +61,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class JsonPipe extends FixedForwardPipe {
 	private @Getter Direction direction = Direction.JSON2XML;
-	private @Getter String version = "2";
+	private @Getter int version = 2;
 	private @Getter boolean addXmlRootElement=true;
 
 	private TransformerPool tpXml2Json;
@@ -57,7 +79,7 @@ public class JsonPipe extends FixedForwardPipe {
 		if (dir == null) {
 			throw new ConfigurationException("direction must be set");
 		}
-		if (dir == Direction.XML2JSON && "2".equals(getVersion())) {
+		if (dir == Direction.XML2JSON && getVersion() == 2 ) {
 			tpXml2Json = TransformerPool.configureStyleSheetTransformer(getLogPrefix(null), this, "/xml/xsl/xml2json.xsl", 0);
 		}
 	}
@@ -65,8 +87,8 @@ public class JsonPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 
-		if (message == null) {
-			throw new PipeRunException(this, getLogPrefix(session) + "got null input");
+		if (Message.isEmpty(message)) {
+			throw new PipeRunException(this, getLogPrefix(session) + "got "+(Message.isNull(message)?"null":"empty")+" input");
 		}
 
 		try {
@@ -74,26 +96,36 @@ public class JsonPipe extends FixedForwardPipe {
 
 			switch (getDirection()) {
 			case JSON2XML:
-				stringResult = message.asString();
-				JSONTokener jsonTokener = new JSONTokener(stringResult);
-				if (stringResult.startsWith("{")) {
-					JSONObject jsonObject = new JSONObject(jsonTokener);
-					stringResult = XML.toString(jsonObject);
-				}
-				if (stringResult.startsWith("[")) {
-					JSONArray jsonArray = new JSONArray(jsonTokener);
-					stringResult = XML.toString(jsonArray);
-				}
-
-				if(isAddXmlRootElement()) {
-					boolean isWellFormed = XmlUtils.isWellFormed(stringResult);
-					if (!isWellFormed) {
-						stringResult = "<root>" + stringResult + "</root>";
+				if(getVersion() < 3) {
+					stringResult = message.asString();
+					JSONTokener jsonTokener = new JSONTokener(stringResult);
+					if (stringResult.startsWith("{")) {
+						JSONObject jsonObject = new JSONObject(jsonTokener);
+						stringResult = XML.toString(jsonObject);
 					}
+					if (stringResult.startsWith("[")) {
+						JSONArray jsonArray = new JSONArray(jsonTokener);
+						stringResult = XML.toString(jsonArray);
+					}
+
+					if(isAddXmlRootElement()) {
+						boolean isWellFormed = XmlUtils.isWellFormed(stringResult);
+						if (!isWellFormed) {
+							stringResult = "<root>" + stringResult + "</root>";
+						}
+					}
+				} else {
+					SaxElementBuilder elementBuilder = new SaxElementBuilder(isAddXmlRootElement()?"root":null);
+					try(JsonReader jr = Json.createReader(message.asReader())) {
+						JsonStructure jobj = jr.read();
+						handleJsonValue(elementBuilder, jobj, null);
+					}
+					elementBuilder.close();
+					stringResult = elementBuilder.toString();
 				}
 				break;
 			case XML2JSON:
-				if ("2".equals(getVersion())) {
+				if (getVersion() == 2) {
 					stringResult = tpXml2Json.transform(message,null);
 				} else {
 					JSONObject jsonObject = XML.toJSONObject(message.asString());
@@ -110,13 +142,49 @@ public class JsonPipe extends FixedForwardPipe {
 		}
 	}
 
+	private void handleJsonValue(SaxElementBuilder currentElement, JsonValue jsonValue, String subElementName) throws SAXException {
+		switch (jsonValue.getValueType()) {
+		case ARRAY:
+			JsonArray array = jsonValue.asJsonArray();
+			ListIterator<JsonValue> values = array.listIterator();
+			while(values.hasNext()) {
+				JsonValue value = values.next();
+				System.err.println(value);
+				SaxElementBuilder saxArray = currentElement.startElement(subElementName != null ? subElementName : "array");
+				handleJsonValue(saxArray, value, null);
+				saxArray.endElement();
+			}
+			break;
+		case OBJECT:
+			JsonObject object = jsonValue.asJsonObject();
+			Set<Entry<String, JsonValue>> objects = object.entrySet();
+			for(Entry<String, JsonValue> obj : objects) {
+				SaxElementBuilder asdf = currentElement.startElement(obj.getKey());
+				handleJsonValue(asdf, obj.getValue(), null);
+				asdf.endElement();
+			}
+			break;
+		case STRING:
+			JsonString jsonString = (JsonString) jsonValue;
+			currentElement.addValue(jsonString.getString());
+			break;
+		case NUMBER:
+			JsonNumber jsonNumber = (JsonNumber) jsonValue;
+			currentElement.addValue(jsonNumber.toString());
+			break;
+		default:
+			System.out.println("not implemented ["+jsonValue.getValueType()+"]");
+			break;
+		}
+	}
+
 	@IbisDoc({"Direction of the transformation.", "JSON2XML"})
 	public void setDirection(Direction value) {
 		direction = value;
 	}
 
 	@IbisDoc({"Version of the JsonPipe. Either 1 or 2.", "2"})
-	public void setVersion(String version) {
+	public void setVersion(int version) {
 		this.version = version;
 	}
 
