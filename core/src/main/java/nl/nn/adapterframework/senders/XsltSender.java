@@ -76,7 +76,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	public final OutputType DEFAULT_XPATH_OUTPUT_METHOD=OutputType.TEXT;
 	public final boolean DEFAULT_INDENT=false; // some existing ibises expect default for indent to be false 
 	public final boolean DEFAULT_OMIT_XML_DECLARATION=false; 
-	
+
 	private @Getter String styleSheetName;
 	private @Getter String styleSheetNameSessionKey=null;
 	private @Getter String xpathExpression=null;
@@ -97,8 +97,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 
 	protected ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
 	protected @Setter IThreadConnectableTransactionManager txManager;
-	private @Getter boolean streamingXslt;
-
+	private @Getter Boolean streamingXslt = null;
 
 	/**
 	 * The <code>configure()</code> method instantiates a transformer for the specified
@@ -107,10 +106,10 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-	
-		streamingXslt = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, false);
+
+		if(streamingXslt == null) streamingXslt = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, false);
 		dynamicTransformerPoolMap = Collections.synchronizedMap(new LRUMap(transformerPoolMapSize));
-	
+
 		if(StringUtils.isNotEmpty(getXpathExpression()) && getOutputType()==null) {
 			setOutputType(DEFAULT_XPATH_OUTPUT_METHOD);
 		}
@@ -326,31 +325,33 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		if (message==null) {
 			throw new SenderException(getLogPrefix()+"got null input");
 		}
-		try {
-			try (ThreadConnector threadConnector = streamingXslt ? new ThreadConnector(this, threadLifeCycleEventListener, txManager, session) : null) {
-				try (MessageOutputStream target=MessageOutputStream.getTargetStream(this, session, next)) {
-					TransformerPool poolToUse = getTransformerPoolToUse(session);
-					ContentHandler handler = createHandler(message, threadConnector, session, poolToUse, target);
-					if (isDebugInput() && log.isDebugEnabled()) {
-						handler = new XmlTap(handler) {
-							@Override
-							public void endDocument() throws SAXException {
-								super.endDocument();
-								log.debug(getLogPrefix()+" xml input ["+getWriter()+"]");
-							}
-						};
-					}
-					XMLReader reader = getXmlReader(session, handler);
-					InputSource source = message.asInputSource();
-					reader.parse(source);
-					return target.getPipeRunResult();
+		try (ThreadConnector threadConnector = streamingXslt ? new ThreadConnector(this, threadLifeCycleEventListener, txManager, session) : null) {
+			try (MessageOutputStream target=MessageOutputStream.getTargetStream(this, session, next)) {
+				TransformerPool poolToUse = getTransformerPoolToUse(session);
+				ContentHandler handler = createHandler(message, threadConnector, session, poolToUse, target);
+				if (isDebugInput() && log.isDebugEnabled()) {
+					handler = new XmlTap(handler) {
+						@Override
+						public void endDocument() throws SAXException {
+							super.endDocument();
+							log.debug(getLogPrefix()+" xml input ["+getWriter()+"]");
+						}
+					};
 				}
+				XMLReader reader = getXmlReader(session, handler);
+				InputSource source = message.asInputSource();
+				reader.parse(source);
+				return target.getPipeRunResult();
 			}
 		} catch (Exception e) {
-			throw new SenderException(getLogPrefix()+"Exception on transforming input", e);
+			throw new SenderException(getLogPrefix()+"Cannot transform input", e);
 		}
 	}
-	
+
+	@IbisDoc({"If true, then this sender will process the XSLT while streaming in a different thread. Can be used to switch streaming off for debugging purposes","set by appconstant xslt.streaming.default"})
+	public void setStreamingXslt(Boolean streamingActive) {
+		this.streamingXslt = streamingActive;
+	}
 
 	@Override
 	public boolean isSynchronous() {

@@ -71,7 +71,8 @@ public class JsonXsltSender extends XsltSender {
 			log.debug("sender [{}] cannot provide outputstream", () -> getName());
 			return null;
 		}
-		ThreadConnector threadConnector = isStreamingXslt() ? new ThreadConnector(this, threadLifeCycleEventListener, txManager, session) : null; 
+
+		ThreadConnector threadConnector = getStreamingXslt() ? new ThreadConnector(this, threadLifeCycleEventListener, txManager, session) : null;
 		MessageOutputStream target = MessageOutputStream.getTargetStream(this, session, next);
 		try {
 			TransformerPool poolToUse = getTransformerPoolToUse(session);
