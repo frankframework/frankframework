@@ -422,7 +422,17 @@ public class HttpSender extends HttpSenderBase {
 				if (requestOrBodyParamsSet.contains(name)) {
 					Message msg = pv.asMessage();
 					if (!msg.isEmpty() || !parametersToSkipWhenEmptySet.contains(name)) {
-						entity.addPart(name, new MessageContentBody(msg));
+
+						String fileName = null;
+						String sessionKey = pv.getDefinition().getSessionKey();
+						if (sessionKey != null) {
+							fileName = session.getMessage(sessionKey + "Name").asString();
+						}
+						if(fileName != null) {
+							log.warn("setting filename using [{}Name] for bodypart [{}]. Consider using a MultipartXml with the attribute [name] instead.", sessionKey, fileName, name);
+						}
+
+						entity.addPart(name, new MessageContentBody(msg, null, fileName));
 						if (log.isDebugEnabled()) log.debug("{}appended bodypart [{}] with message [{}]", getLogPrefix(), name, msg);
 					}
 				}
