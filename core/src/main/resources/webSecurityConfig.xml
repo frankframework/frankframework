@@ -1,16 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+<beans:beans xmlns="http://www.springframework.org/schema/security" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:sec="http://www.springframework.org/schema/security"
+	xsi:schemaLocation="http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd
+						http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 	<http use-expressions="true">
-		<intercept-url pattern="/login*" access="isAnonymous()" />
-		<intercept-url pattern="/**" access="isAuthenticated()" />
+		<intercept-url pattern="/iaf/api/**" access="isAuthenticated()" />
+		<intercept-url pattern="/**" access="isAnonymous()" />
 
-		<form-login login-page='/login.html'
-			default-target-url="/homepage.html"
-			authentication-failure-url="/login.html?error=true" />
-		<logout logout-success-url="/login.html" />
+		<form-login login-page="/iaf/gui/#!/login"
+			default-target-url="/iaf/gui/#!/status"
+			authentication-failure-url="/iaf/gui/#!/login?error=true" />
+		<logout logout-success-url="/iaf/gui/#!/login" />
 	</http>
 
 	<authentication-manager>
@@ -26,4 +29,4 @@
 		class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder">
 	</beans:bean>
 
-</beans>
+</beans:beans>
