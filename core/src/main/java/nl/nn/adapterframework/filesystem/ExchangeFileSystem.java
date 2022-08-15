@@ -393,6 +393,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		boolean invalidateConnectionOnRelease = false;
 		try {
 			ItemId itemId = ItemId.getItemIdFromString(reference.getObjectName());
+			// TODO: check if this bind can be left out
 			return EmailMessage.bind(exchangeService,itemId);
 		} catch (Exception e) {
 			invalidateConnectionOnRelease = true;
@@ -879,7 +880,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	}
 
 
-	protected String getFrom(EmailMessage emailMessage) throws FileSystemException {
+	protected String getFrom(EmailMessage emailMessage) {
 		try {
 			return cleanAddress(emailMessage.getFrom());
 		} catch (ServiceLocalException e) {
@@ -894,6 +895,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			EmailAddress receivedBy = emailMessage.getReceivedBy();
 			if (receivedBy == null) {
 				SoapFaultDetails soapFaultDetails = new SoapFaultDetails() {
+					@Override
 					public ServiceError getResponseCode() {
 						return ServiceError.ErrorItemNotFound;
 					}
@@ -912,7 +914,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		}
 	}
 
-	protected String getSender(EmailMessage emailMessage) throws FileSystemException {
+	protected String getSender(EmailMessage emailMessage) {
 		try {
 			EmailAddress sender = emailMessage.getSender();
 			return sender==null ? null : cleanAddress(sender);
@@ -922,7 +924,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		}
 	}
 
-	protected List<String> getReplyTo(EmailMessage emailMessage) throws FileSystemException {
+	protected List<String> getReplyTo(EmailMessage emailMessage) {
 		try {
 			return asList(emailMessage.getReplyTo());
 		} catch (ServiceLocalException e) {
@@ -931,7 +933,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		}
 	}
 
-	protected Date getDateTimeSent(EmailMessage emailMessage) throws FileSystemException {
+	protected Date getDateTimeSent(EmailMessage emailMessage) {
 		try {
 			return emailMessage.getDateTimeSent();
 		} catch (ServiceLocalException e) {
@@ -940,7 +942,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		}
 	}
 
-	protected Date getDateTimeReceived(EmailMessage emailMessage) throws FileSystemException {
+	protected Date getDateTimeReceived(EmailMessage emailMessage) {
 		try {
 			return emailMessage.getDateTimeReceived();
 		} catch (ServiceLocalException e) {
@@ -1041,13 +1043,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		}
 	}
 
-	private ExchangeObjectReference asObjectReference(String objectName) throws FileSystemException {
-		ExchangeObjectReference reference = new ExchangeObjectReference(objectName, getMailAddress(), basefolderId, getMailboxObjectSeparator());
-		if(!reference.isStatic()){
-			reference.setBaseFolderId(getBaseFolderId(reference.getMailbox(), getBaseFolder()));
-		}
-
-		return reference;
+	private ExchangeObjectReference asObjectReference(String objectName) {
+		return asObjectReference(objectName, basefolderId);
 	}
 
 	private ExchangeObjectReference asObjectReference(String objectName, FolderId baseFolderId){
@@ -1055,14 +1052,12 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		if(!reference.isStatic()){
 			reference.setBaseFolderId(baseFolderId);
 		}
-
 		return reference;
 	}
 
 	private ExchangeService getConnection(ExchangeObjectReference reference) throws FileSystemException {
 		ExchangeService service = super.getConnection();
 		setMailboxOnService(service, reference.getMailbox());
-
 		return service;
 	}
 

@@ -29,6 +29,10 @@ public class ExchangeObjectReference {
 	private final @Getter String originalReference;
 	private @Getter @Setter FolderId baseFolderId;
 
+	/**
+	 * Create an ExchangeObjectReference for 'objectName'
+	 * The staticMailAddress and defaultBaseFolderId are only used when no mailbox is found in objectName.
+	 */
 	public ExchangeObjectReference(String objectName, String staticMailAddress, FolderId defaultBaseFolderId, String separator) {
 		this.originalReference = objectName;
 		String[] items = StringUtils.split(objectName, separator);
