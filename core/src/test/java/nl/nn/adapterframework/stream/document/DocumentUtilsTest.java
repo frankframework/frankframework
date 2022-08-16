@@ -48,27 +48,27 @@ public class DocumentUtilsTest {
 	}
 
 	@Test
-	public void testStringDocument() throws SAXException {;
+	public void testStringDocument() throws SAXException {
 		testBuild(getJsonValue("\"waarde\""), "<root>waarde</root>");
 	}
 
 	@Test
-	public void testNumberDocument() throws SAXException {;
+	public void testNumberDocument() throws SAXException {
 		testBuild(getJsonValue("100"), "<root>100</root>");
 	}
 
 	@Test
-	public void testTrueDocument() throws SAXException {;
+	public void testTrueDocument() throws SAXException {
 		testBuild(getJsonValue("true"), "<root>true</root>");
 	}
 
 	@Test
-	public void testFalseDocument() throws SAXException {;
+	public void testFalseDocument() throws SAXException {
 		testBuild(getJsonValue("false"), "<root>false</root>");
 	}
 
 	@Test
-	public void testNullDocument() throws SAXException {;
+	public void testNullDocument() throws SAXException {
 		testBuild(getJsonValue("null"), "<root nil=\"true\"/>");
 	}
 
