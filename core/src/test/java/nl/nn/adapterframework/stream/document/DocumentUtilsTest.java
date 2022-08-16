@@ -74,14 +74,13 @@ public class DocumentUtilsTest {
 
 	@Test
 	public void testNestedObjectDocument() throws SAXException {
-		testBuild("{ \"items\":{ \"numeric\":1, \"chars\":\"waarde\", \"welles\":true, \"nietes\":false, \"niks\":null, \"rij\":[\"a\",2,true,false,null,{\"a\":1,\"b\":7},[1,2,3]]}}",
+		testBuild("{ \"items\":{ \"numeric\":1, \"chars\":\"waarde\", \"welles\":true, \"nietes\":false, \"rij\":[\"a\",2,true,false,null,{\"a\":1,\"b\":7},[1,2,3]]}}",
 				"<root>"+
 					"<items>"+
 						"<numeric>1</numeric>"+
 						"<chars>waarde</chars>"+
 						"<welles>true</welles>"+
 						"<nietes>false</nietes>"+
-						"<niks nil=\"true\"/>"+
 						"<rij>a</rij>"+
 						"<rij>2</rij>"+
 						"<rij>true</rij>"+
