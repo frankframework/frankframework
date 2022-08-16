@@ -17,6 +17,7 @@ package nl.nn.adapterframework.stream.document;
 
 import java.util.Map.Entry;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.xml.sax.SAXException;
 
 import jakarta.json.JsonArray;
@@ -51,11 +52,10 @@ public class DocumentUtils {
 			documentBuilder.setValue(null);
 			break;
 		default:
-			System.out.println("not implemented ["+jValue.getValueType()+"]");
-			break;
+			throw new NotImplementedException("not implemented ["+jValue.getValueType()+"]");
 		}
 	}
-	
+
 	private static void jsonObject2Builder(JsonObject jObj, ObjectBuilder objectBuilder) throws SAXException {
 		for (Entry<String,JsonValue> entry:jObj.entrySet()) {
 			String n=entry.getKey();
@@ -88,8 +88,7 @@ public class DocumentUtils {
 				objectBuilder.add(n, null);
 				break;
 			default:
-				System.out.println("not implemented ["+v.getValueType()+"]");
-				break;
+				throw new NotImplementedException("not implemented ["+v.getValueType()+"]");
 			}
 		}
 	}
@@ -128,8 +127,7 @@ public class DocumentUtils {
 				arrayBuilder.addElement(null);
 				break;
 			default:
-				System.out.println("not implemented ["+jValue.getValueType()+"]");
-				break;
+				throw new NotImplementedException("not implemented ["+jValue.getValueType()+"]");
 			}
 		}
 	}

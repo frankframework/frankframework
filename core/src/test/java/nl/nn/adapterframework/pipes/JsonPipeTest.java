@@ -87,7 +87,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 
 		String result = prr.getResult().asString();
 		String expectedNullOccupation = version==3 ? "<occupation/>" : "<occupation>null</occupation>"; // <occupation nil="true"/> would be better
-		assertEquals("<root>"+expectedNullOccupation+"<name>Lars</name><female>false</female><age>15</age><male>true</male></root>", result); 
+		assertEquals("<root>"+expectedNullOccupation+"<name>Lars</name><female>false</female><age>15</age><male>true</male></root>", result);
 	}
 
 	@Test
