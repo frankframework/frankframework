@@ -107,7 +107,7 @@ public class DocumentUtils {
 			case OBJECT:
 				try (INodeBuilder nodeBuilder=arrayBuilder.addElement()) {
 					try (ObjectBuilder objectBuilder=nodeBuilder.startObject()) {
-						 jsonObject2Builder(jValue.asJsonObject(), objectBuilder);
+						jsonObject2Builder(jValue.asJsonObject(), objectBuilder);
 					}
 				}
 				break;
