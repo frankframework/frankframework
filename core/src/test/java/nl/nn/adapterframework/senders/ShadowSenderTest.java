@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.senders;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
@@ -8,6 +9,8 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.util.Collection;
 
+import static org.hamcrest.number.OrderingComparison.*;
+import static org.hamcrest.CoreMatchers.*;
 import org.junit.Test;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -188,7 +191,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 		Element origResult = XmlUtils.getFirstChildTag(el, "originalResult");
 		assertEquals(ORIGINAL_SENDER_RESULT, XmlUtils.getStringValue(origResult, true));
 		assertEquals(ORIGINAL_SENDER_NAME, origResult.getAttribute("senderName"));
-		assertTrue(Integer.parseInt(origResult.getAttribute("duration")) < 10);
+		assertThat(Integer.parseInt(origResult.getAttribute("duration")), lessThan(10));
 
 		Collection<Node> shadowResults = XmlUtils.getChildTags(el, "shadowResult");
 		assertEquals(3, shadowResults.size());
@@ -197,7 +200,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 			assertEquals(INPUT_MESSAGE, XmlUtils.getStringValue(shadowResult, true));
 			assertTrue(shadowResult.getAttribute("senderName").startsWith("shadowSenderWithDelay"));
 			int duration = Integer.parseInt(shadowResult.getAttribute("duration"));
-			assertTrue("test duration was ["+duration+"]", duration >= 2000 && duration < 2050);
+			assertThat("test duration was ["+duration+"]", duration, is(both(greaterThan(2000)).and(lessThan(2050))));
 		}
 	}
 }
