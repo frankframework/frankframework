@@ -30,7 +30,7 @@ public class DocumentUtils {
 
 	public static String DEFAULT_ARRAY_ELEMENT_NAME = "array";
 	public static String DEFAULT_NESTED_ARRAY_ELEMENT_NAME = "item";
-	
+
 	public static void jsonValue2Document(JsonValue jValue, IDocumentBuilder documentBuilder) throws SAXException {
 		switch (jValue.getValueType()) {
 		case ARRAY:

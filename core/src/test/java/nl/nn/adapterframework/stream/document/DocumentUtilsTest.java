@@ -36,7 +36,7 @@ public class DocumentUtilsTest {
 			return jObject.get("v");
 		}
 	}
-	
+
 	@Test
 	public void testStringArrayDocument() throws SAXException {
 		testBuild("[ \"aap\", \"noot\", \"mies\" ]", "<root><array>aap</array><array>noot</array><array>mies</array></root>");
@@ -74,7 +74,7 @@ public class DocumentUtilsTest {
 
 	@Test
 	public void testNestedObjectDocument() throws SAXException {
-		testBuild("{ \"items\":{ \"numeric\":1, \"chars\":\"waarde\", \"welles\":true, \"nietes\":false, \"niks\":null, \"rij\":[\"a\",2,true,false,null,{\"a\":1,\"b\":7},[1,2,3]]}}", 
+		testBuild("{ \"items\":{ \"numeric\":1, \"chars\":\"waarde\", \"welles\":true, \"nietes\":false, \"niks\":null, \"rij\":[\"a\",2,true,false,null,{\"a\":1,\"b\":7},[1,2,3]]}}",
 				"<root>"+
 					"<items>"+
 						"<numeric>1</numeric>"+
