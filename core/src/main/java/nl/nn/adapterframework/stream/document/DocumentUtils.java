@@ -1,0 +1,109 @@
+/*
+   Copyright 2021 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+package nl.nn.adapterframework.stream.document;
+
+import java.util.Map.Entry;
+
+import org.xml.sax.SAXException;
+
+import jakarta.json.JsonArray;
+import jakarta.json.JsonNumber;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonString;
+import jakarta.json.JsonValue;
+
+public class DocumentUtils {
+
+	public static void jsonValue2Document(JsonValue jValue, IDocumentBuilder documentBuilder) throws SAXException {
+		switch (jValue.getValueType()) {
+		case ARRAY:
+			jsonArray2Builder((JsonArray)jValue, documentBuilder.asArrayBuilder("array"));
+			break;
+		case OBJECT:
+			jsonObject2Builder((JsonObject)jValue, documentBuilder.asObjectBuilder());
+			break;
+		case STRING:
+			documentBuilder.setValue(((JsonString) jValue).getString());
+			break;
+		case NUMBER:
+			documentBuilder.setValue(((JsonNumber) jValue).toString());
+			break;
+		default:
+			System.out.println("not implemented ["+jValue.getValueType()+"]");
+			break;
+		}
+	}
+	
+	private static void jsonObject2Builder(JsonObject jObj, ObjectBuilder objectBuilder) throws SAXException {
+		for (Entry<String,JsonValue> entry:jObj.entrySet()) {
+			String n=entry.getKey();
+			JsonValue v=entry.getValue();
+			switch (v.getValueType()) {
+			case ARRAY:
+				JsonArray array = v.asJsonArray();
+				try (ArrayBuilder arrayBuilder=objectBuilder.addRepeatedField(n)) {
+					jsonArray2Builder(array, arrayBuilder);
+				}
+				break;
+			case OBJECT:
+				try (ObjectBuilder fieldObjectBuilder=objectBuilder.addObjectField(n)) {
+					jsonObject2Builder((JsonObject)v, fieldObjectBuilder);
+				}
+				break;
+			case STRING:
+				objectBuilder.add(n, ((JsonString) v).getString());
+				break;
+			case NUMBER:
+				objectBuilder.add(n, ((JsonNumber) v).toString());
+				break;
+			default:
+				System.out.println("not implemented ["+v.getValueType()+"]");
+				break;
+			}
+		}
+	}
+
+	private static void jsonArray2Builder(JsonArray jArr, ArrayBuilder arrayBuilder) throws SAXException {
+		for (JsonValue jValue:jArr) {
+			switch (jValue.getValueType()) {
+			case ARRAY:
+				JsonArray array = jValue.asJsonArray();
+				try (INodeBuilder nodeBuilder=arrayBuilder.addElement()) {
+					try (ArrayBuilder nestedArrayBuilder=nodeBuilder.startArray("item")) {
+						jsonArray2Builder(array, nestedArrayBuilder);
+					}
+				}
+				break;
+			case OBJECT:
+				try (INodeBuilder nodeBuilder=arrayBuilder.addElement()) {
+					try (ObjectBuilder objectBuilder=nodeBuilder.startObject()) {
+						 jsonObject2Builder(jValue.asJsonObject(), objectBuilder);
+					}
+				}
+				break;
+			case STRING:
+				arrayBuilder.addElement(((JsonString) jValue).getString());
+				break;
+			case NUMBER:
+				arrayBuilder.addElement(((JsonNumber) jValue).toString());
+				break;
+			default:
+				System.out.println("not implemented ["+jValue.getValueType()+"]");
+				break;
+			}
+		}
+	}
+}

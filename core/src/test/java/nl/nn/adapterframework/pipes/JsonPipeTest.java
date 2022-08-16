@@ -66,6 +66,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 
 	@Test
 	public void doPipeInputObject() throws Exception {
+		pipe.setAddXmlRootElement(false);
 		pipe.configure();
 		pipe.start();
 
@@ -108,7 +109,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 		String input = "<root><value>a</value><empty1></empty1><empty2/></root>";
 		String expected ="{\"value\":\"a\",\"empty1\":\"\",\"empty2\":\"\"}";
 
-		if(version == 1) {
+		if(version == 1 || version == 3) {
 			expected = "{\"root\":{\"empty1\":\"\",\"empty2\":{},\"value\":\"a\"}}"; //empty 2 is an Json Object!
 		}
 		PipeRunResult prr = doPipe(pipe, input, session);
@@ -126,7 +127,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 		String input = "<root><values><value>a</value><value>a</value><value>a</value></values></root>";
 		String expected ="{\"values\":{\"value\":[\"a\",\"a\",\"a\"]}}";
 
-		if(version == 1) {
+		if(version == 1 || version == 3) {
 			expected = "{\"root\":"+expected+"}";
 		}
 		PipeRunResult prr = doPipe(pipe, input, session);
@@ -137,6 +138,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 
 	@Test
 	public void testJson2XmlArray() throws Exception {
+		pipe.setAddXmlRootElement(false);
 		pipe.configure();
 		pipe.start();
 
@@ -151,6 +153,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 
 	@Test
 	public void testJson2XmlArrayWith1Value() throws Exception {
+		pipe.setAddXmlRootElement(false);
 		pipe.configure();
 		pipe.start();
 
