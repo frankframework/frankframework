@@ -101,17 +101,13 @@ public class DocumentUtils {
 			switch (jValue.getValueType()) {
 			case ARRAY:
 				JsonArray array = jValue.asJsonArray();
-				try (INodeBuilder nodeBuilder=arrayBuilder.addElement()) {
-					try (ArrayBuilder nestedArrayBuilder=nodeBuilder.startArray(DEFAULT_NESTED_ARRAY_ELEMENT_NAME)) {
-						jsonArray2Builder(array, nestedArrayBuilder);
-					}
+				try (ArrayBuilder nestedArrayBuilder=arrayBuilder.addArrayElement(DEFAULT_NESTED_ARRAY_ELEMENT_NAME)) {
+					jsonArray2Builder(array, nestedArrayBuilder);
 				}
 				break;
 			case OBJECT:
-				try (INodeBuilder nodeBuilder=arrayBuilder.addElement()) {
-					try (ObjectBuilder objectBuilder=nodeBuilder.startObject()) {
-						jsonObject2Builder(jValue.asJsonObject(), objectBuilder);
-					}
+				try (ObjectBuilder objectBuilder=arrayBuilder.addObjectElement()) {
+					jsonObject2Builder(jValue.asJsonObject(), objectBuilder);
 				}
 				break;
 			case STRING:

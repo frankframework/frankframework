@@ -31,4 +31,18 @@ public abstract class ArrayBuilder extends StructureBuilder implements IArrayBui
 		addElement().setValue(value);
 	}
 
+	public ObjectBuilder addObjectElement() throws SAXException {
+		INodeBuilder field = addElement();
+		ObjectBuilder result = field.startObject();
+		result.field=field;
+		return result;
+	}
+
+	public ArrayBuilder addArrayElement(String elementName) throws SAXException {
+		INodeBuilder field = addElement();
+		ArrayBuilder result = field.startArray(elementName);
+		result.field=field;
+		return result;
+	}
+
 }
