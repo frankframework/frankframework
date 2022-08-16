@@ -8,6 +8,7 @@ import static org.junit.Assert.assertThrows;
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -86,7 +87,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 		PipeRunResult prr = doPipe(pipe, input, session);
 
 		String result = prr.getResult().asString();
-		String expectedNullOccupation = version==3 ? "<occupation/>" : "<occupation>null</occupation>"; // <occupation nil="true"/> would be better
+		String expectedNullOccupation = version==3 ? "<occupation nil=\"true\"/>" : "<occupation>null</occupation>";
 		assertEquals("<root>"+expectedNullOccupation+"<name>Lars</name><female>false</female><age>15</age><male>true</male></root>", result);
 	}
 
@@ -157,6 +158,22 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 
 		String input ="{\"values\":{\"value\":[\"a\",\"a\",\"a\"]}}";
 		String expected = "<values><value>a</value><value>a</value><value>a</value></values>";
+
+		PipeRunResult prr = doPipe(pipe, input, session);
+
+		String result = prr.getResult().asString();
+		assertEquals(expected, result);
+	}
+
+	@Test
+	@Ignore("Structure is lost in version 1 and 2")
+	public void testJson2XmlNestedArray() throws Exception {
+		pipe.setAddXmlRootElement(false);
+		pipe.configure();
+		pipe.start();
+
+		String input ="{\"values\":{\"value\":[[\"a\",\"a\",\"a\"],[\"b\",\"b\",\"b\"]]}}";
+		String expected = "<values><value>a</value><value>a</value><value>a</value><value>b</value><value>b</value><value>b</value></values>";
 
 		PipeRunResult prr = doPipe(pipe, input, session);
 
