@@ -28,10 +28,13 @@ import jakarta.json.JsonValue;
 
 public class DocumentUtils {
 
+	public static String DEFAULT_ARRAY_ELEMENT_NAME = "array";
+	public static String DEFAULT_NESTED_ARRAY_ELEMENT_NAME = "item";
+	
 	public static void jsonValue2Document(JsonValue jValue, IDocumentBuilder documentBuilder) throws SAXException {
 		switch (jValue.getValueType()) {
 		case ARRAY:
-			jsonArray2Builder((JsonArray)jValue, documentBuilder.asArrayBuilder("array"));
+			jsonArray2Builder((JsonArray)jValue, documentBuilder.asArrayBuilder(DEFAULT_ARRAY_ELEMENT_NAME));
 			break;
 		case OBJECT:
 			jsonObject2Builder((JsonObject)jValue, documentBuilder.asObjectBuilder());
@@ -99,7 +102,7 @@ public class DocumentUtils {
 			case ARRAY:
 				JsonArray array = jValue.asJsonArray();
 				try (INodeBuilder nodeBuilder=arrayBuilder.addElement()) {
-					try (ArrayBuilder nestedArrayBuilder=nodeBuilder.startArray("item")) {
+					try (ArrayBuilder nestedArrayBuilder=nodeBuilder.startArray(DEFAULT_NESTED_ARRAY_ELEMENT_NAME)) {
 						jsonArray2Builder(array, nestedArrayBuilder);
 					}
 				}
