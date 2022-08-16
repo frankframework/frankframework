@@ -24,6 +24,8 @@ import org.json.JSONTokener;
 import org.json.XML;
 
 import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonException;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonValue;
@@ -103,8 +105,16 @@ public class JsonPipe extends FixedForwardPipe {
 					}
 				} else {
 					try(JsonReader jr = Json.createReader(message.asReader())) {
-						JsonValue jValue = jr.read();
+						JsonValue jValue=null;
+						try {
+							jValue = jr.read();
+						} catch (JsonException e) {
+							log.debug("cannot parse as JsonStructure", e);
+							stringResult="<root>"+message.asString()+"</root>";
+							break;
+						}
 						String root="root";
+						StringWriter writer = new StringWriter();
 						if (jValue instanceof JsonObject) {
 							if (!isAddXmlRootElement()) {
 								JsonObject jObj = (JsonObject)jValue;
@@ -115,10 +125,21 @@ public class JsonPipe extends FixedForwardPipe {
 								root = firstElem.getKey();
 								jValue = firstElem.getValue();
 							}
-						}
-						StringWriter writer = new StringWriter();
-						try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder(root, writer)) {
-							DocumentUtils.jsonValue2Document(jValue, documentBuilder);
+							try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder(root, writer)) {
+								DocumentUtils.jsonValue2Document(jValue, documentBuilder);
+							}
+						} else {
+							if (isAddXmlRootElement()) {
+								try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder(root, writer)) {
+									DocumentUtils.jsonValue2Document(jValue, documentBuilder);
+								}
+							} else {
+								for (JsonValue item:(JsonArray)jValue) {
+									try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder("array", writer)) {
+										DocumentUtils.jsonValue2Document(item, documentBuilder);
+									}
+								}
+							}
 						}
 						stringResult = writer.toString();
 					}

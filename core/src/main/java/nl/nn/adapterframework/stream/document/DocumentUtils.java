@@ -35,11 +35,20 @@ public class DocumentUtils {
 		case OBJECT:
 			jsonObject2Builder((JsonObject)jValue, documentBuilder.asObjectBuilder());
 			break;
+		case NUMBER:
+			documentBuilder.setValue(jValue.toString()); // works for XML, but will be quoted in JSON
+			break;
 		case STRING:
 			documentBuilder.setValue(((JsonString) jValue).getString());
 			break;
-		case NUMBER:
-			documentBuilder.setValue(((JsonNumber) jValue).toString());
+		case FALSE:
+			documentBuilder.setValue(false);
+			break;
+		case TRUE:
+			documentBuilder.setValue(true);
+			break;
+		case NULL:
+			documentBuilder.setValue(null);
 			break;
 		default:
 			System.out.println("not implemented ["+jValue.getValueType()+"]");
@@ -67,7 +76,16 @@ public class DocumentUtils {
 				objectBuilder.add(n, ((JsonString) v).getString());
 				break;
 			case NUMBER:
-				objectBuilder.add(n, ((JsonNumber) v).toString());
+				objectBuilder.add(n, ((JsonNumber) v).toString()); // works for XML, but will be quoted in JSON
+				break;
+			case FALSE:
+				objectBuilder.add(n, false);
+				break;
+			case TRUE:
+				objectBuilder.add(n, true);
+				break;
+			case NULL:
+				objectBuilder.add(n, null);
 				break;
 			default:
 				System.out.println("not implemented ["+v.getValueType()+"]");
@@ -98,7 +116,16 @@ public class DocumentUtils {
 				arrayBuilder.addElement(((JsonString) jValue).getString());
 				break;
 			case NUMBER:
-				arrayBuilder.addElement(((JsonNumber) jValue).toString());
+				arrayBuilder.addElement(((JsonNumber) jValue).toString()); // works for XML, but will be quoted in JSON
+				break;
+			case FALSE:
+				arrayBuilder.addElement(false);
+				break;
+			case TRUE:
+				arrayBuilder.addElement(true);
+				break;
+			case NULL:
+				arrayBuilder.addElement(null);
 				break;
 			default:
 				System.out.println("not implemented ["+jValue.getValueType()+"]");

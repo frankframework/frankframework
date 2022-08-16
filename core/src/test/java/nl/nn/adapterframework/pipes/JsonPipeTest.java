@@ -65,7 +65,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 	}
 
 	@Test
-	public void doPipeInputObject() throws Exception {
+	public void doPipeInputObjectSingleField() throws Exception {
 		pipe.setAddXmlRootElement(false);
 		pipe.configure();
 		pipe.start();
@@ -75,6 +75,19 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 
 		String result = prr.getResult().asString();
 		assertEquals("<name>Lars</name>", result);
+	}
+
+	@Test
+	public void doPipeInputObject() throws Exception {
+		pipe.configure();
+		pipe.start();
+
+		String input = "{ \"occupation\": null, \"name\": \"Lars\", \"female\":false, \"age\": 15, \"male\":true  }";
+		PipeRunResult prr = doPipe(pipe, input, session);
+
+		String result = prr.getResult().asString();
+		String expectedNullOccupation = version==3 ? "<occupation/>" : "<occupation>null</occupation>"; // <occupation nil="true"/> would be better
+		assertEquals("<root>"+expectedNullOccupation+"<name>Lars</name><female>false</female><age>15</age><male>true</male></root>", result); 
 	}
 
 	@Test
