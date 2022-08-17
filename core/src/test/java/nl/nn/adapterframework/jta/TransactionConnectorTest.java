@@ -201,7 +201,7 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 		}
 	}
 	public void runInConnectedChildThread(String query) throws InterruptedException {
-		try (TransactionConnector transactionConnector = TransactionConnector.getInstance(txManager, null)) {
+		try (TransactionConnector transactionConnector = TransactionConnector.getInstance(txManager, null, null, true)) {
 			Thread thread = new Thread() {
 
 				@Override
@@ -251,7 +251,6 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 					System.out.println("-> gtrid: "+gtrid);
 				}
 			}
-//			AbstractPlatformTransactionManager.SuspendedResourcesHolder holder = 
 		}
 	}
 }

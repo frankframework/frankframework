@@ -23,21 +23,22 @@ import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * This TransactionConnector suspends the transaction in the main thread,
- * and resumes it in the child thread, for as long as it runs. The calling party 
- * (e.g. the party that is using a streaming transformer, or is using a provided 
+ * and resumes it in the child thread, for as long as it runs. The calling party
+ * (e.g. the party that is using a streaming transformer, or is using a provided
  * OutputStream that may lead to a ContentHandlerOutputStream or JsonEventHandlerOutputStream)
  * must make sure that no transaction related code (e.g. obtaining connections) is executed
  * during the life of the TransactionConnector (between construction and calling of close()).
- * 
+ *
  * @author Gerrit van Brakel
  *
- * @param <T> the transaction 
+ * @param <T> the transaction
  * @param <R> a holder of suspended resources
  */
 public class TransactionConnector<T,R> implements AutoCloseable {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private Object owner;
+	private String description;
 	private TransactionConnectorCoordinator<T,R> coordinator;
 	private Thread parentThread;
 	private Thread childThread;
@@ -45,22 +46,24 @@ public class TransactionConnector<T,R> implements AutoCloseable {
 
 	private boolean childThreadTransactionSuspended;
 
-	private TransactionConnector(TransactionConnectorCoordinator<T,R> coordinator, Object owner) {
+	private TransactionConnector(TransactionConnectorCoordinator<T,R> coordinator, Object owner, String description) {
 		super();
 		parentThread=Thread.currentThread();
 		this.coordinator = coordinator;
 		this.owner = owner;
+		this.description = description;
+		log.debug("created "+this);
 	}
 
 	/**
 	 * factory method, to be called from 'main' thread.
-	 * 
+	 *
 	 * When a transaction connector has been set up, new transactional resources can only be introduced after beginChildThread() has been called,
 	 * not on the main thread anymore, because the transaction must be suspended there.
 	 * TODO: This also means that objects further downstream might need to restore the transaction context before they can add new transactional resources.
 	 * This is currently not implemented; therefore a FixedQuerySender providing an UpdateClob or UpdateBlob outputstream might behave incorrectly.
 	 */
-	public static <T,R> TransactionConnector<T,R> getInstance(IThreadConnectableTransactionManager<T,R> txManager, Object owner) {
+	public static <T,R> TransactionConnector<T,R> getInstance(IThreadConnectableTransactionManager<T,R> txManager, Object owner, String description, boolean overrideLastInThread) {
 		if (txManager==null) {
 			return null;
 		}
@@ -68,14 +71,14 @@ public class TransactionConnector<T,R> implements AutoCloseable {
 		if (coordinator == null) {
 			return null;
 		}
-		TransactionConnector<T,R> instance = new TransactionConnector<T,R>(coordinator, owner);
-		coordinator.setLastInThread(instance);
+		TransactionConnector<T,R> instance = new TransactionConnector<T,R>(coordinator, owner, description);
+		coordinator.setLastInThread(instance, overrideLastInThread);
 		return instance;
 	}
 
 	/**
 	 * resume transaction, that was saved in parent thread, in the child thread.
-	 * After beginChildThread() has been called, new transactional resources cannot be enlisted in the parentThread, 
+	 * After beginChildThread() has been called, new transactional resources cannot be enlisted in the parentThread,
 	 * because the transaction context has been prepared to be transferred to the childThread.
 	 */
 	public void beginChildThread() {
@@ -133,6 +136,6 @@ public class TransactionConnector<T,R> implements AutoCloseable {
 
 	@Override
 	public String toString() {
-		return "C-"+Integer.toHexString(hashCode())+" of "+ClassUtils.nameOf(owner);
+		return "C-"+Integer.toHexString(hashCode())+" of "+ClassUtils.nameOf(owner)+(description!=null?"/"+description:"");
 	}
 }

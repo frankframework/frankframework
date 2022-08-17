@@ -45,16 +45,20 @@ public class ThreadConnector<T> implements AutoCloseable {
 	private TransactionConnector<?,?> transactionConnector;
 
 
-	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, String correlationId) {
+	public ThreadConnector(Object owner, String description, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, String correlationId, boolean overrideLastInThread) {
 		super();
 		this.threadLifeCycleEventListener=threadLifeCycleEventListener;
 		threadInfo=threadLifeCycleEventListener!=null?threadLifeCycleEventListener.announceChildThread(owner, correlationId):null;
 		parentThread=Thread.currentThread();
 		hideRegex= IbisMaskingLayout.getThreadLocalReplace();
-		transactionConnector = TransactionConnector.getInstance(txManager, owner);
+		transactionConnector = TransactionConnector.getInstance(txManager, owner, description, true);
 	}
-	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, PipeLineSession session) {
-		this(owner, threadLifeCycleEventListener, txManager, session==null?null:session.getMessageId());
+	public ThreadConnector(Object owner, String description, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, PipeLineSession session) {
+		this(owner, description, threadLifeCycleEventListener, txManager, session, true);
+	}
+
+	public ThreadConnector(Object owner, String description, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, PipeLineSession session, boolean overrideLastInThread) {
+		this(owner, description, threadLifeCycleEventListener, txManager, session==null?null:session.getMessageId(), overrideLastInThread);
 	}
 
 	public <R> R startThread(R input) {
