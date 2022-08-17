@@ -52,7 +52,7 @@ public class TransactionConnector<T,R> implements AutoCloseable {
 		this.coordinator = coordinator;
 		this.owner = owner;
 		this.description = description;
-		log.debug("created "+this);
+		if (log.isDebugEnabled()) log.debug("created "+this);
 	}
 
 	/**
