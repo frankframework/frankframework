@@ -41,26 +41,30 @@ public class ThreadConnector<T> implements AutoCloseable {
 		CREATED,
 		FINISHED;
 	};
-	
+
 	private ThreadState threadState=ThreadState.ANNOUNCED;
 	private TransactionConnector<?,?> transactionConnector;
 
 
-	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, String correlationId) {
+	public ThreadConnector(Object owner, String description, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, String correlationId, boolean overrideLastInThread) {
 		super();
 		this.threadLifeCycleEventListener=threadLifeCycleEventListener;
 		threadInfo=threadLifeCycleEventListener!=null?threadLifeCycleEventListener.announceChildThread(owner, correlationId):null;
 		parentThread=Thread.currentThread();
 		hideRegex= IbisMaskingLayout.getThreadLocalReplace();
-		transactionConnector = TransactionConnector.getInstance(txManager, owner);
+		transactionConnector = TransactionConnector.getInstance(txManager, owner, description, overrideLastInThread);
 	}
-	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, PipeLineSession session) {
-		this(owner, threadLifeCycleEventListener, txManager, session==null?null:session.getMessageId());
+	public ThreadConnector(Object owner, String description, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, PipeLineSession session) {
+		this(owner, description, threadLifeCycleEventListener, txManager, session, true);
+	}
+
+	public ThreadConnector(Object owner, String description, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, PipeLineSession session, boolean overrideLastInThread) {
+		this(owner, description, threadLifeCycleEventListener, txManager, session==null?null:session.getMessageId(), overrideLastInThread);
 		if (session!=null) {
 			session.scheduleCloseOnSessionExit(this, ClassUtils.nameOf(owner));
-		} 
+		}
 	}
-	
+
 	public <R> R startThread(R input) {
 		childThread = Thread.currentThread();
 		if (transactionConnector!=null) {
@@ -132,7 +136,7 @@ public class ThreadConnector<T> implements AutoCloseable {
 		}
 		return result;
 	}
-	
+
 	@Override
 	public void close() throws IOException {
 		try {
@@ -151,11 +155,11 @@ public class ThreadConnector<T> implements AutoCloseable {
 					break;
 				case FINISHED:
 					break;
-				default: 
+				default:
 					throw new IllegalStateException("Unknown ThreadState ["+threadState+"]");
 				}
 			}
 		}
 	}
-	
+
 }

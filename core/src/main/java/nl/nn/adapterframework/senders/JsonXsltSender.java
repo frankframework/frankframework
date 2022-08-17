@@ -72,7 +72,7 @@ public class JsonXsltSender extends XsltSender {
 			return null;
 		}
 
-		ThreadConnector threadConnector = getStreamingXslt() ? new ThreadConnector(this, threadLifeCycleEventListener, txManager, session) : null;
+		ThreadConnector threadConnector = getStreamingXslt() ? new ThreadConnector(this, "provideOutputStream", threadLifeCycleEventListener, txManager, session) : null;
 		MessageOutputStream target = MessageOutputStream.getTargetStream(this, session, next);
 		try {
 			TransformerPool poolToUse = getTransformerPoolToUse(session);

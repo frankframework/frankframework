@@ -79,5 +79,22 @@
 			</ForEachChildElementPipe>
 		</pipeline>
 	</adapter>
-	
+
+	<adapter name="TransactedOutputStreaming2" >
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-TransactedOutputStreaming2" />
+		</receiver>
+		<pipeline transactionAttribute="RequiresNew">
+			<exits>
+				<exit path="READY" state="success"/>
+			</exits>
+			<XsltPipe name="createDocument" xpathExpression="/*" getInputFromFixedValue="&lt;root&gt;&lt;elem&gt;x&lt;/elem&gt;&lt;/root&gt;"/>
+			<!-- TransactionConnector for MessageOutputStream of ForEachChildElementPipe is created after that for elementXPathExpression, but the latter should be 'last in thread'  -->
+			<ForEachChildElementPipe name="iterate" elementXPathExpression="/*/*" >
+				<EchoSender/>
+				<forward name="success" path="READY" />
+			</ForEachChildElementPipe>
+		</pipeline>
+	</adapter>	
+
 </module>

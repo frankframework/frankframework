@@ -184,7 +184,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		try {
 			TransformerPool poolToUse = getTransformerPoolToUse(session);
 			boolean canStreamOut = streamingXslt && !isDisableOutputEscaping(poolToUse); // TODO fix problem in TransactionConnecor that currently inhibits streaming out when disable-output-escaping is used
-			ThreadConnector threadConnector = canStreamOut ? new ThreadConnector(this, threadLifeCycleEventListener, txManager,  session) : null;
+			ThreadConnector threadConnector = canStreamOut ? new ThreadConnector(this, "provideOutputStream", threadLifeCycleEventListener, txManager,  session) : null;
 			MessageOutputStream target = MessageOutputStream.getTargetStream(this, session, next);
 			ContentHandler handler = createHandler(null, threadConnector, session, poolToUse, target);
 			return new MessageOutputStream(this, handler, target, threadLifeCycleEventListener, txManager, session, threadConnector);
@@ -325,7 +325,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		if (message==null) {
 			throw new SenderException(getLogPrefix()+"got null input");
 		}
-		try (ThreadConnector threadConnector = streamingXslt ? new ThreadConnector(this, threadLifeCycleEventListener, txManager, session) : null) {
+		try (ThreadConnector threadConnector = streamingXslt ? new ThreadConnector(this, "sendMessage", threadLifeCycleEventListener, txManager, session) : null) {
 			try (MessageOutputStream target=MessageOutputStream.getTargetStream(this, session, next)) {
 				TransformerPool poolToUse = getTransformerPoolToUse(session);
 				ContentHandler handler = createHandler(message, threadConnector, session, poolToUse, target);
