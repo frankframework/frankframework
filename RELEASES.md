@@ -17,7 +17,10 @@ Upcoming (7.8)
 - Parameter handling for types Node and DomDoc is namespace aware, starting from version 7.6. To remove namespaces, use set attribute removeNamespaces="true"
 - Larva uses different correlationId in the format *Test Tool correlation id(${counter})* for each scenario.
 - To use files in ZipIteratorPipe and UnzipPipe the attribute processFilename="true" must be set. Otherwise the data will not be interpreted as a filename, but as data.
-- JsonPipe version 1 has been removed
+- JsonPipe version 1 has been removed. Json to Xml conversion has slightly changed:
+  - null values are rendered as '<elem nil="true"/>' instead of '<elem>null</elem>'
+  - default array element containers are '<item>' instead of '<array>'
+  - multidimensional arrays with scalar values are not flattened into one dimensional arrays any more
 
 
 7.7
