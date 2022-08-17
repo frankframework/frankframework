@@ -135,7 +135,7 @@ public class JsonPipe extends FixedForwardPipe {
 								}
 							} else {
 								for (JsonValue item:(JsonArray)jValue) {
-									try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder("array", writer)) {
+									try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder("item", writer)) {
 										DocumentUtils.jsonValue2Document(item, documentBuilder);
 									}
 								}

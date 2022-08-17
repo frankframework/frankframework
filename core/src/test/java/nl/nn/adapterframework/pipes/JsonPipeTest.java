@@ -99,7 +99,11 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 		PipeRunResult prr = doPipe(pipe, input, session);
 
 		String result = prr.getResult().asString();
-		assertEquals("<root><array>Wie</array><array>dit leest</array><array>is gek</array></root>", result);
+		String expected = "<root><array>Wie</array><array>dit leest</array><array>is gek</array></root>";
+		if (version == 3) {
+			expected = expected.replaceAll("array>", "item>");
+		}
+		assertEquals(expected, result);
 	}
 
 	@Test
@@ -111,7 +115,11 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 		PipeRunResult prr = doPipe(pipe, input, session);
 
 		String result = prr.getResult().asString();
-		assertEquals("<array>Wie</array><array>dit leest</array><array>is gek</array>", result);
+		String expected = "<array>Wie</array><array>dit leest</array><array>is gek</array>";
+		if (version == 3) {
+			expected = expected.replaceAll("array>", "item>");
+		}
+		assertEquals(expected, result);
 	}
 
 	@Test

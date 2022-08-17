@@ -14,11 +14,24 @@ import nl.nn.adapterframework.testutil.MatchUtils;
 
 public class DocumentUtilsTest {
 
-	protected void testBuild(String json, String expected) throws SAXException {
+	protected void testBuild(String json, String expected) throws Exception {
 		try(JsonReader jr = Json.createReader(new StringReader(json))) {
 			JsonValue jValue=jr.read();
 			testBuild(jValue, expected);
 		}
+
+//		String stringResult = null;
+//		JSONTokener jsonTokener = new JSONTokener(json);
+//		if (json.startsWith("{")) {
+//			JSONObject jsonObject = new JSONObject(jsonTokener);
+//			stringResult = XML.toString(jsonObject);
+//		}
+//		if (json.startsWith("[")) {
+//			JSONArray jsonArray = new JSONArray(jsonTokener);
+//			stringResult = XML.toString(jsonArray);
+//		}
+//		MatchUtils.assertXmlEquals("org.json compatibility", expected, "<root>"+stringResult+"</root>");
+
 	}
 
 	protected void testBuild(JsonValue jValue, String expected) throws SAXException {
@@ -38,12 +51,12 @@ public class DocumentUtilsTest {
 	}
 
 	@Test
-	public void testStringArrayDocument() throws SAXException {
-		testBuild("[ \"aap\", \"noot\", \"mies\" ]", "<root><array>aap</array><array>noot</array><array>mies</array></root>");
+	public void testStringArrayDocument() throws Exception {
+		testBuild("[ \"aap\", \"noot\", \"mies\" ]", "<root><item>aap</item><item>noot</item><item>mies</item></root>");
 	}
 
 	@Test
-	public void testStringObjectDocument() throws SAXException {
+	public void testStringObjectDocument() throws Exception {
 		testBuild("{ \"naam\":\"aap\" }", "<root><naam>aap</naam></root>");
 	}
 
@@ -73,7 +86,7 @@ public class DocumentUtilsTest {
 	}
 
 	@Test
-	public void testNestedObjectDocument() throws SAXException {
+	public void testNestedObjectDocument() throws Exception {
 		testBuild("{ \"items\":{ \"numeric\":1, \"chars\":\"waarde\", \"welles\":true, \"nietes\":false, \"rij\":[\"a\",2,true,false,null,{\"a\":1,\"b\":7},[1,2,3]]}}",
 				"<root>"+
 					"<items>"+
