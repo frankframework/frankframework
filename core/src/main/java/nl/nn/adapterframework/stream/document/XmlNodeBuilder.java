@@ -44,7 +44,11 @@ public class XmlNodeBuilder implements INodeBuilder {
 
 	@Override
 	public void setValue(String value) throws SAXException {
-		current.addValue(value).close();
+		if (value!=null) {
+			current.addValue(value).close();
+		} else {
+			current.addAttribute("nil", "true").close();
+		}
 	}
 
 	@Override

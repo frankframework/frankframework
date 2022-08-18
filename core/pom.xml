@@ -375,12 +375,6 @@
 			<version>2.10.9.2</version>
 		</dependency>
 
-		<!-- JsonPipe -->
-		<dependency>
-			<groupId>org.json</groupId>
-			<artifactId>json</artifactId>
-			<version>20080701</version>
-		</dependency>
 		<dependency>
 			<groupId>org.glassfish</groupId>
 			<artifactId>jakarta.json</artifactId>
