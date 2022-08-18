@@ -46,20 +46,17 @@ public class ThreadConnector<T> implements AutoCloseable {
 	private TransactionConnector<?,?> transactionConnector;
 
 
-	public ThreadConnector(Object owner, String description, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, String correlationId, boolean overwriteLastInThread) {
+	public ThreadConnector(Object owner, String description, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, String correlationId) {
 		super();
 		this.threadLifeCycleEventListener=threadLifeCycleEventListener;
 		threadInfo=threadLifeCycleEventListener!=null?threadLifeCycleEventListener.announceChildThread(owner, correlationId):null;
 		parentThread=Thread.currentThread();
 		hideRegex= IbisMaskingLayout.getThreadLocalReplace();
-		transactionConnector = TransactionConnector.getInstance(txManager, owner, description, overwriteLastInThread);
-	}
-	public ThreadConnector(Object owner, String description, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, PipeLineSession session) {
-		this(owner, description, threadLifeCycleEventListener, txManager, session, true);
+		transactionConnector = TransactionConnector.getInstance(txManager, owner, description);
 	}
 
-	public ThreadConnector(Object owner, String description, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, PipeLineSession session, boolean overwriteLastInThread) {
-		this(owner, description, threadLifeCycleEventListener, txManager, session==null?null:session.getMessageId(), overwriteLastInThread);
+	public ThreadConnector(Object owner, String description, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, PipeLineSession session) {
+		this(owner, description, threadLifeCycleEventListener, txManager, session==null?null:session.getMessageId());
 		if (session!=null) {
 			session.scheduleCloseOnSessionExit(this, ClassUtils.nameOf(owner));
 		}
