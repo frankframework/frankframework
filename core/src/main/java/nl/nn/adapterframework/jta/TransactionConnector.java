@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.jta;
 
+import java.util.List;
+
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.functional.ThrowingRunnable;
@@ -42,7 +44,7 @@ public class TransactionConnector<T,R> implements AutoCloseable {
 	private TransactionConnectorCoordinator<T,R> coordinator;
 	private Thread parentThread;
 	private Thread childThread;
-	private ThrowingRunnable<?> onEndChildThreadAction;
+	private List<ThrowingRunnable<?>> onEndChildThreadActions;
 
 	private boolean childThreadTransactionSuspended;
 
@@ -96,9 +98,11 @@ public class TransactionConnector<T,R> implements AutoCloseable {
 	 */
 	@lombok.SneakyThrows
 	public void endChildThread() {
-		if (onEndChildThreadAction!=null) {
+		if (onEndChildThreadActions!=null) {
 			log.debug("[{}] endChildThread() in thread [{}], executing onEndThreadAction", ()->toString(), ()->Thread.currentThread().getName());
-			onEndChildThreadAction.run();
+			for(ThrowingRunnable<?> action:onEndChildThreadActions) {
+				action.run();
+			}
 		}
 		if (childThread==null || coordinator==null) {
 			log.debug("[{}] endChildThread() in thread [{}], no childThread started or no transaction or not the last in chain", ()->toString(), ()->Thread.currentThread().getName());
@@ -113,8 +117,8 @@ public class TransactionConnector<T,R> implements AutoCloseable {
 		childThreadTransactionSuspended=true;
 	}
 
-	public <E extends Exception> void onEndChildThread(ThrowingRunnable<E> action) {
-		onEndChildThreadAction = action;
+	public void onEndChildThread(List<ThrowingRunnable<?>> actions) {
+		onEndChildThreadActions = actions;
 	}
 	/**
 	 * close() to be called from parent thread, when child thread has ended.
