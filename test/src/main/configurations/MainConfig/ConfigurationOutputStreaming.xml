@@ -85,6 +85,9 @@
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-TransactedOutputStreaming2" />
 		</receiver>
 		<pipeline transactionAttribute="RequiresNew">
+			<exits>
+				<exit path="READY" state="success"/>
+			</exits>
 			<SenderPipe name="prepareTable1" >
 				<FixedQuerySender 
 					queryType="other"
@@ -104,6 +107,7 @@
 					queryType="other"
 					query="UPDATE IBISTEMP SET TCHAR='Y' WHERE TKEY=2639"
 				/>
+				<forward name="success" path="READY" />
 			</ForEachChildElementPipe>
 		</pipeline>
 	</adapter>

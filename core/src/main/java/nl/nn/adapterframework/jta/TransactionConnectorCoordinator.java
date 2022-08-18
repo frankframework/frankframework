@@ -150,6 +150,7 @@ public class TransactionConnectorCoordinator<T,R> implements AutoCloseable {
 
 	@Override
 	public void close() {
+		log.debug("close() numBeginChildThreadsCalled [{}] connectorCount [{}]", numBeginChildThreadsCalled, connectorCount);
 		Thread currentThread = Thread.currentThread();
 		if (currentThread != parentThread) {
 			throw new IllegalStateException("close() must be called from parentThread");
