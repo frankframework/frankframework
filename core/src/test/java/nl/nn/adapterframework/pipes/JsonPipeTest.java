@@ -10,7 +10,6 @@ import java.util.Collection;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
@@ -18,11 +17,11 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.JsonPipe.Direction;
 
-@RunWith(Parameterized.class)
+//@RunWith(Parameterized.class)
 public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 
 	@Parameterized.Parameter(0)
-	public int version = 0;
+	public int version = 3;
 
 	@Parameters(name = "Version: {0}")
 	public static Collection<Object> data() {
@@ -32,7 +31,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 	@Override
 	public JsonPipe createPipe() {
 		JsonPipe pipe = new JsonPipe();
-		pipe.setVersion(version);
+//		pipe.setVersion(version);
 		return pipe;
 	}
 
