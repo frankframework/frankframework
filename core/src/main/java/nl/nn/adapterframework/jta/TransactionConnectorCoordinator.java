@@ -64,8 +64,8 @@ public class TransactionConnectorCoordinator<T,R> implements AutoCloseable {
 		return coordinator;
 	}
 
-	public void setLastInThread(TransactionConnector<T,R> target, boolean overrideLastInThread) {
-		if (overrideLastInThread || lastInThread==null) {
+	public void setLastInThread(TransactionConnector<T,R> target, boolean overwriteLastInThread) {
+		if (overwriteLastInThread || lastInThread==null) {
 			log.debug("setting lastInThread from [{}] to [{}]", lastInThread, target);
 			lastInThread = target;
 		} else {
