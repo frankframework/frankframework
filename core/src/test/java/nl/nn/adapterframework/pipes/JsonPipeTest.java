@@ -5,34 +5,18 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
-import java.util.Arrays;
-import java.util.Collection;
-
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
 
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.JsonPipe.Direction;
 
-//@RunWith(Parameterized.class)
 public class JsonPipeTest extends PipeTestBase<JsonPipe> {
-
-	@Parameterized.Parameter(0)
-	public int version = 3;
-
-	@Parameters(name = "Version: {0}")
-	public static Collection<Object> data() {
-		return Arrays.asList(new Object[] {1, 2, 3});
-	}
 
 	@Override
 	public JsonPipe createPipe() {
-		JsonPipe pipe = new JsonPipe();
-//		pipe.setVersion(version);
-		return pipe;
+		return new JsonPipe();
 	}
 
 	@Test
@@ -86,8 +70,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 		PipeRunResult prr = doPipe(pipe, input, session);
 
 		String result = prr.getResult().asString();
-		String expectedNullOccupation = version==3 ? "<occupation nil=\"true\"/>" : "<occupation>null</occupation>";
-		assertEquals("<root>"+expectedNullOccupation+"<name>Lars</name><female>false</female><age>15</age><male>true</male></root>", result);
+		assertEquals("<root><occupation nil=\"true\"/><name>Lars</name><female>false</female><age>15</age><male>true</male></root>", result);
 	}
 
 	@Test
@@ -98,10 +81,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 		PipeRunResult prr = doPipe(pipe, input, session);
 
 		String result = prr.getResult().asString();
-		String expected = "<root><array>Wie</array><array>dit leest</array><array>is gek</array></root>";
-		if (version == 3) {
-			expected = expected.replaceAll("array>", "item>");
-		}
+		String expected = "<root><item>Wie</item><item>dit leest</item><item>is gek</item></root>";
 		assertEquals(expected, result);
 	}
 
@@ -114,10 +94,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 		PipeRunResult prr = doPipe(pipe, input, session);
 
 		String result = prr.getResult().asString();
-		String expected = "<array>Wie</array><array>dit leest</array><array>is gek</array>";
-		if (version == 3) {
-			expected = expected.replaceAll("array>", "item>");
-		}
+		String expected = "<item>Wie</item><item>dit leest</item><item>is gek</item>";
 		assertEquals(expected, result);
 	}
 
@@ -130,9 +107,6 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 		String input = "<root><value>a</value><empty1></empty1><empty2/><null nil=\"true\"/></root>";
 		String expected ="{\"value\":\"a\",\"empty1\":\"\",\"empty2\":\"\",\"null\":null}";
 
-//		if(version == 1 || version == 3) {
-//			expected = "{\"root\":{\"empty1\":\"\",\"empty2\":{},\"value\":\"a\"}}"; //empty 2 is an Json Object!
-//		}
 		PipeRunResult prr = doPipe(pipe, input, session);
 
 		String result = prr.getResult().asString();
@@ -148,9 +122,6 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 		String input = "<root><values><value>a</value><value>a</value><value>a</value></values></root>";
 		String expected ="{\"values\":{\"value\":[\"a\",\"a\",\"a\"]}}";
 
-//		if(version == 1 || version == 3) {
-//			expected = "{\"root\":"+expected+"}";
-//		}
 		PipeRunResult prr = doPipe(pipe, input, session);
 
 		String result = prr.getResult().asString();

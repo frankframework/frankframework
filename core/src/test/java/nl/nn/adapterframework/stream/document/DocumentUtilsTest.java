@@ -19,19 +19,6 @@ public class DocumentUtilsTest {
 			JsonValue jValue=jr.read();
 			testBuild(jValue, expected);
 		}
-
-//		String stringResult = null;
-//		JSONTokener jsonTokener = new JSONTokener(json);
-//		if (json.startsWith("{")) {
-//			JSONObject jsonObject = new JSONObject(jsonTokener);
-//			stringResult = XML.toString(jsonObject);
-//		}
-//		if (json.startsWith("[")) {
-//			JSONArray jsonArray = new JSONArray(jsonTokener);
-//			stringResult = XML.toString(jsonArray);
-//		}
-//		MatchUtils.assertXmlEquals("org.json compatibility", expected, "<root>"+stringResult+"</root>");
-
 	}
 
 	protected void testBuild(JsonValue jValue, String expected) throws SAXException {
