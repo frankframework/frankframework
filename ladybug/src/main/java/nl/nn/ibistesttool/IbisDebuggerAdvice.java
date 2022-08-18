@@ -483,7 +483,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 
 		public Executor(RequestReplyExecutor requestReplyExecutor, ThreadLifeCycleEventListener<ThreadDebugInfo> threadLifeCycleEventListener) {
 			this.requestReplyExecutor=requestReplyExecutor;
-			this.threadConnector = new ThreadConnector<ThreadDebugInfo>(requestReplyExecutor, "Debugger", threadLifeCycleEventListener, null, requestReplyExecutor.getCorrelationID(), true);
+			this.threadConnector = new ThreadConnector<ThreadDebugInfo>(requestReplyExecutor, "Debugger", threadLifeCycleEventListener, null, requestReplyExecutor.getCorrelationID());
 		}
 
 		@Override
