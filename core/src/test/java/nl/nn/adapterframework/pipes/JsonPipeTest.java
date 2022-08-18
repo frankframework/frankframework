@@ -127,12 +127,12 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 		pipe.configure();
 		pipe.start();
 
-		String input = "<root><value>a</value><empty1></empty1><empty2/></root>";
-		String expected ="{\"value\":\"a\",\"empty1\":\"\",\"empty2\":\"\"}";
+		String input = "<root><value>a</value><empty1></empty1><empty2/><null nil=\"true\"/></root>";
+		String expected ="{\"value\":\"a\",\"empty1\":\"\",\"empty2\":\"\",\"null\":null}";
 
-		if(version == 1 || version == 3) {
-			expected = "{\"root\":{\"empty1\":\"\",\"empty2\":{},\"value\":\"a\"}}"; //empty 2 is an Json Object!
-		}
+//		if(version == 1 || version == 3) {
+//			expected = "{\"root\":{\"empty1\":\"\",\"empty2\":{},\"value\":\"a\"}}"; //empty 2 is an Json Object!
+//		}
 		PipeRunResult prr = doPipe(pipe, input, session);
 
 		String result = prr.getResult().asString();
@@ -148,9 +148,9 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 		String input = "<root><values><value>a</value><value>a</value><value>a</value></values></root>";
 		String expected ="{\"values\":{\"value\":[\"a\",\"a\",\"a\"]}}";
 
-		if(version == 1 || version == 3) {
-			expected = "{\"root\":"+expected+"}";
-		}
+//		if(version == 1 || version == 3) {
+//			expected = "{\"root\":"+expected+"}";
+//		}
 		PipeRunResult prr = doPipe(pipe, input, session);
 
 		String result = prr.getResult().asString();
