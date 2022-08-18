@@ -362,7 +362,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
 		HandlerRecord handlerRecord = new HandlerRecord();
 		try {
-			ThreadConnector threadConnector = streamingXslt ? new ThreadConnector(this, threadLifeCycleEventListener, txManager, session) : null; 
+			ThreadConnector threadConnector = streamingXslt ? new ThreadConnector(this, "provideOutputStream", threadLifeCycleEventListener, txManager, session) : null; 
 			MessageOutputStream target=getTargetStream(session);
 			Writer resultWriter = target.asWriter();
 			ItemCallback callback = createItemCallBack(session, getSender(), resultWriter);
@@ -396,7 +396,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			}
 		}
 		HandlerRecord handlerRecord = new HandlerRecord();
-		try (ThreadConnector threadConnector = streamingXslt ? new ThreadConnector(this, threadLifeCycleEventListener, txManager, session) : null) {
+		try (ThreadConnector threadConnector = streamingXslt ? new ThreadConnector(this, "iterateOverInput", threadLifeCycleEventListener, txManager, session) : null) {
 			try {
 				createHandler(handlerRecord, threadConnector, session, callback);
 			} catch (TransformerException e) {

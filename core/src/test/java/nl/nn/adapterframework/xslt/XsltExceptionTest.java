@@ -37,7 +37,7 @@ public class XsltExceptionTest {
 				super.startElement(uri, localName, qName, atts);
 			}
 		};
-		try (ThreadConnector threadConnector = expectChildThreads ? new ThreadConnector(null, null, null, (PipeLineSession)null) : null) {
+		try (ThreadConnector threadConnector = expectChildThreads ? new ThreadConnector(null, null, null, null, (PipeLineSession)null) : null) {
 			TransformerFilter transformer = tp.getTransformerFilter(threadConnector, filter);
 			
 			try {

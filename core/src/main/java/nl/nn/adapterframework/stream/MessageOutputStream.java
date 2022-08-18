@@ -109,12 +109,12 @@ public class MessageOutputStream implements AutoCloseable {
 	// this constructor for testing only
 	<T> MessageOutputStream(ContentHandler handler) {
 		this(null, (IForwardTarget)null, null);
-		threadConnector = new ThreadConnector<T>(null, null, null, (PipeLineSession)null);
+		threadConnector = new ThreadConnector<T>(null, null, null, null, (PipeLineSession)null);
 		this.requestStream=new ThreadConnectingFilter(threadConnector, handler);
 	}
 	public <T> MessageOutputStream(INamedObject owner, ContentHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, PipeLineSession session, ThreadConnector<?> targetThreadConnector) {
 		this(owner, nextStream, null);
-		threadConnector = new ThreadConnector<T>(owner, threadLifeCycleEventListener, txManager, session);
+		threadConnector = new ThreadConnector<T>(owner, "ContentHandler-MessageOutputStream", threadLifeCycleEventListener, txManager, session);
 		this.requestStream=new ThreadConnectingFilter(threadConnector, handler);
 		this.targetThreadConnector = targetThreadConnector;
 	}
@@ -123,12 +123,12 @@ public class MessageOutputStream implements AutoCloseable {
 	<T> MessageOutputStream(JsonEventHandler handler) {
 		this(null, (IForwardTarget)null, null);
 		this.requestStream=handler;
-		threadConnector = new ThreadConnector<T>(null, null, null, (PipeLineSession)null);
+		threadConnector = new ThreadConnector<T>(null, null, null, null, (PipeLineSession)null);
 	}
 	public <T> MessageOutputStream(INamedObject owner, JsonEventHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, PipeLineSession session, ThreadConnector<?> targetThreadConnector) {
 		this(owner, nextStream, null);
 		this.requestStream=handler;
-		threadConnector = new ThreadConnector<T>(owner, threadLifeCycleEventListener, txManager, session);
+		threadConnector = new ThreadConnector<T>(owner, "JsonEventHandler-MessageOutputStream", threadLifeCycleEventListener, txManager, session);
 		this.targetThreadConnector = targetThreadConnector;
 		//TODO apply ThreadConnectingFilter, to make sure transaction is properly resumed in child thread
 	}
@@ -213,6 +213,7 @@ public class MessageOutputStream implements AutoCloseable {
 	}
 
 	public Object asNative() {
+		if (log.isDebugEnabled()) log.debug(getLogPrefix() + "returning native["+ClassUtils.nameOf(requestStream)+"]");
 		return requestStream;
 	}
 
