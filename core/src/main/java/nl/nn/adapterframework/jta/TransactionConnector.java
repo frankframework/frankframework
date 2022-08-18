@@ -63,7 +63,7 @@ public class TransactionConnector<T,R> implements AutoCloseable {
 	 * TODO: This also means that objects further downstream might need to restore the transaction context before they can add new transactional resources.
 	 * This is currently not implemented; therefore a FixedQuerySender providing an UpdateClob or UpdateBlob outputstream might behave incorrectly.
 	 */
-	public static <T,R> TransactionConnector<T,R> getInstance(IThreadConnectableTransactionManager<T,R> txManager, Object owner, String description, boolean overwriteLastInThread) {
+	public static <T,R> TransactionConnector<T,R> getInstance(IThreadConnectableTransactionManager<T,R> txManager, Object owner, String description) {
 		if (txManager==null) {
 			return null;
 		}
@@ -72,7 +72,7 @@ public class TransactionConnector<T,R> implements AutoCloseable {
 			return null;
 		}
 		TransactionConnector<T,R> instance = new TransactionConnector<T,R>(coordinator, owner, description);
-		coordinator.setLastInThread(instance, overwriteLastInThread);
+		coordinator.registerConnector(instance);
 		return instance;
 	}
 

@@ -35,6 +35,8 @@ public class TransactionConnectorCoordinator<T,R> implements AutoCloseable {
 	private R resourceHolder;
 	private boolean suspended;
 	private TransactionConnector<T,R> lastInThread;
+	private int connectorCount=0;
+	private int numBeginChildThreadsCalled=0;
 
 
 	private TransactionConnectorCoordinator(IThreadConnectableTransactionManager<T,R> txManager) {
@@ -64,19 +66,23 @@ public class TransactionConnectorCoordinator<T,R> implements AutoCloseable {
 		return coordinator;
 	}
 
-	public void setLastInThread(TransactionConnector<T,R> target, boolean overwriteLastInThread) {
-		if (overwriteLastInThread || lastInThread==null) {
-			log.debug("setting lastInThread from [{}] to [{}]", lastInThread, target);
-			lastInThread = target;
-		} else {
-			log.debug("do not override lastInThread from [{}] to [{}]", lastInThread, target);
-		}
+	public void registerConnector(TransactionConnector connector) {
+		connectorCount++;
 	}
 
-	public boolean isLastInThread(TransactionConnector<T,R> target) {
-		log.debug("comparing lastInThread [{}] to target [{}]", lastInThread, target);
-		return lastInThread==target;
-	}
+	//	public void setLastInThread(TransactionConnector<T,R> target, boolean overwriteLastInThread) {
+//		if (overwriteLastInThread || lastInThread==null) {
+//			log.debug("setting lastInThread from [{}] to [{}]", lastInThread, target);
+//			lastInThread = target;
+//		} else {
+//			log.debug("do not override lastInThread from [{}] to [{}]", lastInThread, target);
+//		}
+//	}
+//
+//	public boolean isLastInThread(TransactionConnector<T,R> target) {
+//		log.debug("comparing lastInThread [{}] to target [{}]", lastInThread, target);
+//		return lastInThread==target;
+//	}
 
 	/**
 	 * Execute an action with the thread prepared for enlisting transactional resources.
@@ -114,11 +120,15 @@ public class TransactionConnectorCoordinator<T,R> implements AutoCloseable {
 
 	public void resumeTransactionInChildThread(TransactionConnector<T,R> requester) {
 		Thread thread = Thread.currentThread();
+		numBeginChildThreadsCalled++;
+		if (numBeginChildThreadsCalled==connectorCount) {
+			lastInThread = requester;
+		}
 		if (thread!=parentThread) {
 			log.debug("resumeTransactionInChildThread() current thread [{}] unequal to parentThread [{}], so resuming transaction forced", ()->Thread.currentThread().getName(), ()->parentThread.getName());
 			resumeTransaction(true);
 		} else {
-			if (isLastInThread(requester)) {
+			if (lastInThread==requester) {
 				log.debug("resumeTransactionInChildThread() requester [{}] is last in thread, so resuming transaction", requester);
 				resumeTransaction();
 			} else {
