@@ -3,20 +3,18 @@ package nl.nn.adapterframework.align;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import java.io.StringReader;
 import java.net.URL;
-import java.util.Set;
-
-import jakarta.json.JsonStructure;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.leadpony.justify.api.JsonSchema;
+import org.leadpony.justify.api.JsonValidationService;
+import org.leadpony.justify.api.ProblemHandler;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.networknt.schema.JsonSchema;
-import com.networknt.schema.JsonSchemaFactory;
-import com.networknt.schema.SpecVersion;
-import com.networknt.schema.ValidationMessage;
-
+import jakarta.json.JsonStructure;
+import jakarta.json.stream.JsonParser;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
 import nl.nn.adapterframework.testutil.MatchUtils;
@@ -97,20 +95,28 @@ public class TestXmlSchema2JsonSchema extends AlignTestBase {
 		// validate the json against the generated schema
 		if (compactArrays==skipJsonRootElements) {
 			if (StringUtils.isNotEmpty(jsonString)) {
-				JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4);
-				JsonSchema schema = factory.getSchema(jsonSchemaContent);
-
-				ObjectMapper mapper = new ObjectMapper();
-				JsonNode node = mapper.readTree(jsonString);
-
-				Set<ValidationMessage> errors = schema.validate(node);
-
-				LOG.debug("jsonString: {}", jsonString);
-				LOG.debug("errors: {}", errors);
-				assertEquals(errors.toString(), 0, errors.size());
+				validateJson(jsonString,jsonSchemaContent);
 			}
 		}
 
 	}
 
+	public void validateJson(String jsonString, String jsonSchemaContent) {
+		JsonValidationService service = JsonValidationService.newInstance();
+		JsonSchema schema = service.readSchema(new StringReader(jsonSchemaContent));
+		final List<String> problems = new LinkedList<>();
+		// Problem handler which will print problems found.
+		ProblemHandler handler = service.createProblemPrinter(problems::add);
+
+		try (JsonParser parser = service.createParser(new StringReader(jsonString), schema, handler)) {
+			while (parser.hasNext()) {
+				parser.next();
+				// Could do something useful here, like posting the event on a JsonEventHandler.
+			}
+		}
+
+		LOG.debug("jsonString: {}", jsonString);
+		LOG.debug("problems: {}", problems);
+		assertEquals(problems.toString(), 0, problems.size());
+	}
 }
