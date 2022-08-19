@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015-2017 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,57 +15,72 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Supplier;
+
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IDualModeValidator;
 import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.validation.AbstractXmlValidator.ValidationResult;
-import nl.nn.adapterframework.validation.RootValidations;
 import nl.nn.adapterframework.validation.XmlValidatorException;
 
 
+/**
+ * Pipe that validates the input message against a Schema.
+ *
+ * @ff.forward parserError a parser exception occurred, probably caused by a non-well-formed document. If not specified, <code>failure</code> is used in such a case.
+ * @ff.forward failure The document is not valid according to the configured schema.
+ * @ff.forward warnings warnings occurred. If not specified, <code>success</code> is used.
+ * @ff.forward outputParserError a <code>parserError</code> when validating a response. If not specified, <code>parserError</code> is used.
+ * @ff.forward outputFailure a <code>failure</code> when validating a response. If not specified, <code>failure</code> is used.
+ * @ff.forward outputWarnings warnings occurred when validating a response. If not specified, <code>warnings</code> is used.
+ *
+ * @author Gerrit van Brakel
+ */
 public abstract class ValidatorBase extends FixedForwardPipe implements IDualModeValidator {
 
-//	private @Getter String schema;
-//	private @Getter String schemaSessionKey;
+	private @Getter String schemaLocation;
+	private @Getter String schemaSessionKey;
 	private @Getter String root;
 	private @Getter String responseRoot;
 	private @Getter boolean forwardFailureToSuccess = false;
-	private @Getter String rootElementSessionKey;
+
+	private @Getter boolean throwException = false;
+	private @Getter String reasonSessionKey = "failureReason";
+
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		checkSchemaSpecified();
-
-		if (!isForwardFailureToSuccess() && !isThrowException()){
-			if (findForward("failure")==null) {
-				throw new ConfigurationException("must either set throwException=true or have a forward with name [failure]");
-			}
+		if (StringUtils.isNotEmpty(getSchemaLocation()) && StringUtils.isNotEmpty(getSchemaSessionKey())) {
+			throw new ConfigurationException("cannot have schemaSessionKey together with schemaLocation");
 		}
+		checkSchemaSpecified();
 
 		registerEvent(ValidationResult.PARSER_ERROR.getEvent());
 		registerEvent(ValidationResult.INVALID.getEvent());
 		registerEvent(ValidationResult.VALID_WITH_WARNINGS.getEvent());
 		registerEvent(ValidationResult.VALID.getEvent());
-		if (getRoot() == null) {
-			ConfigurationWarnings.add(this, log, "root not specified");
-		}
 	}
 
-
-	protected abstract void checkSchemaSpecified() throws ConfigurationException;
-
+	protected void checkSchemaSpecified() throws ConfigurationException {
+		if (StringUtils.isEmpty(getSchemaLocation()) && StringUtils.isEmpty(getSchemaSessionKey())) {
+			throw new ConfigurationException("must have either schemaSessionKey, schemaLocation");
+		}
+	}
 
 	@Override
 	public final PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
@@ -79,15 +94,8 @@ public abstract class ValidatorBase extends FixedForwardPipe implements IDualMod
 
 	public PipeRunResult doPipe(Message input, PipeLineSession session, boolean responseMode, String messageRoot) throws PipeRunException {
 		try {
-			Message messageToValidate;
 			input.preserve();
-			if (StringUtils.isNotEmpty(getSoapNamespace())) {
-				messageToValidate = getMessageToValidate(input, session);
-			} else {
-				messageToValidate = input;
-			}
-
-			PipeForward forward = validate(messageToValidate, session, responseMode, messageRoot);
+			PipeForward forward = validate(input, session, responseMode, messageRoot);
 			return new PipeRunResult(forward, input);
 		} catch (Exception e) {
 			throw new PipeRunException(this, getLogPrefix(session), e);
@@ -95,17 +103,14 @@ public abstract class ValidatorBase extends FixedForwardPipe implements IDualMod
 
 	}
 
-	protected final PipeForward validate(String messageToValidate, PipeLineSession session) throws XmlValidatorException, PipeRunException, ConfigurationException {
+	protected final PipeForward validate(String messageToValidate, PipeLineSession session) throws PipeRunException, XmlValidatorException, ConfigurationException {
 		return validate(new Message(messageToValidate), session, false, null);
 	}
 
-	protected abstract PipeForward validate(Message messageToValidate, PipeLineSession session, boolean responseMode, String messageRoot) throws XmlValidatorException, PipeRunException, ConfigurationException;
+	protected abstract PipeForward validate(Message messageToValidate, PipeLineSession session, boolean responseMode, String messageRoot) throws PipeRunException, XmlValidatorException, ConfigurationException;
 
-	protected RootValidations createRootValidation(String messageRoot) {
-		return new RootValidations(messageRoot);
-	}
 
-	protected PipeForward determineForward(ValidationResult validationResult, PipeLineSession session, boolean responseMode) throws PipeRunException {
+	protected PipeForward determineForward(ValidationResult validationResult, PipeLineSession session, boolean responseMode, Supplier<String> errorMessageProvider) throws PipeRunException {
 		throwEvent(validationResult.getEvent());
 		PipeForward forward = null;
 		switch(validationResult) {
@@ -143,11 +148,7 @@ public abstract class ValidatorBase extends FixedForwardPipe implements IDualMod
 					if (isForwardFailureToSuccess()) {
 						forward = getSuccessForward();
 					} else {
-						String errorMessage = session.get(getReasonSessionKey(), null);
-						if (StringUtils.isEmpty(errorMessage)) {
-							errorMessage = session.get(getXmlReasonSessionKey(), "unknown error");
-						}
-						throw new PipeRunException(this, errorMessage);
+						throw new PipeRunException(this, errorMessageProvider.get());
 					}
 				}
 				return forward;
@@ -156,77 +157,117 @@ public abstract class ValidatorBase extends FixedForwardPipe implements IDualMod
 		}
 	}
 
-	protected PipeRunResult getErrorResult(ValidationResult result, String reason, PipeLineSession session, boolean responseMode) throws PipeRunException {
-		if (StringUtils.isNotEmpty(getReasonSessionKey())) {
-			session.put(getReasonSessionKey(), reason);
-		}
-		PipeForward forward = determineForward(ValidationResult.PARSER_ERROR, session, responseMode);
-		return new PipeRunResult(forward, Message.nullMessage());
+
+	protected boolean isConfiguredForMixedValidation() {
+		return StringUtils.isNotEmpty(responseRoot);
 	}
-
-	@Deprecated
-	protected abstract Message getMessageToValidate(Message message, PipeLineSession session);
-
-	protected abstract boolean isConfiguredForMixedValidation();
-
-	public String getMessageRoot(boolean responseMode) {
-		return responseMode ? getResponseRoot() : getMessageRoot();
-	}
-
-
 
 	@Override
-	public abstract IValidator getResponseValidator();
-
-	public boolean isMixedValidator(Object outputValidator) {
-		return outputValidator==null && isConfiguredForMixedValidation();
-	}
-
-	@Deprecated
-	public String getSoapNamespace() {
+	public IValidator getResponseValidator() {
+		if (isConfiguredForMixedValidation()) {
+			return new ResponseValidatorWrapper(this);
+		}
 		return null;
 	}
 
+	public class ResponseValidatorWrapper implements IValidator {
 
-	@IbisDoc({"5", "Name of the root element, or a comma separated list of element names. The validation fails if the root element is not present in the list. N.B. for WSDL generation only the first element is used", ""})
+		private @Getter @Setter String name;
+
+		private Map<String, PipeForward> forwards=new HashMap<String, PipeForward>();
+
+		protected ValidatorBase owner;
+		public ResponseValidatorWrapper(ValidatorBase owner) {
+			super();
+			this.owner=owner;
+			name="ResponseValidator of "+owner.getName();
+		}
+
+		@Override
+		public void configure() throws ConfigurationException {
+		}
+
+		@Override
+		public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+			return owner.doPipe(message, session, true, null);
+		}
+
+		@Override
+		public PipeRunResult validate(Message message, PipeLineSession session, String messageRoot) throws PipeRunException {
+			return owner.doPipe(message, session, true, messageRoot);
+		}
+
+		@Override
+		public int getMaxThreads() {
+			return 0;
+		}
+
+		@Override
+		public Map<String, PipeForward> getForwards() {
+			return forwards;
+		}
+
+		@Override
+		public void registerForward(PipeForward forward) {
+			forwards.put(forward.getName(), forward);
+		}
+
+		@Override
+		public void start() throws PipeStartException {
+		}
+
+		@Override
+		public void stop() {
+		}
+
+		@Override
+		public ApplicationContext getApplicationContext() {
+			return owner.getApplicationContext();
+		}
+
+		@Override
+		public ClassLoader getConfigurationClassLoader() {
+			return owner.getConfigurationClassLoader();
+		}
+
+		@Override
+		public void setApplicationContext(ApplicationContext applicationContext) {
+			//Can ignore this as it's not set through Spring
+		}
+
+		@Override
+		public boolean consumesSessionVariable(String sessionKey) {
+			return owner.consumesSessionVariable(sessionKey);
+		}
+	}
+
+	/** Reference to schema */
+	public void setSchemaLocation(String schemaLocation) {
+		this.schemaLocation = schemaLocation;
+	}
+
+	/** Session key for retrieving a schema */
+	public void setSchemaSessionKey(String schemaSessionKey) {
+		this.schemaSessionKey = schemaSessionKey;
+	}
+
+	/** Name of the root element */
 	public void setRoot(String root) {
 		this.root = root;
 	}
-	@IbisDoc({"6", "Name of the response root element, or a comma separated list of element names. The validation fails if the root element is not present in the list. N.B. for WSDL generation only the first element is used", ""})
+	/** Name of the response root element */
 	public void setResponseRoot(String responseRoot) {
 		this.responseRoot = responseRoot;
 	}
 
-	@IbisDoc({"7", "If set <code>true</code>, the failure forward is replaced by the success forward (like a warning mode)", "false"})
+	/** If set <code>true</code>, the failure forward is replaced by the success forward (like a warning mode) */
 	@Deprecated
 	@ConfigurationWarning("please specify a forward with name=failure instead")
 	public void setForwardFailureToSuccess(boolean b) {
 		this.forwardFailureToSuccess = b;
 	}
 
-//	@IbisDocRef({ABSTRACTXMLVALIDATOR})
-//	public void setThrowException(boolean throwException) {
-//		validator.setThrowException(throwException);
-//	}
-//	public boolean isThrowException() {
-//		return validator.isThrowException();
-//	}
-//
-//	@IbisDocRef({ABSTRACTXMLVALIDATOR})
-//	public void setReasonSessionKey(String reasonSessionKey) {
-//		validator.setReasonSessionKey(reasonSessionKey);
-//	}
-//	public String getReasonSessionKey() {
-//		return validator.getReasonSessionKey();
-//	}
-//
-//	@IbisDocRef({ABSTRACTXMLVALIDATOR})
-//	public void setXmlReasonSessionKey(String xmlReasonSessionKey) {
-//		validator.setXmlReasonSessionKey(xmlReasonSessionKey);
-//	}
-//	public String getXmlReasonSessionKey() {
-//		return validator.getXmlReasonSessionKey();
-//	}
+
 //
 //	@IbisDocRef({ABSTRACTXMLVALIDATOR})
 //	public void setCharset(String string) {
@@ -235,6 +276,5 @@ public abstract class ValidatorBase extends FixedForwardPipe implements IDualMod
 //	public String getCharset() {
 //		return  validator.getCharset();
 //	}
-
 
 }
