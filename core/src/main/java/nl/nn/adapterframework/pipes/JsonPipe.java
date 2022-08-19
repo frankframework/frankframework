@@ -15,11 +15,15 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.json.JSONTokener;
-import org.json.XML;
+import java.io.StringWriter;
+import java.util.Map.Entry;
 
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonException;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
+import jakarta.json.JsonValue;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -27,11 +31,12 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.document.DocumentUtils;
+import nl.nn.adapterframework.stream.document.XmlDocumentBuilder;
 import nl.nn.adapterframework.util.TransformerPool;
-import nl.nn.adapterframework.util.XmlUtils;
 
 /**
- * JSON is not aware of the element order. This pipe performs a <strong>best effort</strong> JSON to XML transformation. 
+ * JSON is not aware of the element order. This pipe performs a <strong>best effort</strong> JSON to XML transformation.
  * If you wish to validate or add structure to the converted (xml) file, please use the {@link Json2XmlValidator}.
  *
  * @author Martijn Onstwedder
@@ -39,7 +44,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class JsonPipe extends FixedForwardPipe {
 	private @Getter Direction direction = Direction.JSON2XML;
-	private @Getter String version = "2";
 	private @Getter boolean addXmlRootElement=true;
 
 	private TransformerPool tpXml2Json;
@@ -57,7 +61,7 @@ public class JsonPipe extends FixedForwardPipe {
 		if (dir == null) {
 			throw new ConfigurationException("direction must be set");
 		}
-		if (dir == Direction.XML2JSON && "2".equals(getVersion())) {
+		if (dir == Direction.XML2JSON) {
 			tpXml2Json = TransformerPool.configureStyleSheetTransformer(getLogPrefix(null), this, "/xml/xsl/xml2json.xsl", 0);
 		}
 	}
@@ -65,8 +69,8 @@ public class JsonPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 
-		if (message == null) {
-			throw new PipeRunException(this, getLogPrefix(session) + "got null input");
+		if (Message.isEmpty(message)) {
+			throw new PipeRunException(this, getLogPrefix(session) + "got "+(Message.isNull(message)?"null":"empty")+" input");
 		}
 
 		try {
@@ -74,31 +78,48 @@ public class JsonPipe extends FixedForwardPipe {
 
 			switch (getDirection()) {
 			case JSON2XML:
-				stringResult = message.asString();
-				JSONTokener jsonTokener = new JSONTokener(stringResult);
-				if (stringResult.startsWith("{")) {
-					JSONObject jsonObject = new JSONObject(jsonTokener);
-					stringResult = XML.toString(jsonObject);
-				}
-				if (stringResult.startsWith("[")) {
-					JSONArray jsonArray = new JSONArray(jsonTokener);
-					stringResult = XML.toString(jsonArray);
-				}
-
-				if(isAddXmlRootElement()) {
-					boolean isWellFormed = XmlUtils.isWellFormed(stringResult);
-					if (!isWellFormed) {
-						stringResult = "<root>" + stringResult + "</root>";
+				try(JsonReader jr = Json.createReader(message.asReader())) {
+					JsonValue jValue=null;
+					try {
+						jValue = jr.read();
+					} catch (JsonException e) {
+						log.debug("cannot parse as JsonStructure", e);
+						stringResult="<root>"+message.asString()+"</root>";
+						break;
 					}
+					String root="root";
+					StringWriter writer = new StringWriter();
+					if (jValue instanceof JsonObject) {
+						if (!isAddXmlRootElement()) {
+							JsonObject jObj = (JsonObject)jValue;
+							if (jObj.size()>1) {
+								throw new PipeRunException(this, "Cannot extract root element name from object with ["+jObj.size()+"] names");
+							}
+							Entry<String,JsonValue> firstElem=jObj.entrySet().stream().findFirst().orElseThrow(()->new PipeRunException(this, "Cannot extract root element name from empty object"));
+							root = firstElem.getKey();
+							jValue = firstElem.getValue();
+						}
+						try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder(root, writer)) {
+							DocumentUtils.jsonValue2Document(jValue, documentBuilder);
+						}
+					} else {
+						if (isAddXmlRootElement()) {
+							try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder(root, writer)) {
+								DocumentUtils.jsonValue2Document(jValue, documentBuilder);
+							}
+						} else {
+							for (JsonValue item:(JsonArray)jValue) {
+								try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder("item", writer)) {
+									DocumentUtils.jsonValue2Document(item, documentBuilder);
+								}
+							}
+						}
+					}
+					stringResult = writer.toString();
 				}
 				break;
 			case XML2JSON:
-				if ("2".equals(getVersion())) {
-					stringResult = tpXml2Json.transform(message,null);
-				} else {
-					JSONObject jsonObject = XML.toJSONObject(message.asString());
-					stringResult = jsonObject.toString();
-				}
+				stringResult = tpXml2Json.transform(message,null);
 				break;
 			default:
 				throw new IllegalStateException("unknown direction ["+getDirection()+"]");
@@ -110,14 +131,11 @@ public class JsonPipe extends FixedForwardPipe {
 		}
 	}
 
+
+
 	@IbisDoc({"Direction of the transformation.", "JSON2XML"})
 	public void setDirection(Direction value) {
 		direction = value;
-	}
-
-	@IbisDoc({"Version of the JsonPipe. Either 1 or 2.", "2"})
-	public void setVersion(String version) {
-		this.version = version;
 	}
 
 	@IbisDoc({"When true, and direction is json2xml, it wraps a root element around the converted message", "true"})

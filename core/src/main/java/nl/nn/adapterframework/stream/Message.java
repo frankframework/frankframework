@@ -60,6 +60,7 @@ import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageUtils;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -579,11 +580,16 @@ public class Message implements Serializable {
 	}
 
 	public void toStringPrefix(Writer writer) throws IOException {
-		if (context==null || context.isEmpty()) {
+		if (context==null || context.isEmpty() || !log.isDebugEnabled()) {
 			return;
 		}
 		writer.write("context:\n");
 		for(Entry<String,Object> entry:context.entrySet()) {
+			if("authorization".equalsIgnoreCase(entry.getKey())) {
+				String value = Misc.hide((String)entry.getValue());
+				writer.write(entry.getKey()+": "+value+"\n");
+				continue;
+			}
 			writer.write(entry.getKey()+": "+entry.getValue()+"\n");
 		}
 		writer.write("value:\n");

@@ -18,39 +18,51 @@ package nl.nn.adapterframework.http.mime;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.Map;
 
-import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MIME;
-import org.apache.http.entity.mime.content.AbstractContentBody;
+import org.apache.http.entity.mime.content.ContentBody;
 import org.apache.logging.log4j.Logger;
+import org.springframework.http.MediaType;
+import org.springframework.util.MimeType;
 
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.MessageUtils;
+import nl.nn.adapterframework.util.StreamUtil;
 
-public class MessageContentBody extends AbstractContentBody {
+public class MessageContentBody implements ContentBody {
 	private Logger log = LogUtil.getLogger(this);
 	private final Message message;
 	private String filename;
 	private static final int OUTPUT_BUFFER_SIZE = 4096;
+	private final MimeType mimeType;
 
 	public MessageContentBody(Message message) {
-		this(message, message.isBinary() ? ContentType.APPLICATION_OCTET_STREAM : ContentType.DEFAULT_TEXT);
+		this(message, null);
 	}
 
-	public MessageContentBody(Message message, ContentType contentType) {
+	public MessageContentBody(Message message, MimeType contentType) {
 		this(message, contentType, null);
 	}
 
-	public MessageContentBody(Message message, ContentType contentType, String filename) {
-		super(contentType);
+	public MessageContentBody(Message message, MimeType contentType, String filename) {
 		this.message = message;
+		this.filename = filename;
+
+		MimeType type = (contentType != null) ? contentType : MessageUtils.getMimeType(message);
+		if(type == null) {
+			type = message.isBinary() ? MediaType.APPLICATION_OCTET_STREAM : MediaType.TEXT_PLAIN;
+		}
+		this.mimeType = type;
+
 		Map<String, Object> context = message.getContext();
 		if(context != null && filename == null) {
 			this.filename = (String) context.get(MessageContext.METADATA_NAME);
 		}
-		log.debug("creating part from message ["+message+"] name ["+filename+"] contentType ["+contentType+"]");
+		log.debug("creating part from message [{}] name [{}] contentType [{}]", message, filename, contentType);
 	}
 
 	@Override
@@ -94,4 +106,39 @@ public class MessageContentBody extends AbstractContentBody {
 		return message.size();
 	}
 
+	@Override
+	public String getMimeType() {
+		StringBuilder builder = new StringBuilder();
+		builder.append(getMediaType());
+		builder.append('/');
+		builder.append(getSubType());
+		return builder.toString();
+	}
+
+	@Override
+	public String getMediaType() {
+		return mimeType.getType();
+	}
+
+	@Override
+	public String getSubType() {
+		return mimeType.getSubtype();
+	}
+
+	@Override
+	public String getCharset() {
+		if(message.isBinary()) {
+			return null;
+		}
+
+		Charset charset = (mimeType.getCharset() != null) ? mimeType.getCharset() : StreamUtil.DEFAULT_CHARSET;
+		if(charset != null) {
+			return charset.name();
+		}
+		return null;
+	}
+
+	public boolean isRepeatable() {
+		return message.isRepeatable();
+	}
 }

@@ -139,6 +139,8 @@ public class JsonWriter implements JsonEventHandler {
 			writeSeparatingComma(false);
 			if (value instanceof String) {
 				writer.write("\""+value+"\"");
+			} else if (value==null) {
+				writer.write("null");
 			} else {
 				writer.write(value.toString());
 			}

@@ -31,11 +31,11 @@ public class MultipartEntity extends BasicHttpEntity implements HttpEntity {
 
 	private final MultipartForm multipart;
 
-	MultipartEntity(MultipartForm multipart, final ContentType contentType, final long contentLength) {
+	MultipartEntity(MultipartForm multipart, final ContentType contentType) {
 		super();
 		this.multipart = multipart;
 		setContentType(new BasicHeader(HTTP.CONTENT_TYPE, contentType.toString()));
-		setContentLength(contentLength);
+		setContentLength(multipart.getTotalLength());
 	}
 
 	public MultipartForm getMultipart() {
@@ -44,18 +44,17 @@ public class MultipartEntity extends BasicHttpEntity implements HttpEntity {
 
 	@Override
 	public boolean isRepeatable() {
-		//TODO loop through each part and check if it's repeatable!
-		return getContentLength() != -1;
+		return multipart.isRepeatable();
 	}
 
 	@Override
 	public boolean isChunked() {
-		return !isRepeatable();
+		return getContentLength() != -1;
 	}
 
 	@Override
 	public boolean isStreaming() {
-		return !isRepeatable();
+		return !isChunked();
 	}
 
 	@Override
