@@ -33,6 +33,7 @@
 		<security:csrf disabled="true" />
 		<security:headers>
 			<security:frame-options policy="SAMEORIGIN" />
+			<security:content-type-options disabled="true" />
 		</security:headers>
 		<security:custom-filter position="PRE_AUTH_FILTER" ref="jeePreAuthenticatedFilter" />
 		<security:logout />
