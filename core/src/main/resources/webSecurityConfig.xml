@@ -2,7 +2,7 @@
 <beans:beans xmlns="http://www.springframework.org/schema/security" 
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 	xmlns:beans="http://www.springframework.org/schema/beans"
-	xmlns:sec="http://www.springframework.org/schema/security"
+	xmlns:security="http://www.springframework.org/schema/security"
 	xsi:schemaLocation="http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd
 						http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
@@ -11,7 +11,7 @@
 		<csrf disabled="true"/>
 
 		<http-basic entry-point-ref="authenticationEntryPoint" />
-		<sec:logout />
+		<security:logout />
 	</http>
 
 	<beans:bean id="authenticationEntryPoint" class="org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint">
@@ -19,20 +19,24 @@
 	</beans:bean>
 
 	<authentication-manager alias="inMemoryAuthManager">
-		<sec:authentication-provider>
-			<sec:user-service>
-				<sec:user name="IbisTester123" password="IbisTester" authorities="IbisTester"/>
-			</sec:user-service>
-			<sec:password-encoder ref="passwordEncoder" />
-		</sec:authentication-provider>
+		<security:authentication-provider>
+			<security:user-service>
+				<security:user name="IbisTester123" password="IbisTester" authorities="IbisTester"/>
+			</security:user-service>
+			<security:password-encoder ref="passwordEncoder" />
+		</security:authentication-provider>
 	</authentication-manager>
 	<beans:bean id="passwordEncoder" class = "org.springframework.security.crypto.password.NoOpPasswordEncoder" factory-method = "getInstance"/>
 -->
 
 	<http use-expressions="true" realm="Frank" authentication-manager-ref="authenticationManager" entry-point-ref="403EntryPoint" pattern="/**">
-		<csrf disabled="true"/>
-		<sec:custom-filter position="PRE_AUTH_FILTER" ref="jeePreAuthenticatedFilter"/>
-		<sec:logout />
+		<security:csrf disabled="true" />
+		<security:headers>
+			<security:frame-options policy="SAMEORIGIN" />
+			<security:content-type-options disabled="true" />
+		</security:headers>
+		<security:custom-filter position="PRE_AUTH_FILTER" ref="jeePreAuthenticatedFilter" />
+		<security:logout />
 	</http>
 
 	<!-- When using JEE the container authenticates clients (401) we therefore only have to authorize them. If not authorized, return a 403. -->
@@ -46,7 +50,7 @@ https://docs.spring.io/spring-security/site/docs/3.0.x/reference/authz-arch.html
 
 	<!-- Delegates requests to the container, holds configured users and roles in the application -->
 	<authentication-manager alias="authenticationManager">
-		<sec:authentication-provider ref="j2eeAuthenticationProvider" />
+		<security:authentication-provider ref="j2eeAuthenticationProvider" />
 	</authentication-manager>
 
 	<!-- Checks if the user has been logged in and returns the HttpRequest.getUserPrincipal -->
