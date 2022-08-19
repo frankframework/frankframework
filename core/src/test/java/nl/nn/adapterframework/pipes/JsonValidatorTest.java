@@ -88,22 +88,22 @@ public class JsonValidatorTest extends PipeTestBase<JsonValidator>{
 		assertEquals(input, result.getResult().asString());
 	}
 
-//	@Test
-//	public void overrideRootElementInvalid() throws Exception {
-//		pipe.setSchemaLocation("/Align/FamilyTree/family-compact-family.jsd");
-//		pipe.setRoot("address");
-//		pipe.registerForward(new PipeForward("failure", null));
-//		configureAndStartPipe();
-//
-//		String input = "{}";
-//		PipeRunResult result = doPipe(input);
-//
-//		assertEquals("failure", result.getPipeForward().getName());
-//		assertEquals(input, result.getResult().asString());
-//
-//		String reason = (String)session.get("failureReason");
-//		assertThat(reason, containsString("The object must have a property whose name is \"members\""));
-//	}
+	@Test
+	public void overrideRootElementInvalid() throws Exception {
+		pipe.setSchemaLocation("/Align/FamilyTree/family-compact-family.jsd");
+		pipe.setRoot("address");
+		pipe.registerForward(new PipeForward("failure", null));
+		configureAndStartPipe();
+
+		String input = "{}";
+		PipeRunResult result = pipe.validate(new Message(input), session, "address");
+
+		assertEquals("failure", result.getPipeForward().getName());
+		assertEquals(input, result.getResult().asString());
+
+		String reason = (String)session.get("failureReason");
+		assertThat(reason, containsString("The object must have a property whose name is \"street\""));
+	}
 
 
 }
