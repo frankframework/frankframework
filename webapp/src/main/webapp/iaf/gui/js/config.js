@@ -450,6 +450,18 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 			$scope.url = Misc.getServerPath() + "testtool";
 		}
 	})
+	.state('pages.ladybug_beta', {
+		url: "/testing/ladybug-beta",
+		templateUrl: "views/iFrame.html",
+		data: {
+			pageTitle: 'Ladybug (beta)',
+			breadcrumbs: 'Testing > Ladybug (beta)',
+			iframe: true
+		},
+		controller: function($scope, Misc, $timeout){
+			$scope.url = Misc.getServerPath() + "ladybug";
+		}
+	})
 	.state('pages.empty_page', {
 		url: "/empty_page",
 		templateUrl: "views/empty_page.html",
