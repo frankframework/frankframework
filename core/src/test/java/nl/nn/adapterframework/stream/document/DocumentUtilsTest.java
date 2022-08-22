@@ -10,7 +10,9 @@ import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonValue;
+import nl.nn.adapterframework.stream.json.JsonUtils;
 import nl.nn.adapterframework.testutil.MatchUtils;
+import nl.nn.adapterframework.xml.XmlWriter;
 
 public class DocumentUtilsTest {
 
@@ -19,6 +21,11 @@ public class DocumentUtilsTest {
 			JsonValue jValue=jr.read();
 			testBuild(jValue, expected);
 		}
+		
+		XmlWriter writer = new XmlWriter();
+		Json2XmlHandler j2xHandler = new Json2XmlHandler(writer);
+		JsonUtils.parseJson(json, j2xHandler);
+		MatchUtils.assertXmlEquals(expected, writer.toString());
 	}
 
 	protected void testBuild(JsonValue jValue, String expected) throws SAXException {
@@ -95,5 +102,11 @@ public class DocumentUtilsTest {
 					"</items>"+
 				"</root>");
 	}
+	
+	@Test
+	public void testSimple() throws Exception {
+			testBuild("{\"a\":1,\"b\":{\"c\":2}}","<root><a>1</a><b><c>2</c></b></root>");
+	}
+
 
 }
