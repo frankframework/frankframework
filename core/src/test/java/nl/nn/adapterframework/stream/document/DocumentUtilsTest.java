@@ -21,7 +21,7 @@ public class DocumentUtilsTest {
 			JsonValue jValue=jr.read();
 			testBuild(jValue, expected);
 		}
-		
+
 		XmlWriter writer = new XmlWriter();
 		Json2XmlHandler j2xHandler = new Json2XmlHandler(writer);
 		JsonUtils.parseJson(json, j2xHandler);
@@ -102,7 +102,7 @@ public class DocumentUtilsTest {
 					"</items>"+
 				"</root>");
 	}
-	
+
 	@Test
 	public void testSimple() throws Exception {
 			testBuild("{\"a\":1,\"b\":{\"c\":2}}","<root><a>1</a><b><c>2</c></b></root>");

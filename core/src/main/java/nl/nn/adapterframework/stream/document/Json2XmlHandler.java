@@ -104,7 +104,7 @@ public class Json2XmlHandler implements JsonEventHandler {
 
 	@Override
 	public void endObject() throws SAXException {
-		((ObjectBuilder)stack.pop()).close();;
+		((ObjectBuilder)stack.pop()).close();
 		checkPendingFieldOrElement();
 	}
 
@@ -131,7 +131,7 @@ public class Json2XmlHandler implements JsonEventHandler {
 
 	@Override
 	public void endArray() throws SAXException {
-		((ArrayBuilder)stack.pop()).close();;
+		((ArrayBuilder)stack.pop()).close();
 		checkPendingFieldOrElement();
 	}
 
