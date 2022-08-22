@@ -25,6 +25,7 @@ import nl.nn.adapterframework.http.HttpSender.PostType;
 import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.ParameterBuilder;
 
 public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 
@@ -324,6 +325,129 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 		assertEquals("(SocketException) Connection reset", exception.getMessage());
 	}
 
+	@Test //Mocking a Repeatable Multipart Message
+	public void testRetryRepeatableMultipartPayloadOnResetOAuth() throws Exception {
+		sender.setUrl(authtenticatedService.getOAuthEndpoint());
+		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
+		sender.setTokenEndpoint(tokenServer.getEndpoint());
+		sender.setClientId(tokenServer.getClientId());
+		sender.setClientSecret(tokenServer.getClientSecret());
+
+		sender.setFirstBodyPartName("request");
+
+		String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
+				+ "sessionKey=\"part_file\" size=\"72833\" "
+				+ "mimeType=\"application/pdf\"/></parts>";
+		session.put("multipartXml", xmlMultipart);
+		session.put("part_file", "<dummy xml file/>"); // as it stands, only text is repeatable
+
+		sender.setMultipartXmlSessionKey("multipartXml");
+		sender.addParameter(ParameterBuilder.create("xml-part", "<ik><ben/><xml/></ik>"));
+		sender.addParameter(ParameterBuilder.create().withName("binary-part").withSessionKey("part_file"));
+
+		sender.setPostType(PostType.MTOM);
+		sender.setMethodType(HttpMethod.POST);
+
+		sender.configure();
+		sender.open();
+
+		authtenticatedService.setScenarioState(authtenticatedService.SCENARIO_CONNECTION_RESET, authtenticatedService.SCENARIO_STATE_RESET_CONNECTION);
+
+		Message result = sendRepeatableMessage();
+		assertEquals("200", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
+		assertNotNull(result.asString());
+	}
+
+
+	@Test //Mocking a Non-Repeatable Multipart Message (avoids a NonRepeatableRequestException)
+	public void testRetryNonRepeatableMultipartPayloadOnResetOAuth() throws Exception {
+		sender.setUrl(authtenticatedService.getOAuthEndpoint());
+		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
+		sender.setTokenEndpoint(tokenServer.getEndpoint());
+		sender.setClientId(tokenServer.getClientId());
+		sender.setClientSecret(tokenServer.getClientSecret());
+
+		Message nonRepeatableMessage = Message.asMessage(new FilterInputStream(new Message("dummy-string").asInputStream()) {});
+		session.put("binaryPart", nonRepeatableMessage);
+		sender.addParameter(ParameterBuilder.create("xml-part", "<ik><ben/><xml/></ik>"));
+		sender.addParameter(ParameterBuilder.create().withName("binary-part").withSessionKey("binaryPart"));
+
+		sender.setPostType(PostType.MTOM);
+		sender.setMethodType(HttpMethod.POST);
+
+		sender.configure();
+		sender.open();
+
+		authtenticatedService.setScenarioState(authtenticatedService.SCENARIO_CONNECTION_RESET, authtenticatedService.SCENARIO_STATE_RESET_CONNECTION);
+
+		SenderException exception = assertThrows(SenderException.class, () -> {
+			sendNonRepeatableMessage();
+		});
+		assertTrue(exception.getCause() instanceof SocketException);
+		assertEquals("(SocketException) Connection reset", exception.getMessage());
+	}
+
+
+	@Test
+	public void testRetryRepeatableMultipartPayloadOnOAuthAuthenticationTokenExpired() throws Exception {
+		sender.setUrl(authtenticatedService.getOAuthEndpoint());
+		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
+		sender.setTokenEndpoint(tokenServer.getEndpointFirstExpired());
+		sender.setClientId(tokenServer.getClientId());
+		sender.setClientSecret(tokenServer.getClientSecret());
+
+		sender.configure();
+		sender.open();
+
+		Message repeatableMessage = Message.asMessage("dummy-string".getBytes());
+		session.put("binaryPart", repeatableMessage);
+		sender.addParameter(ParameterBuilder.create("xml-part", "<ik><ben/><xml/></ik>"));
+		sender.addParameter(ParameterBuilder.create().withName("binary-part").withSessionKey("binaryPart"));
+
+		sender.setPostType(PostType.MTOM);
+		sender.setMethodType(HttpMethod.POST);
+
+		sender.configure();
+		sender.open();
+
+		authtenticatedService.setScenarioState(authtenticatedService.SCENARIO_CONNECTION_RESET, authtenticatedService.SCENARIO_STATE_RESET_CONNECTION);
+
+		Message result = sendNonRepeatableMessage();
+		assertEquals("200", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
+		assertEquals("{}", result.asString());
+	}
+
+	@Test
+	public void testRetryNonRepeatableMultipartPayloadOnOAuthAuthenticationTokenExpired() throws Exception {
+		sender.setUrl(authtenticatedService.getOAuthEndpoint());
+		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
+		sender.setTokenEndpoint(tokenServer.getEndpointFirstExpired());
+		sender.setClientId(tokenServer.getClientId());
+		sender.setClientSecret(tokenServer.getClientSecret());
+
+		sender.configure();
+		sender.open();
+
+		Message nonRepeatableMessage = Message.asMessage(new FilterInputStream(new Message("dummy-string").asInputStream()) {});
+		session.put("binaryPart", nonRepeatableMessage);
+		sender.addParameter(ParameterBuilder.create("xml-part", "<ik><ben/><xml/></ik>"));
+		sender.addParameter(ParameterBuilder.create().withName("binary-part").withSessionKey("binaryPart"));
+
+		sender.setPostType(PostType.MTOM);
+		sender.setMethodType(HttpMethod.POST);
+
+		sender.configure();
+		sender.open();
+
+		authtenticatedService.setScenarioState(authtenticatedService.SCENARIO_CONNECTION_RESET, authtenticatedService.SCENARIO_STATE_RESET_CONNECTION);
+
+		SenderException exception = assertThrows(SenderException.class, () -> {
+			sendNonRepeatableMessage();
+		});
+		exception.printStackTrace();
+		assertTrue(exception.getCause() instanceof SocketException);
+		assertEquals("(SocketException) Connection reset", exception.getMessage());
+	}
 
 	@Test
 	public void testRetryOnResetAuthenticated() throws Exception {

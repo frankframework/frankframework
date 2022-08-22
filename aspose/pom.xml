@@ -295,16 +295,16 @@
 
 	<profiles>
 		<profile>
-			<id>AsposeRepository</id>
+			<id>aspose</id>
 			<activation>
 				<property>
-					<name>aspose</name>
+					<name>!no-aspose</name>
 				</property>
 			</activation>
 			<repositories>
 				<repository>
 					<id>AsposeJavaAPI</id>
-					<name>Aspose Java API</name>
+					<name>Aspose Java Repository</name>
 					<url>https://repository.aspose.com/repo/</url>
 				</repository>
 			</repositories>

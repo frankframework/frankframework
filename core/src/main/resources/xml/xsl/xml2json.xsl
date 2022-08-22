@@ -53,6 +53,7 @@
 	</xsl:template>
 	<xsl:template name="nodeValue">
 		<xsl:choose>
+			<xsl:when test="@nil='true'" >null</xsl:when>
 			<xsl:when test="count(./*)=0">
 				<xsl:value-of select="'&quot;'"/>
 				<xsl:variable name="message">

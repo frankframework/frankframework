@@ -35,7 +35,6 @@ import com.aspose.words.SaveOptions;
 
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
-import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionService;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -49,7 +48,6 @@ class WordConvertor extends AbstractConvertor {
 	private static final Logger LOGGER = LogUtil.getLogger(WordConvertor.class);
 	private static final Map<MediaType, Supplier<LoadOptions>> MEDIA_TYPE_LOAD_FORMAT_MAPPING;
 
-	private CisConversionService cisConversionService;
 	private CisConfiguration cisConfiguration;
 
 	static {
@@ -74,9 +72,8 @@ class WordConvertor extends AbstractConvertor {
 		MEDIA_TYPE_LOAD_FORMAT_MAPPING = Collections.unmodifiableMap(map);
 	}
 
-	protected WordConvertor(CisConversionService cisConversionService, CisConfiguration cisConfiguration) {
+	protected WordConvertor(CisConfiguration cisConfiguration) {
 		super(cisConfiguration, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[MEDIA_TYPE_LOAD_FORMAT_MAPPING.size()]));
-		this.cisConversionService = cisConversionService;
 		this.cisConfiguration = cisConfiguration;
 	}
 
@@ -99,14 +96,14 @@ class WordConvertor extends AbstractConvertor {
 			}
 
 			Document doc = new Document(inputStream, loadOptions);
-			new Fontsetter(cisConversionService.getFontsDirectory()).setFontSettings(doc);
+			new Fontsetter(cisConfiguration.getFontsDirectory()).setFontSettings(doc);
 			SaveOptions saveOptions = SaveOptions.createSaveOptions(SaveFormat.PDF);
 			saveOptions.setMemoryOptimization(true);
 
 			long startTime = new Date().getTime();
 			doc.save(result.getPdfResultFile().getAbsolutePath(), saveOptions);
 			long endTime = new Date().getTime();
-			LOGGER.debug("Conversion(save operation in convert method) takes  :::  " + (endTime - startTime) + " ms");
+			LOGGER.debug("Conversion(save operation in convert method) took  :::  " + (endTime - startTime) + " ms");
 			result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
 		}
 	}

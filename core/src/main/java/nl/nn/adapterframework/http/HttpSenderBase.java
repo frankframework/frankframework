@@ -72,10 +72,12 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.IForwardNameProvidingSender;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.encryption.AuthSSLContextFactory;
@@ -170,7 +172,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 //TODO: Fix javadoc!
 
-public abstract class HttpSenderBase extends SenderWithParametersBase implements HasPhysicalDestination, HasKeystore, HasTruststore {
+public abstract class HttpSenderBase extends SenderWithParametersBase implements IForwardNameProvidingSender, HasPhysicalDestination, HasKeystore, HasTruststore {
 
 	private final @Getter(onMethod = @__(@Override)) String domain = "Http";
 
@@ -622,7 +624,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	protected abstract Message extractResult(HttpResponseHandler responseHandler, PipeLineSession session) throws SenderException, IOException;
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessageAndProvideForwardName(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		ParameterValueList pvl = null;
 		try {
 			if (paramList !=null) {
@@ -739,14 +741,12 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		}
 
 		if (isXhtml() && !result.isEmpty()) {
-			String resultString;
+			String xhtml;
 			try {
-				resultString = result.asString();
+				xhtml = XmlUtils.toXhtml(result);
 			} catch (IOException e) {
 				throw new SenderException("error reading http response as String", e);
 			}
-
-			String xhtml = XmlUtils.toXhtml(resultString);
 
 			if (transformerPool != null && xhtml != null) {
 				log.debug(getLogPrefix() + " transforming result [" + xhtml + "]");
@@ -760,7 +760,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			result = Message.asMessage(xhtml);
 		}
 
-		return result;
+		return new SenderResult(Integer.toString(statusCode),result);
 	}
 
 	@Override

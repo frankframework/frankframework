@@ -66,4 +66,7 @@
 	/>
 
 	<bean id="MessageEventListener" class="nl.nn.adapterframework.lifecycle.MessageEventListener" scope="singleton" />
+
+	<import resource="webSecurityConfig.xml"/>
+
 </beans>

@@ -39,7 +39,7 @@ public class ExchangeMailListener extends MailListener<EmailMessage,Attachment,E
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		String separator = getFileSystem().getMailboxFolderSeparator();
+		String separator = getFileSystem().getMailboxObjectSeparator();
 		if (StringUtils.isNotEmpty(getInputFolder()) && getInputFolder().contains(separator) ||
 			StringUtils.isNotEmpty(getInProcessFolder()) && getInProcessFolder().contains(separator)){
 			throw new ConfigurationException("Moving items across mailboxes is not supported by ExchangeMailListener for attributes [inputFolder,inProcessFolder]. " +
@@ -158,7 +158,7 @@ public class ExchangeMailListener extends MailListener<EmailMessage,Attachment,E
 	}
 
 	@IbisDocRef({EXCHANGE_FILE_SYSTEM})
-	public void setMailboxFolderSeparator(String separator) {
-		getFileSystem().setMailboxFolderSeparator(separator);
+	public void setMailboxObjectSeparator(String separator) {
+		getFileSystem().setMailboxObjectSeparator(separator);
 	}
 }

@@ -97,15 +97,11 @@ public class LarvaPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		IbisContext ibisContext = getAdapter().getConfiguration().getIbisManager().getIbisContext();
-		AppConstants appConstants = TestTool.getAppConstants(ibisContext);
-		// Property webapp.realpath is not available in appConstants which was
-		// created with AppConstants.getInstance(ClassLoader classLoader), this
-		// should be fixed but for now use AppConstants.getInstance().
 		String realPath = AppConstants.getInstance().getResolvedProperty("webapp.realpath") + "larva/";
 		List<String> scenariosRootDirectories = new ArrayList<>();
 		List<String> scenariosRootDescriptions = new ArrayList<>();
 		String currentScenariosRootDirectory = TestTool.initScenariosRootDirectories(
-				appConstants, realPath,
+				realPath,
 				null, scenariosRootDirectories,
 				scenariosRootDescriptions, null);
 		String paramScenariosRootDirectory = currentScenariosRootDirectory;
@@ -119,7 +115,7 @@ public class LarvaPipe extends FixedForwardPipe {
 		LogWriter out = new LogWriter(log, isWriteToLog(), isWriteToSystemOut());
 		boolean silent = true;
 		TestTool.setTimeout(getTimeout());
-		int numScenariosFailed=TestTool.runScenarios(ibisContext, appConstants, paramLogLevel,
+		int numScenariosFailed=TestTool.runScenarios(ibisContext, paramLogLevel,
 								paramAutoScroll, paramExecute,
 								paramWaitBeforeCleanUp, getTimeout(), realPath,
 								paramScenariosRootDirectory,

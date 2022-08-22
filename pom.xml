@@ -25,7 +25,7 @@
 		<mssql.driver.version>7.4.1.jre8</mssql.driver.version>
 		<mysql.driver.version>8.0.29</mysql.driver.version>
 		<mariadb.driver.version>2.7.6</mariadb.driver.version>
-		<postgresql.driver.version>42.4.0</postgresql.driver.version>
+		<postgresql.driver.version>42.4.1</postgresql.driver.version>
 		<mongodb.driver.version>4.7.0</mongodb.driver.version>
 	</properties>
 
@@ -284,7 +284,7 @@
 			<dependency>
 				<groupId>org.mockito</groupId>
 				<artifactId>mockito-core</artifactId>
-				<version>4.6.1</version>
+				<version>4.7.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hamcrest</groupId>
@@ -708,7 +708,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-project-info-reports-plugin</artifactId>
-				<version>3.1.0</version>
+				<version>3.4.1</version>
 			</plugin>
 			<!-- 
 				http://maven.apache.org/plugins/maven-javadoc-plugin/usage.html 
@@ -860,6 +860,17 @@
 			</modules>
 		</profile>
 		<profile>
+			<id>aspose</id>
+			<activation>
+				<property>
+					<name>!no-aspose</name>
+				</property>
+			</activation>
+			<modules>
+				<module>aspose</module>
+			</modules>
+		</profile>
+		<profile>
 			<id>proprietary</id>
 			<activation>
 				<property>
@@ -873,7 +884,6 @@
 				<module>sap</module>
 				<module>tibco</module>
 				<module>idin</module>
-				<module>aspose</module>
 			</modules>
 			<repositories>
 				<repository>

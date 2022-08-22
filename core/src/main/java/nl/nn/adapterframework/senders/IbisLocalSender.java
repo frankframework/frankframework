@@ -25,11 +25,13 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.IForwardNameProvidingSender;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -41,6 +43,8 @@ import nl.nn.adapterframework.util.Misc;
 
 /**
  * Posts a message to another IBIS-adapter in the same IBIS instance.
+ * 
+ * Returns exit.code as forward name to SenderPipe. 
  *
  * An IbisLocalSender makes a call to a Receiver with either a {@link nl.nn.adapterframework.http.WebServiceListener WebServiceListener}
  * or a {@link JavaListener JavaListener}.
@@ -83,7 +87,7 @@ import nl.nn.adapterframework.util.Misc;
  * @since  4.2
  */
 @Category("Basic")
-public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination {
+public class IbisLocalSender extends SenderWithParametersBase implements IForwardNameProvidingSender, HasPhysicalDestination {
 
 	private final @Getter(onMethod = @__(@Override)) String domain = "Local";
 
@@ -165,7 +169,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessageAndProvideForwardName(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		String correlationID = session==null ? null : session.getMessageId();
 		Message result = null;
 		try (PipeLineSession context = new PipeLineSession()) {
@@ -229,7 +233,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 							throw new SenderException(msg);
 						}
 						log.info(getLogPrefix()+msg);
-						return new Message("<error>"+msg+"</error>");
+						return new SenderResult("error", new Message("<error>"+msg+"</error>"));
 					}
 					if (isIsolated()) {
 						if (isSynchronous()) {
@@ -265,7 +269,8 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 				context.put("originalResult", result);
 				throw new SenderException(getLogPrefix()+"call to "+serviceIndication+" resulted in exitState ["+exitState+"] exitCode ["+exitCode+"]");
 			}
-			return result;
+			String forwardName = exitCode !=null ? exitCode.toString() : null;
+			return new SenderResult(forwardName, result);
 		}
 	}
 

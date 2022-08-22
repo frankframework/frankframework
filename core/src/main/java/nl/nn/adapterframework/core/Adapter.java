@@ -292,7 +292,7 @@ public class Adapter implements IAdapter, NamedBean {
 	/**
 	 * Decrease the number of messages in process
 	 */
-	private synchronized void decNumOfMessagesInProcess(long duration, boolean processingSuccess) {
+	private void decNumOfMessagesInProcess(long duration, boolean processingSuccess) {
 		synchronized (statsMessageProcessingDuration) {
 			numOfMessagesInProcess--;
 			numOfMessagesProcessed.increase();
@@ -302,7 +302,7 @@ public class Adapter implements IAdapter, NamedBean {
 			} else {
 				lastMessageProcessingState = PROCESS_STATE_ERROR;
 			}
-			notifyAll();
+			statsMessageProcessingDuration.notifyAll();
 		}
 	}
 	/**
@@ -940,7 +940,7 @@ public class Adapter implements IAdapter, NamedBean {
 	public void waitForNoMessagesInProcess() throws InterruptedException {
 		synchronized (statsMessageProcessingDuration) {
 			while (getNumOfMessagesInProcess() > 0) {
-				wait(); // waits for notification from decNumOfMessagesInProcess()
+				statsMessageProcessingDuration.wait(); // waits for notification from decNumOfMessagesInProcess()
 			}
 		}
 	}

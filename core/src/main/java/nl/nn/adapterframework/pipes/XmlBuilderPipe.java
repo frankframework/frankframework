@@ -30,6 +30,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * 
  * @author Peter Leeuwenburgh
  */
+@Deprecated
 public class XmlBuilderPipe extends FixedForwardPipe {
 
 	private String substringStart;

@@ -1,5 +1,5 @@
 /*
-   Copyright 2014-2019 Nationale-Nederlanden, 2020-2022 WeAreFrank
+   Copyright 2014-2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -63,37 +63,29 @@ import org.apache.logging.log4j.Logger;
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
 
-import nl.nn.adapterframework.configuration.ClassLoaderException;
-import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.http.HttpSender;
-import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.http.WebServiceSender;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
-import nl.nn.adapterframework.jms.JMSFacade.DeliveryMode;
-import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.jms.PullingJmsListener;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.receivers.JavaListener;
-import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.senders.DelaySender;
 import nl.nn.adapterframework.senders.IbisJavaSender;
 import nl.nn.adapterframework.stream.FileMessage;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testtool.queues.QueueCreator;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CaseInsensitiveComparator;
 import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -112,7 +104,7 @@ public class TestTool {
 	protected static final String TESTTOOL_CORRELATIONID = "Test Tool correlation id";
 	protected static final int DEFAULT_TIMEOUT = AppConstants.getInstance().getInt("larva.timeout", 30000);
 	protected static final String TESTTOOL_BIFNAME = "Test Tool bif name";
-	protected static final nl.nn.adapterframework.stream.Message TESTTOOL_DUMMY_MESSAGE = new nl.nn.adapterframework.stream.Message("<TestTool>Dummy message</TestTool>");
+	public static final nl.nn.adapterframework.stream.Message TESTTOOL_DUMMY_MESSAGE = new nl.nn.adapterframework.stream.Message("<TestTool>Dummy message</TestTool>");
 	protected static final String TESTTOOL_CLEAN_UP_REPLY = "<TestTool>Clean up reply</TestTool>";
 	private static final int RESULT_ERROR = 0;
 	private static final int RESULT_OK = 1;
@@ -144,16 +136,6 @@ public class TestTool {
 		return IbisApplicationServlet.getIbisContext(application);
 	}
 
-	public static AppConstants getAppConstants(IbisContext ibisContext) {
-		// Load AppConstants using a class loader to get an instance that has
-		// resolved application.server.type in ServerSpecifics*.properties,
-		// SideSpecifics*.properties and StageSpecifics*.properties filenames
-		// See IbisContext.setDefaultApplicationServerType() and userstory
-		// 'Refactor ConfigurationServlet en AppConstants' too.
-		Configuration configuration = ibisContext.getIbisManager().getConfigurations().get(0);
-		return AppConstants.getInstance(configuration.getClassLoader());
-	}
-
 	public static void runScenarios(ServletContext application, HttpServletRequest request, Writer out) {
 		runScenarios(application, request, out, false);
 	}
@@ -176,8 +158,7 @@ public class TestTool {
 		String realPath = application.getRealPath(servletPath.substring(0, i));
 		String paramScenariosRootDirectory = request.getParameter("scenariosrootdirectory");
 		IbisContext ibisContext = getIbisContext(application);
-		AppConstants appConstants = getAppConstants(ibisContext);
-		runScenarios(ibisContext, appConstants, paramLogLevel,
+		runScenarios(ibisContext, paramLogLevel,
 				paramAutoScroll, paramExecute, paramWaitBeforeCleanUp, timeout,
 				realPath, paramScenariosRootDirectory, out, silent);
 	}
@@ -189,10 +170,11 @@ public class TestTool {
 	 * 		   0: all scenarios passed
 	 * 		   positive: number of scenarios that failed
 	 */
-	public static int runScenarios(IbisContext ibisContext, AppConstants appConstants, String paramLogLevel,
+	public static int runScenarios(IbisContext ibisContext, String paramLogLevel,
 			String paramAutoScroll, String paramExecute, String paramWaitBeforeCleanUp,
 			int timeout, String realPath, String paramScenariosRootDirectory,
 			Writer out, boolean silent) {
+		AppConstants appConstants = AppConstants.getInstance();
 		String logLevel = "wrong pipeline messages";
 		String autoScroll = "true";
 		if (paramLogLevel != null && LOG_LEVEL_ORDER.indexOf("[" + paramLogLevel + "]") > -1) {
@@ -227,7 +209,7 @@ public class TestTool {
 		List<String> scenariosRootDirectories = new ArrayList<String>();
 		List<String> scenariosRootDescriptions = new ArrayList<String>();
 		String currentScenariosRootDirectory = initScenariosRootDirectories(
-				appConstants, realPath,
+				realPath,
 				paramScenariosRootDirectory, scenariosRootDirectories,
 				scenariosRootDescriptions, writers);
 		if (scenariosRootDirectories.size() == 0) {
@@ -317,7 +299,7 @@ public class TestTool {
 						if (steps != null) {
 							synchronized(STEP_SYNCHRONIZER) {
 								debugMessage("Open queues", writers);
-								Map<String, Map<String, Object>> queues = openQueues(scenarioDirectory, steps, properties, ibisContext, appConstants, writers, timeout, correlationId);
+								Map<String, Map<String, Object>> queues = QueueCreator.openQueues(scenarioDirectory, properties, ibisContext, writers, timeout, correlationId);
 								if (queues != null) {
 									debugMessage("Execute steps", writers);
 									boolean allStepsPassed = true;
@@ -998,11 +980,8 @@ public class TestTool {
 		}
 	}
 
-	public static String initScenariosRootDirectories(
-			AppConstants appConstants, String realPath,
-			String paramScenariosRootDirectory,
-			List<String> scenariosRootDirectories, List<String> scenariosRootDescriptions,
-			Map<String, Object> writers) {
+	public static String initScenariosRootDirectories(String realPath, String paramScenariosRootDirectory, List<String> scenariosRootDirectories, List<String> scenariosRootDescriptions, Map<String, Object> writers) {
+		AppConstants appConstants = AppConstants.getInstance();
 		String currentScenariosRootDirectory = null;
 		if (realPath == null) {
 			errorMessage("Could not read webapp real path", writers);
@@ -1203,6 +1182,7 @@ public class TestTool {
 				String value = getAbsolutePath(propertiesDirectory, (String)properties.get(property));
 				if (value != null) {
 					absolutePathProperties.put(absolutePathProperty, value);
+					properties.put(property, value);
 				}
 			}
 		}
@@ -1236,920 +1216,6 @@ public class TestTool {
 		debugMessage(steps.size() + " steps found", writers);
 		return steps;
 	}
-
-	public static Map<String, Map<String, Object>> openQueues(String scenarioDirectory, List<String> steps,
-			Properties properties, IbisContext ibisContext,
-			AppConstants appConstants, Map<String, Object> writers, int parameterTimeout, String correlationId) {
-		Map<String, Map<String, Object>> queues = new HashMap<String, Map<String, Object>>();
-		debugMessage("Get all queue names", writers);
-		List<String> jmsSenders = new ArrayList<String>();
-		List<String> jmsListeners = new ArrayList<String>();
-		List<String> jdbcFixedQuerySenders = new ArrayList<String>();
-		List<String> ibisWebServiceSenders = new ArrayList<String>();
-		List<String> webServiceSenders = new ArrayList<String>();
-		List<String> webServiceListeners = new ArrayList<String>();
-		List<String> httpSenders = new ArrayList<String>();
-		List<String> ibisJavaSenders = new ArrayList<String>();
-		List<String> delaySenders = new ArrayList<String>();
-		List<String> javaListeners = new ArrayList<String>();
-		List<String> fileSenders = new ArrayList<String>();
-		List<String> fileListeners = new ArrayList<String>();
-		List<String> xsltProviderListeners = new ArrayList<String>();
-
-		Iterator iterator = properties.keySet().iterator();
-		while (iterator.hasNext()) {
-			String key = (String)iterator.next();
-			int i = key.indexOf('.');
-			if (i != -1) {
-				int j = key.indexOf('.', i + 1);
-				if (j != -1) {
-					String queueName = key.substring(0, j);
-					debugMessage("queuename openqueue: " + queueName, writers);
-					if ("nl.nn.adapterframework.jms.JmsSender".equals(properties.get(queueName + ".className"))
-							&& !jmsSenders.contains(queueName)) {
-						debugMessage("Adding jmsSender queue: " + queueName, writers);
-						jmsSenders.add(queueName);
-					} else if ("nl.nn.adapterframework.jms.JmsListener".equals(properties.get(queueName + ".className"))
-							&& !jmsListeners.contains(queueName)) {
-						debugMessage("Adding jmsListener queue: " + queueName, writers);
-						jmsListeners.add(queueName);
-					} else if ("nl.nn.adapterframework.jdbc.FixedQuerySender".equals(properties.get(queueName + ".className"))
-							&& !jdbcFixedQuerySenders.contains(queueName)) {
-						debugMessage("Adding jdbcFixedQuerySender queue: " + queueName, writers);
-						jdbcFixedQuerySenders.add(queueName);
-					} else if ("nl.nn.adapterframework.http.IbisWebServiceSender".equals(properties.get(queueName + ".className"))
-							&& !ibisWebServiceSenders.contains(queueName)) {
-						debugMessage("Adding ibisWebServiceSender queue: " + queueName, writers);
-						ibisWebServiceSenders.add(queueName);
-					} else if ("nl.nn.adapterframework.http.WebServiceSender".equals(properties.get(queueName + ".className"))
-							&& !webServiceSenders.contains(queueName)) {
-						debugMessage("Adding webServiceSender queue: " + queueName, writers);
-						webServiceSenders.add(queueName);
-					} else if ("nl.nn.adapterframework.http.WebServiceListener".equals(properties.get(queueName + ".className"))
-							&& !webServiceListeners.contains(queueName)) {
-						debugMessage("Adding webServiceListener queue: " + queueName, writers);
-						webServiceListeners.add(queueName);
-					} else if ("nl.nn.adapterframework.http.HttpSender".equals(properties.get(queueName + ".className"))
-							&& !httpSenders.contains(queueName)) {
-						debugMessage("Adding httpSender queue: " + queueName, writers);
-						httpSenders.add(queueName);
-					} else if ("nl.nn.adapterframework.senders.IbisJavaSender".equals(properties.get(queueName + ".className"))
-							&& !ibisJavaSenders.contains(queueName)) {
-						debugMessage("Adding ibisJavaSender queue: " + queueName, writers);
-						ibisJavaSenders.add(queueName);
-					} else if ("nl.nn.adapterframework.senders.DelaySender".equals(properties.get(queueName + ".className"))
-							&& !delaySenders.contains(queueName)) {
-						debugMessage("Adding delaySender queue: " + queueName, writers);
-						delaySenders.add(queueName);
-					} else if ("nl.nn.adapterframework.receivers.JavaListener".equals(properties.get(queueName + ".className"))
-							&& !javaListeners.contains(queueName)) {
-						debugMessage("Adding javaListener queue: " + queueName, writers);
-						javaListeners.add(queueName);
-					} else if ("nl.nn.adapterframework.testtool.FileSender".equals(properties.get(queueName + ".className"))
-							&& !fileSenders.contains(queueName)) {
-						debugMessage("Adding fileSender queue: " + queueName, writers);
-						fileSenders.add(queueName);
-					} else if ("nl.nn.adapterframework.testtool.FileListener".equals(properties.get(queueName + ".className"))
-							&& !fileListeners.contains(queueName)) {
-						debugMessage("Adding fileListener queue: " + queueName, writers);
-						fileListeners.add(queueName);
-					} else if ("nl.nn.adapterframework.testtool.XsltProviderListener".equals(properties.get(queueName + ".className"))
-							&& !xsltProviderListeners.contains(queueName)) {
-						debugMessage("Adding xsltProviderListeners queue: " + queueName, writers);
-						xsltProviderListeners.add(queueName);
-					}
-				}
-			}
-		}
-
-		debugMessage("Initialize jms senders", writers);
-		iterator = jmsSenders.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String queueName = (String)iterator.next();
-			String queue = (String)properties.get(queueName + ".queue");
-			if (queue == null) {
-				closeQueues(queues, properties, writers, correlationId);
-				queues = null;
-				errorMessage("Could not find property '" + queueName + ".queue'", writers);
-			} else {
-				JmsSender jmsSender = (JmsSender)ibisContext.createBeanAutowireByName(JmsSender.class);
-				jmsSender.setName("Test Tool JmsSender");
-				jmsSender.setDestinationName(queue);
-				jmsSender.setDestinationType(DestinationType.QUEUE);
-				jmsSender.setAcknowledgeMode("auto");
-				String jmsRealm = (String)properties.get(queueName + ".jmsRealm");
-				if (jmsRealm!=null) {
-					jmsSender.setJmsRealm(jmsRealm);
-				} else {
-					jmsSender.setJmsRealm("default");
-				}
-				String deliveryMode = properties.getProperty(queueName + ".deliveryMode");
-				debugMessage("Property '" + queueName + ".deliveryMode': " + deliveryMode, writers);
-				String persistent = properties.getProperty(queueName + ".persistent");
-				debugMessage("Property '" + queueName + ".persistent': " + persistent, writers);
-				String useCorrelationIdFrom = properties.getProperty(queueName + ".useCorrelationIdFrom");
-				debugMessage("Property '" + queueName + ".useCorrelationIdFrom': " + useCorrelationIdFrom, writers);
-				String replyToName = properties.getProperty(queueName + ".replyToName");
-				debugMessage("Property '" + queueName + ".replyToName': " + replyToName, writers);
-				if (deliveryMode != null) {
-					debugMessage("Set deliveryMode to " + deliveryMode, writers);
-					jmsSender.setDeliveryMode(EnumUtils.parse(DeliveryMode.class, deliveryMode));
-				}
-				if ("true".equals(persistent)) {
-					debugMessage("Set persistent to true", writers);
-					jmsSender.setPersistent(true);
-				} else {
-					debugMessage("Set persistent to false", writers);
-					jmsSender.setPersistent(false);
-				}
-				if (replyToName != null) {
-					debugMessage("Set replyToName to " + replyToName, writers);
-					jmsSender.setReplyToName(replyToName);
-				}
-				try {
-					jmsSender.configure();
-				} catch (ConfigurationException e) {
-					throw new RuntimeException(e);
-				}
-				Map<String, Object> jmsSenderInfo = new HashMap<String, Object>();
-				jmsSenderInfo.put("jmsSender", jmsSender);
-				jmsSenderInfo.put("useCorrelationIdFrom", useCorrelationIdFrom);
-				String jmsCorrelationId = properties.getProperty(queueName + ".jmsCorrelationId");
-				if (jmsCorrelationId!=null) {
-					jmsSenderInfo.put("jmsCorrelationId", jmsCorrelationId);
-					debugMessage("Property '" + queueName + ".jmsCorrelationId': " + jmsCorrelationId, writers);
-				}
-				queues.put(queueName, jmsSenderInfo);
-				debugMessage("Opened jms sender '" + queueName + "'", writers);
-			}
-		}
-
-		debugMessage("Initialize jms listeners", writers);
-		iterator = jmsListeners.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String queueName = (String)iterator.next();
-			String queue = (String)properties.get(queueName + ".queue");
-			String timeout = (String)properties.get(queueName + ".timeout");
-
-			int nTimeout = parameterTimeout;
-			if (timeout != null && timeout.length() > 0) {
-				nTimeout = Integer.parseInt(timeout);
-				debugMessage("Overriding default timeout setting of "+parameterTimeout+" with "+ nTimeout, writers);
-			}
-
-			if (queue == null) {
-				closeQueues(queues, properties, writers, correlationId);
-				queues = null;
-				errorMessage("Could not find property '" + queueName + ".queue'", writers);
-			} else {
-				PullingJmsListener pullingJmsListener = (PullingJmsListener)ibisContext.createBeanAutowireByName(PullingJmsListener.class);
-				pullingJmsListener.setName("Test Tool JmsListener");
-				pullingJmsListener.setDestinationName(queue);
-				pullingJmsListener.setDestinationType(DestinationType.QUEUE);
-				pullingJmsListener.setAcknowledgeMode("auto");
-				String jmsRealm = (String)properties.get(queueName + ".jmsRealm");
-				if (jmsRealm!=null) {
-					pullingJmsListener.setJmsRealm(jmsRealm);
-				} else {
-					pullingJmsListener.setJmsRealm("default");
-				}
-				// Call setJmsRealm twice as a workaround for a strange bug
-				// where we get a java.lang.NullPointerException in a class of
-				// the commons-beanutils.jar on the first call to setJmsRealm
-				// after starting the Test Tool ear:
-				// at org.apache.commons.beanutils.MappedPropertyDescriptor.internalFindMethod(MappedPropertyDescriptor.java(Compiled Code))
-				// at org.apache.commons.beanutils.MappedPropertyDescriptor.internalFindMethod(MappedPropertyDescriptor.java:413)
-				// ...
-				// Looks like some sort of classloader problem where
-				// internalFindMethod on another class is called (last line in
-				// stacktrace has "Compiled Code" while other lines have
-				// linenumbers).
-				// Can be reproduced with for example:
-				// - WebSphere Studio Application Developer (Windows) Version: 5.1.2
-				// - Ibis4Juice build 20051104-1351
-				// - y01\rr\getAgent1003\scenario01.properties
-				pullingJmsListener.setTimeOut(nTimeout);
-				String setForceMessageIdAsCorrelationId = (String)properties.get(queueName + ".setForceMessageIdAsCorrelationId");
-				if ("true".equals(setForceMessageIdAsCorrelationId)) {
-					pullingJmsListener.setForceMessageIdAsCorrelationId(true);
-				}
-				try {
-					pullingJmsListener.configure();
-				} catch (ConfigurationException e) {
-					throw new RuntimeException(e);
-				}
-				Map<String, Object> jmsListenerInfo = new HashMap<String, Object>();
-				jmsListenerInfo.put("jmsListener", pullingJmsListener);
-				queues.put(queueName, jmsListenerInfo);
-				debugMessage("Opened jms listener '" + queueName + "'", writers);
-				if (jmsCleanUp(queueName, pullingJmsListener, writers)) {
-					errorMessage("Found one or more old messages on queue '" + queueName + "', you might want to run your tests with a higher 'wait before clean up' value", writers);
-				}
-			}
-		}
-
-		debugMessage("Initialize jdbc fixed query senders", writers);
-		iterator = jdbcFixedQuerySenders.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String name = (String)iterator.next();
-			String datasourceName = (String)properties.get(name + ".datasourceName");
-			String username = (String)properties.get(name + ".username");
-			String password = (String)properties.get(name + ".password");
-			boolean allFound = false;
-			String preDelete = "";
-			int preDeleteIndex = 1;
-			String queryType = (String)properties.get(name + ".queryType");
-			String getBlobSmartString = (String)properties.get(name + ".getBlobSmart");
-			boolean getBlobSmart = false;
-			if (getBlobSmartString != null) {
-				getBlobSmart = Boolean.valueOf(getBlobSmartString).booleanValue();
-			}
-			if (datasourceName == null) {
-				closeQueues(queues, properties, writers, correlationId);
-				queues = null;
-				errorMessage("Could not find datasourceName property for " + name, writers);
-			} else {
-				Map<String, Object> querySendersInfo = new HashMap<String, Object>();
-				while (!allFound && queues != null) {
-					preDelete = (String)properties.get(name + ".preDel" + preDeleteIndex);
-					if (preDelete != null) {
-						FixedQuerySender deleteQuerySender = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
-						deleteQuerySender.setName("Test Tool pre delete query sender");
-						deleteQuerySender.setDatasourceName(datasourceName);
-						deleteQuerySender.setQueryType("delete");
-						deleteQuerySender.setQuery("delete from " + preDelete);
-						try {
-							deleteQuerySender.configure();
-							deleteQuerySender.open();
-							deleteQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, null);
-							deleteQuerySender.close();
-						} catch(ConfigurationException e) {
-							closeQueues(queues, properties, writers, correlationId);
-							queues = null;
-							errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
-						} catch(TimeoutException e) {
-							closeQueues(queues, properties, writers, correlationId);
-							queues = null;
-							errorMessage("Time out on execute pre delete query for '" + name + "': " + e.getMessage(), e, writers);
-						} catch(SenderException e) {
-							closeQueues(queues, properties, writers, correlationId);
-							queues = null;
-							errorMessage("Could not execute pre delete query for '" + name + "': " + e.getMessage(), e, writers);
-						}
-						preDeleteIndex++;
-					} else {
-						allFound = true;
-					}
-				}
-				if (queues != null) {
-					String prePostQuery = (String)properties.get(name + ".prePostQuery");
-					if (prePostQuery != null) {
-						FixedQuerySender prePostFixedQuerySender = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
-						prePostFixedQuerySender.setName("Test Tool query sender");
-						prePostFixedQuerySender.setDatasourceName(datasourceName);
-						//prePostFixedQuerySender.setUsername(username);
-						//prePostFixedQuerySender.setPassword(password);
-						prePostFixedQuerySender.setQueryType("select");
-						prePostFixedQuerySender.setQuery(prePostQuery);
-						try {
-							prePostFixedQuerySender.configure();
-						} catch(ConfigurationException e) {
-							closeQueues(queues, properties, writers, correlationId);
-							queues = null;
-							errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
-						}
-						if (queues != null) {
-							try {
-								prePostFixedQuerySender.open();
-							} catch(SenderException e) {
-								closeQueues(queues, properties, writers, correlationId);
-								queues = null;
-								errorMessage("Could not open (pre/post) '" + name + "': " + e.getMessage(), e, writers);
-							}
-						}
-						if (queues != null) {
-							try {
-								PipeLineSession session = new PipeLineSession();
-								session.put(PipeLineSession.businessCorrelationIdKey, correlationId);
-								String result = prePostFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, session).asString();
-								querySendersInfo.put("prePostQueryFixedQuerySender", prePostFixedQuerySender);
-								querySendersInfo.put("prePostQueryResult", result);
-							} catch(TimeoutException e) {
-								closeQueues(queues, properties, writers, correlationId);
-								queues = null;
-								errorMessage("Time out on execute query for '" + name + "': " + e.getMessage(), e, writers);
-							} catch(IOException | SenderException e) {
-								closeQueues(queues, properties, writers, correlationId);
-								queues = null;
-								errorMessage("Could not execute query for '" + name + "': " + e.getMessage(), e, writers);
-							}
-						}
-					}
-				}
-				if (queues != null) {
-					String readQuery = (String)properties.get(name + ".readQuery");
-					if (readQuery != null) {
-						FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
-						readQueryFixedQuerySender.setName("Test Tool query sender");
-						readQueryFixedQuerySender.setDatasourceName(datasourceName);
-						//readQueryFixedQuerySender.setUsername(username);
-						//readQueryFixedQuerySender.setPassword(password);
-
-						if ((queryType != null) && (! queryType.equals(""))) {
-							readQueryFixedQuerySender.setQueryType(queryType);
-						} else {
-							readQueryFixedQuerySender.setQueryType("select");
-						}
-
-						readQueryFixedQuerySender.setQuery(readQuery);
-						readQueryFixedQuerySender.setBlobSmartGet(getBlobSmart);
-						try {
-							readQueryFixedQuerySender.configure();
-						} catch(ConfigurationException e) {
-							closeQueues(queues, properties, writers, correlationId);
-							queues = null;
-							errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
-						}
-						if (queues != null) {
-							try {
-								readQueryFixedQuerySender.open();
-								querySendersInfo.put("readQueryQueryFixedQuerySender", readQueryFixedQuerySender);
-							} catch(SenderException e) {
-								closeQueues(queues, properties, writers, correlationId);
-								queues = null;
-								errorMessage("Could not open '" + name + "': " + e.getMessage(), e, writers);
-							}
-						}
-					}
-				}
-				if (queues != null) {
-					String waitBeforeRead = (String)properties.get(name + ".waitBeforeRead");
-					if (waitBeforeRead != null) {
-						try {
-							querySendersInfo.put("readQueryWaitBeforeRead", new Integer(waitBeforeRead));
-						} catch(NumberFormatException e) {
-							errorMessage("Value of '" + name + ".waitBeforeRead' not a number: " + e.getMessage(), e, writers);
-						}
-					}
-					queues.put(name, querySendersInfo);
-					debugMessage("Opened jdbc connection '" + name + "'", writers);
-				}
-			}
-		}
-
-		debugMessage("Initialize ibis web service senders", writers);
-		iterator = ibisWebServiceSenders.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String name = (String)iterator.next();
-
-			String ibisHost = (String)properties.get(name + ".ibisHost");
-			String ibisInstance = (String)properties.get(name + ".ibisInstance");
-			String serviceName = (String)properties.get(name + ".serviceName");
-			Boolean convertExceptionToMessage = new Boolean((String)properties.get(name + ".convertExceptionToMessage"));
-
-			if (ibisHost == null) {
-				closeQueues(queues, properties, writers, correlationId);
-				queues = null;
-				errorMessage("Could not find ibisHost property for " + name, writers);
-			} else if (ibisInstance == null) {
-				closeQueues(queues, properties, writers, correlationId);
-				queues = null;
-				errorMessage("Could not find ibisInstance property for " + name, writers);
-			} else if (serviceName == null) {
-				closeQueues(queues, properties, writers, correlationId);
-				queues = null;
-				errorMessage("Could not find serviceName property for " + name, writers);
-			}
-		}
-
-		debugMessage("Initialize web service senders", writers);
-		iterator = webServiceSenders.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String name = (String)iterator.next();
-			Boolean convertExceptionToMessage = new Boolean((String)properties.get(name + ".convertExceptionToMessage"));
-			String url = (String)properties.get(name + ".url");
-			String userName = (String)properties.get(name + ".userName");
-			String password = (String)properties.get(name + ".password");
-			String authAlias = (String)properties.get(name + ".authAlias");
-			String soap = (String)properties.get(name + ".soap");
-			String allowSelfSignedCertificates = properties.getProperty(name + ".allowSelfSignedCertificates", "true");
-			String verifyHostname = properties.getProperty(name + ".verifyHostname", "false");
-			if (url == null) {
-				closeQueues(queues, properties, writers, correlationId);
-				queues = null;
-				errorMessage("Could not find url property for " + name, writers);
-			} else {
-				WebServiceSender webServiceSender = new WebServiceSender();
-				webServiceSender.setName("Test Tool WebServiceSender");
-				webServiceSender.setUrl(url);
-				webServiceSender.setUsername(userName);
-				webServiceSender.setPassword(password);
-				webServiceSender.setAuthAlias(authAlias);
-				if (soap != null) {
-					webServiceSender.setSoap(new Boolean(soap));
-				}
-				webServiceSender.setAllowSelfSignedCertificates(new Boolean(allowSelfSignedCertificates));
-				webServiceSender.setVerifyHostname(new Boolean(verifyHostname));
-				String serviceNamespaceURI = (String)properties.get(name + ".serviceNamespaceURI");
-				if (serviceNamespaceURI != null) {
-					webServiceSender.setServiceNamespaceURI(serviceNamespaceURI);
-				}
-				String serviceNamespace = (String)properties.get(name + ".serviceNamespace");
-				if (serviceNamespace != null) {
-					webServiceSender.setServiceNamespace(serviceNamespace);
-				}
-				try {
-					webServiceSender.configure();
-				} catch(ConfigurationException e) {
-					errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
-					closeQueues(queues, properties, writers, correlationId);
-					queues = null;
-				}
-				if (queues != null) {
-					try {
-						webServiceSender.open();
-					} catch (SenderException e) {
-						closeQueues(queues, properties, writers, correlationId);
-						queues = null;
-						errorMessage("Could not open '" + name + "': " + e.getMessage(), e, writers);
-					}
-					if (queues != null) {
-						Map<String, Object> webServiceSenderInfo = new HashMap<String, Object>();
-						webServiceSenderInfo.put("webServiceSender", webServiceSender);
-						webServiceSenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
-						queues.put(name, webServiceSenderInfo);
-						debugMessage("Opened web service sender '" + name + "'", writers);
-					}
-				}
-			}
-		}
-
-		debugMessage("Initialize web service listeners", writers);
-		iterator = webServiceListeners.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String name = (String)iterator.next();
-			String serviceNamespaceURI = (String)properties.get(name + ".serviceNamespaceURI");
-
-			if (serviceNamespaceURI == null) {
-				closeQueues(queues, properties, writers, correlationId);
-				queues = null;
-				errorMessage("Could not find property '" + name + ".serviceNamespaceURI'", writers);
-			} else {
-				ListenerMessageHandler listenerMessageHandler = new ListenerMessageHandler();
-				listenerMessageHandler.setTimeout(parameterTimeout);
-
-				if(properties.contains(name + ".requestTimeOut") || properties.contains(name + ".responseTimeOut")) {
-					errorMessage("properties "+name+".requestTimeOut/"+name+".responseTimeOut have been replaced with "+name+".timeout", writers);
-				}
-
-				try {
-					long timeout = Long.parseLong((String)properties.get(name + ".timeout"));
-					listenerMessageHandler.setTimeout(timeout);
-					debugMessage("Timeout set to '" + timeout + "'", writers);
-				} catch(Exception e) {
-				}
-				WebServiceListener webServiceListener = new WebServiceListener();
-				webServiceListener.setName("Test Tool WebServiceListener");
-				webServiceListener.setServiceNamespaceURI(serviceNamespaceURI);
-				webServiceListener.setHandler(listenerMessageHandler);
-				try {
-					webServiceListener.open();
-				} catch (ListenerException e) {
-					closeQueues(queues, properties, writers, correlationId);
-					queues = null;
-					errorMessage("Could not open web service listener '" + name + "': " + e.getMessage(), e, writers);
-				}
-				Map<String, Object> webServiceListenerInfo = new HashMap<String, Object>();
-				webServiceListenerInfo.put("webServiceListener", webServiceListener);
-				webServiceListenerInfo.put("listenerMessageHandler", listenerMessageHandler);
-				queues.put(name, webServiceListenerInfo);
-				ServiceDispatcher serviceDispatcher = ServiceDispatcher.getInstance();
-				try {
-					serviceDispatcher.registerServiceClient(serviceNamespaceURI, webServiceListener);
-					debugMessage("Opened web service listener '" + name + "'", writers);
-				} catch(ListenerException e) {
-					closeQueues(queues, properties, writers, correlationId);
-					queues = null;
-					errorMessage("Could not open web service listener '" + name + "': " + e.getMessage(), e, writers);
-				}
-			}
-		}
-
-		debugMessage("Initialize http senders", writers);
-		iterator = httpSenders.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String name = (String)iterator.next();
-			Boolean convertExceptionToMessage = new Boolean((String)properties.get(name + ".convertExceptionToMessage"));
-			String url = (String)properties.get(name + ".url");
-			String userName = (String)properties.get(name + ".userName");
-			String password = (String)properties.get(name + ".password");
-			String authAlias = (String)properties.get(name + ".authAlias");
-			String headerParams = (String)properties.get(name + ".headersParams");
-			String xhtmlString = (String)properties.get(name + ".xhtml");
-			String methodtype = (String)properties.get(name + ".methodType");
-			String paramsInUrlString = (String)properties.get(name + ".paramsInUrl");
-			Boolean treatInputMessageAsParameters = new Boolean((String)properties.get(name + ".treatInputMessageAsParameters"));
-			String inputMessageParam = (String)properties.get(name + ".inputMessageParam");
-			String multipartString = (String)properties.get(name + ".multipart");
- 			String styleSheetName = (String)properties.get(name + ".styleSheetName");
- 			String allowSelfSignedCertificates = properties.getProperty(name + ".allowSelfSignedCertificates", "true");
- 			String verifyHostname = properties.getProperty(name + ".verifyHostname", "false");
-			if (url == null) {
-				closeQueues(queues, properties, writers, correlationId);
-				queues = null;
-				errorMessage("Could not find url property for " + name, writers);
-			} else {
-				HttpSender httpSender = null;
-				PipeLineSession session = null;
-				ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
-				try {
-					// Use directoryClassLoader to make it possible to specify
-					// styleSheetName relative to the scenarioDirectory.
-					//TODO create larva classloader without basepath
-					DirectoryClassLoader directoryClassLoader = new DirectoryClassLoader(originalClassLoader);
-					directoryClassLoader.setDirectory(scenarioDirectory);
-					directoryClassLoader.setBasePath(".");
-					directoryClassLoader.configure(ibisContext, "dummy");
-					Thread.currentThread().setContextClassLoader(directoryClassLoader);
-					httpSender = new HttpSender();
-					httpSender.setName("Test Tool HttpSender");
-					httpSender.setUrl(url);
-					httpSender.setUsername(userName);
-					httpSender.setPassword(password);
-					httpSender.setAuthAlias(authAlias);
-					httpSender.setHeadersParams(headerParams);
-					httpSender.setTreatInputMessageAsParameters(treatInputMessageAsParameters);
-					if (StringUtils.isNotEmpty(xhtmlString)) {
-						httpSender.setXhtml(Boolean.valueOf(xhtmlString).booleanValue());
-					}
-					if (StringUtils.isNotEmpty(methodtype)) {
-						HttpMethod method = EnumUtils.parse(HttpMethod.class, methodtype);
-						httpSender.setMethodType(method);
-					}
-					if (StringUtils.isNotEmpty(paramsInUrlString)) {
-						httpSender.setParamsInUrl(Boolean.valueOf(paramsInUrlString).booleanValue());
-					}
-					if (StringUtils.isNotEmpty(inputMessageParam)) {
-						httpSender.setInputMessageParam(inputMessageParam);
-					}
-					if (StringUtils.isNotEmpty(multipartString)) {
-						httpSender.setMultipart(Boolean.valueOf(multipartString).booleanValue());
-					}
-					if (StringUtils.isNotEmpty(styleSheetName)) {
-						httpSender.setStyleSheetName(styleSheetName);
-					}
-					httpSender.setAllowSelfSignedCertificates(new Boolean(allowSelfSignedCertificates));
-					httpSender.setVerifyHostname(new Boolean(verifyHostname));
-					session = new PipeLineSession();
-					Map<String, Object> paramPropertiesMap = createParametersMapFromParamProperties(properties, name, writers, true, session);
-					Iterator<String> parameterNameIterator = paramPropertiesMap.keySet().iterator();
-					while (parameterNameIterator.hasNext()) {
-						String parameterName = (String)parameterNameIterator.next();
-						Parameter parameter = (Parameter)paramPropertiesMap.get(parameterName);
-						httpSender.addParameter(parameter);
-					}
-					httpSender.configure();
-				} catch(ClassLoaderException e) {
-					errorMessage("Could not create classloader: " + e.getMessage(), e, writers);
-					closeQueues(queues, properties, writers, correlationId);
-					queues = null;
-				} catch(ConfigurationException e) {
-					errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
-					closeQueues(queues, properties, writers, correlationId);
-					queues = null;
-				} finally {
-					if (originalClassLoader != null) {
-						Thread.currentThread().setContextClassLoader(originalClassLoader);
-					}
-				}
-				if (queues != null) {
-					try {
-						httpSender.open();
-					} catch (SenderException e) {
-						closeQueues(queues, properties, writers, correlationId);
-						queues = null;
-						errorMessage("Could not open '" + name + "': " + e.getMessage(), e, writers);
-					}
-					if (queues != null) {
-						Map<String, Object> httpSenderInfo = new HashMap<String, Object>();
-						httpSenderInfo.put("httpSender", httpSender);
-						httpSenderInfo.put("session", session);
-						httpSenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
-						queues.put(name, httpSenderInfo);
-						debugMessage("Opened http sender '" + name + "'", writers);
-					}
-				}
-			}
-		}
-
-		debugMessage("Initialize ibis java senders", writers);
-		iterator = ibisJavaSenders.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String name = (String)iterator.next();
-			String serviceName = (String)properties.get(name + ".serviceName");
-			Boolean convertExceptionToMessage = new Boolean((String)properties.get(name + ".convertExceptionToMessage"));
-			if (serviceName == null) {
-				closeQueues(queues, properties, writers, correlationId);
-				queues = null;
-				errorMessage("Could not find serviceName property for " + name, writers);
-			} else {
-				IbisJavaSender ibisJavaSender = new IbisJavaSender();
-				ibisJavaSender.setName("Test Tool IbisJavaSender");
-				ibisJavaSender.setServiceName(serviceName);
-				PipeLineSession session = new PipeLineSession();
-				Map<String, Object> paramPropertiesMap = createParametersMapFromParamProperties(properties, name, writers, true, session);
-				Iterator<String> parameterNameIterator = paramPropertiesMap.keySet().iterator();
-				while (parameterNameIterator.hasNext()) {
-					String parameterName = (String)parameterNameIterator.next();
-					Parameter parameter = (Parameter)paramPropertiesMap.get(parameterName);
-					ibisJavaSender.addParameter(parameter);
-				}
-				try {
-					ibisJavaSender.configure();
-				} catch(ConfigurationException e) {
-					errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
-					closeQueues(queues, properties, writers, correlationId);
-					queues = null;
-				}
-				if (queues != null) {
-					try {
-						ibisJavaSender.open();
-					} catch (SenderException e) {
-						closeQueues(queues, properties, writers, correlationId);
-						queues = null;
-						errorMessage("Could not open '" + name + "': " + e.getMessage(), e, writers);
-					}
-					if (queues != null) {
-						Map<String, Object> ibisJavaSenderInfo = new HashMap<String, Object>();
-						ibisJavaSenderInfo.put("ibisJavaSender", ibisJavaSender);
-						ibisJavaSenderInfo.put("session", session);
-						ibisJavaSenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
-						queues.put(name, ibisJavaSenderInfo);
-						debugMessage("Opened ibis java sender '" + name + "'", writers);
-					}
-				}
-			}
-		}
-
-		debugMessage("Initialize delay senders", writers);
-		iterator = delaySenders.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String name = (String)iterator.next();
-			Boolean convertExceptionToMessage = new Boolean((String)properties.get(name + ".convertExceptionToMessage"));
-			String delayTime = (String)properties.get(name + ".delayTime");
-			DelaySender delaySender = new DelaySender();
-			if (delayTime!=null) {
-				delaySender.setDelayTime(Long.parseLong(delayTime));
-			}
-			delaySender.setName("Test Tool DelaySender");
-			Map<String, Object> delaySenderInfo = new HashMap<String, Object>();
-			delaySenderInfo.put("delaySender", delaySender);
-			delaySenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
-			queues.put(name, delaySenderInfo);
-			debugMessage("Opened delay sender '" + name + "'", writers);
-		}
-
-		debugMessage("Initialize java listeners", writers);
-		iterator = javaListeners.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String name = (String)iterator.next();
-			String serviceName = (String)properties.get(name + ".serviceName");
-			if (serviceName == null) {
-				closeQueues(queues, properties, writers, correlationId);
-				queues = null;
-				errorMessage("Could not find property '" + name + ".serviceName'", writers);
-			} else {
-				ListenerMessageHandler<String> listenerMessageHandler = new ListenerMessageHandler<>();
-
-				if(properties.contains(name + ".requestTimeOut") || properties.contains(name + ".responseTimeOut")) {
-					errorMessage("properties "+name+".requestTimeOut/"+name+".responseTimeOut have been replaced with "+name+".timeout", writers);
-				}
-
-				try {
-					long timeout = Long.parseLong((String)properties.get(name + ".timeout"));
-					listenerMessageHandler.setTimeout(timeout);
-					debugMessage("Timeout set to '" + timeout + "'", writers);
-				} catch(Exception e) {
-				}
-				JavaListener javaListener = new JavaListener();
-				javaListener.setName("Test Tool JavaListener");
-				javaListener.setServiceName(serviceName);
-				javaListener.setHandler(listenerMessageHandler);
-				try {
-					javaListener.open();
-					Map<String, Object> javaListenerInfo = new HashMap<String, Object>();
-					javaListenerInfo.put("javaListener", javaListener);
-					javaListenerInfo.put("listenerMessageHandler", listenerMessageHandler);
-					queues.put(name, javaListenerInfo);
-					debugMessage("Opened java listener '" + name + "'", writers);
-				} catch(ListenerException e) {
-					closeQueues(queues, properties, writers, correlationId);
-					queues = null;
-					errorMessage("Could not open java listener '" + name + "': " + e.getMessage(), e, writers);
-				}
-			}
-		}
-
-		debugMessage("Initialize file senders", writers);
-		iterator = fileSenders.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String queueName = (String)iterator.next();
-			String filename  = (String)properties.get(queueName + ".filename");
-			if (filename == null) {
-				closeQueues(queues, properties, writers, correlationId);
-				queues = null;
-				errorMessage("Could not find filename property for " + queueName, writers);
-			} else {
-				FileSender fileSender = new FileSender();
-				String filenameAbsolutePath = (String)properties.get(queueName + ".filename.absolutepath");
-				fileSender.setFilename(filenameAbsolutePath);
-				String encoding = (String)properties.get(queueName + ".encoding");
-				if (encoding != null) {
-					fileSender.setEncoding(encoding);
-					debugMessage("Encoding set to '" + encoding + "'", writers);
-				}
-				String deletePathString = (String)properties.get(queueName + ".deletePath");
-				if (deletePathString != null) {
-					boolean deletePath = Boolean.valueOf(deletePathString).booleanValue();
-					fileSender.setDeletePath(deletePath);
-					debugMessage("Delete path set to '" + deletePath + "'", writers);
-				}
-				String createPathString = (String)properties.get(queueName + ".createPath");
-				if (createPathString != null) {
-					boolean createPath = Boolean.valueOf(createPathString).booleanValue();
-					fileSender.setCreatePath(createPath);
-					debugMessage("Create path set to '" + createPath + "'", writers);
-				}
-				try {
-					String checkDeleteString = (String)properties.get(queueName + ".checkDelete");
-					if (checkDeleteString != null) {
-						boolean checkDelete = Boolean.valueOf(checkDeleteString).booleanValue();
-						fileSender.setCheckDelete(checkDelete);
-						debugMessage("Check delete set to '" + checkDelete + "'", writers);
-					}
-				} catch(Exception e) {
-				}
-				try {
-					String runAntString = (String)properties.get(queueName + ".runAnt");
-					if (runAntString != null) {
-						boolean runAnt = Boolean.valueOf(runAntString).booleanValue();
-						fileSender.setRunAnt(runAnt);
-						debugMessage("Run ant set to '" + runAnt + "'", writers);
-					}
-				} catch(Exception e) {
-				}
-				try {
-					long timeOut = Long.parseLong((String)properties.get(queueName + ".timeOut"));
-					fileSender.setTimeOut(timeOut);
-					debugMessage("Time out set to '" + timeOut + "'", writers);
-				} catch(Exception e) {
-				}
-				try {
-					long interval  = Long.parseLong((String)properties.get(queueName + ".interval"));
-					fileSender.setInterval(interval);
-					debugMessage("Interval set to '" + interval + "'", writers);
-				} catch(Exception e) {
-				}
-				try {
-					String overwriteString = (String)properties.get(queueName + ".overwrite");
-					if (overwriteString != null) {
-						debugMessage("OverwriteString = " + overwriteString, writers);
-						boolean overwrite = Boolean.valueOf(overwriteString).booleanValue();
-						fileSender.setOverwrite(overwrite);
-						debugMessage("Overwrite set to '" + overwrite + "'", writers);
-					}
-				} catch(Exception e) {
-				}
-				Map<String, Object> fileSenderInfo = new HashMap<String, Object>();
-				fileSenderInfo.put("fileSender", fileSender);
-				queues.put(queueName, fileSenderInfo);
-				debugMessage("Opened file sender '" + queueName + "'", writers);
-			}
-		}
-
-		debugMessage("Initialize file listeners", writers);
-		iterator = fileListeners.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String queueName = (String)iterator.next();
-			String filename  = (String)properties.get(queueName + ".filename");
-			String filename2  = (String)properties.get(queueName + ".filename2");
-			String directory = null;
-			String wildcard = null;
-			if (filename == null) {
-				directory = (String)properties.get(queueName + ".directory");
-				wildcard = (String)properties.get(queueName + ".wildcard");
-			}
-			if (filename == null && directory == null) {
-				closeQueues(queues, properties, writers, correlationId);
-				queues = null;
-				errorMessage("Could not find filename or directory property for " + queueName, writers);
-			} else if (directory != null && wildcard == null) {
-				closeQueues(queues, properties, writers, correlationId);
-				queues = null;
-				errorMessage("Could not find wildcard property for " + queueName, writers);
-			} else {
-				FileListener fileListener = new FileListener();
-				if (filename == null) {
-					String directoryAbsolutePath = (String)properties.get(queueName + ".directory.absolutepath");;
-					fileListener.setDirectory(directoryAbsolutePath);
-					fileListener.setWildcard(wildcard);
-				} else {
-					String filenameAbsolutePath = (String)properties.get(queueName + ".filename.absolutepath");;
-					fileListener.setFilename(filenameAbsolutePath);
-				}
-				try {
-					long waitBeforeRead = Long.parseLong((String)properties.get(queueName + ".waitBeforeRead"));
-					fileListener.setWaitBeforeRead(waitBeforeRead);
-					debugMessage("Wait before read set to '" + waitBeforeRead + "'", writers);
-				} catch(Exception e) {
-				}
-				try {
-					long timeOut = Long.parseLong((String)properties.get(queueName + ".timeOut"));
-					fileListener.setTimeOut(timeOut);
-					debugMessage("Time out set to '" + timeOut + "'", writers);
-				} catch(Exception e) {
-				}
-				try {
-					long interval  = Long.parseLong((String)properties.get(queueName + ".interval"));
-					fileListener.setInterval(interval);
-					debugMessage("Interval set to '" + interval + "'", writers);
-				} catch(Exception e) {
-				}
-				if (filename2!=null) {
-					fileListener.setFilename2(filename2);
-				}
-				Map<String, Object> fileListenerInfo = new HashMap<String, Object>();
-				fileListenerInfo.put("fileListener", fileListener);
-				queues.put(queueName, fileListenerInfo);
-				debugMessage("Opened file listener '" + queueName + "'", writers);
-				if (fileListenerCleanUp(queueName, fileListener, writers)) {
-					errorMessage("Found old messages on '" + queueName + "'", writers);
-				}
-			}
-		}
-
-		debugMessage("Initialize xslt provider listeners", writers);
-		iterator = xsltProviderListeners.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String queueName = (String)iterator.next();
-			String filename  = (String)properties.get(queueName + ".filename");
-			if (filename == null) {
-				closeQueues(queues, properties, writers, correlationId);
-				queues = null;
-				errorMessage("Could not find filename property for " + queueName, writers);
-			} else {
-				Boolean fromClasspath = new Boolean((String)properties.get(queueName + ".fromClasspath"));
-				if (!fromClasspath) {
-					filename = (String)properties.get(queueName + ".filename.absolutepath");
-				}
-				XsltProviderListener xsltProviderListener = new XsltProviderListener();
-				xsltProviderListener.setFromClasspath(fromClasspath);
-				xsltProviderListener.setFilename(filename);
-				String xsltVersionString = (String)properties.get(queueName + ".xsltVersion");
-				if (xsltVersionString != null) {
-					try {
-						int xsltVersion = Integer.valueOf(xsltVersionString).intValue();
-						xsltProviderListener.setXsltVersion(xsltVersion);
-						debugMessage("XsltVersion set to '" + xsltVersion + "'", writers);
-					} catch(Exception e) {
-					}
-				}
-				String xslt2String = (String)properties.get(queueName + ".xslt2");
-				if (xslt2String != null) {
-					try {
-						boolean xslt2 = Boolean.valueOf(xslt2String).booleanValue();
-						xsltProviderListener.setXslt2(xslt2);
-						debugMessage("Xslt2 set to '" + xslt2 + "'", writers);
-					} catch(Exception e) {
-					}
-				}
-				String namespaceAwareString = (String)properties.get(queueName + ".namespaceAware");
-				if (namespaceAwareString != null) {
-					try {
-						boolean namespaceAware = Boolean.valueOf(namespaceAwareString).booleanValue();
-						xsltProviderListener.setNamespaceAware(namespaceAware);
-						debugMessage("Namespace aware set to '" + namespaceAware + "'", writers);
-					} catch(Exception e) {
-					}
-				}
-				try {
-					xsltProviderListener.init();
-					Map<String, Object> xsltProviderListenerInfo = new HashMap<String, Object>();
-					xsltProviderListenerInfo.put("xsltProviderListener", xsltProviderListener);
-					queues.put(queueName, xsltProviderListenerInfo);
-					debugMessage("Opened xslt provider listener '" + queueName + "'", writers);
-				} catch(ListenerException e) {
-					closeQueues(queues, properties, writers, correlationId);
-					queues = null;
-					errorMessage("Could not create xslt provider listener for '" + queueName + "': " + e.getMessage(), e, writers);
-				}
-			}
-		}
-
-		return queues;
-	}
-
-
 
 	public static boolean closeQueues(Map<String, Map<String, Object>> queues, Properties properties, Map<String, Object> writers, String correlationId) {
 		boolean remainingMessagesFound = false;
@@ -3013,8 +2079,7 @@ public class TestTool {
 
 	// Used by saveResultToFile.jsp
 	public static void windiff(ServletContext application, HttpServletRequest request, String expectedFileName, String result, String expected) throws IOException, SenderException {
-		IbisContext ibisContext = getIbisContext(application);
-		AppConstants appConstants = getAppConstants(ibisContext);
+		AppConstants appConstants = AppConstants.getInstance();
 		String windiffCommand = appConstants.getResolvedProperty("larva.windiff.command");
 		if (windiffCommand == null) {
 			String servletPath = request.getServletPath();
@@ -3023,7 +2088,7 @@ public class TestTool {
 			List<String> scenariosRootDirectories = new ArrayList<String>();
 			List<String> scenariosRootDescriptions = new ArrayList<String>();
 			String currentScenariosRootDirectory = TestTool.initScenariosRootDirectories(
-					appConstants, realPath,
+					realPath,
 					null, scenariosRootDirectories,
 					scenariosRootDescriptions, null);
 			windiffCommand = currentScenariosRootDirectory + "..\\..\\IbisAlgemeenWasbak\\WinDiff\\WinDiff.Exe";
@@ -4134,7 +3199,7 @@ public class TestTool {
 	 *
 	 * @return A map with parameters
 	 */
-	private static Map<String, Object> createParametersMapFromParamProperties(Properties properties, String property, Map<String, Object> writers, boolean createParameterObjects, PipeLineSession session) {
+	public static Map<String, Object> createParametersMapFromParamProperties(Properties properties, String property, Map<String, Object> writers, boolean createParameterObjects, PipeLineSession session) {
 		debugMessage("Search parameters for property '" + property + "'", writers);
 		final String _name = ".name";
 		final String _param = ".param";

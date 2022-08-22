@@ -7,7 +7,6 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
@@ -23,7 +22,7 @@ import nl.nn.adapterframework.testutil.TestFileUtils;
 public class MessageSendingPipeTest extends StreamingPipeTestBase<MessageSendingPipe> {
 
 	@Override
-	public MessageSendingPipe createPipe() throws ConfigurationException {
+	public MessageSendingPipe createPipe() {
 		MessageSendingPipe result = new MessageSendingPipe();
 		result.setSender(new EchoSender() {
 

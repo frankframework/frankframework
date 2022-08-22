@@ -51,8 +51,7 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 			throw new ConfigurationException(getLogPrefix()+"query must be specified");
 		}
 	}
-		
-	
+
 	@Override
 	protected String getQuery(Message message) {
 		return getQuery();
@@ -62,7 +61,7 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 	protected boolean canProvideOutputStream() {
 		return (getQueryTypeEnum()==QueryType.UPDATECLOB && StringUtils.isEmpty(getClobSessionKey()) ||
 				getQueryTypeEnum()==QueryType.UPDATEBLOB && StringUtils.isEmpty(getBlobSessionKey()))
-				&& getParameterList()==null || !getParameterList().isInputValueOrContextRequiredForResolution();
+				&& (getParameterList()==null || !getParameterList().isInputValueOrContextRequiredForResolution());
 	}
 
 
