@@ -22,21 +22,20 @@ import org.jboss.narayana.jta.jms.TransactionHelper;
 import org.jboss.narayana.jta.jms.TransactionHelperImpl;
 import org.springframework.transaction.TransactionSystemException;
 
+import com.arjuna.ats.arjuna.common.CoreEnvironmentBeanException;
+import com.arjuna.ats.arjuna.common.arjPropertyManager;
 import com.arjuna.ats.arjuna.recovery.RecoveryManager;
 import com.arjuna.ats.internal.jta.recovery.arjunacore.XARecoveryModule;
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 
 import lombok.Getter;
-import lombok.Setter;
 import nl.nn.adapterframework.jta.StatusRecordingTransactionManager;
 
 public class NarayanaJtaTransactionManager extends StatusRecordingTransactionManager {
 
 	private static final long serialVersionUID = 1L;
 
-	private @Getter @Setter NarayanaConfigurationBean narayanaConfig;
-	private @Getter @Setter int shutdownTimeout = 10000;
-	private @Getter @Setter String logdir = "c:/temp/logs";
+//	private @Getter @Setter int shutdownTimeout = 10000;
 
 	private @Getter RecoveryManager recoveryManager;
 	private @Getter TransactionHelper transactionHelper;
@@ -51,18 +50,22 @@ public class NarayanaJtaTransactionManager extends StatusRecordingTransactionMan
 	}
 
 	@Override
-	protected TransactionManager createTransactionManager()  throws TransactionSystemException{
+	protected TransactionManager createTransactionManager() throws TransactionSystemException {
 		initialize();
 		TransactionManager result = com.arjuna.ats.jta.TransactionManager.transactionManager();
 		transactionHelper = new TransactionHelperImpl(result);
 		return result;
 	}
 
-	private void initialize() {
+	private void initialize() throws TransactionSystemException {
 		if (!initialized) {
 			initialized=true;
 			determineTmUid();
-			narayanaConfig.getProperties().setProperty("CoreEnvironmentBean.nodeIdentifier", getUid());
+			try {
+				arjPropertyManager.getCoreEnvironmentBean().setNodeIdentifier(getUid());
+			} catch (CoreEnvironmentBeanException e) {
+				throw new TransactionSystemException("Cannot set TmUid", e);
+			}
 
 			recoveryManager = RecoveryManager.manager();
 			recoveryManager.initialize();

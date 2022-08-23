@@ -16,7 +16,6 @@
 		class="nl.nn.adapterframework.jta.narayana.NarayanaJtaTransactionManager"
 		depends-on="narayanaConfig"
 		>
-		<property name="narayanaConfig" ref="narayanaConfig"/>
 		<property name="statusFile" value="${transactionmanager.log.dir}/status.txt" />
 		<property name="uidFile"  value="${transactionmanager.log.dir}/tm-uid.txt" />
 		<property name="uid" value="${transactionmanager.uid}" />
@@ -34,10 +33,10 @@
 		</property>
 	</bean>
 
-	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jta.narayana.NarayanaDataSourceFactory" >
+	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jta.narayana.NarayanaDataSourceFactory" depends-on="txManagerReal" >
 		<property name="transactionManager" ref="txManagerReal"/>
 	</bean>
-	<bean id="connectionFactoryFactory" class="nl.nn.adapterframework.jta.narayana.NarayanaConnectionFactoryFactory" >
+	<bean id="connectionFactoryFactory" class="nl.nn.adapterframework.jta.narayana.NarayanaConnectionFactoryFactory" depends-on="txManagerReal" >
 		<property name="transactionManager" ref="txManagerReal"/>
 	</bean>
 </beans>

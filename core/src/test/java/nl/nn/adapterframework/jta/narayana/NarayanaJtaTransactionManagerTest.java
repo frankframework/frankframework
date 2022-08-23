@@ -13,8 +13,10 @@ import java.util.Properties;
 
 import javax.transaction.TransactionManager;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -27,15 +29,17 @@ import com.arjuna.ats.arjuna.common.arjPropertyManager;
 import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
 
 import nl.nn.adapterframework.testutil.TransactionManagerType;
+import nl.nn.adapterframework.util.LogUtil;
 
 public class NarayanaJtaTransactionManagerTest {
+	protected Logger log = LogUtil.getLogger(this);
 
 	public String STATUS_FILE = "status.txt";
 	public String TMUID_FILE = "tm-uid.txt";
 
 	private NarayanaJtaTransactionManager delegateTransactionManager;
 	public @Rule TemporaryFolder folder = new TemporaryFolder();
-	
+
 	@BeforeClass
 	public static void ensureNarayanaisNotActive() {
 //		if(TransactionManagerServices.isTransactionManagerRunning()) {
@@ -53,18 +57,26 @@ public class NarayanaJtaTransactionManagerTest {
 //		}
 	}
 
+	@Before
+	public void setup() {
+		log.debug("setup");
+		delete(TMUID_FILE);
+	}
+
 	@After
 	public void tearDown() {
+		log.debug("start teardown");
 		if (delegateTransactionManager != null) {
 			delegateTransactionManager.shutdownTransactionManager();
 			delegateTransactionManager = null;
 		}
+		log.debug("end teardown");
 	}
 
 	private NarayanaJtaTransactionManager getNarayanaJtaTransactionManager() throws Exception {
-		
+
 		System.out.println("getNarayanaJtaTransactionManager folder ["+folder.getRoot().toString()+"]");
-		
+
 		NarayanaJtaTransactionManager result = new NarayanaJtaTransactionManager();
 		Properties props = new Properties();
 		props.setProperty("JDBCEnvironmentBean.isolationLevel", "2" );
@@ -76,8 +88,6 @@ public class NarayanaJtaTransactionManagerTest {
 		config.setProperties(props);
 		config.afterPropertiesSet();
 
-		
-		result.setNarayanaConfig(config);
 		result.setStatusFile(folder.getRoot().toString()+"/"+STATUS_FILE);
 		result.setUidFile(folder.getRoot().toString()+"/"+TMUID_FILE);
 		delegateTransactionManager = result;
@@ -90,13 +100,12 @@ public class NarayanaJtaTransactionManagerTest {
 		tm.afterPropertiesSet();
 		TransactionManagerImple ntm = (TransactionManagerImple)tm.getTransactionManager();
 		assertNotNull(ntm); // assert that transaction manager is a Narayana TransactionManager
-		
+
 		String narayanaServerId = arjPropertyManager.getCoreEnvironmentBean().getNodeIdentifier();
 		String tmUid = tm.getUid();
-		
-		
-		assertEquals(tmUid, narayanaServerId);
 
+
+		assertEquals(tmUid, narayanaServerId);
 		assertStatus("ACTIVE", tmUid);
 	}
 
@@ -114,9 +123,6 @@ public class NarayanaJtaTransactionManagerTest {
 		assertEquals(presetTmUid, tm.getUid());
 
 		assertStatus("ACTIVE", presetTmUid);
-		
-		tm.destroy();
-		delegateTransactionManager = null;
 	}
 
 	@Test
@@ -159,6 +165,18 @@ public class NarayanaJtaTransactionManagerTest {
 		assertEquals(status, read(STATUS_FILE));
 		if (tmUid!=null) {
 			assertEquals(tmUid, read(TMUID_FILE));
+		}
+	}
+
+
+	public void delete(String filename) throws TransactionSystemException {
+		Path file = Paths.get(folder.getRoot().toString()+"/"+filename);
+		try {
+			if (Files.exists(file)) {
+				Files.delete(file);
+			}
+		} catch (Exception e) {
+			throw new TransactionSystemException("Cannot delete file ["+file+"]", e);
 		}
 	}
 
