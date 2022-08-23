@@ -41,7 +41,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
-import org.springframework.util.MimeType;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.IbisContext;

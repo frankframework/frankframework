@@ -46,12 +46,9 @@ import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.support.MessageBuilder;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
-import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
