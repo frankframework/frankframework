@@ -1,11 +1,10 @@
 package nl.nn.adapterframework.management.bus;
 
 import java.security.Principal;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
@@ -13,19 +12,34 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.integration.support.DefaultMessageBuilderFactory;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
-import org.springframework.messaging.support.GenericMessage;
 
-import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
 import nl.nn.adapterframework.webcontrol.api.Base;
 
-public class RequestMessage {
+public class RequestMessageBuilder {
+	private Map<String, Object> customHeaders = new HashMap<>();
 
-	private static final long serialVersionUID = 1L;
+	private final Base base;
+	private final BusTopic topic;
+	private Object payload = "NONE";
 
-	public static Message<?> create(Base base, BusTopic action) {
+	public RequestMessageBuilder(Base base, BusTopic topic) {
+		this.base = base;
+		this.topic = topic;
+	}
+
+	public RequestMessageBuilder addHeader(String key, Object value) {
+		customHeaders.put(key, value);
+		return this;
+	}
+
+	public static RequestMessageBuilder create(Base base, BusTopic topic) {
+		return new RequestMessageBuilder(base, topic);
+	}
+
+	public Message<?> build() {
 		DefaultMessageBuilderFactory factory = base.getApplicationContext().getBean("messageBuilderFactory", DefaultMessageBuilderFactory.class);
-		MessageBuilder<String> builder = factory.withPayload("");
-		builder.setHeader("action", action.name());
+		MessageBuilder<?> builder = factory.withPayload(payload);
+		builder.setHeader(TopicSelector.TOPIC_HEADER_NAME, topic.name());
 
 		UriInfo uriInfo = base.getUriInfo();
 		builder.setHeader("uri", uriInfo.getRequestUri());
@@ -47,6 +61,9 @@ public class RequestMessage {
 //		for(Entry<String, List<String>> param : queryParams.entrySet()) {
 //			builder.setHeader(param.getKey(), param.getValue());
 //		}
+		for(Entry<String, Object> customHeader : customHeaders.entrySet()) {
+			builder.setHeader(customHeader.getKey(), customHeader.getValue());
+		}
 
 		return builder.build();
 	}

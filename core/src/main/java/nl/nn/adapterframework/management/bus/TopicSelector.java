@@ -21,7 +21,9 @@ import java.lang.annotation.RetentionPolicy;
 
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-public @interface HeaderSelector {
+public @interface TopicSelector {
+
+	public static final String TOPIC_HEADER_NAME = "topic";
 
 	BusTopic value();
 

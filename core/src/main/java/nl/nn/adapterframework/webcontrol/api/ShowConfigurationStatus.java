@@ -390,7 +390,7 @@ public final class ShowConfigurationStatus extends Base {
 			ResponseBuilder response;
 			InputStream flow = flowDiagramManager.get(adapter);
 			if(flow != null) {
-				response = Response.ok(flow, flowDiagramManager.getMediaType());
+				response = Response.ok(flow, flowDiagramManager.getMediaType().toString());
 			} else {
 				response = Response.noContent();
 			}

@@ -90,14 +90,14 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 			for (MethodDescriptor methodDescriptor : methodDescriptors) {
 				Method method = methodDescriptor.getMethod();
 
-				HeaderSelector selector = AnnotationUtils.findAnnotation(method, HeaderSelector.class);
+				TopicSelector selector = AnnotationUtils.findAnnotation(method, TopicSelector.class);
 				if(selector != null) {
 					BusTopic busAction = selector.value();
 					MessageSelector msel = new MessageSelector() {
 
 						@Override
 						public boolean accept(Message<?> message) {
-							String action = (String) message.getHeaders().get("action");
+							String action = (String) message.getHeaders().get(TopicSelector.TOPIC_HEADER_NAME);
 
 							return busAction.name().equalsIgnoreCase(action);
 						}

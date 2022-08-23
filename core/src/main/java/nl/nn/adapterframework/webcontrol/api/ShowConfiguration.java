@@ -57,7 +57,7 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.RequestMessage;
+import nl.nn.adapterframework.management.bus.RequestMessageBuilder;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
@@ -91,7 +91,7 @@ public final class ShowConfiguration extends Base {
 				ResponseBuilder response;
 				InputStream configFlow = flowDiagramManager.get(getIbisManager().getConfigurations());
 				if(configFlow != null) {
-					response = Response.ok(configFlow, flowDiagramManager.getMediaType());
+					response = Response.ok(configFlow, flowDiagramManager.getMediaType().toString());
 				} else {
 					response = Response.noContent();
 				}
@@ -118,12 +118,14 @@ public final class ShowConfiguration extends Base {
 	@Path("/configurations2")
 	@Produces(MediaType.APPLICATION_XML)
 	public Response getXMLConfiguration2(@QueryParam("loadedConfiguration") boolean loaded, @QueryParam("flow") String flow) throws ApiException {
-//		ApiMessageRequest request = new ApiMessageRequest(Action.GET_CONFIGURATION, IbisContext.ALL_CONFIGS_KEY);//json bericht!
-//		Message request = ActionMessage.create(this, IbisAction.FULLRELOAD)
-//		return callGateway(ApiMessageRequest.newAction(ApiAction.GET_CONFIGURATION));
-		Message<?> request = RequestMessage.create(this, BusTopic.CONFIGURATION);
-//		Message<?> input = MessageBuilder.withPayload("configurations").build();
-		return callGateway(request);
+		if(StringUtils.isNotEmpty(flow)) {
+			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.FLOW);
+			return callGateway(builder.build());
+		} else {
+			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION);
+			if(loaded) builder.addHeader("loaded", loaded);
+			return callGateway(builder.build());
+		}
 	}
 
 	@PUT
@@ -132,7 +134,6 @@ public final class ShowConfiguration extends Base {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response fullReload(LinkedHashMap<String, Object> json) throws ApiException {
-
 		Response.ResponseBuilder response = Response.status(Response.Status.NO_CONTENT); //PUT defaults to no content
 
 		for (Entry<String, Object> entry : json.entrySet()) {
@@ -140,9 +141,7 @@ public final class ShowConfiguration extends Base {
 			Object value = entry.getValue();
 			if(key.equalsIgnoreCase("action")) {
 				if(value.equals("reload")) {
-//					getIbisManager().handleAction(IbisAction.FULLRELOAD, "", "", "", getUserPrincipalName(), true);
-//					RequestMessage.ibisAction()
-//					callGateway(RequestMessage.create(this, IbisAction.FULLRELOAD));
+					getIbisManager().handleAction(IbisAction.FULLRELOAD, "", "", "", getUserPrincipalName(), true);
 				}
 				response.entity("{\"status\":\"ok\"}");
 			}
@@ -179,7 +178,7 @@ public final class ShowConfiguration extends Base {
 	@Path("/configurations/{configuration}/health")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getConfigurationHealth(@PathParam("configuration") String configurationName) throws ApiException {
-		Message<?> request = RequestMessage.create(this, BusTopic.CONFIGURATION);
+//		Message<?> request = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION);
 
 		Configuration configuration = getIbisManager().getConfiguration(configurationName);
 
@@ -250,7 +249,7 @@ public final class ShowConfiguration extends Base {
 			ResponseBuilder response;
 			InputStream flow = flowDiagramManager.get(configuration);
 			if(flow != null) {
-				response = Response.ok(flow, flowDiagramManager.getMediaType());
+				response = Response.ok(flow, flowDiagramManager.getMediaType().toString());
 			} else {
 				response = Response.noContent();
 			}

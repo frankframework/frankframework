@@ -41,6 +41,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
+import org.springframework.util.MimeType;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.IbisContext;
@@ -77,11 +78,10 @@ public abstract class Base implements ApplicationContextAware {
 		Gateway gateway = getApplicationContext().getBean("gateway", Gateway.class);
 		Message<?> response = gateway.execute(input);
 		MessageHeaders headers = response.getHeaders();
-		System.out.println(headers.keySet());
-		if(response.getPayload() instanceof Response) {
-			return (Response) response.getPayload();
-		}
-		return Response.status(Response.Status.OK).entity(response.getPayload()).build();
+		int status = (int) headers.get("status");
+		String mimeType = (String) headers.get("mimeType");
+
+		return Response.status(status).entity(response.getPayload()).type(mimeType).build();
 	}
 
 	@Override

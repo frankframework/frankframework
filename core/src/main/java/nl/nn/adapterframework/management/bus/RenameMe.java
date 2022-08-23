@@ -3,10 +3,6 @@ package nl.nn.adapterframework.management.bus;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
-
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.messaging.Message;
 
 import lombok.Getter;
@@ -16,13 +12,13 @@ import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 @BusAware("frank-management-bus")
-public class RenameMe implements InitializingBean {
+public class RenameMe {
 	private @Getter @Setter IbisManager ibisManager;
 	private @Setter FlowDiagramManager flowDiagramManager;
 
-	@HeaderSelector(BusTopic.CONFIGURATION)
+	@TopicSelector(BusTopic.CONFIGURATION)
 	public Message getXMLConfiguration(Message<?> message) {
-		boolean loadedConfiguration = false;//Boolean.parseBoolean(message.getHeaders().get("loaded"));
+		boolean loadedConfiguration = getHeader(message, "loaded", false);
 		String result = "";
 		for (Configuration configuration : getIbisManager().getConfigurations()) {
 			if (loadedConfiguration) {
@@ -32,23 +28,28 @@ public class RenameMe implements InitializingBean {
 			}
 		}
 		return ResponseMessage.create(result);
-//		return Response.status(Response.Status.OK).entity(result).build();
 	}
 
-	@HeaderSelector(BusTopic.CONFIGURATION)
-	public Message getApplicationFlow() throws IOException {
-		ResponseBuilder response;
+	@TopicSelector(BusTopic.FLOW)
+	public Message getApplicationFlow(Message<?> message) throws IOException {
 		InputStream configFlow = flowDiagramManager.get(getIbisManager().getConfigurations());
 		if(configFlow != null) {
-			response = Response.ok(configFlow, flowDiagramManager.getMediaType());
+			return ResponseMessage.ok(configFlow, flowDiagramManager.getMediaType());
 		} else {
-			response = Response.noContent();
+			return ResponseMessage.noContent();
 		}
-		return ResponseMessage.create(response.build());
 	}
 
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		System.out.println("halli hallo dit werkt!");
+	private boolean containsHeader(Message<?> message, String headerName) {
+		return message.getHeaders().get(headerName) != null;
+	}
+
+	private boolean getHeader(Message<?> message, String headerName, boolean defaultValue) {
+		Object header = message.getHeaders().get(headerName);
+		if(header == null) {
+			return defaultValue;
+		}
+
+		return Boolean.parseBoolean(""+header);
 	}
 }

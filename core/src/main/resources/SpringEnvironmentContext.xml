@@ -10,30 +10,13 @@
 		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration-5.2.xsd
 		"
 	>
-<!-- 	<integration:gateway id="simpleGateway" service-interface="foo.TempConverter" default-request-channel="simpleExpression" /> -->
 <!-- 	<integration:control-bus dispatcher-pool-size="25" auto-create-channels="true"/> -->
 	<integration:publish-subscribe-channel id="frank-management-bus" />
 	<integration:publish-subscribe-channel id="inputChannel"/>
 	<integration:publish-subscribe-channel id="outputChannel"/>
-<!-- 	 datatype="java.lang.Number" -->
 
-<!-- 	<integration:inbound-channel-adapter ref="testBusHandler" method="in" channel="inputChannel"> -->
-<!-- 		<int:poller fixed-delay="1000" /> -->
-<!-- 	</integration:inbound-channel-adapter> -->
-
-	<integration:outbound-channel-adapter ref="testBusHandler" method="out" channel="outputChannel" />
-<!-- 	<int:gateway id="gateway" service-interface="nl.nn.adapterframework.lifecycle.Gateway" default-request-channel="rrChannel" /> -->
-
-	<integration:service-activator input-channel="inputChannel" ref="simpleMessageListener" method="onMessage" />
-<!-- 	<integration:service-activator input-channel="inputChannel" output-channel="outputChannel" ref="simpleMessageListener" method="onMessage" /> -->
-<!-- 		<integration:endpoint input-channel="exampleChannel" handler-ref="testBusHandler" handler-method="someMethod" default-output-channel="replyChannel"/> -->
-
-	<bean name="simpleMessageListener" class="nl.nn.adapterframework.lifecycle.SimpleMessageListener" scope="singleton" />
-	<bean name="rrMessageListener" class="nl.nn.adapterframework.lifecycle.SimpleMessageListener" scope="singleton" />
-	<bean name="testBusHandler" class="nl.nn.adapterframework.lifecycle.TestBus" scope="singleton" />
 	<bean name="gateway" class="nl.nn.adapterframework.lifecycle.Gateway" scope="singleton">
 		<property name="requestChannel" ref="frank-management-bus" />
-<!-- 		<property name="replyChannel" ref="outputChannel" /> -->
 	</bean>
 
 	<context:property-placeholder />
