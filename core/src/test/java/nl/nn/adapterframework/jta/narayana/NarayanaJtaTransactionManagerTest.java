@@ -34,10 +34,7 @@ public class NarayanaJtaTransactionManagerTest {
 	public String TMUID_FILE = "tm-uid.txt";
 
 	private NarayanaJtaTransactionManager delegateTransactionManager;
-	public @Rule TemporaryFolder tmpFolder = new TemporaryFolder();
-	
-//	public String folder = tmpFolder.getRoot().toString();
-	public String folder = "c:/temp/narayana";
+	public @Rule TemporaryFolder folder = new TemporaryFolder();
 	
 	@BeforeClass
 	public static void ensureNarayanaisNotActive() {
@@ -66,15 +63,14 @@ public class NarayanaJtaTransactionManagerTest {
 
 	private NarayanaJtaTransactionManager getNarayanaJtaTransactionManager() throws Exception {
 		
-		System.out.println("getNarayanaJtaTransactionManager folder ["+folder+"]");
+		System.out.println("getNarayanaJtaTransactionManager folder ["+folder.getRoot().toString()+"]");
 		
 		NarayanaJtaTransactionManager result = new NarayanaJtaTransactionManager();
 		Properties props = new Properties();
 		props.setProperty("JDBCEnvironmentBean.isolationLevel", "2" );
-		//props.setProperty("CoreEnvironmentBean.nodeIdentifier", "DefaultNodeIdentifier");
-		props.setProperty("ObjectStoreEnvironmentBean.objectStoreDir", folder);
-		props.setProperty("ObjectStoreEnvironmentBean.stateStore.objectStoreDir", folder);
-		props.setProperty("ObjectStoreEnvironmentBean.communicationStore.objectStoreDir", folder);
+		props.setProperty("ObjectStoreEnvironmentBean.objectStoreDir", folder.getRoot().toString());
+		props.setProperty("ObjectStoreEnvironmentBean.stateStore.objectStoreDir", folder.getRoot().toString());
+		props.setProperty("ObjectStoreEnvironmentBean.communicationStore.objectStoreDir", folder.getRoot().toString());
 
 		NarayanaConfigurationBean config = new NarayanaConfigurationBean();
 		config.setProperties(props);
@@ -82,9 +78,8 @@ public class NarayanaJtaTransactionManagerTest {
 
 		
 		result.setNarayanaConfig(config);
-//		result.setRecoveryManager(recoveryManager);
-		result.setStatusFile(folder+"/"+STATUS_FILE);
-		result.setUidFile(folder+"/"+TMUID_FILE);
+		result.setStatusFile(folder.getRoot().toString()+"/"+STATUS_FILE);
+		result.setUidFile(folder.getRoot().toString()+"/"+TMUID_FILE);
 		delegateTransactionManager = result;
 		return result;
 	}
@@ -119,6 +114,9 @@ public class NarayanaJtaTransactionManagerTest {
 		assertEquals(presetTmUid, tm.getUid());
 
 		assertStatus("ACTIVE", presetTmUid);
+		
+		tm.destroy();
+		delegateTransactionManager = null;
 	}
 
 	@Test
@@ -165,7 +163,7 @@ public class NarayanaJtaTransactionManagerTest {
 	}
 
 	public void write(String filename, String text) throws TransactionSystemException {
-		Path file = Paths.get(folder+"/"+filename);
+		Path file = Paths.get(folder.getRoot().toString()+"/"+filename);
 		try {
 			try (OutputStream fos = Files.newOutputStream(file)) {
 				fos.write(text.getBytes(StandardCharsets.UTF_8));
@@ -176,7 +174,7 @@ public class NarayanaJtaTransactionManagerTest {
 	}
 
 	public String read(String filename) {
-		Path file = Paths.get(folder+"/"+filename);
+		Path file = Paths.get(folder.getRoot().toString()+"/"+filename);
 		if (!Files.exists(file)) {
 			return null;
 		}
