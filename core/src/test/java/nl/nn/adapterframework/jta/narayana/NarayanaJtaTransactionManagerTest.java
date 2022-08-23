@@ -75,7 +75,7 @@ public class NarayanaJtaTransactionManagerTest {
 
 	private NarayanaJtaTransactionManager getNarayanaJtaTransactionManager() throws Exception {
 
-		System.out.println("getNarayanaJtaTransactionManager folder ["+folder.getRoot().toString()+"]");
+		log.debug("getNarayanaJtaTransactionManager folder ["+folder.getRoot().toString()+"]");
 
 		NarayanaJtaTransactionManager result = new NarayanaJtaTransactionManager();
 		Properties props = new Properties();
