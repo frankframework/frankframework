@@ -11,11 +11,26 @@
 		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration-5.2.xsd
 	">
 
-	<integration:service-activator input-channel="frank-management-bus" ref="ConfigurationMessageListener" method="onMessage" />
-	<bean name="ConfigurationMessageListener" class="nl.nn.adapterframework.lifecycle.ConfigurationMessageListener" scope="singleton" />
+<!-- 	<integration:chain input-channel="frank-management-bus"> -->
+<!-- 		<integration:filter ref="messageSelector" /> -->
+<!-- 		<integration:service-activator> -->
+<!-- 			<bean name="ConfigurationMessageListener" class="nl.nn.adapterframework.lifecycle.ConfigurationMessageListener" /> -->
+<!-- 		</integration:service-activator> -->
+<!-- 	</integration:chain> -->
 
-	<integration:service-activator input-channel="frank-management-bus" ref="ApplicationMessageListener" method="onMessage" />
-	<bean name="ApplicationMessageListener" class="nl.nn.adapterframework.lifecycle.ApplicationMessageListener" scope="singleton" />
+<!-- 	<bean id="messageSelector" class="org.springframework.integration.filter.MessageFilter"> -->
+<!-- 		<constructor-arg></constructor-arg> -->
+<!-- 	</bean> -->
+
+	<bean id="messageDispatcher" class="nl.nn.adapterframework.management.bus.MessageDispatcher">
+		<property name="packageName" value="nl.nn.adapterframework.management.bus" />
+	</bean>
+
+
+<!-- 	<integration:service-activator input-channel="frank-management-bus" ref="ApplicationMessageListener" method="onMessage"/> -->
+<!-- 	<bean name="ApplicationMessageListener" class="nl.nn.adapterframework.lifecycle.ApplicationMessageListener" scope="singleton" /> -->
+
+<!-- 	<integration:filter input-channel="frank-management-bus" expression="test" /> -->
 
 	<context:property-placeholder />
 

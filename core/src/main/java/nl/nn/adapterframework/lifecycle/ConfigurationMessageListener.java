@@ -2,9 +2,11 @@ package nl.nn.adapterframework.lifecycle;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.integration.core.MessageSelector;
 import org.springframework.integration.handler.AbstractReplyProducingMessageHandler;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
@@ -36,9 +38,15 @@ public class ConfigurationMessageListener extends AbstractReplyProducingMessageH
 	}
 
 	public ResponseMessage onMessage(Message<?> action) {
+//		BusAction.
 		System.out.println(action.getClass().getCanonicalName());
 		System.out.println("execute action " + action);
-		return ResponseMessage.create("test");
+		MessageHeaders headers = action.getHeaders();
+		for(Entry<String, Object> header : headers.entrySet()) {
+			System.out.println(header.getKey() + " - " + header.getValue().getClass() + " - " + header.getValue());
+		}
+//		return ResponseMessage.create("test");
+		return null;
 	}
 
 	@Override

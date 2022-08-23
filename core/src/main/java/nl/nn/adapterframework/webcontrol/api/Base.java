@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.JAXRSServiceFactoryBean;
@@ -62,8 +63,9 @@ import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 public abstract class Base implements ApplicationContextAware {
 	@Context protected ServletConfig servletConfig;
 	@Context protected @Getter SecurityContext securityContext;
-	@Context protected HttpServletRequest request;
+	@Context protected @Getter HttpServletRequest request;
 	private @Getter ApplicationContext applicationContext;
+	@Context protected @Getter UriInfo uriInfo;
 
 	private IbisContext ibisContext = null;
 	private JAXRSServiceFactoryBean serviceFactory = null;

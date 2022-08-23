@@ -56,6 +56,7 @@ import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
+import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.RequestMessage;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.AppConstants;
@@ -120,8 +121,9 @@ public final class ShowConfiguration extends Base {
 //		ApiMessageRequest request = new ApiMessageRequest(Action.GET_CONFIGURATION, IbisContext.ALL_CONFIGS_KEY);//json bericht!
 //		Message request = ActionMessage.create(this, IbisAction.FULLRELOAD)
 //		return callGateway(ApiMessageRequest.newAction(ApiAction.GET_CONFIGURATION));
-		Message<?> input = MessageBuilder.withPayload("GET:configurations").build();
-		return callGateway(input);
+		Message<?> request = RequestMessage.create(this, BusTopic.CONFIGURATION);
+//		Message<?> input = MessageBuilder.withPayload("configurations").build();
+		return callGateway(request);
 	}
 
 	@PUT
@@ -140,7 +142,7 @@ public final class ShowConfiguration extends Base {
 				if(value.equals("reload")) {
 //					getIbisManager().handleAction(IbisAction.FULLRELOAD, "", "", "", getUserPrincipalName(), true);
 //					RequestMessage.ibisAction()
-					callGateway(RequestMessage.create(this, IbisAction.FULLRELOAD));
+//					callGateway(RequestMessage.create(this, IbisAction.FULLRELOAD));
 				}
 				response.entity("{\"status\":\"ok\"}");
 			}
@@ -177,6 +179,7 @@ public final class ShowConfiguration extends Base {
 	@Path("/configurations/{configuration}/health")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getConfigurationHealth(@PathParam("configuration") String configurationName) throws ApiException {
+		Message<?> request = RequestMessage.create(this, BusTopic.CONFIGURATION);
 
 		Configuration configuration = getIbisManager().getConfiguration(configurationName);
 
@@ -197,7 +200,7 @@ public final class ShowConfiguration extends Base {
 			if(state==RunState.STARTED) {
 				for (Receiver<?> receiver: adapter.getReceivers()) {
 					RunState rState = receiver.getRunState();
-	
+
 					if(rState!=RunState.STARTED) {
 						errors.add("receiver["+receiver.getName()+"] of adapter["+adapter.getName()+"] is in state["+rState.toString()+"]");
 						state = RunState.ERROR;

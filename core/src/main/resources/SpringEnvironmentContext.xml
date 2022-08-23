@@ -4,7 +4,6 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:integration="http://www.springframework.org/schema/integration"
-	xmlns:int="http://www.springframework.org/schema/integration"
 	xsi:schemaLocation="
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
@@ -13,7 +12,7 @@
 	>
 <!-- 	<integration:gateway id="simpleGateway" service-interface="foo.TempConverter" default-request-channel="simpleExpression" /> -->
 <!-- 	<integration:control-bus dispatcher-pool-size="25" auto-create-channels="true"/> -->
-	<integration:publish-subscribe-channel id="frank-management-bus"/>
+	<integration:publish-subscribe-channel id="frank-management-bus" />
 	<integration:publish-subscribe-channel id="inputChannel"/>
 	<integration:publish-subscribe-channel id="outputChannel"/>
 <!-- 	 datatype="java.lang.Number" -->

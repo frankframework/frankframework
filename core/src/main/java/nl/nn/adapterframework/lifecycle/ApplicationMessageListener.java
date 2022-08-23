@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.integration.core.MessageSelector;
 import org.springframework.integration.handler.AbstractReplyProducingMessageHandler;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
@@ -25,14 +26,20 @@ public class ApplicationMessageListener extends AbstractReplyProducingMessageHan
 
 	public ResponseMessage onMessage(Message<?> message) {
 //		IbisAction action = EnumUtils.parse(IbisAction.class, (String) message.getPayload());
-		IbisAction action = (IbisAction) message.getPayload();
+		Object payload = message.getPayload();
+		System.out.println(payload.getClass());
 		MessageHeaders headers = message.getHeaders();
 		String configurationName = (String) headers.get("configuration");
 		String adapterName = (String) headers.get("adapter");
 		String receiverName = (String) headers.get("receiver");
 		String issuedBy = (String) headers.get("issuedBy");
-		ibisManager.handleAction(action, configurationName, adapterName, receiverName, issuedBy, true);
-		return ResponseMessage.create("test");
+		String loadedConfiguration = (String) headers.get("loadedConfiguration");
+		String flow = (String) headers.get("flow");
+
+//		IbisAction action = EnumUtils.parse(IbisAction.class, payload.toString());
+//		ibisManager.handleAction(action, configurationName, adapterName, receiverName, issuedBy, true);
+//		return ResponseMessage.create("test");
+		return null;
 	}
 
 	@Override
@@ -48,4 +55,5 @@ public class ApplicationMessageListener extends AbstractReplyProducingMessageHan
 		headers.put("test123", "asdf");
 		return new GenericMessage<>(result, headers);
 	}
+
 }
