@@ -11,6 +11,8 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 
 import com.arjuna.ats.arjuna.common.arjPropertyManager;
+import com.arjuna.ats.arjuna.coordinator.TransactionReaper;
+import com.arjuna.ats.arjuna.coordinator.TxControl;
 import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
 
 import nl.nn.adapterframework.jta.StatusRecordingTransactionManagerImplementationTestBase;
@@ -37,6 +39,8 @@ public class NarayanaJtaTransactionManagerTest extends StatusRecordingTransactio
 //		if(TransactionManagerServices.isTransactionManagerRunning()) {
 //			fail("unable to shutdown NARAYANA TransactionManager");
 //		}
+		TxControl.disable(true);
+		TransactionReaper.terminate(false);
 	}
 
 	@AfterClass
@@ -61,10 +65,10 @@ public class NarayanaJtaTransactionManagerTest extends StatusRecordingTransactio
 		return result;
 	}
 
-	@Override
 	@Ignore("Narayana does not keep a freshly opened transaction as PENDING")
+	@Override
 	public void testShutdownWithPendingTransactions() throws NotSupportedException, SystemException {
-		super.testShutdownWithPendingTransactions();
+		//super.testShutdownWithPendingTransactions();
 	}
 
 }
