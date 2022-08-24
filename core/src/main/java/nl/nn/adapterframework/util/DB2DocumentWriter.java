@@ -68,7 +68,7 @@ public class DB2DocumentWriter {
 		try {
 			ObjectBuilder documentBuilder = DocumentBuilderFactory.startObjectDocument(DocumentFormat.XML, docname);
 			try {
-				getXML(dbmsSupport, rs, maxlength, includeFieldDefinition, documentBuilder);
+				writeDocument(dbmsSupport, rs, maxlength, includeFieldDefinition, documentBuilder);
 			} finally {
 				documentBuilder.close();
 			}
@@ -81,11 +81,11 @@ public class DB2DocumentWriter {
 
 	public void writeDocument(DocumentFormat format, IDbmsSupport dbmsSupport, ResultSet rs, int maxlength, boolean includeFieldDefinition, MessageOutputStream target) throws StreamingException, SAXException {
 		try (ObjectBuilder documentBuilder = DocumentBuilderFactory.startObjectDocument(format, docname, target)) {
-			getXML(dbmsSupport, rs, maxlength, includeFieldDefinition, documentBuilder);
+			writeDocument(dbmsSupport, rs, maxlength, includeFieldDefinition, documentBuilder);
 		}
 	}
 
-	public void getXML(IDbmsSupport dbmsSupport, ResultSet rs, int maxlength, boolean includeFieldDefinition, ObjectBuilder documentBuilder) throws SAXException {
+	public void writeDocument(IDbmsSupport dbmsSupport, ResultSet rs, int maxlength, boolean includeFieldDefinition, ObjectBuilder documentBuilder) throws SAXException {
 
 		if (null == rs) {
 			return;
@@ -107,6 +107,18 @@ public class DB2DocumentWriter {
 			ResultSetMetaData rsmeta = rs.getMetaData();
 			if (includeFieldDefinition) {
 				addFieldDefinitions(documentBuilder, rsmeta);
+			} else {
+				try (ArrayBuilder fields = documentBuilder.addArrayField("fields","name")) {
+					int nfields = rsmeta.getColumnCount();
+
+					for (int j = 1; j <= nfields; j++) {
+						String columnName = rsmeta.getColumnName(j);
+						if(convertFieldnamesToUppercase) {
+							columnName = columnName.toUpperCase();
+						}
+						fields.addElement(columnName);
+					}
+				}
 			}
 
 			//----------------------------------------
@@ -115,7 +127,7 @@ public class DB2DocumentWriter {
 
 			try (ArrayBuilder rows = documentBuilder.addArrayField(recordname,"row")) {
 				while (rs.next() && rowCounter < maxlength) {
-					getRowXml(rows, dbmsSupport, rs,rowCounter,rsmeta,getBlobCharset(),decompressBlobs,nullValue,trimSpaces, getBlobSmart);
+					writeRow(rows, dbmsSupport, rs,rowCounter,rsmeta,getBlobCharset(),decompressBlobs,nullValue,trimSpaces, getBlobSmart);
 					rowCounter++;
 				}
 			}
@@ -207,9 +219,9 @@ public class DB2DocumentWriter {
 //		return parent.toString();
 //	}
 
-	public static void getRowXml(ArrayBuilder rows, IDbmsSupport dbmsSupport, ResultSet rs, int rowNumber, ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart) throws SenderException, SQLException, SAXException {
+	public static void writeRow(ArrayBuilder rows, IDbmsSupport dbmsSupport, ResultSet rs, int rowNumber, ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart) throws SenderException, SQLException, SAXException {
 		try (INodeBuilder nodeBuilder = rows.addElement()) {
-			try (ObjectBuilder row=nodeBuilder.startObject()) {
+			try (ArrayBuilder row=nodeBuilder.startArray("field")) {
 				for (int i = 1; i <= rsmeta.getColumnCount(); i++) {
 					String columnName = "" + rsmeta.getColumnName(i);
 					if(convertFieldnamesToUppercase) {
@@ -218,15 +230,15 @@ public class DB2DocumentWriter {
 					try {
 						String value = JdbcUtil.getValue(dbmsSupport, rs, i, rsmeta, blobCharset, decompressBlobs, nullValue, trimSpaces, getBlobSmart, false);
 						if (rs.wasNull()) {
-							row.add(columnName, null);
+							row.addElement(null);
 						} else {
-							row.add(columnName, value);
+							row.addElement(value);
 						}
 					} catch (Exception e) {
 						throw new SenderException("error getting fieldvalue column ["+i+"] fieldType ["+getFieldType(rsmeta.getColumnType(i))+ "]", e);
 					}
 				}
-				JdbcUtil.warningsToXml(rs.getWarnings(), row);
+				//JdbcUtil.warningsToXml(rs.getWarnings(), row);
 			}
 		}
 	}

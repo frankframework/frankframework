@@ -14,6 +14,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.document.DocumentFormat;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
 
 public class FixedQuerySenderTest extends JdbcSenderTestBase<FixedQuerySender> {
@@ -186,7 +187,6 @@ public class FixedQuerySenderTest extends JdbcSenderTestBase<FixedQuerySender> {
 		sender.addParameter(new Parameter("param1", "value"));
 
 		sender.setColumnsReturned("tKEY,tVARCHAR");
-
 		sender.configure();
 		sender.open();
 
@@ -205,4 +205,32 @@ public class FixedQuerySenderTest extends JdbcSenderTestBase<FixedQuerySender> {
 		Message result=sendMessage("dummy");
 		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
 	}
+	
+	public void testOutputFormat(DocumentFormat outputFormat, String expected) throws Exception {
+		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (tKEY, tVARCHAR, tINT) VALUES ('1', 2, 3)");
+		sender.setColumnsReturned("tKEY, tVARCHAR, tINT");
+
+		sender.setOutputFormat(outputFormat);
+		sender.configure();
+		sender.open();
+
+		Message result = sendMessage("dummy");
+		assertEquals(expected, result.asString());
+	}
+
+	@Test
+	public void testOutputFormatDefault() throws Exception {
+		testOutputFormat(null,"<result><rowset><row number=\"0\"><field name=\"TKEY\">1</field><field name=\"TVARCHAR\">2</field><field name=\"TINT\">3</field></row></rowset></result>");
+	}
+
+	@Test
+	public void testOutputFormatXml() throws Exception {
+		testOutputFormat(DocumentFormat.XML, "<result><fields><name>TKEY</name><name>TVARCHAR</name><name>TINT</name></fields><rowset><row><field>1</field><field>2</field><field>3</field></row></rowset></result>");
+	}
+
+	@Test
+	public void testOutputFormatJson() throws Exception {
+		testOutputFormat(DocumentFormat.JSON, "{\"fields\":[\"TKEY\",\"TVARCHAR\",\"TINT\"],\"rowset\":[[\"1\",\"2\",\"3\"]]}"); // TODO: TINT should be rendered as number
+	}
+
 }

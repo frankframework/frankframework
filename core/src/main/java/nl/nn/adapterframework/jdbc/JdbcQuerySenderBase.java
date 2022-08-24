@@ -1163,7 +1163,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		this.prettyPrint = prettyPrint;
 	}
 
-	@IbisDoc({"45", "The type of output. If not set then defaults to old-style XML. If set to XML, new-style XML is used", "false"})
+	@IbisDoc({"45", "The type of output. If not set then defaults to old-style XML. If set to XML, new-style XML is used. EXPERIMENTAL: datatypes like numbers are not yet rendered correctly", "false"})
 	public void setOutputFormat(DocumentFormat outputFormat) {
 		this.outputFormat = outputFormat;
 	}
