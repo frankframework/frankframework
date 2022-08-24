@@ -140,7 +140,6 @@ public final class ShowConfiguration extends Base {
 	@Path("/configurations/{configuration}/health")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getConfigurationHealth(@PathParam("configuration") String configurationName) throws ApiException {
-//		Message<?> request = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION);
 
 		Configuration configuration = getIbisManager().getConfiguration(configurationName);
 

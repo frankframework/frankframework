@@ -12,8 +12,6 @@
 	>
 <!-- 	<integration:control-bus dispatcher-pool-size="25" auto-create-channels="true"/> -->
 	<integration:publish-subscribe-channel id="frank-management-bus" />
-	<integration:publish-subscribe-channel id="inputChannel"/>
-	<integration:publish-subscribe-channel id="outputChannel"/>
 
 	<bean name="gateway" class="nl.nn.adapterframework.lifecycle.Gateway" scope="singleton">
 		<property name="requestChannel" ref="frank-management-bus" />

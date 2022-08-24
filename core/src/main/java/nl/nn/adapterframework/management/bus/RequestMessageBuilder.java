@@ -86,6 +86,4 @@ public class RequestMessageBuilder {
 		}
 		return null;
 	}
-
-	//public void handleAction(IbisAction action, String configurationName, String adapterName, String receiverName, String commandIssuedBy) {
 }

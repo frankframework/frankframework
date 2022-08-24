@@ -61,7 +61,12 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 		nullChannel = applicationContext.getBean("nullChannel", MessageChannel.class); //Messages that do not match the TopicSelector will be discarded
 
 		ClassPathBeanDefinitionScanner scanner = scan();
-		sopmt(scanner);
+		String[] names = scanner.getRegistry().getBeanDefinitionNames();
+		for (String beanName : names) {
+			log.info("scanning bean [{}] for ServiceActivators", beanName);
+			BeanDefinition beanDef = scanner.getRegistry().getBeanDefinition(beanName);
+			findServiceActivators(beanDef);
+		}
 	}
 
 	private ClassPathBeanDefinitionScanner scan() {
@@ -82,16 +87,7 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 		return scanner;
 	}
 
-	private void sopmt(ClassPathBeanDefinitionScanner scanner) throws ClassNotFoundException, IntrospectionException {
-		String[] names = scanner.getRegistry().getBeanDefinitionNames();
-		for (String beanName : names) {
-			log.info("scanning bean [{}] for ServiceActivators", beanName);
-			BeanDefinition beanDef = scanner.getRegistry().getBeanDefinition(beanName);
-			registerServiceActivator(beanDef);
-		}
-	}
-
-	private void registerServiceActivator(BeanDefinition beanDef) throws ClassNotFoundException, IntrospectionException {
+	private void findServiceActivators(BeanDefinition beanDef) throws ClassNotFoundException, IntrospectionException {
 		Class<?> beanClass = getBeanClass(beanDef);
 
 		SubscribableChannel inputChannel = findChannel(beanClass); //Validate the channel exists before continuing
