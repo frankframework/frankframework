@@ -458,7 +458,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 			breadcrumbs: 'Testing > Ladybug (beta)',
 			iframe: true
 		},
-		controller: function($scope, Misc, $timeout){
+		controller: function($scope, Misc){
 			$scope.url = Misc.getServerPath() + "ladybug";
 		}
 	})
