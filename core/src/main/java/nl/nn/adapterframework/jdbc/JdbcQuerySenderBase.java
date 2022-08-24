@@ -142,7 +142,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	private @Getter boolean avoidLocking=false;
 	private @Getter DocumentFormat outputFormat=null;
 	private @Getter boolean prettyPrint=false;
-	
+
 
 	private String convertedResultQuery;
 

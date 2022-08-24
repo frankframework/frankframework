@@ -80,7 +80,7 @@ public class DB2DocumentWriter {
 	}
 
 	public void writeDocument(DocumentFormat format, IDbmsSupport dbmsSupport, ResultSet rs, int maxlength, boolean includeFieldDefinition, MessageOutputStream target) throws StreamingException, SAXException {
-		try (ObjectBuilder documentBuilder = DocumentBuilderFactory.startObjectDocument(format, docname, target)) {;
+		try (ObjectBuilder documentBuilder = DocumentBuilderFactory.startObjectDocument(format, docname, target)) {
 			getXML(dbmsSupport, rs, maxlength, includeFieldDefinition, documentBuilder);
 		}
 	}
@@ -153,7 +153,7 @@ public class DB2DocumentWriter {
 						columnName = columnName.toUpperCase();
 					}
 					field.add("name", columnName);
-	
+
 					//Not every JDBC implementation implements these attributes!
 					try {
 						field.add("type", getFieldType(rsmeta.getColumnType(j)));
