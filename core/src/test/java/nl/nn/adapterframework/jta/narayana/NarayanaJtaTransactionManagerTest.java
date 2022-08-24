@@ -45,7 +45,7 @@ public class NarayanaJtaTransactionManagerTest extends StatusRecordingTransactio
 //			fail("TransactionManager still running");
 //		}
 	}
-	
+
 	@Override
 	protected NarayanaJtaTransactionManager setupTransactionManager() {
 		NarayanaJtaTransactionManager result = super.setupTransactionManager();
@@ -64,6 +64,7 @@ public class NarayanaJtaTransactionManagerTest extends StatusRecordingTransactio
 	@Override
 	@Ignore("Narayana does not keep a freshly opened transaction as PENDING")
 	public void testShutdownWithPendingTransactions() throws NotSupportedException, SystemException {
+		super.testShutdownWithPendingTransactions();
 	}
 
 }

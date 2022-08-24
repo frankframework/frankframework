@@ -52,7 +52,7 @@ public abstract class StatusRecordingTransactionManagerImplementationTestBase<T 
 		}
 	}
 
-	
+
 	protected T setupTransactionManager() {
 		log.debug("setupTransactionManager folder ["+folder.getRoot().toString()+"]");
 		T result = createTransactionManager();
@@ -119,7 +119,7 @@ public abstract class StatusRecordingTransactionManagerImplementationTestBase<T 
 		assertNotNull(delegateTm); // assert that transaction manager is a javax.transaction.TransactionManager
 
 		delegateTm.begin();
-				
+
 		String tmUid = tm.getUid();
 		assertNotNull(tmUid);
 
