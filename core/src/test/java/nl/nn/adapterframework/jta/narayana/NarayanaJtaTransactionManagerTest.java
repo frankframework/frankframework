@@ -11,8 +11,6 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 
 import com.arjuna.ats.arjuna.common.arjPropertyManager;
-import com.arjuna.ats.arjuna.coordinator.TransactionReaper;
-import com.arjuna.ats.arjuna.coordinator.TxControl;
 import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
 
 import nl.nn.adapterframework.jta.StatusRecordingTransactionManagerImplementationTestBase;
@@ -39,8 +37,8 @@ public class NarayanaJtaTransactionManagerTest extends StatusRecordingTransactio
 //		if(TransactionManagerServices.isTransactionManagerRunning()) {
 //			fail("unable to shutdown NARAYANA TransactionManager");
 //		}
-		TxControl.disable(true);
-		TransactionReaper.terminate(false);
+//		TxControl.disable(true);
+//		TransactionReaper.terminate(false);
 	}
 
 	@AfterClass
