@@ -1,3 +1,18 @@
+/*
+   Copyright 2022 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.management.bus;
 
 import java.beans.BeanInfo;
@@ -6,6 +21,7 @@ import java.beans.Introspector;
 import java.beans.MethodDescriptor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
@@ -21,11 +37,9 @@ import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGenerator;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
-import org.springframework.integration.core.MessageSelector;
 import org.springframework.integration.filter.MessageFilter;
 import org.springframework.integration.handler.MessageHandlerChain;
 import org.springframework.integration.handler.ServiceActivatingHandler;
-import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.messaging.SubscribableChannel;
@@ -39,12 +53,13 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 	private @Setter String packageName;
 	private @Setter BeanFactory beanFactory;
 	private @Setter ApplicationContext applicationContext;
-
-	public MessageDispatcher() {
-	}
+	private MessageChannel nullChannel;
+	private EnumMap<BusTopic, MessageFilter> messageTopicFilters = new EnumMap<>(BusTopic.class);
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
+		nullChannel = applicationContext.getBean("nullChannel", MessageChannel.class); //Messages that do not match the TopicSelector will be discarded
+
 		ClassPathBeanDefinitionScanner scanner = scan();
 		sopmt(scanner);
 	}
@@ -72,56 +87,77 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 		for (String beanName : names) {
 			log.info("scanning bean [{}] for ServiceActivators", beanName);
 			BeanDefinition beanDef = scanner.getRegistry().getBeanDefinition(beanName);
-			String className = beanDef.getBeanClassName();
+			registerServiceActivator(beanDef);
+		}
+	}
 
-			ClassLoader classLoader = applicationContext.getClassLoader();
-			Class<?> beanClass = Class.forName(className, true, classLoader);
-			BusAware busAware = AnnotationUtils.findAnnotation(beanClass, BusAware.class);
-			if(busAware == null) {
-				throw new IllegalStateException("found a bean that does not implement BusAware");
-			}
-			String busName = busAware.value();
-			SubscribableChannel inputChannel = applicationContext.getBean(busName, SubscribableChannel.class);
-			MessageChannel nullChannel = applicationContext.getBean("nullChannel", MessageChannel.class);
+	private void registerServiceActivator(BeanDefinition beanDef) throws ClassNotFoundException, IntrospectionException {
+		Class<?> beanClass = getBeanClass(beanDef);
 
-			BeanInfo beanInfo = Introspector.getBeanInfo(beanClass);
-			MethodDescriptor[] methodDescriptors =  beanInfo.getMethodDescriptors();
-			Object bean = SpringUtils.createBean(applicationContext, beanClass);
-			for (MethodDescriptor methodDescriptor : methodDescriptors) {
-				Method method = methodDescriptor.getMethod();
+		SubscribableChannel inputChannel = findChannel(beanClass); //Validate the channel exists before continuing
 
-				TopicSelector selector = AnnotationUtils.findAnnotation(method, TopicSelector.class);
-				if(selector != null) {
-					BusTopic busAction = selector.value();
-					MessageSelector msel = new MessageSelector() {
+		BeanInfo beanInfo = Introspector.getBeanInfo(beanClass);
+		MethodDescriptor[] methodDescriptors =  beanInfo.getMethodDescriptors();
+		Object bean = SpringUtils.createBean(applicationContext, beanClass);
 
-						@Override
-						public boolean accept(Message<?> message) {
-							String action = (String) message.getHeaders().get(TopicSelector.TOPIC_HEADER_NAME);
+		for (MethodDescriptor methodDescriptor : methodDescriptors) {
+			Method method = methodDescriptor.getMethod();
 
-							return busAction.name().equalsIgnoreCase(action);
-						}
-
-					};
-					MessageFilter filter = new MessageFilter(msel);
-					filter.setDiscardChannel(nullChannel);
-//					SpringUtils.autowireByName(applicationContext, filter);
-					applicationContext.getAutowireCapableBeanFactory().initializeBean(filter, beanName);
-					ServiceActivatingHandler serviceActivator = new ServiceActivatingHandler(bean, method);
-					serviceActivator.setRequiresReply(method.getReturnType() != null);
-//					SpringUtils.autowireByType(applicationContext, serviceActivator);
-					applicationContext.getAutowireCapableBeanFactory().initializeBean(serviceActivator, serviceActivator.getClass().getCanonicalName());
-
-					MessageHandlerChain chain = new MessageHandlerChain();
-					List<MessageHandler> handlers = new ArrayList<>();
-					handlers.add(filter);
-					handlers.add(serviceActivator);
-					chain.setHandlers(handlers);
-//					SpringUtils.autowireByType(applicationContext, chain);
-					applicationContext.getAutowireCapableBeanFactory().initializeBean(chain, chain.getClass().getCanonicalName());
-					inputChannel.subscribe(chain);
-				}
+			TopicSelector selector = AnnotationUtils.findAnnotation(method, TopicSelector.class);
+			if(selector != null) {
+				registerServiceActivator(bean, method, inputChannel, selector.value());
 			}
 		}
+	}
+
+	private void registerServiceActivator(Object bean, Method method, SubscribableChannel channel, BusTopic topic) {
+		ServiceActivatingHandler serviceActivator = new ServiceActivatingHandler(bean, method);
+		serviceActivator.setRequiresReply(method.getReturnType() != null);
+		initializeBean(serviceActivator);
+
+		MessageHandlerChain chain = new MessageHandlerChain();
+		List<MessageHandler> handlers = new ArrayList<>();
+		handlers.add(getMessageTopicFilter(topic));
+		handlers.add(serviceActivator);
+		chain.setHandlers(handlers);
+		initializeBean(chain);
+		channel.subscribe(chain);
+	}
+
+	//Multiple methods can subscribe to the same BusTopic, filters are re-used
+	private MessageFilter getMessageTopicFilter(BusTopic topic) {
+		return messageTopicFilters.computeIfAbsent(topic, this::compute);
+	}
+
+	private MessageFilter compute(BusTopic topic) {
+		MessageFilter filter = new MessageFilter(message -> {
+			String action = (String) message.getHeaders().get(TopicSelector.TOPIC_HEADER_NAME);
+			return topic.name().equalsIgnoreCase(action);
+		});
+
+		filter.setDiscardChannel(nullChannel);
+		initializeBean(filter);
+		return filter;
+	}
+
+	private Class<?> getBeanClass(BeanDefinition beanDef) throws ClassNotFoundException {
+		String className = beanDef.getBeanClassName();
+
+		ClassLoader classLoader = applicationContext.getClassLoader();
+		return Class.forName(className, true, classLoader);
+	}
+
+	private SubscribableChannel findChannel(Class<?> beanClass) {
+		BusAware busAware = AnnotationUtils.findAnnotation(beanClass, BusAware.class);
+		if(busAware == null) {
+			throw new IllegalStateException("found a bean that does not implement BusAware");
+		}
+		String busName = busAware.value();
+
+		return applicationContext.getBean(busName, SubscribableChannel.class);
+	}
+
+	private final void initializeBean(Object bean) {
+		applicationContext.getAutowireCapableBeanFactory().initializeBean(bean, bean.getClass().getCanonicalName());
 	}
 }

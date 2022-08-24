@@ -40,13 +40,14 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageHeaders;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.lifecycle.Gateway;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
+import nl.nn.adapterframework.management.bus.BusMessageUtils;
+import nl.nn.adapterframework.management.bus.RequestMessageBuilder;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -73,14 +74,10 @@ public abstract class Base implements ApplicationContextAware {
 	protected Logger log = LogUtil.getLogger(this);
 	protected static String HATEOASImplementation = AppConstants.getInstance().getString("ibis-api.hateoasImplementation", "default");
 
-	public Response callGateway(Message<?> input) throws ApiException { //todo add getUserPrincipalName header
+	public Response callGateway(RequestMessageBuilder input) throws ApiException {
 		Gateway gateway = getApplicationContext().getBean("gateway", Gateway.class);
-		Message<?> response = gateway.execute(input);
-		MessageHeaders headers = response.getHeaders();
-		int status = (int) headers.get("status");
-		String mimeType = (String) headers.get("mimeType");
-
-		return Response.status(status).entity(response.getPayload()).type(mimeType).build();
+		Message<?> response = gateway.execute(input.build());
+		return BusMessageUtils.convertToJaxRsResponse(response);
 	}
 
 	@Override

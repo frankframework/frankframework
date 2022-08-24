@@ -80,48 +80,13 @@ public final class ShowConfiguration extends Base {
 	@Path("/configurations")
 	@Produces(MediaType.APPLICATION_XML)
 	public Response getXMLConfiguration(@QueryParam("loadedConfiguration") boolean loaded, @QueryParam("flow") String flow) throws ApiException {
-
-		if(StringUtils.isNotEmpty(flow)) {
-			FlowDiagramManager flowDiagramManager = getFlowDiagramManager();
-
-			try {
-				ResponseBuilder response;
-				InputStream configFlow = flowDiagramManager.get(getIbisManager().getConfigurations());
-				if(configFlow != null) {
-					response = Response.ok(configFlow, flowDiagramManager.getMediaType().toString());
-				} else {
-					response = Response.noContent();
-				}
-				return response.build();
-			} catch (IOException e) {
-				throw new ApiException(e);
-			}
-		}
-		else {
-			String result = "";
-			for (Configuration configuration : getIbisManager().getConfigurations()) {
-				if (loaded) {
-					result = result + configuration.getLoadedConfiguration();
-				} else {
-					result = result + configuration.getOriginalConfiguration();
-				}
-			}
-			return Response.status(Response.Status.OK).entity(result).build();
-		}
-	}
-
-	@GET
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/configurations2")
-	@Produces(MediaType.APPLICATION_XML)
-	public Response getXMLConfiguration2(@QueryParam("loadedConfiguration") boolean loaded, @QueryParam("flow") String flow) throws ApiException {
 		if(StringUtils.isNotEmpty(flow)) {
 			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.FLOW);
-			return callGateway(builder.build());
+			return callGateway(builder);
 		} else {
 			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION);
 			if(loaded) builder.addHeader("loaded", loaded);
-			return callGateway(builder.build());
+			return callGateway(builder);
 		}
 	}
 
