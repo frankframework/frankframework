@@ -34,7 +34,7 @@ import nl.nn.adapterframework.util.FileUtils;
  * 
  * @author Jaco de Groot
  */
-public class FileListener implements IConfigurable {
+public class FileListener implements IConfigurable, AutoCloseable {
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Getter @Setter String name;
@@ -55,10 +55,11 @@ public class FileListener implements IConfigurable {
 			throw new ConfigurationException("Could not find wildcard property");
 		}
 
-		checkRemainingMessages();
+		close();
 	}
 
-	private void checkRemainingMessages() throws ConfigurationException {
+	@Override
+	public void close() throws ConfigurationException {
 		if (getFilename2() != null) {
 			return;
 		}

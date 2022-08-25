@@ -42,6 +42,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -83,6 +84,7 @@ import nl.nn.adapterframework.senders.IbisJavaSender;
 import nl.nn.adapterframework.stream.FileMessage;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testtool.queues.QueueCreator;
+import nl.nn.adapterframework.testtool.queues.QueueWrapper;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CaseInsensitiveComparator;
 import nl.nn.adapterframework.util.DomBuilderException;
@@ -1291,14 +1293,12 @@ public class TestTool {
 			}
 		}
 
-		debugMessage("Close web service senders", writers);
-		iterator = queues.keySet().iterator();
-		while (iterator.hasNext()) {
-			String queueName = (String)iterator.next();
-			if ("nl.nn.adapterframework.http.WebServiceSender".equals(properties.get(queueName + ".className"))) {
-				WebServiceSender webServiceSender = (WebServiceSender)((Map<?, ?>)queues.get(queueName)).get("webServiceSender");
-				Map<?, ?> webServiceSenderInfo = (Map<?, ?>)queues.get(queueName);
-				SenderThread senderThread = (SenderThread)webServiceSenderInfo.remove("webServiceSenderThread");
+		debugMessage("Close autoclosables", writers);
+		for(String queueName : queues.keySet()) {
+			Map<String, Object> value = queues.get(queueName);
+			if(value instanceof QueueWrapper) {
+				QueueWrapper queue = (QueueWrapper) value;
+				SenderThread senderThread = queue.getSenderThread();
 				if (senderThread != null) {
 					debugMessage("Found remaining SenderThread", writers);
 					SenderException senderException = senderThread.getSenderException();
@@ -1314,25 +1314,7 @@ public class TestTool {
 						wrongPipelineMessage("Found remaining message on '" + queueName + "'", message, writers);
 					}
 				}
-				try {
-					webServiceSender.close();
-				} catch (SenderException e) {
-					//Ignore
-				}
-				debugMessage("Closed webservice sender '" + queueName + "'", writers);
-			}
-		}
-
-		debugMessage("Close web service listeners", writers);
-		iterator = queues.keySet().iterator();
-		while (iterator.hasNext()) {
-			String queueName = (String)iterator.next();
-			if ("nl.nn.adapterframework.http.WebServiceListener".equals(properties.get(queueName + ".className"))) {
-				Map<?, ?> webServiceListenerInfo = (Map<?, ?>)queues.get(queueName);
-				WebServiceListener webServiceListener = (WebServiceListener)webServiceListenerInfo.get("webServiceListener");
-				webServiceListener.close();
-				debugMessage("Closed web service listener '" + queueName + "'", writers);
-				ListenerMessageHandler listenerMessageHandler = (ListenerMessageHandler)webServiceListenerInfo.get("listenerMessageHandler");
+				ListenerMessageHandler listenerMessageHandler = queue.getMessageHandler();
 				if (listenerMessageHandler != null) {
 					ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage();
 					while (listenerMessage != null) {
@@ -1349,99 +1331,13 @@ public class TestTool {
 						listenerMessage = listenerMessageHandler.getResponseMessage();
 					}
 				}
-			}
-		}
-
-		debugMessage("Close ibis java senders", writers);
-		iterator = queues.keySet().iterator();
-		while (iterator.hasNext()) {
-			String queueName = (String)iterator.next();
-			if ("nl.nn.adapterframework.senders.IbisJavaSender".equals(properties.get(queueName + ".className"))) {
-				IbisJavaSender ibisJavaSender = (IbisJavaSender)((Map<?, ?>)queues.get(queueName)).get("ibisJavaSender");
-
-				Map<?, ?> ibisJavaSenderInfo = (Map<?, ?>)queues.get(queueName);
-				SenderThread ibisJavaSenderThread = (SenderThread)ibisJavaSenderInfo.remove("ibisJavaSenderThread");
-				if (ibisJavaSenderThread != null) {
-					debugMessage("Found remaining SenderThread", writers);
-					SenderException senderException = ibisJavaSenderThread.getSenderException();
-					if (senderException != null) {
-						errorMessage("Found remaining SenderException: " + senderException.getMessage(), senderException, writers);
-					}
-					TimeoutException timeOutException = ibisJavaSenderThread.getTimeOutException();
-					if (timeOutException != null) {
-						errorMessage("Found remaining TimeOutException: " + timeOutException.getMessage(), timeOutException, writers);
-					}
-					String message = ibisJavaSenderThread.getResponse();
-					if (message != null) {
-						wrongPipelineMessage("Found remaining message on '" + queueName + "'", message, writers);
-					}
-				}
 
 				try {
-				ibisJavaSender.close();
-					debugMessage("Closed ibis java sender '" + queueName + "'", writers);
-				} catch(SenderException e) {
+					queue.close();
+					debugMessage("Closed queue '" + queueName + "'", writers);
+				} catch(Exception e) {
 					errorMessage("Could not close '" + queueName + "': " + e.getMessage(), e, writers);
 				}
-			}
-		}
-
-		debugMessage("Close delay senders", writers);
-		iterator = queues.keySet().iterator();
-		while (iterator.hasNext()) {
-			String queueName = (String)iterator.next();
-			if ("nl.nn.adapterframework.senders.DelaySender".equals(properties.get(queueName + ".className"))) {
-				DelaySender delaySender = (DelaySender)((Map<?, ?>)queues.get(queueName)).get("delaySender");
-				try {
-					delaySender.close();
-					debugMessage("Closed delay sender '" + queueName + "'", writers);
-				} catch(SenderException e) {
-					errorMessage("Could not close delay sender '" + queueName + "': " + e.getMessage(), e, writers);
-				}
-			}
-		}
-
-		debugMessage("Close java listeners", writers);
-		iterator = queues.keySet().iterator();
-		while (iterator.hasNext()) {
-			String queueName = (String)iterator.next();
-			if ("nl.nn.adapterframework.receivers.JavaListener".equals(properties.get(queueName + ".className"))) {
-				Map<?, ?> javaListenerInfo = (Map<?, ?>)queues.get(queueName);
-				JavaListener javaListener = (JavaListener)javaListenerInfo.get("javaListener");
-				try {
-					javaListener.close();
-					debugMessage("Closed java listener '" + queueName + "'", writers);
-				} catch(ListenerException e) {
-					errorMessage("Could not close java listener '" + queueName + "': " + e.getMessage(), e, writers);
-				}
-				ListenerMessageHandler listenerMessageHandler = (ListenerMessageHandler)javaListenerInfo.get("listenerMessageHandler");
-				if (listenerMessageHandler != null) {
-					ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage();
-					while (listenerMessage != null) {
-						String message = listenerMessage.getMessage();
-						wrongPipelineMessage("Found remaining request message on '" + queueName + "'", message, writers);
-						remainingMessagesFound = true;
-						listenerMessage = listenerMessageHandler.getRequestMessage();
-					}
-					listenerMessage = listenerMessageHandler.getResponseMessage();
-					while (listenerMessage != null) {
-						String message = listenerMessage.getMessage();
-						wrongPipelineMessage("Found remaining response message on '" + queueName + "'", message, writers);
-						remainingMessagesFound = true;
-						listenerMessage = listenerMessageHandler.getResponseMessage();
-					}
-				}
-			}
-		}
-
-		debugMessage("Close file listeners", writers);
-		iterator = queues.keySet().iterator();
-		while (iterator.hasNext()) {
-			String queueName = (String)iterator.next();
-			if ("nl.nn.adapterframework.testtool.FileListener".equals(properties.get(queueName + ".className"))) {
-				FileListener fileListener = (FileListener)((Map<?, ?>)queues.get(queueName)).get("fileListener");
-				fileListenerCleanUp(queueName, fileListener, writers);
-				debugMessage("Closed file listener '" + queueName + "'", writers);
 			}
 		}
 
@@ -1497,30 +1393,6 @@ public class TestTool {
 			}
 		}
 		pullingJmsListener.setTimeOut((int) oldTimeOut);
-		return remainingMessagesFound;
-	}
-
-	public static boolean fileListenerCleanUp(String queueName, FileListener fileListener, Map<String, Object> writers) {
-		boolean remainingMessagesFound = false;
-		debugMessage("Check for remaining messages on '" + queueName + "'", writers);
-		if (fileListener.getFilename2()!=null) {
-			return false;
-		}
-		long oldTimeOut = fileListener.getTimeOut();
-		fileListener.setTimeOut(0);
-		boolean empty = false;
-		fileListener.setTimeOut(0);
-		try {
-			String message = fileListener.getMessage();
-			if (message != null) {
-				remainingMessagesFound = true;
-				wrongPipelineMessage("Found remaining message on '" + queueName + "'", message, writers);
-			}
-		} catch(TimeoutException e) {
-		} catch(ListenerException e) {
-			errorMessage("Could read message from file listener '" + queueName + "': " + e.getMessage(), e, writers);
-		}
-		fileListener.setTimeOut(oldTimeOut);
 		return remainingMessagesFound;
 	}
 
@@ -1582,6 +1454,9 @@ public class TestTool {
 		SenderThread senderThread = new SenderThread(sender, fileContent, session, convertExceptionToMessage.booleanValue(), correlationId);
 		senderThread.start();
 		senderInfo.put(senderType + "SenderThread", senderThread);
+		if(senderInfo instanceof QueueWrapper) {
+			((QueueWrapper) senderInfo).setSenderThread(senderThread);
+		}
 		debugPipelineMessage(stepDisplayName, "Successfully started thread writing to '" + queueName + "':", fileContent, writers);
 		logger.debug("Successfully started thread writing to '" + queueName + "'");
 		result = RESULT_OK;
@@ -1709,6 +1584,9 @@ public class TestTool {
 
 		Map<?, ?> senderInfo = (Map<?, ?>)queues.get(queueName);
 		SenderThread senderThread = (SenderThread)senderInfo.remove(senderType + "SenderThread");
+		if(senderInfo instanceof QueueWrapper) {
+			((QueueWrapper) senderInfo).removeSenderThread();
+		}
 		if (senderThread == null) {
 			errorMessage("No SenderThread found, no " + senderType + "Sender.write request?", writers);
 		} else {
