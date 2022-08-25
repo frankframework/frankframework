@@ -4,7 +4,6 @@ import java.util.Properties;
 
 import javax.transaction.NotSupportedException;
 import javax.transaction.SystemException;
-import javax.transaction.UserTransaction;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -16,7 +15,7 @@ import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImpl
 import nl.nn.adapterframework.jta.StatusRecordingTransactionManagerImplementationTestBase;
 import nl.nn.adapterframework.testutil.TransactionManagerType;
 
-public class NarayanaJtaTransactionManagerTest extends StatusRecordingTransactionManagerImplementationTestBase<NarayanaJtaTransactionManager,TransactionManagerImple,UserTransaction>{
+public class NarayanaJtaTransactionManagerTest extends StatusRecordingTransactionManagerImplementationTestBase<NarayanaJtaTransactionManager,TransactionManagerImple>{
 
 	@Override
 	protected NarayanaJtaTransactionManager createTransactionManager() {

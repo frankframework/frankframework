@@ -10,7 +10,7 @@ import bitronix.tm.TransactionManagerServices;
 import nl.nn.adapterframework.jta.StatusRecordingTransactionManagerImplementationTestBase;
 import nl.nn.adapterframework.testutil.TransactionManagerType;
 
-public class BtmJtaTransactionManagerTest extends StatusRecordingTransactionManagerImplementationTestBase<BtmJtaTransactionManager,BitronixTransactionManager,BitronixTransactionManager> {
+public class BtmJtaTransactionManagerTest extends StatusRecordingTransactionManagerImplementationTestBase<BtmJtaTransactionManager,BitronixTransactionManager> {
 
 	@Override
 	protected BtmJtaTransactionManager createTransactionManager() {

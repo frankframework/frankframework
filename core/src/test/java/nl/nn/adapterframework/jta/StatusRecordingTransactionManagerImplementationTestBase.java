@@ -13,7 +13,6 @@ import java.nio.file.Paths;
 import javax.transaction.NotSupportedException;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
-import javax.transaction.UserTransaction;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
@@ -27,17 +26,17 @@ import org.springframework.util.StreamUtils;
 
 import nl.nn.adapterframework.util.LogUtil;
 
-public abstract class StatusRecordingTransactionManagerImplementationTestBase<T extends StatusRecordingTransactionManager, TM extends TransactionManager, UT extends UserTransaction> {
+public abstract class StatusRecordingTransactionManagerImplementationTestBase<S extends StatusRecordingTransactionManager, T extends TransactionManager> {
 	protected Logger log = LogUtil.getLogger(this);
 
 	public String STATUS_FILE = "status.txt";
 	public String TMUID_FILE = "tm-uid.txt";
 
-	private T delegateTransactionManager;
+	private S delegateTransactionManager;
 	public @Rule TemporaryFolder folder = new TemporaryFolder();
 
-	protected abstract T createTransactionManager();
-	protected abstract String getTMUID(TM tm);
+	protected abstract S createTransactionManager();
+	protected abstract String getTMUID(T tm);
 
 	@Before
 	public void setup() {
@@ -54,9 +53,9 @@ public abstract class StatusRecordingTransactionManagerImplementationTestBase<T 
 	}
 
 
-	protected T setupTransactionManager() {
+	protected S setupTransactionManager() {
 		log.debug("setupTransactionManager folder ["+folder.getRoot().toString()+"]");
-		T result = createTransactionManager();
+		S result = createTransactionManager();
 		result.setStatusFile(folder.getRoot()+"/"+STATUS_FILE);
 		result.setUidFile(folder.getRoot()+"/"+TMUID_FILE);
 		delegateTransactionManager = result;
@@ -65,9 +64,10 @@ public abstract class StatusRecordingTransactionManagerImplementationTestBase<T 
 
 	@Test
 	public void testCleanSetup() {
-		T tm = setupTransactionManager();
+		log.debug("--> testCleanSetup)");
+		S tm = setupTransactionManager();
 		tm.afterPropertiesSet();
-		TM delegateTm = (TM)tm.getTransactionManager();
+		T delegateTm = (T)tm.getTransactionManager();
 		assertNotNull(delegateTm); // assert that transaction manager is a javax.transaction.TransactionManager
 
 		String serverId = getTMUID(delegateTm);
@@ -79,11 +79,12 @@ public abstract class StatusRecordingTransactionManagerImplementationTestBase<T 
 
 	@Test
 	public void testPresetTmUid() {
+		log.debug("--> testPresetTmUid)");
 		String presetTmUid = "fakeTmUid";
 		write(TMUID_FILE, presetTmUid);
-		T tm = setupTransactionManager();
+		S tm = setupTransactionManager();
 		tm.afterPropertiesSet();
-		TM delegateTm = (TM)tm.getTransactionManager();
+		T delegateTm = (T)tm.getTransactionManager();
 		assertNotNull(delegateTm); // assert that transaction manager is a javax.transaction.TransactionManager
 
 		String serverId = getTMUID(delegateTm);
@@ -96,9 +97,10 @@ public abstract class StatusRecordingTransactionManagerImplementationTestBase<T 
 
 	@Test
 	public void testCleanShutdown() {
-		T tm = setupTransactionManager();
+		log.debug("--> testCleanShutdown)");
+		S tm = setupTransactionManager();
 		tm.afterPropertiesSet();
-		TM delegateTm = (TM)tm.getTransactionManager();
+		T delegateTm = (T)tm.getTransactionManager();
 		assertNotNull(delegateTm); // assert that transaction manager is a javax.transaction.TransactionManager
 
 		String tmUid = getTMUID(delegateTm);
@@ -114,10 +116,11 @@ public abstract class StatusRecordingTransactionManagerImplementationTestBase<T 
 	@Test
 	@Ignore
 	public void testShutdownWithPendingTransactions() throws NotSupportedException, SystemException {
+		log.debug("--> testShutdownWithPendingTransactions)");
 		//TransactionManagerServices.getConfiguration().setDefaultTransactionTimeout(1);
-		T tm = setupTransactionManager();
+		S tm = setupTransactionManager();
 		tm.afterPropertiesSet();
-		TM delegateTm = (TM)tm.getTransactionManager();
+		T delegateTm = (T)tm.getTransactionManager();
 		assertNotNull(delegateTm); // assert that transaction manager is a javax.transaction.TransactionManager
 
 		delegateTm.begin();
@@ -132,6 +135,10 @@ public abstract class StatusRecordingTransactionManagerImplementationTestBase<T 
 		assertStatus("PENDING", tmUid);
 	}
 
+//	private void createPendingTransaction() {
+//		delegateTransactionManager.getTransactionManager().begin();
+//	}
+//	
 	public void assertStatus(String status, String tmUid) {
 		assertEquals(status, read(STATUS_FILE));
 		if (tmUid!=null) {
