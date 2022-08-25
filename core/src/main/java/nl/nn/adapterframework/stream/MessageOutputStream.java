@@ -37,6 +37,7 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.jta.IThreadConnectableTransactionManager;
+import nl.nn.adapterframework.stream.document.Json2XmlHandler;
 import nl.nn.adapterframework.stream.json.JsonTee;
 import nl.nn.adapterframework.stream.json.JsonWriter;
 import nl.nn.adapterframework.stream.xml.XmlTee;
@@ -307,7 +308,7 @@ public class MessageOutputStream implements AutoCloseable {
 			return (JsonEventHandler) requestStream;
 		}
 		if (requestStream instanceof ContentHandler) {
-			throw new StreamingException("Cannot handle JSON as XML");
+			return new Json2XmlHandler((ContentHandler) requestStream);
 		}
 		if (requestStream instanceof OutputStream) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning OutputStream as JsonEventHandler");

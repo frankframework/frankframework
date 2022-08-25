@@ -18,7 +18,6 @@ package nl.nn.adapterframework.configuration;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -26,7 +25,6 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,16 +33,11 @@ import java.util.StringTokenizer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
-import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.SenderException;
@@ -52,12 +45,10 @@ import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.StreamUtil;
-import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Functions to manipulate the configuration. 
@@ -73,8 +64,6 @@ public class ConfigurationUtils {
 	public static final String STUB4TESTTOOL_XSLT_VALIDATORS_PARAM = "disableValidators";
 	public static final String STUB4TESTTOOL_XSLT = "/xml/xsl/stub4testtool.xsl";
 
-	private static final String ACTIVE_XSLT = "/xml/xsl/active.xsl";
-	private static final String CANONICALIZE_XSLT = "/xml/xsl/canonicalize.xsl";
 	public static final String FRANK_CONFIG_XSD = "/xml/xsd/FrankConfig-compatibility.xsd";
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.database.autoLoad", false);
@@ -87,44 +76,6 @@ public class ConfigurationUtils {
 	 */
 	public static boolean isConfigurationStubbed(ClassLoader classLoader) {
 		return AppConstants.getInstance(classLoader).getBoolean(STUB4TESTTOOL_CONFIGURATION_KEY, false);
-	}
-
-	public static String getStubbedConfiguration(ClassLoader classLoader, String originalConfig) throws ConfigurationException {
-		Map<String, Object> parameters = new Hashtable<String, Object>();
-		// Parameter disableValidators has been used to test the impact of
-		// validators on memory usage.
-		parameters.put(STUB4TESTTOOL_XSLT_VALIDATORS_PARAM, AppConstants.getInstance(classLoader).getBoolean(STUB4TESTTOOL_VALIDATORS_DISABLED_KEY, false));
-		return transformConfiguration(originalConfig, STUB4TESTTOOL_XSLT, parameters);
-	}
-
-	public static String getActivatedConfiguration(String originalConfig) throws ConfigurationException {
-		return transformConfiguration(originalConfig, ACTIVE_XSLT, null);
-	}
-
-	public static String getCanonicalizedConfiguration(String originalConfig) throws ConfigurationException {
-		return transformConfiguration(originalConfig, CANONICALIZE_XSLT, null);
-	}
-
-	public static String transformConfiguration(String originalConfig, String xslt, Map<String, Object> parameters) throws ConfigurationException {
-		URL xsltSource = ClassUtils.getResourceURL(xslt);
-		if (xsltSource == null) {
-			throw new ConfigurationException("cannot find resource [" + xslt + "]");
-		}
-		try {
-			Transformer transformer = XmlUtils.createTransformer(xsltSource);
-			XmlUtils.setTransformerParameters(transformer, parameters);
-			// Use namespaceAware=true, otherwise for some reason the
-			// transformation isn't working with a SAXSource, in system out it
-			// generates:
-			// jar:file: ... .jar!/xml/xsl/active.xsl; Line #34; Column #13; java.lang.NullPointerException
-			return XmlUtils.transformXml(transformer, originalConfig, true);
-		} catch (IOException e) {
-			throw new ConfigurationException("cannot retrieve [" + xslt + "]", e);
-		} catch (SAXException|TransformerConfigurationException e) {
-			throw new ConfigurationException("got error creating transformer from file [" + xslt + "]", e);
-		} catch (TransformerException te) {
-			throw new ConfigurationException("got error transforming resource [" + xsltSource.toString() + "] from [" + xslt + "]", te);
-		}
 	}
 
 	public static String getConfigurationFile(ClassLoader classLoader, String currentConfigurationName) {

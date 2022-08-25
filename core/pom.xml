@@ -12,7 +12,7 @@
 
 	<properties>
 		<spring.version>5.3.22</spring.version>
-		<spring-security.version>5.7.1</spring-security.version>
+		<spring-security.version>5.7.3</spring-security.version>
 		<j2v8.version>4.6.0</j2v8.version>
 		<jackson.version>2.13.3</jackson.version>
 		<micrometer.version>1.9.3</micrometer.version>
@@ -27,7 +27,7 @@
 		<dependency>
 			<groupId>org.javassist</groupId>
 			<artifactId>javassist</artifactId>
-			<version>3.29.0-GA</version>
+			<version>3.29.1-GA</version>
 		</dependency>
 
 		<dependency>
@@ -437,7 +437,7 @@
 		<dependency>
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-java-sdk-s3</artifactId>
-			<version>1.12.264</version>
+			<version>1.12.288</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
@@ -494,7 +494,7 @@
 		<dependency>
 			<groupId>com.nimbusds</groupId>
 			<artifactId>oauth2-oidc-sdk</artifactId>
-			<version>9.38</version>
+			<version>9.41</version>
 		</dependency>
 
 		<!-- TransactionManagers: BTM + NARAYANA -->
@@ -757,7 +757,7 @@
 		<dependency>
 			<groupId>com.nimbusds</groupId>
 			<artifactId>nimbus-jose-jwt</artifactId>
-			<version>9.23</version>
+			<version>9.24.2</version>
 		</dependency>
 
 		<dependency>
