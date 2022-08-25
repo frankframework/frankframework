@@ -18,6 +18,7 @@ import javax.transaction.UserTransaction;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -111,6 +112,7 @@ public abstract class StatusRecordingTransactionManagerImplementationTestBase<T 
 	}
 
 	@Test
+	@Ignore
 	public void testShutdownWithPendingTransactions() throws NotSupportedException, SystemException {
 		//TransactionManagerServices.getConfiguration().setDefaultTransactionTimeout(1);
 		T tm = setupTransactionManager();
