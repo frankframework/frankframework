@@ -12,12 +12,11 @@
 		<artifactId>ibis-adapterframework-docker-as-tomcat</artifactId>
 		<version>${revision}</version>
 	</parent>
-	
+
 	<properties>
 		<config.image.tag>iaf-webapp-tomcat</config.image.tag>
 	</properties>
-	
-	
+
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
@@ -28,7 +27,6 @@
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-webapp</artifactId>
-			<version>${project.version}</version>
 			<type>war</type>
 		</dependency>
 	</dependencies>
@@ -39,7 +37,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
-				<version>3.3.0</version>
 				<executions>
 					<execution>
 						<id>copy-dependencies</id>
@@ -57,21 +54,21 @@
 					</execution>
 					<execution>
 						<id>unpack</id>
-			            <phase>package</phase>
-			            <goals>
-			            	<goal>unpack</goal>
-			            </goals>
+						<phase>package</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
 						<configuration>
 							<artifactItems>
-				                <artifactItem>
+								<artifactItem>
 									<groupId>org.ibissource</groupId>
 									<artifactId>ibis-adapterframework-webapp</artifactId>
 									<version>${project.version}</version>
 									<type>war</type>
 									<outputDirectory>${project.build.directory}/dependencies/war</outputDirectory>
-				                </artifactItem>
-				            </artifactItems>
-			            	<overWriteReleases>false</overWriteReleases>
+								</artifactItem>
+							</artifactItems>
+							<overWriteReleases>false</overWriteReleases>
 							<overWriteSnapshots>true</overWriteSnapshots>
 							<excludeTransitive>true</excludeTransitive>
 							<stripVersion>true</stripVersion>
@@ -82,7 +79,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
-				<version>1.8</version>
 				<executions>
 					<execution>
 						<id>prepare-package</id>
