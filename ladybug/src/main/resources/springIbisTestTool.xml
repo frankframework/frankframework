@@ -107,6 +107,12 @@
 				}"
 		/>
 	</bean>
+	<!-- Ladybug API classes autowired by CXF Spring (see LadybugWebContext.xml) expect a bean with name testStorage -->
+	<bean name="testStorage" class="nl.nn.testtool.storage.proxy.ProxyStorage">
+		<property name="destination">
+			<ref bean="#{testStorageActive}"/>
+		</property>
+	</bean>
 	<bean name="testStorageXml" class="nl.nn.testtool.storage.xml.XmlStorage" autowire="byName" init-method="init">
 		<property name="name" value="Test"/>
 		<property name="metadataFile" value="${log.dir}/testtool4${instance.name.lc}.metadata.xml"/>
@@ -224,7 +230,7 @@
 			<ref bean="testTool"/>
 		</property>
 		<property name="testStorage">
-			<ref bean="#{testStorageActive}"/>
+			<ref bean="testStorage"/>
 		</property>
 		<property name="reportsComponent">
 			<ref bean="reportsComponent"/>
@@ -241,7 +247,7 @@
 		<property name="treePane">
 			<bean class="nl.nn.testtool.echo2.test.TreePane" autowire="byName" init-method="initBean" >
 				<property name="storage">
-					<ref bean="#{testStorageActive}"/>
+					<ref bean="testStorage"/>
 				</property>
 			</bean>
 		</property>
@@ -256,7 +262,7 @@
 							<ref bean="debugStorage"/>
 						</property>
 						<property name="testStorage">
-							<ref bean="#{testStorageActive}"/>
+							<ref bean="testStorage"/>
 						</property>
 						<property name="reportXmlTransformer">
 							<ref bean="reportXmlTransformer"/>
@@ -275,7 +281,7 @@
 			<ref bean="testTool"/>
 		</property>
 		<property name="testStorage">
-			<ref bean="#{testStorageActive}"/>
+			<ref bean="testStorage"/>
 		</property>
 		<property name="reportsComponent1">
 			<bean parent="reportsComponent">
@@ -321,9 +327,6 @@
 		</property>
 		<property name="tabs">
 			<ref bean="tabs"/>
-		</property>
-		<property name="testStorage">
-			<ref bean="#{testStorageActive}"/>
 		</property>
 	</bean>
 
