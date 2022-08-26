@@ -72,10 +72,13 @@ public class HttpSecurityConfigurer implements ApplicationContextAware {
 		http.antMatcher("/**");
 		AuthenticationManager authManager = getAuthenticationManager(http);
 		http.authenticationManager(authManager);
-		http.jee().j2eePreAuthenticatedProcessingFilter(getProcessingFilter(authManager));
 		http.csrf().disable();
 		http.headers().frameOptions().sameOrigin().contentTypeOptions().disable();
 		http.logout();
+
+		//http.authorizeHttpRequests((authz) -> authz.antMatchers("/iaf/**"));
+		http.jee().j2eePreAuthenticatedProcessingFilter(getProcessingFilter(authManager));
+//		http.anonymous();
 
 		return http.build();
 	}
