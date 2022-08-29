@@ -16,12 +16,10 @@
 package nl.nn.adapterframework.jta.narayana;
 
 import java.io.IOException;
-import java.util.Vector;
 
 import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
 
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.jboss.narayana.jta.jms.TransactionHelper;
 import org.jboss.narayana.jta.jms.TransactionHelperImpl;
 import org.springframework.transaction.TransactionSystemException;
@@ -29,11 +27,9 @@ import org.springframework.transaction.TransactionSystemException;
 import com.arjuna.ats.arjuna.common.CoreEnvironmentBeanException;
 import com.arjuna.ats.arjuna.common.arjPropertyManager;
 import com.arjuna.ats.arjuna.exceptions.ObjectStoreException;
-import com.arjuna.ats.arjuna.objectstore.ObjectStoreAPI;
 import com.arjuna.ats.arjuna.objectstore.RecoveryStore;
 import com.arjuna.ats.arjuna.objectstore.StoreManager;
 import com.arjuna.ats.arjuna.recovery.RecoveryManager;
-import com.arjuna.ats.arjuna.recovery.RecoveryModule;
 import com.arjuna.ats.arjuna.state.InputObjectState;
 import com.arjuna.ats.internal.jta.recovery.arjunacore.XARecoveryModule;
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
@@ -44,8 +40,6 @@ import nl.nn.adapterframework.jta.StatusRecordingTransactionManager;
 public class NarayanaJtaTransactionManager extends StatusRecordingTransactionManager {
 
 	private static final long serialVersionUID = 1L;
-
-//	private @Getter @Setter int shutdownTimeout = 10000;
 
 	private @Getter RecoveryManager recoveryManager;
 	private @Getter TransactionHelper transactionHelper;
@@ -77,96 +71,47 @@ public class NarayanaJtaTransactionManager extends StatusRecordingTransactionMan
 				throw new TransactionSystemException("Cannot set TmUid", e);
 			}
 
+			log.debug("TMUID [{}]", arjPropertyManager.getCoreEnvironmentBean().getNodeIdentifier());
+			log.debug("ObjectStoreDir [{}]", arjPropertyManager.getObjectStoreEnvironmentBean().getObjectStoreDir());
 			recoveryManager = RecoveryManager.manager();
 			recoveryManager.initialize();
 			recoveryManager.startRecoveryManagerThread();
-
-			XARecoveryModule recoveryModule = new XARecoveryModule();
-			recoveryManager.addModule(recoveryModule);
 		}
 	}
 
 	@Override
 	protected boolean shutdownTransactionManager() {
 		try {
-			
-			
-			recoveryManager.scan();
-			boolean result = recoveryManager.getModules().size()==0;
-			showStore();
 			recoveryManager.terminate();
-			showStore();
-			return result;
+			return recoveryStoreEmpty();
 		} catch (Exception e) {
 			log.warn("could not shut down transaction manager", e);
 			return false;
 		}
 	}
 
-	public boolean recoveryStoreEmpty() throws ObjectStoreException {
+	public boolean recoveryStoreEmpty() throws ObjectStoreException, IOException {
 		RecoveryStore store = StoreManager.getRecoveryStore();
 		InputObjectState buff = new InputObjectState();
-		return store.allObjUids("Recovery", buff) && !buff.notempty();
+		if (!store.allObjUids("StateManager/BasicAction/TwoPhaseCoordinator/AtomicAction", buff)) {
+			return false; // if an error occurred, consider the recovery store not completed
+		}
+		if (!buff.notempty()) {
+			return true;
+		}
+		byte[] objUid=buff.unpackBytes();
+		return !isNotBlankArray(objUid);
 	}
-	
-	public void showStore() throws ObjectStoreException, IOException {
-		//RecoveryStore recoveryStore = StoreManager.getRecoveryStore();
-		
-		RecoveryManager recMan = RecoveryManager.manager();
-		Vector<RecoveryModule> modules = recMan.getModules();
-		log.info("---> RecoveryModule size ["+modules.size()+"]");
-		log.info("---> RecoveryModules toString ["+modules+"]");
-		for(RecoveryModule module:modules) {
-			log.info("---> module ["+ReflectionToStringBuilder.reflectionToString(module)+"]");
-			if (module instanceof XARecoveryModule) {
-				XARecoveryModule xaModule = (XARecoveryModule) module;
-				xaModule.periodicWorkFirstPass();
+
+
+	public boolean isNotBlankArray(byte[] arr) {
+		for(int i=0; i<arr.length; i++) {
+			if (arr[i]!=0) {
+				return true;
 			}
 		}
-		
-		
-		ObjectStoreAPI store = StoreManager.getTxOJStore();
-
-		InputObjectState buff = new InputObjectState();
-		if (store.allTypes(buff)) {
-			log.info("---> allTypes ["+buff.unpackString()+"]");
-			log.info("---> allTypes string ["+ReflectionToStringBuilder.toString(buff)+"]");
-			
-			byte[] bytes = buff.buffer();
-			
-			System.out.println();
-			for (int i=0; i<bytes.length; i++) {
-//				System.out.println(i+": "+bytes[i]+" ["+((char)bytes[i])+"]");
-				System.out.print((char)bytes[i]);
-			}
-			System.out.println();
-			
-			if (store.allObjUids("StateManager\\BasicAction\\TwoPhaseCoordinator\\AtomicAction", buff)) {
-				
-				log.info("---> allObjUids toString ["+buff.toString()+"]");
-				log.info("---> allObjUids notempty ["+buff.notempty()+"]");
-				log.info("---> allObjUids length ["+buff.length()+"]");
-				log.info("---> allObjUids size ["+buff.size()+"]");
-				log.info("---> allObjUids type ["+buff.type()+"]");
-				log.info("---> allObjUids valid ["+buff.valid()+"]");
-				log.info("\n");
-				log.info("---> allObjUids string ["+ReflectionToStringBuilder.toString(buff)+"]");
-				log.info("---> allObjUids string ["+new String(buff.unpackBytes())+"]");
-				log.info("\n");
-				log.info("---> allObjUids toString ["+buff.toString()+"]");
-				log.info("---> allObjUids notempty ["+buff.notempty()+"]");
-				log.info("---> allObjUids length ["+buff.length()+"]");
-				log.info("---> allObjUids size ["+buff.size()+"]");
-				log.info("---> allObjUids type ["+buff.type()+"]");
-				log.info("---> allObjUids valid ["+buff.valid()+"]");
-				
-			}
-		} else {
-			log.warn("allTypes returned error");
-		};
-
+		return false;
 	}
-	
 
 
 	public void registerXAResourceRecoveryHelper(XAResourceRecoveryHelper xaResourceRecoveryHelper) {

@@ -27,6 +27,8 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.TransactionSystemException;
 import org.springframework.util.StreamUtils;
 
+import com.arjuna.ats.arjuna.recovery.RecoveryManager;
+
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
@@ -43,7 +45,7 @@ import nl.nn.adapterframework.util.Semaphore;
 public class StatusRecordingTransactionManagerImplementationTest {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private static TransactionManagerType singleTransactionManagerType = null; // set to a specific transaction manager type, to speed up testing
+	private static TransactionManagerType singleTransactionManagerType = TransactionManagerType.NARAYANA; // set to a specific transaction manager type, to speed up testing
 
 	protected SpringTxManagerProxy txManager;
 	protected StatusRecordingTransactionManager txManagerReal;
@@ -82,6 +84,7 @@ public class StatusRecordingTransactionManagerImplementationTest {
 		STATUS_FILE = txManagerReal.getStatusFile();
 		TMUID_FILE = txManagerReal.getUidFile();
 		tableName = "tmp_"+transactionManagerType;
+		log.debug("STATUS_FILE ["+STATUS_FILE+"]");
 	}
 	
 	@After
@@ -120,9 +123,23 @@ public class StatusRecordingTransactionManagerImplementationTest {
 		txManagerReal.destroy();
 		assertStatus("PENDING", txManagerReal.getUid());
 		
+		teardown();
+		XaDatasourceCommitStopper.stop(false);
+		setup();
+		RecoveryManager manager = RecoveryManager.manager();
+		log.info("Start scan 1");
+		manager.scan();
+		log.info("End scan 1");
+		log.info("sleeping 10 seconds, to let second recovery manager pass kick in");
+		Thread.sleep(10000);
+		log.info("Start scan 2");
+		manager.scan();
+		log.info("End scan 2");
+		txManagerReal.destroy();
+		assertStatus("COMPLETED", txManagerReal.getUid());
+
 	}
-	
-	
+		
 	public Semaphore semaphore;
 	
 	public void prepareTable(String datasourceName) throws ConfigurationException, SenderException, TimeoutException {
