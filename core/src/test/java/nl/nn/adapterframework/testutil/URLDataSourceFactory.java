@@ -1,7 +1,5 @@
 package nl.nn.adapterframework.testutil;
 
-import static org.junit.Assert.fail;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.ArrayList;
@@ -109,8 +107,13 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 				try {
 					DataSource ds = createDataSource(product, url, userId, password, testPeek, xaImplClassName);
 					return namedDataSource(ds, product, testPeek);
+				} catch (NamingException e) {
+					throw e;
 				} catch (Exception e) {
-					fail(e.getMessage());
+					NamingException ne = new NamingException("cannot lookup datasource");
+					ne.initCause(e);
+					ne.fillInStackTrace();
+					throw ne;
 				}
 			}
 		}
