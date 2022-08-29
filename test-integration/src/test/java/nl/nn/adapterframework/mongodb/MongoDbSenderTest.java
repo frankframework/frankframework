@@ -102,7 +102,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		Message result = sendMessage(students.build().toString());
 		assertThat(result.asString(),StringContains.containsString("\"insertedIds\":"));
 	}
-	
+
 	@Test
 	public void testFindOne() throws Exception {
 		sender.setAction(MongoAction.FINDONE);
