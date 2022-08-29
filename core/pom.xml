@@ -566,7 +566,7 @@
 		<dependency>
 			<groupId>com.eclipsesource.j2v8</groupId>
 			<artifactId>j2v8_linux_x86_64</artifactId>
-			<version>4.8.0</version>
+			<version>${j2v8.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
