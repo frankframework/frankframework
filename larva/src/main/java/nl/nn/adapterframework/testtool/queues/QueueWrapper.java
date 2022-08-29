@@ -42,6 +42,7 @@ import nl.nn.adapterframework.stream.FileMessage;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testtool.HttpServletResponseMock;
 import nl.nn.adapterframework.testtool.ListenerMessageHandler;
+import nl.nn.adapterframework.testtool.SenderThread;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -49,6 +50,7 @@ public class QueueWrapper extends HashMap<String, Object> {
 	private static final String CONVERT_MESSAGE_TO_EXCEPTION_KEY = "convertExceptionToMessage";
 	private static final String PIPELINESESSION_KEY = "session";
 	private static final String MESSAGE_HANDLER_KEY = "listenerMessageHandler";
+	private static final String SENDER_THREAD_KEY = "asdfasdfadsfasfdfafsd";
 	private final String queueKey;
 
 	private QueueWrapper(IConfigurable configurable) {
@@ -79,6 +81,18 @@ public class QueueWrapper extends HashMap<String, Object> {
 
 	public ListenerMessageHandler getMessageHandler() {
 		return (ListenerMessageHandler) get(MESSAGE_HANDLER_KEY);
+	}
+
+	public void setSenderThread(SenderThread senderThread) {
+		put(SENDER_THREAD_KEY, senderThread);
+	}
+
+	public SenderThread getSenderThread() {
+		return (SenderThread) get(SENDER_THREAD_KEY);
+	}
+
+	public void removeSenderThread() {
+		remove(SENDER_THREAD_KEY);
 	}
 
 	public QueueWrapper invokeSetters(Properties queueProperties) {
@@ -257,6 +271,18 @@ public class QueueWrapper extends HashMap<String, Object> {
 			}
 		} catch (SenderException | ListenerException e) {
 			throw new ConfigurationException("error opening ["+get()+"]", e);
+		}
+	}
+
+	public void close() throws Exception {
+		if(get() instanceof AutoCloseable) {
+			((AutoCloseable) get()).close();
+		}
+		else if(get() instanceof ISender) {
+			((ISender) get()).close();
+		}
+		else if(get() instanceof IListener<?>) {
+			((IListener<?>) get()).close();
 		}
 	}
 }

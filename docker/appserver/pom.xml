@@ -11,10 +11,6 @@
 		<version>${revision}</version>
 	</parent>
 
-
-	<modules>
-	</modules>
-
 	<profiles>
 		<profile>
 			<id>Tomcat</id>
