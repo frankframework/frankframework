@@ -103,8 +103,8 @@ public abstract class StatusRecordingTransactionManager extends ThreadConnectabl
 	@Override
 	public void destroy() {
 		log.info("shutting down transaction manager");
-		boolean transactionsPending = shutdownTransactionManager();
-		writeStatus(transactionsPending ? Status.COMPLETED : Status.PENDING);
+		boolean noTransactionsPending = shutdownTransactionManager();
+		writeStatus(noTransactionsPending ? Status.COMPLETED : Status.PENDING);
 		log.info("transaction manager shutdown completed");
 	}
 
