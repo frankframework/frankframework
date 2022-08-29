@@ -35,6 +35,7 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedG
 import org.springframework.security.web.authentication.preauth.j2ee.J2eeBasedPreAuthenticatedWebAuthenticationDetailsSource;
 import org.springframework.security.web.authentication.preauth.j2ee.J2eePreAuthenticatedProcessingFilter;
 import org.springframework.security.web.authentication.preauth.j2ee.WebXmlMappableAttributesRetriever;
+import org.springframework.security.web.util.matcher.AnyRequestMatcher;
 
 import lombok.Setter;
 import nl.nn.adapterframework.util.SpringUtils;
@@ -69,17 +70,14 @@ public class HttpSecurityConfigurer implements ApplicationContextAware {
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-		http.antMatcher("/**");
+		http.requestMatcher(AnyRequestMatcher.INSTANCE);
 		AuthenticationManager authManager = getAuthenticationManager(http);
+		http.addFilter(getProcessingFilter(authManager));
 		http.authenticationManager(authManager);
+		http.headers().frameOptions().sameOrigin();
+
 		http.csrf().disable();
-		http.headers().frameOptions().sameOrigin().contentTypeOptions().disable();
 		http.logout();
-
-		//http.authorizeHttpRequests((authz) -> authz.antMatchers("/iaf/**"));
-		http.jee().j2eePreAuthenticatedProcessingFilter(getProcessingFilter(authManager));
-//		http.anonymous();
-
 		return http.build();
 	}
 
