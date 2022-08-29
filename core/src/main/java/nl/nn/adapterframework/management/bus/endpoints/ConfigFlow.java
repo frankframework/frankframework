@@ -18,12 +18,15 @@ package nl.nn.adapterframework.management.bus.endpoints;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.messaging.Message;
 
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.management.bus.BusAware;
+import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
@@ -35,12 +38,35 @@ public class ConfigFlow {
 	private @Setter FlowDiagramManager flowDiagramManager;
 
 	@TopicSelector(BusTopic.FLOW)
-	public Message getApplicationFlow(Message<?> message) throws IOException {
+	public Message<?> getFlow(Message<?> message) throws IOException {
+		String configurationName = BusMessageUtils.getHeader(message, "configuration");
+		if(StringUtils.isNotEmpty(configurationName)) {
+			return getConfigurationFlow(configurationName);
+		}
+		return getApplicationFlow();
+	}
+
+	public Message<?> getApplicationFlow() throws IOException {
 		InputStream configFlow = flowDiagramManager.get(getIbisManager().getConfigurations());
 		if(configFlow != null) {
 			return ResponseMessage.ok(configFlow, flowDiagramManager.getMediaType());
-		} else {
-			return ResponseMessage.noContent();
 		}
+
+		return ResponseMessage.noContent();
+	}
+
+	public Message<?> getConfigurationFlow(String configurationName) throws IOException {
+		Configuration configuration = getIbisManager().getConfiguration(configurationName);
+
+		if(configuration == null) {
+			throw new IllegalStateException("Configuration not found!"); //should be wrapped in a message?
+		}
+
+		InputStream flow = flowDiagramManager.get(configuration);
+		if(flow != null) {
+			return ResponseMessage.ok(flow, flowDiagramManager.getMediaType());
+		}
+
+		return ResponseMessage.noContent();
 	}
 }

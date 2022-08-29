@@ -17,23 +17,39 @@ package nl.nn.adapterframework.management.bus;
 
 import javax.ws.rs.core.Response;
 
+import org.apache.logging.log4j.Logger;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 
-public class BusMessageUtils {
+import nl.nn.adapterframework.util.LogUtil;
 
+public class BusMessageUtils {
+	private static Logger LOG = LogUtil.getLogger(BusMessageUtils.class);
+
+	public static String getHeader(Message<?> message, String headerName) {
+		MessageHeaders headers = message.getHeaders();
+		if(headers.containsKey(headerName)) {
+			return headers.get(headerName, String.class);
+		}
+		return null;
+	}
 
 	public static boolean containsHeader(Message<?> message, String headerName) {
 		return message.getHeaders().get(headerName) != null;
 	}
 
 	public static boolean getHeader(Message<?> message, String headerName, boolean defaultValue) {
-		Object header = message.getHeaders().get(headerName);
-		if(header == null) {
-			return defaultValue;
+		MessageHeaders headers = message.getHeaders();
+		if(headers.containsKey(headerName)) {
+			try {
+				return headers.get(headerName, Boolean.class);
+			} catch (IllegalArgumentException e) {
+				Object header = headers.get(headerName);
+				LOG.warn("unable to parse header as boolean", e);
+				return Boolean.parseBoolean(""+header);
+			}
 		}
-
-		return Boolean.parseBoolean(""+header);
+		return defaultValue;
 	}
 
 	public static Response convertToJaxRsResponse(Message<?> response) {

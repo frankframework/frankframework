@@ -23,6 +23,9 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface BusAware {
 
+	/**
+	 * Spring Channel to subscribe to
+	 */
 	String value();
 
 }
