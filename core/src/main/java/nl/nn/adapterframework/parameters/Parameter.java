@@ -892,10 +892,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 		return name;
 	}
 
-	/**
-	 * The target data type of the parameter, related to the database or XSLT stylesheet to which the parameter is applied.
-	 * @param type
-	 */
+	/** The target data type of the parameter, related to the database or XSLT stylesheet to which the parameter is applied. */
 	public void setType(ParameterType type) {
 		this.type = type;
 	}
