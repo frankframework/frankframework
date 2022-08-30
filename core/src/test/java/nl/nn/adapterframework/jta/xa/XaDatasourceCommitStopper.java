@@ -15,10 +15,9 @@ public class XaDatasourceCommitStopper extends XaResourceObserver{
 
 	private static boolean stop;
 
-	public static int endless = 20; // seconds
-	
 	public static Semaphore prepareFinished;
 	public static Semaphore commitCalled;
+	public static Semaphore performCommit;
 
 
 	public XaDatasourceCommitStopper(XAResource target) {
@@ -27,8 +26,11 @@ public class XaDatasourceCommitStopper extends XaResourceObserver{
 
 	public static void stop(boolean stop) {
 		XaDatasourceCommitStopper.stop = stop;
-		prepareFinished = new Semaphore();
-		commitCalled = new Semaphore();
+		if (stop) {
+			prepareFinished = new Semaphore();
+			commitCalled = new Semaphore();
+			performCommit = new Semaphore();
+		}		
 	}
 
 	public static XADataSource augmentXADataSource(XADataSource dataSource) {
@@ -39,9 +41,9 @@ public class XaDatasourceCommitStopper extends XaResourceObserver{
 	public void commit(Xid xid, boolean onePhase) throws XAException {
 		if (stop) {
 			try {
-				log.warn("commit() starting 'endless' sleep to simulate unresponsive RM");
+				log.warn("commit() waiting 'endless' to perform commit to simulate unresponsive RM");
 				commitCalled.release();
-				Thread.sleep(endless*1000);
+				performCommit.acquire();
 			} catch (InterruptedException e) {
 				throw new XAException(e.getMessage());
 			}
@@ -50,18 +52,19 @@ public class XaDatasourceCommitStopper extends XaResourceObserver{
 	}
 
 
-	@Override
-	public void rollback(Xid xid) throws XAException {
-		if (stop) {
-			try {
-				log.warn("rollback() starting 'endless' sleep to simulate unresponsive RM");
-				Thread.sleep(endless*1000);
-			} catch (InterruptedException e) {
-				throw new XAException(e.getMessage());
-			}
-		}
-		super.rollback(xid);
-	}
+//	@Override
+//	public void rollback(Xid xid) throws XAException {
+//		if (stop) {
+//			try {
+//				log.warn("rollback() waiting 'endless' to perform rollback to simulate unresponsive RM");
+//				commitCalled.release();
+//				performCommit.acquire();
+//			} catch (InterruptedException e) {
+//				throw new XAException(e.getMessage());
+//			}
+//		}
+//		super.rollback(xid);
+//	}
 
 	@Override
 	public int prepare(Xid xid) throws XAException {

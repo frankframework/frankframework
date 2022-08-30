@@ -12,6 +12,7 @@ import static org.mockito.Mockito.doAnswer;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
 
 import org.junit.After;
@@ -22,6 +23,7 @@ import org.mockito.Mockito;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
+import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
@@ -456,7 +458,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		private @Getter int numRowsUpdated=-1;
 		private QueryExecutionContext context;
 
-		public ChangeProcessStateTester(ConnectionSupplier connectionSupplier) {
+		public ChangeProcessStateTester(ThrowingSupplier<Connection,SQLException> connectionSupplier) {
 			super(connectionSupplier);
 		}
 

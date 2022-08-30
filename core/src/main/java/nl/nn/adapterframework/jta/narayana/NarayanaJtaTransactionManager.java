@@ -76,13 +76,31 @@ public class NarayanaJtaTransactionManager extends StatusRecordingTransactionMan
 			recoveryManager = RecoveryManager.manager();
 			recoveryManager.initialize();
 			recoveryManager.startRecoveryManagerThread();
+
+			XARecoveryModule recoveryModule = new XARecoveryModule();
+			recoveryManager.addModule(recoveryModule);
 		}
 	}
 
 	@Override
 	protected boolean shutdownTransactionManager() {
 		try {
-			recoveryManager.terminate();
+			if (recoveryManager!=null) {
+				if (!recoveryStoreEmpty()) {
+					log.debug("RecoveryStore not empty. Performing recovery manager scan to clean up");
+					recoveryManager.scan();
+					if (!recoveryStoreEmpty()) {
+						log.debug("RecoveryStore still not empty after scan. Waiting 10 seconds...");
+						Thread.sleep(10000);
+						if (!recoveryStoreEmpty()) {
+							log.debug("RecoveryStore still not empty after waiting, scanning again");
+							recoveryManager.scan();
+						}
+					}
+				}
+				recoveryManager.terminate();
+				recoveryManager=null;
+			}
 			return recoveryStoreEmpty();
 		} catch (Exception e) {
 			log.warn("could not shut down transaction manager", e);

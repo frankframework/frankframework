@@ -26,7 +26,7 @@ public class XaResourceObserver implements XAResource {
 
 	@Override
 	public void end(Xid xid, int flags) throws XAException {
-		log.debug("end Xid [{}] flags [{}]", xid, flags);
+		log.debug("end Xid [{}] flags [{}]", xid, Integer.toHexString(flags));
 		target.end(xid, flags);
 	}
 
@@ -42,8 +42,12 @@ public class XaResourceObserver implements XAResource {
 	}
 
 	@Override
-	public boolean isSameRM(XAResource arg0) throws XAException {
-		return target.isSameRM(arg0);
+	public boolean isSameRM(XAResource xares) throws XAException {
+		log.debug("isSameRM [{}]", xares);
+		if (xares instanceof XaResourceObserver) {
+			return target.isSameRM(((XaResourceObserver)xares).target);
+		}
+		return target.isSameRM(xares);
 	}
 
 	@Override
@@ -54,7 +58,7 @@ public class XaResourceObserver implements XAResource {
 
 	@Override
 	public Xid[] recover(int flag) throws XAException {
-		log.debug("recover flag [{}]", flag);
+		log.debug("recover flag [{}]", Integer.toHexString(flag));
 		return target.recover(flag);
 	}
 
@@ -70,9 +74,14 @@ public class XaResourceObserver implements XAResource {
 	}
 
 	@Override
-	public void start(Xid xid, int arg1) throws XAException {
-		log.debug("start Xid [{}]", xid);
-		target.start(xid, arg1);
+	public void start(Xid xid, int flags) throws XAException {
+		log.debug("start Xid [{}], flags [{}]", xid, Integer.toHexString(flags));
+		try {
+			target.start(xid, flags);
+		} catch (XAException e) {
+			e.printStackTrace();
+			throw e;
+		}
 	}
 
 }

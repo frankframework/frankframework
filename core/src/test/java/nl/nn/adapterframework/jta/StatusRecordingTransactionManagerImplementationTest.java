@@ -3,32 +3,26 @@ package nl.nn.adapterframework.jta;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assume.assumeFalse;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import javax.naming.NamingException;
 
-import org.apache.logging.log4j.Logger;
+import org.apache.commons.lang3.NotImplementedException;
 import org.junit.After;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.TransactionSystemException;
-import org.springframework.util.StreamUtils;
 
-import com.arjuna.ats.arjuna.recovery.RecoveryManager;
+import com.arjuna.ats.arjuna.common.arjPropertyManager;
 
+import bitronix.tm.TransactionManagerServices;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
@@ -36,24 +30,21 @@ import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jta.xa.XaDatasourceCommitStopper;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.ConcurrentActionTester;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TransactionManagerType;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Semaphore;
 
 @RunWith(Parameterized.class)
-public class StatusRecordingTransactionManagerImplementationTest {
-	protected Logger log = LogUtil.getLogger(this);
+public class StatusRecordingTransactionManagerImplementationTest<S extends StatusRecordingTransactionManager> extends StatusRecordingTransactionManagerTestBase<S> {
 
-	private static TransactionManagerType singleTransactionManagerType = TransactionManagerType.NARAYANA; // set to a specific transaction manager type, to speed up testing
+	private static TransactionManagerType singleTransactionManagerType = null; // set to a specific transaction manager type, to speed up testing
 
 	protected SpringTxManagerProxy txManager;
 	protected StatusRecordingTransactionManager txManagerReal;
 	private @Getter TestConfiguration configuration;
 	
-	private String STATUS_FILE;
-	private String TMUID_FILE;
-	
+
 	private String tableName;
 
 	@Parameters(name= "{0}")
@@ -74,21 +65,35 @@ public class StatusRecordingTransactionManagerImplementationTest {
 	@Parameterized.Parameter(0)
 	public @Getter TransactionManagerType transactionManagerType;
 	
+	
+	@BeforeClass
+	public static void init() {
+		for (TransactionManagerType tmt:TransactionManagerType.values()) {
+			tmt.closeConfigurationContext();
+		}
+	}
 
-	@Before
-	public void setup() {
-		configuration = transactionManagerType.getConfigurationContext("H2");
+	@Override
+	public void setup() throws IOException {
 		assumeFalse(transactionManagerType==TransactionManagerType.DATASOURCE);
+		super.setup();
+	}
+	
+	@Override
+	protected S createTransactionManager() {
+		configuration = transactionManagerType.getConfigurationContext("H2");
 		txManager = configuration.getBean(SpringTxManagerProxy.class, "txManager");
 		txManagerReal = configuration.getBean(StatusRecordingTransactionManager.class, "txReal");
-		STATUS_FILE = txManagerReal.getStatusFile();
-		TMUID_FILE = txManagerReal.getUidFile();
+		statusFile = txManagerReal.getStatusFile();
+		tmUidFile = txManagerReal.getUidFile();
+		log.debug("statusFile [{}], tmUidFile [{}]", statusFile, tmUidFile);
 		tableName = "tmp_"+transactionManagerType;
-		log.debug("STATUS_FILE ["+STATUS_FILE+"]");
+		return (S)txManagerReal;
 	}
 	
 	@After
 	public void teardown() {
+		log.debug("teardown");
 		try {
 			transactionManagerType.closeConfigurationContext();
 		} catch (Exception e) {
@@ -96,17 +101,36 @@ public class StatusRecordingTransactionManagerImplementationTest {
 		}
 		XaDatasourceCommitStopper.stop(false);
 	}
+
+	protected String getTMUID() {
+		switch (transactionManagerType) {
+		case DATASOURCE:
+			return null;
+		case BTM:
+			return TransactionManagerServices.getConfiguration().getServerId();
+		case NARAYANA:
+			return arjPropertyManager.getCoreEnvironmentBean().getNodeIdentifier();
+		default:
+			throw new NotImplementedException("Unkonwn transaction manager type ["+transactionManagerType+"]");
+		}
+	}
+
+
+	
 	@Test
 	public void testSetup() {
+		setupTransactionManager();
 		assertStatus("ACTIVE", txManagerReal.getUid());
+		assertEquals(txManagerReal.getUid(),getTMUID());
 	}
 
 	@Test
 	public void testShutdown() throws Exception {
+		setupTransactionManager();
 		assertStatus("ACTIVE", txManagerReal.getUid());
-		prepareTable("H2");
-		prepareTable("Oracle");
-		runXATransactionInThread();
+		assertEquals(txManagerReal.getUid(),getTMUID());
+		ConcurrentXATransactionTester xaTester = new ConcurrentXATransactionTester();
+		xaTester.run(); // same thread
 		txManagerReal.destroy();
 		assertStatus("COMPLETED", txManagerReal.getUid());
 		
@@ -114,33 +138,33 @@ public class StatusRecordingTransactionManagerImplementationTest {
 	
 	@Test
 	public void testShutdownPending() throws Exception {
-		assertStatus("ACTIVE", txManagerReal.getUid());
-		prepareTable("H2");
-		prepareTable("Oracle");
+		setupTransactionManager();
+		String uid = txManagerReal.getUid();
+		assertStatus("ACTIVE", uid);
 		XaDatasourceCommitStopper.stop(true);
-		runXATransactionInThread();
+		Semaphore actionDone = new Semaphore();
+		ConcurrentXATransactionTester xaTester = new ConcurrentXATransactionTester();
+		xaTester.setActionDone(actionDone);
+
+		xaTester.start();
 		XaDatasourceCommitStopper.commitCalled.acquire();
 		txManagerReal.destroy();
-		assertStatus("PENDING", txManagerReal.getUid());
+		assertStatus("PENDING", uid);
 		
 		teardown();
+		XaDatasourceCommitStopper.performCommit.release();
 		XaDatasourceCommitStopper.stop(false);
-		setup();
-		RecoveryManager manager = RecoveryManager.manager();
-		log.info("Start scan 1");
-		manager.scan();
-		log.info("End scan 1");
-		log.info("sleeping 10 seconds, to let second recovery manager pass kick in");
-		Thread.sleep(10000);
-		log.info("Start scan 2");
-		manager.scan();
-		log.info("End scan 2");
+		
+//		log.debug("waiting for commit to finish");
+//		actionDone.acquire();
+		log.debug("recreating transaction manager");
+		setupTransactionManager();
+		
+		assertEquals("tmuid must be the same after restart", uid, txManagerReal.getUid());
 		txManagerReal.destroy();
-		assertStatus("COMPLETED", txManagerReal.getUid());
-
+		assertStatus("COMPLETED", uid);
 	}
 		
-	public Semaphore semaphore;
 	
 	public void prepareTable(String datasourceName) throws ConfigurationException, SenderException, TimeoutException {
 		DirectQuerySender fs1 = new DirectQuerySender();
@@ -159,12 +183,53 @@ public class StatusRecordingTransactionManagerImplementationTest {
 		fs1.close();
 	}
 	
-	private void runXATransactionInThread() throws InterruptedException {
-		semaphore = new Semaphore();
-		Thread thread = new Thread(()->runXATransaction());
-		thread.start();
-		semaphore.acquire();
-		semaphore = null;
+//	public Semaphore semaphore;
+//
+//	private void runXATransactionInThread() throws InterruptedException {
+//		semaphore = new Semaphore();
+//		Thread thread = new Thread(()->runXATransaction());
+//		thread.start();
+//		semaphore.acquire();
+//		semaphore = null;
+//	}
+	
+	private class ConcurrentXATransactionTester extends ConcurrentActionTester {
+
+		@Override
+		public void initAction() throws Exception {
+			prepareTable("H2");
+			prepareTable("Oracle");
+		}
+
+		@Override
+		public void action() throws Exception {
+			DirectQuerySender fs1 = new DirectQuerySender();
+			configuration.autowireByName(fs1);
+			fs1.setName("fs1");
+			fs1.setDatasourceName("H2");
+			fs1.configure();
+			
+			DirectQuerySender fs2 = new DirectQuerySender();
+			configuration.autowireByName(fs2);
+			fs2.setName("fs1");
+			fs2.setDatasourceName("Oracle");
+			fs2.configure();
+			
+			fs1.open();
+			fs2.open();
+
+			TransactionDefinition txDef = txManager.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW, 10);
+			TransactionStatus txStatus = txManager.getTransaction(txDef);
+			try {
+	
+				fs1.sendMessage(new Message("INSERT INTO "+tableName+" (id) VALUES ('x')"),null);
+				fs2.sendMessage(new Message("INSERT INTO "+tableName+" (id) VALUES ('x')"),null);
+			} finally {
+				txManager.commit(txStatus);
+			}
+		}
+
+		
 	}
 	
 	private void runXATransaction() {
@@ -189,11 +254,6 @@ public class StatusRecordingTransactionManagerImplementationTest {
 			try {
 				fs1.sendMessage(new Message("INSERT INTO "+tableName+" (id) VALUES ('x')"),null);
 				fs2.sendMessage(new Message("INSERT INTO "+tableName+" (id) VALUES ('x')"),null);
-				
-				if (semaphore!=null) {
-					semaphore.release();
-				}
-				
 			} finally {
 				txManager.commit(txStatus);
 			}
@@ -201,6 +261,7 @@ public class StatusRecordingTransactionManagerImplementationTest {
 			e.printStackTrace();
 		}
 	}
+
 	
 //	private S delegateTransactionManager;
 //	public @Rule TemporaryFolder folder = new TemporaryFolder();
@@ -309,46 +370,46 @@ public class StatusRecordingTransactionManagerImplementationTest {
 //		delegateTransactionManager.getTransactionManager().begin();
 //	}
 	
-	public void assertStatus(String status, String tmUid) {
-		log.debug("testing file ["+STATUS_FILE+"] for status ["+status+"]");
-		assertEquals(status, read(STATUS_FILE));
-		if (tmUid!=null) {
-			assertEquals(tmUid, read(TMUID_FILE));
-		}
-	}
-
-	public void delete(String filename) throws TransactionSystemException {
-		Path file = Paths.get(filename);
-		try {
-			if (Files.exists(file)) {
-				Files.delete(file);
-			}
-		} catch (Exception e) {
-			throw new TransactionSystemException("Cannot delete file ["+file+"]", e);
-		}
-	}
-
-	public void write(String filename, String text) throws TransactionSystemException {
-		Path file = Paths.get(filename);
-		try {
-			try (OutputStream fos = Files.newOutputStream(file)) {
-				fos.write(text.getBytes(StandardCharsets.UTF_8));
-			}
-		} catch (Exception e) {
-			throw new TransactionSystemException("Cannot write line ["+text+"] to file ["+file+"]", e);
-		}
-	}
-
-	public String read(String filename) {
-		Path file = Paths.get(filename);
-		if (!Files.exists(file)) {
-			return null;
-		}
-		try (InputStream fis = Files.newInputStream(file)) {
-			return StreamUtils.copyToString(fis, StandardCharsets.UTF_8).trim();
-		} catch (Exception e) {
-			throw new TransactionSystemException("Cannot read from file ["+file+"]", e);
-		}
-	}
+//	public void assertStatus(String status, String tmUid) {
+//		log.debug("testing file ["+STATUS_FILE+"] for status ["+status+"]");
+//		assertEquals(status, read(STATUS_FILE));
+//		if (tmUid!=null) {
+//			assertEquals(tmUid, read(TMUID_FILE));
+//		}
+//	}
+//
+//	public void delete(String filename) throws TransactionSystemException {
+//		Path file = Paths.get(filename);
+//		try {
+//			if (Files.exists(file)) {
+//				Files.delete(file);
+//			}
+//		} catch (Exception e) {
+//			throw new TransactionSystemException("Cannot delete file ["+file+"]", e);
+//		}
+//	}
+//
+//	public void write(String filename, String text) throws TransactionSystemException {
+//		Path file = Paths.get(filename);
+//		try {
+//			try (OutputStream fos = Files.newOutputStream(file)) {
+//				fos.write(text.getBytes(StandardCharsets.UTF_8));
+//			}
+//		} catch (Exception e) {
+//			throw new TransactionSystemException("Cannot write line ["+text+"] to file ["+file+"]", e);
+//		}
+//	}
+//
+//	public String read(String filename) {
+//		Path file = Paths.get(filename);
+//		if (!Files.exists(file)) {
+//			return null;
+//		}
+//		try (InputStream fis = Files.newInputStream(file)) {
+//			return StreamUtils.copyToString(fis, StandardCharsets.UTF_8).trim();
+//		} catch (Exception e) {
+//			throw new TransactionSystemException("Cannot read from file ["+file+"]", e);
+//		}
+//	}
 
 }
