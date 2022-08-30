@@ -52,20 +52,6 @@ public class XaDatasourceCommitStopper extends XaResourceObserver{
 	}
 
 
-//	@Override
-//	public void rollback(Xid xid) throws XAException {
-//		if (stop) {
-//			try {
-//				log.warn("rollback() waiting 'endless' to perform rollback to simulate unresponsive RM");
-//				commitCalled.release();
-//				performCommit.acquire();
-//			} catch (InterruptedException e) {
-//				throw new XAException(e.getMessage());
-//			}
-//		}
-//		super.rollback(xid);
-//	}
-
 	@Override
 	public int prepare(Xid xid) throws XAException {
 		int result = super.prepare(xid);

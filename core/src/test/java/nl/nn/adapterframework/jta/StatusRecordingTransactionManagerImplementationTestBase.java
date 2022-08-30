@@ -135,10 +135,6 @@ public abstract class StatusRecordingTransactionManagerImplementationTestBase<S 
 		assertStatus("PENDING", tmUid);
 	}
 
-//	private void createPendingTransaction() {
-//		delegateTransactionManager.getTransactionManager().begin();
-//	}
-//	
 	public void assertStatus(String status, String tmUid) {
 		assertEquals(status, read(STATUS_FILE));
 		if (tmUid!=null) {
