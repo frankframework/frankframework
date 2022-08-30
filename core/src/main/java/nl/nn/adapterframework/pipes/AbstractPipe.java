@@ -358,6 +358,10 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 		this.preserveInput = preserveInput;
 	}
 
+	/**
+	 * If set, the pipe result is copied to a session key that has the name defined by this attribute. The
+	 * pipe result is still written as the output message as usual. 
+	 */
 	@Override
 	public void setStoreResultInSessionKey(String string) {
 		storeResultInSessionKey = string;
