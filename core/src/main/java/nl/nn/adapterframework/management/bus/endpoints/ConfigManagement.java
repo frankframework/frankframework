@@ -32,7 +32,7 @@ public class ConfigManagement {
 	private @Getter @Setter IbisManager ibisManager;
 
 	@TopicSelector(BusTopic.CONFIGURATION)
-	public Message getXMLConfiguration(Message<?> message) {
+	public Message<String> getXMLConfiguration(Message<?> message) {
 		boolean loadedConfiguration = BusMessageUtils.getHeader(message, "loaded", false);
 		StringBuilder result = new StringBuilder();
 		for (Configuration configuration : getIbisManager().getConfigurations()) {

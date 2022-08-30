@@ -25,6 +25,7 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
@@ -38,35 +39,43 @@ public class ConfigFlow {
 	private @Setter FlowDiagramManager flowDiagramManager;
 
 	@TopicSelector(BusTopic.FLOW)
-	public Message<?> getFlow(Message<?> message) throws IOException {
-		String configurationName = BusMessageUtils.getHeader(message, "configuration");
-		if(StringUtils.isNotEmpty(configurationName)) {
-			return getConfigurationFlow(configurationName);
-		}
-		return getApplicationFlow();
-	}
-
-	public Message<?> getApplicationFlow() throws IOException {
-		InputStream configFlow = flowDiagramManager.get(getIbisManager().getConfigurations());
-		if(configFlow != null) {
-			return ResponseMessage.ok(configFlow, flowDiagramManager.getMediaType());
-		}
-
-		return ResponseMessage.noContent();
-	}
-
-	public Message<?> getConfigurationFlow(String configurationName) throws IOException {
-		Configuration configuration = getIbisManager().getConfiguration(configurationName);
-
-		if(configuration == null) {
-			throw new IllegalStateException("Configuration not found!"); //should be wrapped in a message?
-		}
-
-		InputStream flow = flowDiagramManager.get(configuration);
+	public Message<?> getFlowDiagram(Message<?> message) throws IOException {
+		InputStream flow = getFlow(message);
 		if(flow != null) {
 			return ResponseMessage.ok(flow, flowDiagramManager.getMediaType());
 		}
 
-		return ResponseMessage.noContent();
+		return ResponseMessage.noContent(); //No flow file present
+	}
+
+	private InputStream getFlow(Message<?> message) throws IOException {
+		String configurationName = BusMessageUtils.getHeader(message, "configuration");
+		if(StringUtils.isNotEmpty(configurationName)) {
+			Configuration configuration = getIbisManager().getConfiguration(configurationName);
+			String adapterName = BusMessageUtils.getHeader(message, "adapter");
+			if(StringUtils.isNotEmpty(adapterName)) {
+				return getAdapterFlow(configuration, adapterName);
+			}
+			return getConfigurationFlow(configuration);
+		}
+		return getApplicationFlow();
+	}
+
+	private InputStream getApplicationFlow() throws IOException {
+		return flowDiagramManager.get(getIbisManager().getConfigurations());
+	}
+
+	private InputStream getConfigurationFlow(Configuration configuration) throws IOException {
+		return flowDiagramManager.get(configuration);
+	}
+
+	private InputStream getAdapterFlow(Configuration configuration, String adapterName) throws IOException {
+		Adapter adapter = configuration.getRegisteredAdapter(adapterName);
+
+		if(adapter == null) {
+			throw new IllegalStateException("Adapter not found!"); //should be wrapped in a message?
+		}
+
+		return flowDiagramManager.get(adapter);
 	}
 }
