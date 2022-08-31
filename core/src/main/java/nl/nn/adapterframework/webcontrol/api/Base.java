@@ -76,8 +76,16 @@ public abstract class Base implements ApplicationContextAware {
 
 	public Response callGateway(RequestMessageBuilder input) throws ApiException {
 		Gateway gateway = getApplicationContext().getBean("gateway", Gateway.class);
-		Message<?> response = gateway.execute(input.build());
-		return BusMessageUtils.convertToJaxRsResponse(response);
+		Message<?> response = gateway.requestReply(input.build());
+		if(response != null) {
+			return BusMessageUtils.convertToJaxRsResponse(response);
+		}
+		return Response.noContent().build();
+	}
+	public Response callFFGateway(RequestMessageBuilder input) throws ApiException {
+		Gateway gateway = getApplicationContext().getBean("gateway", Gateway.class);
+		gateway.fireAndForget(input.build());
+		return Response.noContent().build();
 	}
 
 	@Override

@@ -108,7 +108,7 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 
 	private void registerServiceActivator(Object bean, Method method, SubscribableChannel channel, BusTopic topic) {
 		ServiceActivatingHandler serviceActivator = new ServiceActivatingHandler(bean, method);
-		serviceActivator.setRequiresReply(method.getReturnType() != null);
+		serviceActivator.setRequiresReply(method.getReturnType() != void.class);
 		initializeBean(serviceActivator);
 
 		MessageHandlerChain chain = new MessageHandlerChain();
