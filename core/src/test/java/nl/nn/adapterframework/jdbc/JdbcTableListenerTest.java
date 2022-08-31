@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
 import static org.junit.Assume.assumeTrue;
 import static org.mockito.Mockito.doAnswer;
@@ -566,7 +567,11 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 			return false;
 		}
 		assertEquals("10", key);
-		JdbcUtil.executeStatement(dbmsSupport,connection, "UPDATE "+TEST_TABLE+" SET TINT=4 WHERE TKEY=10", null);
+		try {
+			JdbcUtil.executeStatement(dbmsSupport,connection, "UPDATE "+TEST_TABLE+" SET TINT=4 WHERE TKEY=10", null);
+		} catch (Exception e) {
+			fail("Got the message, but cannot update the row: "+e.getMessage());
+		}
 		return true;
 	}
 
