@@ -58,7 +58,7 @@ public class MqttFacade implements HasPhysicalDestination, IConfigurable {
 	private String username;
 	private String password;
 	private String authAlias;
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getClientId())) {

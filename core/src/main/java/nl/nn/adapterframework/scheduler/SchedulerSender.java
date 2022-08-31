@@ -54,7 +54,7 @@ public class SchedulerSender extends SenderWithParametersBase {
 		if (StringUtils.isEmpty(cronExpressionPattern)) {
 			throw new ConfigurationException("Property [cronExpressionPattern] is empty");
 		}
-		
+
 		Parameter p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 		p.setName("_cronexpression");
 		p.setPattern(cronExpressionPattern);
@@ -90,9 +90,9 @@ public class SchedulerSender extends SenderWithParametersBase {
 			String correlationID = session==null ? "" : session.getMessageId();
 			ParameterValueList values = paramList.getValues(message, session);
 			String jobName = getName() + correlationID;
-			String cronExpression = values.getParameterValue("_cronexpression").asStringValue();
+			String cronExpression = values.get("_cronexpression").asStringValue();
 			if (StringUtils.isNotEmpty(jobNamePattern)) {
-				jobName = values.getParameterValue("_jobname").asStringValue();
+				jobName = values.get("_jobname").asStringValue();
 			}
 			schedule(jobName, cronExpression, correlationID, message.asString());
 			return new Message(jobName);

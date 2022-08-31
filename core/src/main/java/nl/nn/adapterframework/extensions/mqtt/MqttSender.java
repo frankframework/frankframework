@@ -77,7 +77,7 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 	}
 
 	@Override
-	public void addParameter(Parameter p) { 
+	public void addParameter(Parameter p) {
 		if (paramList==null) {
 			paramList = new ParameterList();
 		}

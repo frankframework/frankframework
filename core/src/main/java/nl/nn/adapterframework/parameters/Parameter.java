@@ -810,7 +810,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 		String formatType = patternElements.length>1 ? patternElements[1].trim() : null;
 		String formatString = patternElements.length>2 ? patternElements[2].trim() : null;
 
-		ParameterValue paramValue = alreadyResolvedParameters.getParameterValue(name);
+		ParameterValue paramValue = alreadyResolvedParameters.get(name);
 		Object substitutionValue = paramValue == null ? null : paramValue.getValue();
 
 		if (substitutionValue == null) {
