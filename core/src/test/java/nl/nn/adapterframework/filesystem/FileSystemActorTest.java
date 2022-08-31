@@ -14,6 +14,7 @@ import java.io.OutputStream;
 import java.io.Writer;
 import java.util.Date;
 
+import org.apache.commons.codec.binary.Base64;
 import org.hamcrest.core.StringContains;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -30,10 +31,12 @@ import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.pipes.Base64Pipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestAssertions;
+import nl.nn.adapterframework.util.StreamUtil;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> extends HelperedFileSystemTestBase {
@@ -687,8 +690,20 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		assertEquals(contents.trim(), actualContents.trim());
 	}
 
-	@Test
-	public void fileSystemActorWriteActionWriteLineSeparator() throws Exception {
+	protected Object doAction(Message message, ParameterValueList pvl, PipeLineSession session, boolean viaOutputStream, boolean expectStreamable) throws Exception {
+		boolean streamable = actor.canProvideOutputStream();
+		assertEquals("streamability", expectStreamable, streamable);
+		if (viaOutputStream && streamable) {
+			MessageOutputStream mos = actor.provideOutputStream(session, null);
+			StreamUtil.copyStream(message.asInputStream(), mos.asStream(), 1000);
+			mos.close();
+			mos.close(); // must be possible to close AutoCloseable multiple times
+			return mos.getResponse();
+		}
+		return actor.doAction(message, pvl, session);
+	}
+	
+	public void fileSystemActorWriteActionWriteLineSeparatorSessionKeyContents(boolean viaOutputStream, boolean expectStreamable) throws Exception {
 		String filename = "writeLineSeparator" + FILE1;
 		String contents = "Some text content to test write action writeLineSeparator enabled";
 		
@@ -704,16 +719,17 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		actor.setWriteLineSeparator(true);
 		actor.setAction(FileSystemAction.WRITE);
+		actor.setFilename(filename);
 		params.configure();
 		actor.configure(fileSystem,params,owner);
 		actor.open();
 
-		Message message = new Message(filename);
+		Message message = new Message("fakeInputMessage");
 		ParameterValueList pvl = params.getValues(message, session);
-		Object result = actor.doAction(message, pvl, session);
+		Object result = doAction(message, pvl, session, viaOutputStream, expectStreamable);
 		waitForActionToFinish();
 
-		String stringResult=(String)result;
+		String stringResult=Message.asString(result);
 		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
 		
 		String actualContents = readFile(null, filename);
@@ -723,6 +739,142 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		assertEquals(expected, actualContents);
 	}
 
+	@Test
+	public void fileSystemActorWriteActionWriteLineSeparatorSessionKeyContents() throws Exception {
+		fileSystemActorWriteActionWriteLineSeparatorSessionKeyContents(false, false);
+	}
+
+	@Test
+	public void fileSystemActorWriteActionWriteLineSeparatorSessionKeyContentsStreaming() throws Exception {
+		fileSystemActorWriteActionWriteLineSeparatorSessionKeyContents(true, false);
+	}
+	
+	public void fileSystemActorWriteActionWriteLineSeparatorMessageContents(boolean viaOutputStream, boolean expectStreamable) throws Exception {
+		String filename = "writeLineSeparator" + FILE1;
+		String contents = "Some text content to test write action writeLineSeparator enabled";
+		
+		if (_fileExists(filename)) {
+			_deleteFile(null, filename);
+		}
+
+		PipeLineSession session = new PipeLineSession();
+		session.put("writeLineSeparator", contents);
+
+		ParameterList params = new ParameterList();
+
+		actor.setWriteLineSeparator(true);
+		actor.setAction(FileSystemAction.WRITE);
+		actor.setFilename(filename);
+		params.configure();
+		actor.configure(fileSystem,params,owner);
+		actor.open();
+
+		Message message = new Message(contents);
+		ParameterValueList pvl = params.getValues(message, session);
+		Object result = doAction(message, pvl, session, viaOutputStream, expectStreamable);
+		waitForActionToFinish();
+
+		String stringResult=Message.asString(result);
+		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
+		
+		String actualContents = readFile(null, filename);
+		
+		String expected = contents + lineSeparator;
+		
+		assertEquals(expected, actualContents);
+	}
+
+	@Test
+	public void fileSystemActorWriteActionWriteLineSeparatorMessageContents() throws Exception {
+		fileSystemActorWriteActionWriteLineSeparatorMessageContents(false, true);
+	}
+
+	@Test
+	public void fileSystemActorWriteActionWriteLineSeparatorMessageContentsStreaming() throws Exception {
+		fileSystemActorWriteActionWriteLineSeparatorMessageContents(true, true);
+	}
+	
+	public void fileSystemActorWriteActionBase64Encode(boolean viaOutputStream, boolean expectStreamable) throws Exception {
+		String filename = "base64Encoding" + FILE1;
+		String contents = "Some text content to test write action base64Encoding enabled";
+		String expected = new String(Base64.encodeBase64(contents.getBytes(), true));
+		
+		if (_fileExists(filename)) {
+			_deleteFile(null, filename);
+		}
+
+		ParameterList params = new ParameterList();
+
+		actor.setBase64(Base64Pipe.Direction.ENCODE);
+		actor.setAction(FileSystemAction.WRITE);
+		actor.setFilename(filename);
+		params.configure();
+		actor.configure(fileSystem,params,owner);
+		actor.open();
+
+		Message message = new Message(contents);
+		ParameterValueList pvl = params.getValues(message, session);
+		Object result = doAction(message, pvl, session, viaOutputStream, expectStreamable);
+		waitForActionToFinish();
+
+		String stringResult=Message.asString(result);
+		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
+		
+		String actualContents = readFile(null, filename);
+		
+		assertEquals(expected, actualContents);
+	}
+
+	@Test
+	public void fileSystemActorWriteActionBase64Encode() throws Exception {
+		fileSystemActorWriteActionBase64Encode(false, true);
+	}
+
+	@Test
+	public void fileSystemActorWriteActionBase64EncodeStreaming() throws Exception {
+		fileSystemActorWriteActionBase64Encode(true, true);
+	}
+
+	public void fileSystemActorWriteActionBase64Decode(boolean viaOutputStream, boolean expectStreamable) throws Exception {
+		String filename = "base64Decoding" + FILE1;
+		String expected = "Some text content to test write action base64Decoding enabled";
+		String contents = new String(Base64.encodeBase64(expected.getBytes(), true));
+		
+		if (_fileExists(filename)) {
+			_deleteFile(null, filename);
+		}
+
+		ParameterList params = new ParameterList();
+
+		actor.setBase64(Base64Pipe.Direction.DECODE);
+		actor.setAction(FileSystemAction.WRITE);
+		actor.setFilename(filename);
+		params.configure();
+		actor.configure(fileSystem,params,owner);
+		actor.open();
+
+		Message message = new Message(contents);
+		ParameterValueList pvl = params.getValues(message, session);
+		Object result = doAction(message, pvl, session, viaOutputStream, expectStreamable);
+		waitForActionToFinish();
+
+		String stringResult=Message.asString(result);
+		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
+		
+		String actualContents = readFile(null, filename);
+		
+		assertEquals(expected, actualContents);
+	}
+
+	@Test
+	public void fileSystemActorWriteActionBase64Decode() throws Exception {
+		fileSystemActorWriteActionBase64Decode(false, true);
+	}
+
+	@Test
+	public void fileSystemActorWriteActionBase64DecodeStreaming() throws Exception {
+		fileSystemActorWriteActionBase64Decode(true, true);
+	}
 	@Test
 	public void fileSystemActorWriteActionTestWithByteArrayAndContentsViaAlternativeParameter() throws Exception {
 		String filename = "uploadedwithByteArray" + FILE1;
