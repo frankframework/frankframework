@@ -17,6 +17,7 @@ package nl.nn.adapterframework.filesystem;
 
 import java.io.File;
 import java.io.FilterInputStream;
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -61,13 +62,13 @@ import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
  * Worker class for {@link FileSystemPipe} and {@link FileSystemSender}.
- * 
+ *
  * @ff.parameter action overrides attribute <code>action</code>
  * @ff.parameter filename overrides attribute <code>filename</code>. If not present, the input message is used.
- * @ff.parameter destination destination for action <code>rename</code> and <code>move</code>. Overrides attribute <code>destination</code>. 
+ * @ff.parameter destination destination for action <code>rename</code> and <code>move</code>. Overrides attribute <code>destination</code>.
  * @ff.parameter contents contents for action <code>write</code> and <code>append</code>.
  * @ff.parameter inputFolder folder for actions <code>list</code>, <code>mkdir</code> and <code>rmdir</code>. This is a sub folder of baseFolder. Overrides attribute <code>inputFolder</code>. If not present, the input message is used.
- * 
+ *
  * @author Gerrit van Brakel
  */
 public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutputStreamingSupport {
@@ -96,8 +97,8 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	public final String PARAMETER_FILENAME="filename";
 	public final String PARAMETER_INPUTFOLDER="inputFolder";	// folder for actions list, mkdir and rmdir. This is a sub folder of baseFolder
 	public final String PARAMETER_DESTINATION="destination";	// destination for action rename and move
-	
-	
+
+
 	public final FileSystemAction[] ACTIONS_BASIC= {FileSystemAction.LIST, FileSystemAction.INFO, FileSystemAction.READ, FileSystemAction.DOWNLOAD, FileSystemAction.READDELETE, FileSystemAction.MOVE, FileSystemAction.COPY, FileSystemAction.DELETE, FileSystemAction.MKDIR, FileSystemAction.RMDIR};
 	public final FileSystemAction[] ACTIONS_WRITABLE_FS= {FileSystemAction.WRITE, FileSystemAction.UPLOAD, FileSystemAction.APPEND, FileSystemAction.RENAME};
 	public final FileSystemAction[] ACTIONS_MAIL_FS= {FileSystemAction.FORWARD};
@@ -120,7 +121,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	private @Getter String charset;
 
 	private Set<FileSystemAction> actions = new LinkedHashSet<FileSystemAction>(Arrays.asList(ACTIONS_BASIC));
-	
+
 	private INamedObject owner;
 	private FS fileSystem;
 	private ParameterList parameterList;
@@ -170,7 +171,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		this.owner=owner;
 		this.fileSystem=fileSystem;
 		this.parameterList=parameterList;
-		
+
 		if (fileSystem instanceof IWritableFileSystem) {
 			actions.addAll(Arrays.asList(ACTIONS_WRITABLE_FS));
 		}
@@ -217,13 +218,13 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			throw new ConfigurationException(ClassUtils.nameOf(owner)+": unknown or invalid action [" + action2 + "] supported actions are " + actions.toString() + "");
 
 		//Check if necessary parameters are available
-		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action2, FileSystemAction.WRITE,  PARAMETER_CONTENTS1, PARAMETER_FILENAME, "filename", getFilename());
+		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action2, FileSystemAction.WRITE,   PARAMETER_CONTENTS1, PARAMETER_FILENAME, "filename", getFilename());
 		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action2, FileSystemAction.MOVE,    PARAMETER_DESTINATION, null, "destination", getDestination());
 		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action2, FileSystemAction.COPY,    PARAMETER_DESTINATION, null, "destination", getDestination());
 		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action2, FileSystemAction.RENAME,  PARAMETER_DESTINATION, null, "destination", getDestination());
 		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action2, FileSystemAction.FORWARD, PARAMETER_DESTINATION, null, "destination", getDestination());
 	}
-	
+
 //	protected void actionRequiresParameter(INamedObject owner, ParameterList parameterList, String action, String parameter) throws ConfigurationException {
 //		if (getActionEnum().equals(action) && (parameterList == null || parameterList.findParameter(parameter) == null)) {
 //			throw new ConfigurationException("the "+action+" action requires the parameter ["+parameter+"] to be present");
@@ -256,8 +257,8 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			}
 		}
 	}
-	
-	
+
+
 	private String determineFilename(Message input, ParameterValueList pvl) throws FileSystemException {
 		if (StringUtils.isNotEmpty(getFilename())) {
 			return getFilename();
@@ -287,10 +288,9 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	}
 
 	private F getFile(Message input, ParameterValueList pvl) throws FileSystemException {
-		String filename=determineFilename(input, pvl);
-		return fileSystem.toFile(filename);
+		return fileSystem.toFile(determineFilename(input, pvl));
 	}
-	
+
 	private String determineInputFoldername(Message input, ParameterValueList pvl) throws FileSystemException {
 		if (StringUtils.isNotEmpty(getInputFolder())) {
 			return getInputFolder();
@@ -307,7 +307,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			throw new FileSystemException(e);
 		}
 	}
-	
+
 	public Object doAction(Message input, ParameterValueList pvl, PipeLineSession session) throws FileSystemException, TimeoutException {
 		try {
 			if(input != null) {
@@ -368,7 +368,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 							}
 							super.finalize();
 						}
-						
+
 					};
 					if (getBase64()!=null) {
 						in = new Base64InputStream(in, getBase64()==Base64Pipe.Direction.ENCODE);
@@ -464,17 +464,18 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		}
 	}
 
-	
+
 	private interface FileAction<F> {
 		public F execute(F f) throws FileSystemException;
 	}
+
 	/**
 	 * Helper method to process delete, move and copy actions.
-	 * @throws FileSystemException 
-	 * @throws IOException 
+	 * @throws FileSystemException
+	 * @throws IOException
 	 */
 	private String processAction(Message input, ParameterValueList pvl, FileAction<F> action) throws FileSystemException, IOException {
-		if(StringUtils.isNotEmpty(getWildcard()) || StringUtils.isNotEmpty(getExcludeWildcard())) { 
+		if(StringUtils.isNotEmpty(getWildcard()) || StringUtils.isNotEmpty(getExcludeWildcard())) {
 			String folder = arrangeFolder(determineInputFoldername(input, pvl));
 			XmlBuilder dirXml = new XmlBuilder(getAction()+"FilesList");
 			try(Stream<F> stream = FileSystemUtils.getFilteredStream(fileSystem, folder, getWildcard(), getExcludeWildcard())) {
@@ -515,9 +516,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		} else {
 			contents=input;
 		}
-		if (getBase64()!=null) {
-			out = new Base64OutputStream(out, getBase64()==Base64Pipe.Direction.ENCODE);
-		}
+		out = augmentOutputStream(out);
 		if (contents instanceof Message) {
 			Misc.streamToStream(((Message)contents).asInputStream(), out);
 		} else if (contents instanceof InputStream) {
@@ -529,21 +528,43 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		} else {
 			throw new FileSystemException("expected Message, InputStream, ByteArray or String but got [" + contents.getClass().getName() + "] instead");
 		}
-		if(isWriteLineSeparator()) {
-			out.write(eolArray);
-		}
+		out.close();
 	}
-	
-	
+
+
 	protected boolean canProvideOutputStream() {
-		return (getAction() == FileSystemAction.WRITE || getAction() == FileSystemAction.APPEND)
-				&& parameterList.findParameter(PARAMETER_FILENAME)!=null
+		return (parameterList.findParameter(PARAMETER_ACTION)==null && (getAction() == FileSystemAction.WRITE || getAction() == FileSystemAction.APPEND))
+				&& parameterList.findParameter(PARAMETER_CONTENTS1)==null
+				&& (StringUtils.isNotEmpty(getFilename()) || parameterList.findParameter(PARAMETER_FILENAME)!=null)
 				&& !parameterList.isInputValueRequiredForResolution();
 	}
 
 	@Override
 	public boolean supportsOutputStreamPassThrough() {
 		return false;
+	}
+
+	protected OutputStream augmentOutputStream(OutputStream out) {
+		if (getBase64()!=null) {
+			out = new Base64OutputStream(out, getBase64()==Base64Pipe.Direction.ENCODE);
+		}
+		if(isWriteLineSeparator()) {
+			out = new FilterOutputStream(out) {
+				boolean closed=false;
+				@Override
+				public void close() throws IOException {
+					try {
+						if (!closed) {
+							out.write(eolArray);
+							closed=true;
+						}
+					} finally {
+						super.close();
+					}
+				}
+			};
+		}
+		return out;
 	}
 
 	@SuppressWarnings("resource")
@@ -553,7 +574,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			return null;
 		}
 		ParameterValueList pvl=null;
-		
+
 		try {
 			if (parameterList != null) {
 				pvl = parameterList.getValues(null, session);
@@ -569,8 +590,20 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			} else {
 				out = ((IWritableFileSystem<F>)fileSystem).createFile(file);
 			}
-			MessageOutputStream stream = new MessageOutputStream(owner, out, next);
-			stream.setResponse(new Message(FileSystemUtils.getFileInfo(fileSystem, file).toXML()));
+			out = augmentOutputStream(out);
+			MessageOutputStream stream = new MessageOutputStream(owner, out, next) {
+
+				@Override
+				public Message getResponse() {
+					try {
+						return new Message(FileSystemUtils.getFileInfo(fileSystem, file).toXML());
+					} catch (FileSystemException e) {
+						log.warn("cannot get file information", e);
+						return null;
+					}
+				}
+
+			};
 			return stream;
 		} catch (FileSystemException | IOException e) {
 			throw new StreamingException("cannot obtain OutputStream", e);
