@@ -516,9 +516,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		} else {
 			contents=input;
 		}
-		if (getBase64()!=null) {
-			out = new Base64OutputStream(out, getBase64()==Base64Pipe.Direction.ENCODE);
-		}
+		out = augmentOutputStream(out);
 		if (contents instanceof Message) {
 			Misc.streamToStream(((Message)contents).asInputStream(), out);
 		} else if (contents instanceof InputStream) {
@@ -530,15 +528,12 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		} else {
 			throw new FileSystemException("expected Message, InputStream, ByteArray or String but got [" + contents.getClass().getName() + "] instead");
 		}
-		if(isWriteLineSeparator()) {
-			out.write(eolArray);
-		}
 		out.close();
 	}
 
 
 	protected boolean canProvideOutputStream() {
-		return (getAction() == FileSystemAction.WRITE || getAction() == FileSystemAction.APPEND)
+		return (parameterList.findParameter(PARAMETER_ACTION)==null && (getAction() == FileSystemAction.WRITE || getAction() == FileSystemAction.APPEND))
 				&& parameterList.findParameter(PARAMETER_CONTENTS1)==null
 				&& (StringUtils.isNotEmpty(getFilename()) || parameterList.findParameter(PARAMETER_FILENAME)!=null)
 				&& !parameterList.isInputValueRequiredForResolution();
@@ -547,6 +542,29 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	@Override
 	public boolean supportsOutputStreamPassThrough() {
 		return false;
+	}
+
+	protected OutputStream augmentOutputStream(OutputStream out) {
+		if (getBase64()!=null) {
+			out = new Base64OutputStream(out, getBase64()==Base64Pipe.Direction.ENCODE);
+		}
+		if(isWriteLineSeparator()) {
+			out = new FilterOutputStream(out) {
+				boolean closed=false;
+				@Override
+				public void close() throws IOException {
+					try {
+						if (!closed) {
+							out.write(eolArray);
+							closed=true;
+						}
+					} finally {
+						super.close();
+					}
+				}
+			};
+		}
+		return out;
 	}
 
 	@SuppressWarnings("resource")
@@ -572,27 +590,20 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			} else {
 				out = ((IWritableFileSystem<F>)fileSystem).createFile(file);
 			}
-			if (getBase64()!=null) {
-				out = new Base64OutputStream(out, getBase64()==Base64Pipe.Direction.ENCODE);
-			}
-			if(isWriteLineSeparator()) {
-				out = new FilterOutputStream(out) {
-					boolean closed=false;
-					@Override
-					public void close() throws IOException {
-						try {
-							if (!closed) {
-								out.write(eolArray);
-								closed=true;
-							}
-						} finally {
-							super.close();
-						}
+			out = augmentOutputStream(out);
+			MessageOutputStream stream = new MessageOutputStream(owner, out, next) {
+
+				@Override
+				public Message getResponse() {
+					try {
+						return new Message(FileSystemUtils.getFileInfo(fileSystem, file).toXML());
+					} catch (FileSystemException e) {
+						log.warn("cannot get file information", e);
+						return null;
 					}
-				};
-			}
-			MessageOutputStream stream = new MessageOutputStream(owner, out, next);
-			stream.setResponse(new Message(FileSystemUtils.getFileInfo(fileSystem, file).toXML()));
+				}
+
+			};
 			return stream;
 		} catch (FileSystemException | IOException e) {
 			throw new StreamingException("cannot obtain OutputStream", e);
