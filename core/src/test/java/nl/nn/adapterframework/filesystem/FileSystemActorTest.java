@@ -694,7 +694,6 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	public void fileSystemActorWriteActionWriteLineSeparatorSessionKeyContents(boolean viaOutputStream, boolean expectStreamable) throws Exception {
 		String filename = "writeLineSeparator" + FILE1;
 		String contents = "Some text content to test write action writeLineSeparator enabled";
-		String expectedSize="67";
 		String expectedFSize="1 kB";
 
 		if (_fileExists(filename)) {
@@ -721,7 +720,6 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		String stringResult=Message.asString(result);
 		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
-		TestAssertions.assertXpathValueEquals(expectedSize, stringResult, "file/@size");
 		TestAssertions.assertXpathValueEquals(expectedFSize, stringResult, "file/@fSize");
 
 		String actualContents = readFile(null, filename);
@@ -744,7 +742,6 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	public void fileSystemActorWriteActionWriteLineSeparatorMessageContents(boolean viaOutputStream, boolean expectStreamable) throws Exception {
 		String filename = "writeLineSeparator" + FILE1;
 		String contents = "Some text content to test write action writeLineSeparator enabled";
-		String expectedSize="67";
 		String expectedFSize="1 kB";
 
 		if (_fileExists(filename)) {
@@ -770,7 +767,6 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		String stringResult=Message.asString(result);
 		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
-		TestAssertions.assertXpathValueEquals(expectedSize, stringResult, "file/@size");
 		TestAssertions.assertXpathValueEquals(expectedFSize, stringResult, "file/@fSize");
 
 		String actualContents = readFile(null, filename);
@@ -794,7 +790,6 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		String filename = "base64Encoding" + FILE1;
 		String contents = "Some text content to test write action base64Encoding enabled";
 		String expected = new String(Base64.encodeBase64(contents.getBytes(), true));
-		String expectedSize="88";
 		String expectedFSize="1 kB";
 
 		if (_fileExists(filename)) {
@@ -817,7 +812,6 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		String stringResult=Message.asString(result);
 		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
-		TestAssertions.assertXpathValueEquals(expectedSize, stringResult, "file/@size");
 		TestAssertions.assertXpathValueEquals(expectedFSize, stringResult, "file/@fSize");
 
 		String actualContents = readFile(null, filename);
@@ -839,7 +833,6 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		String filename = "base64Decoding" + FILE1;
 		String expected = "Some text content to test write action base64Decoding enabled";
 		String contents = new String(Base64.encodeBase64(expected.getBytes(), true));
-		String expectedSize="61";
 		String expectedFSize="1 kB";
 
 		if (_fileExists(filename)) {
@@ -862,7 +855,6 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		String stringResult=Message.asString(result);
 		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
-		TestAssertions.assertXpathValueEquals(expectedSize, stringResult, "file/@size");
 		TestAssertions.assertXpathValueEquals(expectedFSize, stringResult, "file/@fSize");
 
 		String actualContents = readFile(null, filename);
