@@ -14,7 +14,7 @@ import org.springframework.transaction.TransactionSystemException;
 
 import lombok.Setter;
 
-public class StatusRecordingTransactionManagerTest extends StatusRecordingTransactionManagerTestBase<nl.nn.adapterframework.jta.StatusRecordingTransactionManagerTest.TestableStatusRecordingTransactionManager>{
+public class StatusRecordingTransactionManagerTest extends StatusRecordingTransactionManagerTestBase<StatusRecordingTransactionManagerTest.TestableStatusRecordingTransactionManager>{
 
 	@Override
 	protected TestableStatusRecordingTransactionManager createTransactionManager() {
@@ -46,7 +46,7 @@ public class StatusRecordingTransactionManagerTest extends StatusRecordingTransa
 		}
 
 	}
-	
+
 	@Override
 	@Before
 	public void setup() throws IOException {

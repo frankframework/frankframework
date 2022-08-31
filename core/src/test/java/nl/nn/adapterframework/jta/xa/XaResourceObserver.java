@@ -12,7 +12,7 @@ public class XaResourceObserver implements XAResource {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private XAResource target;
-	
+
 	public XaResourceObserver(XAResource target) {
 		this.target = target;
 	}

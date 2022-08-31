@@ -42,8 +42,8 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 				String url = (String)datasource[1];
 				String userId = (String)datasource[2];
 				String password = (String)datasource[3];
-				boolean testPeek = (boolean)datasource[4];
-				String xaImplClassName = (String)datasource[5];
+				//boolean testPeek = (boolean)datasource[4];
+				//String xaImplClassName = (String)datasource[5];
 
 				try { //Attempt to add the DataSource and skip it if it cannot be instantiated
 					DataSource ds = new DriverManagerDataSource(url, userId, password); // do not use createDataSource here, as it has side effects in descender classes

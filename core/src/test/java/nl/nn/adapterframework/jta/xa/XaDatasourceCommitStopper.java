@@ -30,7 +30,7 @@ public class XaDatasourceCommitStopper extends XaResourceObserver{
 			prepareFinished = new Semaphore();
 			commitCalled = new Semaphore();
 			performCommit = new Semaphore();
-		}		
+		}
 	}
 
 	public static XADataSource augmentXADataSource(XADataSource dataSource) {

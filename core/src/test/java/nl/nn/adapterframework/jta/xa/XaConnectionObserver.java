@@ -13,10 +13,10 @@ public class XaConnectionObserver implements XAConnection {
 
 	private XAConnection target;
 	private Function<XAResource,XAResource> resourceObservationProvider;
-	
+
 	public XaConnectionObserver(XAConnection target) {
 		this(target, r -> new XaResourceObserver(r));
-	}	
+	}
 	public XaConnectionObserver(XAConnection target, Function<XAResource,XAResource> resourceObservationProvider) {
 		this.target = target;
 		this.resourceObservationProvider = resourceObservationProvider;

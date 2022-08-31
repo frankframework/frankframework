@@ -13,7 +13,7 @@ public class XaDatasourceObserver implements XADataSource{
 
 	private XADataSource target;
 	private Function<XAConnection,XAConnection> connectionObservationProvider;
-	
+
 	public XaDatasourceObserver(XADataSource target) {
 		this(target, c -> new XaConnectionObserver(c));
 	}

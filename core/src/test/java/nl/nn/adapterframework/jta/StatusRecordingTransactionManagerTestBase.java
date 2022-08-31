@@ -27,7 +27,7 @@ public abstract class StatusRecordingTransactionManagerTestBase<S extends Status
 	public String folder;
 	public String statusFile;
 	public String tmUidFile;
-	
+
 	protected S transactionManager;
 
 	protected abstract S createTransactionManager();
@@ -56,7 +56,7 @@ public abstract class StatusRecordingTransactionManagerTestBase<S extends Status
 		return result;
 	}
 
-	
+
 	public void assertStatus(String status, String tmUid) {
 		assertEquals(status, read(statusFile));
 		if (tmUid!=null) {

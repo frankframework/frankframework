@@ -44,8 +44,11 @@ public class StatusRecordingTransactionManagerImplementationTest<S extends Statu
 	protected StatusRecordingTransactionManager txManagerReal;
 	private @Getter TestConfiguration configuration;
 
-
 	private String tableName;
+
+	@Parameterized.Parameter(0)
+	public @Getter TransactionManagerType transactionManagerType;
+
 
 	@Parameters(name= "{0}")
 	public static Collection data() throws NamingException {
@@ -61,9 +64,6 @@ public class StatusRecordingTransactionManagerImplementationTest<S extends Statu
 
 		return list;
 	}
-
-	@Parameterized.Parameter(0)
-	public @Getter TransactionManagerType transactionManagerType;
 
 
 	@BeforeClass
