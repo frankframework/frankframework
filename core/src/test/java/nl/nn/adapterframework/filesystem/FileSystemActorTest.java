@@ -685,6 +685,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 			MessageOutputStream mos = actor.provideOutputStream(session, null);
 			StreamUtil.copyStream(message.asInputStream(), mos.asStream(), 1000);
 			mos.close();
+			mos.close(); // must be possible to close AutoCloseable multiple times
 			return mos.getResponse();
 		}
 		return actor.doAction(message, pvl, session);

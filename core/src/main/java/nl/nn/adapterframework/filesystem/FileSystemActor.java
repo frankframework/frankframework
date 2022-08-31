@@ -577,10 +577,14 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			}
 			if(isWriteLineSeparator()) {
 				out = new FilterOutputStream(out) {
+					boolean closed=false;
 					@Override
 					public void close() throws IOException {
 						try {
-							out.write(eolArray);
+							if (!closed) {
+								out.write(eolArray);
+								closed=true;
+							}
 						} finally {
 							super.close();
 						}
