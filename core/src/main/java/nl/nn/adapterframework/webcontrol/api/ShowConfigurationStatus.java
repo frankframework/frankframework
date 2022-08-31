@@ -290,7 +290,11 @@ public final class ShowConfigurationStatus extends Base {
 				if(value.equals("stop")) { action = IbisAction.STOPADAPTER; }
 				if(value.equals("start")) { action = IbisAction.STARTADAPTER; }
 
-				getIbisManager().handleAction(action, "", adapterName, null, getUserPrincipalName(), false);
+				RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.IBISACTION);
+				builder.addHeader("action", action.name());
+				builder.addHeader("configuration", getAdapter(adapterName).getConfiguration().getName());
+				builder.addHeader("adapter", action);
+				callGateway(builder);
 
 				response.entity("{\"status\":\"ok\"}");
 			}
