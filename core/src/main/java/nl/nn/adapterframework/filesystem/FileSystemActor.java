@@ -17,6 +17,7 @@ package nl.nn.adapterframework.filesystem;
 
 import java.io.File;
 import java.io.FilterInputStream;
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -548,6 +549,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		if(isWriteLineSeparator()) {
 			out.write(eolArray);
 		}
+		out.close();
 	}
 
 	private void deleteEmptyFolder(F f) throws FileSystemException, IOException {
@@ -573,7 +575,8 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 
 	protected boolean canProvideOutputStream() {
 		return (getAction() == FileSystemAction.WRITE || getAction() == FileSystemAction.APPEND)
-				&& parameterList.findParameter(PARAMETER_FILENAME)!=null
+				&& parameterList.findParameter(PARAMETER_CONTENTS1)==null
+				&& (StringUtils.isNotEmpty(getFilename()) || parameterList.findParameter(PARAMETER_FILENAME)!=null)
 				&& !parameterList.isInputValueOrContextRequiredForResolution();
 	}
 
@@ -604,6 +607,21 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				out = ((IWritableFileSystem<F>)fileSystem).appendFile(file);
 			} else {
 				out = ((IWritableFileSystem<F>)fileSystem).createFile(file);
+			}
+			if (getBase64()!=null) {
+				out = new Base64OutputStream(out, getBase64()==Base64Pipe.Direction.ENCODE);
+			}
+			if(isWriteLineSeparator()) {
+				out = new FilterOutputStream(out) {
+					@Override
+					public void close() throws IOException {
+						try {
+							out.write(eolArray);
+						} finally {
+							super.close();
+						}
+					}
+				};
 			}
 			MessageOutputStream stream = new MessageOutputStream(owner, out, next);
 			stream.setResponse(new Message(FileSystemUtils.getFileInfo(fileSystem, file).toXML()));
