@@ -58,17 +58,17 @@ public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F
 
 			IBasicFileSystem<F> ifs = getFileSystem();
 			F file;
-			
+
 			try {
 				file = ifs.toFile(message.asString());
 			} catch (Exception e) {
 				throw new SenderException(getLogPrefix() + "unable to get file", e);
 			}
-			
+
 			XmlBuilder attachments = new XmlBuilder("attachments");
 			IWithAttachments<F,A> withAttachments = getFileSystem();
 			try {
-				Iterator<A> it = withAttachments.listAttachments(file); 
+				Iterator<A> it = withAttachments.listAttachments(file);
 				if (it!=null) {
 					while (it.hasNext()) {
 						A attachment = it.next();
@@ -77,7 +77,7 @@ public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F
 						attachmentXml.addAttribute("contentType", withAttachments.getAttachmentContentType(attachment));
 						attachmentXml.addAttribute("size", withAttachments.getAttachmentSize(attachment));
 						attachmentXml.addAttribute("filename", withAttachments.getAttachmentFileName(attachment));
-						
+
 						FileAttachment fileAttachment = (FileAttachment) attachment;
 						fileAttachment.load();
 						if(!attachmentsAsSessionKeys) {
@@ -96,7 +96,6 @@ public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F
 				throw new SenderException(e);
 			}
 			return new PipeRunResult(null, attachments.toString());
-			
 		}
 	}
 

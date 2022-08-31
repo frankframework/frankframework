@@ -34,7 +34,7 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 	private FS fileSystem;
 	private String folder;
 	private String messageIdPropertyKey;
-	
+
 	private String hideRegex = null;
 	private String hideMethod = "all";
 
@@ -44,7 +44,7 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 		this.folder = folder;
 		this.messageIdPropertyKey = messageIdPropertyKey;
 	}
-	
+
 	@Override
 	public boolean isTransacted() {
 		return false;

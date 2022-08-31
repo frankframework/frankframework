@@ -102,7 +102,7 @@ public class CompareIntegerPipe extends AbstractPipe {
 	}
 
 	private Integer getOperandValue(ParameterValueList pvl, String operandName, String sessionkey, Message message, PipeLineSession session) throws PipeRunException {
-		ParameterValue pv = pvl.getParameterValue(operandName);
+		ParameterValue pv = pvl.get(operandName);
 		Integer operand = null;
 		if(pv != null && pv.getValue() != null) {
 			operand = pv.asIntegerValue(0);

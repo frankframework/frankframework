@@ -75,7 +75,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	private @Getter String soapHeaderParam="soapHeader";
 	private @Getter LinkMethod linkMethod=LinkMethod.MESSAGEID;
 	private @Getter String destinationParam = null;
-	
+
 	protected ParameterList paramList = null;
 	private SoapWrapper soapWrapper = null;
 	private String responseHeaders = null;
@@ -83,9 +83,9 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 
 	public enum LinkMethod {
 		/** use the generated messageId as the correlationId in the selector for response messages */
-		MESSAGEID, 
+		MESSAGEID,
 		/** set the correlationId of the pipeline as the correlationId of the message sent, and use that as the correlationId in the selector for response messages */
-		CORRELATIONID, 
+		CORRELATIONID,
 		/** do not automatically set the correlationId of the message sent, but use use the value found in that header after sending the message as the selector for response messages */
 		CORRELATIONID_FROM_MESSAGE;
 	}
@@ -134,7 +134,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	}
 
 	@Override
-	public void addParameter(Parameter p) { 
+	public void addParameter(Parameter p) {
 		if (paramList==null) {
 			paramList=new ParameterList();
 		}
@@ -169,7 +169,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 			if (isSoap()) {
 				if (soapHeader==null) {
 					if (pvl!=null && StringUtils.isNotEmpty(getSoapHeaderParam())) {
-						ParameterValue soapHeaderParamValue=pvl.getParameterValue(getSoapHeaderParam());
+						ParameterValue soapHeaderParamValue=pvl.get(getSoapHeaderParam());
 						if (soapHeaderParamValue==null) {
 							log.warn("no SoapHeader found using parameter ["+getSoapHeaderParam()+"]");
 						} else {
@@ -259,11 +259,11 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 					}
 					return extractMessage(rawReplyMsg, session, isSoap(), getReplySoapHeaderSessionKey(),soapWrapper);
 				} finally {
-					if (mc != null) { 
-						try { 
-							mc.close(); 
-						} catch (JMSException e) { 
-							log.warn("JmsSender [" + getName() + "] got exception closing message consumer for reply",e); 
+					if(mc != null) {
+						try {
+							mc.close();
+						} catch (JMSException e) {
+							log.warn("JmsSender [" + getName() + "] got exception closing message consumer for reply", e);
 						}
 					}
 				}
@@ -282,11 +282,11 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 		} catch (JmsException e) {
 			throw new SenderException(e);
 		} finally {
-			if (mp != null) { 
-				try { 
-					mp.close(); 
-				} catch (JMSException e) { 
-					log.warn("JmsSender [" + getName() + "] got exception closing message producer",e); 
+			if(mp != null) {
+				try {
+					mp.close();
+				} catch (JMSException e) {
+					log.warn("JmsSender [" + getName() + "] got exception closing message producer", e);
 				}
 			}
 			closeSession(s);
@@ -295,7 +295,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 
 	public Destination getDestination(PipeLineSession session, ParameterValueList pvl) throws JmsException, NamingException, JMSException {
 		if (StringUtils.isNotEmpty(getDestinationParam())) {
-			String destinationName = pvl.getParameterValue(getDestinationParam()).asStringValue(null);
+			String destinationName = pvl.get(getDestinationParam()).asStringValue(null);
 			if (StringUtils.isNotEmpty(destinationName)) {
 				return getDestination(destinationName);
 			}
@@ -311,8 +311,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 			ParameterType type = property.getDefinition().getType();
 			String name = property.getDefinition().getName();
 
-			if ((!isSoap() || !name.equals(getSoapHeaderParam()) && 
-				(StringUtils.isEmpty(getDestinationParam()) || !name.equals(getDestinationParam())))) {
+			if ((!isSoap() || !name.equals(getSoapHeaderParam()) && (StringUtils.isEmpty(getDestinationParam()) || !name.equals(getDestinationParam())))) {
 
 				if (log.isDebugEnabled()) { log.debug(getLogPrefix()+"setting ["+type+"] property from param ["+name+"] to value ["+property.getValue()+"]"); }
 				switch(type) {
@@ -332,7 +331,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 			}
 		}
 	}
-	
+
 	@Override
 	public String toString() {
 		String result = super.toString();
@@ -345,7 +344,6 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 
 	}
 
-	
 	@IbisDoc({"1", "Parameter that is used, if specified and not empty, to determine the destination. Overrides the destination attribute", ""})
 	public void setDestinationParam(String string) {
 		destinationParam = string;
@@ -360,7 +358,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	public void setReplyToName(String replyTo) {
 		this.replyToName = replyTo;
 	}
-	
+
 	@IbisDoc({"4", "Value of the JMSType field", "not set by application"})
 	public void setMessageType(String string) {
 		messageType = string;

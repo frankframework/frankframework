@@ -55,14 +55,14 @@ import nl.nn.adapterframework.util.StreamUtil;
  */
 public class ZipWriterPipe extends FixedForwardPipe {
 
- 	private static final String ACTION_OPEN="open";
+	private static final String ACTION_OPEN="open";
 	private static final String ACTION_WRITE="write";
 	private static final String ACTION_STREAM="stream";
 	private static final String ACTION_CLOSE="close";
 
 	private static final String PARAMETER_FILENAME="filename";
 
- 	private @Getter String action=null;
+	private @Getter String action=null;
 	private @Getter String zipWriterHandle="zipwriterhandle";
 	private @Getter boolean closeInputstreamOnExit=true;
 	private @Getter boolean closeOutputstreamOnExit=true;
@@ -110,7 +110,7 @@ public class ZipWriterPipe extends FixedForwardPipe {
 		if (input instanceof OutputStream) {
 			resultStream=(OutputStream)input;
 		} else if (input instanceof HttpServletResponse) {
-			ParameterValue pv=pvl.getParameterValue(PARAMETER_FILENAME);
+			ParameterValue pv=pvl.get(PARAMETER_FILENAME);
 			if (pv==null) {
 				throw new PipeRunException(this,getLogPrefix(session)+"parameter 'filename' not found, but required if stream is HttpServletResponse");
 			}
@@ -146,7 +146,7 @@ public class ZipWriterPipe extends FixedForwardPipe {
 		if (sessionData==null) {
 			if (mustFind) {
 				throw new PipeRunException(this,getLogPrefix(session)+"cannot find session data");
-			} 
+			}
 			log.debug(getLogPrefix(session)+"did find session data, assuming already closed");
 		} else {
 			try {
@@ -185,7 +185,7 @@ public class ZipWriterPipe extends FixedForwardPipe {
 		if (sessionData==null) {
 			throw new PipeRunException(this,getLogPrefix(session)+"zipWriterHandle in session key ["+getZipWriterHandle()+"] is not open");
 		}
-		String filename = pvl.getParameterValue(PARAMETER_FILENAME).asStringValue();
+		String filename = pvl.get(PARAMETER_FILENAME).asStringValue();
 		if (StringUtils.isEmpty(filename)) {
 			throw new PipeRunException(this,getLogPrefix(session)+"filename cannot be empty");
 		}

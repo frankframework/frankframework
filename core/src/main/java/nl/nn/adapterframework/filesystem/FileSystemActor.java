@@ -267,7 +267,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			return getFilename();
 		}
 		if (pvl!=null && pvl.contains(PARAMETER_FILENAME)) {
-			return pvl.getParameterValue(PARAMETER_FILENAME).asStringValue(null);
+			return pvl.get(PARAMETER_FILENAME).asStringValue(null);
 		}
 		try {
 			return input.asString();
@@ -281,7 +281,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			return getDestination();
 		}
 		if (pvl!=null && pvl.contains(PARAMETER_DESTINATION)) {
-			String destination = pvl.getParameterValue(PARAMETER_DESTINATION).asStringValue(null);
+			String destination = pvl.get(PARAMETER_DESTINATION).asStringValue(null);
 			if (StringUtils.isEmpty(destination)) {
 				throw new FileSystemException("parameter ["+PARAMETER_DESTINATION+"] does not specify destination");
 			}
@@ -299,7 +299,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			return getInputFolder();
 		}
 		if (pvl!=null && pvl.contains(PARAMETER_INPUTFOLDER)) {
-			return pvl.getParameterValue(PARAMETER_INPUTFOLDER).asStringValue(null);
+			return pvl.get(PARAMETER_INPUTFOLDER).asStringValue(null);
 		}
 		try {
 			if (input==null || StringUtils.isEmpty(input.asString())) {
@@ -320,7 +320,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 
 			if (pvl != null && pvl.contains(PARAMETER_ACTION)) {
 				try {
-					action = EnumUtils.parse(FileSystemAction.class, pvl.getParameterValue(PARAMETER_ACTION).asStringValue(getAction()+""));
+					action = EnumUtils.parse(FileSystemAction.class, pvl.get(PARAMETER_ACTION).asStringValue(getAction()+""));
 				} catch(IllegalArgumentException e) {
 					throw new FileSystemException("unable to resolve the value of parameter ["+PARAMETER_ACTION+"]");
 				}
@@ -328,6 +328,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			} else {
 				action = getAction();
 			}
+
 			switch(action) {
 				case CREATE:{
 					F file=getFile(input, pvl);
