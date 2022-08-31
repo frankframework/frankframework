@@ -992,7 +992,6 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		try (Writer writer = target.asWriter()) {
 			writer.write(contents);
 		}
-		target.close();
 
 		// verify the filename is properly returned
 		String stringResult=target.getPipeRunResult().getResult().asString();

@@ -631,8 +631,13 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			MessageOutputStream stream = new MessageOutputStream(owner, out, next) {
 
 				@Override
-				public void afterClose() throws Exception {
-					setResponse(new Message(FileSystemUtils.getFileInfo(fileSystem, file).toXML()));
+				public Message getResponse() {
+					try {
+						return new Message(FileSystemUtils.getFileInfo(fileSystem, file).toXML());
+					} catch (FileSystemException e) {
+						log.warn("cannot get file information", e);
+						return null;
+					}
 				}
 
 			};
