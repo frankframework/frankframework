@@ -86,7 +86,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 	private @Getter int numRetries = 0;
 	private @Getter int firstDelay = 0;
 	private @Getter int retryDelay = 10000;
-	private @Getter @Setter boolean ignoreTableNotExist = false;
+	private @Getter boolean ignoreTableNotExist = false;
 
 	private @Getter @Setter TransactionAttribute transactionAttribute=TransactionAttribute.SUPPORTS;
 	private @Getter @Setter int transactionTimeout = 0;
@@ -339,6 +339,11 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 	@IbisDoc({"If > 0: The time in s to wait before the INSERT statement to obtain the lock is canceled. N.B. On Oracle hitting this lockWaitTimeout may cause the error: (SQLRecoverableException) SQLState [08003], errorCode [17008] connection closed", "0"})
 	public void setLockWaitTimeout(int i) {
 		lockWaitTimeout = i;
+	}
+
+	@IbisDoc({"If set <code>true</code> and the IBISLOCK table does not exist in the database, the process continues as if the lock was obtained", ""})
+	public void setIgnoreTableNotExist(boolean b) {
+		ignoreTableNotExist = b;
 	}
 
 }

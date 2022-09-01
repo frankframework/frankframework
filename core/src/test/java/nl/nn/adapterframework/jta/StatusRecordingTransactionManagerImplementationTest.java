@@ -1,14 +1,14 @@
 package nl.nn.adapterframework.jta;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.hasItems;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeThat;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import javax.naming.NamingException;
 
@@ -30,6 +30,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
+import nl.nn.adapterframework.jdbc.TransactionManagerTestBase;
 import nl.nn.adapterframework.jta.xa.XaDatasourceCommitStopper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.ConcurrentActionTester;
@@ -43,6 +44,8 @@ public class StatusRecordingTransactionManagerImplementationTest<S extends Statu
 
 	private static TransactionManagerType singleTransactionManagerType = null; // set to a specific transaction manager type, to speed up testing
 
+	private static String SECONDARY_PRODUCT="H2";
+	
 	protected SpringTxManagerProxy txManager;
 	protected StatusRecordingTransactionManager txManagerReal;
 	private @Getter TestConfiguration configuration;
@@ -51,27 +54,19 @@ public class StatusRecordingTransactionManagerImplementationTest<S extends Statu
 
 	@Parameterized.Parameter(0)
 	public @Getter TransactionManagerType transactionManagerType;
+	@Parameterized.Parameter(1)
+	public String productKey;
 
 
-	@Parameters(name= "{0}")
+	@Parameters(name= "{0}: {1}")
 	public static Collection data() throws NamingException {
-		TransactionManagerType[] transactionManagerTypes = { singleTransactionManagerType };
-		if (singleTransactionManagerType==null) {
-			transactionManagerTypes = TransactionManagerType.values();
-		}
-		List<Object> list = new ArrayList<>();
-
-		for(TransactionManagerType type: transactionManagerTypes) {
-			list.add(type);
-		}
-
-		return list;
+		return TransactionManagerTestBase.data();
 	}
 
 
 	@BeforeClass
 	public static void init() {
-		assumeThat(URLDataSourceFactory.availableDatasources, hasItems("H2", "Oracle"));
+		assumeThat(URLDataSourceFactory.availableDatasources, hasItems(SECONDARY_PRODUCT));
 		for (TransactionManagerType tmt:TransactionManagerType.values()) {
 			tmt.closeConfigurationContext();
 		}
@@ -80,12 +75,13 @@ public class StatusRecordingTransactionManagerImplementationTest<S extends Statu
 	@Override
 	public void setup() throws IOException {
 		assumeFalse(transactionManagerType==TransactionManagerType.DATASOURCE);
+		assumeThat(productKey, not(equalTo(SECONDARY_PRODUCT)));
 		super.setup();
 	}
 
 	@Override
 	protected S createTransactionManager() {
-		configuration = transactionManagerType.getConfigurationContext("H2");
+		configuration = transactionManagerType.getConfigurationContext(productKey);
 		txManager = configuration.getBean(SpringTxManagerProxy.class, "txManager");
 		txManagerReal = configuration.getBean(StatusRecordingTransactionManager.class, "txReal");
 		statusFile = txManagerReal.getStatusFile();
@@ -191,8 +187,8 @@ public class StatusRecordingTransactionManagerImplementationTest<S extends Statu
 
 		@Override
 		public void initAction() throws Exception {
-			prepareTable("H2");
-			prepareTable("Oracle");
+			prepareTable(productKey);
+			prepareTable(SECONDARY_PRODUCT);
 		}
 
 		@Override
@@ -200,13 +196,13 @@ public class StatusRecordingTransactionManagerImplementationTest<S extends Statu
 			DirectQuerySender fs1 = new DirectQuerySender();
 			configuration.autowireByName(fs1);
 			fs1.setName("fs1");
-			fs1.setDatasourceName("H2");
+			fs1.setDatasourceName(productKey);
 			fs1.configure();
 
 			DirectQuerySender fs2 = new DirectQuerySender();
 			configuration.autowireByName(fs2);
 			fs2.setName("fs1");
-			fs2.setDatasourceName("Oracle");
+			fs2.setDatasourceName(SECONDARY_PRODUCT);
 			fs2.configure();
 
 			fs1.open();
