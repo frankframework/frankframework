@@ -147,7 +147,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	private @Getter int retryMaxInterval=1;
 	private @Getter String retryXPath;
 	private @Getter String retryNamespaceDefs;
-	private @Getter int presumedTimeOutInterval=10;
+	private @Getter int presumedTimeOutInterval=0;
 
 	private @Getter boolean streamResultToServlet=false;
 
@@ -748,7 +748,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			if  (pipeline!=null) {
 				Adapter adapter = pipeline.getAdapter();
 				if (adapter!=null) {
-					if (getPresumedTimeOutInterval()>=0 && !isConfigurationStubbed) {
+					if (getPresumedTimeOutInterval()>0 && !isConfigurationStubbed) {
 						long lastExitIsTimeoutDate = adapter.getLastExitIsTimeoutDate(getName());
 						if (lastExitIsTimeoutDate>0) {
 							long duration = startTime - lastExitIsTimeoutDate;
@@ -807,7 +807,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			if (pipeline!=null) {
 				Adapter adapter = pipeline.getAdapter();
 				if (adapter!=null) {
-					if (getPresumedTimeOutInterval()>=0 && !ConfigurationUtils.isConfigurationStubbed(getConfigurationClassLoader())) {
+					if (getPresumedTimeOutInterval()>0 && !ConfigurationUtils.isConfigurationStubbed(getConfigurationClassLoader())) {
 						if (!PRESUMED_TIMEOUT_FORWARD.equals(exitState)) {
 							adapter.setLastExitState(getName(), System.currentTimeMillis(), exitState);
 						}
@@ -1150,7 +1150,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		this.retryNamespaceDefs = retryNamespaceDefs;
 	}
 
-	@IbisDoc({"23", "when the previous call was a timeout, the maximum time <i>in seconds</i> after this timeout to presume the current call is also a timeout. a value of -1 indicates to never presume timeouts", "10"})
+	@IbisDoc({"23", "when the previous call was a timeout, the maximum time <i>in seconds</i> after this timeout to presume the current call is also a timeout.", "0"})
 	public void setPresumedTimeOutInterval(int i) {
 		presumedTimeOutInterval = i;
 	}
