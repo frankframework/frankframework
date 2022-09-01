@@ -21,6 +21,7 @@ Upcoming (7.8)
   - null values are rendered as '<elem nil="true"/>' instead of '<elem>null</elem>'
   - default array element containers are '<item>' instead of '<array>'
   - multidimensional arrays with scalar values are not flattened into one dimensional arrays any more
+- MessageSendingPipe and descendants (like SenderPipe and ForEachChildElementPipe) no longer set presumedTimeOutInterval by default.
 
 
 7.7
