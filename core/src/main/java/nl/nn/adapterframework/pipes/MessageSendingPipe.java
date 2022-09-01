@@ -1113,7 +1113,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 
 
 	/**
-	 * The message  (e.g. 'receiver timed out') that is returned when the time listening for a reply message
+	 * The message (e.g. 'receiver timed out') that is returned when the time listening for a reply message
 	 * exceeds the timeout, or in other situations no reply message is received.
 	 */
 	public void setResultOnTimeOut(String newResultOnTimeOut) {
