@@ -1,7 +1,9 @@
 package nl.nn.adapterframework.jta;
 
+import static org.hamcrest.Matchers.hasItems;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeThat;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,6 +35,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.ConcurrentActionTester;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TransactionManagerType;
+import nl.nn.adapterframework.testutil.URLDataSourceFactory;
 import nl.nn.adapterframework.util.Semaphore;
 
 @RunWith(Parameterized.class)
@@ -68,6 +71,7 @@ public class StatusRecordingTransactionManagerImplementationTest<S extends Statu
 
 	@BeforeClass
 	public static void init() {
+		assumeThat(URLDataSourceFactory.availableDatasources, hasItems("H2", "Oracle"));
 		for (TransactionManagerType tmt:TransactionManagerType.values()) {
 			tmt.closeConfigurationContext();
 		}

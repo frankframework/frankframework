@@ -1,6 +1,6 @@
 package nl.nn.adapterframework.jdbc;
 
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -570,6 +570,10 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		try {
 			JdbcUtil.executeStatement(dbmsSupport,connection, "UPDATE "+TEST_TABLE+" SET TINT=4 WHERE TKEY=10", null);
 		} catch (Exception e) {
+			if (dbmsSupport.getDbms()==Dbms.MSSQL) {
+				log.info("Allow MSSQL to fail concurrent update with an exception (happens in case 3, 4 and 5): "+e.getMessage());
+				return false;
+			}
 			fail("Got the message, but cannot update the row: "+e.getMessage());
 		}
 		return true;
