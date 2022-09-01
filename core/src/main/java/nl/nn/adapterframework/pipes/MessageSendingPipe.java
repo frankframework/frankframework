@@ -58,6 +58,7 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.core.IMessageBrowser.HideMethod;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
@@ -136,7 +137,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	private @Getter String auditTrailXPath;
 	private @Getter String auditTrailNamespaceDefs;
 	private @Getter boolean useInputForExtract = true;
-	private @Getter String hideMethod = "all";
+	private @Getter @Setter HideMethod hideMethod = HideMethod.ALL;
 
 	private @Getter boolean checkXmlWellFormed = false;
 	private @Getter String checkRootTag;
@@ -255,11 +256,6 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				if (getListener() instanceof HasPhysicalDestination) {
 					log.info(getLogPrefix(null)+"has listener on "+((HasPhysicalDestination)getListener()).getPhysicalDestinationName());
 				}
-			}
-
-			if (!(getHideMethod().equalsIgnoreCase("all"))
-					&& (!(getHideMethod().equalsIgnoreCase("firstHalf")))) {
-				throw new ConfigurationException("invalid value for hideMethod [" + getHideMethod() + "], must be 'all' or 'firstHalf'");
 			}
 
 			if (isCheckXmlWellFormed() || StringUtils.isNotEmpty(getCheckRootTag())) {
@@ -1095,8 +1091,8 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		super.setHideRegex(hideRegex);
 	}
 
-	@IbisDoc({"(Only used when hideRegex is not empty and only applies to error/logstore) either <code>all</code> or <code>firsthalf</code>. when <code>firsthalf</code> only the first half of the string is masked, otherwise (<code>all</code>) the entire string is masked", "all"})
-	public void setHideMethod(String hideMethod) {
+	@IbisDoc({"(Only used when hideRegex is not empty and only applies to error/logstore)", "all"})
+	public void setHideMethod(HideMethod hideMethod) {
 		this.hideMethod = hideMethod;
 	}
 
