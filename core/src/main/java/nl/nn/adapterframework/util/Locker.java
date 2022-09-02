@@ -300,7 +300,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 	}
 
 
-	@IbisDoc({"Identifier for this lock", ""})
+	@IbisDoc({"Identifier for this lock"})
 	@Mandatory
 	public void setObjectId(String objectId) {
 		this.objectId = objectId;
@@ -311,7 +311,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 		this.type = type;
 	}
 
-	@IbisDoc({"Format for date which is added after <code>objectid</code> (e.g. yyyyMMdd to be sure the job is executed only once a day)", ""})
+	@IbisDoc({"Format for date which is added after <code>objectid</code> (e.g. yyyyMMdd to be sure the job is executed only once a day)"})
 	public void setDateFormatSuffix(String dateFormatSuffix) {
 		this.dateFormatSuffix = dateFormatSuffix;
 	}
@@ -341,7 +341,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 		lockWaitTimeout = i;
 	}
 
-	@IbisDoc({"If set <code>true</code> and the IBISLOCK table does not exist in the database, the process continues as if the lock was obtained", ""})
+	@IbisDoc({"If set <code>true</code> and the IBISLOCK table does not exist in the database, the process continues as if the lock was obtained"})
 	public void setIgnoreTableNotExist(boolean b) {
 		ignoreTableNotExist = b;
 	}

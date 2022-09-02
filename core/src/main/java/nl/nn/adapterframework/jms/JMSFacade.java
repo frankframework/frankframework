@@ -793,7 +793,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	/**
 	 * The name of the destination, this may be a <code>queue</code> or <code>topic</code> name.
 	 */
-	@IbisDoc({"1", "Name of the JMS destination (queue or topic) to use", ""})
+	@IbisDoc({"1", "Name of the JMS destination (queue or topic) to use"})
 	public void setDestinationName(String destinationName) {
 		this.destinationName = destinationName;
 	}
@@ -854,7 +854,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 * The JNDI-name of the connection factory to use to connect to a <i>queue</i> if {@link #isTransacted()} returns <code>false</code>.
 	 * The corresponding connection factory should be configured not to support XA transactions.
 	 */
-	@IbisDoc({"6", "JNDI-name of the queueConnectionFactory, used when <code>destinationType<code>=</code>QUEUE</code>", ""})
+	@IbisDoc({"6", "JNDI-name of the queueConnectionFactory, used when <code>destinationType<code>=</code>QUEUE</code>"})
 	public void setQueueConnectionFactoryName(String name) {
 		queueConnectionFactoryName=name;
 	}
@@ -863,7 +863,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 * The JNDI-name of the connection factory to use to connect to a <i>topic</i> if {@link #isTransacted()} returns <code>false</code>.
 	 * The corresponding connection factory should be configured not to support XA transactions.
 	 */
-	@IbisDoc({"7", "JNDI-name of the topicConnectionFactory, used when <code>destinationType<code>=</code>TOPIC</code>", ""})
+	@IbisDoc({"7", "JNDI-name of the topicConnectionFactory, used when <code>destinationType<code>=</code>TOPIC</code>"})
 	public void setTopicConnectionFactoryName(String topicConnectionFactoryName) {
 		this.topicConnectionFactoryName = topicConnectionFactoryName;
 	}
@@ -924,7 +924,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		this.messageSelector=newMessageSelector;
 	}
 
-	@IbisDoc({"14", "Alias used to obtain credentials for authentication to JMS server", ""})
+	@IbisDoc({"14", "Alias used to obtain credentials for authentication to JMS server"})
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
