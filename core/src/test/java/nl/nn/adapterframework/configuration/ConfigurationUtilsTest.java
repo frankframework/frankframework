@@ -517,6 +517,12 @@ public class ConfigurationUtilsTest extends Mockito {
 		stub4testtoolTest(directory, false);
 	}
 
+	@Test
+	public void stub4testtoolDisableStub() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/DisableStub";
+		stub4testtoolTest(directory, false);
+	}
+	
 	private void stub4testtoolTest(String baseDirectory, boolean disableValidators) throws Exception {
 		Map<String, Object> parameters = new Hashtable<String, Object>();
 		parameters.put(STUB4TESTTOOL_XSLT_VALIDATORS_PARAM, disableValidators);

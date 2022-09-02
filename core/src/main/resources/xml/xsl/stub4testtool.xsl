@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:stub="http://frankframework.org/stub">
 	<xsl:output method="xml" indent="yes" omit-xml-declaration="yes" />
 	<!-- Parameter disableValidators has been used to test the impact of validators on memory usage -->
 	<xsl:param name="disableValidators"/>
@@ -411,4 +411,14 @@
 		<xsl:text>&gt;</xsl:text>
 	</xsl:template>
 
+	<!-- Disable stubbing if set. -->
+	<!-- This uses priority="1" to ensure it has higher priority than matching templates with default priority, which would otherwise result in error XTRE0540 (ambiguous rule match)-->
+	<xsl:template match="*[lower-case(@stub:disableStub)=('true','!false')]" priority="1">
+		<xsl:copy-of select="."/>
+	</xsl:template>
+
+	<!-- disableStub can be defined on the listener, in that case also do not stub the receiver -->
+	<xsl:template match="receiver[lower-case(listener/@stub:disableStub)=('true','!false')]" priority="1">
+		<xsl:copy-of select="."/>
+	</xsl:template>
 </xsl:stylesheet>
