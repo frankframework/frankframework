@@ -23,7 +23,7 @@ import nl.nn.adapterframework.jdbc.JdbcTestBase;
 import nl.nn.adapterframework.jdbc.QueryExecutionContext;
 import nl.nn.adapterframework.util.StreamUtil;
 
-@Ignore("Tests for Blobs take much time and memory to test regularly")
+@Ignore("Tests for Blobs take too much time and memory to test regularly")
 public class TestBlobs extends JdbcTestBase {
 
 	boolean testBigBlobs = false;

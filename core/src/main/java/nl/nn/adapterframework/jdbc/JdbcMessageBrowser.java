@@ -65,7 +65,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	private @Getter String hostField=null;
 
 	private @Getter @Setter String hideRegex = null;
-	private @Getter @Setter String hideMethod = "all";
+	private @Getter @Setter HideMethod hideMethod = HideMethod.ALL;
 
 	private @Getter SortOrder order = null;
 	private String messagesOrder = AppConstants.getInstance().getString("browse.messages.order", "DESC");

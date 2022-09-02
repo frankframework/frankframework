@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -67,6 +67,7 @@ import jakarta.json.JsonStructure;
 import jakarta.json.JsonWriter;
 import jakarta.json.JsonWriterFactory;
 import jakarta.json.stream.JsonGenerator;
+import nl.nn.adapterframework.core.IMessageBrowser.HideMethod;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
@@ -1261,15 +1262,14 @@ public class Misc {
 	 * @see #hideFirstHalf(String, String)
 	 * @see #hideAll(String, String)
 	 */
-	public static String cleanseMessage(String inputString, String regexForHiding, String hideMethod) {
+	public static String cleanseMessage(String inputString, String regexForHiding, HideMethod hideMethod) {
 		if (StringUtils.isEmpty(regexForHiding)) {
 			return inputString;
 		}
-		if ("firstHalf".equalsIgnoreCase(hideMethod)) {
+		if (hideMethod == HideMethod.FIRSTHALF) {
 			return hideFirstHalf(inputString, regexForHiding);
-		} else {
-			return hideAll(inputString, regexForHiding);
 		}
+		return hideAll(inputString, regexForHiding);
 	}
 
 	/**

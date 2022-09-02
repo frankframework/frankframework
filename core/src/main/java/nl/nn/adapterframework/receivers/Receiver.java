@@ -57,6 +57,7 @@ import nl.nn.adapterframework.core.IKnowsDeliveryCount;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IManagable;
 import nl.nn.adapterframework.core.IMessageBrowser;
+import nl.nn.adapterframework.core.IMessageBrowser.HideMethod;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPortConnectedListener;
@@ -265,7 +266,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	private @Getter boolean removeCompactMsgNamespaces = true;
 
 	private @Getter String hideRegex = null;
-	private @Getter String hideMethod = "all";
+	private @Getter HideMethod hideMethod = HideMethod.ALL;
 	private @Getter String hiddenInputSessionKeys=null;
 
 	private Counter numberOfExceptionsCaughtWithoutMessageBeingReceived = new Counter(0);
@@ -610,9 +611,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			}
 			if (!StringUtils.isEmpty(getElementToMove()) && !StringUtils.isEmpty(getElementToMoveChain())) {
 				throw new ConfigurationException("cannot have both an elementToMove and an elementToMoveChain specified");
-			}
-			if (!(getHideMethod().equalsIgnoreCase("all")) && (!(getHideMethod().equalsIgnoreCase("firstHalf")))) {
-				throw new ConfigurationException(getLogPrefix() + "invalid value for hideMethod [" + getHideMethod() + "], must be 'all' or 'firstHalf'");
 			}
 			if (getListener() instanceof ReceiverAware) {
 				((ReceiverAware)getListener()).setReceiver(this);
@@ -2132,8 +2130,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		this.hideRegex = hideRegex;
 	}
 
-	@IbisDoc({"(Only used when hideRegex is not empty) either <code>all</code> or <code>firstHalf</code>. When <code>firstHalf</code> only the first half of the string is masked, otherwise (<code>all</code>) the entire string is masked", "all"})
-	public void setHideMethod(String hideMethod) {
+	@IbisDoc({"Only used when hideRegex is not empty", "all"})
+	public void setHideMethod(HideMethod hideMethod) {
 		this.hideMethod = hideMethod;
 	}
 

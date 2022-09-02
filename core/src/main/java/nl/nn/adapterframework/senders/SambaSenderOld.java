@@ -155,7 +155,7 @@ public class SambaSenderOld extends SenderWithParametersBase {
 			} else if (getAction().equalsIgnoreCase("list")) {
 				return new Message(listFilesInDirectory(file));
 			} else if (getAction().equalsIgnoreCase("upload")) {
-				Message paramValue = pvl.getParameterValue("file").asMessage();
+				Message paramValue = pvl.get("file").asMessage();
 
 				try(SmbFileOutputStream out = new SmbFileOutputStream(file)) {
 					out.write(paramValue.asByteArray());
@@ -184,7 +184,7 @@ public class SambaSenderOld extends SenderWithParametersBase {
 				else
 					throw new SenderException("trying to remove a file instead of a directory");
 			} else if (getAction().equalsIgnoreCase("rename")) {
-				String destination = pvl.getParameterValue("destination").asStringValue();
+				String destination = pvl.get("destination").asStringValue();
 				if (destination == null)
 					throw new SenderException("unknown destination[+destination+]");
 

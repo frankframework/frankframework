@@ -23,6 +23,7 @@ import java.util.Comparator;
  */
 public class FileComparator implements Comparator<File> {
 
+	@Override
 	public int compare(File file1, File file2) {
 		long l = file1.lastModified() - file2.lastModified();
 		if (l < 0) {

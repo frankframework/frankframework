@@ -41,7 +41,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.lang3.StringUtils;
@@ -53,13 +52,14 @@ import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
+import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.management.bus.RequestMessageBuilder;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.NameComparatorBase;
 import nl.nn.adapterframework.util.RunState;
-import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
  * Shows the configuration (with resolved variables).
@@ -78,33 +78,13 @@ public final class ShowConfiguration extends Base {
 	@Path("/configurations")
 	@Produces(MediaType.APPLICATION_XML)
 	public Response getXMLConfiguration(@QueryParam("loadedConfiguration") boolean loaded, @QueryParam("flow") String flow) throws ApiException {
-
 		if(StringUtils.isNotEmpty(flow)) {
-			FlowDiagramManager flowDiagramManager = getFlowDiagramManager();
-
-			try {
-				ResponseBuilder response;
-				InputStream configFlow = flowDiagramManager.get(getIbisManager().getConfigurations());
-				if(configFlow != null) {
-					response = Response.ok(configFlow, flowDiagramManager.getMediaType());
-				} else {
-					response = Response.noContent();
-				}
-				return response.build();
-			} catch (IOException e) {
-				throw new ApiException(e);
-			}
-		}
-		else {
-			String result = "";
-			for (Configuration configuration : getIbisManager().getConfigurations()) {
-				if (loaded) {
-					result = result + configuration.getLoadedConfiguration();
-				} else {
-					result = result + configuration.getOriginalConfiguration();
-				}
-			}
-			return Response.status(Response.Status.OK).entity(result).build();
+			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.FLOW);
+			return callGateway(builder);
+		} else {
+			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION);
+			if(loaded) builder.addHeader("loaded", loaded);
+			return callGateway(builder);
 		}
 	}
 
@@ -114,7 +94,6 @@ public final class ShowConfiguration extends Base {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response fullReload(LinkedHashMap<String, Object> json) throws ApiException {
-
 		Response.ResponseBuilder response = Response.status(Response.Status.NO_CONTENT); //PUT defaults to no content
 
 		for (Entry<String, Object> entry : json.entrySet()) {
@@ -179,7 +158,7 @@ public final class ShowConfiguration extends Base {
 			if(state==RunState.STARTED) {
 				for (Receiver<?> receiver: adapter.getReceivers()) {
 					RunState rState = receiver.getRunState();
-	
+
 					if(rState!=RunState.STARTED) {
 						errors.add("receiver["+receiver.getName()+"] of adapter["+adapter.getName()+"] is in state["+rState.toString()+"]");
 						state = RunState.ERROR;
@@ -214,29 +193,20 @@ public final class ShowConfiguration extends Base {
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/configurations/{configuration}/flow")
-	@Produces(MediaType.TEXT_PLAIN)
 	public Response getConfigurationFlow(@PathParam("configuration") String configurationName) throws ApiException {
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.FLOW);
+		builder.addHeader("configuration", configurationName);
+		return callGateway(builder);
+	}
 
-		Configuration configuration = getIbisManager().getConfiguration(configurationName);
-
-		if(configuration == null){
-			throw new ApiException("Configuration not found!");
-		}
-
-		FlowDiagramManager flowDiagramManager = getFlowDiagramManager();
-
-		try {
-			ResponseBuilder response;
-			InputStream flow = flowDiagramManager.get(configuration);
-			if(flow != null) {
-				response = Response.ok(flow, flowDiagramManager.getMediaType());
-			} else {
-				response = Response.noContent();
-			}
-			return response.build();
-		} catch (IOException e) {
-			throw new ApiException(e);
-		}
+	@GET
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/configurations/{configuration}/adapters/{name}/flow")
+	public Response getAdapterFlow(@PathParam("configuration") String configurationName, @PathParam("name") String adapterName) throws ApiException {
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.FLOW);
+		builder.addHeader("configuration", configurationName);
+		builder.addHeader("adapter", adapterName);
+		return callGateway(builder);
 	}
 
 	@PUT

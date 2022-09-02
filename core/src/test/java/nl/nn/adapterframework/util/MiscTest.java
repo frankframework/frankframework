@@ -33,6 +33,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import nl.nn.adapterframework.core.IMessageBrowser.HideMethod;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
@@ -530,7 +531,7 @@ public class MiscTest {
 	public void testCleanseMessage() throws Exception {
 		String s = "Donald Duck 23  Hey hey  14  Wooo";
 		String regex = "\\d";
-		String res = Misc.cleanseMessage(s, regex, " does not matter");
+		String res = Misc.cleanseMessage(s, regex, HideMethod.ALL);
 		assertEquals("Donald Duck **  Hey hey  **  Wooo", res);
 	}
 

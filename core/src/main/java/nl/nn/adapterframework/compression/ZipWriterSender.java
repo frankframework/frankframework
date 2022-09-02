@@ -46,11 +46,11 @@ public class ZipWriterSender extends SenderWithParametersBase {
 
 	private static final String PARAMETER_FILENAME="filename";
 	private static final String PARAMETER_CONTENTS="contents";
- 
+
 	private String zipWriterHandle="zipwriterhandle";
 	private boolean closeInputstreamOnExit=true;
 	private String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-	
+
 	private Parameter filenameParameter=null;
 	private Parameter contentsParameter=null;
 
@@ -77,16 +77,16 @@ public class ZipWriterSender extends SenderWithParametersBase {
 
 		ZipWriter sessionData=ZipWriter.getZipWriter(session,getZipWriterHandle());
 		if (sessionData==null) {
-			throw new SenderException("zipWriterHandle in session key ["+getZipWriterHandle()+"] is not open");		
-		} 
+			throw new SenderException("zipWriterHandle in session key ["+getZipWriterHandle()+"] is not open");
+		}
 		try {
-			String filename=filenameParameter==null?message.asString():(String)pvl.getParameterValue(PARAMETER_FILENAME).getValue();
+			String filename=filenameParameter==null?message.asString():(String)pvl.get(PARAMETER_FILENAME).getValue();
 			if (contentsParameter==null) {
 				if (message!=null) {
 					sessionData.writeEntry(filename,message,isCloseInputstreamOnExit(),getCharset());
 				}
 			} else {
-				Message paramValue=Message.asMessage(pvl.getParameterValue(PARAMETER_CONTENTS).getValue());
+				Message paramValue=Message.asMessage(pvl.get(PARAMETER_CONTENTS).getValue());
 				sessionData.writeEntry(filename,paramValue,isCloseInputstreamOnExit(),getCharset());
 			}
 			return message;
@@ -120,7 +120,7 @@ public class ZipWriterSender extends SenderWithParametersBase {
 	public String getCharset() {
 		return charset;
 	}
-	
+
 	@IbisDoc({"session key used to refer to zip session. must be used if zipwriterpipes are nested", "zipwriterhandle"})
 	public void setZipWriterHandle(String string) {
 		zipWriterHandle = string;

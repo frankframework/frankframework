@@ -7,7 +7,7 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<revision>7.8-SNAPSHOT</revision>
+		<revision>7.9-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<log4j2.version>2.18.0</log4j2.version>
 		<cxf.version>3.5.3</cxf.version>
@@ -16,17 +16,17 @@
 		<jboss-logging.version>3.4.2.Final</jboss-logging.version>
 		<argLine /> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
-		<frankdoc.version>1.1-SNAPSHOT</frankdoc.version>
+		<frankdoc.version>1.1</frankdoc.version>
 
 		<!-- DB Driver Versions -->
 		<h2.driver.version>2.1.214</h2.driver.version>
 		<oracle.driver.version>18.3.0.0</oracle.driver.version>
 		<oracle.driver.jdkversion>8</oracle.driver.jdkversion>
 		<mssql.driver.version>7.4.1.jre8</mssql.driver.version>
-		<mysql.driver.version>8.0.29</mysql.driver.version>
+		<mysql.driver.version>8.0.30</mysql.driver.version>
 		<mariadb.driver.version>2.7.6</mariadb.driver.version>
-		<postgresql.driver.version>42.4.1</postgresql.driver.version>
-		<mongodb.driver.version>4.7.0</mongodb.driver.version>
+		<postgresql.driver.version>42.5.0</postgresql.driver.version>
+		<mongodb.driver.version>4.7.1</mongodb.driver.version>
 	</properties>
 
 	<name>Ibis AdapterFramework parent</name>
@@ -476,7 +476,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
-					<version>3.4.0</version>
+					<version>3.4.1</version>
 					<configuration>
 						<doclint>none</doclint>
 						<tags>
@@ -536,12 +536,12 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-site-plugin</artifactId>
-					<version>3.9.1</version>
+					<version>3.12.1</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-checkstyle-plugin</artifactId>
-					<version>3.1.2</version>
+					<version>3.2.0</version>
 					<configuration>
 						<configLocation>${iaf.rootdir}/checkstyle.xml</configLocation>
 						<logViolationsToConsole>true</logViolationsToConsole>
@@ -566,7 +566,7 @@
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>flatten-maven-plugin</artifactId>
-					<version>1.2.7</version>
+					<version>1.3.0</version>
 					<configuration>
 						<updatePomFile>true</updatePomFile>
 						<flattenMode>resolveCiFriendliesOnly</flattenMode>
@@ -717,7 +717,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.4.0</version>
+				<version>3.4.1</version>
 				<inherited>false</inherited>
 				<reportSets>
 					<reportSet>
@@ -770,7 +770,7 @@
 					<plugin>
 						<groupId>org.sonatype.plugins</groupId>
 						<artifactId>nexus-staging-maven-plugin</artifactId>
-						<version>1.6.8</version>
+						<version>1.6.13</version>
 						<extensions>true</extensions>
 						<configuration>
 							<serverId>ossrh</serverId>
@@ -921,7 +921,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-javadoc-plugin</artifactId>
-						<version>3.4.0</version>
+						<version>3.4.1</version>
 						<configuration>
 							<sourcepath>${project.build.directory}/generated-sources/delombok</sourcepath>
 						</configuration>

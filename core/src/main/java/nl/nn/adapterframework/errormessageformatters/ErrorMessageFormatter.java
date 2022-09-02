@@ -52,7 +52,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author  Gerrit van Brakel
  */
 public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProvider {
-    protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	/**
@@ -62,13 +62,13 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 	 */
 	@Override
 	public Message format(String errorMessage, Throwable t, INamedObject location, Message originalMessage, String messageId, long receivedTime) {
-	
+
 		String details = null;
 		errorMessage = getErrorMessage(errorMessage, t);
 		if (t != null) {
 			details = ExceptionUtils.getStackTrace(t);
 		}
-		 
+
 		String originator = AppConstants.getInstance().getProperty("application.name")+" "+ AppConstants.getInstance().getProperty("application.version");
 		// Build a Base xml
 		XmlBuilder errorXml = new XmlBuilder("errorMessage");

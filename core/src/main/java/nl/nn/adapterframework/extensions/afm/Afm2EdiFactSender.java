@@ -49,7 +49,7 @@ public class Afm2EdiFactSender implements ISender {
 
 	public static final String VERWERKTAG = "VRWRKCD";
 	public static final String TPNRTAG = "AL_RECCRT";
-	
+
 	private static final String contractRoot = "Contractdocument";
 	private static final String mantelRoot = "Mantel";
 	private static final String onderdeelRoot = "Onderdeel";
@@ -87,7 +87,7 @@ public class Afm2EdiFactSender implements ISender {
 		}
 	}
 
-	private void appendArray(char aArray[], StringBuffer aRes) {
+	private void appendArray(char[] aArray, StringBuffer aRes) {
 		String aStr = new String(aArray);
 		appendString(aStr, aRes);
 	}
@@ -137,7 +137,6 @@ public class Afm2EdiFactSender implements ISender {
 		regelTeller = 0;
 	}
 	public String execute(String aInput) throws DomBuilderException {
-		 
 		Document doc = XmlUtils.buildDomDocument(aInput);
 
 		NodeList contractList = doc.getElementsByTagName(contractRoot);
@@ -301,7 +300,7 @@ public class Afm2EdiFactSender implements ISender {
 	public String getName() {
 		return name;
 	}
-	
+
 	public void setDestination(String newDestination) {
 		destination = newDestination;
 	}
