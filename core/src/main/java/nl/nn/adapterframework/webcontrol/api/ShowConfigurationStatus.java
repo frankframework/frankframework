@@ -15,7 +15,6 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.security.KeyStore;
@@ -47,7 +46,6 @@ import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.lang3.StringUtils;
@@ -74,6 +72,8 @@ import nl.nn.adapterframework.http.RestListener;
 import nl.nn.adapterframework.jdbc.JdbcSenderBase;
 import nl.nn.adapterframework.jms.JmsBrowser;
 import nl.nn.adapterframework.jms.JmsListenerBase;
+import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.management.bus.RequestMessageBuilder;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.AppConstants;
@@ -81,7 +81,6 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.RunState;
-import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
  * Get adapter information from either all or a specified adapter
@@ -381,23 +380,14 @@ public final class ShowConfigurationStatus extends Base {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters/{name}/flow")
 	@Produces(MediaType.TEXT_PLAIN)
+	@Deprecated
 	public Response getAdapterFlow(@PathParam("name") String adapterName) throws ApiException {
-		Adapter adapter = getAdapter(adapterName);
+		String configurationName = getAdapter(adapterName).getConfiguration().getName();
 
-		FlowDiagramManager flowDiagramManager = getFlowDiagramManager();
-
-		try {
-			ResponseBuilder response;
-			InputStream flow = flowDiagramManager.get(adapter);
-			if(flow != null) {
-				response = Response.ok(flow, flowDiagramManager.getMediaType());
-			} else {
-				response = Response.noContent();
-			}
-			return response.build();
-		} catch (IOException e) {
-			throw new ApiException(e);
-		}
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.FLOW);
+		builder.addHeader("configuration", configurationName);
+		builder.addHeader("adapter", adapterName);
+		return callGateway(builder);
 	}
 
 	private Map<String, Object> addCertificateInfo(HasKeystore s) {
