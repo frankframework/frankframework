@@ -42,10 +42,8 @@ import nl.nn.adapterframework.util.Semaphore;
 @RunWith(Parameterized.class)
 public class StatusRecordingTransactionManagerImplementationTest<S extends StatusRecordingTransactionManager> extends StatusRecordingTransactionManagerTestBase<S> {
 
-	private static TransactionManagerType singleTransactionManagerType = null; // set to a specific transaction manager type, to speed up testing
-
 	private static String SECONDARY_PRODUCT="H2";
-	
+
 	protected SpringTxManagerProxy txManager;
 	protected StatusRecordingTransactionManager txManagerReal;
 	private @Getter TestConfiguration configuration;
