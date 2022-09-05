@@ -74,7 +74,6 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.xml.PrettyPrintFilter;
 
 /**
  * This executes the query that is obtained from the (here still abstract) method getStatement.
@@ -134,7 +133,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	private @Getter boolean includeFieldDefinition=XmlUtils.isIncludeFieldDefinitionByDefault();
 	private @Getter String rowIdSessionKey=null;
 	private @Getter String packageContent = "db2";
-	protected String[] columnsReturnedList=null;
+	private @Getter String[] columnsReturnedList=null;
 	private @Getter boolean streamResultToServlet=false;
 	private @Getter String sqlDialect = AppConstants.getInstance().getString("jdbc.sqlDialect", null);
 	private @Getter boolean lockRows=false;
@@ -142,7 +141,6 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	private @Getter boolean avoidLocking=false;
 	private @Getter DocumentFormat outputFormat=null;
 	private @Getter boolean prettyPrint=false;
-
 
 	private String convertedResultQuery;
 
@@ -567,10 +565,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				db2xml.setDecompressBlobs(isBlobsCompressed());
 				db2xml.setGetBlobSmart(isBlobSmartGet());
 				ContentHandler handler = target.asContentHandler();
-				if (isPrettyPrint()) {
-					handler = new PrettyPrintFilter(handler);
-				}
-				db2xml.getXML(getDbmsSupport(), resultset, getMaxRows(), isIncludeFieldDefinition(), handler);
+				db2xml.getXML(getDbmsSupport(), resultset, getMaxRows(), isIncludeFieldDefinition(), handler, isPrettyPrint());
 				return target.getPipeRunResult();
 			}
 			DB2DocumentWriter db2document = new DB2DocumentWriter();
@@ -583,7 +578,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 //				if (isPrettyPrint()) {
 //					handler = new PrettyPrintFilter(handler);
 //				}
-			db2document.writeDocument(getOutputFormat(), getDbmsSupport(), resultset, getMaxRows(), isIncludeFieldDefinition(), target);
+			db2document.writeDocument(getOutputFormat(), getDbmsSupport(), resultset, getMaxRows(), isIncludeFieldDefinition(), target, isPrettyPrint());
 			return target.getPipeRunResult();
 		} catch (Exception e) {
 			throw new JdbcException(e);
@@ -1037,9 +1032,6 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	 */
 	public void setColumnsReturned(String string) {
 		columnsReturned = string;
-	}
-	public String[] getColumnsReturnedList() {
-		return columnsReturnedList;
 	}
 
 	@IbisDoc({"9", "Named parameters will be auto detected by default. Every string in the query which equals <code>"+UNP_START+"paramname"+UNP_END+"</code> will be replaced by the value of the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped.", "null"})

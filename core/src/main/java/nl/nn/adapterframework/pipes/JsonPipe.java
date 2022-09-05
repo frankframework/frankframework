@@ -45,6 +45,7 @@ import nl.nn.adapterframework.util.TransformerPool;
 public class JsonPipe extends FixedForwardPipe {
 	private @Getter Direction direction = Direction.JSON2XML;
 	private @Getter boolean addXmlRootElement=true;
+	private @Getter boolean prettyPrint=false;
 
 	private TransformerPool tpXml2Json;
 
@@ -99,17 +100,17 @@ public class JsonPipe extends FixedForwardPipe {
 							root = firstElem.getKey();
 							jValue = firstElem.getValue();
 						}
-						try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder(root, writer)) {
+						try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder(root, writer, isPrettyPrint())) {
 							DocumentUtils.jsonValue2Document(jValue, documentBuilder);
 						}
 					} else {
 						if (isAddXmlRootElement()) {
-							try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder(root, writer)) {
+							try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder(root, writer, isPrettyPrint())) {
 								DocumentUtils.jsonValue2Document(jValue, documentBuilder);
 							}
 						} else {
 							for (JsonValue item:(JsonArray)jValue) {
-								try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder("item", writer)) {
+								try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder("item", writer, isPrettyPrint())) {
 									DocumentUtils.jsonValue2Document(item, documentBuilder);
 								}
 							}
@@ -141,5 +142,10 @@ public class JsonPipe extends FixedForwardPipe {
 	@IbisDoc({"When true, and direction is json2xml, it wraps a root element around the converted message", "true"})
 	public void setAddXmlRootElement(boolean addXmlRootElement) {
 		this.addXmlRootElement = addXmlRootElement;
+	}
+
+	@IbisDoc({"Format the output in easy legible way (currently only for XML)"})
+	public void setPrettyPrint(boolean prettyPrint) {
+		this.prettyPrint = prettyPrint;
 	}
 }

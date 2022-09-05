@@ -29,22 +29,24 @@ public class Json2XmlHandler implements JsonEventHandler {
 
 	private String root;
 	private ContentHandler handler;
+	private boolean prettyPrint;
 
 	private Stack<Object> stack = new Stack<>();
 
 
-	public Json2XmlHandler(ContentHandler handler) {
-		this("root", handler);
+	public Json2XmlHandler(ContentHandler handler, boolean prettyPrint) {
+		this("root", handler, prettyPrint);
 	}
 
-	public Json2XmlHandler(String root, ContentHandler handler) {
+	public Json2XmlHandler(String root, ContentHandler handler, boolean prettyPrint) {
 		this.root = root;
 		this.handler = handler;
+		this.prettyPrint = prettyPrint;
 	}
 
 	@Override
 	public void startDocument() throws SAXException {
-		stack.push(new XmlDocumentBuilder(root, handler));
+		stack.push(new XmlDocumentBuilder(root, handler, prettyPrint));
 	}
 
 	@Override

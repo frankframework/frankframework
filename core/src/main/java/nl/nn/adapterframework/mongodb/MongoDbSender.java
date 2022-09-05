@@ -106,6 +106,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 	private @Getter int limit=0;
 	private @Getter boolean countOnly=false;
 	private @Getter DocumentFormat outputFormat=DocumentFormat.JSON;
+	private @Getter boolean prettyPrint=false;
 
 	private @Setter @Getter IMongoClientFactory mongoClientFactory = null; // Spring should wire this!
 
@@ -216,7 +217,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 
 	
 	protected void renderResult(InsertOneResult insertOneResult, MessageOutputStream target) throws SAXException, StreamingException {
-		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormat(), "insertOneResult", target)) {
+		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormat(), "insertOneResult", target, isPrettyPrint())) {
 			builder.add("acknowledged", insertOneResult.wasAcknowledged());
 			if (insertOneResult.wasAcknowledged()) {
 				builder.add("insertedId", renderField(insertOneResult.getInsertedId()));
@@ -225,7 +226,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 	}
 
 	protected void renderResult(InsertManyResult insertManyResult, MessageOutputStream target) throws SAXException, StreamingException {
-		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormat(), "insertManyResult", target)) {
+		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormat(), "insertManyResult", target, isPrettyPrint())) {
 			builder.add("acknowledged", insertManyResult.wasAcknowledged());
 			if (insertManyResult.wasAcknowledged()) {
 				try (ObjectBuilder objectBuilder = builder.addObjectField("insertedIds")) {
@@ -244,7 +245,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 	}
 	
 	protected void renderResult(Document findResult, MessageOutputStream target) throws StreamingException {
-		try (IDocumentBuilder builder = DocumentBuilderFactory.startDocument(getOutputFormat(), "FindOneResult", target)) {
+		try (IDocumentBuilder builder = DocumentBuilderFactory.startDocument(getOutputFormat(), "FindOneResult", target, isPrettyPrint())) {
 			JsonWriterSettings writerSettings = JsonWriterSettings.builder().outputMode(JsonMode.RELAXED).build();
 			Encoder<Document> encoder = new DocumentCodec();
 			JsonDocumentWriter jsonWriter = new JsonDocumentWriter(builder, writerSettings);
@@ -266,7 +267,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 				}
 				return;
 			} 
-			try (ArrayBuilder builder = DocumentBuilderFactory.startArrayDocument(getOutputFormat(), "FindManyResult", "item", target)) {
+			try (ArrayBuilder builder = DocumentBuilderFactory.startArrayDocument(getOutputFormat(), "FindManyResult", "item", target, isPrettyPrint())) {
 				JsonWriterSettings writerSettings = JsonWriterSettings.builder().outputMode(JsonMode.RELAXED).build();
 				Encoder<Document> encoder = new DocumentCodec();
 				for (Document doc : findResults) {
@@ -282,7 +283,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 	}
 	
 	protected void renderResult(UpdateResult updateResult, MessageOutputStream target) throws SAXException, StreamingException {
-		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormat(), "updateResult", target)) {
+		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormat(), "updateResult", target, isPrettyPrint())) {
 			builder.add("acknowledged", updateResult.wasAcknowledged());
 			if (updateResult.wasAcknowledged()) {
 				builder.add("matchedCount", updateResult.getMatchedCount());
@@ -293,7 +294,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 	}
 	
 	protected void renderResult(DeleteResult deleteResult, MessageOutputStream target) throws SAXException, StreamingException {
-		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormat(), "deleteResult", target)) {
+		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormat(), "deleteResult", target, isPrettyPrint())) {
 			builder.add("acknowledged", deleteResult.wasAcknowledged());
 			if (deleteResult.wasAcknowledged()) {
 				builder.add("deleteCount", deleteResult.getDeletedCount());
@@ -379,44 +380,49 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 	}
 	
 
-	@IbisDoc({"1", "The MongoDB datasource", "${"+JndiMongoClientFactory.DEFAULT_DATASOURCE_NAME_PROPERTY+"}"})
+	@IbisDoc({"The MongoDB datasource", "${"+JndiMongoClientFactory.DEFAULT_DATASOURCE_NAME_PROPERTY+"}"})
 	public void setDatasourceName(String datasourceName) {
 		this.datasourceName = datasourceName;
 	}
 
-	@IbisDoc({"8", "Database to connect to. Can be overridden by parameter '"+PARAM_DATABASE+"'", ""})
+	@IbisDoc({"Database to connect to. Can be overridden by parameter '"+PARAM_DATABASE+"'"})
 	public void setDatabase(String database) {
 		this.database = database;
 	}
 
-	@IbisDoc({"9", "Collection to act upon. Can be overridden by parameter '"+PARAM_COLLECTION+"'", ""})
+	@IbisDoc({"Collection to act upon. Can be overridden by parameter '"+PARAM_COLLECTION+"'"})
 	public void setCollection(String collection) {
 		this.collection = collection;
 	}
 
-	@IbisDoc({"10", "Action", ""})
+	@IbisDoc({"Action"})
 	public void setAction(MongoAction action) {
 		this.action = action;
 	}
 	
-	@IbisDoc({"11", "Filter. Can contain references to parameters between '"+NAMED_PARAM_START+"' and '"+NAMED_PARAM_END+"'. Can be overridden by parameter '"+PARAM_FILTER+"'", ""})
+	@IbisDoc({"Filter. Can contain references to parameters between '"+NAMED_PARAM_START+"' and '"+NAMED_PARAM_END+"'. Can be overridden by parameter '"+PARAM_FILTER+"'"})
 	public void setFilter(String filter) {
 		this.filter = filter;
 	}
 
-	@IbisDoc({"12", "Limit to number of results returned. A value of 0 means 'no limit'. Can be overridden by parameter '"+PARAM_LIMIT+"'", "0"})
+	@IbisDoc({"Limit to number of results returned. A value of 0 means 'no limit'. Can be overridden by parameter '"+PARAM_LIMIT+"'", "0"})
 	public void setLimit(int limit) {
 		this.limit = limit;
 	}
 
-	@IbisDoc({"13", "Only for find operation: return only the count and not the full document(s)", "false"})
+	@IbisDoc({"Only for find operation: return only the count and not the full document(s)", "false"})
 	public void setCountOnly(boolean countOnly) {
 		this.countOnly = countOnly;
 	}
 
-	@IbisDoc({"14", "OutputFormat", "JSON"})
+	@IbisDoc({"OutputFormat", "JSON"})
 	public void setOutputFormat(DocumentFormat outputFormat) {
 		this.outputFormat = outputFormat;
+	}
+
+	@IbisDoc({"Format the output in easy legible way (currently only for XML)"})
+	public void setPrettyPrint(boolean prettyPrint) {
+		this.prettyPrint = prettyPrint;
 	}
 
 }

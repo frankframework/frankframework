@@ -28,16 +28,16 @@ public class XmlDocumentBuilder extends XmlNodeBuilder implements IDocumentBuild
 	private Writer writer;
 	
 	public XmlDocumentBuilder(String rootElement) throws SAXException {
-		this(rootElement, new StringWriter());
+		this(rootElement, new StringWriter(), true);
 	}
 	
-	public XmlDocumentBuilder(String rootElement, Writer writer) throws SAXException {
+	public XmlDocumentBuilder(String rootElement, Writer writer, boolean prettyPrint) throws SAXException {
 		super(new SaxDocumentBuilder(null, writer), rootElement);
 		this.writer = writer;
 	}
 	
-	public XmlDocumentBuilder(String rootElement, ContentHandler handler) throws SAXException {
-		super(new SaxDocumentBuilder(null, handler), rootElement);
+	public XmlDocumentBuilder(String rootElement, ContentHandler handler, boolean prettyPrint) throws SAXException {
+		super(new SaxDocumentBuilder(null, handler, prettyPrint), rootElement);
 	}
 
 	@Override

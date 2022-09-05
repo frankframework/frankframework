@@ -79,8 +79,8 @@ public class DB2DocumentWriter {
 		}
 	}
 
-	public void writeDocument(DocumentFormat format, IDbmsSupport dbmsSupport, ResultSet rs, int maxlength, boolean includeFieldDefinition, MessageOutputStream target) throws StreamingException, SAXException {
-		try (ObjectBuilder documentBuilder = DocumentBuilderFactory.startObjectDocument(format, docname, target)) {
+	public void writeDocument(DocumentFormat format, IDbmsSupport dbmsSupport, ResultSet rs, int maxlength, boolean includeFieldDefinition, MessageOutputStream target, boolean prettyPrint) throws StreamingException, SAXException {
+		try (ObjectBuilder documentBuilder = DocumentBuilderFactory.startObjectDocument(format, docname, target, prettyPrint)) {
 			writeDocument(dbmsSupport, rs, maxlength, includeFieldDefinition, documentBuilder);
 		}
 	}

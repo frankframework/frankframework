@@ -43,7 +43,7 @@ public class DocumentBuilderTest {
 	public void testXmlDocumentBuilder() throws SAXException {
 		String expected = expectedXml;
 		XmlWriter writer = new XmlWriter();
-		try (IDocumentBuilder root = new XmlDocumentBuilder("root", writer)) {
+		try (IDocumentBuilder root = new XmlDocumentBuilder("root", writer, false)) {
 			buildDocument(root);
 		}
 		MatchUtils.assertXmlEquals(expected, writer.toString());

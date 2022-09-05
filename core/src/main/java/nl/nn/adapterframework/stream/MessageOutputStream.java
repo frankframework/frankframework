@@ -308,7 +308,7 @@ public class MessageOutputStream implements AutoCloseable {
 			return (JsonEventHandler) requestStream;
 		}
 		if (requestStream instanceof ContentHandler) {
-			return new Json2XmlHandler((ContentHandler) requestStream);
+			return new Json2XmlHandler((ContentHandler) requestStream, false);
 		}
 		if (requestStream instanceof OutputStream) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning OutputStream as JsonEventHandler");
