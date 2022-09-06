@@ -2,6 +2,7 @@
 	<adapter name="ApiListener_SimpleInsert">
 		<receiver
 			checkForDuplicates="true"
+			checkForDuplicatesMethod="CORRELATIONID"
 			processResultCacheSize="0"
 			>
 			<listener
