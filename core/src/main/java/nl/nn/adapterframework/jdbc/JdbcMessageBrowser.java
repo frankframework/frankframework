@@ -331,6 +331,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	public boolean containsCorrelationId(String correlationId) throws ListenerException {
 		try (Connection conn = getConnection()) {
 			try (PreparedStatement stmt = conn.prepareStatement(checkCorrelationIdQuery)) {
+				applyStandardParameters(stmt, correlationId, false);
 				try (ResultSet rs =  stmt.executeQuery()) {
 					return rs.next();
 				}
