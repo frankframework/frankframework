@@ -76,9 +76,6 @@ public class NarayanaJtaTransactionManager extends StatusRecordingTransactionMan
 			recoveryManager = RecoveryManager.manager();
 			recoveryManager.initialize();
 			recoveryManager.startRecoveryManagerThread();
-
-			XARecoveryModule recoveryModule = new XARecoveryModule();
-			recoveryManager.addModule(recoveryModule);
 		}
 	}
 
