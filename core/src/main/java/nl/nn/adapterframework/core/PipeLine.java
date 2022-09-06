@@ -324,6 +324,10 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			}
 			configure(getOutputWrapper());
 		}
+		if (getLocker()!=null) {
+			log.debug(getLogPrefix()+"configuring Locker");
+			getLocker().configure();
+		}
 
 		requestSizeStats = new SizeStatisticsKeeper("- pipeline in");
 
