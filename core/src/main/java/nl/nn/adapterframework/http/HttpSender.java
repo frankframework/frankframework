@@ -68,7 +68,6 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.DocumentedEnum;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.mime.MessageContentBody;
 import nl.nn.adapterframework.http.mime.MultipartEntityBuilder;
@@ -181,22 +180,18 @@ public class HttpSender extends HttpSenderBase {
 
 	private static final MimeType APPLICATION_XOP_XML = MimeType.valueOf("application/xop+xml");
 
-	public enum PostType implements DocumentedEnum {
-		RAW("raw text/xml/json"), // text/html;charset=UTF8
-		BINARY("binary content"), //application/octet-stream
+	public enum PostType {
+		/** The input message is sent unchanged as character data, like text, XML or JSON, with possibly parameter data appended */
+		RAW, // text/html;charset=UTF8
+		/** The input message is sent unchanged as binary data */
+		BINARY, //application/octet-stream
 //		SWA("Soap with Attachments"), // text/xml
-		URLENCODED("x-www-form-urlencoded"), // application/x-www-form-urlencoded
-		FORMDATA("form-data"), // multipart/form-data
-		MTOM("mtom"); // multipart/related
-
-		private String description;
-		PostType(String description) {
-			this.description = description;
-		}
-		@Override
-		public String toString() {
-			return description;
-		}
+		/** Yields a x-www-form-urlencoded form entity */
+		URLENCODED,
+		/** Yields a multipart/form-data form entity */
+		FORMDATA, 
+		/** Yields a MTOM multipart/related form entity */
+		MTOM;
 	}
 
 	@Override
@@ -239,7 +234,7 @@ public class HttpSender extends HttpSenderBase {
 			throw new SenderException("error encoding queryparameters in url ["+url.toString()+"]", e);
 		}
 
-		if(postType.equals(PostType.URLENCODED) || postType.equals(PostType.FORMDATA) || postType.equals(PostType.MTOM)) {
+		if(postType==PostType.URLENCODED || postType==PostType.FORMDATA || postType==PostType.MTOM) {
 			try {
 				return getMultipartPostMethodWithParamsInBody(uri, message, parameters, session);
 			} catch (IOException e) {
@@ -299,7 +294,7 @@ public class HttpSender extends HttpSenderBase {
 			case PUT:
 			case PATCH:
 				HttpEntity entity;
-				if(postType.equals(PostType.RAW)) {
+				if(postType == PostType.RAW) {
 					String messageString = BooleanUtils.isTrue(getTreatInputMessageAsParameters()) && !Message.isEmpty(message) ? message.asString() : "";
 					if (parameters!=null) {
 						StringBuffer msg = new StringBuffer(messageString);
@@ -311,7 +306,7 @@ public class HttpSender extends HttpSenderBase {
 						}
 					}
 					entity = new ByteArrayEntity(messageString.getBytes(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING), getFullContentType());
-				} else if(postType.equals(PostType.BINARY)) {
+				} else if(postType == PostType.BINARY) {
 					entity = new HttpMessageEntity(message, getFullContentType());
 				} else {
 					throw new SenderException("PostType ["+postType.name()+"] not allowed!");
@@ -363,7 +358,7 @@ public class HttpSender extends HttpSenderBase {
 	private HttpPost getMultipartPostMethodWithParamsInBody(URI uri, Message message, ParameterValueList parameters, PipeLineSession session) throws SenderException, IOException {
 		HttpPost hmethod = new HttpPost(uri);
 
-		if (postType.equals(PostType.URLENCODED) && StringUtils.isEmpty(getMultipartXmlSessionKey())) { // x-www-form-urlencoded
+		if (postType==PostType.URLENCODED && StringUtils.isEmpty(getMultipartXmlSessionKey())) { // x-www-form-urlencoded
 			List<NameValuePair> requestFormElements = new ArrayList<>();
 
 			if (StringUtils.isNotEmpty(getFirstBodyPartName())) {
@@ -384,7 +379,7 @@ public class HttpSender extends HttpSenderBase {
 			try {
 				hmethod.setEntity(new UrlEncodedFormEntity(requestFormElements, getCharSet()));
 			} catch (UnsupportedEncodingException e) {
-				throw new SenderException(getLogPrefix()+"unsupported encoding for one or more post parameters", e);
+				throw new SenderException(getLogPrefix()+"unsupported encoding for one or more POST parameters", e);
 			}
 		}
 		else { //formdata and mtom
@@ -396,11 +391,11 @@ public class HttpSender extends HttpSenderBase {
 	}
 
 	private FormBodyPart createStringBodypart(Message message) {
-		MimeType mimeType = (postType.equals(PostType.MTOM)) ? APPLICATION_XOP_XML : MediaType.TEXT_PLAIN; // only the first part is XOP+XML, other parts should use their own content-type
+		MimeType mimeType = (postType == PostType.MTOM) ? APPLICATION_XOP_XML : MediaType.TEXT_PLAIN; // only the first part is XOP+XML, other parts should use their own content-type
 		FormBodyPartBuilder bodyPart = FormBodyPartBuilder.create(getFirstBodyPartName(), new MessageContentBody(message, mimeType));
 
 		// Should only be set when request is MTOM and it's the first BodyPart
-		if (postType.equals(PostType.MTOM) && StringUtils.isNotEmpty(getMtomContentTransferEncoding())) {
+		if (postType == PostType.MTOM && StringUtils.isNotEmpty(getMtomContentTransferEncoding())) {
 			bodyPart.setField(MIME.CONTENT_TRANSFER_ENC, getMtomContentTransferEncoding());
 		}
 
@@ -411,7 +406,7 @@ public class HttpSender extends HttpSenderBase {
 		MultipartEntityBuilder entity = MultipartEntityBuilder.create();
 
 		entity.setCharset(Charset.forName(getCharSet()));
-		if(postType.equals(PostType.MTOM))
+		if(postType == PostType.MTOM)
 			entity.setMtomMultipart();
 
 		if (StringUtils.isNotEmpty(getFirstBodyPartName())) {
@@ -634,14 +629,14 @@ public class HttpSender extends HttpSenderBase {
 	}
 
 	/**
-	 * When <code>methodType=POST</code>, the type of post request
+	 * If <code>methodType</code>=<code>POST</code>, <code>PUT</code> or <code>PATCH</code>, the type of post request
 	 * @ff.default RAW
 	 */
 	public void setPostType(PostType type) {
 		this.postType = type;
 	}
 
-	@IbisDoc({"When false and <code>methodType=POST</code>, request parameters are put in the request body instead of in the url", "true"})
+	@IbisDoc({"If false and <code>methodType</code>=<code>POST</code>, request parameters are put in the request body instead of in the url", "true"})
 	@Deprecated
 	public void setParamsInUrl(boolean b) {
 		if(!b) {
@@ -660,24 +655,24 @@ public class HttpSender extends HttpSenderBase {
 	public void setInputMessageParam(String inputMessageParam) {
 		setFirstBodyPartName(inputMessageParam);
 	}
-	@IbisDoc({"(Only used when <code>methodType=POST</code> and <code>postType=URLENCODED</code>, <code>FORM-DATA</code> or <code>MTOM</code>) Prepends a new BodyPart using the specified name and uses the input of the Sender as content", ""})
+	@IbisDoc({"(Only used when <code>methodType=POST</code> and <code>postType</code>=<code>URLENCODED</code>, <code>FORM-DATA</code> or <code>MTOM</code>) Prepends a new BodyPart using the specified name and uses the input of the Sender as content", ""})
 	public void setFirstBodyPartName(String firstBodyPartName) {
 		this.firstBodyPartName = firstBodyPartName;
 	}
 
-	@IbisDoc({"When true, besides http status code 200 (OK) also the code 301 (MOVED_PERMANENTLY), 302 (MOVED_TEMPORARILY) and 307 (TEMPORARY_REDIRECT) are considered successful", "false"})
+	@IbisDoc({"If true, besides http status code 200 (OK) also the code 301 (MOVED_PERMANENTLY), 302 (MOVED_TEMPORARILY) and 307 (TEMPORARY_REDIRECT) are considered successful", "false"})
 	public void setIgnoreRedirects(boolean b) {
 		ignoreRedirects = b;
 	}
 
-	@IbisDoc({"if set, the result is streamed to a file (instead of passed as a string)", ""})
+	@IbisDoc({"If set, the result is streamed to a file (instead of passed as a string)", ""})
 	@Deprecated
 	@ConfigurationWarning("no longer required to store the result as a file in the PipeLineSession, the sender can return binary data")
 	public void setStreamResultToFileNameSessionKey(String string) {
 		streamResultToFileNameSessionKey = string;
 	}
 
-	@IbisDoc({"if set, a pointer to an input stream of the result is put in the specified sessionkey (as the sender interface only allows a sender to return a string a sessionkey is used instead to return the stream)", ""})
+	@IbisDoc({"If set, a pointer to an input stream of the result is put in the specified sessionkey (as the sender interface only allows a sender to return a string a sessionkey is used instead to return the stream)", ""})
 	@Deprecated
 	@ConfigurationWarning("no longer required to store the result as a stream in the PipeLineSession, the sender can return binary data")
 	public void setStoreResultAsStreamInSessionKey(String storeResultAsStreamInSessionKey) {
@@ -690,21 +685,21 @@ public class HttpSender extends HttpSenderBase {
 		this.storeResultAsByteArrayInSessionKey = storeResultAsByteArrayInSessionKey;
 	}
 
-	@IbisDoc({"when true, the result is base64 encoded", "false"})
+	@IbisDoc({"If true, the result is Base64 encoded", "false"})
 	@Deprecated
 	@ConfigurationWarning("use Base64Pipe instead")
 	public void setBase64(boolean b) {
 		base64 = b;
 	}
 
-	@IbisDoc({"if set, the result is streamed to the httpservletresponse object of the restservicedispatcher (instead of passed as a string)", "false"})
+	@IbisDoc({"If set, the result is streamed to the HhttpServletResponse object of the RestServiceDispatcher (instead of passed as a string)", "false"})
 	public void setStreamResultToServlet(boolean b) {
 		streamResultToServlet = b;
 	}
 
 	@Deprecated
 	@ConfigurationWarning("multipart has been replaced by postType='formdata'")
-	@IbisDoc({"when true and <code>methodtype=post</code> and <code>paramsinurl=false</code>, request parameters are put in a multipart/form-data entity instead of in the request body", "false"})
+	@IbisDoc({"If true and <code>methodType<code>=<code>POST</code> and <code>paramsInUrl</code>=<code>false</code>, request parameters are put in a multipart/form-data entity instead of in the request body", "false"})
 	public void setMultipart(boolean b) {
 		if(b && !postType.equals(PostType.MTOM)) {
 			postType = PostType.FORMDATA;
@@ -713,12 +708,12 @@ public class HttpSender extends HttpSenderBase {
 
 	@Deprecated
 	@ConfigurationWarning("Unless set explicitly multipart response will be detected automatically")
-	@IbisDoc({"when true the response body is expected to be in mime multipart which is the case when a soap message with attachments is received (see also <a href=\"https://docs.oracle.com/javaee/7/api/javax/xml/soap/soapmessage.html\">https://docs.oracle.com/javaee/7/api/javax/xml/soap/soapmessage.html</a>). the first part will be returned as result of this sender. other parts are returned as streams in sessionkeys with names multipart1, multipart2, etc. the http connection is held open until the last stream is read.", "false"})
+	@IbisDoc({"If true the response body is expected to be in mime multipart which is the case when a soap message with attachments is received (see also <a href=\"https://docs.oracle.com/javaee/7/api/javax/xml/soap/soapmessage.html\">https://docs.oracle.com/javaee/7/api/javax/xml/soap/soapmessage.html</a>). the first part will be returned as result of this sender. other parts are returned as streams in sessionkeys with names multipart1, multipart2, etc. the http connection is held open until the last stream is read.", "false"})
 	public void setMultipartResponse(Boolean b) {
 		multipartResponse = b;
 	}
 
-	@IbisDoc({"if set and <code>methodtype=post</code> and <code>paramsinurl=false</code>, a multipart/form-data entity is created instead of a request body. for each part element in the session key a part in the multipart entity is created", ""})
+	@IbisDoc({"If set and <code>methodType</code>=<code>POST</code> and <code>paramsInUrl</code>=<code>false</code>, a multipart/form-data entity is created instead of a request body. For each part element in the session key a part in the multipart entity is created", ""})
 	public void setMultipartXmlSessionKey(String multipartXmlSessionKey) {
 		this.multipartXmlSessionKey = multipartXmlSessionKey;
 	}
@@ -733,12 +728,12 @@ public class HttpSender extends HttpSenderBase {
 		this.mtomContentTransferEncoding = mtomContentTransferEncoding;
 	}
 
-	@IbisDoc({"64", "specifies whether messages will encoded, e.g. spaces will be replaced by '+' etc.", "false"})
+	@IbisDoc({"Specifies whether messages will encoded, e.g. spaces will be replaced by '+' etc.", "false"})
 	public void setEncodeMessages(boolean b) {
 		encodeMessages = b;
 	}
 
-	@IbisDoc({"65", "if <code>true</code>, the input will be added to the URL for methodType=GET, or for methodType=POST, PUT or PATCH if postType=RAW. This used to be the default behaviour in framework version 7.7 and earlier", "for methodType=GET: <code>false</code>,<br/>for methodTypes POST, PUT, PATCH: <code>true</code> "})
+	@IbisDoc({"If <code>true</code>, the input will be added to the URL for <code>methodType</code>=<code>GET</code>, or for <code>methodType</code>=<code>POST</code>, <code>PUT</code> or <code>PATCH</code> if <code>postType</code>=<code>RAW</code>. This used to be the default behaviour in framework version 7.7 and earlier", "for methodType=<code>GET</code>: <code>false</code>,<br/>for methodTypes <code>POST</code>, <code>PUT</code>, <code>PATCH</code>: <code>true</code> "})
 	public void setTreatInputMessageAsParameters(Boolean b) {
 		treatInputMessageAsParameters = b;
 	}
