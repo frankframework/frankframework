@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,33 +20,25 @@ import javax.jms.XAConnectionFactory;
 
 import org.jboss.narayana.jta.jms.ConnectionFactoryProxy;
 import org.jboss.narayana.jta.jms.JmsXAResourceRecoveryHelper;
-import org.jboss.narayana.jta.jms.TransactionHelper;
 
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 
+import lombok.Setter;
 import nl.nn.adapterframework.jndi.JndiConnectionFactoryFactory;
 
 public class NarayanaConnectionFactoryFactory extends JndiConnectionFactoryFactory {
 
-	private NarayanaRecoveryManager recoveryManager;
-	private TransactionHelper transactionHelper;
+	private @Setter NarayanaJtaTransactionManager transactionManager;
 
 	@Override
 	protected ConnectionFactory augment(ConnectionFactory connectionFactory, String connectionFactoryName) {
 		if (connectionFactory instanceof XAConnectionFactory) {
 			XAResourceRecoveryHelper recoveryHelper = new JmsXAResourceRecoveryHelper((XAConnectionFactory) connectionFactory);
-			this.recoveryManager.registerXAResourceRecoveryHelper(recoveryHelper);
-			return new ConnectionFactoryProxy((XAConnectionFactory) connectionFactory, transactionHelper);
+			this.transactionManager.registerXAResourceRecoveryHelper(recoveryHelper);
+			return new ConnectionFactoryProxy((XAConnectionFactory) connectionFactory, transactionManager.getTransactionHelper());
 		}
 		log.warn("ConnectionFactory [{}] is not XA enabled", connectionFactoryName);
 		return connectionFactory;
 	}
 
-	public void setRecoveryManager(NarayanaRecoveryManager recoveryManager) {
-		this.recoveryManager = recoveryManager;
-	}
-
-	public void setTransactionHelper(TransactionHelper transactionHelper) {
-		this.transactionHelper = transactionHelper;
-	}
 }

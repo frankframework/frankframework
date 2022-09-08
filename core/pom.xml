@@ -15,7 +15,7 @@
 		<spring-security.version>5.7.3</spring-security.version>
 		<spring-integration.version>5.5.14</spring-integration.version>
 		<j2v8.version>4.6.0</j2v8.version>
-		<jackson.version>2.13.3</jackson.version>
+		<jackson.version>2.13.4</jackson.version>
 		<micrometer.version>1.9.3</micrometer.version>
 		<saxon.version>10.8</saxon.version>
 	</properties>
@@ -501,7 +501,7 @@
 		<dependency>
 			<groupId>com.nimbusds</groupId>
 			<artifactId>oauth2-oidc-sdk</artifactId>
-			<version>9.42</version>
+			<version>9.43</version>
 		</dependency>
 
 		<!-- TransactionManagers: BTM + NARAYANA -->
