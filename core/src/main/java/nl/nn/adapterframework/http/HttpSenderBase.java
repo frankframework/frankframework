@@ -165,7 +165,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * please check password or authAlias configuration of the corresponding certificate.
  * </p>
  *
- * @ff.parameters Any parameters present are appended to the request (when method is <code>GET</code> as request-parameters, when method <code>POST</code> as body part) except the headersParams list, which are added as HTTP headers, and the urlParam header
+ * @ff.parameters Any parameters present are appended to the request (when method is <code>GET</code> as request-parameters, when method <code>POST</code> as body part) except the <code>headersParams</code> list, which are added as HTTP headers, and the <code>urlParam</code> header
  *
  * @author	Niels Meijer
  * @since	7.0
@@ -781,7 +781,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		this.urlParam = urlParam;
 	}
 
-	@IbisDoc({"The HTTP Method used to execute the request", "GET"})
+	@IbisDoc({"The HTTP Method used to execute the request", "<code>GET</code>"})
 	public void setMethodType(HttpMethod method) {
 		this.httpMethod = method;
 	}
@@ -789,12 +789,12 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	/**
 	 * This is a superset of mimetype + charset + optional payload metadata.
 	 */
-	@IbisDoc({"Content-Type (superset of mimetype + charset) of the request, for POST and PUT methods", "text/html"})
+	@IbisDoc({"Content-Type (superset of mimetype + charset) of the request, for <code>POST</code>, <code>PUT</code> and <code>PATCH</code> methods", "text/html, when postType=<code>RAW</code>"})
 	public void setContentType(String string) {
 		contentType = string;
 	}
 
-	@IbisDoc({"Charset of the request. Typically only used on PUT and POST requests.", "UTF-8"})
+	@IbisDoc({"Charset of the request. Typically only used on <code>PUT</code> and <code>POST</code> requests.", "UTF-8"})
 	public void setCharSet(String string) {
 		charSet = string;
 	}
@@ -814,7 +814,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		maxExecuteRetries = i;
 	}
 
-	/** Authentication Alias used for authentication to the host */
+	/** Authentication alias used for authentication to the host */
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
