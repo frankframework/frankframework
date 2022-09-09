@@ -560,7 +560,7 @@
 	              	<archive>activemq-rar.rar</archive>
 	                <transaction-support>XATransaction</transaction-support>  
 	                <config-property name="ServerUrl">  
-	                    tcp://host.docker.internal:61616
+	                    tcp://host.docker.internal:61616?jms.xaAckMode=1
 	                </config-property>  
 	                <connection-definitions>  
 	                    <connection-definition class-name="org.apache.activemq.ra.ActiveMQManagedConnectionFactory" jndi-name="jms/qcf-activemq" enabled="true" use-java-context="true" pool-name="jms/qcf-activemq" use-ccm="true">
