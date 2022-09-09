@@ -83,8 +83,8 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Sender for the HTTP protocol using GET, POST, PUT or DELETE.
- * 
- * Returns HTTP status code as forward name to SenderPipe. 
+ *
+ * Returns HTTP status code as forward name to SenderPipe.
  *
  * <p><b>Expected message format:</b></p>
  * <p>GET methods expect a message looking like this</p>
@@ -189,7 +189,7 @@ public class HttpSender extends HttpSenderBase {
 		/** Yields a x-www-form-urlencoded form entity */
 		URLENCODED,
 		/** Yields a multipart/form-data form entity */
-		FORMDATA, 
+		FORMDATA,
 		/** Yields a MTOM multipart/related form entity */
 		MTOM;
 	}
