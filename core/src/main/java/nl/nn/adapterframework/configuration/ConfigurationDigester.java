@@ -35,6 +35,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
+import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
@@ -208,8 +209,9 @@ public class ConfigurationDigester implements ApplicationContextAware {
 			if (digester != null ) {
 				currentElementName = digester.getCurrentElementName();
 			}
-
-			throw new ConfigurationException("error during unmarshalling configuration from file [" + configurationFile + "] with digester-rules-file ["+getDigesterRuleFile()+"] in element ["+currentElementName+"]", t);
+			Locator locator = digester.getDocumentLocator();
+			String location = locator!=null ? " systemId ["+locator.getSystemId()+"] line ["+locator.getLineNumber()+"] column ["+locator.getColumnNumber()+"]":"";
+			throw new ConfigurationException("error during unmarshalling configuration from file [" + configurationFile + "] "+location+" with digester-rules-file ["+getDigesterRuleFile()+"] in element ["+currentElementName+"]", t);
 		}
 	}
 
