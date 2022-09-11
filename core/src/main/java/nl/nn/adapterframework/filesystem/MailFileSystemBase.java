@@ -41,8 +41,8 @@ public abstract class MailFileSystemBase<M,A,C extends AutoCloseable> extends Co
 		return "baseFolder ["+getBaseFolder()+"]";
 	}
 
-	@IbisDoc({"1", "Alias used to obtain accessToken or username and password for authentication to Exchange mail server. " + 
-			"If the alias refers to a combination of a username and a password, the deprecated Basic Authentication method is used. " + 
+	@IbisDoc({"1", "Alias used to obtain accessToken or username and password for authentication to Exchange mail server. " +
+			"If the alias refers to a combination of a username and a password, the deprecated Basic Authentication method is used. " +
 			"If the alias refers to a password without a username, the password is treated as the accessToken.", ""})
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;

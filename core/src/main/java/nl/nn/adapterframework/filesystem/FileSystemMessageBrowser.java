@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import java.util.Iterator;
 
 import org.apache.logging.log4j.Logger;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
@@ -34,9 +36,9 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 	private FS fileSystem;
 	private String folder;
 	private String messageIdPropertyKey;
-	
-	private String hideRegex = null;
-	private String hideMethod = "all";
+
+	private @Getter @Setter String hideRegex = null;
+	private @Getter @Setter HideMethod hideMethod = HideMethod.ALL;
 
 
 	public FileSystemMessageBrowser(FS fileSystem, String folder, String messageIdPropertyKey) {
@@ -44,7 +46,7 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 		this.folder = folder;
 		this.messageIdPropertyKey = messageIdPropertyKey;
 	}
-	
+
 	@Override
 	public boolean isTransacted() {
 		return false;
@@ -121,24 +123,6 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 			throw new ListenerException(e);
 		}
 		return count;
-	}
-
-	@Override
-	public void setHideRegex(String hideRegex) {
-		this.hideRegex = hideRegex;
-	}
-	@Override
-	public String getHideRegex() {
-		return hideRegex;
-	}
-
-	@Override
-	public void setHideMethod(String hideMethod) {
-		this.hideMethod = hideMethod;
-	}
-	@Override
-	public String getHideMethod() {
-		return hideMethod;
 	}
 
 }

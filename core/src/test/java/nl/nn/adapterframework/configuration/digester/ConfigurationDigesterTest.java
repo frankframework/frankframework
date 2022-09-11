@@ -20,6 +20,7 @@ import org.xml.sax.SAXParseException;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationDigester;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestConfiguration;
@@ -51,6 +52,7 @@ public class ConfigurationDigesterTest {
 	@Test
 	public void testNewConfigurationPreParser() throws Exception {
 		ConfigurationDigester digester = new ConfigurationDigester();
+		digester.setConfigurationWarnings( new ConfigurationWarnings() );
 		Resource resource = Resource.getResource("/Digester/SimpleConfiguration/Configuration.xml");
 		Properties properties = new Properties();
 		properties.setProperty("HelloWorld.active", "false");

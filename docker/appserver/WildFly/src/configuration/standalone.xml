@@ -154,7 +154,7 @@
                 </datasource>
                 <!-- Framework datasources -->
                 <datasource jndi-name="java:/jdbc/ibis4test-h2" pool-name="h2-datasource" enabled="true" use-java-context="true">
-					<connection-url>jdbc:h2:file:./ibis4test;NON_KEYWORDS=VALUE;DB_CLOSE_ON_EXIT=FALSE;AUTO_SERVER=TRUE</connection-url>
+					<connection-url>jdbc:h2:file:./ibis4test;DB_CLOSE_ON_EXIT=FALSE;AUTO_SERVER=TRUE</connection-url>
 					<driver>h2</driver>
 				</datasource>
 				<xa-datasource jndi-name="java:/jdbc/ibis4test-oracle" pool-name="ibis4test-oracle">
@@ -560,7 +560,7 @@
 	              	<archive>activemq-rar.rar</archive>
 	                <transaction-support>XATransaction</transaction-support>  
 	                <config-property name="ServerUrl">  
-	                    tcp://host.docker.internal:61616
+	                    tcp://host.docker.internal:61616?jms.xaAckMode=1
 	                </config-property>  
 	                <connection-definitions>  
 	                    <connection-definition class-name="org.apache.activemq.ra.ActiveMQManagedConnectionFactory" jndi-name="jms/qcf-activemq" enabled="true" use-java-context="true" pool-name="jms/qcf-activemq" use-ccm="true">

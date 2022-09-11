@@ -17,6 +17,7 @@ package nl.nn.adapterframework.filesystem;
 
 import java.io.File;
 import java.io.FilterInputStream;
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -267,7 +268,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			return getFilename();
 		}
 		if (pvl!=null && pvl.contains(PARAMETER_FILENAME)) {
-			return pvl.getParameterValue(PARAMETER_FILENAME).asStringValue(null);
+			return pvl.get(PARAMETER_FILENAME).asStringValue(null);
 		}
 		try {
 			return input.asString();
@@ -281,7 +282,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			return getDestination();
 		}
 		if (pvl!=null && pvl.contains(PARAMETER_DESTINATION)) {
-			String destination = pvl.getParameterValue(PARAMETER_DESTINATION).asStringValue(null);
+			String destination = pvl.get(PARAMETER_DESTINATION).asStringValue(null);
 			if (StringUtils.isEmpty(destination)) {
 				throw new FileSystemException("parameter ["+PARAMETER_DESTINATION+"] does not specify destination");
 			}
@@ -299,7 +300,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			return getInputFolder();
 		}
 		if (pvl!=null && pvl.contains(PARAMETER_INPUTFOLDER)) {
-			return pvl.getParameterValue(PARAMETER_INPUTFOLDER).asStringValue(null);
+			return pvl.get(PARAMETER_INPUTFOLDER).asStringValue(null);
 		}
 		try {
 			if (input==null || StringUtils.isEmpty(input.asString())) {
@@ -320,7 +321,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 
 			if (pvl != null && pvl.contains(PARAMETER_ACTION)) {
 				try {
-					action = EnumUtils.parse(FileSystemAction.class, pvl.getParameterValue(PARAMETER_ACTION).asStringValue(getAction()+""));
+					action = EnumUtils.parse(FileSystemAction.class, pvl.get(PARAMETER_ACTION).asStringValue(getAction()+""));
 				} catch(IllegalArgumentException e) {
 					throw new FileSystemException("unable to resolve the value of parameter ["+PARAMETER_ACTION+"]");
 				}
@@ -328,6 +329,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			} else {
 				action = getAction();
 			}
+
 			switch(action) {
 				case CREATE:{
 					F file=getFile(input, pvl);
@@ -531,9 +533,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		} else {
 			contents=input;
 		}
-		if (getBase64()!=null) {
-			out = new Base64OutputStream(out, getBase64()==Base64Pipe.Direction.ENCODE);
-		}
+		out = augmentOutputStream(out);
 		if (contents instanceof Message) {
 			Misc.streamToStream(((Message)contents).asInputStream(), out);
 		} else if (contents instanceof InputStream) {
@@ -545,9 +545,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		} else {
 			throw new FileSystemException("expected Message, InputStream, ByteArray or String but got [" + contents.getClass().getName() + "] instead");
 		}
-		if(isWriteLineSeparator()) {
-			out.write(eolArray);
-		}
+		out.close();
 	}
 
 	private void deleteEmptyFolder(F f) throws FileSystemException, IOException {
@@ -572,14 +570,38 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	}
 
 	protected boolean canProvideOutputStream() {
-		return (getAction() == FileSystemAction.WRITE || getAction() == FileSystemAction.APPEND)
-				&& parameterList.findParameter(PARAMETER_FILENAME)!=null
+		return (parameterList.findParameter(PARAMETER_ACTION)==null && (getAction() == FileSystemAction.WRITE || getAction() == FileSystemAction.APPEND))
+				&& parameterList.findParameter(PARAMETER_CONTENTS1)==null
+				&& (StringUtils.isNotEmpty(getFilename()) || parameterList.findParameter(PARAMETER_FILENAME)!=null)
 				&& !parameterList.isInputValueOrContextRequiredForResolution();
 	}
 
 	@Override
 	public boolean supportsOutputStreamPassThrough() {
 		return false;
+	}
+
+	protected OutputStream augmentOutputStream(OutputStream out) {
+		if (getBase64()!=null) {
+			out = new Base64OutputStream(out, getBase64()==Base64Pipe.Direction.ENCODE);
+		}
+		if(isWriteLineSeparator()) {
+			out = new FilterOutputStream(out) {
+				boolean closed=false;
+				@Override
+				public void close() throws IOException {
+					try {
+						if (!closed) {
+							out.write(eolArray);
+							closed=true;
+						}
+					} finally {
+						super.close();
+					}
+				}
+			};
+		}
+		return out;
 	}
 
 	@SuppressWarnings("resource")
@@ -605,8 +627,20 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			} else {
 				out = ((IWritableFileSystem<F>)fileSystem).createFile(file);
 			}
-			MessageOutputStream stream = new MessageOutputStream(owner, out, next);
-			stream.setResponse(new Message(FileSystemUtils.getFileInfo(fileSystem, file).toXML()));
+			out = augmentOutputStream(out);
+			MessageOutputStream stream = new MessageOutputStream(owner, out, next) {
+
+				@Override
+				public Message getResponse() {
+					try {
+						return new Message(FileSystemUtils.getFileInfo(fileSystem, file).toXML());
+					} catch (FileSystemException e) {
+						log.warn("cannot get file information", e);
+						return null;
+					}
+				}
+
+			};
 			return stream;
 		} catch (FileSystemException | IOException e) {
 			throw new StreamingException("cannot obtain OutputStream", e);

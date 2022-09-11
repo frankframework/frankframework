@@ -31,6 +31,7 @@
 			<artifactId>ojdbc${oracle.driver.jdkversion}</artifactId>
 			<version>${oracle.driver.version}</version>
 		</dependency>
+		<!--H2 Appears to be already included in WildFly, though as an older version -->
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
@@ -76,7 +77,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
-				<version>3.1.2</version>
 				<executions>
 					<execution>
 						<id>copy-dependencies</id>
@@ -115,7 +115,6 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
-				<version>3.2.0</version>
 				<executions>
 					<execution>
 						<id>prepare-as-dependencies</id>
@@ -137,7 +136,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
-				<version>1.6</version>
 				<executions>
 					<execution>
 						<id>prepare-package</id>

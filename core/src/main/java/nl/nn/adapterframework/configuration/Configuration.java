@@ -32,6 +32,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.Lifecycle;
 import org.springframework.context.LifecycleProcessor;
 import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.context.support.AbstractRefreshableConfigApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import lombok.Getter;
@@ -470,7 +471,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		handler.configure();
 	}
 
-	/*
+	/**
 	 * Configurations should be wired through Spring, which in turn should call {@link #setBeanName(String)}.
 	 * Once the ConfigurationContext has a name it should not be changed anymore, hence
 	 * {@link AbstractRefreshableConfigApplicationContext#setBeanName(String) super.setBeanName(String)} only sets the name once.
@@ -478,7 +479,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 *
 	 * The DisplayName will always be updated, which is purely used for logging purposes.
 	 */
-	/** Name of the Configuration */
+	@Protected
 	@Override
 	public void setName(String name) {
 		if(StringUtils.isNotEmpty(name)) {
@@ -494,6 +495,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	/** The version of the Configuration, typically provided by the BuildInfo.properties file. */
+	@Protected
 	public void setVersion(String version) {
 		if(StringUtils.isNotEmpty(version)) {
 			if(state == BootState.STARTING && this.version != null && !this.version.equals(version)) {

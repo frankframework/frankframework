@@ -99,7 +99,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 		if (pvl==null) {
 			throw new SapException("no parameters to determine sapSystemName from");
 		}
-		String SapSystemName=pvl.getParameterValue(getSapSystemNameParam()).asStringValue(null);
+		String SapSystemName=pvl.get(getSapSystemNameParam()).asStringValue(null);
 		if (StringUtils.isEmpty(SapSystemName)) {
 			throw new SapException("could not determine sapSystemName using parameter ["+getSapSystemNameParam()+"]");
 		}

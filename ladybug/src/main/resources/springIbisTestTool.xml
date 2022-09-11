@@ -39,25 +39,18 @@
 		<property name="maxMessageLength"><ref bean="maxMessageLength"/></property>
 		<property name="regexFilter"><ref bean="regexFilter"/></property>
 		<property name="securityLoggerName" value="SEC"/>
-		<!--
-		Prevent threads that didn't start and aren't cancelled to keep reports in progress. Most of the times (like when
-		using ParallelSenders) the main thread will wait for child threads to return their result anyway
-		-->
+		<!-- Prevent threads that didn't start and aren't cancelled from keeping reports in progress -->
 		<property name="closeThreads" value="true"/>
+		<property name="closeNewThreadsOnly" value="true"/>
 		<!-- See comment on closeReportsTask -->
 		<property name="closeMessageCapturers" value="false"/>
 	</bean>
 
 	<!--
-	Prevent streams for which close method isn't invoked to keep reports in progress.
-	
-	It would be possible to set closeMessageCapturers to true on the testTool bean but in some cases that would close
-	the report too soon as a stream can be read after the pipeline has finished (e.g. when Base64Pipe is the last pipe
-	Ladybug would show an empty string while test a pipeline would show the correct result).
-	
-	It would be possible to set threadsTime to a positive number to have the closeReportsTask bean close threads too
-	instead of doing it on the testTool bean with closeThreads set to true but in that case the user would have to wait
-	for this task to execute before a report would appear in the Ladybug
+	Prevent streams for which close method isn't invoked from keeping reports in progress. It would be possible to set
+	closeMessageCapturers to true on the testTool bean but in some cases that would close the report too soon as a
+	stream can be read after the pipeline has finished (e.g. when Base64Pipe is the last pipe Ladybug would show an
+	empty string while test a pipeline would show the correct result).
 	-->
 	<bean name="closeReportsTask" class="nl.nn.testtool.CloseReportsTask">
 		<property name="messageCapturersTime" value="60000"/>
@@ -106,6 +99,12 @@
 				'testStorageXml' : 'testStorageFile'
 				}"
 		/>
+	</bean>
+	<!-- Ladybug API classes autowired by CXF Spring (see LadybugWebContext.xml) expect a bean with name testStorage -->
+	<bean name="testStorage" class="nl.nn.testtool.storage.proxy.ProxyStorage">
+		<property name="destination">
+			<ref bean="#{testStorageActive}"/>
+		</property>
 	</bean>
 	<bean name="testStorageXml" class="nl.nn.testtool.storage.xml.XmlStorage" autowire="byName" init-method="init">
 		<property name="name" value="Test"/>
@@ -224,7 +223,7 @@
 			<ref bean="testTool"/>
 		</property>
 		<property name="testStorage">
-			<ref bean="#{testStorageActive}"/>
+			<ref bean="testStorage"/>
 		</property>
 		<property name="reportsComponent">
 			<ref bean="reportsComponent"/>
@@ -241,7 +240,7 @@
 		<property name="treePane">
 			<bean class="nl.nn.testtool.echo2.test.TreePane" autowire="byName" init-method="initBean" >
 				<property name="storage">
-					<ref bean="#{testStorageActive}"/>
+					<ref bean="testStorage"/>
 				</property>
 			</bean>
 		</property>
@@ -256,7 +255,7 @@
 							<ref bean="debugStorage"/>
 						</property>
 						<property name="testStorage">
-							<ref bean="#{testStorageActive}"/>
+							<ref bean="testStorage"/>
 						</property>
 						<property name="reportXmlTransformer">
 							<ref bean="reportXmlTransformer"/>
@@ -275,7 +274,7 @@
 			<ref bean="testTool"/>
 		</property>
 		<property name="testStorage">
-			<ref bean="#{testStorageActive}"/>
+			<ref bean="testStorage"/>
 		</property>
 		<property name="reportsComponent1">
 			<bean parent="reportsComponent">
@@ -321,9 +320,6 @@
 		</property>
 		<property name="tabs">
 			<ref bean="tabs"/>
-		</property>
-		<property name="testStorage">
-			<ref bean="#{testStorageActive}"/>
 		</property>
 	</bean>
 

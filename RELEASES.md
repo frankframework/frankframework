@@ -4,8 +4,68 @@ Ibis AdapterFramework release notes
 [Tags](https://github.com/ibissource/iaf/releases)
 [JavaDocs](https://javadoc.frankframework.org/)
 
-Upcoming (7.8)
+Upcoming (7.9)
 --------------
+[Commits](https://github.com/ibissource/iaf/compare/v7.8-RC1...HEAD)
+
+
+7.8-RC1
+---
+[Commits](https://github.com/ibissource/iaf/compare/v7.7...v7.8-RC1)
+
+LCM dependencies (where possible)
+Generic bugfixes
+Performance enhancements
+
+- Add Message Context (#2746)
+- MicroMeter based statistics collection (#2841)
+- Add default Exit to PipeLine (#2851)
+- Add MediaTypes and Diacritic detection to Messages (#2790)
+- Fix framework util queries to be PostgreSQL compliant (#2888 + #2920)
+- Add JSON compare to Larva (#2914)
+- Display all entries of CredentialFactory at SecurityItems (#2883)
+- Introduce connection overview page (#2929)
+- Enable Narayana XA transaction management for PostgreSQL (#2949)
+- Introduce inline store overview page (#2958)
+- Refactor FlowGenerator and prepare for Mermaid flows (#3025 + #3084 + #3271)
+- Implement simple MSAL for Exchange (#3055 + #3368)
+- Catch all unhandled FF!API exceptions (#3090 + #3365)
+- Convert servlets to startup without web.xml definitions (#3096)
+- Use scenario specific correlationId in Larva (#3215)
+- Avoid problematic sysids for XPath expressions (#3234)
+- Refactor FixedResultPipe (#3181)
+- Add attribute connectionTimeToLive to HttpSenders (#3253)
+- Use build-in HTTP retry mechanism (#3281)
+- Improve PipeForward handling (#3289)
+- Support Base64 encoded attachments in WebServiceListener (#3313)
+- Add WebContent folder option to serve web content through configurations (#3317)
+- Bump Xerces-J from 2.12.1-xml-schema-1.1 to 2.12.2-xml-schema-1.1 (#3311)
+- Include hashcode for message in logging (#3332 + #3342)
+- Implement index checks for all DBMSes (#3326)
+- Allow receiver to start from status EXCEPTION_STARTING/EXCEPTION_STOPPING (#3349 + #3367)
+- Avoid ALL FILES execute permission exception when loading J2V8 (#3354)
+- Support multiple SapListeners (#3369)
+- Add WildFly docker images (#3315)
+- Fix ShadowSender (#3379)
+- Add xslt3 support as supported in Saxon HE version (#3130)
+- Enable to view log files even when application did not start properly (#3384)
+- Jakarta dependencies are used where possible, please check your dependency tree for duplicates after updating (#3405)
+- Fix editing database CRON triggers (#3522)
+- Fix default JDBC datasource as first selected entry (#3510)
+- Show JDBC connections when not configured as JmsRealm (#3505)
+- Only retry http entities when Message.isRepeatable (#3518)
+- Add option to disable JMX (#3501)
+- Allow XML to be parsed directly in Text2XmlPipe (#3532)
+- Correct waiting for no messages in process (#3552)
+- Fix MessageOutputStream transaction resume in child thread (#3561)
+- Fix Xalan racecondition (NPEs) when using lexical handlers (#3563)
+- Make MultipartXml message capable of being repeated (#3564)
+- Allow senders to provide pipe-forward hints (#3556)
+- Introduce Spring Security (#3580)
+- Add JsonValidator (#3555)
+- Disable Configuration name and version attributes (#3614)
+- Disable presumedTimeOutInterval by default (#3644)
+
 
 ### Non backwards compatible changes
 
@@ -21,13 +81,13 @@ Upcoming (7.8)
   - null values are rendered as '<elem nil="true"/>' instead of '<elem>null</elem>'
   - default array element containers are '<item>' instead of '<array>'
   - multidimensional arrays with scalar values are not flattened into one dimensional arrays any more
+- MessageSendingPipe and descendants (like SenderPipe and ForEachChildElementPipe) no longer set presumedTimeOutInterval by default.
 
 
 7.7
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.6-RC1...HEAD)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/ibissource/iaf/compare/v7.6.1...v7.6.2)
 
 - New FrankDoc XSD and website
 - LCM Dependencies

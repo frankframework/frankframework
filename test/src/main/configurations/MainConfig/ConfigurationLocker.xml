@@ -5,6 +5,7 @@
 				name="Locker" />
 		</receiver>
 		<pipeline firstPipe="Delay">
+			<locker objectId="PipeLineLocker" />
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>

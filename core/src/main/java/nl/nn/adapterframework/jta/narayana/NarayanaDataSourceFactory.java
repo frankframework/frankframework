@@ -29,29 +29,26 @@ import com.arjuna.ats.internal.jdbc.drivers.modifiers.IsSameRMModifier;
 import com.arjuna.ats.internal.jdbc.drivers.modifiers.ModifierFactory;
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 
+import lombok.Setter;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
 	protected static Logger log = LogUtil.getLogger(NarayanaDataSourceFactory.class);
 
-	private NarayanaRecoveryManager recoveryManager;
+	private @Setter NarayanaJtaTransactionManager transactionManager;
 
 	@Override
 	protected DataSource augmentDatasource(CommonDataSource dataSource, String dataSourceName) {
 		if (dataSource instanceof XADataSource) {
 			XAResourceRecoveryHelper recoveryHelper = new DataSourceXAResourceRecoveryHelper((XADataSource) dataSource);
-			this.recoveryManager.registerXAResourceRecoveryHelper(recoveryHelper);
+			this.transactionManager.registerXAResourceRecoveryHelper(recoveryHelper);
 			DataSource result = new NarayanaDataSource(dataSource, dataSourceName);
 			checkModifiers(result);
 			return result;
 		}
 		log.warn("DataSource [{}] is not XA enabled", dataSourceName);
 		return (DataSource) dataSource;
-	}
-
-	public void setRecoveryManager(NarayanaRecoveryManager recoveryManager) {
-		this.recoveryManager = recoveryManager;
 	}
 
 	public static void checkModifiers(DataSource dataSource) {

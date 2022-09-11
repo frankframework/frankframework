@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,6 +29,8 @@ import javax.jms.Session;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
@@ -46,11 +48,11 @@ import nl.nn.adapterframework.util.Misc;
  */
 public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends JMSFacade implements IMessageBrowser<M> {
 
-	private long timeOut = 3000;
-	private String selector=null;
+	private @Getter long timeOut = 3000;
+	private @Getter String selector=null;
 
-	private String hideRegex = null;
-	private String hideMethod = "all";
+	private @Getter @Setter String hideRegex = null;
+	private @Getter @Setter HideMethod hideMethod = HideMethod.ALL;
 
 	public JmsMessageBrowser() {
 		super();
@@ -240,35 +242,10 @@ public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends 
 		return result.toString();
 	}
 
-	public String getSelector() {
-		return selector;
-	}
-
 
 	@IbisDoc({"Timeout <i>in milliseconds</i> for receiving a message from the queue", "3000"})
 	public void setTimeOut(long newTimeOut) {
 		timeOut = newTimeOut;
-	}
-	public long getTimeOut() {
-		return timeOut;
-	}
-
-	@Override
-	public void setHideRegex(String hideRegex) {
-		this.hideRegex = hideRegex;
-	}
-	@Override
-	public String getHideRegex() {
-		return hideRegex;
-	}
-
-	@Override
-	public void setHideMethod(String hideMethod) {
-		this.hideMethod = hideMethod;
-	}
-	@Override
-	public String getHideMethod() {
-		return hideMethod;
 	}
 
 }

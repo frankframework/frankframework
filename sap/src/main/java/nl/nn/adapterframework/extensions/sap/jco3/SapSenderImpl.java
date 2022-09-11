@@ -82,7 +82,7 @@ public abstract class SapSenderImpl extends SapSenderBase implements ISapSender 
 			if (pvl==null) {
 				throw new SapException("no parameters to determine functionName from");
 			}
-			ParameterValue pv = pvl.getParameterValue(getFunctionNameParam());
+			ParameterValue pv = pvl.get(getFunctionNameParam());
 			if (pv==null) {
 				throw new SapException("could not get ParameterValue for parameter ["+getFunctionNameParam()+"]");
 			}

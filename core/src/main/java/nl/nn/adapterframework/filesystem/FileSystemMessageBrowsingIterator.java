@@ -36,7 +36,7 @@ public class FileSystemMessageBrowsingIterator<F, FS extends IBasicFileSystem<F>
 		iterator = directoryStream != null ? directoryStream.iterator() : null;
 		this.messageIdPropertyKey = messageIdPropertyKey;
 	}
-	
+
 	@Override
 	public boolean hasNext() throws ListenerException {
 		return iterator !=null && iterator.hasNext();
