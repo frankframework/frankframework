@@ -25,8 +25,8 @@ import org.apache.logging.log4j.Logger;
 import lombok.Setter;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.RunState;
+import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 
 public class PollGuard extends TimerTask {
 	private Logger log = LogUtil.getLogger(this);
@@ -49,12 +49,12 @@ public class PollGuard extends TimerTask {
 			log.trace(springJmsConnector.getLogPrefix() + "check last poll finished time " + simpleDateFormat.format(new Date(lastPollFinishedTime)));
 		}
 		long currentCheck = System.currentTimeMillis();
-		if (lastPollFinishedTime < lastCheck) {
-			if (lastPollFinishedTime != previousLastPollFinishedTime
-				&& springJmsConnector.threadsProcessing.getValue() == 0
-				&& springJmsConnector.getReceiver().getRunState() == RunState.STARTED
-				&& !springJmsConnector.getJmsContainer().isRecovering()) {
-				previousLastPollFinishedTime = lastPollFinishedTime;
+		if (lastPollFinishedTime < lastCheck) {												// if the last poll finished more than the pollGuardInterval seconds ago
+			if (lastPollFinishedTime != previousLastPollFinishedTime						//   and we did not earlier check for this same value
+				&& springJmsConnector.threadsProcessing.getValue() == 0						//   and we are not still processing a message
+				&& springJmsConnector.getReceiver().getRunState() == RunState.STARTED		//   and we are ready to pro
+				&& !springJmsConnector.getJmsContainer().isRecovering()) {					//   and we are not already in the process of recovering
+				previousLastPollFinishedTime = lastPollFinishedTime;						// then we consider this too long, and suspect a problem.
 				timeoutDetected = true;
 				int pollTimeoutNr=pollTimeouts.incrementAndGet();
 				warn("JMS poll timeout ["+pollTimeoutNr+"] last poll finished ["+((currentCheck-lastPollFinishedTime)/1000)+"] s ago, an attempt will be made to stop and start listener");
@@ -65,9 +65,9 @@ public class PollGuard extends TimerTask {
 				} catch (Exception e) {
 					log.warn("JMS poll timeout ["+pollTimeoutNr+"] handling caught Exception when stopping receiver ["+springJmsConnector.getListener().getReceiver().getName()+"]", e);
 				} finally {
-					log.info("JMS poll timeout ["+pollTimeoutNr+"] handling restarting receiver ["+springJmsConnector.getListener().getReceiver().getName()+"]");
+					log.warn("JMS poll timeout ["+pollTimeoutNr+"] handling restarting receiver ["+springJmsConnector.getListener().getReceiver().getName()+"]");
 					springJmsConnector.getListener().getReceiver().startRunning();
-					log.info("JMS poll timeout ["+pollTimeoutNr+"] handling restarted receiver ["+springJmsConnector.getListener().getReceiver().getName()+"]");
+					log.warn("JMS poll timeout ["+pollTimeoutNr+"] handling restarted receiver ["+springJmsConnector.getListener().getReceiver().getName()+"]");
 				}
 			}
 		} else {
