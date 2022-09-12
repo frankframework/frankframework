@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,14 +29,15 @@ import javax.jms.TextMessage;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.SuppressKeys;
+import nl.nn.adapterframework.core.IListenerConnector.CacheMode;
 import nl.nn.adapterframework.core.ITransactionRequirements;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.jms.JmsListener;
 import nl.nn.adapterframework.util.TransformerPool;
-import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * ESB (Enterprise Service Bus) extension of JmsListener.
@@ -60,7 +61,6 @@ import nl.nn.adapterframework.util.TransformerPool.OutputType;
 public class EsbJmsListener extends JmsListener implements ITransactionRequirements {
 	private static final String REQUEST_REPLY = "RR";
 	private static final String FIRE_AND_FORGET = "FF";
-	private static final String CACHE_CONSUMER = "CACHE_CONSUMER";
 
 	private String messageProtocol = null;
 	private boolean copyAEProperties = false;
@@ -75,10 +75,10 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 		}
 		if (getMessageProtocol().equalsIgnoreCase(REQUEST_REPLY)) {
 			setForceMessageIdAsCorrelationId(true);
-			if (CACHE_CONSUMER.equals(getCacheMode())) {
-				ConfigurationWarnings.add(this, log, "attribute [cacheMode] already has a default value [" + CACHE_CONSUMER + "]", SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY, getReceiver().getAdapter());
+			if (getCacheMode()==CacheMode.CACHE_CONSUMER) {
+				ConfigurationWarnings.add(this, log, "attribute [cacheMode] already has a default value [" + CacheMode.CACHE_CONSUMER + "]", SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY, getReceiver().getAdapter());
 			}
-			setCacheMode("CACHE_CONSUMER");
+			setCacheMode(CacheMode.CACHE_CONSUMER);
 		} else {
 			setUseReplyTo(false);
 		}
