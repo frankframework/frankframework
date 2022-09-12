@@ -170,7 +170,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 	public void testNoShadowSendersWaitForCompletion() throws Exception {
 		testNoShadowSenders(true);
 	}
-	
+
 	@Test
 	public void testResultSenderResultWith3ShadowSenders() throws Exception {
 		sender.registerSender(new TestSender("shadowSenderWithDelay1"));
