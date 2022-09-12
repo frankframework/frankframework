@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ import nl.nn.adapterframework.util.LogUtil;
 /**
  * Extend the DefaultMessageListenerContainer from Spring to add trace logging and make it possible to monitor the last
  * poll finished time.
- * 
+ *
  * @author Niels Meijer
  * @author Jaco de Groot
  */
@@ -90,12 +90,14 @@ public class IbisMessageListenerContainer extends DefaultMessageListenerContaine
 	@Override
 	protected boolean doReceiveAndExecute(Object invoker, Session session, MessageConsumer consumer, TransactionStatus txStatus) throws JMSException {
 		if (log.isTraceEnabled()) log.trace("doReceiveAndExecute() - destination["+getDestinationName()+"] clientId["+getClientId()+"] session["+session+"]");
-		boolean messageReceived = super.doReceiveAndExecute(invoker, session, consumer, txStatus);
-		if (getMessageListener() instanceof SpringJmsConnector) {
-			SpringJmsConnector springJmsConnector = (SpringJmsConnector)getMessageListener();
-			springJmsConnector.setLastPollFinishedTime(System.currentTimeMillis());
+		try {
+			return super.doReceiveAndExecute(invoker, session, consumer, txStatus);
+		} finally {
+			if (getMessageListener() instanceof SpringJmsConnector) {
+				SpringJmsConnector springJmsConnector = (SpringJmsConnector)getMessageListener();
+				springJmsConnector.setLastPollFinishedTime(System.currentTimeMillis());
+			}
 		}
-		return messageReceived;
 	}
 
 	public void setCredentialFactory(CredentialFactory credentialFactory) {
