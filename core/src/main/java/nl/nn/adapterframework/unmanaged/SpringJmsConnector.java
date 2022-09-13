@@ -81,7 +81,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 	public static final int IDLE_TASK_EXECUTION_LIMIT=1000;
 
 	private CredentialFactory credentialFactory;
-	private String cacheMode;
+	private CacheMode cacheMode;
 	private int acknowledgeMode;
 	private boolean sessionTransacted;
 	private String messageSelector;
@@ -110,7 +110,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 	@Override
 	public void configureEndpointConnection(final IPortConnectedListener<Message> jmsListener,
 			ConnectionFactory connectionFactory, CredentialFactory credentialFactory, Destination destination,
-			IbisExceptionListener exceptionListener, String cacheMode, int acknowledgeMode, boolean sessionTransacted,
+			IbisExceptionListener exceptionListener, CacheMode cacheMode, int acknowledgeMode, boolean sessionTransacted,
 			String messageSelector, long receiveTimeout, long pollGuardInterval) throws ConfigurationException {
 		super.configureEndpointConnection(jmsListener, connectionFactory, destination, exceptionListener);
 		this.credentialFactory = credentialFactory;
@@ -172,8 +172,8 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		}
 		jmsContainer.setIdleTaskExecutionLimit(IDLE_TASK_EXECUTION_LIMIT);
 
-		if (StringUtils.isNotEmpty(cacheMode)) {
-			jmsContainer.setCacheLevelName(cacheMode);
+		if (cacheMode!=null) {
+			jmsContainer.setCacheLevelName(cacheMode.name());
 		} else {
 			if (getReceiver().isTransacted()) {
 				jmsContainer.setCacheLevel(DEFAULT_CACHE_LEVEL_TRANSACTED);
