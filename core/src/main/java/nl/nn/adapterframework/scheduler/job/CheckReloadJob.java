@@ -103,6 +103,7 @@ public class CheckReloadJob extends JobDef {
 			}
 		} catch (Exception e) {
 			getMessageKeeper().add("error while executing query [" + selectQuery + "] (as part of scheduled job execution)", e);
+			return;
 		} finally {
 			qs.close();
 		}
