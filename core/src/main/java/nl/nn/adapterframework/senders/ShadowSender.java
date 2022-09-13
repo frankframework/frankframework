@@ -34,7 +34,6 @@ import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Guard;
-import nl.nn.adapterframework.util.Semaphore;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.SaxDocumentBuilder;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
@@ -126,7 +125,6 @@ public class ShadowSender extends ParallelSenders {
 		Guard primaryGuard = new Guard();
 		Guard shadowGuard = new Guard();
 		Map<ISender, ParallelSenderExecutor> executorMap = new ConcurrentHashMap<>();
-		Semaphore shadowsFinished = isWaitForShadowsToFinish() ? new Semaphore() : null;
 
 		executeGuarded(originalSender, message, session, primaryGuard, executorMap);
 		// Loop through all senders and execute the message.
@@ -142,12 +140,11 @@ public class ShadowSender extends ParallelSenders {
 		}
 
 		/*
-		 * setup thread to
+		 * setup action to
 		 * - wait for remaining senders to have replied
 		 * - collect the results of all senders
 		 */
-
-		getExecutor().execute(() -> {
+		Runnable collectResults = () -> {
 			// Wait till every sender has replied.
 			try {
 				shadowGuard.waitForAllResources();
@@ -162,20 +159,15 @@ public class ShadowSender extends ParallelSenders {
 				}
 			} catch (InterruptedException e) {
 				log.warn(getLogPrefix()+"result collection thrad was interupted", e);
-			} finally {
-				if (shadowsFinished!=null) {
-					shadowsFinished.release();
-				}
 			}
-		});
+		};
 
-		if (shadowsFinished!=null) {
-			try {
-				shadowsFinished.acquire();
-			} catch (InterruptedException e) {
-				throw new SenderException("Interrupted waiting for shadows to finish", e);
-			}
+		if (isWaitForShadowsToFinish()) {
+			collectResults.run();
+		} else {
+			getExecutor().execute(collectResults);
 		}
+
 		ParallelSenderExecutor originalSenderExecutor = executorMap.get(originalSender);
 		if(originalSenderExecutor == null) {
 			throw new IllegalStateException("unable to find originalSenderExecutor");
