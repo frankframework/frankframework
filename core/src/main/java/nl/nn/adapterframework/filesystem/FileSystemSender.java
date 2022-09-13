@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2019-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IForwardTarget;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
@@ -34,22 +34,23 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingSenderBase;
+import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * Base class for Senders that use a {@link IBasicFileSystem FileSystem}.
- * 
+ *
  * @see FileSystemActor
- * 
+ *
  * @ff.parameter action overrides attribute <code>action</code>.
  * @ff.parameter filename overrides attribute <code>filename</code>. If not present, the input message is used.
  * @ff.parameter destination destination for action <code>rename</code> and <code>move</code>. Overrides attribute <code>destination</code>.
  * @ff.parameter contents contents for action <code>write</code> and <code>append</code>.
  * @ff.parameter inputFolder folder for actions <code>list</code>, <code>mkdir</code> and <code>rmdir</code>. This is a sub folder of baseFolder. Overrides attribute <code>inputFolder</code>. If not present, the input message is used.
- * 
+ *
  * @author Gerrit van Brakel
  */
 public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends StreamingSenderBase implements HasPhysicalDestination {
-	
+
 	private FS fileSystem;
 	private FileSystemActor<F,FS> actor=new FileSystemActor<F,FS>();
 	private final String FILESYSTEMACTOR = "nl.nn.adapterframework.filesystem.FileSystemActor";
@@ -57,14 +58,18 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		getFileSystem().configure();
-		try { 
+		FS fileSystem = getFileSystem();
+		if (getApplicationContext()!=null) {
+			SpringUtils.autowireByName(getApplicationContext(), fileSystem);
+		}
+		fileSystem.configure();
+		try {
 			actor.configure(fileSystem, getParameterList(), this);
 		} catch (ConfigurationException e) {
 			throw new ConfigurationException(getLogPrefix(),e);
 		}
 	}
-	
+
 	@Override
 	public void open() throws SenderException {
 		try {
@@ -75,7 +80,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 			throw new SenderException("Cannot open fileSystem",e);
 		}
 	}
-	
+
 	@Override
 	public void close() throws SenderException {
 		try {
@@ -93,7 +98,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 	@Override
 	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
 		ParameterValueList pvl = null;
-		
+
 		try {
 			if (paramList !=null) {
 				pvl=paramList.getValues(message, session);
@@ -154,7 +159,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 	public void setInputFolder(String inputFolder) {
 		actor.setInputFolder(inputFolder);
 	}
-	
+
 	@IbisDocRef({"4", FILESYSTEMACTOR})
 	public void setCreateFolder(boolean createFolder) {
 		actor.setCreateFolder(createFolder);
@@ -179,7 +184,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 	public void setNumberOfBackups(int numberOfBackups) {
 		actor.setNumberOfBackups(numberOfBackups);
 	}
-	
+
 	@IbisDocRef({"9", FILESYSTEMACTOR})
 	@Deprecated
 	public void setBase64(Base64Pipe.Direction base64) {

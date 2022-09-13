@@ -35,8 +35,8 @@ import java.util.stream.Collectors;
 
 import javax.mail.internet.InternetAddress;
 
-import nl.nn.adapterframework.core.SenderException;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationContext;
 
 import com.microsoft.aad.msal4j.ClientCredentialFactory;
 import com.microsoft.aad.msal4j.ClientCredentialParameters;
@@ -44,6 +44,7 @@ import com.microsoft.aad.msal4j.ConfidentialClientApplication;
 import com.microsoft.aad.msal4j.IAuthenticationResult;
 
 import lombok.Getter;
+import lombok.Setter;
 import microsoft.exchange.webservices.data.autodiscover.IAutodiscoverRedirectionUrl;
 import microsoft.exchange.webservices.data.core.ExchangeService;
 import microsoft.exchange.webservices.data.core.PropertySet;
@@ -88,11 +89,16 @@ import microsoft.exchange.webservices.data.search.ItemView;
 import microsoft.exchange.webservices.data.search.filter.SearchFilter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.encryption.HasKeystore;
+import nl.nn.adapterframework.encryption.HasTruststore;
+import nl.nn.adapterframework.encryption.KeystoreType;
 import nl.nn.adapterframework.receivers.ExchangeMailListener;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
 
 /**
@@ -118,7 +124,11 @@ import nl.nn.adapterframework.xml.SaxElementBuilder;
  * @author Gerrit van Brakel
  *
  */
-public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachment,ExchangeService> {
+public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachment,ExchangeService> implements HasKeystore, HasTruststore {
+
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
+	private @Getter String name="ExchangeFileSystem";
 
 	private @Getter String mailAddress;
 	private @Getter boolean validateAllRedirectUrls=true;
@@ -137,6 +147,26 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	private @Getter String clientId = null;
 	private @Getter String clientSecret = null;
 	private @Getter String tenantId = null;
+
+	/* SSL */
+	private @Getter @Setter String keystore;
+	private @Getter @Setter String keystoreAuthAlias;
+	private @Getter @Setter String keystorePassword;
+	private @Getter @Setter KeystoreType keystoreType=KeystoreType.PKCS12;
+	private @Getter @Setter String keystoreAlias;
+	private @Getter @Setter String keystoreAliasAuthAlias;
+	private @Getter @Setter String keystoreAliasPassword;
+	private @Getter @Setter String keyManagerAlgorithm=null;
+
+	private @Getter @Setter String truststore=null;
+	private @Getter @Setter String truststoreAuthAlias;
+	private @Getter @Setter String truststorePassword=null;
+	private @Getter @Setter KeystoreType truststoreType=KeystoreType.JKS;
+	private @Getter @Setter String trustManagerAlgorithm=null;
+	private @Getter @Setter boolean allowSelfSignedCertificates = false;
+	private @Getter @Setter boolean verifyHostname=true;
+	private @Getter @Setter boolean ignoreCertificateExpiredException=false;
+
 	private ConfidentialClientApplication client;
 	private MsalClientAdapter msalClientAdapter;
 	private ExecutorService executor;
@@ -161,11 +191,30 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		proxyCf = new CredentialFactory(getAuthAlias(), getClientId(), getClientSecret());
 
 		if(StringUtils.isNotEmpty(getTenantId())) {
-			msalClientAdapter = new MsalClientAdapter();
+			msalClientAdapter = applicationContext!=null ? SpringUtils.createBean(applicationContext, MsalClientAdapter.class): new MsalClientAdapter();
 			msalClientAdapter.setProxyHost(getProxyHost());
 			msalClientAdapter.setProxyPort(getProxyPort());
 			msalClientAdapter.setProxyUsername(proxyCf.getUsername());
 			msalClientAdapter.setProxyPassword(proxyCf.getPassword());
+
+			msalClientAdapter.setKeystore(getKeystore());
+			msalClientAdapter.setKeystoreType(getKeystoreType());
+			msalClientAdapter.setKeystoreAuthAlias(getKeystoreAuthAlias());
+			msalClientAdapter.setKeystorePassword(getKeystorePassword());
+			msalClientAdapter.setKeystoreAlias(getKeystoreAlias());
+			msalClientAdapter.setKeystoreAliasAuthAlias(getKeystoreAliasAuthAlias());
+			msalClientAdapter.setKeystoreAliasPassword(getKeystoreAliasPassword());
+			msalClientAdapter.setKeyManagerAlgorithm(getKeyManagerAlgorithm());
+
+			msalClientAdapter.setTruststore(getTruststore());
+			msalClientAdapter.setTruststoreType(getTruststoreType());
+			msalClientAdapter.setTruststoreAuthAlias(getTruststoreAuthAlias());
+			msalClientAdapter.setTruststorePassword(getTruststorePassword());
+			msalClientAdapter.setTrustManagerAlgorithm(getTrustManagerAlgorithm());
+			msalClientAdapter.setVerifyHostname(isVerifyHostname());
+			msalClientAdapter.setAllowSelfSignedCertificates(isAllowSelfSignedCertificates());
+			msalClientAdapter.setIgnoreCertificateExpiredException(isIgnoreCertificateExpiredException());
+
 			msalClientAdapter.configure();
 
 			clientCredentialParam = ClientCredentialParameters.builder(

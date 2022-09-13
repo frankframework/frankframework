@@ -49,6 +49,7 @@ import nl.nn.adapterframework.stream.document.ObjectBuilder;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * {@link IPullingListener listener} that looks in a {@link IBasicFileSystem FileSystem} for files.
@@ -105,6 +106,9 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	@Override
 	public void configure() throws ConfigurationException {
 		FS fileSystem = getFileSystem();
+		if (getApplicationContext()!=null) {
+			SpringUtils.autowireByName(getApplicationContext(), fileSystem);
+		}
 		fileSystem.configure();
 		if (getNumberOfBackups()>0 && !(fileSystem instanceof IWritableFileSystem)) {
 			throw new ConfigurationException("FileSystem ["+ClassUtils.nameOf(fileSystem)+"] does not support setting attribute 'numberOfBackups'");
