@@ -188,7 +188,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private @Getter ContentType fullContentType = null;
 	private @Getter String contentType = null;
 
-	/** CONNECTION POOL **/
+	/* CONNECTION POOL */
 	private @Getter int timeout = 10000;
 	private @Getter int maxConnections = 10;
 	private @Getter int maxExecuteRetries = 1;
@@ -200,7 +200,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private HttpClientContext httpClientContext = HttpClientContext.create();
 	private @Getter CloseableHttpClient httpClient;
 
-	/** SECURITY */
+	/* SECURITY */
 	private @Getter String authAlias;
 	private @Getter String username;
 	private @Getter String password;
@@ -212,7 +212,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private @Getter String clientSecret;
 	private @Getter String scope;
 
-	/** PROXY **/
+	/* PROXY */
 	private @Getter String proxyHost;
 	private @Getter int    proxyPort=80;
 	private @Getter String proxyAuthAlias;
@@ -220,7 +220,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private @Getter String proxyPassword;
 	private @Getter String proxyRealm=null;
 
-	/** SSL **/
+	/* SSL */
 	private @Getter String keystore;
 	private @Getter String keystoreAuthAlias;
 	private @Getter String keystorePassword;
