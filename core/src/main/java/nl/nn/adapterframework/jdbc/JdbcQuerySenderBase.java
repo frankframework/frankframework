@@ -574,10 +574,6 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			if (StringUtils.isNotEmpty(getBlobCharset())) db2document.setBlobCharset(getBlobCharset());
 			db2document.setDecompressBlobs(isBlobsCompressed());
 			db2document.setGetBlobSmart(isBlobSmartGet());
-//				ContentHandler handler = target.asContentHandler();
-//				if (isPrettyPrint()) {
-//					handler = new PrettyPrintFilter(handler);
-//				}
 			db2document.writeDocument(getOutputFormat(), getDbmsSupport(), resultset, getMaxRows(), isIncludeFieldDefinition(), target, isPrettyPrint());
 			return target.getPipeRunResult();
 		} catch (Exception e) {

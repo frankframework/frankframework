@@ -97,7 +97,7 @@ public class DB2DocumentWriter {
 		try {
 			stmt = rs.getStatement();
 			if (stmt!=null) {
-				JdbcUtil.warningsToXml(stmt.getWarnings(), documentBuilder);
+				JdbcUtil.warningsToDocument(stmt.getWarnings(), documentBuilder);
 			}
 		} catch (SQLException e1) {
 			log.warn("exception obtaining statement warnings", e1);

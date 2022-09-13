@@ -152,7 +152,7 @@ public class JdbcUtil {
 		}
 	}
 
-	public static void warningsToXml(SQLWarning warnings, ObjectBuilder parent) throws SAXException {
+	public static void warningsToDocument(SQLWarning warnings, ObjectBuilder parent) throws SAXException {
 		if (warnings!=null) {
 			try (ArrayBuilder arrayBuilder = parent.addArrayField("warnings", "warning")) {
 				while (warnings!=null) {
