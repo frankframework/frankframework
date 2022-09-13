@@ -80,23 +80,19 @@ public class ShadowSenderTest extends ParallelSendersTest {
 	}
 
 	@Test
-	public void testWithoutResultSender() throws Exception {
-		ConfigurationException exception = assertThrows(ConfigurationException.class, () -> {
-			((ShadowSender)sender).setResultSender(null);
-			sender.configure();
-			sender.open();
-		});
-		assertEquals("no originalSender or resultSender defined", exception.getMessage());
+	public void testWithDefaultResultSender() throws Exception {
+		((ShadowSender)sender).setResultSender(null);
+		sender.configure();
+		sender.open();
+		assertEquals("resultSender", ((ShadowSender)sender).getResultSenderName());
 	}
 
 	@Test
-	public void testWithoutOriginalSender() throws Exception {
-		ConfigurationException exception = assertThrows(ConfigurationException.class, () -> {
-			((ShadowSender)sender).setOriginalSender(null);
-			sender.configure();
-			sender.open();
-		});
-		assertEquals("no originalSender or resultSender defined", exception.getMessage());
+	public void testWithoutDefaultOriginalSender() throws Exception {
+		((ShadowSender)sender).setOriginalSender(null);
+		sender.configure();
+		sender.open();
+		assertEquals("originalSender", ((ShadowSender)sender).getOriginalSenderName());
 	}
 
 	@Test
@@ -126,17 +122,20 @@ public class ShadowSenderTest extends ParallelSendersTest {
 			ps.configure();
 			ps.open();
 		});
-		assertEquals("no originalSender or resultSender defined", exception.getMessage());
+		assertEquals("ShadowSender should contain at least 2 Senders, none found", exception.getMessage());
 	}
 
-	@Test
-	public void testNoShadowSenders() throws Exception {
+	public void testNoShadowSenders(boolean waitForCompletionOfShadows) throws Exception {
+		((ShadowSender)sender).setWaitForShadowsToFinish(waitForCompletionOfShadows);
 		sender.configure();
 		sender.open();
 
 		String result = sender.sendMessage(new Message(INPUT_MESSAGE), session).asString();
 		assertEquals(ORIGINAL_SENDER_RESULT, result);
 
+		if (!waitForCompletionOfShadows) {
+			Thread.sleep(1000); // wait for results to be collected in the background
+		}
 		Message senderResult = null;
 		for(ISender sender : sender.getSenders()) {
 			if(RESULT_SENDER_NAME.equals(sender.getName())) {
@@ -156,10 +155,20 @@ public class ShadowSenderTest extends ParallelSendersTest {
 		assertEquals(ORIGINAL_SENDER_RESULT, XmlUtils.getStringValue(origResult, true));
 		assertEquals(ORIGINAL_SENDER_NAME, origResult.getAttribute("senderName"));
 		int duration = Integer.parseInt(origResult.getAttribute("duration"));
-		assertTrue("test took more then [10s] duration ["+duration+"]", duration < 10);
+		assertTrue("test took more then [15s] duration ["+duration+"]", duration < 15);
 
 		Collection<Node> shadowResults = XmlUtils.getChildTags(el, "shadowResult");
 		assertEquals(0, shadowResults.size());
+	}
+
+	@Test
+	public void testNoShadowSenders() throws Exception {
+		testNoShadowSenders(false);
+	}
+
+	@Test
+	public void testNoShadowSendersWaitForCompletion() throws Exception {
+		testNoShadowSenders(true);
 	}
 
 	@Test
@@ -173,6 +182,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 		String result = sender.sendMessage(new Message(INPUT_MESSAGE), session).asString();
 		assertEquals(ORIGINAL_SENDER_RESULT, result);
 
+		Thread.sleep(3000); // wait for results to be collected in the background
 		Message senderResult = null;
 		for(ISender sender : sender.getSenders()) {
 			if(RESULT_SENDER_NAME.equals(sender.getName())) {
