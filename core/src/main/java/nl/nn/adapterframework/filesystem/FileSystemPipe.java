@@ -64,7 +64,9 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 	public void configure() throws ConfigurationException {
 		super.configure();
 		FS fileSystem = getFileSystem();
-		SpringUtils.autowireByName(getApplicationContext(), fileSystem);
+		if (getApplicationContext()!=null) {
+			SpringUtils.autowireByName(getApplicationContext(), fileSystem);
+		}
 		fileSystem.configure();
 		try {
 			actor.configure(fileSystem, getParameterList(), this);
