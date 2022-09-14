@@ -16,7 +16,7 @@
             <field name="TKEY">57438</field>
             <field name="TCHAR">D</field>
             <field name="TTIMESTAMP">2022-01-20 17:48:59</field>
-            <field name="TVARCHAR"/>
+            <field name="TVARCHAR" null="true"/>
           </row>
           <row number="1">
             <field name="TKEY">57439</field>

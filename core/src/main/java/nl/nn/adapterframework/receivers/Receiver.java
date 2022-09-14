@@ -1376,7 +1376,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					Object messageForAfterMessageProcessed = rawMessageOrWrapper;
 					if (getListener() instanceof IHasProcessState && !itx.isRollbackOnly()) {
 						ProcessState targetState = messageInError && knownProcessStates.contains(ProcessState.ERROR) ? ProcessState.ERROR : ProcessState.DONE;
-						Object movedMessage = changeProcessState(rawMessageOrWrapper, targetState, messageInError ? errorMessage : "");
+						Object movedMessage = changeProcessState(rawMessageOrWrapper, targetState, messageInError ? errorMessage : null);
 						if (movedMessage!=null) {
 							messageForAfterMessageProcessed = movedMessage;
 						}
