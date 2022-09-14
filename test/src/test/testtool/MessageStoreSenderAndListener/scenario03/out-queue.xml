@@ -21,7 +21,7 @@
       <field name="MESSAGEID">1</field>
       <field name="CORRELATIONID">Test Tool correlation id</field>
       <field name="MESSAGEDATE">2022-03-28 18:48:00</field>
-      <field name="COMMENTS"/>
+      <field name="COMMENTS" null="true"/>
       <field name="MESSAGE">"&lt;?xml version='1.0' encoding='UTF-8'?&gt;
 &lt;Envelope&gt;
 	&lt;Header&gt;
