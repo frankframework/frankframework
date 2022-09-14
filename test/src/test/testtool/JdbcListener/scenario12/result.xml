@@ -16,7 +16,7 @@
             <field name="TCHAR">6</field>
             <field name="TCLOB">success</field>
             <field name="TNUMBER">IGNORE.00000</field>
-            <field name="TVARCHAR">exitState [SUCCESS], result [String: &lt;result&gt;&lt;rowsupdated&gt;1&lt;/rowsupdated&gt;&lt;/result&gt;]</field>
+            <field name="TVARCHAR"/>
           </row>
           <row number="1">
             <field name="TCHAR">X</field>
