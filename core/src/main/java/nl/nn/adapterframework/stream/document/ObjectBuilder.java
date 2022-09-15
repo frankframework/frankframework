@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,7 +30,28 @@ public abstract class ObjectBuilder extends StructureBuilder implements IObjectB
 	public void add(String name, boolean value) throws SAXException {
 		addField(name).setValue(value);
 	}
-	
+
+	public void addNumber(String name, String value) throws SAXException {
+		addField(name).setValue(value);
+	}
+
+
+	public void addAttribute(String name, String value) throws SAXException {
+		add(name, value);
+	}
+
+	public void addAttribute(String name, long value) throws SAXException {
+		add(name, value);
+	}
+
+	public void addAttribute(String name, boolean value) throws SAXException {
+		add(name, value);
+	}
+
+	public void addNumberAttribute(String name, String value) throws SAXException {
+		addNumber(name, value);
+	}
+
 	public ObjectBuilder addObjectField(String name) throws SAXException {
 		INodeBuilder field = addField(name);
 		ObjectBuilder result = field.startObject();

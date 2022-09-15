@@ -1,0 +1,41 @@
+{
+    "fielddefinition": [
+        {
+            "name": "CNT",
+            "type": "BIGINT",
+            "columnDisplaySize": 20,
+            "precision": 64,
+            "scale": 0,
+            "isCurrency": false,
+            "columnTypeName": "BIGINT",
+            "columnClassName": "java.lang.Long"
+        },
+        {
+            "name": "STR",
+            "type": "VARCHAR",
+            "columnDisplaySize": 6,
+            "precision": 6,
+            "scale": 0,
+            "isCurrency": false,
+            "columnTypeName": "CHARACTER VARYING",
+            "columnClassName": "java.lang.String"
+        },
+        {
+            "name": "NUM",
+            "type": "INTEGER",
+            "columnDisplaySize": 11,
+            "precision": 32,
+            "scale": 0,
+            "isCurrency": false,
+            "columnTypeName": "INTEGER",
+            "columnClassName": "java.lang.Integer"
+        }
+    ],
+    "rowset": [
+        [
+            "0",
+            "string",
+            "5"
+        ]
+    ]
+}

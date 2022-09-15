@@ -156,5 +156,14 @@ public class Json2XmlHandler implements JsonEventHandler {
 		stack.pop();
 	}
 
+	@Override
+	public void number(String value) throws SAXException {
+		INodeBuilder top = (INodeBuilder)checkField();
+		try (INodeBuilder node = top) {
+			top.setNumberValue(value);
+		}
+		stack.pop();
+	}
+
 
 }

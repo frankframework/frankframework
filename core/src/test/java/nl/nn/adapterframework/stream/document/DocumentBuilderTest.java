@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.stream.document;
 
+import static nl.nn.adapterframework.testutil.MatchUtils.assertXmlEquals;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
@@ -90,7 +91,7 @@ public class DocumentBuilderTest {
 		try (IDocumentBuilder root = new XmlDocumentBuilder("root")) {
 			buildDocument(root);
 			root.close();
-			assertEquals(expected, root.toString());
+			assertXmlEquals(expected, root.toString());
 		}
 	}
 
@@ -110,7 +111,7 @@ public class DocumentBuilderTest {
 		try (ObjectBuilder root = DocumentBuilderFactory.startObjectDocument(DocumentFormat.XML, "root")) {
 			buildObject(root);
 			root.close();
-			assertEquals(expected, root.toString());
+			assertXmlEquals(expected, root.toString());
 		}
 	}
 

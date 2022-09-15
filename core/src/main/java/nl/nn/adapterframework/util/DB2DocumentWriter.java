@@ -164,33 +164,33 @@ public class DB2DocumentWriter {
 					if(convertFieldnamesToUppercase) {
 						columnName = columnName.toUpperCase();
 					}
-					field.add("name", columnName);
+					field.addAttribute("name", columnName);
 
 					//Not every JDBC implementation implements these attributes!
 					try {
-						field.add("type", getFieldType(rsmeta.getColumnType(j)));
+						field.addAttribute("type", getFieldType(rsmeta.getColumnType(j)));
 					} catch (SQLException e) {
 						log.debug("Could not determine columnType",e);
 					}
 					try {
-						field.add("columnDisplaySize", rsmeta.getColumnDisplaySize(j));
+						field.addAttribute("columnDisplaySize", rsmeta.getColumnDisplaySize(j));
 					} catch (SQLException e) {
 						log.debug("Could not determine columnDisplaySize",e);
 					}
 					try {
-						field.add("precision", rsmeta.getPrecision(j));
+						field.addAttribute("precision", rsmeta.getPrecision(j));
 					} catch (SQLException e) {
 						log.warn("Could not determine precision",e);
 					} catch (NumberFormatException e2) {
 						if (log.isDebugEnabled()) log.debug("Could not determine precision: "+e2.getMessage());
 					}
 					try {
-						field.add("scale", rsmeta.getScale(j));
+						field.addAttribute("scale", rsmeta.getScale(j));
 					} catch (SQLException e) {
 						log.debug("Could not determine scale",e);
 					}
 					try {
-						field.add("isCurrency", rsmeta.isCurrency(j));
+						field.addAttribute("isCurrency", rsmeta.isCurrency(j));
 					} catch (SQLException e) {
 						log.debug("Could not determine isCurrency",e);
 					}
@@ -198,12 +198,12 @@ public class DB2DocumentWriter {
 						String columnTypeName = rsmeta.getColumnTypeName(j);
 						if(convertFieldnamesToUppercase)
 							columnTypeName = columnTypeName.toUpperCase();
-						field.add("columnTypeName", columnTypeName);
+						field.addAttribute("columnTypeName", columnTypeName);
 					} catch (SQLException e) {
 						log.debug("Could not determine columnTypeName",e);
 					}
 					try {
-						field.add("columnClassName", rsmeta.getColumnClassName(j));
+						field.addAttribute("columnClassName", rsmeta.getColumnClassName(j));
 					} catch (SQLException e) {
 						log.debug("Could not determine columnClassName",e);
 					}

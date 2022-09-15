@@ -55,4 +55,10 @@ public class XmlDocumentBuilder extends XmlNodeBuilder implements IDocumentBuild
 		return ArrayBuilder.asArrayBuilder(this, elementName);
 	}
 
+	@Override
+	public void close() throws SAXException {
+		super.close(); 
+		super.close(); // compensate for promotion in additional SaxDocumentBuilder in constructor
+	}
+
 }
