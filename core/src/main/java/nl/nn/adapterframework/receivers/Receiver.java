@@ -916,7 +916,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		plr.setResult(result);
 		plr.setState(ExitState.ERROR);
 		if (getSender()!=null) {
-			String sendMsg = sendResultToSender(result);
+			String sendMsg = sendResultToSender(result, messageId);
 			if (sendMsg != null) {
 				log.warn("problem sending result:"+sendMsg);
 			}
@@ -1359,7 +1359,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				throw wrapExceptionAsListenerException(t);
 			}
 			if (getSender()!=null) {
-				String sendMsg = sendResultToSender(result);
+				String sendMsg = sendResultToSender(result, messageId);
 				if (sendMsg != null) {
 					errorMessage = sendMsg;
 				}
@@ -1760,12 +1760,14 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	public boolean isInRunState(RunState someRunState) {
 		return runState.getRunState()==someRunState;
 	}
-	private String sendResultToSender(Message result) {
+	private String sendResultToSender(Message result, String correlationId) {
 		String errorMessage = null;
 		try {
 			if (getSender() != null) {
 				if (log.isDebugEnabled()) { log.debug("Receiver ["+getName()+"] sending result to configured sender"); }
-				getSender().sendMessage(result, null);
+				PipeLineSession pipeLineSession = new PipeLineSession();
+				pipeLineSession.put(PipeLineSession.messageIdKey, correlationId);
+				getSender().sendMessage(result, pipeLineSession);
 			}
 		} catch (Exception e) {
 			String msg = "caught exception in message post processing";

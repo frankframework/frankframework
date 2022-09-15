@@ -30,6 +30,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IWithParameters;
@@ -58,7 +60,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	private @Getter long replyMessageTimeToLive=0;
 	private @Getter int replyPriority=-1;
 	private @Getter DeliveryMode replyDeliveryMode=DeliveryMode.NON_PERSISTENT;
-	private ISender sender;
+	private @Getter ISender sender;
 
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private final String MSGLOG_KEYS = APP_CONSTANTS.getResolvedProperty("msg.log.keys");
@@ -146,7 +148,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	 * Fill in thread-context with things needed by the JMSListener code.
 	 * This includes a Session. The Session object can be passed in
 	 * externally.
-	 * 
+	 *
 	 * @param rawMessage - Original message received, can not be <code>null</code>
 	 * @param threadContext - Thread context to be populated, can not be <code>null</code>
 	 */
@@ -280,14 +282,10 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		return replyMessage;
 	}
 
+	@Deprecated
 	public void setSender(ISender newSender) {
 		sender = newSender;
-		log.debug("["+getName()+"] ** registered sender ["+sender.getName()+"] with properties ["+sender.toString()+"]");
-	}
-
-	@Override
-	public ISender getSender() {
-		return sender;
+		ConfigurationWarnings.add(this, log, "["+getName()+"] has a nested Sender, which is deprecated. Please use attribute replyDestinationName or a Sender nested in Receiver instead", SuppressKeys.DEPRECATION_SUPPRESS_KEY, null);
 	}
 
 	/**
@@ -350,7 +348,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	}
 
 	/**
-	 * By default, the JmsListener takes the Correlation-ID (if present) as the ID that has to be used as Correlation-ID of the reply. 
+	 * By default, the JmsListener takes the Correlation-ID (if present) as the ID that has to be used as Correlation-ID of the reply.
 	 * When set to <code>true</code>, the messageID is used as Correlation-ID of the reply.
 	 */
 	public void setForceMessageIdAsCorrelationId(boolean force){
@@ -372,7 +370,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		useReplyTo = newUseReplyTo;
 	}
 
-	@IbisDoc({"Value of the jmstype field of the reply message", "not set by application"})
+	@IbisDoc({"Value of the JMSType field of the reply message", "not set by application"})
 	public void setReplyMessageType(String string) {
 		replyMessageType = string;
 	}
@@ -395,7 +393,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		replyMessageTimeToLive = l;
 	}
 
-	@IbisDoc({"when <code>true</code>, messages sent are put in a soap envelope", "false"})
+	@IbisDoc({"If <code>true</code>, messages sent are put in a SOAP envelope", "false"})
 	public void setSoap(boolean b) {
 		soap = b;
 	}
@@ -416,7 +414,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		soapHeaderSessionKey = string;
 	}
 
-	@IbisDoc({"comma separated list of all xpath keys that need to be logged. (overrides <code>msg.log.keys</code> property)", ""})
+	@IbisDoc({"Comma separated list of all XPath keys that need to be logged. (overrides <code>msg.log.keys</code> property)", ""})
 	public void setxPathLoggingKeys(String string) {
 		xPathLoggingKeys = string;
 	}

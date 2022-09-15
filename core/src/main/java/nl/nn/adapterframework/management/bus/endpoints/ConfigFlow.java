@@ -52,6 +52,9 @@ public class ConfigFlow {
 		String configurationName = BusMessageUtils.getHeader(message, "configuration");
 		if(StringUtils.isNotEmpty(configurationName)) {
 			Configuration configuration = getIbisManager().getConfiguration(configurationName);
+			if (configuration==null) {
+				throw new IOException("configuration ["+configurationName+"] not found");
+			}
 			String adapterName = BusMessageUtils.getHeader(message, "adapter");
 			if(StringUtils.isNotEmpty(adapterName)) {
 				return getAdapterFlow(configuration, adapterName);
