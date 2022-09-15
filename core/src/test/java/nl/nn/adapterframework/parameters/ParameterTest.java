@@ -181,6 +181,21 @@ public class ParameterTest {
 	}
 
 	@Test
+	public void testPatternUnknownSessionVariableOrParameterSilentlyIgnored() throws ConfigurationException, ParameterException {
+		Parameter p = new Parameter();
+		p.setName("dummy");
+		p.setPattern("{unknown}");
+		p.setIgnoreUnresolvablePatternElements(true);
+		p.configure();
+
+		PipeLineSession session = new PipeLineSession();
+
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+
+		assertEquals("", p.getValue(alreadyResolvedParameters, null, session, false));
+	}
+
+	@Test
 	public void testContextKey() throws ConfigurationException, ParameterException {
 		Parameter p = new Parameter();
 		p.setName("dummy");
