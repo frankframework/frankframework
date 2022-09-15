@@ -1,21 +1,26 @@
 package nl.nn.adapterframework.jdbc;
 
+import static nl.nn.adapterframework.testutil.MatchUtils.assertJsonEquals;
+import static nl.nn.adapterframework.testutil.MatchUtils.assertXmlEquals;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assume.assumeThat;
+import static org.junit.Assume.assumeTrue;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.functional.ThrowingConsumer;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.document.DocumentFormat;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
+import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class FixedQuerySenderTest extends JdbcSenderTestBase<FixedQuerySender> {
 
@@ -206,31 +211,37 @@ public class FixedQuerySenderTest extends JdbcSenderTestBase<FixedQuerySender> {
 		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
 	}
 	
-	public void testOutputFormat(DocumentFormat outputFormat, String expected) throws Exception {
-		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (tKEY, tVARCHAR, tINT) VALUES ('1', 2, 3)");
-		sender.setColumnsReturned("tKEY, tVARCHAR, tINT");
 
+	public void testOutputFormat(DocumentFormat outputFormat, ThrowingConsumer<String, Exception> asserter) throws Exception {
+		assumeTrue(getDataSourceName().equals("H2"));
+		sender.setQuery("SELECT COUNT(*) as CNT, 'string' as STR, 5 as NUM FROM "+JdbcTestBase.TEST_TABLE+" WHERE 1=0");
 		sender.setOutputFormat(outputFormat);
+		sender.setIncludeFieldDefinition(true);
+		sender.setQueryType("select");
 		sender.configure();
 		sender.open();
 
 		Message result = sendMessage("dummy");
-		assertEquals(expected, result.asString());
+		asserter.accept(result.asString());
 	}
 
 	@Test
 	public void testOutputFormatDefault() throws Exception {
-		testOutputFormat(null,"<result><rowset><row number=\"0\"><field name=\"TKEY\">1</field><field name=\"TVARCHAR\">2</field><field name=\"TINT\">3</field></row></rowset></result>");
+		String expected =  TestFileUtils.getTestFile("/Jdbc/result-default.xml");
+		testOutputFormat(null, r-> assertXmlEquals(expected, r));
 	}
 
 	@Test
 	public void testOutputFormatXml() throws Exception {
-		testOutputFormat(DocumentFormat.XML, "<result><fields><name>TKEY</name><name>TVARCHAR</name><name>TINT</name></fields><rowset><row><field>1</field><field>2</field><field>3</field></row></rowset></result>");
+		String expected =  TestFileUtils.getTestFile("/Jdbc/result-xml.xml");
+		testOutputFormat(DocumentFormat.XML, r-> assertXmlEquals(expected, r));
 	}
 
 	@Test
 	public void testOutputFormatJson() throws Exception {
-		testOutputFormat(DocumentFormat.JSON, "{\"fields\":[\"TKEY\",\"TVARCHAR\",\"TINT\"],\"rowset\":[[\"1\",\"2\",\"3\"]]}"); // TODO: TINT should be rendered as number
+		String expected =  TestFileUtils.getTestFile("/Jdbc/result-json.json");
+		testOutputFormat(DocumentFormat.JSON, r-> assertJsonEquals(expected, r)); // TODO: TINT should be rendered as number
 	}
 
+	
 }

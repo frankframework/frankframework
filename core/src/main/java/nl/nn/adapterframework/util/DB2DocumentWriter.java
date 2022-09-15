@@ -232,7 +232,11 @@ public class DB2DocumentWriter {
 						if (rs.wasNull()) {
 							row.addElement(null);
 						} else {
-							row.addElement(value);
+							if (JdbcUtil.isNumeric(rsmeta.getColumnType(i))) {
+								row.addNumberElement(value);
+							} else {
+								row.addElement(value);
+							}
 						}
 					} catch (Exception e) {
 						throw new SenderException("error getting fieldvalue column ["+i+"] fieldType ["+getFieldType(rsmeta.getColumnType(i))+ "]", e);

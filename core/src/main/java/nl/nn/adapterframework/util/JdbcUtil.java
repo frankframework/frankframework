@@ -1030,4 +1030,19 @@ public class JdbcUtil {
 		}
 	}
 
+	public static boolean isNumeric(int sqlTYpe) {
+		switch(sqlTYpe) {
+		case Types.INTEGER:
+		case Types.NUMERIC:
+		case Types.DOUBLE:
+		case Types.BIGINT:
+		case Types.DECIMAL:
+		case Types.FLOAT:
+		case Types.REAL:
+		case Types.SMALLINT:
+			return true;
+		default:
+			return false;
+		}
+	}
 }
