@@ -47,7 +47,7 @@ public class NarayanaConfigurationBean implements InitializingBean {
 			}
 			localProperties.putAll(AppConstants.getInstance()); //Override with properties set in the Ibis
 			localProperties.putAll(properties); //Override with spring configured properties
-			return properties;
+			return localProperties;
 		}
 
 		private Properties readXmlFile(String propertyFileName) {

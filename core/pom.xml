@@ -15,8 +15,8 @@
 		<spring-security.version>5.7.3</spring-security.version>
 		<spring-integration.version>5.5.14</spring-integration.version>
 		<j2v8.version>4.6.0</j2v8.version>
-		<jackson.version>2.13.3</jackson.version>
-		<micrometer.version>1.9.3</micrometer.version>
+		<jackson.version>2.13.4</jackson.version>
+		<micrometer.version>1.9.4</micrometer.version>
 		<saxon.version>10.8</saxon.version>
 	</properties>
 
@@ -28,7 +28,7 @@
 		<dependency>
 			<groupId>org.javassist</groupId>
 			<artifactId>javassist</artifactId>
-			<version>3.29.1-GA</version>
+			<version>3.29.2-GA</version>
 		</dependency>
 
 		<dependency>
@@ -501,7 +501,7 @@
 		<dependency>
 			<groupId>com.nimbusds</groupId>
 			<artifactId>oauth2-oidc-sdk</artifactId>
-			<version>9.42</version>
+			<version>9.43.1</version>
 		</dependency>
 
 		<!-- TransactionManagers: BTM + NARAYANA -->
@@ -551,7 +551,7 @@
 		<dependency>
 			<groupId>org.liquibase</groupId>
 			<artifactId>liquibase-core</artifactId>
-			<version>4.15.0</version>
+			<version>4.16.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>javax.xml.bind</groupId>
@@ -764,13 +764,13 @@
 		<dependency>
 			<groupId>com.nimbusds</groupId>
 			<artifactId>nimbus-jose-jwt</artifactId>
-			<version>9.24.3</version>
+			<version>9.25</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.tika</groupId>
 			<artifactId>tika-core</artifactId>
-			<version>1.28.4</version>
+			<version>1.28.5</version>
 			<exclusions>
 				<exclusion><!-- excluded because we want to ignore this (1.2.2) version! this dependency handles javax.activation.* imports, and is NOT compatible with the IBM JRE -->
 					<groupId>jakarta.activation</groupId>

@@ -13,7 +13,7 @@
 
 	<properties>
 		<oracle.driver.groupid>com.oracle.database.jdbc</oracle.driver.groupid><!-- explicitly defined because of the legacy profile -->
-		<activemq.driver.version>5.8.0</activemq.driver.version>
+		<activemq.driver.version>5.16.5</activemq.driver.version> <!-- appears to be the last java 8 compatible release -->
 		<artemis.driver.version>2.19.1</artemis.driver.version><!-- ActiveMQ Artemis v2.19 is the last that works with Java 8 -->
 	</properties>
 

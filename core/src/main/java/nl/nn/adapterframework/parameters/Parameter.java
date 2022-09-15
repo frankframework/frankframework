@@ -124,6 +124,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 	private @Getter String authAlias;
 	private @Getter String username;
 	private @Getter String password;
+	private @Getter boolean ignoreUnresolvablePatternElements = false;
 	private @Getter String defaultValue = null;
 	private @Getter String defaultValueMethods = "defaultValue";
 	private @Getter String value = null;
@@ -868,7 +869,11 @@ public class Parameter implements IConfigurable, IWithParameters {
 			}
 		}
 		if (substitutionValue == null) {
-			throw new ParameterException("Parameter or session variable with name [" + name + "] in pattern [" + getPattern() + "] cannot be resolved");
+			if (isIgnoreUnresolvablePatternElements()) {
+				substitutionValue="";
+			} else {
+				throw new ParameterException("Parameter or session variable with name [" + name + "] in pattern [" + getPattern() + "] cannot be resolved");
+			}
 		}
 		return substitutionValue;
 	}
@@ -1021,6 +1026,11 @@ public class Parameter implements IConfigurable, IWithParameters {
 	/** Default password that is used when a <code>pattern</code> containing {password} is specified */
 	public void setPassword(String string) {
 		password = string;
+	}
+
+	/** If set <code>true</code> pattern elements that cannot be resolved to a parameter or sessionKey are silently resolved to an empty string */
+	public void setIgnoreUnresolvablePatternElements(boolean b) {
+		ignoreUnresolvablePatternElements = b;
 	}
 
 	/**

@@ -20,7 +20,7 @@ def createGenericJMSDestination(jmsProviderName, name, jndiName, extJndiName):
 	return(jmsDestinationId)
 
 # ActiveMQ
-createJMSProvider('ActiveMQ', 'org.apache.activemq.jndi.ActiveMQInitialContextFactory', 'tcp://host.docker.internal:61616', 'classpath=/work/drivers/activemq-client.jar;/work/drivers/hawtbuf.jar;/work/drivers/slf4j-api.jar')
+createJMSProvider('ActiveMQ', 'org.apache.activemq.jndi.ActiveMQInitialContextFactory', 'tcp://host.docker.internal:61616?jms.xaAckMode=1', 'classpath=/work/drivers/activemq-client.jar;/work/drivers/hawtbuf.jar;/work/drivers/slf4j-api.jar')
 
 createGenericJMSCF('ActiveMQ', 'qcf', 'jms/qcf-activemq', 'XAConnectionFactory')
 

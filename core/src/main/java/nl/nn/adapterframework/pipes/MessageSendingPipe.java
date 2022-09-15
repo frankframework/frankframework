@@ -137,7 +137,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	private @Getter String auditTrailXPath;
 	private @Getter String auditTrailNamespaceDefs;
 	private @Getter boolean useInputForExtract = true;
-	private @Getter @Setter HideMethod hideMethod = HideMethod.ALL;
+	private @Getter HideMethod hideMethod = HideMethod.ALL;
 
 	private @Getter boolean checkXmlWellFormed = false;
 	private @Getter String checkRootTag;

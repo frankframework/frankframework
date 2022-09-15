@@ -31,6 +31,7 @@
 			<artifactId>ojdbc${oracle.driver.jdkversion}</artifactId>
 			<version>${oracle.driver.version}</version>
 		</dependency>
+		<!--H2 Appears to be already included in WildFly, though as an older version -->
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
