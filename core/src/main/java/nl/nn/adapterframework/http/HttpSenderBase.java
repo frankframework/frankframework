@@ -167,6 +167,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </p>
  *
  * @ff.parameters Any parameters present are appended to the request (when method is <code>GET</code> as request-parameters, when method <code>POST</code> as body part) except the <code>headersParams</code> list, which are added as HTTP headers, and the <code>urlParam</code> header
+ * @ff.forward "&lt;statusCode of the HTTP response&gt;" default
  *
  * @author	Niels Meijer
  * @since	7.0

@@ -82,6 +82,8 @@ import nl.nn.adapterframework.util.Misc;
  *   <li>Define a Receiver with a WebServiceListener</li>
  *   <li>Set the attribute <code>name</code> to <i>yourIbisWebServiceName</i></li>
  * </ul>
+ * 
+ * @ff.forward "&lt;Exit.code&gt;" default
  *
  * @author Gerrit van Brakel
  * @since  4.2
@@ -265,11 +267,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 
 			ExitState exitState = (ExitState)context.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
 			Object exitCode = context.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
-			if (exitState!=null && exitState!=ExitState.SUCCESS) {
-				context.put("originalResult", result);
-				throw new SenderException(getLogPrefix()+"call to "+serviceIndication+" resulted in exitState ["+exitState+"] exitCode ["+exitCode+"]");
-			}
-			String forwardName = exitCode !=null ? exitCode.toString() : null;
+			String forwardName = exitCode !=null ? exitCode.toString() : exitState!=null && exitState!=ExitState.SUCCESS ? "exception" : "success";
 			return new SenderResult(forwardName, result);
 		}
 	}
