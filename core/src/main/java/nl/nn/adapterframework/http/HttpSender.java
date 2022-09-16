@@ -167,7 +167,6 @@ public class HttpSender extends HttpSenderBase {
 	private @Getter boolean streamResultToServlet=false;
 
 	private @Getter boolean paramsInUrl=true;
-	private @Getter boolean ignoreRedirects=false;
 	private @Getter String firstBodyPartName=null;
 
 	private @Getter Boolean multipartResponse=null;
@@ -478,22 +477,6 @@ public class HttpSender extends HttpSenderBase {
 		return FormBodyPartBuilder.create(name, new MessageContentBody(partObject, mimeType, partName)).build();
 	}
 
-	protected boolean validateResponseCode(int statusCode) {
-		boolean ok = false;
-		if (StringUtils.isNotEmpty(getResultStatusCodeSessionKey())) {
-			ok = true;
-		} else {
-			if (statusCode==200 || statusCode==201 || statusCode==202 || statusCode==204 || statusCode==206) {
-				ok = true;
-			} else {
-				if (isIgnoreRedirects() && (statusCode==HttpServletResponse.SC_MOVED_PERMANENTLY || statusCode==HttpServletResponse.SC_MOVED_TEMPORARILY || statusCode==HttpServletResponse.SC_TEMPORARY_REDIRECT)) {
-					ok = true;
-				}
-			}
-		}
-		return ok;
-	}
-
 	@Override
 	protected Message extractResult(HttpResponseHandler responseHandler, PipeLineSession session) throws SenderException, IOException {
 		int statusCode = responseHandler.getStatusLine().getStatusCode();
@@ -509,7 +492,8 @@ public class HttpSender extends HttpSenderBase {
 					body = "(" + ClassUtils.nameOf(e) + "): " + e.getMessage();
 				}
 			}
-			throw new SenderException(getLogPrefix() + "httpstatus [" + statusCode + "] reason [" + responseHandler.getStatusLine().getReasonPhrase() + "] body [" + body +"]");
+			log.warn(getLogPrefix() + "httpstatus [" + statusCode + "] reason [" + responseHandler.getStatusLine().getReasonPhrase() + "]");
+			return new Message(body);
 		}
 
 		HttpServletResponse response = null;
@@ -655,14 +639,9 @@ public class HttpSender extends HttpSenderBase {
 	public void setInputMessageParam(String inputMessageParam) {
 		setFirstBodyPartName(inputMessageParam);
 	}
-	@IbisDoc({"(Only used when <code>methodType=POST</code> and <code>postType</code>=<code>URLENCODED</code>, <code>FORM-DATA</code> or <code>MTOM</code>) Prepends a new BodyPart using the specified name and uses the input of the Sender as content", ""})
+	@IbisDoc({"(Only used when <code>methodType</code>=<code>POST</code> and <code>postType</code>=<code>URLENCODED</code>, <code>FORM-DATA</code> or <code>MTOM</code>) Prepends a new BodyPart using the specified name and uses the input of the Sender as content", ""})
 	public void setFirstBodyPartName(String firstBodyPartName) {
 		this.firstBodyPartName = firstBodyPartName;
-	}
-
-	@IbisDoc({"If true, besides http status code 200 (OK) also the code 301 (MOVED_PERMANENTLY), 302 (MOVED_TEMPORARILY) and 307 (TEMPORARY_REDIRECT) are considered successful", "false"})
-	public void setIgnoreRedirects(boolean b) {
-		ignoreRedirects = b;
 	}
 
 	@IbisDoc({"If set, the result is streamed to a file (instead of passed as a string)", ""})

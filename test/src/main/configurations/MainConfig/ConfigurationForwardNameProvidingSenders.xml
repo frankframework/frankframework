@@ -5,16 +5,37 @@
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-ForwardNameSelectable" />
 		</receiver>
 		<pipeline>
-			<SenderPipe name="Call ForwardNameSelectable Child Adapter">
+			<XmlSwitchPipe name="SenderSelector" xpathExpression="*/@sender" >
+				<forward name="IbisLocalSender" path="Call ForwardNameSelectable Child Adapter via IbisLocalSender" />
+				<forward name="HttpSender"      path="Call ForwardNameSelectable Child Adapter via HttpSender" />
+			</XmlSwitchPipe>
+			
+			<SenderPipe name="Call ForwardNameSelectable Child Adapter via IbisLocalSender">
 				<IbisLocalSender javaListener="ibis4test-ForwardNameSelectable-Child"/>
 				<forward name="200" path="fwd200" />
 				<forward name="400" path="fwd400" />
 			</SenderPipe>
-			
-			<FixedResultPipe name="default" returnString="default: [result]" replaceFixedParams="true" >
+
+			<FixedResultPipe name="fall through 1" returnString="fall through 1: [result]" replaceFixedParams="true" >
 				<param name="result" />
 				<forward name="success" path="READY" /> 
 			</FixedResultPipe>
+
+			<SenderPipe name="Call ForwardNameSelectable Child Adapter via HttpSender">
+				<HttpSender>
+					<Param name="url" xpathExpression="*/@url"/>
+				</HttpSender>
+				<Forward name="200" path="fwd200"/>
+				<Forward name="404" path="fwd404"/>
+				<Forward name="503" path="fwd503"/>
+				<Forward name="exception" path="FwdException"/>
+			</SenderPipe>
+			
+			<FixedResultPipe name="fall through 2" returnString="fall through 2: [result]" replaceFixedParams="true" >
+				<param name="result" />
+				<forward name="success" path="READY" /> 
+			</FixedResultPipe>
+
 			<FixedResultPipe name="fwd200" returnString="fwd200: [result]" replaceFixedParams="true" >
 				<param name="result" />
 				<forward name="success" path="READY" /> 
@@ -23,21 +44,33 @@
 				<param name="result" />
 				<forward name="success" path="READY" /> 
 			</FixedResultPipe>
+			<FixedResultPipe name="fwd404" returnString="fwd404: [result]" replaceFixedParams="true" >
+				<param name="result" />
+				<forward name="success" path="READY" /> 
+			</FixedResultPipe>
+			<FixedResultPipe name="fwd503" returnString="fwd503: [result]" replaceFixedParams="true" >
+				<param name="result" />
+				<forward name="success" path="READY" /> 
+			</FixedResultPipe>
+			<FixedResultPipe name="FwdException" returnString="FwdException: [result]" replaceFixedParams="true" >
+				<param name="result" />
+				<forward name="success" path="READY" /> 
+			</FixedResultPipe>
 		</pipeline>
 	</adapter>
 
 
-	<adapter name="ForwardNameSelectable Child Adapter" >
-		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="ibis4test-ForwardNameSelectable-Child" />
-		</receiver>
-		<pipeline>
-			<exits>
-				<exit name="Exit1" state="success"/>
-				<exit name="Exit2" state="success" code="200" />
-				<exit name="Exit3" state="success" code="400" />
-			</exits>
-			<XmlSwitchPipe name="exitSelector" xpathExpression="*/@exit" />
+	<Adapter name="ForwardNameSelectable Child Adapter - IbisLocal" >
+		<Receiver>
+			<JavaListener name="ibis4test-ForwardNameSelectable-Child" />
+		</Receiver>
+		<Pipeline>
+			<Exits>
+				<Exit name="Exit1" state="success"/>
+				<Exit name="Exit2" state="success" code="200" />
+				<Exit name="Exit3" state="ERROR" code="400" />
+			</Exits>
+			<XmlSwitchPipe name="exitSelector" xpathExpression="*/@path" />
 			
 			<FixedResultPipe name="Pipe1" returnString="Pipe 1" >
 				<forward name="success" path="Exit1" />
@@ -48,7 +81,15 @@
 			<FixedResultPipe name="Pipe3" returnString="Pipe 3" >
 				<forward name="success" path="Exit3" />
 			</FixedResultPipe>
-		</pipeline>
-	</adapter>
-	
+		</Pipeline>
+	</Adapter>
+
+	<Adapter name="ForwardNameSelectable Child Adapter - HttpSender target" >
+		<Receiver>
+			<ApiListener uriPattern="/forwardnameselectabledummy" />
+		</Receiver>
+		<Pipeline>
+			<FixedResultPipe name="dummy service" returnString="dummy content" />
+		</Pipeline>
+	</Adapter>	
 </module>
