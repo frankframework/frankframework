@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,16 +26,16 @@ import nl.nn.adapterframework.xml.SaxDocumentBuilder;
 public class XmlDocumentBuilder extends XmlNodeBuilder implements IDocumentBuilder {
 
 	private Writer writer;
-	
+
 	public XmlDocumentBuilder(String rootElement) throws SAXException {
 		this(rootElement, new StringWriter(), true);
 	}
-	
+
 	public XmlDocumentBuilder(String rootElement, Writer writer, boolean prettyPrint) throws SAXException {
 		super(new SaxDocumentBuilder(null, writer), rootElement);
 		this.writer = writer;
 	}
-	
+
 	public XmlDocumentBuilder(String rootElement, ContentHandler handler, boolean prettyPrint) throws SAXException {
 		super(new SaxDocumentBuilder(null, handler, prettyPrint), rootElement);
 	}
@@ -57,7 +57,7 @@ public class XmlDocumentBuilder extends XmlNodeBuilder implements IDocumentBuild
 
 	@Override
 	public void close() throws SAXException {
-		super.close(); 
+		super.close();
 		super.close(); // compensate for promotion in additional SaxDocumentBuilder in constructor
 	}
 

@@ -1,0 +1,14 @@
+{
+    "fields": [
+        "CNT",
+        "STR",
+        "NUM"
+    ],
+    "rowset": [
+        [
+            0,
+            "string",
+            5
+        ]
+    ]
+}

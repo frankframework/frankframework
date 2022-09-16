@@ -127,7 +127,7 @@ public class DB2DocumentWriter {
 
 			try (ArrayBuilder rows = documentBuilder.addArrayField(recordname,"row")) {
 				while (rs.next() && rowCounter < maxlength) {
-					writeRow(rows, dbmsSupport, rs,rowCounter,rsmeta,getBlobCharset(),decompressBlobs,nullValue,trimSpaces, getBlobSmart);
+					writeRow(rows, dbmsSupport, rs,rsmeta,getBlobCharset(),decompressBlobs,nullValue,trimSpaces,getBlobSmart);
 					rowCounter++;
 				}
 			}
@@ -219,7 +219,7 @@ public class DB2DocumentWriter {
 //		return parent.toString();
 //	}
 
-	public static void writeRow(ArrayBuilder rows, IDbmsSupport dbmsSupport, ResultSet rs, int rowNumber, ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart) throws SenderException, SQLException, SAXException {
+	public static void writeRow(ArrayBuilder rows, IDbmsSupport dbmsSupport, ResultSet rs, ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart) throws SenderException, SQLException, SAXException {
 		try (INodeBuilder nodeBuilder = rows.addElement()) {
 			try (ArrayBuilder row=nodeBuilder.startArray("field")) {
 				for (int i = 1; i <= rsmeta.getColumnCount(); i++) {

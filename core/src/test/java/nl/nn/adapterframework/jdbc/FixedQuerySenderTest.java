@@ -210,13 +210,13 @@ public class FixedQuerySenderTest extends JdbcSenderTestBase<FixedQuerySender> {
 		Message result=sendMessage("dummy");
 		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
 	}
-	
 
-	public void testOutputFormat(DocumentFormat outputFormat, ThrowingConsumer<String, Exception> asserter) throws Exception {
+
+	public void testOutputFormat(DocumentFormat outputFormat, boolean includeFieldDefinition, ThrowingConsumer<String, Exception> asserter) throws Exception {
 		assumeTrue(getDataSourceName().equals("H2"));
 		sender.setQuery("SELECT COUNT(*) as CNT, 'string' as STR, 5 as NUM FROM "+JdbcTestBase.TEST_TABLE+" WHERE 1=0");
 		sender.setOutputFormat(outputFormat);
-		sender.setIncludeFieldDefinition(true);
+		sender.setIncludeFieldDefinition(includeFieldDefinition);
 		sender.setQueryType("select");
 		sender.configure();
 		sender.open();
@@ -228,20 +228,39 @@ public class FixedQuerySenderTest extends JdbcSenderTestBase<FixedQuerySender> {
 	@Test
 	public void testOutputFormatDefault() throws Exception {
 		String expected =  TestFileUtils.getTestFile("/Jdbc/result-default.xml");
-		testOutputFormat(null, r-> assertXmlEquals(expected, r));
+		testOutputFormat(null, true, r-> assertXmlEquals(expected, r));
 	}
 
 	@Test
 	public void testOutputFormatXml() throws Exception {
 		String expected =  TestFileUtils.getTestFile("/Jdbc/result-xml.xml");
-		testOutputFormat(DocumentFormat.XML, r-> assertXmlEquals(expected, r));
+		testOutputFormat(DocumentFormat.XML, true, r-> assertXmlEquals(expected, r));
 	}
 
 	@Test
 	public void testOutputFormatJson() throws Exception {
 		String expected =  TestFileUtils.getTestFile("/Jdbc/result-json.json");
-		testOutputFormat(DocumentFormat.JSON, r-> assertJsonEquals(expected, r)); // TODO: TINT should be rendered as number
+		testOutputFormat(DocumentFormat.JSON, true, r-> assertJsonEquals(expected, r));
 	}
 
-	
+	@Test
+	public void testOutputFormatDefaultNoFieldDefinitions() throws Exception {
+		String expected =  TestFileUtils.getTestFile("/Jdbc/result-default-nofielddef.xml");
+		testOutputFormat(null, false, r-> assertXmlEquals(expected, r));
+	}
+
+	@Test
+	public void testOutputFormatXmlNoFieldDefinitions() throws Exception {
+		String expected =  TestFileUtils.getTestFile("/Jdbc/result-xml-nofielddef.xml");
+		testOutputFormat(DocumentFormat.XML, false, r-> assertXmlEquals(expected, r));
+	}
+
+	@Test
+	public void testOutputFormatJsonNoFieldDefinitions() throws Exception {
+		String expected =  TestFileUtils.getTestFile("/Jdbc/result-json-nofielddef.json");
+		testOutputFormat(DocumentFormat.JSON, false, r-> assertJsonEquals(expected, r));
+	}
+
+
+
 }

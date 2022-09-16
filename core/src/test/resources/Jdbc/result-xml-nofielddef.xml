@@ -1,0 +1,14 @@
+<result>
+	<fields>
+		<name>CNT</name>
+		<name>STR</name>
+		<name>NUM</name>
+	</fields>
+	<rowset>
+		<row>
+			<field>0</field>
+			<field>string</field>
+			<field>5</field>
+		</row>
+	</rowset>
+</result>
