@@ -649,8 +649,8 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		SenderResult senderResult = sendMessageAndProvideForwardName(message, session);
 		Message result = senderResult.getResult();
-		int statusCode = (int)result.getContext().get(CONTEXT_KEY_STATUS_CODE);
-		if (!validateResponseCode(statusCode)) {
+		if (!senderResult.isSuccess()) {
+			int statusCode = (int)result.getContext().get(CONTEXT_KEY_STATUS_CODE);
 			String reasonPhrase = (String)result.getContext().get(CONTEXT_KEY_REASON_PHRASE);
 			String body;
 			try {
@@ -721,6 +721,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 		Message result = null;
 		int statusCode = -1;
+		boolean success;
 		String reasonPhrase = null;
 		HttpHost targetHost = new HttpHost(targetUri.getHost(), getPort(targetUri), targetUri.getScheme());
 
@@ -740,6 +741,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			HttpResponseHandler responseHandler = new HttpResponseHandler(httpResponse);
 			StatusLine statusline = httpResponse.getStatusLine();
 			statusCode = statusline.getStatusCode();
+			success = validateResponseCode(statusCode);
 			reasonPhrase =  statusline.getReasonPhrase();
 
 			if (StringUtils.isNotEmpty(getResultStatusCodeSessionKey()) && session != null) {
@@ -804,7 +806,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 		result.getContext().put(CONTEXT_KEY_STATUS_CODE, statusCode);
 		result.getContext().put(CONTEXT_KEY_REASON_PHRASE, reasonPhrase);
-		return new SenderResult(Integer.toString(statusCode),result);
+		return new SenderResult(Integer.toString(statusCode), success, result);
 	}
 
 	@Override
