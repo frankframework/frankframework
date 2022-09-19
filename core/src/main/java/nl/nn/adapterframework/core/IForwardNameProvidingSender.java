@@ -15,7 +15,10 @@
 */
 package nl.nn.adapterframework.core;
 
+import java.io.IOException;
+
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.ClassUtils;
 
 /* 
  * Interface to be implemented by Senders that beside their proper result return a state, 
@@ -28,7 +31,19 @@ public interface IForwardNameProvidingSender extends ISenderWithParameters {
 
 	@Override
 	default Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		return sendMessageAndProvideForwardName(message, session).getResult();
+		SenderResult senderResult = sendMessageAndProvideForwardName(message, session);
+		Message result = senderResult.getResult();
+		if (!senderResult.isSuccess()) {
+			String body;
+			try {
+				body = result.asString();
+			} catch (IOException e) {
+				body = "Cannot extract responseBody ("+ClassUtils.nameOf(e)+"): "+e.getMessage();
+			}
+			throw new SenderException(body);
+		}
+		return result;
 	}
+
 
 }
