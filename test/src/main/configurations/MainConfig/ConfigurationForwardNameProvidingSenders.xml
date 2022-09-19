@@ -14,9 +14,10 @@
 				<IbisLocalSender javaListener="ibis4test-ForwardNameSelectable-Child"/>
 				<forward name="200" path="fwd200" />
 				<forward name="400" path="fwd400" />
+				<Forward name="exception" path="FwdException"/>
 			</SenderPipe>
 
-			<FixedResultPipe name="fall through 1" returnString="fall through 1: [result]" replaceFixedParams="true" >
+			<FixedResultPipe name="fall through IbisLocal" returnString="fall through IbisLocal: [result]" replaceFixedParams="true" >
 				<param name="result" />
 				<forward name="success" path="READY" /> 
 			</FixedResultPipe>
@@ -26,12 +27,11 @@
 					<Param name="url" xpathExpression="*/@url"/>
 				</HttpSender>
 				<Forward name="200" path="fwd200"/>
-				<Forward name="404" path="fwd404"/>
-				<Forward name="503" path="fwd503"/>
+				<Forward name="400" path="fwd400"/>
 				<Forward name="exception" path="FwdException"/>
 			</SenderPipe>
 			
-			<FixedResultPipe name="fall through 2" returnString="fall through 2: [result]" replaceFixedParams="true" >
+			<FixedResultPipe name="fall through Http" returnString="fall through Http: [result]" replaceFixedParams="true" >
 				<param name="result" />
 				<forward name="success" path="READY" /> 
 			</FixedResultPipe>
@@ -41,14 +41,6 @@
 				<forward name="success" path="READY" /> 
 			</FixedResultPipe>
 			<FixedResultPipe name="fwd400" returnString="fwd400: [result]" replaceFixedParams="true" >
-				<param name="result" />
-				<forward name="success" path="READY" /> 
-			</FixedResultPipe>
-			<FixedResultPipe name="fwd404" returnString="fwd404: [result]" replaceFixedParams="true" >
-				<param name="result" />
-				<forward name="success" path="READY" /> 
-			</FixedResultPipe>
-			<FixedResultPipe name="fwd503" returnString="fwd503: [result]" replaceFixedParams="true" >
 				<param name="result" />
 				<forward name="success" path="READY" /> 
 			</FixedResultPipe>
@@ -66,30 +58,32 @@
 		</Receiver>
 		<Pipeline>
 			<Exits>
-				<Exit name="Exit1" state="success"/>
-				<Exit name="Exit2" state="success" code="200" />
-				<Exit name="Exit3" state="ERROR" code="400" />
+				<Exit name="ExitS0"   state="success"/>
+				<Exit name="ExitS200" state="success" code="200" />
+				<Exit name="ExitS201" state="success" code="201" />
+				<Exit name="ExitE0"   state="ERROR" />
+				<Exit name="ExitE400" state="ERROR" code="400" />
+				<Exit name="ExitE500" state="ERROR" code="500" />
 			</Exits>
 			<XmlSwitchPipe name="exitSelector" xpathExpression="*/@path" />
-			
-			<FixedResultPipe name="Pipe1" returnString="Pipe 1" >
-				<forward name="success" path="Exit1" />
-			</FixedResultPipe>
-			<FixedResultPipe name="Pipe2" returnString="Pipe 2" >
-				<forward name="success" path="Exit2" />
-			</FixedResultPipe>
-			<FixedResultPipe name="Pipe3" returnString="Pipe 3" >
-				<forward name="success" path="Exit3" />
-			</FixedResultPipe>
 		</Pipeline>
 	</Adapter>
 
 	<Adapter name="ForwardNameSelectable Child Adapter - HttpSender target" >
 		<Receiver>
-			<ApiListener uriPattern="/forwardnameselectabledummy" />
+			<ApiListener uriPattern="/statuscodeselectable/{exit}" />
 		</Receiver>
 		<Pipeline>
-			<FixedResultPipe name="dummy service" returnString="dummy content" />
+			<Exits>
+				<Exit name="Exit200" state="success" code="200" />
+				<Exit name="Exit201" state="success" code="201" />
+				<Exit name="Exit400" state="success" code="400" />
+				<Exit name="Exit500" state="success" code="500" />
+			</Exits>
+			<FixedResultPipe name="httpservice" returnString="statuscodeselectable: [exit]" replaceFixedParams="true" >
+				<param name="exit" sessionKey="exit" />
+			</FixedResultPipe>
+			<XmlSwitchPipe name="ExitSelector" sessionKey="exit" />
 		</Pipeline>
 	</Adapter>	
 </module>

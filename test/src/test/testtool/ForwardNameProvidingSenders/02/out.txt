@@ -1,1 +1,1 @@
-fwd200: [Pipe 2]
+fwd200: [<request sender="IbisLocalSender" path="ExitS200"/>]

@@ -1,1 +1,1 @@
-fwd200: [dummy content]
+fwd200: [statuscodeselectable: [Exit200]]

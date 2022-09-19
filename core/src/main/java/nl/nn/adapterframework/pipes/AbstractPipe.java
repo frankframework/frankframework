@@ -34,6 +34,7 @@ import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -269,6 +270,12 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 						result = new PipeForward(forward, forward);
 					}
 				}
+				if (result == null) {
+					PipeLineExit exit = pipeLine.getPipeLineExits().get(forward);
+					if (exit!=null) {
+						result = new PipeForward(forward, forward);
+					}
+				}
 				if (result!=null) {
 					pipeForwards.put(forward, result);
 				}
@@ -360,7 +367,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 
 	/**
 	 * If set, the pipe result is copied to a session key that has the name defined by this attribute. The
-	 * pipe result is still written as the output message as usual. 
+	 * pipe result is still written as the output message as usual.
 	 */
 	@Override
 	public void setStoreResultInSessionKey(String string) {
