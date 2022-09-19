@@ -21,17 +21,16 @@ import nl.nn.adapterframework.receivers.Receiver;
  * Interface extending IPushingListener for listeners which connect to a
  * ListenerPort or other type of named endpoint, from which they receive
  * their messages.
- * 
+ *
  * Current implementations are PushingJmsListener and the EJB version of
  * IfsaProviderListener.
- * 
+ *
  * @author Tim van der Leeuw
  *
  */
 public interface IPortConnectedListener<M> extends IPushingListener<M> {
 
 	public IbisExceptionListener getExceptionListener();
-	public String getListenerPort();
 	public IMessageHandler<M> getHandler();
 
 	public void setReceiver(Receiver<M> receiver);

@@ -88,7 +88,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
  */
 public class PushingJmsListener extends JmsListenerBase implements IPortConnectedListener<javax.jms.Message>, IThreadCountControllable, IKnowsDeliveryCount<javax.jms.Message> {
 
-	private @Getter String listenerPort;
+	private @Getter String replyDestinationName;
 	private @Getter CacheMode cacheMode;
 	private @Getter long pollGuardInterval = Long.MIN_VALUE;
 
@@ -154,10 +154,13 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"in PushingJmsListener.afterMessageProcessed()");
 		try {
-			Destination replyTo = (Destination) threadContext.get("replyTo");
+			Destination replyTo = isUseReplyTo() ? (Destination) threadContext.get("replyTo") : null;
+			if (replyTo==null && StringUtils.isNotEmpty(getReplyDestinationName())) {
+				replyTo = getDestination(getReplyDestinationName());
+			}
 
 			// handle reply
-			if (isUseReplyTo() && (replyTo != null)) {
+			if (replyTo != null) {
 
 				log.debug(getLogPrefix()+"sending reply message with correlationID[" + cid + "], replyTo [" + replyTo.toString()+ "]");
 				long timeToLive = getReplyMessageTimeToLive();
@@ -186,10 +189,10 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 				send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, getReplyDeliveryMode().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException, properties);
 			} else {
 				if (getSender()==null) {
-					log.info("["+getName()+"] has no sender, not sending the result.");
+					log.info("["+getName()+"] no replyTo address found or not configured to use replyTo, and no sender, not sending the result.");
 				} else {
 					if (log.isDebugEnabled()) {
-						log.debug("["+getName()+"] no replyTo address found or not configured to use replyTo, using default destination sending message with correlationID[" + cid + "] [" + plr.getResult() + "]");
+						log.debug("["+getName()+"] no replyTo address found or not configured to use replyTo, using sending message on nested sender with correlationID[" + cid + "] [" + plr.getResult() + "]");
 					}
 					PipeLineSession pipeLineSession = new PipeLineSession();
 					pipeLineSession.put(PipeLineSession.messageIdKey,cid);
@@ -223,26 +226,6 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 
 
 
-	/**
-	 * Name of the WebSphere listener port that this JMS Listener binds to.
-	 * Optional.
-	 *
-	 * This property is only used in EJB Deployment mode and has no effect
-	 * otherwise.
-	 *
-	 * @param listenerPort Name of the listener port, as configured in the
-	 *                     application server.
-	 */
-	public void setListenerPort(String listenerPort) {
-		this.listenerPort = listenerPort;
-	}
-
-
-
-
-	public void setCacheMode(CacheMode cacheMode) {
-		this.cacheMode = cacheMode;
-	}
 
 	@Override
 	public boolean isThreadCountReadable() {
@@ -322,6 +305,24 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 		}
 	}
 
+	@Mandatory
+	@Override
+	public void setDestinationName(String destinationName) {
+		super.setDestinationName(destinationName);
+	}
+
+	/** 
+	 * Name of the JMS destination (queue or topic) to use for sending replies. If <code>useReplyTo</code>=<code>true</code>, 
+	 * the sender specified reply destination takes precedence over this one. 
+	 */
+	public void setReplyDestinationName(String destinationName) {
+		this.replyDestinationName = destinationName;
+	}
+
+	public void setCacheMode(CacheMode cacheMode) {
+		this.cacheMode = cacheMode;
+	}
+
 	/**
 	 * Interval <i>in milliseconds</i> for the poll guard to check whether a successful poll was done by the receive
 	 * (https://docs.oracle.com/javaee/7/api/javax/jms/messageconsumer.html#receive-long-) since last check. If polling has stopped this will be logged
@@ -334,12 +335,6 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 	 * */
 	public void setPollGuardInterval(long pollGuardInterval) {
 		this.pollGuardInterval = pollGuardInterval;
-	}
-
-	@Mandatory
-	@Override
-	public void setDestinationName(String destinationName) {
-		super.setDestinationName(destinationName);
 	}
 
 }
