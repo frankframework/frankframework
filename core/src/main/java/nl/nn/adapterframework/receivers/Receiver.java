@@ -1760,13 +1760,13 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	public boolean isInRunState(RunState someRunState) {
 		return runState.getRunState()==someRunState;
 	}
-	private String sendResultToSender(Message result, String correlationId) {
+	private String sendResultToSender(Message result, String messageId) {
 		String errorMessage = null;
 		try {
 			if (getSender() != null) {
 				if (log.isDebugEnabled()) { log.debug("Receiver ["+getName()+"] sending result to configured sender"); }
 				PipeLineSession pipeLineSession = new PipeLineSession();
-				pipeLineSession.put(PipeLineSession.messageIdKey, correlationId);
+				pipeLineSession.put(PipeLineSession.messageIdKey, messageId);
 				getSender().sendMessage(result, pipeLineSession);
 			}
 		} catch (Exception e) {

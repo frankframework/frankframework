@@ -91,7 +91,6 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 	private @Getter String replyDestinationName;
 	private @Getter CacheMode cacheMode;
 	private @Getter long pollGuardInterval = Long.MIN_VALUE;
-	private @Getter String listenerPort;
 
 	private @Getter @Setter IListenerConnector<javax.jms.Message> jmsConnector;
 	private @Getter @Setter IMessageHandler<javax.jms.Message> handler;
@@ -228,9 +227,6 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 
 
 
-
-
-
 	@Override
 	public boolean isThreadCountReadable() {
 		if (jmsConnector instanceof IThreadCountControllable) {
@@ -339,16 +335,6 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 	 * */
 	public void setPollGuardInterval(long pollGuardInterval) {
 		this.pollGuardInterval = pollGuardInterval;
-	}
-
-	/**
-	 * Name of the WebSphere listener port that this JMS Listener binds to.
-	 *
-	 * This property is only used in EJB Deployment mode and has no effect
-	 * otherwise.
-	 */
-	public void setListenerPort(String listenerPort) {
-		this.listenerPort = listenerPort;
 	}
 
 }
