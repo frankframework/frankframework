@@ -1,14 +1,10 @@
 {
-    "fields": [
-        "CNT",
-        "STR",
-        "NUM"
-    ],
     "rowset": [
-        [
-            0,
-            "string",
-            5
-        ]
+        {
+            "CNT": 0,
+            "STR": "string",
+            "NUM": 5,
+            "NULLCOL": null
+        }
     ]
 }

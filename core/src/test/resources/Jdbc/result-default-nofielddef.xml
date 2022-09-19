@@ -4,6 +4,7 @@
 			<field name="CNT">0</field>
 			<field name="STR">string</field>
 			<field name="NUM">5</field>
+			<field name="NULLCOL" null="true"/>
 		</row>
 	</rowset>
 </result>

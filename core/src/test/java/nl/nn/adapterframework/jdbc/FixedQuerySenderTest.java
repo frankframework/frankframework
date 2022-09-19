@@ -214,7 +214,7 @@ public class FixedQuerySenderTest extends JdbcSenderTestBase<FixedQuerySender> {
 
 	public void testOutputFormat(DocumentFormat outputFormat, boolean includeFieldDefinition, ThrowingConsumer<String, Exception> asserter) throws Exception {
 		assumeTrue(getDataSourceName().equals("H2"));
-		sender.setQuery("SELECT COUNT(*) as CNT, 'string' as STR, 5 as NUM FROM "+JdbcTestBase.TEST_TABLE+" WHERE 1=0");
+		sender.setQuery("SELECT COUNT(*) as CNT, 'string' as STR, 5 as NUM, null as NULLCOL FROM "+JdbcTestBase.TEST_TABLE+" WHERE 1=0");
 		sender.setOutputFormat(outputFormat);
 		sender.setIncludeFieldDefinition(includeFieldDefinition);
 		sender.setQueryType("select");

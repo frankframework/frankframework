@@ -107,18 +107,6 @@ public class DB2DocumentWriter {
 			ResultSetMetaData rsmeta = rs.getMetaData();
 			if (includeFieldDefinition) {
 				addFieldDefinitions(documentBuilder, rsmeta);
-			} else {
-				try (ArrayBuilder fields = documentBuilder.addArrayField("fields","name")) {
-					int nfields = rsmeta.getColumnCount();
-
-					for (int j = 1; j <= nfields; j++) {
-						String columnName = rsmeta.getColumnName(j);
-						if(convertFieldnamesToUppercase) {
-							columnName = columnName.toUpperCase();
-						}
-						fields.addElement(columnName);
-					}
-				}
 			}
 
 			//----------------------------------------
@@ -221,7 +209,7 @@ public class DB2DocumentWriter {
 
 	public static void writeRow(ArrayBuilder rows, IDbmsSupport dbmsSupport, ResultSet rs, ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart) throws SenderException, SQLException, SAXException {
 		try (INodeBuilder nodeBuilder = rows.addElement()) {
-			try (ArrayBuilder row=nodeBuilder.startArray("field")) {
+			try (ObjectBuilder row=nodeBuilder.startObject()) {
 				for (int i = 1; i <= rsmeta.getColumnCount(); i++) {
 					String columnName = "" + rsmeta.getColumnName(i);
 					if(convertFieldnamesToUppercase) {
@@ -230,12 +218,12 @@ public class DB2DocumentWriter {
 					try {
 						String value = JdbcUtil.getValue(dbmsSupport, rs, i, rsmeta, blobCharset, decompressBlobs, nullValue, trimSpaces, getBlobSmart, false);
 						if (rs.wasNull()) {
-							row.addElement(null);
+							row.add(columnName, null);
 						} else {
 							if (JdbcUtil.isNumeric(rsmeta.getColumnType(i))) {
-								row.addNumberElement(value);
+								row.addNumber(columnName, value);
 							} else {
-								row.addElement(value);
+								row.add(columnName, value);
 							}
 						}
 					} catch (Exception e) {

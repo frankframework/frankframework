@@ -29,13 +29,24 @@
             "isCurrency": false,
             "columnTypeName": "INTEGER",
             "columnClassName": "java.lang.Integer"
+        },
+        {
+            "name": "NULLCOL",
+            "type": "NULL",
+            "columnDisplaySize": 4,
+            "precision": 1,
+            "scale": 0,
+            "isCurrency": false,
+            "columnTypeName": "NULL",
+            "columnClassName": "java.lang.Void"
         }
     ],
     "rowset": [
-        [
-            0,
-            "string",
-            5
-        ]
+        {
+            "CNT": 0,
+            "STR": "string",
+            "NUM": 5,
+            "NULLCOL": null
+        }
     ]
 }
