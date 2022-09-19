@@ -31,6 +31,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.IteratingPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F,A>> extends IteratingPipe<A> {
@@ -43,6 +44,7 @@ public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F,A>> exten
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
+		SpringUtils.autowireByName(getApplicationContext(), getFileSystem());
 		getFileSystem().configure();
 	}
 

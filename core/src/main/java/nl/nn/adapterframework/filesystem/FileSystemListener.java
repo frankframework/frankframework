@@ -106,9 +106,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	@Override
 	public void configure() throws ConfigurationException {
 		FS fileSystem = getFileSystem();
-		if (getApplicationContext()!=null) {
-			SpringUtils.autowireByName(getApplicationContext(), fileSystem);
-		}
+		SpringUtils.autowireByName(getApplicationContext(), fileSystem);
 		fileSystem.configure();
 		if (getNumberOfBackups()>0 && !(fileSystem instanceof IWritableFileSystem)) {
 			throw new ConfigurationException("FileSystem ["+ClassUtils.nameOf(fileSystem)+"] does not support setting attribute 'numberOfBackups'");

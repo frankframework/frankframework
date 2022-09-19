@@ -61,9 +61,7 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 	public void configure() throws ConfigurationException {
 		super.configure();
 		FS fileSystem = getFileSystem();
-		if (getApplicationContext()!=null) {
-			SpringUtils.autowireByName(getApplicationContext(), fileSystem);
-		}
+		SpringUtils.autowireByName(getApplicationContext(), fileSystem);
 		fileSystem.configure();
 		try {
 			actor.configure(fileSystem, getParameterList(), this);
