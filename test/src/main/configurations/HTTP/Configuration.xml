@@ -8,7 +8,7 @@
 	<!ENTITY RestListener SYSTEM "./ConfigurationRestListener.xml">
 	<!ENTITY ApiListener SYSTEM "./ConfigurationApiListener.xml">
 ]>
-<configuration name="HTTP">
+<configuration>
 	&WebServiceListenerSender;
 	&WebServiceListenerSenderAddress;
 	&WebServiceListenerSenderAttachments;

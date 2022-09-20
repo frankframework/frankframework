@@ -3,8 +3,8 @@
 	<!ENTITY WebServiceListenerSenderNoSoap SYSTEM "./ConfigurationWebServiceListenerSenderNoSoap.xml">
 	<!ENTITY HttpListenerSender SYSTEM "./ConfigurationHttpListenerSender.xml">
 ]>
-<IOS-Adaptering configurationName="WSS_HTTP">
+<configuration>
 	&WebServiceListenerSender;
 	&WebServiceListenerSenderNoSoap;
 	&HttpListenerSender;
-</IOS-Adaptering>
+</configuration>

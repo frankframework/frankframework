@@ -3,7 +3,7 @@
 	<!ENTITY HelloWorlds SYSTEM "ConfigurationHelloWorlds.xml">
 	<!ENTITY HelloBeautifulWorld SYSTEM "ConfigurationHelloBeautifulWorld.xml">
 ]>
-<configuration name="Frank2Example">
+<configuration>
 	&HelloWorld;
 	&HelloWorlds;
 	&HelloBeautifulWorld;

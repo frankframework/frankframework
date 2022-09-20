@@ -65,7 +65,7 @@
 	<!ENTITY ApiWsdlGenerator SYSTEM "./ConfigurationApiWsdlGenerator.xml">
 	<!ENTITY Unzip SYSTEM "./ConfigurationUnzip.xml">
 ]>
-<configuration name="MainConfig">
+<configuration>
 	&Authentication;
 	&Batch;
 	&Cache;
