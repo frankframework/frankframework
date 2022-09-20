@@ -235,7 +235,6 @@ public final class ShowConfigurationStatus extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateAdapters(Map<String, Object> json) throws ApiException {
 
-		Response.ResponseBuilder response = Response.status(Response.Status.NO_CONTENT); //PUT defaults to no content
 		IbisAction action = null;
 		ArrayList<String> adapters = new ArrayList<>();
 
@@ -245,7 +244,7 @@ public final class ShowConfigurationStatus extends Base {
 			if(value.equals("start")) { action = IbisAction.STARTADAPTER; }
 		}
 		if(action == null) {
-			throw new ApiException("no or unknown action provided");
+			throw new ApiException("no or unknown action provided", Response.Status.BAD_REQUEST);
 		}
 
 
@@ -273,7 +272,7 @@ public final class ShowConfigurationStatus extends Base {
 			}
 		}
 
-		return response.status(Response.Status.ACCEPTED).build();
+		return Response.status(Response.Status.ACCEPTED).build(); //PUT defaults to no content
 	}
 
 	@PUT
@@ -284,7 +283,6 @@ public final class ShowConfigurationStatus extends Base {
 	public Response updateAdapter(@PathParam("adapterName") String adapterName, Map<String, Object> json) throws ApiException {
 
 		getAdapter(adapterName); //Check if the adapter exists!
-		Response.ResponseBuilder response = Response.status(Response.Status.NO_CONTENT); //PUT defaults to no content
 
 		Object value = json.get("action");
 		if(value instanceof String) {
@@ -292,7 +290,7 @@ public final class ShowConfigurationStatus extends Base {
 			if(value.equals("stop")) { action = IbisAction.STOPADAPTER; }
 			if(value.equals("start")) { action = IbisAction.STARTADAPTER; }
 			if(action == null) {
-				throw new ApiException("no or unknown action provided");
+				throw new ApiException("no or unknown action provided", Response.Status.BAD_REQUEST);
 			}
 
 			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.IBISACTION);
@@ -300,10 +298,10 @@ public final class ShowConfigurationStatus extends Base {
 			builder.addHeader("configuration", getAdapter(adapterName).getConfiguration().getName());
 			builder.addHeader("adapter", adapterName);
 			callFFGateway(builder);
-			response.entity("{\"status\":\"ok\"}");
+			return Response.status(Response.Status.ACCEPTED).entity("{\"status\":\"ok\"}").build();
 		}
 
-		return response.build();
+		return Response.status(Response.Status.BAD_REQUEST).build();
 	}
 
 	@PUT
@@ -320,8 +318,6 @@ public final class ShowConfigurationStatus extends Base {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
 
-		Response.ResponseBuilder response = Response.status(Response.Status.NO_CONTENT); //PUT defaults to no content
-
 		Object value = json.get("action");
 		if(value instanceof String) {
 			IbisAction action = null;
@@ -330,7 +326,7 @@ public final class ShowConfigurationStatus extends Base {
 			else if(value.equals("incthread")) { action = IbisAction.INCTHREADS; }
 			else if(value.equals("decthread")) { action = IbisAction.DECTHREADS; }
 			if(action == null) {
-				throw new ApiException("no or unknown action provided");
+				throw new ApiException("no or unknown action provided", Response.Status.BAD_REQUEST);
 			}
 
 			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.IBISACTION);
@@ -339,10 +335,10 @@ public final class ShowConfigurationStatus extends Base {
 			builder.addHeader("adapter", adapterName);
 			builder.addHeader("receiver", receiverName);
 			callFFGateway(builder);
-			response.entity("{\"status\":\"ok\"}");
+			return Response.status(Response.Status.ACCEPTED).entity("{\"status\":\"ok\"}").build();
 		}
 
-		return response.build();
+		return Response.status(Response.Status.BAD_REQUEST).build();
 	}
 
 	@GET
