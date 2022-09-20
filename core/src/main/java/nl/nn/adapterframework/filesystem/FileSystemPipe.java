@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2019-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,9 +21,9 @@ import java.util.Map;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -37,18 +37,19 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingPipe;
+import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * Base class for Pipes that use a {@link IBasicFileSystem FileSystem}.
- * 
+ *
  * @see FileSystemActor
- * 
+ *
  * @ff.parameter action overrides attribute <code>action</code>.
  * @ff.parameter filename overrides attribute <code>filename</code>. If not present, the input message is used.
  * @ff.parameter destination destination for action <code>rename</code> and <code>move</code>. Overrides attribute <code>destination</code>.
  * @ff.parameter contents contents for action <code>write</code> and <code>append</code>.
  * @ff.parameter inputFolder folder for actions <code>list</code>, <code>mkdir</code> and <code>rmdir</code>. This is a sub folder of baseFolder. Overrides attribute <code>inputFolder</code>. If not present, the input message is used.
- * 
+ *
  * @author Gerrit van Brakel
  */
 public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends StreamingPipe implements HasPhysicalDestination {
@@ -60,8 +61,12 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		getFileSystem().configure();
-		try { 
+		FS fileSystem = getFileSystem();
+		if (getApplicationContext()!=null) {
+			SpringUtils.autowireByName(getApplicationContext(), fileSystem);
+		}
+		fileSystem.configure();
+		try {
 			actor.configure(fileSystem, getParameterList(), this);
 		} catch (ConfigurationException e) {
 			throw new ConfigurationException(getLogPrefix(null),e);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners, 2020 WeAreFrank!
+   Copyright 2019-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package nl.nn.adapterframework.senders;
 import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.doc.IbisDocRef;
+import nl.nn.adapterframework.encryption.KeystoreType;
 import nl.nn.adapterframework.filesystem.ExchangeFileSystem;
 import nl.nn.adapterframework.filesystem.FileSystemSender;
 /**
@@ -124,6 +125,72 @@ public class ExchangeFolderSender extends FileSystemSender<EmailMessage,Exchange
 	@IbisDocRef({EXCHANGE_FILE_SYSTEM})
 	public void setProxyDomain(String domain) {
 		getFileSystem().setProxyDomain(domain);
+	}
+
+	@IbisDocRef({EXCHANGE_FILE_SYSTEM})
+	public void setKeystore(String keystore) {
+		getFileSystem().setKeystore(keystore);
+	}
+	@IbisDocRef({EXCHANGE_FILE_SYSTEM})
+	public void setKeystoreType(KeystoreType keystoreType) {
+		getFileSystem().setKeystoreType(keystoreType);
+	}
+	@IbisDocRef({EXCHANGE_FILE_SYSTEM})
+	public void setKeystoreAuthAlias(String keystoreAuthAlias) {
+		getFileSystem().setKeystoreAuthAlias(keystoreAuthAlias);
+	}
+	@IbisDocRef({EXCHANGE_FILE_SYSTEM})
+	public void setKeystorePassword(String keystorePassword) {
+		getFileSystem().setKeystorePassword(keystorePassword);
+	}
+	@IbisDocRef({EXCHANGE_FILE_SYSTEM})
+	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
+		getFileSystem().setKeyManagerAlgorithm(keyManagerAlgorithm);
+	}
+	@IbisDocRef({EXCHANGE_FILE_SYSTEM})
+	public void setKeystoreAlias(String keystoreAlias) {
+		getFileSystem().setKeystoreAlias(keystoreAlias);
+	}
+	@IbisDocRef({EXCHANGE_FILE_SYSTEM})
+	public void setKeystoreAliasAuthAlias(String keystoreAliasAuthAlias) {
+		getFileSystem().setKeystoreAliasAuthAlias(keystoreAliasAuthAlias);
+	}
+	@IbisDocRef({EXCHANGE_FILE_SYSTEM})
+	public void setKeystoreAliasPassword(String keystoreAliasPassword) {
+		getFileSystem().setKeystoreAliasPassword(keystoreAliasPassword);
+	}
+
+	@IbisDocRef({EXCHANGE_FILE_SYSTEM})
+	public void setTruststore(String truststore) {
+		getFileSystem().setTruststore(truststore);
+	}
+	@IbisDocRef({EXCHANGE_FILE_SYSTEM})
+	public void setTruststoreType(KeystoreType truststoreType) {
+		getFileSystem().setTruststoreType(truststoreType);
+	}
+	@IbisDocRef({EXCHANGE_FILE_SYSTEM})
+	public void setTruststoreAuthAlias(String truststoreAuthAlias) {
+		getFileSystem().setTruststoreAuthAlias(truststoreAuthAlias);
+	}
+	@IbisDocRef({EXCHANGE_FILE_SYSTEM})
+	public void setTruststorePassword(String truststorePassword) {
+		getFileSystem().setTruststorePassword(truststorePassword);
+	}
+	@IbisDocRef({EXCHANGE_FILE_SYSTEM})
+	public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
+		getFileSystem().setTrustManagerAlgorithm(trustManagerAlgorithm);
+	}
+	@IbisDocRef({EXCHANGE_FILE_SYSTEM})
+	public void setVerifyHostname(boolean verifyHostname) {
+		getFileSystem().setVerifyHostname(verifyHostname);
+	}
+	@IbisDocRef({EXCHANGE_FILE_SYSTEM})
+	public void setAllowSelfSignedCertificates(boolean allowSelfSignedCertificates) {
+		getFileSystem().setAllowSelfSignedCertificates(allowSelfSignedCertificates);
+	}
+	@IbisDocRef({EXCHANGE_FILE_SYSTEM})
+	public void setIgnoreCertificateExpiredException(boolean ignoreCertificateExpiredException) {
+		getFileSystem().setIgnoreCertificateExpiredException(ignoreCertificateExpiredException);
 	}
 
 }
