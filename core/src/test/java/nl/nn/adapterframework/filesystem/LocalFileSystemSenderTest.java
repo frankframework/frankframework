@@ -26,14 +26,14 @@ public class LocalFileSystemSenderTest extends FileSystemSenderTest<LocalFileSys
 		result.setRoot(folder.getRoot().getAbsolutePath());
 		return result;
 	}
-	
+
 	@Override
 	public void setUp() throws Exception {
 		folder = new TemporaryFolder();
 		folder.create();
 		super.setUp();
 	}
-	
+
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
 		return new LocalFileSystemTestHelper(folder);
@@ -53,18 +53,19 @@ public class LocalFileSystemSenderTest extends FileSystemSenderTest<LocalFileSys
 
 		sender.addParameter(new Parameter("destination", dest.getPath()));
 		sender.setNumberOfBackups(1);
+		autowireByName(sender);
 		sender.configure();
 		sender.open();
-	
+
 		try (FileOutputStream fout = new FileOutputStream(src)) {
 			fout.write("tja".getBytes());
 		}
-		
+
 		Message result = sender.sendMessage(Message.nullMessage(), null);
-		
+
 		assertEquals("bb.txt", result.asString());
 		assertTrue(dest.exists());
-	
+
 	}
 
 	@Test
@@ -76,6 +77,7 @@ public class LocalFileSystemSenderTest extends FileSystemSenderTest<LocalFileSys
 		assertFalse(dest.exists());
 
 		LocalFileSystemSender sender = new LocalFileSystemSender();
+		autowireByName(sender);
 		sender.setAction(FileSystemAction.RENAME);
 		sender.addParameter(new Parameter("filename", src.getPath()));
 
@@ -83,7 +85,7 @@ public class LocalFileSystemSenderTest extends FileSystemSenderTest<LocalFileSys
 		sender.setNumberOfBackups(1);
 		sender.configure();
 		sender.open();
-	
+
 		try (FileOutputStream fout = new FileOutputStream(src)) {
 			fout.write("tja".getBytes());
 		}

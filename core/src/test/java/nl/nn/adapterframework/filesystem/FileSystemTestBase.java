@@ -7,63 +7,55 @@ import static org.junit.Assert.assertTrue;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.apache.logging.log4j.Logger;
-import org.junit.Rule;
-import org.junit.rules.ExpectedException;
-
+import nl.nn.adapterframework.core.ConfiguredTestBase;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.LogUtil;
 
-public abstract class FileSystemTestBase {
-	protected Logger log = LogUtil.getLogger(this);
-	
+public abstract class FileSystemTestBase extends ConfiguredTestBase {
+
 	protected boolean doTimingTests=false;
 
-	@Rule
-	public ExpectedException thrown = ExpectedException.none();
-	
 	public String FILE1 = "file1.txt";
 	public String FILE2 = "file2.txt";
 	public String DIR1 = "testDirectory";
 	public String DIR2 = "testDirectory2";
 
 	private long waitMillis = 0;
-	
-	
+
+
 	/**
 	 * Checks if a file with the specified name exists.
-	 * @param folder to search in for the file, set to null for root folder. 
+	 * @param folder to search in for the file, set to null for root folder.
 	 * @param filename
 	 */
 	protected abstract boolean _fileExists(String folder, String filename) throws Exception;
-	
+
 	/**
 	 * Checks if a folder with the specified name exists.
 	 */
 	protected abstract boolean _folderExists(String folderName) throws Exception;
-	
+
 	/**
 	 * Deletes the file with the specified name
 	 */
 	protected abstract void _deleteFile(String folder, String filename) throws Exception;
-	
+
 	/**
-	 * Creates a file with the specified name and returns output stream 
+	 * Creates a file with the specified name and returns output stream
 	 */
 	protected abstract OutputStream _createFile(String folder, String filename) throws Exception;
 
 	/**
-	 * Returns an input stream of the file 
+	 * Returns an input stream of the file
 	 */
 	protected abstract InputStream _readFile(String folder, String filename) throws Exception;
-	
+
 	/**
-	 * Creates a folder 
+	 * Creates a folder
 	 */
 	protected abstract void _createFolder(String foldername) throws Exception;
-	
+
 	/**
-	 * Deletes the folder 
+	 * Deletes the folder
 	 */
 	protected abstract void _deleteFolder(String folderName) throws Exception;
 
@@ -92,11 +84,11 @@ public abstract class FileSystemTestBase {
 		}
 	}
 
-	/** 
-	 * Pause current thread. Since creating an object takes a bit time 
+	/**
+	 * Pause current thread. Since creating an object takes a bit time
 	 * this method can be used to make sure object is created in the server.
-	 * Added for Amazon S3 sender. 
-	 * @throws FileSystemException 
+	 * Added for Amazon S3 sender.
+	 * @throws FileSystemException
 	 */
 	public void waitForActionToFinish() throws FileSystemException {
 		try {
@@ -114,7 +106,7 @@ public abstract class FileSystemTestBase {
 	protected void existsCheck(String filename) throws Exception {
 		assertTrue("Expected file [" + filename + "] to be present", _fileExists(filename));
 	}
-	
+
 	protected void assertFileExistsWithContents(String folder, String filename, String contents) throws Exception {
 		assertTrue("file ["+filename+"] does not exist in folder ["+folder+"]",_fileExists(folder, filename));
 		String actualContents = readFile(folder, filename);
@@ -124,7 +116,7 @@ public abstract class FileSystemTestBase {
 	protected void assertFileDoesNotExist(String folder, String filename) throws Exception {
 		assertFalse(filename+" should not exist", _fileExists(folder, filename));
 	}
-	
+
 
 
 	public void setWaitMillis(long waitMillis) {
