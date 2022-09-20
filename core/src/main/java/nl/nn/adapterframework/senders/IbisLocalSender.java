@@ -171,6 +171,36 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 	}
 
 	@Override
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		SenderResult senderResult = sendMessageAndProvideForwardName(message, session);
+		Message result = senderResult.getResult();
+		if (!senderResult.isSuccess()) {
+			throw new SenderException(getLogPrefix()+"call to "+getServiceIndication(session)+" unsuccessful, resulting in forward/exitCode ["+senderResult.getForwardName()+"]");
+		}
+		return result;
+	}
+
+	protected String getServiceIndication(PipeLineSession session) throws SenderException {
+		String serviceIndication;
+		if (StringUtils.isNotEmpty(getServiceName())) {
+			serviceIndication="service ["+getServiceName()+"]";
+		} else {
+			String javaListener;
+			if (StringUtils.isNotEmpty(getJavaListenerSessionKey())) {
+				try {
+					javaListener = session.getMessage(getJavaListenerSessionKey()).asString();
+				} catch (IOException e) {
+					throw new SenderException("unable to resolve session key ["+getJavaListenerSessionKey()+"]", e);
+				}
+			} else {
+				javaListener = getJavaListener();
+			}
+			serviceIndication="JavaListener ["+javaListener+"]";
+		}
+		return serviceIndication;
+	}
+
+	@Override
 	public SenderResult sendMessageAndProvideForwardName(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		String correlationID = session==null ? null : session.getMessageId();
 		Message result = null;
