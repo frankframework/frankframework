@@ -51,8 +51,8 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.jta.TransactionConnectorCoordinator;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -64,7 +64,9 @@ import nl.nn.adapterframework.pipes.Base64Pipe.Direction;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
+import nl.nn.adapterframework.stream.document.DocumentFormat;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.DB2DocumentWriter;
 import nl.nn.adapterframework.util.DB2XMLWriter;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -72,7 +74,6 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.xml.PrettyPrintFilter;
 
 /**
  * This executes the query that is obtained from the (here still abstract) method getStatement.
@@ -132,12 +133,13 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	private @Getter boolean includeFieldDefinition=XmlUtils.isIncludeFieldDefinitionByDefault();
 	private @Getter String rowIdSessionKey=null;
 	private @Getter String packageContent = "db2";
-	protected String[] columnsReturnedList=null;
+	private @Getter String[] columnsReturnedList=null;
 	private @Getter boolean streamResultToServlet=false;
 	private @Getter String sqlDialect = AppConstants.getInstance().getString("jdbc.sqlDialect", null);
 	private @Getter boolean lockRows=false;
 	private @Getter int lockWait=-1;
 	private @Getter boolean avoidLocking=false;
+	private @Getter DocumentFormat outputFormat=null;
 	private @Getter boolean prettyPrint=false;
 
 	private String convertedResultQuery;
@@ -555,17 +557,24 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		}
 		try (MessageOutputStream target=MessageOutputStream.getTargetStream(this, session, next)) {
 			// Create XML and give the maxlength as a parameter
-			DB2XMLWriter db2xml = new DB2XMLWriter();
-			db2xml.setNullValue(getNullValue());
-			db2xml.setTrimSpaces(isTrimSpaces());
-			if (StringUtils.isNotEmpty(getBlobCharset())) db2xml.setBlobCharset(getBlobCharset());
-			db2xml.setDecompressBlobs(isBlobsCompressed());
-			db2xml.setGetBlobSmart(isBlobSmartGet());
-			ContentHandler handler = target.asContentHandler();
-			if (isPrettyPrint()) {
-				handler = new PrettyPrintFilter(handler);
+			if (getOutputFormat()==null) {
+				DB2XMLWriter db2xml = new DB2XMLWriter();
+				db2xml.setNullValue(getNullValue());
+				db2xml.setTrimSpaces(isTrimSpaces());
+				if (StringUtils.isNotEmpty(getBlobCharset())) db2xml.setBlobCharset(getBlobCharset());
+				db2xml.setDecompressBlobs(isBlobsCompressed());
+				db2xml.setGetBlobSmart(isBlobSmartGet());
+				ContentHandler handler = target.asContentHandler();
+				db2xml.getXML(getDbmsSupport(), resultset, getMaxRows(), isIncludeFieldDefinition(), handler, isPrettyPrint());
+				return target.getPipeRunResult();
 			}
-			db2xml.getXML(getDbmsSupport(), resultset, getMaxRows(), isIncludeFieldDefinition(), handler);
+			DB2DocumentWriter db2document = new DB2DocumentWriter();
+			db2document.setNullValue(getNullValue());
+			db2document.setTrimSpaces(isTrimSpaces());
+			if (StringUtils.isNotEmpty(getBlobCharset())) db2document.setBlobCharset(getBlobCharset());
+			db2document.setDecompressBlobs(isBlobsCompressed());
+			db2document.setGetBlobSmart(isBlobSmartGet());
+			db2document.writeDocument(getOutputFormat(), getDbmsSupport(), resultset, getMaxRows(), isIncludeFieldDefinition(), target, isPrettyPrint());
 			return target.getPipeRunResult();
 		} catch (Exception e) {
 			throw new JdbcException(e);
@@ -1020,9 +1029,6 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	public void setColumnsReturned(String string) {
 		columnsReturned = string;
 	}
-	public String[] getColumnsReturnedList() {
-		return columnsReturnedList;
-	}
 
 	@IbisDoc({"9", "Named parameters will be auto detected by default. Every string in the query which equals <code>"+UNP_START+"paramname"+UNP_END+"</code> will be replaced by the value of the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped.", "null"})
 	public void setUseNamedParams(Boolean b) {
@@ -1145,6 +1151,10 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		this.prettyPrint = prettyPrint;
 	}
 
+	@IbisDoc({"45", "The type of output. If not set then defaults to old-style XML. If set to XML, new-style XML is used. EXPERIMENTAL: datatypes like numbers are not yet rendered correctly", "false"})
+	public void setOutputFormat(DocumentFormat outputFormat) {
+		this.outputFormat = outputFormat;
+	}
 	public int getBatchSize() {
 		return 0;
 	}

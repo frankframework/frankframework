@@ -23,14 +23,14 @@ public class DocumentUtilsTest {
 		}
 
 		XmlWriter writer = new XmlWriter();
-		Json2XmlHandler j2xHandler = new Json2XmlHandler(writer);
+		Json2XmlHandler j2xHandler = new Json2XmlHandler(writer, false);
 		JsonUtils.parseJson(json, j2xHandler);
 		MatchUtils.assertXmlEquals(expected, writer.toString());
 	}
 
 	protected void testBuild(JsonValue jValue, String expected) throws SAXException {
 		StringWriter writer = new StringWriter();
-		try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder("root",writer)) {
+		try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder("root",writer, false)) {
 			DocumentUtils.jsonValue2Document(jValue, documentBuilder);
 		}
 		MatchUtils.assertXmlEquals(expected, writer.toString());

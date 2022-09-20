@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ public class XmlObjectBuilder extends ObjectBuilder {
 	public XmlObjectBuilder(SaxElementBuilder current, String elementName) throws SAXException {
 		this.current = current.startElement(elementName);
 	}
+
 	@Override
 	public void close() throws SAXException {
 		try {
@@ -34,11 +35,30 @@ public class XmlObjectBuilder extends ObjectBuilder {
 			super.close();
 		}
 	}
-	
+
 	@Override
 	public INodeBuilder addField(String fieldName) throws SAXException {
 		return new XmlNodeBuilder(current, fieldName);
 	}
+
+	@Override
+	public void addAttribute(String name, String value) throws SAXException {
+		current.addAttribute(name, value);
+	}
+
+	@Override
+	public void addAttribute(String name, long value) throws SAXException {
+		addAttribute(name, Long.toString(value));
+	}
+	@Override
+	public void addAttribute(String name, boolean value) throws SAXException {
+		addAttribute(name, Boolean.toString(value));
+	}
+	@Override
+	public void addNumberAttribute(String name, String value) throws SAXException {
+		addAttribute(name, value);
+	}
+
 	@Override
 	public ArrayBuilder addRepeatedField(String fieldName) throws SAXException {
 		return new XmlArrayBuilder(current, fieldName);
