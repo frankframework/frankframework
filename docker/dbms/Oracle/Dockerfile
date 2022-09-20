@@ -3,3 +3,6 @@ FROM ${BASE_IMAGE}
 
 # Copy in setup scripts
 COPY *.sql /docker-entrypoint-initdb.d/setup
+
+-- Run with --nowait as is done in extensions to create database to reduce startup time
+RUN $ORACLE_BASE/$RUN_FILE --nowait
