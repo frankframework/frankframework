@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.pipes;
 
+import static nl.nn.adapterframework.testutil.MatchUtils.assertXmlEquals;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -70,7 +71,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 		PipeRunResult prr = doPipe(pipe, input, session);
 
 		String result = prr.getResult().asString();
-		assertEquals("<root><occupation nil=\"true\"/><name>Lars</name><female>false</female><age>15</age><male>true</male></root>", result);
+		assertXmlEquals("<root><occupation nil=\"true\"/><name>Lars</name><female>false</female><age>15</age><male>true</male></root>", result);
 	}
 
 	@Test
@@ -82,7 +83,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 
 		String result = prr.getResult().asString();
 		String expected = "<root><item>Wie</item><item>dit leest</item><item>is gek</item></root>";
-		assertEquals(expected, result);
+		assertXmlEquals(expected, result);
 	}
 
 	@Test
@@ -140,7 +141,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 		PipeRunResult prr = doPipe(pipe, input, session);
 
 		String result = prr.getResult().asString();
-		assertEquals(expected, result);
+		assertXmlEquals(expected, result);
 	}
 
 	@Test
@@ -171,7 +172,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 		PipeRunResult prr = doPipe(pipe, input, session);
 
 		String result = prr.getResult().asString();
-		assertEquals(expected, result);
+		assertXmlEquals(expected, result);
 	}
 
 	@Test
@@ -185,6 +186,6 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 		PipeRunResult prr = doPipe(pipe, input, session);
 
 		String result = prr.getResult().asString();
-		assertEquals(expected, result);
+		assertXmlEquals(expected, result);
 	}
 }

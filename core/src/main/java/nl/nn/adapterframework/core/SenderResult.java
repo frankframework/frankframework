@@ -26,14 +26,16 @@ import nl.nn.adapterframework.stream.Message;
 public class SenderResult {
 
 	private @Getter @Setter String forwardName;
+	private @Getter boolean success;
 	private @Getter Message result;
 
 	public SenderResult() {
 		super();
 	}
 
-	public SenderResult(String forwardName, Message result) {
+	public SenderResult(String forwardName, boolean success, Message result) {
 		this.forwardName = forwardName;
+		this.success = success;
 		this.result = result;
 	}
 

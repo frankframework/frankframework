@@ -100,6 +100,7 @@ import nl.nn.adapterframework.receivers.ExchangeMailListener;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
 
 /**
@@ -151,7 +152,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	private @Getter String clientSecret = null;
 	private @Getter String tenantId = null;
 
-	/** SSL **/
+	/* SSL */
 	private @Getter @Setter String keystore;
 	private @Getter @Setter String keystoreAuthAlias;
 	private @Getter @Setter String keystorePassword;
@@ -190,13 +191,13 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		}
 
 		if( StringUtils.isNotEmpty(getTenantId()) ){
-			msalClientAdapter = new MsalClientAdapter();
+			msalClientAdapter = applicationContext!=null ? SpringUtils.createBean(applicationContext, MsalClientAdapter.class): new MsalClientAdapter();
 			msalClientAdapter.setProxyHost(getProxyHost());
 			msalClientAdapter.setProxyPort(getProxyPort());
 			CredentialFactory proxyCredentials = getProxyCredentials();
 			msalClientAdapter.setProxyUsername(proxyCredentials.getUsername());
 			msalClientAdapter.setProxyPassword(proxyCredentials.getPassword());
-			
+
 			msalClientAdapter.setKeystore(getKeystore());
 			msalClientAdapter.setKeystoreType(getKeystoreType());
 			msalClientAdapter.setKeystoreAuthAlias(getKeystoreAuthAlias());
@@ -254,6 +255,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			super.close();
 			if(msalClientAdapter != null){
 				msalClientAdapter.close();
+				client = null;
 			}
 		} catch (SenderException e){
 			throw new FileSystemException("An exception occurred during closing of MSAL HttpClient", e);
@@ -261,9 +263,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			if(executor != null) {
 				executor.shutdown();
 				executor = null;
-			}
-			if(msalClientAdapter != null){
-				msalClientAdapter = null;
 			}
 		}
 	}

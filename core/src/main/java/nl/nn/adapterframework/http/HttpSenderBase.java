@@ -32,6 +32,7 @@ import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.HostnameVerifier;
+import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.TransformerConfigurationException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -166,6 +167,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </p>
  *
  * @ff.parameters Any parameters present are appended to the request (when method is <code>GET</code> as request-parameters, when method <code>POST</code> as body part) except the <code>headersParams</code> list, which are added as HTTP headers, and the <code>urlParam</code> header
+ * @ff.forward "&lt;statusCode of the HTTP response&gt;" default
  *
  * @author	Niels Meijer
  * @since	7.0
@@ -173,6 +175,9 @@ import nl.nn.adapterframework.util.XmlUtils;
 //TODO: Fix javadoc!
 
 public abstract class HttpSenderBase extends SenderWithParametersBase implements IForwardNameProvidingSender, HasPhysicalDestination, HasKeystore, HasTruststore {
+
+	private final String CONTEXT_KEY_STATUS_CODE="Http.StatusCode";
+	private final String CONTEXT_KEY_REASON_PHRASE="Http.ReasonPhrase";
 
 	private final @Getter(onMethod = @__(@Override)) String domain = "Http";
 
@@ -188,7 +193,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private @Getter ContentType fullContentType = null;
 	private @Getter String contentType = null;
 
-	/** CONNECTION POOL **/
+	/* CONNECTION POOL */
 	private @Getter int timeout = 10000;
 	private @Getter int maxConnections = 10;
 	private @Getter int maxExecuteRetries = 1;
@@ -200,7 +205,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private HttpClientContext httpClientContext = HttpClientContext.create();
 	private @Getter CloseableHttpClient httpClient;
 
-	/** SECURITY */
+	/* SECURITY */
 	private @Getter String authAlias;
 	private @Getter String username;
 	private @Getter String password;
@@ -212,7 +217,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private @Getter String clientSecret;
 	private @Getter String scope;
 
-	/** PROXY **/
+	/* PROXY */
 	private @Getter String proxyHost;
 	private @Getter int    proxyPort=80;
 	private @Getter String proxyAuthAlias;
@@ -220,7 +225,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private @Getter String proxyPassword;
 	private @Getter String proxyRealm=null;
 
-	/** SSL **/
+	/* SSL */
 	private @Getter String keystore;
 	private @Getter String keystoreAuthAlias;
 	private @Getter String keystorePassword;
@@ -241,6 +246,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 	private @Getter String headersParams="";
 	private @Getter boolean followRedirects=true;
+	private @Getter boolean ignoreRedirects=false;
 	private @Getter boolean xhtml=false;
 	private @Getter String styleSheetName=null;
 	private @Getter String protocol=null;
@@ -623,6 +629,40 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	 */
 	protected abstract Message extractResult(HttpResponseHandler responseHandler, PipeLineSession session) throws SenderException, IOException;
 
+	protected boolean validateResponseCode(int statusCode) {
+		boolean ok = false;
+		if (StringUtils.isNotEmpty(getResultStatusCodeSessionKey())) {
+			ok = true;
+		} else {
+			if (statusCode==200 || statusCode==201 || statusCode==202 || statusCode==204 || statusCode==206) {
+				ok = true;
+			} else {
+				if (isIgnoreRedirects() && (statusCode==HttpServletResponse.SC_MOVED_PERMANENTLY || statusCode==HttpServletResponse.SC_MOVED_TEMPORARILY || statusCode==HttpServletResponse.SC_TEMPORARY_REDIRECT)) {
+					ok = true;
+				}
+			}
+		}
+		return ok;
+	}
+
+	@Override
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		SenderResult senderResult = sendMessageAndProvideForwardName(message, session);
+		Message result = senderResult.getResult();
+		if (!senderResult.isSuccess()) {
+			int statusCode = (int)result.getContext().get(CONTEXT_KEY_STATUS_CODE);
+			String reasonPhrase = (String)result.getContext().get(CONTEXT_KEY_REASON_PHRASE);
+			String body;
+			try {
+				body = result.asString();
+			} catch (IOException e) {
+				body = "Cannot extract responseBody ("+ClassUtils.nameOf(e)+"): "+e.getMessage();
+			}
+			throw new SenderException(getLogPrefix() + "httpstatus [" + statusCode + "] reason [" + reasonPhrase + "] body [" + body +"]");
+		}
+		return result;
+	}
+
 	@Override
 	public SenderResult sendMessageAndProvideForwardName(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		ParameterValueList pvl = null;
@@ -681,6 +721,8 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 		Message result = null;
 		int statusCode = -1;
+		boolean success;
+		String reasonPhrase = null;
 		HttpHost targetHost = new HttpHost(targetUri.getHost(), getPort(targetUri), targetUri.getScheme());
 
 		TimeoutGuard tg = new TimeoutGuard(1+getTimeout()/1000, getName()) {
@@ -699,6 +741,8 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			HttpResponseHandler responseHandler = new HttpResponseHandler(httpResponse);
 			StatusLine statusline = httpResponse.getStatusLine();
 			statusCode = statusline.getStatusCode();
+			success = validateResponseCode(statusCode);
+			reasonPhrase =  statusline.getReasonPhrase();
 
 			if (StringUtils.isNotEmpty(getResultStatusCodeSessionKey()) && session != null) {
 				session.put(getResultStatusCodeSessionKey(), Integer.toString(statusCode));
@@ -760,7 +804,9 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			result = Message.asMessage(xhtml);
 		}
 
-		return new SenderResult(Integer.toString(statusCode),result);
+		result.getContext().put(CONTEXT_KEY_STATUS_CODE, statusCode);
+		result.getContext().put(CONTEXT_KEY_REASON_PHRASE, reasonPhrase);
+		return new SenderResult(Integer.toString(statusCode), success, result);
 	}
 
 	@Override
@@ -1056,6 +1102,12 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	public void setFollowRedirects(boolean b) {
 		followRedirects = b;
 	}
+
+	@IbisDoc({"If true, besides http status code 200 (OK) also the code 301 (MOVED_PERMANENTLY), 302 (MOVED_TEMPORARILY) and 307 (TEMPORARY_REDIRECT) are considered successful", "false"})
+	public void setIgnoreRedirects(boolean b) {
+		ignoreRedirects = b;
+	}
+
 
 	@IbisDoc({"Controls whether connections checked to be stale, i.e. appear open, but are not.", "true"})
 	public void setStaleChecking(boolean b) {

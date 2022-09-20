@@ -76,7 +76,7 @@ public class TextSplitterPipe extends StreamingPipe {
 			}
 	
 			try (MessageOutputStream target=getTargetStream(session)) {
-				try (SaxDocumentBuilder saxBuilder = new SaxDocumentBuilder("text", target.asContentHandler())) {
+				try (SaxDocumentBuilder saxBuilder = new SaxDocumentBuilder("text", target.asContentHandler(), false)) {
 					for(int counter = 0; result[counter] != null; counter++) {
 						saxBuilder.addElement("block", result[counter]);
 					}

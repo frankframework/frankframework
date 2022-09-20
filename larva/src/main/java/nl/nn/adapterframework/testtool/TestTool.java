@@ -63,6 +63,7 @@ import org.apache.logging.log4j.Logger;
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
 
+import jakarta.json.JsonException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.ISender;
@@ -2050,7 +2051,12 @@ public class TestTool {
 		String diffType = properties.getProperty(step + ".diffType");
 		if ((diffType != null && diffType.equals(".json")) || (diffType == null && fileName.endsWith(".json"))) {
 			printableExpectedResult = Misc.jsonPretty(expectedResult);
-			printableActualResult = Misc.jsonPretty(actualResult);
+			try {
+				printableActualResult = Misc.jsonPretty(actualResult);
+			} catch (JsonException e) {
+				debugMessage("Could not prettify Json: "+e.getMessage(), writers);
+				printableActualResult = actualResult;
+			}
 		} else {
 			printableExpectedResult = XmlUtils.replaceNonValidXmlCharacters(expectedResult);
 			printableActualResult = XmlUtils.replaceNonValidXmlCharacters(actualResult);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -59,6 +59,11 @@ public class XmlNodeBuilder implements INodeBuilder {
 	@Override
 	public void setValue(boolean value) throws SAXException {
 		current.addValue(Boolean.toString(value)).close();
+	}
+
+	@Override
+	public void setNumberValue(String value) throws SAXException {
+		setValue(value);
 	}
 
 }

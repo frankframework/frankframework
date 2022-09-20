@@ -61,6 +61,9 @@ import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.Base64Pipe.Direction;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.document.ArrayBuilder;
+import nl.nn.adapterframework.stream.document.INodeBuilder;
+import nl.nn.adapterframework.stream.document.ObjectBuilder;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
 
 /**
@@ -144,6 +147,35 @@ public class JdbcUtil {
 						warning.addAttribute("message",message);
 						warnings=warnings.getNextWarning();
 					}
+				}
+			}
+		}
+	}
+
+	public static void warningsToDocument(SQLWarning warnings, ObjectBuilder parent) throws SAXException {
+		if (warnings!=null) {
+			try (ArrayBuilder arrayBuilder = parent.addArrayField("warnings", "warning")) {
+				while (warnings!=null) {
+					try (INodeBuilder nodeBuilder=arrayBuilder.addElement()) {
+						try (ObjectBuilder warning=nodeBuilder.startObject()) {
+							warning.add("errorCode",""+warnings.getErrorCode());
+							warning.add("sqlState",""+warnings.getSQLState());
+
+							String message=warnings.getMessage();
+						
+			 				Throwable cause=warnings.getCause();
+							if (cause!=null) {
+								warning.add("cause",cause.getClass().getName());
+								if (message==null) {
+									message=cause.getMessage();
+								} else {
+									message=message+": "+cause.getMessage();
+								}
+							}
+							warning.add("message",message);
+						}
+					}
+					warnings=warnings.getNextWarning();
 				}
 			}
 		}
@@ -998,4 +1030,19 @@ public class JdbcUtil {
 		}
 	}
 
+	public static boolean isNumeric(int sqlTYpe) {
+		switch(sqlTYpe) {
+		case Types.INTEGER:
+		case Types.NUMERIC:
+		case Types.DOUBLE:
+		case Types.BIGINT:
+		case Types.DECIMAL:
+		case Types.FLOAT:
+		case Types.REAL:
+		case Types.SMALLINT:
+			return true;
+		default:
+			return false;
+		}
+	}
 }

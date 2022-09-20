@@ -1,14 +1,13 @@
 package nl.nn.adapterframework.stream.document;
 
+import static nl.nn.adapterframework.testutil.MatchUtils.assertXmlEquals;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
-import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.json.JsonTee;
 import nl.nn.adapterframework.stream.json.JsonWriter;
-import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.xml.XmlWriter;
 
 public class DocumentBuilderTest {
@@ -43,10 +42,10 @@ public class DocumentBuilderTest {
 	public void testXmlDocumentBuilder() throws SAXException {
 		String expected = expectedXml;
 		XmlWriter writer = new XmlWriter();
-		try (IDocumentBuilder root = new XmlDocumentBuilder("root", writer)) {
+		try (IDocumentBuilder root = new XmlDocumentBuilder("root", writer, false)) {
 			buildDocument(root);
 		}
-		MatchUtils.assertXmlEquals(expected, writer.toString());
+		assertXmlEquals(expected, writer.toString());
 		assertEquals(expected, writer.toString());
 	}
 
@@ -90,12 +89,12 @@ public class DocumentBuilderTest {
 		try (IDocumentBuilder root = new XmlDocumentBuilder("root")) {
 			buildDocument(root);
 			root.close();
-			assertEquals(expected, root.toString());
+			assertXmlEquals(expected, root.toString());
 		}
 	}
 
 	@Test
-	public void testJsonObjectDocumentBuilder() throws SAXException, StreamingException {
+	public void testJsonObjectDocumentBuilder() throws SAXException {
 		String expected = expectedJson;
 		try (ObjectBuilder root = DocumentBuilderFactory.startObjectDocument(DocumentFormat.JSON, "dummy")) {
 			buildObject(root);
@@ -105,12 +104,12 @@ public class DocumentBuilderTest {
 	}
 
 	@Test
-	public void testXmlObjectDocumentBuilder() throws SAXException, StreamingException {
+	public void testXmlObjectDocumentBuilder() throws SAXException {
 		String expected = expectedXml;
 		try (ObjectBuilder root = DocumentBuilderFactory.startObjectDocument(DocumentFormat.XML, "root")) {
 			buildObject(root);
 			root.close();
-			assertEquals(expected, root.toString());
+			assertXmlEquals(expected, root.toString());
 		}
 	}
 

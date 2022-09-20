@@ -96,8 +96,18 @@ public class MatchUtils {
 	}
 
 	public static void assertXmlEquals(String description, String xmlExp, String xmlAct, boolean ignoreNamespaces, boolean includeComments) {
-		String xmlExpPretty = xmlPretty(xmlExp, ignoreNamespaces, includeComments);
-		String xmlActPretty = xmlPretty(xmlAct, ignoreNamespaces, includeComments);
+		String xmlExpPretty;
+		String xmlActPretty;
+		try {
+			xmlExpPretty = xmlPretty(xmlExp, ignoreNamespaces, includeComments);
+		} catch (RuntimeException e) {
+			xmlExpPretty = e.getMessage();
+		}
+		try {
+			xmlActPretty = xmlPretty(xmlAct, ignoreNamespaces, includeComments);
+		} catch (RuntimeException e) {
+			xmlActPretty = e.getMessage();
+		}
 		assertEquals(description,xmlExpPretty,xmlActPretty);
 	}
 

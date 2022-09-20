@@ -23,20 +23,23 @@ import javax.jms.Session;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IKnowsDeliveryCount;
 import nl.nn.adapterframework.core.IListenerConnector;
+import nl.nn.adapterframework.core.IListenerConnector.CacheMode;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IPortConnectedListener;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.PipeLine.ExitState;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.Mandatory;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.CredentialFactory;
 /**
@@ -85,27 +88,21 @@ import nl.nn.adapterframework.util.CredentialFactory;
  */
 public class PushingJmsListener extends JmsListenerBase implements IPortConnectedListener<javax.jms.Message>, IThreadCountControllable, IKnowsDeliveryCount<javax.jms.Message> {
 
-	private String listenerPort;
-	private String cacheMode;
-	private IListenerConnector<javax.jms.Message> jmsConnector;
-	private IMessageHandler<javax.jms.Message> handler;
-	private Receiver<javax.jms.Message> receiver;
-	private IbisExceptionListener exceptionListener;
-	private long pollGuardInterval = Long.MIN_VALUE;
+	private @Getter String replyDestinationName;
+	private @Getter CacheMode cacheMode;
+	private @Getter long pollGuardInterval = Long.MIN_VALUE;
+
+	private @Getter @Setter IListenerConnector<javax.jms.Message> jmsConnector;
+	private @Getter @Setter IMessageHandler<javax.jms.Message> handler;
+	private @Getter @Setter Receiver<javax.jms.Message> receiver;
+	private @Getter @Setter IbisExceptionListener exceptionListener;
+
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (jmsConnector==null) {
 			throw new ConfigurationException(getLogPrefix()+" has no jmsConnector. It should be configured via springContext.xml");
-		}
-		if (StringUtils.isNotEmpty(getCacheMode())) {
-			if (!getCacheMode().equals("CACHE_NONE") &&
-				!getCacheMode().equals("CACHE_CONNECTION") &&
-				!getCacheMode().equals("CACHE_SESSION") &&
-				!getCacheMode().equals("CACHE_CONSUMER")) {
-					throw new ConfigurationException(getLogPrefix()+"cacheMode ["+getCacheMode()+"] must be one of CACHE_NONE, CACHE_CONNECTION, CACHE_SESSION or CACHE_CONSUMER");
-				}
 		}
 		Destination destination;
 		try {
@@ -157,10 +154,13 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"in PushingJmsListener.afterMessageProcessed()");
 		try {
-			Destination replyTo = (Destination) threadContext.get("replyTo");
+			Destination replyTo = isUseReplyTo() ? (Destination) threadContext.get("replyTo") : null;
+			if (replyTo==null && StringUtils.isNotEmpty(getReplyDestinationName())) {
+				replyTo = getDestination(getReplyDestinationName());
+			}
 
 			// handle reply
-			if (isUseReplyTo() && (replyTo != null)) {
+			if (replyTo != null) {
 
 				log.debug(getLogPrefix()+"sending reply message with correlationID[" + cid + "], replyTo [" + replyTo.toString()+ "]");
 				long timeToLive = getReplyMessageTimeToLive();
@@ -189,10 +189,10 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 				send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, getReplyDeliveryMode().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException, properties);
 			} else {
 				if (getSender()==null) {
-					log.info("["+getName()+"] has no sender, not sending the result.");
+					log.info("["+getName()+"] no replyTo address found or not configured to use replyTo, and no sender, not sending the result.");
 				} else {
 					if (log.isDebugEnabled()) {
-						log.debug("["+getName()+"] no replyTo address found or not configured to use replyTo, using default destination sending message with correlationID[" + cid + "] [" + plr.getResult() + "]");
+						log.debug("["+getName()+"] no replyTo address found or not configured to use replyTo, using sending message on nested sender with correlationID[" + cid + "] [" + plr.getResult() + "]");
 					}
 					PipeLineSession pipeLineSession = new PipeLineSession();
 					pipeLineSession.put(PipeLineSession.messageIdKey,cid);
@@ -214,16 +214,9 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 		} catch (Exception e) {
 			if (e instanceof ListenerException) {
 				throw (ListenerException)e;
-			} 
+			}
 			throw new ListenerException(e);
 		}
-	}
-
-	public void setJmsConnector(IListenerConnector<javax.jms.Message> configurator) {
-		jmsConnector = configurator;
-	}
-	public IListenerConnector<javax.jms.Message> getJmsConnector() {
-		return jmsConnector;
 	}
 
 	@Override
@@ -231,68 +224,8 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 		return jmsConnector;
 	}
 
-	@Override
-	public void setExceptionListener(IbisExceptionListener listener) {
-		this.exceptionListener = listener;
-	}
-	@Override
-	public IbisExceptionListener getExceptionListener() {
-		return exceptionListener;
-	}
-
-	@Override
-	public void setHandler(IMessageHandler<javax.jms.Message> handler) {
-		this.handler = handler;
-	}
-	@Override
-	public IMessageHandler<javax.jms.Message> getHandler() {
-		return handler;
-	}
 
 
-
-	/**
-	 * Name of the WebSphere listener port that this JMS Listener binds to.
-	 * Optional.
-	 *
-	 * This property is only used in EJB Deployment mode and has no effect
-	 * otherwise.
-	 *
-	 * @param listenerPort Name of the listener port, as configured in the
-	 *                     application server.
-	 */
-	public void setListenerPort(String listenerPort) {
-		this.listenerPort = listenerPort;
-	}
-
-	/**
-	 * Name of the WebSphere listener port that this JMS Listener binds to. Optional.
-	 *
-	 * This property is only used in EJB Deployment mode and has no effect otherwise.	 *
-	 * @return The name of the WebSphere Listener Port, as configured in the
-	 * application server.
-	 */
-	@Override
-	public String getListenerPort() {
-		return listenerPort;
-	}
-
-
-	@Override
-	public void setReceiver(Receiver<javax.jms.Message> receiver) {
-		this.receiver = receiver;
-	}
-	@Override
-	public Receiver<javax.jms.Message> getReceiver() {
-		return receiver;
-	}
-
-	public void setCacheMode(String string) {
-		cacheMode = string;
-	}
-	public String getCacheMode() {
-		return cacheMode;
-	}
 
 	@Override
 	public boolean isThreadCountReadable() {
@@ -372,22 +305,36 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 		}
 	}
 
-	@IbisDoc({"Interval <i>in milliseconds</i> for the poll guard to check whether a successful poll was done by the receive (https://docs.oracle.com/javaee/7/api/javax/jms/messageconsumer.html#receive-long-) since last check. when polling has stopped this will be logged and the listener will be stopped and started in an attempt to workaround problems with polling. polling might stop due to bugs in the jms driver/implementation which should be fixed by the supplier. as the poll time includes reading and processing of the message no successful poll might be registered since the last check when message processing takes a long time, hence while messages are being processed the check on last successful poll will be skipped. set to -1 to disable", "ten times the specified timeout"})
-	public void setPollGuardInterval(long pollGuardInterval) {
-		this.pollGuardInterval = pollGuardInterval;
-	}
-
-	public long getPollGuardInterval() {
-		return pollGuardInterval;
-	}
-
-	/**
-	 * The name of the destination to listen to, this may be a <code>queue</code> or <code>topic</code> name.
-	 * @ff.mandatory
-	 */
+	@Mandatory
 	@Override
 	public void setDestinationName(String destinationName) {
 		super.setDestinationName(destinationName);
+	}
+
+	/** 
+	 * Name of the JMS destination (queue or topic) to use for sending replies. If <code>useReplyTo</code>=<code>true</code>, 
+	 * the sender specified reply destination takes precedence over this one. 
+	 */
+	public void setReplyDestinationName(String destinationName) {
+		this.replyDestinationName = destinationName;
+	}
+
+	public void setCacheMode(CacheMode cacheMode) {
+		this.cacheMode = cacheMode;
+	}
+
+	/**
+	 * Interval <i>in milliseconds</i> for the poll guard to check whether a successful poll was done by the receive
+	 * (https://docs.oracle.com/javaee/7/api/javax/jms/messageconsumer.html#receive-long-) since last check. If polling has stopped this will be logged
+	 * and the listener will be stopped and started in an attempt to workaround problems with polling.
+	 * Polling might stop due to bugs in the JMS driver/implementation which should be fixed by the supplier. As the poll time includes reading
+	 * and processing of the message no successful poll might be registered since the last check when message processing takes a long time, hence
+	 * while messages are being processed the check on last successful poll will be skipped. Set to -1 to disable.
+	 *
+	 * @ff.default ten times the specified timeout
+	 * */
+	public void setPollGuardInterval(long pollGuardInterval) {
+		this.pollGuardInterval = pollGuardInterval;
 	}
 
 }

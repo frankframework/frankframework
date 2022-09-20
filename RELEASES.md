@@ -8,6 +8,12 @@ Upcoming (7.9)
 --------------
 [Commits](https://github.com/ibissource/iaf/compare/v7.8-RC1...HEAD)
 
+### Non backwards compatible changes
+
+- IbisLocalSender no longer throws exceptions if exit.state="ERROR" situations, but provides forwardName 'exception'. The sessionKey 'originalResult' is no longer used.
+- For sending replies from the JmsListener to a fixed destination the attribute 'replyDestinationName' should be used instead of a nested JmsSender, to avoid clutter in the debugger reports 
+
+
 
 7.8-RC1
 ---

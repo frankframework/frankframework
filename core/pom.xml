@@ -11,12 +11,12 @@
 	<name>Ibis AdapterFramework core</name>
 
 	<properties>
-		<spring.version>5.3.22</spring.version>
+		<spring.version>5.3.23</spring.version>
 		<spring-security.version>5.7.3</spring-security.version>
 		<spring-integration.version>5.5.14</spring-integration.version>
 		<j2v8.version>4.6.0</j2v8.version>
 		<jackson.version>2.13.4</jackson.version>
-		<micrometer.version>1.9.3</micrometer.version>
+		<micrometer.version>1.9.4</micrometer.version>
 		<saxon.version>10.8</saxon.version>
 	</properties>
 
@@ -28,7 +28,7 @@
 		<dependency>
 			<groupId>org.javassist</groupId>
 			<artifactId>javassist</artifactId>
-			<version>3.29.1-GA</version>
+			<version>3.29.2-GA</version>
 		</dependency>
 
 		<dependency>
@@ -134,11 +134,6 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>commons-collections</groupId>
-			<artifactId>commons-collections</artifactId>
-			<version>3.2.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -531,7 +526,7 @@
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
 			<artifactId>msal4j</artifactId>
-			<version>1.13.0</version>
+			<version>1.13.1</version>
 		</dependency>
 		<dependency>
 			<groupId>joda-time</groupId>
@@ -551,7 +546,7 @@
 		<dependency>
 			<groupId>org.liquibase</groupId>
 			<artifactId>liquibase-core</artifactId>
-			<version>4.16.0</version>
+			<version>4.16.1</version>
 			<exclusions>
 				<exclusion>
 					<groupId>javax.xml.bind</groupId>
@@ -764,13 +759,13 @@
 		<dependency>
 			<groupId>com.nimbusds</groupId>
 			<artifactId>nimbus-jose-jwt</artifactId>
-			<version>9.24.4</version>
+			<version>9.25</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.tika</groupId>
 			<artifactId>tika-core</artifactId>
-			<version>1.28.4</version>
+			<version>1.28.5</version>
 			<exclusions>
 				<exclusion><!-- excluded because we want to ignore this (1.2.2) version! this dependency handles javax.activation.* imports, and is NOT compatible with the IBM JRE -->
 					<groupId>jakarta.activation</groupId>
@@ -809,7 +804,7 @@
 		<dependency>
 			<groupId>com.github.tomakehurst</groupId>
 			<artifactId>wiremock-jre8-standalone</artifactId>
-			<version>2.33.2</version>
+			<version>2.34.0</version>
 			<scope>test</scope>
 		</dependency>
 

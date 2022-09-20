@@ -45,7 +45,6 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.RequestReplyExecutor;
-import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -202,10 +201,6 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			return (M)proceedingJoinPoint.proceed();
 		}
 		ISender sender = (ISender)proceedingJoinPoint.getTarget();
-		if (!sender.isSynchronous() && sender instanceof JmsSender) {
-			// Ignore JmsSenders within JmsListeners (calling JmsSender without ParameterResolutionContext) within Receivers.
-			return (M)proceedingJoinPoint.proceed();
-		}
 
 		String messageId = session == null ? null : session.getMessageId();
 		message = ibisDebugger.senderInput(sender, messageId, message);

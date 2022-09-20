@@ -1,0 +1,52 @@
+{
+    "fielddefinition": [
+        {
+            "name": "CNT",
+            "type": "BIGINT",
+            "columnDisplaySize": 20,
+            "precision": 64,
+            "scale": 0,
+            "isCurrency": false,
+            "columnTypeName": "BIGINT",
+            "columnClassName": "java.lang.Long"
+        },
+        {
+            "name": "STR",
+            "type": "VARCHAR",
+            "columnDisplaySize": 6,
+            "precision": 6,
+            "scale": 0,
+            "isCurrency": false,
+            "columnTypeName": "CHARACTER VARYING",
+            "columnClassName": "java.lang.String"
+        },
+        {
+            "name": "NUM",
+            "type": "INTEGER",
+            "columnDisplaySize": 11,
+            "precision": 32,
+            "scale": 0,
+            "isCurrency": false,
+            "columnTypeName": "INTEGER",
+            "columnClassName": "java.lang.Integer"
+        },
+        {
+            "name": "NULLCOL",
+            "type": "NULL",
+            "columnDisplaySize": 4,
+            "precision": 1,
+            "scale": 0,
+            "isCurrency": false,
+            "columnTypeName": "NULL",
+            "columnClassName": "java.lang.Void"
+        }
+    ],
+    "rowset": [
+        {
+            "CNT": 0,
+            "STR": "string",
+            "NUM": 5,
+            "NULLCOL": null
+        }
+    ]
+}
