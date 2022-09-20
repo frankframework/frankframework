@@ -2050,7 +2050,12 @@ public class TestTool {
 		String printableActualResult;
 		String diffType = properties.getProperty(step + ".diffType");
 		if ((diffType != null && diffType.equals(".json")) || (diffType == null && fileName.endsWith(".json"))) {
-			printableExpectedResult = Misc.jsonPretty(expectedResult);
+			try {
+				printableExpectedResult = Misc.jsonPretty(expectedResult);
+			} catch (JsonException e) {
+				debugMessage("Could not prettify Json: "+e.getMessage(), writers);
+				printableExpectedResult = expectedResult;
+			}
 			try {
 				printableActualResult = Misc.jsonPretty(actualResult);
 			} catch (JsonException e) {
