@@ -784,7 +784,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			throw new SenderException("Failed to recover from exception");
 		}
 
-		if (isXhtml() && !result.isEmpty()) {
+		if (isXhtml() && !Message.isEmpty(result)) {
 			String xhtml;
 			try {
 				xhtml = XmlUtils.toXhtml(result);
