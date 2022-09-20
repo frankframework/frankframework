@@ -43,8 +43,8 @@ import nl.nn.adapterframework.util.Misc;
 
 /**
  * Posts a message to another IBIS-adapter in the same IBIS instance.
- * 
- * Returns exit.code as forward name to SenderPipe. 
+ *
+ * Returns exit.code as forward name to SenderPipe.
  *
  * An IbisLocalSender makes a call to a Receiver with either a {@link nl.nn.adapterframework.http.WebServiceListener WebServiceListener}
  * or a {@link JavaListener JavaListener}.
@@ -82,6 +82,8 @@ import nl.nn.adapterframework.util.Misc;
  *   <li>Define a Receiver with a WebServiceListener</li>
  *   <li>Set the attribute <code>name</code> to <i>yourIbisWebServiceName</i></li>
  * </ul>
+ *
+ * @ff.forward "&lt;Exit.code&gt;" default
  *
  * @author Gerrit van Brakel
  * @since  4.2
@@ -233,7 +235,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 							throw new SenderException(msg);
 						}
 						log.info(getLogPrefix()+msg);
-						return new SenderResult("error", new Message("<error>"+msg+"</error>"));
+						return new SenderResult("error", false, new Message("<error>"+msg+"</error>"));
 					}
 					if (isIsolated()) {
 						if (isSynchronous()) {
@@ -265,12 +267,8 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 
 			ExitState exitState = (ExitState)context.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
 			Object exitCode = context.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
-			if (exitState!=null && exitState!=ExitState.SUCCESS) {
-				context.put("originalResult", result);
-				throw new SenderException(getLogPrefix()+"call to "+serviceIndication+" resulted in exitState ["+exitState+"] exitCode ["+exitCode+"]");
-			}
 			String forwardName = exitCode !=null ? exitCode.toString() : null;
-			return new SenderResult(forwardName, result);
+			return new SenderResult(forwardName, exitState==ExitState.SUCCESS, result);
 		}
 	}
 

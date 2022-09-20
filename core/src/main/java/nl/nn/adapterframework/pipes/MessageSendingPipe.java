@@ -766,6 +766,10 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					if (StringUtils.isNotEmpty(forwardName)) {
 						forward = findForward(forwardName);
 					}
+					if (forward==null) {
+						forwardName = senderResult.isSuccess() ? PipeForward.SUCCESS_FORWARD_NAME: PipeForward.EXCEPTION_FORWARD_NAME;
+						forward = findForward(forwardName);
+					}
 					sendResult = new PipeRunResult(forward, senderResult.getResult());
 				} else {
 					// result has a messageID for async senders, the result for sync senders
