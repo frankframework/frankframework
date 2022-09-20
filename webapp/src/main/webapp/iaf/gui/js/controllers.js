@@ -479,13 +479,6 @@ angular.module('iaf.beheerconsole')
 		$(".rating i").removeClass("fa-star").addClass("fa-star-o");
 		$(".rating i:nth-child(-n+"+ (rating + 1) +")").addClass("fa-star").removeClass("fa-star-o");
 	};
-
-	$scope.showStrutsConsoleDisabled = function () {
-		SweetAlert.Warning({
-			title: "Struts Console Disabled",
-			text: "The struts console has been disabled. In order to enable it, set the property [strutsConsole.enabled] to true.",
-		});
-	}
 }])
 
 .controller('LoadingPageCtrl', ['$scope', 'Api', '$state', function($scope, Api, $state) {

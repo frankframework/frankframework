@@ -22,7 +22,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.CredentialFactory;
 
 /**
- * Interface specifying method to configure a JMS receiver or some sort.
+ * Interface specifying method to configure a JMS receiver of some sort.
  *
  * @author  Tim van der Leeuw
  * @since   4.8

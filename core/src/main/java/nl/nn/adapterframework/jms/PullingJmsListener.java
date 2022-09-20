@@ -89,7 +89,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 	private RunStateEnquirer runStateEnquirer=null;
 	
 	public PullingJmsListener() {  
-		setTimeOut(20000);
+		setTimeout(20000);
 	}
 
 	protected Session getSession(Map<String,Object> threadContext) throws ListenerException {
@@ -99,9 +99,8 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 			} catch (JmsException e) {
 				throw new ListenerException("exception creating QueueSession", e);
 			}
-		} else {
-			return (Session) threadContext.get(THREAD_CONTEXT_SESSION_KEY);
 		}
+		return (Session) threadContext.get(THREAD_CONTEXT_SESSION_KEY);
 	}
 
 	protected void releaseSession(Session session) throws ListenerException {
@@ -114,13 +113,11 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 		try {
 			if (StringUtils.isNotEmpty(correlationId)) {
 				return getMessageConsumerForCorrelationId(session, getDestination(), correlationId);
-			} else {
-				if (isSessionsArePooled()) {
-					return getMessageConsumer(session, getDestination());
-				} else {
-					return (MessageConsumer) threadContext.get(THREAD_CONTEXT_MESSAGECONSUMER_KEY);
-				}
+			} 
+			if (isSessionsArePooled()) {
+				return getMessageConsumer(session, getDestination());
 			}
+			return (MessageConsumer) threadContext.get(THREAD_CONTEXT_MESSAGECONSUMER_KEY);
 		} catch (Exception e) {
 			throw new ListenerException(getLogPrefix()+"exception creating QueueReceiver for "+getPhysicalDestinationName(), e);
 		}
