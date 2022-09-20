@@ -117,4 +117,5 @@ public class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem>{
 		Message result = fileSystem.readFile(new File(testFile.toURI()).toPath(), "auto");
 		assertEquals(Misc.streamToString(testFile.openStream(), "iso-8859-1"), result.asString());
 	}
+
 }

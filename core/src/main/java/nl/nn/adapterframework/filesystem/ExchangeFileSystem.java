@@ -255,6 +255,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			super.close();
 			if(msalClientAdapter != null){
 				msalClientAdapter.close();
+				client = null;
 			}
 		} catch (SenderException e){
 			throw new FileSystemException("An exception occurred during closing of MSAL HttpClient", e);
@@ -262,9 +263,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			if(executor != null) {
 				executor.shutdown();
 				executor = null;
-			}
-			if(msalClientAdapter != null){
-				msalClientAdapter = null;
 			}
 		}
 	}

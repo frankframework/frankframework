@@ -15,7 +15,13 @@ public abstract class FileSystemWithAttachmentsTest<F, A, FS extends IWithAttach
 	protected IFileSystemWithAttachmentsTestHelper<A> getHelper() {
 		return (IFileSystemWithAttachmentsTestHelper<A>)helper;
 	}
-	
+
+	@Override
+	public void setUp() throws Exception {
+		super.setUp();
+		autowireByName(fileSystem);
+	}
+
 	@Test
 	public void fileSystemWithAttachmentsTestList() throws Exception {
 		String filename = "testAttachmentBasics" + FILE1;
@@ -24,7 +30,7 @@ public abstract class FileSystemWithAttachmentsTest<F, A, FS extends IWithAttach
 		String attachmentContentType="testAttachmentContentType";
 		String attachmentContents="attachmentContents";
 		byte[] attachmentContentsBytes=attachmentContents.getBytes("UTF-8");
-		
+
 		fileSystem.configure();
 		fileSystem.open();
 
@@ -32,22 +38,22 @@ public abstract class FileSystemWithAttachmentsTest<F, A, FS extends IWithAttach
 		A attachment = getHelper().createAttachment(attachmentName, attachmentFileName, attachmentContentType, attachmentContentsBytes);
 		getHelper().addAttachment(null, filename, attachment);
 		waitForActionToFinish();
-		
+
 		// test
 		F f = fileSystem.toFile(filename);
 		assertTrue("Expected file[" + filename + "] to be present", fileSystem.exists(f));
-		
+
 		Iterator<A> attachmentIterator = fileSystem.listAttachments(f);
 		assertNotNull(attachmentIterator);
 		assertTrue(attachmentIterator.hasNext());
 		A attachmentRetrieved = attachmentIterator.next();
 		assertFalse(attachmentIterator.hasNext());
 		assertNotNull(attachmentRetrieved);
-		
+
 		assertEquals(attachmentName,fileSystem.getAttachmentName(attachmentRetrieved));
 		assertEquals(attachmentFileName,fileSystem.getAttachmentFileName(attachmentRetrieved));
 		assertEquals(attachmentContentType,fileSystem.getAttachmentContentType(attachmentRetrieved));
-		
+
 		assertEquals(attachmentContents, fileSystem.readAttachment(attachmentRetrieved).asString());
 	}
 
@@ -63,7 +69,7 @@ public abstract class FileSystemWithAttachmentsTest<F, A, FS extends IWithAttach
 		String propname2="propname2";
 		String propvalue1="propvalue1";
 		String propvalue2="propvalue2";
-		
+
 		fileSystem.configure();
 		fileSystem.open();
 
@@ -73,24 +79,24 @@ public abstract class FileSystemWithAttachmentsTest<F, A, FS extends IWithAttach
 		getHelper().setProperty(attachment, propname2, propvalue2);
 		getHelper().addAttachment(null, filename, attachment);
 		waitForActionToFinish();
-		
+
 		// test
 		F f = fileSystem.toFile(filename);
 		assertTrue("Expected file[" + filename + "] to be present", fileSystem.exists(f));
-		
+
 		Iterator<A> attachmentIterator = fileSystem.listAttachments(f);
 		assertNotNull(attachmentIterator);
 		assertTrue(attachmentIterator.hasNext());
 		A attachmentRetrieved = attachmentIterator.next();
 		assertFalse(attachmentIterator.hasNext());
 		assertNotNull(attachmentRetrieved);
-		
+
 		assertEquals(attachmentName,fileSystem.getAttachmentName(attachmentRetrieved));
 		assertEquals(attachmentFileName,fileSystem.getAttachmentFileName(attachmentRetrieved));
 		assertEquals(attachmentContentType,fileSystem.getAttachmentContentType(attachmentRetrieved));
-		
+
 		assertEquals(attachmentContents, fileSystem.readAttachment(attachmentRetrieved).asString());
-		
+
 		Map<String,Object> retrievedProperties = fileSystem.getAdditionalAttachmentProperties(attachmentRetrieved);
 		assertNotNull(retrievedProperties);
 		assertEquals(propvalue1,retrievedProperties.get(propname1));
