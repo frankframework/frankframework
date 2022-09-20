@@ -1076,7 +1076,10 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	}
 
 	private CredentialFactory getCredentials(){
-		return new CredentialFactory(getAuthAlias(), getClientId(), getClientSecret());
+		if (StringUtils.isNotEmpty(getTenantId())) {
+			return new CredentialFactory(getAuthAlias(), getClientId(), getClientSecret());
+		}
+		return new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
 	}
 
 	private CredentialFactory getProxyCredentials(){
