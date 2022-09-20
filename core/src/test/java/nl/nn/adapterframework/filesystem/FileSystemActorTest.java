@@ -83,6 +83,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 			}
 		};
 		fileSystem = createFileSystem();
+		autowireByName(fileSystem);
 		fileSystem.configure();
 		fileSystem.open();
 		actor=new FileSystemActor<F, FS>();
@@ -105,14 +106,14 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	@Test
 	public void fileSystemActorTestConfigureNoAction() throws Exception {
-		thrown.expectMessage("either attribute [action] or parameter [action] must be specified");
-		thrown.expectMessage("fake owner of FileSystemActor");
+		exception.expectMessage("either attribute [action] or parameter [action] must be specified");
+		exception.expectMessage("fake owner of FileSystemActor");
 		actor.configure(fileSystem,null,owner);
 	}
 
 	@Test
 	public void fileSystemActorEmptyParameterAction() throws Exception {
-		thrown.expectMessage("unable to resolve the value of parameter");
+		exception.expectMessage("unable to resolve the value of parameter");
 		String filename = "emptyParameterAction" + FILE1;
 		String contents = "Tekst om te lezen";
 
@@ -188,8 +189,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	@Test
 	public void fileSystemActorTestConfigureInputDirectoryForListActionDoesNotExist() throws Exception {
-		thrown.expectMessage("inputFolder [xxx], canonical name [");
-		thrown.expectMessage("does not exist");
+		exception.expectMessage("inputFolder [xxx], canonical name [");
+		exception.expectMessage("does not exist");
 		actor.setAction(FileSystemAction.LIST);
 		actor.setInputFolder("xxx");
 		actor.configure(fileSystem,null,owner);
@@ -228,8 +229,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.setInputFolder("folder1");
 		ParameterList params = new ParameterList();
 		params.add(new Parameter("inputFolder", "folder2"));
-		thrown.expectMessage("inputFolder [folder1], canonical name [");
-		thrown.expectMessage("does not exist");
+		exception.expectMessage("inputFolder [folder1], canonical name [");
+		exception.expectMessage("does not exist");
 		actor.configure(fileSystem,params,owner);
 		actor.open();
 	}
@@ -1224,7 +1225,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	@Test()
 	public void fileSystemActorMoveActionTestForDestinationParameter() throws Exception {
 		actor.setAction(FileSystemAction.MOVE);
-		thrown.expectMessage("the ["+FileSystemAction.MOVE+"] action requires the parameter [destination] or the attribute [destination] to be present");
+		exception.expectMessage("the ["+FileSystemAction.MOVE+"] action requires the parameter [destination] or the attribute [destination] to be present");
 		actor.configure(fileSystem,null,owner);
 	}
 
@@ -1279,7 +1280,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	}
 	@Test
 	public void fileSystemActorMoveActionTestRootToFolderFailIfolderDoesNotExist() throws Exception {
-		thrown.expectMessage("unable to process ["+FileSystemAction.MOVE+"] action for File [sendermovefile1.txt]: destination folder [folder] does not exist");
+		exception.expectMessage("unable to process ["+FileSystemAction.MOVE+"] action for File [sendermovefile1.txt]: destination folder [folder] does not exist");
 		fileSystemActorMoveActionTest(null,"folder",false,false);
 	}
 	@Test
@@ -1548,7 +1549,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	@Test
 	public void fileSystemActorAttemptToRmNonEmptyDir() throws Exception {
-		thrown.expectMessage("Cannot remove folder");
+		exception.expectMessage("Cannot remove folder");
 		String folder = DIR1;
 		String innerFolder = DIR1+"/innerFolder";
 		if (!_folderExists(DIR1)) {
@@ -1818,7 +1819,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 //	@Test
 ////	@Ignore("MockFileSystem.exists appears not to work properly")
 //	public void fileSystemActorRenameActionTestDestinationExists() throws Exception {
-//		thrown.expectMessage("destination exists");
+//		exception.expectMessage("destination exists");
 //		fileSystemActorRenameActionTest(true);
 //	}
 
