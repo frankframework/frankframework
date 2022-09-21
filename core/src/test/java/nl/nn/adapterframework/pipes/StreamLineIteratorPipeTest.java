@@ -293,9 +293,10 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 	}
 
 	@Test
-	public void testStartOfLineString() throws Exception {
+	public void testStartOfLineStringAndItemNoSessionKey() throws Exception {
 		pipe.setSender(getElementRenderer(false));
 		pipe.setStartOfLineString("BOL");
+		pipe.setItemNoSessionKey("itemNo");
 		configurePipe();
 		pipe.start();
 
@@ -306,6 +307,24 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 		String actual = Message.asString(prr.getResult());
 
 		assertXmlEquals(expected, actual);
+		assertEquals("3", session.getMessage("itemNo").asString());
+	}
+
+	@Test
+	public void testItemNoSessionKeyEmptyInput() throws Exception {
+		pipe.setSender(getElementRenderer(false));
+		pipe.setItemNoSessionKey("itemNo");
+		configurePipe();
+		pipe.start();
+
+		String input = "";
+		String expected = "<results/>";
+
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String actual = Message.asString(prr.getResult());
+
+		assertXmlEquals(expected, actual);
+		assertEquals("0", session.getMessage("itemNo").asString());
 	}
 
 	private ISender getElementRenderer() {
