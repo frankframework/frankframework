@@ -74,17 +74,17 @@ public abstract class Base implements ApplicationContextAware {
 	protected Logger log = LogUtil.getLogger(this);
 	protected static String HATEOASImplementation = AppConstants.getInstance().getString("ibis-api.hateoasImplementation", "default");
 
-	public Response callGateway(RequestMessageBuilder input) throws ApiException {
+	public Response callSyncGateway(RequestMessageBuilder input) throws ApiException {
 		Gateway gateway = getApplicationContext().getBean("gateway", Gateway.class);
-		Message<?> response = gateway.requestReply(input.build());
+		Message<?> response = gateway.sendSyncMessage(input.build());
 		if(response != null) {
 			return BusMessageUtils.convertToJaxRsResponse(response);
 		}
-		return Response.noContent().build();
+		return Response.noContent().build(); //TODO this should probably give an exception
 	}
-	public Response callFFGateway(RequestMessageBuilder input) throws ApiException {
+	public Response callAsyncGateway(RequestMessageBuilder input) throws ApiException {
 		Gateway gateway = getApplicationContext().getBean("gateway", Gateway.class);
-		gateway.fireAndForget(input.build());
+		gateway.sendAsyncMessage(input.build());
 		return Response.noContent().build();
 	}
 

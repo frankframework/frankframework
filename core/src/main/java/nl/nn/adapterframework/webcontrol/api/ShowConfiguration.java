@@ -80,11 +80,11 @@ public final class ShowConfiguration extends Base {
 	public Response getXMLConfiguration(@QueryParam("loadedConfiguration") boolean loaded, @QueryParam("flow") String flow) throws ApiException {
 		if(StringUtils.isNotEmpty(flow)) {
 			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.FLOW);
-			return callGateway(builder);
+			return callSyncGateway(builder);
 		} else {
 			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION);
 			if(loaded) builder.addHeader("loaded", loaded);
-			return callGateway(builder);
+			return callSyncGateway(builder);
 		}
 	}
 
@@ -196,7 +196,7 @@ public final class ShowConfiguration extends Base {
 	public Response getConfigurationFlow(@PathParam("configuration") String configurationName) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.FLOW);
 		builder.addHeader("configuration", configurationName);
-		return callGateway(builder);
+		return callSyncGateway(builder);
 	}
 
 	@GET
@@ -206,7 +206,7 @@ public final class ShowConfiguration extends Base {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.FLOW);
 		builder.addHeader("configuration", configurationName);
 		builder.addHeader("adapter", adapterName);
-		return callGateway(builder);
+		return callSyncGateway(builder);
 	}
 
 	@PUT

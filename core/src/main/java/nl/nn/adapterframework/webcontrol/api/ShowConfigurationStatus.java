@@ -262,13 +262,13 @@ public final class ShowConfigurationStatus extends Base {
 		if(adapters.isEmpty()) {
 			builder.addHeader("configuration", "*ALL*");
 			builder.addHeader("adapter", "*ALL*");
-			callFFGateway(builder);
+			callAsyncGateway(builder);
 		} else {
 			for (Iterator<String> iterator = adapters.iterator(); iterator.hasNext();) {
 				String adapterName = iterator.next();
 				builder.addHeader("configuration", getAdapter(adapterName).getConfiguration().getName());
 				builder.addHeader("adapter", adapterName);
-				callFFGateway(builder);
+				callAsyncGateway(builder);
 			}
 		}
 
@@ -297,7 +297,7 @@ public final class ShowConfigurationStatus extends Base {
 			builder.addHeader("action", action.name());
 			builder.addHeader("configuration", getAdapter(adapterName).getConfiguration().getName());
 			builder.addHeader("adapter", adapterName);
-			callFFGateway(builder);
+			callAsyncGateway(builder);
 			return Response.status(Response.Status.ACCEPTED).entity("{\"status\":\"ok\"}").build();
 		}
 
@@ -334,7 +334,7 @@ public final class ShowConfigurationStatus extends Base {
 			builder.addHeader("configuration", getAdapter(adapterName).getConfiguration().getName());
 			builder.addHeader("adapter", adapterName);
 			builder.addHeader("receiver", receiverName);
-			callFFGateway(builder);
+			callAsyncGateway(builder);
 			return Response.status(Response.Status.ACCEPTED).entity("{\"status\":\"ok\"}").build();
 		}
 
@@ -391,7 +391,7 @@ public final class ShowConfigurationStatus extends Base {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.FLOW);
 		builder.addHeader("configuration", configurationName);
 		builder.addHeader("adapter", adapterName);
-		return callGateway(builder);
+		return callSyncGateway(builder);
 	}
 
 	private Map<String, Object> addCertificateInfo(HasKeystore s) {
