@@ -83,7 +83,7 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 			return false;
 		}
 	}
-	
+
 	@Override
 	public boolean containsMessageId(String originalMessageId) throws ListenerException {
 		return contains(originalMessageId, IMessageBrowsingIteratorItem::getOriginalId);
