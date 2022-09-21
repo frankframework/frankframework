@@ -87,8 +87,8 @@ public class Adapter implements IAdapter, NamedBean {
 	private Logger log = LogUtil.getLogger(this);
 	protected Logger msgLog = LogUtil.getLogger("MSG");
 
-	private Level MSGLOG_LEVEL_TERSE = Level.toLevel("TERSE");
-	private Level MSGLOG_LEVEL_TERSE_EFF = Level.DEBUG;
+	public static final Level MSGLOG_LEVEL_TERSE = Level.toLevel("TERSE");
+	public static final Level MSGLOG_LEVEL_TERSE_EFF = Level.DEBUG;
 
 	public static final String PROCESS_STATE_OK = "OK";
 	public static final String PROCESS_STATE_ERROR = "ERROR";
@@ -549,6 +549,27 @@ public class Adapter implements IAdapter, NamedBean {
 		return new Date(statsUpSince);
 	}
 
+	private void messageLogResult(String messageId, PipeLineResult result, String duration) {
+		ThreadContext.put("exitState", result.getState().name());
+		ThreadContext.put("responseSize", getFileSizeAsBytes(result.getResult()));
+		if (!isMsgLogHidden()) {
+			ThreadContext.put("response", result.getResult().toString());
+		}
+		if (duration!=null) {
+			ThreadContext.put("duration", duration);
+		}
+		if(msgLog.isEnabled(MSGLOG_LEVEL_TERSE)) {
+			msgLog.log(MSGLOG_LEVEL_TERSE_EFF, "returned from PipeLine");
+		}
+		if (log.isDebugEnabled()) {
+			String exitCode = ", exit-code ["+result.getExitCode()+"]";
+			String format = "got exit-state [{}]"+(result.getExitCode()!=0 ? exitCode : "" ) +" and result [{}] from PipeLine";
+			log.debug("Adapter [{}] messageId [{}] "+format, getName(), messageId, result.getState(), result.getResult());
+		}
+		
+	}
+	
+	
 	@Override
 	public PipeLineResult processMessage(String messageId, Message message, PipeLineSession pipeLineSession) {
 		long startTime = System.currentTimeMillis();
@@ -571,16 +592,7 @@ public class Adapter implements IAdapter, NamedBean {
 				}
 			}
 			result.setResult(formatErrorMessage(msg, t, message, messageId, objectInError, startTime));
-			//if (isRequestReplyLogging()) {
-			String exitCode = ", exit-code ["+result.getExitCode()+"]";
-			String format = "got exit-state [{}]"+(result.getExitCode()!=0 ? exitCode : "" ) +" and result [{}] from PipeLine";
-			if(msgLog.isEnabled(MSGLOG_LEVEL_TERSE)) {
-				String resultOrSize = (isMsgLogHidden()) ? "SIZE="+getFileSizeAsBytes(result.getResult()) : result.getResult().toString();
-				msgLog.log(MSGLOG_LEVEL_TERSE_EFF, format, result.getState(), resultOrSize);
-			}
-			if (log.isDebugEnabled()) {
-				log.debug("Adapter [{}] messageId [{}] "+format, getName(), messageId, result.getState(), result.getResult());
-			}
+			messageLogResult(messageId, result, null);
 			return result;
 		}
 	}
@@ -633,8 +645,12 @@ public class Adapter implements IAdapter, NamedBean {
 			ThreadContext.put("Adapter", getName());
 			ThreadContext.put("mid", messageId);
 			if(msgLog.isEnabled(MSGLOG_LEVEL_TERSE)) {
-				String messageOrSize = (isMsgLogHidden()) ? "SIZE="+getFileSizeAsBytes(message) : message.toString();
-				msgLog.log(MSGLOG_LEVEL_TERSE_EFF, "received message [{}]{}", messageOrSize, additionalLogging);
+				ThreadContext.put("requestSize", getFileSizeAsBytes(message));
+				if (isMsgLogHidden()) {
+					msgLog.log(MSGLOG_LEVEL_TERSE_EFF, "received message{}", additionalLogging);
+				} else {
+					msgLog.log(MSGLOG_LEVEL_TERSE_EFF, "received message [{}]{}", message.toString(), additionalLogging);
+				}	
 			}
 			log.info("Adapter [{}] received message with messageId [{}]{}", getName(), messageId, additionalLogging);
 
@@ -650,15 +666,7 @@ public class Adapter implements IAdapter, NamedBean {
 			} else {
 				duration = Misc.getDurationInMs(startTime);
 			}
-			String exitCode = ", exit-code ["+result.getExitCode()+"]";
-			String format = "duration [{}] got exit-state [{}]"+(result.getExitCode()!=0 ? exitCode : "" )+" and result [{}] from PipeLine";
-			if(msgLog.isEnabled(MSGLOG_LEVEL_TERSE)) {
-				String resultOrSize = (isMsgLogHidden()) ? "SIZE="+getFileSizeAsBytes(result.getResult()) : result.toString();
-				msgLog.log(MSGLOG_LEVEL_TERSE_EFF, format, duration, result.getState(), resultOrSize);
-			}
-			if (log.isDebugEnabled()) {
-				log.debug("Adapter [{}] messageId [{}] "+format, getName(), messageId, duration, result.getState(), result.getResult());
-			}
+			messageLogResult(messageId, result, duration);
 			return result;
 
 		} catch (Throwable t) {

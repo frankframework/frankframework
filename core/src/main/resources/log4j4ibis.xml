@@ -50,10 +50,7 @@
 			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.msg.maxBackupIndex}" fileIndex="min" />
 		</Appender>
 		<Appender type="RollingFile" name="msg-json" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-messages.json" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-messages.json.%i" append="true">
-			<JsonTemplateLayout eventTemplateUri="classpath:EcsLayout.json">
-				<EventTemplateAdditionalField key="adapter" format="JSON" value='{"$resolver": "mdc", "key": "adapter"}'/>
-				<EventTemplateAdditionalField key="mid" format="JSON" value='{"$resolver": "mdc", "key": "mid"}'/>
-			</JsonTemplateLayout>
+			<JsonTemplateLayout eventTemplateUri="classpath:EcsLayout.json"/>
 			<Policies>
 				<Policy type="SizeBasedTriggeringPolicy" size="${ctx:log.maxFileSize}" />
 			</Policies>
