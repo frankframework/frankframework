@@ -88,7 +88,7 @@ public class CommandSender extends SenderWithParametersBase {
 		return synchronous;
 	}
 
-	@IbisDoc({ "1", "The command to be executed. Note: Executing a command in WAS requires &lt;&lt;ALL FILES&gt;&gt; execute permission to avoid that provide the absolute path of the command. Absolute path can be found with the following command 'which -a {commandName}'", "" })
+	@IbisDoc({"The command to be executed. Note: Executing a command in WAS requires &lt;&lt;ALL FILES&gt;&gt; execute permission to avoid that provide the absolute path of the command. Absolute path can be found with the following command 'which -a {commandName}'", "" })
 	public void setCommand(String string) {
 		command = string;
 	}
@@ -96,7 +96,7 @@ public class CommandSender extends SenderWithParametersBase {
 		return command;
 	}
 
-	@IbisDoc({ "2", "The number of seconds to execute a command. If the limit is exceeded, a TimeoutException is thrown. A value of 0 means execution time is not limited", "0" })
+	@IbisDoc({"The number of seconds to execute a command. If the limit is exceeded, a TimeoutException is thrown. A value of 0 means execution time is not limited", "0" })
 	public void setTimeOut(int timeOut) {
 		this.timeOut = timeOut;
 	}
@@ -104,7 +104,7 @@ public class CommandSender extends SenderWithParametersBase {
 		return timeOut;
 	}
 
-	@IbisDoc({ "3", "In case the command that will be executed contains arguments then this flag should be set to true", "false" })
+	@IbisDoc({"In case the command that will be executed contains arguments then this flag should be set to true", "false" })
 	public void setCommandWithArguments(boolean commandWithArguments) {
 		this.commandWithArguments = commandWithArguments;
 	}

@@ -27,7 +27,7 @@ public class LocalFileSystemPipe extends FileSystemPipe<Path, LocalFileSystem>{
 		setFileSystem(new LocalFileSystem());
 	}
 
-	@IbisDoc({"1", "the folder that serves as the root of this virtual filesystem", "" })
+	@IbisDoc({"the folder that serves as the root of this virtual filesystem", "" })
 	public void setRoot(String root) {
 		getFileSystem().setRoot(root);
 	}

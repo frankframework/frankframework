@@ -71,16 +71,16 @@ public class StreamLineIteratorPipe extends StringIteratorPipe {
 		return item.toString();
 	}
 
-	@IbisDoc({"1", "If set, each record has to end with this string. If a line read doesn't end with this string more lines are added (including line separators) until the total record ends with the given string", ""})
+	@IbisDoc({"If set, each record has to end with this string. If a line read doesn't end with this string more lines are added (including line separators) until the total record ends with the given string", ""})
 	public void setEndOfLineString(String string) {
 		endOfLineString = string;
 	}
-	@IbisDoc({"2", "Marks the start of a new record. If set, a new record is started when this line is read.", ""})
+	@IbisDoc({"Marks the start of a new record. If set, a new record is started when this line is read.", ""})
 	public void setStartOfLineString(String string) {
 		startOfLineString = string;
 	}
 
-	@IbisDoc({"3", "If set to <code>false</code>, the inputstream is not closed after it has been used", "true"})
+	@IbisDoc({"If set to <code>false</code>, the inputstream is not closed after it has been used", "true"})
 	public void setCloseInputstreamOnExit(boolean b) {
 		setCloseIteratorOnExit(b);
 	}

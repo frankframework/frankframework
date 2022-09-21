@@ -90,12 +90,12 @@ public class GetFromSession  extends FixedForwardPipe {
 	 * Sets the name of the key in the <code>PipeLineSession</code> to store the input in
 	 * @see PipeLineSession
 	 */
-	@IbisDoc({"1", "Key of the session variable to retrieve the output message from. When left unspecified, the input message is used as the key of the session variable", ""})
+	@IbisDoc({"Key of the session variable to retrieve the output message from. When left unspecified, the input message is used as the key of the session variable", ""})
 	public void setSessionKey(String sessionKey) {
 		this.sessionKey = sessionKey;
 	}
 
-	@IbisDoc({"2", "<ul><li><code>string</code>: renders the contents</li><li><code>map</code>: converts a Map&lt;String, String&gt; object to a xml-string (&lt;items&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;/items&gt;)</li></ul>", "string"})
+	@IbisDoc({"<ul><li><code>string</code>: renders the contents</li><li><code>map</code>: converts a Map&lt;String, String&gt; object to a xml-string (&lt;items&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;/items&gt;)</li></ul>", "string"})
 	public void setType(ParameterType type) {
 		this.type = type;
 	}

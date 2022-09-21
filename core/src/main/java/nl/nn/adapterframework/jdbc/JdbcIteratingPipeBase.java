@@ -153,7 +153,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 		querySender.setJmsRealm(jmsRealmName);
 	}
 
-	@IbisDoc({"1", "The SQL query text to be excecuted each time sendMessage() is called. When not set, the input message is taken as the query", ""})
+	@IbisDoc({"The SQL query text to be excecuted each time sendMessage() is called. When not set, the input message is taken as the query", ""})
 	public void setQuery(String query) {
 		querySender.setQuery(query);
 	}

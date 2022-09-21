@@ -59,7 +59,7 @@ public class Result2BlobWriter extends Result2LobWriterBase {
 		}
 	}
 
-	@IbisDoc({"1", "Column that contains the BLOB to be updated", "1"})
+	@IbisDoc({"Column that contains the BLOB to be updated", "1"})
 	public void setBlobColumn(int column) {
 		querySender.setBlobColumn(column);
 	}

@@ -139,7 +139,7 @@ public class HashPipe extends FixedForwardPipe {
 	public void setEncoding(String encoding) {
 		setCharset(encoding);
 	}
-	@IbisDoc({"2", "Character set to use for converting the secret from String to bytes", "UTF-8"})
+	@IbisDoc({"Character set to use for converting the secret from String to bytes", "UTF-8"})
 	public void setCharset(String charset) {
 		this.charset = charset;
 	}
@@ -157,7 +157,7 @@ public class HashPipe extends FixedForwardPipe {
 		setHashEncoding(hashEncoding);
 	}
 
-	@IbisDoc({"4", "The secret to hash with. Only used if no parameter secret is configured. The secret is only used when there is no authAlias specified, by attribute or parameter", ""})
+	@IbisDoc({"The secret to hash with. Only used if no parameter secret is configured. The secret is only used when there is no authAlias specified, by attribute or parameter", ""})
 	public void setSecret(String secret) {
 		this.secret = secret;
 	}

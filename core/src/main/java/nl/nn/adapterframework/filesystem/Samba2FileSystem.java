@@ -467,27 +467,27 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 		return "domain ["+getAuthenticationDomain()+"] share ["+getShare()+"]";
 	}
 
-	@IbisDoc({ "1", "the destination, aka smb://xxx/yyy share", "" })
+	@IbisDoc({"the destination, aka smb://xxx/yyy share", "" })
 	public void setShare(String share) {
 		this.share = share;
 	}
 
-	@IbisDoc({ "2", "the smb share username", "" })
+	@IbisDoc({"the smb share username", "" })
 	public void setUsername(String username) {
 		this.username = username;
 	}
 
-	@IbisDoc({ "3", "the smb share password", "" })
+	@IbisDoc({"the smb share password", "" })
 	public void setPassword(String password) {
 		this.password = password;
 	}
 
-	@IbisDoc({ "4", "alias used to obtain credentials for the smb share", "" })
+	@IbisDoc({"alias used to obtain credentials for the smb share", "" })
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}
 
-	@IbisDoc({ "5", "domain, in case the user account is bound to a domain", "" })
+	@IbisDoc({"domain, in case the user account is bound to a domain", "" })
 	public void setAuthenticationDomain(String domain) {
 		this.authenticationDomain = domain;
 	}
@@ -497,22 +497,22 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 		setAuthenticationDomain(domain);
 	}
 
-	@IbisDoc({ "6", "Type of the authentication either 'NTLM' or 'SPNEGO' ", "SPNEGO" })
+	@IbisDoc({"Type of the authentication either 'NTLM' or 'SPNEGO' ", "SPNEGO" })
 	public void setAuthType(Samba2AuthType authType) {
 		this.authType = authType;
 	}
 
-	@IbisDoc({ "7", "Kerberos Domain Controller, as set in java.security.krb5.kdc", "" })
+	@IbisDoc({"Kerberos Domain Controller, as set in java.security.krb5.kdc", "" })
 	public void setKdc(String kdc) {
 		this.kdc = kdc;
 	}
 
-	@IbisDoc({ "8", "Kerberos Realm, as set in java.security.krb5.realm", "" })
+	@IbisDoc({"Kerberos Realm, as set in java.security.krb5.realm", "" })
 	public void setRealm(String realm) {
 		this.realm = realm;
 	}
 
-	@IbisDoc({ "9", "controls whether hidden files are seen or not", "false" })
+	@IbisDoc({"controls whether hidden files are seen or not", "false" })
 	public void setListHiddenFiles(boolean listHiddenFiles) {
 		this.listHiddenFiles = listHiddenFiles;
 	}

@@ -738,7 +738,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		this.charset = charset;
 	}
 
-	@IbisDoc({"16", "If set to true then the folder will be deleted if it is empty after processing the action. Works with actions "+ACTION_DELETE+", "+ACTION_READ_DELETE+" and "+ACTION_MOVE})
+	@IbisDoc({"If set to true then the folder will be deleted if it is empty after processing the action. Works with actions "+ACTION_DELETE+", "+ACTION_READ_DELETE+" and "+ACTION_MOVE})
 	public void setDeleteEmptyFolder(boolean deleteEmptyFolder) {
 		this.deleteEmptyFolder = deleteEmptyFolder;
 	}

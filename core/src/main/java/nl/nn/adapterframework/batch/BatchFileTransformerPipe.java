@@ -114,27 +114,27 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 		}
 	}
 
-	@IbisDoc({"1", "Directory in which the transformed file(s) is stored", ""})
+	@IbisDoc({"Directory in which the transformed file(s) is stored", ""})
 	public void setMove2dirAfterTransform(String readyDir) {
 		move2dirAfterTransform = readyDir;
 	}
 
-	@IbisDoc({"2", "Directory to which the inputfile is moved in case an error occurs", ""})
+	@IbisDoc({"Directory to which the inputfile is moved in case an error occurs", ""})
 	public void setMove2dirAfterError(String errorDir) {
 		move2dirAfterError = errorDir;
 	}
 
-	@IbisDoc({"3", "Number of copies held of a file with the same name. Backup files have a dot and a number suffixed to their name. If set to 0, no backups will be kept.", "5"})
+	@IbisDoc({"Number of copies held of a file with the same name. Backup files have a dot and a number suffixed to their name. If set to 0, no backups will be kept.", "5"})
 	public void setNumberOfBackups(int i) {
 		numberOfBackups = i;
 	}
 
-	@IbisDoc({"4", "If set <code>true</code>, the destination file will be deleted if it already exists", "false"})
+	@IbisDoc({"If set <code>true</code>, the destination file will be deleted if it already exists", "false"})
 	public void setOverwrite(boolean b) {
 		overwrite = b;
 	}
 
-	@IbisDoc({"5", "If set <code>true</code>, the file processed will deleted after being processed, and not stored", "false"})
+	@IbisDoc({"If set <code>true</code>, the file processed will deleted after being processed, and not stored", "false"})
 	public void setDelete(boolean b) {
 		delete = b;
 	}

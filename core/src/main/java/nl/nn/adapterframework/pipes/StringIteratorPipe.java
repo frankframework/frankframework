@@ -143,23 +143,23 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 	}
 
 	@Override
-	@IbisDoc({"1", "Controls multiline behaviour. If set to a value greater than 0, it specifies the number of rows send in a block to the sender.", "0 (one line at a time, no prefix of suffix)"})
+	@IbisDoc({"Controls multiline behaviour. If set to a value greater than 0, it specifies the number of rows send in a block to the sender.", "0 (one line at a time, no prefix of suffix)"})
 	public void setBlockSize(int i) {
 		stringIteratorPipeBlockSize = i;
 	}
 
-	@IbisDoc({"2", "If <code>startPosition &gt;= 0</code>, this field contains the start position of the key in the current record (first character is 0); " + 
+	@IbisDoc({"If <code>startPosition &gt;= 0</code>, this field contains the start position of the key in the current record (first character is 0); " + 
 			"A sequence of lines with the same key is put in one block and send to the sender. Cannot be used in combination with blockSize.", "-1"})
 	public void setStartPosition(int i) {
 		startPosition = i;
 	}
 
-	@IbisDoc({"3", "If <code>endPosition &gt;= startPosition</code>, this field contains the end position of the key in the current record", "-1"})
+	@IbisDoc({"If <code>endPosition &gt;= startPosition</code>, this field contains the end position of the key in the current record", "-1"})
 	public void setEndPosition(int i) {
 		endPosition = i;
 	}
 
-	@IbisDoc({"4", "If <code>true</code>, all items in a block are sent at once. If set false, items are sent individually, potentially leveraging block enabled sending capabilities of the sender", "true"})
+	@IbisDoc({"If <code>true</code>, all items in a block are sent at once. If set false, items are sent individually, potentially leveraging block enabled sending capabilities of the sender", "true"})
 	public void setCombineBlocks(boolean combineBlocks) {
 		this.combineBlocks = combineBlocks;
 	}
@@ -167,27 +167,27 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 
 
 	
-	@IbisDoc({"5", "If <code>combineBlocks = true</code>, this string is inserted at the start of each block. Requires <code>blockSize</code> or <code>startPosition</code> and <code>endPosition</code> to be set too.", "&lt;block&gt;"})
+	@IbisDoc({"If <code>combineBlocks = true</code>, this string is inserted at the start of each block. Requires <code>blockSize</code> or <code>startPosition</code> and <code>endPosition</code> to be set too.", "&lt;block&gt;"})
 	public void setBlockPrefix(String string) {
 		blockPrefix = string;
 	}
 
-	@IbisDoc({"6", "If <code>combineBlocks = true</code>, this string is inserted at the end of the set of lines. Requires <code>blockSize</code> or <code>startPosition</code> and <code>endPosition</code> to be set too.", "&lt;/block&gt;"})
+	@IbisDoc({"If <code>combineBlocks = true</code>, this string is inserted at the end of the set of lines. Requires <code>blockSize</code> or <code>startPosition</code> and <code>endPosition</code> to be set too.", "&lt;/block&gt;"})
 	public void setBlockSuffix(String string) {
 		blockSuffix = string;
 	}
 
-	@IbisDoc({"7", "This string is inserted at the start of each item", ""})
+	@IbisDoc({"This string is inserted at the start of each item", ""})
 	public void setLinePrefix(String string) {
 		linePrefix = string;
 	}
 
-	@IbisDoc({"8", "This string is appended at the end of each item", ""})
+	@IbisDoc({"This string is appended at the end of each item", ""})
 	public void setLineSuffix(String string) {
 		lineSuffix = string;
 	}
 
-	@IbisDoc({"9", "Escape XML characters in each item", "false"})
+	@IbisDoc({"Escape XML characters in each item", "false"})
 	public void setEscapeXml(boolean escapeXml) {
 		this.escapeXml = escapeXml;
 	}

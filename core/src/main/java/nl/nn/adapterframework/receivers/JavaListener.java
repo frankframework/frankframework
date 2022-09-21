@@ -256,7 +256,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 		return handler;
 	}
 
-	@IbisDoc({"1", "Internal name of the listener, as known to the adapter. An IbisLocalSender refers to this name in its <code>javaListener</code>-attribute.", ""})
+	@IbisDoc({"Internal name of the listener, as known to the adapter. An IbisLocalSender refers to this name in its <code>javaListener</code>-attribute.", ""})
 	@Override
 	public void setName(String name) {
 		this.name = name;
@@ -267,7 +267,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 	}
 
 
-	@IbisDoc({"2", "External Name of the listener. An IbisJavaSender refers to this name in its <code>serviceName</code>-attribute.", ""})
+	@IbisDoc({"External Name of the listener. An IbisJavaSender refers to this name in its <code>serviceName</code>-attribute.", ""})
 	public void setServiceName(String jndiName) {
 		this.serviceName = jndiName;
 	}
@@ -286,7 +286,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 	}
 
 	@Deprecated
-	@IbisDoc({"3", "If set <code>false</code>, the request is executed asynchronously. N.B. be aware that there is no limit on the number of threads generated", "true"})
+	@IbisDoc({"If set <code>false</code>, the request is executed asynchronously. N.B. be aware that there is no limit on the number of threads generated", "true"})
 	public void setSynchronous(boolean b) {
 		synchronous = b;
 	}
@@ -294,7 +294,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 		return synchronous;
 	}
 
-	@IbisDoc({"4", "Should the JavaListener throw a ListenerException when it occurs or return an error message", "true"})
+	@IbisDoc({"Should the JavaListener throw a ListenerException when it occurs or return an error message", "true"})
 	public void setThrowException(boolean throwException) {
 		this.throwException = throwException;
 	}
@@ -302,7 +302,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 		return throwException;
 	}
 
-	@IbisDoc({"5", "If <code>true</code>, the WSDL of the service provided by this listener will available for download ", "false"})
+	@IbisDoc({"If <code>true</code>, the WSDL of the service provided by this listener will available for download ", "false"})
 	public void setHttpWsdl(boolean httpWsdl) {
 		this.httpWsdl = httpWsdl;
 	}

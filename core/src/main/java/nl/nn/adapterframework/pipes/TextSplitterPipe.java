@@ -88,12 +88,12 @@ public class TextSplitterPipe extends StreamingPipe {
 		}
 	}
 
-	@IbisDoc({"1", "Set the maximum number of characters of a block", "160"})
+	@IbisDoc({"Set the maximum number of characters of a block", "160"})
 	public void setMaxBlockLength(int maxBlockLength) {
 		this.maxBlockLength = maxBlockLength;
 	}
 
-	@IbisDoc({"2", "If true, try to break up the message at spaces, instead of in the middle of words", "false"})
+	@IbisDoc({"If true, try to break up the message at spaces, instead of in the middle of words", "false"})
 	public void setSoftSplit(boolean softSplit) {
 		this.softSplit = softSplit;
 	}

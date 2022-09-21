@@ -70,12 +70,12 @@ public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
 	}
 
 
-	@IbisDoc({"1", "Start position of the field in the record that identifies the recordtype (first character is 0)", "0"})
+	@IbisDoc({"Start position of the field in the record that identifies the recordtype (first character is 0)", "0"})
 	public void setStartPosition(int i) {
 		startPosition = i;
 	}
 
-	@IbisDoc({"2", "If endposition >= 0 then this field contains the endPosition of the recordtype field in the record; All characters beyond this position are ignored. Else, if endPosition < 0 then it depends on the length of the recordkey in the flow", "-1"})
+	@IbisDoc({"If endposition >= 0 then this field contains the endPosition of the recordtype field in the record; All characters beyond this position are ignored. Else, if endPosition < 0 then it depends on the length of the recordkey in the flow", "-1"})
 	public void setEndPosition(int i) {
 		endPosition = i;
 	}

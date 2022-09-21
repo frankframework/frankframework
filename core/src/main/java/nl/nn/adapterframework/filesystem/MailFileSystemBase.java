@@ -41,7 +41,7 @@ public abstract class MailFileSystemBase<M,A,C extends AutoCloseable> extends Co
 		return "baseFolder ["+getBaseFolder()+"]";
 	}
 
-	@IbisDoc({"1", "Alias used to obtain accessToken or username and password for authentication to Exchange mail server. " +
+	@IbisDoc({"Alias used to obtain accessToken or username and password for authentication to Exchange mail server. " +
 			"If the alias refers to a combination of a username and a password, the deprecated Basic Authentication method is used. " +
 			"If the alias refers to a password without a username, the password is treated as the accessToken.", ""})
 	public void setAuthAlias(String authAlias) {
@@ -51,7 +51,7 @@ public abstract class MailFileSystemBase<M,A,C extends AutoCloseable> extends Co
 		return authAlias;
 	}
 
-	@IbisDoc({"2", "Username for authentication to mail server.", ""})
+	@IbisDoc({"Username for authentication to mail server.", ""})
 	public void setUsername(String username) {
 		this.username = username;
 	}
@@ -59,7 +59,7 @@ public abstract class MailFileSystemBase<M,A,C extends AutoCloseable> extends Co
 		return username;
 	}
 
-	@IbisDoc({"3", "Password for authentication to mail server.", ""})
+	@IbisDoc({"Password for authentication to mail server.", ""})
 	public void setPassword(String password) {
 		this.password = password;
 	}
@@ -68,7 +68,7 @@ public abstract class MailFileSystemBase<M,A,C extends AutoCloseable> extends Co
 	}
 
 
-	@IbisDoc({"4", "Folder (subfolder of root or of inbox) to look for mails. If empty, the inbox folder is used", ""})
+	@IbisDoc({"Folder (subfolder of root or of inbox) to look for mails. If empty, the inbox folder is used", ""})
 	public void setBaseFolder(String basefolder) {
 		this.basefolder = basefolder;
 	}
@@ -76,7 +76,7 @@ public abstract class MailFileSystemBase<M,A,C extends AutoCloseable> extends Co
 		return basefolder;
 	}
 
-	@IbisDoc({"5", "If set <code>true</code>, the contents will be read in MIME format", "false"})
+	@IbisDoc({"If set <code>true</code>, the contents will be read in MIME format", "false"})
 	public void setReadMimeContents(boolean readMimeContents) {
 		this.readMimeContents = readMimeContents;
 	}
@@ -84,7 +84,7 @@ public abstract class MailFileSystemBase<M,A,C extends AutoCloseable> extends Co
 		return readMimeContents;
 	}
 
-	@IbisDoc({"6", "Comma separated list of fields to try as response address", REPLY_ADDRESS_FIELDS_DEFAULT})
+	@IbisDoc({"Comma separated list of fields to try as response address", REPLY_ADDRESS_FIELDS_DEFAULT})
 	public void setReplyAddressFields(String replyAddressFields) {
 		this.replyAddressFields = replyAddressFields;
 	}
