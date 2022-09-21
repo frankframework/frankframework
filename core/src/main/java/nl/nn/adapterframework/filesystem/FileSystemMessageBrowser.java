@@ -26,6 +26,7 @@ import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.functional.ThrowingFunction;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> implements IMessageBrowser<F> {
@@ -34,7 +35,7 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 	private FS fileSystem;
 	private String folder;
 	private String messageIdPropertyKey;
-	
+
 	private String hideRegex = null;
 	private String hideMethod = "all";
 
@@ -44,7 +45,7 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 		this.folder = folder;
 		this.messageIdPropertyKey = messageIdPropertyKey;
 	}
-	
+
 	@Override
 	public boolean isTransacted() {
 		return false;
@@ -69,13 +70,21 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 		return new FileSystemMessageBrowsingIteratorItem<F, FS>(fileSystem, browseMessage(storageKey), messageIdPropertyKey);
 	}
 
+	protected boolean contains(String value, ThrowingFunction<IMessageBrowsingIteratorItem,String,ListenerException> field) throws ListenerException {
+		try (IMessageBrowsingIterator it=getIterator()){
+			while (it.hasNext()) {
+				IMessageBrowsingIteratorItem item = it.next();
+				if (value.equals(field.apply(item))) {
+					return true;
+				}
+			}
+			return false;
+		}
+	}
+
 	@Override
 	public boolean containsMessageId(String originalMessageId) throws ListenerException {
-		try {
-			return fileSystem.exists(fileSystem.toFile(folder, originalMessageId));
-		} catch (FileSystemException e) {
-			throw new ListenerException(e);
-		}
+		return contains(originalMessageId, IMessageBrowsingIteratorItem::getOriginalId);
 	}
 
 	@Override
