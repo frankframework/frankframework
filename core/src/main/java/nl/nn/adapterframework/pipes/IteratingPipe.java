@@ -56,7 +56,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Abstract base class to sends a message to a Sender for each item returned by a configurable iterator.
- * 
+ *
  * <br>
  * The output of each of the processing of each of the elements is returned in XML as follows:
  * <pre>
@@ -67,7 +67,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  *  &lt;/results&gt;
  * </pre>
  *
- * 
+ *
  * For more configuration options, see {@link MessageSendingPipe}.
  * <br>
  * use parameters like:
@@ -75,10 +75,10 @@ import nl.nn.adapterframework.util.XmlUtils;
  *	&lt;param name="element-name-of-current-item"  xpathExpression="name(/*)" /&gt;
  *	&lt;param name="value-of-current-item"         xpathExpression="/*" /&gt;
  * </pre>
- * 
+ *
  * @ff.forward maxItemsReached The iteration stopped when the configured maximum number of items was processed.
  * @ff.forward stopConditionMet The iteration stopped when the configured condition expression became true.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.7
  */
@@ -89,7 +89,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 
 	private @Getter String styleSheetName;
 	private @Getter String xpathExpression=null;
-	private @Getter String namespaceDefs = null; 
+	private @Getter String namespaceDefs = null;
 	private @Getter OutputType outputType=OutputType.TEXT;
 	private @Getter boolean omitXmlDeclaration=true;
 
@@ -161,7 +161,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	protected ItemCallback createItemCallBack(PipeLineSession session, ISender sender, Writer out) {
 		return new ItemCallback(session, sender, out);
 	}
-	
+
 	protected Message itemToMessage(I item) throws SenderException {
 		return Message.asMessage(item);
 	}
@@ -177,7 +177,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			callback.startIterating(); // perform startIterating even when it=null, to avoid empty result
 			if (it!=null) {
 				try {
-					
+
 					boolean keepGoing = true;
 					while (keepGoing && (it.hasNext())) {
 						if (Thread.currentThread().isInterrupted()) {
@@ -193,7 +193,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 						}
 					} catch (Exception e) {
 						log.warn("Exception closing iterator", e);
-					} 
+					}
 				}
 			}
 		} finally {
@@ -204,7 +204,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 
 	protected class ItemCallback {
 		private PipeLineSession session;
-		private ISender sender; 
+		private ISender sender;
 		private Writer results;
 		private int itemsInBlock=0;
 		private int totalItems=0;
@@ -223,7 +223,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				executorList = new ArrayList<ParallelSenderExecutor>();
 			}
 		}
-		
+
 		public void startIterating() throws SenderException, TimeoutException, IOException {
 			if (isCollectResults()) {
 				results.append("<results>\n");
@@ -251,7 +251,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			}
 		}
 		/**
-		 * @return true when looping should continue, false when stop is required. 
+		 * @return true when looping should continue, false when stop is required.
 		 */
 		public boolean endBlock() throws SenderException, TimeoutException, IOException {
 			if (!isParallel() && sender instanceof IBlockEnabledSender<?>) {
@@ -261,7 +261,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			itemsInBlock=0;
 			return true;
 		}
-		
+
 		/**
 		 * @return a non null StopReason when stop is required
 		 */
@@ -283,7 +283,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			if (msgTransformerPool!=null) {
 				try {
 					long preprocessingStartTime = System.currentTimeMillis();
-					
+
 					Map<String,Object>parameterValueMap = getParameterList()!=null?getParameterList().getValues(message, session).getValueMap():null;
 					String transformedMsg=msgTransformerPool.transform(message.asSource(),parameterValueMap);
 					if (log.isDebugEnabled()) {
@@ -299,7 +299,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			} else {
 				if (log.isDebugEnabled()) {
 					log.debug(getLogPrefix(session)+"iteration ["+totalItems+"] item ["+message+"]");
-				} 
+				}
 			}
 			if (childThreadSemaphore!=null) {
 				try {
@@ -308,7 +308,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 					throw new SenderException(getLogPrefix(session)+ " interrupted waiting for thread",e);
 				}
 			}
-			try { 
+			try {
 				try {
 					if (isParallel()) {
 						if (isCollectResults()) {
@@ -394,7 +394,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			if (isRemoveXmlDeclarationInResults()) {
 				if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"removing XML declaration from ["+itemResult+"]");
 				itemResult = XmlUtils.skipXmlDeclaration(itemResult);
-			} 
+			}
 			if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"partial result ["+itemResult+"]");
 			String itemInput="";
 			if (isAddInputToResult()) {
@@ -403,7 +403,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			itemResult = "<result item=\"" + count + "\">\n"+itemInput+itemResult+"\n</result>";
 			results.append(itemResult+"\n");
 		}
-		
+
 		public void waitForResults() throws SenderException, IOException {
 			if (isParallel()) {
 				try {
@@ -424,12 +424,12 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				}
 			}
 		}
-		
+
 		public int getCount() {
 			return totalItems;
 		}
 	}
-	
+
 	@Override
 	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
 		log.debug("pipe [{}] has no implementation to provide an outputstream", () -> getName());
@@ -442,15 +442,15 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			return false;
 		}
 		return !isCollectResults() // when collectResults is false, streaming is not necessary or useful
-				&& StringUtils.isEmpty(getItemNoSessionKey()) 
-				&& super.canStreamToNextPipe(); 
+				&& StringUtils.isEmpty(getItemNoSessionKey())
+				&& super.canStreamToNextPipe();
 	}
 
 	@Override
 	protected PipeRunResult sendMessage(Message input, PipeLineSession session, ISender sender, Map<String,Object> threadContext) throws SenderException, TimeoutException, IOException {
 		// sendResult has a messageID for async senders, the result for sync senders
 		StopReason stopReason = null;
-		try (MessageOutputStream target=getTargetStream(session)) { 
+		try (MessageOutputStream target=getTargetStream(session)) {
 			try (Writer resultWriter = target.asWriter()) {
 				ItemCallback callback = createItemCallBack(session,sender, resultWriter);
 				stopReason = iterateOverInput(input,session,threadContext, callback);
