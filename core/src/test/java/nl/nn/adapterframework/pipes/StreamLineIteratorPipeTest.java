@@ -30,7 +30,7 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 
 	public void testBasicWithLinePrefixAndSuffix(boolean blockEnabled, boolean combinedBlocks, String expectedLogFile) throws Exception {
 		pipe.setSender(getElementRenderer(blockEnabled));
-		pipe.setLinePrefix("{"); 
+		pipe.setLinePrefix("{");
 		pipe.setLineSuffix("}");
 		pipe.setCombineBlocks(combinedBlocks);
 		configurePipe();
@@ -39,7 +39,7 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 		Message input = TestFileUtils.getTestFileMessage("/IteratingPipe/TenLines.txt");
 		String expected = TestFileUtils.getTestFile("/IteratingPipe/TenLinesResultWithLineFixes.xml");
 		String expectedLog = TestFileUtils.getTestFile(expectedLogFile);
-		
+
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String actual = Message.asString(prr.getResult());
 
@@ -70,7 +70,7 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 	public void testBlocksWithCombine(boolean blockEnabled, boolean combinedBlocks, int blockSize, String expectedFile, String expectedLogFile) throws Exception {
 		pipe.setSender(getElementRenderer(blockEnabled));
 		pipe.setBlockSize(blockSize);
-		pipe.setLinePrefix("{"); 
+		pipe.setLinePrefix("{");
 		pipe.setLineSuffix("}");
 		pipe.setCombineBlocks(combinedBlocks);
 		configurePipe();
@@ -79,7 +79,7 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 		Message input = TestFileUtils.getTestFileMessage("/IteratingPipe/TenLines.txt");
 		String expected = TestFileUtils.getTestFile(expectedFile);
 		String expectedLog = TestFileUtils.getTestFile(expectedLogFile);
-		
+
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String actual = Message.asString(prr.getResult());
 
@@ -134,7 +134,7 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 
 		Message input = TestFileUtils.getTestFileMessage("/IteratingPipe/TenLines.txt");
 		String expected = TestFileUtils.getTestFile("/IteratingPipe/TenLinesResultInBlocksOfFour.xml");
-		
+
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String actual = Message.asString(prr.getResult());
 
@@ -154,7 +154,7 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 
 		Message input = TestFileUtils.getTestFileMessage("/IteratingPipe/TenLines.txt");
 		String expected = TestFileUtils.getTestFile("/IteratingPipe/SevenLinesResultInBlocksOfFour.xml");
-		
+
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String actual = Message.asString(prr.getResult());
 
@@ -175,14 +175,14 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 
 		Message input = TestFileUtils.getTestFileMessage("/IteratingPipe/TenLines.txt");
 		String expected = TestFileUtils.getTestFile("/IteratingPipe/SevenLinesResultInBlocksOfFour.xml");
-		
+
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String actual = Message.asString(prr.getResult());
-		
+
 		assertEquals(StopReason.MAX_ITEMS_REACHED.getForwardName(), prr.getPipeForward().getName());
 		assertEquals(expected, actual);
 	}
-	
+
 	@Test
 	public void testMaxItemsReachedWithoutSpecialForwardRegistered() throws Exception {
 		pipe.setSender(getElementRenderer(false));
@@ -196,10 +196,10 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 
 		Message input = TestFileUtils.getTestFileMessage("/IteratingPipe/TenLines.txt");
 		String expected = TestFileUtils.getTestFile("/IteratingPipe/SevenLinesResultInBlocksOfFour.xml");
-		
+
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String actual = Message.asString(prr.getResult());
-		
+
 		assertEquals(PipeForward.SUCCESS_FORWARD_NAME, prr.getPipeForward().getName());
 		assertEquals(expected, actual);
 	}
@@ -217,13 +217,13 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 
 		Message input = TestFileUtils.getTestFileMessage("/IteratingPipe/TenLines.txt");
 		String expected = TestFileUtils.getTestFile("/IteratingPipe/TenLinesResultInKeyBlocks.xml");
-		
+
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expected, actual);
 	}
-	
+
 	@Test
 	public void testBlocksByKeyWithStopConditionXpath() throws Exception {
 		pipe.setSender(getElementRenderer());
@@ -244,7 +244,7 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 		assertEquals(expected, actual);
 		assertEquals(StopReason.STOP_CONDITION_MET.getForwardName(), prr.getPipeForward().getName());
 	}
-	
+
 
 	@Test
 	public void testBasicWithoutXmlEscaping() throws Exception {
@@ -254,7 +254,7 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 
 		Message input = TestFileUtils.getTestFileMessage("/IteratingPipe/TenLinesWithXmlChars.txt");
 		String expected = TestFileUtils.getTestFile("/IteratingPipe/TenLinesResultWithoutXmlCharsEscaped.txt");
-		
+
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String actual = Message.asString(prr.getResult());
 
@@ -270,7 +270,7 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 
 		Message input = TestFileUtils.getTestFileMessage("/IteratingPipe/TenLinesWithXmlChars.txt");
 		String expected = TestFileUtils.getTestFile("/IteratingPipe/TenLinesResultWithXmlCharsEscaped.xml");
-		
+
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String actual = Message.asString(prr.getResult());
 
@@ -286,30 +286,48 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 
 		Message input = TestFileUtils.getTestFileMessage("/StreamLineIteratorPipe/EndMarked.txt");
 		String expected = TestFileUtils.getTestFile("/StreamLineIteratorPipe/EndMarkedResult.xml");
-		
+
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String actual = Message.asString(prr.getResult());
-		
+
 		assertXmlEquals(expected, actual);
 	}
 
 	@Test
-	public void testStartOfLineString() throws Exception {
+	public void testStartOfLineStringAndItemNoSessionKey() throws Exception {
 		pipe.setSender(getElementRenderer(false));
 		pipe.setStartOfLineString("BOL");
+		pipe.setItemNoSessionKey("itemNo");
 		configurePipe();
 		pipe.start();
 
 		Message input = TestFileUtils.getTestFileMessage("/StreamLineIteratorPipe/BeginMarked.txt");
 		String expected = TestFileUtils.getTestFile("/StreamLineIteratorPipe/BeginMarkedResult.xml");
-		
+
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String actual = Message.asString(prr.getResult());
 
 		assertXmlEquals(expected, actual);
-		
+		assertEquals("3", session.getMessage("itemNo").asString());
 	}
-	
+
+	@Test
+	public void testItemNoSessionKeyEmptyInput() throws Exception {
+		pipe.setSender(getElementRenderer(false));
+		pipe.setItemNoSessionKey("itemNo");
+		configurePipe();
+		pipe.start();
+
+		String input = "";
+		String expected = "<results/>";
+
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String actual = Message.asString(prr.getResult());
+
+		assertXmlEquals(expected, actual);
+		assertEquals("0", session.getMessage("itemNo").asString());
+	}
+
 	private ISender getElementRenderer() {
 		resultLog = new StringBuffer();
 		// returns the renderer that does not surround the input with brackets
