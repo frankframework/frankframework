@@ -98,27 +98,27 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 	}
 
 
-	@IbisDoc({"1", "If set, input is taken from this session key, instead of regular input", ""})
+	@IbisDoc({"If set, input is taken from this session key, instead of regular input", ""})
 	public void setGetInputFromSessionKey(String string) {
 		getInputFromSessionKey = string;
 	}
 
-	@IbisDoc({"2", "If set, this fixed value is taken as input, instead of regular input", ""})
+	@IbisDoc({"If set, this fixed value is taken as input, instead of regular input", ""})
 	public void setGetInputFromFixedValue(String string) {
 		getInputFromFixedValue = string;
 	}
 
-	@IbisDoc({"3", "If set <code>true</code>, the input of a pipe is restored before processing the next one", "false"})
+	@IbisDoc({"If set <code>true</code>, the input of a pipe is restored before processing the next one", "false"})
 	public void setPreserveInput(boolean preserveInput) {
 		this.preserveInput = preserveInput;
 	}
 
-	@IbisDoc({"4", "If set, the result is stored under this session key", ""})
+	@IbisDoc({"If set, the result is stored under this session key", ""})
 	public void setStoreResultInSessionKey(String string) {
 		storeResultInSessionKey = string;
 	}
 
-	@IbisDoc({"5", "If set, the input is stored under this session key", ""})
+	@IbisDoc({"If set, the input is stored under this session key", ""})
 	public void setStoreInputInSessionKey(String string) {
 		storeInputInSessionKey = string;
 	}

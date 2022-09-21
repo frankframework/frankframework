@@ -59,7 +59,7 @@ public class RecordHandlerManager implements IRecordHandlerManager {
 		return flowMap.get(flowName);
 	}
 	
-	@IbisDoc({"10", "Element that contains the handlers for a specific record type, to be assigned to the manager"})
+	@IbisDoc({"Element that contains the handlers for a specific record type, to be assigned to the manager"})
 	@Override
 	public void addHandler(RecordHandlingFlow handlers) {
 		flowMap.put(handlers.getRecordKey(), handlers);
@@ -100,13 +100,13 @@ public class RecordHandlerManager implements IRecordHandlerManager {
 	}
 
 	@Override
-	@IbisDoc({"1", "Name of the manager", ""})
+	@IbisDoc({"Name of the manager", ""})
 	public void setName(String string) {
 		name = string;
 	}
 
 	@Override
-	@IbisDoc({"2", "This manager is the initial manager, i.e. to be used for the first record", "false"})
+	@IbisDoc({"This manager is the initial manager, i.e. to be used for the first record", "false"})
 	public void setInitial(boolean b) {
 		initial = b;
 	}

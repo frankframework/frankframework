@@ -164,7 +164,7 @@ public class ResultBlock2Sender extends Result2StringWriter {
 		}
 	}
 
-	@IbisDoc({"10", "Sender to which each block of results is sent"})
+	@IbisDoc({"Sender to which each block of results is sent"})
 	public void setSender(ISender sender) {
 		this.sender = sender;
 	}

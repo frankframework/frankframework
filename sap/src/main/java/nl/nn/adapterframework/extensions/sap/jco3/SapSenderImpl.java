@@ -139,14 +139,14 @@ public abstract class SapSenderImpl extends SapSenderBase implements ISapSender 
 	}
 
 
-	@IbisDoc({"1", "Name of the RFC-function to be called in the SAP system", ""})
+	@IbisDoc({"Name of the RFC-function to be called in the SAP system", ""})
 	@Override
 	public void setFunctionName(String string) {
 		functionName = string;
 	}
 
 
-	@IbisDoc({"2", "name of the parameter used to obtain the functionName from if the attribute <code>functionName</code> is empty", "functionName"})
+	@IbisDoc({"Name of the parameter used to obtain the functionName from if the attribute <code>functionName</code> is empty", "functionName"})
 	@Override
 	public void setFunctionNameParam(String string) {
 		functionNameParam = string;

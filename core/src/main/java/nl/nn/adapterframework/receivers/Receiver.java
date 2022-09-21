@@ -1987,13 +1987,13 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		errorSender.setName("errorSender of ["+getName()+"]");
 	}
 
-	@IbisDoc({"40", "Storage to keep track of messages that failed processing"})
+	@IbisDoc({"Storage to keep track of messages that failed processing"})
 	public void setErrorStorage(ITransactionalStorage<Serializable> errorStorage) {
 		this.errorStorage = errorStorage;
 	}
 
 
-	@IbisDoc({"50", "Storage to keep track of all messages processed correctly"})
+	@IbisDoc({"Storage to keep track of all messages processed correctly"})
 	public void setMessageLog(ITransactionalStorage<Serializable> messageLog) {
 		this.messageLog = messageLog;
 	}

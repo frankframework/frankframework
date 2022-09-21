@@ -127,37 +127,37 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 	}
 
 
-	@IbisDoc({"1", "Root tag for the generated xml document that will be send to the Sender", "record"})
+	@IbisDoc({"Root tag for the generated xml document that will be send to the Sender", "record"})
 	public void setRootTag(String string) {
 		rootTag = string;
 	}
 
-	@IbisDoc({"2", "Name of stylesheet to transform an individual record", ""})
+	@IbisDoc({"Name of stylesheet to transform an individual record", ""})
 	public void setStyleSheetName(String string) {
 		styleSheetName = string;
 	}
 
-	@IbisDoc({"3", "Alternatively: xpath-expression to create stylesheet from", ""})
+	@IbisDoc({"Alternatively: xpath-expression to create stylesheet from", ""})
 	public void setXpathExpression(String string) {
 		xpathExpression = string;
 	}
 
-	@IbisDoc({"4", "Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions. One entry can be without a prefix, that will define the default namespace.", ""})
+	@IbisDoc({"Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions. One entry can be without a prefix, that will define the default namespace.", ""})
 	public void setNamespaceDefs(String namespaceDefs) {
 		this.namespaceDefs = namespaceDefs;
 	}
 
-	@IbisDoc({"5", "Only valid for <code>xpathExpression</code>", "text"})
+	@IbisDoc({"Only valid for <code>xpathExpression</code>", "text"})
 	public void setOutputType(OutputType outputType) {
 		this.outputType = outputType;
 	}
 
-	@IbisDoc({"6", "Force the transformer generated from the xpath-expression to omit the xml declaration", "true"})
+	@IbisDoc({"Force the transformer generated from the xpath-expression to omit the xml declaration", "true"})
 	public void setOmitXmlDeclaration(boolean b) {
 		omitXmlDeclaration = b;
 	}
 
-	@IbisDoc({"7", "String which ends the record and must be ignored", ""})
+	@IbisDoc({"String which ends the record and must be ignored", ""})
 	public void setEndOfRecord(String string) {
 		endOfRecord = string;
 	}

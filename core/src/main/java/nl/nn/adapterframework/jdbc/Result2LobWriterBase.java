@@ -118,7 +118,7 @@ public abstract class Result2LobWriterBase extends ResultWriter implements Appli
 	}
 
 	
-	@IbisDoc({"1", "The SQL query text", ""})
+	@IbisDoc({"The SQL query text", ""})
 	public void setQuery(String query) {
 		querySender.setQuery(query);
 	}

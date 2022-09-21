@@ -53,7 +53,7 @@ public class TransactionAttributes implements HasTransactionAttribute {
 
 
 
-	//@IbisDoc({"4", "If set to <code>true</code>, messages will be processed under transaction control. (see below)", "<code>false</code>"})
+	//@IbisDoc({"If set to <code>true</code>, messages will be processed under transaction control. (see below)", "<code>false</code>"})
 	@Deprecated
 	@ConfigurationWarning("implemented as setting of transacted=true as transactionAttribute=Required and transacted=false as transactionAttribute=Supports")
 	public void setTransacted(boolean transacted) {
