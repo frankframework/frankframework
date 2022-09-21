@@ -2,8 +2,8 @@
 <log4j2:Configuration status="warn" name="${ctx:instance.name}" strict="true" xmlns="http://logging.apache.org/log4j/2.0/config" xmlns:log4j2="log4j-config.xsd" packages="nl.nn.adapterframework.logging">
 	<!-- https://logging.apache.org/log4j/2.x/manual/customloglevels.html -->
 	<CustomLevels>
-		<CustomLevel name="TERSE" intLevel="550" />
-		<CustomLevel name="BASIC" intLevel="350" />
+		<CustomLevel name="TERSE" intLevel="550" /> <!-- between DEBUG and TRACE -->
+		<CustomLevel name="BASIC" intLevel="350" /> <!-- between INFO and DEBUG -->
 	</CustomLevels>
 
 	<!-- Pattern %TC is the NDC or ThreadContext (see IbisNdcPatternConverter) -->
@@ -42,8 +42,18 @@
 			</Policies>
 			<RolloverStrategy type="DefaultRolloverStrategy" max="5" fileIndex="min" />
 		</Appender>
-		<Appender type="RollingFile" name="msg" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-messages.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-messages.log.%i" append="true">
-			<Layout type="PatternLayout" pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %m%n"/>
+		<Appender type="RollingFile" name="msg-text" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-messages.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-messages.log.%i" append="true">
+			<Layout type="PatternLayout" pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %X %m%n"/>
+			<Policies>
+				<Policy type="SizeBasedTriggeringPolicy" size="${ctx:log.maxFileSize}" />
+			</Policies>
+			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.msg.maxBackupIndex}" fileIndex="min" />
+		</Appender>
+		<Appender type="RollingFile" name="msg-json" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-messages.json" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-messages.json.%i" append="true">
+			<JsonTemplateLayout eventTemplateUri="classpath:EcsLayout.json">
+				<EventTemplateAdditionalField key="adapter" format="JSON" value='{"$resolver": "mdc", "key": "adapter"}'/>
+				<EventTemplateAdditionalField key="mid" format="JSON" value='{"$resolver": "mdc", "key": "mid"}'/>
+			</JsonTemplateLayout>
 			<Policies>
 				<Policy type="SizeBasedTriggeringPolicy" size="${ctx:log.maxFileSize}" />
 			</Policies>
@@ -110,7 +120,8 @@
 			<AppenderRef ref="galm"/>
 		</Logger>
 		<Logger name="MSG" additivity="false" level="INFO">
-			<AppenderRef ref="msg"/>
+			<AppenderRef ref="msg-text"/>
+			<AppenderRef ref="msg-json"/>
 		</Logger>
 		<Logger name="SEC" additivity="false" level="INFO">
 			<AppenderRef ref="security"/>

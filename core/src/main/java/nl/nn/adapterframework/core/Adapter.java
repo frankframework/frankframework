@@ -88,6 +88,7 @@ public class Adapter implements IAdapter, NamedBean {
 	protected Logger msgLog = LogUtil.getLogger("MSG");
 
 	private Level MSGLOG_LEVEL_TERSE = Level.toLevel("TERSE");
+	private Level MSGLOG_LEVEL_TERSE_EFF = Level.DEBUG;
 
 	public static final String PROCESS_STATE_OK = "OK";
 	public static final String PROCESS_STATE_ERROR = "ERROR";
@@ -343,7 +344,7 @@ public class Adapter implements IAdapter, NamedBean {
 
 			if(msgLog.isEnabled(MSGLOG_LEVEL_TERSE)) {
 				String resultOrSize = (isMsgLogHidden()) ? "SIZE="+getFileSizeAsBytes(formattedErrorMessage) : formattedErrorMessage.toString();
-				msgLog.log(MSGLOG_LEVEL_TERSE, String.format("Adapter [%s] messageId [%s] formatted errormessage, result [%s]", getName(), messageID, resultOrSize));
+				msgLog.log(MSGLOG_LEVEL_TERSE_EFF, "formatted errormessage, result [{}]", resultOrSize);
 			}
 
 			return formattedErrorMessage;
@@ -572,13 +573,13 @@ public class Adapter implements IAdapter, NamedBean {
 			result.setResult(formatErrorMessage(msg, t, message, messageId, objectInError, startTime));
 			//if (isRequestReplyLogging()) {
 			String exitCode = ", exit-code ["+result.getExitCode()+"]";
-			String format = "Adapter [%s] messageId [%s] got exit-state [%s]"+(result.getExitCode()!=0 ? exitCode : "" ) +" and result [%s] from PipeLine";
+			String format = "got exit-state [{}]"+(result.getExitCode()!=0 ? exitCode : "" ) +" and result [{}] from PipeLine";
 			if(msgLog.isEnabled(MSGLOG_LEVEL_TERSE)) {
 				String resultOrSize = (isMsgLogHidden()) ? "SIZE="+getFileSizeAsBytes(result.getResult()) : result.getResult().toString();
-				msgLog.log(MSGLOG_LEVEL_TERSE, String.format(format, getName(), messageId, result.getState(), resultOrSize));
+				msgLog.log(MSGLOG_LEVEL_TERSE_EFF, format, result.getState(), resultOrSize);
 			}
 			if (log.isDebugEnabled()) {
-				log.debug(String.format(format, getName(), messageId, result.getState(), result.getResult()));
+				log.debug("Adapter [{}] messageId [{}] "+format, getName(), messageId, result.getState(), result.getResult());
 			}
 			return result;
 		}
@@ -616,6 +617,7 @@ public class Adapter implements IAdapter, NamedBean {
 
 			StringBuilder additionalLogging = new StringBuilder();
 
+			// xPathLogKeys is an EsbJmsListener thing
 			String xPathLogKeys = (String) pipeLineSession.get("xPathLogKeys");
 			if(StringUtils.isNotEmpty(xPathLogKeys)) {
 				StringTokenizer tokenizer = new StringTokenizer(xPathLogKeys, ",");
@@ -628,16 +630,13 @@ public class Adapter implements IAdapter, NamedBean {
 				}
 			}
 
-			String format = "Adapter [%s] received message [%s] with messageId [%s]";
+			ThreadContext.put("Adapter", getName());
+			ThreadContext.put("mid", messageId);
 			if(msgLog.isEnabled(MSGLOG_LEVEL_TERSE)) {
 				String messageOrSize = (isMsgLogHidden()) ? "SIZE="+getFileSizeAsBytes(message) : message.toString();
-				msgLog.log(MSGLOG_LEVEL_TERSE, String.format(format, getName(), messageOrSize, messageId) + additionalLogging);
+				msgLog.log(MSGLOG_LEVEL_TERSE_EFF, "received message [{}]{}", messageOrSize, additionalLogging);
 			}
-			if (log.isDebugEnabled()) {
-				log.debug(String.format(format, getName(), message, messageId) + additionalLogging);
-			} else if(log.isInfoEnabled()) {
-				log.info(String.format("Adapter [%s] received message with messageId [%s]" + additionalLogging, getName(), messageId));
-			}
+			log.info("Adapter [{}] received message with messageId [{}]{}", getName(), messageId, additionalLogging);
 
 			if (Message.isEmpty(message) && isReplaceNullMessage()) {
 				log.debug("Adapter [" + getName() + "] replaces null message with messageId [" + messageId + "] by empty message");
@@ -652,13 +651,13 @@ public class Adapter implements IAdapter, NamedBean {
 				duration = Misc.getDurationInMs(startTime);
 			}
 			String exitCode = ", exit-code ["+result.getExitCode()+"]";
-			String format2 = "Adapter [%s] messageId [%s] duration [%s] got exit-state [%s]"+(result.getExitCode()!=0 ? exitCode : "" )+" and result [%s] from PipeLine";
+			String format = "duration [{}] got exit-state [{}]"+(result.getExitCode()!=0 ? exitCode : "" )+" and result [{}] from PipeLine";
 			if(msgLog.isEnabled(MSGLOG_LEVEL_TERSE)) {
 				String resultOrSize = (isMsgLogHidden()) ? "SIZE="+getFileSizeAsBytes(result.getResult()) : result.toString();
-				msgLog.log(MSGLOG_LEVEL_TERSE, String.format(format2, getName(), messageId, duration, result.getState(), resultOrSize));
+				msgLog.log(MSGLOG_LEVEL_TERSE_EFF, format, duration, result.getState(), resultOrSize);
 			}
 			if (log.isDebugEnabled()) {
-				log.debug(String.format(format2, getName(), messageId, duration, result.getState(), result.getResult()));
+				log.debug("Adapter [{}] messageId [{}] "+format, getName(), messageId, duration, result.getState(), result.getResult());
 			}
 			return result;
 
