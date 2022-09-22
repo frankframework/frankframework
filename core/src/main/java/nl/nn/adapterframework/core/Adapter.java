@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
@@ -566,10 +567,10 @@ public class Adapter implements IAdapter, NamedBean {
 			String format = "got exit-state [{}]"+(result.getExitCode()!=0 ? exitCode : "" ) +" and result [{}] from PipeLine";
 			log.debug("Adapter [{}] messageId [{}] "+format, getName(), messageId, result.getState(), result.getResult());
 		}
-		
+
 	}
-	
-	
+
+
 	@Override
 	public PipeLineResult processMessage(String messageId, Message message, PipeLineSession pipeLineSession) {
 		long startTime = System.currentTimeMillis();
@@ -619,87 +620,87 @@ public class Adapter implements IAdapter, NamedBean {
 		boolean ndcChanged=!newNDC.equals(lastNDC);
 
 		try {
-			if (ndcChanged) {
-				ThreadContext.push(newNDC);
-			}
+			try (final CloseableThreadContext.Instance ctc = ndcChanged ? CloseableThreadContext.push(newNDC): null) {
+				try {
+					if (StringUtils.isNotEmpty(composedHideRegex)) {
+						IbisMaskingLayout.addToThreadLocalReplace(composedHideRegex);
+					}
 
-			if (StringUtils.isNotEmpty(composedHideRegex)) {
-				IbisMaskingLayout.addToThreadLocalReplace(composedHideRegex);
-			}
+					StringBuilder additionalLogging = new StringBuilder();
 
-			StringBuilder additionalLogging = new StringBuilder();
+					// xPathLogKeys is an EsbJmsListener thing
+					String xPathLogKeys = (String) pipeLineSession.get("xPathLogKeys");
+					if(StringUtils.isNotEmpty(xPathLogKeys)) {
+						StringTokenizer tokenizer = new StringTokenizer(xPathLogKeys, ",");
+						while (tokenizer.hasMoreTokens()) {
+							String logName = tokenizer.nextToken();
+							String xPathResult = (String) pipeLineSession.get(logName);
+							additionalLogging.append(" and ");
+							additionalLogging.append(logName);
+							additionalLogging.append(" [" + xPathResult + "]");
+						}
+					}
 
-			// xPathLogKeys is an EsbJmsListener thing
-			String xPathLogKeys = (String) pipeLineSession.get("xPathLogKeys");
-			if(StringUtils.isNotEmpty(xPathLogKeys)) {
-				StringTokenizer tokenizer = new StringTokenizer(xPathLogKeys, ",");
-				while (tokenizer.hasMoreTokens()) {
-					String logName = tokenizer.nextToken();
-					String xPathResult = (String) pipeLineSession.get(logName);
-					additionalLogging.append(" and ");
-					additionalLogging.append(logName);
-					additionalLogging.append(" [" + xPathResult + "]");
+					ThreadContext.put("Adapter", getName());
+					ThreadContext.put("mid", messageId);
+					if(msgLog.isEnabled(MSGLOG_LEVEL_TERSE)) {
+						if (!Message.isEmpty(message)) {
+							ThreadContext.put("requestSize", getFileSizeAsBytes(message));
+						}
+						if (isMsgLogHidden()) {
+							msgLog.log(MSGLOG_LEVEL_TERSE_EFF, "received message{}", additionalLogging);
+						} else {
+							msgLog.log(MSGLOG_LEVEL_TERSE_EFF, "received message [{}]{}", message.toString(), additionalLogging);
+						}
+					}
+					log.info("Adapter [{}] received message with messageId [{}]{}", getName(), messageId, additionalLogging);
+
+					if (Message.isEmpty(message) && isReplaceNullMessage()) {
+						log.debug("Adapter [" + getName() + "] replaces null message with messageId [" + messageId + "] by empty message");
+						message = new Message("");
+					}
+					result = pipeline.process(messageId, message, pipeLineSession);
+
+					String duration;
+					if(msgLogHumanReadable) {
+						duration = Misc.getAge(startTime);
+					} else {
+						duration = Misc.getDurationInMs(startTime);
+					}
+					messageLogResult(messageId, result, duration);
+					return result;
+
+				} catch (Throwable t) {
+					ListenerException e;
+					if (t instanceof ListenerException) {
+						e = (ListenerException) t;
+					} else {
+						e = new ListenerException(t);
+					}
+					processingSuccess = false;
+					incNumOfMessagesInError();
+					addErrorMessageToMessageKeeper("error processing message with messageId [" + messageId+"]: ",e);
+					throw e;
+				} finally {
+					long endTime = System.currentTimeMillis();
+					long duration = endTime - startTime;
+					//reset the InProcess fields, and increase processedMessagesCount
+					decNumOfMessagesInProcess(duration, processingSuccess);
+
+					if (log.isDebugEnabled()) { // for performance reasons
+						log.debug("Adapter: [" + getName()
+								+ "] STAT: Finished processing message with messageId [" + messageId
+								+ "] exit-state [" + result.getState()
+								+ "] started " + DateUtils.format(new Date(startTime), DateUtils.FORMAT_FULL_GENERIC)
+								+ " finished " + DateUtils.format(new Date(endTime), DateUtils.FORMAT_FULL_GENERIC)
+								+ " total duration: " + duration + " msecs");
+					} else {
+						log.info("Adapter [" + getName() + "] completed message with messageId [" + messageId + "] with exit-state [" + result.getState() + "]");
+					}
+					IbisMaskingLayout.removeThreadLocalReplace();
 				}
 			}
-
-			ThreadContext.put("Adapter", getName());
-			ThreadContext.put("mid", messageId);
-			if(msgLog.isEnabled(MSGLOG_LEVEL_TERSE)) {
-				ThreadContext.put("requestSize", getFileSizeAsBytes(message));
-				if (isMsgLogHidden()) {
-					msgLog.log(MSGLOG_LEVEL_TERSE_EFF, "received message{}", additionalLogging);
-				} else {
-					msgLog.log(MSGLOG_LEVEL_TERSE_EFF, "received message [{}]{}", message.toString(), additionalLogging);
-				}	
-			}
-			log.info("Adapter [{}] received message with messageId [{}]{}", getName(), messageId, additionalLogging);
-
-			if (Message.isEmpty(message) && isReplaceNullMessage()) {
-				log.debug("Adapter [" + getName() + "] replaces null message with messageId [" + messageId + "] by empty message");
-				message = new Message("");
-			}
-			result = pipeline.process(messageId, message, pipeLineSession);
-
-			String duration;
-			if(msgLogHumanReadable) {
-				duration = Misc.getAge(startTime);
-			} else {
-				duration = Misc.getDurationInMs(startTime);
-			}
-			messageLogResult(messageId, result, duration);
-			return result;
-
-		} catch (Throwable t) {
-			ListenerException e;
-			if (t instanceof ListenerException) {
-				e = (ListenerException) t;
-			} else {
-				e = new ListenerException(t);
-			}
-			processingSuccess = false;
-			incNumOfMessagesInError();
-			addErrorMessageToMessageKeeper("error processing message with messageId [" + messageId+"]: ",e);
-			throw e;
 		} finally {
-			long endTime = System.currentTimeMillis();
-			long duration = endTime - startTime;
-			//reset the InProcess fields, and increase processedMessagesCount
-			decNumOfMessagesInProcess(duration, processingSuccess);
-
-			if (log.isDebugEnabled()) { // for performance reasons
-				log.debug("Adapter: [" + getName()
-						+ "] STAT: Finished processing message with messageId [" + messageId
-						+ "] exit-state [" + result.getState()
-						+ "] started " + DateUtils.format(new Date(startTime), DateUtils.FORMAT_FULL_GENERIC)
-						+ " finished " + DateUtils.format(new Date(endTime), DateUtils.FORMAT_FULL_GENERIC)
-						+ " total duration: " + duration + " msecs");
-			} else {
-				log.info("Adapter [" + getName() + "] completed message with messageId [" + messageId + "] with exit-state [" + result.getState() + "]");
-			}
-			IbisMaskingLayout.removeThreadLocalReplace();
-			if (ndcChanged) {
-				ThreadContext.pop();
-			}
 			if (ThreadContext.getDepth() == 0) {
 				ThreadContext.removeStack();
 			}
