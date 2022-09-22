@@ -4,6 +4,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -11,7 +14,6 @@ import org.junit.runners.MethodSorters;
 
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
-import nl.nn.adapterframework.core.ListenerException;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public abstract class FileSystemMessageBrowserTest<F, FS extends IWritableFileSystem<F>> extends HelperedFileSystemTestBase {
@@ -28,6 +30,7 @@ public abstract class FileSystemMessageBrowserTest<F, FS extends IWritableFileSy
 	public void setUp() throws Exception {
 		super.setUp();
 		fileSystem = createFileSystem();
+		autowireByName(fileSystem);
 		fileSystem.configure();
 		fileSystem.open();
 	}
@@ -44,9 +47,9 @@ public abstract class FileSystemMessageBrowserTest<F, FS extends IWritableFileSy
 		createFile(folder, "file1", "inhoud eerste file");
 		createFile(folder, "file2", "inhoud tweede file");
 		createFile(folder, "file3", "inhoud derde file");
-				
+
 		browser = new FileSystemMessageBrowser(fileSystem, folder, messageIdProperty);
-		
+
 		assertEquals(3,browser.getMessageCount());
 	}
 
@@ -59,8 +62,8 @@ public abstract class FileSystemMessageBrowserTest<F, FS extends IWritableFileSy
 		createFile(folder, "file2", "inhoud tweede file");
 		createFile(folder, "file3", "inhoud derde file");
 		createFile(null, "otherFile", "inhoud andere file");
-		
-		
+
+
 		F file1 = fileSystem.toFile(folder, "file1");
 		String mid1 = getMessageId(file1);
 
@@ -68,20 +71,11 @@ public abstract class FileSystemMessageBrowserTest<F, FS extends IWritableFileSy
 		String otherMid = getMessageId(otherfile);
 
 		browser = new FileSystemMessageBrowser(fileSystem, folder, messageIdProperty);
-		
+
 		assertTrue(browser.containsMessageId(mid1));
 		assertFalse(browser.containsMessageId(otherMid));
 	}
 
-	private void compareNextItemToFile(IMessageBrowsingIterator iterator, F file, String mid) throws ListenerException {
-		IMessageBrowsingIteratorItem item = iterator.next();
-		assertEquals(mid, item.getOriginalId());
-		String storageKey = item.getId();
-		
-		F sfile = browser.browseMessage(storageKey);
-		assertEquals(fileSystem.getName(file), fileSystem.getName(sfile));
-	}
-	
 	@Test
 	public void fileSystemBrowserIteratorTest() throws Exception {
 		String folder = "browserFolder";
@@ -91,27 +85,36 @@ public abstract class FileSystemMessageBrowserTest<F, FS extends IWritableFileSy
 		createFile(folder, "file2", "inhoud tweede file");
 		createFile(folder, "file3", "inhoud derde file");
 		createFile(null, "otherFile", "inhoud andere file");
-		
-		
+
+
 		F file1 = fileSystem.toFile(folder, "file1");
 		String mid1 = getMessageId(file1);
+		String name1 = fileSystem.getName(file1);
 
 		F file2 = fileSystem.toFile(folder, "file2");
 		String mid2 = getMessageId(file2);
+		String name2 = fileSystem.getName(file2);
 
 		F file3 = fileSystem.toFile(folder, "file3");
 		String mid3 = getMessageId(file3);
-
-		F otherfile = fileSystem.toFile(folder, "otherFile");
-		String otherMid = getMessageId(otherfile);
+		String name3 = fileSystem.getName(file3);
 
 		browser = new FileSystemMessageBrowser(fileSystem, folder, messageIdProperty);
-		
+
+		Map<String,String> items = new HashMap<>();
+
 		try (IMessageBrowsingIterator iterator = browser.getIterator()) {
-			compareNextItemToFile(iterator, file1, mid1);
-			compareNextItemToFile(iterator, file2, mid2);
-			compareNextItemToFile(iterator, file3, mid3);
-			assertFalse(iterator.hasNext());
+			while(iterator.hasNext()) {
+				IMessageBrowsingIteratorItem item = iterator.next();
+				String storageKey = item.getId();
+				F file = browser.browseMessage(storageKey);
+				items.put(item.getOriginalId(), fileSystem.getName(file));
+			}
 		}
+
+		assertEquals(3,items.size());
+		assertEquals(name1, items.get(mid1));
+		assertEquals(name2, items.get(mid2));
+		assertEquals(name3, items.get(mid3));
 	}
 }
