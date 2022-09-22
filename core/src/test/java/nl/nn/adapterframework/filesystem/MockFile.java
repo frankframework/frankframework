@@ -21,6 +21,8 @@ public class MockFile {
 		super();
 		this.name = name;
 		this.owner=owner;
+		additionalProperties=new LinkedHashMap<String,Object>();
+		additionalProperties.put("id", "[id:"+getName()+"]");
 	}
 
 	public String getName() {
@@ -86,7 +88,7 @@ public class MockFile {
 		this.contents = contents;
 	}
 
-	public void addProperties(String key, Object value) {
+	public void addProperty(String key, Object value) {
 		if (additionalProperties==null) {
 			additionalProperties=new LinkedHashMap<String,Object>();
 		}
