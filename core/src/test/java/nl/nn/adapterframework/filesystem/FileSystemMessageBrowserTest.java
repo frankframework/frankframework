@@ -30,7 +30,6 @@ public abstract class FileSystemMessageBrowserTest<F, FS extends IWritableFileSy
 	public void setUp() throws Exception {
 		super.setUp();
 		fileSystem = createFileSystem();
-		autowireByName(fileSystem);
 		fileSystem.configure();
 		fileSystem.open();
 	}
