@@ -29,4 +29,11 @@ grant select on sys.dba_2pc_pending to testiaf_user;
 grant execute on sys.dbms_system to testiaf_user;
 commit;
 
+-- Increase processes to prevent ORA-12519, TNS:no appropriate service handler found
+alter system set processes=400 scope=spfile;
+alter system set sessions=640 scope=spfile;
+alter system set transactions=704 scope=spfile;
+shutdown immediate;
+startup;
+
 exit
