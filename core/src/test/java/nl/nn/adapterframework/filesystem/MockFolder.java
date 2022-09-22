@@ -1,12 +1,12 @@
 package nl.nn.adapterframework.filesystem;
 
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.Map;
 
 public class MockFolder extends MockFile {
 
-	private Map<String,MockFile> files = new LinkedHashMap<String,MockFile>();
-	private Map<String,MockFolder> folders = new LinkedHashMap<String,MockFolder>();
+	private Map<String,MockFile> files = new HashMap<String,MockFile>();        // do not use LinkedHashMap, do not rely on insertion order
+	private Map<String,MockFolder> folders = new HashMap<String,MockFolder>();  // do not use LinkedHashMap, do not rely on insertion order
 
 	public MockFolder(String filename, MockFolder parent) {
 		super(filename,parent);
