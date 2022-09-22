@@ -5,7 +5,6 @@ Frank!Framework
 ![frank-framework-github-banner](frank-framework-github-banner.png)
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/ibissource/iaf/blob/master/LICENSE)
-[![Build Status](https://api.travis-ci.org/ibissource/iaf.svg?branch=master)](https://travis-ci.org/ibissource/iaf)
 [![Core Tests](https://github.com/ibissource/iaf/workflows/Java%20CI%20with%20Maven/badge.svg)](https://github.com/ibissource/iaf/actions?query=workflow%3A%22Java+CI+with+Maven%22+branch%3Amaster)
 [![Pull Requests](https://img.shields.io/github/commit-activity/m/ibissource/iaf?label=Pull%20Requests)](https://github.com/ibissource/iaf/pulls)
 [![codecov](https://codecov.io/gh/ibissource/iaf/branch/master/graph/badge.svg)](https://codecov.io/gh/ibissource/iaf)
