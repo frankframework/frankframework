@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
@@ -819,7 +820,13 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					}
 
 					if(msgLog.getLevel().isMoreSpecificThan(Adapter.MSGLOG_LEVEL_TERSE)) {
-						msgLog.log(Adapter.MSGLOG_LEVEL_TERSE_EFF, String.format("Sender [%s] class [%s] duration [%s] got exit-state [%s]", sender.getName(), ClassUtils.nameOf(sender), duration, exitState));
+						try (final CloseableThreadContext.Instance ctc = CloseableThreadContext
+								.put("class", ClassUtils.nameOf(sender))
+								.put("duration", duration)
+								.put("exit-state", exitState)
+								) {
+							msgLog.log(Adapter.MSGLOG_LEVEL_TERSE_EFF, String.format("Sender [%s] got exit-state [%s]", sender.getName(), exitState));
+						}
 					}
 				}
 			}

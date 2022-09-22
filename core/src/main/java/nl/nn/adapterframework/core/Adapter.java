@@ -551,23 +551,29 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	private void messageLogResult(String messageId, PipeLineResult result, String duration) {
-		ThreadContext.put("exitState", result.getState().name());
-		ThreadContext.put("responseSize", getFileSizeAsBytes(result.getResult()));
-		if (!isMsgLogHidden()) {
-			ThreadContext.put("response", result.getResult().toString());
+		Map<String,String> mdcValues = new HashMap<>();
+		mdcValues.put("exitState", result.getState().name());
+		if (result.getExitCode()!=0) {
+			mdcValues.put("exitCode", Integer.toString(result.getExitCode()));
 		}
 		if (duration!=null) {
-			ThreadContext.put("duration", duration);
+			mdcValues.put("duration", duration);
 		}
-		if(msgLog.isEnabled(MSGLOG_LEVEL_TERSE)) {
-			msgLog.log(MSGLOG_LEVEL_TERSE_EFF, "returned from PipeLine");
-		}
-		if (log.isDebugEnabled()) {
-			String exitCode = ", exit-code ["+result.getExitCode()+"]";
-			String format = "got exit-state [{}]"+(result.getExitCode()!=0 ? exitCode : "" ) +" and result [{}] from PipeLine";
-			log.debug("Adapter [{}] messageId [{}] "+format, getName(), messageId, result.getState(), result.getResult());
+		mdcValues.put("size", getFileSizeAsBytes(result.getResult()));
+		if (!isMsgLogHidden()) {
+			mdcValues.put("result", result.getResult().toString());
 		}
 
+		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.putAll(mdcValues)) {
+			if(msgLog.isEnabled(MSGLOG_LEVEL_TERSE)) {
+				msgLog.log(MSGLOG_LEVEL_TERSE_EFF, "returned from PipeLine");
+			}
+			if (log.isDebugEnabled()) {
+				String exitCode = ", exit-code ["+result.getExitCode()+"]";
+				String format = "got exit-state [{}]"+(result.getExitCode()!=0 ? exitCode : "" ) +" and result [{}] from PipeLine";
+				log.debug("Adapter [{}] messageId [{}] "+format, getName(), messageId, result.getState(), result.getResult());
+			}
+		}
 	}
 
 
@@ -620,84 +626,78 @@ public class Adapter implements IAdapter, NamedBean {
 		boolean ndcChanged=!newNDC.equals(lastNDC);
 
 		try {
-			try (final CloseableThreadContext.Instance ctc = ndcChanged ? CloseableThreadContext.push(newNDC): null) {
-				try {
-					if (StringUtils.isNotEmpty(composedHideRegex)) {
-						IbisMaskingLayout.addToThreadLocalReplace(composedHideRegex);
-					}
-
-					StringBuilder additionalLogging = new StringBuilder();
-
-					// xPathLogKeys is an EsbJmsListener thing
-					String xPathLogKeys = (String) pipeLineSession.get("xPathLogKeys");
-					if(StringUtils.isNotEmpty(xPathLogKeys)) {
-						StringTokenizer tokenizer = new StringTokenizer(xPathLogKeys, ",");
-						while (tokenizer.hasMoreTokens()) {
-							String logName = tokenizer.nextToken();
-							String xPathResult = (String) pipeLineSession.get(logName);
-							additionalLogging.append(" and ");
-							additionalLogging.append(logName);
-							additionalLogging.append(" [" + xPathResult + "]");
+			try (final CloseableThreadContext.Instance ctc1 = ndcChanged ? CloseableThreadContext.push(newNDC): null) {
+				try (final CloseableThreadContext.Instance ctc2 = CloseableThreadContext.put("Adapter", getName()).put("mid", messageId)) {
+					try {
+						if (StringUtils.isNotEmpty(composedHideRegex)) {
+							IbisMaskingLayout.addToThreadLocalReplace(composedHideRegex);
 						}
-					}
 
-					ThreadContext.put("Adapter", getName());
-					ThreadContext.put("mid", messageId);
-					if(msgLog.isEnabled(MSGLOG_LEVEL_TERSE)) {
-						if (!Message.isEmpty(message)) {
-							ThreadContext.put("requestSize", getFileSizeAsBytes(message));
+						StringBuilder additionalLogging = new StringBuilder();
+
+						// xPathLogKeys is an EsbJmsListener thing
+						String xPathLogKeys = (String) pipeLineSession.get("xPathLogKeys");
+						if(StringUtils.isNotEmpty(xPathLogKeys)) {
+							StringTokenizer tokenizer = new StringTokenizer(xPathLogKeys, ",");
+							while (tokenizer.hasMoreTokens()) {
+								String logName = tokenizer.nextToken();
+								String xPathResult = (String) pipeLineSession.get(logName);
+								additionalLogging.append(" and ");
+								additionalLogging.append(logName);
+								additionalLogging.append(" [" + xPathResult + "]");
+							}
 						}
-						if (isMsgLogHidden()) {
-							msgLog.log(MSGLOG_LEVEL_TERSE_EFF, "received message{}", additionalLogging);
+
+						if(msgLog.isEnabled(MSGLOG_LEVEL_TERSE)) {
+							String messageOrSize = (isMsgLogHidden()) ? "SIZE="+getFileSizeAsBytes(message) : message.toString();
+							msgLog.log(MSGLOG_LEVEL_TERSE_EFF, "received message [{}]{}", messageOrSize, additionalLogging);
+						}
+						log.info("Adapter [{}] received message with messageId [{}]{}", getName(), messageId, additionalLogging);
+
+						if (Message.isEmpty(message) && isReplaceNullMessage()) {
+							log.debug("Adapter [" + getName() + "] replaces null message with messageId [" + messageId + "] by empty message");
+							message = new Message("");
+						}
+						result = pipeline.process(messageId, message, pipeLineSession);
+
+						String duration;
+						if(msgLogHumanReadable) {
+							duration = Misc.getAge(startTime);
 						} else {
-							msgLog.log(MSGLOG_LEVEL_TERSE_EFF, "received message [{}]{}", message.toString(), additionalLogging);
+							duration = Misc.getDurationInMs(startTime);
 						}
-					}
-					log.info("Adapter [{}] received message with messageId [{}]{}", getName(), messageId, additionalLogging);
+						messageLogResult(messageId, result, duration);
+						return result;
 
-					if (Message.isEmpty(message) && isReplaceNullMessage()) {
-						log.debug("Adapter [" + getName() + "] replaces null message with messageId [" + messageId + "] by empty message");
-						message = new Message("");
-					}
-					result = pipeline.process(messageId, message, pipeLineSession);
+					} catch (Throwable t) {
+						ListenerException e;
+						if (t instanceof ListenerException) {
+							e = (ListenerException) t;
+						} else {
+							e = new ListenerException(t);
+						}
+						processingSuccess = false;
+						incNumOfMessagesInError();
+						addErrorMessageToMessageKeeper("error processing message with messageId [" + messageId+"]: ",e);
+						throw e;
+					} finally {
+						long endTime = System.currentTimeMillis();
+						long duration = endTime - startTime;
+						//reset the InProcess fields, and increase processedMessagesCount
+						decNumOfMessagesInProcess(duration, processingSuccess);
 
-					String duration;
-					if(msgLogHumanReadable) {
-						duration = Misc.getAge(startTime);
-					} else {
-						duration = Misc.getDurationInMs(startTime);
+						if (log.isDebugEnabled()) { // for performance reasons
+							log.debug("Adapter: [" + getName()
+									+ "] STAT: Finished processing message with messageId [" + messageId
+									+ "] exit-state [" + result.getState()
+									+ "] started " + DateUtils.format(new Date(startTime), DateUtils.FORMAT_FULL_GENERIC)
+									+ " finished " + DateUtils.format(new Date(endTime), DateUtils.FORMAT_FULL_GENERIC)
+									+ " total duration: " + duration + " msecs");
+						} else {
+							log.info("Adapter [" + getName() + "] completed message with messageId [" + messageId + "] with exit-state [" + result.getState() + "]");
+						}
+						IbisMaskingLayout.removeThreadLocalReplace();
 					}
-					messageLogResult(messageId, result, duration);
-					return result;
-
-				} catch (Throwable t) {
-					ListenerException e;
-					if (t instanceof ListenerException) {
-						e = (ListenerException) t;
-					} else {
-						e = new ListenerException(t);
-					}
-					processingSuccess = false;
-					incNumOfMessagesInError();
-					addErrorMessageToMessageKeeper("error processing message with messageId [" + messageId+"]: ",e);
-					throw e;
-				} finally {
-					long endTime = System.currentTimeMillis();
-					long duration = endTime - startTime;
-					//reset the InProcess fields, and increase processedMessagesCount
-					decNumOfMessagesInProcess(duration, processingSuccess);
-
-					if (log.isDebugEnabled()) { // for performance reasons
-						log.debug("Adapter: [" + getName()
-								+ "] STAT: Finished processing message with messageId [" + messageId
-								+ "] exit-state [" + result.getState()
-								+ "] started " + DateUtils.format(new Date(startTime), DateUtils.FORMAT_FULL_GENERIC)
-								+ " finished " + DateUtils.format(new Date(endTime), DateUtils.FORMAT_FULL_GENERIC)
-								+ " total duration: " + duration + " msecs");
-					} else {
-						log.info("Adapter [" + getName() + "] completed message with messageId [" + messageId + "] with exit-state [" + result.getState() + "]");
-					}
-					IbisMaskingLayout.removeThreadLocalReplace();
 				}
 			}
 		} finally {

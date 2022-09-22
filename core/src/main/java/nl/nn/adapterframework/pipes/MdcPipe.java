@@ -15,7 +15,10 @@
  */
 package nl.nn.adapterframework.pipes;
 
-import org.apache.logging.log4j.ThreadContext;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import org.apache.logging.log4j.CloseableThreadContext;
 
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -24,13 +27,14 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.ClassUtils;
 
 /**
  * Pipe that stores all its parameter values in the ThreadContext, formerly known as Mapped Diagnostic Context (MDC), to be used in logging.
  * The input is passed through to the output.
- * 
+ *
  * @ff.parameters every parameter value is stored in the ThreadContext under its name.
- * 
+ *
  * @author Gerrit van Brakel
  */
 public class MdcPipe extends FixedForwardPipe {
@@ -38,14 +42,16 @@ public class MdcPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		if (!getParameterList().isEmpty()) {
+			Map<String,String> values = new LinkedHashMap<>();
 			try {
 				ParameterValueList pvl = getParameterList().getValues(message, session);
 				for(ParameterValue pv : pvl) {
-					ThreadContext.put(pv.getName(), pv.asStringValue());
+					values.put(pv.getName(), pv.asStringValue());
 				}
 			} catch (ParameterException e) {
 				throw new PipeRunException(this, getLogPrefix(session)+"exception extracting parameters", e);
 			}
+			session.scheduleCloseOnSessionExit(CloseableThreadContext.putAll(values), ClassUtils.nameOf(this));
 		}
 		return new PipeRunResult(getSuccessForward(),message);
 	}
