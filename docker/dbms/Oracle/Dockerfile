@@ -1,8 +1,4 @@
-ARG BASE_IMAGE=oracle/database:21.3.0-xe
-FROM ${BASE_IMAGE}
-
-# Copy in setup scripts
-COPY *.sql /docker-entrypoint-initdb.d/setup
-
-## Run with --nowait as is done in extensions to create database to reduce startup time
-RUN $ORACLE_BASE/$RUN_FILE --nowait
+FROM store/oracle/database-enterprise:12.2.0.1
+COPY create_user.sql /home/oracle
+COPY entrypoint.sh /home/oracle
+CMD /bin/bash /home/oracle/entrypoint.sh
