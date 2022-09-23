@@ -134,11 +134,11 @@ public class TestTool {
 		return IbisApplicationServlet.getIbisContext(application);
 	}
 
-	public static void runScenarios(ServletContext application, HttpServletRequest request, Writer out) {
-		runScenarios(application, request, out, false);
+	public static void runScenarios(ServletContext application, HttpServletRequest request, Writer out, String realPath) {
+		runScenarios(application, request, out, false, realPath);
 	}
 
-	public static void runScenarios(ServletContext application, HttpServletRequest request, Writer out, boolean silent) {
+	private static void runScenarios(ServletContext application, HttpServletRequest request, Writer out, boolean silent, String realPath) {
 		String paramLogLevel = request.getParameter("loglevel");
 		String paramAutoScroll = request.getParameter("autoscroll");
 		String paramExecute = request.getParameter("execute");
@@ -151,9 +151,6 @@ public class TestTool {
 			} catch(NumberFormatException e) {
 			}
 		}
-		String servletPath = request.getServletPath();
-		int i = servletPath.lastIndexOf('/');
-		String realPath = application.getRealPath(servletPath.substring(0, i));
 		String paramScenariosRootDirectory = request.getParameter("scenariosrootdirectory");
 		IbisContext ibisContext = getIbisContext(application);
 		runScenarios(ibisContext, paramLogLevel,
@@ -1180,7 +1177,6 @@ public class TestTool {
 				String value = getAbsolutePath(propertiesDirectory, (String)properties.get(property));
 				if (value != null) {
 					absolutePathProperties.put(absolutePathProperty, value);
-					properties.put(property, value);
 				}
 			}
 		}
@@ -1337,17 +1333,6 @@ public class TestTool {
 			}
 		}
 
-		debugMessage("Close xslt provider listeners", writers);
-		iterator = queues.keySet().iterator();
-		while (iterator.hasNext()) {
-			String queueName = (String)iterator.next();
-			if ("nl.nn.adapterframework.testtool.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
-				XsltProviderListener xsltProviderListener = (XsltProviderListener)((Map<?, ?>)queues.get(queueName)).get("xsltProviderListener");
-				xsltProviderListenerCleanUp(queues, queueName, writers);
-				debugMessage("Closed xslt provider listener '" + queueName + "'", writers);
-			}
-		}
-
 		return remainingMessagesFound;
 	}
 
@@ -1389,18 +1374,6 @@ public class TestTool {
 			}
 		}
 		pullingJmsListener.setTimeOut((int) oldTimeOut);
-		return remainingMessagesFound;
-	}
-
-	public static boolean xsltProviderListenerCleanUp(Map<String, Map<String, Object>> queues, String queueName, Map<String, Object> writers) {
-		boolean remainingMessagesFound = false;
-		Map<?, ?> xsltProviderListenerInfo = (Map<?, ?>)queues.get(queueName);
-		XsltProviderListener xsltProviderListener = (XsltProviderListener)xsltProviderListenerInfo.get("xsltProviderListener");
-		String message = xsltProviderListener.getResult();
-		if (message != null) {
-			remainingMessagesFound = true;
-			wrongPipelineMessage("Found remaining message on '" + queueName + "'", message, writers);
-		}
 		return remainingMessagesFound;
 	}
 

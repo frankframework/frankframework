@@ -17,6 +17,9 @@ package nl.nn.adapterframework.testtool;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Enumeration;
 
 import org.apache.tools.ant.DefaultLogger;
@@ -32,6 +35,7 @@ import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Dir2Xml;
 
 /**
@@ -45,6 +49,7 @@ public class FileSender implements IConfigurable {
 	private @Getter @Setter String name;
 
 	private String filename;
+	private File file;
 	private String encoding = "UTF-8";
 	private boolean checkDelete = true;
 	private long timeOut = 3000;
@@ -56,7 +61,15 @@ public class FileSender implements IConfigurable {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		//nothing to do there
+		String scenarioDirectory = null;
+		try {
+			URL scenarioDirectoryURL = ClassUtils.getResourceURL(this, ".");
+			scenarioDirectory = new File(scenarioDirectoryURL.toURI()).getAbsolutePath();
+		} catch (URISyntaxException e) {
+			throw new ConfigurationException("Could not find scenario root directory", e);
+		}
+		String absPath = TestTool.getAbsolutePath(scenarioDirectory, filename);
+		file = new File(absPath);
 	}
 
 	/**
@@ -71,31 +84,27 @@ public class FileSender implements IConfigurable {
 			runAntScript();
 		} else {
 			if (deletePath) {
-				File file = new File(filename);
 				if (file.exists()) {
-					recursiveDelete(filename);
+					recursiveDelete(file);
 				}
 			} else {
 				if (createPath) {
-					File file = new File(filename);
 					if (file.exists()) {
-						throw new SenderException("Path '" + filename + "' already exists.");
+						throw new SenderException("Path '" + file + "' already exists.");
 					}
 					file.mkdirs();
 				} else {
-					File file = new File(filename);
 					if (!overwrite && file.exists()) {
-						throw new SenderException("File '" + filename + "' already exists.");
+						throw new SenderException("File '" + file + "' already exists.");
 					}
 					String pathname = file.getParent();
 					File path = new File(pathname);
 					if (!path.exists()) {
 						path.mkdirs();
 					}
-					try {
-						FileOutputStream fileOutputStream = new FileOutputStream(file);
+
+					try(FileOutputStream fileOutputStream = new FileOutputStream(file)) {
 						fileOutputStream.write(message.getBytes(encoding));
-						fileOutputStream.close();
 					} catch(Exception e) {
 						throw new SenderException("Exception writing file '" + filename + "': " + e.getMessage(), e);
 					}
@@ -115,9 +124,9 @@ public class FileSender implements IConfigurable {
 		}
 	}
 
-	public String getMessage() throws TimeoutException, SenderException {
+	public String getMessage() throws IOException {
 		Dir2Xml dx=new Dir2Xml();
-		dx.setPath(filename);
+		dx.setPath(file.getAbsolutePath());
 		return dx.getRecursiveDirList();
 	}
 
@@ -128,7 +137,7 @@ public class FileSender implements IConfigurable {
 		consoleLogger.setOutputPrintStream(System.out);
 		consoleLogger.setMessageOutputLevel(Project.MSG_INFO);
 		ant.addBuildListener(consoleLogger);
-		
+
 		// iterate over appConstants and add them as properties
 		AppConstants appConstants = AppConstants.getInstance();
 		@SuppressWarnings("unchecked")
@@ -140,23 +149,21 @@ public class FileSender implements IConfigurable {
 
 		ant.init();
 		ProjectHelper helper = new ProjectHelperImpl();
-		helper.parse(ant, new File(filename));
+		helper.parse(ant, file);
 		ant.executeTarget(ant.getDefaultTarget());
 	}
 
-	private boolean recursiveDelete(String path) {
-		File file = new File(path);
-		String[] dirList = file.list();
+	private boolean recursiveDelete(File path) {
+		String[] dirList = path.list();
 		for (int i = 0; i < dirList.length; i++) {
-			String newPath = path + File.separator + dirList[i];
-			File newFile = new File(newPath);
+			File newFile = new File(path, dirList[i]);
 			if (newFile.isDirectory()) {
-				recursiveDelete(newPath);
+				recursiveDelete(path);
 			} else {
 				newFile.delete();
 			}
 		}
-		return file.delete();
+		return path.delete();
 	}
 
 	/**
