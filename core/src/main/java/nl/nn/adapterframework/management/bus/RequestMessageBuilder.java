@@ -35,11 +35,17 @@ public class RequestMessageBuilder {
 
 	private final Base base;
 	private final BusTopic topic;
+	private final String action;
 	private Object payload = "NONE";
 
 	public RequestMessageBuilder(Base base, BusTopic topic) {
+		this(base, topic, null);
+	}
+
+	public RequestMessageBuilder(Base base, BusTopic topic, String action) {
 		this.base = base;
 		this.topic = topic;
+		this.action = action;
 	}
 
 	public RequestMessageBuilder addHeader(String key, Object value) {
@@ -51,10 +57,17 @@ public class RequestMessageBuilder {
 		return new RequestMessageBuilder(base, topic);
 	}
 
+	public static RequestMessageBuilder create(Base base, BusTopic topic, String action) {
+		return new RequestMessageBuilder(base, topic);
+	}
+
 	public Message<?> build() {
 		DefaultMessageBuilderFactory factory = base.getApplicationContext().getBean("messageBuilderFactory", DefaultMessageBuilderFactory.class);
 		MessageBuilder<?> builder = factory.withPayload(payload);
 		builder.setHeader(TopicSelector.TOPIC_HEADER_NAME, topic.name());
+		if(action != null) {
+			builder.setHeader(TopicSelector.ACTION_HEADER_NAME, action);
+		}
 
 		UriInfo uriInfo = base.getUriInfo();
 		builder.setHeader("uri", uriInfo.getRequestUri());

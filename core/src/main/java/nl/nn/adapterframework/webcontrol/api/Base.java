@@ -85,7 +85,7 @@ public abstract class Base implements ApplicationContextAware {
 	public Response callAsyncGateway(RequestMessageBuilder input) throws ApiException {
 		Gateway gateway = getApplicationContext().getBean("gateway", Gateway.class);
 		gateway.sendAsyncMessage(input.build());
-		return Response.noContent().build();
+		return Response.ok().build();
 	}
 
 	@Override

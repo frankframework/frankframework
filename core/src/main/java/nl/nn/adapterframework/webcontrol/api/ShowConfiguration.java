@@ -1,32 +1,24 @@
 /*
-Copyright 2016-2021 WeAreFrank!
+   Copyright 2016-2022 WeAreFrank!
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+       http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
@@ -41,25 +33,16 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 
-import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
-import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.RequestMessageBuilder;
-import nl.nn.adapterframework.receivers.Receiver;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.NameComparatorBase;
-import nl.nn.adapterframework.util.RunState;
 
 /**
  * Shows the configuration (with resolved variables).
@@ -70,8 +53,6 @@ import nl.nn.adapterframework.util.RunState;
 
 @Path("/")
 public final class ShowConfiguration extends Base {
-
-	private String orderBy = AppConstants.getInstance().getProperty("iaf-api.configurations.orderby", "version").trim();
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -94,43 +75,27 @@ public final class ShowConfiguration extends Base {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response fullReload(LinkedHashMap<String, Object> json) throws ApiException {
-		Response.ResponseBuilder response = Response.status(Response.Status.NO_CONTENT); //PUT defaults to no content
-
-		for (Entry<String, Object> entry : json.entrySet()) {
-			String key = entry.getKey();
-			Object value = entry.getValue();
-			if(key.equalsIgnoreCase("action")) {
-				if(value.equals("reload")) {
-					getIbisManager().handleAction(IbisAction.FULLRELOAD, "", "", "", getUserPrincipalName(), true);
-				}
-				response.entity("{\"status\":\"ok\"}");
-			}
+		Object value = json.get("action");
+		if(value instanceof String && "reload".equals(value)) {
+			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.IBISACTION);
+			builder.addHeader("action", IbisAction.FULLRELOAD.name());
+			builder.addHeader("configuration", "*ALL*");
+			callAsyncGateway(builder);
+			return Response.status(Response.Status.ACCEPTED).entity("{\"status\":\"ok\"}").build();
 		}
 
-		return response.build();
+		return Response.status(Response.Status.BAD_REQUEST).build();
 	}
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/configurations/{configuration}")
 	@Produces(MediaType.APPLICATION_XML)
-	public Response getConfigurationByName(@PathParam("configuration") String configurationName, @QueryParam("loadedConfiguration") boolean loadedConfiguration) throws ApiException {
-
-		String result = "";
-
-		Configuration configuration = getIbisManager().getConfiguration(configurationName);
-
-		if(configuration == null){
-			throw new ApiException("Configuration not found!");
-		}
-
-		if (loadedConfiguration) {
-			result = configuration.getLoadedConfiguration();
-		} else {
-			result = configuration.getOriginalConfiguration();
-		}
-
-		return Response.status(Response.Status.OK).entity(result).build();
+	public Response getConfigurationByName(@PathParam("configuration") String configurationName, @QueryParam("loadedConfiguration") boolean loaded) throws ApiException {
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION);
+		builder.addHeader("configuration", configurationName);
+		if(loaded) builder.addHeader("loaded", loaded);
+		return callSyncGateway(builder);
 	}
 
 	@GET
@@ -138,56 +103,9 @@ public final class ShowConfiguration extends Base {
 	@Path("/configurations/{configuration}/health")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getConfigurationHealth(@PathParam("configuration") String configurationName) throws ApiException {
-
-		Configuration configuration = getIbisManager().getConfiguration(configurationName);
-
-		if(configuration == null) {
-			throw new ApiException("Configuration not found!");
-		}
-		if(!configuration.isActive()) {
-			throw new ApiException("Configuration not active", configuration.getConfigurationException());
-		}
-
-		Map<String, Object> response = new HashMap<>();
-		Map<RunState, Integer> stateCount = new HashMap<>();
-		List<String> errors = new ArrayList<>();
-
-		for (IAdapter adapter : configuration.getRegisteredAdapters()) {
-			RunState state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
-
-			if(state==RunState.STARTED) {
-				for (Receiver<?> receiver: adapter.getReceivers()) {
-					RunState rState = receiver.getRunState();
-
-					if(rState!=RunState.STARTED) {
-						errors.add("receiver["+receiver.getName()+"] of adapter["+adapter.getName()+"] is in state["+rState.toString()+"]");
-						state = RunState.ERROR;
-					}
-				}
-			}
-			else {
-				errors.add("adapter["+adapter.getName()+"] is in state["+state.toString()+"]");
-				state = RunState.ERROR;
-			}
-
-			int count;
-			if(stateCount.containsKey(state))
-				count = stateCount.get(state);
-			else
-				count = 0;
-
-			stateCount.put(state, ++count);
-		}
-
-		Status status = Response.Status.OK;
-		if(stateCount.containsKey(RunState.ERROR))
-			status = Response.Status.SERVICE_UNAVAILABLE;
-
-		if(!errors.isEmpty())
-			response.put("errors", errors);
-		response.put("status", status);
-
-		return Response.status(status).entity(response).build();
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, "status");
+		builder.addHeader("configuration", configurationName);
+		return callSyncGateway(builder);
 	}
 
 	@GET
@@ -215,55 +133,27 @@ public final class ShowConfiguration extends Base {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response reloadConfiguration(@PathParam("configuration") String configurationName, LinkedHashMap<String, Object> json) throws ApiException {
-
-		Configuration configuration = getIbisManager().getConfiguration(configurationName);
-
-		if(configuration == null){
-			throw new ApiException("Configuration not found!");
+		Object value = json.get("action");
+		if(value instanceof String && "reload".equals(value)) {
+			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.IBISACTION);
+			builder.addHeader("action", IbisAction.RELOAD.name());
+			builder.addHeader("configuration", configurationName);
+			callAsyncGateway(builder);
+			return Response.status(Response.Status.ACCEPTED).entity("{\"status\":\"ok\"}").build();
 		}
 
-		Response.ResponseBuilder response = Response.status(Response.Status.NO_CONTENT); //PUT defaults to no content
-
-		for (Entry<String, Object> entry : json.entrySet()) {
-			String key = entry.getKey();
-			Object value = entry.getValue();
-			if(key.equalsIgnoreCase("action")) {
-				if(value.equals("reload")) {
-					getIbisManager().handleAction(IbisAction.RELOAD, configurationName, "", "", getUserPrincipalName(), false);
-				}
-				response.entity("{\"status\":\"ok\"}");
-			}
-		}
-
-		return response.build();
+		return Response.status(Response.Status.BAD_REQUEST).build();
 	}
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/configurations/{configuration}/versions")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getConfigurationDetailsByName(@PathParam("configuration") String configurationName, @QueryParam("realm") String jmsRealm) throws ApiException {
-
-		Configuration configuration = getIbisManager().getConfiguration(configurationName);
-		if(configuration == null) {
-			throw new ApiException("Configuration not found!");
-		}
-
-		if ("DatabaseClassLoader".equals(configuration.getClassLoaderType())) {
-			List<Map<String, Object>> configs = getConfigsFromDatabase(configurationName, jmsRealm);
-			if(configs == null)
-				return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-
-			for(Map<String, Object> config: configs) {
-				if(config.get("version").toString().equals(configuration.getVersion()))
-					config.put("loaded", true);
-				else
-					config.put("loaded", false);
-			}
-			return Response.status(Response.Status.OK).entity(configs).build();
-		}
-
-		return Response.status(Response.Status.NO_CONTENT).build();
+	public Response getConfigurationDetailsByName(@PathParam("configuration") String configurationName, @QueryParam("datasourceName") String datasourceName) throws ApiException {
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, "details");
+		builder.addHeader("configuration", configurationName);
+		builder.addHeader("datasourceName", datasourceName);
+		return callSyncGateway(builder);
 	}
 
 	@PUT
@@ -271,44 +161,14 @@ public final class ShowConfiguration extends Base {
 	@Path("/configurations/{configuration}/versions/{version}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response manageConfiguration(@PathParam("configuration") String configurationName, @PathParam("version") String encodedVersion, @QueryParam("realm") String jmsRealm, LinkedHashMap<String, Object> json) throws ApiException {
-
-		Configuration configuration = getIbisManager().getConfiguration(configurationName);
-
-		if(configuration == null){
-			throw new ApiException("Configuration not found!");
-		}
-
-		String version = Misc.urlDecode(encodedVersion);
-
-		try {
-			for (Entry<String, Object> entry : json.entrySet()) {
-				String key = entry.getKey();
-				Object valueObject = entry.getValue();
-				boolean value = false;
-				if(valueObject instanceof Boolean) {
-					value = (boolean) valueObject;
-				}
-				else
-					value = Boolean.parseBoolean(valueObject.toString());
-
-				if(key.equalsIgnoreCase("activate")) {
-					if(ConfigurationUtils.activateConfig(getIbisContext(), configurationName, version, value, jmsRealm)) {
-						return Response.status(Response.Status.ACCEPTED).build();
-					}
-				}
-				else if(key.equalsIgnoreCase("autoreload")) {
-					if(ConfigurationUtils.autoReloadConfig(getIbisContext(), configurationName, version, value, jmsRealm)) {
-						return Response.status(Response.Status.ACCEPTED).build();
-					}
-				}
-			}
-		}
-		catch (Exception e) {
-			throw new ApiException(e);
-		}
-
-		return Response.status(Response.Status.BAD_REQUEST).build();
+	public Response manageConfiguration(@PathParam("configuration") String configurationName, @PathParam("version") String encodedVersion, @QueryParam("datasourceName") String datasourceName, LinkedHashMap<String, Object> json) throws ApiException {
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, "manage");
+		builder.addHeader("configuration", configurationName);
+		builder.addHeader("version", Misc.urlDecode(encodedVersion));
+		builder.addHeader("activate", json.get("activate"));
+		builder.addHeader("autoreload", json.get("autoreload"));
+		builder.addHeader("datasourceName", datasourceName);
+		return callSyncGateway(builder);
 	}
 
 	@POST
@@ -360,95 +220,21 @@ public final class ShowConfiguration extends Base {
 	@Path("/configurations/{configuration}/versions/{version}/download")
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	public Response downloadConfiguration(@PathParam("configuration") String configurationName, @PathParam("version") String version, @QueryParam("dataSourceName") String dataSourceName) throws ApiException {
-
-		if (StringUtils.isEmpty(version))
-			version = null;
-		if (StringUtils.isEmpty(dataSourceName))
-			dataSourceName = null;
-
-		try {
-			Map<String, Object> configuration = ConfigurationUtils.getConfigFromDatabase(getIbisContext(), configurationName, dataSourceName, version);
-			return Response
-					.status(Response.Status.OK)
-					.entity(configuration.get("CONFIG"))
-					.header("Content-Disposition", "attachment; filename=\"" + configuration.get("FILENAME") + "\"")
-					.build();
-		} catch (Exception e) {
-			throw new ApiException(e);
-		}
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, "download");
+		builder.addHeader("configuration", configurationName);
+		builder.addHeader("version", version);
+		builder.addHeader("datasourceName", dataSourceName);
+		return callSyncGateway(builder);
 	}
 
 	@DELETE
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/configurations/{configuration}/versions/{version}")
-	public Response deleteConfiguration(@PathParam("configuration") String configurationName, @PathParam("version") String version, @QueryParam("realm") String jmsRealm) throws ApiException {
-
-		if (StringUtils.isEmpty(jmsRealm))
-			jmsRealm = null;
-
-		try {
-			ConfigurationUtils.removeConfigFromDatabase(getIbisContext(), configurationName, jmsRealm, version);
-			return Response.status(Response.Status.OK).build();
-		} catch (Exception e) {
-			throw new ApiException(e);
-		}
-	}
-
-
-	private List<Map<String, Object>> getConfigsFromDatabase(String configurationName, String dataSourceName) {
-		List<Map<String, Object>> returnMap = new ArrayList<Map<String, Object>>();
-
-		if (StringUtils.isEmpty(dataSourceName)) {
-			dataSourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
-			if (StringUtils.isEmpty(dataSourceName)) {
-				return null;
-			}
-		}
-
-		FixedQuerySender qs = getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
-		qs.setDatasourceName(dataSourceName);
-		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
-		try {
-			qs.configure();
-			qs.open();
-			try (Connection conn = qs.getConnection()) {
-				String query = "SELECT NAME, VERSION, FILENAME, RUSER, ACTIVECONFIG, AUTORELOAD, CRE_TYDST FROM IBISCONFIG WHERE NAME=?";
-				try (PreparedStatement stmt = conn.prepareStatement(query)) {
-					stmt.setString(1, configurationName);
-					try (ResultSet rs = stmt.executeQuery()) {
-						while (rs.next()) {
-							Map<String, Object> config = new HashMap<>();
-							config.put("name", rs.getString(1));
-							config.put("version", rs.getString(2));
-							config.put("filename", rs.getString(3));
-							config.put("user", rs.getString(4));
-							config.put("active", rs.getBoolean(5));
-							config.put("autoreload", rs.getBoolean(6));
-
-							Date creationDate = rs.getDate(7);
-							config.put("created", DateUtils.format(creationDate, DateUtils.FORMAT_GENERICDATETIME));
-							returnMap.add(config);
-						}
-					}
-				}
-			}
-		} catch (Exception e) {
-			throw new ApiException(e);
-		} finally {
-			qs.close();
-		}
-
-		returnMap.sort(new NameComparatorBase<Map<String, Object>>() {
-
-			@Override
-			public int compare(Map<String, Object> obj1, Map<String, Object> obj2) {
-				String filename1 = (String) obj1.get(orderBy);
-				String filename2 = (String) obj2.get(orderBy);
-
-				return -compareNames(filename1, filename2); //invert the results as we want the latest version first
-			}
-
-		});
-		return returnMap;
+	public Response deleteConfiguration(@PathParam("configuration") String configurationName, @PathParam("version") String version, @QueryParam("datasourceName") String datasourceName) throws ApiException {
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, "delete");
+		builder.addHeader("configuration", configurationName);
+		builder.addHeader("version", version);
+		builder.addHeader("datasourceName", datasourceName);
+		return callAsyncGateway(builder);
 	}
 }

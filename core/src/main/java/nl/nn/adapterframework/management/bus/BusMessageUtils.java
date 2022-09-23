@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.management.bus;
 
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.messaging.Message;
@@ -57,6 +58,13 @@ public class BusMessageUtils {
 		int status = (int) headers.get(ResponseMessage.STATUS_KEY);
 		String mimeType = (String) headers.get(ResponseMessage.MIMETYPE_KEY);
 
-		return Response.status(status).entity(response.getPayload()).type(mimeType).build();
+		ResponseBuilder builder = Response.status(status).entity(response.getPayload()).type(mimeType);
+
+		String contentDisposition = (String) headers.get(ResponseMessage.CONTENT_DISPOSITION_KEY);
+		if(contentDisposition != null) {
+			builder.header("Content-Disposition", contentDisposition);
+		}
+
+		return builder.build();
 	}
 }
