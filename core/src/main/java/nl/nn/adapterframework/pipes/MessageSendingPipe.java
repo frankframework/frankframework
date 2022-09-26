@@ -24,7 +24,7 @@ import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
@@ -41,6 +41,7 @@ import nl.nn.adapterframework.core.ICorrelatedPullingListener;
 import nl.nn.adapterframework.core.IDualModeValidator;
 import nl.nn.adapterframework.core.IForwardNameProvidingSender;
 import nl.nn.adapterframework.core.IMessageBrowser;
+import nl.nn.adapterframework.core.IMessageBrowser.HideMethod;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
@@ -58,7 +59,6 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.core.IMessageBrowser.HideMethod;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
@@ -108,7 +108,6 @@ import nl.nn.adapterframework.util.XmlUtils;
 @SupportsOutputStreaming
 public class MessageSendingPipe extends StreamingPipe implements HasSender, HasStatistics {
 	protected Logger msgLog = LogUtil.getLogger("MSG");
-	private Level MSGLOG_LEVEL_TERSE = Level.toLevel("TERSE");
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
 	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";
@@ -820,8 +819,14 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 						duration = Misc.getDurationInMs(startTime);
 					}
 
-					if(msgLog.getLevel().isMoreSpecificThan(MSGLOG_LEVEL_TERSE)) {
-						msgLog.log(MSGLOG_LEVEL_TERSE, String.format("Sender [%s] class [%s] duration [%s] got exit-state [%s]", sender.getName(), ClassUtils.nameOf(sender), duration, exitState));
+					if(msgLog.getLevel().isMoreSpecificThan(Adapter.MSGLOG_LEVEL_TERSE)) {
+						try (final CloseableThreadContext.Instance ctc = CloseableThreadContext
+								.put("class", ClassUtils.nameOf(sender))
+								.put("duration", duration)
+								.put("exit-state", exitState)
+								) {
+							msgLog.log(Adapter.MSGLOG_LEVEL_TERSE_EFF, String.format("Sender [%s] got exit-state [%s]", sender.getName(), exitState));
+						}
 					}
 				}
 			}
