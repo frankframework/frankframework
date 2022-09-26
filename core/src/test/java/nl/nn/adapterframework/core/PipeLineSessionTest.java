@@ -73,7 +73,7 @@ public class PipeLineSessionTest {
 		Date tsSent = cal2.getTime();
 
 		//Should set the value as a String
-		PipeLineSession.setListenerParameters(session, null, null, tsReceived, tsSent);
+		PipeLineSession.setListenerParameters(session, null, null, null, tsReceived, tsSent);
 
 		assertEquals(tsReceived, session.getTsReceived());
 		assertEquals(tsSent, session.getTsSent());

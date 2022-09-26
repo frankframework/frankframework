@@ -544,7 +544,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						messageId = messageIdHeader;
 					}
 				}
-				PipeLineSession.setListenerParameters(messageContext, messageId, null, null, null); //We're only using this method to keep setting id/cid/tcid uniform
+				PipeLineSession.setListenerParameters(messageContext, messageId, null, null, null, null); //We're only using this method to keep setting id/cid/tcid uniform
 				Message result = listener.processRequest(null, body, messageContext);
 
 				/**

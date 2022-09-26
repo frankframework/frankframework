@@ -387,7 +387,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 //			}
 //		}
 
-		PipeLineSession.setListenerParameters(threadContext, id, BIFname, null, tsSent);
+		PipeLineSession.setListenerParameters(threadContext, id, null, BIFname, null, tsSent);
 	    threadContext.put("timestamp", tsSent);
 	    threadContext.put("replyTo", ((replyTo == null) ? "none" : replyTo.toString()));
 	    threadContext.put("messageText", messageText);

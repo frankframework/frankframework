@@ -412,7 +412,7 @@ public class PullingIfsaProviderListener extends IfsaFacade implements IPullingL
 					
 		}
 	
-		PipeLineSession.setListenerParameters(threadContext, id, cid, null, tsSent);
+		PipeLineSession.setListenerParameters(threadContext, id, null, cid, null, tsSent);
 	    threadContext.put("timestamp", tsSent);
 	    threadContext.put("replyTo", ((replyTo == null) ? "none" : replyTo.toString()));
 	    threadContext.put("messageText", messageText);
