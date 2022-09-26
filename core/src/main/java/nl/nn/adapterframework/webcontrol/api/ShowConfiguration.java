@@ -63,7 +63,7 @@ public final class ShowConfiguration extends Base {
 			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.FLOW);
 			return callSyncGateway(builder);
 		} else {
-			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION);
+			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, "xml");
 			if(loaded) builder.addHeader("loaded", loaded);
 			return callSyncGateway(builder);
 		}
@@ -92,7 +92,7 @@ public final class ShowConfiguration extends Base {
 	@Path("/configurations/{configuration}")
 	@Produces(MediaType.APPLICATION_XML)
 	public Response getConfigurationByName(@PathParam("configuration") String configurationName, @QueryParam("loadedConfiguration") boolean loaded) throws ApiException {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, "xml");
 		builder.addHeader("configuration", configurationName);
 		if(loaded) builder.addHeader("loaded", loaded);
 		return callSyncGateway(builder);

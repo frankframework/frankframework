@@ -80,7 +80,7 @@ public abstract class Base implements ApplicationContextAware {
 		if(response != null) {
 			return BusMessageUtils.convertToJaxRsResponse(response);
 		}
-		return Response.noContent().build(); //TODO this should probably give an exception
+		return Response.serverError().build(); //TODO this should probably give an exception
 	}
 	public Response callAsyncGateway(RequestMessageBuilder input) throws ApiException {
 		Gateway gateway = getApplicationContext().getBean("gateway", Gateway.class);

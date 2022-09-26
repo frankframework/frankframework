@@ -44,6 +44,7 @@ import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
+import nl.nn.adapterframework.management.bus.ActionSelector;
 import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
@@ -58,6 +59,7 @@ import nl.nn.adapterframework.util.RunState;
 import nl.nn.adapterframework.webcontrol.api.ApiException;
 
 @BusAware("frank-management-bus")
+@TopicSelector(BusTopic.CONFIGURATION)
 public class ConfigManagement {
 
 	private String orderBy = AppConstants.getInstance().getProperty("iaf-api.configurations.orderby", "version").trim();
@@ -66,7 +68,7 @@ public class ConfigManagement {
 	private Logger log = LogUtil.getLogger(this);
 	private static final String HEADER_CONFIGURATION_KEY = "configuration";
 
-	@TopicSelector(BusTopic.CONFIGURATION)
+	@ActionSelector("xml")
 	public Message<String> getXMLConfiguration(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_KEY);
 		boolean loadedConfiguration = BusMessageUtils.getHeader(message, "loaded", false);
@@ -84,7 +86,7 @@ public class ConfigManagement {
 		return ResponseMessage.ok(result.toString());
 	}
 
-	@TopicSelector(BusTopic.CONFIGURATION)
+	@ActionSelector("details")
 	public Message<String> getConfigurationDetailsByName(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_KEY);
 		Configuration configuration = getIbisManager().getConfiguration(configurationName);
@@ -92,7 +94,7 @@ public class ConfigManagement {
 			throw new IllegalStateException("configuration ["+configurationName+"] does not exists");
 		}
 
-		if ("DatabaseClassLoader".equals(configuration.getClassLoaderType())) {
+		if("DatabaseClassLoader".equals(configuration.getClassLoaderType())) {
 			String datasourceName = BusMessageUtils.getHeader(message, "datasourceName");
 			List<Map<String, Object>> configs = getConfigsFromDatabase(configurationName, datasourceName);
 
@@ -106,6 +108,7 @@ public class ConfigManagement {
 		return ResponseMessage.noContent();
 	}
 
+	@ActionSelector("manage")
 	public Message<String> manageConfiguration(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_KEY);
 		Configuration configuration = getIbisManager().getConfiguration(configurationName);
@@ -126,7 +129,7 @@ public class ConfigManagement {
 			else if(autoreload && ConfigurationUtils.autoReloadConfig(getIbisContext(), configurationName, version, autoreload, datasourceName)) {
 				return ResponseMessage.accepted();
 			}
-		} catch (Exception e) {
+		} catch(Exception e) {
 			log.warn("unable to update configuration settings in database", e);
 			throw new IllegalStateException("unable to update configuration settings in database"); //don't pass e, we should limit sensitive information from being sent over the bus
 		}
@@ -135,6 +138,7 @@ public class ConfigManagement {
 		return ResponseMessage.badRequest();
 	}
 
+	@ActionSelector("download")
 	public Message<byte[]> downloadConfiguration(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_KEY);
 		String version = BusMessageUtils.getHeader(message, "version");
@@ -156,6 +160,7 @@ public class ConfigManagement {
 		return new GenericMessage<>(config, headers);
 	}
 
+	@ActionSelector("delete")
 	public void deleteConfiguration(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_KEY);
 		String version = BusMessageUtils.getHeader(message, "version");

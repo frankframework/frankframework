@@ -58,7 +58,7 @@ public class RequestMessageBuilder {
 	}
 
 	public static RequestMessageBuilder create(Base base, BusTopic topic, String action) {
-		return new RequestMessageBuilder(base, topic);
+		return new RequestMessageBuilder(base, topic, action);
 	}
 
 	public Message<?> build() {
@@ -66,7 +66,7 @@ public class RequestMessageBuilder {
 		MessageBuilder<?> builder = factory.withPayload(payload);
 		builder.setHeader(TopicSelector.TOPIC_HEADER_NAME, topic.name());
 		if(action != null) {
-			builder.setHeader(TopicSelector.ACTION_HEADER_NAME, action);
+			builder.setHeader(ActionSelector.ACTION_HEADER_NAME, action);
 		}
 
 		UriInfo uriInfo = base.getUriInfo();

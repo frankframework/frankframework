@@ -95,13 +95,19 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 		BeanInfo beanInfo = Introspector.getBeanInfo(beanClass);
 		MethodDescriptor[] methodDescriptors =  beanInfo.getMethodDescriptors();
 		Object bean = SpringUtils.createBean(applicationContext, beanClass);
+		TopicSelector classTopicSelector = AnnotationUtils.findAnnotation(beanClass, TopicSelector.class);
 
 		for (MethodDescriptor methodDescriptor : methodDescriptors) {
 			Method method = methodDescriptor.getMethod();
 
-			TopicSelector selector = AnnotationUtils.findAnnotation(method, TopicSelector.class);
-			if(selector != null) {
-				registerServiceActivator(bean, method, inputChannel, selector.value());
+			TopicSelector methodTopicSelector = AnnotationUtils.findAnnotation(method, TopicSelector.class);
+			if(methodTopicSelector != null) {
+				registerServiceActivator(bean, method, inputChannel, methodTopicSelector.value());
+			} else if(classTopicSelector != null) {
+				ActionSelector action = AnnotationUtils.findAnnotation(method, ActionSelector.class);
+				if(action != null) {
+					registerServiceActivator(bean, method, inputChannel, classTopicSelector.value());
+				}
 			}
 		}
 	}
@@ -111,13 +117,22 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 		serviceActivator.setRequiresReply(method.getReturnType() != void.class);
 		initializeBean(serviceActivator);
 
-		MessageHandlerChain chain = new MessageHandlerChain();
 		List<MessageHandler> handlers = new ArrayList<>();
 		handlers.add(getMessageTopicFilter(topic));
+		ActionSelector action = AnnotationUtils.findAnnotation(method, ActionSelector.class);
+		if(action != null) {
+			handlers.add(getMessageActionFilter(action.value())); //Optional ActionHeader filter
+		}
 		handlers.add(serviceActivator);
+
+		MessageHandlerChain chain = new MessageHandlerChain();
 		chain.setHandlers(handlers);
 		initializeBean(chain);
-		channel.subscribe(chain);
+		if(channel.subscribe(chain)) {
+			System.out.println("registered new ServiceActivator ["+bean.getClass().getCanonicalName()+"] method ["+method.getName()+"] topic ["+topic+"] action ["+(action != null?action.value():"*")+"]");
+		} else {
+			System.out.println("unable to register ServiceActivator ["+bean.getClass().getCanonicalName()+"]");
+		}
 	}
 
 	//Multiple methods can subscribe to the same BusTopic, filters are re-used
@@ -133,6 +148,19 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 
 		filter.setDiscardChannel(nullChannel);
 		initializeBean(filter);
+		return filter;
+	}
+
+	//Some methods might have an action
+	private MessageFilter getMessageActionFilter(String actionFilter) {
+		MessageFilter filter = new MessageFilter(message -> {
+			String actionHeader = (String) message.getHeaders().get(ActionSelector.ACTION_HEADER_NAME);
+			System.out.println("filter for ["+actionFilter+"] got ["+actionHeader+"]");
+			return actionFilter.equalsIgnoreCase(actionHeader);
+		});
+
+		filter.setDiscardChannel(nullChannel);
+		initializeBean(filter, actionFilter);
 		return filter;
 	}
 
@@ -155,5 +183,9 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 
 	private final void initializeBean(Object bean) {
 		applicationContext.getAutowireCapableBeanFactory().initializeBean(bean, bean.getClass().getCanonicalName());
+	}
+
+	private final void initializeBean(Object bean, String name) {
+		applicationContext.getAutowireCapableBeanFactory().initializeBean(bean, name);
 	}
 }
