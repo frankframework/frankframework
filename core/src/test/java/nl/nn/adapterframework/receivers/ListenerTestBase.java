@@ -48,14 +48,15 @@ public abstract class ListenerTestBase<M extends Object, S extends IListener<M>>
 	@SuppressWarnings("unchecked")
 	public void setUp() throws Exception {
 		String messageId = "testmessageac13ecb1--30fe9225_16caa708707_-7fb1";
-		String technicalCorrelationId = "testmessageac13ecb1--30fe9225_16caa708707_-7fb2";
+		String correlationId = "testmessageac13ecb1--30fe9225_16caa708707_-7fb2";
+		String replyCorrelationId = "testmessageac13ecb1--30fe9225_16caa708707_-7fb3";
 		if(listener instanceof IPullingListener) {
 			threadContext = ((IPullingListener<M>) listener).openThread();
 		} else {
 			threadContext = new HashMap<>();
 		}
 
-		PipeLineSession.setListenerParameters(threadContext, messageId, technicalCorrelationId, null, null);
+		PipeLineSession.setListenerParameters(threadContext, messageId, correlationId, replyCorrelationId, null, null);
 		listener = createListener();
 	}
 
