@@ -171,23 +171,23 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		Destination replyTo=null;
 		try {
 			mode = DeliveryMode.parse(message.getJMSDeliveryMode());
-		} catch (JMSException ignore) {
-			log.debug("ignoring JMSException in getJMSDeliveryMode()", ignore);
+		} catch (JMSException e) {
+			log.debug("ignoring JMSException in getJMSDeliveryMode()", e);
 		}
 		// --------------------------
 		// retrieve MessageID
 		// --------------------------
 		try {
 			id = message.getJMSMessageID();
-		} catch (JMSException ignore) {
-			log.debug("ignoring JMSException in getJMSMessageID()", ignore);
+		} catch (JMSException e) {
+			log.debug("ignoring JMSException in getJMSMessageID()", e);
 		}
 		// --------------------------
 		// retrieve CorrelationID
 		// --------------------------
 		try {
 			if (isForceMessageIdAsCorrelationId()){
-				if (log.isDebugEnabled()) log.debug("forcing the messageID to be the correlationID");
+				if (log.isDebugEnabled()) log.debug("prepare to use the messageID as the reply-correlationID");
 				cid =id;
 			}
 			else {
@@ -197,8 +197,8 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 					log.debug("Setting correlation ID to MessageId");
 				}
 			}
-		} catch (JMSException ignore) {
-			log.debug("ignoring JMSException in getJMSCorrelationID()", ignore);
+		} catch (JMSException e) {
+			log.debug("ignoring JMSException in getJMSCorrelationID()", e);
 		}
 		// --------------------------
 		// retrieve TimeStamp
@@ -207,8 +207,8 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 			long lTimeStamp = message.getJMSTimestamp();
 			tsSent = new Date(lTimeStamp);
 
-		} catch (JMSException ignore) {
-			log.debug("ignoring JMSException in getJMSTimestamp()", ignore);
+		} catch (JMSException e) {
+			log.debug("ignoring JMSException in getJMSTimestamp()", e);
 		}
 		// --------------------------
 		// retrieve ReplyTo address
@@ -216,8 +216,8 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		try {
 			replyTo = message.getJMSReplyTo();
 
-		} catch (JMSException ignore) {
-			log.debug("ignoring JMSException in getJMSReplyTo()", ignore);
+		} catch (JMSException e) {
+			log.debug("ignoring JMSException in getJMSReplyTo()", e);
 		}
 
 		if (log.isDebugEnabled()) {
@@ -350,6 +350,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	/**
 	 * By default, the JmsListener takes the Correlation-ID (if present) as the ID that has to be used as Correlation-ID of the reply.
 	 * When set to <code>true</code>, the messageID is used as Correlation-ID of the reply.
+	 * @ff.default false
 	 */
 	public void setForceMessageIdAsCorrelationId(boolean force){
 		forceMessageIdAsCorrelationId = force;
