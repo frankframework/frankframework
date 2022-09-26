@@ -20,10 +20,7 @@ import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -55,33 +52,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	@Before
 	public void setUp() throws Exception {
 		super.setUp();
-		owner= new IConfigurable() {
-
-			@Override
-			public String getName() {
-				return "fake owner of FileSystemActor";
-			}
-			@Override
-			public void setName(String newName) {
-				throw new IllegalStateException("setName() should not be called");
-			}
-			@Override
-			public ClassLoader getConfigurationClassLoader() {
-				return Thread.currentThread().getContextClassLoader();
-			}
-			@Override
-			public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-				// Ignore
-			}
-			@Override
-			public void configure() throws ConfigurationException {
-				// Ignore
-			}
-			@Override
-			public ApplicationContext getApplicationContext() {
-				return null;
-			}
-		};
+		owner= adapter;
+		adapter.setName("fake owner of FileSystemActor");
 		fileSystem = createFileSystem();
 		autowireByName(fileSystem);
 		fileSystem.configure();

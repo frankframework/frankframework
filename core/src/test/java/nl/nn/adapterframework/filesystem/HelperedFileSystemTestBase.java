@@ -73,6 +73,7 @@ public abstract class HelperedFileSystemTestBase extends FileSystemTestBase {
 
 	@Before
 	public void setUp() throws Exception {
+		super.setUp();
 		helper = getFileSystemTestHelper();
 		helper.setUp();
 	}
