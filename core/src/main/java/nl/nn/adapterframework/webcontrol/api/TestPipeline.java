@@ -208,7 +208,7 @@ public class TestPipeline extends Base {
 				}
 			}
 			Date now = new Date();
-			PipeLineSession.setListenerParameters(pls, messageId, technicalCorrelationId, now, now);
+			PipeLineSession.setListenerParameters(pls, messageId, null, technicalCorrelationId, now, now);
 
 			secLog.info(String.format("testing pipeline of adapter [%s] %s", adapter.getName(), (writeSecLogMessage ? "message [" + message + "]" : "")));
 
