@@ -39,7 +39,7 @@ public class BusMessageUtils {
 		return message.getHeaders().get(headerName) != null;
 	}
 
-	public static boolean getHeader(Message<?> message, String headerName, boolean defaultValue) {
+	public static Boolean getHeader(Message<?> message, String headerName, Boolean defaultValue) {
 		MessageHeaders headers = message.getHeaders();
 		if(headers.containsKey(headerName)) {
 			try {

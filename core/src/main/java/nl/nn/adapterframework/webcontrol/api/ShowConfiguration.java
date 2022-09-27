@@ -165,8 +165,11 @@ public final class ShowConfiguration extends Base {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, "manage");
 		builder.addHeader("configuration", configurationName);
 		builder.addHeader("version", Misc.urlDecode(encodedVersion));
-		builder.addHeader("activate", json.get("activate"));
-		builder.addHeader("autoreload", json.get("autoreload"));
+		if(json.containsKey("activate")) {
+			builder.addHeader("activate", json.get("activate"));
+		} else if(json.containsKey("autoreload")) {
+			builder.addHeader("autoreload", json.get("autoreload"));
+		}
 		builder.addHeader("datasourceName", datasourceName);
 		return callSyncGateway(builder);
 	}

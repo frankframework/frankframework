@@ -119,17 +119,17 @@ public class ConfigManagement {
 			throw new IllegalStateException("configuration ["+configurationName+"] does not exists");
 		}
 		String version = BusMessageUtils.getHeader(message, "version");
-		boolean activate = BusMessageUtils.getHeader(message, "activate", false);
-		boolean autoreload = BusMessageUtils.getHeader(message, "autoreload", false);
+		Boolean activate = BusMessageUtils.getHeader(message, "activate", null);
+		Boolean autoreload = BusMessageUtils.getHeader(message, "autoreload", null);
 		String datasourceName = BusMessageUtils.getHeader(message, "datasourceName");
 
 		try {
-			if(activate) {
+			if(activate != null) {
 				if(ConfigurationUtils.activateConfig(getIbisContext(), configurationName, version, activate, datasourceName)) {
 					return ResponseMessage.accepted();
 				}
 			}
-			else if(autoreload && ConfigurationUtils.autoReloadConfig(getIbisContext(), configurationName, version, autoreload, datasourceName)) {
+			else if(autoreload != null && ConfigurationUtils.autoReloadConfig(getIbisContext(), configurationName, version, autoreload, datasourceName)) {
 				return ResponseMessage.accepted();
 			}
 		} catch(Exception e) {
