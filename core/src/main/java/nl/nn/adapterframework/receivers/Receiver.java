@@ -1023,7 +1023,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 				Date tsReceived = PipeLineSession.getTsReceived(session);
 				Date tsSent = PipeLineSession.getTsSent(session);
-				PipeLineSession.setListenerParameters(session, null, null, tsReceived, tsSent);
+				PipeLineSession.setListenerParameters(session, null, correlationId, tsReceived, tsSent);
 				String messageId = (String) session.get(PipeLineSession.originalMessageIdKey);
 				return processMessageInAdapter(rawMessage, message, messageId, correlationId, session, -1, false, false);
 			} finally {
@@ -1077,7 +1077,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				}
 
 				Message message = null;
-				String replyCorrelationId = null;
+				String messageId = null;
 				try {
 					message = getListener().extractMessage((M)rawMessageOrWrapper, session);
 				} catch (Exception e) {
@@ -1091,20 +1091,20 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					}
 				}
 				try {
-					replyCorrelationId = getListener().getIdFromRawMessage((M)rawMessageOrWrapper, session);
+					messageId = getListener().getIdFromRawMessage((M)rawMessageOrWrapper, session);
 				} catch (Exception e) {
 					if(rawMessageOrWrapper instanceof MessageWrapper) { //somehow messages wrapped in MessageWrapper are in the ITransactionalStorage
 						MessageWrapper<M> wrapper = (MessageWrapper)rawMessageOrWrapper;
-						replyCorrelationId = wrapper.getId(); // TODO: check if this is correct. Isn't the real replyCorrelationId lost in messsageWrapper?
+						messageId = wrapper.getId(); // TODO: check if this is correct. Isn't the real replyCorrelationId lost in messsageWrapper?
 						session.putAll(wrapper.getContext());
 					} else {
 						throw new ListenerException(e);
 					}
 				}
-				String messageId = (String)session.get(PipeLineSession.originalMessageIdKey);
+				String correlationId = (String)session.get(PipeLineSession.correlationIdKey);
 				long endExtractingMessage = System.currentTimeMillis();
 				messageExtractionStatistics.addValue(endExtractingMessage-startExtractingMessage);
-				Message output = processMessageInAdapter(rawMessageOrWrapper, message, messageId, replyCorrelationId, session, waitingDuration, manualRetry, duplicatesAlreadyChecked);
+				Message output = processMessageInAdapter(rawMessageOrWrapper, message, messageId, correlationId, session, waitingDuration, manualRetry, duplicatesAlreadyChecked);
 				try {
 					output.close();
 				} catch (Exception e) {
@@ -1175,7 +1175,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	/*
 	 * Assumes message is read, and when transacted, transaction is still open.
 	 */
-	private Message processMessageInAdapter(Object rawMessageOrWrapper, Message message, String messageId, String replyCorrelationId, PipeLineSession session, long waitingDuration, boolean manualRetry, boolean duplicatesAlreadyChecked) throws ListenerException {
+	private Message processMessageInAdapter(Object rawMessageOrWrapper, Message message, String messageId, String correlationId, PipeLineSession session, long waitingDuration, boolean manualRetry, boolean duplicatesAlreadyChecked) throws ListenerException {
 		long startProcessingTimestamp = System.currentTimeMillis();
 //		if (message==null) {
 //			requestSizeStatistics.addValue(0);
@@ -1183,7 +1183,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 //			requestSizeStatistics.addValue(message.length());
 //		}
 		lastMessageDate = startProcessingTimestamp;
-		log.debug(getLogPrefix()+"received message with messageId ["+messageId+"] (technical) correlationId ["+replyCorrelationId+"]");
+		log.debug(getLogPrefix()+"received message with messageId ["+messageId+"] correlationId ["+correlationId+"]");
 
 		if (StringUtils.isEmpty(messageId)) {
 			messageId=Misc.createSimpleUUID();
@@ -1215,7 +1215,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			}
 		}
 
-		String businessCorrelationId=session.get(PipeLineSession.correlationIdKey, replyCorrelationId);
+		String businessCorrelationId=session.get(PipeLineSession.correlationIdKey, correlationId);
 		if (correlationIDTp!=null) {
 			try {
 				message.preserve();
@@ -1231,9 +1231,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				} else {
 					cidText = "styleSheet ["+getCorrelationIDStyleSheet()+"]";
 				}
-				if (StringUtils.isNotEmpty(replyCorrelationId)) {
-					log.info(getLogPrefix()+"did not find correlationId using "+cidText+", reverting to correlationId of transfer ["+replyCorrelationId+"]");
-					businessCorrelationId=replyCorrelationId;
+				if (StringUtils.isNotEmpty(correlationId)) {
+					log.info(getLogPrefix()+"did not find correlationId using "+cidText+", reverting to correlationId of transfer ["+correlationId+"]");
+					businessCorrelationId=correlationId;
 				}
 			}
 		}
@@ -1241,7 +1241,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			log.info(getLogPrefix()+"did not find (technical) correlationId, reverting to messageId ["+messageId+"]");
 			businessCorrelationId=messageId;
 		}
-		log.info(getLogPrefix()+"messageId [" + messageId + "] replyCorrelationId [" + replyCorrelationId + "] businessCorrelationId [" + businessCorrelationId + "]");
+		log.info(getLogPrefix()+"messageId [" + messageId + "] correlationId [" + correlationId + "] businessCorrelationId [" + businessCorrelationId + "]");
 		session.put(PipeLineSession.correlationIdKey, businessCorrelationId);
 		String label=null;
 		if (labelTp!=null) {
@@ -1393,9 +1393,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 						// This might cause class cast exceptions.
 						// There are, however, also Listeners that might use MessageWrapper as their raw message type,
 						// like JdbcListener
-						error("Exception post processing after retry of message messageId ["+messageId+"] cid ["+replyCorrelationId+"]", e);
+						error("Exception post processing after retry of message messageId ["+messageId+"] cid ["+correlationId+"]", e);
 					} else {
-						error("Exception post processing message messageId ["+messageId+"] cid ["+replyCorrelationId+"]", e);
+						error("Exception post processing message messageId ["+messageId+"] cid ["+correlationId+"]", e);
 					}
 					throw wrapExceptionAsListenerException(e);
 				}
