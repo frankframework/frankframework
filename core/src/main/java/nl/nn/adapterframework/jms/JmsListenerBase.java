@@ -166,7 +166,6 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	protected String retrieveIdFromMessage(javax.jms.Message message, Map<String, Object> threadContext) throws ListenerException {
 		String id = "unset";
 		String cid = "unset";
-		String replyCid = "unset";
 		DeliveryMode mode = null;
 		Date tsSent = null;
 		Destination replyTo=null;
@@ -190,17 +189,6 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 			cid = message.getJMSCorrelationID();
 		} catch (JMSException e) {
 			log.debug("ignoring JMSException in getJMSCorrelationID()", e);
-		}
-		if (isForceMessageIdAsCorrelationId()){
-			if (log.isDebugEnabled()) log.debug("prepare to use the messageID as the reply-correlationID");
-			replyCid =id;
-		}
-		else {
-			replyCid = cid;
-			if (cid==null) {
-				replyCid = id;
-				log.debug("Setting correlation ID to MessageId");
-			}
 		}
 		// --------------------------
 		// retrieve TimeStamp
@@ -233,7 +221,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 				+ "]");
 		}
 
-		PipeLineSession.setListenerParameters(threadContext, id, cid, replyCid, null, tsSent);
+		PipeLineSession.setListenerParameters(threadContext, id, cid, null, tsSent);
 		threadContext.put("timestamp",tsSent);
 		threadContext.put("replyTo",replyTo);
 		try {
@@ -244,7 +232,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		} catch (JMSException e) {
 			log.error("Warning in ack", e);
 		}
-		return replyCid;
+		return id;
 	}
 
 

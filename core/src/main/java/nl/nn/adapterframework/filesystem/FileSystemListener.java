@@ -335,7 +335,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 				messageId+="-"+DateUtils.format(fileSystem.getModificationTime(file));
 			}
 			if (threadContext!=null) {
-				PipeLineSession.setListenerParameters(threadContext, messageId, messageId, messageId, null, null);
+				PipeLineSession.setListenerParameters(threadContext, messageId, messageId, null, null);
 				if (attributes!=null) {
 					threadContext.putAll(attributes);
 				}

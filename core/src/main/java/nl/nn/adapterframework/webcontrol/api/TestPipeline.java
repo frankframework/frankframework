@@ -188,7 +188,6 @@ public class TestPipeline extends Base {
 				pls.putAll(sessionKeyMap);
 			}
 			Map ibisContexts = getIbisContext(message);
-			String technicalCorrelationId = null;
 			if (ibisContexts != null) {
 				String contextDump = "ibisContext:";
 				for (Iterator it = ibisContexts.keySet().iterator(); it.hasNext();) {
@@ -197,18 +196,14 @@ public class TestPipeline extends Base {
 					if (log.isDebugEnabled()) {
 						contextDump = contextDump + "\n " + key + "=[" + value + "]";
 					}
-					if (key.equals(PipeLineSession.technicalCorrelationIdKey)) {
-						technicalCorrelationId = value;
-					} else {
-						pls.put(key, value);
-					}
+					pls.put(key, value);
 				}
 				if (log.isDebugEnabled()) {
 					log.debug(contextDump);
 				}
 			}
 			Date now = new Date();
-			PipeLineSession.setListenerParameters(pls, messageId, null, technicalCorrelationId, now, now);
+			PipeLineSession.setListenerParameters(pls, messageId, null, now, now);
 
 			secLog.info(String.format("testing pipeline of adapter [%s] %s", adapter.getName(), (writeSecLogMessage ? "message [" + message + "]" : "")));
 

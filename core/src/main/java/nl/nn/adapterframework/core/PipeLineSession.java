@@ -43,10 +43,9 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	private Logger log = LogUtil.getLogger(this);
 
 	public static final String originalMessageKey="originalMessage";
-	public static final String originalMessageIdKey="id";            // externally determined messageId, e.g. JmsMessageID, HTTP header configured as messageId
+	public static final String originalMessageIdKey="id";    // externally determined (or generated) messageId, e.g. JmsMessageID, HTTP header configured as messageId
 	public static final String messageIdKey="messageId";
-	public static final String businessCorrelationIdKey="cid";       // conversationId, e.g. JmsCorrelationID, even if not used for sending the reply
-	public static final String technicalCorrelationIdKey="tcid";     // id to be used as correlationId in the reply. Currently determined when reading the request. Also used for moveInProcesToError
+	public static final String correlationIdKey="cid";       // conversationId, e.g. JmsCorrelationID.
 
 	public static final String TS_RECEIVED_KEY = "tsReceived";
 	public static final String TS_SENT_KEY = "tsSent";
@@ -125,17 +124,13 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	/**
 	 * Convenience method to set required parameters from listeners
-	 * @param conversationId TODO
 	 */
-	public static void setListenerParameters(Map<String, Object> map, String messageId, String conversationId, String replyCorrelationId, Date tsReceived, Date tsSent) {
+	public static void setListenerParameters(Map<String, Object> map, String messageId, String correlationId, Date tsReceived, Date tsSent) {
 		if (messageId!=null) {
 			map.put(originalMessageIdKey, messageId);
 		}
-		if (conversationId!=null) {
-			map.put(businessCorrelationIdKey, conversationId);
-		}
-		if (replyCorrelationId!=null) {
-			map.put(technicalCorrelationIdKey, replyCorrelationId);
+		if (correlationId!=null) {
+			map.put(correlationIdKey, correlationId);
 		}
 		if (tsReceived==null) {
 			tsReceived=new Date();

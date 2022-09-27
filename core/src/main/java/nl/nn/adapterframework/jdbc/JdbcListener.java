@@ -259,7 +259,7 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 			id = (String)rawMessage;
 		}
 		if (context!=null) {
-			PipeLineSession.setListenerParameters(context, id, id, id, null, null);
+			PipeLineSession.setListenerParameters(context, id, id, null, null);
 		}
 		return id;
 	}

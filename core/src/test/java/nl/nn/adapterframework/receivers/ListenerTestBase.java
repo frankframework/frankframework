@@ -49,14 +49,13 @@ public abstract class ListenerTestBase<M extends Object, S extends IListener<M>>
 	public void setUp() throws Exception {
 		String messageId = "testmessageac13ecb1--30fe9225_16caa708707_-7fb1";
 		String correlationId = "testmessageac13ecb1--30fe9225_16caa708707_-7fb2";
-		String replyCorrelationId = "testmessageac13ecb1--30fe9225_16caa708707_-7fb3";
 		if(listener instanceof IPullingListener) {
 			threadContext = ((IPullingListener<M>) listener).openThread();
 		} else {
 			threadContext = new HashMap<>();
 		}
 
-		PipeLineSession.setListenerParameters(threadContext, messageId, correlationId, replyCorrelationId, null, null);
+		PipeLineSession.setListenerParameters(threadContext, messageId, correlationId, null, null);
 		listener = createListener();
 	}
 

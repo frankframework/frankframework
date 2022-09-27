@@ -919,7 +919,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		plr.setResult(result);
 		plr.setState(ExitState.ERROR);
 		if (getSender()!=null) {
-			String sendMsg = sendResultToSender(result, messageId);
+			String sendMsg = sendResultToSender(result);
 			if (sendMsg != null) {
 				log.warn("problem sending result:"+sendMsg);
 			}
@@ -1023,7 +1023,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 				Date tsReceived = PipeLineSession.getTsReceived(session);
 				Date tsSent = PipeLineSession.getTsSent(session);
-				PipeLineSession.setListenerParameters(session, null, null, correlationId, tsReceived, tsSent);
+				PipeLineSession.setListenerParameters(session, null, null, tsReceived, tsSent);
 				String messageId = (String) session.get(PipeLineSession.originalMessageIdKey);
 				return processMessageInAdapter(rawMessage, message, messageId, correlationId, session, -1, false, false);
 			} finally {
@@ -1152,7 +1152,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				IbisTransaction itxErrorStorage = new IbisTransaction(txManager, TXNEW_CTRL, "errorStorage of receiver [" + getName() + "]");
 				try {
 					String originalMessageId = (String)session.get(PipeLineSession.originalMessageIdKey);
-					String correlationId = (String)session.get(PipeLineSession.businessCorrelationIdKey);
+					String correlationId = (String)session.get(PipeLineSession.correlationIdKey);
 					String receivedDateStr = (String)session.get(PipeLineSession.TS_RECEIVED_KEY);
 					if (receivedDateStr==null) {
 						log.warn(getLogPrefix()+PipeLineSession.TS_RECEIVED_KEY+" is unknown, cannot update comments");
@@ -1215,7 +1215,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			}
 		}
 
-		String businessCorrelationId=session.get(PipeLineSession.businessCorrelationIdKey, replyCorrelationId);
+		String businessCorrelationId=session.get(PipeLineSession.correlationIdKey, replyCorrelationId);
 		if (correlationIDTp!=null) {
 			try {
 				message.preserve();
@@ -1242,7 +1242,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			businessCorrelationId=messageId;
 		}
 		log.info(getLogPrefix()+"messageId [" + messageId + "] replyCorrelationId [" + replyCorrelationId + "] businessCorrelationId [" + businessCorrelationId + "]");
-		session.put(PipeLineSession.businessCorrelationIdKey, businessCorrelationId);
+		session.put(PipeLineSession.correlationIdKey, businessCorrelationId);
 		String label=null;
 		if (labelTp!=null) {
 			try {
@@ -1364,7 +1364,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				throw wrapExceptionAsListenerException(t);
 			}
 			if (getSender()!=null) {
-				String sendMsg = sendResultToSender(result, replyCorrelationId);
+				String sendMsg = sendResultToSender(result);
 				if (sendMsg != null) {
 					errorMessage = sendMsg;
 				}
@@ -1765,14 +1765,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	public boolean isInRunState(RunState someRunState) {
 		return runState.getRunState()==someRunState;
 	}
-	private String sendResultToSender(Message result, String replyCorrelationId) {
+	private String sendResultToSender(Message result) {
 		String errorMessage = null;
 		try {
 			if (getSender() != null) {
 				if (log.isDebugEnabled()) { log.debug("Receiver ["+getName()+"] sending result to configured sender"); }
-				PipeLineSession pipeLineSession = new PipeLineSession();
-				pipeLineSession.put(PipeLineSession.messageIdKey, replyCorrelationId);
-				getSender().sendMessage(result, pipeLineSession);
+				getSender().sendMessage(result, null); // sending correlated responses via a receiver embedded sender is not supported
 			}
 		} catch (Exception e) {
 			String msg = "caught exception in message post processing";
@@ -1961,6 +1959,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	/**
 	 * Sender to which the response (output of {@link PipeLine}) should be sent. Applies if the receiver
 	 * has an asynchronous listener.
+	 * N.B. Sending correlated responses via this sender is not supported.
 	 */
 	public void setSender(ISender sender) {
 		this.sender = sender;

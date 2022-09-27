@@ -58,7 +58,7 @@ public class SenderThread extends Thread {
 			if (session==null) {
 				session = new PipeLineSession();
 			}
-			session.put(PipeLineSession.businessCorrelationIdKey, correlationId);
+			session.put(PipeLineSession.correlationIdKey, correlationId);
 			response = sender.sendMessage(new Message(request), session).asString();
 		} catch(SenderException e) {
 			if (convertExceptionToMessage) {

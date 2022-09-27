@@ -173,7 +173,14 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 
 	@Override
 	public void afterMessageProcessed(PipeLineResult plr, Object rawMessageOrWrapper, Map<String,Object> threadContext) throws ListenerException {
-		String cid = (String) threadContext.get(PipeLineSession.technicalCorrelationIdKey);
+		String cid = null;
+		
+		if (!isForceMessageIdAsCorrelationId()) {
+			cid = (String) threadContext.get(PipeLineSession.correlationIdKey);
+		}
+		if (StringUtils.isEmpty(cid)) {
+			cid = (String) threadContext.get(PipeLineSession.originalMessageIdKey);
+		}
 
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"in PullingJmsListener.afterMessageProcessed()");
 		try {

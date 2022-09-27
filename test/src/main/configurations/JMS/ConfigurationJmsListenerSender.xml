@@ -190,48 +190,16 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 
-			<CompareStringPipe name="compareIdAndTcid" >
-				<param name="operand1" sessionKey="id"/>
-				<param name="operand2" sessionKey="tcid"/>
-				<forward name="equals" path="IdAndTcidSame" />
-				<forward name="lessthan" path="IdAndTcidDifferent" />
-				<forward name="greaterthan" path="IdAndTcidDifferent" />
-			</CompareStringPipe>
-			
-			<FixedResultPipe name="IdAndTcidSame" returnString="true" storeResultInSessionKey="IdAndTcidSame">
-				<forward name="success" path="compareIdAndMid" />
-			</FixedResultPipe>
-			<FixedResultPipe name="IdAndTcidDifferent" returnString="false" storeResultInSessionKey="IdAndTcidSame">
-				<forward name="success" path="compareIdAndMid" />
-			</FixedResultPipe>
-			
-			<CompareStringPipe name="compareIdAndMid" >
-				<param name="operand1" sessionKey="id"/>
-				<param name="operand2" sessionKey="messageId"/>
-				<forward name="equals" path="IdAndMidSame" />
-				<forward name="lessthan" path="IdAndMidDifferent" />
-				<forward name="greaterthan" path="IdAndMidDifferent" />
-			</CompareStringPipe>
-			
-			<FixedResultPipe name="IdAndMidSame" returnString="true" storeResultInSessionKey="IdAndMidSame">
-				<forward name="success" path="displayKeys" />
-			</FixedResultPipe>
-			<FixedResultPipe name="IdAndMidDifferent" returnString="false" storeResultInSessionKey="IdAndMidSame">
-				<forward name="success" path="displayKeys" />
-			</FixedResultPipe>
-			
-			<pipe name="displayKeys" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="branch [BRANCH] Orignal Id [ORIGINALID] tcid [TID] id=tcid [SAME1] cid [CID] messageId [MESSAGEID]" replaceFixedParams="true">
+			<pipe name="displayKeys" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="branch [BRANCH] Orignal Id [ORIGINALID] cid [CID] messageId [MESSAGEID]" replaceFixedParams="true">
 				<param name="BRANCH" sessionKey="originalMessage" xpathExpression="*/@branch" />
 				<param name="ORIGINALID" sessionKey="id" />
-				<param name="TID" sessionKey="tcid" />
-				<param name="SAME1" sessionKey="IdAndTcidSame" />
-				<param name="SAME2" sessionKey="IdAndMidSame" />
 				<param name="CID" sessionKey="cid" />
 				<param name="MESSAGEID" sessionKey="messageId" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
 	</adapter>
+
 	<adapter name="JmsFFSender" description="Test the functioning of the JmsSender (FF)"
 		active="${active.jms}">
 		<receiver name="JmsFFSender">

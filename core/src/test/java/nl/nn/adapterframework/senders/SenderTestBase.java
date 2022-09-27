@@ -43,9 +43,9 @@ public abstract class SenderTestBase<S extends ISender> extends ConfiguredTestBa
 		super.setUp();
 		session = new PipeLineSession();
 		String messageId = "testmessageac13ecb1--30fe9225_16caa708707_-7fb1";
-		String technicalCorrelationId = "testmessageac13ecb1--30fe9225_16caa708707_-7fb2";
+		String correlationId = "testmessageac13ecb1--30fe9225_16caa708707_-7fb2";
 		session.put(PipeLineSession.messageIdKey, messageId);
-		session.put(PipeLineSession.technicalCorrelationIdKey, technicalCorrelationId);
+		session.put(PipeLineSession.correlationIdKey, correlationId);
 		sender = createSender();
 		getConfiguration().autowireByType(sender);
 	}

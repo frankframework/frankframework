@@ -149,7 +149,15 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 
 	@Override
 	public void afterMessageProcessed(PipeLineResult plr, Object rawMessageOrWrapper, Map<String, Object> threadContext) throws ListenerException {
-		String cid     = (String) threadContext.get(PipeLineSession.technicalCorrelationIdKey);
+		String cid = null;
+		
+		if (!isForceMessageIdAsCorrelationId()) {
+			cid = (String) threadContext.get(PipeLineSession.correlationIdKey);
+		}
+		if (StringUtils.isEmpty(cid)) {
+			cid = (String) threadContext.get(PipeLineSession.originalMessageIdKey);
+		}
+
 		Session session= (Session) threadContext.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY); // session is/must be saved in threadcontext by JmsConnector
 
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"in PushingJmsListener.afterMessageProcessed()");
