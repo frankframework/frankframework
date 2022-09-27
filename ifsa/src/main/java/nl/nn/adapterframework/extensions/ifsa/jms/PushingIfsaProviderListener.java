@@ -196,7 +196,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 				originalRawMessage = (javax.jms.Message)threadContext.get(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
 			}
 			if (originalRawMessage==null) {
-				String cid = (String) threadContext.get(PipeLineSession.businessCorrelationIdKey);
+				String cid = (String) threadContext.get(PipeLineSession.correlationIdKey);
 				log.warn(getLogPrefix()+"no original raw message found for correlationId ["+cid+"], cannot send result");
 			} else {
 				if (session==null) {
@@ -387,7 +387,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 //			}
 //		}
 
-		PipeLineSession.setListenerParameters(threadContext, id, null, BIFname, null, tsSent);
+		PipeLineSession.setListenerParameters(threadContext, id, null, null, tsSent);
 	    threadContext.put("timestamp", tsSent);
 	    threadContext.put("replyTo", ((replyTo == null) ? "none" : replyTo.toString()));
 	    threadContext.put("messageText", messageText);
