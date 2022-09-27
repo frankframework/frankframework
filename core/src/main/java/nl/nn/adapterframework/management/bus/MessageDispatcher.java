@@ -21,7 +21,6 @@ import java.beans.Introspector;
 import java.beans.MethodDescriptor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.EnumMap;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
@@ -40,6 +39,8 @@ import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.integration.filter.MessageFilter;
 import org.springframework.integration.handler.MessageHandlerChain;
 import org.springframework.integration.handler.ServiceActivatingHandler;
+import org.springframework.integration.selector.MessageSelectorChain;
+import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.messaging.SubscribableChannel;
@@ -54,7 +55,6 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 	private @Setter BeanFactory beanFactory;
 	private @Setter ApplicationContext applicationContext;
 	private MessageChannel nullChannel;
-	private EnumMap<BusTopic, MessageFilter> messageTopicFilters = new EnumMap<>(BusTopic.class);
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -113,55 +113,45 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 	}
 
 	private void registerServiceActivator(Object bean, Method method, SubscribableChannel channel, BusTopic topic) {
+		String componentName = bean.getClass().getSimpleName()+"."+method.getName();
 		ServiceActivatingHandler serviceActivator = new ServiceActivatingHandler(bean, method);
 		serviceActivator.setRequiresReply(method.getReturnType() != void.class);
+		serviceActivator.setComponentName(componentName);
+		serviceActivator.setManagedName("@"+componentName);
 		initializeBean(serviceActivator);
 
-		List<MessageHandler> handlers = new ArrayList<>();
-		handlers.add(getMessageTopicFilter(topic));
+		MessageSelectorChain selectors = new MessageSelectorChain();
 		ActionSelector action = AnnotationUtils.findAnnotation(method, ActionSelector.class);
 		if(action != null) {
-			handlers.add(getMessageActionFilter(action.value())); //Optional ActionHeader filter
+			selectors.add(message -> actionSelector(message, action));
 		}
+		selectors.add(message -> {
+			String topicHeader = (String) message.getHeaders().get(TopicSelector.TOPIC_HEADER_NAME);
+			return topic.name().equalsIgnoreCase(topicHeader);
+		});
+
+		MessageFilter filter = new MessageFilter(selectors);
+		filter.setDiscardChannel(nullChannel);
+		initializeBean(filter);
+
+		List<MessageHandler> handlers = new ArrayList<>();
+		handlers.add(filter);
 		handlers.add(serviceActivator);
 
 		MessageHandlerChain chain = new MessageHandlerChain();
 		chain.setHandlers(handlers);
 		initializeBean(chain);
 		if(channel.subscribe(chain)) {
-			System.out.println("registered new ServiceActivator ["+bean.getClass().getCanonicalName()+"] method ["+method.getName()+"] topic ["+topic+"] action ["+(action != null?action.value():"*")+"]");
+			log.info("registered new ServiceActivator [{}] on topic [{}] with action [{}]", componentName, topic, (action != null?action.value():"*"));
 		} else {
-			System.out.println("unable to register ServiceActivator ["+bean.getClass().getCanonicalName()+"]");
+			log.info("unable to register ServiceActivator [{}]", componentName);
 		}
 	}
 
-	//Multiple methods can subscribe to the same BusTopic, filters are re-used
-	private MessageFilter getMessageTopicFilter(BusTopic topic) {
-		return messageTopicFilters.computeIfAbsent(topic, this::compute);
-	}
-
-	private MessageFilter compute(BusTopic topic) {
-		MessageFilter filter = new MessageFilter(message -> {
-			String action = (String) message.getHeaders().get(TopicSelector.TOPIC_HEADER_NAME);
-			return topic.name().equalsIgnoreCase(action);
-		});
-
-		filter.setDiscardChannel(nullChannel);
-		initializeBean(filter);
-		return filter;
-	}
-
-	//Some methods might have an action
-	private MessageFilter getMessageActionFilter(String actionFilter) {
-		MessageFilter filter = new MessageFilter(message -> {
-			String actionHeader = (String) message.getHeaders().get(ActionSelector.ACTION_HEADER_NAME);
-			System.out.println("filter for ["+actionFilter+"] got ["+actionHeader+"]");
-			return actionFilter.equalsIgnoreCase(actionHeader);
-		});
-
-		filter.setDiscardChannel(nullChannel);
-		initializeBean(filter, actionFilter);
-		return filter;
+	private boolean actionSelector(Message<?> message, ActionSelector action) {
+		String actionFilter = action.value();
+		String actionHeader = (String) message.getHeaders().get(ActionSelector.ACTION_HEADER_NAME);
+		return actionFilter.equalsIgnoreCase(actionHeader);
 	}
 
 	private Class<?> getBeanClass(BeanDefinition beanDef) throws ClassNotFoundException {
@@ -183,9 +173,5 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 
 	private final void initializeBean(Object bean) {
 		applicationContext.getAutowireCapableBeanFactory().initializeBean(bean, bean.getClass().getCanonicalName());
-	}
-
-	private final void initializeBean(Object bean, String name) {
-		applicationContext.getAutowireCapableBeanFactory().initializeBean(bean, name);
 	}
 }

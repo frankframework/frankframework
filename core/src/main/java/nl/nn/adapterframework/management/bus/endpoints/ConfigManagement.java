@@ -64,9 +64,12 @@ public class ConfigManagement {
 
 	private String orderBy = AppConstants.getInstance().getProperty("iaf-api.configurations.orderby", "version").trim();
 	private @Getter @Setter IbisManager ibisManager;
-	private @Getter @Setter IbisContext ibisContext;
 	private Logger log = LogUtil.getLogger(this);
 	private static final String HEADER_CONFIGURATION_KEY = "configuration";
+
+	private IbisContext getIbisContext() {
+		return ibisManager.getIbisContext();
+	}
 
 	@ActionSelector("xml")
 	public Message<String> getXMLConfiguration(Message<?> message) {
