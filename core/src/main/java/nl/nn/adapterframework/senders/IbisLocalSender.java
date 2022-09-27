@@ -202,7 +202,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 
 	@Override
 	public SenderResult sendMessageAndProvideForwardName(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		String correlationID = session==null ? null : session.getMessageId();
+		String correlationID = session==null ? null : session.getCorrelationId();
 		Message result = null;
 		try (PipeLineSession context = new PipeLineSession()) {
 			if (paramList!=null) {

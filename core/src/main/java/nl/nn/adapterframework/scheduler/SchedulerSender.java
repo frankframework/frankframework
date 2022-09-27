@@ -87,7 +87,7 @@ public class SchedulerSender extends SenderWithParametersBase {
 	@Override
 	public Message sendMessage(Message message, PipeLineSession session) throws SenderException {
 		try {
-			String correlationID = session==null ? "" : session.getMessageId();
+			String correlationID = session==null ? "" : session.getCorrelationId();
 			ParameterValueList values = paramList.getValues(message, session);
 			String jobName = getName() + correlationID;
 			String cronExpression = values.get("_cronexpression").asStringValue();

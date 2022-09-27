@@ -149,13 +149,13 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 
 	@Override
 	public void afterMessageProcessed(PipeLineResult plr, Object rawMessageOrWrapper, Map<String, Object> threadContext) throws ListenerException {
-		String cid = null;
+		String replyCid = null;
 
 		if (!isForceMessageIdAsCorrelationId()) {
-			cid = (String) threadContext.get(PipeLineSession.correlationIdKey);
+			replyCid = (String) threadContext.get(PipeLineSession.correlationIdKey);
 		}
-		if (StringUtils.isEmpty(cid)) {
-			cid = (String) threadContext.get(PipeLineSession.originalMessageIdKey);
+		if (StringUtils.isEmpty(replyCid)) {
+			replyCid = (String) threadContext.get(PipeLineSession.messageIdKey);
 		}
 
 		Session session= (Session) threadContext.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY); // session is/must be saved in threadcontext by JmsConnector
@@ -170,7 +170,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 			// handle reply
 			if (replyTo != null) {
 
-				log.debug(getLogPrefix()+"sending reply message with correlationID[" + cid + "], replyTo [" + replyTo.toString()+ "]");
+				log.debug(getLogPrefix()+"sending reply message with correlationID[" + replyCid + "], replyTo [" + replyTo.toString()+ "]");
 				long timeToLive = getReplyMessageTimeToLive();
 				boolean ignoreInvalidDestinationException = false;
 				if (timeToLive == 0) {
@@ -180,7 +180,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 						if (expiration!=0) {
 							timeToLive=expiration-new Date().getTime();
 							if (timeToLive<=0) {
-								log.warn(getLogPrefix()+"message ["+cid+"] expired ["+timeToLive+"]ms, sending response with 1 second time to live");
+								log.warn(getLogPrefix()+"message ["+replyCid+"] expired ["+timeToLive+"]ms, sending response with 1 second time to live");
 								timeToLive=1000;
 								// In case of a temporary queue it might already
 								// have disappeared.
@@ -188,22 +188,22 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 							}
 						}
 					} else {
-						log.warn(getLogPrefix()+"message with correlationID ["+cid+"] is not a JMS message, but ["+rawMessageOrWrapper.getClass().getName()+"], cannot determine time to live ["+timeToLive+"]ms, sending response with 20 second time to live");
+						log.warn(getLogPrefix()+"message with correlationID ["+replyCid+"] is not a JMS message, but ["+rawMessageOrWrapper.getClass().getName()+"], cannot determine time to live ["+timeToLive+"]ms, sending response with 20 second time to live");
 						timeToLive=1000;
 						ignoreInvalidDestinationException = true;
 					}
 				}
 				Map<String, Object> properties = getMessageProperties(threadContext);
-				send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, getReplyDeliveryMode().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException, properties);
+				send(session, replyTo, replyCid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, getReplyDeliveryMode().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException, properties);
 			} else {
 				if (getSender()==null) {
 					log.info("["+getName()+"] no replyTo address found or not configured to use replyTo, and no sender, not sending the result.");
 				} else {
 					if (log.isDebugEnabled()) {
-						log.debug("["+getName()+"] no replyTo address found or not configured to use replyTo, using sending message on nested sender with correlationID[" + cid + "] [" + plr.getResult() + "]");
+						log.debug("["+getName()+"] no replyTo address found or not configured to use replyTo, using sending message on nested sender with correlationID[" + replyCid + "] [" + plr.getResult() + "]");
 					}
 					PipeLineSession pipeLineSession = new PipeLineSession();
-					pipeLineSession.put(PipeLineSession.messageIdKey,cid);
+					pipeLineSession.put(PipeLineSession.correlationIdKey,replyCid);
 					getSender().sendMessage(plr.getResult(), pipeLineSession);
 				}
 			}

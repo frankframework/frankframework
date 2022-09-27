@@ -54,7 +54,7 @@ public class ThreadConnector<T> implements AutoCloseable {
 		transactionConnector = TransactionConnector.getInstance(txManager, owner, description);
 	}
 	public ThreadConnector(Object owner, String description, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, PipeLineSession session) {
-		this(owner, description, threadLifeCycleEventListener, txManager, session==null?null:session.getMessageId());
+		this(owner, description, threadLifeCycleEventListener, txManager, session==null?null:session.getCorrelationId());
 	}
 
 	public <R> R startThread(R input) {

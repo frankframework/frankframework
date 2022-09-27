@@ -354,7 +354,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		return configurationSucceeded;
 	}
 
-	private void showProcessingContext(String correlationId, String messageId, PipeLineSession session) {
+	private void showProcessingContext(String messageId, String correlationId, PipeLineSession session) {
 		if (log.isDebugEnabled()) {
 			List<String> hiddenSessionKeys = new ArrayList<>();
 			if (getHiddenInputSessionKeys()!=null) {
@@ -1024,7 +1024,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				Date tsReceived = PipeLineSession.getTsReceived(session);
 				Date tsSent = PipeLineSession.getTsSent(session);
 				PipeLineSession.setListenerParameters(session, null, correlationId, tsReceived, tsSent);
-				String messageId = (String) session.get(PipeLineSession.originalMessageIdKey);
+				String messageId = (String) session.get(PipeLineSession.messageIdKey);
 				return processMessageInAdapter(rawMessage, message, messageId, correlationId, session, -1, false, false);
 			} finally {
 				if (sessionCreated) {
@@ -1151,7 +1151,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			} catch (ListenerException e) {
 				IbisTransaction itxErrorStorage = new IbisTransaction(txManager, TXNEW_CTRL, "errorStorage of receiver [" + getName() + "]");
 				try {
-					String originalMessageId = (String)session.get(PipeLineSession.originalMessageIdKey);
+					String messageId = (String)session.get(PipeLineSession.messageIdKey);
 					String correlationId = (String)session.get(PipeLineSession.correlationIdKey);
 					String receivedDateStr = (String)session.get(PipeLineSession.TS_RECEIVED_KEY);
 					if (receivedDateStr==null) {
@@ -1159,7 +1159,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					} else {
 						Date receivedDate = DateUtils.parseToDate(receivedDateStr,DateUtils.FORMAT_FULL_GENERIC);
 						errorStorage.deleteMessage(storageKey);
-						errorStorage.storeMessage(originalMessageId, correlationId,receivedDate,"after retry: "+e.getMessage(),null, msg);
+						errorStorage.storeMessage(messageId, correlationId,receivedDate,"after retry: "+e.getMessage(),null, msg);
 					}
 				} catch (SenderException e1) {
 					itxErrorStorage.setRollbackOnly();
@@ -1304,7 +1304,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			}
 
 			numReceived.increase();
-			showProcessingContext(businessCorrelationId, messageId, session);
+			showProcessingContext(messageId, businessCorrelationId, session);
 //			threadContext=pipelineSession; // this is to enable Listeners to use session variables, for instance in afterProcessMessage()
 			try {
 				if (getMessageLog()!=null) {
@@ -1315,7 +1315,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				try {
 					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"activating TimeoutGuard with transactionTimeout ["+getTransactionTimeout()+"]s");
 					tg.activateGuard(getTransactionTimeout());
-					pipeLineResult = adapter.processMessageWithExceptions(businessCorrelationId, pipelineMessage, session);
+					pipeLineResult = adapter.processMessageWithExceptions(messageId, pipelineMessage, session);
 					setExitState(session, pipeLineResult.getState(), pipeLineResult.getExitCode());
 					session.put("exitcode", ""+ pipeLineResult.getExitCode());
 					result=pipeLineResult.getResult();

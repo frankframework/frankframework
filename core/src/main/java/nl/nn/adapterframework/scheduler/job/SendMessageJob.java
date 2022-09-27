@@ -61,7 +61,7 @@ public class SendMessageJob extends JobDef {
 			//sendMessage message cannot be NULL
 			Message message = new Message((getMessage()==null) ? "" : getMessage());
 			PipeLineSession session = new PipeLineSession();
-			session.put(PipeLineSession.messageIdKey, Misc.createSimpleUUID()); //Create a dummy messageId so the localSender uses it as correlationId for the calling adapter.
+			session.put(PipeLineSession.correlationIdKey, Misc.createSimpleUUID()); //Create a dummy messageId so the localSender uses it as correlationId for the calling adapter.
 			localSender.sendMessage(message, session);
 		}
 		catch (SenderException e) {

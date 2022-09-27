@@ -154,7 +154,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	public Message sendMessage(Message message, PipeLineSession session, String soapHeader) throws SenderException, TimeoutException {
 		Session s = null;
 		MessageProducer mp = null;
-		String correlationID = session==null ? null : session.getMessageId();
+		String correlationID = session==null ? null : session.getCorrelationId();
 
 		ParameterValueList pvl=null;
 		if (paramList != null) {

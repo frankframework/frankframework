@@ -173,13 +173,13 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 
 	@Override
 	public void afterMessageProcessed(PipeLineResult plr, Object rawMessageOrWrapper, Map<String,Object> threadContext) throws ListenerException {
-		String cid = null;
+		String replyCid = null;
 
 		if (!isForceMessageIdAsCorrelationId()) {
-			cid = (String) threadContext.get(PipeLineSession.correlationIdKey);
+			replyCid = (String) threadContext.get(PipeLineSession.correlationIdKey);
 		}
-		if (StringUtils.isEmpty(cid)) {
-			cid = (String) threadContext.get(PipeLineSession.originalMessageIdKey);
+		if (StringUtils.isEmpty(replyCid)) {
+			replyCid = (String) threadContext.get(PipeLineSession.messageIdKey);
 		}
 
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"in PullingJmsListener.afterMessageProcessed()");
@@ -189,7 +189,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 			// handle reply
 			if (isUseReplyTo() && (replyTo != null)) {
 
-				log.debug(getLogPrefix()+"sending reply message with correlationID [" + cid + "], replyTo [" + replyTo.toString()+ "]");
+				log.debug(getLogPrefix()+"sending reply message with correlationID [" + replyCid + "], replyTo [" + replyTo.toString()+ "]");
 				long timeToLive = getReplyMessageTimeToLive();
 				boolean ignoreInvalidDestinationException = false;
 				if (timeToLive == 0) {
@@ -199,7 +199,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 						if (expiration!=0) {
 							timeToLive=expiration-new Date().getTime();
 							if (timeToLive<=0) {
-								log.warn(getLogPrefix()+"message ["+cid+"] expired ["+timeToLive+"]ms, sending response with 1 second time to live");
+								log.warn(getLogPrefix()+"message ["+replyCid+"] expired ["+timeToLive+"]ms, sending response with 1 second time to live");
 								timeToLive=1000;
 								// In case of a temporary queue it might already
 								// have disappeared.
@@ -207,7 +207,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 							}
 						}
 					} else {
-						log.warn(getLogPrefix()+"message with correlationID ["+cid+"] is not a JMS message, but ["+rawMessageOrWrapper.getClass().getName()+"], cannot determine time to live ["+timeToLive+"]ms, sending response with 20 second time to live");
+						log.warn(getLogPrefix()+"message with correlationID ["+replyCid+"] is not a JMS message, but ["+rawMessageOrWrapper.getClass().getName()+"], cannot determine time to live ["+timeToLive+"]ms, sending response with 20 second time to live");
 						timeToLive=1000;
 						ignoreInvalidDestinationException = true;
 					}
@@ -216,22 +216,22 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 				if (session==null) {
 					try {
 						session=getSession(threadContext);
-						send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, getReplyDeliveryMode().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException);
+						send(session, replyTo, replyCid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, getReplyDeliveryMode().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException);
 					} finally {
 						releaseSession(session);
 					}
 				} else {
-					send(session, replyTo, cid, plr.getResult(), getReplyMessageType(), timeToLive, getReplyDeliveryMode().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException);
+					send(session, replyTo, replyCid, plr.getResult(), getReplyMessageType(), timeToLive, getReplyDeliveryMode().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException);
 				}
 			} else {
 				if (getSender()==null) {
 					log.debug(getLogPrefix()+"itself has no sender to send the result (An enclosing Receiver might still have one).");
 				} else {
 					if (log.isDebugEnabled()) {
-						log.debug(getLogPrefix()+ "no replyTo address found or not configured to use replyTo, using default destination sending message with correlationID[" + cid + "] [" + plr.getResult() + "]");
+						log.debug(getLogPrefix()+ "no replyTo address found or not configured to use replyTo, using default destination sending message with correlationID[" + replyCid + "] [" + plr.getResult() + "]");
 					}
 					PipeLineSession pipeLineSession = new PipeLineSession();
-					pipeLineSession.put(PipeLineSession.messageIdKey,cid);
+					pipeLineSession.put(PipeLineSession.correlationIdKey,replyCid);
 					getSender().sendMessage(plr.getResult(), pipeLineSession);
 				}
 			}
@@ -261,7 +261,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 				} else {
 					// TODO: dit weghalen. Het hoort hier niet, en zit ook al in getIdFromRawMessage. Daar hoort het ook niet, overigens...
 					if (getAcknowledgeModeEnum() == AcknowledgeMode.CLIENT_ACKNOWLEDGE) {
-						log.debug("["+getName()+"] acknowledges message with id ["+cid+"]");
+						log.debug("["+getName()+"] acknowledges message with id ["+replyCid+"]");
 						((TextMessage)rawMessageOrWrapper).acknowledge();
 					}
 				}

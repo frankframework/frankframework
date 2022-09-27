@@ -245,7 +245,7 @@ public class PullingIfsaProviderListener extends IfsaFacade implements IPullingL
 				originalRawMessage = (javax.jms.Message)threadContext.get(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
 			}
 			if (originalRawMessage==null) {
-				String id = (String) threadContext.get(PipeLineSession.originalMessageIdKey);
+				String id = (String) threadContext.get(PipeLineSession.messageIdKey);
 				String cid = (String) threadContext.get(PipeLineSession.correlationIdKey);
 				log.warn(getLogPrefix()+"no original raw message found for messageId ["+id+"] correlationId ["+cid+"], cannot send result");
 			} else {
