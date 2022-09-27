@@ -43,7 +43,6 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	private Logger log = LogUtil.getLogger(this);
 
 	public static final String originalMessageKey="originalMessage";
-	public static final String originalMessageIdKey="id";    
 	public static final String messageIdKey="mid";           // externally determined (or generated) messageId, e.g. JmsMessageID, HTTP header configured as messageId
 	public static final String correlationIdKey="cid";       // conversationId, e.g. JmsCorrelationID.
 

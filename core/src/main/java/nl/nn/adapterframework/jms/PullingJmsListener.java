@@ -244,12 +244,12 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 					// the following if transacted using transacted sessions, instead of XA-enabled sessions.
 					Session session = (Session)threadContext.get(THREAD_CONTEXT_SESSION_KEY);
 					if (session == null) {
-						log.warn("Listener ["+getName()+"] message ["+ (String)threadContext.get(PipeLineSession.originalMessageIdKey) +"] has no session to commit or rollback");
+						log.warn("Listener ["+getName()+"] message ["+ (String)threadContext.get(PipeLineSession.messageIdKey) +"] has no session to commit or rollback");
 					} else {
 						if (plr.getState()==ExitState.SUCCESS) {
 							session.commit();
 						} else {
-							log.warn("Listener ["+getName()+"] message ["+ (String)threadContext.get(PipeLineSession.originalMessageIdKey) +"] not committed nor rolled back either");
+							log.warn("Listener ["+getName()+"] message ["+ (String)threadContext.get(PipeLineSession.messageIdKey) +"] not committed nor rolled back either");
 							//TODO: enable rollback, or remove support for JmsTransacted altogether (XA-transactions should do it all)
 							// session.rollback();
 						}
