@@ -150,7 +150,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 	@Override
 	public void afterMessageProcessed(PipeLineResult plr, Object rawMessageOrWrapper, Map<String, Object> threadContext) throws ListenerException {
 		String cid = null;
-		
+
 		if (!isForceMessageIdAsCorrelationId()) {
 			cid = (String) threadContext.get(PipeLineSession.correlationIdKey);
 		}
@@ -319,9 +319,9 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 		super.setDestinationName(destinationName);
 	}
 
-	/** 
-	 * Name of the JMS destination (queue or topic) to use for sending replies. If <code>useReplyTo</code>=<code>true</code>, 
-	 * the sender specified reply destination takes precedence over this one. 
+	/**
+	 * Name of the JMS destination (queue or topic) to use for sending replies. If <code>useReplyTo</code>=<code>true</code>,
+	 * the sender specified reply destination takes precedence over this one.
 	 */
 	public void setReplyDestinationName(String destinationName) {
 		this.replyDestinationName = destinationName;
