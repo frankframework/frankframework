@@ -11,7 +11,8 @@ Upcoming (7.9)
 ### Non backwards compatible changes
 
 - IbisLocalSender no longer throws exceptions if exit.state="ERROR" situations, but provides forwardName 'exception'. The sessionKey 'originalResult' is no longer used.
-- For sending replies from the JmsListener to a fixed destination the attribute 'replyDestinationName' should be used instead of a nested JmsSender, to avoid clutter in the debugger reports 
+- For sending replies from the JmsListener to a fixed destination the attribute 'replyDestinationName' should be used instead of a nested JmsSender, to avoid clutter in the debugger reports
+- Session variable 'id' has been renamed 'mid', session variables 'messageId' and 'tcid' have been removed.
 
 
 

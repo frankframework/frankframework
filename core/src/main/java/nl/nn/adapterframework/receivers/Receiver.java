@@ -1101,7 +1101,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 						throw new ListenerException(e);
 					}
 				}
-				String correlationId = (String)session.get(PipeLineSession.correlationIdKey);
+				String correlationId = session.getCorrelationId();
 				long endExtractingMessage = System.currentTimeMillis();
 				messageExtractionStatistics.addValue(endExtractingMessage-startExtractingMessage);
 				Message output = processMessageInAdapter(rawMessageOrWrapper, message, messageId, correlationId, session, waitingDuration, manualRetry, duplicatesAlreadyChecked);
@@ -1151,8 +1151,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			} catch (ListenerException e) {
 				IbisTransaction itxErrorStorage = new IbisTransaction(txManager, TXNEW_CTRL, "errorStorage of receiver [" + getName() + "]");
 				try {
-					String messageId = (String)session.get(PipeLineSession.messageIdKey);
-					String correlationId = (String)session.get(PipeLineSession.correlationIdKey);
+					String messageId = session.getMessageId();
+					String correlationId = session.getCorrelationId();
 					String receivedDateStr = (String)session.get(PipeLineSession.TS_RECEIVED_KEY);
 					if (receivedDateStr==null) {
 						log.warn(getLogPrefix()+PipeLineSession.TS_RECEIVED_KEY+" is unknown, cannot update comments");
