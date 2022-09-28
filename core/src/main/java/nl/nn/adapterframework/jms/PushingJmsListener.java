@@ -88,7 +88,6 @@ import nl.nn.adapterframework.util.CredentialFactory;
  */
 public class PushingJmsListener extends JmsListenerBase implements IPortConnectedListener<javax.jms.Message>, IThreadCountControllable, IKnowsDeliveryCount<javax.jms.Message> {
 
-	private @Getter String replyDestinationName;
 	private @Getter CacheMode cacheMode;
 	private @Getter long pollGuardInterval = Long.MIN_VALUE;
 
@@ -170,7 +169,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 			// handle reply
 			if (replyTo != null) {
 
-				log.debug(getLogPrefix()+"sending reply message with correlationID[" + replyCid + "], replyTo [" + replyTo.toString()+ "]");
+				log.debug(getLogPrefix()+"sending reply message with correlationID [" + replyCid + "], replyTo [" + replyTo.toString()+ "]");
 				long timeToLive = getReplyMessageTimeToLive();
 				boolean ignoreInvalidDestinationException = false;
 				if (timeToLive == 0) {
@@ -200,7 +199,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 					log.info("["+getName()+"] no replyTo address found or not configured to use replyTo, and no sender, not sending the result.");
 				} else {
 					if (log.isDebugEnabled()) {
-						log.debug("["+getName()+"] no replyTo address found or not configured to use replyTo, using sending message on nested sender with correlationID[" + replyCid + "] [" + plr.getResult() + "]");
+						log.debug("["+getName()+"] no replyTo address found or not configured to use replyTo, sending message on nested sender with correlationID [" + replyCid + "] [" + plr.getResult() + "]");
 					}
 					PipeLineSession pipeLineSession = new PipeLineSession();
 					pipeLineSession.put(PipeLineSession.correlationIdKey,replyCid);
@@ -317,14 +316,6 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 	@Override
 	public void setDestinationName(String destinationName) {
 		super.setDestinationName(destinationName);
-	}
-
-	/**
-	 * Name of the JMS destination (queue or topic) to use for sending replies. If <code>useReplyTo</code>=<code>true</code>,
-	 * the sender specified reply destination takes precedence over this one.
-	 */
-	public void setReplyDestinationName(String destinationName) {
-		this.replyDestinationName = destinationName;
 	}
 
 	public void setCacheMode(CacheMode cacheMode) {

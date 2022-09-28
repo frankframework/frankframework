@@ -169,10 +169,8 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 	}
 
 
-
-
 	@Override
-	public void afterMessageProcessed(PipeLineResult plr, Object rawMessageOrWrapper, Map<String,Object> threadContext) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult plr, Object rawMessageOrWrapper, Map<String, Object> threadContext) throws ListenerException {
 		String replyCid = null;
 
 		if (!isForceMessageIdAsCorrelationId()) {
@@ -184,10 +182,13 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"in PullingJmsListener.afterMessageProcessed()");
 		try {
-			Destination replyTo = (Destination) threadContext.get("replyTo");
+			Destination replyTo = isUseReplyTo() ? (Destination) threadContext.get("replyTo") : null;
+			if (replyTo==null && StringUtils.isNotEmpty(getReplyDestinationName())) {
+				replyTo = getDestination(getReplyDestinationName());
+			}
 
 			// handle reply
-			if (isUseReplyTo() && (replyTo != null)) {
+			if (replyTo != null) {
 
 				log.debug(getLogPrefix()+"sending reply message with correlationID [" + replyCid + "], replyTo [" + replyTo.toString()+ "]");
 				long timeToLive = getReplyMessageTimeToLive();
@@ -225,10 +226,10 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 				}
 			} else {
 				if (getSender()==null) {
-					log.debug(getLogPrefix()+"itself has no sender to send the result (An enclosing Receiver might still have one).");
+					log.info("["+getName()+"] no replyTo address found or not configured to use replyTo, and no sender, not sending the result.");
 				} else {
 					if (log.isDebugEnabled()) {
-						log.debug(getLogPrefix()+ "no replyTo address found or not configured to use replyTo, using default destination sending message with correlationID[" + replyCid + "] [" + plr.getResult() + "]");
+						log.debug("["+getName()+"] no replyTo address found or not configured to use replyTo, sending message on nested sender with correlationID [" + replyCid + "] [" + plr.getResult() + "]");
 					}
 					PipeLineSession pipeLineSession = new PipeLineSession();
 					pipeLineSession.put(PipeLineSession.correlationIdKey,replyCid);
@@ -267,6 +268,9 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 				}
 			}
 		} catch (Exception e) {
+			if (e instanceof ListenerException) {
+				throw (ListenerException)e;
+			}
 			throw new ListenerException(e);
 		}
 	}

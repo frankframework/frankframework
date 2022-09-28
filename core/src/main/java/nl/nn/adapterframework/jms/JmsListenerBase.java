@@ -56,6 +56,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 
 	private @Getter long timeOut = 1000; // Same default value as Spring: https://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/jms/listener/AbstractPollingMessageListenerContainer.html#setReceiveTimeout(long)
 	private @Getter boolean useReplyTo=true;
+	private @Getter String replyDestinationName;
 	private @Getter String replyMessageType=null;
 	private @Getter long replyMessageTimeToLive=0;
 	private @Getter int replyPriority=-1;
@@ -359,6 +360,14 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	@IbisDoc({"", "true"})
 	public void setUseReplyTo(boolean newUseReplyTo) {
 		useReplyTo = newUseReplyTo;
+	}
+
+	/**
+	 * Name of the JMS destination (queue or topic) to use for sending replies. If <code>useReplyTo</code>=<code>true</code>,
+	 * the sender specified reply destination takes precedence over this one.
+	 */
+	public void setReplyDestinationName(String destinationName) {
+		this.replyDestinationName = destinationName;
 	}
 
 	@IbisDoc({"Value of the JMSType field of the reply message", "not set by application"})
