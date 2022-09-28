@@ -42,10 +42,8 @@ public abstract class SenderTestBase<S extends ISender> extends ConfiguredTestBa
 	public void setUp() throws Exception {
 		super.setUp();
 		session = new PipeLineSession();
-		String messageId = "testmessageac13ecb1--30fe9225_16caa708707_-7fb1";
-		String correlationId = "testmessageac13ecb1--30fe9225_16caa708707_-7fb2";
-		session.put(PipeLineSession.messageIdKey, messageId);
-		session.put(PipeLineSession.correlationIdKey, correlationId);
+		session.put(PipeLineSession.messageIdKey, testMessageId);
+		session.put(PipeLineSession.correlationIdKey, testCorrelationId);
 		sender = createSender();
 		getConfiguration().autowireByType(sender);
 	}

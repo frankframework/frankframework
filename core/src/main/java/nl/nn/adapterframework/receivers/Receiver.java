@@ -1095,7 +1095,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				} catch (Exception e) {
 					if(rawMessageOrWrapper instanceof MessageWrapper) { //somehow messages wrapped in MessageWrapper are in the ITransactionalStorage
 						MessageWrapper<M> wrapper = (MessageWrapper)rawMessageOrWrapper;
-						messageId = wrapper.getId(); // TODO: check if this is correct. Isn't the real replyCorrelationId lost in messsageWrapper?
+						messageId = wrapper.getId();
 						session.putAll(wrapper.getContext());
 					} else {
 						throw new ListenerException(e);
