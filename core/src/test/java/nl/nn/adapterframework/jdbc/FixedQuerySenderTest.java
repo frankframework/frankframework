@@ -4,6 +4,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
+import java.io.ByteArrayInputStream;
+import java.io.StringReader;
 import java.sql.Connection;
 
 import org.junit.Before;
@@ -12,6 +14,7 @@ import org.junit.Test;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
@@ -217,5 +220,72 @@ public class FixedQuerySenderTest extends SenderTestBase<FixedQuerySender> {
 		Message result=sendMessage("dummy");
 		assertEquals(resultColumnsReturned, result.asString());
 	}
+
+	public String getLongString(int sizeInK) {
+		StringBuilder result=new StringBuilder();
+		for(int i=0; i<16; i++) {
+			result.append("0123456789ABCDEF");
+		}
+		String block=result.toString();
+		for(int i=1; i<sizeInK; i++) {
+			result.append(block);
+		}
+		return result.toString();
+	}
+
+	@Test
+	public void testParameterTypeDefault() throws Exception {
+		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (tKEY, tCLOB) VALUES ('1', ?)");
+		sender.addParameter(ParameterBuilder.create().withName("clob").withSessionKey("clob"));
+		sender.setSqlDialect("Oracle");
+		sender.configure();
+		sender.open();
+
+		String block = getLongString(10);
+
+		session.put("clob", new Message(new StringReader(block)));
+
+		Message result=sendMessage("dummy");
+		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
+	}
+
+	@Test
+	public void testParameterTypeLobStream() throws Exception {
+		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (tKEY, tCLOB, tBLOB) VALUES ('1', ?, ?)");
+		sender.addParameter(ParameterBuilder.create().withName("clob").withSessionKey("clob").withType(ParameterType.CHARACTER));
+		sender.addParameter(ParameterBuilder.create().withName("blob").withSessionKey("blob").withType(ParameterType.BINARY));
+		sender.setSqlDialect("Oracle");
+		sender.configure();
+		sender.open();
+
+		String block = getLongString(10000);
+
+		session.put("clob", new Message(new StringReader(block)));
+		session.put("blob", new Message(new ByteArrayInputStream(block.getBytes())));
+		session.put("varchar", new Message(new ByteArrayInputStream(block.getBytes())));
+
+		Message result=sendMessage("dummy");
+		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
+	}
+
+	@Test
+	public void testParameterTypeLobArray() throws Exception {
+		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (tKEY, tCLOB, tBLOB) VALUES ('1', ?, ?)");
+		sender.addParameter(ParameterBuilder.create().withName("clob").withSessionKey("clob").withType(ParameterType.CHARACTER));
+		sender.addParameter(ParameterBuilder.create().withName("blob").withSessionKey("blob").withType(ParameterType.BINARY));
+		sender.setSqlDialect("Oracle");
+		sender.configure();
+		sender.open();
+
+		String block = getLongString(1000);
+
+		session.put("clob", new Message(block));
+		session.put("blob", new Message(block.getBytes()));
+		session.put("varchar", new Message(block.getBytes()));
+
+		Message result=sendMessage("dummy");
+		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
+	}
+
 
 }
