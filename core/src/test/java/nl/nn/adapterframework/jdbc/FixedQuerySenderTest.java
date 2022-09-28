@@ -275,7 +275,7 @@ public class FixedQuerySenderTest extends JdbcSenderTestBase<FixedQuerySender> {
 		}
 		return result.toString();
 	}
-	
+
 	@Test
 	public void testParameterTypeDefault() throws Exception {
 		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (tKEY, tCLOB) VALUES ('1', ?)");
@@ -285,9 +285,9 @@ public class FixedQuerySenderTest extends JdbcSenderTestBase<FixedQuerySender> {
 		sender.open();
 
 		String block = getLongString(10);
-		
+
 		session.put("clob", new Message(new StringReader(block)));
-		
+
 		Message result=sendMessage("dummy");
 		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
 	}
@@ -302,11 +302,11 @@ public class FixedQuerySenderTest extends JdbcSenderTestBase<FixedQuerySender> {
 		sender.open();
 
 		String block = getLongString(10000);
-		
+
 		session.put("clob", new Message(new StringReader(block)));
 		session.put("blob", new Message(new ByteArrayInputStream(block.getBytes())));
 		session.put("varchar", new Message(new ByteArrayInputStream(block.getBytes())));
-		
+
 		Message result=sendMessage("dummy");
 		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
 	}
@@ -321,11 +321,11 @@ public class FixedQuerySenderTest extends JdbcSenderTestBase<FixedQuerySender> {
 		sender.open();
 
 		String block = getLongString(1000);
-		
+
 		session.put("clob", new Message(block));
 		session.put("blob", new Message(block.getBytes()));
 		session.put("varchar", new Message(block.getBytes()));
-		
+
 		Message result=sendMessage("dummy");
 		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
 	}
