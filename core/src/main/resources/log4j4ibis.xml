@@ -6,7 +6,6 @@
 		<CustomLevel name="BASIC" intLevel="350" /> <!-- between INFO and DEBUG -->
 	</CustomLevels>
 
-	<!-- Pattern %TC is the NDC or ThreadContext (see IbisNdcPatternConverter) -->
 	<Appenders>
 		<Appender type="Console" name="stdout">
 			<Layout type="IbisPatternLayout">
