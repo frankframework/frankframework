@@ -15,10 +15,10 @@
 */
 package nl.nn.adapterframework.jms;
 
-import java.util.Date;
 import java.util.Map;
 
 import javax.jms.Destination;
+import javax.jms.JMSException;
 import javax.jms.Session;
 
 import org.apache.commons.lang3.StringUtils;
@@ -38,7 +38,6 @@ import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.Mandatory;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.CredentialFactory;
@@ -148,69 +147,13 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 
 	@Override
 	public void afterMessageProcessed(PipeLineResult plr, Object rawMessageOrWrapper, Map<String, Object> threadContext) throws ListenerException {
-		String replyCid = null;
-
-		if (!isForceMessageIdAsCorrelationId()) {
-			replyCid = (String) threadContext.get(PipeLineSession.correlationIdKey);
-		}
-		if (StringUtils.isEmpty(replyCid)) {
-			replyCid = (String) threadContext.get(PipeLineSession.messageIdKey);
-		}
-
-		Session session= (Session) threadContext.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY); // session is/must be saved in threadcontext by JmsConnector
-
-		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"in PushingJmsListener.afterMessageProcessed()");
+		super.afterMessageProcessed(plr, rawMessageOrWrapper, threadContext);
 		try {
-			Destination replyTo = isUseReplyTo() ? (Destination) threadContext.get("replyTo") : null;
-			if (replyTo==null && StringUtils.isNotEmpty(getReplyDestinationName())) {
-				replyTo = getDestination(getReplyDestinationName());
-			}
-
-			// handle reply
-			if (replyTo != null) {
-
-				log.debug(getLogPrefix()+"sending reply message with correlationID [" + replyCid + "], replyTo [" + replyTo.toString()+ "]");
-				long timeToLive = getReplyMessageTimeToLive();
-				boolean ignoreInvalidDestinationException = false;
-				if (timeToLive == 0) {
-					if (rawMessageOrWrapper instanceof javax.jms.Message) {
-						javax.jms.Message messageReceived=(javax.jms.Message)rawMessageOrWrapper;
-						long expiration=messageReceived.getJMSExpiration();
-						if (expiration!=0) {
-							timeToLive=expiration-new Date().getTime();
-							if (timeToLive<=0) {
-								log.warn(getLogPrefix()+"message ["+replyCid+"] expired ["+timeToLive+"]ms, sending response with 1 second time to live");
-								timeToLive=1000;
-								// In case of a temporary queue it might already
-								// have disappeared.
-								ignoreInvalidDestinationException = true;
-							}
-						}
-					} else {
-						log.warn(getLogPrefix()+"message with correlationID ["+replyCid+"] is not a JMS message, but ["+rawMessageOrWrapper.getClass().getName()+"], cannot determine time to live ["+timeToLive+"]ms, sending response with 20 second time to live");
-						timeToLive=1000;
-						ignoreInvalidDestinationException = true;
-					}
-				}
-				Map<String, Object> properties = getMessageProperties(threadContext);
-				send(session, replyTo, replyCid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, getReplyDeliveryMode().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException, properties);
-			} else {
-				if (getSender()==null) {
-					log.info("["+getName()+"] no replyTo address found or not configured to use replyTo, and no sender, not sending the result.");
-				} else {
-					if (log.isDebugEnabled()) {
-						log.debug("["+getName()+"] no replyTo address found or not configured to use replyTo, sending message on nested sender with correlationID [" + replyCid + "] [" + plr.getResult() + "]");
-					}
-					PipeLineSession pipeLineSession = new PipeLineSession();
-					pipeLineSession.put(PipeLineSession.correlationIdKey,replyCid);
-					getSender().sendMessage(plr.getResult(), pipeLineSession);
-				}
-			}
-
 			// TODO Do we still need this? Should we commit too? See
 			// PullingJmsListener.afterMessageProcessed() too (which does a
 			// commit, but no rollback).
 			if (plr!=null && !isTransacted() && isJmsTransacted() && plr.getState()==ExitState.SUCCESS) {
+				Session session = (Session)threadContext.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY); // session is/must be saved in threadcontext by JmsConnector
 				if (session==null) {
 					log.error(getLogPrefix()+"session is null, cannot roll back session");
 				} else {
@@ -218,10 +161,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 					session.rollback();
 				}
 			}
-		} catch (Exception e) {
-			if (e instanceof ListenerException) {
-				throw (ListenerException)e;
-			}
+		} catch (JMSException e) {
 			throw new ListenerException(e);
 		}
 	}
