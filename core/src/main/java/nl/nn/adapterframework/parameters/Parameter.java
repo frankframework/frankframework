@@ -205,8 +205,13 @@ public class Parameter implements IConfigurable, IWithParameters {
 		@ConfigurationWarning("use type [BINARY] instead")
 		@Deprecated BYTES,
 
-		/** Forces the parameter value to be treated as binary data (eg. when using a SQL BLOB field). */
+		/** Forces the parameter value to be treated as binary data (e.g. when using a SQL BLOB field).
+		 * When applied as a JDBC parameter, the method setBinaryStream() or setBytes() is used */
 		BINARY,
+
+		/** Forces the parameter value to be treated as character data (e.g. when using a SQL CLOB field).
+		 * When applied as a JDBC parameter, the method setCharacterStream() or setString() is used */
+		CHARACTER,
 
 		/** (Used in larva only) Converts a List to a xml-string (&lt;items&gt;&lt;item&gt;...&lt;/item&gt;&lt;item&gt;...&lt;/item&gt;&lt;/items&gt;) */
 		@Deprecated LIST,
