@@ -4,6 +4,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
+import java.io.ByteArrayInputStream;
+import java.io.StringReader;
 import java.sql.Connection;
 
 import org.junit.Before;
@@ -12,6 +14,7 @@ import org.junit.Test;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
