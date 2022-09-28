@@ -31,7 +31,7 @@
 		name="jdbc/ibis4test-oracle"
 		factory="org.apache.naming.factory.BeanFactory"
 		type="oracle.jdbc.xa.client.OracleXADataSource"
-		URL="jdbc:oracle:thin:@host.docker.internal:1521:ORCLCDB"
+		URL="jdbc:oracle:thin:@host.docker.internal:1521:XE"
 		user="${testiaf_user/username:-testiaf_user}"
 		password="${testiaf_user/password:-testiaf_user00}"
 	/>
