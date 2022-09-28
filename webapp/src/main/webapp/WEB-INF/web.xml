@@ -18,15 +18,15 @@
 		</init-param>
 		<init-param>
 			<param-name>allowedObserverPaths</param-name>
-			<param-value>/index.jsp /FileViewerServlet /testtool</param-value>
+			<param-value>/index.jsp /FileViewerServlet /iaf/testtool</param-value>
 		</init-param>
 		<init-param>
 			<param-name>allowedDataAdminPaths</param-name>
-			<param-value>/testtool</param-value>
+			<param-value>/iaf/testtool</param-value>
 		</init-param>
 		<init-param>
 			<param-name>allowedTesterPaths</param-name>
-			<param-value>/testtool</param-value>
+			<param-value>/iaf/testtool</param-value>
 		</init-param>
 	</filter>
 
