@@ -63,7 +63,7 @@ public final class ShowConfiguration extends Base {
 			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.FLOW);
 			return callSyncGateway(builder);
 		} else {
-			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, "xml");
+			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, "get");
 			if(loaded) builder.addHeader("loaded", loaded);
 			return callSyncGateway(builder);
 		}
@@ -92,7 +92,7 @@ public final class ShowConfiguration extends Base {
 	@Path("/configurations/{configuration}")
 	@Produces(MediaType.APPLICATION_XML)
 	public Response getConfigurationByName(@PathParam("configuration") String configurationName, @QueryParam("loadedConfiguration") boolean loaded) throws ApiException {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, "xml");
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, "get");
 		builder.addHeader("configuration", configurationName);
 		if(loaded) builder.addHeader("loaded", loaded);
 		return callSyncGateway(builder);
@@ -150,7 +150,7 @@ public final class ShowConfiguration extends Base {
 	@Path("/configurations/{configuration}/versions")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getConfigurationDetailsByName(@PathParam("configuration") String configurationName, @QueryParam("datasourceName") String datasourceName) throws ApiException {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, "details");
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, "find");
 		builder.addHeader("configuration", configurationName);
 		builder.addHeader("datasourceName", datasourceName);
 		return callSyncGateway(builder);

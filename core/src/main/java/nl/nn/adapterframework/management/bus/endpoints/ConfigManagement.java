@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.lang3.StringUtils;
@@ -65,15 +64,21 @@ public class ConfigManagement {
 	private String orderBy = AppConstants.getInstance().getProperty("iaf-api.configurations.orderby", "version").trim();
 	private @Getter @Setter IbisManager ibisManager;
 	private Logger log = LogUtil.getLogger(this);
-	private static final String HEADER_CONFIGURATION_KEY = "configuration";
+	private static final String HEADER_CONFIGURATION_NAME_KEY = "configuration";
+	private static final String HEADER_CONFIGURATION_VERSION_KEY = "version";
+	private static final String HEADER_DATASOURCE_NAME_KEY = "datasourceName";
 
 	private IbisContext getIbisContext() {
 		return ibisManager.getIbisContext();
 	}
 
-	@ActionSelector("xml")
+	/**
+	 * @return Configuration XML
+	 * header loaded to differentiate between the loaded and original (raw) XML.
+	 */
+	@ActionSelector("get")
 	public Message<String> getXMLConfiguration(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_KEY);
+		String configurationName = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_NAME_KEY);
 		boolean loadedConfiguration = BusMessageUtils.getHeader(message, "loaded", false);
 		StringBuilder result = new StringBuilder();
 
@@ -89,16 +94,26 @@ public class ConfigManagement {
 		return ResponseMessage.ok(result.toString());
 	}
 
-	@ActionSelector("details")
-	public Message<String> getConfigurationDetailsByName(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_KEY);
+	private Configuration getConfigurationByName(String configurationName) {
 		Configuration configuration = getIbisManager().getConfiguration(configurationName);
 		if(configuration == null) {
 			throw new IllegalStateException("configuration ["+configurationName+"] does not exists");
 		}
+		return configuration;
+	}
+
+	/**
+	 * @return If the configuration is of type DatabaseClassLoader, the metadata of the configurations found in the database.
+	 * header configuration The name of the Configuration to find
+	 * header datasourceName The name of the datasource where the configurations are located.
+	 */
+	@ActionSelector("find")
+	public Message<String> getConfigurationDetailsByName(Message<?> message) {
+		String configurationName = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_NAME_KEY);
+		Configuration configuration = getConfigurationByName(configurationName);
 
 		if("DatabaseClassLoader".equals(configuration.getClassLoaderType())) {
-			String datasourceName = BusMessageUtils.getHeader(message, "datasourceName");
+			String datasourceName = BusMessageUtils.getHeader(message, HEADER_DATASOURCE_NAME_KEY);
 			List<Map<String, Object>> configs = getConfigsFromDatabase(configurationName, datasourceName);
 
 			for(Map<String, Object> config: configs) {
@@ -111,17 +126,23 @@ public class ConfigManagement {
 		return ResponseMessage.noContent();
 	}
 
+	/**
+	 * @return Manages a configuration, either activates the config directly or sets the autoreload flag in the database
+	 * header configuration The name of the Configuration to manage
+	 * header version The version of the Configuration to find
+	 * header activate Whether the configuration should be activated
+	 * header autoreload Whether the configuration should be reloaded (on the next ReloadJob interval)
+	 * header datasourceName The name of the datasource where the configurations are located.
+	 */
 	@ActionSelector("manage")
 	public Message<String> manageConfiguration(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_KEY);
-		Configuration configuration = getIbisManager().getConfiguration(configurationName);
-		if(configuration == null) {
-			throw new IllegalStateException("configuration ["+configurationName+"] does not exists");
-		}
-		String version = BusMessageUtils.getHeader(message, "version");
+		String configurationName = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_NAME_KEY);
+		getConfigurationByName(configurationName); //Validate the configuration exists
+
+		String version = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_VERSION_KEY);
 		Boolean activate = BusMessageUtils.getHeader(message, "activate", null);
 		Boolean autoreload = BusMessageUtils.getHeader(message, "autoreload", null);
-		String datasourceName = BusMessageUtils.getHeader(message, "datasourceName");
+		String datasourceName = BusMessageUtils.getHeader(message, HEADER_DATASOURCE_NAME_KEY);
 
 		try {
 			if(activate != null) {
@@ -141,11 +162,17 @@ public class ConfigManagement {
 		return ResponseMessage.badRequest();
 	}
 
+	/**
+	 * header configuration The name of the Configuration to download
+	 * header version The version of the Configuration to find
+	 * header datasourceName The name of the datasource where the configurations are located.
+	 */
 	@ActionSelector("download")
 	public Message<byte[]> downloadConfiguration(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_KEY);
-		String version = BusMessageUtils.getHeader(message, "version");
-		String datasourceName = BusMessageUtils.getHeader(message, "datasourceName");
+		String configurationName = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_NAME_KEY);
+		getConfigurationByName(configurationName); //Validate the configuration exists
+		String version = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_VERSION_KEY);
+		String datasourceName = BusMessageUtils.getHeader(message, HEADER_DATASOURCE_NAME_KEY);
 
 		Map<String, Object> configuration;
 		try {
@@ -163,11 +190,18 @@ public class ConfigManagement {
 		return new GenericMessage<>(config, headers);
 	}
 
+	/**
+	 * header configuration The name of the Configuration to delete
+	 * header version The version of the Configuration to find
+	 * header datasourceName The name of the datasource where the configurations are located.
+	 */
 	@ActionSelector("delete")
 	public void deleteConfiguration(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_KEY);
-		String version = BusMessageUtils.getHeader(message, "version");
-		String datasourceName = BusMessageUtils.getHeader(message, "datasourceName");
+		String configurationName = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_NAME_KEY);
+		getConfigurationByName(configurationName); //Validate the configuration exists
+		String version = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_VERSION_KEY);
+		String datasourceName = BusMessageUtils.getHeader(message, HEADER_DATASOURCE_NAME_KEY);
+
 		try {
 			ConfigurationUtils.removeConfigFromDatabase(getIbisContext(), configurationName, datasourceName, version);
 		} catch (Exception e) {
@@ -176,12 +210,14 @@ public class ConfigManagement {
 		}
 	}
 
+	/**
+	 * @return The status of a configuration. If an Adapter is not in state STARTED it is flagged as NOT-OK.
+	 * header configuration The name of the Configuration to delete
+	 */
+	@ActionSelector("status")
 	public Message<String> getConfigurationHealth(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_KEY);
-		Configuration configuration = getIbisManager().getConfiguration(configurationName);
-		if(configuration == null) {
-			throw new IllegalStateException("configuration ["+configurationName+"] does not exists");
-		}
+		String configurationName = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_NAME_KEY);
+		Configuration configuration = getConfigurationByName(configurationName);
 		if(!configuration.isActive()) {
 			throw new IllegalStateException("configuration not active", configuration.getConfigurationException());
 		}
@@ -217,9 +253,9 @@ public class ConfigManagement {
 			stateCount.put(state, ++count);
 		}
 
-		Status status = Response.Status.OK;
+		Status status = Status.OK;
 		if(stateCount.containsKey(RunState.ERROR))
-			status = Response.Status.SERVICE_UNAVAILABLE;
+			status = Status.SERVICE_UNAVAILABLE;
 
 		if(!errors.isEmpty())
 			response.put("errors", errors);
