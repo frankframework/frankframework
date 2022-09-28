@@ -210,6 +210,18 @@ public class FixedQuerySenderTest extends JdbcSenderTestBase<FixedQuerySender> {
 	}
 
 
+	public String getLongString(int sizeInK) {
+		StringBuilder result=new StringBuilder();
+		for(int i=0; i<16; i++) {
+			result.append("0123456789ABCDEF");
+		}
+		String block=result.toString();
+		for(int i=1; i<sizeInK; i++) {
+			result.append(block);
+		}
+		return result.toString();
+	}
+
 	@Test
 	public void testParameterTypeDefault() throws Exception {
 		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (tKEY, tCLOB) VALUES ('1', ?)");
