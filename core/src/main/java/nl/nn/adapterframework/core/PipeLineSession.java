@@ -79,15 +79,14 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		super(t);
 	}
 
-	//Shouldn't this be `id` ? See {#setListenerParameters(...)};
 	@SneakyThrows
 	public String getMessageId() {
-		return Message.asString(get(messageIdKey)); // Allow Ladybug to wrap it in a Message
+		return getMessage(messageIdKey).asString(); // Allow Ladybug to wrap it in a Message
 	}
 
 	@SneakyThrows
 	public String getCorrelationId() {
-		return Message.asString(get(correlationIdKey)); // Allow Ladybug to wrap it in a Message
+		return getMessage(correlationIdKey).asString(); // Allow Ladybug to wrap it in a Message
 	}
 
 	public Message getMessage(String key) {
