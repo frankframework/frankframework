@@ -34,7 +34,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author  Tim van der Leeuw
  * @since   4.8
  */
-abstract public class AbstractJmsConfigurator {
+public abstract class AbstractJmsConfigurator {
 	protected Logger log=LogUtil.getLogger(this);
 
 	private @Getter @Setter IPortConnectedListener<Message> listener;
