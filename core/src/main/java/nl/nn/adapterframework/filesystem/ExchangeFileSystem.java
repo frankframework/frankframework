@@ -1002,12 +1002,18 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public String getSubject(EmailMessage emailMessage) throws FileSystemException {
+		ItemId id=null;
 		try {
-			if (emailMessage.getId()!=null) { // attachments don't have an id, but appear to be loaded at the same time as the main message
+			id = emailMessage.getId();
+			if (id!=null) { // attachments don't have an id, but appear to be loaded at the same time as the main message
 				emailMessage.load(new PropertySet(ItemSchema.Subject));
 			}
 			return emailMessage.getSubject();
 		} catch (Exception e) {
+			if (id==null) {
+				log.warn("Could not get Subject for message without ItemId", e);
+				return null;
+			}
 			throw new FileSystemException("Could not get Subject", e);
 		}
 	}
