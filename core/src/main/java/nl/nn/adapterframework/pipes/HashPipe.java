@@ -111,7 +111,7 @@ public class HashPipe extends FixedForwardPipe {
 				case Hex:
 					hash = Hex.encodeHexString(mac.doFinal());
 					break;
-	
+
 				default: // Should never happen, as a ConfigurationException is thrown during configuration if another method is tried
 					throw new PipeRunException(this, getLogPrefix(session) + "error determining hashEncoding");
 			}
