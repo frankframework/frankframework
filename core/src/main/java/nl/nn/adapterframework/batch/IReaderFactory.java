@@ -31,7 +31,7 @@ import nl.nn.adapterframework.doc.FrankDocGroup;
 public interface IReaderFactory {
 
 	void configure() throws ConfigurationException;
-	
+
 	/**
 	 * Obtain a Reader that reads lines in the given characterset.
 	 */

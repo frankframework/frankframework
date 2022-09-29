@@ -27,25 +27,16 @@ import nl.nn.adapterframework.core.ListenerException;
  * @author Johan Verrips IOS
  */
 public class ServiceDispatcherBean {
-	
-	/**
-	 * ServiceDispatcherBean constructor comment.
-	 */
-	public ServiceDispatcherBean() {
-		super();
-	}
-	
-	public static String dispatchRequest(String serviceName, String request) {
 
+	public static String dispatchRequest(String serviceName, String request) {
 		try {
 			return ServiceDispatcher.getInstance().dispatchRequest(serviceName, null, request, null);
 		} catch (ListenerException e) {
 			return e.getMessage();
 		}
 	}
-	
-	public static String dispatchRequest(String serviceName, String correlationID, String request) {
 
+	public static String dispatchRequest(String serviceName, String correlationID, String request) {
 		try {
 			return ServiceDispatcher.getInstance().dispatchRequest(serviceName, correlationID, request, null);
 		} catch (ListenerException e) {

@@ -739,7 +739,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 				@Override
 				public int read(byte[] b, int off, int len) throws IOException {
 					try {
-						byte readbuf[] = new byte[len];
+						byte[] readbuf = new byte[len];
 						int result = bytesMsg.readBytes(readbuf);
 						if (result>0) {
 							System.arraycopy(readbuf, 0, b, off, result);

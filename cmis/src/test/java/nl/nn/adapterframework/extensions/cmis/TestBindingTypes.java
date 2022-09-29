@@ -57,6 +57,11 @@ public class TestBindingTypes extends CmisSenderTestBase {
 	private static String createActionExpectedBase64 = "ZmlsZUlucHV0LnR4dA==";
 	private static String updateActionExpectedBase64 = "aWQ=";
 
+	private String bindingType;
+	private String action;
+	private Message input;
+	private String expectedResult;
+
 	@Parameters(name = "{0} - {1}")
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
@@ -79,11 +84,6 @@ public class TestBindingTypes extends CmisSenderTestBase {
 				{ "browser", "fetch", INPUT, FETCH_RESULT },
 		});
 	}
-
-	private String bindingType;
-	private String action;
-	private Message input;
-	private String expectedResult;
 
 	public TestBindingTypes(String bindingType, String action, String input, String expected) {
 		this.bindingType = bindingType;

@@ -39,37 +39,37 @@ public class FormatTest {
 	}
 
 	@Test
-	public void halfTheSizeSVG() {
+	public void halfTheSizeAsSvg() {
 		Format format = Format.SVG;
 		assertEquals("font-size=\"5.0\"", format.postProcess(dummy, 0.5));
 	}
 
 	@Test
-	public void equalSizeSVG() {
+	public void equalSizeAsSvg() {
 		Format format = Format.SVG;
 		assertEquals("font-size=\"10\"", format.postProcess(dummy, 1.0));
 	}
 
 	@Test
-	public void doubleTheSizeSVG() {
+	public void doubleTheSizeAsSvg() {
 		Format format = Format.SVG;
 		assertEquals("font-size=\"20.0\"", format.postProcess(dummy, 2.0));
 	}
 
 	@Test
-	public void halfTheSizeSVG_STANDALONE() {
+	public void halfTheSizeAsSvgStandalone() {
 		Format format = Format.SVG_STANDALONE;
 		assertEquals("font-size=\"5.0\"", format.postProcess(dummy, 0.5));
 	}
 
 	@Test
-	public void equalSizeSVG_STANDALONE() {
+	public void equalSizeAsSvgStandalone() {
 		Format format = Format.SVG_STANDALONE;
 		assertEquals("font-size=\"10\"", format.postProcess(dummy, 1.0));
 	}
 
 	@Test
-	public void doubleTheSizeSVG_STANDALONE() {
+	public void doubleTheSizeAsSvgStandalone() {
 		Format format = Format.SVG_STANDALONE;
 		assertEquals("font-size=\"20.0\"", format.postProcess(dummy, 2.0));
 	}

@@ -61,7 +61,7 @@ public class Base64Pipe extends StreamingPipe {
 	private OutputTypes outputType = null;
 	private Boolean convertToString = false;
 
-	private byte lineSeparatorArray[];
+	private byte[] lineSeparatorArray;
 
 	public enum Direction {
 		ENCODE,

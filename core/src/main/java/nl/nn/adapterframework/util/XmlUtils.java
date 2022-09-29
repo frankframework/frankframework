@@ -1199,7 +1199,7 @@ public class XmlUtils {
 	 * encodes a url
 	 */
 
-	static public String encodeURL(String url) {
+	public static String encodeURL(String url) {
 		String mark = "-_.!~*'()\"";
 		StringBuilder encodedUrl = new StringBuilder();
 		int len = url.length();
@@ -1223,7 +1223,7 @@ public class XmlUtils {
 		return encodedUrl.toString();
 	}
 
-	static private char toHexChar(int digitValue) {
+	private static char toHexChar(int digitValue) {
 		if (digitValue < 10) {
 			return (char) ('0' + digitValue);
 		}
@@ -1249,7 +1249,7 @@ public class XmlUtils {
 	 *
 	 * @return boolean      The value found.
 	 */
-	static public boolean getChildTagAsBoolean(Element el, String tag) {
+	public static boolean getChildTagAsBoolean(Element el, String tag) {
 		return getChildTagAsBoolean(el, tag, false);
 	}
 	/**
@@ -1273,7 +1273,7 @@ public class XmlUtils {
 	 *
 	 * @return boolean      The value found.
 	 */
-	static public boolean getChildTagAsBoolean(
+	public static boolean getChildTagAsBoolean(
 		Element el,
 		String tag,
 		boolean defaultValue) {
@@ -1305,7 +1305,7 @@ public class XmlUtils {
 	 *                       tag can be found, or if the tag
 	 *                       doesn't have an integer-value.
 	 */
-	static public long getChildTagAsLong(Element el, String tag) {
+	public static long getChildTagAsLong(Element el, String tag) {
 		return getChildTagAsLong(el, tag, 0);
 	}
 	/**
@@ -1320,7 +1320,7 @@ public class XmlUtils {
 	 *
 	 * @return long          The value found.
 	 */
-	static public long getChildTagAsLong(
+	public static long getChildTagAsLong(
 		Element el,
 		String tag,
 		long defaultValue) {
@@ -1351,7 +1351,7 @@ public class XmlUtils {
 	 * @return String       The value found, or null if no matching
 	 *                       tag is found.
 	 */
-	static public String getChildTagAsString(Element el, String tag) {
+	public static String getChildTagAsString(Element el, String tag) {
 		return getChildTagAsString(el, tag, null);
 	}
 	/**
@@ -1366,7 +1366,7 @@ public class XmlUtils {
 	 *
 	 * @return String       The value found.
 	 */
-	static public String getChildTagAsString(
+	public static String getChildTagAsString(
 		Element el,
 		String tag,
 		String defaultValue) {
@@ -1433,7 +1433,7 @@ public class XmlUtils {
 	 * @return Element The element found, or <code>null</code> if no match
 	 *                  found.
 	 */
-	static public Element getFirstChildTag(Element el, String tag) {
+	public static Element getFirstChildTag(Element el, String tag) {
 		NodeList nl;
 		int len;
 
@@ -1450,10 +1450,10 @@ public class XmlUtils {
 		}
 		return null;
 	}
-	static public String getStringValue(Element el) {
+	public static String getStringValue(Element el) {
 		return getStringValue(el, true);
 	}
-	static public String getStringValue(Element el, boolean trimWhitespace) {
+	public static String getStringValue(Element el, boolean trimWhitespace) {
 		StringBuilder sb = new StringBuilder(1024);
 		String str;
 

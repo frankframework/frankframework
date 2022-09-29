@@ -101,7 +101,7 @@ public class PDFUtil {
    * This method is used to change the level
    * @param level java.util.logging.Level 
    */
-	public void setLogLevel(java.util.logging.Level level){
+	public void setLogLevel(Level level){
 		logger.setLevel(level);
 	}
 		

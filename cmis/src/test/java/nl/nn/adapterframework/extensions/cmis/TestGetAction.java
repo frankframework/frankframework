@@ -41,6 +41,14 @@ public class TestGetAction extends CmisSenderTestBase {
 			+ "<property name=\"project:lastModified\" type=\"datetime\">2019-02-26T16:31:15</property>"
 			+ "<property name=\"project:onTime\" type=\"boolean\">true</property></properties></cmis>";
 
+	private String bindingType;
+	private String action;
+	private Message input;
+	private String expectedResult;
+	private Boolean resultToServlet;
+	private Boolean getProperties;
+	private Boolean getDocumentContent;
+
 	@Parameters(name = "{0} - {1} - toServlet = {4} - getProperties = {5} - getDocumentContent = {6}")
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
@@ -60,14 +68,6 @@ public class TestGetAction extends CmisSenderTestBase {
 				{ "browser", "get", INPUT_WITH_PROPERTIES, GET_RESULT_FOR_GET_PROPERTIES, false, true, true},
 		});
 	}
-
-	private String bindingType;
-	private String action;
-	private Message input;
-	private String expectedResult;
-	private Boolean resultToServlet;
-	private Boolean getProperties;
-	private Boolean getDocumentContent;
 
 	public TestGetAction(String bindingType, String action, String input, String expected, Boolean resultToServlet, Boolean getProperties, Boolean getDocumentContent) {
 		this.bindingType = bindingType;

@@ -37,6 +37,11 @@ public class TestCreateAction extends CmisSenderTestBase {
 
 	private static final String FILE_INPUT = "/fileInput.txt";
 
+	private String bindingType;
+	private String action;
+	private Message input;
+	private String expectedResult;
+
 	@Parameters(name = "{0} - {1} - {index}")
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
@@ -50,11 +55,6 @@ public class TestCreateAction extends CmisSenderTestBase {
 				{ "browser", "create", INPUT },
 		});
 	}
-
-	private String bindingType;
-	private String action;
-	private Message input;
-	private String expectedResult;
 
 	public TestCreateAction(String bindingType, String action, String input) {
 		if(EMPTY_INPUT.equals(input)) {

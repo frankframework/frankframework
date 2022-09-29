@@ -678,7 +678,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		public EMail(String address, String name, String type) throws SenderException {
 			try {
 				if (StringUtils.isNotEmpty(address)) {
-					InternetAddress ia[] = InternetAddress.parseHeader(address, true);
+					InternetAddress[] ia = InternetAddress.parseHeader(address, true);
 					if (ia.length==0) {
 						throw new AddressException("No address found in ["+address+"]");
 					}
