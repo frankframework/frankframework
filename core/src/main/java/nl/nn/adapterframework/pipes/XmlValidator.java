@@ -87,6 +87,7 @@ import nl.nn.adapterframework.xml.RootElementToSessionKeyFilter;
 @Category("Basic")
 public class XmlValidator extends ValidatorBase implements SchemasProvider, HasSpecialDefaultValues, IXmlValidator, InitializingBean {
 
+	private @Getter String schemaLocation;
 	private @Getter String noNamespaceSchemaLocation;
 	private String soapNamespace = SoapVersion.SOAP11.namespace;
 	private @Getter String rootElementSessionKey;
@@ -135,6 +136,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	public void configure() throws ConfigurationException {
 		try {
 			super.configure();
+			checkSchemaSpecified();
 			if (StringUtils.isNotEmpty(getSoapNamespace())) {
 				// Don't use this warning yet as it is used for the IFSA to Tibco
 				// migration where an adapter with Tibco listener (with SOAP
@@ -201,8 +203,10 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		super.stop();
 	}
 
-	@Override
 	protected void checkSchemaSpecified() throws ConfigurationException {
+		if (StringUtils.isNotEmpty(getSchemaLocation()) && StringUtils.isNotEmpty(getSchemaSessionKey())) {
+			throw new ConfigurationException("cannot have schemaSessionKey together with schemaLocation");
+		}
 		if (StringUtils.isEmpty(getNoNamespaceSchemaLocation()) && StringUtils.isEmpty(getSchemaLocation()) && StringUtils.isEmpty(getSchemaSessionKey())) {
 			throw new ConfigurationException("must have either schemaSessionKey, schemaLocation or noNamespaceSchemaLocation");
 		}
@@ -649,18 +653,14 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	/**
 	 * <p>
 	 * The filename of the schema on the classpath. It is not possible to specify a
-	 * namespace using this attribute.
+	 * namespace using this attribute. (effectively the same as noNamespaceSchemaLocation)
 	 * <p>
 	 * An example value would be "xml/xsd/GetPartyDetail.xsd"
 	 * </p>
 	 * <p>
 	 * The value of the schema attribute is only used if the schemaLocation
-	 * attribute and the noNamespaceSchemaLocation are not set
-	 * </p>
-	 *
-	 * @see ClassUtils#getResourceURL
+	 * attribute and the noNamespaceSchemaLocation are not set.
 	 */
-	@IbisDoc({"1", "the filename of the schema on the classpath. see doc on the method. (effectively the same as noNamespaceSchemaLocation)", "" })
 	public void setSchema(String schema) {
 		setNoNamespaceSchemaLocation(schema);
 	}
@@ -676,23 +676,23 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	 * <b>Note</b> that spaces are considered separators for this attributed. This means that, for example, spaces in filenames should be escaped to %20.
 	 */
 	public void setSchemaLocation(String schemaLocation) {
-		super.setSchemaLocation(schemaLocation);
+		this.schemaLocation = schemaLocation;
 	}
 
-	@IbisDoc({"3", "A uri reference as a hint as to the location of a schema document with no target namespace.", ""})
+	@IbisDoc({"A uri reference as a hint as to the location of a schema document with no target namespace.", ""})
 	public void setNoNamespaceSchemaLocation(String noNamespaceSchemaLocation) {
 		this.noNamespaceSchemaLocation = noNamespaceSchemaLocation;
 	}
 
 
-	@IbisDoc({"5", "Name of the root element, or a comma separated list of element names. The validation fails if the root element is not present in the list. N.B. for WSDL generation only the first element is used", ""})
+	@IbisDoc({"Name of the root element, or a comma separated list of element names. The validation fails if the root element is not present in the list. N.B. for WSDL generation only the first element is used", ""})
 	public void setRoot(String root) {
 		super.setRoot(root);
 		if (StringUtils.isNotEmpty(root)) {
 			addRequestRootValidation(new RootValidation(root));
 		}
 	}
-	@IbisDoc({"6", "Name of the response root element, or a comma separated list of element names. The validation fails if the root element is not present in the list. N.B. for WSDL generation only the first element is used", ""})
+	@IbisDoc({"Name of the response root element, or a comma separated list of element names. The validation fails if the root element is not present in the list. N.B. for WSDL generation only the first element is used", ""})
 	public void setResponseRoot(String responseRoot) {
 		super.setResponseRoot(responseRoot);
 		if (StringUtils.isNotEmpty(responseRoot)) {
@@ -800,7 +800,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	@Deprecated
 	@IbisDoc({"The namespace of the SOAP envelope, when this property has a value and the input message is a SOAP message, " +
 		"the content of the SOAP Body is used for validation, hence the SOAP Envelope and SOAP Body elements are not considered part of the message to validate. " +
-		"Please note that this functionality is deprecated, using {@link nl.nn.adapterframework.soap.SoapValidator} "+
+		"Please note that this functionality is deprecated, using {@link SoapValidator} "+
 		"is now the preferred solution in case a SOAP message needs to be validated, in other cases give this property an empty value", "http://schemas.xmlsoap.org/soap/envelope/"})
 	public void setSoapNamespace(String string) {
 		soapNamespace = string;
@@ -810,12 +810,12 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		return soapNamespace;
 	}
 
-	@IbisDoc({"40", "key of session variable to store the name of the root element",""})
+	@IbisDoc({"Key of session variable to store the name of the root element",""})
 	public void setRootElementSessionKey(String rootElementSessionKey) {
 		this.rootElementSessionKey = rootElementSessionKey;
 	}
 
-	@IbisDoc({"41", "key of session variable to store the namespace of the root element",""})
+	@IbisDoc({"Key of session variable to store the namespace of the root element",""})
 	public void setRootNamespaceSessionKey(String rootNamespaceSessionKey) {
 		this.rootNamespaceSessionKey = rootNamespaceSessionKey;
 	}

@@ -17,7 +17,7 @@
                 "DetailList":[
                     {
                         "Code":"ORIGINAL_MESSAGE",
-                        "Text":"{ \"Status\": \"e\", \"Item\": { \"Id\": 1 } }"
+                        "Text":"{ \"Status\": \"e\", \"Item\": { \"Id\": \"1\" } }"
                     },
                     {
                         "Code":"ERROR",

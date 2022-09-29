@@ -20,7 +20,7 @@ public class JsonValidatorTest extends PipeTestBase<JsonValidator>{
 
 	@Test
 	public void basic() throws Exception {
-		pipe.setSchemaLocation("/Align/FamilyTree/family-compact-family.jsd");
+		pipe.setSchema("/Align/FamilyTree/family-compact-family.jsd");
 		configureAndStartPipe();
 
 		String input = TestFileUtils.getTestFile("/Align/FamilyTree/family-compact.json");
@@ -32,7 +32,7 @@ public class JsonValidatorTest extends PipeTestBase<JsonValidator>{
 
 	@Test
 	public void basicInvalid() throws Exception {
-		pipe.setSchemaLocation("/Align/FamilyTree/family-compact-family.jsd");
+		pipe.setSchema("/Align/FamilyTree/family-compact-family.jsd");
 		pipe.registerForward(new PipeForward("failure", null));
 		configureAndStartPipe();
 
@@ -47,8 +47,24 @@ public class JsonValidatorTest extends PipeTestBase<JsonValidator>{
 	}
 
 	@Test
+	public void basicNullInput() throws Exception {
+		pipe.setSchema("/Align/FamilyTree/family-compact-family.jsd");
+		pipe.registerForward(new PipeForward("failure", null));
+		configureAndStartPipe();
+
+		String input = null;
+		PipeRunResult result = doPipe(input);
+
+		assertEquals("failure", result.getPipeForward().getName());
+		assertEquals(input, result.getResult().asString());
+
+		String reason = (String)session.get("failureReason");
+		assertThat(reason, containsString("The object must have a property whose name is \"members\""));
+	}
+
+	@Test
 	public void parserError() throws Exception {
-		pipe.setSchemaLocation("/Align/FamilyTree/family-compact-family.jsd");
+		pipe.setSchema("/Align/FamilyTree/family-compact-family.jsd");
 		pipe.registerForward(new PipeForward("failure", null));
 		pipe.registerForward(new PipeForward("parserError", null));
 		configureAndStartPipe();
@@ -65,7 +81,7 @@ public class JsonValidatorTest extends PipeTestBase<JsonValidator>{
 
 	@Test
 	public void basicWithRootElementSpecified() throws Exception {
-		pipe.setSchemaLocation("/Align/FamilyTree/family-compact-family.jsd");
+		pipe.setSchema("/Align/FamilyTree/family-compact-family.jsd");
 		configureAndStartPipe();
 
 		String input = TestFileUtils.getTestFile("/Align/FamilyTree/family-compact.json");
@@ -77,7 +93,7 @@ public class JsonValidatorTest extends PipeTestBase<JsonValidator>{
 
 	@Test
 	public void overrideRootElement() throws Exception {
-		pipe.setSchemaLocation("/Align/FamilyTree/family-compact-family.jsd");
+		pipe.setSchema("/Align/FamilyTree/family-compact-family.jsd");
 		pipe.registerForward(new PipeForward("failure", null));
 		configureAndStartPipe();
 
@@ -90,7 +106,7 @@ public class JsonValidatorTest extends PipeTestBase<JsonValidator>{
 
 	@Test
 	public void overrideRootElementInvalid() throws Exception {
-		pipe.setSchemaLocation("/Align/FamilyTree/family-compact-family.jsd");
+		pipe.setSchema("/Align/FamilyTree/family-compact-family.jsd");
 		pipe.setRoot("address");
 		pipe.registerForward(new PipeForward("failure", null));
 		configureAndStartPipe();
