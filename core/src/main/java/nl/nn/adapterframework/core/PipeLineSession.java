@@ -79,14 +79,18 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		super(t);
 	}
 
+	/*
+	 * The ladybug might stub the MessageId. The Stubbed value will be wrapped in a Message.
+	 * Ensure that 
+	 */
 	@SneakyThrows
 	public String getMessageId() {
-		return getMessage(messageIdKey).asString(); // Allow Ladybug to wrap it in a Message
+		return getString(messageIdKey); // Allow Ladybug to wrap it in a Message
 	}
 
 	@SneakyThrows
 	public String getCorrelationId() {
-		return getMessage(correlationIdKey).asString(); // Allow Ladybug to wrap it in a Message
+		return getString(correlationIdKey); // Allow Ladybug to wrap it in a Message
 	}
 
 	public Message getMessage(String key) {
@@ -171,7 +175,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	private String getString(String key) {
 		try {
-			return (String) get(key);
+			return getMessage(key).asString();
 		} catch(Exception e) {
 			return get(key).toString();
 		}
