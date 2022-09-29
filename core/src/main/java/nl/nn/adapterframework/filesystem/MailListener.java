@@ -25,14 +25,13 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
 import nl.nn.adapterframework.xml.XmlWriter;
 
 /**
- * Implementation of a {@link nl.nn.adapterframework.filesystem.FileSystemListener
- * FileSystemListener} that enables a
- * {@link nl.nn.adapterframework.receivers.Receiver} to look in a folder
+ * Implementation of a {@link FileSystemListener} that enables a {@link Receiver} to look in a folder
  * for received mails. When a mail is found, it is moved to an output folder (or
  * it's deleted), so that it isn't found more then once. A xml string with
  * information about the mail is passed to the pipeline.

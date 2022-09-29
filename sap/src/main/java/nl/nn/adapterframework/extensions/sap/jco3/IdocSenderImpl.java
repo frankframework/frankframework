@@ -21,6 +21,7 @@ import com.sap.conn.idoc.IDocFactory;
 import com.sap.conn.idoc.jco.JCoIDoc;
 import com.sap.conn.jco.JCoDestination;
 
+import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
@@ -29,7 +30,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
- * Implementation of {@link nl.nn.adapterframework.core.ISender sender} that sends an IDoc to SAP.
+ * Implementation of {@link ISender sender} that sends an IDoc to SAP.
  * N.B. The sending of the iDoc is committed right after the XA transaction is completed.
  *
  * @author  Gerrit van Brakel

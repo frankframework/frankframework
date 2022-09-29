@@ -32,17 +32,19 @@ import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IMessageHandler;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.ISecurityHandler;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
 import nl.nn.adapterframework.dispatcher.RequestProcessor;
 import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
+import nl.nn.adapterframework.senders.IbisJavaSender;
+import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -52,8 +54,8 @@ import nl.nn.adapterframework.util.LogUtil;
  * JavaListeners can receive calls made via de ibis-servicedispatcher, which should be located on the JVM classpath to receive calls from other components in the JVM. If you want to call an adapter in the same Frank-application, consider using the IbisLocalSender.
  * <p>
  * To understand what this listener does exactly, please remember that the Frank!Framework is a Java application.
- * The JavaListener listens to Java method calls. You can issue Java method calls using a {@link nl.nn.adapterframework.senders.IbisJavaSender} (external call)
- * or {@link nl.nn.adapterframework.senders.IbisLocalSender} (internal call).
+ * The JavaListener listens to Java method calls. You can issue Java method calls using a {@link IbisJavaSender} (external call)
+ * or {@link IbisLocalSender} (internal call).
  * For more information see the ibis-servicedispatcher project.
  *
  * @author  Gerrit van Brakel

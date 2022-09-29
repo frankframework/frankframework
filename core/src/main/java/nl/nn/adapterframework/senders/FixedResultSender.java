@@ -33,6 +33,7 @@ import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.pipes.FixedResultPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
@@ -40,10 +41,10 @@ import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.TransformerPool;
 
 /**
- * FixedResultSender, same behaviour as {@link nl.nn.adapterframework.pipes.FixedResultPipe FixedResultPipe}, but now as a ISender.
- * 
+ * FixedResultSender, same behaviour as {@link FixedResultPipe}, but now as a ISender.
+ *
  * @ff.parameters Any parameters defined on the sender will be used for replacements. Each occurrence of <code>${name-of-parameter}</code> in the file fileName will be replaced by its corresponding value-of-parameter. This works only with files, not with values supplied in attribute {@link #setReturnString(String) returnString}.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.9
  */
@@ -80,7 +81,7 @@ public class FixedResultSender extends SenderWithParametersBase {
 			returnString = replace(returnString, replaceFrom, replaceTo );
 		}
 	}
- 
+
 	@Override
 	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		String result=returnString;

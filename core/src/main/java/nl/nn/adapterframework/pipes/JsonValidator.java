@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
@@ -26,12 +27,15 @@ import org.leadpony.justify.api.ProblemHandler;
 
 import jakarta.json.stream.JsonParser;
 import jakarta.json.stream.JsonParsingException;
+import lombok.Getter;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.doc.Category;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.validation.AbstractXmlValidator.ValidationResult;
 
@@ -44,31 +48,54 @@ import nl.nn.adapterframework.validation.AbstractXmlValidator.ValidationResult;
 @Category("Basic")
 public class JsonValidator extends ValidatorBase {
 
+	private @Getter String schema;
 	//private @Getter String jsonSchemaVersion=null;
+	private @Getter String subSchemaPrefix="/definitions/";
+	private @Getter String reasonSessionKey = "failureReason";
 
 	private JsonValidationService service = JsonValidationService.newInstance();
-	private JsonSchema schema;
+	private JsonSchema jsonSchema;
+
+	@Override
+	public void configure() throws ConfigurationException {
+		super.configure();
+		if (getSubSchemaPrefix()==null) {
+			setSubSchemaPrefix("");
+		}
+	}
 
 	@Override
 	public void start() throws PipeStartException {
 		try {
 			super.start();
-			schema = getSchema();
+			jsonSchema = getJsonSchema();
 		} catch (IOException e) {
 			throw new PipeStartException("unable to start validator", e);
 		}
 	}
 
+	@Override
 	protected PipeForward validate(Message messageToValidate, PipeLineSession session, boolean responseMode, String messageRoot) throws PipeRunException {
 		final List<String> problems = new LinkedList<>();
 		// Problem handler which will print problems found.
 		ProblemHandler handler = service.createProblemPrinter(problems::add);
 		ValidationResult resultEvent;
 		try {
-			messageToValidate.preserve();
-			JsonSchema curSchema = schema;
+			if (messageToValidate.isEmpty()) {
+				messageToValidate = new Message("{}");
+			} else {
+				messageToValidate.preserve();
+			}
+			JsonSchema curSchema = jsonSchema;
+			if (StringUtils.isEmpty(messageRoot)) {
+				messageRoot = responseMode ? getResponseRoot() : getRoot();
+			}
 			if (StringUtils.isNotEmpty(messageRoot)) {
-				curSchema = schema.getSubschemaAt("/definitions/"+messageRoot);
+				log.debug("validation to messageRoot ["+messageRoot+"]");
+				curSchema = jsonSchema.getSubschemaAt(getSubSchemaPrefix()+messageRoot);
+				if (curSchema==null) {
+					throw new PipeRunException(this, "No schema found for ["+getSubSchemaPrefix()+messageRoot+"]");
+				}
 			}
 			// Parses the JSON instance by JsonParser
 			try (JsonParser parser = service.createParser(messageToValidate.asInputStream(), curSchema, handler)) {
@@ -91,10 +118,29 @@ public class JsonValidator extends ValidatorBase {
 	}
 
 
-	protected JsonSchema getSchema() throws IOException {
-		String schemaName = getSchemaLocation();
-		Resource schemaRes = Resource.getResource(schemaName);
-		return service.readSchema(schemaRes.openStream());
+	protected JsonSchema getJsonSchema() throws IOException {
+		String schemaName = getSchema();
+		Resource schemaRes = Resource.getResource(this, schemaName);
+		if (schemaRes==null) {
+			throw new FileNotFoundException("Cannot find schema ["+schemaName+"]");
+		}
+		JsonSchema result = service.readSchema(schemaRes.openStream());
+		return result;
+	}
+
+	@IbisDoc({"The JSON Schema to validate to", ""})
+	public void setSchema(String schema) {
+		this.schema=schema;
+	}
+
+	@IbisDoc({"Prefix to element name to find subschema in schema", "/definitions/"})
+	public void setSubSchemaPrefix(String prefix) {
+		subSchemaPrefix = prefix;
+	}
+
+	@IbisDoc({"If set: key of session variable to store reasons of mis-validation in", "failureReason"})
+	public void setReasonSessionKey(String reasonSessionKey) {
+		this.reasonSessionKey = reasonSessionKey;
 	}
 
 }

@@ -31,13 +31,14 @@ import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.dispatcher.DispatcherManager;
 import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.http.HttpSender;
+import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
 
 /**
  * Posts a message to another IBIS-adapter or application in the same JVM using IbisServiceDispatcher.
  *
- * An IbisJavaSender makes a call to a Receiver with a {@link nl.nn.adapterframework.receivers.JavaListener JavaListener}
+ * An IbisJavaSender makes a call to a Receiver with a {@link JavaListener}
  * or any other application in the same JVM that has registered a <code>RequestProcessor</code> with the IbisServiceDispatcher.
  *
  * Any parameters are copied to the PipeLineSession of the service called.
@@ -148,7 +149,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 
 
 	/**
-	 * ServiceName of the {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} that should be called.
+	 * ServiceName of the {@link JavaListener} that should be called.
 	 */
 	public void setServiceName(String string) {
 		serviceName = string;
