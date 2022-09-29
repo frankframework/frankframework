@@ -81,7 +81,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	/*
 	 * The ladybug might stub the MessageId. The Stubbed value will be wrapped in a Message.
-	 * Ensure that 
+	 * Ensure that a proper string is returned in those cases too.
 	 */
 	@SneakyThrows
 	public String getMessageId() {
