@@ -18,7 +18,7 @@ package nl.nn.adapterframework.http.rest;
 import nl.nn.adapterframework.http.RestListener;
 
 /**
- * Etag (key-value) Cache interface, allows {@link RestListener}s and {@link ApiListener}s to save and retrieve etags.
+ * Etag (key-value) Cache interface, allows {@link RestListener RestListeners} and {@link ApiListener ApiListeners} to save and retrieve etags.
  *
  * @author	Niels Meijer
  * @since	7.0-B2

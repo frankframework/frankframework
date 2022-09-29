@@ -85,7 +85,6 @@ import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.Protected;
 import nl.nn.adapterframework.functional.ThrowingSupplier;
-import nl.nn.adapterframework.http.rest.ApiListener;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.jms.JMSFacade;
 import nl.nn.adapterframework.jta.SpringTxManagerProxy;
@@ -113,7 +112,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Wrapper for a listener that specifies a channel for the incoming messages of a specific {@link Adapter}.
  * By choosing a listener, the Frank developer determines how the messages are received.
- * For example, an {@link ApiListener} receives RESTful HTTP requests and a
+ * For example, an {@link nl.nn.adapterframework.http.rest.ApiListener} receives RESTful HTTP requests and a
  * {@link JavaListener} receives messages from direct Java calls.
  * <br/><br/>
  * Apart from wrapping the listener, a {@link Receiver} can be configured
@@ -123,7 +122,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * There are two kinds of listeners: synchronous listeners and asynchronous listeners.
  * Synchronous listeners are expected to return a response. The system that triggers the
  * receiver typically waits for a response before proceeding its operation. When a
- * {@link ApiListener} receives a HTTP request, the listener is expected to return a
+ * {@link nl.nn.adapterframework.http.rest.ApiListener} receives a HTTP request, the listener is expected to return a
  * HTTP response. Asynchronous listeners are not expected to return a response. The system that
  * triggers the listener typically continues without waiting for the adapter to finish. When a
  * receiver contains an asynchronous listener, it can have a sender that sends the transformed
