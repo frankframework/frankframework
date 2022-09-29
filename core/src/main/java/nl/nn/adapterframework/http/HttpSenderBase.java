@@ -178,7 +178,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 	private final String CONTEXT_KEY_STATUS_CODE="Http.StatusCode";
 	private final String CONTEXT_KEY_REASON_PHRASE="Http.ReasonPhrase";
-	public final static String MESSAGE_ID_HEADER = "Message-Id";
+	public static final String MESSAGE_ID_HEADER = "Message-Id";
 
 	private final @Getter(onMethod = @__(@Override)) String domain = "Http";
 

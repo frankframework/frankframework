@@ -62,7 +62,7 @@ public class SendMessageJob extends JobDef {
 			Message message = new Message((getMessage()==null) ? "" : getMessage());
 			PipeLineSession session = new PipeLineSession();
 			//Set a messageId that will be forwarded by the localSender to the called adapter. Adapter and job will then share a Ladybug report.
-			session.put(PipeLineSession.correlationIdKey, Misc.createSimpleUUID()); 
+			session.put(PipeLineSession.correlationIdKey, Misc.createSimpleUUID());
 			localSender.sendMessage(message, session);
 		}
 		catch (SenderException e) {
