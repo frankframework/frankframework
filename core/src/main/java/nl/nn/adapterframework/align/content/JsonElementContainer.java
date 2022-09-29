@@ -225,8 +225,7 @@ public class JsonElementContainer implements ElementContainer {
 			case NUMERIC:
 				return stripLeadingZeroes(stringContent);
 			default:
-				if(log.isTraceEnabled())
-					log.trace("getContent quoted stringContent [" + stringContent + "]");
+				if(log.isTraceEnabled()) log.trace("getContent quoted stringContent [" + stringContent + "]");
 //				String result=StringEscapeUtils.escapeJson(stringContent.toString()); // this also converts diacritics into unicode escape sequences
 				String result = ESCAPE_JSON.translate(stringContent.toString());
 				return '"' + result + '"';
