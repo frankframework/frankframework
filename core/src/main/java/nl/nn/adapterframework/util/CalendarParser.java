@@ -456,10 +456,23 @@ public class CalendarParser {
 	private static final boolean DEBUG = false;
 
 	/** list of weekday names. */
-	private static final String[] WEEKDAY_NAMES = { "sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", };
+	private static final String[] WEEKDAY_NAMES = { "sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday" };
 
 	/** list of month abbreviations and names. */
-	private static final String[][] MONTHS = { { "jan", "January" }, { "feb", "February" }, { "mar", "March" }, { "apr", "April" }, { "may", "May" }, { "jun", "June" }, { "jul", "July" }, { "aug", "August" }, { "sep", "September" }, { "oct", "October" }, { "nov", "November" }, { "dec", "December" }, };
+	private static final String[][] MONTHS = {
+		{ "jan", "January" },
+		{ "feb", "February" },
+		{ "mar", "March" },
+		{ "apr", "April" },
+		{ "may", "May" },
+		{ "jun", "June" },
+		{ "jul", "July" },
+		{ "aug", "August" },
+		{ "sep", "September" },
+		{ "oct", "October" },
+		{ "nov", "November" },
+		{ "dec", "December" }
+	};
 
 	/**
 	 * Append formatted time string to the string buffer.
