@@ -24,8 +24,8 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
- * IMonitorAdapter that uses a {@link nl.nn.adapterframework.core.ISender sender} to send its message.
- * 
+ * IMonitorAdapter that uses a {@link ISender sender} to send its message.
+ *
  * @author  Gerrit van Brakel
  * @since   4.9
  */

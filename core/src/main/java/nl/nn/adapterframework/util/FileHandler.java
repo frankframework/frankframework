@@ -43,26 +43,28 @@ import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IScopeProvider;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.pipes.FilePipe;
+import nl.nn.adapterframework.senders.FileSender;
 import nl.nn.adapterframework.stream.Message;
 
 
 /**
- * FileHandler, available to the Ibis developer as {@link nl.nn.adapterframework.senders.FileSender} and
- * {@link nl.nn.adapterframework.pipes.FilePipe}, allows to write to or read from a file.
- * 
+ * FileHandler, available to the Ibis developer as {@link FileSender} and
+ * {@link FilePipe}, allows to write to or read from a file.
+ *
  * <p>
  * Actions take place on the file specified by the fileName attribute (or when
  * not available the fileNameSessionKey, when fileNameSessionKey is empty too
  * the input of the pipe is used as file name). When a directory is not
  * specified, the fileName is expected to include the directory.
  * </p>
- * 
+ *
  * <p>
  * When a file needs to be created and both the fileName and the directory are
  * not specified a temporary file is created as specified by the
@@ -71,18 +73,18 @@ import nl.nn.adapterframework.stream.Message;
  * the directory is specified, the temporary file is created the same way except
  * that the temporary file is created in the specified directory.
  * </p>
- * 
+ *
  * <p>
  * The pipe also support base64 en- and decoding.
  * </p>
- * 
+ *
  * <table border="1">
  * <p><b>Parameters:</b>
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
  * <tr><td></td>writeSuffix<td><i>String</i></td><td>When a parameter with name writeSuffix is present, it is used instead of the writeSuffix specified by the attribute</td></tr>
  * </table>
  * </p>
- * 
+ *
  * @author J. Dekker
  * @author Jaco de Groot (***@dynasol.nl)
  *
@@ -93,7 +95,7 @@ public class FileHandler implements IScopeProvider {
 	private @Getter @Setter ApplicationContext applicationContext;
 
 	protected static final byte[] BOM_UTF_8 = new byte[]{(byte)0xEF, (byte)0xBB, (byte)0xBF};
-	
+
 	protected String charset = System.getProperty("file.encoding");
 	protected String outputType = "string";
 	protected String fileSource = "filesystem";
@@ -112,8 +114,8 @@ public class FileHandler implements IScopeProvider {
 
 	protected List transformers;
 	protected byte[] eolArray=null;
-	
-	/** 
+
+	/**
 	 * @see nl.nn.adapterframework.core.IPipe#configure()
 	 */
 	public void configure() throws ConfigurationException {
@@ -121,11 +123,11 @@ public class FileHandler implements IScopeProvider {
 		transformers = new LinkedList();
 		if (StringUtils.isEmpty(getActions()))
 			throw new ConfigurationException(getLogPrefix(null)+"should at least define one action");
-			
+
 		StringTokenizer tok = new StringTokenizer(getActions(), " ,\t\n\r\f");
 		while (tok.hasMoreTokens()) {
 			String token = tok.nextToken();
-			
+
 			if ("write".equalsIgnoreCase(token))
 				transformers.add(new FileWriter(false));
 			else if ("write_append".equalsIgnoreCase(token))
@@ -149,7 +151,7 @@ public class FileHandler implements IScopeProvider {
 			else
 				throw new ConfigurationException(getLogPrefix(null)+"Action [" + token + "] is not supported");
 		}
-		
+
 		if (transformers.size() == 0)
 			throw new ConfigurationException(getLogPrefix(null)+"should at least define one action");
 		if (!outputType.equalsIgnoreCase("string")
@@ -158,18 +160,18 @@ public class FileHandler implements IScopeProvider {
 				&& !outputType.equalsIgnoreCase("stream")) {
 			throw new ConfigurationException(getLogPrefix(null)+"illegal value for outputType ["+outputType+"], must be 'string', 'bytes' or 'stream'");
 		}
-		
+
 		// configure the transformers
 		for (Iterator it = transformers.iterator(); it.hasNext(); ) {
 			((TransformerAction)it.next()).configure();
 		}
 		eolArray = System.getProperty("line.separator").getBytes();
 	}
-	
+
 //	public Object handle(Object input, PipeLineSession session) throws Exception {
 //		return handle(input, session, null);
 //	}
-	
+
 	public Object handle(Message input, PipeLineSession session, ParameterList paramList) throws Exception {
 		Object output = null;
 		if (input!=null) {
@@ -208,10 +210,10 @@ public class FileHandler implements IScopeProvider {
 				String contentType = session.getMessage("contentType").asString();
 				String contentDisposition = session.getMessage("contentDisposition").asString();
 				if (StringUtils.isNotEmpty(contentType)) {
-					response.setHeader("Content-Type", contentType); 
+					response.setHeader("Content-Type", contentType);
 				}
 				if (StringUtils.isNotEmpty(contentDisposition)) {
-					response.setHeader("Content-Disposition", contentDisposition); 
+					response.setHeader("Content-Disposition", contentDisposition);
 				}
 				OutputStream outputStream = response.getOutputStream();
 				Misc.streamToStream(inputStream, outputStream);
@@ -229,13 +231,13 @@ public class FileHandler implements IScopeProvider {
 			return new String((byte[])output, charset);
 		}
 	}
-	
+
 	/**
 	 * The pipe supports several actions. All actions are implementations in
 	 * inner-classes that implement the Transformer interface.
 	 */
 	protected interface TransformerAction {
-		/* 
+		/*
 		 * @see nl.nn.adapterframework.core.IPipe#configure()
 		 */
 		void configure() throws ConfigurationException;
@@ -245,17 +247,17 @@ public class FileHandler implements IScopeProvider {
 		 */
 		byte[] go(byte[] in, PipeLineSession session, ParameterList paramList) throws Exception;
 	}
-	
+
 	protected interface TransformerActionWithInputTypeStream extends TransformerAction {
 		byte[] go(InputStream in, PipeLineSession session, ParameterList paramList) throws Exception;
 	}
-	
+
 	protected interface TransformerActionWithOutputTypeStream extends TransformerAction {
 		InputStream go(byte[] in, PipeLineSession session, ParameterList paramList, String outputType) throws Exception;
 	}
-	
+
 	/**
-	 * Encodes the input 
+	 * Encodes the input
 	 */
 	private class Encoder implements TransformerAction {
 		public void configure() {}
@@ -263,7 +265,7 @@ public class FileHandler implements IScopeProvider {
 			return Base64.encodeBase64(in);
 		}
 	}
-	
+
 	/**
 	 * Decodes the input
 	 */
@@ -317,7 +319,7 @@ public class FileHandler implements IScopeProvider {
 		if (writeSuffix_work == null) {
 			writeSuffix_work = getWriteSuffix();
 		}
-		
+
 		String name = getEffectiveFileName(null, session);
 		if (StringUtils.isEmpty(getDirectory())) {
 			if (StringUtils.isEmpty(name)) {
@@ -503,10 +505,10 @@ public class FileHandler implements IScopeProvider {
 				boolean success = file.delete();
 				if (!success){
 					log.warn( getLogPrefix(session) + "could not delete file [" + file.toString() +"]");
-				} 
+				}
 				else {
 					log.debug(getLogPrefix(session) + "deleted file [" + file.toString() +"]");
-				} 
+				}
 			}
 			else {
 				log.warn( getLogPrefix(session) + "file [" + file.toString() +"] does not exist");
@@ -518,10 +520,10 @@ public class FileHandler implements IScopeProvider {
 					boolean success = directory.delete();
 					if (!success){
 						log.warn( getLogPrefix(session) + "could not delete directory [" + directory.toString() +"]");
-					} 
+					}
 					else {
 						log.debug(getLogPrefix(session) + "deleted directory [" + directory.toString() +"]");
-					} 
+					}
 				} else {
 						log.debug(getLogPrefix(session) + "directory [" + directory.toString() +"] doesn't exist or is not empty");
 				}
@@ -557,7 +559,7 @@ public class FileHandler implements IScopeProvider {
 
 			Dir2Xml dx=new Dir2Xml();
 			dx.setPath(dir);
-			if (StringUtils.isNotEmpty(name)) { 
+			if (StringUtils.isNotEmpty(name)) {
 				dx.setWildCard(name);
 			}
 			String listResult=dx.getDirList();
@@ -658,7 +660,7 @@ public class FileHandler implements IScopeProvider {
 	 * Sets actions the pipe has to do. Possible actions are "read", "write", "write_append", "encode", "decode", "delete" and "read_delete"
 	 * You can also define combinations, like "read encode write".
 	 */
-	@IbisDoc({"comma separated list of actions to be performed. Possible action values: <ul> <li>write: create a new file and write input to it</li> <li>write_append: create a new file if it does not exist, otherwise append to existing file; then write input to it</li> <li>create: create a new file, but do not write anything to it</li> <li>read: read from file</li> <li>delete: delete the file</li><li>read_delete: read the contents, then delete (when outputType is stream the file is deleted after the stream is read)</li> <li>encode: encode base64</li> <li>decode: decode base64</li> <li>list: returns the files and directories in the directory that satisfy the specified filter (see {@link nl.nn.adapterframework.util.Dir2Xml dir2xml}). If a directory is not specified, the fileName is expected to include the directory</li> <li>info: returns information about the file</li> </ul>", ""})
+	@IbisDoc({"comma separated list of actions to be performed. Possible action values: <ul> <li>write: create a new file and write input to it</li> <li>write_append: create a new file if it does not exist, otherwise append to existing file; then write input to it</li> <li>create: create a new file, but do not write anything to it</li> <li>read: read from file</li> <li>delete: delete the file</li><li>read_delete: read the contents, then delete (when outputType is stream the file is deleted after the stream is read)</li> <li>encode: encode base64</li> <li>decode: decode base64</li> <li>list: returns the files and directories in the directory that satisfy the specified filter (see {@link Dir2Xml}). If a directory is not specified, the fileName is expected to include the directory</li> <li>info: returns information about the file</li> </ul>", ""})
 	public void setActions(String actions) {
 		this.actions = actions;
 	}

@@ -47,6 +47,7 @@ import com.sap.conn.jco.server.JCoServerTIDHandler;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageHandler;
+import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
@@ -56,7 +57,7 @@ import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.stream.Message;
 
 /**
- * Implementation of a {@link nl.nn.adapterframework.core.IPushingListener},
+ * Implementation of a {@link IPushingListener},
  * that enables a GenericReceiver to receive messages from SAP-systems.
  *
  * In SAP the function to be called is a RFC-function to the destination that is registered using <code>progid</code>.

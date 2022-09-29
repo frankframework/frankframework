@@ -46,12 +46,13 @@ import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.jms.IbisMessageListenerContainer;
+import nl.nn.adapterframework.jms.PushingJmsListener;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DateUtils;
 
 /**
- * Configure a Spring JMS Container from a {@link nl.nn.adapterframework.jms.PushingJmsListener}.
+ * Configure a Spring JMS Container from a {@link PushingJmsListener}.
  *
  * <p>
  * This implementation expects to receive an instance of

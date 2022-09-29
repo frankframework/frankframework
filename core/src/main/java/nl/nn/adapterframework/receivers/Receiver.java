@@ -1054,9 +1054,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	/**
-	 * All messages that for this receiver are pumped down to this method, so it actually
-	 * calls the {@link nl.nn.adapterframework.core.Adapter adapter} to process the message.<br/>
-
+	 * All messages that for this receiver are pumped down to this method, so it actually calls the {@link Adapter} to process the message.<br/>
 	 * Assumes that a transaction has been started where necessary.
 	 */
 	private void processRawMessage(Object rawMessageOrWrapper, PipeLineSession session, long waitingDuration, boolean manualRetry, boolean duplicatesAlreadyChecked) throws ListenerException {
@@ -2005,7 +2003,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 	/**
 	 * Sets the name of the Receiver.
-	 * If the listener implements the {@link nl.nn.adapterframework.core.INamedObject name} interface and <code>getName()</code>
+	 * If the listener implements the {@link INamedObject name} interface and <code>getName()</code>
 	 * of the listener is empty, the name of this object is given to the listener.
 	 */
 	@IbisDoc({"Name of the Receiver as known to the Adapter", ""})

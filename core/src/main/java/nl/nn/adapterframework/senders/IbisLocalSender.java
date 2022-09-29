@@ -35,6 +35,7 @@ import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.pipes.IsolatedServiceCaller;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
@@ -46,7 +47,7 @@ import nl.nn.adapterframework.util.Misc;
  *
  * Returns exit.code as forward name to SenderPipe.
  *
- * An IbisLocalSender makes a call to a Receiver with either a {@link nl.nn.adapterframework.http.WebServiceListener WebServiceListener}
+ * An IbisLocalSender makes a call to a Receiver with either a {@link WebServiceListener}
  * or a {@link JavaListener JavaListener}.
  *
  * Any parameters are copied to the PipeLineSession of the service called.
@@ -54,7 +55,7 @@ import nl.nn.adapterframework.util.Misc;
  * <h3>Configuration of the Adapter to be called</h3>
  * A call to another Adapter in the same IBIS instance is preferably made using the combination
  * of an IbisLocalSender and a {@link JavaListener JavaListener}. If,
- * however, a Receiver with a {@link nl.nn.adapterframework.http.WebServiceListener WebServiceListener} is already present, that can be used in some cases, too.
+ * however, a Receiver with a {@link WebServiceListener} is already present, that can be used in some cases, too.
  *
  * <h4>configuring IbisLocalSender and JavaListener</h4>
  * <ul>
@@ -305,7 +306,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 	/**
 	 * Sets a serviceName under which the JavaListener or WebServiceListener is registered.
 	 */
-	@IbisDoc({"name of the {@link nl.nn.adapterframework.http.WebServiceListener WebServiceListener} that should be called", ""})
+	@IbisDoc({"name of the {@link WebServiceListener} that should be called", ""})
 	public void setServiceName(String serviceName) {
 		this.serviceName = serviceName;
 	}
@@ -318,12 +319,12 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 		isolated = b;
 	}
 
-	@IbisDoc({"name of the sessionkey which holds the name of the {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} that should be called", ""})
+	@IbisDoc({"name of the sessionkey which holds the name of the {@link JavaListener} that should be called", ""})
 	public void setJavaListenerSessionKey(String string) {
 		javaListenerSessionKey = string;
 	}
 
-	@IbisDoc({"name of the {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} that should be called (will be ignored when javaListenerSessionKey is set)", ""})
+	@IbisDoc({"name of the {@link JavaListener} that should be called (will be ignored when javaListenerSessionKey is set)", ""})
 	public void setJavaListener(String string) {
 		javaListener = string;
 	}
@@ -333,7 +334,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 		synchronous = b;
 	}
 
-	@IbisDoc({"when <code>true</code>, the sender waits upon open until the called {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} is opened", "true"})
+	@IbisDoc({"when <code>true</code>, the sender waits upon open until the called {@link JavaListener} is opened", "true"})
 	public void setCheckDependency(boolean b) {
 		checkDependency = b;
 	}

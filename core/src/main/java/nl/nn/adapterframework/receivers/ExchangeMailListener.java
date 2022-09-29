@@ -28,7 +28,7 @@ import nl.nn.adapterframework.filesystem.ExchangeFileSystem;
 import nl.nn.adapterframework.filesystem.MailListener;
 
 /**
- * Microsoft Exchange Implementation of a {@link nl.nn.adapterframework.filesystem.MailListener}.
+ * Microsoft Exchange Implementation of a {@link MailListener}.
  *
  * @author Gerrit van Brakel
  */

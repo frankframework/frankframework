@@ -21,8 +21,8 @@ import java.sql.SQLException;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ITransactionalStorage;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
@@ -34,7 +34,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Extension to StreamPipe for API Management.
  * <p>
- * In {@link nl.nn.adapterframework.pipes.StreamPipe} for parameter <code>httpRequest</code> and attribute 
+ * In {@link StreamPipe} for parameter <code>httpRequest</code> and attribute
  * <code>extractFirstStringPart=true</code> the first part is returned to the pipeline.
  * In this class the first part is checked. If it contains a 'MessageID' with namespace "http://www.w3.org/2005/08/addressing",
  * then the message to return to the pipeline is retrieved from the MessageStore.

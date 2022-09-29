@@ -22,6 +22,7 @@ import com.sap.conn.jco.JCoFunction;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
@@ -33,7 +34,7 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 
 /**
- * Implementation of {@link nl.nn.adapterframework.core.ISender sender} that calls a SAP RFC-function.
+ * Implementation of {@link ISender sender} that calls a SAP RFC-function.
  *
  * N.B. If no requestFieldIndex or requestFieldName is specified, input is converted from xml;
  * If no replyFieldIndex or replyFieldName is specified, output is converted to xml.

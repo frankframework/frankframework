@@ -30,14 +30,16 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.http.rest.ApiListener;
 import nl.nn.adapterframework.pipes.JsonPipe;
 import nl.nn.adapterframework.pipes.JsonPipe.Direction;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.stream.Message;
 
 /**
- * Listener that allows a {@link nl.nn.adapterframework.receivers.Receiver} to receive messages as a REST webservice.
+ * Listener that allows a {@link Receiver} to receive messages as a REST webservice.
  * Prepends the configured URI pattern with <code>rest/</code>. When you are writing a new Frank config, you are recommended
- * to use an {@link nl.nn.adapterframework.http.rest.ApiListener} instead. You can find all serviced URI patterns
+ * to use an {@link ApiListener} instead. You can find all serviced URI patterns
  * in the Frank!Console: main menu item Webservice, heading Available REST Services.
  *
  * <p>
@@ -253,12 +255,12 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		retrieveMultipart = b;
 	}
 
-	@IbisDoc({"Mediatype (e.g. XML, JSON, TEXT) the {@link nl.nn.adapterframework.http.RestServiceDispatcher restServiceDispatcher} receives as input", "XML"})
+	@IbisDoc({"Mediatype (e.g. XML, JSON, TEXT) the {@link RestServiceDispatcher} receives as input", "XML"})
 	public void setConsumes(MediaTypes consumes) {
 		this.consumes = consumes;
 	}
 
-	@IbisDoc({"Mediatype (e.g. XML, JSON, TEXT) the {@link nl.nn.adapterframework.http.RestServiceDispatcher restServiceDispatcher} sends as output, if set to json the ibis will automatically try to convert the xml message", "XML"})
+	@IbisDoc({"Mediatype (e.g. XML, JSON, TEXT) the {@link RestServiceDispatcher} sends as output, if set to json the ibis will automatically try to convert the xml message", "XML"})
 	public void setProduces(MediaTypes produces) {
 		this.produces = produces;
 	}

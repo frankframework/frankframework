@@ -32,6 +32,7 @@ import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
 import nl.nn.adapterframework.core.IListenerConnector;
 import nl.nn.adapterframework.core.IPostboxListener;
+import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLine.ExitState;
@@ -44,7 +45,7 @@ import nl.nn.adapterframework.util.RunStateEnquirer;
 import nl.nn.adapterframework.util.RunStateEnquiring;
 
 /**
- * A true multi-threaded {@link nl.nn.adapterframework.core.IPullingListener Listener}-class.
+ * A true multi-threaded {@link IPullingListener Listener}-class.
  * <br/>
  *
  * Since version 4.1, Ibis supports distributed transactions using the XA-protocol. This feature is controlled by the

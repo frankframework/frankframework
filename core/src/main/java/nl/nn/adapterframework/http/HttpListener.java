@@ -15,23 +15,24 @@
 */
 package nl.nn.adapterframework.http;
 
+import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.http.rest.ApiListener;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 
-import org.apache.commons.lang3.StringUtils;
-
-import lombok.Getter;
-
 /**
- * Implementation of a {@link IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.Receiver}
+ * Implementation of a {@link IPushingListener IPushingListener} that enables a {@link Receiver}
  * to receive messages from HTTP requests. If you are writing a new configuration, you are recommended to use
- * an {@link nl.nn.adapterframework.http.rest.ApiListener} or a {@link nl.nn.adapterframework.http.WebServiceListener}
+ * an {@link ApiListener} or a {@link WebServiceListener}
  * instead.
  *
- * @author  Gerrit van Brakel 
+ * @author  Gerrit van Brakel
  * @since   4.4.x (still experimental)
  */
 @Deprecated
