@@ -325,7 +325,7 @@ public class QueueCreator {
 					if (queues != null) {
 						try {
 							PipeLineSession session = new PipeLineSession();
-							session.put(PipeLineSession.businessCorrelationIdKey, correlationId);
+							session.put(PipeLineSession.correlationIdKey, correlationId);
 							String result = prePostFixedQuerySender.sendMessage(TestTool.TESTTOOL_DUMMY_MESSAGE, session).asString();
 							querySendersInfo.put("prePostQueryFixedQuerySender", prePostFixedQuerySender);
 							querySendersInfo.put("prePostQueryResult", result);

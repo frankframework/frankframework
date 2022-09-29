@@ -37,8 +37,8 @@ public class MailSenderTest extends MailSenderTestBase<MailSender> {
 			public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 				super.sendMessage(message, session);
 				session.put("mailSession", mailSession);
-				String correlationID = session.getMessageId();
-				return new Message(correlationID);
+				String messageID = session.getMessageId();
+				return new Message(messageID);
 			}
 		};
 		mailSender.setSmtpHost("localhost");

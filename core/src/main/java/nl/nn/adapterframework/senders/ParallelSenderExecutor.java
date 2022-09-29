@@ -37,7 +37,7 @@ public class ParallelSenderExecutor extends RequestReplyExecutor {
 	public ParallelSenderExecutor(ISender sender, Message message, PipeLineSession session, Guard guard, StatisticsKeeper sk) {
 		this(sender, message, session, null, guard, sk);
 	}
-	
+
 	public ParallelSenderExecutor(ISender sender, Message message, PipeLineSession session, Semaphore semaphore, Guard guard, StatisticsKeeper sk) {
 		super();
 		this.sender=sender;
@@ -46,7 +46,7 @@ public class ParallelSenderExecutor extends RequestReplyExecutor {
 		this.guard=guard;
 		this.semaphore=semaphore;
 		this.sk=sk;
-		correlationID = session.getMessageId();
+		correlationID = session.getCorrelationId();
 	}
 
 	@Override

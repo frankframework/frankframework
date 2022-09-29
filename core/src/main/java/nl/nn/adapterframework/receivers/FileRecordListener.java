@@ -73,13 +73,13 @@ public class FileRecordListener implements IPullingListener {
 
 	@Override
 	public void afterMessageProcessed(PipeLineResult processResult,	Object rawMessage, Map threadContext) throws ListenerException {
-		String tcid = (String) threadContext.get(PipeLineSession.technicalCorrelationIdKey);
+		String cid = (String) threadContext.get(PipeLineSession.correlationIdKey);
 		if (sender != null) {
 			if (processResult.isSuccessful()) {
 				try {
 					sender.sendMessage(processResult.getResult(), null);
 				} catch (Exception e) {
-					throw new ListenerException("error sending message with technical correlationId [" + tcid + " msg [" + processResult.getResult() + "]", e);
+					throw new ListenerException("error sending message with technical correlationId [" + cid + " msg [" + processResult.getResult() + "]", e);
 				}
 			}
 		}

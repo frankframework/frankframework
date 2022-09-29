@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.testtool;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
@@ -34,7 +33,7 @@ import nl.nn.adapterframework.util.TransformerPool;
 
 /**
  * XSLT provider listener for the Test Tool.
- * 
+ *
  * @author Jaco de Groot
  */
 public class XsltProviderListener implements IConfigurable, AutoCloseable {

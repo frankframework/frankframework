@@ -159,7 +159,10 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 			if (!textMode) {
 				writer.append("<"+qName);
 				for (int i=0; i<attributes.getLength(); i++) {
-					writer.append(" "+attributes.getQName(i)+"=\""+XmlUtils.encodeChars(attributes.getValue(i), true).replace("&#39;", "'")+"\"");
+					String attrValue = attributes.getValue(i);
+					if (attrValue!=null) {
+						writer.append(" "+attributes.getQName(i)+"=\""+XmlUtils.encodeChars(attrValue, true).replace("&#39;", "'")+"\"");
+					}
 				}
 				for (int i=0; i<newNamespaceDefinitions.size(); i++) {
 					writePrefixMapping(newNamespaceDefinitions.get(i));

@@ -631,8 +631,8 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		if (object.hasAllowableAction(Action.CAN_DELETE_OBJECT)) { //// You can delete
 			Document suppDoc = (Document) object;
 			suppDoc.delete(true);
-			String correlationID = session==null ? null : session.getMessageId();
-			return new Message(correlationID);
+			String messageID = session==null ? null : session.getMessageId();
+			return new Message(messageID);
 
 		}
 		//// You can't delete

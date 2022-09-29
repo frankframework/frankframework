@@ -178,6 +178,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 	private final String CONTEXT_KEY_STATUS_CODE="Http.StatusCode";
 	private final String CONTEXT_KEY_REASON_PHRASE="Http.ReasonPhrase";
+	public static final String MESSAGE_ID_HEADER = "Message-Id";
 
 	private final @Getter(onMethod = @__(@Override)) String domain = "Http";
 
@@ -705,7 +706,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 			//Set all headers
 			if(session != null && APPEND_MESSAGEID_HEADER && StringUtils.isNotEmpty(session.getMessageId())) {
-				httpRequestBase.setHeader("Message-Id", session.getMessageId());
+				httpRequestBase.setHeader(MESSAGE_ID_HEADER, session.getMessageId());
 			}
 			for (String param: headersParamsMap.keySet()) {
 				httpRequestBase.setHeader(param, headersParamsMap.get(param));

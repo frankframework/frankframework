@@ -16,7 +16,7 @@
 		<jboss-logging.version>3.4.2.Final</jboss-logging.version>
 		<argLine /> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
-		<frankdoc.version>1.1</frankdoc.version>
+		<frankdoc.version>1.2-SNAPSHOT</frankdoc.version>
 
 		<!-- DB Driver Versions -->
 		<h2.driver.version>2.1.214</h2.driver.version>
@@ -710,9 +710,9 @@
 				<artifactId>maven-project-info-reports-plugin</artifactId>
 				<version>3.4.1</version>
 			</plugin>
-			<!-- 
-				http://maven.apache.org/plugins/maven-javadoc-plugin/usage.html 
-				Generate Javadocs As Part Of Project Reports 
+			<!--
+				http://maven.apache.org/plugins/maven-javadoc-plugin/usage.html
+				Generate Javadocs As Part Of Project Reports
 			-->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -964,16 +964,21 @@
 					<plugin>
 						<groupId>org.ibissource</groupId>
 						<artifactId>frank-doc-plugin</artifactId>
-						<version>0.1</version>
+						<version>0.2-SNAPSHOT</version>
 						<inherited>false</inherited> <!-- Only run the Frank!Doc once and include all modules -->
 						<configuration>
 							<doclint>none</doclint>
 							<doclet>org.frankframework.frankdoc.doclet.DocletBuilder</doclet>
 							<docletArtifact>
 								<groupId>org.ibissource</groupId>
-								<artifactId>frank-doc</artifactId>
+								<artifactId>frank-doc-doclet</artifactId>
 								<version>${frankdoc.version}</version>
 							</docletArtifact>
+							<frontendArtifact>
+								<groupId>org.ibissource</groupId>
+								<artifactId>frank-doc-frontend</artifactId>
+								<version>${frankdoc.version}</version>
+							</frontendArtifact>
 							<additionalOptions>
 								<additionalOption>-outputDirectory</additionalOption>
 								<additionalOption>${project.build.directory}/frankdoc</additionalOption>

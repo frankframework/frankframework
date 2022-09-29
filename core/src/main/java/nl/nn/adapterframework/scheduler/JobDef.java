@@ -485,7 +485,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 		return messageKeeper;
 	}
 
-	/** Number of message displayed in ibisconsole
+	/** Number of messages displayed in ibisconsole
 	 * @ff.default 10
 	 */
 	public void setMessageKeeperSize(int size) {

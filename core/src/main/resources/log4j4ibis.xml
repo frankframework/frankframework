@@ -6,11 +6,10 @@
 		<CustomLevel name="BASIC" intLevel="350" /> <!-- between INFO and DEBUG -->
 	</CustomLevels>
 
-	<!-- Pattern %TC is the NDC or ThreadContext (see IbisNdcPatternConverter) -->
 	<Appenders>
 		<Appender type="Console" name="stdout">
 			<Layout type="IbisPatternLayout">
-				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %TC %c{2} - %m%n</Pattern>
+				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %X{mid,cid} %c{2} - %m%n</Pattern>
 			</Layout>
 		</Appender>
 		<Appender type="RollingFile" name="file" fileName="${ctx:log.dir}/${ctx:instance.name.lc}.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}.log.%i">
@@ -18,7 +17,7 @@
 				<Filter type="IbisThreadFilter" onMatch="DENY" onMismatch="NEUTRAL" regex="${ctx:log.thread.rejectRegex}" />
 			</Filters>
 			<Layout type="IbisPatternLayout">
-				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %TC %c{2} - %m%n%iEx</Pattern>
+				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %X{mid,cid} %c{2} - %m%n%iEx</Pattern>
 			</Layout>
 			<Policies>
 				<Policy type="SizeBasedTriggeringPolicy" size="${ctx:log.maxFileSize}" />

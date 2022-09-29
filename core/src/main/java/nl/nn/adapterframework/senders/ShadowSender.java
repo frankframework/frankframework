@@ -183,7 +183,7 @@ public class ShadowSender extends ParallelSenders {
 	private Message collectResults(Map<ISender, ParallelSenderExecutor> executorMap, Message message, PipeLineSession session) throws SAXException, IOException {
 		SaxDocumentBuilder builder = new SaxDocumentBuilder("results");
 
-		String correlationID = session==null ? null : session.getMessageId();
+		String correlationID = session==null ? null : session.getCorrelationId();
 		builder.addAttribute("correlationID", correlationID);
 
 		builder.addElement("originalMessage", XmlUtils.skipXmlDeclaration(message.asString()));

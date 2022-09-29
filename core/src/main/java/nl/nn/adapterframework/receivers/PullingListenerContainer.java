@@ -300,7 +300,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 									receiver.processRawMessage(listener, rawMessage, session, true);
 								}
 							} else {
-								String correlationId = (String) threadContext.get(PipeLineSession.technicalCorrelationIdKey);
+								String correlationId = (String) threadContext.get(PipeLineSession.correlationIdKey);
 								Date receivedDate = new Date();
 								String errorMessage = Misc.concatStrings("too many retries", "; ", receiver.getCachedErrorMessage(messageId));
 								final M rawMessageFinal = rawMessage;

@@ -58,6 +58,20 @@ public class XmlWriterTest {
 		assertEquals(expected,xmlWriter.toString());
 	}
 
+	@Test
+	public void testWithNullAttribute() throws Exception {
+		XmlWriter xmlWriter = new XmlWriter();
+
+		//String expected = "<document attr=\"null\"/>";
+		String expected = "<document/>";
+
+		try (SaxDocumentBuilder documentBuilder = new SaxDocumentBuilder("document", xmlWriter, false)) {
+			documentBuilder.addAttribute("attr", null);
+		}
+
+		assertEquals(expected,xmlWriter.toString());
+	}
+
 
 	@Test
 	public void testNoLexicalHandling() throws Exception {
