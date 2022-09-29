@@ -354,7 +354,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		return configurationSucceeded;
 	}
 
-	private void showProcessingContext(String correlationId, String messageId, PipeLineSession session) {
+	private void showProcessingContext(String messageId, String correlationId, PipeLineSession session) {
 		if (log.isDebugEnabled()) {
 			List<String> hiddenSessionKeys = new ArrayList<>();
 			if (getHiddenInputSessionKeys()!=null) {
@@ -919,7 +919,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		plr.setResult(result);
 		plr.setState(ExitState.ERROR);
 		if (getSender()!=null) {
-			String sendMsg = sendResultToSender(result, messageId);
+			String sendMsg = sendResultToSender(result);
 			if (sendMsg != null) {
 				log.warn("problem sending result:"+sendMsg);
 			}
@@ -1024,7 +1024,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				Date tsReceived = PipeLineSession.getTsReceived(session);
 				Date tsSent = PipeLineSession.getTsSent(session);
 				PipeLineSession.setListenerParameters(session, null, correlationId, tsReceived, tsSent);
-				String messageId = (String) session.get(PipeLineSession.originalMessageIdKey);
+				String messageId = (String) session.get(PipeLineSession.messageIdKey);
 				return processMessageInAdapter(rawMessage, message, messageId, correlationId, session, -1, false, false);
 			} finally {
 				if (sessionCreated) {
@@ -1077,7 +1077,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				}
 
 				Message message = null;
-				String technicalCorrelationId = null;
+				String messageId = null;
 				try {
 					message = getListener().extractMessage((M)rawMessageOrWrapper, session);
 				} catch (Exception e) {
@@ -1091,20 +1091,20 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					}
 				}
 				try {
-					technicalCorrelationId = getListener().getIdFromRawMessage((M)rawMessageOrWrapper, session);
+					messageId = getListener().getIdFromRawMessage((M)rawMessageOrWrapper, session);
 				} catch (Exception e) {
 					if(rawMessageOrWrapper instanceof MessageWrapper) { //somehow messages wrapped in MessageWrapper are in the ITransactionalStorage
 						MessageWrapper<M> wrapper = (MessageWrapper)rawMessageOrWrapper;
-						technicalCorrelationId = wrapper.getId();
+						messageId = wrapper.getId();
 						session.putAll(wrapper.getContext());
 					} else {
 						throw new ListenerException(e);
 					}
 				}
-				String messageId = (String)session.get(PipeLineSession.originalMessageIdKey);
+				String correlationId = session.getCorrelationId();
 				long endExtractingMessage = System.currentTimeMillis();
 				messageExtractionStatistics.addValue(endExtractingMessage-startExtractingMessage);
-				Message output = processMessageInAdapter(rawMessageOrWrapper, message, messageId, technicalCorrelationId, session, waitingDuration, manualRetry, duplicatesAlreadyChecked);
+				Message output = processMessageInAdapter(rawMessageOrWrapper, message, messageId, correlationId, session, waitingDuration, manualRetry, duplicatesAlreadyChecked);
 				try {
 					output.close();
 				} catch (Exception e) {
@@ -1151,15 +1151,15 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			} catch (ListenerException e) {
 				IbisTransaction itxErrorStorage = new IbisTransaction(txManager, TXNEW_CTRL, "errorStorage of receiver [" + getName() + "]");
 				try {
-					String originalMessageId = (String)session.get(PipeLineSession.originalMessageIdKey);
-					String correlationId = (String)session.get(PipeLineSession.businessCorrelationIdKey);
+					String messageId = session.getMessageId();
+					String correlationId = session.getCorrelationId();
 					String receivedDateStr = (String)session.get(PipeLineSession.TS_RECEIVED_KEY);
 					if (receivedDateStr==null) {
 						log.warn(getLogPrefix()+PipeLineSession.TS_RECEIVED_KEY+" is unknown, cannot update comments");
 					} else {
 						Date receivedDate = DateUtils.parseToDate(receivedDateStr,DateUtils.FORMAT_FULL_GENERIC);
 						errorStorage.deleteMessage(storageKey);
-						errorStorage.storeMessage(originalMessageId, correlationId,receivedDate,"after retry: "+e.getMessage(),null, msg);
+						errorStorage.storeMessage(messageId, correlationId,receivedDate,"after retry: "+e.getMessage(),null, msg);
 					}
 				} catch (SenderException e1) {
 					itxErrorStorage.setRollbackOnly();
@@ -1175,7 +1175,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	/*
 	 * Assumes message is read, and when transacted, transaction is still open.
 	 */
-	private Message processMessageInAdapter(Object rawMessageOrWrapper, Message message, String messageId, String technicalCorrelationId, PipeLineSession session, long waitingDuration, boolean manualRetry, boolean duplicatesAlreadyChecked) throws ListenerException {
+	private Message processMessageInAdapter(Object rawMessageOrWrapper, Message message, String messageId, String correlationId, PipeLineSession session, long waitingDuration, boolean manualRetry, boolean duplicatesAlreadyChecked) throws ListenerException {
 		long startProcessingTimestamp = System.currentTimeMillis();
 //		if (message==null) {
 //			requestSizeStatistics.addValue(0);
@@ -1183,7 +1183,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 //			requestSizeStatistics.addValue(message.length());
 //		}
 		lastMessageDate = startProcessingTimestamp;
-		log.debug(getLogPrefix()+"received message with messageId ["+messageId+"] (technical) correlationId ["+technicalCorrelationId+"]");
+		log.debug(getLogPrefix()+"received message with messageId ["+messageId+"] correlationId ["+correlationId+"]");
 
 		if (StringUtils.isEmpty(messageId)) {
 			messageId=Misc.createSimpleUUID();
@@ -1215,7 +1215,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			}
 		}
 
-		String businessCorrelationId=null;
+		String businessCorrelationId=session.get(PipeLineSession.correlationIdKey, correlationId);
 		if (correlationIDTp!=null) {
 			try {
 				message.preserve();
@@ -1231,20 +1231,18 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				} else {
 					cidText = "styleSheet ["+getCorrelationIDStyleSheet()+"]";
 				}
-				if (StringUtils.isNotEmpty(technicalCorrelationId)) {
-					log.info(getLogPrefix()+"did not find correlationId using "+cidText+", reverting to correlationId of transfer ["+technicalCorrelationId+"]");
-					businessCorrelationId=technicalCorrelationId;
+				if (StringUtils.isNotEmpty(correlationId)) {
+					log.info(getLogPrefix()+"did not find correlationId using "+cidText+", reverting to correlationId of transfer ["+correlationId+"]");
+					businessCorrelationId=correlationId;
 				}
 			}
-		} else {
-			businessCorrelationId=technicalCorrelationId;
 		}
 		if (StringUtils.isEmpty(businessCorrelationId) && StringUtils.isNotEmpty(messageId)) {
 			log.info(getLogPrefix()+"did not find (technical) correlationId, reverting to messageId ["+messageId+"]");
 			businessCorrelationId=messageId;
 		}
-		log.info(getLogPrefix()+"messageId [" + messageId + "] technicalCorrelationId [" + technicalCorrelationId + "] businessCorrelationId [" + businessCorrelationId + "]");
-		session.put(PipeLineSession.businessCorrelationIdKey, businessCorrelationId);
+		log.info(getLogPrefix()+"messageId [" + messageId + "] correlationId [" + correlationId + "] businessCorrelationId [" + businessCorrelationId + "]");
+		session.put(PipeLineSession.correlationIdKey, businessCorrelationId);
 		String label=null;
 		if (labelTp!=null) {
 			try {
@@ -1306,7 +1304,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			}
 
 			numReceived.increase();
-			showProcessingContext(businessCorrelationId, messageId, session);
+			showProcessingContext(messageId, businessCorrelationId, session);
 //			threadContext=pipelineSession; // this is to enable Listeners to use session variables, for instance in afterProcessMessage()
 			try {
 				if (getMessageLog()!=null) {
@@ -1317,7 +1315,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				try {
 					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"activating TimeoutGuard with transactionTimeout ["+getTransactionTimeout()+"]s");
 					tg.activateGuard(getTransactionTimeout());
-					pipeLineResult = adapter.processMessageWithExceptions(businessCorrelationId, pipelineMessage, session);
+					pipeLineResult = adapter.processMessageWithExceptions(messageId, pipelineMessage, session);
 					setExitState(session, pipeLineResult.getState(), pipeLineResult.getExitCode());
 					session.put("exitcode", ""+ pipeLineResult.getExitCode());
 					result=pipeLineResult.getResult();
@@ -1366,7 +1364,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				throw wrapExceptionAsListenerException(t);
 			}
 			if (getSender()!=null) {
-				String sendMsg = sendResultToSender(result, messageId);
+				String sendMsg = sendResultToSender(result);
 				if (sendMsg != null) {
 					errorMessage = sendMsg;
 				}
@@ -1395,9 +1393,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 						// This might cause class cast exceptions.
 						// There are, however, also Listeners that might use MessageWrapper as their raw message type,
 						// like JdbcListener
-						error("Exception post processing after retry of message messageId ["+messageId+"] cid ["+technicalCorrelationId+"]", e);
+						error("Exception post processing after retry of message messageId ["+messageId+"] cid ["+correlationId+"]", e);
 					} else {
-						error("Exception post processing message messageId ["+messageId+"] cid ["+technicalCorrelationId+"]", e);
+						error("Exception post processing message messageId ["+messageId+"] cid ["+correlationId+"]", e);
 					}
 					throw wrapExceptionAsListenerException(e);
 				}
@@ -1767,14 +1765,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	public boolean isInRunState(RunState someRunState) {
 		return runState.getRunState()==someRunState;
 	}
-	private String sendResultToSender(Message result, String messageId) {
+	private String sendResultToSender(Message result) {
 		String errorMessage = null;
 		try {
 			if (getSender() != null) {
 				if (log.isDebugEnabled()) { log.debug("Receiver ["+getName()+"] sending result to configured sender"); }
-				PipeLineSession pipeLineSession = new PipeLineSession();
-				pipeLineSession.put(PipeLineSession.messageIdKey, messageId);
-				getSender().sendMessage(result, pipeLineSession);
+				getSender().sendMessage(result, null); // sending correlated responses via a receiver embedded sender is not supported
 			}
 		} catch (Exception e) {
 			String msg = "caught exception in message post processing";
@@ -1963,6 +1959,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	/**
 	 * Sender to which the response (output of {@link PipeLine}) should be sent. Applies if the receiver
 	 * has an asynchronous listener.
+	 * N.B. Sending correlated responses via this sender is not supported.
 	 */
 	public void setSender(ISender sender) {
 		this.sender = sender;

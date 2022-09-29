@@ -35,7 +35,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 
 /**
  * Series of Senders, that are executed one after another.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.9
  */
@@ -76,7 +76,7 @@ public class SenderSeries extends SenderWrapperBase {
 
 	@Override
 	public Message doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		String correlationID = session==null ? null : session.getMessageId();
+		String correlationID = session==null ? null : session.getCorrelationId();
 		long t1 = System.currentTimeMillis();
 		for (ISender sender: getSenders()) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"sending correlationID ["+correlationID+"] message ["+message+"] to sender ["+sender.getName()+"]");
@@ -121,8 +121,8 @@ public class SenderSeries extends SenderWrapperBase {
 		registerSender(sender);
 	}
 
-	/** 
-	 * one or more specifications of senders that will be executed one after another. Each sender will get the result of the preceding one as input. 
+	/**
+	 * one or more specifications of senders that will be executed one after another. Each sender will get the result of the preceding one as input.
 	 * @ff.mandatory
 	 */
 	public void registerSender(ISender sender) {
