@@ -101,10 +101,10 @@ public abstract class SelfContainedBasicFileSystemTest<F, FS extends IBasicFileS
 		assertFalse("file should not exist anymore after being deleted", fileSystem.exists(destFile2));
 
 		fileSystem.removeFolder(folderName2, false);
-		assertFalse(fileSystem.folderExists(folderName2));
+		assertFalse("folder ["+folderName2+"] should not exist anymore after being deleted", fileSystem.folderExists(folderName2));
 
 		fileSystem.removeFolder(folderName, false);
-		assertFalse(fileSystem.folderExists(folderName));
+		assertFalse("folder ["+folderName+"] should not exist anymore after being deleted", fileSystem.folderExists(folderName));
 	}
 
 	public void testFileSystemUtils()  throws Exception{
