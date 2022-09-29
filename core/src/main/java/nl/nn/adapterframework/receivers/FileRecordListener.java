@@ -74,13 +74,11 @@ public class FileRecordListener implements IPullingListener {
 	@Override
 	public void afterMessageProcessed(PipeLineResult processResult,	Object rawMessage, Map threadContext) throws ListenerException {
 		String cid = (String) threadContext.get(PipeLineSession.correlationIdKey);
-		if (sender != null) {
-			if (processResult.isSuccessful()) {
-				try {
-					sender.sendMessage(processResult.getResult(), null);
-				} catch (Exception e) {
-					throw new ListenerException("error sending message with technical correlationId [" + cid + " msg [" + processResult.getResult() + "]", e);
-				}
+		if (sender != null && processResult.isSuccessful()) {
+			try {
+				sender.sendMessage(processResult.getResult(), null);
+			} catch (Exception e) {
+				throw new ListenerException("error sending message with technical correlationId [" + cid + " msg [" + processResult.getResult() + "]", e);
 			}
 		}
 	}
@@ -126,9 +124,8 @@ public class FileRecordListener implements IPullingListener {
 			throw new ListenerException("error retrieving canonical path of renamed file [" + file.getName() + "]", e);
 		}
 		return result;
-
 	}
-	
+
 	@Override
 	public void close() throws ListenerException {
 		try {
@@ -142,7 +139,7 @@ public class FileRecordListener implements IPullingListener {
 	public void closeThread(Map threadContext) throws ListenerException {
 		// nothing special
 	}
-	
+
 	/**
 	 * Configure does some basic checks (directoryProcessedFiles is a directory,  inputDirectory is a directory, wildcard is filled etc.);
 	 *
@@ -177,7 +174,7 @@ public class FileRecordListener implements IPullingListener {
 	protected File getFileToProcess() {
 		WildCardFilter filter = new WildCardFilter(wildcard);
 		File dir = new File(getInputDirectory());
-		File files[] = dir.listFiles(filter);
+		File[] files = dir.listFiles(filter);
 		int count = (files == null ? 0 : files.length);
 		for (int i = 0; i < count; i++) {
 			File file = files[i];
@@ -201,6 +198,7 @@ public class FileRecordListener implements IPullingListener {
 		PipeLineSession.setListenerParameters(threadContext, correlationId, correlationId, null, null);
 		return correlationId;
 	}
+
 	/**
 	 * Retrieves a single record from a file. If the file is empty or fully processed, it looks wether there
 	 * is a new file to process and returns the first record.
@@ -252,7 +250,7 @@ public class FileRecordListener implements IPullingListener {
 
 		return null;
 	}
-	
+
 	@Override
 	public Message extractMessage(Object rawMessage, Map threadContext) throws ListenerException {
 		return Message.asMessage(rawMessage);
@@ -293,7 +291,7 @@ public class FileRecordListener implements IPullingListener {
 	public ISender getSender() {
 		return sender;
 	}
-	
+
 	@Override
 	public String toString() {
 		String result = super.toString();
@@ -305,7 +303,7 @@ public class FileRecordListener implements IPullingListener {
 		return result;
 
 	}
-	
+
 	@Override
 	@IbisDoc({"name of the listener as known to the adapter.", ""})
 	public void setName(String name) {
@@ -315,7 +313,7 @@ public class FileRecordListener implements IPullingListener {
 	public String getName() {
 		return name;
 	}
-	
+
 	/**
 	 * set the directory name to look in for files.
 	 * @see #setWildcard(String)

@@ -39,6 +39,13 @@ public class MultipartForm {
 
 	private final List<FormBodyPart> parts;
 
+	private static final ByteArrayBuffer FIELD_SEP = encode(MIME.DEFAULT_CHARSET, ": ");
+	private static final ByteArrayBuffer CR_LF = encode(MIME.DEFAULT_CHARSET, "\r\n");
+	private static final ByteArrayBuffer TWO_DASHES = encode(MIME.DEFAULT_CHARSET, "--");
+
+	private final Charset charset;
+	private final String boundary;
+
 	private static ByteArrayBuffer encode(final Charset charset, final String string) {
 		final ByteBuffer encoded = charset.encode(CharBuffer.wrap(string));
 		final ByteArrayBuffer bab = new ByteArrayBuffer(encoded.remaining());
@@ -73,13 +80,6 @@ public class MultipartForm {
 		writeBytes(field.getBody(), charset, out);
 		writeBytes(CR_LF, out);
 	}
-
-	private static final ByteArrayBuffer FIELD_SEP = encode(MIME.DEFAULT_CHARSET, ": ");
-	private static final ByteArrayBuffer CR_LF = encode(MIME.DEFAULT_CHARSET, "\r\n");
-	private static final ByteArrayBuffer TWO_DASHES = encode(MIME.DEFAULT_CHARSET, "--");
-
-	final Charset charset;
-	final String boundary;
 
 	/**
 	 * Creates an instance with the specified settings.

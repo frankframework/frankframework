@@ -368,7 +368,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				case OTHER:
 					Message result = executeOtherQuery(queryExecutionContext, message, session);
 					if (getBatchSize()>0 && ++queryExecutionContext.iteration>=getBatchSize()) {
-						int results[]=statement.executeBatch();
+						int[] results=statement.executeBatch();
 						int numRowsAffected=0;
 						for (int i:results) {
 							numRowsAffected+=i;

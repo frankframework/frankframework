@@ -37,12 +37,10 @@ public class TextSplitterPipe extends StreamingPipe {
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 
 		try {
-	
-			String result[] = new String[100];
+			String[] result = new String[100];
 			int p, s, o = 0;
-	
 			String inputString = message.asString();
-	
+
 			if (softSplit) {
 				for (p = 0; p < inputString.length() - maxBlockLength;) {
 					// find last space in msg part
@@ -74,7 +72,7 @@ public class TextSplitterPipe extends StreamingPipe {
 					}
 				}
 			}
-	
+
 			try (MessageOutputStream target=getTargetStream(session)) {
 				try (SaxDocumentBuilder saxBuilder = new SaxDocumentBuilder("text", target.asContentHandler(), false)) {
 					for(int counter = 0; result[counter] != null; counter++) {
