@@ -3,11 +3,17 @@
 	xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:integration="http://www.springframework.org/schema/integration"
 	default-autowire="byName"
 	xsi:schemaLocation="
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration-5.2.xsd
 	">
+
+	<bean id="messageDispatcher" class="nl.nn.adapterframework.management.bus.MessageDispatcher">
+		<property name="packageName" value="nl.nn.adapterframework.management.bus" />
+	</bean>
 
 	<context:property-placeholder />
 
@@ -63,27 +69,6 @@
 	<bean id="adapterLifecycleWrapper" autowire="byName" scope="prototype" abstract="true" />
 
 	<bean name="adapterFlowProcessor" class="nl.nn.adapterframework.util.flow.FlowDiagramAdapterWrapper" parent="adapterLifecycleWrapper"/>
-	<bean name="adapterJmxProcessor" class="nl.nn.adapterframework.jmx.JmxAdapterWrapper" parent="adapterLifecycleWrapper"/>
-
-	<bean id="mbeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean">
-		<property name="locateExistingServerIfPossible" value="true" /><!-- indicate to first look for a server -->
-		<property name="defaultDomain" value="${instance.name}" />
-		<property name="agentId" value="" /> <!-- an empty string forces the PlatformMbeanServer to be used -->
-	</bean>
-
-	<bean id="namingStrategy" class="nl.nn.adapterframework.jmx.JmxNamingStrategy">
-		<property name="defaultDomain" value="${instance.name}" />
-	</bean>
-
-	<bean name="MBeanManager" class="org.springframework.jmx.export.MBeanExporter" lazy-init="false">
-		<property name="namingStrategy" ref="namingStrategy" />
-		<property name="server" ref="mbeanServer"/>
-		<property name="ensureUniqueRuntimeObjectNames" value="false" />
-		<property name="assembler">
-			<bean class="nl.nn.adapterframework.jmx.JmxMBeanInfoAssembler" />
-		</property>
-		<property name="registrationPolicy" value="REPLACE_EXISTING"/>
-	</bean>
 
 	<bean
 		name="flowDiagramManager"

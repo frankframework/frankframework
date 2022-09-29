@@ -260,7 +260,7 @@ angular.module('iaf.beheerconsole')
 
 					for(x in adapter.receivers) {
 						var adapterReceiver = adapter.receivers[x];
-						if(adapterReceiver.started === false)
+						if(adapterReceiver.state != 'started')
 							adapter.status = 'warning';
 
 						if(adapterReceiver.transactionalStores) {
@@ -479,13 +479,6 @@ angular.module('iaf.beheerconsole')
 		$(".rating i").removeClass("fa-star").addClass("fa-star-o");
 		$(".rating i:nth-child(-n+"+ (rating + 1) +")").addClass("fa-star").removeClass("fa-star-o");
 	};
-
-	$scope.showStrutsConsoleDisabled = function () {
-		SweetAlert.Warning({
-			title: "Struts Console Disabled",
-			text: "The struts console has been disabled. In order to enable it, set the property [strutsConsole.enabled] to true.",
-		});
-	}
 }])
 
 .controller('LoadingPageCtrl', ['$scope', 'Api', '$state', function($scope, Api, $state) {
@@ -1017,12 +1010,17 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('UploadConfigurationsCtrl', ['$scope', 'Api', function($scope, Api) {
+.controller('UploadConfigurationsCtrl', ['$scope', 'Api', 'appConstants', function($scope, Api, appConstants) {
 	$scope.datasources = {};
+	$scope.form = {};
+
+	$scope.$on('appConstants', function() {
+		$scope.form.datasource = appConstants['jdbc.datasource.default'];
+	});
 
 	Api.Get("jdbc", function(data) {
 		$.extend($scope, data);
-		$scope.form.datasource = data.datasources[0];
+		$scope.form.datasource = (appConstants['jdbc.datasource.default'] != undefined) ? appConstants['jdbc.datasource.default'] : data.datasources[0];
 	});
 
 	$scope.form = {
@@ -1865,26 +1863,13 @@ angular.module('iaf.beheerconsole')
 		$scope.state.push({type:type, message: message});
 	};
 
-	let adapters = $scope.adapters;
-	let schedulerEligibleAdapters={};
-	for(adapter in adapters) {
-		let receivers = adapters[adapter].receivers;
-		for(r in receivers) {
-			let receiver=receivers[r];
-			if(receiver.listener.class.startsWith('JavaListener')){
-				schedulerEligibleAdapters[adapter] = adapters[adapter];
-			}
-		}
-	}
-	$scope.schedulerEligibleAdapters = schedulerEligibleAdapters;
-
 	$scope.form = {
 			name:"",
 			group:"",
 			adapter:"",
 			receiver:"",
 			cron:"",
-			interval:-1,
+			interval:"",
 			message:"",
 			description:"",
 			locker:false,
@@ -1916,7 +1901,7 @@ angular.module('iaf.beheerconsole')
 					adapter:"",
 					receiver:"",
 					cron:"",
-					interval:-1,
+					interval:"",
 					message:"",
 					description:"",
 					locker:false,
@@ -1944,7 +1929,7 @@ angular.module('iaf.beheerconsole')
 			adapter:"",
 			receiver:"",
 			cron:"",
-			interval:-1,
+			interval:"",
 			message:"",
 			description:"",
 			locker:false,
@@ -1952,20 +1937,36 @@ angular.module('iaf.beheerconsole')
 			persistent:true,
 	};
 
+	function findReceiver() {
+		let adapter = $scope.form.adapter;
+		let listener = $scope.form.listener;
+		let receivers = ($scope.adapters && $scope.adapters[adapter]) ? $scope.adapters[adapter].receivers : null;
+		if(receivers != null) {
+			for(i in receivers) {
+				let receiver = receivers[i];
+				if(listener == receiver.listener.name) {
+					$scope.form.receiver = receiver.name;
+				}
+			}
+		}
+	}
+
 	Api.Get(url, function(data) {
 		$scope.form = {
 				name: data.name,
 				group: data.group,
 				adapter: data.adapter,
-				receiver: "",
-				cron: data.triggers[0].cronExpression,
-				interval: data.triggers[0].repeatInterval,
+				listener: data.listener,
+				receiver: null,
+				cron: data.triggers[0].cronExpression || "",
+				interval: data.triggers[0].repeatInterval || "",
 				message: data.message,
 				description: data.description,
 				locker: data.locker,
 				lockkey: data.lockkey,
 				persistent: true,
 		};
+		findReceiver();
 	});
 
 	$scope.submit = function(form) {
@@ -2165,12 +2166,17 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('IBISstoreSummaryCtrl', ['$scope', 'Api', '$location', function($scope, Api, $location) {
+.controller('IBISstoreSummaryCtrl', ['$scope', 'Api', '$location', 'appConstants', function($scope, Api, $location, appConstants) {
 	$scope.datasources = {};
+	$scope.form = {};
+
+	$scope.$on('appConstants', function() {
+		$scope.form.datasource = appConstants['jdbc.datasource.default'];
+	});
 
 	Api.Get("jdbc", function(data) {
 		$.extend($scope, data);
-		$scope.form = {datasource: data.datasources[0]};
+		$scope.form.datasource = (appConstants['jdbc.datasource.default'] != undefined) ? appConstants['jdbc.datasource.default'] : data.datasources[0];
 	});
 
 	if($location.search() && $location.search().datasource != null) {
@@ -2375,18 +2381,22 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('ExecuteJdbcQueryCtrl', ['$scope', 'Api', '$timeout', '$state', 'Cookies', function($scope, Api, $timeout, $state, Cookies) {
+.controller('ExecuteJdbcQueryCtrl', ['$scope', 'Api', '$timeout', '$state', 'Cookies', 'appConstants', function($scope, Api, $timeout, $state, Cookies, appConstants) {
 	$scope.datasources = {};
 	$scope.resultTypes = {};
 	$scope.error = "";
 	$scope.processingMessage = false;
 	$scope.form = {};
 
+	$scope.$on('appConstants', function() {
+		$scope.form.datasource = appConstants['jdbc.datasource.default'];
+	});
+
 	var executeQueryCookie = Cookies.get("executeQuery");
 
 	Api.Get("jdbc", function(data) {
 		$.extend($scope, data);
-		$scope.form.datasource = data.datasources[0];
+		$scope.form.datasource = (appConstants['jdbc.datasource.default'] != undefined) ? appConstants['jdbc.datasource.default'] : data.datasources[0];
 		$scope.form.queryType = data.queryTypes[0];
 		$scope.form.resultType = data.resultTypes[0];
 		if(executeQueryCookie) {
@@ -2437,15 +2447,20 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('BrowseJdbcTablesCtrl', ['$scope', 'Api', '$timeout', '$state', function($scope, Api, $timeout, $state) {
+.controller('BrowseJdbcTablesCtrl', ['$scope', 'Api', '$timeout', '$state', 'appConstants', function($scope, Api, $timeout, $state, appConstants) {
 	$scope.datasources = {};
 	$scope.resultTypes = {};
 	$scope.error = "";
 	$scope.processingMessage = false;
+	$scope.form = {};
+
+	$scope.$on('appConstants', function() {
+		$scope.form.datasource = appConstants['jdbc.datasource.default'];
+	});
 
 	Api.Get("jdbc", function(data) {
 		$scope.datasources = data.datasources;
-		$scope.form = {datasource: data.datasources[0]};
+		$scope.form.datasource = (appConstants['jdbc.datasource.default'] != undefined) ? appConstants['jdbc.datasource.default'] : data.datasources[0];
 	});
 	$scope.submit = function(formData) {
 		$scope.processingMessage = true;

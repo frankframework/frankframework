@@ -244,17 +244,17 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 		return 0;
 	}
 
-	@IbisDoc({"1", "The flowId of the file transfer when direction=wrap. When direction=unwrap the flowId will be extracted from the incoming message and added as a sessionKey to the pipeline.", ""})
+	@IbisDoc({"The flowId of the file transfer when direction=wrap. When direction=unwrap the flowId will be extracted from the incoming message and added as a sessionKey to the pipeline.", ""})
 	public void setFlowId(String flowId) {
 		this.flowId = flowId;
 	}
 
-	@IbisDoc({"2", "specifies the output folder if transformFilename=<code>false</code> and direction=wrap", ""})
+	@IbisDoc({"specifies the output folder if transformFilename=<code>false</code> and direction=wrap", ""})
 	public void setFlowOutFolder(String flowOutFolder) {
 		this.flowOutFolder = flowOutFolder;
 	}
 
-	@IbisDoc({"3", "when <code>true</code> and direction=wrap, the input which is expected to be a local filename will be transformed to the filename as known on the IUF State machine.", "true"})
+	@IbisDoc({"when <code>true</code> and direction=wrap, the input which is expected to be a local filename will be transformed to the filename as known on the IUF State machine.", "true"})
 	public void setTransformFilename(boolean transformFilename) {
 		this.transformFilename = transformFilename;
 	}

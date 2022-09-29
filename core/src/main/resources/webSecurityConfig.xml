@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/security" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xsi:schemaLocation="http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd
+						http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+<!-- example use of a secured endpoint in tandum with the global authenticationManager
+	<http use-expressions="true" realm="Frank2" authentication-manager-ref="inMemoryAuthManager" create-session="stateless" pattern="/api/**">
+		<csrf disabled="true"/>
+
+		<http-basic entry-point-ref="authenticationEntryPoint" />
+		<security:logout />
+	</http>
+
+	<beans:bean id="authenticationEntryPoint" class="org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint">
+		<beans:property name="realmName" value="Frank" />
+	</beans:bean>
+
+	<authentication-manager alias="inMemoryAuthManager">
+		<security:authentication-provider>
+			<security:user-service>
+				<security:user name="IbisTester123" password="IbisTester" authorities="IbisTester"/>
+			</security:user-service>
+			<security:password-encoder ref="passwordEncoder" />
+		</security:authentication-provider>
+	</authentication-manager>
+	<beans:bean id="passwordEncoder" class = "org.springframework.security.crypto.password.NoOpPasswordEncoder" factory-method = "getInstance"/>
+-->
+
+	<http use-expressions="true" realm="Frank" authentication-manager-ref="authenticationManager" entry-point-ref="403EntryPoint" pattern="/**">
+		<security:csrf disabled="true" />
+		<security:headers>
+			<security:frame-options policy="SAMEORIGIN" />
+		</security:headers>
+		<security:custom-filter position="PRE_AUTH_FILTER" ref="jeePreAuthenticatedFilter" />
+		<security:logout />
+	</http>
+
+	<!-- When using JEE the container authenticates clients (401) we therefore only have to authorize them. If not authorized, return a 403. -->
+	<beans:bean id="403EntryPoint" class="org.springframework.security.web.authentication.Http403ForbiddenEntryPoint" />
+
+<!--
+https://docs.spring.io/spring-security/site/docs/3.0.x/reference/introduction.html
+https://stackoverflow.com/questions/9831268/how-to-use-j2eepreauthenticatedprocessingfilter-and-a-custom-authentication-prov
+https://docs.spring.io/spring-security/site/docs/3.0.x/reference/authz-arch.html
+-->
+
+	<!-- Delegates requests to the container, holds configured users and roles in the application -->
+	<authentication-manager alias="authenticationManager">
+		<security:authentication-provider ref="j2eeAuthenticationProvider" />
+	</authentication-manager>
+
+	<!-- Checks if the user has been logged in and returns the HttpRequest.getUserPrincipal -->
+	<beans:bean id="jeePreAuthenticatedFilter" class="org.springframework.security.web.authentication.preauth.j2ee.J2eePreAuthenticatedProcessingFilter">
+		<beans:property name="authenticationManager" ref="authenticationManager" />
+		<beans:property name="authenticationDetailsSource" ref="authenticationDetailsSource" />
+	</beans:bean>
+
+	<!-- Reads the web.xml file 'security-roles' -->
+	<beans:bean id="mappableAttributesRetriever" class="org.springframework.security.web.authentication.preauth.j2ee.WebXmlMappableAttributesRetriever" />
+
+	<!-- Checks which roles the user(principal) has by performing HttpRequest.isUserInRole -->
+	<beans:bean id="authenticationDetailsSource" class="org.springframework.security.web.authentication.preauth.j2ee.J2eeBasedPreAuthenticatedWebAuthenticationDetailsSource">
+		<beans:property name="mappableRolesRetriever" ref="mappableAttributesRetriever" />
+	</beans:bean>
+
+	<!-- The J2EE authentication provider -->
+	<!-- SecurityContextHolder.getContext().getAuthentication(); can be used to retrieve the username (when available) -->
+	<beans:bean id="j2eeAuthenticationProvider" class="org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider">
+		<beans:property name="preAuthenticatedUserDetailsService" ref="preAuthenticatedUserDetailsService" />
+	</beans:bean>
+
+	<!-- Converts the AuthenticationToken into UserDetails -->
+	<beans:bean id="preAuthenticatedUserDetailsService" class="org.springframework.security.web.authentication.preauth.PreAuthenticatedGrantedAuthoritiesUserDetailsService" />
+</beans:beans>

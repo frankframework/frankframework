@@ -95,5 +95,10 @@ public class PrettyPrintFilter extends FullXmlFilter {
 		this.indent = indent;
 	}
 
+	@Override
+	public String toString() {
+		return getContentHandler().toString();
+	}
+
 
 }

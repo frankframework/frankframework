@@ -25,14 +25,17 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.IForwardNameProvidingSender;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.pipes.IsolatedServiceCaller;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
@@ -42,7 +45,9 @@ import nl.nn.adapterframework.util.Misc;
 /**
  * Posts a message to another IBIS-adapter in the same IBIS instance.
  *
- * An IbisLocalSender makes a call to a Receiver with either a {@link nl.nn.adapterframework.http.WebServiceListener WebServiceListener}
+ * Returns exit.code as forward name to SenderPipe.
+ *
+ * An IbisLocalSender makes a call to a Receiver with either a {@link WebServiceListener}
  * or a {@link JavaListener JavaListener}.
  *
  * Any parameters are copied to the PipeLineSession of the service called.
@@ -50,7 +55,7 @@ import nl.nn.adapterframework.util.Misc;
  * <h3>Configuration of the Adapter to be called</h3>
  * A call to another Adapter in the same IBIS instance is preferably made using the combination
  * of an IbisLocalSender and a {@link JavaListener JavaListener}. If,
- * however, a Receiver with a {@link nl.nn.adapterframework.http.WebServiceListener WebServiceListener} is already present, that can be used in some cases, too.
+ * however, a Receiver with a {@link WebServiceListener} is already present, that can be used in some cases, too.
  *
  * <h4>configuring IbisLocalSender and JavaListener</h4>
  * <ul>
@@ -79,11 +84,13 @@ import nl.nn.adapterframework.util.Misc;
  *   <li>Set the attribute <code>name</code> to <i>yourIbisWebServiceName</i></li>
  * </ul>
  *
+ * @ff.forward "&lt;Exit.code&gt;" default
+ *
  * @author Gerrit van Brakel
  * @since  4.2
  */
 @Category("Basic")
-public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination {
+public class IbisLocalSender extends SenderWithParametersBase implements IForwardNameProvidingSender, HasPhysicalDestination {
 
 	private final @Getter(onMethod = @__(@Override)) String domain = "Local";
 
@@ -166,7 +173,37 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 
 	@Override
 	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		String correlationID = session==null ? null : session.getMessageId();
+		SenderResult senderResult = sendMessageAndProvideForwardName(message, session);
+		Message result = senderResult.getResult();
+		if (!senderResult.isSuccess()) {
+			throw new SenderException(getLogPrefix()+"call to "+getServiceIndication(session)+" unsuccessful, resulting in forward/exitCode ["+senderResult.getForwardName()+"]");
+		}
+		return result;
+	}
+
+	protected String getServiceIndication(PipeLineSession session) throws SenderException {
+		String serviceIndication;
+		if (StringUtils.isNotEmpty(getServiceName())) {
+			serviceIndication="service ["+getServiceName()+"]";
+		} else {
+			String javaListener;
+			if (StringUtils.isNotEmpty(getJavaListenerSessionKey())) {
+				try {
+					javaListener = session.getMessage(getJavaListenerSessionKey()).asString();
+				} catch (IOException e) {
+					throw new SenderException("unable to resolve session key ["+getJavaListenerSessionKey()+"]", e);
+				}
+			} else {
+				javaListener = getJavaListener();
+			}
+			serviceIndication="JavaListener ["+javaListener+"]";
+		}
+		return serviceIndication;
+	}
+
+	@Override
+	public SenderResult sendMessageAndProvideForwardName(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		String correlationID = session==null ? null : session.getCorrelationId();
 		Message result = null;
 		try (PipeLineSession context = new PipeLineSession()) {
 			if (paramList!=null) {
@@ -229,7 +266,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 							throw new SenderException(msg);
 						}
 						log.info(getLogPrefix()+msg);
-						return new Message("<error>"+msg+"</error>");
+						return new SenderResult("error", false, new Message("<error>"+msg+"</error>"));
 					}
 					if (isIsolated()) {
 						if (isSynchronous()) {
@@ -261,18 +298,15 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 
 			ExitState exitState = (ExitState)context.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
 			Object exitCode = context.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
-			if (exitState!=null && exitState!=ExitState.SUCCESS) {
-				context.put("originalResult", result);
-				throw new SenderException(getLogPrefix()+"call to "+serviceIndication+" resulted in exitState ["+exitState+"] exitCode ["+exitCode+"]");
-			}
-			return result;
+			String forwardName = exitCode !=null ? exitCode.toString() : null;
+			return new SenderResult(forwardName, exitState==ExitState.SUCCESS, result);
 		}
 	}
 
 	/**
 	 * Sets a serviceName under which the JavaListener or WebServiceListener is registered.
 	 */
-	@IbisDoc({"name of the {@link nl.nn.adapterframework.http.WebServiceListener WebServiceListener} that should be called", ""})
+	@IbisDoc({"name of the {@link WebServiceListener} that should be called", ""})
 	public void setServiceName(String serviceName) {
 		this.serviceName = serviceName;
 	}
@@ -285,12 +319,12 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 		isolated = b;
 	}
 
-	@IbisDoc({"name of the sessionkey which holds the name of the {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} that should be called", ""})
+	@IbisDoc({"name of the sessionkey which holds the name of the {@link JavaListener} that should be called", ""})
 	public void setJavaListenerSessionKey(String string) {
 		javaListenerSessionKey = string;
 	}
 
-	@IbisDoc({"name of the {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} that should be called (will be ignored when javaListenerSessionKey is set)", ""})
+	@IbisDoc({"name of the {@link JavaListener} that should be called (will be ignored when javaListenerSessionKey is set)", ""})
 	public void setJavaListener(String string) {
 		javaListener = string;
 	}
@@ -300,7 +334,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 		synchronous = b;
 	}
 
-	@IbisDoc({"when <code>true</code>, the sender waits upon open until the called {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} is opened", "true"})
+	@IbisDoc({"when <code>true</code>, the sender waits upon open until the called {@link JavaListener} is opened", "true"})
 	public void setCheckDependency(boolean b) {
 		checkDependency = b;
 	}

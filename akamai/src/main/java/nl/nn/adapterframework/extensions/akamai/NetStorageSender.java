@@ -54,7 +54,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Sender for Akamai NetStorage (HTTP based).
  *
- * <p>See {@link nl.nn.adapterframework.http.HttpSenderBase} for more arguments and parameters!</p>
+ * <p>See {@link HttpSenderBase} for more arguments and parameters!</p>
  *
  *
  * <p><b>AuthAlias:</b></p>
@@ -210,9 +210,9 @@ public class NetStorageSender extends HttpSenderBase {
 		} else {
 			if (statusCode==HttpServletResponse.SC_OK) {
 				ok = true;
-			} else if (isFollowRedirects() && 
-					statusCode == HttpServletResponse.SC_MOVED_PERMANENTLY || 
-					statusCode == HttpServletResponse.SC_MOVED_TEMPORARILY || 
+			} else if (isFollowRedirects() &&
+					statusCode == HttpServletResponse.SC_MOVED_PERMANENTLY ||
+					statusCode == HttpServletResponse.SC_MOVED_TEMPORARILY ||
 					statusCode == HttpServletResponse.SC_TEMPORARY_REDIRECT) {
 				ok = true;
 			}
@@ -271,7 +271,7 @@ public class NetStorageSender extends HttpSenderBase {
 	}
 
 	/**
-	 * When an exception occurs and the response cannot be parsed, we do not want to throw a 'missing response' exception. 
+	 * When an exception occurs and the response cannot be parsed, we do not want to throw a 'missing response' exception.
 	 * Since this method is used when handling exceptions, silently return null, to avoid NPE's and IOExceptions
 	 */
 	public String getResponseBodyAsString(HttpResponseHandler responseHandler, boolean throwIOExceptionWhenParsingResponse) throws IOException {

@@ -47,5 +47,61 @@
 			</pipe>
 		</pipeline>
 	</adapter>
+
+	<adapter name="TransactedOutputStreaming" >
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-TransactedOutputStreaming" />
+		</receiver>
+		<pipeline transactionAttribute="RequiresNew">
+			<SenderPipe name="prepareTable1" >
+				<FixedQuerySender 
+					queryType="other"
+					query="DELETE FROM IBISTEMP WHERE TKEY = 2639"
+				/>
+			</SenderPipe>
+			<SenderPipe name="prepareTable2" >
+				<FixedQuerySender 
+					queryType="other"
+					query="INSERT INTO IBISTEMP (TKEY, TCHAR) VALUES (2639,'A')"
+				/>
+			</SenderPipe>
+			<XsltPipe name="createDocument" styleSheetName="OutputStreaming/xsl/createDocument.xslt" />
+			<!-- ForEachChildElementPipe provides OutputStream to XsltPipe. Transaction connection must be properly handled  -->
+			<ForEachChildElementPipe name="iterate">
+				<FixedQuerySender 
+					queryType="other"
+					query="UPDATE IBISTEMP SET TCHAR='Y' WHERE TKEY=2639"
+				/>
+			</ForEachChildElementPipe>
+		</pipeline>
+	</adapter>
+
+	<adapter name="TransactedOutputStreaming2" >
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-TransactedOutputStreaming2" />
+		</receiver>
+		<pipeline transactionAttribute="RequiresNew">
+			<SenderPipe name="prepareTable1" >
+				<FixedQuerySender 
+					queryType="other"
+					query="DELETE FROM IBISTEMP WHERE TKEY = 2639"
+				/>
+			</SenderPipe>
+			<SenderPipe name="prepareTable2" >
+				<FixedQuerySender 
+					queryType="other"
+					query="INSERT INTO IBISTEMP (TKEY, TCHAR) VALUES (2639,'A')"
+				/>
+			</SenderPipe>
+			<XsltPipe name="createDocument" xpathExpression="/*" getInputFromFixedValue="&lt;root&gt;&lt;elem&gt;x&lt;/elem&gt;&lt;elem&gt;y&lt;/elem&gt;&lt;/root&gt;" outputType="XML"/>
+			<!-- TransactionConnector for MessageOutputStream of ForEachChildElementPipe is created after that for elementXPathExpression, but the latter should be 'last in thread'  -->
+			<ForEachChildElementPipe name="iterate" elementXPathExpression="/*/*" >
+				<FixedQuerySender 
+					queryType="other"
+					query="UPDATE IBISTEMP SET TCHAR='Y' WHERE TKEY=2639"
+				/>
+			</ForEachChildElementPipe>
+		</pipeline>
+	</adapter>
 	
 </module>

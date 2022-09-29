@@ -92,7 +92,7 @@ public final class SendJmsMessage extends Base {
 			}
 			qms.addParameter(p);
 		}
-		
+
 		Attachment filePart = inputDataMap.getAttachment("file");
 		if(filePart != null) {
 			fileName = filePart.getContentDisposition().getParameter( "filename" );
@@ -161,7 +161,7 @@ public final class SendJmsMessage extends Base {
 						break;
 					}
 					rb+=chunk;
-				} 
+				}
 				String currentMessage = XmlUtils.readXml(b,0,rb,StreamUtil.DEFAULT_INPUT_STREAM_ENCODING,false);
 
 				processMessage(qms, currentMessage);
@@ -182,7 +182,7 @@ public final class SendJmsMessage extends Base {
 			qms.sendMessage(new Message(message), null);
 		} catch (Exception e) {
 			throw new ApiException("Error occured sending message", e);
-		} 
+		}
 		try {
 			qms.close();
 		} catch (Exception e) {

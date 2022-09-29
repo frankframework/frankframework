@@ -2,7 +2,11 @@
 <beans
 	xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/task  http://www.springframework.org/schema/task/spring-task.xsd
+	"
 	>
 
 	<bean
@@ -35,11 +39,29 @@
 		<property name="maxMessageLength"><ref bean="maxMessageLength"/></property>
 		<property name="regexFilter"><ref bean="regexFilter"/></property>
 		<property name="securityLoggerName" value="SEC"/>
-		<!-- Prevent threads that didn't start and aren't cancelled to keep reports in progress. Most of the times (like when using ParallelSenders) the main thread will wait for child threads to return their result anyway -->
+		<!-- Prevent threads that didn't start and aren't cancelled from keeping reports in progress -->
 		<property name="closeThreads" value="true"/>
-		<!-- Prevent streams for which close method isn't invoked to keep reports in progress. Most of the times streams will be processed during the lifetime of the main thread (which is executing the PipeLine) anyway -->
-		<property name="closeMessageCapturers" value="true"/>
+		<property name="closeNewThreadsOnly" value="true"/>
+		<!-- See comment on closeReportsTask -->
+		<property name="closeMessageCapturers" value="false"/>
 	</bean>
+
+	<!--
+	Prevent streams for which close method isn't invoked from keeping reports in progress. It would be possible to set
+	closeMessageCapturers to true on the testTool bean but in some cases that would close the report too soon as a
+	stream can be read after the pipeline has finished (e.g. when Base64Pipe is the last pipe Ladybug would show an
+	empty string while test a pipeline would show the correct result).
+	-->
+	<bean name="closeReportsTask" class="nl.nn.testtool.CloseReportsTask">
+		<property name="messageCapturersTime" value="60000"/>
+		<property name="threadsTime" value="-1"/>
+	</bean>
+
+	<task:scheduler id="closeReportsScheduler"/>
+
+	<task:scheduled-tasks scheduler="closeReportsScheduler">
+		<task:scheduled ref="closeReportsTask" method="closeReports" fixed-delay="10000" />
+	</task:scheduled-tasks>
 
 	<bean name="metadataExtractor" class="nl.nn.testtool.MetadataExtractor">
 		<property name="extraMetadataFieldExtractors">
@@ -77,6 +99,12 @@
 				'testStorageXml' : 'testStorageFile'
 				}"
 		/>
+	</bean>
+	<!-- Ladybug API classes autowired by CXF Spring (see LadybugWebContext.xml) expect a bean with name testStorage -->
+	<bean name="testStorage" class="nl.nn.testtool.storage.proxy.ProxyStorage">
+		<property name="destination">
+			<ref bean="#{testStorageActive}"/>
+		</property>
 	</bean>
 	<bean name="testStorageXml" class="nl.nn.testtool.storage.xml.XmlStorage" autowire="byName" init-method="init">
 		<property name="name" value="Test"/>
@@ -195,7 +223,7 @@
 			<ref bean="testTool"/>
 		</property>
 		<property name="testStorage">
-			<ref bean="#{testStorageActive}"/>
+			<ref bean="testStorage"/>
 		</property>
 		<property name="reportsComponent">
 			<ref bean="reportsComponent"/>
@@ -212,7 +240,7 @@
 		<property name="treePane">
 			<bean class="nl.nn.testtool.echo2.test.TreePane" autowire="byName" init-method="initBean" >
 				<property name="storage">
-					<ref bean="#{testStorageActive}"/>
+					<ref bean="testStorage"/>
 				</property>
 			</bean>
 		</property>
@@ -227,7 +255,7 @@
 							<ref bean="debugStorage"/>
 						</property>
 						<property name="testStorage">
-							<ref bean="#{testStorageActive}"/>
+							<ref bean="testStorage"/>
 						</property>
 						<property name="reportXmlTransformer">
 							<ref bean="reportXmlTransformer"/>
@@ -246,7 +274,7 @@
 			<ref bean="testTool"/>
 		</property>
 		<property name="testStorage">
-			<ref bean="#{testStorageActive}"/>
+			<ref bean="testStorage"/>
 		</property>
 		<property name="reportsComponent1">
 			<bean parent="reportsComponent">
@@ -292,9 +320,6 @@
 		</property>
 		<property name="tabs">
 			<ref bean="tabs"/>
-		</property>
-		<property name="testStorage">
-			<ref bean="#{testStorageActive}"/>
 		</property>
 	</bean>
 

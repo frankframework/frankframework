@@ -198,8 +198,8 @@ public class SchemaUtils {
 	}
 
 	/**
-	 * Including a {@link nl.nn.adapterframework.validation.XSD} into an {@link javax.xml.stream.XMLStreamWriter} while parsing it. It is parsed
-	 * (using a low level {@link javax.xml.stream.XMLEventReader} so that certain things can be corrected on the fly.
+	 * Including a {@link XSD} into an {@link XMLStreamWriter} while parsing it. It is parsed
+	 * (using a low level {@link XMLEventReader} so that certain things can be corrected on the fly.
 	 *
 	 * @param xsd
 	 * @param xmlStreamWriter

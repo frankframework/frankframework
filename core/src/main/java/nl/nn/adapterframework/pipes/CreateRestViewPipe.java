@@ -30,6 +30,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.http.RestListener;
 import nl.nn.adapterframework.lifecycle.ApplicationMetrics;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -42,7 +43,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
- * Create a view for {@link nl.nn.adapterframework.http.RestListener}.
+ * Create a view for {@link RestListener}.
  *
  * <p>
  * <b>expected format after performing the XSLT transformation:</b>
@@ -133,7 +134,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </code>
  * </p>
  * <p>
- * 
+ *
  * @author Peter Leeuwenburgh
  */
 

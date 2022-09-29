@@ -33,6 +33,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import nl.nn.adapterframework.core.IMessageBrowser.HideMethod;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
@@ -310,15 +311,14 @@ public class MiscTest {
 		String res = Misc.concatStrings(a, seperator, b);
 		assertEquals("LeBron", res);
 	}
-	
+
 	@Test
 	public void testConcat() throws Exception {
 		String seperator = "|";
 		String res = Misc.concat(seperator, null, "a", "b", null, "c", null);
 		assertEquals("a|b|c", res);
 	}
-	
-	
+
 	/**
 	 * Method: hide(String string)
 	 */
@@ -478,7 +478,7 @@ public class MiscTest {
 		arrayList.add("a");
 		arrayList.add("b");
 		arrayList.add("c");
-		assertTrue(stringCollection.size() == 3);
+		assertEquals(3, stringCollection.size());
 		assertEquals("c", stringCollection.get(stringCollection.size() - 1));
 	}
 
@@ -531,7 +531,7 @@ public class MiscTest {
 	public void testCleanseMessage() throws Exception {
 		String s = "Donald Duck 23  Hey hey  14  Wooo";
 		String regex = "\\d";
-		String res = Misc.cleanseMessage(s, regex, " does not matter");
+		String res = Misc.cleanseMessage(s, regex, HideMethod.ALL);
 		assertEquals("Donald Duck **  Hey hey  **  Wooo", res);
 	}
 
@@ -602,7 +602,7 @@ public class MiscTest {
 		String expectedString = Misc.resourceToString(expected);
 		TestAssertions.assertEqualsIgnoreCRLF(expectedString, Misc.jsonPretty(inputString));
 	}
-	
+
 	@Test
 	public void testPrettyJsonArray() throws IOException {
 		URL input = TestFileUtils.getTestFileURL("/Misc/minifiedJsonArray.json");

@@ -1,12 +1,14 @@
 package nl.nn.adapterframework.util;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,6 +24,9 @@ import org.xml.sax.SAXException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.UrlMessage;
+import nl.nn.adapterframework.testutil.MatchUtils;
+import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.testutil.TestScopeProvider;
 import nl.nn.adapterframework.xml.StringBuilderContentHandler;
 import nl.nn.adapterframework.xml.XmlWriter;
@@ -32,7 +37,7 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 		testXslt(XmlUtils.makeRemoveNamespacesXslt(omitXmlDeclaration, indent),input,expected);
 		testTransformerPool(XmlUtils.getRemoveNamespacesTransformerPool(omitXmlDeclaration, indent),input,expected);
 	}
-	
+
 	public void testGetRootNamespace(String input, String expected) throws SAXException, TransformerException, IOException, ConfigurationException {
 		testXslt(XmlUtils.makeGetRootNamespaceXslt(),input,expected);
 		testTransformerPool(XmlUtils.getGetRootNamespaceTransformerPool(),input,expected);
@@ -159,21 +164,19 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	@Test
 	public void testCanonicalizeWithNewLinesAndSpaces() throws Exception {
 		String newLinesAndSpaces = XmlUtils.canonicalize("<test>\n<a>9</a>\n  <b>2</b>  \n<c>7</c>\n</test>\n");
-		assertEquals("<test>\n" + 
-				"	<a>9</a>\n" + 
-				"	<b>2</b>\n" + 
-				"	<c>7</c>\n" + 
+		assertEquals("<test>\n" +
+				"	<a>9</a>\n" +
+				"	<b>2</b>\n" +
+				"	<c>7</c>\n" +
 				"</test>", newLinesAndSpaces);
 	}
 
 	@Test
 	public void testCanonicalizeWithAttributes() throws Exception {
 		String attributes = XmlUtils.canonicalize("<test><a a=\"1\"   c=\"3\"	b=\"2\">9</a></test>");
-		assertEquals("<test>\n" + 
-				"	<a a=\"1\" b=\"2\" c=\"3\">9</a>\n" + 
-				"</test>", attributes);
+		assertEquals("<test>\n	<a a=\"1\" b=\"2\" c=\"3\">9</a>\n</test>", attributes);
 	}
-	
+
 	@Test
 	public void testParseXml() throws IOException, SAXException {
 		String source="<root><elem_a>val_a</elem_a><elem_b>val_b</elem_b></root>";
@@ -188,9 +191,9 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 						+ "endElement root\n"
 						+ "endDocument\n";
 		StringBuilderContentHandler handler = new StringBuilderContentHandler();
-		
+
 		XmlUtils.parseXml(source, handler);
-		
+
 		assertEquals(expected, handler.toString());
 	}
 
@@ -204,10 +207,64 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 						+ "characters [val_b]\n"
 						+ "endElement elem_b\n";
 		StringBuilderContentHandler handler = new StringBuilderContentHandler();
-		
+
 		XmlUtils.parseNodeSet(source, handler);
-		
+
 		assertEquals(expected, handler.toString());
+	}
+
+	@Test
+	public void htmlToXhtml() throws Exception {
+		URL url = TestFileUtils.getTestFileURL("/HtmlCleaner/html.input.html");
+		Message message = new UrlMessage(url);
+
+		String actual = XmlUtils.toXhtml(message);
+		String expected = TestFileUtils.getTestFile("/HtmlCleaner/html.output.html");
+		MatchUtils.assertXmlEquals(expected, actual);
+	}
+
+	@Test
+	public void xhtmlToXhtml() throws Exception {
+		URL url = TestFileUtils.getTestFileURL("/HtmlCleaner/xhtml.input.xhtml");
+		Message message = new UrlMessage(url);
+
+		String actual = XmlUtils.toXhtml(message);
+		String expected = TestFileUtils.getTestFile("/HtmlCleaner/xhtml.output.xhtml");
+		MatchUtils.assertXmlEquals(expected, actual);
+	}
+
+	@Test
+	public void noDoctypeToXhtml() throws Exception {
+		URL url = TestFileUtils.getTestFileURL("/HtmlCleaner/html.without-doctype.input.html");
+		Message message = new UrlMessage(url);
+
+		String actual = XmlUtils.toXhtml(message);
+		String expected = TestFileUtils.getTestFile("/HtmlCleaner/html.without-doctype.output.html");
+		MatchUtils.assertXmlEquals(expected, actual);
+	}
+
+	@Test
+	public void noHtmlToXhtml() throws Exception {
+		Message message = new Message("<xml>tralalal</xml>");
+
+		String actual = XmlUtils.toXhtml(message);
+		assertNull(actual);
+	}
+
+	@Test
+	public void nullToXhtml() throws Exception {
+		Message message = Message.nullMessage();
+
+		String actual = XmlUtils.toXhtml(message);
+		assertNull(actual);
+	}
+
+	@Test
+	public void emptyToXhtml() throws Exception {
+		Message message = new Message("");
+
+		String actual = XmlUtils.toXhtml(message);
+		assertNull(actual);
 	}
 
 }

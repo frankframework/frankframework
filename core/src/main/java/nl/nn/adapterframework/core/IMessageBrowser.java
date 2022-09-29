@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -47,6 +47,13 @@ public interface IMessageBrowser<M> extends IXAEnabled {
 		}
 	}
 
+	public enum HideMethod {
+		/** to mask the entire string */
+		ALL,
+		/** to only mask the first half of the string */
+		FIRSTHALF
+	}
+	
 	/**
 	 * Gets an enumeration of messages. This includes setting up connections, sessions etc.
 	 */
@@ -80,9 +87,9 @@ public interface IMessageBrowser<M> extends IXAEnabled {
 	public void setHideRegex(String hideRegex);
 	public String getHideRegex();
 
-	@IbisDoc({"(Only used when hideRegex is not empty) either <code>all</code> or <code>firstHalf</code>. When <code>firstHalf</code> only the first half of the string is masked, otherwise (<code>all</code>) the entire string is masked", "all"})
-	public void setHideMethod(String hideMethod);
-	public String getHideMethod();
+	@IbisDoc({"(Only used when hideRegex is not empty) Specifies the way to hide", "ALL"})
+	public void setHideMethod(HideMethod hideMethod);
+	public HideMethod getHideMethod();
 
 
 }

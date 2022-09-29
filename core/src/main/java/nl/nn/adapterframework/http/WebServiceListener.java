@@ -38,6 +38,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.cxf.MessageProvider;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
@@ -45,7 +46,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
- * Listener that allows a {@link nl.nn.adapterframework.receivers.Receiver} to receive messages as a SOAP webservice.
+ * Listener that allows a {@link Receiver} to receive messages as a SOAP webservice.
  * The structure of the SOAP messages is expressed in a WSDL (Web Services Description Language) document.
  * The Frank!Framework generates a WSDL document for each adapter that contains WebServiceListeners. You can
  * find these documents in the Frank!Console under main menu item Webservices, heading Available WSDL's.

@@ -47,7 +47,6 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 
 import com.sun.mail.imap.AppendUID;
@@ -58,19 +57,16 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.http.PartMessage;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
 
 public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IMAPFolder> {
 	private final @Getter(onMethod = @__(@Override)) String domain = "IMAP";
-	protected Logger log = LogUtil.getLogger(this);
 
 	private @Getter String host;
 	private @Getter int port = 993;
 
 	private Session emailSession = Session.getInstance(System.getProperties());
-
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -216,7 +212,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 			if (!folder.isOpen()) {
 				folder.open(Folder.READ_WRITE);
 			}
-			Message messages[] = folder.getMessages();
+			Message[] messages = folder.getMessages();
 			return messages.length;
 		} catch (MessagingException e) {
 			invalidateConnectionOnRelease = true;
@@ -262,9 +258,9 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 		IMAPFolder baseFolder = getConnection();
 		boolean invalidateConnectionOnRelease = false;
 		try {
-			AppendUID results[];
+			AppendUID[] results;
 			try (IMAPFolder destination = getFolder(baseFolder, destinationFolder)) {
-				Message messages[] = new Message[1];
+				Message[] messages = new Message[1];
 				messages[0] = f;
 				destination.open(Folder.READ_WRITE);
 				IMAPFolder src = (IMAPFolder) f.getFolder();
@@ -290,9 +286,9 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 		IMAPFolder baseFolder = getConnection();
 		boolean invalidateConnectionOnRelease = false;
 		try {
-			AppendUID results[];
+			AppendUID[] results;
 			try (IMAPFolder destination = getFolder(baseFolder, destinationFolder)) {
-				Message messages[] = new Message[1];
+				Message[] messages = new Message[1];
 				messages[0] = f;
 				destination.open(Folder.READ_WRITE);
 				IMAPFolder src = (IMAPFolder) f.getFolder();
@@ -530,7 +526,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	@Override
 	public Map<String, Object> getAdditionalFileProperties(Message f) throws FileSystemException {
 		try {
-			Map<String, Object> result = new LinkedHashMap<String, Object>();
+			Map<String, Object> result = new LinkedHashMap<>();
 			result.put(IMailFileSystem.TO_RECEPIENTS_KEY, getRecipientsOfType(f, RecipientType.TO));
 			result.put(IMailFileSystem.CC_RECEPIENTS_KEY, getRecipientsOfType(f, RecipientType.CC));
 			result.put(IMailFileSystem.BCC_RECEPIENTS_KEY, getRecipientsOfType(f, RecipientType.BCC));

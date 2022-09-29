@@ -33,6 +33,7 @@ import org.xml.sax.SAXParseException;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.scheduler.job.IJob;
@@ -91,7 +92,7 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 	}
 
 	/**
-	 * @return an {@link nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader IConfigurationClassLoader}.
+	 * @return an {@link IConfigurationClassLoader}.
 	 */
 	protected final ClassLoader getClassLoader() {
 		if(applicationContext == null) {

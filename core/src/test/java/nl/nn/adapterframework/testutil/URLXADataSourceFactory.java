@@ -7,6 +7,8 @@ import javax.sql.XADataSource;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import nl.nn.adapterframework.jta.xa.XaDatasourceCommitStopper;
+
 public abstract class URLXADataSourceFactory extends URLDataSourceFactory {
 
 	@Override
@@ -15,6 +17,7 @@ public abstract class URLXADataSourceFactory extends URLDataSourceFactory {
 		BeanUtils.setProperty(xaDataSource, "URL", url);
 		if (StringUtils.isNotEmpty(userId)) BeanUtils.setProperty(xaDataSource, "user", userId);
 		if (StringUtils.isNotEmpty(password)) BeanUtils.setProperty(xaDataSource, "password", password);
+		xaDataSource = XaDatasourceCommitStopper.augmentXADataSource(xaDataSource);
 		return augmentXADataSource(xaDataSource, product);
 	}
 

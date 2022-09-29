@@ -31,7 +31,7 @@
 		name="jdbc/ibis4test-oracle"
 		factory="org.apache.naming.factory.BeanFactory"
 		type="oracle.jdbc.xa.client.OracleXADataSource"
-		URL="jdbc:oracle:thin:@host.docker.internal:1521:ORCLCDB"
+		URL="jdbc:oracle:thin:@host.docker.internal:1521:XE"
 		user="${testiaf_user/username:-testiaf_user}"
 		password="${testiaf_user/password:-testiaf_user00}"
 	/>
@@ -178,7 +178,7 @@
 	<Resource name="jms/qcf-activemq"
 		factory="org.apache.naming.factory.BeanFactory"
 		type="org.apache.activemq.ActiveMQXAConnectionFactory"
-		brokerURL="tcp://host.docker.internal:61616"
+		brokerURL="tcp://host.docker.internal:61616?jms.xaAckMode=1"
 	/>
 
 	<!-- Activemq-artemis resource configuration -->

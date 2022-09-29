@@ -156,14 +156,22 @@ public class ServletManager {
 		if(!appConstants.getBoolean(propertyPrefix+"enabled", true))
 			return;
 
-		getServletContext().log("instantiating IbisInitializer servlet ["+servletName+"]");
+		ServletSecurityElement security = getServletSecurity(propertyPrefix, roles);
+		StringBuilder builder = new StringBuilder("instantiating IbisInitializer servlet ["+servletName+"] using protocol ");
+		builder.append((security.getTransportGuarantee()==TransportGuarantee.CONFIDENTIAL)?"[HTTPS]":"[HTTP]");
+		if(security.getRolesAllowed().length > 0) {
+			builder.append(" and roles " + Arrays.asList(security.getRolesAllowed()));
+		} else if(!"LOC".equalsIgnoreCase(appConstants.getProperty("dtap.stage"))) {
+			builder.append(" with no authentication enabled!");
+		}
+		getServletContext().log(builder.toString());
 
 		ServletRegistration.Dynamic serv = getServletContext().addServlet(servletName, servlet);
 
 		int loadOnStartupCopy = appConstants.getInt(propertyPrefix+"loadOnStartup", loadOnStartup);
 		serv.setLoadOnStartup(loadOnStartupCopy);
 		serv.addMapping(getUrlMapping(propertyPrefix, urlMapping));
-		serv.setServletSecurity(getServletSecurity(propertyPrefix, roles));
+		serv.setServletSecurity(security);
 
 		if(initParameters != null && !initParameters.isEmpty()) {
 			//Manually loop through the map as serv.setInitParameters will fail all parameters even if only 1 fails...

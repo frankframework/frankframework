@@ -21,6 +21,7 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 	public void setUp() throws Exception {
 		super.setUp();
 		fileSystem = createFileSystem();
+		autowireByName(fileSystem);
 		fileSystem.configure();
 		fileSystem.open();
 	}

@@ -75,7 +75,7 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 				throw new ConfigurationException("returnFixedDate only allowed in stub mode");
 			}
 		}
-		
+
 		if(isGetCurrentTimeStampInMillis() && isReturnFixedDate()) {
 			throw new ConfigurationException("returnFixedDate cannot be used to get current time stamp in millis");
 		}
@@ -85,7 +85,7 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 		} catch (IllegalArgumentException ex){
 			throw new ConfigurationException("has an illegal value for dateFormat", ex);
 		}
-		
+
 		if (timeZone!=null) {
 			formatter.setTimeZone(timeZone);
 		}
@@ -143,14 +143,14 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 		}
 
 		session.put(this.getSessionKey(), formattedDate);
-	
+
 		if (log.isDebugEnabled()) {
 			log.debug(getLogPrefix(session) + "stored ["+ formattedDate	+ "] in pipeLineSession under key [" + getSessionKey() + "]");
 		}
 
 		return new PipeRunResult(getSuccessForward(), message);
 	}
-	
+
 	@IbisDoc({"Key of session variable to store systemdate in", "systemDate"})
 	public void setSessionKey(String newSessionKey) {
 		sessionKey = newSessionKey;
@@ -158,7 +158,7 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 	public String getSessionKey() {
 		return sessionKey;
 	}
-	
+
 	@IbisDoc({"Format to store date in", "full ISO format: "+DateUtils.fullIsoFormat})
 	public void setDateFormat(String rhs) {
 		dateFormat = rhs;
@@ -166,17 +166,17 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 	public String getDateFormat() {
 		return dateFormat;
 	}
-	
+
 	@IbisDoc({"Time zone to use for the formatter", "the default time zone for the JVM"})
 	public void setTimeZone(String timeZone) {
 		this.timeZone = TimeZone.getTimeZone(timeZone);
 	}
 
-	@IbisDoc({"Set to a time <i>in milliseconds</i> to create a value that is different to the previous returned value by a PutSystemDateInSession pipe in this virtual machine or <code>-1 to disable</code>. The thread will sleep for the specified time before recalculating a new value. Set the timezone to a value without Daylight Saving Time (like GMT+1) to prevent this pipe to generate two equal value's when the clock is set back. <b>note:</b> When you're looking for a GUID parameter for your XSLT it might be better to use &lt;param name=&quot;guid&quot; pattern=&quot;{hostname}_{uid}&quot;/&gt;, see {@link nl.nn.adapterframework.parameters.Parameter}", "-1"})
+	@IbisDoc({"Set to a time <i>in milliseconds</i> to create a value that is different to the previous returned value by a PutSystemDateInSession pipe in this virtual machine or <code>-1 to disable</code>. The thread will sleep for the specified time before recalculating a new value. Set the timezone to a value without Daylight Saving Time (like GMT+1) to prevent this pipe to generate two equal value's when the clock is set back. <b>note:</b> When you're looking for a GUID parameter for your XSLT it might be better to use &lt;param name=&quot;guid&quot; pattern=&quot;{hostname}_{uid}&quot;/&gt;, see {@link Parameter}", "-1"})
 	public void setSleepWhenEqualToPrevious(long sleepWhenEqualToPrevious) {
 		this.sleepWhenEqualToPrevious = sleepWhenEqualToPrevious;
 	}
-	
+
 	@IbisDoc({"If <code>true</code>, the date/time returned will always be "+FIXEDDATETIME+" (for testing purposes only). It is overridden by the value of the pipelinesession key <code>stub4testtool.fixeddate</code> when it exists", "false"})
 	public void setReturnFixedDate(boolean b) {
 		returnFixedDate = b;

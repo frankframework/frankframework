@@ -159,18 +159,18 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 
 
 
-	@IbisDoc({"1", "name of the SapSystem used by this object", ""})
+	@IbisDoc({"Name of the SapSystem used by this object", ""})
 	public void setSapSystemName(String string) {
 		sapSystemName = string;
 	}
 
 
-	@IbisDoc({"2", "one of: begin, commit, rollback, release", ""})
+	@IbisDoc({"One of: begin, commit, rollback, release", ""})
 	public void setAction(String string) {
 		action = string;
 	}
 
-	@IbisDoc({"3", "session key under which information is stored", ""})
+	@IbisDoc({"Session key under which information is stored", ""})
 	public void setLuwHandleSessionKey(String string) {
 		luwHandleSessionKey = string;
 	}

@@ -22,7 +22,6 @@ import java.net.URL;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
@@ -79,14 +78,7 @@ public class LarvaServlet extends HttpServletBase {
 	}
 
 	@Override
-	protected void service(HttpServletRequest requ, HttpServletResponse resp) throws ServletException, IOException {
-		HttpServletRequestWrapper req = new HttpServletRequestWrapper(requ) {
-			@Override
-			public String getServletPath() { //Required for the Larva testtool to initialize
-				return super.getServletPath() + "/index.jsp";
-			}
-		};
-
+	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		if(req.getPathInfo() == null) {
 			resp.sendRedirect(req.getContextPath() + SERVLET_PATH + "index.jsp"); // Avoid that WebSphere removes the slash at the end of the url (causing an endless loop) by explicitly adding the welcome resource
 			return;
@@ -145,7 +137,11 @@ public class LarvaServlet extends HttpServletBase {
 		Writer writer = resp.getWriter();
 		resp.setContentType("text/html");
 		writer.append(getTemplate("Larva Test Tool"));
-		TestTool.runScenarios(getServletContext(), req, writer);
+
+		String cleanServletPath = getUrlMapping().replace("/*", "");
+		String realPath = getServletContext().getRealPath(cleanServletPath);
+
+		TestTool.runScenarios(getServletContext(), req, writer, realPath);
 		writer.append("</body></html>");
 		resp.flushBuffer();
 	}

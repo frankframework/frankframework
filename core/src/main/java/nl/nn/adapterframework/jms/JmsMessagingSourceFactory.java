@@ -47,7 +47,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * @since   4.4
  */
 public class JmsMessagingSourceFactory extends MessagingSourceFactory {
-	static private Map<String,MessagingSource> jmsMessagingSourceMap = new HashMap<>();
+	private static Map<String,MessagingSource> jmsMessagingSourceMap = new HashMap<>();
 	private JMSFacade jmsFacade;
 	private String applicationServerType = AppConstants.getInstance().getResolvedProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
 
@@ -63,13 +63,13 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 	@Override
 	protected MessagingSource createMessagingSource(String jmsConnectionFactoryName, String authAlias, boolean createDestination, boolean useJms102) throws IbisException {
 		Context context = getContext();
-		ConnectionFactory connectionFactory = getConnectionFactory(context, jmsConnectionFactoryName, createDestination, useJms102); 
+		ConnectionFactory connectionFactory = getConnectionFactory(context, jmsConnectionFactoryName, createDestination, useJms102);
 		return new JmsMessagingSource(jmsConnectionFactoryName, jmsFacade.getJndiContextPrefix(), context, connectionFactory, getMessagingSourceMap(), authAlias, createDestination, jmsFacade.getProxiedDestinationNames(), useJms102);
 	}
 
 	@Override
 	protected Context createContext() throws NamingException {
-		return (Context) new InitialContext();
+		return new InitialContext();
 	}
 
 	@Override
@@ -78,7 +78,7 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 		if (connectionFactoryFactory==null) {
 			throw new ConfigurationException("No ConnectionFactoryFactory was configured");
 		}
-		
+
 		ConnectionFactory connectionFactory;
 		try {
 			connectionFactory = connectionFactoryFactory.getConnectionFactory(cfName, jmsFacade.getJndiEnv());

@@ -11,6 +11,7 @@
 	<!ENTITY Exits SYSTEM "./ConfigurationExits.xml">
 	<!ENTITY ReplacerPipe SYSTEM "./ConfigurationReplacerPipe.xml">
 	<!ENTITY ReplaceInputAndPreserve SYSTEM "./ConfigurationReplaceInputAndPreserve.xml">
+	<!ENTITY ForwardNameProvidingSenders SYSTEM "./ConfigurationForwardNameProvidingSenders.xml">
 	<!ENTITY CompareStringPipe SYSTEM "./ConfigurationCompareStringPipe.xml">
 	<!ENTITY CompareXmlStringPipe SYSTEM "./ConfigurationCompareXmlStringPipe.xml">
 	<!ENTITY QuerySender SYSTEM "./ConfigurationQuerySender.xml">
@@ -64,7 +65,7 @@
 	<!ENTITY ApiWsdlGenerator SYSTEM "./ConfigurationApiWsdlGenerator.xml">
 	<!ENTITY Unzip SYSTEM "./ConfigurationUnzip.xml">
 ]>
-<configuration name="MainConfig">
+<configuration>
 	&Authentication;
 	&Batch;
 	&Cache;
@@ -77,6 +78,7 @@
 	&Exits;
 	&ReplacerPipe;
 	&ReplaceInputAndPreserve;
+	&ForwardNameProvidingSenders;
 	&CompareStringPipe;
 	&CompareXmlStringPipe;
 	&QuerySender;

@@ -59,13 +59,13 @@
 		<dependency>
 			<groupId>org.mongodb</groupId>
 			<artifactId>mongodb-driver-sync</artifactId>
-			<version>4.2.3</version>
+			<version>${mongodb.driver.version}</version>
 		</dependency>
 		<dependency>
-		    <groupId>org.apache.activemq</groupId>
-		    <artifactId>activemq-rar</artifactId>
-		    <version>${activemq.driver.version}</version>
-		    <type>rar</type>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-rar</artifactId>
+			<version>${activemq.driver.version}</version>
+			<type>rar</type>
 		</dependency>
 		<!-- Artemis is already part of JBOSS, so not added explicitly -->
 	</dependencies>
@@ -76,7 +76,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
-				<version>3.1.2</version>
 				<executions>
 					<execution>
 						<id>copy-dependencies</id>
@@ -115,7 +114,6 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
-				<version>3.2.0</version>
 				<executions>
 					<execution>
 						<id>prepare-as-dependencies</id>
@@ -137,7 +135,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
-				<version>1.6</version>
 				<executions>
 					<execution>
 						<id>prepare-package</id>

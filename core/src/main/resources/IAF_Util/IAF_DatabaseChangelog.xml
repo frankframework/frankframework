@@ -135,14 +135,15 @@ TagDatabase
 			<column name="CREATED_ON" type="DATETIME"/>
 			<column name="BY_USER" type="java.sql.Types.VARCHAR(32)"/>
 		</createTable>
-		<!-- in Quartz the JobKey is defined by name and group, hence this being the primairy key constraint in the database as well -->
+		<!-- in Quartz the JobKey is defined by name and group, hence this being the primary key constraint in the database as well -->
 		<addPrimaryKey tableName="IBISSCHEDULES" columnNames="JOBNAME, JOBGROUP" constraintName="PK_IBISSCHEDULES"/>
 	</changeSet>
-	
+
 	<changeSet id="IAF_Util:7" author="Ali Sihab Akcan">
+		<validCheckSum>8:97b29783dae30e2edd2c2a80341b9ad4</validCheckSum><!-- #3513, afterColumn is database specific -->
 		<comment>Add description column to IBISSCHEDULES Table</comment>
-		<addColumn tableName="IBISSCHEDULES" >
-			<column afterColumn="MESSAGE" name="DESCRIPTION"  type="java.sql.Types.VARCHAR(255)"/> 
+		<addColumn tableName="IBISSCHEDULES">
+			<column name="DESCRIPTION"  type="java.sql.Types.VARCHAR(255)"/>
 		</addColumn>
 	</changeSet>
 

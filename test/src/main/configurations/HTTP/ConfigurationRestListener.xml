@@ -55,7 +55,7 @@
 				>
 					<param name="key01" value="every cloud has a silver lining" />
 					<param name="key02" sessionKey="originalMessage" />
-					<param name="file" sessionKey="fileContent" type="inputstream" />
+					<param name="file" sessionKey="fileContent"/>
 				</sender>
 				<forward name="success" path="text2Xml" />
 			</pipe>

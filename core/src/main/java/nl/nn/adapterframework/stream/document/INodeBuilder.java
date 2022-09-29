@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,7 +24,8 @@ public interface INodeBuilder extends AutoCloseable {
 	public void setValue(String value) throws SAXException;
 	public void setValue(long value) throws SAXException;
 	public void setValue(boolean value) throws SAXException;
-	
+	public void setNumberValue(String value) throws SAXException;
+
 	@Override
 	public void close() throws SAXException;
 

@@ -14,6 +14,9 @@ import nl.nn.adapterframework.util.LogUtil;
 public abstract class ConfiguredTestBase {
 	protected Logger log = LogUtil.getLogger(this);
 
+	public static final String testMessageId = "testmessageac13ecb1--30fe9225_16caa708707_-7fb1";
+	public static final String testCorrelationId = "testmessageac13ecb1--30fe9225_16caa708707_-7fb2";
+
 	protected PipeLineSession session;
 
 	protected PipeLine pipeline;

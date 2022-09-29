@@ -260,13 +260,13 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		return paramList;
 	}
 
-	@IbisDoc({"1", "Name of the recordhandler", ""})
+	@IbisDoc({"Name of the recordhandler", ""})
 	@Override
 	public void setName(String string) {
 		name = string;
 	}
 
-	@IbisDoc({"2", "Comma separated specification of field lengths. if neither this attribute nor <code>inputSeparator</code> is specified then the entire record is parsed", ""})
+	@IbisDoc({"Comma separated specification of field lengths. if neither this attribute nor <code>inputSeparator</code> is specified then the entire record is parsed", ""})
 	public void setInputFields(String fieldLengths) {
 		StringTokenizer st = new StringTokenizer(fieldLengths, ",");
 		while (st.hasMoreTokens()) {
@@ -275,12 +275,12 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		}
 	}
 
-	@IbisDoc({"4", "Separator that separates the fields in the input record. If neither this attribute nor <code>inputFields</code> is specified then the entire record is parsed", ""})
+	@IbisDoc({"Separator that separates the fields in the input record. If neither this attribute nor <code>inputFields</code> is specified then the entire record is parsed", ""})
 	public void setInputSeparator(String string) {
 		inputSeparator = string;
 	}
 
-	@IbisDoc({"4", "If set <code>true</code>, trailing spaces are removed from each field", "false"})
+	@IbisDoc({"If set <code>true</code>, trailing spaces are removed from each field", "false"})
 	public void setTrim(boolean b) {
 		trim = b;
 	}

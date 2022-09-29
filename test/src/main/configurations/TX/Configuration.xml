@@ -14,7 +14,7 @@
 	<!ENTITY TransactionHandlingMultiThread SYSTEM "./TransactionHandlingMultiThread.xml">
 ]>
 
-<configuration name="TX">
+<configuration>
 	&TransactionTimeoutHandling;
 	&TransactionTimeoutFxfListener;
 

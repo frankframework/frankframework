@@ -99,7 +99,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 		if (pvl==null) {
 			throw new SapException("no parameters to determine sapSystemName from");
 		}
-		String SapSystemName=pvl.getParameterValue(getSapSystemNameParam()).asStringValue(null);
+		String SapSystemName=pvl.get(getSapSystemNameParam()).asStringValue(null);
 		if (StringUtils.isEmpty(SapSystemName)) {
 			throw new SapException("could not determine sapSystemName using parameter ["+getSapSystemNameParam()+"]");
 		}
@@ -156,17 +156,17 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 	}
 
 
-	@IbisDoc({"1", "session key in which LUW information is stored. If set, actions that share a LUW-handle will be executed using the same destination. Can only be used for synchronous functions", ""})
+	@IbisDoc({"Session key in which LUW information is stored. If set, actions that share a LUW-handle will be executed using the same destination. Can only be used for synchronous functions", ""})
 	public void setLuwHandleSessionKey(String string) {
 		luwHandleSessionKey = string;
 	}
 
-	@IbisDoc({"2", "name of the parameter used to indicate the name of the {@link SapSystem} used by this object if the attribute <code>sapSystemName</code> is empty", "sapSystemName"})
+	@IbisDoc({"Name of the parameter used to indicate the name of the {@link SapSystem} used by this object if the attribute <code>sapSystemName</code> is empty", "sapSystemName"})
 	public void setSapSystemNameParam(String string) {
 		sapSystemNameParam = string;
 	}
 
-	@IbisDoc({"3", "when <code>false</code>, the sender operates in RR mode: the a reply is expected from SAP, and the sender does not participate in a transaction. When <code>false</code>, the sender operates in FF mode: no reply is expected from SAP, and the sender joins the transaction, that must be present. The SAP transaction is committed right after the XA transaction is completed.", "false"})
+	@IbisDoc({"If <code>false</code>, the sender operates in RR mode: the a reply is expected from SAP, and the sender does not participate in a transaction. When <code>false</code>, the sender operates in FF mode: no reply is expected from SAP, and the sender joins the transaction, that must be present. The SAP transaction is committed right after the XA transaction is completed.", "false"})
 	protected void setSynchronous(boolean b) {
 		synchronous = b;
 	}

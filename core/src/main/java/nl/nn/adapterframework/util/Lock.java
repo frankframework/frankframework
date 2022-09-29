@@ -21,32 +21,32 @@ package nl.nn.adapterframework.util;
  * @see     Semaphore
  */
 public class Lock {
-	
-    private int sharedLocks;
-	private int exclusiveLocksRequested=0;
-	private boolean exclusiveLockGranted=false;
-    
 
-    public Lock() {
-        this(0);
-    }
-    public Lock(int i) {
-        if (i < 0) throw new IllegalArgumentException(i + " < 0");
+	private int sharedLocks;
+	private int exclusiveLocksRequested = 0;
+	private boolean exclusiveLockGranted = false;
+
+	public Lock() {
+		this(0);
+	}
+
+	public Lock(int i) {
+		if(i < 0) throw new IllegalArgumentException(i + " < 0");
 		sharedLocks = i;
-    }
+	}
 
-    /**
-     * Decrements internal counter, blocking if the counter is already
-     * zero.
-     *
-     * @exception InterruptedException passed from this.wait().
-     */
-    public synchronized void acquireShared() throws InterruptedException {
-        while (exclusiveLocksRequested>0 || exclusiveLockGranted) {
-            this.wait();
-        }
+	/**
+	 * Decrements internal counter, blocking if the counter is already zero.
+	 *
+	 * @exception InterruptedException passed from this.wait().
+	 */
+	public synchronized void acquireShared() throws InterruptedException {
+		while(exclusiveLocksRequested > 0 || exclusiveLockGranted) {
+			this.wait();
+		}
 		sharedLocks++;
-    }
+	}
+
 	public synchronized void acquireExclusive() throws InterruptedException {
 		exclusiveLocksRequested++;
 		try {
@@ -90,22 +90,23 @@ public class Lock {
 //		}
 //	}
 
-    /**
-     * Increments internal counter, possibly awakening the thread
-     * wait()ing in acquire()
-     */
-    public synchronized void releaseShared() {
+	/**
+	 * Increments internal counter, possibly awakening the thread wait()ing in
+	 * acquire()
+	 */
+	public synchronized void releaseShared() {
 		sharedLocks--;
-        if (sharedLocks == 0) {
-            this.notifyAll();
-        }
-    }
+		if(sharedLocks == 0) {
+			this.notifyAll();
+		}
+	}
+
 	public synchronized void releaseExclusive() {
-		exclusiveLockGranted=false;
+		exclusiveLockGranted = false;
 		this.notifyAll();
 	}
-    
-    public synchronized boolean isReleased() {
-    	return sharedLocks==0 && !exclusiveLockGranted;
-    }
+
+	public synchronized boolean isReleased() {
+		return sharedLocks == 0 && !exclusiveLockGranted;
+	}
 }

@@ -47,7 +47,7 @@ import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
- * 
+ *
  * @ff.parameter from email address of the sender
  * @ff.parameter subject subject field of the message
  * @ff.parameter threadTopic (optional) conversation field of the message, used to correlate mails in mail viewer (header field "Thread-Topic"). Note: subject must end with value of threadTopic, but cann't be exactly the same
@@ -100,8 +100,8 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		}
 		sendEmail(mailSession);
 
-		String correlationID = session==null ? null : session.getMessageId();
-		return new Message(correlationID);
+		String messageID = session==null ? null : session.getMessageId();
+		return new Message(messageID);
 	}
 
 	/**
@@ -667,18 +667,18 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	protected class MailAttachmentStream extends MailAttachmentBase<InputStream>{};
 
 	/**
-	 * Generic mail class 
+	 * Generic mail class
 	 * @author alisihab
 	 *
 	 */
 	public class EMail {
 		private InternetAddress emailAddress;
-		private String type; //"cc", "to", "from", "bcc" 
+		private String type; //"cc", "to", "from", "bcc"
 
 		public EMail(String address, String name, String type) throws SenderException {
 			try {
 				if (StringUtils.isNotEmpty(address)) {
-					InternetAddress ia[] = InternetAddress.parseHeader(address, true);
+					InternetAddress[] ia = InternetAddress.parseHeader(address, true);
 					if (ia.length==0) {
 						throw new AddressException("No address found in ["+address+"]");
 					}

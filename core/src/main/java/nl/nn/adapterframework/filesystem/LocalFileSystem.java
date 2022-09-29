@@ -258,7 +258,7 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 		return "root ["+(getRoot()==null?"":getRoot())+"]";
 	}
 
-	@IbisDoc({"1", "Path to the folder that serves as the root of this virtual filesystem. All specifications of folders or files are relative to this root. "+
+	@IbisDoc({"Path to the folder that serves as the root of this virtual filesystem. All specifications of folders or files are relative to this root. "+
 			"When the root is left unspecified, absolute paths to files and folders can be used", "" })
 	public void setRoot(String root) {
 		this.root = root;

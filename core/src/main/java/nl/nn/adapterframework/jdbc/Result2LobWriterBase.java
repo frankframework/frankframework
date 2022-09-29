@@ -27,6 +27,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import lombok.Setter;
+import nl.nn.adapterframework.batch.IResultHandler;
 import nl.nn.adapterframework.batch.ResultWriter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -40,10 +41,10 @@ import nl.nn.adapterframework.util.SpringUtils;
 
 
 /**
- * Baseclass for batch {@link nl.nn.adapterframework.batch.IResultHandler resultHandler} that writes the transformed record to a LOB.
- * 
+ * Baseclass for batch {@link IResultHandler resultHandler} that writes the transformed record to a LOB.
+ *
  * @ff.parameters any parameters defined on the resultHandler will be applied to the SQL statement
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.7
  */
@@ -65,7 +66,7 @@ public abstract class Result2LobWriterBase extends ResultWriter implements Appli
 		querySender.setName("querySender of "+getName());
 		querySender.configure();
 	}
-	
+
 	@Override
 	public void open() throws SenderException {
 		super.open();
@@ -84,10 +85,10 @@ public abstract class Result2LobWriterBase extends ResultWriter implements Appli
 	protected abstract Object getLobHandle(IDbmsSupport dbmsSupport, ResultSet rs)                   throws SenderException;
 	protected abstract Writer getWriter   (IDbmsSupport dbmsSupport, Object lobHandle, ResultSet rs) throws SenderException;
 	protected abstract void   updateLob   (IDbmsSupport dbmsSupport, Object lobHandle, ResultSet rs) throws SenderException;
-	
+
 	@Override
 	protected Writer createWriter(PipeLineSession session, String streamId) throws Exception {
-		querySender.sendMessage(new Message(streamId), session); // TODO find out why this is here. It seems to me the query will be executed twice this way. Or is it to insert an empty LOB before updating it? 
+		querySender.sendMessage(new Message(streamId), session); // TODO find out why this is here. It seems to me the query will be executed twice this way. Or is it to insert an empty LOB before updating it?
 		Connection connection=querySender.getConnection();
 		openConnections.put(streamId, connection);
 		Message message = new Message(streamId);
@@ -101,7 +102,7 @@ public abstract class Result2LobWriterBase extends ResultWriter implements Appli
 		openLobHandles.put(streamId, lobHandle);
 		return getWriter(dbmsSupport, lobHandle, rs);
 	}
-	
+
 	@Override
 	public String finalizeResult(PipeLineSession session, String streamId, boolean error) throws Exception {
 		try {
@@ -117,8 +118,8 @@ public abstract class Result2LobWriterBase extends ResultWriter implements Appli
 		}
 	}
 
-	
-	@IbisDoc({"1", "The SQL query text", ""})
+
+	@IbisDoc({"The SQL query text", ""})
 	public void setQuery(String query) {
 		querySender.setQuery(query);
 	}
@@ -130,7 +131,7 @@ public abstract class Result2LobWriterBase extends ResultWriter implements Appli
 
 	@IbisDocRef({"3", FIXEDQUERYSENDER})
 	public String getPhysicalDestinationName() {
-		return querySender.getPhysicalDestinationName(); 
+		return querySender.getPhysicalDestinationName();
 	}
 
 	@IbisDocRef({"4", FIXEDQUERYSENDER})

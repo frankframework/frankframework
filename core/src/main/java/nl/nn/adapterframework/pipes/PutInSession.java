@@ -89,12 +89,12 @@ public class PutInSession extends FixedForwardPipe {
 		return new PipeRunResult(getSuccessForward(), message);
 	}
 
-	@IbisDoc({"1", "Key of the session variable to store the input in", "" })
+	@IbisDoc({"Key of the session variable to store the input in", "" })
 	public void setSessionKey(String newSessionKey) {
 		sessionKey = newSessionKey;
 	}
 
-	@IbisDoc({"2", "Value to store in the <code>pipeLineSession</code>. If not set, the input of the pipe is stored", "" })
+	@IbisDoc({"Value to store in the <code>pipeLineSession</code>. If not set, the input of the pipe is stored", "" })
 	public void setValue(String value) {
 		this.value = value;
 	}

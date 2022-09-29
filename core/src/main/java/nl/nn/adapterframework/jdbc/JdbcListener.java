@@ -377,33 +377,33 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 	}
 
 
-	@IbisDoc({"1", "Primary key field of the table, used to identify messages", ""})
+	@IbisDoc({"Primary key field of the table, used to identify messages", ""})
 	public void setKeyField(String fieldname) {
 		keyField = fieldname;
 	}
 
-	@IbisDoc({"2", "(Optional) field containing the message data", "<i>same as keyField</i>"})
+	@IbisDoc({"(Optional) field containing the message data", "<i>same as keyField</i>"})
 	public void setMessageField(String fieldname) {
 		messageField = fieldname;
 	}
 
-	@IbisDoc({"3", "Type of the field containing the message data", "<i>String</i>"})
+	@IbisDoc({"Type of the field containing the message data", "<i>String</i>"})
 	public void setMessageFieldType(MessageFieldType value) {
 		messageFieldType = value;
 	}
 
-	@IbisDoc({"4", "Controls whether BLOB is considered stored compressed in the database", "true"})
+	@IbisDoc({"Controls whether BLOB is considered stored compressed in the database", "true"})
 	public void setBlobsCompressed(boolean b) {
 		blobsCompressed = b;
 	}
 
-	@IbisDoc({"5", "Charset used to read BLOB. When specified, then the BLOB will be converted into a string", ""})
+	@IbisDoc({"Charset used to read BLOB. When specified, then the BLOB will be converted into a string", ""})
 	@Deprecated
 	public void setBlobCharset(String string) {
 		blobCharset = string;
 	}
 
-	@IbisDoc({"6", "Controls automatically whether blobdata is stored compressed and/or serialized in the database. N.B. When set true, then the BLOB will be converted into a string", "false"})
+	@IbisDoc({"Controls automatically whether blobdata is stored compressed and/or serialized in the database. N.B. When set true, then the BLOB will be converted into a string", "false"})
 	public void setBlobSmartGet(boolean b) {
 		blobSmartGet = b;
 	}

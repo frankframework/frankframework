@@ -1,10 +1,12 @@
 package nl.nn.adapterframework.filesystem;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.AnyOf.anyOf;
+import static org.hamcrest.core.StringEndsWith.endsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -13,14 +15,19 @@ import java.io.PrintWriter;
 import java.nio.file.DirectoryStream;
 import java.util.Iterator;
 
+import org.junit.Before;
 import org.junit.Test;
-
-import static org.hamcrest.core.AnyOf.anyOf;
-import static org.hamcrest.core.StringEndsWith.endsWith;
 
 import nl.nn.adapterframework.stream.Message;
 
 public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> extends HelperedBasicFileSystemTest<F,FS> {
+
+	@Override
+	@Before
+	public void setUp() throws Exception {
+		super.setUp();
+		autowireByName(fileSystem);
+	}
 
 	@Test
 	public void writableFileSystemTestCreateNewFile() throws Exception {
@@ -357,7 +364,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 
 	@Test
 	public void writableFileSystemTestRemovingNonExistingDirectory() throws Exception {
-		thrown.expectMessage("Directory does not exist.");
+		exception.expectMessage("Directory does not exist.");
 		String foldername = "nonExistingFolder";
 
 		fileSystem.configure();
@@ -371,7 +378,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 
 	@Test
 	public void writableFileSystemTestCreateExistingFolder() throws Exception {
-		thrown.expectMessage("Directory already exists.");
+		exception.expectMessage("Directory already exists.");
 		String folderName = "existingFolder";
 
 		fileSystem.configure();

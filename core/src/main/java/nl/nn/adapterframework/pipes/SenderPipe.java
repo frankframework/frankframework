@@ -21,6 +21,7 @@ import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.IWrapperPipe;
 import nl.nn.adapterframework.doc.Category;
+import nl.nn.adapterframework.doc.Reintroduce;
 
 /**
  * Plain extension to {@link MessageSendingPipe} that can be used directly in configurations.
@@ -34,27 +35,32 @@ import nl.nn.adapterframework.doc.Category;
 @Category("Basic")
 public class SenderPipe extends MessageSendingPipe {
 
-	@Override // to obtain proper order in FrankDoc and XSD
+	@Override
+	@Reintroduce
 	public void setMessageLog(ITransactionalStorage messageLog) {
 		super.setMessageLog(messageLog);
 	}
 
-	@Override // to obtain proper order in FrankDoc and XSD
+	@Override
+	@Reintroduce
 	public void setInputWrapper(IWrapperPipe inputWrapper) {
 		super.setInputWrapper(inputWrapper);
 	}
 
 	@Override
+	@Reintroduce
 	public void setInputValidator(IValidator inputValidator) {
 		super.setInputValidator(inputValidator);
 	}
 
 	@Override
+	@Reintroduce
 	public void setSender(ISender sender) {
 		super.setSender(sender);
 	}
 
 	@Override
+	@Reintroduce
 	public void setListener(ICorrelatedPullingListener listener) {
 		super.setListener(listener);
 	}

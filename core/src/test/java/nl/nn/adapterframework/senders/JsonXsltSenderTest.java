@@ -4,8 +4,8 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.StringReader;
 
-import javax.json.Json;
-import javax.json.JsonStructure;
+import jakarta.json.Json;
+import jakarta.json.JsonStructure;
 
 import org.junit.Test;
 
@@ -20,8 +20,6 @@ public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 	public JsonXsltSender createSender() {
 		return new JsonXsltSender();
 	}
-
-
 
 	@Test
 	public void basic() throws Exception {
@@ -67,7 +65,7 @@ public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 		String textOut=result.getResult().asString();
 		assertEquals(expectedText,textOut);
 	}
-	
+
 	public static JsonStructure string2Json(String json) {
 		JsonStructure jsonStructure = Json.createReader(new StringReader(json)).read();
 		return jsonStructure;

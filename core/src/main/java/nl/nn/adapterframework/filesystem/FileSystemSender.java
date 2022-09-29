@@ -35,6 +35,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingSenderBase;
+import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * Base class for Senders that use a {@link IBasicFileSystem FileSystem}.
@@ -59,7 +60,9 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		getFileSystem().configure();
+		FS fileSystem = getFileSystem();
+		SpringUtils.autowireByName(getApplicationContext(), fileSystem);
+		fileSystem.configure();
 		try {
 			actor.configure(fileSystem, getParameterList(), this);
 		} catch (ConfigurationException e) {

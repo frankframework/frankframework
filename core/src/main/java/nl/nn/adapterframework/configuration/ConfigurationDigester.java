@@ -35,6 +35,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
+import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
@@ -52,6 +53,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.SpringUtils;
+import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.AttributePropertyResolver;
@@ -66,8 +68,8 @@ import nl.nn.adapterframework.xml.XmlWriter;
  * The configurationDigester reads the configuration.xml and the digester rules
  * in XML format and factors a Configuration.
  *
- * <p>Since 4.0.1, the configuration.xml is first resolved using the {@link nl.nn.adapterframework.util.StringResolver resolver},
- * with tries to resolve ${variable} with the {@link nl.nn.adapterframework.util.AppConstants AppConstants}, so that
+ * <p>Since 4.0.1, the configuration.xml is first resolved using the {@link StringResolver resolver},
+ * with tries to resolve ${variable} with the {@link AppConstants}, so that
  * both the values from the property files as the environment setting are available.<p>
  * <p>Since 4.1.1 the configuration.xml is parsed with a entityresolver that uses the classpath, which
  * means that you may specify entities that will be resolved during parsing.
@@ -134,7 +136,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	private Digester getDigester(Configuration configuration) throws ConfigurationException, ParserConfigurationException, SAXException {
 		XMLReader reader = XmlUtils.getXMLReader(configuration);
 		Digester digester = new Digester(reader) {
-			// override Digester.createSAXException() implementations to obtain a clear unduplicated message and a properly nested stacktrace on IBM JDK 
+			// override Digester.createSAXException() implementations to obtain a clear unduplicated message and a properly nested stacktrace on IBM JDK
 			@Override
 			public SAXException createSAXException(String message, Exception e) {
 				return SaxException.createSaxException(message, getDocumentLocator(), e);
@@ -208,8 +210,9 @@ public class ConfigurationDigester implements ApplicationContextAware {
 			if (digester != null ) {
 				currentElementName = digester.getCurrentElementName();
 			}
-
-			throw new ConfigurationException("error during unmarshalling configuration from file [" + configurationFile + "] with digester-rules-file ["+getDigesterRuleFile()+"] in element ["+currentElementName+"]", t);
+			Locator locator = digester.getDocumentLocator();
+			String location = locator!=null ? " systemId ["+locator.getSystemId()+"] line ["+locator.getLineNumber()+"] column ["+locator.getColumnNumber()+"]":"";
+			throw new ConfigurationException("error during unmarshalling configuration from file [" + configurationFile + "] "+location+" with digester-rules-file ["+getDigesterRuleFile()+"] in element ["+currentElementName+"]", t);
 		}
 	}
 

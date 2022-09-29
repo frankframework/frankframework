@@ -72,7 +72,7 @@ public class JsonXsltSender extends XsltSender {
 			log.debug("sender [{}] cannot provide outputstream", () -> getName());
 			return null;
 		}
-		ThreadConnector threadConnector = isStreamingXslt() ? new ThreadConnector(this, threadLifeCycleEventListener, txManager, session) : null;
+		ThreadConnector threadConnector = getStreamingXslt() ? new ThreadConnector(this, "provideOutputStream", threadLifeCycleEventListener, txManager, session) : null;
 		MessageOutputStream target = MessageOutputStream.getTargetStream(this, session, next);
 		try {
 			TransformerPool poolToUse = getTransformerPoolToUse(session);
@@ -107,7 +107,7 @@ public class JsonXsltSender extends XsltSender {
 		return new JsonXslt3XmlReader(handler);
 	}
 
-	@IbisDoc({"1", "When <code>true</code>, the xml result of the transformation is converted back to json", "true"})
+	@IbisDoc({"When <code>true</code>, the xml result of the transformation is converted back to json", "true"})
 	public void setJsonResult(boolean jsonResult) {
 		this.jsonResult = jsonResult;
 	}
@@ -116,7 +116,7 @@ public class JsonXsltSender extends XsltSender {
 	}
 
 	@Override
-	@IbisDoc({"2", "Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", "j=http://www.w3.org/2013/XSL/json"})
+	@IbisDoc({"Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", "j=http://www.w3.org/2013/XSL/json"})
 	public void setNamespaceDefs(String namespaceDefs) {
 		super.setNamespaceDefs(namespaceDefs);
 	}

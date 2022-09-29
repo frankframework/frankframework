@@ -48,6 +48,7 @@ public class SftpHostVerification extends AbstractKnownHostsKeyVerification {
 	 * @param pk the current public key of the host
 	 * @param actual the actual public key supplied by the host
 	 */
+	@Override
 	public void onHostKeyMismatch(String host, SshPublicKey pk, SshPublicKey actual) {
 		try {
 			log.warn("The host key supplied by [" + host + "] is [" + actual.getFingerprint()+"]");
@@ -64,6 +65,7 @@ public class SftpHostVerification extends AbstractKnownHostsKeyVerification {
 	 * @param host the name of the host
 	 * @param pk the public key supplied by the host
 	 */
+	@Override
 	public void onUnknownHost(String host, SshPublicKey pk) {
 		try {
 			log.warn("The host [" + host + "], key fingerprint [" + pk.getFingerprint()+"] is currently unknown to the system");

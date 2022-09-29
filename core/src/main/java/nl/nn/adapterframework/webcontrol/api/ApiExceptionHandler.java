@@ -46,6 +46,11 @@ public class ApiExceptionHandler implements ExceptionMapper<WebApplicationExcept
 
 		log.warn("Caught unhandled WebApplicationException while executing FF!API call", exception);
 
-		return ApiException.formatException(exception.getMessage(), Status.INTERNAL_SERVER_ERROR);
+		Status status = Status.INTERNAL_SERVER_ERROR;
+		Response response = exception.getResponse();
+		if(response != null && response.getStatus() > 0) {
+			status = Status.fromStatusCode(response.getStatus());
+		}
+		return ApiException.formatException(exception.getMessage(), status);
 	}
 }

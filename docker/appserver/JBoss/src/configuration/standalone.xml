@@ -185,7 +185,7 @@
 				</datasource>
 				<xa-datasource jndi-name="java:/jdbc/ibis4test-oracle" pool-name="ibis4test-oracle">
 					<driver>oracle</driver>
-					<xa-datasource-property name="URL">jdbc:oracle:thin:@host.docker.internal:1521:ORCLCDB</xa-datasource-property>
+					<xa-datasource-property name="URL">jdbc:oracle:thin:@host.docker.internal:1521:XE</xa-datasource-property>
 					<security>
 						<user-name>testiaf_user</user-name>
 						<password>testiaf_user00</password>

@@ -15,7 +15,6 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.security.KeyStore;
@@ -29,7 +28,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -47,7 +45,6 @@ import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.lang3.StringUtils;
@@ -74,6 +71,8 @@ import nl.nn.adapterframework.http.RestListener;
 import nl.nn.adapterframework.jdbc.JdbcSenderBase;
 import nl.nn.adapterframework.jms.JmsBrowser;
 import nl.nn.adapterframework.jms.JmsListenerBase;
+import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.management.bus.RequestMessageBuilder;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.AppConstants;
@@ -81,7 +80,6 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.RunState;
-import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
  * Get adapter information from either all or a specified adapter
@@ -237,39 +235,44 @@ public final class ShowConfigurationStatus extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateAdapters(Map<String, Object> json) throws ApiException {
 
-		Response.ResponseBuilder response = Response.status(Response.Status.NO_CONTENT); //PUT defaults to no content
 		IbisAction action = null;
 		ArrayList<String> adapters = new ArrayList<>();
 
-		for (Entry<String, Object> entry : json.entrySet()) {
-			String key = entry.getKey();
-			Object value = entry.getValue();
-			if(key.equalsIgnoreCase("action")) {//Start or stop an adapter!
-				if(value.equals("stop")) { action = IbisAction.STOPADAPTER; }
-				if(value.equals("start")) { action = IbisAction.STARTADAPTER; }
-			}
-			if(key.equalsIgnoreCase("adapters")) {
-				try {
-					adapters.addAll((ArrayList<String>) value);
-				} catch(Exception e) {
-					return response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-				}
+		Object value = json.get("action");
+		if(value instanceof String) {
+			if(value.equals("stop")) { action = IbisAction.STOPADAPTER; }
+			if(value.equals("start")) { action = IbisAction.STARTADAPTER; }
+		}
+		if(action == null) {
+			throw new ApiException("no or unknown action provided", Response.Status.BAD_REQUEST);
+		}
+
+
+		Object adapterList = json.get("adapters");
+		if(adapterList != null) {
+			try {
+				adapters.addAll((ArrayList<String>) adapterList);
+			} catch(Exception e) {
+				throw new ApiException(e);
 			}
 		}
 
-		if(action != null) {
-			response.status(Response.Status.ACCEPTED);
-			if(adapters.isEmpty()) {
-				getIbisManager().handleAction(action, "*ALL*", "*ALL*", null, getUserPrincipalName(), false);
-			} else {
-				for (Iterator<String> iterator = adapters.iterator(); iterator.hasNext();) {
-					String adapterName = iterator.next();
-					getIbisManager().handleAction(action, "", adapterName, null, getUserPrincipalName(), false);
-				}
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.IBISACTION);
+		builder.addHeader("action", action.name());
+		if(adapters.isEmpty()) {
+			builder.addHeader("configuration", "*ALL*");
+			builder.addHeader("adapter", "*ALL*");
+			callAsyncGateway(builder);
+		} else {
+			for (Iterator<String> iterator = adapters.iterator(); iterator.hasNext();) {
+				String adapterName = iterator.next();
+				builder.addHeader("configuration", getAdapter(adapterName).getConfiguration().getName());
+				builder.addHeader("adapter", adapterName);
+				callAsyncGateway(builder);
 			}
 		}
 
-		return response.build();
+		return Response.status(Response.Status.ACCEPTED).build(); //PUT defaults to no content
 	}
 
 	@PUT
@@ -280,24 +283,25 @@ public final class ShowConfigurationStatus extends Base {
 	public Response updateAdapter(@PathParam("adapterName") String adapterName, Map<String, Object> json) throws ApiException {
 
 		getAdapter(adapterName); //Check if the adapter exists!
-		Response.ResponseBuilder response = Response.status(Response.Status.NO_CONTENT); //PUT defaults to no content
 
-		for (Entry<String, Object> entry : json.entrySet()) {
-			String key = entry.getKey();
-			Object value = entry.getValue();
-			if(key.equalsIgnoreCase("action")) {//Start or stop an adapter!
-				IbisAction action = null;
-
-				if(value.equals("stop")) { action = IbisAction.STOPADAPTER; }
-				if(value.equals("start")) { action = IbisAction.STARTADAPTER; }
-
-				getIbisManager().handleAction(action, "", adapterName, null, getUserPrincipalName(), false);
-
-				response.entity("{\"status\":\"ok\"}");
+		Object value = json.get("action");
+		if(value instanceof String) {
+			IbisAction action = null;
+			if(value.equals("stop")) { action = IbisAction.STOPADAPTER; }
+			if(value.equals("start")) { action = IbisAction.STARTADAPTER; }
+			if(action == null) {
+				throw new ApiException("no or unknown action provided", Response.Status.BAD_REQUEST);
 			}
+
+			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.IBISACTION);
+			builder.addHeader("action", action.name());
+			builder.addHeader("configuration", getAdapter(adapterName).getConfiguration().getName());
+			builder.addHeader("adapter", adapterName);
+			callAsyncGateway(builder);
+			return Response.status(Response.Status.ACCEPTED).entity("{\"status\":\"ok\"}").build();
 		}
 
-		return response.build();
+		return Response.status(Response.Status.BAD_REQUEST).build();
 	}
 
 	@PUT
@@ -314,28 +318,27 @@ public final class ShowConfigurationStatus extends Base {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
 
-		Response.ResponseBuilder response = Response.status(Response.Status.NO_CONTENT); //PUT defaults to no content
-
-		for (Entry<String, Object> entry : json.entrySet()) {
-			String key = entry.getKey();
-			Object value = entry.getValue();
-			if(key.equalsIgnoreCase("action")) {//Start or stop an adapter!
-				IbisAction action = null;
-
-				if(value.equals("stop")) { action = IbisAction.STOPRECEIVER; }
-				else if(value.equals("start")) { action = IbisAction.STARTRECEIVER; }
-				else if(value.equals("incthread")) { action = IbisAction.INCTHREADS; }
-				else if(value.equals("decthread")) { action = IbisAction.DECTHREADS; }
-
-				if(action == null)
-					throw new ApiException("no or unknown action provided");
-
-				getIbisManager().handleAction(action, "", adapterName, receiverName, getUserPrincipalName(), false);
-				response.entity("{\"status\":\"ok\"}");
+		Object value = json.get("action");
+		if(value instanceof String) {
+			IbisAction action = null;
+			if(value.equals("stop")) { action = IbisAction.STOPRECEIVER; }
+			else if(value.equals("start")) { action = IbisAction.STARTRECEIVER; }
+			else if(value.equals("incthread")) { action = IbisAction.INCTHREADS; }
+			else if(value.equals("decthread")) { action = IbisAction.DECTHREADS; }
+			if(action == null) {
+				throw new ApiException("no or unknown action provided", Response.Status.BAD_REQUEST);
 			}
+
+			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.IBISACTION);
+			builder.addHeader("action", action.name());
+			builder.addHeader("configuration", getAdapter(adapterName).getConfiguration().getName());
+			builder.addHeader("adapter", adapterName);
+			builder.addHeader("receiver", receiverName);
+			callAsyncGateway(builder);
+			return Response.status(Response.Status.ACCEPTED).entity("{\"status\":\"ok\"}").build();
 		}
 
-		return response.build();
+		return Response.status(Response.Status.BAD_REQUEST).build();
 	}
 
 	@GET
@@ -381,23 +384,14 @@ public final class ShowConfigurationStatus extends Base {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters/{name}/flow")
 	@Produces(MediaType.TEXT_PLAIN)
+	@Deprecated
 	public Response getAdapterFlow(@PathParam("name") String adapterName) throws ApiException {
-		Adapter adapter = getAdapter(adapterName);
+		String configurationName = getAdapter(adapterName).getConfiguration().getName();
 
-		FlowDiagramManager flowDiagramManager = getFlowDiagramManager();
-
-		try {
-			ResponseBuilder response;
-			InputStream flow = flowDiagramManager.get(adapter);
-			if(flow != null) {
-				response = Response.ok(flow, flowDiagramManager.getMediaType());
-			} else {
-				response = Response.noContent();
-			}
-			return response.build();
-		} catch (IOException e) {
-			throw new ApiException(e);
-		}
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.FLOW);
+		builder.addHeader("configuration", configurationName);
+		builder.addHeader("adapter", adapterName);
+		return callSyncGateway(builder);
 	}
 
 	private Map<String, Object> addCertificateInfo(HasKeystore s) {

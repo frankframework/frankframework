@@ -56,12 +56,12 @@ public class FxfXmlValidator extends WsdlXmlValidator {
 		}
 	}
 
-	@IbisDoc({"1", "either <code>send</code> or <code>receive</code>", "send"})
+	@IbisDoc({"either <code>send</code> or <code>receive</code>", "send"})
 	public void setDirection(String direction) {
 		this.direction = direction;
 	}
 
-	@IbisDoc({"2", "either 3.1 or 3.2", "3.1"})
+	@IbisDoc({"either 3.1 or 3.2", "3.1"})
 	public void setFxfVersion(String fxfVersion) {
 		this.fxfVersion = fxfVersion;
 	}

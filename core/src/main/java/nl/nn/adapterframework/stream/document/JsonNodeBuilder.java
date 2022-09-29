@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import nl.nn.adapterframework.stream.JsonEventHandler;
 public class JsonNodeBuilder implements INodeBuilder {
 
 	private JsonEventHandler handler;
-	
+
 	public JsonNodeBuilder(JsonEventHandler handler) {
 		this.handler = handler;
 	}
@@ -54,6 +54,11 @@ public class JsonNodeBuilder implements INodeBuilder {
 	@Override
 	public void setValue(boolean value) throws SAXException {
 		handler.primitive(value);
+	}
+
+	@Override
+	public void setNumberValue(String value) throws SAXException {
+		handler.number(value);
 	}
 
 }

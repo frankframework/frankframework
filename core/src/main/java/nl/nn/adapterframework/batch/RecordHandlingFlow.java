@@ -113,61 +113,61 @@ public final class RecordHandlingFlow {
 	}
 
 	
-	@IbisDoc({"1", "Key under which this flow is registered in the manager", ""})
+	@IbisDoc({"Key under which this flow is registered in the manager", ""})
 	public void setRecordKey(String recordKey) {
 		this.recordKey = recordKey;
 	}
 	
-	@IbisDoc({"2", "Name of the manager to be used after handling this record", ""})
+	@IbisDoc({"Name of the manager to be used after handling this record", ""})
 	public void setNextRecordHandlerManagerRef(String nextRecordHandlerManagerName) {
 		nextRecordHandlerManagerRef = nextRecordHandlerManagerName;
 	}
 
-	@IbisDoc({"3", "Name of the recordHandler to be used to transform records of the type specified in the key (optional)", ""})
+	@IbisDoc({"Name of the recordHandler to be used to transform records of the type specified in the key (optional)", ""})
 	public void setRecordHandlerRef(String recordHandlerName) {
 		recordHandlerRef = recordHandlerName;
 	}
 
-	@IbisDoc({"4", "Name of the manager to which this flow must be added", ""})
+	@IbisDoc({"Name of the manager to which this flow must be added", ""})
 	public void setRecordHandlerManagerRef(String recordHandlerManagerName) {
 		recordHandlerManagerRef = recordHandlerManagerName;
 	}
 
-	@IbisDoc({"5", "Name of the resultHandler to be used to handle the transformed result", ""})
+	@IbisDoc({"Name of the resultHandler to be used to handle the transformed result", ""})
 	public void setResultHandlerRef(String resultHandlerName) {
 		resultHandlerRef = resultHandlerName;
 	}
 
 
-	@IbisDoc({"6", "Instructs the resultHandler to start a new block before the parsed line is processed", ""})
+	@IbisDoc({"Instructs the resultHandler to start a new block before the parsed line is processed", ""})
 	public void setOpenBlockBeforeLine(String blockName) {
 		openBlockBeforeLine = blockName;
 	}
 
-	@IbisDoc({"7", "Instructs the resultHandler to end the specified block before the parsed line is processed", ""})
+	@IbisDoc({"Instructs the resultHandler to end the specified block before the parsed line is processed", ""})
 	public void setCloseBlockBeforeLine(String blockName) {
 		closeBlockBeforeLine = blockName;
 	}
 
 
-	@IbisDoc({"8", "Instructs the resultHandler to start a new block after the parsed line is processed", ""})
+	@IbisDoc({"Instructs the resultHandler to start a new block after the parsed line is processed", ""})
 	public void setOpenBlockAfterLine(String blockName) {
 		openBlockAfterLine = blockName;
 	}
 
-	@IbisDoc({"9", "Instructs the resultHandler to end the specified block after the parsed line is processed", ""})
+	@IbisDoc({"Instructs the resultHandler to end the specified block after the parsed line is processed", ""})
 	public void setCloseBlockAfterLine(String blockName) {
 		closeBlockAfterLine = blockName;
 	}
 
 
-	@IbisDoc({"10", "If <code>true</code>, any open block of this type (and other nested open 'autoClose' block) is closed before a new one of the same type is opened. At a forced close, nested blocks are closed too (since 4.9)", "true"})
+	@IbisDoc({"If <code>true</code>, any open block of this type (and other nested open 'autoClose' block) is closed before a new one of the same type is opened. At a forced close, nested blocks are closed too (since 4.9)", "true"})
 	public void setAutoCloseBlock(boolean b) {
 		autoCloseBlock = b;
 	}
 
 
-	@IbisDoc({"11", "If &gt;0 the <code>openBlockBeforeLine</code> instruction is only performed when the current line number is a multiple of this value", "0"})
+	@IbisDoc({"If &gt;0 the <code>openBlockBeforeLine</code> instruction is only performed when the current line number is a multiple of this value", "0"})
 	public void setOpenBlockBeforeLineNumber(int i) {
 		openBlockBeforeLineNumber = i;
 	}

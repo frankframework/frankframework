@@ -130,22 +130,22 @@ public class FxfListener extends EsbJmsListener {
 		}
 	}
 
-	@IbisDoc({"1", "name of the session key to store the name of the received file in", "fxfFile"})
+	@IbisDoc({"name of the session key to store the name of the received file in", "fxfFile"})
 	public void setFxfFileSessionKey(String fxfFileSessionKey) {
 		this.fxfFileSessionKey = fxfFileSessionKey;
 	}
 
-	@IbisDoc({"2", "If set to <code>true</code>, the received file is moved after being processed", "true"})
+	@IbisDoc({"If set to <code>true</code>, the received file is moved after being processed", "true"})
 	public void setMoveProcessedFile(boolean b) {
 		moveProcessedFile = b;
 	}
 
-	@IbisDoc({"3", "(only used when <code>moveProcessedFile=true</code>) <b>sibling</b> directory (related to the parent directory of the file to process) where files are stored after being processed", "processed"})
+	@IbisDoc({"(only used when <code>moveProcessedFile=true</code>) <b>sibling</b> directory (related to the parent directory of the file to process) where files are stored after being processed", "processed"})
 	public void setProcessedSiblingDirectory(String processedSiblingDirectory) {
 		this.processedSiblingDirectory = processedSiblingDirectory;
 	}
 
-	@IbisDoc({"4", "(only used when <code>moveProcessedFile=true</code>) when set to <code>true</code>, the directory to move processed files in is created if it does not exist", "false"})
+	@IbisDoc({"(only used when <code>moveProcessedFile=true</code>) when set to <code>true</code>, the directory to move processed files in is created if it does not exist", "false"})
 	public void setCreateProcessedDirectory(boolean b) {
 		createProcessedDirectory = b;
 	}

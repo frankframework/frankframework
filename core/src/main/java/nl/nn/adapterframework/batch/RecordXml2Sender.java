@@ -66,7 +66,7 @@ public class RecordXml2Sender extends RecordXmlTransformer {
 	}
 
 
-	@IbisDoc({"10", "Sender that needs to handle the (XML) record"})
+	@IbisDoc({"Sender that needs to handle the (XML) record"})
 	public void setSender(ISender sender) {
 		this.sender = sender;
 	}

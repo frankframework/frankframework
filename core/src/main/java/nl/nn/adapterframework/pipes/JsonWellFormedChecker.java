@@ -17,10 +17,9 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
 
-import javax.json.Json;
-import javax.json.JsonException;
-import javax.json.JsonReader;
-
+import jakarta.json.Json;
+import jakarta.json.JsonException;
+import jakarta.json.JsonReader;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;

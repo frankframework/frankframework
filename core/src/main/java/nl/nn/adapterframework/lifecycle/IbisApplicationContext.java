@@ -151,8 +151,17 @@ public class IbisApplicationContext implements Closeable {
 			}
 		}
 
+		addJmxConfigurationIfEnabled(springConfigurationFiles);
+
 		log.info("loading Spring configuration files "+springConfigurationFiles+"");
 		return springConfigurationFiles.toArray(new String[springConfigurationFiles.size()]);
+	}
+
+	private void addJmxConfigurationIfEnabled(List<String> springConfigurationFiles) {
+		boolean jmxEnabled = AppConstants.getInstance().getBoolean("management.endpoints.jmx.enabled", false);
+		if(jmxEnabled) {
+			springConfigurationFiles.add(ResourceUtils.CLASSPATH_URL_PREFIX+"/"+"SpringApplicationContextJMX.xml");
+		}
 	}
 
 	/**
