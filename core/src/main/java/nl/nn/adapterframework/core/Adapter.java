@@ -627,7 +627,7 @@ public class Adapter implements IAdapter, NamedBean {
 
 		try {
 			try (final CloseableThreadContext.Instance ctc1 = ndcChanged ? CloseableThreadContext.push(newNDC): null) {
-				try (final CloseableThreadContext.Instance ctc2 = CloseableThreadContext.put("Adapter", getName()).put("mid", messageId)) {
+				try (final CloseableThreadContext.Instance ctc2 = CloseableThreadContext.put("Adapter", getName()).put("mid", messageId).put("cid", pipeLineSession.getCorrelationId())) {
 					try {
 						if (StringUtils.isNotEmpty(composedHideRegex)) {
 							IbisMaskingLayout.addToThreadLocalReplace(composedHideRegex);

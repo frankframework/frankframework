@@ -113,7 +113,7 @@ public abstract class SapSenderImpl extends SapSenderBase implements ISapSender 
 			if (StringUtils.isEmpty(getFunctionName())) {
 				pvl.remove(getFunctionNameParam());
 			}
-			String correlationID = session==null ? null : session.getMessageId();
+			String correlationID = session==null ? null : session.getCorrelationId();
 			message2FunctionCall(function, message.asString(), correlationID, pvl);
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+" function call ["+functionCall2message(function)+"]");
 

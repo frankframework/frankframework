@@ -119,7 +119,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage<String> impleme
 			}
 			// the messageId to be inserted in the messageStore defaults to the messageId of the session
 			String messageId = session.getMessageId();
-			String correlationID = messageId;
+			String correlationID = session.getCorrelationId();
 			if (paramList != null && paramList.findParameter(PARAM_MESSAGEID) != null) {
 				try {
 					// the messageId to be inserted can also be specified via the parameter messageId
