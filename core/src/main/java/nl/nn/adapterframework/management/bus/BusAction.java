@@ -15,15 +15,7 @@
 */
 package nl.nn.adapterframework.management.bus;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+public enum BusAction {
 
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-public @interface ActionSelector {
-
-	public static final String ACTION_HEADER_NAME = "action";
-
-	BusAction value();
+	GET, FIND, DOWNLOAD, DELETE, MANAGE, STATUS
 }

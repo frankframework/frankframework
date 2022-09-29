@@ -35,14 +35,14 @@ public class RequestMessageBuilder {
 
 	private final Base base;
 	private final BusTopic topic;
-	private final String action;
+	private final BusAction action;
 	private Object payload = "NONE";
 
 	public RequestMessageBuilder(Base base, BusTopic topic) {
 		this(base, topic, null);
 	}
 
-	public RequestMessageBuilder(Base base, BusTopic topic, String action) {
+	public RequestMessageBuilder(Base base, BusTopic topic, BusAction action) {
 		this.base = base;
 		this.topic = topic;
 		this.action = action;
@@ -57,7 +57,7 @@ public class RequestMessageBuilder {
 		return new RequestMessageBuilder(base, topic);
 	}
 
-	public static RequestMessageBuilder create(Base base, BusTopic topic, String action) {
+	public static RequestMessageBuilder create(Base base, BusTopic topic, BusAction action) {
 		return new RequestMessageBuilder(base, topic, action);
 	}
 
@@ -66,7 +66,7 @@ public class RequestMessageBuilder {
 		MessageBuilder<?> builder = factory.withPayload(payload);
 		builder.setHeader(TopicSelector.TOPIC_HEADER_NAME, topic.name());
 		if(action != null) {
-			builder.setHeader(ActionSelector.ACTION_HEADER_NAME, action);
+			builder.setHeader(ActionSelector.ACTION_HEADER_NAME, action.name());
 		}
 
 		UriInfo uriInfo = base.getUriInfo();

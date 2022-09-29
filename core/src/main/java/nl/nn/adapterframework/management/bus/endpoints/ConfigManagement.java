@@ -44,6 +44,7 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.management.bus.ActionSelector;
+import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
@@ -76,7 +77,7 @@ public class ConfigManagement {
 	 * @return Configuration XML
 	 * header loaded to differentiate between the loaded and original (raw) XML.
 	 */
-	@ActionSelector("get")
+	@ActionSelector(BusAction.GET)
 	public Message<String> getXMLConfiguration(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_NAME_KEY);
 		boolean loadedConfiguration = BusMessageUtils.getHeader(message, "loaded", false);
@@ -107,7 +108,7 @@ public class ConfigManagement {
 	 * header configuration The name of the Configuration to find
 	 * header datasourceName The name of the datasource where the configurations are located.
 	 */
-	@ActionSelector("find")
+	@ActionSelector(BusAction.FIND)
 	public Message<String> getConfigurationDetailsByName(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_NAME_KEY);
 		Configuration configuration = getConfigurationByName(configurationName);
@@ -134,7 +135,7 @@ public class ConfigManagement {
 	 * header autoreload Whether the configuration should be reloaded (on the next ReloadJob interval)
 	 * header datasourceName The name of the datasource where the configurations are located.
 	 */
-	@ActionSelector("manage")
+	@ActionSelector(BusAction.MANAGE)
 	public Message<String> manageConfiguration(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_NAME_KEY);
 		getConfigurationByName(configurationName); //Validate the configuration exists
@@ -167,7 +168,7 @@ public class ConfigManagement {
 	 * header version The version of the Configuration to find
 	 * header datasourceName The name of the datasource where the configurations are located.
 	 */
-	@ActionSelector("download")
+	@ActionSelector(BusAction.DOWNLOAD)
 	public Message<byte[]> downloadConfiguration(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_NAME_KEY);
 		getConfigurationByName(configurationName); //Validate the configuration exists
@@ -195,7 +196,7 @@ public class ConfigManagement {
 	 * header version The version of the Configuration to find
 	 * header datasourceName The name of the datasource where the configurations are located.
 	 */
-	@ActionSelector("delete")
+	@ActionSelector(BusAction.DELETE)
 	public void deleteConfiguration(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_NAME_KEY);
 		getConfigurationByName(configurationName); //Validate the configuration exists
@@ -214,7 +215,7 @@ public class ConfigManagement {
 	 * @return The status of a configuration. If an Adapter is not in state STARTED it is flagged as NOT-OK.
 	 * header configuration The name of the Configuration to delete
 	 */
-	@ActionSelector("status")
+	@ActionSelector(BusAction.STATUS)
 	public Message<String> getConfigurationHealth(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_NAME_KEY);
 		Configuration configuration = getConfigurationByName(configurationName);

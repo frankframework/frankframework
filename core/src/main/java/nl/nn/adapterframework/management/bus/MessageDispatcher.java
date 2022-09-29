@@ -149,7 +149,7 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 	}
 
 	private boolean actionSelector(Message<?> message, ActionSelector action) {
-		String actionFilter = action.value();
+		String actionFilter = action.value().name();
 		String actionHeader = (String) message.getHeaders().get(ActionSelector.ACTION_HEADER_NAME);
 		return actionFilter.equalsIgnoreCase(actionHeader);
 	}

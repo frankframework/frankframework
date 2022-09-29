@@ -40,6 +40,7 @@ import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
+import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.RequestMessageBuilder;
 import nl.nn.adapterframework.util.Misc;
@@ -63,7 +64,7 @@ public final class ShowConfiguration extends Base {
 			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.FLOW);
 			return callSyncGateway(builder);
 		} else {
-			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, "get");
+			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.GET);
 			if(loaded) builder.addHeader("loaded", loaded);
 			return callSyncGateway(builder);
 		}
@@ -92,7 +93,7 @@ public final class ShowConfiguration extends Base {
 	@Path("/configurations/{configuration}")
 	@Produces(MediaType.APPLICATION_XML)
 	public Response getConfigurationByName(@PathParam("configuration") String configurationName, @QueryParam("loadedConfiguration") boolean loaded) throws ApiException {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, "get");
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.GET);
 		builder.addHeader("configuration", configurationName);
 		if(loaded) builder.addHeader("loaded", loaded);
 		return callSyncGateway(builder);
@@ -103,7 +104,7 @@ public final class ShowConfiguration extends Base {
 	@Path("/configurations/{configuration}/health")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getConfigurationHealth(@PathParam("configuration") String configurationName) throws ApiException {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, "status");
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.STATUS);
 		builder.addHeader("configuration", configurationName);
 		return callSyncGateway(builder);
 	}
@@ -150,7 +151,7 @@ public final class ShowConfiguration extends Base {
 	@Path("/configurations/{configuration}/versions")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getConfigurationDetailsByName(@PathParam("configuration") String configurationName, @QueryParam("datasourceName") String datasourceName) throws ApiException {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, "find");
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.FIND);
 		builder.addHeader("configuration", configurationName);
 		builder.addHeader("datasourceName", datasourceName);
 		return callSyncGateway(builder);
@@ -162,7 +163,7 @@ public final class ShowConfiguration extends Base {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response manageConfiguration(@PathParam("configuration") String configurationName, @PathParam("version") String encodedVersion, @QueryParam("datasourceName") String datasourceName, LinkedHashMap<String, Object> json) throws ApiException {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, "manage");
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.MANAGE);
 		builder.addHeader("configuration", configurationName);
 		builder.addHeader("version", Misc.urlDecode(encodedVersion));
 		if(json.containsKey("activate")) {
@@ -223,7 +224,7 @@ public final class ShowConfiguration extends Base {
 	@Path("/configurations/{configuration}/versions/{version}/download")
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	public Response downloadConfiguration(@PathParam("configuration") String configurationName, @PathParam("version") String version, @QueryParam("dataSourceName") String dataSourceName) throws ApiException {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, "download");
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.DOWNLOAD);
 		builder.addHeader("configuration", configurationName);
 		builder.addHeader("version", version);
 		builder.addHeader("datasourceName", dataSourceName);
@@ -234,7 +235,7 @@ public final class ShowConfiguration extends Base {
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/configurations/{configuration}/versions/{version}")
 	public Response deleteConfiguration(@PathParam("configuration") String configurationName, @PathParam("version") String version, @QueryParam("datasourceName") String datasourceName) throws ApiException {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, "delete");
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.DELETE);
 		builder.addHeader("configuration", configurationName);
 		builder.addHeader("version", version);
 		builder.addHeader("datasourceName", datasourceName);
