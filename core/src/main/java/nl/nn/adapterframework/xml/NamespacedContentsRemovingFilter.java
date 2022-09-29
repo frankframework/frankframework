@@ -27,13 +27,13 @@ import org.xml.sax.SAXException;
  *
  */
 public class NamespacedContentsRemovingFilter extends FullXmlFilter {
-	
+
+	private int removingDepth=0;
+
 	public NamespacedContentsRemovingFilter(ContentHandler handler) {
 		super(handler);
 	}
 
-	private int removingDepth=0;
-	
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
 		if (removingDepth>0 || StringUtils.isNotEmpty(uri)) {

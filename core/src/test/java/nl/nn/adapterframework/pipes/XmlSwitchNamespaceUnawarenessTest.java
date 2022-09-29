@@ -3,12 +3,9 @@ package nl.nn.adapterframework.pipes;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.util.TransformerPoolNamespaceUnawarenessTest;
 
@@ -28,17 +25,6 @@ public class XmlSwitchNamespaceUnawarenessTest extends PipeTestBase<XmlSwitch> {
 	public XmlSwitch createPipe() {
 		return new XmlSwitch();
 
-	}
-
-	@Test
-	@Ignore
-	//@Override
-	public void notConfigured() throws ConfigurationException {
-	}
-
-	public PipeRunResult doPipe(String input) throws PipeRunException {
-		return doPipe(pipe, input, null);
-		//return pipe.doPipe(input, null);
 	}
 
 	public void testSwitch(String input, String expectedForwardName) throws Exception {
