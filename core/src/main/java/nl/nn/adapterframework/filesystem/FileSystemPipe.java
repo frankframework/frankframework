@@ -38,6 +38,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingPipe;
+import nl.nn.adapterframework.stream.document.DocumentFormat;
 import nl.nn.adapterframework.util.SpringUtils;
 
 /**
@@ -248,5 +249,10 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 	@IbisDocRef({FILESYSTEMACTOR})
 	public void setDeleteEmptyFolder(boolean deleteEmptyFolder) {
 		actor.setDeleteEmptyFolder(deleteEmptyFolder);
+	}
+
+	@IbisDocRef({FILESYSTEMACTOR})
+	public void setOutputFormat(DocumentFormat outputFormat) {
+		actor.setOutputFormat(outputFormat);
 	}
 }

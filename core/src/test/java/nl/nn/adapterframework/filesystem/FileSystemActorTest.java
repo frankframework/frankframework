@@ -6,7 +6,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -241,17 +240,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 //			count++;
 //		}
 
-		String anchor=" count=\"";
-		int posCount=stringResult.indexOf(anchor);
-		if (posCount<0) {
-			fail("result does not contain anchor ["+anchor+"]");
-		}
-		int posQuote=stringResult.indexOf('"',posCount+anchor.length());
-
-		int resultCount = Integer.valueOf(stringResult.substring(posCount+anchor.length(), posQuote));
-		// test
-		assertEquals("count mismatch",expectedNumberOfFiles, resultCount);
-		assertEquals("mismatch in number of files",expectedNumberOfFiles, resultCount);
+		assertFileCountEquals(Message.asMessage(result), expectedNumberOfFiles);
 	}
 
 	@Test
@@ -416,21 +405,9 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		Message message = new Message(filename);
 		ParameterValueList pvl = params.getValues(message, session);
 		Object result = actor.doAction(message, pvl, session);
-		System.err.println(result);
-		String stringResult=(String)result;
 		waitForActionToFinish();
 
-		String anchor=" count=\"";
-		int posCount=stringResult.indexOf(anchor);
-		if (posCount<0) {
-			fail("result does not contain anchor ["+anchor+"]");
-		}
-		int posQuote=stringResult.indexOf('"',posCount+anchor.length());
-
-		int resultCount = Integer.valueOf(stringResult.substring(posCount+anchor.length(), posQuote));
-		// test
-		assertEquals("count mismatch", 2, resultCount);
-		assertEquals("mismatch in number of files", 2, resultCount);
+		assertFileCountEquals(Message.asMessage(result), 2);
 	}
 
 	public void fileSystemActorInfoActionTest(boolean fileViaAttribute) throws Exception {

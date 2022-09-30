@@ -27,15 +27,19 @@ import java.util.stream.StreamSupport;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.xml.sax.SAXException;
 
 import lombok.Lombok;
 import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.stream.MessageContext;
+import nl.nn.adapterframework.stream.document.DocumentBuilderFactory;
+import nl.nn.adapterframework.stream.document.DocumentFormat;
+import nl.nn.adapterframework.stream.document.INodeBuilder;
+import nl.nn.adapterframework.stream.document.ObjectBuilder;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.WildCardFilter;
-import nl.nn.adapterframework.util.XmlBuilder;
 
 public class FileSystemUtils {
 	protected static Logger log = LogUtil.getLogger(FileSystemUtils.class);
@@ -308,42 +312,56 @@ public class FileSystemUtils {
 				});
 	}
 
-	public static <F, FS extends IBasicFileSystem<F>> XmlBuilder getFileInfo(FS fileSystem, F f) throws FileSystemException {
-		XmlBuilder fileXml = new XmlBuilder("file");
-
-		String name = fileSystem.getName(f);
-		fileXml.addAttribute("name", name);
-		if (!".".equals(name) && !"..".equals(name)) {
-			long fileSize = fileSystem.getFileSize(f);
-			fileXml.addAttribute("size", "" + fileSize);
-			fileXml.addAttribute("fSize", "" + Misc.toFileSize(fileSize, true));
+	
+	public static <F, FS extends IBasicFileSystem<F>> String getFileInfo(FS fileSystem, F f, DocumentFormat format) throws FileSystemException {
+		try {
+			INodeBuilder builder = DocumentBuilderFactory.startDocument(format, "file");
 			try {
-				fileXml.addAttribute("canonicalName", fileSystem.getCanonicalName(f));
-			} catch (Exception e) {
-				log.warn("cannot get canonicalName for file [" + name + "]", e);
-				fileXml.addAttribute("canonicalName", name);
+				getFileInfo(fileSystem, f, builder);
+			} finally {
+				builder.close();
 			}
-			// Get the modification date of the file
-			Date modificationDate = fileSystem.getModificationTime(f);
-			//add date
-			if (modificationDate != null) {
-				String date = DateUtils.format(modificationDate, DateUtils.shortIsoFormat);
-				fileXml.addAttribute("modificationDate", date);
+			return builder.toString();
+		} catch (SAXException e) {
+			throw new FileSystemException("Cannot get FileInfo", e);
+		}
+	}
 
-				// add the time
-				String time = DateUtils.format(modificationDate, DateUtils.FORMAT_TIME_HMS);
-				fileXml.addAttribute("modificationTime", time);
+	public static <F, FS extends IBasicFileSystem<F>> void getFileInfo(FS fileSystem, F f, INodeBuilder nodeBuilder) throws FileSystemException, SAXException {
+		
+		try (ObjectBuilder file = nodeBuilder.startObject()) {
+			String name = fileSystem.getName(f);
+			file.addAttribute("name", name);
+			if (!".".equals(name) && !"..".equals(name)) {
+				long fileSize = fileSystem.getFileSize(f);
+				file.addAttribute("size", "" + fileSize);
+				file.addAttribute("fSize", "" + Misc.toFileSize(fileSize, true));
+				try {
+					file.addAttribute("canonicalName", fileSystem.getCanonicalName(f));
+				} catch (Exception e) {
+					log.warn("cannot get canonicalName for file [" + name + "]", e);
+					file.addAttribute("canonicalName", name);
+				}
+				// Get the modification date of the file
+				Date modificationDate = fileSystem.getModificationTime(f);
+				//add date
+				if (modificationDate != null) {
+					String date = DateUtils.format(modificationDate, DateUtils.shortIsoFormat);
+					file.addAttribute("modificationDate", date);
+	
+					// add the time
+					String time = DateUtils.format(modificationDate, DateUtils.FORMAT_TIME_HMS);
+					file.addAttribute("modificationTime", time);
+				}
+			}
+	
+			Map<String, Object> additionalParameters = fileSystem.getAdditionalFileProperties(f);
+			if(additionalParameters != null) {
+				for (Map.Entry<String, Object> attribute : additionalParameters.entrySet()) {
+					file.addAttribute(attribute.getKey(), String.valueOf(attribute.getValue()));
+				}
 			}
 		}
-
-		Map<String, Object> additionalParameters = fileSystem.getAdditionalFileProperties(f);
-		if(additionalParameters != null) {
-			for (Map.Entry<String, Object> attribute : additionalParameters.entrySet()) {
-				fileXml.addAttribute(attribute.getKey(), String.valueOf(attribute.getValue()));
-			}
-		}
-
-		return fileXml;
 	}
 
 }

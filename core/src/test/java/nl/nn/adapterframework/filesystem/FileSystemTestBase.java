@@ -9,6 +9,8 @@ import java.io.OutputStream;
 
 import nl.nn.adapterframework.core.ConfiguredTestBase;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
 public abstract class FileSystemTestBase extends ConfiguredTestBase {
 
@@ -117,7 +119,11 @@ public abstract class FileSystemTestBase extends ConfiguredTestBase {
 		assertFalse(filename+" should not exist", _fileExists(folder, filename));
 	}
 
-
+	protected void assertFileCountEquals(Object result, int expectedFileCount) throws Exception {
+		TransformerPool tp = TransformerPool.getXPathTransformerPool(null, "count(*/file)", OutputType.TEXT, false, null);
+		int resultCount = Integer.parseInt(tp.transform(Message.asMessage(result), null, false));
+		assertEquals("file count mismatch", expectedFileCount, resultCount);
+	}
 
 	public void setWaitMillis(long waitMillis) {
 		this.waitMillis = waitMillis;

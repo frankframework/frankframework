@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -449,17 +448,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 //			count++;
 //		}
 
-		String anchor=" count=\"";
-		int posCount=result.indexOf(anchor);
-		if (posCount<0) {
-			fail("result does not contain anchor ["+anchor+"]");
-		}
-		int posQuote=result.indexOf('"',posCount+anchor.length());
-
-		int resultCount = Integer.valueOf(result.substring(posCount+anchor.length(), posQuote));
-		// test
-		assertEquals("count mismatch",numberOfFiles, resultCount);
-		assertEquals("mismatch in number of files",numberOfFiles, resultCount);
+		assertFileCountEquals(result, numberOfFiles);
 	}
 
 	@Test
@@ -542,19 +531,8 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		Message message= new Message(filename);
 		PipeRunResult prr = fileSystemPipe.doPipe(message, null);
 		String result=prr.getResult().asString();
-		System.err.println(result);
 		waitForActionToFinish();
 
-		String anchor=" count=\"";
-		int posCount=result.indexOf(anchor);
-		if (posCount<0) {
-			fail("result does not contain anchor ["+anchor+"]");
-		}
-		int posQuote=result.indexOf('"',posCount+anchor.length());
-
-		int resultCount = Integer.valueOf(result.substring(posCount+anchor.length(), posQuote));
-		// test
-		assertEquals("count mismatch", 2, resultCount);
-		assertEquals("mismatch in number of files", 2, resultCount);
+		assertFileCountEquals(result, 2);
 	}
 }
