@@ -198,8 +198,7 @@ public class RestServiceDispatcher {
 									String fieldName = item.getFieldName();
 									String fieldNameName = fieldName + "Name";
 									String fileName = FilenameUtils.getName(item.getName());
-									if(log.isTraceEnabled())
-										log.trace("setting parameter [" + fieldNameName + "] to [" + fileName + "]");
+									if(log.isTraceEnabled()) log.trace("setting parameter [" + fieldNameName + "] to [" + fileName + "]");
 									context.put(fieldNameName, fileName);
 									InputStream inputStream = item.getInputStream();
 									if(inputStream.available() > 0) {

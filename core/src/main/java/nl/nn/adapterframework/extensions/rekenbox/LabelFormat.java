@@ -83,7 +83,7 @@ public class LabelFormat extends FixedForwardPipe {
 				DocumentBuilder documentBuilder = XmlUtils.getDocumentBuilderFactory().newDocumentBuilder();
 				Document document = documentBuilder.parse(message.asInputSource());
 
-				result = XmlToLabelFormat.doTransformation(document).toString();
+				result = XmlToLabelFormat.doTransformation(document);
 				return new PipeRunResult(getSuccessForward(), result);
 			}
 			else {

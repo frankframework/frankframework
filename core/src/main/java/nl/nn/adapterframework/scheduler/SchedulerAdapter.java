@@ -201,7 +201,7 @@ public class SchedulerAdapter {
 			} catch (Exception e) {
 				log.debug(e);
 			}
-			;
+
 			xbRoot.addAttribute("jobStoreClass", smd.getJobStoreClass().getName());
 			xbRoot.addAttribute("schedulerClass", smd.getSchedulerClass().getName());
 			xbRoot.addAttribute("threadPoolClass", smd.getThreadPoolClass().getName());

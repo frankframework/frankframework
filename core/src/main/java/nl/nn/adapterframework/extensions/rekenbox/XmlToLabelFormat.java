@@ -19,7 +19,11 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-import org.w3c.dom.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 
 /**
  * <P>
@@ -36,8 +40,7 @@ import org.w3c.dom.*;
  *         Use base-class AbstractTranformer.
  * 
  */
-public class XmlToLabelFormat /* extends AbstractTransformer */
-{
+public class XmlToLabelFormat {
 
 	/**
 	 * Method makeTagLabel. Makes a label for the rekenbox from the tag-name and
@@ -128,7 +131,7 @@ public class XmlToLabelFormat /* extends AbstractTransformer */
 	 * <code>java.lang.String</code>.
 	 * 
 	 */
-	public static Object doTransformation(/* Message message, Map scratchpad, */ Object data) throws Exception {
+	public static String doTransformation(/* Message message, Map scratchpad, */ Object data) {
 		Document doc;
 		Element el;
 		StringBuffer buf;
@@ -141,7 +144,7 @@ public class XmlToLabelFormat /* extends AbstractTransformer */
 		} else if(data instanceof Element) {
 			el = (Element) data;
 		} else {
-			throw new Exception("Input not of type Document or Element, but of type " + data.getClass());
+			throw new IllegalStateException("Input not of type Document or Element, but of type " + data.getClass());
 		}
 		c = getElementChildren(el);
 		convertTagsToLabels(buf, "", c);
