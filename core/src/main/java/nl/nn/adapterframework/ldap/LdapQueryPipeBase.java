@@ -35,7 +35,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * @author Gerrit van Brakel
  */
 public abstract class LdapQueryPipeBase extends FixedForwardPipe {
-	
+
 	private String ldapProviderURL;
 	private String host;
 	private int port = -1;
@@ -91,7 +91,7 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 	public abstract PipeRunResult doPipeWithException(Message message, PipeLineSession session) throws PipeRunException;
 
 	protected String retrieveUrl(String host, int port, String baseDN, boolean useSsl) {
-		String url; 
+		String url;
 		if (StringUtils.isNotEmpty(getLdapProviderURL())) {
 			url=getLdapProviderURL();
 		} else {

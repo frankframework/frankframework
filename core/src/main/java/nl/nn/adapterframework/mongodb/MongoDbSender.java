@@ -215,7 +215,6 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 		}
 	}
 
-	
 	protected void renderResult(InsertOneResult insertOneResult, MessageOutputStream target) throws SAXException, StreamingException {
 		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormat(), "insertOneResult", target, isPrettyPrint())) {
 			builder.add("acknowledged", insertOneResult.wasAcknowledged());
@@ -231,7 +230,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 			if (insertManyResult.wasAcknowledged()) {
 				try (ObjectBuilder objectBuilder = builder.addObjectField("insertedIds")) {
 					Map<Integer, BsonValue> insertedIds = insertManyResult.getInsertedIds();
-					
+
 					insertedIds.forEach((k,v)->{
 						try {
 							objectBuilder.add(Integer.toString(k), renderField(v));
@@ -243,7 +242,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 			}
 		}
 	}
-	
+
 	protected void renderResult(Document findResult, MessageOutputStream target) throws StreamingException {
 		try (IDocumentBuilder builder = DocumentBuilderFactory.startDocument(getOutputFormat(), "FindOneResult", target, isPrettyPrint())) {
 			JsonWriterSettings writerSettings = JsonWriterSettings.builder().outputMode(JsonMode.RELAXED).build();
@@ -254,7 +253,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 			throw new StreamingException("Could not render collection", e);
 		}
 	}
-	
+
 	protected void renderResult(FindIterable<Document> findResults, MessageOutputStream target) throws StreamingException {
 		try {
 			if (isCountOnly()) {
@@ -266,7 +265,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 					writer.write(Integer.toString(count));
 				}
 				return;
-			} 
+			}
 			try (ArrayBuilder builder = DocumentBuilderFactory.startArrayDocument(getOutputFormat(), "FindManyResult", "item", target, isPrettyPrint())) {
 				JsonWriterSettings writerSettings = JsonWriterSettings.builder().outputMode(JsonMode.RELAXED).build();
 				Encoder<Document> encoder = new DocumentCodec();
@@ -281,7 +280,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 			throw new StreamingException("Could not render collection", e);
 		}
 	}
-	
+
 	protected void renderResult(UpdateResult updateResult, MessageOutputStream target) throws SAXException, StreamingException {
 		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormat(), "updateResult", target, isPrettyPrint())) {
 			builder.add("acknowledged", updateResult.wasAcknowledged());
@@ -292,7 +291,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 			}
 		}
 	}
-	
+
 	protected void renderResult(DeleteResult deleteResult, MessageOutputStream target) throws SAXException, StreamingException {
 		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormat(), "deleteResult", target, isPrettyPrint())) {
 			builder.add("acknowledged", deleteResult.wasAcknowledged());
@@ -301,7 +300,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 			}
 		}
 	}
-	
+
 	private String renderField(BsonValue bsonValue) {
 		if (bsonValue.isObjectId()) {
 			return bsonValue.asObjectId().getValue().toString();
@@ -315,9 +314,9 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 	protected void addOptionalValue(ObjectBuilder builder, String name, BsonValue bsonValue) throws SAXException {
 		if (bsonValue!=null) {
 			builder.add(name, bsonValue.isObjectId()? bsonValue.asObjectId().getValue().toString() : bsonValue.asString().getValue());
-		}	
+		}
 	}
-	
+
 
 	protected Document getDocument(Message message) throws IOException {
 		return getDocument(message.asString());
@@ -326,7 +325,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 	protected Document getDocument(String message) {
 		return Document.parse(message);
 	}
-	
+
 	protected List<Document> getDocuments(Message message) throws IOException {
 		JsonArray array = Json.createReader(message.asReader()).readArray();
 		List<Document> documents = new ArrayList<>();
@@ -351,7 +350,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 		}
 		return mongoDatabase.getCollection(collectionName);
 	}
-	
+
 	protected Document getFilter(ParameterValueList pvl, Message message) throws IOException, ParameterException, IllegalArgumentException {
 		String filterSpec = getParameterOverriddenAttributeValue(pvl, PARAM_FILTER, getFilter());
 		if (StringUtils.isEmpty(filterSpec)) {
@@ -362,7 +361,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 		}
 		return getDocument(filterSpec);
 	}
-	
+
 	protected int getLimit(ParameterValueList pvl) {
 		return getParameterOverriddenAttributeValue(pvl, PARAM_LIMIT, getLimit());
 	}
@@ -378,7 +377,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 		}
 		return result;
 	}
-	
+
 
 	@IbisDoc({"The MongoDB datasource", "${"+JndiMongoClientFactory.DEFAULT_DATASOURCE_NAME_PROPERTY+"}"})
 	public void setDatasourceName(String datasourceName) {
@@ -399,7 +398,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 	public void setAction(MongoAction action) {
 		this.action = action;
 	}
-	
+
 	@IbisDoc({"Filter. Can contain references to parameters between '"+NAMED_PARAM_START+"' and '"+NAMED_PARAM_END+"'. Can be overridden by parameter '"+PARAM_FILTER+"'"})
 	public void setFilter(String filter) {
 		this.filter = filter;

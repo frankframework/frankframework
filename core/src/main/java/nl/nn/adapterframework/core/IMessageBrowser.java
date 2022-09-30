@@ -53,7 +53,7 @@ public interface IMessageBrowser<M> extends IXAEnabled {
 		/** to only mask the first half of the string */
 		FIRSTHALF
 	}
-	
+
 	/**
 	 * Gets an enumeration of messages. This includes setting up connections, sessions etc.
 	 */

@@ -149,7 +149,7 @@ public final class BrowseQueue extends Base {
 					if(showPayload && item instanceof JmsMessageBrowserIteratorItem) {
 						message.put("text", ((JmsMessageBrowserIteratorItem) item).getText());
 					}
-	
+
 					messages.add(message);
 				}
 			}

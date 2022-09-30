@@ -51,9 +51,8 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 
-	public final String PARAMETER_SIGNATURE="signature";
-	
-	public final String ALGORITHM_DEFAULT = "SHA256withRSA";
+	public static final String PARAMETER_SIGNATURE="signature";
+	public static final String ALGORITHM_DEFAULT = "SHA256withRSA";
 
 
 	private @Getter Action action = Action.SIGN;
@@ -73,7 +72,7 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 	private PrivateKey privateKey;
 	private PublicKey publicKey;
 	private PipeForward failureForward; // forward used when verification fails
-	
+
 
 	public enum Action {
 		/** signs the input */
@@ -81,7 +80,7 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 		/** verifies a signature */
 		VERIFY;
 	}
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -91,7 +90,7 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 		if (StringUtils.isEmpty(getKeystore())) {
 			throw new ConfigurationException("keystore must be specified");
 		}
-		
+
 		AuthSSLContextFactory.verifyKeystoreConfiguration(this, null);
 		if (getAction() == Action.VERIFY) {
 			if (getParameterList().findParameter(PARAMETER_SIGNATURE)==null) {
@@ -157,10 +156,10 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 					ParameterValueList pvl = getParameterList().getValues(message, session);
 					Message signatureMsg = Message.asMessage(pvl.getValueMap().get(PARAMETER_SIGNATURE));
 					byte[] signature = isSignatureBase64() ? Base64.decodeBase64(signatureMsg.asString()):signatureMsg.asByteArray();
-					
+
 					boolean verified = dsa.verify(signature);
 					PipeForward forward = verified ? getSuccessForward() : failureForward;
-					
+
 					return new PipeRunResult(forward, message);
 				default:
 					throw new IllegalStateException("Unknown action ["+getAction()+"]");
@@ -190,7 +189,7 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 	public void setProvider(String provider) {
 		this.provider = provider;
 	}
-	
+
 	/** if true, the signature is (expected to be) base64 encoded
 	 * @ff.default true
 	 */

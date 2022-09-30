@@ -93,7 +93,7 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 			throw new SenderException("cannot close Connection",e);
 		}
 	}
-	
+
 	@Override
 	protected Connection getConnectionForSendMessage(Connection blockHandle) throws JdbcException, TimeoutException {
 		return blockHandle;

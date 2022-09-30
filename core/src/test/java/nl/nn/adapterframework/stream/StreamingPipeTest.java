@@ -18,7 +18,7 @@ import nl.nn.adapterframework.util.Locker;
  */
 public class StreamingPipeTest extends PipeTestBase<StreamingPipe> {
 
-	
+	@Override
 	public StreamingPipe createPipe() {
 		StreamingPipe pipe = new StreamingPipe() {
 
@@ -29,11 +29,11 @@ public class StreamingPipeTest extends PipeTestBase<StreamingPipe> {
 		};
 		return pipe;
 	}
-	
+
 	@Test
 	public void testCanProvideOutputStreamDefault() throws ConfigurationException, PipeStartException {
 		configureAndStartPipe();
-		
+
 		assertTrue(pipe.canProvideOutputStream());
 	}
 
@@ -73,7 +73,7 @@ public class StreamingPipeTest extends PipeTestBase<StreamingPipe> {
 	public void testCanProvideOutputStreamWithSkipOnEmptyInput() throws ConfigurationException, PipeStartException {
 		pipe.setSkipOnEmptyInput(true);
 		configureAndStartPipe();
-		
+
 		assertFalse(pipe.canProvideOutputStream());
 	}
 
@@ -81,7 +81,7 @@ public class StreamingPipeTest extends PipeTestBase<StreamingPipe> {
 	public void testCanProvideOutputStreamWithIfParam() throws ConfigurationException, PipeStartException {
 		pipe.setIfParam("dummyIfParam");
 		configureAndStartPipe();
-		
+
 		assertFalse(pipe.canProvideOutputStream());
 	}
 
@@ -89,7 +89,7 @@ public class StreamingPipeTest extends PipeTestBase<StreamingPipe> {
 	public void testCanProvideOutputStreamWithPreserveInput() throws ConfigurationException, PipeStartException {
 		pipe.setPreserveInput(true);
 		configureAndStartPipe();
-		
+
 		assertFalse(pipe.canProvideOutputStream());
 	}
 
@@ -97,7 +97,7 @@ public class StreamingPipeTest extends PipeTestBase<StreamingPipe> {
 	public void testCanProvideOutputStreamWithElementToMove() throws ConfigurationException, PipeStartException {
 		pipe.setElementToMove("fakeElementToMove");
 		configureAndStartPipe();
-		
+
 		assertFalse(pipe.canProvideOutputStream());
 	}
 
@@ -105,7 +105,7 @@ public class StreamingPipeTest extends PipeTestBase<StreamingPipe> {
 	public void testCanProvideOutputStreamWithRestoreMovedElements() throws ConfigurationException, PipeStartException {
 		pipe.setRestoreMovedElements(true);
 		configureAndStartPipe();
-		
+
 		assertFalse(pipe.canProvideOutputStream());
 	}
 
@@ -119,7 +119,7 @@ public class StreamingPipeTest extends PipeTestBase<StreamingPipe> {
 		};
 		pipe.setLocker(locker);
 		configureAndStartPipe();
-		
+
 		assertFalse(pipe.canProvideOutputStream());
 	}
 
@@ -171,7 +171,7 @@ public class StreamingPipeTest extends PipeTestBase<StreamingPipe> {
 
 		assertFalse(pipe.canStreamToNextPipe());
 	}
-	
+
 	@Test
 	public void testStreamToNextPipeWithElementToMoveChain() throws ConfigurationException, PipeStartException {
 		pipe.setElementToMoveChain("elementChain");
@@ -179,7 +179,7 @@ public class StreamingPipeTest extends PipeTestBase<StreamingPipe> {
 
 		assertFalse(pipe.canStreamToNextPipe());
 	}
-	
+
 	@Test
 	public void testStreamToNextPipeWithWriteToSecLoc() throws ConfigurationException, PipeStartException {
 		pipe.setWriteToSecLog(true);
@@ -187,5 +187,4 @@ public class StreamingPipeTest extends PipeTestBase<StreamingPipe> {
 
 		assertFalse(pipe.canStreamToNextPipe());
 	}
-	
 }

@@ -47,7 +47,7 @@ public class Properties2Xml extends Map2Xml<String,String,PropertyNode,Map<Strin
 		String value;
 		Map<String,String> attributes;
 	}
-	
+
 	public Properties2Xml(ValidatorHandler validatorHandler, List<XSModel> schemaInformation, String rootElement) {
 		super(validatorHandler, schemaInformation);
 		setRootElement(rootElement);
@@ -134,7 +134,7 @@ public class Properties2Xml extends Map2Xml<String,String,PropertyNode,Map<Strin
 		if (targetNamespace!=null) {
 			p2x.setTargetNamespace(targetNamespace);
 		}
-		
+
 		return p2x.translate(data);
 	}
 

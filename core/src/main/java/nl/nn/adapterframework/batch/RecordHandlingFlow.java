@@ -42,18 +42,18 @@ public final class RecordHandlingFlow {
 	private @Getter String recordHandlerManagerRef;
 	private @Getter String nextRecordHandlerManagerRef;
 	private @Getter String resultHandlerRef;
-	
+
 	private @Getter String openBlockBeforeLine=null;
 	private @Getter String closeBlockBeforeLine=null;
 	private @Getter String openBlockAfterLine=null;
 	private @Getter String closeBlockAfterLine=null;
 	private @Getter boolean autoCloseBlock=true;
 	private @Getter int openBlockBeforeLineNumber=0;
-	
+
 	private @Getter IRecordHandler recordHandler;
 	private @Getter IRecordHandlerManager nextRecordHandlerManager;
 	private @Getter IResultHandler resultHandler;
-	
+
 	public void configure(IRecordHandlerManager manager, Map<String,IRecordHandlerManager> registeredManagers, Map<String,IRecordHandler> registeredRecordHandlers, Map<String,IResultHandler> registeredResultHandlers, IResultHandler defaultHandler) throws ConfigurationException {
 		if (getOpenBlockBeforeLineNumber()>0 && StringUtils.isEmpty(getOpenBlockBeforeLine())) {
 					throw new ConfigurationException("openBlockBeforeLine must be set when openBlockBeforeLineNumber > 0");
@@ -66,15 +66,15 @@ public final class RecordHandlingFlow {
 		// obtain the named manager that is to be used after a specified record  
 		IRecordHandlerManager nextManager = null;
 		if (StringUtils.isEmpty(getNextRecordHandlerManagerRef())) {
-			nextManager = manager; 
-		} else { 
+			nextManager = manager;
+		} else {
 			nextManager = registeredManagers.get(getNextRecordHandlerManagerRef());
 			if (nextManager == null) {
 				throw new ConfigurationException("cannot find nextRecordHandlerManager [" + getNextRecordHandlerManagerRef() + "] for flow of manager [" + getNextRecordHandlerManagerRef() + "], key ["+getRecordKey()+"]");
 			}
 		}
 		setNextRecordHandlerManager(nextManager);
-			
+
 		// obtain the recordHandler 
 		if (StringUtils.isNotEmpty(getRecordHandlerRef())) {
 			IRecordHandler recordHandler = registeredRecordHandlers.get(getRecordHandlerRef());
@@ -86,7 +86,7 @@ public final class RecordHandlingFlow {
 		} else {
 			log.debug("no recordhandler defined for flow of manager [" + getNextRecordHandlerManagerRef() + "], key ["+getRecordKey()+"]");
 		}
-		
+
 		// obtain the named resultHandler
 		IResultHandler resultHandler = registeredResultHandlers.get(getResultHandlerRef());
 		if (resultHandler == null) {
@@ -98,8 +98,7 @@ public final class RecordHandlingFlow {
 		}
 		setResultHandler(resultHandler);
 	}
-	
-	
+
 	public void setRecordHandler(IRecordHandler handler) {
 		recordHandler = handler;
 	}
@@ -112,12 +111,11 @@ public final class RecordHandlingFlow {
 		nextRecordHandlerManager = manager;
 	}
 
-	
 	@IbisDoc({"Key under which this flow is registered in the manager", ""})
 	public void setRecordKey(String recordKey) {
 		this.recordKey = recordKey;
 	}
-	
+
 	@IbisDoc({"Name of the manager to be used after handling this record", ""})
 	public void setNextRecordHandlerManagerRef(String nextRecordHandlerManagerName) {
 		nextRecordHandlerManagerRef = nextRecordHandlerManagerName;

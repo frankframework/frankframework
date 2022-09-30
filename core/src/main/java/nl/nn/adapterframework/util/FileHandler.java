@@ -260,7 +260,9 @@ public class FileHandler implements IScopeProvider {
 	 * Encodes the input
 	 */
 	private class Encoder implements TransformerAction {
+		@Override
 		public void configure() {}
+		@Override
 		public byte[] go(byte[] in, PipeLineSession session, ParameterList paramList) throws Exception {
 			return Base64.encodeBase64(in);
 		}
@@ -270,7 +272,9 @@ public class FileHandler implements IScopeProvider {
 	 * Decodes the input
 	 */
 	private class Decoder implements TransformerAction {
+		@Override
 		public void configure() {}
+		@Override
 		public byte[] go(byte[] in, PipeLineSession session, ParameterList paramList) throws Exception {
 			return Base64.decodeBase64(in == null ? null : new String(in));
 		}
@@ -347,6 +351,7 @@ public class FileHandler implements IScopeProvider {
 		}
 		// create the directory structure if not exists and
 		// check the permissions
+		@Override
 		public void configure() throws ConfigurationException {
 			if (StringUtils.isNotEmpty(getDirectory()) && isTestCanWrite()) {
 				if (!FileUtils.canWrite(getDirectory())) {
@@ -354,9 +359,11 @@ public class FileHandler implements IScopeProvider {
 				}
 			}
 		}
+		@Override
 		public byte[] go(byte[] in, PipeLineSession session, ParameterList paramList) throws Exception {
 			return go(new ByteArrayInputStream(in), session, paramList);
 		}
+		@Override
 		public byte[] go(InputStream in, PipeLineSession session, ParameterList paramList) throws Exception {
 			File tmpFile=createFile(null, session, paramList);
 			if (!tmpFile.getParentFile().exists()) {
@@ -384,6 +391,7 @@ public class FileHandler implements IScopeProvider {
 	private class FileCreater implements TransformerAction {
 		// create the directory structure if not exists and
 		// check the permissions
+		@Override
 		public void configure() throws ConfigurationException {
 			if (StringUtils.isNotEmpty(getDirectory()) && isTestCanWrite()) {
 				if (!FileUtils.canWrite(getDirectory())) {
@@ -391,6 +399,7 @@ public class FileHandler implements IScopeProvider {
 				}
 			}
 		}
+		@Override
 		public byte[] go(byte[] in, PipeLineSession session, ParameterList paramList) throws Exception {
 			File tmpFile=createFile(in, session, paramList);
 			if (!tmpFile.getParentFile().exists()) {
@@ -425,6 +434,7 @@ public class FileHandler implements IScopeProvider {
 			this.deleteAfterRead = deleteAfterRead;
 		}
 
+		@Override
 		public void configure() throws ConfigurationException {
 			if (StringUtils.isNotEmpty(getDirectory())) {
 				File file = new File(getDirectory());
@@ -445,6 +455,7 @@ public class FileHandler implements IScopeProvider {
 			}
 		}
 
+		@Override
 		public byte[] go(byte[] in, PipeLineSession session, ParameterList paramList) throws Exception {
 			InputStream inputStream =
 					getSkipBomAndDeleteFileAfterReadInputStream(in, session);
@@ -457,6 +468,7 @@ public class FileHandler implements IScopeProvider {
 			}
 		}
 
+		@Override
 		public InputStream go(byte[] in, PipeLineSession session, ParameterList paramList,
 				String outputType) throws Exception {
 			return getSkipBomAndDeleteFileAfterReadInputStream(in, session);
@@ -484,6 +496,7 @@ public class FileHandler implements IScopeProvider {
 	 */
 	private class FileDeleter implements TransformerAction {
 
+		@Override
 		public void configure() throws ConfigurationException {
 			if (StringUtils.isNotEmpty(getDirectory()) && isTestExists()) {
 				File file = new File(getDirectory());
@@ -496,6 +509,7 @@ public class FileHandler implements IScopeProvider {
 			}
 		}
 
+		@Override
 		public byte[] go(byte[] in, PipeLineSession session, ParameterList paramList) throws Exception {
 			// Can only return URL in case fileSource is classpath (which should
 			// have given a configuration warning before this method is called).
@@ -535,6 +549,7 @@ public class FileHandler implements IScopeProvider {
 
 	private class FileLister implements TransformerAction {
 
+		@Override
 		public void configure() throws ConfigurationException {
 			if (StringUtils.isNotEmpty(getDirectory()) && isTestExists()) {
 				File file = new File(getDirectory());
@@ -544,6 +559,7 @@ public class FileHandler implements IScopeProvider {
 			}
 		}
 
+		@Override
 		public byte[] go(byte[] in, PipeLineSession session, ParameterList paramList) throws Exception {
 			String name = getEffectiveFileName(in, session);
 
@@ -570,6 +586,7 @@ public class FileHandler implements IScopeProvider {
 
 	private class FileInfoProvider implements TransformerAction {
 
+		@Override
 		public void configure() throws ConfigurationException {
 			if (StringUtils.isNotEmpty(getDirectory()) && isTestExists()) {
 				File file = new File(getDirectory());
@@ -579,6 +596,7 @@ public class FileHandler implements IScopeProvider {
 			}
 		}
 
+		@Override
 		public byte[] go(byte[] in, PipeLineSession session, ParameterList paramList) throws Exception {
 			File file = null;
 			Object object = getEffectiveFile(in, session);

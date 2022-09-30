@@ -33,7 +33,7 @@ public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
 
 	private @Getter int startPosition;
 	private @Getter int endPosition=-1;
-	
+
 	@Override
 	public RecordHandlingFlow getRecordHandler(PipeLineSession session, String record) throws Exception {
 		String value = null;
@@ -59,13 +59,13 @@ public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
 				}
 			}
 			return rhf;
-		} 
+		}
 		if (endPosition >= record.length()) {
-			value = record.substring(startPosition); 
+			value = record.substring(startPosition);
 		} else {
 			value = record.substring(startPosition, endPosition);
 		}
-		
+
 		return super.getRecordHandlerByKey(value);
 	}
 

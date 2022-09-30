@@ -44,11 +44,11 @@ public interface IRecordHandler extends IConfigurable {
 	 * Perform an action on the array of fields.
 	 * 
 	 * @return transformed result
-	 */	
+	 */
 	String handleRecord(PipeLineSession session, List<String> parsedRecord) throws Exception;
-	
+
 	boolean isNewRecordType(PipeLineSession session, boolean equalRecordTypes, List<String> prevRecord, List<String> curRecord) throws Exception;
-	
+
 	public String getRecordType(List<String> record);
-	
+
 }

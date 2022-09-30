@@ -37,7 +37,7 @@ import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 public class TransactionAttributePipeProcessor extends PipeProcessorBase {
 
 	private PlatformTransactionManager txManager;
-	
+
 	@Override
 	protected PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		PipeRunResult pipeRunResult;
@@ -64,7 +64,7 @@ public class TransactionAttributePipeProcessor extends PipeProcessorBase {
 				if (tg.cancel()) {
 					if (tCaught==null) {
 						throw new PipeRunException(pipe,tg.getDescription()+" was interrupted");
-					} 
+					}
 					log.warn("Thread interrupted, but propagating other caught exception of type ["+ClassUtils.nameOf(tCaught)+"]");
 				}
 			}

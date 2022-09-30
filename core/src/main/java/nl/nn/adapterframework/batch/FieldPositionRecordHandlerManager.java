@@ -31,7 +31,7 @@ public class FieldPositionRecordHandlerManager extends RecordHandlerManager {
 
 	private @Getter int fieldNr;
 	private @Getter String separator;
-	
+
 	@Override
 	public RecordHandlingFlow getRecordHandler(PipeLineSession session, String record) throws Exception {
 		int startNdx = -1, endNdx = -1;

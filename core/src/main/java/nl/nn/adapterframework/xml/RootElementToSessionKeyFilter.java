@@ -27,7 +27,7 @@ public class RootElementToSessionKeyFilter extends FullXmlFilter {
 	private PipeLineSession session;
 	private String rootElementSessionKey;
 	private String rootNamespaceSessionKey;
-	
+
 	private boolean rootElementParsed;
 
 	public RootElementToSessionKeyFilter(PipeLineSession session, String rootElementSessionKey, String rootNamespaceSessionKey, ContentHandler handler) {
@@ -54,5 +54,4 @@ public class RootElementToSessionKeyFilter extends FullXmlFilter {
 		}
 		super.startElement(uri, localName, qName, atts);
 	}
-	
 }

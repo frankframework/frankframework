@@ -97,7 +97,7 @@ public class TimeoutGuard {
 			if (log.isDebugEnabled()) log.debug("deactivating TimeoutGuard for task ["+description+"]");
 			timer.cancel();
 		}
-		return Thread.interrupted() || threadKilled; 
+		return Thread.interrupted() || threadKilled;
 	}
 
 	/**

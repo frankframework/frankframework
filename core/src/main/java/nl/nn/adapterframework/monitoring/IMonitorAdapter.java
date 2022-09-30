@@ -30,10 +30,10 @@ public interface IMonitorAdapter {
 
 	void configure() throws ConfigurationException;
 
-	void fireEvent(String subSource, EventTypeEnum eventType, SeverityEnum severity, String message, Throwable t); 
+	void fireEvent(String subSource, EventTypeEnum eventType, SeverityEnum severity, String message, Throwable t);
 
 	public XmlBuilder toXml();
 
-	void setName(String name);	
+	void setName(String name);
 	String getName();
 }

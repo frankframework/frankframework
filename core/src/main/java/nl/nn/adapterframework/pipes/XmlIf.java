@@ -132,7 +132,7 @@ public class XmlIf extends AbstractPipe {
 		pipeForward=findForward(forward);
 
 		if (pipeForward == null) {
-			  throw new PipeRunException (this, getLogPrefix(null)+"cannot find forward or pipe named [" + forward + "]");
+			throw new PipeRunException (this, getLogPrefix(null)+"cannot find forward or pipe named [" + forward + "]");
 		}
 		log.debug(getLogPrefix(session)+ "resolved forward [" + forward + "] to path ["+pipeForward.getPath()+"]");
 		return new PipeRunResult(pipeForward, message);

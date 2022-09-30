@@ -134,7 +134,7 @@ public class SoapWrapper {
 	public Message getBody(Message message) throws SAXException, TransformerException, IOException  {
 		return getBody(message, false, null, null);
 	}
-	
+
 	public Message getBody(Message message, boolean allowPlainXml, PipeLineSession session, String soapNamespaceSessionKey) throws SAXException, TransformerException, IOException  {
 		message.preserve();
 		Message result = new Message(extractBodySoap11.transform(message.asSource()));
@@ -214,7 +214,7 @@ public class SoapWrapper {
 		}
 		if (StringUtils.isNotEmpty(soapHeaderInitial)) {
 			soapHeader = "<soapenv:Header>" + XmlUtils.skipXmlDeclaration(soapHeaderInitial) + "</soapenv:Header>";
-		} 
+		}
 		StringBuilder namespaceClause = new StringBuilder();
 		if (StringUtils.isNotEmpty(namespaceDefs)) {
 			StringTokenizer st1 = new StringTokenizer(namespaceDefs, ", \t\r\n\f");
@@ -242,7 +242,7 @@ public class SoapWrapper {
 
 	public Message createSoapFaultMessage(String faultcode, String faultstring) {
 		String faultCdataString = "<![CDATA[" + faultstring + "]]>";
-		String fault = "<soapenv:Fault>" + "<faultcode>" + faultcode + "</faultcode>" + 
+		String fault = "<soapenv:Fault>" + "<faultcode>" + faultcode + "</faultcode>" +
 						"<faultstring>" + faultCdataString + "</faultstring>" + "</soapenv:Fault>";
 		try {
 			return putInEnvelope(new Message(fault), null, null, null);

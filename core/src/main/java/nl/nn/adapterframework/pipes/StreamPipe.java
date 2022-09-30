@@ -95,7 +95,7 @@ public class StreamPipe extends FixedForwardPipe {
 			return message;
 		}
 	}
-	
+
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		Object result = message;
@@ -227,7 +227,7 @@ public class StreamPipe extends FixedForwardPipe {
 							PipeForward antiVirusFailedForward = findForward(ANTIVIRUS_FAILED_FORWARD);
 							if (antiVirusFailedForward == null) {
 								throw new PipeRunException(this, errorMessage);
-							} 
+							}
 							if (antiVirusFailureAsSoapFault) {
 								errorMessage = createSoapFaultMessage(errorMessage).asString();
 							}
@@ -249,7 +249,7 @@ public class StreamPipe extends FixedForwardPipe {
 		}
 		return new PipeRunResult(getSuccessForward(), result);
 	}
-	
+
 	protected String adjustFirstStringPart(String firstStringPart, PipeLineSession session) throws PipeRunException {
 		if (firstStringPart == null) {
 			return "";

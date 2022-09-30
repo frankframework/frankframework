@@ -51,7 +51,7 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 	private SideTable instances=new CachedSideTable("ibisinstance", "instancekey", "name", "seq_ibisinstance");
 	private SideTable hosts=    new CachedSideTable("ibishost",     "hostkey",     "name", "seq_ibishost");
 	private SideTable statnames=new CachedSideTable("ibisstatname", "statnamekey", "name", "seq_ibisstatname");
-	
+
 	private StatGroupTable groups= new CachedStatGroupTable("ibisgroup", "groupkey", "parentgroup", "instancekey", "name", "type", "seq_ibisgroup");
 
 	private String insertEventQueryInsertClause;
@@ -62,9 +62,9 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 	private String selectNextValueQuery;
 
 	private int instanceKey;
-	
+
 	private final boolean trace=false;
-	
+
 	public StatisticsKeeperStore() {
 		super();
 		createQueries();
@@ -87,10 +87,10 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 		} catch (JdbcException | SQLException e) {
 			throw new ConfigurationException("could not find instancekey for instance ["+instance+"]",e);
 		}
-	}	
+	}
 
 	private void createQueries() {
-		
+
 		insertEventQueryInsertClause=
 		"insert into ibisevent (" +
 		"  eventkey" +
@@ -120,14 +120,14 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 //		", cump95" +
 //		", cump98" +
 		") values(?,?,?,?,?,?,?,?,?,?)";
-		
+
 		insertNumQuery="INSERT INTO ibisnuminfo (eventkey, groupkey, statnamekey, value) VALUES (?,?,?,?)";
 		insertTimestampQuery="INSERT INTO ibisdateinfo (eventkey, groupkey, statnamekey, value) VALUES (?,?,?,?)";
 		selectNextValueQuery="SELECT seq_ibisevent.nextval FROM DUAL";
 	}
 
 	private void addPeriodIndicator(List nameList, List valueList, Date now, String[][] periods, long allowedLength, String prefix, Date mark) {
-		long intervalStart=mark.getTime(); 
+		long intervalStart=mark.getTime();
 		long intervalEnd=now.getTime();
 		if ((intervalEnd-intervalStart)<=allowedLength) {
 			Date midterm=new Date((intervalEnd>>1)+(intervalStart>>1));
@@ -146,7 +146,7 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 		List valueList=new LinkedList();
 		now=new Date();
 		SessionInfo sessionInfo = new SessionInfo();
-		PreparedStatement stmt=null;		
+		PreparedStatement stmt=null;
 		long freeMem = Runtime.getRuntime().freeMemory();
 		long totalMem = Runtime.getRuntime().totalMemory();
 		addPeriodIndicator(nameList,valueList,now,new String[][]{PERIOD_FORMAT_HOUR,PERIOD_FORMAT_DATEHOUR},PERIOD_ALLOWED_LENGTH_HOUR,"s",mainMark);
@@ -158,9 +158,9 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 			try (Connection connection = getConnection()) {
 				sessionInfo.connection=connection;
 				String hostname=Misc.getHostname();
-				int hostKey=hosts.findOrInsert(connection,hostname);	
-				sessionInfo.eventKey=JdbcUtil.executeIntQuery(connection,selectNextValueQuery);		
-				
+				int hostKey=hosts.findOrInsert(connection,hostname);
+				sessionInfo.eventKey=JdbcUtil.executeIntQuery(connection,selectNextValueQuery);
+
 				String insertEventQuery=null;
 				try {
 					String insertClause=insertEventQueryInsertClause;
@@ -197,7 +197,7 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 						}
 					}
 				}
-				
+
 				return sessionInfo;
 			}
 		} catch (Exception e) {
@@ -207,7 +207,7 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 
 	@Override
 	public void end(SessionInfo data) throws SenderException {
-		SessionInfo sessionInfo = (SessionInfo)data;	
+		SessionInfo sessionInfo = data;
 		try {
 			if (sessionInfo!=null && sessionInfo.connection!=null) {
 				sessionInfo.connection.close();
@@ -237,7 +237,7 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 
 	@Override
 	public void handleStatisticsKeeper(SessionInfo data, StatisticsKeeper sk) throws SenderException {
-		SessionInfo sessionInfo = (SessionInfo)data;	
+		SessionInfo sessionInfo = data;
 		PreparedStatement stmt = null;
 
 		int statnamekey=-1;
@@ -317,7 +317,7 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 
 	@Override
 	public void handleScalar(SessionInfo data, String scalarName, Date value) throws SenderException {
-		SessionInfo sessionInfo = (SessionInfo)data;	
+		SessionInfo sessionInfo = (SessionInfo)data;
 		PreparedStatement stmt = null;
 
 		int statnamekey=-1;
@@ -351,7 +351,7 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 	public SessionInfo openGroup(SessionInfo parentData, String name, String type) throws SenderException {
 		SessionInfo sessionInfo = (SessionInfo)parentData;
 		int parentKey=sessionInfo.groupKey;
-		int groupKey;	
+		int groupKey;
 		try {
 			groupKey=groups.findOrInsert(sessionInfo.connection,parentKey,instanceKey,name,type);
 			SessionInfo groupData=new SessionInfo();

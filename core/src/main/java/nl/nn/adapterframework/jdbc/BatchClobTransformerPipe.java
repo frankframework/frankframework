@@ -40,5 +40,4 @@ public class BatchClobTransformerPipe extends BatchTransformerPipeBase {
 			throw new SenderException(e);
 		}
 	}
-	
 }

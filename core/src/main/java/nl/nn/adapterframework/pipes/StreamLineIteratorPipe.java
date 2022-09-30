@@ -39,7 +39,7 @@ public class StreamLineIteratorPipe extends StringIteratorPipe {
 
 	private @Getter String endOfLineString;
 	private @Getter String startOfLineString;
-	
+
 	protected Reader getReader(Message input, PipeLineSession session, Map<String,Object> threadContext) throws SenderException {
 		if (input==null) {
 			throw new SenderException("cannot obtain reader from null input");
@@ -61,8 +61,8 @@ public class StreamLineIteratorPipe extends StringIteratorPipe {
 		StringBuffer item = new StringBuffer(it.next());
 		if (StringUtils.isNotEmpty(getEndOfLineString()) || StringUtils.isNotEmpty(getStartOfLineString())) {
 			String peeked = ((PeekableDataIterator<String>)it).peek();
-			while (peeked!=null && 
-					(StringUtils.isEmpty(getStartOfLineString()) || !peeked.startsWith(getStartOfLineString())) && 
+			while (peeked!=null &&
+					(StringUtils.isEmpty(getStartOfLineString()) || !peeked.startsWith(getStartOfLineString())) &&
 					(StringUtils.isEmpty(getEndOfLineString())   || !item.toString().endsWith(getEndOfLineString()))) {
 				item.append(System.getProperty("line.separator")).append(it.next());
 				peeked = ((PeekableDataIterator<String>)it).peek();

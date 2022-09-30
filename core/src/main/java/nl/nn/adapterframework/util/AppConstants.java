@@ -456,7 +456,7 @@ public final class AppConstants extends Properties implements Serializable {
 	 * @param dfault the default value
 	 * @return long
 	 */
-	 public long getLong(String key, long dfault) {
+	public long getLong(String key, long dfault) {
 		String ob = this.getResolvedProperty(key);
 
 		if (ob == null)return dfault;
@@ -470,7 +470,7 @@ public final class AppConstants extends Properties implements Serializable {
 	 * @param dfault the default value
 	 * @return double
 	 */
-	 public double getDouble(String key, double dfault) {
+	public double getDouble(String key, double dfault) {
 		String ob = this.getResolvedProperty(key);
 		if (ob == null)return dfault;
 		return Double.parseDouble(ob);

@@ -20,8 +20,8 @@ import org.xml.sax.SAXException;
 public interface IArrayBuilder extends AutoCloseable {
 
 	public INodeBuilder addElement() throws SAXException;
-	
+
 	@Override
 	public void close() throws SAXException;
-	
+
 }

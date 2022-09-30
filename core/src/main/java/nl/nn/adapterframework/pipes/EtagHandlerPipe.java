@@ -144,7 +144,7 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 				break;
 
 			default:
-				throw new PipeRunException(this, getLogPrefix(session)+"action not found ["+getAction()+"]"); 
+				throw new PipeRunException(this, getLogPrefix(session)+"action not found ["+getAction()+"]");
 			}
 
 			return new PipeRunResult(getSuccessForward(), returnCode);

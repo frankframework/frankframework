@@ -40,12 +40,12 @@ public class MapContentContainer<V> implements DocumentContainer {
 	private String indexSeparator=".";
 	private static String arrayValueSeparator=",";
 	private Map<String,List<V>> data;
-	
+
 	private String currentName;
 	private String currentValue;
 	boolean currentIsNull;
 	private ScalarType type=ScalarType.UNKNOWN;
-	
+
 	public MapContentContainer(Map<String,List<V>> data) {
 		super();
 		this.data=data;
@@ -55,7 +55,7 @@ public class MapContentContainer<V> implements DocumentContainer {
 			new LookupTranslator(new String[][] { { "\\", "\\\\" } }),
 			new LookupTranslator(EntityArrays.JAVA_CTRL_CHARS_ESCAPE())});
 
-	
+
 	public String valueToString(V value) {
 		return (String)value;
 	}
@@ -63,7 +63,7 @@ public class MapContentContainer<V> implements DocumentContainer {
 	public V stringToValue(String value) {
 		return (V)value;
 	}
-	
+
 	@Override
 	public void startElement(String localName, boolean xmlArrayContainer, boolean repeatedElement, XSTypeDefinition typeDefinition) {
 		currentName=localName;
@@ -88,7 +88,7 @@ public class MapContentContainer<V> implements DocumentContainer {
 			}
 		}
 	}
-	
+
 	@Override
 	public void endElement(String localName) {
 		setValue(localName,stringToValue(currentValue),currentIsNull);
@@ -146,7 +146,7 @@ public class MapContentContainer<V> implements DocumentContainer {
 
 	public Map<String,V> flattenedVertical() {
 		Map<String,V> result = new LinkedHashMap<String,V>();
-		
+
 		for(String key:data.keySet()) {
 			List<V> entry=data.get(key);
 			for(int i=0;i<entry.size();i++) {
@@ -158,7 +158,7 @@ public class MapContentContainer<V> implements DocumentContainer {
 
 	public Map<String,String> flattenedHorizontal() {
 		Map<String,String> result = new LinkedHashMap<String,String>();
-		
+
 		for(String key:data.keySet()) {
 			List<V> entry=data.get(key);
 			String value="";

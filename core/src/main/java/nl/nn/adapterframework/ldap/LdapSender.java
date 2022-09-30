@@ -585,7 +585,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 						// Sun:
 						//   [LDAP: error code 20 - Attribute Or Value Exists]
 						if (e.getMessage().startsWith("[LDAP: error code 20 - ")) {
-							if (log.isDebugEnabled()) log.debug("Operation [" + getOperation()+ "] successful: " + e.getMessage());	
+							if (log.isDebugEnabled()) log.debug("Operation [" + getOperation()+ "] successful: " + e.getMessage());
 							result = DEFAULT_RESULT_CREATE_OK;
 						} else {
 							storeLdapException(e, session);

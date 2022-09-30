@@ -26,7 +26,7 @@ public class LocalFileSystemSender extends FileSystemSender<Path, LocalFileSyste
 	public LocalFileSystemSender() {
 		setFileSystem(new LocalFileSystem());
 	}
-	
+
 	@IbisDoc({"Optional base folder, that serves as root for all other folders", ""})
 	public void setRoot(String root) {
 		getFileSystem().setRoot(root);

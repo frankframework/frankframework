@@ -101,7 +101,7 @@ public class UploadFilePipe extends FixedForwardPipe {
 				log.warn(getLogPrefix(session) + "directory [" + dir.getPath() + "] could not be created");
 			}
 		}
-		
+
 		String fileName;
 		try {
 			fileName = session.getMessage("fileName").asString();

@@ -76,8 +76,8 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 						" FROM "+getTableName() + (StringUtils.isNotBlank(tableAlias)?" "+tableAlias.trim():"") +
 						" WHERE "+getStatusField()+
 						(StringUtils.isNotEmpty(getStatusValue(ProcessState.AVAILABLE))?
-						 "='"+getStatusValue(ProcessState.AVAILABLE)+"'":
-						 " NOT IN ('"+getStatusValue(ProcessState.ERROR)+"','"+getStatusValue(ProcessState.DONE)+(StringUtils.isNotEmpty(getStatusValue(ProcessState.HOLD))?"','"+getStatusValue(ProcessState.HOLD):"")+"')")+
+						"='"+getStatusValue(ProcessState.AVAILABLE)+"'":
+						" NOT IN ('"+getStatusValue(ProcessState.ERROR)+"','"+getStatusValue(ProcessState.DONE)+(StringUtils.isNotEmpty(getStatusValue(ProcessState.HOLD))?"','"+getStatusValue(ProcessState.HOLD):"")+"')")+
 						(StringUtils.isNotEmpty(getSelectCondition()) ? " AND ("+getSelectCondition()+")": "") +
 						(StringUtils.isNotEmpty(getOrderField())? " ORDER BY "+getOrderField():""));
 		statusValues.forEach((state, value) -> setUpdateStatusQuery(state, "dummy query to register status value in JdbcListener")); // must have set updateStatusQueries before calling super.configure()

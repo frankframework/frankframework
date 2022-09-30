@@ -61,9 +61,9 @@ public class FileUtils {
 	public static String getFilename(ParameterList definedParameters, PipeLineSession session, String originalFilename, String filenamePattern) throws ParameterException {
 		// no pattern defined, outputname = inputname
 		if (StringUtils.isEmpty(filenamePattern)) {
-			return originalFilename; 
+			return originalFilename;
 		}
-		
+
 		// obtain filename
 		int ndx = originalFilename.lastIndexOf('.');
 		String name = originalFilename;
@@ -73,7 +73,7 @@ public class FileUtils {
 			name = originalFilename.substring(0, ndx);
 			extension = originalFilename.substring(ndx + 1);
 		}
-		
+
 		// construct the parameterlist
 		ParameterList pl = new ParameterList();
 		try {
@@ -96,16 +96,16 @@ public class FileUtils {
 			pl.add(p);
 		}
 		catch(ConfigurationException e) {
-			throw new ParameterException(e);		
+			throw new ParameterException(e);
 		}
-		
+
 		// resolve the parameters
 		ParameterValueList pvl = pl.getValues(null, session);
-		String filename = pvl.getParameterValue("__filename").getValue().toString(); 
-		
+		String filename = pvl.getParameterValue("__filename").getValue().toString();
+
 		return filename;
 	}
-	
+
 	public static String getFilename(ParameterList definedParameters, PipeLineSession session, File originalFile, String filenamePattern) throws ParameterException {
 		if (originalFile == null)
 			return getFilename(definedParameters, session, "", filenamePattern);
@@ -126,7 +126,6 @@ public class FileUtils {
 		}
 	}
 
-	
 	public static String moveFile(String filename, String destDir, boolean overwrite, int numBackups) throws InterruptedException, IOException {
 		File srcFile = new File(filename);
 		return moveFile(srcFile, destDir, overwrite, numBackups);
@@ -161,7 +160,7 @@ public class FileUtils {
 	public static String moveFile(File orgFile, File rename2File, int numberOfAttempts, long waitTime) throws InterruptedException {
 		boolean rename2FileExists = rename2File.exists();
 		int errCount = 0;
-		
+
 		while (errCount++ < numberOfAttempts) {
 			// Move file to new directory using renameTo
 			boolean success = orgFile.renameTo(rename2File);
@@ -183,7 +182,7 @@ public class FileUtils {
 					log.debug("Could not copy file in alternate move");
 				}
 			}
-			
+
 			if (!success) {
 				log.debug("Retries left for moving file [" + (numberOfAttempts - errCount) + "]");
 				if (errCount < numberOfAttempts) {
@@ -227,10 +226,10 @@ public class FileUtils {
 
 	public static String appendFile(File orgFile, File destFile, int nrRetries, long waitTime) throws InterruptedException {
 		int errCount = 0;
-		
+
 		while (errCount++ < nrRetries) {
 			boolean success = copyFile(orgFile, destFile, true);
-			
+
 			if (! success) {
 				Thread.sleep(waitTime);
 			}
@@ -317,13 +316,13 @@ public class FileUtils {
 				// 1.deleteOnExit() only deletes for normal JVM shutdowns, not crashes or killing the JVM process.
 				// 2.deleteOnExit() only deletes on JVM shutdown - not good for long running server processes because:
 				// 3.The most evil of all - deleteOnExit() consumes memory for each temp file entry. If your process is running for months, or creates a lot of temp files in a short time, you consume memory and never release it until the JVM shuts down
- 				return tempDir;
+				return tempDir;
 			}
 		}
 		throw new IOException("Failed to create temp directory within ["
 				+ tempDirAttempts + "] attempts (last attempt is [" + tempDir.getPath() + "])");
 	}
-	
+
 	public static void makeBackups(File targetFile, int numBackups)  {
 		if (numBackups<=0 || !targetFile.exists()) {
 			return;
@@ -413,9 +412,9 @@ public class FileUtils {
 		if (StringUtils.isNotEmpty(excludeWildcard)) {
 			excludeFilter = new WildCardFilter(excludeWildcard);
 		}
-		
+
 		long lastChangedAllowed=minStability>0?new Date().getTime()-minStability:0;
-		
+
 		List<File> result = new ArrayList<File>();
 		int count = (files == null ? 0 : files.length);
 		for (int i = 0; i < count; i++) {
@@ -489,11 +488,11 @@ public class FileUtils {
 		}
 		return result.toString();
 	}
-	
+
 	public static String getNamesFromList(List<String> filenames, char seperator) {
 		if (filenames == null)
 			return "";
-			
+
 		StringBuffer result = new StringBuffer();
 		for (Iterator<String> nameIterator = filenames.iterator(); nameIterator.hasNext();) {
 			String name = (String)nameIterator.next();
@@ -503,7 +502,7 @@ public class FileUtils {
 		}
 		return result.toString();
 	}
-	
+
 	/*
 	 * methods to create a fixed length string from a value
 	 */
@@ -512,7 +511,7 @@ public class FileUtils {
 		align(result, val, length, leftAlign, fillchar);
 		return result.toString();
 	}
-	
+
 	public static void align(StringBuffer result, String val, int length, boolean leftAlign, char fillchar) {
 		if (val.length() > length) {
 			result.append(val.substring(0, length));
@@ -521,7 +520,7 @@ public class FileUtils {
 		} else {
 			char[] fill = getFilledArray(length - val.length(), fillchar);
 			if (leftAlign) {
-				result.append(val).append(fill);			
+				result.append(val).append(fill);
 			} else {
 				result.append(fill).append(val);
 			}
@@ -541,11 +540,11 @@ public class FileUtils {
 		int idx = fileName.lastIndexOf('.');
 		if (idx<0) {
 			return null;
-		} 
+		}
 		idx++;
 		if (idx >= fileName.length()) {
 			return null;
-		} 
+		}
 		return fileName.substring(idx);
 	}
 
@@ -555,7 +554,7 @@ public class FileUtils {
 		int idx = fname.lastIndexOf('.');
 		if (idx<0) {
 			return null;
-		} 
+		}
 		return fname.substring(0, idx);
 	}
 
@@ -563,7 +562,7 @@ public class FileUtils {
 		String fileNameExtension = getFileNameExtension(fileName);
 		if (fileNameExtension==null) {
 			return false;
-		} 
+		}
 		return fileNameExtension.equalsIgnoreCase(extension);
 	}
 
@@ -629,7 +628,7 @@ public class FileUtils {
 						}
 					}
 				} else {
-					File zipParentFile = zipFile.getParentFile(); 
+					File zipParentFile = zipFile.getParentFile();
 					if (!zipParentFile.exists()) {
 						log.debug("creating directory [" + zipParentFile.getPath() + "] for ZipEntry [" + ze.getName() + "]");
 						if (!zipParentFile.mkdir()) {

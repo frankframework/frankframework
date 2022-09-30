@@ -53,5 +53,4 @@ public class BatchBlobTransformerPipe extends BatchTransformerPipeBase {
 	public void setBlobsCompressed(boolean compressed) {
 		querySender.setBlobsCompressed(compressed);
 	}
-	
 }

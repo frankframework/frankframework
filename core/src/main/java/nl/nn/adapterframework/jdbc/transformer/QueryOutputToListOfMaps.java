@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 public class QueryOutputToListOfMaps extends AbstractQueryOutputTransformer {
-	
+
 	private List<Map<String, String>> rowset;
 	private Map<String, String> currentRow;
 

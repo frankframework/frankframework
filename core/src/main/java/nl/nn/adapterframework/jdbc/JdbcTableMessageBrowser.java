@@ -101,7 +101,7 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 		}
 		return (M)rs.getString(columnIndex);
 	}
-	
+
 	protected void createQueryTexts(IDbmsSupport dbmsSupport) throws ConfigurationException {
 		deleteQuery = "DELETE" + getFromClause(true) + getWhereClause(getKeyField()+"=?",true);
 		selectContextQuery = "SELECT "+getListClause(true)+ getWhereClause(getKeyField()+"=?",true);

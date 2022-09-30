@@ -1137,7 +1137,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 
 
 	@IbisDoc({"Charset used when reading a stream (that is e.g. going to be written to a BLOB or CLOB). When empty, the stream is copied directly to the BLOB, without conversion", ""})
-	 public void setStreamCharset(String string) {
+	public void setStreamCharset(String string) {
 		streamCharset = string;
 	}
 

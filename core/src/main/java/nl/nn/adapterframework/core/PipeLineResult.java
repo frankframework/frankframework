@@ -39,7 +39,7 @@ public class PipeLineResult {
 	public boolean isSuccessful() {
 		return getState()==ExitState.SUCCESS;
 	}
-	
+
 	@Override
 	public String toString(){
 		return "result=["+result+"] state=["+state+"]";

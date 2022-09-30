@@ -9,6 +9,7 @@ import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
+@SuppressWarnings("unused")
 public class XsltSenderParameterNamespaceAwarenessTest extends SenderTestBase<XsltSender> {
 
 	private String EXPECTED_RESULT_PARAMETER_PLAIN_SENDER_NAMESPACE_UNAWARE_7_5= "/Xslt/3205/result-ok-with-namespaces.xml";
@@ -35,7 +36,7 @@ public class XsltSenderParameterNamespaceAwarenessTest extends SenderTestBase<Xs
 	private String expectedResultParameterPlainSenderNamespaceAware = EXPECTED_RESULT_PARAMETER_PLAIN_SENDER_NAMESPACE_AWARE_7_8;
 	private String expectedResultParameterRemoveNamespacesSenderNamespaceUnaware = EXPECTED_RESULT_PARAMETER_REMOVE_NAMESPACES_SENDER_NAMESPACE_UNAWARE_7_8;
 	private String expectedResultParameterRemoveNamespacesSenderNamespaceAware = EXPECTED_RESULT_PARAMETER_REMOVE_NAMESPACES_SENDER_NAMESPACE_AWARE_7_8;
-	
+
 	@Override
 	public XsltSender createSender() {
 		return new XsltSender();
@@ -45,7 +46,7 @@ public class XsltSenderParameterNamespaceAwarenessTest extends SenderTestBase<Xs
 		String input = TestFileUtils.getTestFile("/Xslt/3205/input.xml");
 		String paramContents = TestFileUtils.getTestFile("/Xslt/3205/param.xml");
 		String expectedResult = TestFileUtils.getTestFile(expectedFile);
-		
+
 		sender.setStyleSheetName("/Xslt/3205/xslt.xslt");
 		sender.setNamespaceAware(senderNamespaceAware);
 		Parameter param = new Parameter();
@@ -56,9 +57,9 @@ public class XsltSenderParameterNamespaceAwarenessTest extends SenderTestBase<Xs
 		sender.addParameter(param);
 		sender.configure();
 		sender.open();
-		
+
 		Message result = sender.sendMessage(new Message(input), session);
-		
+
 		assertEquals(expectedResult, result.asString());
 	}
 
@@ -71,16 +72,14 @@ public class XsltSenderParameterNamespaceAwarenessTest extends SenderTestBase<Xs
 	public void testNamespaceAwarenessOfParameterPlainSenderNamespaceAware() throws Exception {
 		testNamespaceAwarenessOfParameter(true, false, expectedResultParameterPlainSenderNamespaceAware);
 	}
-	
+
 	@Test
 	public void testNamespaceAwarenessOfParameterRemoveNamespacesSenderNamespaceUnaware() throws Exception {
 		testNamespaceAwarenessOfParameter(false, true, expectedResultParameterRemoveNamespacesSenderNamespaceUnaware);
 	}
-	
+
 	@Test
 	public void testNamespaceAwarenessOfParameterRemoveNamespacesSenderNamespaceAware() throws Exception {
 		testNamespaceAwarenessOfParameter(true, true, expectedResultParameterRemoveNamespacesSenderNamespaceAware);
 	}
-	
-
 }

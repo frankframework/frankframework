@@ -63,7 +63,6 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 		}
 	}
 
-	
 	@Override
 	protected IteratingPipe<String>.ItemCallback createItemCallBack(PipeLineSession session, ISender sender, Writer writer) {
 		return new ItemCallback(session, sender, writer) {
@@ -87,7 +86,7 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 					items.append(getBlockPrefix());
 				}
 			}
-			
+
 			private StopReason finalizeBlock() throws SenderException, TimeoutException, IOException {
 				if (processingInBlocks && isCombineBlocks() && itemCounter>0) {
 					itemCounter=0;
@@ -98,15 +97,15 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 				}
 				return null;
 			}
-			
+
 			@Override
 			public StopReason handleItem(String item) throws SenderException, TimeoutException, IOException {
 				if (processInBlocksBySize && itemCounter==0) {
 					startBlock();
-				} 
+				}
 				if (processInBlocksByKey) {
 					String key = getKey(item);
-					if (!key.equals(previousKey)) { 
+					if (!key.equals(previousKey)) {
 						StopReason stopReason = finalizeBlock();
 						if(stopReason != null) {
 							return stopReason;
@@ -148,7 +147,7 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 		stringIteratorPipeBlockSize = i;
 	}
 
-	@IbisDoc({"If <code>startPosition &gt;= 0</code>, this field contains the start position of the key in the current record (first character is 0); " + 
+	@IbisDoc({"If <code>startPosition &gt;= 0</code>, this field contains the start position of the key in the current record (first character is 0); " +
 			"A sequence of lines with the same key is put in one block and send to the sender. Cannot be used in combination with blockSize.", "-1"})
 	public void setStartPosition(int i) {
 		startPosition = i;
@@ -164,9 +163,6 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 		this.combineBlocks = combineBlocks;
 	}
 
-
-
-	
 	@IbisDoc({"If <code>combineBlocks = true</code>, this string is inserted at the start of each block. Requires <code>blockSize</code> or <code>startPosition</code> and <code>endPosition</code> to be set too.", "&lt;block&gt;"})
 	public void setBlockPrefix(String string) {
 		blockPrefix = string;

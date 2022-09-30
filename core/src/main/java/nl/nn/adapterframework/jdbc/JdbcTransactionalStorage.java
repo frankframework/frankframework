@@ -241,9 +241,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 			return;
 		}
 		checkedSequences.add(storageRefKey);
-		if (getDbmsSupport().isSequencePresent(connection, getSchemaOwner4Check(), getTableName(), getSequenceName())) {
-			//no more checks
-		} else {
+		if (!getDbmsSupport().isSequencePresent(connection, getSchemaOwner4Check(), getTableName(), getSequenceName())) {
 			ConfigurationWarnings.add(this, log, "sequence ["+getSequenceName()+"] not present");
 		}
 	}
@@ -413,7 +411,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 					if (!isCreateTable() && tableMustBeCreated) {
 						throw new SenderException("table ["+getPrefix()+getTableName()+"] does not exist");
 					}
-					 log.info("table ["+getPrefix()+getTableName()+"] does "+(tableMustBeCreated?"NOT ":"")+"exist");
+					log.info("table ["+getPrefix()+getTableName()+"] does "+(tableMustBeCreated?"NOT ":"")+"exist");
 				} catch (JdbcException e) {
 					log.warn(getLogPrefix()+"exception determining existence of table ["+getPrefix()+getTableName()+"] for transactional storage, trying to create anyway."+ e.getMessage());
 					tableMustBeCreated=true;
@@ -453,7 +451,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 						getMessageField()+" "+getMessageFieldType()+", "+
 						getExpiryDateField()+" "+getDateFieldType()+
 						(StringUtils.isNotEmpty(getLabelField())?getLabelField()+" "+getTextFieldType()+"("+MAXLABELLEN+"), ":"")+
-					  ")";
+					")";
 
 			log.debug(getLogPrefix()+"creating table ["+getPrefix()+getTableName()+"] using query ["+query+"]");
 			stmt.execute(query);

@@ -81,7 +81,7 @@ public class JmsMessagingSource extends MessagingSource {
 		}
 		return (Destination)getContext().lookup(prefixedDestinationName);
 	}
-	
+
 	public Destination createDestination(String destinationName) throws JmsException {
 		Destination dest = null;
 		Session session = null;

@@ -41,7 +41,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  */
 public class ResultBlock2Sender extends Result2StringWriter {
 
-	private @Getter ISender sender = null; 
+	private @Getter ISender sender = null;
 	private Map<String,Integer> counters = new HashMap<>();
 	private Map<String,Integer> levels = new HashMap<>();
 

@@ -48,7 +48,7 @@ public class LockerPipeProcessor extends PipeProcessorBase {
 			}
 			if (objectId == null) {
 				throw new PipeRunException(pipe, "could not obtain lock ["+locker+"]");
-			} 
+			}
 			try {
 				pipeRunResult = chain.apply(message);
 			} finally {

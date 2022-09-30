@@ -37,12 +37,12 @@ import nl.nn.adapterframework.stream.document.IObjectBuilder;
 public class StrictJsonDocumentWriter implements StrictJsonWriter {
 
 	private Stack<AutoCloseable> stack = new Stack<>();
- 	private final StrictCharacterStreamJsonWriterSettings settings;
+	private final StrictCharacterStreamJsonWriterSettings settings;
 	private StrictJsonContext context = new StrictJsonContext(null, JsonContextType.TOP_LEVEL, "");
 	private State state = State.INITIAL;
 	private int curLength; // not yet handled
 	private boolean isTruncated; // not yet handled
-	
+
 	private enum JsonContextType {
 		TOP_LEVEL, DOCUMENT, ARRAY,
 	}
@@ -174,20 +174,19 @@ public class StrictJsonDocumentWriter implements StrictJsonWriter {
 			setNextState();
 		}
 	}
-	
-	
+
 
 
 	@Override
 	public void writeBoolean(final boolean value) {
 		checkState(State.VALUE);
-		
+
 		try (INodeBuilder nodeBuilder = context.contextType == JsonContextType.ARRAY ? ((IArrayBuilder)stack.peek()).addElement() : (INodeBuilder)stack.pop()) {
 			nodeBuilder.setValue(value ? Boolean.TRUE: Boolean.FALSE );
 		} catch (SAXException e) {
 			throwBSONException(e);
 		}
-		
+
 		setNextState();
 	}
 	@Override
@@ -281,7 +280,6 @@ public class StrictJsonDocumentWriter implements StrictJsonWriter {
 	}
 
 
-	
 	/**
 	 * Return true if the output has been truncated due to exceeding the length
 	 * specified in {@link StrictCharacterStreamJsonWriterSettings#getMaxLength()}.

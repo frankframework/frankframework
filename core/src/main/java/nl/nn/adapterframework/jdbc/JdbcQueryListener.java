@@ -53,7 +53,6 @@ public class JdbcQueryListener extends JdbcListener {
 			ConfigurationWarnings.add(this, log, "Database ["+getDbmsSupport().getDbmsName()+"] needs updateStatusToInProcessQuery to run in multiple threads");
 		}
 	}
-	
 
 	@Override
 	/**

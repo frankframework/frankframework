@@ -42,7 +42,7 @@ public class IbisJobBuilder {
 
 		job.setJobClass(jobClass);
 		job.setDescription(description);
-		job.setKey(key); 
+		job.setKey(key);
 		job.setDurability(false);
 		job.setRequestsRecovery(false);
 		job.setJobType(jobType);

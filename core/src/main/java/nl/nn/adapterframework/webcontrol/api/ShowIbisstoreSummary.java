@@ -238,7 +238,7 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 					slotsBuilder.add(slotBuilder.build());
 					slotdatecount=0;
 					slotmsgcount=0;
-				} 
+				}
 				slotBuilder=Json.createObjectBuilder();
 				datesBuilder = Json.createArrayBuilder();
 				slotBuilder.add("id",slotid);
