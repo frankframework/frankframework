@@ -15,43 +15,13 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.security.Principal;
-
-import javax.servlet.ServletConfig;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.core.UriInfo;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.cxf.jaxrs.JAXRSServiceFactoryBean;
-import org.apache.cxf.jaxrs.ext.multipart.Attachment;
-import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
-import org.apache.cxf.jaxrs.spring.JAXRSServerFactoryBeanDefinitionParser.SpringJAXRSServerFactoryBean;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeanInstantiationException;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.messaging.Message;
 
-import lombok.Getter;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
-import nl.nn.adapterframework.lifecycle.Gateway;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
-import nl.nn.adapterframework.management.bus.BusMessageUtils;
-import nl.nn.adapterframework.management.bus.RequestMessageBuilder;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
@@ -61,43 +31,9 @@ import nl.nn.adapterframework.util.flow.FlowDiagramManager;
  * @author	Niels Meijer
  */
 
-public abstract class Base implements ApplicationContextAware {
-	@Context protected ServletConfig servletConfig;
-	@Context protected @Getter SecurityContext securityContext;
-	@Context protected @Getter HttpServletRequest request;
-	private @Getter ApplicationContext applicationContext;
-	@Context protected @Getter UriInfo uriInfo;
+public abstract class Base extends FrankApiBase {
 
 	private IbisContext ibisContext = null;
-	private JAXRSServiceFactoryBean serviceFactory = null;
-
-	protected Logger log = LogUtil.getLogger(this);
-	protected static String HATEOASImplementation = AppConstants.getInstance().getString("ibis-api.hateoasImplementation", "default");
-
-	public Response callSyncGateway(RequestMessageBuilder input) throws ApiException {
-		Gateway gateway = getApplicationContext().getBean("gateway", Gateway.class);
-		Message<?> response = gateway.sendSyncMessage(input.build());
-		if(response != null) {
-			return BusMessageUtils.convertToJaxRsResponse(response);
-		}
-		return Response.serverError().build(); //TODO this should probably give an exception
-	}
-	public Response callAsyncGateway(RequestMessageBuilder input) throws ApiException {
-		Gateway gateway = getApplicationContext().getBean("gateway", Gateway.class);
-		gateway.sendAsyncMessage(input.build());
-		return Response.ok().build();
-	}
-
-	@Override
-	public final void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		this.applicationContext = applicationContext;
-		SpringJAXRSServerFactoryBean server = (SpringJAXRSServerFactoryBean) applicationContext.getBean("IAF-API");
-		serviceFactory = server.getServiceFactory();
-	}
-
-	protected JAXRSServiceFactoryBean getJAXRSService() {
-		return serviceFactory;
-	}
 
 	/**
 	 * Retrieves the IbisContext from <code>servletConfig</code>.
@@ -145,86 +81,5 @@ public abstract class Base implements ApplicationContextAware {
 		} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {
 			throw new ApiException("failed to initalize FlowDiagramManager", e);
 		}
-	}
-
-	protected String getUserPrincipalName() {
-		Principal principal = securityContext.getUserPrincipal();
-		if(principal != null && StringUtils.isNotEmpty(principal.getName())) {
-			return principal.getName();
-		}
-		return null;
-	}
-
-	protected String resolveStringFromMap(MultipartBody inputDataMap, String key) throws ApiException {
-		return resolveStringFromMap(inputDataMap, key, null);
-	}
-
-	protected String resolveStringFromMap(MultipartBody inputDataMap, String key, String defaultValue) throws ApiException {
-		String result = resolveTypeFromMap(inputDataMap, key, String.class, null);
-		if(StringUtils.isEmpty(result)) {
-			if(defaultValue != null) {
-				return defaultValue;
-			}
-			throw new ApiException("Key ["+key+"] may not be empty");
-		}
-		return result;
-	}
-
-	protected String resolveStringWithEncoding(MultipartBody inputDataMap, String key, String defaultEncoding) {
-		Attachment msg = inputDataMap.getAttachment(key);
-		if(msg != null) {
-			String encoding = (StringUtils.isNotEmpty(defaultEncoding)) ? defaultEncoding : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-			if(msg.getContentType().getParameters() != null) { //Encoding has explicitly been set on the multipart bodypart
-				String charset = msg.getContentType().getParameters().get("charset");
-				if(StringUtils.isNotEmpty(charset)) {
-					encoding = charset;
-				}
-			}
-			InputStream is = msg.getObject(InputStream.class);
-
-			try {
-				String inputMessage = Misc.streamToString(is, "\n", encoding, false);
-				return StringUtils.isEmpty(inputMessage) ? null : inputMessage;
-			} catch (UnsupportedEncodingException e) {
-				throw new ApiException("unsupported file encoding ["+encoding+"]");
-			} catch (IOException e) {
-				throw new ApiException("error parsing value of key ["+key+"]", e);
-			}
-		}
-		return null;
-	}
-
-	protected <T> T resolveTypeFromMap(MultipartBody inputDataMap, String key, Class<T> clazz, T defaultValue) throws ApiException {
-		try {
-			Attachment attachment = inputDataMap.getAttachment(key);
-			if(attachment != null) {
-				return convert(clazz, attachment.getObject(InputStream.class));
-			}
-		} catch (Exception e) {
-			log.debug("Failed to parse parameter ["+key+"]", e);
-		}
-		if(defaultValue != null) {
-			return defaultValue;
-		}
-		throw new ApiException("Key ["+key+"] not defined", 400);
-	}
-
-	@SuppressWarnings("unchecked")
-	protected static <T> T convert(Class<T> clazz, InputStream is) throws IOException {
-		if(clazz.isAssignableFrom(InputStream.class)) {
-			return (T) is;
-		}
-		String str = Misc.streamToString(is);
-		if(str == null) {
-			return null;
-		}
-		if(clazz.isAssignableFrom(boolean.class) || clazz.isAssignableFrom(Boolean.class)) {
-			return (T) Boolean.valueOf(str);
-		} else if(clazz.isAssignableFrom(int.class) || clazz.isAssignableFrom(Integer.class)) {
-			return (T) Integer.valueOf(str);
-		} else if(clazz.isAssignableFrom(String.class)) {
-			return (T) str;
-		}
-		throw new IllegalArgumentException("cannot convert to class ["+clazz+"]");
 	}
 }

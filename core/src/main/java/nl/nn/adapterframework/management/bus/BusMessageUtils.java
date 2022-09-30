@@ -18,6 +18,7 @@ package nl.nn.adapterframework.management.bus;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
@@ -39,7 +40,18 @@ public class BusMessageUtils {
 		return message.getHeaders().get(headerName) != null;
 	}
 
-	public static Boolean getHeader(Message<?> message, String headerName, Boolean defaultValue) {
+	public static String getHeader(Message<?> message, String headerName, String defaultValue) {
+		MessageHeaders headers = message.getHeaders();
+		if(headers.containsKey(headerName)) {
+			String value = headers.get(headerName, String.class);
+			if(StringUtils.isNotEmpty(value)) {
+				return value;
+			}
+		}
+		return defaultValue;
+	}
+
+	public static Boolean getBooleanHeader(Message<?> message, String headerName, Boolean defaultValue) {
 		MessageHeaders headers = message.getHeaders();
 		if(headers.containsKey(headerName)) {
 			try {

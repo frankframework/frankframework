@@ -38,7 +38,7 @@ public class HandleIbisManagerAction {
 		String adapterName = BusMessageUtils.getHeader(message, "adapter");
 		String receiverName = BusMessageUtils.getHeader(message, "receiver");
 		String userPrincipalName = BusMessageUtils.getHeader(message, "issuedBy");
-		boolean isAdmin = BusMessageUtils.getHeader(message, "isAdmin", false); //limits the use of a FULL_RELOAD
+		boolean isAdmin = BusMessageUtils.getBooleanHeader(message, "isAdmin", false); //limits the use of a FULL_RELOAD
 
 		IbisAction action = EnumUtils.parse(IbisAction.class, actionName);
 		getIbisManager().handleAction(action, configurationName, adapterName, receiverName, userPrincipalName, isAdmin);

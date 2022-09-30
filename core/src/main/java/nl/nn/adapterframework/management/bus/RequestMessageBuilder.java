@@ -28,21 +28,21 @@ import org.springframework.integration.support.DefaultMessageBuilderFactory;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 
-import nl.nn.adapterframework.webcontrol.api.Base;
+import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 public class RequestMessageBuilder {
 	private Map<String, Object> customHeaders = new HashMap<>();
 
-	private final Base base;
+	private final FrankApiBase base;
 	private final BusTopic topic;
 	private final BusAction action;
 	private Object payload = "NONE";
 
-	public RequestMessageBuilder(Base base, BusTopic topic) {
+	public RequestMessageBuilder(FrankApiBase base, BusTopic topic) {
 		this(base, topic, null);
 	}
 
-	public RequestMessageBuilder(Base base, BusTopic topic, BusAction action) {
+	public RequestMessageBuilder(FrankApiBase base, BusTopic topic, BusAction action) {
 		this.base = base;
 		this.topic = topic;
 		this.action = action;
@@ -53,11 +53,11 @@ public class RequestMessageBuilder {
 		return this;
 	}
 
-	public static RequestMessageBuilder create(Base base, BusTopic topic) {
+	public static RequestMessageBuilder create(FrankApiBase base, BusTopic topic) {
 		return new RequestMessageBuilder(base, topic);
 	}
 
-	public static RequestMessageBuilder create(Base base, BusTopic topic, BusAction action) {
+	public static RequestMessageBuilder create(FrankApiBase base, BusTopic topic, BusAction action) {
 		return new RequestMessageBuilder(base, topic, action);
 	}
 
@@ -71,7 +71,7 @@ public class RequestMessageBuilder {
 
 		UriInfo uriInfo = base.getUriInfo();
 		builder.setHeader("uri", uriInfo.getRequestUri());
-		builder.setHeader("method", base.getRequest().getMethod());
+		builder.setHeader("method", base.getServletRequest().getMethod());
 
 		if(!uriInfo.getQueryParameters().isEmpty()) {
 			builder.setHeader("query", uriInfo.getQueryParameters());

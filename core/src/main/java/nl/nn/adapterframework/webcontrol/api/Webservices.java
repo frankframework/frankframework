@@ -217,9 +217,9 @@ public final class Webservices extends Base {
 				} else {
 					endpoint = "rpcrouter";
 				}
-				String protocol = request.isSecure() ? "https://" : "http://";
-				int port = request.getServerPort();
-				String restBaseUrl = protocol + request.getServerName() + (port != 0 ? ":" + port : "") + request.getContextPath() + "/services/";
+				String protocol = servletRequest.isSecure() ? "https://" : "http://";
+				int port = servletRequest.getServerPort();
+				String restBaseUrl = protocol + servletRequest.getServerName() + (port != 0 ? ":" + port : "") + servletRequest.getContextPath() + "/services/";
 				endpoint = restBaseUrl + endpoint;
 				break;	//what if there are more than 1 WebServiceListener
 			}

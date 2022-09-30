@@ -403,9 +403,9 @@ public final class ShowScheduler extends Base {
 		Scheduler scheduler = getScheduler();
 
 		if(log.isInfoEnabled()) {
-			String commandIssuedBy = request.getRemoteHost();
-			commandIssuedBy += "-"+request.getRemoteAddr();
-			commandIssuedBy += "-"+request.getRemoteUser();
+			String commandIssuedBy = servletRequest.getRemoteHost();
+			commandIssuedBy += "-"+servletRequest.getRemoteAddr();
+			commandIssuedBy += "-"+servletRequest.getRemoteUser();
 
 			log.info("trigger job jobName [" + jobName + "] groupName [" + groupName + "] " + commandIssuedBy);
 		}
