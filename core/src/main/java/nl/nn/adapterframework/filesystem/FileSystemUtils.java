@@ -312,7 +312,7 @@ public class FileSystemUtils {
 				});
 	}
 
-	
+
 	public static <F, FS extends IBasicFileSystem<F>> String getFileInfo(FS fileSystem, F f, DocumentFormat format) throws FileSystemException {
 		try {
 			INodeBuilder builder = DocumentBuilderFactory.startDocument(format, "file");
@@ -328,7 +328,7 @@ public class FileSystemUtils {
 	}
 
 	public static <F, FS extends IBasicFileSystem<F>> void getFileInfo(FS fileSystem, F f, INodeBuilder nodeBuilder) throws FileSystemException, SAXException {
-		
+
 		try (ObjectBuilder file = nodeBuilder.startObject()) {
 			String name = fileSystem.getName(f);
 			file.addAttribute("name", name);
@@ -348,13 +348,13 @@ public class FileSystemUtils {
 				if (modificationDate != null) {
 					String date = DateUtils.format(modificationDate, DateUtils.shortIsoFormat);
 					file.addAttribute("modificationDate", date);
-	
+
 					// add the time
 					String time = DateUtils.format(modificationDate, DateUtils.FORMAT_TIME_HMS);
 					file.addAttribute("modificationTime", time);
 				}
 			}
-	
+
 			Map<String, Object> additionalParameters = fileSystem.getAdditionalFileProperties(f);
 			if(additionalParameters != null) {
 				for (Map.Entry<String, Object> attribute : additionalParameters.entrySet()) {

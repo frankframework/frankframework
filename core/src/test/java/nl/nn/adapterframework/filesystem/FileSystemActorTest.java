@@ -228,7 +228,6 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		PipeLineSession session = new PipeLineSession();
 		ParameterValueList pvl = null;
 		Object result = actor.doAction(message, pvl, session);
-		String stringResult=(String)result;
 
 		log.debug(result);
 
@@ -240,7 +239,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 //			count++;
 //		}
 
-		assertFileCountEquals(Message.asMessage(result), expectedNumberOfFiles);
+		assertFileCountEquals(result, expectedNumberOfFiles);
 	}
 
 	@Test
@@ -407,7 +406,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		Object result = actor.doAction(message, pvl, session);
 		waitForActionToFinish();
 
-		assertFileCountEquals(Message.asMessage(result), 2);
+		assertFileCountEquals(result, 2);
 	}
 
 	public void fileSystemActorInfoActionTest(boolean fileViaAttribute) throws Exception {

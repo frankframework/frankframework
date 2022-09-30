@@ -505,9 +505,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 					F file = it.next();
 					try (INodeBuilder nodeBuilder = directoryBuilder.addElement()){
 						FileSystemUtils.getFileInfo(fileSystem, file, nodeBuilder);
-					}
-					if(action.execute(file) != null) {
-						// tja?
+						action.execute(file);
 					}
 				}
 			}
