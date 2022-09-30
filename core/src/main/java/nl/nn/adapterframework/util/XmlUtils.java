@@ -1065,6 +1065,24 @@ public class XmlUtils {
 		return factory;
 	}
 
+	public static String convertEndOfLines(String input) {
+		if (input==null) {
+			return null;
+		}
+		return input.replaceAll("\r\n?", "\n");
+	}
+
+	public static String normalizeWhitespace(String input) {
+		if (input==null) {
+			return null;
+		}
+		return input.replaceAll("\t|\n|\r", " ");
+	}
+
+	public static String normalizeAttributeValue(String input) {
+		return normalizeWhitespace(convertEndOfLines(input));
+	}
+
 	public static String encodeChars(String string) {
 		return encodeChars(string, false);
 	}

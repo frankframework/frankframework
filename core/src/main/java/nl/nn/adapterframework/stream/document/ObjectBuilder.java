@@ -17,6 +17,8 @@ package nl.nn.adapterframework.stream.document;
 
 import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.util.XmlUtils;
+
 public abstract class ObjectBuilder extends StructureBuilder implements IObjectBuilder {
 
 	public void add(String name, String value) throws SAXException {
@@ -37,7 +39,7 @@ public abstract class ObjectBuilder extends StructureBuilder implements IObjectB
 
 
 	public void addAttribute(String name, String value) throws SAXException {
-		add(name, value);
+		add(name, XmlUtils.normalizeAttributeValue(value));
 	}
 
 	public void addAttribute(String name, long value) throws SAXException {
@@ -49,7 +51,7 @@ public abstract class ObjectBuilder extends StructureBuilder implements IObjectB
 	}
 
 	public void addNumberAttribute(String name, String value) throws SAXException {
-		addNumber(name, value);
+		addNumber(name, XmlUtils.normalizeAttributeValue(value));
 	}
 
 	public ObjectBuilder addObjectField(String name) throws SAXException {

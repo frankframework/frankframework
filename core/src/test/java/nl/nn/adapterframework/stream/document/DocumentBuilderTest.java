@@ -12,8 +12,8 @@ import nl.nn.adapterframework.xml.XmlWriter;
 
 public class DocumentBuilderTest {
 
-	private String expectedJson = "{\"veld1\":\"waarde1\",\"veld2\":10,\"array\":[\"elem1\",\"elem2\"],\"repField\":[\"rep1\",\"rep2\"],\"objField\":{\"o1\":\"w1\",\"o2\":10}}";
-	private String expectedXml = "<root><veld1>waarde1</veld1><veld2>10</veld2><array><element>elem1</element><element>elem2</element></array><repField>rep1</repField><repField>rep2</repField><objField><o1>w1</o1><o2>10</o2></objField></root>";
+	private String expectedJson = "{\"attr1\":\"alpha\",\"attr2\":12,\"attr3\":true,\"attr4\":\"a b  c d e f   g\",\"veld1\":\"waarde1\",\"veld2\":10,\"array\":[\"elem1\",\"elem2\"],\"repField\":[\"rep1\",\"rep2\"],\"objField\":{\"o1\":\"w1\",\"o2\":10}}";
+	private String expectedXml =     "<root attr1=\"alpha\" attr2=\"12\" attr3=\"true\" attr4=\"a b  c d e f   g\"><veld1>waarde1</veld1><veld2>10</veld2><array><element>elem1</element><element>elem2</element></array><repField>rep1</repField><repField>rep2</repField><objField><o1>w1</o1><o2>10</o2></objField></root>";
 
 	public void buildDocument(IDocumentBuilder root) throws SAXException {
 		try (ObjectBuilder object = root.startObject()) {
@@ -22,6 +22,10 @@ public class DocumentBuilderTest {
 	}
 
 	public void buildObject(ObjectBuilder object) throws SAXException {
+		object.addAttribute("attr1", "alpha");
+		object.addAttribute("attr2", 12);
+		object.addAttribute("attr3", true);
+		object.addAttribute("attr4", "a b  c\td\re\nf\r\n\t\ng");
 		object.add("veld1", "waarde1");
 		object.add("veld2", 10);
 		try (ArrayBuilder array = object.addField("array").startArray("element")) {
