@@ -191,7 +191,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 		} finally {
 			if (tg.cancel()) {
 				throw new TimeoutException(getLogPrefix()+"thread has been interrupted");
-			} 
+			}
 		}
 	}
 
@@ -226,7 +226,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 			try (Connection connection = getConnection()) {
 				DatabaseMetaData metadata = connection.getMetaData();
 				String result = metadata.getURL();
-	
+
 				String catalog=null;
 				catalog=connection.getCatalog();
 				result += catalog!=null ? ("/"+catalog):"";
@@ -253,7 +253,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	public String getAuthAlias() {
 		return authAlias;
 	}
-	
+
 	@IbisDoc({"User name for authentication when connecting to database, when none found from <code>authAlias</code>", ""})
 	public void setUsername(String username) {
 		this.username = username;

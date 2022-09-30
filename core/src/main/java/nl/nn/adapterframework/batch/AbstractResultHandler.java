@@ -51,7 +51,7 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 	private boolean defaultResultHandler;
 	private @Getter boolean blockByRecordType=true;
 	private @Getter AbstractPipe pipe;
-	
+
 	protected ParameterList paramList = null;
 
 	@Override

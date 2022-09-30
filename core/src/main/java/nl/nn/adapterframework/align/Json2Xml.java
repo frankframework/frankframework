@@ -357,7 +357,6 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 			j2x.setOverrideValues(overrideValues);
 		}
 		if (targetNamespace!=null) {
-			//if (DEBUG) System.out.println("setting targetNamespace ["+targetNamespace+"]");
 			j2x.setTargetNamespace(targetNamespace);
 		}
 		j2x.setDeepSearch(deepSearch);

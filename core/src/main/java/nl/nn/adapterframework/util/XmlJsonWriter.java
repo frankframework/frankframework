@@ -31,15 +31,15 @@ public class XmlJsonWriter extends DefaultHandler implements ContentHandler {
 	private Writer writer;
 	private boolean commaRequired=false;
 	private boolean stringOpen=false;
-	
+
 	public XmlJsonWriter(Writer writer) {
 		this.writer=writer;
 	}
-	
+
 	public XmlJsonWriter() {
 		this(new StringWriter());
 	}
-	
+
 	@Override
 	public void endDocument() throws SAXException {
 		try {

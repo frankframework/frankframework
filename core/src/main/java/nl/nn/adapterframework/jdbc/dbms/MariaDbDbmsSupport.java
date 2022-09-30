@@ -46,7 +46,7 @@ public class MariaDbDbmsSupport extends MySqlDbmsSupport {
 		if (wait < 0) {
 			return selectQuery+(batchSize>0?" LIMIT "+batchSize:"")+" FOR UPDATE WAIT 0"; // Mariadb has no 'skip locked'
 		} else {
-			return selectQuery+(batchSize>0?" LIMIT "+batchSize:"")+" FOR UPDATE WAIT "+wait; 
+			return selectQuery+(batchSize>0?" LIMIT "+batchSize:"")+" FOR UPDATE WAIT "+wait;
 		}
 	}
 
@@ -72,7 +72,6 @@ public class MariaDbDbmsSupport extends MySqlDbmsSupport {
 		return rs.getStatement().getConnection().createClob();
 	}
 
-	
 	@Override
 	public Object getBlobHandle(ResultSet rs, int column) throws SQLException, JdbcException {
 		return rs.getStatement().getConnection().createBlob();

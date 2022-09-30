@@ -20,12 +20,12 @@ import org.springframework.context.ApplicationEvent;
 public class DebuggerStatusChangedEvent extends ApplicationEvent {
 
 	private boolean enabled;
-	
+
 	public DebuggerStatusChangedEvent(Object source, boolean enabled) {
 		super(source);
 		this.enabled=enabled;
 	}
-	
+
 	public boolean isEnabled() {
 		return enabled;
 	}

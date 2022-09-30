@@ -53,10 +53,10 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	private @Getter String name;
 	private @Getter String inputSeparator;
 	private @Getter boolean trim=false;
-	
-	private List<InputField> inputFields=new LinkedList<>(); 
+
+	private List<InputField> inputFields=new LinkedList<>();
 	private List<Integer> recordIdentifyingFields=new LinkedList<>();
-	
+
 	protected @Getter ParameterList paramList = null;
 
 	@Override
@@ -68,7 +68,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 			throw new ConfigurationException(ClassUtils.nameOf(this)+" inputFields and inputSeparator cannot be specified both");
 		}
 	}
-	
+
 	@Override
 	public void open() throws SenderException {
 		//nothing to do		
@@ -94,7 +94,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	protected int getNumberOfInputFields() {
 		return inputFields.size();
 	}
-	
+
 	@Override
 	public List<String> parse(PipeLineSession session, String record) {
 		if (inputFields.size() > 0) {
@@ -109,16 +109,16 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 			return result;
 		}
 	}
-	
+
 	private List<String> parseUsingInputFields(String record) {
 		List<String> result = new ArrayList<>();
 
-		int recordLength = record.length(); 
+		int recordLength = record.length();
 		int curPos = 0;
 		for (Iterator<InputField> fieldIt = inputFields.iterator(); fieldIt.hasNext();) {
 			InputField field = fieldIt.next();
-			int endPos = curPos + field.length; 
-			
+			int endPos = curPos + field.length;
+
 			String item;
 			if (curPos >= recordLength) {
 				item="";
@@ -134,16 +134,16 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 			} else {
 				result.add(item);
 			}
-			
+
 			curPos = endPos;
 		}
-		
+
 		return result;
 	}
 
 	private List<String> parseUsingSeparator(String record) {
 		List<String> result = new ArrayList<>();
-		
+
 		int endNdx = -1;
 		do {
 			int startNdx = endNdx + 1;
@@ -162,14 +162,14 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 			}
 		}
 		while(endNdx != -1);
-		
+
 		return result;
 	}
-	
+
 	@Override
 	public String getRecordType(List<String> record) {
 		String result=null;
-		
+
 		for (Iterator<Integer> it = recordIdentifyingFields.iterator(); it.hasNext();) {
 			int i = (it.next()).intValue();
 			String field=record.get(i-1);
@@ -182,7 +182,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		}
 		return result;
 	}
-	
+
 	@Override
 	public boolean isNewRecordType(PipeLineSession session, boolean equalRecordHandlers, List<String> prevRecord, List<String> curRecord) {
 		if (getRecordIdentifyingFieldList().size() == 0) {
@@ -193,7 +193,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 			if (log.isTraceEnabled()) log.trace("isNewRecordType(): equalRecordTypes ["+equalRecordHandlers+"], so returning true");
 			return true;
 		}
-			
+
 		if (prevRecord == null) {
 			if (log.isTraceEnabled()) log.trace("isNewRecordType(): no previous record, so returning true");
 			return true;
@@ -209,11 +209,11 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		}
 		return false;
 	}
-	
+
 
 	protected class InputField {
 		private int length;
-		
+
 		InputField(int length) {
 			this.length = length;
 		}

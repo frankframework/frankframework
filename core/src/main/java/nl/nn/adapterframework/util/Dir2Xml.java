@@ -31,18 +31,18 @@ import org.apache.logging.log4j.Logger;
  */
 public class Dir2Xml  {
 	protected static Logger log = LogUtil.getLogger(Dir2Xml.class);
-	
-  	private String path;
-  	private String wildcard="*.*";
-  	
+
+	private String path;
+	private String wildcard = "*.*";
+
 	public String getDirList() {
 		return getDirList(false);
 	}
-	  
+
 	public String getDirList(boolean includeDirectories) {
 		return getDirList(includeDirectories, -1);
 	}
-	  
+
 	public String getDirList(boolean includeDirectories, int maxItems) {
 		WildCardFilter filter = new WildCardFilter(wildcard);
 		File dir = new File(path);
@@ -81,7 +81,7 @@ public class Dir2Xml  {
 		} else {
 			dirXml.addAttribute("count", count - numberOfDirectories);
 		}
-				
+
 		return dirXml.toXML();
 	}
 
@@ -104,7 +104,7 @@ public class Dir2Xml  {
 	}
 
 	public static XmlBuilder getFileAsXmlBuilder(File file, String nameShown) {
-	
+
 		XmlBuilder fileXml = new XmlBuilder("file");
 		fileXml.addAttribute("name", nameShown);
 		long fileSize = file.length();
@@ -122,14 +122,14 @@ public class Dir2Xml  {
 		//add date
 		String date = DateUtils.format(modificationDate, DateUtils.FORMAT_DATE);
 		fileXml.addAttribute("modificationDate", date);
-	
+
 		// add the time
 		String time = DateUtils.format(modificationDate, DateUtils.FORMAT_TIME_HMS);
 		fileXml.addAttribute("modificationTime", time);
-	
+
 		return fileXml;
 	}
-	
+
 	public void setPath(String path) {
 		this.path = path;
 	}
@@ -139,6 +139,5 @@ public class Dir2Xml  {
 	 */
 	public void setWildCard(String wildcard) {
 		this.wildcard = wildcard;
-	
 	}
 }

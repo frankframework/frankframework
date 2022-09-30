@@ -62,7 +62,7 @@ public class RecordXml2Sender extends RecordXmlTransformer {
 	@Override
 	public String handleRecord(PipeLineSession session, List<String> parsedRecord) throws Exception {
 		String xml = super.handleRecord(session,parsedRecord);
-		return getSender().sendMessage(new Message(xml), session).asString(); 
+		return getSender().sendMessage(new Message(xml), session).asString();
 	}
 
 

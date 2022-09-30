@@ -89,6 +89,7 @@ public class BisJmsSender extends JmsSender {
 		setSoap(true);
 	}
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (!isSoap()) {

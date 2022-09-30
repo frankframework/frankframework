@@ -58,7 +58,7 @@ public class RecordHandlerManager implements IRecordHandlerManager {
 	private RecordHandlingFlow getFlowByName(String flowName) {
 		return flowMap.get(flowName);
 	}
-	
+
 	@IbisDoc({"Element that contains the handlers for a specific record type, to be assigned to the manager"})
 	@Override
 	public void addHandler(RecordHandlingFlow handlers) {
@@ -69,13 +69,13 @@ public class RecordHandlerManager implements IRecordHandlerManager {
 	}
 
 	public Collection<RecordHandlingFlow> getRecordHandlers() {
-		return flowMap.values();	
+		return flowMap.values();
 	}
-	
+
 	protected Map<String,RecordHandlingFlow> getFlowMap() {
-		return flowMap;	
+		return flowMap;
 	}
-	
+
 	@Override
 	public RecordHandlingFlow getRecordHandler(PipeLineSession session, String record) throws Exception {
 		return flowMap.get("*");
@@ -96,7 +96,6 @@ public class RecordHandlerManager implements IRecordHandlerManager {
 			}
 		}
 		return rhf;
-		
 	}
 
 	@Override

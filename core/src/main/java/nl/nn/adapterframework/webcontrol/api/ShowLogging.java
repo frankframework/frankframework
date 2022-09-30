@@ -54,8 +54,8 @@ public class ShowLogging { // ShowLogging does not extend Base, to enable log an
 	@Relation("logging")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getLogDirectory(
-			@QueryParam("directory") String directory, 
-			@QueryParam("sizeFormat") String sizeFormatParam, 
+			@QueryParam("directory") String directory,
+			@QueryParam("sizeFormat") String sizeFormatParam,
 			@QueryParam("wildcard") String wildcard
 			) throws ApiException {
 

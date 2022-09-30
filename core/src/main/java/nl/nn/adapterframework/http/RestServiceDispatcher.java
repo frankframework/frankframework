@@ -185,30 +185,31 @@ public class RestServiceDispatcher {
 							DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
 							ServletFileUpload servletFileUpload = new ServletFileUpload(diskFileItemFactory);
 							List<FileItem> items = servletFileUpload.parseRequest(httpServletRequest);
-					        for (FileItem item : items) {
-					        	if (item.isFormField()) {
-					                // Process regular form field (input type="text|radio|checkbox|etc", select, etc).
-					                String fieldName = item.getFieldName();
-					                String fieldValue = item.getString();
-					    			log.trace("setting parameter ["+fieldName+"] to ["+fieldValue+"]");
-					    			context.put(fieldName, fieldValue);
-					            } else {
-					                // Process form file field (input type="file").
-					                String fieldName = item.getFieldName();
-					                String fieldNameName = fieldName + "Name";
-					                String fileName = FilenameUtils.getName(item.getName());
-					    			if (log.isTraceEnabled()) log.trace("setting parameter ["+fieldNameName+"] to ["+fileName+"]");
-					    			context.put(fieldNameName, fileName);
-					                InputStream inputStream = item.getInputStream();
-					                if (inputStream.available() > 0) {
-					                	log.trace("setting parameter ["+fieldName+"] to input stream of file ["+fileName+"]");
-						    			context.put(fieldName, inputStream);
-					                } else {
-						    			log.trace("setting parameter ["+fieldName+"] to ["+null+"]");
-						    			context.put(fieldName, null);
-					                }
-					            }
-					        }
+							for(FileItem item : items) {
+								if(item.isFormField()) {
+									// Process regular form field (input type="text|radio|checkbox|etc", select,
+									// etc).
+									String fieldName = item.getFieldName();
+									String fieldValue = item.getString();
+									log.trace("setting parameter [" + fieldName + "] to [" + fieldValue + "]");
+									context.put(fieldName, fieldValue);
+								} else {
+									// Process form file field (input type="file").
+									String fieldName = item.getFieldName();
+									String fieldNameName = fieldName + "Name";
+									String fileName = FilenameUtils.getName(item.getName());
+									if(log.isTraceEnabled()) log.trace("setting parameter [" + fieldNameName + "] to [" + fileName + "]");
+									context.put(fieldNameName, fileName);
+									InputStream inputStream = item.getInputStream();
+									if(inputStream.available() > 0) {
+										log.trace("setting parameter [" + fieldName + "] to input stream of file [" + fileName + "]");
+										context.put(fieldName, inputStream);
+									} else {
+										log.trace("setting parameter [" + fieldName + "] to [" + null + "]");
+										context.put(fieldName, null);
+									}
+								}
+							}
 						} catch (FileUploadException e) {
 							throw new ListenerException(e);
 						} catch (IOException e) {
@@ -219,7 +220,7 @@ public class RestServiceDispatcher {
 				writeToSecLog = restListener.isWriteToSecLog();
 				if (writeToSecLog) {
 					context.put("writeSecLogMessage", restListener.isWriteSecLogMessage());
- 				}
+				}
 				boolean authorized = false;
 				if (principal == null) {
 					authorized = true;

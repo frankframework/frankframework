@@ -175,6 +175,7 @@ public class BisJmsListener extends JmsListener {
 		setSoap(true);
 	}
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (!isSoap()) {

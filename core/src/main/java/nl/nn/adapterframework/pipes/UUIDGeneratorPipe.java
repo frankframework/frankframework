@@ -39,7 +39,7 @@ public class UUIDGeneratorPipe extends FixedForwardPipe {
 		/** a UUID with fixed length 31 will be generated */
 		NUMERIC
 	}
-	
+
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 

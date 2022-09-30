@@ -27,7 +27,7 @@ public class QueryExecutionContext {
 	private String query;
 	private QueryType queryType;
 	private ParameterList parameterList;
-	private Connection connection; 
+	private Connection connection;
 	private PreparedStatement statement;
 	private PreparedStatement resultQueryStatement;
 	private JdbcSession jdbcSession;

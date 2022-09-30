@@ -67,7 +67,7 @@ public class Monitor implements IConfigurationAware, INamedObject, DisposableBea
 	private MonitorManager manager = null;
 
 	private List<ITrigger> triggers = new ArrayList<>();
-	private Set<String> destinations = new HashSet<>(); 
+	private Set<String> destinations = new HashSet<>();
 	private @Getter @Setter ApplicationContext applicationContext;
 
 	public void configure() {
@@ -129,7 +129,7 @@ public class Monitor implements IConfigurationAware, INamedObject, DisposableBea
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"firing event on destination ["+destination+"]");
 
 			if (monitorAdapter != null) {
-				monitorAdapter.fireEvent(eventSource, eventType, severity, getName(), null); 
+				monitorAdapter.fireEvent(eventSource, eventType, severity, getName(), null);
 			}
 		}
 	}

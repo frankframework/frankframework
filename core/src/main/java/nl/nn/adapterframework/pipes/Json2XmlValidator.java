@@ -341,7 +341,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	}
 	public JsonStructure createResponseJsonSchema() {
 		return createJsonSchema(getResponseRoot());
- 	}
+	}
 
 	public JsonObject createJsonSchemaDefinitions(String definitionsPath) {
 		List<XSModel> models = validator.getXSModels();

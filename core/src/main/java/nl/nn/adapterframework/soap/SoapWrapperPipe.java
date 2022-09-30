@@ -66,7 +66,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 	private @Getter String root = null;
 	private @Getter boolean ignoreSoapFault = false;
 	private @Getter boolean allowPlainXml = false;
-	
+
 	private @Getter String wssAuthAlias;
 	private @Getter String wssUserName;
 	private @Getter String wssPassword;
@@ -291,7 +291,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 		}
 		return soapNamespace;
 	}
-	
+
 	protected Message unwrapMessage(Message message, PipeLineSession session) throws SAXException, TransformerException, IOException {
 		return soapWrapper.getBody(message, isAllowPlainXml(), session, getSoapNamespaceSessionKey());
 	}

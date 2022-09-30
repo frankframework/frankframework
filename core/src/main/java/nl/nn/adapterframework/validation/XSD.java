@@ -401,7 +401,7 @@ public class XSD implements Schema, Comparable<XSD> {
 			if (getImportedNamespaces().contains(xsd.getTargetNamespace())) {
 				return true;
 			}
- 		}
+		}
 		return false;
 	}
 

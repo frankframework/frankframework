@@ -154,7 +154,7 @@ public class JsonElementContainer implements ElementContainer {
 			} else {
 				stringContent+=content;
 			}
-			if (log.isTraceEnabled()) log.trace("resulting stringContent ["+stringContent+"] stringContent.toString ["+stringContent.toString()+"] toString ["+toString()+"]");
+			log.trace("resulting stringContent [{}] toString [{}]", ()->stringContent, this::toString);
 		}
 	}
 
@@ -226,8 +226,8 @@ public class JsonElementContainer implements ElementContainer {
 				return stripLeadingZeroes(stringContent);
 			default:
 				if(log.isTraceEnabled()) log.trace("getContent quoted stringContent [" + stringContent + "]");
-//				String result=StringEscapeUtils.escapeJson(stringContent.toString()); // this also converts diacritics into unicode escape sequences
-				String result = ESCAPE_JSON.translate(stringContent.toString());
+//				String result=StringEscapeUtils.escapeJson(stringContent); // this also converts diacritics into unicode escape sequences
+				String result = ESCAPE_JSON.translate(stringContent);
 				return '"' + result + '"';
 			}
 		}

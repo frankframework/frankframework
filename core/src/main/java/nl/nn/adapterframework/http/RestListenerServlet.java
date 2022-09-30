@@ -73,9 +73,9 @@ public class RestListenerServlet extends HttpServletBase {
 
 			String pattern = sd.findMatchingPattern(path);
 			if(pattern!=null) {
-				Map methodConfig = sd.getMethodConfig(pattern, "OPTIONS");
+				Map<String, Object> methodConfig = sd.getMethodConfig(pattern, "OPTIONS");
 				if (methodConfig == null) { //If set, it means the adapter handles the OPTIONS request
-					Iterator iter = sd.getAvailableMethods(pattern).iterator();
+					Iterator<String> iter = sd.getAvailableMethods(pattern).iterator();
 					StringBuilder sb = new StringBuilder();
 					sb.append("OPTIONS"); //Append preflight OPTIONS request
 					while (iter.hasNext()) {
@@ -102,9 +102,9 @@ public class RestListenerServlet extends HttpServletBase {
 		try (PipeLineSession messageContext= new PipeLineSession()) {
 			messageContext.setSecurityHandler(securityHandler);
 
-			Enumeration paramnames=request.getParameterNames();
+			Enumeration<String> paramnames=request.getParameterNames();
 			while (paramnames.hasMoreElements()) {
-				String paramname = (String)paramnames.nextElement();
+				String paramname = paramnames.nextElement();
 				String paramvalue = request.getParameter(paramname);
 				if (log.isTraceEnabled()) log.trace("setting parameter ["+paramname+"] to ["+paramvalue+"]");
 				messageContext.put(paramname, paramvalue);

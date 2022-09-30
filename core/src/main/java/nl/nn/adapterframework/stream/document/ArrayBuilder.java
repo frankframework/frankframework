@@ -18,7 +18,7 @@ package nl.nn.adapterframework.stream.document;
 import org.xml.sax.SAXException;
 
 public abstract class ArrayBuilder extends StructureBuilder implements IArrayBuilder {
-	
+
 	public void addElement(String value) throws SAXException {
 		addElement().setValue(value);
 	}

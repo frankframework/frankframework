@@ -43,7 +43,7 @@ import nl.nn.adapterframework.xml.SaxElementBuilder;
  *
  */
 public class CsvParserPipe extends StreamingPipe {
-	
+
 	private @Getter Boolean fileContainsHeader;
 	private @Getter String fieldNames;
 	private @Getter String fieldSeparator;
@@ -56,7 +56,7 @@ public class CsvParserPipe extends StreamingPipe {
 		LOWERCASE,
 		UPPERCASE;
 	}
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -107,7 +107,7 @@ public class CsvParserPipe extends StreamingPipe {
 				throw (PipeRunException)e;
 			}
 			throw new PipeRunException(this, "Cannot parse CSV", e);
-		}	
+		}
 	}
 
 	@IbisDoc({"Specifies if the first line should be treated as header or as data", "true"})

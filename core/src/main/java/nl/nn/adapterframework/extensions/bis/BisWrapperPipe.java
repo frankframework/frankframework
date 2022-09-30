@@ -506,10 +506,12 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 		return outputRoot;
 	}
 
+	@Override
 	public void setOutputNamespace(String outputNamespace) {
 		this.outputNamespace = outputNamespace;
 	}
 
+	@Override
 	public String getOutputNamespace() {
 		return outputNamespace;
 	}
@@ -594,10 +596,12 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 		return bisActionName;
 	}
 
+	@Override
 	public void setRemoveOutputNamespaces(boolean b) {
 		removeOutputNamespaces = b;
 	}
 
+	@Override
 	public boolean isRemoveOutputNamespaces() {
 		return removeOutputNamespaces;
 	}

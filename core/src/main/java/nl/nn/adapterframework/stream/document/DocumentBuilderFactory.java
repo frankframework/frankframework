@@ -34,7 +34,7 @@ public class DocumentBuilderFactory {
 			throw new IllegalArgumentException("Unknown document format ["+format+"]");
 		}
 	}
-	
+
 	public static IDocumentBuilder startDocument(DocumentFormat format, String rootElement) throws SAXException {
 		switch (format) {
 		case XML:
@@ -45,15 +45,15 @@ public class DocumentBuilderFactory {
 			throw new IllegalArgumentException("Unknown document format ["+format+"]");
 		}
 	}
-	
+
 	public static IDocumentBuilder startDocument(String rootElement, ContentHandler handler, boolean prettyPrint) throws SAXException {
 		return new XmlDocumentBuilder(rootElement, handler, prettyPrint);
 	}
-	
+
 	public static IDocumentBuilder startDocument(JsonEventHandler handler) throws SAXException {
 		return new JsonDocumentBuilder(handler);
 	}
-	
+
 	public static ObjectBuilder startObjectDocument(DocumentFormat format, String rootElement, MessageOutputStream outputStream, boolean prettyPrint) throws SAXException, StreamingException {
 		return startDocument(format, rootElement, outputStream, prettyPrint).asObjectBuilder();
 	}

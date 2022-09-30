@@ -44,15 +44,15 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 
 	private @Getter String rootTag="record";
 	private @Getter String xpathExpression=null;
-	private @Getter String namespaceDefs = null; 
+	private @Getter String namespaceDefs = null;
 	private @Getter String styleSheetName;
 	private @Getter OutputType outputType=OutputType.TEXT;
 	private @Getter boolean omitXmlDeclaration=true;
 	private @Getter String endOfRecord;
 
-	private TransformerPool transformerPool; 
+	private TransformerPool transformerPool;
 
-	private List<String> outputFields; 
+	private List<String> outputFields;
 
 	public RecordXmlTransformer() {
 		outputFields = new LinkedList<String>();
@@ -86,10 +86,10 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 			Message message = new Message(xml);
 			ParameterValueList pvl = paramList==null?null:paramList.getValues(message, session);
 			return transformerPool.transform(message.asSource(), pvl);
-		} 
+		}
 		return xml;
 	}
-	
+
 	protected String getXml(List<String> parsedRecord) {
 		XmlBuilder record=new XmlBuilder(getRootTag());
 		int ndx = 0;

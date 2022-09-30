@@ -132,7 +132,6 @@ public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends 
 		}
 	}
 
-	
 	public J getJmsMessage(String messageId) throws ListenerException {
 		Session session=null;
 		J msg = null;
@@ -228,7 +227,7 @@ public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends 
 	}
 
 	protected String getCombinedSelector(Map<String,String> selectors) {
-		StringBuffer result = new StringBuffer();
+		StringBuilder result = new StringBuilder();
 		for (Map.Entry<String,String> entry: selectors.entrySet()) {
 			if (result.length() > 0) {
 				result.append(" AND ");

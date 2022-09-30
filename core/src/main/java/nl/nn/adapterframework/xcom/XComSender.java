@@ -66,13 +66,13 @@ public class XComSender extends SenderWithParametersBase {
 	private @Getter String workingDirName = ".";
 	private @Getter String xcomtcp = "xcomtcp";
 
-	
+
 	public enum FileOptionType {
 		CREATE,
 		APPEND,
 		REPLACE
 	}
-	
+
 	public enum CompressType {
 		YES,
 		COMPACT,
@@ -82,12 +82,12 @@ public class XComSender extends SenderWithParametersBase {
 		RLE,
 		NO
 	}
-	
+
 	public enum CodeType {
 		EBCDIC,
 		ASCII
 	}
-	
+
 	public enum CarriageFlagType {
 		YES,
 		VLR,
@@ -96,7 +96,7 @@ public class XComSender extends SenderWithParametersBase {
 		XPACK,
 		NO
 	}
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		if (! StringUtils.isEmpty(port)) {

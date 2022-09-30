@@ -135,7 +135,7 @@ public class JdbcUtil {
 
 						String message=warnings.getMessage();
 
-		 				Throwable cause=warnings.getCause();
+						Throwable cause=warnings.getCause();
 						if (cause!=null) {
 							warning.addAttribute("cause",cause.getClass().getName());
 							if (message==null) {
@@ -163,7 +163,7 @@ public class JdbcUtil {
 
 							String message=warnings.getMessage();
 
-			 				Throwable cause=warnings.getCause();
+							Throwable cause=warnings.getCause();
 							if (cause!=null) {
 								warning.add("cause",cause.getClass().getName());
 								if (message==null) {

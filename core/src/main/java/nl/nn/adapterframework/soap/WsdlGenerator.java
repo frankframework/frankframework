@@ -258,7 +258,7 @@ public class WsdlGenerator {
 						warn("Could not extract paradigm from soapBody attribute of inputValidator (should end with _Action, _Event, _Request or _Solicit)");
 					}
 //					if (outputValidator != null || isMixedValidator) {
-					  if (outputValidator != null) {
+					if (outputValidator != null) {
 						String outputParadigm = WsdlGeneratorUtils.getEsbSoapParadigm(outputValidator);
 						if (outputParadigm != null) {
 							if (!"Response".equals(outputParadigm)) {
@@ -596,7 +596,7 @@ public class WsdlGenerator {
 		if (inputHeaderIsOptional) {
 			parts.clear();
 			if (inputHeaderElement != null) {
-			   	parts.add(inputHeaderElement);
+				parts.add(inputHeaderElement);
 			}
 			message(w, inputRoot + "_" + inputHeaderElement.getLocalPart(), parts);
 		}
@@ -612,7 +612,7 @@ public class WsdlGenerator {
 			if (outputHeaderIsOptional) {
 				parts.clear();
 				if (outputHeaderElement != null) {
-				   	parts.add(outputHeaderElement);
+					parts.add(outputHeaderElement);
 				}
 				message(w, outputRoot + "_"+ outputHeaderElement.getLocalPart(), parts);
 			}

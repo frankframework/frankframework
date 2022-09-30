@@ -32,10 +32,10 @@ public class RootValidation {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private List<String> rootValidation;
-	
+
 	private RootValidation() {
 	}
-	
+
 	public RootValidation(String... rootElement) {
 		this();
 		rootValidation = Arrays.asList(rootElement);
@@ -70,7 +70,7 @@ public class RootValidation {
 	public int getPathLength() {
 		return rootValidation.size();
 	}
-	
+
 	/**
 	 * Comma separated list of elements valid at level in path.
 	 */

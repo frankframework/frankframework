@@ -240,7 +240,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	public void setServiceNamespaceURI(String string) {
 		serviceNamespaceURI = string;
 	}
-	
+
 	public void setApplicationFaultsAsSoapFaults(boolean b) {
 		setApplicationFaultsAsExceptions(b);
 	}

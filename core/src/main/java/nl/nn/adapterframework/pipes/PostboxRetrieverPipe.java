@@ -52,7 +52,7 @@ public class PostboxRetrieverPipe  extends FixedForwardPipe {
 
 	private IPostboxListener listener = null;
 	private String resultOnEmptyPostbox = "empty postbox";
-		
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -74,7 +74,7 @@ public class PostboxRetrieverPipe  extends FixedForwardPipe {
 	public void start() throws PipeStartException {
 		try {
 			getListener().open();
-		} 
+		}
 		catch (Exception e) {
 			throw new PipeStartException(e);
 		}
@@ -84,7 +84,7 @@ public class PostboxRetrieverPipe  extends FixedForwardPipe {
 	public void stop() {
 		try {
 			getListener().close();
-		} 
+		}
 		catch (Exception e) {
 			log.warn(getLogPrefix(null) + " exception closing sender", e);
 		}
@@ -103,20 +103,19 @@ public class PostboxRetrieverPipe  extends FixedForwardPipe {
 		try {
 			threadContext = getListener().openThread();
 			Object rawMessage = getListener().retrieveRawMessage(messageSelector, threadContext);
-			
+
 			if (rawMessage == null)
 				return new PipeRunResult(findForward("emptyPostbox"), getResultOnEmptyPostbox());
-				
 			Message result = getListener().extractMessage(rawMessage, threadContext);
 			return new PipeRunResult(getSuccessForward(), result);
-		} 
+		}
 		catch (Exception e) {
 			throw new PipeRunException( this, getLogPrefix(session) + "caught exception", e);
-		} 
+		}
 		finally {
 			try {
 				getListener().closeThread(threadContext);
-			} 
+			}
 			catch (ListenerException le) {
 				log.error(getLogPrefix(session)+"got error closing listener");
 			}

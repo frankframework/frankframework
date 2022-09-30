@@ -439,7 +439,6 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 		return httpSender.getKeyManagerAlgorithm();
 	}
 
-	
 	@Override
 	@IbisDocRef({HTTPSENDERBASE})
 	public void setTruststore(String truststore) {
@@ -521,7 +520,6 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 		return httpSender.isIgnoreCertificateExpiredException();
 	}
 
-	
 	@IbisDocRef({HTTPSENDERBASE})
 	public void setFollowRedirects(boolean b) {
 		httpSender.setFollowRedirects(b);
@@ -531,7 +529,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	public void setStaleChecking(boolean b) {
 		httpSender.setStaleChecking(b);
 	}
-	
+
 	@IbisDocRef({HTTPSENDERBASE})
 	public void setStaleTimeout(int timeout) {
 		httpSender.setStaleTimeout(timeout);

@@ -42,17 +42,17 @@ public class FilePipe extends FixedForwardPipe {
 	public FilePipe() {
 		fileHandler = new FileHandler();
 	}
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		try { 
+		try {
 			fileHandler.configure();
 		} catch (ConfigurationException e) {
 			throw new ConfigurationException(getLogPrefix(null)+"could not configure",e);
 		}
 	}
-	
+
 	/** 
 	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Message, PipeLineSession)
 	 */

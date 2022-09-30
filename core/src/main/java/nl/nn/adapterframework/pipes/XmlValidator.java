@@ -222,6 +222,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	}
 
 
+	@Override
 	public PipeRunResult doPipe(Message input, PipeLineSession session, boolean responseMode, String messageRoot) throws PipeRunException {
 		try {
 			Message messageToValidate;
@@ -685,6 +686,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	}
 
 
+	@Override
 	@IbisDoc({"Name of the root element, or a comma separated list of element names. The validation fails if the root element is not present in the list. N.B. for WSDL generation only the first element is used", ""})
 	public void setRoot(String root) {
 		super.setRoot(root);
@@ -692,6 +694,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 			addRequestRootValidation(new RootValidation(root));
 		}
 	}
+	@Override
 	@IbisDoc({"Name of the response root element, or a comma separated list of element names. The validation fails if the root element is not present in the list. N.B. for WSDL generation only the first element is used", ""})
 	public void setResponseRoot(String responseRoot) {
 		super.setResponseRoot(responseRoot);
@@ -717,6 +720,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	public void setThrowException(boolean throwException) {
 		validator.setThrowException(throwException);
 	}
+	@Override
 	public boolean isThrowException() {
 		return validator.isThrowException();
 	}

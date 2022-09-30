@@ -184,7 +184,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 							throw new TimeoutException("Thread has been interrupted");
 						}
 						stopReason = callback.handleItem(getItem(it));
- 						keepGoing = stopReason == null;
+						keepGoing = stopReason == null;
 					}
 				} finally {
 					try {

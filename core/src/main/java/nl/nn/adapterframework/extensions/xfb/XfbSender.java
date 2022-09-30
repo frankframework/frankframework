@@ -85,9 +85,9 @@ public class XfbSender extends SenderWithParametersBase {
 			throw new ConfigurationException("XfbSender ["+getName()+"] attribute flow must be specified");
 		}
 		if (StringUtils.isEmpty(getAppli())) {
-			throw new ConfigurationException("XfbSender ["+getName()+"] attribute appli must be specified");
+			throw new ConfigurationException("XfbSender [" + getName() + "] attribute appli must be specified");
 		}
- 	} 
+	}
 
 	@Override
 	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
@@ -126,7 +126,7 @@ public class XfbSender extends SenderWithParametersBase {
 	public void setScript(String script) {
 		this.script = script;
 	}
-	
+
 	public String getScript() {
 		return script;
 	}
@@ -134,7 +134,7 @@ public class XfbSender extends SenderWithParametersBase {
 	public void setFt(String ft) {
 		this.ft = ft;
 	}
-	
+
 	public String getFt() {
 		return ft;
 	}
@@ -142,7 +142,7 @@ public class XfbSender extends SenderWithParametersBase {
 	public void setFlow(String flow) {
 		this.flow = flow;
 	}
-	
+
 	public String getFlow() {
 		return flow;
 	}
@@ -150,7 +150,7 @@ public class XfbSender extends SenderWithParametersBase {
 	public void setAppli(String appli) {
 		this.appli = appli;
 	}
-	
+
 	public String getAppli() {
 		return appli;
 	}
@@ -158,7 +158,7 @@ public class XfbSender extends SenderWithParametersBase {
 	public void setNoname(String noname) {
 		this.noname = noname;
 	}
-	
+
 	public String getNoname() {
 		return noname;
 	}
@@ -172,7 +172,7 @@ public class XfbSender extends SenderWithParametersBase {
 	public void setCopy(boolean copy) {
 		this.copy = copy;
 	}
-	
+
 	public boolean getCopy() {
 		return copy;
 	}
@@ -181,7 +181,7 @@ public class XfbSender extends SenderWithParametersBase {
 	public void setCopyPrefix(String copyPrefix) {
 		this.copyPrefix = copyPrefix;
 	}
-	
+
 	public String getCopyPrefix() {
 		return copyPrefix;
 	}

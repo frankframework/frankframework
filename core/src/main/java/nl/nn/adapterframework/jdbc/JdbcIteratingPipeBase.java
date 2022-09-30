@@ -102,7 +102,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 		querySender.close();
 	}
 
-	protected abstract IDataIterator<String> getIterator(IDbmsSupport dbmsSupport, Connection conn, ResultSet rs) throws SenderException; 
+	protected abstract IDataIterator<String> getIterator(IDbmsSupport dbmsSupport, Connection conn, ResultSet rs) throws SenderException;
 
 	@Override
 	protected IDataIterator<String> getIterator(Message message, PipeLineSession session, Map<String,Object> threadContext) throws SenderException {
@@ -177,7 +177,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 	public void setSqlDialect(String string) {
 		querySender.setSqlDialect(string);
 	}
-	
+
 	@IbisDocRef({"6", FIXEDQUERYSENDER})
 	public void setLockRows(boolean b) {
 		querySender.setLockRows(b);

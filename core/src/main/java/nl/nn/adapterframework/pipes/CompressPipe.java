@@ -154,7 +154,7 @@ public class CompressPipe extends StreamingPipe {
 				if (getFileFormat() == FileFormat.GZ || getFileFormat() == null && resultIsContent) {
 					out = new GZIPOutputStream(out);
 				} else {
-					ZipOutputStream zipper = new ZipOutputStream(out); 
+					ZipOutputStream zipper = new ZipOutputStream(out);
 					String zipEntryName = getZipEntryName(filename, session);
 					zipper.putNextEntry(new ZipEntry(zipEntryName));
 					out = zipper;

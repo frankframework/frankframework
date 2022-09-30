@@ -331,7 +331,7 @@ public class ServerStatistics extends Base {
 			if(state==RunState.STARTED) {
 				for (Receiver<?> receiver: adapter.getReceivers()) {
 					RunState rState = receiver.getRunState();
-	
+
 					if(rState!=RunState.STARTED) {
 						errors.add("receiver["+receiver.getName()+"] of adapter["+adapter.getName()+"] is in state["+rState.toString()+"]");
 						state = RunState.ERROR;

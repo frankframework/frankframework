@@ -78,7 +78,7 @@ public class FixedErrorMessageFormatter extends ErrorMessageFormatter {
 				log.error("got error transforming resource [{}] from [{}]", messageToReturn, getStyleSheetName(), e);
 			}
 		}
-	
+
 		return messageToReturn;
 	}
 

@@ -78,7 +78,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 
 	@Override
 	public void startElement(String namespaceURI, String lName, String qName, Attributes attrs) throws SAXException {
-		
+
 		/*
 		 * When there are root validations that are one element longer than the number of elements on the stack,
 		 * and of those root validations the path to the last element matches the elements on the stack,
@@ -171,7 +171,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 
 	protected void checkNamespaceExistance(String namespace) throws UnknownNamespaceException {
 		if (!ignoreUnknownNamespaces && validNamespaces != null && namespaceWarnings <= MAX_NAMESPACE_WARNINGS) {
-			if (!validNamespaces.contains(namespace) && !("".equals(namespace) && validNamespaces.contains(null))) { 
+			if (!validNamespaces.contains(namespace) && !("".equals(namespace) && validNamespaces.contains(null))) {
 				if (currentInvalidNamespace == null || !(currentInvalidNamespace.equals(namespace))) { // avoid invalid namespace to be reported for each sub element
 					currentInvalidNamespace = namespace;
 					String message = "Unknown namespace '" + namespace + "'";

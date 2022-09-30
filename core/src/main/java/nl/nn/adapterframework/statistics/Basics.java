@@ -28,7 +28,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  */
 public class Basics implements IBasics<Basics> {
 
-	public static final int NUM_BASIC_ITEMS=6;   
+	public static final int NUM_BASIC_ITEMS=6;
 
 /*
  * Capacity calculation.
@@ -43,14 +43,13 @@ public class Basics implements IBasics<Basics> {
  * sum: c+d
  * sumOfSquares: c+2d 
  */
-	
-	
+
 	protected long count = 0;
 	protected long min = Long.MAX_VALUE;
 	protected long max = 0;
 	protected long sum = 0;
 	protected long sumOfSquares=0;
-	
+
 	public Basics() {
 		super();
 	}
@@ -61,7 +60,7 @@ public class Basics implements IBasics<Basics> {
 		this.sum = sum;
 		this.sumOfSquares = sumOfSquares;
 	}
-	
+
 	public void reset() {
 		count = 0;
 		min = Long.MAX_VALUE;
@@ -74,14 +73,14 @@ public class Basics implements IBasics<Basics> {
 	public Basics takeSnapshot() {
 		return new Basics(count, sum, sumOfSquares);
 	}
-	
+
 	@Override
 	public void addValue(long value) {
 		++count;
 		checkMinMax(value);
 		addSums(value);
 	}
-	
+
 	@Override
 	public void checkMinMax(long value) {
 		if (value < min) {
@@ -108,7 +107,7 @@ public class Basics implements IBasics<Basics> {
 		sum += record.getSum();
 		sumOfSquares += record.getSumOfSquares();
 	}
-	
+
 	private double calculateVariance(long count, long sum, long sumOfSquares) {
 		double result;
 		if (count>1) {
@@ -167,7 +166,6 @@ public class Basics implements IBasics<Basics> {
 	}
 
 
-	
 	@Override
 	public long getCount() {
 		return count;

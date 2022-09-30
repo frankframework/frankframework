@@ -38,7 +38,7 @@ import nl.nn.adapterframework.util.Misc;
  */
 public class ZipWriter {
 	protected Logger log = LogUtil.getLogger(this);
-	
+
 	private ZipOutputStream zipoutput;
 	private boolean entryOpen=false;
 	private boolean closeOnExit;
@@ -98,14 +98,14 @@ public class ZipWriter {
 
 	public void writeEntry(String filename, Message contents, boolean close, String charset) throws CompressionException, IOException {
 		if (StringUtils.isEmpty(filename)) {
-			throw new CompressionException("filename cannot be empty");		
+			throw new CompressionException("filename cannot be empty");
 		}
 		openEntry(filename);
 		if (contents!=null) {
 			try (InputStream is = contents.asInputStream( charset)) {
 				Misc.streamToStream(is,getZipoutput());
 			}
-		} else { 
+		} else {
 			log.warn("contents of zip entry ["+filename+"] is null");
 		}
 		closeEntry();
@@ -113,17 +113,17 @@ public class ZipWriter {
 
 	public void writeEntryWithCompletedHeader(String filename, Message contents, boolean close, String charset) throws CompressionException, IOException {
 		if (StringUtils.isEmpty(filename)) {
-			throw new CompressionException("filename cannot be empty");		
+			throw new CompressionException("filename cannot be empty");
 		}
-		
+
 		byte[] contentBytes = null;
 		int size = 0;
 		if (contents!=null) {
 			contentBytes = contents.asByteArray(charset);
-		} else { 
+		} else {
 			log.warn("contents of zip entry ["+filename+"] is null");
 		}
-		
+
 		CRC32 crc = new CRC32();
 		crc.reset();
 		if (contentBytes!=null) {
@@ -141,7 +141,7 @@ public class ZipWriter {
 		}
 		getZipoutput().closeEntry();
 	}
-		
+
 	public String getLogPrefix(String handlekey) {
 		return "ZipWriterHandle ["+handlekey+"] ";
 	}

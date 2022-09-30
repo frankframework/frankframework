@@ -68,7 +68,7 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 	}
 
 	private class ItemCallbackCallingHandler extends DefaultHandler {
-		
+
 		private ItemCallback callback;
 		private StringBuffer elementBuffer = new StringBuffer();
 		private List<String> elements = new ArrayList<String>();
@@ -91,8 +91,8 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 			} catch (SenderException | TimeoutException | IOException e) {
 				throw new SaxException(e);
 			}
+
 			super.startDocument();
-			
 		}
 
 		@Override

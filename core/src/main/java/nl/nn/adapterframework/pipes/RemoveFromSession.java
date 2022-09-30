@@ -35,33 +35,30 @@ import nl.nn.adapterframework.stream.Message;
  *
  * @see PipeLineSession
  */
-
- public class RemoveFromSession  extends FixedForwardPipe {
-    private String sessionKey;
+public class RemoveFromSession extends FixedForwardPipe {
+	private String sessionKey;
 
 	public RemoveFromSession() {
 		super.setPreserveInput(true);
 	}
-    
-	/**
-     * Checks whether the proper forward is defined.
-     */
-    @Override
-	public void configure() throws ConfigurationException {
-	    super.configure();
 
-	/*
-        if (null== getSessionKey()) {
-            throw new ConfigurationException("Pipe [" + getName() + "]"
-                    + " has a null value for sessionKey");
-        }
-	*/
-    }
-	 
+	/**
+	 * Checks whether the proper forward is defined.
+	 */
+	@Override
+	public void configure() throws ConfigurationException {
+		super.configure();
+
+		/*
+		 * if (null== getSessionKey()) { throw new ConfigurationException("Pipe [" +
+		 * getName() + "]" + " has a null value for sessionKey"); }
+		 */
+	}
+
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String result = null;
-	
+
 		String sessionKeys = getSessionKey();
 		if (StringUtils.isEmpty(sessionKeys)) {
 			try {
@@ -96,11 +93,10 @@ import nl.nn.adapterframework.stream.Message;
 				}
 			}
 		}
-	
+
 		return new PipeRunResult(getSuccessForward(), result);
 	}
 
-	 
 	@IbisDoc({"name of the key of the entry in the <code>pipelinesession</code> to remove. if this key is empty the input message is interpretted as key. for multiple keys use ',' as delimiter", ""})
 	public void setSessionKey(String newSessionKey) {
 		sessionKey = newSessionKey;

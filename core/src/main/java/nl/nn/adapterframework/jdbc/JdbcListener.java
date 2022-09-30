@@ -64,7 +64,7 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 	private @Getter String blobCharset = null;
 	private @Getter boolean blobsCompressed=true;
 	private @Getter boolean blobSmartGet=false;
-	
+
 	private @Getter boolean trace=false;
 	private @Getter boolean peekUntransacted=true;
 
@@ -75,7 +75,7 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 
 	private String preparedSelectQuery;
 	private String preparedPeekQuery;
-	
+
 	public enum MessageFieldType {
 		STRING,
 		CLOB,
@@ -131,7 +131,7 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 			super.close();
 		}
 	}
-	
+
 	@Override
 	public Map<String,Object> openThread() throws ListenerException {
 		return new HashMap<>();
@@ -168,7 +168,7 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 			throw new ListenerException(getLogPrefix() + "caught exception retrieving message trigger using query [" + preparedPeekQuery + "]", e);
 		}
 	}
-	
+
 	@Override
 	public M getRawMessage(Map<String,Object> threadContext) throws ListenerException {
 		if (isConnectionsArePooled()) {
@@ -177,7 +177,7 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 			} catch (JdbcException | SQLException e) {
 				throw new ListenerException(e);
 			}
-		} 
+		}
 		synchronized (connection) {
 			return getRawMessage(connection,threadContext);
 		}
@@ -212,7 +212,7 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 		try {
 			M result;
 			String key=rs.getString(getKeyField());
-	
+
 			if (StringUtils.isNotEmpty(getMessageField())) {
 				Message message;
 				switch (getMessageFieldType()) {
@@ -248,8 +248,7 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 			throw new JdbcException(e);
 		}
 	}
-	
-	
+
 	@Override
 	public String getIdFromRawMessage(M rawMessage, Map<String,Object> context) throws ListenerException {
 		String id;
@@ -320,7 +319,7 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 			} catch (JdbcException|SQLException e) {
 				throw new ListenerException(e);
 			}
-		} 
+		}
 		synchronized (connection) {
 			return changeProcessState(connection, rawMessage, toState, reason);
 		}

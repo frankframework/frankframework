@@ -158,7 +158,7 @@ public class UpdateLoggingConfig extends Base {
 					log.warn("no applicationEventPublisher, cannot set debugger enabled to ["+enableDebugger+"]");
 				}
 			}
- 		}
+		}
 
 		if(msg.length() > 0) {
 			log.warn(msg.toString());
