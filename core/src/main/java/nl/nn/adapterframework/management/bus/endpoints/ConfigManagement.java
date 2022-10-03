@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.management.bus.endpoints;
 
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -56,7 +58,6 @@ import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.NameComparatorBase;
 import nl.nn.adapterframework.util.RunState;
-import nl.nn.adapterframework.webcontrol.api.ApiException;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.CONFIGURATION)
@@ -161,6 +162,34 @@ public class ConfigManagement {
 
 		log.debug("header [activate] or [autoreload] not found");
 		return ResponseMessage.badRequest();
+	}
+
+	@ActionSelector(BusAction.UPLOAD)
+	public Message<?> uploadConfiguration(Message<InputStream> message) {
+		boolean multipleConfigs = BusMessageUtils.getBooleanHeader(message, "multiple_configs", false);
+		boolean activateConfig = BusMessageUtils.getBooleanHeader(message, "activate_config", true);
+		boolean automaticReload = BusMessageUtils.getBooleanHeader(message, "automatic_reload", false);
+		String datasourceName = BusMessageUtils.getHeader(message, HEADER_DATASOURCE_NAME_KEY);
+		String user = BusMessageUtils.getHeader(message, "user");
+		InputStream file = message.getPayload();
+		String filename = BusMessageUtils.getHeader(message, "filename");
+
+		Map<String, String> result = new LinkedHashMap<>();
+		try {
+			if(multipleConfigs) {
+				result = ConfigurationUtils.processMultiConfigZipFile(getIbisContext(), datasourceName, activateConfig, automaticReload, file, user);
+			} else {
+				String configName=ConfigurationUtils.addConfigToDatabase(getIbisContext(), datasourceName, activateConfig, automaticReload, filename, file, user);
+				if(configName != null) {
+					result.put(configName, "loaded");
+				}
+			}
+
+			return ResponseMessage.ok(result);
+		} catch (Exception e) {
+			log.error("failed to upload Configuration", e);
+			throw new IllegalStateException("failed to upload Configuration"); //don't pass e, we should limit sensitive information from being sent over the bus
+		}
 	}
 
 	/**
@@ -303,7 +332,8 @@ public class ConfigManagement {
 				}
 			}
 		} catch (Exception e) {
-			throw new ApiException(e);
+			log.warn("unable to retrieve configuration from database", e);
+			throw new IllegalStateException("unable to retrieve configuration from database");
 		} finally {
 			qs.close();
 		}
