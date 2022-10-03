@@ -55,12 +55,12 @@ public class IbisThrowablePatternConverterTest {
 		final String result = sb.toString();
 		assertThat(result, startsWith("nl.nn.adapterframework.core.PipeRunException: CompareIntegerPipe: XsltPipe: XmlSwitch: UnzipPipe"));
 		assertThat(result, containsString(") ~[junit")); // stacktrace must contain package information
-		
+
 		int firstCausedBy = result.indexOf("Caused by");
 		assertThat("cannot find first 'Caused By'", firstCausedBy, greaterThan(0));
 		int secondCausedBy =  result.indexOf("Caused by", firstCausedBy+10);
 		assertThat("cannot find second 'Caused By'", secondCausedBy, greaterThan(0));
-		
+
 		assertThat("'Caused By's too far apart", secondCausedBy-firstCausedBy, lessThan(300));
 	}
 }

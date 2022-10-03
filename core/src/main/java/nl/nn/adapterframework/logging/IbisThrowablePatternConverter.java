@@ -77,21 +77,4 @@ public final class IbisThrowablePatternConverter extends ThrowablePatternConvert
 		}
 	}
 
-    public void ExtendedThrowablePatternConverter_format(final LogEvent event, final StringBuilder toAppendTo) {
-        final ThrowableProxy proxy = event.getThrownProxy();
-        final Throwable throwable = event.getThrown();
-        if ((throwable != null || proxy != null) && options.anyLines()) {
-            if (proxy == null) {
-                super.format(event, toAppendTo);
-                return;
-            }
-            final int len = toAppendTo.length();
-            if (len > 0 && !Character.isWhitespace(toAppendTo.charAt(len - 1))) {
-                toAppendTo.append(' ');
-            }
-            proxy.formatExtendedStackTraceTo(toAppendTo, options.getIgnorePackages(),
-                    options.getTextRenderer(), getSuffix(event), options.getSeparator());
-        }
-    }
-
 }
