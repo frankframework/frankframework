@@ -267,4 +267,30 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 		assertNull(actual);
 	}
 
+	@Test
+	public void testConvertEndOfLines() {
+		String input="a\nb\rc\r\nd\r\re\n\nf\r\n\r\ng";
+		String expected="a\nb\nc\nd\n\ne\n\nf\n\ng";
+
+		assertEquals(expected, XmlUtils.convertEndOfLines(input));
+		assertEquals(null, XmlUtils.convertEndOfLines(null));
+	}
+
+	@Test
+	public void testNormalizeWhitespace() {
+		String input="a b  c\td\re\nf\r\n\t\ng";
+		String expected="a b  c d e f    g";
+
+		assertEquals(expected, XmlUtils.normalizeWhitespace(input));
+		assertEquals(null, XmlUtils.normalizeWhitespace(null));
+	}
+
+	@Test
+	public void testnormalizeAttributeValue() {
+		String input="a b  c\td\re\nf\r\n\t\ng";
+		String expected="a b  c d e f   g";
+
+		assertEquals(expected, XmlUtils.normalizeAttributeValue(input));
+		assertEquals(null, XmlUtils.normalizeAttributeValue(null));
+	}
 }
