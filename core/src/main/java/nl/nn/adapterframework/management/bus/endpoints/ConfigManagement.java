@@ -80,7 +80,7 @@ public class ConfigManagement {
 	@ActionSelector(BusAction.GET)
 	public Message<String> getXMLConfiguration(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_NAME_KEY);
-		boolean loadedConfiguration = BusMessageUtils.getHeader(message, "loaded", false);
+		boolean loadedConfiguration = BusMessageUtils.getBooleanHeader(message, "loaded", false);
 		StringBuilder result = new StringBuilder();
 
 		if(configurationName != null) {
@@ -141,8 +141,8 @@ public class ConfigManagement {
 		getConfigurationByName(configurationName); //Validate the configuration exists
 
 		String version = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_VERSION_KEY);
-		Boolean activate = BusMessageUtils.getHeader(message, "activate", null);
-		Boolean autoreload = BusMessageUtils.getHeader(message, "autoreload", null);
+		Boolean activate = BusMessageUtils.getBooleanHeader(message, "activate", null);
+		Boolean autoreload = BusMessageUtils.getBooleanHeader(message, "autoreload", null);
 		String datasourceName = BusMessageUtils.getHeader(message, HEADER_DATASOURCE_NAME_KEY);
 
 		try {

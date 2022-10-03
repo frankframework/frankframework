@@ -61,9 +61,9 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
 
 
 	/**
-	  * configure the pipe by creating the required XSLT-transformers using
-	  * {@link #createTransformers() }
-	  */
+	 * configure the pipe by creating the required XSLT-transformers using
+	 * {@link #createTransformers() }
+	 */
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -299,7 +299,7 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
 
 
 	/** CICS userId of account perform operation */
-	public void setClientId(java.lang.String newClientId) {
+	public void setClientId(String newClientId) {
 		clientId = newClientId;
 	}
 	public String getClientId() {
@@ -307,7 +307,7 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
 	}
 
 	/** Password corresponding with userId */
-	public void setClientPassword(java.lang.String newClientPassword) {
+	public void setClientPassword(String newClientPassword) {
 		clientPassword = newClientPassword;
 	}
 	public String getClientPassword() {
@@ -341,7 +341,7 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
 	public void setProxyInputSchema(String newProxyInputSchema) {
 		proxyInputSchema = newProxyInputSchema;
 	}
-	public void setProxyClassName(java.lang.String newProxyClassName) {
+	public void setProxyClassName(String newProxyClassName) {
 		proxyClassName = newProxyClassName;
 	}
 }

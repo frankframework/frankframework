@@ -17,6 +17,11 @@
 		<property name="requestChannel" ref="frank-management-bus" />
 	</bean>
 
+	<!-- Logging should work even when the application failed to start -->
+	<integration:service-activator input-channel="frank-management-bus" method="getLogDirectory">
+		<bean class="nl.nn.adapterframework.management.bus.endpoints.Logging"/>
+	</integration:service-activator>
+
 	<context:property-placeholder />
 
 	<context:component-scan base-package="nl.nn.adapterframework,nl.nn.ibistesttool">

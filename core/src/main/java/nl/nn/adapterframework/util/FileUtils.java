@@ -644,7 +644,7 @@ public class FileUtils {
 		}
 	}
 
-	public static boolean readAllowed(String rules, HttpServletRequest request, String fileName) throws IOException {
+	public static boolean readAllowed(String rules, HttpServletRequest request, String fileName) {
 		List<String> rulesList = Arrays.asList(rules.split("\\|"));
 		for (String rule: rulesList) {
 			List<String> parts = Arrays.asList(rule.trim().split("\\s+"));
