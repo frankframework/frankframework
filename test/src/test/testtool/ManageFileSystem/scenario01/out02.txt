@@ -10,7 +10,7 @@ IyBGcmFuayFSdW5uZXIKClRoaXMgcHJvamVjdCB3aWxsIGhlbHAgeW91IHJ1biB5b3VyIEZyYW5rIGNv
 README.MD
 </result>
 		<result item="3">
-			<directory count="1">
+			<directory>
 				<file name="README.MD" size="144" fSize="1 kB" canonicalName="TESTDATA_DIR\ManageFileSystem\test\README.MD" modificationDate="2022-06-21" modificationTime="08:49:50"/>
 			</directory>
 		</result>

@@ -217,4 +217,12 @@ public class XmlBuilderTest {
 		MatchUtils.assertXmlEquals(expected, root.toXML());
 	}
 
+	@Test
+	public void testAttributeNormalization() {
+		XmlBuilder root = new XmlBuilder("root");
+		root.addAttribute("attr1", "a b  c\td\re\nf\r\n\t\ng");
+		String expected = "<root attr1=\"a b  c d e f   g\" />";
+
+		MatchUtils.assertXmlEquals(expected, root.toXML());
+	}
 }

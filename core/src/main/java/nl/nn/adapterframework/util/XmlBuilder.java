@@ -67,7 +67,7 @@ public class XmlBuilder {
 
 	public void addAttribute(String name, String value) {
 		if (value != null) {
-			attributes.addAttribute("", name, name, "STRING", value);
+			attributes.addAttribute("", name, name, "STRING", XmlUtils.normalizeAttributeValue(value));
 		}
 	}
 

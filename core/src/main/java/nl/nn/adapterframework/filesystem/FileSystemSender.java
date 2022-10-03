@@ -35,6 +35,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingSenderBase;
+import nl.nn.adapterframework.stream.document.DocumentFormat;
 import nl.nn.adapterframework.util.SpringUtils;
 
 /**
@@ -231,8 +232,13 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 		actor.setCharset(charset);
 	}
 
-	@IbisDocRef({"15", FILESYSTEMACTOR})
+	@IbisDocRef({FILESYSTEMACTOR})
 	public void setDeleteEmptyFolder(boolean deleteEmptyFolder) {
 		actor.setDeleteEmptyFolder(deleteEmptyFolder);
+	}
+
+	@IbisDocRef({FILESYSTEMACTOR})
+	public void setOutputFormat(DocumentFormat outputFormat) {
+		actor.setOutputFormat(outputFormat);
 	}
 }

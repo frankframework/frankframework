@@ -91,6 +91,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	private @Getter String charset;
 
 	private @Getter long minStableTime = 1000;
+	private @Getter DocumentFormat outputFormat=DocumentFormat.XML;
 
 	private @Getter FS fileSystem;
 
@@ -291,7 +292,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 				return getFileSystem().readFile(rawMessage, getCharset());
 			}
 			if (getMessageType().equalsIgnoreCase("info")) {
-				return new Message(FileSystemUtils.getFileInfo(getFileSystem(), rawMessage).toXML());
+				return new Message(FileSystemUtils.getFileInfo(getFileSystem(), rawMessage, getOutputFormat()));
 			}
 
 			Map<String,Object> attributes = getFileSystem().getAdditionalFileProperties(rawMessage);
@@ -575,5 +576,10 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	@IbisDoc({"Charset to be used for extracting the contents"})
 	public void setCharset(String charset) {
 		this.charset = charset;
+	}
+
+	@IbisDoc({"OutputFormat of message for messageType=info", "XML"})
+	public void setOutputFormat(DocumentFormat outputFormat) {
+		this.outputFormat = outputFormat;
 	}
 }
