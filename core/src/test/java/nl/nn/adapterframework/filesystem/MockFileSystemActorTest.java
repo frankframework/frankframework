@@ -13,7 +13,7 @@ import nl.nn.adapterframework.stream.Message;
 
 public class MockFileSystemActorTest extends FileSystemActorExtraTest <MockFile,MockFileSystem<MockFile>>{
 
-	
+
 	@Override
 	protected IFileSystemTestHelperFullControl getFileSystemTestHelper() {
 		return new MockFileSystemTestHelper<MockFile>();
@@ -28,16 +28,16 @@ public class MockFileSystemActorTest extends FileSystemActorExtraTest <MockFile,
 	@Override
 	@Test
 	public void fileSystemActorDeleteActionWithDeleteEmptyFolderRootContainsEmptyFoldersTest() throws Exception {
-		
+
 	}
-	
+
 	@Test
 	public void testListStrangeFilenames() throws Exception {
 		String filename = "list" + FILE1+"\tx\r\ny";
 		String contents = "regeltje tekst";
 		String normalizedfFilename="listfile1.txt x y";
-		
-		
+
+
 		actor.setAction(FileSystemAction.LIST);
 		actor.configure(fileSystem,null,owner);
 		actor.open();
@@ -50,7 +50,6 @@ public class MockFileSystemActorTest extends FileSystemActorExtraTest <MockFile,
 		ParameterValueList pvl = null;
 		Object result = actor.doAction(message, pvl, session);
 		String stringResult=(String)result;
-		System.out.println("---> result["+result+"]");
 		assertThat(stringResult, containsString(normalizedfFilename));
 	}
 
