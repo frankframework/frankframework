@@ -693,9 +693,10 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				result = validationResult.getResult();
 			}
 		}
-		if (getOutputWrapper()!=null) {
+		IPipe outputWrapper = getOutputWrapper();
+		if (outputWrapper!=null) {
 			log.debug(getLogPrefix(session)+"wrapping response");
-			PipeRunResult wrapResult = pipeProcessor.processPipe(getPipeLine(), outputWrapper, Message.asMessage(result), session);
+			PipeRunResult wrapResult = pipeProcessor.processPipe(getPipeLine(), outputWrapper, result, session);
 			if (wrapResult==null) {
 				throw new PipeRunException(outputWrapper, "retrieved null result from outputWrapper");
 			}

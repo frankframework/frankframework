@@ -82,7 +82,9 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 
 		if (pipe instanceof FixedForwardPipe) {
 			FixedForwardPipe ffPipe = (FixedForwardPipe) pipe;
-			pipeRunResult = ffPipe.doInitialPipe(message, pipeLineSession);
+			if (ffPipe.skipPipe(message, pipeLineSession)) {
+				pipeRunResult = new PipeRunResult(ffPipe.getSuccessForward(), message);
+			}
 		}
 
 		if (pipeRunResult==null){
