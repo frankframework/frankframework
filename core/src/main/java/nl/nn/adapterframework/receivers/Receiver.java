@@ -134,7 +134,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <b>Transaction control</b><br/><br/>
  * If {@link #setTransacted(boolean) transacted} is set to <code>true</code>, messages will be received and processed under transaction control.
  * This means that after a message has been read and processed and the transaction has ended, one of the following apply:
- * <ul>
  * <table border="1">
  * <tr><th>situation</th><th>input listener</th><th>Pipeline</th><th>inProcess storage</th><th>errorSender</th><th>summary of effect</th></tr>
  * <tr><td>successful</td><td>message read and committed</td><td>message processed</td><td>unchanged</td><td>unchanged</td><td>message processed</td></tr>

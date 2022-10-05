@@ -40,9 +40,9 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Pipe to wrap or unwrap a message from/into a SOAP Envelope.
- * 
+ *
  * @ff.parameters Any parameters defined on the pipe will be applied to the created transformer.
- * 
+ *
  * @author Peter Leeuwenburgh
  */
 public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
@@ -71,11 +71,6 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 	private @Getter String wssUserName;
 	private @Getter String wssPassword;
 	private @Getter boolean wssPasswordDigest = true;
-
-	private @Getter String onlyIfSessionKey;
-	private @Getter String onlyIfValue;
-	private @Getter String unlessSessionKey;
-	private @Getter String unlessValue;
 
 	private CredentialFactory wssCredentialFactory = null;
 
@@ -204,20 +199,6 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		if (StringUtils.isNotEmpty(getOnlyIfSessionKey())) {
-			Object onlyIfActualValue = session.get(getOnlyIfSessionKey());
-			if (onlyIfActualValue==null || StringUtils.isNotEmpty(getOnlyIfValue()) && !getOnlyIfValue().equals(onlyIfActualValue)) {
-				if (log.isDebugEnabled()) log.debug("onlyIfSessionKey ["+getOnlyIfSessionKey()+"] value ["+onlyIfActualValue+"]: not found or not equal to value ["+getOnlyIfValue()+"]");
-				return new PipeRunResult(getSuccessForward(), message);
-			}
-		}
-		if (StringUtils.isNotEmpty(getUnlessSessionKey())) {
-			Object unlessActualValue = session.get(getUnlessSessionKey());
-			if (unlessActualValue!=null && (StringUtils.isEmpty(getUnlessValue()) || getUnlessValue().equals(unlessActualValue))) {
-				if (log.isDebugEnabled()) log.debug("unlessSessionKey ["+getUnlessSessionKey()+"] value ["+unlessActualValue+"]: not found or not equal to value ["+getUnlessValue()+"]");
-				return new PipeRunResult(getSuccessForward(), message);
-			}
-		}
 		Message result;
 		try {
 			if (getDirection() == Direction.WRAP) {
@@ -398,25 +379,4 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 	public void setWssPasswordDigest(boolean b) {
 		wssPasswordDigest = b;
 	}
-
-	@IbisDoc({"Key of session variable to check if action must be executed. The wrap or unwrap action is only executed if the session variable exists", ""})
-	public void setOnlyIfSessionKey(String onlyIfSessionKey) {
-		this.onlyIfSessionKey = onlyIfSessionKey;
-	}
-
-	@IbisDoc({"Value of session variable 'onlyIfSessionKey' to check if action must be executed. The wrap or unwrap action is only executed if the session variable has the specified value", ""})
-	public void setOnlyIfValue(String onlyIfValue) {
-		this.onlyIfValue = onlyIfValue;
-	}
-
-	@IbisDoc({"Key of session variable to check if action must be executed. The wrap or unwrap action is not executed if the session variable exists", ""})
-	public void setUnlessSessionKey(String unlessSessionKey) {
-		this.unlessSessionKey = unlessSessionKey;
-	}
-
-	@IbisDoc({"Value of session variable 'unlessSessionKey' to check if action must be executed. The wrap or unwrap action is not executed if the session variable has the specified value", ""})
-	public void setUnlessValue(String unlessValue) {
-		this.unlessValue = unlessValue;
-	}
-
 }
