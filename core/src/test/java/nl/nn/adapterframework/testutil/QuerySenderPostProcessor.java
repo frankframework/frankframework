@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -28,7 +29,7 @@ public class QuerySenderPostProcessor implements BeanPostProcessor, ApplicationC
 
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-		if(FixedQuerySenderClassName.contains(beanName)) {
+		if(StringUtils.isNotEmpty(beanName) && FixedQuerySenderClassName.contains(beanName)) {
 			FixedQuerySenderMock qs = createMock();
 			qs.addMockedQueries(mocks);
 			return qs;
