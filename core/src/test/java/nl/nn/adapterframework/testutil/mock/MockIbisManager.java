@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.testutil;
+package nl.nn.adapterframework.testutil.mock;
 
 import static org.mockito.Mockito.spy;
 
