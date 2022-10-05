@@ -9,10 +9,18 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+import org.mockito.Mockito;
+
 import nl.nn.adapterframework.jdbc.IDataSourceFactory;
+import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 
 public class DataSourceFactoryMock implements IDataSourceFactory {
 	private Map<String, DataSource> objects = new ConcurrentHashMap<>();
+
+	public DataSourceFactoryMock() {
+		DataSource ds = Mockito.mock(DataSource.class);
+		objects.put(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME, ds);
+	}
 
 	@Override
 	public DataSource getDataSource(String dataSourceName) throws NamingException {

@@ -22,6 +22,10 @@ public class IbmMisc {
 		return getFileLocation("META-INF"); //pretend this is the META-INF folder of an EAR file.
 	}
 
+	/**
+	 * This file is used in conjunction with the {@link #getConnectionPoolProperties(String, String, String)} method.
+	 * Since we stub the {@link #getConnectionPoolProperties(String, String, String)} result, there is no need to return anything
+	 */
 	public static String getConfigurationResourcePath() {
 		return getFileLocation("resources.xml");
 	}
@@ -42,7 +46,10 @@ public class IbmMisc {
 		}
 	}
 
+	/**
+	 * Should be tested in the IBM module, we just mock the result for convenience.
+	 */
 	public static String getConnectionPoolProperties(String confResString, String providerType, String jndiName) throws IOException, TransformerException, SAXException {
-		return null;
+		return String.format("mockPoolProperties type [%s] jndi [%s]", providerType, jndiName);
 	}
 }

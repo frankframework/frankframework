@@ -22,13 +22,13 @@ import nl.nn.adapterframework.jdbc.FixedQuerySender;
  * @author Niels Meijer
  */
 public class QuerySenderPostProcessor implements BeanPostProcessor, ApplicationContextAware {
-	private final String FixedQuerySenderClassName = FixedQuerySender.class.getName();
+	private final String FixedQuerySenderClassName = FixedQuerySender.class.getCanonicalName();
 	private @Setter ApplicationContext applicationContext;
 	private Map<String, ResultSet> mocks = new HashMap<>();
 
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-		if(FixedQuerySenderClassName.equals(beanName)) {
+		if(FixedQuerySenderClassName.contains(beanName)) {
 			FixedQuerySenderMock qs = createMock();
 			qs.addMockedQueries(mocks);
 			return qs;

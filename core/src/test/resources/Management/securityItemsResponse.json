@@ -1,0 +1,87 @@
+{
+	"datasources": [
+		{
+			"connectionPoolProperties": "mockPoolProperties type [JDBC] jndi [jdbc/testconfiguration]",
+			"datasourceName": "jdbc/testconfiguration",
+			"info": "user [null] url [null] product [null] product version [null] driver [null] driver version [null]"
+		}
+	],
+	"authEntries": [
+		{
+			"password": "************",
+			"alias": "alias2",
+			"username": null
+		},
+		{
+			"password": "*********",
+			"alias": "alias1",
+			"username": "username1"
+		},
+		{
+			"password": "*** ERROR ***",
+			"alias": "test",
+			"username": "*** ERROR ***"
+		}
+	],
+	"jmsRealms": [
+	],
+	"serverProps": {
+		"maximumTransactionTimeout": 28801,
+		"totalTransactionLifetimeTimeout": 28800
+	},
+	"deploymentDescriptor": null,
+	"sapSystems": [
+	],
+	"securityRoleBindings": {
+		"SR_Admin": {
+			"specialSubjects": [
+				"AllAuthenticatedUsers"
+			],
+			"groups": [
+			]
+		},
+		"SR_DataAdmin": {
+			"specialSubjects": [
+				"AllAuthenticatedUsers"
+			],
+			"groups": [
+			]
+		},
+		"SR_Tester": {
+			"specialSubjects": [
+				"AllAuthenticatedUsers"
+			],
+			"groups": [
+			]
+		},
+		"SR_Observer": {
+			"specialSubjects": [
+				"AllAuthenticatedUsers"
+			],
+			"groups": [
+			]
+		},
+		"SR_IbisWebService": {
+			"specialSubjects": [
+				"AllAuthenticatedUsers"
+			],
+			"groups": [
+			]
+		}
+	},
+	"xmlComponents": {
+		"SAXParserFactory-class": "org.apache.xerces.jaxp.SAXParserFactoryImpl",
+		"DocumentBuilderFactory1-class": "org.apache.xerces.jaxp.DocumentBuilderFactoryImpl",
+		"DocumentBuilderFactory2-class": "org.apache.xerces.jaxp.DocumentBuilderFactoryImpl",
+		"TransformerFactory1-class": "org.apache.xalan.processor.TransformerFactoryImpl",
+		"TransformerFactory2-class": "net.sf.saxon.TransformerFactoryImpl",
+		"XMLEventFactory-class": "org.apache.xerces.stax.XMLEventFactoryImpl",
+		"XMLInputFactory-class": "nl.nn.adapterframework.xml.StaxParserFactory",
+		"XMLOutputFactory-class": "com.sun.xml.stream.ZephyrWriterFactory",
+		"MessageFactory-class": "com.sun.xml.messaging.saaj.soap.MessageFactoryImpl",
+		"Xerces-Version": "Xerces-J 2.12.2-xml-schema-1.1",
+		"Xalan-Version": "Xalan Java 2.7.2",
+		"Saxon-Version": "SAXON-HE 10.8J from Saxonica",
+		"Woodstox-Version": "woodstox 5.0; xml1.1 enabled"
+	}
+}
