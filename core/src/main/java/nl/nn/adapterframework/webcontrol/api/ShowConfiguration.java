@@ -15,10 +15,8 @@
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedHashMap;
-import java.util.Map;
 
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
@@ -37,7 +35,6 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 
-import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.management.bus.BusAction;
@@ -53,7 +50,7 @@ import nl.nn.adapterframework.util.Misc;
  */
 
 @Path("/")
-public final class ShowConfiguration extends Base {
+public final class ShowConfiguration extends FrankApiBase {
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -180,8 +177,6 @@ public final class ShowConfiguration extends Base {
 	@Path("configurations")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response uploadConfiguration(MultipartBody inputDataMap) throws ApiException {
-
-		String fileName = null;
 		if(inputDataMap == null) {
 			throw new ApiException("Missing post parameters");
 		}
@@ -197,26 +192,17 @@ public final class ShowConfiguration extends Base {
 			user = getUserPrincipalName();
 		}
 
-		fileName = inputDataMap.getAttachment("file").getContentDisposition().getParameter( "filename" );
+		String fileName = inputDataMap.getAttachment("file").getContentDisposition().getParameter( "filename" );
 
-		Map<String, String> result = new LinkedHashMap<String, String>();
-		try {
-			if(multipleConfigs) {
-				try {
-					result = ConfigurationUtils.processMultiConfigZipFile(getIbisContext(), datasource, activateConfig, automaticReload, file, user);
-				} catch (IOException e) {
-					throw new ApiException(e);
-				}
-			} else {
-				String configName=ConfigurationUtils.addConfigToDatabase(getIbisContext(), datasource, activateConfig, automaticReload, fileName, file, user);
-				if(configName != null) {
-					result.put(configName, "loaded");
-				}
-			}
-			return Response.status(Response.Status.CREATED).entity(result).build();
-		} catch (Exception e) {
-			throw new ApiException("Failed to upload Configuration", e);
-		}
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.UPLOAD);
+		builder.setPayload(file);
+		builder.addHeader("filename", fileName);
+		builder.addHeader("multiple_configs", multipleConfigs);
+		builder.addHeader("activate_config", activateConfig);
+		builder.addHeader("automatic_reload", automaticReload);
+		builder.addHeader("user", user);
+		builder.addHeader("datasourceName", datasource);
+		return callSyncGateway(builder);
 	}
 
 	@GET

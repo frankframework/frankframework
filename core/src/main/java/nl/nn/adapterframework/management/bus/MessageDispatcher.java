@@ -36,11 +36,11 @@ import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGenerator;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.springframework.integration.core.MessageSelector;
 import org.springframework.integration.filter.MessageFilter;
 import org.springframework.integration.handler.MessageHandlerChain;
 import org.springframework.integration.handler.ServiceActivatingHandler;
 import org.springframework.integration.selector.MessageSelectorChain;
-import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.messaging.SubscribableChannel;
@@ -123,12 +123,9 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 		MessageSelectorChain selectors = new MessageSelectorChain();
 		ActionSelector action = AnnotationUtils.findAnnotation(method, ActionSelector.class);
 		if(action != null) {
-			selectors.add(message -> actionSelector(message, action));
+			selectors.add(actionSelector(action.value()));
 		}
-		selectors.add(message -> {
-			String topicHeader = (String) message.getHeaders().get(TopicSelector.TOPIC_HEADER_NAME);
-			return topic.name().equalsIgnoreCase(topicHeader);
-		});
+		selectors.add(topicSelector(topic));
 
 		MessageFilter filter = new MessageFilter(selectors);
 		filter.setDiscardChannel(nullChannel);
@@ -140,18 +137,27 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 
 		MessageHandlerChain chain = new MessageHandlerChain();
 		chain.setHandlers(handlers);
+		chain.setComponentName(componentName);
 		initializeBean(chain);
 		if(channel.subscribe(chain)) {
-			log.info("registered new ServiceActivator [{}] on topic [{}] with action [{}]", componentName, topic, (action != null?action.value():"*"));
+			log.info("registered new ServiceActivator [{}] on topic [{}] with action [{}] requires-reply [{}]", componentName, topic, (action != null?action.value():"*"), method.getReturnType() != void.class);
 		} else {
 			log.info("unable to register ServiceActivator [{}]", componentName);
 		}
 	}
 
-	private boolean actionSelector(Message<?> message, ActionSelector action) {
-		String actionFilter = action.value().name();
-		String actionHeader = (String) message.getHeaders().get(ActionSelector.ACTION_HEADER_NAME);
-		return actionFilter.equalsIgnoreCase(actionHeader);
+	public static MessageSelector topicSelector(BusTopic topic) {
+		return message -> {
+			String topicHeader = (String) message.getHeaders().get(TopicSelector.TOPIC_HEADER_NAME);
+			return topic.name().equalsIgnoreCase(topicHeader);
+		};
+	}
+
+	public static MessageSelector actionSelector(BusAction action) {
+		return m -> {
+			String actionHeader = (String) m.getHeaders().get(ActionSelector.ACTION_HEADER_NAME);
+			return action.name().equalsIgnoreCase(actionHeader);
+		};
 	}
 
 	private Class<?> getBeanClass(BeanDefinition beanDef) throws ClassNotFoundException {

@@ -13,22 +13,29 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.management.bus.endpoints;
+package nl.nn.adapterframework.lifecycle;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.context.annotation.Bean;
+import org.springframework.integration.dsl.IntegrationFlow;
+import org.springframework.integration.dsl.IntegrationFlows;
+import org.springframework.integration.handler.ServiceActivatingHandler;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHandler;
 
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
+import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.MessageDispatcher;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Dir2Map;
 
 /**
- * Configured in the SpringEnvironmentContext.xml not through the {@link MessageDispatcher}.
+ * Logging should work even when the application failed to start which is why it's not wired through the {@link MessageDispatcher}.
  */
+@IbisInitializer
 public class Logging {
 
 	private String defaultLogDirectory = AppConstants.getInstance().getResolvedProperty("logging.path").replace("\\\\", "\\");
@@ -36,6 +43,23 @@ public class Logging {
 	private boolean showDirectories = AppConstants.getInstance().getBoolean("logging.showdirectories", false);
 	private int maxItems = AppConstants.getInstance().getInt("logging.items.max", 500);
 
+	/**
+	 * This method is picked op by the IbisInitializer annotation and autowired via the SpringEnvironmentContext.
+	 */
+	@Bean
+	public IntegrationFlow wireLogging() {
+		return IntegrationFlows.from("frank-management-bus").filter(MessageDispatcher.topicSelector(BusTopic.LOGGING)).handle(getHandler()).get();
+	}
+
+	public MessageHandler getHandler() {
+		ServiceActivatingHandler serviceActivator = new ServiceActivatingHandler(this, "getLogDirectory");
+		serviceActivator.setRequiresReply(true);
+		return serviceActivator;
+	}
+
+	/**
+	 * The actual action that is performed when calling the bus with the LOGGING topic.
+	 */
 	public Message<String> getLogDirectory(Message<?> message) {
 		String directory = BusMessageUtils.getHeader(message, "directory", defaultLogDirectory);
 		boolean sizeFormat = BusMessageUtils.getBooleanHeader(message, "sizeFormat", true);

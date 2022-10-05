@@ -53,6 +53,11 @@ public class RequestMessageBuilder {
 		return this;
 	}
 
+	public RequestMessageBuilder setPayload(Object payload) {
+		this.payload = payload;
+		return this;
+	}
+
 	public static RequestMessageBuilder create(FrankApiBase base, BusTopic topic) {
 		return new RequestMessageBuilder(base, topic);
 	}

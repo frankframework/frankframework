@@ -17,5 +17,5 @@ package nl.nn.adapterframework.management.bus;
 
 public enum BusAction {
 
-	GET, FIND, DOWNLOAD, DELETE, MANAGE, STATUS
+	GET, FIND, UPLOAD, DOWNLOAD, DELETE, MANAGE, STATUS
 }

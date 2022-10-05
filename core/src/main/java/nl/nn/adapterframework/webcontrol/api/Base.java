@@ -15,22 +15,18 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import org.springframework.beans.BeanInstantiationException;
-import org.springframework.beans.factory.BeanCreationException;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
-import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
  * Baseclass to fetch ibisContext + ibisManager
+ * @deprecated should not be used anymore in favor of the FrankApiBase (which does not rely on the IbisContext).
  * 
  * @since	7.0-B1
  * @author	Niels Meijer
  */
-
+@Deprecated
 public abstract class Base extends FrankApiBase {
 
 	private IbisContext ibisContext = null;
@@ -73,13 +69,5 @@ public abstract class Base extends FrankApiBase {
 		}
 
 		return ibisManager;
-	}
-
-	protected FlowDiagramManager getFlowDiagramManager() {
-		try {
-			return getIbisContext().getBean("flowDiagramManager", FlowDiagramManager.class);
-		} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {
-			throw new ApiException("failed to initalize FlowDiagramManager", e);
-		}
 	}
 }
