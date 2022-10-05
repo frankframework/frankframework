@@ -28,9 +28,9 @@ import nl.nn.adapterframework.stream.Message;
 
 /**
  * Selects an exitState, based on if the input is a XML string.
- * 
- * The input is a XML string if it, after removing leading white-space characters, starts with '<'.
- * 
+ *
+ * The input is a XML string if it, after removing leading white-space characters, starts with '&lt;'.
+ *
  *
  * @author  Peter Leeuwenburgh
  * @since   4.3

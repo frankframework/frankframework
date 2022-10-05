@@ -580,7 +580,7 @@ public class CalendarParser {
 
 	/**
 	 * Translate a string representation of an ordinal number to the appropriate
-	 * numeric value.<br>
+	 * numeric value.<br/>
 	 * For example, <tt>"1st"</tt> would return <tt>1</tt>, <tt>"23rd"</tt> would
 	 * return <tt>23</tt>, etc.
 	 *
@@ -724,7 +724,7 @@ public class CalendarParser {
 	}
 
 	/**
-	 * Convert the supplied month name to its numeric representation. <br>
+	 * Convert the supplied month name to its numeric representation. <br/>
 	 * For example, <tt>"January"</tt> (or any substring) would return <tt>1</tt>
 	 * and <tt>"December"</tt> would return <tt>12</tt>.
 	 *

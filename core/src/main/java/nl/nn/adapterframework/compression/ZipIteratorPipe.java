@@ -49,7 +49,7 @@ import nl.nn.adapterframework.util.StreamUtil;
  * The message sent each time to the sender is the filename of the entry found in the archive.
  * The contents of the archive is available as a Stream or a String in a session variable.
  *
- * <br>
+ * <br/>
  *
  * @author  Gerrit van Brakel
  * @since   4.9.10

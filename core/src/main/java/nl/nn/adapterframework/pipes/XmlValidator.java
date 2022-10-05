@@ -652,15 +652,9 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 
 
 	/**
-	 * <p>
-	 * The filename of the schema on the classpath. It is not possible to specify a
-	 * namespace using this attribute. (effectively the same as noNamespaceSchemaLocation)
-	 * <p>
-	 * An example value would be "xml/xsd/GetPartyDetail.xsd"
-	 * </p>
-	 * <p>
-	 * The value of the schema attribute is only used if the schemaLocation
-	 * attribute and the noNamespaceSchemaLocation are not set.
+	 * The filename of the schema on the classpath. It is not possible to specify a namespace using this attribute. (effectively the same as noNamespaceSchemaLocation)
+	 * An example value would be "xml/xsd/GetPartyDetail.xsd".
+	 * The value of the schema attribute is only used if the schemaLocation attribute and the noNamespaceSchemaLocation are not set.
 	 */
 	public void setSchema(String schema) {
 		setNoNamespaceSchemaLocation(schema);

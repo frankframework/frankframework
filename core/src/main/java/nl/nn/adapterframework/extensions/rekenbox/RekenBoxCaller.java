@@ -37,16 +37,16 @@ import nl.nn.adapterframework.util.Misc;
  * The inputmessage is written to a temporary file and passed as inputfile to the rekenbox. The contents of the outputfile of the
  * rekenbox is returned as output message. The name of the rekenbox, as determined from the inputfile, is optionally written to
  * the pipeLineSession.
- * 
- * 
- * <p><b>Note:</b><br>
+ *
+ *
+ * <p><b>Note:</b><br/>
  * The rekenbox-name is currently determined from the first 8 characters of the file, or up
  * to the first space (' ') or colon (':') character. Beware that if the first character of the
  * file is a newline character or something similar, less characters are available to pass the
  * rekenbox-name on. Especially if the inputmessages are constructed by means of an XSLT-stylesheet,
  * messages often start with a newline character.
  * </p>
- * 
+ *
  * @author Gerrit van Brakel
  */
 @Category("NN-Special")

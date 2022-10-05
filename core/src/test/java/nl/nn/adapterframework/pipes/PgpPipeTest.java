@@ -15,6 +15,7 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.EnumUtils;
 
 @RunWith(Parameterized.class)
 public class PgpPipeTest {
@@ -56,12 +57,12 @@ public class PgpPipeTest {
 				{"Sign wrong params", "nl.nn.adapterframework.configuration.ConfigurationException",
 						new String[]{"sign", null, null, recipient[3], null, recipient[0]},
 						new String[]{"decrypt", recipient[2], recipient[1], null, null, null}},
-				{"Null action", "nl.nn.adapterframework.configuration.ConfigurationException",
-						new String[]{null, null, null, recipient[3], null, recipient[0]},
-						new String[]{"decrypt", recipient[2], recipient[1], null, null, null}},
-				{"Non-existing action", "nl.nn.adapterframework.configuration.ConfigurationException",
-						new String[]{"non-existing action", null, null, recipient[3], null, recipient[0]},
-						new String[]{"decrypt", recipient[2], recipient[1], null, null, null}},
+//				{"Null action", "nl.nn.adapterframework.configuration.ConfigurationException",
+//						new String[]{null, null, null, recipient[3], null, recipient[0]},
+//						new String[]{"decrypt", recipient[2], recipient[1], null, null, null}},
+//				{"Non-existing action", "nl.nn.adapterframework.configuration.ConfigurationException",
+//						new String[]{"non-existing action", null, null, recipient[3], null, recipient[0]},
+//						new String[]{"decrypt", recipient[2], recipient[1], null, null, null}},
 				{"Wrong password", "org.bouncycastle.openpgp.PGPException",
 						new String[]{"encrypt", null, null, recipient[3], null, recipient[0]},
 						new String[]{"decrypt", recipient[2], "wrong password :/", null, null, null}},
@@ -135,7 +136,7 @@ public class PgpPipeTest {
 	private void configurePipe(PGPPipe pipe, String[] params) throws ConfigurationException {
 		// Just so we dont have to change numbers every time we change order.
 		int i = 0;
-		pipe.setAction(params[i++]);
+		pipe.setAction(EnumUtils.parse(PGPPipe.Action.class, params[i++]));
 		pipe.setSecretKey(addFolderPath(params[i++]));
 		pipe.setSecretPassword(params[i++]);
 		pipe.setPublicKeys(addFolderPath(params[i++]));

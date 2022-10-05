@@ -57,7 +57,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Abstract base class to sends a message to a Sender for each item returned by a configurable iterator.
  *
- * <br>
+ * <br/>
  * The output of each of the processing of each of the elements is returned in XML as follows:
  * <pre>
  *  &lt;results count="num_of_elements"&gt;
@@ -69,7 +69,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  *
  *
  * For more configuration options, see {@link MessageSendingPipe}.
- * <br>
+ * <br/>
  * use parameters like:
  * <pre>
  *	&lt;param name="element-name-of-current-item"  xpathExpression="name(/*)" /&gt;

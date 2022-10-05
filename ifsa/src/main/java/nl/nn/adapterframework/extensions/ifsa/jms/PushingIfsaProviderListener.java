@@ -96,6 +96,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </pre></code>
  * This is due to a IFSA requirement, that sessions be created using a parameter transacted=true, indicating
  * JMS transacted sessions.
+ * </p>
  *
  * @author  Gerrit van Brakel
  * @since   4.2

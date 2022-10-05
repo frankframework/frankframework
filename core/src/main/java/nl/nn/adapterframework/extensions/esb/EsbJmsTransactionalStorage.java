@@ -52,7 +52,7 @@ import nl.nn.adapterframework.util.TransformerPool;
  * <li><code>messageLog</code>:
  * ESB.Infrastructure.US.Log.BusinessLog.2.AuditLog.1.Action</li>
  * </ul>
- *
+ * </p>
  * <p>
  * <b>Configuration </b><i>(where deviating from
  * JmsTransactionalStorage)</i><b>:</b>

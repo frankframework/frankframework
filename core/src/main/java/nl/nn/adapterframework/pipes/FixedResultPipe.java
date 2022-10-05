@@ -51,20 +51,20 @@ import nl.nn.adapterframework.util.TransformerPool;
  * Using parameters and the attributes of this pipe, it is possible to substitute values. This pipe
  * performs the following steps:
  * <ol>
- * <li>During execution, this pipe first obtains a string based on attributes <code>returnString</code>, <code>filename</code> or <code>filenameSessionKey</code>.
+ * <li>During execution, this pipe first obtains a string based on attributes <code>returnString</code>, <code>filename</code> or <code>filenameSessionKey</code>.</li>
  * <li>The resulting string is transformed according to attributes <code>replaceFrom</code> and <code>replaceTo</code> if set.
- * Please note that the plain value of attribute <code>replaceFrom</code> is matched, no <code>${...}</code> here.
+ * Please note that the plain value of attribute <code>replaceFrom</code> is matched, no <code>${...}</code> here.</li>
  * <li>The resulting string is substituted based on the parameters of this pipe. This step depends on attribute <code>replaceFixedParams</code>.
  * Assume that there is a parameter with name <code>xyz</code>. If <code>replaceFixedParams</code> is <code>false</code>, then
  * each occurrence of <code>${xyz}</code> is replaced by the parameter's value. Otherwise, the text <code>xyz</code>
- * is substituted. See {@link Parameter} to see how parameter values are determined.
+ * is substituted. See {@link Parameter} to see how parameter values are determined.</li>
  * <li>If attribute <code>substituteVars</code> is <code>true</code>, then expressions <code>${...}</code> are substituted using
  * system properties, pipelinesession variables and application properties. Please note that
  * no <code>${...}</code> patterns are left if the initial string came from attribute <code>returnString</code>, because
- * any <code>${...}</code> pattern in attribute <code>returnString</code> is substituted when the configuration is loaded.
- * <li>If attribute <code>styleSheetName</code> is set, then the referenced XSLT stylesheet is applied to the resulting string.
+ * any <code>${...}</code> pattern in attribute <code>returnString</code> is substituted when the configuration is loaded.</li>
+ * <li>If attribute <code>styleSheetName</code> is set, then the referenced XSLT stylesheet is applied to the resulting string.</li>
  * </ol>
- * <br/><br/>
+ * <br/>
  * Many attributes of this pipe reference file names. If a file is referenced by a relative path, the path
  * is relative to the configuration's root directory.
  *

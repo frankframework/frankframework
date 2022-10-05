@@ -36,7 +36,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
 /**
  * Pipe that reads a CRL from an input stream and transforms it to an XML.
  * The steam is closed after reading.
- * 
+ *
  * Example configuration:
  * <pre><code>
 	&lt;pipe
@@ -66,9 +66,9 @@ import nl.nn.adapterframework.util.XmlBuilder;
 		&gt;
 		&lt;forward name="success" path="EXIT" /&gt;
 	&lt;/pipe&gt;
- * <code></pre>
- * 
- * 
+ * </code></pre>
+ *
+ *
  * @author Miel Hoppenbrouwers
  * @author Jaco de Groot
  * @author Tom van der Heijden

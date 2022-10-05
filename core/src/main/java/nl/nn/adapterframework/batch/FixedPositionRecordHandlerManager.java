@@ -22,11 +22,11 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
 
 /**
- * Manager that decides the handlers based on the content of a field in the specified 
+ * Manager that decides the handlers based on the content of a field in the specified
  * position in a record. The fields in the record are of a fixed length.
  * The data beween the start position and end position is taken as key in the flow-table.
- * 
- * 
+ *
+ *
  * @author John Dekker
  */
 public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
@@ -75,7 +75,7 @@ public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
 		startPosition = i;
 	}
 
-	@IbisDoc({"If endposition >= 0 then this field contains the endPosition of the recordtype field in the record; All characters beyond this position are ignored. Else, if endPosition < 0 then it depends on the length of the recordkey in the flow", "-1"})
+	@IbisDoc({"If endposition &gt;= 0 then this field contains the endPosition of the recordtype field in the record; All characters beyond this position are ignored. Else, if endPosition &lt; 0 then it depends on the length of the recordkey in the flow", "-1"})
 	public void setEndPosition(int i) {
 		endPosition = i;
 	}

@@ -36,8 +36,8 @@ import nl.nn.adapterframework.stream.Message;
  * If the role is not specified by the role attribute, the input of
  * the pipe is used as role.
  *
- * N.B. The role itself must be specified by hand in the deployement descriptors web.xml and application.xml.
- *
+ * N.B. The role itself must be specified by hand in the deployment descriptors web.xml and application.xml.
+ * </p>
  * @ff.forward notInRole user may not assume role
  *
  * @author  Gerrit van Brakel
