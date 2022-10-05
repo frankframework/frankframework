@@ -673,7 +673,7 @@ public class MiscTest {
 	@Test
 	public void testIbmConfigurationResources() throws Exception {
 		String configurationResources = Misc.getConfigurationResources();
-		assertThat(configurationResources, Matchers.startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"));
+		assertThat(configurationResources, Matchers.startsWith("<dummy xml=\"file\" />"));
 		String server = Misc.getConfigurationServer();
 		assertThat(server, Matchers.startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"));
 	}
