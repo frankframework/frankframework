@@ -15,17 +15,13 @@
 */
 package nl.nn.adapterframework.metrics;
 
-import org.apache.logging.log4j.Logger;
-
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.core.instrument.config.MeterRegistryConfig;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.LogUtil;
 
 public abstract class MetricsRegistryConfiguratorBase<C extends MeterRegistryConfig> {
-	protected Logger log = LogUtil.getLogger(this);
 
 	public static final String METRICS_EXPORT_PROPERTY_PREFIX="management.metrics.export.";
 
@@ -45,12 +41,12 @@ public abstract class MetricsRegistryConfiguratorBase<C extends MeterRegistryCon
 	}
 
 	protected CredentialFactory getCredentialFactory() {
-		return getCredentialFactory("username","password");
+		return getCredentialFactory(config.prefix()+".username",config.prefix()+".password");
 	}
 
 	protected CredentialFactory getCredentialFactory(String usernameKey, String passwordKey) {
 		if (credentialFactory==null) {
-			credentialFactory = new CredentialFactory(getProperty("authAlias"), getProperty(usernameKey), getProperty(passwordKey));
+			credentialFactory = new CredentialFactory(getProperty(config.prefix()+".authAlias"), getProperty(usernameKey), getProperty(passwordKey));
 		}
 		return credentialFactory;
 	}
