@@ -85,7 +85,7 @@ public class ConfigManagement {
 		StringBuilder result = new StringBuilder();
 
 		if(configurationName != null) {
-			Configuration configuration = getIbisManager().getConfiguration(configurationName);
+			Configuration configuration = getConfigurationByName(configurationName);
 			result.append(loadedConfiguration ? configuration.getLoadedConfiguration() : configuration.getOriginalConfiguration());
 		} else {
 			for (Configuration configuration : getIbisManager().getConfigurations()) {

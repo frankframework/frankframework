@@ -369,6 +369,7 @@ public class Misc {
 	/**
 	 * Please consider using resourceToString() instead of relying on files.
 	 */
+	@Deprecated
 	private static String fileToString(String fileName) throws IOException {
 		return fileToString(fileName, null, false);
 	}
@@ -852,6 +853,19 @@ public class Misc {
 	}
 
 	// IBM specific methods using reflection so no dependency on the iaf-ibm module is required.
+	public static String getApplicationDeploymentDescriptorPath() throws IOException {
+		try {
+			return (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getApplicationDeploymentDescriptorPath").invoke(null);
+		} catch (Exception e) {
+			if("WAS".equals(AppConstants.getInstance().getString(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, ""))) {
+				throw new IOException(e);
+			}
+			log.debug("Caught NoClassDefFoundError for getApplicationDeploymentDescriptorPath, just not on Websphere Application Server", e);
+			return null;
+		}
+	}
+
+	// IBM specific methods using reflection so no dependency on the iaf-ibm module is required.
 	public static String getDeployedApplicationBindings() throws IOException {
 		String addp = getApplicationDeploymentDescriptorPath();
 		if (addp==null) {
@@ -861,19 +875,6 @@ public class Misc {
 		String appBndFile = addp + File.separator + "ibm-application-bnd.xmi";
 		log.debug("deployedApplicationBindingsFile [" + appBndFile + "]");
 		return fileToString(appBndFile);
-	}
-
-	// IBM specific methods using reflection so no dependency on the iaf-ibm module is required.
-	public static String getApplicationDeploymentDescriptorPath() throws IOException {
-		try {
-			return (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getApplicationDeploymentDescriptorPath").invoke(null);
-		} catch (Exception e) {
-			if("WAS".equals(AppConstants.getInstance().getString(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, ""))) {
-				throw new IOException(e);
-			}
-			log.debug("Caught NoClassDefFoundError for getApplicationDeploymentDescriptorPath, just not on Websphere Application Server: " + e.getMessage());
-			return null;
-		}
 	}
 
 	// IBM specific methods using reflection so no dependency on the iaf-ibm module is required.
@@ -889,12 +890,12 @@ public class Misc {
 	}
 
 	// IBM specific methods using reflection so no dependency on the iaf-ibm module is required.
-	public static String getConfigurationResources() throws IOException {
+	public static String getConfigurationResources() {
 		try {
 			String path = (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getConfigurationResourcePath").invoke(null);
 			return fileToString(path);
 		} catch (Exception e) {
-			log.debug("Caught NoClassDefFoundError for getConfigurationResources, just not on Websphere Application Server: " + e.getMessage());
+			log.debug("Caught NoClassDefFoundError for getConfigurationResources, just not on Websphere Application Server", e);
 			return null;
 		}
 	}
@@ -905,7 +906,7 @@ public class Misc {
 			String path = (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getConfigurationServerPath").invoke(null);
 			return fileToString(path);
 		} catch (Exception e) {
-			log.debug("Caught NoClassDefFoundError for getConfigurationServer, just not on Websphere Application Server: " + e.getMessage());
+			log.debug("Caught NoClassDefFoundError for getConfigurationServer, just not on Websphere Application Server", e);
 			return null;
 		}
 	}
@@ -925,7 +926,7 @@ public class Misc {
 					.getMethod("getConnectionPoolProperties", args_types)
 					.invoke(null, args);
 		} catch (Exception e) {
-			log.debug("Caught NoClassDefFoundError for getConnectionPoolProperties, just not on Websphere Application Server: " + e.getMessage());
+			log.debug("Caught NoClassDefFoundError for getConnectionPoolProperties, just not on Websphere Application Server", e);
 			return null;
 		}
 	}
@@ -941,8 +942,7 @@ public class Misc {
 					.getMethod("getJmsDestinations", args_types)
 					.invoke(null, args);
 		} catch (Exception e) {
-			log.debug("Caught NoClassDefFoundError for getJmsDestinations, just not on Websphere Application Server: "
-					+ e.getMessage());
+			log.debug("Caught NoClassDefFoundError for getJmsDestinations, just not on Websphere Application Server", e);
 			return null;
 		}
 	}

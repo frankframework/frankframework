@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2022 WeAreFrank!
+   Copyright 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,39 +13,39 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.webcontrol.api;
+package nl.nn.adapterframework.management.bus.endpoints;
 
 import java.io.StringReader;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.security.RolesAllowed;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.springframework.messaging.Message;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.jdbc.DirectQuerySender;
+import nl.nn.adapterframework.configuration.IbisContext;
+import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.IDataSourceFactory;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
@@ -53,36 +53,29 @@ import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.jms.JmsSender;
+import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.RequestMessageBuilder;
+import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
 
-/**
- * Shows the used certificate.
- *
- * @since	7.0-B1
- * @author	Niels Meijer
- */
+@BusAware("frank-management-bus")
+public class SecurityItems {
+	private @Getter @Setter IbisManager ibisManager;
+	private Logger log = LogUtil.getLogger(this);
 
-@Path("/")
-public final class ShowSecurityItems extends Base {
-	public static final String AUTHALIAS_XSLT = "xml/xsl/authAlias.xsl";
+	private IbisContext getIbisContext() {
+		return ibisManager.getIbisContext();
+	}
 
-	@Context HttpServletRequest httpServletRequest;
-
-	@GET
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/securityitems")
-	@Relation("securityitems")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getSecurityItems() throws ApiException {
-
+	@TopicSelector(BusTopic.SECURITY_ITEMS)
+	public Message<String> getSecurityItems(Message<?> message) {
 		Map<String, Object> returnMap = new HashMap<>();
-		returnMap.put("securityRoles", addApplicationDeploymentDescriptor());
-		returnMap.put("securityRoleBindings", getSecurityRoleBindings());
+		returnMap.put("securityRoles", getApplicationDeploymentDescriptor());
 		returnMap.put("jmsRealms", addJmsRealms());
 		returnMap.put("datasources", addDataSources());
 		returnMap.put("sapSystems", addSapSystems());
@@ -90,21 +83,12 @@ public final class ShowSecurityItems extends Base {
 		returnMap.put("serverProps", addServerProps());
 		returnMap.put("xmlComponents", XmlUtils.getVersionInfo());
 
-		return Response.status(Response.Status.CREATED).entity(returnMap).build();
+		return ResponseMessage.ok(returnMap);
 	}
 
-	@GET
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/securityitems2")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getSecurityItems2() throws ApiException {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.SECURITY_ITEMS);
-		return callSyncGateway(builder);
-	}
-
-	private Map<String, Object> addApplicationDeploymentDescriptor() {
+	private Map<String, Object> getApplicationDeploymentDescriptor() {
 		String appDDString = null;
-		Map<String, Object> resultList = new HashMap<String, Object>();
+		Map<String, Object> resultList = new HashMap<>();
 		Document xmlDoc = null;
 
 		try {
@@ -137,7 +121,7 @@ public final class ShowSecurityItems extends Base {
 			Element row = (Element) rowset.item(i);
 			NodeList fieldsInRowset = row.getChildNodes();
 			if (fieldsInRowset != null && fieldsInRowset.getLength() > 0) {
-				Map<String, Object> tmp = new HashMap<String, Object>();
+				Map<String, Object> tmp = new HashMap<>();
 				for (int j = 0; j < fieldsInRowset.getLength(); j++) {
 					if (fieldsInRowset.item(j).getNodeType() == Node.ELEMENT_NODE) {
 						Element field = (Element) fieldsInRowset.item(j);
@@ -149,10 +133,10 @@ public final class ShowSecurityItems extends Base {
 				try {
 					if(tmp.containsKey("role-name")) {
 						String role = (String) tmp.get("role-name");
-						tmp.put("allowed", httpServletRequest.isUserInRole(role));
+						tmp.put("allowed", true); // TODO httpServletRequest.isUserInRole(role)
 					}
-				} catch(Exception e) {};
-				resultList.put(row.getAttribute("id"), tmp);
+				} catch(Exception e) {}
+				resultList.put(row.getAttribute("id"), tmp); //items are stored under the security-role-id
 			}
 		}
 
@@ -165,7 +149,7 @@ public final class ShowSecurityItems extends Base {
 
 	private Map<String, Map<String, List<String>>> getSecurityRoleBindings() {
 		String appBndString = null;
-		Map<String, Map<String, List<String>>> resultList = new HashMap<String, Map<String, List<String>>>();
+		Map<String, Map<String, List<String>>> resultList = new HashMap<>();
 		Document xmlDoc = null;
 
 		try {
@@ -194,8 +178,8 @@ public final class ShowSecurityItems extends Base {
 			NodeList fieldsInRowset = row.getChildNodes();
 			if (fieldsInRowset != null && fieldsInRowset.getLength() > 0) {
 				String role = null;
-				List<String> roles = new ArrayList<String>();
-				List<String> specialSubjects = new ArrayList<String>();
+				List<String> roles = new ArrayList<>();
+				List<String> specialSubjects = new ArrayList<>();
 				for (int j = 0; j < fieldsInRowset.getLength(); j++) {
 					if (fieldsInRowset.item(j).getNodeType() == Node.ELEMENT_NODE) {
 						Element field = (Element) fieldsInRowset.item(j);
@@ -214,7 +198,7 @@ public final class ShowSecurityItems extends Base {
 					}
 				}
 				if(role != null && !role.isEmpty()) {
-					Map<String, List<String>> roleBinding = new HashMap<String, List<String>>();
+					Map<String, List<String>> roleBinding = new HashMap<>();
 					roleBinding.put("groups", roles);
 					roleBinding.put("specialSubjects", specialSubjects);
 					resultList.put(role, roleBinding);
@@ -297,8 +281,9 @@ public final class ShowSecurityItems extends Base {
 
 	private Map<String, Object> mapDataSource(String jmsRealm, String datasourceName, String confResString) {
 		Map<String, Object> realm = new HashMap<>();
-		DirectQuerySender qs = getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
+		FixedQuerySender qs = getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
 
+		qs.setQuery("select datasource from database");
 		if(StringUtils.isNotEmpty(jmsRealm)) {
 			realm.put("name", jmsRealm);
 			qs.setJmsRealm(jmsRealm);
@@ -327,7 +312,7 @@ public final class ShowSecurityItems extends Base {
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private ArrayList<Object> addSapSystems() {
-		ArrayList<Object> sapSystemList = new ArrayList<Object>();
+		ArrayList<Object> sapSystemList = new ArrayList<>();
 		List<String> sapSystems = null;
 		Object sapSystemFactory = null;
 		Method factoryGetSapSystemInfo = null;
@@ -346,8 +331,8 @@ public final class ShowSecurityItems extends Base {
 		if (sapSystems!=null) {
 			Iterator<String> iter = sapSystems.iterator();
 			while (iter.hasNext()) {
-				Map<String, Object> ss = new HashMap<String, Object>();
-				String name = (String) iter.next();
+				Map<String, Object> ss = new HashMap<>();
+				String name = iter.next();
 				ss.put("name", name);
 				try {
 					ss.put("info", (String) factoryGetSapSystemInfo.invoke(sapSystemFactory, name));
@@ -361,11 +346,12 @@ public final class ShowSecurityItems extends Base {
 	}
 
 	private List<String> getAuthEntries() {
-		List<String> entries = new ArrayList<String>();
+		List<String> entries = new LinkedList<>();
 		try {
 			Collection<String> knownAliases = CredentialFactory.getConfiguredAliases();
 			if (knownAliases!=null) {
 				entries.addAll(knownAliases); // start with all aliases in the CredentialProvider
+				Collections.sort(entries, Comparator.naturalOrder());
 			}
 		} catch (Exception e) {
 			log.warn("could not retrieve aliases from CredentialFactory", e);
@@ -393,10 +379,10 @@ public final class ShowSecurityItems extends Base {
 	}
 
 	private List<Object> addAuthEntries() {
-		List<Object> authEntries = new ArrayList<Object>();
+		List<Object> authEntries = new LinkedList<>();
 
 		for(String authAlias : getAuthEntries()) {
-			Map<String, Object> ae = new HashMap<String, Object>();
+			Map<String, Object> ae = new HashMap<>();
 
 			ae.put("alias", authAlias);
 			CredentialFactory cf = new CredentialFactory(authAlias, null, null);
@@ -422,7 +408,7 @@ public final class ShowSecurityItems extends Base {
 	}
 
 	private Map<String, Object> addServerProps() {
-		Map<String, Object> serverProps = new HashMap<String, Object>(2);
+		Map<String, Object> serverProps = new HashMap<>(2);
 
 		Integer totalTransactionLifetimeTimeout = Misc.getTotalTransactionLifetimeTimeout();
 		if(totalTransactionLifetimeTimeout == null) {

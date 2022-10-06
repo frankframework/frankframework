@@ -18,7 +18,7 @@
 		<constructor-arg value="${jms.messageListenerClassName}"/>
 	</bean>
 
-	<bean name="ibisManager" class="nl.nn.adapterframework.testutil.MockIbisManager" />
+	<bean name="ibisManager" class="nl.nn.adapterframework.testutil.mock.MockIbisManager" />
 
 	<bean name="schedulerHelper" class="nl.nn.adapterframework.testutil.SchedulerHelperMock" />
 

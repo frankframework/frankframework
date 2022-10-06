@@ -8,7 +8,9 @@ env:
   USE_PROPRIETARY: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.owner.login == 'ibissource') && github.actor != 'dependabot[bot]' }}
 on:
   push:
-    branches: [master, '[0-9]+.[0-9]+-release']
+    branches:
+      - master
+      - '[0-9]+.[0-9]+-release'
     paths-ignore:
       - "**.md"
       - "**.yml"
@@ -18,7 +20,9 @@ on:
       - "docker/**"
       - "webapp/src/main/webapp/iaf/**"
   pull_request:
-    branches: [master, '[0-9]+.[0-9]+-release']
+    branches:
+      - master
+      - '[0-9]+.[0-9]+-release'
     paths-ignore:
       - "**.md"
       - "**.yml"
