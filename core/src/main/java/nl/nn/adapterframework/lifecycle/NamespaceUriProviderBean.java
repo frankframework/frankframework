@@ -32,17 +32,17 @@ import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * This bean creates an (CXF) endpoint with the /rpcrouter mapping for older SOAP based requests.
- * 
- * When a {@link WebServiceListener} is registered without the `address` attribute, the listener uses 
+ *
+ * When a {@link WebServiceListener} is registered without the `address` attribute, the listener uses
  * the `serviceNamespaceURI` or `name` attribute to register the service in the {@link ServiceDispatcher}.
- * </br></br>
- * Requests that come in on this endpoint, will be dispatched to the appropriate {@link WebServiceListener} based 
+ * </br/>
+ * Requests that come in on this endpoint, will be dispatched to the appropriate {@link WebServiceListener} based
  * on their default namespace.
- * </br></br>
+ * </br/>
  * Example: request with xmlns="urn:ws", will be dispatched to the {@link WebServiceListener} with serviceNamespaceURI="urn:ws"
- * </br></br>
+ * </br/>
  * See {@link NamespaceUriProvider} for more information.
- * 
+ *
  * @author Niels Meijer
  *
  */

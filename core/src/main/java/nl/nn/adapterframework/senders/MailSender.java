@@ -76,28 +76,28 @@ import nl.nn.adapterframework.util.XmlUtils;
  *       &lt;/attachments&gt;&lt;!-- Optional --&gt;
  *   &lt;/email&gt;
  * </pre></code>
- * <p>
+ * </p><p>
  * Notice: the XML message must be valid XML. Therefore, especially the message element
  * must be plain text or be wrapped as CDATA. Example:
  * <code><pre>
  *    &lt;message&gt;&lt;![CDATA[&lt;h1&gt;This is a HtmlMessage&lt;/h1&gt;]]&gt;&lt;/message&gt;
  * </pre></code>
- * <p>
+ * </p><p>
  * The <code>sessionKey</code> attribute for attachment can contain an inputstream or a string. Other types are not supported at this moment.
- * <p>
+ * </p><p>
  * The attribute order for attachments is as follows:
  * <ol>
  *    <li>sessionKey</li>
  *    <li>url</li>
  *    <li><i>value of the attachment element</i></li>
  * </ol>
- * <p>
+ * </p><p>
  * The <code>base64</code> attribute is only used when the value of the PipeLineSession variable <code>sessionKey</code> is a String object
  * or when the value of the attachment element is used. If <code>base64=true</code> then the value will be decoded before it's used.
- * <p>
+ * </p><p>
  * <b>Compilation and Deployment Note:</b> mail.jar (v1.2) and activation.jar must appear BEFORE j2ee.jar.
  * Otherwise errors like the following might occur: <code>NoClassDefFoundException: com/sun/mail/util/MailDateFormat</code>
- *
+ * </p>
  * @author Johan Verrips
  * @author Gerrit van Brakel
  */

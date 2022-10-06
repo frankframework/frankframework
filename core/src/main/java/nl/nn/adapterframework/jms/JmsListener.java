@@ -26,7 +26,7 @@ import nl.nn.adapterframework.core.IPullingListener;
  * committed or rolled back, possibly together with other actions, by the receiver or the pipeline.
  * In case of a failure, all actions within the transaction are rolled back.
  *
- *</p><p><b>Using jmsTransacted and acknowledgement</b><br/>
+ * <p><b>Using jmsTransacted and acknowledgement</b><br/>
  * If jmsTransacted is set <code>true</code>: it should ensure that a message is received and processed on a both or nothing basis.
  * IBIS will commit the the message, otherwise perform rollback. However using jmsTransacted, IBIS does not bring transactions within
  * the adapters under transaction control, compromising the idea of atomic transactions. In the roll-back situation messages sent to
@@ -34,7 +34,7 @@ import nl.nn.adapterframework.core.IPullingListener;
  * message is therefore completely processed, and the roll back does not mean that the processing is rolled back! To obtain the correct
  * (transactional) behaviour, {@link #setTransacted(boolean) transacted} should be used instead of {@link #setJmsTransacted(boolean)
  * listener.transacted}.
- *<p>
+ * </p><p>
  * Setting {@link #setAcknowledgeMode(String) listener.acknowledgeMode} to "auto" means that messages are allways acknowledged (removed from
  * the queue, regardless of what the status of the Adapter is. "client" means that the message will only be removed from the queue
  * when the state of the Adapter equals the success state for committing.

@@ -53,7 +53,7 @@ import nl.nn.adapterframework.util.RunStateEnquiring;
  * committed or rolled back, possibly together with other actions, by the receiver or the pipeline.
  * In case of a failure, all actions within the transaction are rolled back.
  *
- *</p><p><b>Using jmsTransacted and acknowledgement</b><br/>
+ * <p><b>Using jmsTransacted and acknowledgement</b><br/>
  * If jmsTransacted is set <code>true</code>: it should ensure that a message is received and processed on a both or nothing basis.
  * IBIS will commit the the message, otherwise perform rollback. However using jmsTransacted, IBIS does not bring transactions within
  * the adapters under transaction control, compromising the idea of atomic transactions. In the roll-back situation messages sent to
@@ -79,7 +79,7 @@ import nl.nn.adapterframework.util.RunStateEnquiring;
  * in the pipeline to this destination. Otherwise the result is sent using the (optionally)
  * specified {@link #setSender(ISender) Sender}, that in turn sends the message to
  * whatever it is configured to.</p>
- *
+ * </p>
  * <p><b>Notice:</b> the JmsListener is ONLY capable of processing
  * <code>javax.jms.TextMessage</code>s <br/><br/>
  * </p>

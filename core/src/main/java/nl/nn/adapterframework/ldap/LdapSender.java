@@ -62,7 +62,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Sender to obtain information from and write to an LDAP Directory.
  * Returns the set of attributes in an XML format. Examples are shown below.
- * 
+ *
  * <h2>example</h2>
  * Consider the following configuration example:
  * <code>
@@ -72,12 +72,12 @@ import nl.nn.adapterframework.util.XmlUtils;
  *        ldapProviderURL="ldap://servername:389/o=ing"
  *        operation="read"
  *        attributesToReturn="givenName,sn,telephoneNumber" &gt;
- *     <&ltparam name="entryName" xpathExpression="entryName" /&gt;
+ *     &lt;param name="entryName" xpathExpression="entryName" /&gt;
  *   &lt;/sender&gt;
  * </pre>
  * </code>
  * <br/>
- * 
+ *
  * This may result in the following output:
  * <code><pre>
  * &lt;ldap&gt;
@@ -99,15 +99,15 @@ import nl.nn.adapterframework.util.XmlUtils;
  *	&lt;/attributes&gt;
  * &lt;/ldap&gt;
  *  </pre></code> <br/>
- * 
+ *
  * Search or Read?
- * 
+ *
  * Read retrieves all the attributes of the specified entry.
- * 
+ *
  * Search retrieves all the entries of the specified (by entryName) context that have the specified attributes,
- * together with the attributes. If the specified attributes are null or empty all the attributes of all the entries within the 
+ * together with the attributes. If the specified attributes are null or empty all the attributes of all the entries within the
  * specified context are returned.
- *  
+ *
  * Sample result of a <code>read</code> operation:<br/><code><pre>
  *	&lt;attributes&gt;
  *	    &lt;attribute&gt;
@@ -121,7 +121,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  *	    &lt;/attribute>
  *	    &lt;attribute name="givenName" value="Gerrit"/>
  *	&lt;/attributes&gt;
- * 
+ *
  * </pre></code> <br/>
  * Sample result of a <code>search</code> operation:<br/><code><pre>
  *	&lt;entries&gt;
@@ -148,7 +148,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @ff.parameter filterExpression Filter expression (handy with searching - see RFC2254).
  * @ff.parameter principal Will overwrite jndiAuthAlias, principal and credential attributes together with parameter credentials which is expected to be present too. This will also have the effect of usePooling being set to false and the LDAP connection being made at runtime only (skipped at configuration time).
  * @ff.parameter credentials See parameter principal. It's advised to set attribute hidden to true for parameter credentials.
- * 
+ *
  * @author Gerrit van Brakel
  * @author Jaco de Groot
  */
@@ -166,7 +166,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 	public @Getter Operation operation = Operation.READ;
 
 	public enum Operation implements DocumentedEnum {
-		/** Read the contents of an entry. Configuration requirements: 
+		/** Read the contents of an entry. Configuration requirements:
 		 * <ul>
 		 * 	  <li>parameter 'entryName', resolving to RDN of entry to read</li>
 		 * 	  <li>optional xml-inputmessage containing attributes to be returned</li>
@@ -174,7 +174,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		 */
 		@EnumLabel("read") READ,
 
-		/** Create an attribute or an entry. Configuration requirements: 
+		/** Create an attribute or an entry. Configuration requirements:
 		 * <ul>
 		 * 	  <li>parameter 'entryName', resolving to RDN of entry to create</li>
 		 * 	  <li>xml-inputmessage containing attributes to create</li>
@@ -182,7 +182,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		 */
 		@EnumLabel("create") CREATE,
 
-		/** Update an attribute or an entry. Configuration requirements: 
+		/** Update an attribute or an entry. Configuration requirements:
 		 * <ul>
 		 * 	  <li>parameter 'entryName', resolving to RDN of entry to update</li>
 		 * 	  <li>xml-inputmessage containing attributes to update</li>
@@ -191,7 +191,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		 */
 		@EnumLabel("update") UPDATE,
 
-		/** Delete an attribute or an entry. Configuration requirements: 
+		/** Delete an attribute or an entry. Configuration requirements:
 		 * <ul>
 		 * 	  <li>parameter 'entryName', resolving to RDN of entry to delete</li>
 		 * 	  <li>when manipulationSubject is set to attribute: xml-inputmessage containing attributes to be deleted</li>
@@ -199,7 +199,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		 */
 		@EnumLabel("delete") DELETE,
 
-		/** Search for an entry in the direct children of the specified root. Configuration requirements: 
+		/** Search for an entry in the direct children of the specified root. Configuration requirements:
 		 * <ul>
 		 * 	  <li>parameter 'entryName', resolving to RDN of entry to read</li>
 		 *    <li>parameter 'filterExpression', specifying the entries searched for</li>
@@ -208,7 +208,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		 */
 		@EnumLabel("search") SEARCH,
 
-		/** Search for an entry in the complete tree below the specified root. Configuration requirements: 
+		/** Search for an entry in the complete tree below the specified root. Configuration requirements:
 		 * <ul>
 		 * 	  <li>parameter 'entryName', resolving to RDN of entry to read</li>
 		 *    <li>parameter 'filterExpression', specifying the entries searched for</li>
@@ -217,7 +217,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		 */
 		@EnumLabel("deepSearch") DEEP_SEARCH,
 
-		/** Get a list of the direct children of the specifed root. Configuration requirements: 
+		/** Get a list of the direct children of the specifed root. Configuration requirements:
 		 * <ul>
 		 * 	  <li>parameter 'entryName', resolving to RDN of entry to read</li>
 		 * 	  <li>optional attribute 'attributesReturned' containing attributes to be returned</li>
@@ -225,7 +225,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		 */
 		@EnumLabel("getSubContexts") SUB_CONTEXTS,
 
-		/** Get a copy of the complete tree below the specified root. Configuration requirements: 
+		/** Get a copy of the complete tree below the specified root. Configuration requirements:
 		 * <ul>
 		 * 	  <li>parameter 'entryName', resolving to RDN of entry to read</li>
 		 * 	  <li>optional attribute 'attributesReturned' containing attributes to be returned</li>
@@ -233,7 +233,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		 */
 		@EnumLabel("getTree") GET_TREE,
 
-		/** Check username and password against LDAP specifying principal and credential using parameters. Configuration requirements: 
+		/** Check username and password against LDAP specifying principal and credential using parameters. Configuration requirements:
 		 * <ul>
 		 * 	  <li>parameter 'principal', resolving to RDN of user who's password should be verified</li>
 		 * 	  <li>parameter 'credentials', password to verify</li>
@@ -241,7 +241,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		 */
 		@EnumLabel("challenge") CHALLENGE,
 
-		/** Typical user change-password operation (one of the two methods to modify the unicodePwd attribute in AD (http://support.microsoft.com/kb/263991)). Configuration requirements: 
+		/** Typical user change-password operation (one of the two methods to modify the unicodePwd attribute in AD (http://support.microsoft.com/kb/263991)). Configuration requirements:
 		 * <ul>
 		 * 	  <li>parameter 'entryName', resolving to RDN of user who's password should be changed</li>
 		 * 	  <li>parameter 'oldPassword', current password, will be encoded as required by Active Directory (a UTF-16 encoded Unicode string containing the password surrounded by quotation marks) before sending it to the LDAP server. It's advised to set attribute hidden to true for parameter.</li>
@@ -256,7 +256,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		ATTRIBUTE
 	};
 
-	//The results to return if the modifying operation succeeds (an XML, to make it "next pipe ready")  
+	//The results to return if the modifying operation succeeds (an XML, to make it "next pipe ready")
 	private static final String DEFAULT_RESULT = "<LdapResult>Success</LdapResult>";
 	private static final String DEFAULT_RESULT_READ = "<LdapResult>No such object</LdapResult>";
 	private static final String DEFAULT_RESULT_SEARCH = "<LdapResult>Object not found</LdapResult>";
@@ -371,7 +371,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 	/**
 	 * Makes an String array attrIds from the comma separated parameter attributesToReturn
 	 * attrIds is used as an argument to the function getAttributes(context, attrIds) when only
-	 * specific attributes are required - 
+	 * specific attributes are required -
 	 */
 	private String[] getAttributesReturnedParameter() {
 		//since 1.4: return attributesToReturn == null ? null : attributesToReturn.split(",");
@@ -418,7 +418,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			return attributesToXml(dirContext.getAttributes(entryName, getAttributesReturnedParameter())).toXML();
 		} catch(NamingException e) {
 			// https://wiki.servicenow.com/index.php?title=LDAP_Error_Codes:
-			//   32 LDAP_NO_SUCH_OBJECT Indicates the target object cannot be found. This code is not returned on following operations: Search operations that find the search base but cannot find any entries that match the search filter. Bind operations. 
+			//   32 LDAP_NO_SUCH_OBJECT Indicates the target object cannot be found. This code is not returned on following operations: Search operations that find the search base but cannot find any entries that match the search filter. Bind operations.
 			// Sun:
 			//   [LDAP: error code 32 - No Such Object...
 			if(e.getMessage().startsWith("[LDAP: error code 32 - ") ) {
@@ -446,7 +446,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 				} catch(NamingException e) {
 					String msg;
 					// https://wiki.servicenow.com/index.php?title=LDAP_Error_Codes:
-					//   32 LDAP_NO_SUCH_OBJECT Indicates the target object cannot be found. This code is not returned on following operations: Search operations that find the search base but cannot find any entries that match the search filter. Bind operations. 
+					//   32 LDAP_NO_SUCH_OBJECT Indicates the target object cannot be found. This code is not returned on following operations: Search operations that find the search base but cannot find any entries that match the search filter. Bind operations.
 					// Sun:
 					//   [LDAP: error code 32 - No Such Object...
 					if (e.getMessage().startsWith("[LDAP: error code 32 - ")) {
@@ -464,7 +464,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 
 		if (manipulationSubject==Manipulation.ATTRIBUTE) {
 			if (attrs == null && !entryNameAfter.equals(entryName)) {
-				// it should be possible to only 'rename' the entry (without attribute change) 
+				// it should be possible to only 'rename' the entry (without attribute change)
 				return DEFAULT_RESULT;
 			}
 			NamingEnumeration<?> na = attrs.getAll();
@@ -503,7 +503,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 					} catch(NamingException e) {
 						String msg;
 						// https://wiki.servicenow.com/index.php?title=LDAP_Error_Codes:
-						//   32 LDAP_NO_SUCH_OBJECT Indicates the target object cannot be found. This code is not returned on following operations: Search operations that find the search base but cannot find any entries that match the search filter. Bind operations. 
+						//   32 LDAP_NO_SUCH_OBJECT Indicates the target object cannot be found. This code is not returned on following operations: Search operations that find the search base but cannot find any entries that match the search filter. Bind operations.
 						// Sun:
 						//   [LDAP: error code 32 - No Such Object...
 						if (e.getMessage().startsWith("[LDAP: error code 32 - ")) {
@@ -674,7 +674,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 					} catch(NamingException e) {
 						// https://wiki.servicenow.com/index.php?title=LDAP_Error_Codes:
 						//   16 LDAP_NO_SUCH_ATTRIBUTE Indicates that the attribute specified in the modify or compare operation does not exist in the entry.
-						//   32 LDAP_NO_SUCH_OBJECT Indicates the target object cannot be found. This code is not returned on following operations: Search operations that find the search base but cannot find any entries that match the search filter. Bind operations. 
+						//   32 LDAP_NO_SUCH_OBJECT Indicates the target object cannot be found. This code is not returned on following operations: Search operations that find the search base but cannot find any entries that match the search filter. Bind operations.
 						// Sun:
 						//   [LDAP: error code 16 - No Such Attribute...
 						//   [LDAP: error code 32 - No Such Object...
@@ -705,7 +705,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			return DEFAULT_RESULT;
 		} catch (NamingException e) {
 			// https://wiki.servicenow.com/index.php?title=LDAP_Error_Codes:
-			//   32 LDAP_NO_SUCH_OBJECT Indicates the target object cannot be found. This code is not returned on following operations: Search operations that find the search base but cannot find any entries that match the search filter. Bind operations. 
+			//   32 LDAP_NO_SUCH_OBJECT Indicates the target object cannot be found. This code is not returned on following operations: Search operations that find the search base but cannot find any entries that match the search filter. Bind operations.
 			// Sun:
 			//   [LDAP: error code 32 - No Such Object...
 			if (e.getMessage().startsWith("[LDAP: error code 32 - ")) {
@@ -828,7 +828,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 
 	/**
 	 * Performs the specified operation and returns the results.
-	 *  
+	 *
 	 * @return - Depending on operation, DEFAULT_RESULT or read/search result (always XML)
 	 */
 	public String performOperation(Message message, PipeLineSession session) throws SenderException, ParameterException {
@@ -870,8 +870,8 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		}
 	}
 
-	/** 
-	 * Return xml element containing all of the subcontexts of the parent context with their attributes. 
+	/**
+	 * Return xml element containing all of the subcontexts of the parent context with their attributes.
 	 * @return tree xml.
 	 */
 	private XmlBuilder getTree(DirContext parentContext, String context, PipeLineSession session, Map<String,Object> paramValueMap) {
@@ -918,8 +918,8 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		return contextElem;
 	}
 
-	/** 
-	 * Return a list of all of the subcontexts of the current context, which is relative to parentContext. 
+	/**
+	 * Return a list of all of the subcontexts of the current context, which is relative to parentContext.
 	 * @return an array of Strings containing a list of the subcontexts for a current context.
 	 */
 	public String[] getSubContextList (DirContext parentContext, String relativeContext, PipeLineSession session) {
@@ -954,13 +954,13 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 	/**
 	 * Digests the input message and creates a <code>BasicAttributes</code> object, containing <code>BasicAttribute</code> objects,
 	 * which represent the attributes of the specified entry.
-	 * 
+	 *
 	 * <pre>
 	 * BasicAttributes implements Attributes
 	 * contains
 	 * BasicAttribute implements Attribute
 	 * </pre>
-	 * 
+	 *
 	 * @see Attributes
 	 * @see BasicAttributes
 	 * @see Attribute
@@ -992,29 +992,29 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 	//	protected Attributes getAttributesFromParameters(ParameterResolutionContext prc) throws ParameterException {
 	//		Parameter2AttributeHelper helper = new Parameter2AttributeHelper();
 	//		prc.forAllParameters(paramList, helper);
-	//		Attributes result = helper.result; 
-	//		
+	//		Attributes result = helper.result;
+	//
 	//		log.debug("LDAP STEP:	applyParameters(String message, ParameterResolutionContext prc)");
 	//		log.debug("collected LDAP Attributes from parameters ["+result.toString()+"]");
 	//		return result;
 	//	}
-	//	
+	//
 	//	private class Parameter2AttributeHelper implements IParameterHandler {
 	//		private Attributes result = new BasicAttributes(true); // ignore attribute name case
 	//
 	//		public void handleParam(String paramName, Object value) throws ParameterException {
-	//			
+	//
 	//			if (result.get(paramName) == null)
 	//				result.put(new BasicAttribute(paramName, value));
 	//			else
 	//				result.get(paramName).add(value);
-	//		
+	//
 	//			log.debug("LDAP STEP:	(Parameter2 ATTRIBUTE Helper)handleParam(String paramName, Object value) - result = [" + result.toString() +"]");
 	//		}
 	//	}
 
 	/**
-	 *Strips all the values from the attributes in <code>input</code>. This is performed to be able to delete 
+	 *Strips all the values from the attributes in <code>input</code>. This is performed to be able to delete
 	 *the attributes without having to match the values. If values exist they must be exactly matched too in
 	 *order to delete the attribute.
 	 */
@@ -1048,7 +1048,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			if (isUsePooling()) {
 				// Enable connection pooling
 				newJndiEnv.put("com.sun.jndi.ldap.connect.pool", "true");
-				//see http://java.sun.com/products/jndi/tutorial/ldap/connect/config.html 
+				//see http://java.sun.com/products/jndi/tutorial/ldap/connect/config.html
 //				newJndiEnv.put("com.sun.jndi.ldap.connect.pool.maxsize", "20" );
 //				newJndiEnv.put("com.sun.jndi.ldap.connect.pool.prefsize", "10" );
 //				newJndiEnv.put("com.sun.jndi.ldap.connect.pool.timeout", "300000" );
@@ -1095,7 +1095,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 					while (searchresults.hasMore()) {
 						SearchResult sr = (SearchResult)searchresults.next();
 						// log.debug("result:"+ sr.toString());
-	
+
 						XmlBuilder itemElem = new XmlBuilder("item");
 						itemElem.addAttribute("name",sr.getName());
 						try {
@@ -1164,7 +1164,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 	 * http://msdn.microsoft.com/en-us/library/cc223248.aspx and
 	 * http://stackoverflow.com/questions/15335614/changing-active-directory-user-password-from-java-program
 	 * http://blogs.msdn.com/b/alextch/archive/2012/05/15/how-to-set-active-directory-password-from-java-application.aspx
-	 * @throws SenderException 
+	 * @throws SenderException
 	 */
 	private byte[] encodeUnicodePwd(Object value) throws SenderException {
 		log.debug("Encode unicodePwd value");

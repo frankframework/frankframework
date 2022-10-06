@@ -54,6 +54,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  *
  *          ...
  * 	EINDEREKENVERZOEK :EINDE
+ * </pre></code>
  * </p>
  *
  * <p><b>Configuration:</b>

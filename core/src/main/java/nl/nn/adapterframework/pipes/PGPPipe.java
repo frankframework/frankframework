@@ -38,36 +38,6 @@ import nl.nn.adapterframework.stream.StreamingPipe;
  * <p>Performs various PGP (Pretty Good Privacy) actions such as Encrypt, Sign, Decrypt, Verify.</p>
  * <p>To use this pipe action parameter has to be set to one of the actions above.</p>
  * <p>
- * <br/><strong>Encrypt:</strong>
- * <p>
- * Requires the publicKey to be set to recipients public key,
- * and recipients to be set to recipients email addresses.
- * </p>
- * <p>
- * <br/><strong>Sign:</strong>
- * <p>
- * On top of the requirements for <i>Encrypt</i> action,
- * signing requires senders to bet set for user's email;
- * and secretKey & secretPassword to be set to private key's path and it's password
- * (password is optional, if private key does not have protection).
- * </p>
- * <p>
- * <br/><strong>Decrypt:</strong>
- * <p>
- * Requires secretKey and secretPassword to bet set to private key's path and it's password.
- * Just like signing, password is not required, if private key does not have protection.
- * </p>
- * <p>
- * <br/><strong>Verify:</strong>
- * <p>
- * On top of the requirements for <i>Decrypt</i> action,
- * verification expects list of senders' email's and corresponding public keys.
- * However, sender emails does not have to be set, and in that case,
- * this pipe will only validate that someone signed the input.
- * </p>
- * <p>
- * <br/>
- * <p>
  * <strong>Note:</strong> When secret key is required in any of the actions,
  * the related public key should also be included in public keys.
  * </p>
@@ -79,17 +49,18 @@ import nl.nn.adapterframework.stream.StreamingPipe;
  * </p>
  */
 public class PGPPipe extends StreamingPipe {
-	/**
-	 * Action to be taken by pipe.
-	 * Available Actions:
-	 * <ul>
-	 *     <li>Encrypt: Encrypts the given input</li>
-	 *     <li>Sign: Encrypts and then signs the given input</li>
-	 *     <li>Decrypt: Decrypts the given input</li>
-	 *     <li>Verify: Decrypts and verifies the given input</li>
-	 * </ul>
-	 */
-	private String action;
+
+	public enum Action {
+		/** Encrypts the given input. Requires the publicKey to be set to recipients public key, and recipients to be set to recipients email addresses. */
+		ENCRYPT,
+		/** Encrypts and then signs the given input. On top of the requirements for Encrypt action, signing requires senders to bet set for user's email; and secretKey & secretPassword to be set to private key's path and it's password (password is optional, if private key does not have protection). */
+		SIGN,
+		/** Decrypts the given input. Requires secretKey and secretPassword to bet set to private key's path and it's password. Just like signing, password is not required, if private key does not have protection. */
+		DECRYPT,
+		/** Decrypts and verifies the given input. On top of the requirements for Decrypt action, verification expects list of senders' email's and corresponding public keys. However, sender emails does not have to be set, and in that case, this pipe will only validate that someone signed the input. */
+		VERIFY,
+	}
+	private Action action;
 	/**
 	 * Emails of the recipients
 	 */
@@ -123,27 +94,28 @@ public class PGPPipe extends StreamingPipe {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (action == null)
+		if (action == null) {
 			throw new ConfigurationException("Action can not be null!");
-
-		if(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) != null)
+		}
+		if(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) != null) {
 			Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+		}
 
 		Security.addProvider(new BouncyCastleProvider());
 
-		switch (action.toLowerCase()) {
-			case "encrypt":
+		switch (action) {
+			case ENCRYPT:
 				pgpAction = new Encrypt(publicKeys, recipients);
 				break;
-			case "decrypt":
+			case DECRYPT:
 				pgpAction = new Decrypt(secretKey, secretPassword);
 				break;
-			case "sign":
+			case SIGN:
 				if(verificationAddresses == null || verificationAddresses.length == 0)
 					throw new ConfigurationException("During signing action, senders has to be set.");
 				pgpAction = new Sign(publicKeys, secretKey, secretPassword, recipients, verificationAddresses[0]);
 				break;
-			case "verify":
+			case VERIFY:
 				pgpAction = new Verify(publicKeys, secretKey, secretPassword, verificationAddresses);
 				break;
 			default:
@@ -164,8 +136,8 @@ public class PGPPipe extends StreamingPipe {
 		}
 	}
 
-	@IbisDoc({"Action to be taken when pipe is executed. It can be one of the followed: Encrypt (encrypts the input), Sign (Encrypts and Signs the input), Decrypt (Decrypts the input), Verify (Decrypts and verifies the input)"})
-	public void setAction(String action) {
+	@IbisDoc({"Action to be taken when pipe is executed."})
+	public void setAction(Action action) {
 		this.action = action;
 	}
 

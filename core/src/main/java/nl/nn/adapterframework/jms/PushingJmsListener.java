@@ -49,7 +49,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * This version of the <code>JmsListener</code> supports distributed transactions using the XA-protocol.
  * No special action is required to have the listener join the transaction.
  *
- *</p><p><b>Using jmsTransacted and acknowledgement</b><br/>
+ * <p><b>Using jmsTransacted and acknowledgement</b><br/>
  * If jmsTransacted is set <code>true</code>, it should ensure that a message is received and processed on
  * a both or nothing basis. IBIS will commit the the message, otherwise perform rollback. However, using
  * jmsTransacted, IBIS does not bring transactions within the adapters under transaction control,
@@ -59,7 +59,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * that the processing is rolled back! To obtain the correct (transactional) behaviour, set
  * <code>transacted</code>="true" for the enclosing Receiver. Do not use jmsTransacted for any new situation.
  *
- *<p>
+ * </p><p>
  * Setting {@link #setAcknowledgeMode(String) listener.acknowledgeMode} to "auto" means that messages are allways acknowledged (removed from
  * the queue, regardless of what the status of the Adapter is. "client" means that the message will only be removed from the queue
  * when the state of the Adapter equals the success state.

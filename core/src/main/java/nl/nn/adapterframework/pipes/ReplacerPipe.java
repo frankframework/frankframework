@@ -148,7 +148,9 @@ public class ReplacerPipe extends FixedForwardPipe {
 		lineSeparatorSymbol = string;
 	}
 
-	@IbisDoc({"Replace all non XML chars (not in the <a href=\"http://www.w3.org/TR/2006/REC-xml-20060816/#NT-Char\">character range as specified by the XML specification</a>) with {@link XmlUtils#replaceNonValidXmlCharacters(String, char, boolean, boolean) replaceNonValidXmlCharacters}", "false"})
+	/** Replace all non XML chars (not in the <a href="http://www.w3.org/TR/2006/REC-xml-20060816/#NT-Char">character range as specified by the XML specification</a>) with {@link XmlUtils#replaceNonValidXmlCharacters(String, char, boolean, boolean) replaceNonValidXmlCharacters}
+	 * @ff.default false
+	 */
 	public void setReplaceNonXmlChars(boolean b) {
 		replaceNonXmlChars = b;
 	}

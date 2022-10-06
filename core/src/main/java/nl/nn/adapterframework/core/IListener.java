@@ -56,7 +56,7 @@ public interface IListener<M> extends IConfigurable {
 	/**
 	 * Extracts ID-string from message obtained from {@link IPullingListener#getRawMessage(Map)}. May also extract
 	 * other parameters from the message and put those in the context.
-	 * <br>
+	 * <br/>
 	 * Common entries in the session context are:
 	 * <ul>
 	 * 	<li>id: messageId, identifies the current transportation of the message</li>

@@ -1003,11 +1003,11 @@ public class Parameter implements IConfigurable, IWithParameters {
 	 * <li>{fixedhostname}: fake hostname, for testing only</li>
 	 * </ul>
 	 * A guid can be generated using {hostname}_{uid}, see also
-	 * <a href=\"http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html\">http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html</a> for more information about (g)uid's or
-	 * <a href=\"http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html\">http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html</a> for more information about uuid's.
+	 * <a href="http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html">http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html</a> for more information about (g)uid's or
+	 * <a href="http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html">http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html</a> for more information about uuid's.
 	 * <br/>
 	 * When combining a date or time <code>pattern</code> like {now} or {fixeddate} with a DATE, TIME, DATETIME or TIMESTAMP <code>type</code>, the effective value of the attribute
-	 * <code>formatString</code> must match the effective value of the formatString in the </code>pattern</code>.
+	 * <code>formatString</code> must match the effective value of the formatString in the <code>pattern</code>.
 	 */
 	public void setPattern(String string) {
 		pattern = string;

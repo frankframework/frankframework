@@ -151,9 +151,8 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <li>It is not processed at all by the pipeline, or processing by the pipeline has been rolled back;
  *     the message is removed from the input queue and either (one of) still in inProcess storage <i>or</i> sent to the errorSender</li>
  * </ul>
- * </p>
  *
- * <p><b>commit or rollback</b><br>
+ * <p><b>commit or rollback</b><br/>
  * If {@link #setTransacted(boolean) transacted} is set to <code>true</code>, messages will be either committed or rolled back.
  * All message-processing transactions are committed, unless one or more of the following apply:
  * <ul>

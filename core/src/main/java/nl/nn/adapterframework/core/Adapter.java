@@ -64,7 +64,7 @@ import nl.nn.adapterframework.util.RunStateManager;
 /**
  * An Adapter receives a specific type of messages and processes them. It has {@link Receiver Receivers}
  * that receive the messages and a {@link PipeLine} that transforms the incoming messages. Each adapter is part of a {@link Configuration}.
- * <br></br>
+ * <br/>
  * If an adapter can receive its messages through multiple channels (e.g. RESTful HTTP requests, incoming files, etc),
  * each channel appears as a separate {@link Receiver} nested in the adapter. Each {@link Receiver} is also responsible
  * for dealing with
@@ -76,7 +76,7 @@ import nl.nn.adapterframework.util.RunStateManager;
  * errorMessageFormatter that formats the result message if the state is ERROR.
  * <br/><br/>
  * Adapters gather statistics about the messages they process.
- * <br></br>
+ * <br/>
  * Adapters can process messages in parallel. They are thread-safe.
  *
  * @author Johan Verrips

@@ -47,7 +47,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Assumes input to be the file name of a ZIP archive, and unzips it to a
  * directory and/or an XML message.
- * <br>
+ * <br/>
  * The output of each unzipped item is returned in XML as follows when
  * collectFileContents is false:
  * <pre>
@@ -64,7 +64,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  *  &lt;/results&gt;
  * </pre>
  *
- * <br>
+ * <br/>
  * The output of each unzipped item is returned in XML as follows when
  * collectFileContents is true:
  * <pre>
@@ -80,14 +80,14 @@ import nl.nn.adapterframework.util.XmlUtils;
  *       ...
  *  &lt;/results&gt;
  * </pre>
- * <br>
+ * <br/>
  * By default, this pipe takes care
  * to produce unique file names, as follows. When the filename within
  * the archive is:
  * <pre>&lt;basename&gt; + "." + &lt;extension&gt;</pre>
  * then the extracted filename (path omitted) becomes
  * <pre>&lt;basename&gt; + &lt;unique number&gt; + "." + &lt;extension&gt;</pre>
- * <br>
+ * <br/>
  *
  * @since   4.9
  * @author  Gerrit van Brakel

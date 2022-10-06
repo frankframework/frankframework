@@ -140,6 +140,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  *   <li>instead of IBM ikeyman you can use the standard java tool <code>keytool</code> as follows:
  *      <code>keytool -import -alias <i>yourAlias</i> -file <i>pathToSavedCertificate</i></code></li>
  * </ul>
+ * </p>
  * <p>
  * Note 4:
  * In case <code>cannot create or initialize SocketFactory: (IOException) Unable to verify MAC</code>-exceptions are thrown,

@@ -38,7 +38,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
 /**
  * Pipe that returns the memberships of a userDN.
  * The input is a fullDn, of a user or a group.
- * </pre></code> <br/>
+ * <br/>
  * Sample result:<br/><code><pre>
  *	&lt;ldap&gt;
  *	 &lt;entry name="CN=xxyyzz,OU=Users,DC=domain,DC=ext"&gt;
@@ -57,7 +57,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  *   .....
  *	&lt;/ldap&gt;
  * </pre></code> <br/>
- * 
+ *
  * @author Gerrit van Brakel
  */
 public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements ICacheEnabled<String,Set<String>> {

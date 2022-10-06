@@ -28,11 +28,9 @@ import nl.nn.adapterframework.util.AppConstants;
 
 /**
  * General Cache provider.
- * 
+ *
  * N.B. the default values shown can be overridden using properties in appConstants. The property names are found by prefixing the attribute name with <code>cache.default.</code>.
- * </p>
- * 
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.11
  */

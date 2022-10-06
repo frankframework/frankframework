@@ -305,7 +305,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 		soapNamespaceSessionKey = string;
 	}
 
-	@IbisDoc({"Key of session variable to store soap header", "If configured as Pipeline Input Wrapper and direction=<code>unwrap<code>: "+ DEFAULT_SOAP_HEADER_SESSION_KEY})
+	@IbisDoc({"Key of session variable to store soap header", "If configured as Pipeline Input Wrapper and direction=<code>unwrap</code>: "+ DEFAULT_SOAP_HEADER_SESSION_KEY})
 	public void setSoapHeaderSessionKey(String string) {
 		soapHeaderSessionKey = string;
 	}
