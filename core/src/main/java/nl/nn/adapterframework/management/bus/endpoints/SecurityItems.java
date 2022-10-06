@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -376,7 +377,7 @@ public class SecurityItems {
 	}
 
 	private List<Object> addAuthEntries() {
-		List<Object> authEntries = new ArrayList<>();
+		List<Object> authEntries = new LinkedList<>();
 
 		for(String authAlias : getAuthEntries()) {
 			Map<String, Object> ae = new HashMap<>();
