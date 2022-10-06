@@ -24,6 +24,8 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
+import nl.nn.adapterframework.util.XmlUtils;
+
 public class SaxElementBuilder implements AutoCloseable {
 
 	private ContentHandler handler;
@@ -77,7 +79,7 @@ public class SaxElementBuilder implements AutoCloseable {
 		String attrlocalName = name;
 		String attrqName = attrlocalName;
 		String attrType = "";
-		attributes.addAttribute(attruri, attrlocalName, attrqName, attrType, value);
+		attributes.addAttribute(attruri, attrlocalName, attrqName, attrType, XmlUtils.normalizeAttributeValue(value));
 		return this;
 	}
 
