@@ -17,44 +17,66 @@ package nl.nn.adapterframework.metrics;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
+import io.micrometer.core.instrument.config.MeterRegistryConfig;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CredentialFactory;
 
-public abstract class MetricsRegistryConfiguratorBase {
+public abstract class MetricsRegistryConfiguratorBase<C extends MeterRegistryConfig> {
 
 	public static final String METRICS_EXPORT_PROPERTY_PREFIX="management.metrics.export.";
 
-	private String registryPrefix;
 	private AppConstants appConstants;
 	private CredentialFactory credentialFactory;
 
-	protected MetricsRegistryConfiguratorBase(String registryTypeKey) {
-		registryPrefix = METRICS_EXPORT_PROPERTY_PREFIX + registryTypeKey+".";
+	private C config;
+
+	protected MetricsRegistryConfiguratorBase() {
 		appConstants = AppConstants.getInstance();
 	}
 
 	protected String getProperty(String key) {
-		return appConstants.get(registryPrefix+key);
+		String effectiveKey = METRICS_EXPORT_PROPERTY_PREFIX+key;
+		String result = appConstants.get(effectiveKey);
+		return result;
 	}
 
 	protected CredentialFactory getCredentialFactory() {
-		return getCredentialFactory("username","password");
+		return getCredentialFactory(config.prefix()+".username",config.prefix()+".password");
 	}
 
 	protected CredentialFactory getCredentialFactory(String usernameKey, String passwordKey) {
 		if (credentialFactory==null) {
-			credentialFactory = new CredentialFactory(getProperty("authAlias"), getProperty(usernameKey), getProperty(passwordKey));
+			credentialFactory = new CredentialFactory(getProperty(config.prefix()+".authAlias"), getProperty(usernameKey), getProperty(passwordKey));
 		}
 		return credentialFactory;
 	}
 
 
 	public void registerAt(CompositeMeterRegistry compositeRegistry) {
-		if ("true".equals(getProperty("enabled"))) {
-			compositeRegistry.add(createRegistry());
+		config = createConfig();
+		if ("true".equals(getProperty(config.prefix()+"."+"enabled"))) {
+			compositeRegistry.add(createRegistry(config));
 		}
 	}
 
-	protected abstract MeterRegistry createRegistry();
+	protected abstract class MeterRegistryConfigBase implements MeterRegistryConfig {
+		@Override
+		public String get(String s) {
+			return getProperty(s);
+		}
+
+		public String userName() {
+			return getCredentialFactory().getUsername();
+		}
+
+		public String password() {
+			return getCredentialFactory().getPassword();
+		}
+	}
+
+
+	protected abstract C createConfig();
+
+	protected abstract MeterRegistry createRegistry(C config);
 
 }

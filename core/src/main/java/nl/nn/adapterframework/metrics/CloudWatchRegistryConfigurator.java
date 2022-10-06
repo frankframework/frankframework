@@ -21,28 +21,17 @@ import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.MeterRegistry;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchAsyncClient;
 
-public class CloudWatchRegistryConfigurator extends MetricsRegistryConfiguratorBase {
+public class CloudWatchRegistryConfigurator extends MetricsRegistryConfiguratorBase<CloudWatchConfig> {
 
-	private final String NAMESPACE_PROPERTY="namespace";
+	private class Config extends MeterRegistryConfigBase implements CloudWatchConfig {};
 
-	public CloudWatchRegistryConfigurator() {
-		super("cloudwatch");
+	@Override
+	protected CloudWatchConfig createConfig() {
+		return new Config();
 	}
 
 	@Override
-	protected MeterRegistry createRegistry() {
-
-		CloudWatchConfig cloudWatchConfig = new CloudWatchConfig() {
-			@Override
-			public String get(String s) {
-				return getProperty(s);
-			}
-
-			@Override
-			public String namespace() {
-				return getProperty(NAMESPACE_PROPERTY);
-			}
-		};
-		return new CloudWatchMeterRegistry(cloudWatchConfig, Clock.SYSTEM, CloudWatchAsyncClient.create());
+	protected MeterRegistry createRegistry(CloudWatchConfig config) {
+		return new CloudWatchMeterRegistry(config, Clock.SYSTEM, CloudWatchAsyncClient.create());
 	}
 }

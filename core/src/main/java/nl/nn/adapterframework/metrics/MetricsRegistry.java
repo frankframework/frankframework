@@ -51,6 +51,7 @@ public class MetricsRegistry {
 		new PrometheusRegistryConfigurator().registerAt(compositeRegistry);
 		new StatsDRegistryConfigurator().registerAt(compositeRegistry);
 		new CloudWatchRegistryConfigurator().registerAt(compositeRegistry);
+		new InfluxRegistryConfigurator().registerAt(compositeRegistry);
 		new KairosDbRegistryConfigurator().registerAt(compositeRegistry);
 
 		this.registry = compositeRegistry;

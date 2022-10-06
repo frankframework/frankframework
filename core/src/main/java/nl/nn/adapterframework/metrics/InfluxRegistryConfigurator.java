@@ -15,21 +15,35 @@
 */
 package nl.nn.adapterframework.metrics;
 
+import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.prometheus.PrometheusConfig;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.micrometer.influx.InfluxConfig;
+import io.micrometer.influx.InfluxMeterRegistry;
+import software.amazon.awssdk.utils.StringUtils;
 
-public class PrometheusRegistryConfigurator extends MetricsRegistryConfiguratorBase<PrometheusConfig> {
+public class InfluxRegistryConfigurator extends MetricsRegistryConfiguratorBase<InfluxConfig> {
 
-	private class Config extends MeterRegistryConfigBase implements PrometheusConfig {}
+	private class Config extends MeterRegistryConfigBase implements InfluxConfig {
+	
+		@Override
+		public String token() {
+			String result = get("influx.token");
+			if (StringUtils.isEmpty(result)) {
+				result = password();
+			}
+			return result;
+		}
+	}
 
 	@Override
-	protected PrometheusConfig createConfig() {
+	protected InfluxConfig createConfig() {
 		return new Config();
 	}
 
+
 	@Override
-	protected MeterRegistry createRegistry(PrometheusConfig config) {
-		return new PrometheusMeterRegistry(config);
+	protected MeterRegistry createRegistry(InfluxConfig config) {
+		return new InfluxMeterRegistry(config, Clock.SYSTEM);
 	}
+
 }
