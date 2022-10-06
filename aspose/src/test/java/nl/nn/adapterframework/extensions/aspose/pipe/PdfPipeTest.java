@@ -294,6 +294,11 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	}
 
 	@Test
+	public void mailWithSmallImage() throws Exception {
+		expectSuccessfullConversion("mailWithSmallImage", "/PdfPipe/aspect-ratio/mailWithSmallImage.msg", "/PdfPipe/xml-results/mailWithSmallImage.xml", "/PdfPipe/results/mailWithSmallImage.pdf");
+	}
+
+	@Test
 	public void mailWithPdfAttachment() throws Exception {
 		expectSuccessfullConversion("mailWithPdfAttachment", "/PdfPipe/MailWithAttachments/mailWithPdfAttachment.msg", "/PdfPipe/xml-results/mailWithPdfAttachment.xml", "/PdfPipe/results/mailWithPdfAttachment.pdf");
 	}
