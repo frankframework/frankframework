@@ -73,8 +73,7 @@ public class SecurityItems {
 	@TopicSelector(BusTopic.SECURITY_ITEMS)
 	public Message<String> getSecurityItems(Message<?> message) {
 		Map<String, Object> returnMap = new HashMap<>();
-		returnMap.put("securityRoleBindings", getSecurityRoleBindings());
-		returnMap.put("deploymentDescriptor", getApplicationDeploymentDescriptor());
+		returnMap.put("securityRoles", getApplicationDeploymentDescriptor());
 		returnMap.put("jmsRealms", addJmsRealms());
 		returnMap.put("datasources", addDataSources());
 		returnMap.put("sapSystems", addSapSystems());
@@ -112,7 +111,38 @@ public class SecurityItems {
 			log.debug("could get deployment descriptor");
 			return null;
 		}
-		return null;//todo!!
+
+		Map<String, Map<String, List<String>>> secBindings = getSecurityRoleBindings();
+
+		NodeList rowset = xmlDoc.getElementsByTagName("security-role");
+		for (int i = 0; i < rowset.getLength(); i++) {
+			Element row = (Element) rowset.item(i);
+			NodeList fieldsInRowset = row.getChildNodes();
+			if (fieldsInRowset != null && fieldsInRowset.getLength() > 0) {
+				Map<String, Object> tmp = new HashMap<>();
+				for (int j = 0; j < fieldsInRowset.getLength(); j++) {
+					if (fieldsInRowset.item(j).getNodeType() == Node.ELEMENT_NODE) {
+						Element field = (Element) fieldsInRowset.item(j);
+						tmp.put(field.getNodeName(), field.getTextContent());
+					}
+				}
+				if(secBindings.containsKey(row.getAttribute("id")))
+					tmp.putAll(secBindings.get(row.getAttribute("id")));
+				try {
+					if(tmp.containsKey("role-name")) {
+						String role = (String) tmp.get("role-name");
+						tmp.put("allowed", true); // TODO httpServletRequest.isUserInRole(role)
+					}
+				} catch(Exception e) {}
+				resultList.put(row.getAttribute("id"), tmp); //items are stored under the security-role-id
+			}
+		}
+
+		if(resultList.size() == 0) {
+			return null;
+		}
+
+		return resultList;
 	}
 
 	private Map<String, Map<String, List<String>>> getSecurityRoleBindings() {
