@@ -1,8 +1,10 @@
 package nl.nn.adapterframework.util;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
@@ -27,12 +29,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.hamcrest.Matchers;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import nl.nn.adapterframework.core.IMessageBrowser.HideMethod;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
@@ -310,15 +314,14 @@ public class MiscTest {
 		String res = Misc.concatStrings(a, seperator, b);
 		assertEquals("LeBron", res);
 	}
-	
+
 	@Test
 	public void testConcat() throws Exception {
 		String seperator = "|";
 		String res = Misc.concat(seperator, null, "a", "b", null, "c", null);
 		assertEquals("a|b|c", res);
 	}
-	
-	
+
 	/**
 	 * Method: hide(String string)
 	 */
@@ -478,7 +481,7 @@ public class MiscTest {
 		arrayList.add("a");
 		arrayList.add("b");
 		arrayList.add("c");
-		assertTrue(stringCollection.size() == 3);
+		assertEquals(3, stringCollection.size());
 		assertEquals("c", stringCollection.get(stringCollection.size() - 1));
 	}
 
@@ -531,7 +534,7 @@ public class MiscTest {
 	public void testCleanseMessage() throws Exception {
 		String s = "Donald Duck 23  Hey hey  14  Wooo";
 		String regex = "\\d";
-		String res = Misc.cleanseMessage(s, regex, " does not matter");
+		String res = Misc.cleanseMessage(s, regex, HideMethod.ALL);
 		assertEquals("Donald Duck **  Hey hey  **  Wooo", res);
 	}
 
@@ -602,7 +605,15 @@ public class MiscTest {
 		String expectedString = Misc.resourceToString(expected);
 		TestAssertions.assertEqualsIgnoreCRLF(expectedString, Misc.jsonPretty(inputString));
 	}
-	
+
+	@Test
+	public void testPrettyJsonArray() throws IOException {
+		URL input = TestFileUtils.getTestFileURL("/Misc/minifiedJsonArray.json");
+		String inputString = Misc.resourceToString(input);
+		URL expected = TestFileUtils.getTestFileURL("/Misc/prettifiedJsonArray.json");
+		String expectedString = Misc.resourceToString(expected);
+		TestAssertions.assertEqualsIgnoreCRLF(expectedString, Misc.jsonPretty(inputString));
+	}
 
 	@Test
 	public void testAuthorityInUrlString1() {
@@ -649,4 +660,21 @@ public class MiscTest {
 		assertEquals(expected, Misc.insertAuthorityInUrlString(url, null, username, password));
 	}
 
+	@Test
+	public void testIbmDescriptorResources() throws Exception {
+		String descriptorPath = Misc.getApplicationDeploymentDescriptorPath();
+		assertThat(descriptorPath, Matchers.endsWith("META-INF"));
+		String applBindings = Misc.getDeployedApplicationBindings();
+		assertNotNull(applBindings);
+		String deploymentDescriptor = Misc.getApplicationDeploymentDescriptor();
+		assertNotNull(deploymentDescriptor);
+	}
+
+	@Test
+	public void testIbmConfigurationResources() throws Exception {
+		String configurationResources = Misc.getConfigurationResources();
+		assertThat(configurationResources, Matchers.startsWith("<dummy xml=\"file\" />"));
+		String server = Misc.getConfigurationServer();
+		assertThat(server, Matchers.startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"));
+	}
 }

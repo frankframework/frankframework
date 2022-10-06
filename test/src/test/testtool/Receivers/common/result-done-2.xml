@@ -16,7 +16,7 @@
             <field name="TKEY">57493</field>
             <field name="TCHAR">D</field>
             <field name="TTIMESTAMP">2022-01-20 17:51:49</field>
-            <field name="TVARCHAR">exitState [SUCCESS], result [String: &lt;root forward="ready"/&gt;]</field>
+            <field name="TVARCHAR" null="true"/>
           </row>
           <row number="1">
             <field name="TKEY">57494</field>

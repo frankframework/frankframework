@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -49,8 +49,8 @@ import nl.nn.adapterframework.util.Semaphore;
 
 
 /**
- * Container that provides threads to exectue pulling listeners.
- * 
+ * Container that provides threads to execute pulling listeners.
+ *
  * @author  Tim van der Leeuw
  * @since   4.8
  */
@@ -59,8 +59,8 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 
 	private TransactionDefinition txNew = null;
 
-	private Receiver<M> receiver;
-	private PlatformTransactionManager txManager;
+	private @Getter @Setter Receiver<M> receiver;
+	private @Getter @Setter PlatformTransactionManager txManager;
 	private Counter threadsRunning = new Counter(0);
 	private Counter tasksStarted = new Counter(0);
 	private Semaphore processToken = null; // guard against to many messages being processed at the same time
@@ -72,7 +72,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 	/**
 	 * The thread-pool for spawning threads, injected by Spring
 	 */
-	private TaskExecutor taskExecutor;
+	private @Getter @Setter TaskExecutor taskExecutor;
 
 	private PullingListenerContainer() {
 		super();
@@ -278,7 +278,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 							}
 
 							// found a message, process it
-							tasksStarted.increase(); 
+							tasksStarted.increase();
 							log.debug(receiver.getLogPrefix()+"started ListenTask ["+tasksStarted.getValue()+"]");
 							Thread.currentThread().setName(receiver.getName()+"-listener["+tasksStarted.getValue()+"]");
 						} finally {
@@ -295,9 +295,12 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								deliveryCount = receiver.getDeliveryCount(messageId, rawMessage);
 							}
 							if (receiver.getMaxRetries()<0 || deliveryCount <= receiver.getMaxRetries()+1 || receiver.isSupportProgrammaticRetry()) {
-								receiver.processRawMessage(listener, rawMessage, threadContext, true);
+								try (PipeLineSession session = new PipeLineSession()) {
+									session.putAll(threadContext);
+									receiver.processRawMessage(listener, rawMessage, session, true);
+								}
 							} else {
-								String correlationId = (String) threadContext.get(PipeLineSession.technicalCorrelationIdKey);
+								String correlationId = (String) threadContext.get(PipeLineSession.correlationIdKey);
 								Date receivedDate = new Date();
 								String errorMessage = Misc.concatStrings("too many retries", "; ", receiver.getCachedErrorMessage(messageId));
 								final M rawMessageFinal = rawMessage;
@@ -418,28 +421,8 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 			}
 		}
 	}
-	
-	
-	public void setReceiver(Receiver<M> receiver) {
-		this.receiver = receiver;
-	}
-	public Receiver<M> getReceiver() {
-		return receiver;
-	}
 
-	public void setTxManager(PlatformTransactionManager manager) {
-		txManager = manager;
-	}
-	public PlatformTransactionManager getTxManager() {
-		return txManager;
-	}
 
-	public void setTaskExecutor(TaskExecutor executor) {
-		taskExecutor = executor;
-	}
-	public TaskExecutor getTaskExecutor() {
-		return taskExecutor;
-	}
 
 	public synchronized void setIdle(boolean b) {
 		idle = b;

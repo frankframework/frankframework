@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -35,7 +36,7 @@ import org.apache.logging.log4j.Logger;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public class StatisticsKeeperXmlBuilder implements StatisticsKeeperIterationHandler {
+public class StatisticsKeeperXmlBuilder implements StatisticsKeeperIterationHandler<XmlBuilder> {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private DecimalFormat df=new DecimalFormat(ItemList.ITEM_FORMAT_TIME);
@@ -56,19 +57,17 @@ public class StatisticsKeeperXmlBuilder implements StatisticsKeeperIterationHand
 		super();
 	}
 
-	public XmlBuilder getXml(Object data) {
-		return (XmlBuilder)data; 
+	@Override
+	public void configure() throws ConfigurationException {
 	}
 
-	public void configure() throws ConfigurationException {
-	}	
-
-	public Object start(Date now, Date mainMark, Date detailMark) {
+	@Override
+	public XmlBuilder start(Date now, Date mainMark, Date detailMark) {
 		log.debug("StatisticsKeeperXmlBuilder.start()");
-		
+
 		long freeMem = Runtime.getRuntime().freeMemory();
 		long totalMem = Runtime.getRuntime().totalMemory();
-		
+
 		XmlBuilder root = new XmlBuilder(ROOT_ELEMENT);
 		root.addAttribute("version",STATISTICS_XML_VERSION);
 		root.addAttribute("heapSize", Long.toString (totalMem-freeMem) );
@@ -92,37 +91,44 @@ public class StatisticsKeeperXmlBuilder implements StatisticsKeeperIterationHand
 		}
 		return root;
 	}
-	
-	public void end(Object data) {
+
+	@Override
+	public void end(XmlBuilder data) {
 		log.debug("StatisticsKeeperXmlBuilder.end()");
 	}
 
-	public void handleStatisticsKeeper(Object data, StatisticsKeeper sk) {
-		XmlBuilder context=(XmlBuilder)data;
+	@Override
+	public void handleStatisticsKeeper(XmlBuilder context, StatisticsKeeper sk) {
 		XmlBuilder item = statisticsKeeperToXmlBuilder(sk,STATKEEPER_ELEMENT);
 		if (item!=null) {
 			context.addSubElement(item);
 		}
 	}
 
-	public void handleScalar(Object data, String scalarName, long value){
+	@Override
+	public void handleScalar(XmlBuilder context, String name, ScalarMetricBase<?> meter) throws SenderException {
+		handleScalar(context, name, meter.getValue());
+	}
+
+	@Override
+	public void handleScalar(XmlBuilder data, String scalarName, long value){
 		handleScalar(data,scalarName,""+value);
 	}
 
-	public void handleScalar(Object data, String scalarName, Date value){
+	@Override
+	public void handleScalar(XmlBuilder data, String scalarName, Date value){
 		if (value!=null) {
 			handleScalar(data,scalarName,dtf.format(value));
-		} 
+		}
 	}
 
 
-	public void handleScalar(Object data, String scalarName, String value){
-		XmlBuilder context=(XmlBuilder)data;
+	private void handleScalar(XmlBuilder context, String scalarName, String value){
 		addNumber(context,scalarName,value);
 	}
 
-	public Object openGroup(Object parentData, String name, String type) {
-		XmlBuilder context=(XmlBuilder)parentData;
+	@Override
+	public XmlBuilder openGroup(XmlBuilder context, String name, String type) {
 		XmlBuilder group= new XmlBuilder(GROUP_ELEMENT);
 		group.addAttribute("name",name);
 		group.addAttribute("type",type);
@@ -130,11 +136,12 @@ public class StatisticsKeeperXmlBuilder implements StatisticsKeeperIterationHand
 		return group;
 	}
 
-	public void closeGroup(Object data) {
+	@Override
+	public void closeGroup(XmlBuilder data) {
 	}
 
 	private void addPeriodIndicator(XmlBuilder xml, Date now, String[][] periods, long allowedLength, String suffix, Date mark) {
-		long intervalStart=mark.getTime(); 
+		long intervalStart=mark.getTime();
 		long intervalEnd=now.getTime();
 		if ((intervalEnd-intervalStart)<=allowedLength) {
 			Date midterm=new Date((intervalEnd>>1)+(intervalStart>>1));
@@ -147,7 +154,7 @@ public class StatisticsKeeperXmlBuilder implements StatisticsKeeperIterationHand
 
 	private void addNumber(XmlBuilder xml, String name, String value) {
 		XmlBuilder item = new XmlBuilder("item");
-	
+
 		item.addAttribute("name", name);
 		item.addAttribute("value", value);
 		xml.addSubElement(item);
@@ -161,22 +168,22 @@ public class StatisticsKeeperXmlBuilder implements StatisticsKeeperIterationHand
 		XmlBuilder container = new XmlBuilder(elementName);
 		if (name!=null)
 			container.addAttribute("name", name);
-			
+
 		XmlBuilder cumulativeStats = new XmlBuilder(STATKEEPER_SUMMARY_ELEMENT);
-	
+
 		for (int i=0; i<sk.getItemCount(); i++) {
 			Object item = sk.getItemValue(i);
 			if (item==null) {
 				addNumber(cumulativeStats, sk.getItemName(i), "-");
 			} else {
 				switch (sk.getItemType(i)) {
-					case StatisticsKeeper.ITEM_TYPE_INTEGER: 
+					case INTEGER:
 						addNumber(cumulativeStats, sk.getItemName(i), ""+ (Long)item);
 						break;
-					case StatisticsKeeper.ITEM_TYPE_TIME: 
+					case TIME:
 						addNumber(cumulativeStats, sk.getItemName(i), df.format(item));
 						break;
-					case StatisticsKeeper.ITEM_TYPE_FRACTION:
+					case FRACTION:
 						addNumber(cumulativeStats, sk.getItemName(i), ""+pf.format(((Double)item).doubleValue()*100)+ "%");
 						break;
 				}
@@ -184,20 +191,20 @@ public class StatisticsKeeperXmlBuilder implements StatisticsKeeperIterationHand
 		}
 		container.addSubElement(cumulativeStats);
 		XmlBuilder intervalStats = new XmlBuilder(STATKEEPER_INTERVAL_ELEMENT);
-	
+
 		for (int i=0; i<sk.getIntervalItemCount(); i++) {
 			Object item = sk.getIntervalItemValue(i);
 			if (item==null) {
 				addNumber(intervalStats, sk.getIntervalItemName(i), "-");
 			} else {
 				switch (sk.getIntervalItemType(i)) {
-					case StatisticsKeeper.ITEM_TYPE_INTEGER: 
+					case INTEGER:
 						addNumber(intervalStats, sk.getIntervalItemName(i), ""+ (Long)item);
 						break;
-					case StatisticsKeeper.ITEM_TYPE_TIME: 
+					case TIME:
 						addNumber(intervalStats, sk.getIntervalItemName(i), df.format(item));
 						break;
-					case StatisticsKeeper.ITEM_TYPE_FRACTION:
+					case FRACTION:
 						addNumber(intervalStats, sk.getIntervalItemName(i), ""+pf.format(((Double)item).doubleValue()*100)+ "%");
 						break;
 				}

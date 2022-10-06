@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017, 2020 WeAreFrank!
+Copyright 2016-2017, 2020-2022 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,13 +15,8 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
@@ -31,40 +26,31 @@ import org.apache.logging.log4j.Logger;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * Register custom errorHandler for the API.
+ * Custom errorHandler for the FF!API to unpack and re-pack {@link WebApplicationException}s.
+ * Has to be explicitly configured to override the CXF default {@link WebApplicationException}Listener.
  * 
- * @since	7.0-B1
  * @author	Niels Meijer
  */
 
 @Provider
-public class ApiExceptionHandler implements ExceptionMapper<Exception> {
+public class ApiExceptionHandler implements ExceptionMapper<WebApplicationException> {
 
 	private Logger log = LogUtil.getLogger(this);
 
 	@Override
-	@Produces(MediaType.TEXT_PLAIN)
-	public Response toResponse(Exception exception) {
+	public Response toResponse(WebApplicationException exception) {
 		//If the message has already been wrapped in an exception we don't need to `convert` it!
 		if(exception instanceof ApiException) {
 			return ((ApiException) exception).getResponse();
 		}
 
-		log.error("Caught exception in handling FF!API call", exception);
+		log.warn("Caught unhandled WebApplicationException while executing FF!API call", exception);
 
-		ResponseBuilder response = Response.status(Status.INTERNAL_SERVER_ERROR);
-		String message = exception.getMessage();
-
-		if(message != null) {
-			message = message.replace("\"", "\\\"").replace("\n", " ").replace(System.getProperty("line.separator"), " ");
-			Map<String, Object> entity = new HashMap<String, Object>(3);
-			entity.put("status", "error");
-			entity.put("error", message);
-			entity.put("stackTrace", exception.getStackTrace());
-
-			response.entity(entity).type(MediaType.APPLICATION_JSON);
+		Status status = Status.INTERNAL_SERVER_ERROR;
+		Response response = exception.getResponse();
+		if(response != null && response.getStatus() > 0) {
+			status = Status.fromStatusCode(response.getStatus());
 		}
-
-		return response.build();
+		return ApiException.formatException(exception.getMessage(), status);
 	}
 }

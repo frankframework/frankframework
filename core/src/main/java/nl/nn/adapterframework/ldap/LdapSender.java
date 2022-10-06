@@ -164,7 +164,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 	public static final String LDAP_ERROR_MAGIC_STRING="[LDAP: error code";
 
 	public @Getter Operation operation = Operation.READ;
-	
+
 	public enum Operation implements DocumentedEnum {
 		/** Read the contents of an entry. Configuration requirements: 
 		 * <ul>
@@ -255,7 +255,6 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		ENTRY,
 		ATTRIBUTE
 	};
-	
 
 	//The results to return if the modifying operation succeeds (an XML, to make it "next pipe ready")  
 	private static final String DEFAULT_RESULT = "<LdapResult>Success</LdapResult>";
@@ -358,7 +357,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 							msgPart2=msgPart2.substring(1).trim();
 						}
 						message=(msgPart1+" "+msgPart2).trim();
- 					}
+					}
 				}
 			}
 			ldapError.setValue(message);
@@ -381,7 +380,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 	}
 
 	private String[] splitCommaSeparatedString(String toSeparate) {
-		if(toSeparate == null || toSeparate == "") return null;		
+		if(toSeparate == null || toSeparate == "") return null;
 
 		List<String> list = new ArrayList<>();
 		String[] strArr = new String[1]; //just do determine the type of the array in list.toArray(Object[] o)
@@ -424,10 +423,10 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			//   [LDAP: error code 32 - No Such Object...
 			if(e.getMessage().startsWith("[LDAP: error code 32 - ") ) {
 				if (log.isDebugEnabled()) log.debug("Operation [" + getOperation()+ "] found nothing - no such entryName: " + entryName);
-				return DEFAULT_RESULT_READ;	
+				return DEFAULT_RESULT_READ;
 			}
 			storeLdapException(e, session);
-			throw new SenderException("Exception in operation [" + getOperation()+ "] entryName=["+entryName+"]", e);	
+			throw new SenderException("Exception in operation [" + getOperation()+ "] entryName=["+entryName+"]", e);
 		} finally {
 			closeDirContext(dirContext);
 		}
@@ -451,9 +450,9 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 					// Sun:
 					//   [LDAP: error code 32 - No Such Object...
 					if (e.getMessage().startsWith("[LDAP: error code 32 - ")) {
-						msg="Operation [" + getOperation()+ "] failed - wrong entryName ["+ entryName+"]";	
+						msg="Operation [" + getOperation()+ "] failed - wrong entryName ["+ entryName+"]";
 					} else {
-						msg="Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]";									
+						msg="Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]";
 					}
 					storeLdapException(e, session);
 					throw new SenderException(msg,e);
@@ -462,7 +461,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 				}
 			}
 		}
-		
+
 		if (manipulationSubject==Manipulation.ATTRIBUTE) {
 			if (attrs == null && !entryNameAfter.equals(entryName)) {
 				// it should be possible to only 'rename' the entry (without attribute change) 
@@ -508,9 +507,9 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 						// Sun:
 						//   [LDAP: error code 32 - No Such Object...
 						if (e.getMessage().startsWith("[LDAP: error code 32 - ")) {
-							msg="Operation [" + getOperation()+ "] failed - wrong entryName ["+ entryNameAfter+"]";	
+							msg="Operation [" + getOperation()+ "] failed - wrong entryName ["+ entryNameAfter+"]";
 						} else {
-							msg="Exception in operation [" + getOperation()+ "] entryName ["+entryNameAfter+"]";									
+							msg="Exception in operation [" + getOperation()+ "] entryName ["+entryNameAfter+"]";
 						}
 						//result = DEFAULT_RESULT_UPDATE_NOK;
 						storeLdapException(e, session);
@@ -586,7 +585,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 						// Sun:
 						//   [LDAP: error code 20 - Attribute Or Value Exists]
 						if (e.getMessage().startsWith("[LDAP: error code 20 - ")) {
-							if (log.isDebugEnabled()) log.debug("Operation [" + getOperation()+ "] successful: " + e.getMessage());	
+							if (log.isDebugEnabled()) log.debug("Operation [" + getOperation()+ "] successful: " + e.getMessage());
 							result = DEFAULT_RESULT_CREATE_OK;
 						} else {
 							storeLdapException(e, session);
@@ -599,9 +598,9 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			}
 			if (result!=null) {
 				return result;
-			} 
+			}
 			return DEFAULT_RESULT;
-		} 
+		}
 		DirContext dirContext = null;
 		try {
 			if (unicodePwd) {
@@ -613,7 +612,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 						for (int i = 0; i < attr.size(); i++) {
 							attr.set(i, encodeUnicodePwd(attr.get(i)));
 						}
-					} 
+					}
 				}
 			}
 			dirContext = getDirContext(paramValueMap);
@@ -635,7 +634,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			closeDirContext(dirContext);
 		}
 	}
-	
+
 	private String performOperationDelete(String entryName, PipeLineSession session, Map<String,Object> paramValueMap, Attributes attrs) throws SenderException, ParameterException {
 		if (manipulationSubject==Manipulation.ATTRIBUTE) {
 			String result=null;
@@ -696,7 +695,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			}
 			if (result!=null) {
 				return result;
-			} 
+			}
 			return DEFAULT_RESULT;
 		}
 		DirContext dirContext = null;
@@ -732,8 +731,8 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 
 	private String performOperationSearch(String entryName, PipeLineSession session, Map<String,Object> paramValueMap, String filterExpression, int scope) throws SenderException, ParameterException {
 		int timeout=getSearchTimeout();
-		SearchControls controls = new SearchControls(scope, getMaxEntriesReturned(), timeout, 
-													 getAttributesReturnedParameter(), false, false);
+		SearchControls controls = new SearchControls(scope, getMaxEntriesReturned(), timeout,
+													getAttributesReturnedParameter(), false, false);
 //		attrs = parseAttributesFromMessage(message);
 		DirContext dirContext = null;
 		try {
@@ -764,7 +763,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			closeDirContext(dirContext);
 		}
 	}
-		
+
 	private String performOperationGetTree(String entryName, PipeLineSession session, Map<String,Object> paramValueMap) throws SenderException, ParameterException {
 		DirContext dirContext = null;
 		try {
@@ -789,10 +788,10 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			//   49 LDAP_INVALID_CREDENTIALS Indicates that during a bind operation one of the following occurred: The client passed either an incorrect DN or password, or the password is incorrect because it has expired, intruder detection has locked the account, or another similar reason. This is equivalent to AD error code 52e.
 			if(e.getMessage().startsWith("[LDAP: error code 49 - ") ) {
 				if (log.isDebugEnabled()) log.debug("Operation [" + getOperation()+ "] invalid credentials for: " + principal);
-				return DEFAULT_RESULT_CHALLENGE_NOK;	
+				return DEFAULT_RESULT_CHALLENGE_NOK;
 			}
 			storeLdapException(e, session);
-			throw new SenderException("Exception in operation [" + getOperation()+ "] principal=["+principal+"]", e);	
+			throw new SenderException("Exception in operation [" + getOperation()+ "] principal=["+principal+"]", e);
 		} finally {
 			closeDirContext(dirContext);
 		}
@@ -874,12 +873,11 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 	/** 
 	 * Return xml element containing all of the subcontexts of the parent context with their attributes. 
 	 * @return tree xml.
-	 */ 
-	private XmlBuilder getTree(DirContext parentContext, String context, PipeLineSession session, Map<String,Object> paramValueMap)
-	{
+	 */
+	private XmlBuilder getTree(DirContext parentContext, String context, PipeLineSession session, Map<String,Object> paramValueMap) {
 		XmlBuilder contextElem = new XmlBuilder("context");
 		contextElem.addAttribute("name", context);
-		
+
 		String[] subCtxList = getSubContextList(parentContext, context, session);
 		try	{
 			if (subCtxList.length == 0) {
@@ -901,31 +899,29 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 
 		return contextElem;
 	}
-	
+
 	private XmlBuilder subContextsToXml(String entryName, String[] subs, DirContext dirContext) throws NamingException {
-		
+
 		XmlBuilder contextElem = new XmlBuilder("Context");
 		XmlBuilder currentContextElem = new XmlBuilder("CurrentContext");
 		currentContextElem.setValue(entryName + ","+ dirContext.getNameInNamespace());
 		contextElem.addSubElement(currentContextElem);
-		
+
 		if (subs != null) {
 			log.error("Subs.length = " + subs.length);
 			for (int i = 0; i<subs.length; i++) {
 				XmlBuilder subContextElem = new XmlBuilder("SubContext");
-				
 				subContextElem.setValue(subs[i]);
-				
 				contextElem.addSubElement(subContextElem);
 			}
-		}	
+		}
 		return contextElem;
 	}
 
 	/** 
 	 * Return a list of all of the subcontexts of the current context, which is relative to parentContext. 
 	 * @return an array of Strings containing a list of the subcontexts for a current context.
-	 */ 
+	 */
 	public String[] getSubContextList (DirContext parentContext, String relativeContext, PipeLineSession session) {
 		String[] retValue = null;
 
@@ -940,7 +936,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			}
 
 			// Create a string array of the same size as the vector object
-			String contextList[] = new String[n.size()];
+			String[] contextList = new String[n.size()];
 			for (int x = 0; x < n.size(); x++) {
 				// Add each name to the array
 				contextList[x] = n.elementAt(x).getName();
@@ -1125,7 +1121,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 	protected XmlBuilder attributesToXml(Attributes atts)
 		throws NamingException {
 		XmlBuilder attributesElem = new XmlBuilder("attributes");
-		
+
 		NamingEnumeration<?> all = atts.getAll();
 		while (all.hasMore()) {
 			Attribute attribute = (Attribute) all.next();
@@ -1147,18 +1143,16 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		return attributesElem;
 	}
 
-	private XmlBuilder searchResultsToXml(NamingEnumeration<?> entries)
-		throws NamingException {
-		
+	private XmlBuilder searchResultsToXml(NamingEnumeration<?> entries) throws NamingException {
 		XmlBuilder entriesElem = new XmlBuilder("entries");
 		int row=0;
 		while ((getMaxEntriesReturned()==0 || row<getMaxEntriesReturned()) && entries.hasMore()) {
 			SearchResult searchResult = (SearchResult) entries.next();
 			XmlBuilder entryElem = new XmlBuilder("entry");
-			 
+
 			entryElem.addAttribute("name", searchResult.getName());
 			entryElem.addSubElement(attributesToXml(searchResult.getAttributes()));
-			
+
 			entriesElem.addSubElement(entryElem);
 			row++;
 		}

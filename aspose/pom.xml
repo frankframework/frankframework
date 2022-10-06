@@ -15,14 +15,6 @@
 		<aspose.version>19.1</aspose.version>
 	</properties>
 
-	<repositories>
-		<repository>
-			<id>AsposeJavaAPI</id>
-			<name>Aspose Java API</name>
-			<url>https://repository.aspose.com/repo/</url>
-		</repository>
-	</repositories>
-
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
@@ -32,12 +24,18 @@
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 		</dependency>
+		<!-- Explicitly here to enforce this version of databind being used when the aspose dependency is declared before(!) the core dependency -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.13.4</version>
+		</dependency>
 
 		<!-- Tika library -->
 		<dependency>
 			<groupId>org.apache.tika</groupId>
 			<artifactId>tika-parsers</artifactId>
-			<version>1.14</version>
+			<version>1.28.5</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>json-simple</artifactId>
@@ -187,20 +185,27 @@
 					<artifactId>metadata-extractor</artifactId>
 					<groupId>com.drewnoakes</groupId>
 				</exclusion>
+				<exclusion>
+					<groupId>xerces</groupId>
+					<artifactId>xercesImpl</artifactId>
+				</exclusion>
+				<exclusion><!-- excluded because we want to ignore this (1.2.2) version! this dependency handles javax.activation.* imports, and is NOT compatible with the IBM JRE -->
+					<groupId>jakarta.activation</groupId>
+					<artifactId>jakarta.activation-api</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 
+		<!-- Explicitly here because we want to force 'our' version and not the inherited version from DSN -->
+		<dependency>
+			<groupId>com.sun.mail</groupId>
+			<artifactId>jakarta.mail</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>com.sun.mail</groupId>
 			<artifactId>dsn</artifactId>
-			<version>1.5.5</version>
+			<version>1.6.7</version>
 		</dependency>
-
-		<dependency>
-			<groupId>com.sun.mail</groupId>
-			<artifactId>javax.mail</artifactId>
-		</dependency>
-
 
 		<!-- LOG4J to SLF4J Bridge required for ehcache -->
 		<dependency>
@@ -277,8 +282,32 @@
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>pdfbox</artifactId>
-			<version>2.0.24</version>
+			<version>2.0.27</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.pdfbox</groupId>
+			<artifactId>pdfbox-tools</artifactId>
+			<version>2.0.27</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
+	<profiles>
+		<profile>
+			<id>aspose</id>
+			<activation>
+				<property>
+					<name>!no-aspose</name>
+				</property>
+			</activation>
+			<repositories>
+				<repository>
+					<id>AsposeJavaAPI</id>
+					<name>Aspose Java Repository</name>
+					<url>https://repository.aspose.com/repo/</url>
+				</repository>
+			</repositories>
+		</profile>
+	</profiles>
 </project>

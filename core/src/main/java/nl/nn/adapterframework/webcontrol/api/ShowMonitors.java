@@ -284,7 +284,7 @@ public final class ShowMonitors extends Base {
 		if(destinations.isEmpty()) {
 			return null;
 		}
-	
+
 		return new HashSet<>(destinations);
 	}
 

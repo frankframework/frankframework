@@ -20,14 +20,17 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.MimeType;
+
+import com.nimbusds.jose.proc.SecurityContext;
 
 import lombok.Getter;
 import lombok.Setter;
-import com.nimbusds.jose.proc.SecurityContext;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.http.HttpSenderBase;
 import nl.nn.adapterframework.http.PushingListenerAdapter;
 import nl.nn.adapterframework.jwt.JwtValidator;
 import nl.nn.adapterframework.receivers.Receiver;
@@ -37,21 +40,22 @@ import nl.nn.adapterframework.util.AppConstants;
 
 // TODO: Link to https://swagger.io/specification/ when anchors are supported by the Frank!Doc.
 /**
- * Listener that allows a {@link nl.nn.adapterframework.receivers.Receiver} to receive messages as a REST webservice.
+ * Listener that allows a {@link Receiver} to receive messages as a REST webservice.
  * Prepends the configured URI pattern with <code>api/</code>. The structure of REST messages is described
  * by OpenAPI specifications. The Frank!Framework generates an OpenAPI specification for each ApiListener and
  * also an OpenAPI specification for all ApiListeners in all configurations. You can
  * find them in the Frank!Console under main menu item Webservices, heading Available ApiListeners.
  * The generated OpenAPI specifications have <code>servers</code> and <code>paths</code> objects and
- * therefore they document the full URLs of the provided services. 
- * 
+ * therefore they document the full URLs of the provided services.
+ *
  * @author Niels Meijer
  *
  */
 public class ApiListener extends PushingListenerAdapter implements HasPhysicalDestination, ReceiverAware<String> {
 
+	private final @Getter(onMethod = @__(@Override)) String domain = "Http";
 	private @Getter String uriPattern;
-	private @Getter boolean updateEtag = true;
+	private @Getter Boolean updateEtag = null;
 	private @Getter String operationId;
 
 	private @Getter HttpMethod method = HttpMethod.GET;
@@ -64,13 +68,14 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	private @Getter MediaTypes consumes = MediaTypes.ANY;
 	private @Getter MediaTypes produces = MediaTypes.ANY;
-	private @Getter ContentType producedContentType;
+	private @Getter MimeType contentType;
 	private String multipartBodyName = null;
 
 	private @Getter @Setter Receiver<String> receiver;
 
-	private @Getter String messageIdHeader = AppConstants.getInstance(getConfigurationClassLoader()).getString("apiListener.messageIdHeader", "Message-Id");
+	private @Getter String messageIdHeader = AppConstants.getInstance(getConfigurationClassLoader()).getString("apiListener.messageIdHeader", HttpSenderBase.MESSAGE_ID_HEADER);
 	private @Getter String headerParams = null;
+	private @Getter String contentDispositionHeaderSessionKey;
 	private @Getter String charset = null;
 
 	// for jwt validation
@@ -81,6 +86,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter String roleClaim;
 
 	private @Getter JwtValidator<SecurityContext> jwtValidator;
+	private String servletUrlMapping = AppConstants.getInstance().getString("servlet.ApiListenerServlet.urlMapping", "api");
 
 	public enum AuthenticationMethods {
 		NONE, COOKIE, HEADER, AUTHROLE, JWT;
@@ -105,10 +111,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 			throw new ConfigurationException("jwksUrl cannot be empty");
 		}
 
-		producedContentType = new ContentType(produces);
-		if(charset != null) {
-			producedContentType.setCharset(charset);
-		}
+		contentType = produces.getMimeType(charset);
 	}
 
 	@Override
@@ -131,6 +134,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		ApiServiceDispatcher.getInstance().unregisterServiceClient(this);
 	}
 
+	@Override
 	public Message processRequest(String correlationId, Message message, PipeLineSession requestContext) throws ListenerException {
 		Message result = super.processRequest(correlationId, message, requestContext);
 
@@ -144,7 +148,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	@Override
 	public String getPhysicalDestinationName() {
-		String destinationName = "uriPattern: "+getUriPattern()+"; method: "+getMethod();
+		String destinationName = "uriPattern: /"+servletUrlMapping+getUriPattern()+"; method: "+getMethod();
 		if(!MediaTypes.ANY.equals(consumes))
 			destinationName += "; consumes: "+getConsumes();
 		if(!MediaTypes.ANY.equals(produces))
@@ -166,24 +170,20 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	/**
-	 * Match request ContentType to consumes enum to see if the listener accepts the message
+	 * Match request 'Content-Type' (eg. on POST) to consumes enum to see if the listener accepts the message
 	 */
 	public boolean isConsumable(String contentType) {
 		return consumes.isConsumable(contentType);
 	}
 
 	/**
-	 * Match accept header to produces enum to see if the client accepts the message
+	 * Match request 'Accept' header to produces enum to see if the client accepts the message
 	 */
 	public boolean accepts(String acceptHeader) {
-		return produces.equals(MediaTypes.ANY) || acceptHeader.contains("*/*") || acceptHeader.contains(produces.getContentType());
+		return produces.accepts(acceptHeader);
 	}
 
-	public ContentType getContentType() {
-		return producedContentType;
-	}
-
-	/** 
+	/**
 	 * HTTP method to listen to
 	 * @ff.default GET
 	 */
@@ -194,7 +194,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		}
 	}
 
-	/** 
+	/**
 	 * URI pattern to register this listener on, eq. `/my-listener/{something}/here`
 	 * @ff.mandatory
 	 */
@@ -208,7 +208,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		this.uriPattern = uriPattern;
 	}
 
-	/** 
+	/**
 	 * The required contentType on requests, if it doesn't match the request will fail
 	 * @ff.default ANY
 	 */
@@ -216,15 +216,15 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		this.consumes = value;
 	}
 
-	/** 
-	 * The specified contentType on response. When <code<ANY</code> the response will determine the content type based on the return data.
+	/**
+	 * The specified contentType on response. When <code>ANY</code> the response will determine the content type based on the return data.
 	 * @ff.default ANY
 	 */
 	public void setProduces(MediaTypes value) {
 		this.produces = value;
 	}
 
-	/** 
+	/**
 	 * The specified character encoding on the response contentType header
 	 * @ff.default UTF-8
 	 */
@@ -233,29 +233,26 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 			this.charset = charset;
 		}
 	}
-	public String getCharacterEncoding() {
-		return charset;
-	}
 
-	/** 
+	/**
 	 * Automatically generate and validate etags
-	 * @ff.default <code>true</code>
+	 * @ff.default <code>true</code> for repeatable responses
 	 */
-	public void setUpdateEtag(boolean updateEtag) {
+	public void setUpdateEtag(Boolean updateEtag) {
 		this.updateEtag = updateEtag;
 	}
 
 	//TODO add authenticationType
 
-	/** 
-	 * Enables security for this listener. If you wish to use the application servers authorisation roles [AUTHROLE], you need to enable them globally for all ApiListeners with the `servlet.ApiListenerServlet.securityroles=ibistester,ibiswebservice` property
+	/**
+	 * Enables security for this listener. If you wish to use the application servers authorisation roles [AUTHROLE], you need to enable them globally for all ApiListeners with the `servlet.ApiListenerServlet.securityRoles=IbisTester,IbisWebService` property
 	 * @ff.default <code>NONE</code>
 	 */
 	public void setAuthenticationMethod(AuthenticationMethods authenticationMethod) {
 		this.authenticationMethod = authenticationMethod;
 	}
 
-	/** 
+	/**
 	 * Only active when AuthenticationMethod=AUTHROLE. Comma separated list of authorization roles which are granted for this service, eq. IbisTester,IbisObserver", ""})
 	 */
 	public void setAuthenticationRoles(String authRoles) {
@@ -275,7 +272,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		return authenticationRoles;
 	}
 
-	/** 
+	/**
 	 * Specify the form-part you wish to enter the pipeline
 	 * @ff.default name of the first form-part
 	 */
@@ -289,7 +286,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		return null;
 	}
 
-	/** 
+	/**
 	 * Name of the header which contains the message-id
 	 * @ff.default message-id
 	 */
@@ -297,41 +294,46 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		this.messageIdHeader = messageIdHeader;
 	}
 
-	/** 
+	/**
 	 * Unique string used to identify the operation. The id MUST be unique among all operations described in the OpenApi schema
 	 */
 	public void setOperationId(String operationId) {
 		this.operationId = operationId;
 	}
 
-	/** 
+	/**
 	 * Comma separated list of parameters passed as http header. Parameters will be stored in 'headers' sessionkey.
 	 */
 	public void setHeaderParams(String headerParams) {
 		this.headerParams = headerParams;
 	}
 
-	/** issuer to validate jwt */
+	/** Session key that provides the Content-disposition header in the response */
+	public void setContentDispositionHeaderSessionKey(String key) {
+		this.contentDispositionHeaderSessionKey = key;
+	}
+
+	/** Issuer to validate JWT */
 	public void setRequiredIssuer(String issuer) {
 		this.requiredIssuer = issuer;
 	}
 
-	/** keysource url to validate jwt */
+	/** Keysource URL to validate JWT */
 	public void setJwksURL(String string) {
 		this.jwksUrl = string;
 	}
 
-	/** comma separated list of required claims */
+	/** Comma separated list of required claims */
 	public void setRequiredClaims(String string) {
 		this.requiredClaims = string;
 	}
 
-	/** comma separated key value pairs to match with jwt payload. e.g. "sub=UnitTest, aud=test" */
+	/** Comma separated key value pairs to match with JWT payload. e.g. "sub=UnitTest, aud=test" */
 	public void setExactMatchClaims(String string) {
 		this.exactMatchClaims = string;
 	}
 
-	/** claim name which specifies the role */
+	/** Claim name which specifies the role */
 	public void setRoleClaim(String roleClaim) {
 		this.roleClaim = roleClaim;
 	}
@@ -344,7 +346,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		builder.append(" produces["+getProduces()+"]");
 		builder.append(" consumes["+getConsumes()+"]");
 		builder.append(" messageIdHeader["+getMessageIdHeader()+"]");
-		builder.append(" updateEtag["+isUpdateEtag()+"]");
+		builder.append(" updateEtag["+getUpdateEtag()+"]");
 		return builder.toString();
 	}
 

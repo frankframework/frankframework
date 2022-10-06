@@ -44,6 +44,7 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -83,9 +84,8 @@ public class IbisTester {
 			request.setServletPath("/larva/index.jsp");
 			boolean silent;
 			if (scenario == null) {
-				String ibisContextKey = appConstants.getResolvedProperty(IbisApplicationServlet.KEY_CONTEXT);
 				application = new MockServletContext("file:" + webAppPath, null);
-				application.setAttribute(ibisContextKey, ibisContext);
+				application.setAttribute(IbisApplicationServlet.CONTEXT_KEY, ibisContext);
 				silent = false;
 			} else {
 				request.setParameter("loglevel", "scenario passed/failed");
@@ -99,7 +99,7 @@ public class IbisTester {
 			runScenarios(application, request, writer, silent);
 			if (scenario == null) {
 				String htmlString = "<html><head/><body>" + writer.toString() + "</body></html>";
-				return XmlUtils.toXhtml(htmlString);
+				return XmlUtils.toXhtml(Message.asMessage(htmlString));
 			} else {
 				return writer.toString();
 			}

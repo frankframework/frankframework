@@ -16,23 +16,16 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.ConfiguredTestBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.LogUtil;
 
-public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>> {
-	protected Logger log = LogUtil.getLogger(this);
-
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
+public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>> extends ConfiguredTestBase {
 	
 	protected FS fileSystem;
 
@@ -48,6 +41,7 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 	public void setUp() throws IOException, ConfigurationException, FileSystemException {
 		log.debug("setUp start");
 		fileSystem = createFileSystem();
+		autowireByName(fileSystem);
 		log.debug("filesystem created, configure()");
 		fileSystem.configure();
 		log.debug("filesystem configured, open()");

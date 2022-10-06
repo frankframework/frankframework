@@ -62,11 +62,11 @@ public class RecordXml2Sender extends RecordXmlTransformer {
 	@Override
 	public String handleRecord(PipeLineSession session, List<String> parsedRecord) throws Exception {
 		String xml = super.handleRecord(session,parsedRecord);
-		return getSender().sendMessage(new Message(xml), session).asString(); 
+		return getSender().sendMessage(new Message(xml), session).asString();
 	}
 
 
-	@IbisDoc({"10", "Sender that needs to handle the (XML) record"})
+	@IbisDoc({"Sender that needs to handle the (XML) record"})
 	public void setSender(ISender sender) {
 		this.sender = sender;
 	}

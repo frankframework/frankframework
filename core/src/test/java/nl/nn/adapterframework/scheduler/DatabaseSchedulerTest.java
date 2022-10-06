@@ -56,7 +56,7 @@ public class DatabaseSchedulerTest extends Mockito {
 
 		configuration.mockQuery("SELECT COUNT(*) FROM IBISSCHEDULES", builder.build());
 
-		job.execute(configuration.getIbisManager());
+		job.execute();
 
 		MessageKeeper messageKeeper = job.getMessageKeeper();
 		for (int i = 0; i < messageKeeper.size(); i++) {

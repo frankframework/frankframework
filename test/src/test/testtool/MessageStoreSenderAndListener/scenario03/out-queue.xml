@@ -1,0 +1,37 @@
+<result>
+  <fielddefinition>
+    <field name="MESSAGEKEY" type="BIGINT" columnDisplaySize="20" precision="64" scale="0" isCurrency="false" columnTypeName="BIGINT" columnClassName="java.lang.Long"/>
+    <field name="TYPE" type="CHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="CHARACTER" columnClassName="java.lang.String"/>
+    <field name="SLOTID" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="CHARACTER VARYING" columnClassName="java.lang.String"/>
+    <field name="HOST" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="CHARACTER VARYING" columnClassName="java.lang.String"/>
+    <field name="MESSAGEID" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="CHARACTER VARYING" columnClassName="java.lang.String"/>
+    <field name="CORRELATIONID" type="VARCHAR" columnDisplaySize="256" precision="256" scale="0" isCurrency="false" columnTypeName="CHARACTER VARYING" columnClassName="java.lang.String"/>
+    <field name="MESSAGEDATE" type="TIMESTAMP" columnDisplaySize="26" precision="26" scale="6" isCurrency="false" columnTypeName="TIMESTAMP" columnClassName="java.sql.Timestamp"/>
+    <field name="COMMENTS" type="VARCHAR" columnDisplaySize="1000" precision="1000" scale="0" isCurrency="false" columnTypeName="CHARACTER VARYING" columnClassName="java.lang.String"/>
+    <field name="MESSAGE" type="BLOB" columnDisplaySize="2147483647" precision="2147483647" scale="0" isCurrency="false" columnTypeName="BINARY LARGE OBJECT" columnClassName="java.sql.Blob"/>
+    <field name="EXPIRYDATE" type="TIMESTAMP" columnDisplaySize="26" precision="26" scale="6" isCurrency="false" columnTypeName="TIMESTAMP" columnClassName="java.sql.Timestamp"/>
+    <field name="LABEL" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="CHARACTER VARYING" columnClassName="java.lang.String"/>
+  </fielddefinition>
+  <rowset>
+    <row number="0">
+      <field name="MESSAGEKEY">768</field>
+      <field name="TYPE">A</field>
+      <field name="SLOTID">TestMessageStoreSenderAndListener-Queue</field>
+      <field name="HOST">LPZWNL000040524</field>
+      <field name="MESSAGEID">1</field>
+      <field name="CORRELATIONID">Test Tool correlation id</field>
+      <field name="MESSAGEDATE">2022-03-29 08:53:24</field>
+      <field name="COMMENTS" null="true"/>
+      <field name="MESSAGE">"&lt;?xml version='1.0' encoding='UTF-8'?&gt;
+&lt;Envelope&gt;
+	&lt;Header&gt;
+		&lt;MessageID&gt;1&lt;/MessageID&gt;
+		&lt;Message contentType=""application/xml"" encoding=""UTF-8""&gt;test, with comma&lt;/Message&gt;
+	&lt;/Header&gt;
+&lt;/Envelope&gt;
+","a,b,c","double quote: [""] single quote [']"</field>
+      <field name="EXPIRYDATE">2022-04-28 08:53:24</field>
+      <field name="LABEL" null="true"/>
+    </row>
+  </rowset>
+</result>

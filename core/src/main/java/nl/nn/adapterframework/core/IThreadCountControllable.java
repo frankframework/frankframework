@@ -28,10 +28,10 @@ public interface IThreadCountControllable {
 
 	public boolean isThreadCountReadable();
 	public boolean isThreadCountControllable();
-	
+
 	public int getCurrentThreadCount();
 	public int getMaxThreadCount();
-	
+
 	public void increaseThreadCount();
 	public void decreaseThreadCount();
 

@@ -55,7 +55,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 		if (StringUtils.isNotEmpty(getFind())) {
 			if (getReplace() == null) {
 				throw new ConfigurationException("cannot have a null replace-attribute");
-			}		
+			}
 			log.info(getLogPrefix(null)+ "finds ["+getFind()+"] replaces with ["+getReplace()+"]");
 			if (!StringUtils.isEmpty(getLineSeparatorSymbol())) {
 				find=replace(find,lineSeparatorSymbol,System.getProperty("line.separator"));
@@ -113,10 +113,10 @@ public class ReplacerPipe extends FixedForwardPipe {
 		}
 		return new PipeRunResult(getSuccessForward(),input);
 	}
-	
+
 	/**
 	 * Sets the string that is searched for.
-	 */ 
+	 */
 	@IbisDoc({"string to search for", ""})
 	public void setFind(String find) {
 		this.find = find;
@@ -124,10 +124,10 @@ public class ReplacerPipe extends FixedForwardPipe {
 	public String getFind() {
 		return find;
 	}
-	
+
 	/**
 	 * Sets the string that will replace each of the occurrences of the find-string.
-	 */ 
+	 */
 	@IbisDoc({"string that will replace each of the strings found", ""})
 	public void setReplace(String replace) {
 		this.replace = replace;
@@ -138,7 +138,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 
 	/**
 	 * Sets the string the representation in find and replace of the line separator.
-	 */ 
+	 */
 	public String getLineSeparatorSymbol() {
 		return lineSeparatorSymbol;
 	}
@@ -148,7 +148,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 		lineSeparatorSymbol = string;
 	}
 
-	@IbisDoc({"Replace all non XML chars (not in the <a href=\"http://www.w3.org/TR/2006/REC-xml-20060816/#NT-Char\">character range as specified by the XML specification</a>) with {@link nl.nn.adapterframework.util.XmlUtils#replaceNonValidXmlCharacters(String, char, boolean, boolean) replaceNonValidXmlCharacters}", "false"})
+	@IbisDoc({"Replace all non XML chars (not in the <a href=\"http://www.w3.org/TR/2006/REC-xml-20060816/#NT-Char\">character range as specified by the XML specification</a>) with {@link XmlUtils#replaceNonValidXmlCharacters(String, char, boolean, boolean) replaceNonValidXmlCharacters}", "false"})
 	public void setReplaceNonXmlChars(boolean b) {
 		replaceNonXmlChars = b;
 	}
@@ -166,7 +166,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 		return replaceNonXmlChar;
 	}
 
-	@IbisDoc({"Whether to allow Unicode supplementary characters (like a smiley) during {@link nl.nn.adapterframework.util.XmlUtils#replaceNonValidXmlCharacters(String, char, boolean, boolean) replaceNonValidXmlCharacters}", "false"})
+	@IbisDoc({"Whether to allow Unicode supplementary characters (like a smiley) during {@link XmlUtils#replaceNonValidXmlCharacters(String, char, boolean, boolean) replaceNonValidXmlCharacters}", "false"})
 	public void setAllowUnicodeSupplementaryCharacters(boolean b) {
 		allowUnicodeSupplementaryCharacters = b;
 	}

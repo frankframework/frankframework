@@ -41,19 +41,19 @@ public interface IRecordHandlerManager extends INamedObject {
 	/**
 	 * @param flow New flow to be added to the managed flow elements
 	 */
-	@IbisDoc({"10", "Flow to be added to the managed flow elements"})
+	@IbisDoc({"Flow to be added to the managed flow elements"})
 	void addHandler(RecordHandlingFlow flow);
-	
+
 	/**
 	 * @return the RecordHandlingFlow element to be used to handle the record
 	 */
 	RecordHandlingFlow getRecordHandler(PipeLineSession session, String record) throws Exception;
-	
+
 	/**
 	 * @return the IRecordHandlingManager to be used initially based on the name of the input file 
 	 */
 	IRecordHandlerManager getRecordFactoryUsingFilename(PipeLineSession session, String filename);
-	
+
 	/**
 	 * @param initialFactory indicates if this manager is the initial manager
 	 */

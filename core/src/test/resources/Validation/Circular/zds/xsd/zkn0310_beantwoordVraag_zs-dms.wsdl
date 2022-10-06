@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:ZKN="http://www.egem.nl/StUF/sector/zkn/0310" xmlns:StUF="http://www.egem.nl/StUF/StUF0301" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:wsi="http://ws-i.org/schemas/conformanceClaim/" xmlns:xs="http://www.w3.org/2001/XMLSchema" name="StUF-ZKN0310" targetNamespace="http://www.egem.nl/StUF/sector/zkn/0310">
+	<import namespace="http://www.egem.nl/StUF/StUF0301" location="stuf0301_types.wsdl"/>
+	<documentation>
+		<xs:documentation>
+			   Dit document definieert de webservices voor het portType BeantwoordVraag voor het ZS-DMS koppelvlak.
+		
+			   Versie 031000
+			
+			   Versie 031001, wijzigingen t.b.v. patch 21 (1-4-2015) vergeleken met versie 031000 zijn de volgende wijzigingen doorgevoerd:			
+			   - ERR0353: Het documentation element is voorzien van een standaard 'appinfo' structuur met daarin informatie over het schema.
+			   - 382488: De backslashes ('\') in het attribute 'schemaLocation' van het 'definitions/types/schema/import' vervangen door forward slashes ('/').
+			
+		</xs:documentation>
+		<xs:appinfo>
+			<StUF:onderdeel>http://www.egem.nl/StUF/sector/zkn/0310</StUF:onderdeel>
+			<StUF:patch>27</StUF:patch>
+			<StUF:patchdatum>20170701</StUF:patchdatum>
+			<StUF:schemaversie>1</StUF:schemaversie>
+		</xs:appinfo>
+	</documentation>
+	<types>
+		<xs:schema>
+			<xs:import namespace="http://www.egem.nl/StUF/sector/zkn/0310" schemaLocation="zkn0310_msg_zs-dms_resolved2017.xsd"/>
+		</xs:schema>
+	</types>
+	<message name="edcLa01">
+		<part name="body" element="ZKN:edcLa01"/>
+	</message>
+	<message name="edcLv01">
+		<part name="body" element="ZKN:edcLv01"/>
+	</message>
+	<message name="zakLa01">
+		<part name="body" element="ZKN:zakLa01"/>
+	</message>
+	<message name="zakLv01">
+		<part name="body" element="ZKN:zakLv01"/>
+	</message>
+	<portType name="BeantwoordVraag">
+		<documentation>
+		Dit portType ondersteunt als operaties alle synchrone vraagberichten gedefinieerd binnen het sectormodel
+	</documentation>
+		<operation name="geefZaakdocumentLezen_Lv01">
+			<input message="ZKN:edcLv01"/>
+			<output message="ZKN:edcLa01"/>
+			<fault name="fout" message="StUF:Fo02"/>
+		</operation>
+		<operation name="geefZaakstatus_Lv01">
+			<input message="ZKN:zakLv01"/>
+			<output message="ZKN:zakLa01"/>
+			<fault name="fout" message="StUF:Fo02"/>
+		</operation>
+		<operation name="geefZaakdetails_Lv01">
+			<input message="ZKN:zakLv01"/>
+			<output message="ZKN:zakLa01"/>
+			<fault name="fout" message="StUF:Fo02"/>
+		</operation>
+		<operation name="geefLijstZaakdocumenten_Lv01">
+			<input message="ZKN:zakLv01"/>
+			<output message="ZKN:zakLa01"/>
+			<fault name="fout" message="StUF:Fo02"/>
+		</operation>
+	</portType>
+	<binding name="SOAPBeantwoordVraag" type="ZKN:BeantwoordVraag">
+		<documentation>
+			Omdat de uit te wisselen berichten volledig gedefinieerd zijn in het sectormodel cq de StUF-standaard, kunnen we ze zonder verdere encoding (“literal”) opnemen in de body.
+Niet ondersteunde berichten kunnen uit de binding en portType worden verwijderd.
+		</documentation>
+		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+		<operation name="geefZaakdocumentLezen_Lv01">
+			<soap:operation soapAction="http://www.egem.nl/StUF/sector/zkn/0310/geefZaakdocumentLezen_Lv01" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			<input>
+				<soap:body use="literal" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			</input>
+			<output>
+				<soap:body use="literal" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			</output>
+			<fault name="fout">
+				<soap:fault name="fout" use="literal" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			</fault>
+		</operation>
+		<operation name="geefZaakstatus_Lv01">
+			<soap:operation soapAction="http://www.egem.nl/StUF/sector/zkn/0310/geefZaakstatus_Lv01" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			<input>
+				<soap:body use="literal" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			</input>
+			<output>
+				<soap:body use="literal" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			</output>
+			<fault name="fout">
+				<soap:fault name="fout" use="literal" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			</fault>
+		</operation>
+		<operation name="geefZaakdetails_Lv01">
+			<soap:operation soapAction="http://www.egem.nl/StUF/sector/zkn/0310/geefZaakdetails_Lv01" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			<input>
+				<soap:body use="literal" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			</input>
+			<output>
+				<soap:body use="literal" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			</output>
+			<fault name="fout">
+				<soap:fault name="fout" use="literal" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			</fault>
+		</operation>
+		<operation name="geefLijstZaakdocumenten_Lv01">
+			<soap:operation soapAction="http://www.egem.nl/StUF/sector/zkn/0310/geefLijstZaakdocumenten_Lv01" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			<input>
+				<soap:body use="literal" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			</input>
+			<output>
+				<soap:body use="literal" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			</output>
+			<fault name="fout">
+				<soap:fault name="fout" use="literal" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+			</fault>
+		</operation>
+	</binding>
+	<service name="BeantwoordVraag">
+		<documentation>
+	Hieronder wordt de concreet aan te roepen service voor het ontvangen van synchrone ZKN0310-vraagberichten gedefinieerd. 
+		</documentation>
+		<port name="BeantwoordVraag" binding="ZKN:SOAPBeantwoordVraag">
+			<documentation>
+				<wsi:Claim conformsTo="http://ws-i.org/profiles/basic/1.1"/>
+			</documentation>
+			<soap:address location="http://example.com/BeantwoordVraag" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+		</port>
+	</service>
+</definitions>

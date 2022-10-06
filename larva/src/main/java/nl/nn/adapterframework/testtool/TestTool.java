@@ -1,5 +1,5 @@
 /*
-   Copyright 2014-2019 Nationale-Nederlanden, 2020-2021 WeAreFrank
+   Copyright 2014-2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,13 +17,11 @@ package nl.nn.adapterframework.testtool;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Reader;
@@ -48,63 +46,49 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 import java.util.zip.ZipInputStream;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.multipart.FilePart;
-import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
-import org.apache.commons.httpclient.methods.multipart.Part;
-import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockMultipartHttpServletRequest;
 
-import com.sun.syndication.io.XmlReader;
-
-import nl.nn.adapterframework.configuration.ClassLoaderException;
-import nl.nn.adapterframework.configuration.Configuration;
+import jakarta.json.JsonException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.http.HttpSender;
-import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
-import nl.nn.adapterframework.http.IbisWebServiceSender;
-import nl.nn.adapterframework.http.WebServiceListener;
-import nl.nn.adapterframework.http.WebServiceSender;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
-import nl.nn.adapterframework.jms.JMSFacade.DeliveryMode;
-import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.jms.PullingJmsListener;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.receivers.JavaListener;
-import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.senders.DelaySender;
-import nl.nn.adapterframework.senders.IbisJavaSender;
+import nl.nn.adapterframework.stream.FileMessage;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testtool.queues.QueueCreator;
+import nl.nn.adapterframework.testtool.queues.QueueWrapper;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CaseInsensitiveComparator;
 import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.ProcessUtil;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -115,10 +99,10 @@ public class TestTool {
 	private static Logger logger = LogUtil.getLogger(TestTool.class);
 	public static final String LOG_LEVEL_ORDER = "[debug], [pipeline messages prepared for diff], [pipeline messages], [wrong pipeline messages prepared for diff], [wrong pipeline messages], [step passed/failed], [scenario passed/failed], [scenario failed], [totals], [error]";
 	private static final String STEP_SYNCHRONIZER = "Step synchronizer";
-	protected static final int DEFAULT_TIMEOUT = AppConstants.getInstance().getInt("larva.timeout", 30000);
 	protected static final String TESTTOOL_CORRELATIONID = "Test Tool correlation id";
+	protected static final int DEFAULT_TIMEOUT = AppConstants.getInstance().getInt("larva.timeout", 30000);
 	protected static final String TESTTOOL_BIFNAME = "Test Tool bif name";
-	protected static final nl.nn.adapterframework.stream.Message TESTTOOL_DUMMY_MESSAGE = new nl.nn.adapterframework.stream.Message("<TestTool>Dummy message</TestTool>");
+	public static final nl.nn.adapterframework.stream.Message TESTTOOL_DUMMY_MESSAGE = new nl.nn.adapterframework.stream.Message("<TestTool>Dummy message</TestTool>");
 	protected static final String TESTTOOL_CLEAN_UP_REPLY = "<TestTool>Clean up reply</TestTool>";
 	private static final int RESULT_ERROR = 0;
 	private static final int RESULT_OK = 1;
@@ -127,12 +111,13 @@ public class TestTool {
 	private static String zeefVijlNeem = "";
 	private static Writer silentOut = null;
 	private static boolean autoSaveDiffs = false;
-	
+	private static AtomicLong correlationIdSuffixCounter = new AtomicLong(1);
+
 	/*
 	 * if allowReadlineSteps is set to true, actual results can be compared in line by using .readline steps.
 	 * Those results cannot be saved to the inline expected value, however.
 	 */
-	private static final boolean allowReadlineSteps = false; 
+	private static final boolean allowReadlineSteps = false;
 	protected static int globalTimeout=DEFAULT_TIMEOUT;
 
 	private static final String TR_STARTING_TAG="<tr>";
@@ -144,27 +129,16 @@ public class TestTool {
 	public static void setTimeout(int newTimeout) {
 		globalTimeout=newTimeout;
 	}
-	
-	public static IbisContext getIbisContext(ServletContext application) {
+
+	private static IbisContext getIbisContext(ServletContext application) {
 		return IbisApplicationServlet.getIbisContext(application);
 	}
 
-	public static AppConstants getAppConstants(IbisContext ibisContext) {
-		// Load AppConstants using a class loader to get an instance that has
-		// resolved application.server.type in ServerSpecifics*.properties,
-		// SideSpecifics*.properties and StageSpecifics*.properties filenames
-		// See IbisContext.setDefaultApplicationServerType() and userstory
-		// 'Refactor ConfigurationServlet en AppConstants' too.
-		Configuration configuration = ibisContext.getIbisManager().getConfigurations().get(0);
-		AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
-		return appConstants;
+	public static void runScenarios(ServletContext application, HttpServletRequest request, Writer out, String realPath) {
+		runScenarios(application, request, out, false, realPath);
 	}
 
-	public static void runScenarios(ServletContext application, HttpServletRequest request, Writer out) {
-		runScenarios(application, request, out, false);
-	}
-
-	public static void runScenarios(ServletContext application, HttpServletRequest request, Writer out, boolean silent) {
+	private static void runScenarios(ServletContext application, HttpServletRequest request, Writer out, boolean silent, String realPath) {
 		String paramLogLevel = request.getParameter("loglevel");
 		String paramAutoScroll = request.getParameter("autoscroll");
 		String paramExecute = request.getParameter("execute");
@@ -177,28 +151,25 @@ public class TestTool {
 			} catch(NumberFormatException e) {
 			}
 		}
-		String servletPath = request.getServletPath();
-		int i = servletPath.lastIndexOf('/');
-		String realPath = application.getRealPath(servletPath.substring(0, i));
 		String paramScenariosRootDirectory = request.getParameter("scenariosrootdirectory");
 		IbisContext ibisContext = getIbisContext(application);
-		AppConstants appConstants = getAppConstants(ibisContext);
-		runScenarios(ibisContext, appConstants, paramLogLevel,
+		runScenarios(ibisContext, paramLogLevel,
 				paramAutoScroll, paramExecute, paramWaitBeforeCleanUp, timeout,
 				realPath, paramScenariosRootDirectory, out, silent);
 	}
 
 	public static final int ERROR_NO_SCENARIO_DIRECTORIES_FOUND=-1;
 	/**
-	 * 
+	 *
 	 * @return negative: error condition
 	 * 		   0: all scenarios passed
 	 * 		   positive: number of scenarios that failed
 	 */
-	public static int runScenarios(IbisContext ibisContext, AppConstants appConstants, String paramLogLevel,
+	public static int runScenarios(IbisContext ibisContext, String paramLogLevel,
 			String paramAutoScroll, String paramExecute, String paramWaitBeforeCleanUp,
 			int timeout, String realPath, String paramScenariosRootDirectory,
 			Writer out, boolean silent) {
+		AppConstants appConstants = AppConstants.getInstance();
 		String logLevel = "wrong pipeline messages";
 		String autoScroll = "true";
 		if (paramLogLevel != null && LOG_LEVEL_ORDER.indexOf("[" + paramLogLevel + "]") > -1) {
@@ -233,7 +204,7 @@ public class TestTool {
 		List<String> scenariosRootDirectories = new ArrayList<String>();
 		List<String> scenariosRootDescriptions = new ArrayList<String>();
 		String currentScenariosRootDirectory = initScenariosRootDirectories(
-				appConstants, realPath,
+				realPath,
 				paramScenariosRootDirectory, scenariosRootDirectories,
 				scenariosRootDescriptions, writers);
 		if (scenariosRootDirectories.size() == 0) {
@@ -297,9 +268,11 @@ public class TestTool {
 				debugMessage("Execute scenario('s)", writers);
 				Iterator<File> scenarioFilesIterator = scenarioFiles.iterator();
 				while (scenarioFilesIterator.hasNext()) {
+					// increment suffix for each scenario
+					String correlationId = TESTTOOL_CORRELATIONID + "("+ correlationIdSuffixCounter.getAndIncrement() +")";
 					int scenarioPassed = RESULT_ERROR;
-					File scenarioFile = (File)scenarioFilesIterator.next();
-			
+					File scenarioFile = scenarioFilesIterator.next();
+
 					String scenarioDirectory = scenarioFile.getParentFile().getAbsolutePath() + File.separator;
 					String longName = scenarioFile.getAbsolutePath();
 					String shortName = longName.substring(currentScenariosRootDirectory.length() - 1, longName.length() - ".properties".length());
@@ -321,7 +294,7 @@ public class TestTool {
 						if (steps != null) {
 							synchronized(STEP_SYNCHRONIZER) {
 								debugMessage("Open queues", writers);
-								Map<String, Map<String, Object>> queues = openQueues(scenarioDirectory, steps, properties, ibisContext, appConstants, writers, timeout);
+								Map<String, Map<String, Object>> queues = QueueCreator.openQueues(scenarioDirectory, properties, ibisContext, writers, timeout, correlationId);
 								if (queues != null) {
 									debugMessage("Execute steps", writers);
 									boolean allStepsPassed = true;
@@ -338,7 +311,7 @@ public class TestTool {
 										String step = (String)iterator.next();
 										String stepDisplayName = shortName + " - " + step + " - " + properties.get(step);
 										debugMessage("Execute step '" + stepDisplayName + "'", writers);
-										int stepPassed = executeStep(step, properties, stepDisplayName, queues, writers, timeout);
+										int stepPassed = executeStep(step, properties, stepDisplayName, queues, writers, timeout, correlationId);
 										if (stepPassed==RESULT_OK) {
 											stepPassedMessage("Step '" + stepDisplayName + "' passed", writers);
 										} else if (stepPassed==RESULT_AUTOSAVED) {
@@ -363,7 +336,7 @@ public class TestTool {
 									} catch(InterruptedException e) {
 									}
 									debugMessage("Close queues", writers);
-									boolean remainingMessagesFound = closeQueues(queues, properties, writers);
+									boolean remainingMessagesFound = closeQueues(queues, properties, writers, correlationId);
 									if (remainingMessagesFound) {
 										stepFailedMessage("Found one or more messages on queues or in database after scenario executed", writers);
 										scenarioPassed = RESULT_ERROR;
@@ -401,7 +374,7 @@ public class TestTool {
 							}
 						}
 					}
-					
+
 					writeHtml("</div>", writers, false);
 				}
 				long executeTime = System.currentTimeMillis() - startTime;
@@ -703,14 +676,14 @@ public class TestTool {
 			String method = "pipeline messages";
 			int messageCounter = ((Integer)writers.get("messagecounter")).intValue();
 			messageCounter ++;
-			
+
 			writeLog("<div class='message container'>", method, writers, false);
 			writeLog("<h4>Step '" + stepDisplayName + "'</h4>", method, writers, false);
 			writeLog(writeCommands("messagebox" + messageCounter, true, null), method, writers, false);
 			writeLog("<h5>" + XmlUtils.encodeChars(message) + "</h5>", method, writers, false);
 			writeLog("<textarea cols='100' rows='10' id='messagebox" + messageCounter + "'>" + XmlUtils.encodeChars(XmlUtils.replaceNonValidXmlCharacters(pipelineMessage)) + "</textarea>", method, writers, false);
 			writeLog("</div>", method, writers, false);
-			
+
 			writers.put("messagecounter", new Integer(messageCounter));
 		}
 	}
@@ -737,7 +710,7 @@ public class TestTool {
 			String method = "wrong pipeline messages";
 			int messageCounter = ((Integer)writers.get("messagecounter")).intValue();
 			messageCounter ++;
-			
+
 			writeLog("<div class='message container'>", method, writers, false);
 			writeLog(writeCommands("messagebox" + messageCounter, true, null), method, writers, false);
 			writeLog("<h5>" + XmlUtils.encodeChars(message) + "</h5>", method, writers, false);
@@ -761,7 +734,7 @@ public class TestTool {
 			writeLog("<form name='"+formName+"' action='saveResultToFile.jsp' method='post' target='saveResultWindow' accept-charset='UTF-8'>", method, writers, false);
 			writeLog("<input type='hidden' name='iehack' value='&#9760;' />", method, writers, false); // http://stackoverflow.com/questions/153527/setting-the-character-encoding-in-form-submit-for-internet-explorer
 			writeLog("<h4>Step '" + stepDisplayName + "'</h4>", method, writers, false);
-			
+
 			writeLog("<hr/>", method, writers, false);
 
 			writeLog("<div class='resultContainer'>", method, writers, false);
@@ -777,7 +750,7 @@ public class TestTool {
 			writeLog("<h5>Expected (raw):</h5>", method, writers, false);
 			writeLog("<textarea name='expectedBox' id='"+expectedBoxId+"'>" + XmlUtils.encodeChars(pipelineMessageExpected) + "</textarea>", method, writers, false);
 			writeLog("</div>", method, writers, false);
-			
+
 			writeLog("<hr/>", method, writers, false);
 
 			writeLog("<div class='differenceContainer'>", method, writers, false);
@@ -806,7 +779,7 @@ public class TestTool {
 				writeLog("</form>", method, writers, false);
 				writeLog("</div>", method, writers, false);
 			}
-			
+
 			scenarioCounter++;
 			writers.put("scenariocounter", new Integer(scenarioCounter));
 		} else {
@@ -834,15 +807,15 @@ public class TestTool {
 			writeLog("<input type='hidden' name='iehack' value='&#9760;' />", method, writers, false); // http://stackoverflow.com/questions/153527/setting-the-character-encoding-in-form-submit-for-internet-explorer
 			writeLog("<h4>Step '" + stepDisplayName + "'</h4>", method, writers, false);
 			messageCounter ++;
-			
+
 			writeLog("<hr/>", method, writers, false);
-			
+
 			writeLog("<div class='resultContainer'>", method, writers, false);
 			writeLog(writeCommands(resultBoxId, true, null), method, writers, false);
 			writeLog("<h5>Result (prepared for diff):</h5>", method, writers, false);
 			writeLog("<textarea name='resultBox' id='"+resultBoxId+"'>" + XmlUtils.encodeChars(pipelineMessagePreparedForDiff) + "</textarea>", method, writers, false);
-			writeLog("</div>", method, writers, false);		
-			
+			writeLog("</div>", method, writers, false);
+
 			messageCounter++;
 			writeLog("<div class='expectedContainer'>", method, writers, false);
 			writeLog(writeCommands(expectedBoxId, true, null), method, writers, false);
@@ -851,7 +824,7 @@ public class TestTool {
 			writeLog("<h5>Expected (prepared for diff):</h5>", method, writers, false);
 			writeLog("<textarea name='expectedBox' id='" + expectedBoxId + "'>" + XmlUtils.encodeChars(pipelineMessageExpectedPreparedForDiff) + "</textarea>", method, writers, false);
 			writeLog("</div>", method, writers, false);
-			
+
 			writeLog("<hr/>", method, writers, false);
 
 			messageCounter++;
@@ -863,17 +836,17 @@ public class TestTool {
 			writeLog("<h5>Differences:</h5>", method, writers, false);
 			writeLog("<pre id='"+diffBoxId+"' class='diffBox'></pre>", method, writers, false);
 			writeLog("</div>", method, writers, false);
-			
+
 			writeLog("</form>", method, writers, false);
 			writeLog("</div>", method, writers, false);
 
 			writers.put("messagecounter", new Integer(messageCounter));
 		}
 	}
-	
+
 	private static String writeCommands(String target, boolean textArea, String customCommand) {
 		String commands = "";
-		
+
 		commands += "<div class='commands'>";
 		commands += "<span class='widthCommands'><a href='javascript:void(0);' class='" + target + "|widthDown'>-</a><a href='javascript:void(0);' class='" + target + "|widthExact'>width</a><a href='javascript:void(0);' class='" + target + "|widthUp'>+</a></span>";
 		commands += "<span class='heightCommands'><a href='javascript:void(0);' class='" + target + "|heightDown'>-</a><a href='javascript:void(0);' class='" + target + "|heightExact'>height</a><a href='javascript:void(0);' class='" + target + "|heightUp'>+</a></span>";
@@ -885,8 +858,8 @@ public class TestTool {
 			commands += " " + customCommand;
 		}
 		commands += "</div>";
-		
-		
+
+
 		return commands;
 	}
 
@@ -1002,11 +975,8 @@ public class TestTool {
 		}
 	}
 
-	public static String initScenariosRootDirectories(
-			AppConstants appConstants, String realPath,
-			String paramScenariosRootDirectory,
-			List<String> scenariosRootDirectories, List<String> scenariosRootDescriptions,
-			Map<String, Object> writers) {
+	public static String initScenariosRootDirectories(String realPath, String paramScenariosRootDirectory, List<String> scenariosRootDirectories, List<String> scenariosRootDescriptions, Map<String, Object> writers) {
+		AppConstants appConstants = AppConstants.getInstance();
 		String currentScenariosRootDirectory = null;
 		if (realPath == null) {
 			errorMessage("Could not read webapp real path", writers);
@@ -1169,7 +1139,7 @@ public class TestTool {
 	/**
 	 * Returns the absolute pathname for the child pathname. The parent pathname
 	 * is used as a prefix when the child pathname is an not absolute.
-	 *  
+	 *
 	 * @param parent  the parent pathname to use
 	 * @param child   the child pathname to convert to a absolute pathname
 	 */
@@ -1241,946 +1211,7 @@ public class TestTool {
 		return steps;
 	}
 
-	public static Map<String, Map<String, Object>> openQueues(String scenarioDirectory, List<String> steps,
-			Properties properties, IbisContext ibisContext,
-			AppConstants appConstants, Map<String, Object> writers, int parameterTimeout) {
-		Map<String, Map<String, Object>> queues = new HashMap<String, Map<String, Object>>();
-		debugMessage("Get all queue names", writers);
-		List<String> jmsSenders = new ArrayList<String>();
-		List<String> jmsListeners = new ArrayList<String>();
-		List<String> jdbcFixedQuerySenders = new ArrayList<String>();
-		List<String> ibisWebServiceSenders = new ArrayList<String>();
-		List<String> webServiceSenders = new ArrayList<String>();
-		List<String> webServiceListeners = new ArrayList<String>();
-		List<String> httpSenders = new ArrayList<String>();
-		List<String> ibisJavaSenders = new ArrayList<String>();
-		List<String> delaySenders = new ArrayList<String>();
-		List<String> javaListeners = new ArrayList<String>();
-		List<String> fileSenders = new ArrayList<String>();
-		List<String> fileListeners = new ArrayList<String>();
-		List<String> xsltProviderListeners = new ArrayList<String>();
-				
-		Iterator iterator = properties.keySet().iterator();
-		while (iterator.hasNext()) {
-			String key = (String)iterator.next();
-			int i = key.indexOf('.');
-			if (i != -1) {
-				int j = key.indexOf('.', i + 1);
-				if (j != -1) {
-					String queueName = key.substring(0, j);
-					debugMessage("queuename openqueue: " + queueName, writers);
-					if ("nl.nn.adapterframework.jms.JmsSender".equals(properties.get(queueName + ".className"))
-							&& !jmsSenders.contains(queueName)) {
-						debugMessage("Adding jmsSender queue: " + queueName, writers);
-						jmsSenders.add(queueName);
-					} else if ("nl.nn.adapterframework.jms.JmsListener".equals(properties.get(queueName + ".className"))
-							&& !jmsListeners.contains(queueName)) {
-						debugMessage("Adding jmsListener queue: " + queueName, writers);
-						jmsListeners.add(queueName);
-					} else if ("nl.nn.adapterframework.jdbc.FixedQuerySender".equals(properties.get(queueName + ".className"))
-							&& !jdbcFixedQuerySenders.contains(queueName)) {
-						debugMessage("Adding jdbcFixedQuerySender queue: " + queueName, writers);
-						jdbcFixedQuerySenders.add(queueName);
-					} else if ("nl.nn.adapterframework.http.IbisWebServiceSender".equals(properties.get(queueName + ".className"))
-							&& !ibisWebServiceSenders.contains(queueName)) {
-						debugMessage("Adding ibisWebServiceSender queue: " + queueName, writers);
-						ibisWebServiceSenders.add(queueName);
-					} else if ("nl.nn.adapterframework.http.WebServiceSender".equals(properties.get(queueName + ".className"))
-							&& !webServiceSenders.contains(queueName)) {
-						debugMessage("Adding webServiceSender queue: " + queueName, writers);
-						webServiceSenders.add(queueName);
-					} else if ("nl.nn.adapterframework.http.WebServiceListener".equals(properties.get(queueName + ".className"))
-							&& !webServiceListeners.contains(queueName)) {
-						debugMessage("Adding webServiceListener queue: " + queueName, writers);
-						webServiceListeners.add(queueName);
-					} else if ("nl.nn.adapterframework.http.HttpSender".equals(properties.get(queueName + ".className"))
-							&& !httpSenders.contains(queueName)) {
-						debugMessage("Adding httpSender queue: " + queueName, writers);
-						httpSenders.add(queueName);
-					} else if ("nl.nn.adapterframework.senders.IbisJavaSender".equals(properties.get(queueName + ".className"))
-							&& !ibisJavaSenders.contains(queueName)) {
-						debugMessage("Adding ibisJavaSender queue: " + queueName, writers);
-						ibisJavaSenders.add(queueName);
-					} else if ("nl.nn.adapterframework.senders.DelaySender".equals(properties.get(queueName + ".className"))
-							&& !delaySenders.contains(queueName)) {
-						debugMessage("Adding delaySender queue: " + queueName, writers);
-						delaySenders.add(queueName);
-					} else if ("nl.nn.adapterframework.receivers.JavaListener".equals(properties.get(queueName + ".className"))
-							&& !javaListeners.contains(queueName)) {
-						debugMessage("Adding javaListener queue: " + queueName, writers);
-						javaListeners.add(queueName);
-					} else if ("nl.nn.adapterframework.testtool.FileSender".equals(properties.get(queueName + ".className"))
-							&& !fileSenders.contains(queueName)) {
-						debugMessage("Adding fileSender queue: " + queueName, writers);
-						fileSenders.add(queueName);
-					} else if ("nl.nn.adapterframework.testtool.FileListener".equals(properties.get(queueName + ".className"))
-							&& !fileListeners.contains(queueName)) {
-						debugMessage("Adding fileListener queue: " + queueName, writers);
-						fileListeners.add(queueName);
-					} else if ("nl.nn.adapterframework.testtool.XsltProviderListener".equals(properties.get(queueName + ".className"))
-							&& !xsltProviderListeners.contains(queueName)) {
-						debugMessage("Adding xsltProviderListeners queue: " + queueName, writers);
-						xsltProviderListeners.add(queueName);
-					}
-				}
-			}
-		}
-
-		debugMessage("Initialize jms senders", writers);
-		iterator = jmsSenders.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String queueName = (String)iterator.next();
-			String queue = (String)properties.get(queueName + ".queue");
-			if (queue == null) {
-				closeQueues(queues, properties, writers);
-				queues = null;
-				errorMessage("Could not find property '" + queueName + ".queue'", writers);
-			} else {
-				JmsSender jmsSender = (JmsSender)ibisContext.createBeanAutowireByName(JmsSender.class);
-				jmsSender.setName("Test Tool JmsSender");
-				jmsSender.setDestinationName(queue);
-				jmsSender.setDestinationType(DestinationType.QUEUE);
-				jmsSender.setAcknowledgeMode("auto");
-				String jmsRealm = (String)properties.get(queueName + ".jmsRealm");
-				if (jmsRealm!=null) {
-					jmsSender.setJmsRealm(jmsRealm);
-				} else {
-					jmsSender.setJmsRealm("default");
-				}
-				String deliveryMode = properties.getProperty(queueName + ".deliveryMode");
-				debugMessage("Property '" + queueName + ".deliveryMode': " + deliveryMode, writers);
-				String persistent = properties.getProperty(queueName + ".persistent");
-				debugMessage("Property '" + queueName + ".persistent': " + persistent, writers);
-				String useCorrelationIdFrom = properties.getProperty(queueName + ".useCorrelationIdFrom");
-				debugMessage("Property '" + queueName + ".useCorrelationIdFrom': " + useCorrelationIdFrom, writers);
-				String replyToName = properties.getProperty(queueName + ".replyToName");
-				debugMessage("Property '" + queueName + ".replyToName': " + replyToName, writers);
-				if (deliveryMode != null) {
-					debugMessage("Set deliveryMode to " + deliveryMode, writers);
-					jmsSender.setDeliveryMode(EnumUtils.parse(DeliveryMode.class, deliveryMode));
-				}
-				if ("true".equals(persistent)) {
-					debugMessage("Set persistent to true", writers);
-					jmsSender.setPersistent(true);
-				} else {
-					debugMessage("Set persistent to false", writers);
-					jmsSender.setPersistent(false);
-				}
-				if (replyToName != null) {
-					debugMessage("Set replyToName to " + replyToName, writers);
-					jmsSender.setReplyToName(replyToName);
-				}
-				try {
-					jmsSender.configure();
-				} catch (ConfigurationException e) {
-					throw new RuntimeException(e);
-				}
-				Map<String, Object> jmsSenderInfo = new HashMap<String, Object>();
-				jmsSenderInfo.put("jmsSender", jmsSender);
-				jmsSenderInfo.put("useCorrelationIdFrom", useCorrelationIdFrom);
-				String correlationId = properties.getProperty(queueName + ".jmsCorrelationId");
-				if (correlationId!=null) {
-					jmsSenderInfo.put("jmsCorrelationId", correlationId);
-					debugMessage("Property '" + queueName + ".jmsCorrelationId': " + correlationId, writers);
-				}
-				queues.put(queueName, jmsSenderInfo);
-				debugMessage("Opened jms sender '" + queueName + "'", writers);
-			}
-		}
-
-		debugMessage("Initialize jms listeners", writers);
-		iterator = jmsListeners.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String queueName = (String)iterator.next();
-			String queue = (String)properties.get(queueName + ".queue");
-			String timeout = (String)properties.get(queueName + ".timeout");
-
-			int nTimeout = parameterTimeout;
-			if (timeout != null && timeout.length() > 0) {
-				nTimeout = Integer.parseInt(timeout);
-				debugMessage("Overriding default timeout setting of "+parameterTimeout+" with "+ nTimeout, writers);
-			}
-
-			if (queue == null) {
-				closeQueues(queues, properties, writers);
-				queues = null;
-				errorMessage("Could not find property '" + queueName + ".queue'", writers);
-			} else {
-				PullingJmsListener pullingJmsListener = (PullingJmsListener)ibisContext.createBeanAutowireByName(PullingJmsListener.class);
-				pullingJmsListener.setName("Test Tool JmsListener");
-				pullingJmsListener.setDestinationName(queue);
-				pullingJmsListener.setDestinationType(DestinationType.QUEUE);
-				pullingJmsListener.setAcknowledgeMode("auto");
-				String jmsRealm = (String)properties.get(queueName + ".jmsRealm");
-				if (jmsRealm!=null) {
-					pullingJmsListener.setJmsRealm(jmsRealm);
-				} else {
-					pullingJmsListener.setJmsRealm("default");
-				}
-				// Call setJmsRealm twice as a workaround for a strange bug
-				// where we get a java.lang.NullPointerException in a class of
-				// the commons-beanutils.jar on the first call to setJmsRealm
-				// after starting the Test Tool ear:
-				// at org.apache.commons.beanutils.MappedPropertyDescriptor.internalFindMethod(MappedPropertyDescriptor.java(Compiled Code))
-				// at org.apache.commons.beanutils.MappedPropertyDescriptor.internalFindMethod(MappedPropertyDescriptor.java:413)
-				// ...
-				// Looks like some sort of classloader problem where
-				// internalFindMethod on another class is called (last line in
-				// stacktrace has "Compiled Code" while other lines have
-				// linenumbers).
-				// Can be reproduced with for example:
-				// - WebSphere Studio Application Developer (Windows) Version: 5.1.2
-				// - Ibis4Juice build 20051104-1351
-				// - y01\rr\getAgent1003\scenario01.properties
-				pullingJmsListener.setTimeOut(nTimeout);
-				String setForceMessageIdAsCorrelationId = (String)properties.get(queueName + ".setForceMessageIdAsCorrelationId");
-				if ("true".equals(setForceMessageIdAsCorrelationId)) {
-					pullingJmsListener.setForceMessageIdAsCorrelationId(true);
-				}
-				try {
-					pullingJmsListener.configure();
-				} catch (ConfigurationException e) {
-					throw new RuntimeException(e);
-				}
-				Map<String, Object> jmsListenerInfo = new HashMap<String, Object>();
-				jmsListenerInfo.put("jmsListener", pullingJmsListener);
-				queues.put(queueName, jmsListenerInfo);
-				debugMessage("Opened jms listener '" + queueName + "'", writers);
-				if (jmsCleanUp(queueName, pullingJmsListener, writers)) {
-					errorMessage("Found one or more old messages on queue '" + queueName + "', you might want to run your tests with a higher 'wait before clean up' value", writers);
-				}
-			}
-		}
-
-		debugMessage("Initialize jdbc fixed query senders", writers);
-		iterator = jdbcFixedQuerySenders.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String name = (String)iterator.next();
-			String datasourceName = (String)properties.get(name + ".datasourceName");
-			String username = (String)properties.get(name + ".username");
-			String password = (String)properties.get(name + ".password");
-			boolean allFound = false;
-			String preDelete = ""; 
-			int preDeleteIndex = 1;
-			String queryType = (String)properties.get(name + ".queryType");
-			String getBlobSmartString = (String)properties.get(name + ".getBlobSmart");
-			boolean getBlobSmart = false;
-			if (getBlobSmartString != null) {
-				getBlobSmart = Boolean.valueOf(getBlobSmartString).booleanValue();
-			}
-			if (datasourceName == null) {
-				closeQueues(queues, properties, writers);
-				queues = null;
-				errorMessage("Could not find datasourceName property for " + name, writers);
-			} else {
-				Map<String, Object> querySendersInfo = new HashMap<String, Object>();
-				while (!allFound && queues != null) {
-					preDelete = (String)properties.get(name + ".preDel" + preDeleteIndex);
-					if (preDelete != null) {
-						FixedQuerySender deleteQuerySender = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
-						deleteQuerySender.setName("Test Tool pre delete query sender");
-						deleteQuerySender.setDatasourceName(datasourceName);
-						deleteQuerySender.setQueryType("delete");
-						deleteQuerySender.setQuery("delete from " + preDelete);
-						try {
-							deleteQuerySender.configure();				 		
-							deleteQuerySender.open(); 						
-							deleteQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, null);
-							deleteQuerySender.close();
-						} catch(ConfigurationException e) {
-							closeQueues(queues, properties, writers);
-							queues = null;
-							errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
-						} catch(TimeoutException e) {
-							closeQueues(queues, properties, writers);
-							queues = null;
-							errorMessage("Time out on execute pre delete query for '" + name + "': " + e.getMessage(), e, writers);
-						} catch(SenderException e) {
-							closeQueues(queues, properties, writers);
-							queues = null;
-							errorMessage("Could not execute pre delete query for '" + name + "': " + e.getMessage(), e, writers);
-						}
-						preDeleteIndex++;
-					} else {
-						allFound = true;
-					}	
-				}
-				if (queues != null) {
-					String prePostQuery = (String)properties.get(name + ".prePostQuery");
-					if (prePostQuery != null) {
-						FixedQuerySender prePostFixedQuerySender = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
-						prePostFixedQuerySender.setName("Test Tool query sender");
-						prePostFixedQuerySender.setDatasourceName(datasourceName);
-						//prePostFixedQuerySender.setUsername(username);
-						//prePostFixedQuerySender.setPassword(password);
-						prePostFixedQuerySender.setQueryType("select");
-						prePostFixedQuerySender.setQuery(prePostQuery);
-						try {
-							prePostFixedQuerySender.configure();
-						} catch(ConfigurationException e) {
-							closeQueues(queues, properties, writers);
-							queues = null;
-							errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
-						}
-						if (queues != null) {
-							try {
-								prePostFixedQuerySender.open();
-							} catch(SenderException e) {
-								closeQueues(queues, properties, writers);
-								queues = null;
-								errorMessage("Could not open (pre/post) '" + name + "': " + e.getMessage(), e, writers);
-							}
-						}
-						if (queues != null) {
-							try {
-								PipeLineSession session = new PipeLineSession();
-								session.put(PipeLineSession.businessCorrelationIdKey, TestTool.TESTTOOL_CORRELATIONID);
-								String result = prePostFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, session).asString();
-								querySendersInfo.put("prePostQueryFixedQuerySender", prePostFixedQuerySender);
-								querySendersInfo.put("prePostQueryResult", result);
-							} catch(TimeoutException e) {
-								closeQueues(queues, properties, writers);
-								queues = null;
-								errorMessage("Time out on execute query for '" + name + "': " + e.getMessage(), e, writers);
-							} catch(IOException | SenderException e) {
-								closeQueues(queues, properties, writers);
-								queues = null;
-								errorMessage("Could not execute query for '" + name + "': " + e.getMessage(), e, writers);
-							}
-						}
-					}
-				}
-				if (queues != null) {
-					String readQuery = (String)properties.get(name + ".readQuery");
-					if (readQuery != null) {
-						FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
-						readQueryFixedQuerySender.setName("Test Tool query sender");
-						readQueryFixedQuerySender.setDatasourceName(datasourceName);
-						//readQueryFixedQuerySender.setUsername(username);
-						//readQueryFixedQuerySender.setPassword(password);
-						
-						if ((queryType != null) && (! queryType.equals(""))) {
-							readQueryFixedQuerySender.setQueryType(queryType);	
-						} else {
-							readQueryFixedQuerySender.setQueryType("select");	
-						}
-						
-						readQueryFixedQuerySender.setQuery(readQuery);
-						readQueryFixedQuerySender.setBlobSmartGet(getBlobSmart);
-						try {
-							readQueryFixedQuerySender.configure();
-						} catch(ConfigurationException e) {
-							closeQueues(queues, properties, writers);
-							queues = null;
-							errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
-						}
-						if (queues != null) {
-							try {
-								readQueryFixedQuerySender.open();
-								querySendersInfo.put("readQueryQueryFixedQuerySender", readQueryFixedQuerySender);
-							} catch(SenderException e) {
-								closeQueues(queues, properties, writers);
-								queues = null;
-								errorMessage("Could not open '" + name + "': " + e.getMessage(), e, writers);
-							}
-						}
-					}
-				}
-				if (queues != null) {
-					String waitBeforeRead = (String)properties.get(name + ".waitBeforeRead");
-					if (waitBeforeRead != null) {
-						try {
-							querySendersInfo.put("readQueryWaitBeforeRead", new Integer(waitBeforeRead));
-						} catch(NumberFormatException e) {
-							errorMessage("Value of '" + name + ".waitBeforeRead' not a number: " + e.getMessage(), e, writers);
-						}
-					}
-					queues.put(name, querySendersInfo);
-					debugMessage("Opened jdbc connection '" + name + "'", writers);
-				}
-			}
-		}
-
-		debugMessage("Initialize ibis web service senders", writers);
-		iterator = ibisWebServiceSenders.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String name = (String)iterator.next();
-	
-			String ibisHost = (String)properties.get(name + ".ibisHost");
-			String ibisInstance = (String)properties.get(name + ".ibisInstance");
-			String serviceName = (String)properties.get(name + ".serviceName");
-			Boolean convertExceptionToMessage = new Boolean((String)properties.get(name + ".convertExceptionToMessage"));
-
-			if (ibisHost == null) {
-				closeQueues(queues, properties, writers);
-				queues = null;
-				errorMessage("Could not find ibisHost property for " + name, writers);
-			} else if (ibisInstance == null) {
-				closeQueues(queues, properties, writers);
-				queues = null;
-				errorMessage("Could not find ibisInstance property for " + name, writers);
-			} else if (serviceName == null) {
-				closeQueues(queues, properties, writers);
-				queues = null;
-				errorMessage("Could not find serviceName property for " + name, writers);
-			} else {
-				IbisWebServiceSender ibisWebServiceSender = new IbisWebServiceSender();
-				ibisWebServiceSender.setName("Test Tool IbisWebServiceSender");
-				ibisWebServiceSender.setIbisHost(ibisHost);
-				ibisWebServiceSender.setIbisInstance(ibisInstance);
-				ibisWebServiceSender.setServiceName(serviceName);
-				try {
-					ibisWebServiceSender.configure();
-				} catch(ConfigurationException e) {
-					errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
-					closeQueues(queues, properties, writers);
-					queues = null;
-				}
-				try {
-					ibisWebServiceSender.open();
-				} catch (SenderException e) {
-					closeQueues(queues, properties, writers);
-					queues = null;
-					errorMessage("Could not open '" + name + "': " + e.getMessage(), e, writers);
-				}
-				if (queues != null) {
-					Map<String, Object> ibisWebServiceSenderInfo = new HashMap<String, Object>();
-					ibisWebServiceSenderInfo.put("ibisWebServiceSender", ibisWebServiceSender);
-					ibisWebServiceSenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
-					queues.put(name, ibisWebServiceSenderInfo);
-					debugMessage("Opened ibis web service sender '" + name + "'", writers);
-				}
-			}
-		}
-
-		debugMessage("Initialize web service senders", writers);
-		iterator = webServiceSenders.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String name = (String)iterator.next();
-			Boolean convertExceptionToMessage = new Boolean((String)properties.get(name + ".convertExceptionToMessage"));
-			String url = (String)properties.get(name + ".url");
-			String userName = (String)properties.get(name + ".userName");
-			String password = (String)properties.get(name + ".password");
-			String authAlias = (String)properties.get(name + ".authAlias");
-			String soap = (String)properties.get(name + ".soap");
-			String allowSelfSignedCertificates = properties.getProperty(name + ".allowSelfSignedCertificates", "true");
-			String verifyHostname = properties.getProperty(name + ".verifyHostname", "false");
-			if (url == null) {
-				closeQueues(queues, properties, writers);
-				queues = null;
-				errorMessage("Could not find url property for " + name, writers);
-			} else {
-				WebServiceSender webServiceSender = new WebServiceSender();
-				webServiceSender.setName("Test Tool WebServiceSender");
-				webServiceSender.setUrl(url);
-				webServiceSender.setUsername(userName);
-				webServiceSender.setPassword(password);
-				webServiceSender.setAuthAlias(authAlias);
-				if (soap != null) {
-					webServiceSender.setSoap(new Boolean(soap));
-				}
-				webServiceSender.setAllowSelfSignedCertificates(new Boolean(allowSelfSignedCertificates));
-				webServiceSender.setVerifyHostname(new Boolean(verifyHostname));
-				String serviceNamespaceURI = (String)properties.get(name + ".serviceNamespaceURI");
-				if (serviceNamespaceURI != null) {
-					webServiceSender.setServiceNamespaceURI(serviceNamespaceURI);
-				}
-				String serviceNamespace = (String)properties.get(name + ".serviceNamespace");
-				if (serviceNamespace != null) {
-					webServiceSender.setServiceNamespace(serviceNamespace);
-				}
-				try {
-					webServiceSender.configure();
-				} catch(ConfigurationException e) {
-					errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
-					closeQueues(queues, properties, writers);
-					queues = null;
-				}
-				if (queues != null) {
-					try {
-						webServiceSender.open();
-					} catch (SenderException e) {
-						closeQueues(queues, properties, writers);
-						queues = null;
-						errorMessage("Could not open '" + name + "': " + e.getMessage(), e, writers);
-					}
-					if (queues != null) {
-						Map<String, Object> webServiceSenderInfo = new HashMap<String, Object>();
-						webServiceSenderInfo.put("webServiceSender", webServiceSender);
-						webServiceSenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
-						queues.put(name, webServiceSenderInfo);
-						debugMessage("Opened web service sender '" + name + "'", writers);
-					}
-				}
-			}
-		}
-
-		debugMessage("Initialize web service listeners", writers);
-		iterator = webServiceListeners.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String name = (String)iterator.next();
-			String serviceNamespaceURI = (String)properties.get(name + ".serviceNamespaceURI");
-
-			if (serviceNamespaceURI == null) {
-				closeQueues(queues, properties, writers);
-				queues = null;
-				errorMessage("Could not find property '" + name + ".serviceNamespaceURI'", writers);
-			} else {
-				ListenerMessageHandler listenerMessageHandler = new ListenerMessageHandler();
-				listenerMessageHandler.setTimeout(parameterTimeout);
-
-				if(properties.contains(name + ".requestTimeOut") || properties.contains(name + ".responseTimeOut")) {
-					errorMessage("properties "+name+".requestTimeOut/"+name+".responseTimeOut have been replaced with "+name+".timeout", writers);
-				}
-
-				try {
-					long timeout = Long.parseLong((String)properties.get(name + ".timeout"));
-					listenerMessageHandler.setTimeout(timeout);
-					debugMessage("Timeout set to '" + timeout + "'", writers);
-				} catch(Exception e) {
-				}
-				WebServiceListener webServiceListener = new WebServiceListener();
-				webServiceListener.setName("Test Tool WebServiceListener");
-				webServiceListener.setServiceNamespaceURI(serviceNamespaceURI);
-				webServiceListener.setHandler(listenerMessageHandler);
-				try {
-					webServiceListener.open();
-				} catch (ListenerException e) {
-					closeQueues(queues, properties, writers);
-					queues = null;
-					errorMessage("Could not open web service listener '" + name + "': " + e.getMessage(), e, writers);
-				}
-				Map<String, Object> webServiceListenerInfo = new HashMap<String, Object>();
-				webServiceListenerInfo.put("webServiceListener", webServiceListener);
-				webServiceListenerInfo.put("listenerMessageHandler", listenerMessageHandler);
-				queues.put(name, webServiceListenerInfo);
-				ServiceDispatcher serviceDispatcher = ServiceDispatcher.getInstance();
-				try {
-					serviceDispatcher.registerServiceClient(serviceNamespaceURI, webServiceListener);
-					debugMessage("Opened web service listener '" + name + "'", writers);
-				} catch(ListenerException e) {
-					closeQueues(queues, properties, writers);
-					queues = null;
-					errorMessage("Could not open web service listener '" + name + "': " + e.getMessage(), e, writers);
-				}
-			}
-		}
-
-		debugMessage("Initialize http senders", writers);
-		iterator = httpSenders.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String name = (String)iterator.next();
-			Boolean convertExceptionToMessage = new Boolean((String)properties.get(name + ".convertExceptionToMessage"));
-			String url = (String)properties.get(name + ".url");
-			String userName = (String)properties.get(name + ".userName");
-			String password = (String)properties.get(name + ".password");
-			String authAlias = (String)properties.get(name + ".authAlias");
-			String headerParams = (String)properties.get(name + ".headersParams");
-			String xhtmlString = (String)properties.get(name + ".xhtml");
-			String methodtype = (String)properties.get(name + ".methodType");
-			String paramsInUrlString = (String)properties.get(name + ".paramsInUrl");
-			String inputMessageParam = (String)properties.get(name + ".inputMessageParam");
-			String multipartString = (String)properties.get(name + ".multipart");
- 			String styleSheetName = (String)properties.get(name + ".styleSheetName");
- 			String allowSelfSignedCertificates = properties.getProperty(name + ".allowSelfSignedCertificates", "true");
- 			String verifyHostname = properties.getProperty(name + ".verifyHostname", "false");
-			if (url == null) {
-				closeQueues(queues, properties, writers);
-				queues = null;
-				errorMessage("Could not find url property for " + name, writers);
-			} else {
-				HttpSender httpSender = null;
-				PipeLineSession session = null;
-				ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
-				try {
-					// Use directoryClassLoader to make it possible to specify
-					// styleSheetName relative to the scenarioDirectory.
-					//TODO create larva classloader without basepath
-					DirectoryClassLoader directoryClassLoader = new DirectoryClassLoader(originalClassLoader);
-					directoryClassLoader.setDirectory(scenarioDirectory);
-					directoryClassLoader.setBasePath(".");
-					directoryClassLoader.configure(ibisContext, "dummy");
-					Thread.currentThread().setContextClassLoader(directoryClassLoader);
-					httpSender = new HttpSender();
-					httpSender.setName("Test Tool HttpSender");
-					httpSender.setUrl(url);
-					httpSender.setUsername(userName);
-					httpSender.setPassword(password);
-					httpSender.setAuthAlias(authAlias);
-					httpSender.setHeadersParams(headerParams);
-					if (StringUtils.isNotEmpty(xhtmlString)) {
-						httpSender.setXhtml(Boolean.valueOf(xhtmlString).booleanValue());
-					}
-					if (StringUtils.isNotEmpty(methodtype)) {
-						HttpMethod method = EnumUtils.parse(HttpMethod.class, methodtype);
-						httpSender.setMethodType(method);
-					}
-					if (StringUtils.isNotEmpty(paramsInUrlString)) {
-						httpSender.setParamsInUrl(Boolean.valueOf(paramsInUrlString).booleanValue());
-					}
-					if (StringUtils.isNotEmpty(inputMessageParam)) {
-						httpSender.setInputMessageParam(inputMessageParam);
-					}
-					if (StringUtils.isNotEmpty(multipartString)) {
-						httpSender.setMultipart(Boolean.valueOf(multipartString).booleanValue());
-					}
-					if (StringUtils.isNotEmpty(styleSheetName)) {
-						httpSender.setStyleSheetName(styleSheetName);
-					}
-					httpSender.setAllowSelfSignedCertificates(new Boolean(allowSelfSignedCertificates));
-					httpSender.setVerifyHostname(new Boolean(verifyHostname));
-					session = new PipeLineSession();
-					Map<String, Object> paramPropertiesMap = createParametersMapFromParamProperties(properties, name, writers, true, session);
-					Iterator<String> parameterNameIterator = paramPropertiesMap.keySet().iterator();
-					while (parameterNameIterator.hasNext()) {
-						String parameterName = (String)parameterNameIterator.next();
-						Parameter parameter = (Parameter)paramPropertiesMap.get(parameterName);
-						httpSender.addParameter(parameter);
-					}
-					httpSender.configure();
-				} catch(ClassLoaderException e) {
-					errorMessage("Could not create classloader: " + e.getMessage(), e, writers);
-					closeQueues(queues, properties, writers);
-					queues = null;
-				} catch(ConfigurationException e) {
-					errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
-					closeQueues(queues, properties, writers);
-					queues = null;
-				} finally {
-					if (originalClassLoader != null) {
-						Thread.currentThread().setContextClassLoader(originalClassLoader);
-					}
-				}
-				if (queues != null) {
-					try {
-						httpSender.open();
-					} catch (SenderException e) {
-						closeQueues(queues, properties, writers);
-						queues = null;
-						errorMessage("Could not open '" + name + "': " + e.getMessage(), e, writers);
-					}
-					if (queues != null) {
-						Map<String, Object> httpSenderInfo = new HashMap<String, Object>();
-						httpSenderInfo.put("httpSender", httpSender);
-						httpSenderInfo.put("session", session);
-						httpSenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
-						queues.put(name, httpSenderInfo);
-						debugMessage("Opened http sender '" + name + "'", writers);
-					}
-				}
-			}
-		}
-
-		debugMessage("Initialize ibis java senders", writers);
-		iterator = ibisJavaSenders.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String name = (String)iterator.next();
-			String serviceName = (String)properties.get(name + ".serviceName");
-			Boolean convertExceptionToMessage = new Boolean((String)properties.get(name + ".convertExceptionToMessage"));
-			if (serviceName == null) {
-				closeQueues(queues, properties, writers);
-				queues = null;
-				errorMessage("Could not find serviceName property for " + name, writers);
-			} else {
-				IbisJavaSender ibisJavaSender = new IbisJavaSender();
-				ibisJavaSender.setName("Test Tool IbisJavaSender");
-				ibisJavaSender.setServiceName(serviceName);
-				PipeLineSession session = new PipeLineSession();
-				Map<String, Object> paramPropertiesMap = createParametersMapFromParamProperties(properties, name, writers, true, session);
-				Iterator<String> parameterNameIterator = paramPropertiesMap.keySet().iterator();
-				while (parameterNameIterator.hasNext()) {
-					String parameterName = (String)parameterNameIterator.next();
-					Parameter parameter = (Parameter)paramPropertiesMap.get(parameterName);
-					ibisJavaSender.addParameter(parameter);
-				}
-				try {
-					ibisJavaSender.configure();
-				} catch(ConfigurationException e) {
-					errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
-					closeQueues(queues, properties, writers);
-					queues = null;
-				}
-				if (queues != null) {
-					try {
-						ibisJavaSender.open();
-					} catch (SenderException e) {
-						closeQueues(queues, properties, writers);
-						queues = null;
-						errorMessage("Could not open '" + name + "': " + e.getMessage(), e, writers);
-					}
-					if (queues != null) {
-						Map<String, Object> ibisJavaSenderInfo = new HashMap<String, Object>();
-						ibisJavaSenderInfo.put("ibisJavaSender", ibisJavaSender);
-						ibisJavaSenderInfo.put("session", session);
-						ibisJavaSenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
-						queues.put(name, ibisJavaSenderInfo);
-						debugMessage("Opened ibis java sender '" + name + "'", writers);
-					}
-				}
-			}
-		}
-
-		debugMessage("Initialize delay senders", writers);
-		iterator = delaySenders.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String name = (String)iterator.next();
-			Boolean convertExceptionToMessage = new Boolean((String)properties.get(name + ".convertExceptionToMessage"));
-			String delayTime = (String)properties.get(name + ".delayTime");
-			DelaySender delaySender = new DelaySender();
-			if (delayTime!=null) {
-				delaySender.setDelayTime(Long.parseLong(delayTime));
-			}
-			delaySender.setName("Test Tool DelaySender");
-			Map<String, Object> delaySenderInfo = new HashMap<String, Object>();
-			delaySenderInfo.put("delaySender", delaySender);
-			delaySenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
-			queues.put(name, delaySenderInfo);
-			debugMessage("Opened delay sender '" + name + "'", writers);
-		}
-		
-		debugMessage("Initialize java listeners", writers);
-		iterator = javaListeners.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String name = (String)iterator.next();
-			String serviceName = (String)properties.get(name + ".serviceName");
-			if (serviceName == null) {
-				closeQueues(queues, properties, writers);
-				queues = null;
-				errorMessage("Could not find property '" + name + ".serviceName'", writers);
-			} else {
-				ListenerMessageHandler<String> listenerMessageHandler = new ListenerMessageHandler<>();
-
-				if(properties.contains(name + ".requestTimeOut") || properties.contains(name + ".responseTimeOut")) {
-					errorMessage("properties "+name+".requestTimeOut/"+name+".responseTimeOut have been replaced with "+name+".timeout", writers);
-				}
-
-				try {
-					long timeout = Long.parseLong((String)properties.get(name + ".timeout"));
-					listenerMessageHandler.setTimeout(timeout);
-					debugMessage("Timeout set to '" + timeout + "'", writers);
-				} catch(Exception e) {
-				}
-				JavaListener javaListener = new JavaListener();
-				javaListener.setName("Test Tool JavaListener");
-				javaListener.setServiceName(serviceName);
-				javaListener.setHandler(listenerMessageHandler);
-				try {
-					javaListener.open();
-					Map<String, Object> javaListenerInfo = new HashMap<String, Object>();
-					javaListenerInfo.put("javaListener", javaListener);
-					javaListenerInfo.put("listenerMessageHandler", listenerMessageHandler);
-					queues.put(name, javaListenerInfo);
-					debugMessage("Opened java listener '" + name + "'", writers);
-				} catch(ListenerException e) {
-					closeQueues(queues, properties, writers);
-					queues = null;
-					errorMessage("Could not open java listener '" + name + "': " + e.getMessage(), e, writers);
-				}
-			}
-		}
-
-		debugMessage("Initialize file senders", writers);
-		iterator = fileSenders.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String queueName = (String)iterator.next();
-			String filename  = (String)properties.get(queueName + ".filename");
-			if (filename == null) {
-				closeQueues(queues, properties, writers);
-				queues = null;
-				errorMessage("Could not find filename property for " + queueName, writers);
-			} else {
-				FileSender fileSender = new FileSender();
-				String filenameAbsolutePath = (String)properties.get(queueName + ".filename.absolutepath");
-				fileSender.setFilename(filenameAbsolutePath);
-				String encoding = (String)properties.get(queueName + ".encoding");
-				if (encoding != null) {
-					fileSender.setEncoding(encoding);
-					debugMessage("Encoding set to '" + encoding + "'", writers);
-				}
-				String deletePathString = (String)properties.get(queueName + ".deletePath");
-				if (deletePathString != null) {
-					boolean deletePath = Boolean.valueOf(deletePathString).booleanValue();
-					fileSender.setDeletePath(deletePath);
-					debugMessage("Delete path set to '" + deletePath + "'", writers);
-				}
-				String createPathString = (String)properties.get(queueName + ".createPath");
-				if (createPathString != null) {
-					boolean createPath = Boolean.valueOf(createPathString).booleanValue();
-					fileSender.setCreatePath(createPath);
-					debugMessage("Create path set to '" + createPath + "'", writers);
-				}
-				try {
-					String checkDeleteString = (String)properties.get(queueName + ".checkDelete");
-					if (checkDeleteString != null) {
-						boolean checkDelete = Boolean.valueOf(checkDeleteString).booleanValue();
-						fileSender.setCheckDelete(checkDelete);
-						debugMessage("Check delete set to '" + checkDelete + "'", writers);
-					}
-				} catch(Exception e) {
-				}
-				try {
-					String runAntString = (String)properties.get(queueName + ".runAnt");
-					if (runAntString != null) {
-						boolean runAnt = Boolean.valueOf(runAntString).booleanValue();
-						fileSender.setRunAnt(runAnt);
-						debugMessage("Run ant set to '" + runAnt + "'", writers);
-					}
-				} catch(Exception e) {
-				}
-				try {
-					long timeOut = Long.parseLong((String)properties.get(queueName + ".timeOut"));
-					fileSender.setTimeOut(timeOut);
-					debugMessage("Time out set to '" + timeOut + "'", writers);
-				} catch(Exception e) {
-				}
-				try {
-					long interval  = Long.parseLong((String)properties.get(queueName + ".interval"));
-					fileSender.setInterval(interval);
-					debugMessage("Interval set to '" + interval + "'", writers);
-				} catch(Exception e) {
-				}
-				try {
-					String overwriteString = (String)properties.get(queueName + ".overwrite");
-					if (overwriteString != null) {
-						debugMessage("OverwriteString = " + overwriteString, writers);
-						boolean overwrite = Boolean.valueOf(overwriteString).booleanValue();
-						fileSender.setOverwrite(overwrite);
-						debugMessage("Overwrite set to '" + overwrite + "'", writers);
-					}
-				} catch(Exception e) {
-				}
-				Map<String, Object> fileSenderInfo = new HashMap<String, Object>();
-				fileSenderInfo.put("fileSender", fileSender);
-				queues.put(queueName, fileSenderInfo);
-				debugMessage("Opened file sender '" + queueName + "'", writers);
-			}
-		}
-
-		debugMessage("Initialize file listeners", writers);
-		iterator = fileListeners.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String queueName = (String)iterator.next();
-			String filename  = (String)properties.get(queueName + ".filename");
-			String filename2  = (String)properties.get(queueName + ".filename2");
-			String directory = null;
-			String wildcard = null;
-			if (filename == null) {
-				directory = (String)properties.get(queueName + ".directory");
-				wildcard = (String)properties.get(queueName + ".wildcard");
-			}
-			if (filename == null && directory == null) {
-				closeQueues(queues, properties, writers);
-				queues = null;
-				errorMessage("Could not find filename or directory property for " + queueName, writers);
-			} else if (directory != null && wildcard == null) {
-				closeQueues(queues, properties, writers);
-				queues = null;
-				errorMessage("Could not find wildcard property for " + queueName, writers);
-			} else {
-				FileListener fileListener = new FileListener();
-				if (filename == null) {
-					String directoryAbsolutePath = (String)properties.get(queueName + ".directory.absolutepath");;
-					fileListener.setDirectory(directoryAbsolutePath);
-					fileListener.setWildcard(wildcard);
-				} else {
-					String filenameAbsolutePath = (String)properties.get(queueName + ".filename.absolutepath");;
-					fileListener.setFilename(filenameAbsolutePath);
-				}
-				try {
-					long waitBeforeRead = Long.parseLong((String)properties.get(queueName + ".waitBeforeRead"));
-					fileListener.setWaitBeforeRead(waitBeforeRead);
-					debugMessage("Wait before read set to '" + waitBeforeRead + "'", writers);
-				} catch(Exception e) {
-				}
-				try {
-					long timeOut = Long.parseLong((String)properties.get(queueName + ".timeOut"));
-					fileListener.setTimeOut(timeOut);
-					debugMessage("Time out set to '" + timeOut + "'", writers);
-				} catch(Exception e) {
-				}
-				try {
-					long interval  = Long.parseLong((String)properties.get(queueName + ".interval"));
-					fileListener.setInterval(interval);
-					debugMessage("Interval set to '" + interval + "'", writers);
-				} catch(Exception e) {
-				}
-				if (filename2!=null) {
-					fileListener.setFilename2(filename2);
-				}
-				Map<String, Object> fileListenerInfo = new HashMap<String, Object>();
-				fileListenerInfo.put("fileListener", fileListener);
-				queues.put(queueName, fileListenerInfo);
-				debugMessage("Opened file listener '" + queueName + "'", writers);
-				if (fileListenerCleanUp(queueName, fileListener, writers)) {
-					errorMessage("Found old messages on '" + queueName + "'", writers);
-				}
-			}
-		}
-
-		debugMessage("Initialize xslt provider listeners", writers);
-		iterator = xsltProviderListeners.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String queueName = (String)iterator.next();
-			String filename  = (String)properties.get(queueName + ".filename");
-			if (filename == null) {
-				closeQueues(queues, properties, writers);
-				queues = null;
-				errorMessage("Could not find filename property for " + queueName, writers);
-			} else {
-				Boolean fromClasspath = new Boolean((String)properties.get(queueName + ".fromClasspath"));
-				if (!fromClasspath) {
-					filename = (String)properties.get(queueName + ".filename.absolutepath");
-				}
-				XsltProviderListener xsltProviderListener = new XsltProviderListener();
-				xsltProviderListener.setFromClasspath(fromClasspath);
-				xsltProviderListener.setFilename(filename);
-				String xsltVersionString = (String)properties.get(queueName + ".xsltVersion");
-				if (xsltVersionString != null) {
-					try {
-						int xsltVersion = Integer.valueOf(xsltVersionString).intValue();
-						xsltProviderListener.setXsltVersion(xsltVersion);
-						debugMessage("XsltVersion set to '" + xsltVersion + "'", writers);
-					} catch(Exception e) {
-					}
-				}
-				String xslt2String = (String)properties.get(queueName + ".xslt2");
-				if (xslt2String != null) {
-					try {
-						boolean xslt2 = Boolean.valueOf(xslt2String).booleanValue();
-						xsltProviderListener.setXslt2(xslt2);
-						debugMessage("Xslt2 set to '" + xslt2 + "'", writers);
-					} catch(Exception e) {
-					}
-				}
-				String namespaceAwareString = (String)properties.get(queueName + ".namespaceAware");
-				if (namespaceAwareString != null) {
-					try {
-						boolean namespaceAware = Boolean.valueOf(namespaceAwareString).booleanValue();
-						xsltProviderListener.setNamespaceAware(namespaceAware);
-						debugMessage("Namespace aware set to '" + namespaceAware + "'", writers);
-					} catch(Exception e) {
-					}
-				}
-				try {
-					xsltProviderListener.init();
-					Map<String, Object> xsltProviderListenerInfo = new HashMap<String, Object>();
-					xsltProviderListenerInfo.put("xsltProviderListener", xsltProviderListener);
-					queues.put(queueName, xsltProviderListenerInfo);
-					debugMessage("Opened xslt provider listener '" + queueName + "'", writers);
-				} catch(ListenerException e) {
-					closeQueues(queues, properties, writers);
-					queues = null;
-					errorMessage("Could not create xslt provider listener for '" + queueName + "': " + e.getMessage(), e, writers);
-				}
-			}
-		}
-
-		return queues;
-	}
-
-
-
-	public static boolean closeQueues(Map<String, Map<String, Object>> queues, Properties properties, Map<String, Object> writers) {
+	public static boolean closeQueues(Map<String, Map<String, Object>> queues, Properties properties, Map<String, Object> writers, String correlationId) {
 		boolean remainingMessagesFound = false;
 		Iterator<String> iterator;
 		debugMessage("Close jms senders", writers);
@@ -2222,10 +1253,10 @@ public class TestTool {
 						 */
 						String preResult = (String)querySendersInfo.get("prePostQueryResult");
 						PipeLineSession session = new PipeLineSession();
-						session.put(PipeLineSession.businessCorrelationIdKey, TestTool.TESTTOOL_CORRELATIONID);
+						session.put(PipeLineSession.correlationIdKey, correlationId);
 						String postResult = prePostFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, session).asString();
 						if (!preResult.equals(postResult)) {
-							
+
 							String message = null;
 							FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)querySendersInfo.get("readQueryQueryFixedQuerySender");
 							try {
@@ -2240,7 +1271,7 @@ public class TestTool {
 							}
 
 							remainingMessagesFound = true;
-							
+
 						}
 						prePostFixedQuerySender.close();
 					} catch(TimeoutException e) {
@@ -2253,51 +1284,13 @@ public class TestTool {
 				readQueryFixedQuerySender.close();
 			}
 		}
-		debugMessage("Close ibis webservice senders", writers);
-		iterator = queues.keySet().iterator();
-		while (iterator.hasNext()) {
-			String queueName = (String)iterator.next();
-			if ("nl.nn.adapterframework.http.IbisWebServiceSender".equals(properties.get(queueName + ".className"))) {
-				IbisWebServiceSender ibisWebServiceSender = (IbisWebServiceSender)((Map<?, ?>)queues.get(queueName)).get("ibisWebServiceSender");
-				Map<?, ?> ibisWebServiceSenderInfo = (Map<?, ?>)queues.get(queueName);
-				SenderThread senderThread = (SenderThread)ibisWebServiceSenderInfo.remove("ibisWebServiceSenderThread");
-				if (senderThread != null) {
-					debugMessage("Found remaining SenderThread", writers);
-					SenderException senderException = senderThread.getSenderException();
-					if (senderException != null) {
-						errorMessage("Found remaining SenderException: " + senderException.getMessage(), senderException, writers);
-					}
-					IOException ioException = senderThread.getIOException();
-					if (ioException != null) {
-						errorMessage("Found remaining IOException: " + ioException.getMessage(), ioException, writers);
-					}
-					TimeoutException timeOutException = senderThread.getTimeOutException();
-					if (timeOutException != null) {
-						errorMessage("Found remaining TimeOutException: " + timeOutException.getMessage(), timeOutException, writers);
-					}
-					String message = senderThread.getResponse();
-					if (message != null) {
-						wrongPipelineMessage("Found remaining message on '" + queueName + "'", message, writers);
-					}
-				}
 
-				try {
-					ibisWebServiceSender.close();
-					debugMessage("Closed ibis webservice sender '" + queueName + "'", writers);
-				} catch(SenderException e) {
-					errorMessage("Could not close '" + queueName + "': " + e.getMessage(), e, writers);
-				}
-			}
-		}
-		
-		debugMessage("Close web service senders", writers);
-		iterator = queues.keySet().iterator();
-		while (iterator.hasNext()) {
-			String queueName = (String)iterator.next();
-			if ("nl.nn.adapterframework.http.WebServiceSender".equals(properties.get(queueName + ".className"))) {
-				WebServiceSender webServiceSender = (WebServiceSender)((Map<?, ?>)queues.get(queueName)).get("webServiceSender");
-				Map<?, ?> webServiceSenderInfo = (Map<?, ?>)queues.get(queueName);
-				SenderThread senderThread = (SenderThread)webServiceSenderInfo.remove("webServiceSenderThread");
+		debugMessage("Close autoclosables", writers);
+		for(String queueName : queues.keySet()) {
+			Map<String, Object> value = queues.get(queueName);
+			if(value instanceof QueueWrapper) {
+				QueueWrapper queue = (QueueWrapper) value;
+				SenderThread senderThread = queue.getSenderThread();
 				if (senderThread != null) {
 					debugMessage("Found remaining SenderThread", writers);
 					SenderException senderException = senderThread.getSenderException();
@@ -2313,25 +1306,7 @@ public class TestTool {
 						wrongPipelineMessage("Found remaining message on '" + queueName + "'", message, writers);
 					}
 				}
-				try {
-					webServiceSender.close();
-				} catch (SenderException e) {
-					//Ignore
-				}
-				debugMessage("Closed webservice sender '" + queueName + "'", writers);
-			}
-		}
-
-		debugMessage("Close web service listeners", writers);
-		iterator = queues.keySet().iterator();
-		while (iterator.hasNext()) {
-			String queueName = (String)iterator.next();
-			if ("nl.nn.adapterframework.http.WebServiceListener".equals(properties.get(queueName + ".className"))) {
-				Map<?, ?> webServiceListenerInfo = (Map<?, ?>)queues.get(queueName);
-				WebServiceListener webServiceListener = (WebServiceListener)webServiceListenerInfo.get("webServiceListener");
-				webServiceListener.close();
-				debugMessage("Closed web service listener '" + queueName + "'", writers);
-				ListenerMessageHandler listenerMessageHandler = (ListenerMessageHandler)webServiceListenerInfo.get("listenerMessageHandler");
+				ListenerMessageHandler listenerMessageHandler = queue.getMessageHandler();
 				if (listenerMessageHandler != null) {
 					ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage();
 					while (listenerMessage != null) {
@@ -2348,110 +1323,13 @@ public class TestTool {
 						listenerMessage = listenerMessageHandler.getResponseMessage();
 					}
 				}
-			}
-		}
-
-		debugMessage("Close ibis java senders", writers);
-		iterator = queues.keySet().iterator();
-		while (iterator.hasNext()) {
-			String queueName = (String)iterator.next();
-			if ("nl.nn.adapterframework.senders.IbisJavaSender".equals(properties.get(queueName + ".className"))) {
-				IbisJavaSender ibisJavaSender = (IbisJavaSender)((Map<?, ?>)queues.get(queueName)).get("ibisJavaSender");
-
-				Map<?, ?> ibisJavaSenderInfo = (Map<?, ?>)queues.get(queueName);
-				SenderThread ibisJavaSenderThread = (SenderThread)ibisJavaSenderInfo.remove("ibisJavaSenderThread");
-				if (ibisJavaSenderThread != null) {
-					debugMessage("Found remaining SenderThread", writers);
-					SenderException senderException = ibisJavaSenderThread.getSenderException();
-					if (senderException != null) {
-						errorMessage("Found remaining SenderException: " + senderException.getMessage(), senderException, writers);
-					}
-					TimeoutException timeOutException = ibisJavaSenderThread.getTimeOutException();
-					if (timeOutException != null) {
-						errorMessage("Found remaining TimeOutException: " + timeOutException.getMessage(), timeOutException, writers);
-					}
-					String message = ibisJavaSenderThread.getResponse();
-					if (message != null) {
-						wrongPipelineMessage("Found remaining message on '" + queueName + "'", message, writers);
-					}
-				}
 
 				try {
-				ibisJavaSender.close();
-					debugMessage("Closed ibis java sender '" + queueName + "'", writers);
-				} catch(SenderException e) {
+					queue.close();
+					debugMessage("Closed queue '" + queueName + "'", writers);
+				} catch(Exception e) {
 					errorMessage("Could not close '" + queueName + "': " + e.getMessage(), e, writers);
 				}
-			}
-		}
-
-		debugMessage("Close delay senders", writers);
-		iterator = queues.keySet().iterator();
-		while (iterator.hasNext()) {
-			String queueName = (String)iterator.next();
-			if ("nl.nn.adapterframework.senders.DelaySender".equals(properties.get(queueName + ".className"))) {
-				DelaySender delaySender = (DelaySender)((Map<?, ?>)queues.get(queueName)).get("delaySender");
-				try {
-					delaySender.close();
-					debugMessage("Closed delay sender '" + queueName + "'", writers);
-				} catch(SenderException e) {
-					errorMessage("Could not close delay sender '" + queueName + "': " + e.getMessage(), e, writers);
-				}
-			}
-		}
-		
-		debugMessage("Close java listeners", writers);
-		iterator = queues.keySet().iterator();
-		while (iterator.hasNext()) {
-			String queueName = (String)iterator.next();
-			if ("nl.nn.adapterframework.receivers.JavaListener".equals(properties.get(queueName + ".className"))) {
-				Map<?, ?> javaListenerInfo = (Map<?, ?>)queues.get(queueName);
-				JavaListener javaListener = (JavaListener)javaListenerInfo.get("javaListener");
-				try {
-					javaListener.close();
-					debugMessage("Closed java listener '" + queueName + "'", writers);
-				} catch(ListenerException e) {
-					errorMessage("Could not close java listener '" + queueName + "': " + e.getMessage(), e, writers);
-				}
-				ListenerMessageHandler listenerMessageHandler = (ListenerMessageHandler)javaListenerInfo.get("listenerMessageHandler");
-				if (listenerMessageHandler != null) {
-					ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage();
-					while (listenerMessage != null) {
-						String message = listenerMessage.getMessage();
-						wrongPipelineMessage("Found remaining request message on '" + queueName + "'", message, writers);
-						remainingMessagesFound = true;
-						listenerMessage = listenerMessageHandler.getRequestMessage();
-					}
-					listenerMessage = listenerMessageHandler.getResponseMessage();
-					while (listenerMessage != null) {
-						String message = listenerMessage.getMessage();
-						wrongPipelineMessage("Found remaining response message on '" + queueName + "'", message, writers);
-						remainingMessagesFound = true;
-						listenerMessage = listenerMessageHandler.getResponseMessage();
-					}
-				}
-			}
-		}
-
-		debugMessage("Close file listeners", writers);
-		iterator = queues.keySet().iterator();
-		while (iterator.hasNext()) {
-			String queueName = (String)iterator.next();
-			if ("nl.nn.adapterframework.testtool.FileListener".equals(properties.get(queueName + ".className"))) {
-				FileListener fileListener = (FileListener)((Map<?, ?>)queues.get(queueName)).get("fileListener");
-				fileListenerCleanUp(queueName, fileListener, writers);
-				debugMessage("Closed file listener '" + queueName + "'", writers);
-			}
-		}
-
-		debugMessage("Close xslt provider listeners", writers);
-		iterator = queues.keySet().iterator();
-		while (iterator.hasNext()) {
-			String queueName = (String)iterator.next();
-			if ("nl.nn.adapterframework.testtool.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
-				XsltProviderListener xsltProviderListener = (XsltProviderListener)((Map<?, ?>)queues.get(queueName)).get("xsltProviderListener");
-				xsltProviderListenerCleanUp(queues, queueName, writers);
-				debugMessage("Closed xslt provider listener '" + queueName + "'", writers);
 			}
 		}
 
@@ -2499,66 +1377,30 @@ public class TestTool {
 		return remainingMessagesFound;
 	}
 
-	public static boolean fileListenerCleanUp(String queueName, FileListener fileListener, Map<String, Object> writers) {
-		boolean remainingMessagesFound = false;
-		debugMessage("Check for remaining messages on '" + queueName + "'", writers);
-		if (fileListener.getFilename2()!=null) {
-			return false;
-		}
-		long oldTimeOut = fileListener.getTimeOut();
-		fileListener.setTimeOut(0);
-		boolean empty = false;
-		fileListener.setTimeOut(0);
-		try {
-			String message = fileListener.getMessage();
-			if (message != null) {
-				remainingMessagesFound = true;
-				wrongPipelineMessage("Found remaining message on '" + queueName + "'", message, writers);
-			}
-		} catch(TimeoutException e) {
-		} catch(ListenerException e) {
-			errorMessage("Could read message from file listener '" + queueName + "': " + e.getMessage(), e, writers);
-		}
-		fileListener.setTimeOut(oldTimeOut);
-		return remainingMessagesFound;
-	}
-
-	public static boolean xsltProviderListenerCleanUp(Map<String, Map<String, Object>> queues, String queueName, Map<String, Object> writers) {
-		boolean remainingMessagesFound = false;
-		Map<?, ?> xsltProviderListenerInfo = (Map<?, ?>)queues.get(queueName);
-		XsltProviderListener xsltProviderListener = (XsltProviderListener)xsltProviderListenerInfo.get("xsltProviderListener");
-		String message = xsltProviderListener.getResult();
-		if (message != null) {
-			remainingMessagesFound = true;
-			wrongPipelineMessage("Found remaining message on '" + queueName + "'", message, writers);
-		}
-		return remainingMessagesFound;
-	}
-	
-	private static int executeJmsSenderWrite(String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileContent) {
+	private static int executeJmsSenderWrite(String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileContent, String correlationId) {
 		int result = RESULT_ERROR;
-		
+
 		Map<?, ?> jmsSenderInfo = (Map<?, ?>)queues.get(queueName);
 		JmsSender jmsSender = (JmsSender)jmsSenderInfo.get("jmsSender");
 		try {
-			String correlationId = null;
+			String providedCorrelationId = null;
 			String useCorrelationIdFrom = (String)jmsSenderInfo.get("useCorrelationIdFrom");
 			if (useCorrelationIdFrom != null) {
 				Map<?, ?> listenerInfo = (Map<?, ?>)queues.get(useCorrelationIdFrom);
 				if (listenerInfo == null) {
 					errorMessage("Could not find listener '" + useCorrelationIdFrom + "' to use correlation id from", writers);
 				} else {
-					correlationId = (String)listenerInfo.get("correlationId");
-					if (correlationId == null) {
+					providedCorrelationId = (String)listenerInfo.get("correlationId");
+					if (providedCorrelationId == null) {
 						errorMessage("Could not find correlation id from listener '" + useCorrelationIdFrom + "'", writers);
 					}
 				}
 			}
-			if (correlationId == null) {
-				correlationId = (String)jmsSenderInfo.get("jmsCorrelationId");
+			if (providedCorrelationId == null) {
+				providedCorrelationId = (String)jmsSenderInfo.get("jmsCorrelationId");
 			}
-			if (correlationId == null) {
-				correlationId = TESTTOOL_CORRELATIONID;
+			if (providedCorrelationId == null) {
+				providedCorrelationId = correlationId;
 			}
 			jmsSender.sendMessage(new nl.nn.adapterframework.stream.Message(fileContent), null);
 			debugPipelineMessage(stepDisplayName, "Successfully written to '" + queueName + "':", fileContent, writers);
@@ -2568,25 +1410,28 @@ public class TestTool {
 		} catch(SenderException e) {
 			errorMessage("Could not send jms message to '" + queueName + "': " + e.getMessage(), e, writers);
 		}
-		
+
 		return result;
 	}
 
-	private static int executeSenderWrite(String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String senderType, String fileContent) {
+	private static int executeSenderWrite(String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String senderType, String fileContent, String correlationId) {
 		int result = RESULT_ERROR;
 		Map senderInfo = (Map)queues.get(queueName);
 		ISender sender = (ISender)senderInfo.get(senderType + "Sender");
 		Boolean convertExceptionToMessage = (Boolean)senderInfo.get("convertExceptionToMessage");
 		PipeLineSession session = (PipeLineSession)senderInfo.get("session");
-		SenderThread senderThread = new SenderThread(sender, fileContent, session, convertExceptionToMessage.booleanValue());
+		SenderThread senderThread = new SenderThread(sender, fileContent, session, convertExceptionToMessage.booleanValue(), correlationId);
 		senderThread.start();
 		senderInfo.put(senderType + "SenderThread", senderThread);
+		if(senderInfo instanceof QueueWrapper) {
+			((QueueWrapper) senderInfo).setSenderThread(senderThread);
+		}
 		debugPipelineMessage(stepDisplayName, "Successfully started thread writing to '" + queueName + "':", fileContent, writers);
 		logger.debug("Successfully started thread writing to '" + queueName + "'");
 		result = RESULT_OK;
 		return result;
 	}
-	
+
 	private static int executeJavaOrWebServiceListenerWrite(String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileContent) {
 		int result = RESULT_ERROR;
 
@@ -2611,7 +1456,7 @@ public class TestTool {
 
 		return result;
 	}
-	
+
 	private static int executeFileSenderWrite(String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileContent) {
 		int result = RESULT_ERROR;
 		Map<?, ?> fileSenderInfo = (Map<?, ?>)queues.get(queueName);
@@ -2656,7 +1501,7 @@ public class TestTool {
 		}
 		return result;
 	}
-	
+
 	private static int executeJmsListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent) {
 		int result = RESULT_ERROR;
 
@@ -2685,7 +1530,7 @@ public class TestTool {
 				}
 			}
 		}
-		
+
 		if (message == null || message.isEmpty()) {
 			if ("".equals(fileName)) {
 				result = RESULT_OK;
@@ -2700,14 +1545,17 @@ public class TestTool {
 			}
 		}
 
-		return result;	
+		return result;
 	}
 
 	private static int executeSenderRead(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String senderType, String fileName, String fileContent) {
 		int result = RESULT_ERROR;
-	
+
 		Map<?, ?> senderInfo = (Map<?, ?>)queues.get(queueName);
 		SenderThread senderThread = (SenderThread)senderInfo.remove(senderType + "SenderThread");
+		if(senderInfo instanceof QueueWrapper) {
+			((QueueWrapper) senderInfo).removeSenderThread();
+		}
 		if (senderThread == null) {
 			errorMessage("No SenderThread found, no " + senderType + "Sender.write request?", writers);
 		} else {
@@ -2741,7 +1589,7 @@ public class TestTool {
 				errorMessage("Could not read " + senderType + "Sender message (SenderException): " + senderException.getMessage(), senderException, writers);
 			}
 		}
-		
+
 		return result;
 	}
 
@@ -2794,13 +1642,13 @@ public class TestTool {
 				}
 			}
 		}
-		
+
 		return result;
 	}
 
-	private static int executeFixedQuerySenderRead(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent) {
+	private static int executeFixedQuerySenderRead(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent, String correlationId) {
 		int result = RESULT_ERROR;
-		
+
 		Map querySendersInfo = (Map)queues.get(queueName);
 		Integer waitBeforeRead = (Integer)querySendersInfo.get("readQueryWaitBeforeRead");
 
@@ -2817,7 +1665,7 @@ public class TestTool {
 				String preResult = (String)querySendersInfo.get("prePostQueryResult");
 				debugPipelineMessage(stepDisplayName, "Pre result '" + queueName + "':", preResult, writers);
 				PipeLineSession session = new PipeLineSession();
-				session.put(PipeLineSession.businessCorrelationIdKey, TestTool.TESTTOOL_CORRELATIONID);
+				session.put(PipeLineSession.correlationIdKey, correlationId);
 				String postResult = prePostFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, session).asString();
 				debugPipelineMessage(stepDisplayName, "Post result '" + queueName + "':", postResult, writers);
 				if (preResult.equals(postResult)) {
@@ -2838,7 +1686,7 @@ public class TestTool {
 			FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)querySendersInfo.get("readQueryQueryFixedQuerySender");
 			try {
 				PipeLineSession session = new PipeLineSession();
-				session.put(PipeLineSession.businessCorrelationIdKey, TestTool.TESTTOOL_CORRELATIONID);
+				session.put(PipeLineSession.correlationIdKey, correlationId);
 				message = readQueryFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, session).asString();
 			} catch(TimeoutException e) {
 				errorMessage("Time out on execute query for '" + queueName + "': " + e.getMessage(), e, writers);
@@ -2884,7 +1732,7 @@ public class TestTool {
 		} else {
 			result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName);
 		}
-		return result;	
+		return result;
 	}
 
 	private static int executeFileSenderRead(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent) {
@@ -2908,7 +1756,7 @@ public class TestTool {
 		} else {
 			result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName);
 		}
-		return result;	
+		return result;
 	}
 
 	private static int executeXsltProviderListenerRead(String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileContent, Map<String, Object> xsltParameters) {
@@ -2930,10 +1778,10 @@ public class TestTool {
 				debugPipelineMessage(stepDisplayName, "Result:", fileContent, writers);
 			}
 		}
-		return result;	
+		return result;
 	}
 
-	public static int executeStep(String step, Properties properties, String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers, int parameterTimeout) {
+	public static int executeStep(String step, Properties properties, String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers, int parameterTimeout, String correlationId) {
 		int stepPassed = RESULT_ERROR;
 		String fileName = properties.getProperty(step);
 		String fileNameAbsolutePath = properties.getProperty(step + ".absolutepath");
@@ -2942,7 +1790,7 @@ public class TestTool {
 		String fileContent;
 		// vul globale var
 		zeefVijlNeem = fileNameAbsolutePath;
-		
+
 		//inlezen file voor deze stap
 		if ("".equals(fileName)) {
 			errorMessage("No file specified for step '" + step + "'", writers);
@@ -2964,9 +1812,9 @@ public class TestTool {
 				queueName = step.substring(i + 1, step.lastIndexOf("."));
 				if (step.endsWith(".read") || (allowReadlineSteps && step.endsWith(".readline"))) {
 					if ("nl.nn.adapterframework.jms.JmsListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeJmsListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);	
+						stepPassed = executeJmsListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
 					} else 	if ("nl.nn.adapterframework.jdbc.FixedQuerySender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeFixedQuerySenderRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
+						stepPassed = executeFixedQuerySenderRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent, correlationId);
 					} else if ("nl.nn.adapterframework.http.IbisWebServiceSender".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeSenderRead(step, stepDisplayName, properties, queues, writers, queueName, "ibisWebService", fileName, fileContent);
 					} else if ("nl.nn.adapterframework.http.WebServiceSender".equals(properties.get(queueName + ".className"))) {
@@ -2997,17 +1845,17 @@ public class TestTool {
 					}
 
 					if ("nl.nn.adapterframework.jms.JmsSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeJmsSenderWrite(stepDisplayName, queues, writers, queueName, fileContent);
+						stepPassed = executeJmsSenderWrite(stepDisplayName, queues, writers, queueName, fileContent, correlationId);
 					} else if ("nl.nn.adapterframework.http.IbisWebServiceSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeSenderWrite(stepDisplayName, queues, writers, queueName, "ibisWebService", fileContent);
+						stepPassed = executeSenderWrite(stepDisplayName, queues, writers, queueName, "ibisWebService", fileContent, correlationId);
 					} else if ("nl.nn.adapterframework.http.WebServiceSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeSenderWrite(stepDisplayName, queues, writers, queueName, "webService", fileContent);
+						stepPassed = executeSenderWrite(stepDisplayName, queues, writers, queueName, "webService", fileContent, correlationId);
 					} else if ("nl.nn.adapterframework.http.WebServiceListener".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeJavaOrWebServiceListenerWrite(stepDisplayName, queues, writers, queueName, fileContent);
 					} else if ("nl.nn.adapterframework.http.HttpSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeSenderWrite(stepDisplayName, queues, writers, queueName, "http", fileContent);
+						stepPassed = executeSenderWrite(stepDisplayName, queues, writers, queueName, "http", fileContent, correlationId);
 					} else if ("nl.nn.adapterframework.senders.IbisJavaSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeSenderWrite(stepDisplayName, queues, writers, queueName, "ibisJava", fileContent);
+						stepPassed = executeSenderWrite(stepDisplayName, queues, writers, queueName, "ibisJava", fileContent, correlationId);
 					} else if ("nl.nn.adapterframework.receivers.JavaListener".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeJavaOrWebServiceListenerWrite(stepDisplayName, queues, writers, queueName, fileContent);
 					} else if ("nl.nn.adapterframework.testtool.FileSender".equals(properties.get(queueName + ".className"))) {
@@ -3036,26 +1884,24 @@ public class TestTool {
 			// not present in the file. For example, when using a
 			// WebServiceSender to send a message to a WebServiceListener the
 			// xml message must not contain an xml declaration.
-			// AFAIK the Java 1.4 standard XML api doesn't provide a method
-			// to determine the encoding used by an XML file, thus use the
-			// XmlReader from ROME (https://rome.dev.java.net/).
-			try {
-				XmlReader xmlReader = new XmlReader(new File(fileName));
-				encoding = xmlReader.getEncoding();
-				xmlReader.close();
-			} catch (IOException e) {
+			try (InputStream in = new FileInputStream(fileName)) {
+				XMLInputFactory factory = XMLInputFactory.newInstance();
+				XMLStreamReader parser = factory.createXMLStreamReader(in);
+				encoding = parser.getEncoding();
+				parser.close();
+			} catch (IOException | XMLStreamException e) {
 				errorMessage("Could not determine encoding for file '" + fileName + "': " + e.getMessage(), e, writers);
 			}
-		} else if (fileName.endsWith(".utf8")) {
+		} else if (fileName.endsWith(".utf8") || fileName.endsWith(".json")) {
 			encoding = "UTF-8";
 		} else {
 			encoding = "ISO-8859-1";
 		}
 		if (encoding != null) {
-			InputStreamReader inputStreamReader = null;
+			Reader inputStreamReader = null;
 			try {
 				StringBuffer stringBuffer = new StringBuffer();
-				inputStreamReader = new InputStreamReader(new FileInputStream(fileName), encoding);
+				inputStreamReader = StreamUtil.getCharsetDetectingInputStreamReader(new FileInputStream(fileName), encoding);
 				char[] cbuf = new char[4096];
 				int len = inputStreamReader.read(cbuf);
 				while (len != -1) {
@@ -3080,8 +1926,7 @@ public class TestTool {
 
 	// Used by saveResultToFile.jsp
 	public static void windiff(ServletContext application, HttpServletRequest request, String expectedFileName, String result, String expected) throws IOException, SenderException {
-		IbisContext ibisContext = getIbisContext(application);
-		AppConstants appConstants = getAppConstants(ibisContext);
+		AppConstants appConstants = AppConstants.getInstance();
 		String windiffCommand = appConstants.getResolvedProperty("larva.windiff.command");
 		if (windiffCommand == null) {
 			String servletPath = request.getServletPath();
@@ -3090,7 +1935,7 @@ public class TestTool {
 			List<String> scenariosRootDirectories = new ArrayList<String>();
 			List<String> scenariosRootDescriptions = new ArrayList<String>();
 			String currentScenariosRootDirectory = TestTool.initScenariosRootDirectories(
-					appConstants, realPath,
+					realPath,
 					null, scenariosRootDirectories,
 					scenariosRootDescriptions, null);
 			windiffCommand = currentScenariosRootDirectory + "..\\..\\IbisAlgemeenWasbak\\WinDiff\\WinDiff.Exe";
@@ -3178,13 +2023,23 @@ public class TestTool {
 		String printableActualResult;
 		String diffType = properties.getProperty(step + ".diffType");
 		if ((diffType != null && diffType.equals(".json")) || (diffType == null && fileName.endsWith(".json"))) {
-			printableExpectedResult = Misc.jsonPretty(expectedResult);
-			printableActualResult = Misc.jsonPretty(actualResult);
+			try {
+				printableExpectedResult = Misc.jsonPretty(expectedResult);
+			} catch (JsonException e) {
+				debugMessage("Could not prettify Json: "+e.getMessage(), writers);
+				printableExpectedResult = expectedResult;
+			}
+			try {
+				printableActualResult = Misc.jsonPretty(actualResult);
+			} catch (JsonException e) {
+				debugMessage("Could not prettify Json: "+e.getMessage(), writers);
+				printableActualResult = actualResult;
+			}
 		} else {
 			printableExpectedResult = XmlUtils.replaceNonValidXmlCharacters(expectedResult);
 			printableActualResult = XmlUtils.replaceNonValidXmlCharacters(actualResult);
 		}
-		
+
 		String preparedExpectedResult = printableExpectedResult;
 		String preparedActualResult = printableActualResult;
 
@@ -3214,7 +2069,7 @@ public class TestTool {
 
 		/* identifier based decodeUnzipContentBetweenKeys */
 		HashMap<String, HashMap<String, String>> decodeUnzipContentBetweenKeys = ignoreMap.get("decodeUnzipContentBetweenKeys");
-		
+
 		if (decodeUnzipContentBetweenKeys!=null) {
 			Iterator decodeUnzipContentBetweenKeysIt = decodeUnzipContentBetweenKeys.entrySet().iterator();
 			while (decodeUnzipContentBetweenKeysIt.hasNext()) {
@@ -3223,7 +2078,7 @@ public class TestTool {
 				String key1 = decodeUnzipContentBetweenKeysPair.get("key1");
 				String key2 = decodeUnzipContentBetweenKeysPair.get("key2");
 				boolean replaceNewlines = false;
-	
+
 				if ("true".equals(decodeUnzipContentBetweenKeysPair.get("replaceNewlines"))) {
 					replaceNewlines = true;
 				}
@@ -3235,8 +2090,8 @@ public class TestTool {
 				} else {
 					decodeUnzipContentBetweenKeysProcessed = true;
 				}
-	
-				decodeUnzipContentBetweenKeysIt.remove(); 
+
+				decodeUnzipContentBetweenKeysIt.remove();
 			}
 		}
 
@@ -3258,21 +2113,21 @@ public class TestTool {
 		}
 
 		/* identifier based canonicaliseFilePathContentBetweenKeys */
-		HashMap<String, HashMap<String, String>> canonicaliseFilePathContentBetweenKeys = ignoreMap.get("canonicaliseFilePathContentBetweenKeys"); 
+		HashMap<String, HashMap<String, String>> canonicaliseFilePathContentBetweenKeys = ignoreMap.get("canonicaliseFilePathContentBetweenKeys");
 		if (canonicaliseFilePathContentBetweenKeys!=null) {
 			Iterator canonicaliseFilePathContentBetweenKeysIt = canonicaliseFilePathContentBetweenKeys.entrySet().iterator();
 			while (canonicaliseFilePathContentBetweenKeysIt.hasNext()) {
 				Map.Entry canonicaliseFilePathContentBetweenKeysEntry = (Map.Entry) canonicaliseFilePathContentBetweenKeysIt.next();
 				HashMap<String, String> canonicaliseFilePathContentBetweenKeysPair = (HashMap<String, String>) canonicaliseFilePathContentBetweenKeysEntry.getValue();
-				
+
 				String key1 = canonicaliseFilePathContentBetweenKeysPair.get("key1");
 				String key2 = canonicaliseFilePathContentBetweenKeysPair.get("key2");
-				
+
 				debugMessage("Canonicalise filepath content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
 				preparedExpectedResult = canonicaliseFilePathContentBetweenKeys(preparedExpectedResult, key1, key2, writers);
 				preparedActualResult = canonicaliseFilePathContentBetweenKeys(preparedActualResult, key1, key2, writers);
 
-				canonicaliseFilePathContentBetweenKeysIt.remove(); 
+				canonicaliseFilePathContentBetweenKeysIt.remove();
 			}
 		}
 
@@ -3294,7 +2149,7 @@ public class TestTool {
 		}
 
 		/* identifier based formatDecimalContentBetweenKeys */
-		HashMap<String, HashMap<String, String>> formatDecimalContentBetweenKeys = ignoreMap.get("formatDecimalContentBetweenKeys"); 
+		HashMap<String, HashMap<String, String>> formatDecimalContentBetweenKeys = ignoreMap.get("formatDecimalContentBetweenKeys");
 		if (formatDecimalContentBetweenKeys!=null) {
 			Iterator formatDecimalContentBetweenKeysIt = formatDecimalContentBetweenKeys.entrySet().iterator();
 			while (formatDecimalContentBetweenKeysIt.hasNext()) {
@@ -3303,12 +2158,12 @@ public class TestTool {
 
 				String key1 = formatDecimalContentBetweenKeysPair.get("key1");
 				String key2 = formatDecimalContentBetweenKeysPair.get("key2");
-				
+
 				debugMessage("Format decimal content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
 					preparedExpectedResult = formatDecimalContentBetweenKeys(preparedExpectedResult, key1, key2, writers);
 					preparedActualResult = formatDecimalContentBetweenKeys(preparedActualResult, key1, key2, writers);
 
-				formatDecimalContentBetweenKeysIt.remove(); 
+				formatDecimalContentBetweenKeysIt.remove();
 			}
 		}
 
@@ -3335,17 +2190,17 @@ public class TestTool {
 			while (ignoreRegularExpressionKeyIt.hasNext()) {
 				Map.Entry ignoreRegularExpressionKeyEntry = (Map.Entry) ignoreRegularExpressionKeyIt.next();
 				HashMap<String, String> ignoreRegularExpressionKeyItPair = (HashMap<String, String>) ignoreRegularExpressionKeyEntry.getValue();
-				
+
 				String key = ignoreRegularExpressionKeyItPair.get("key");
-				
+
 				debugMessage("Ignore regular expression key '" + key + "'", writers);
 				preparedExpectedResult = ignoreRegularExpression(preparedExpectedResult, key);
 				preparedActualResult = ignoreRegularExpression(preparedActualResult, key);
 
-				ignoreRegularExpressionKeyIt.remove(); 
+				ignoreRegularExpressionKeyIt.remove();
 			}
 		}
-		
+
 		/* numeric removeRegularExpressionKey */
 		debugMessage("Check removeRegularExpressionKey properties", writers);
 		boolean removeRegularExpressionKeyProcessed = false;
@@ -3375,10 +2230,10 @@ public class TestTool {
 				preparedExpectedResult = removeRegularExpression(preparedExpectedResult, key);
 				preparedActualResult = removeRegularExpression(preparedActualResult, key);
 
-				removeRegularExpressionKeyIt.remove(); 
+				removeRegularExpressionKeyIt.remove();
 			}
 		}
-		
+
 		/* numeric replaceRegularExpressionKeys */
 		debugMessage("Check replaceRegularExpressionKeys properties", writers);
 		boolean replaceRegularExpressionKeysProcessed = false;
@@ -3410,10 +2265,10 @@ public class TestTool {
 				preparedExpectedResult = replaceRegularExpression(preparedExpectedResult, key1, key2);
 				preparedActualResult = replaceRegularExpression(preparedActualResult, key1, key2);
 
-				replaceRegularExpressionKeysIt.remove(); 
+				replaceRegularExpressionKeysIt.remove();
 			}
 		}
-		
+
 		/* numeric ignoreContentBetweenKeys */
 		debugMessage("Check ignoreContentBetweenKeys properties", writers);
 		boolean ignoreContentBetweenKeysProcessed = false;
@@ -3445,10 +2300,10 @@ public class TestTool {
 				preparedExpectedResult = ignoreContentBetweenKeys(preparedExpectedResult, key1, key2);
 				preparedActualResult = ignoreContentBetweenKeys(preparedActualResult, key1, key2);
 
-				ignoreContentBetweenKeysIt.remove(); 
+				ignoreContentBetweenKeysIt.remove();
 			}
 		}
-		
+
 		/* numeric ignoreKeysAndContentBetweenKeys */
 		debugMessage("Check ignoreKeysAndContentBetweenKeys properties", writers);
 		boolean ignoreKeysAndContentBetweenKeysProcessed = false;
@@ -3480,10 +2335,10 @@ public class TestTool {
 				preparedExpectedResult = ignoreKeysAndContentBetweenKeys(preparedExpectedResult, key1, key2);
 				preparedActualResult = ignoreKeysAndContentBetweenKeys(preparedActualResult, key1, key2);
 
-				ignoreKeysAndContentBetweenKeysIt.remove(); 
+				ignoreKeysAndContentBetweenKeysIt.remove();
 			}
 		}
-		
+
 		/* numeric removeKeysAndContentBetweenKeys */
 		debugMessage("Check removeKeysAndContentBetweenKeys properties", writers);
 		boolean removeKeysAndContentBetweenKeysProcessed = false;
@@ -3510,12 +2365,12 @@ public class TestTool {
 				HashMap<String, String> removeKeysAndContentBetweenKeysPair = (HashMap<String, String>) removeKeysAndContentBetweenKeysEntry.getValue();
 				String key1 = removeKeysAndContentBetweenKeysPair.get("key1");
 				String key2 = removeKeysAndContentBetweenKeysPair.get("key2");
-	
+
 				debugMessage("Remove keys and content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
 				preparedExpectedResult = removeKeysAndContentBetweenKeys(preparedExpectedResult, key1, key2);
 				preparedActualResult = removeKeysAndContentBetweenKeys(preparedActualResult, key1, key2);
 
-				removeKeysAndContentBetweenKeysIt.remove(); 
+				removeKeysAndContentBetweenKeysIt.remove();
 			}
 		}
 
@@ -3543,12 +2398,12 @@ public class TestTool {
 				Map.Entry ignoreKeyEntry = (Map.Entry) ignoreKeyIt.next();
 				HashMap<String, String> ignoreKeyPair = (HashMap<String, String>) ignoreKeyEntry.getValue();
 				String key = ignoreKeyPair.get("value");
-				
+
 				debugMessage("Ignore key '" + key + "'", writers);
 				preparedExpectedResult = ignoreKey(preparedExpectedResult, key);
 				preparedActualResult = ignoreKey(preparedActualResult, key);
-	
-				ignoreKeyIt.remove(); 
+
+				ignoreKeyIt.remove();
 			}
 		}
 
@@ -3576,12 +2431,12 @@ public class TestTool {
 				Map.Entry removeKeyEntry = (Map.Entry) removeKeyIt.next();
 				HashMap<String, String> removeKeyPair = (HashMap<String, String>) removeKeyEntry.getValue();
 				String key = removeKeyPair.get("value");
-				
+
 				debugMessage("Remove key '" + key + "'", writers);
 				preparedExpectedResult = removeKey(preparedExpectedResult, key);
 				preparedActualResult = removeKey(preparedActualResult, key);
 
-				removeKeyIt.remove(); 
+				removeKeyIt.remove();
 			}
 		}
 
@@ -3611,15 +2466,15 @@ public class TestTool {
 				HashMap<String, String> replaceKeyPair = (HashMap<String, String>) replaceKeyEntry.getValue();
 				String key1 = replaceKeyPair.get("key1");
 				String key2 = replaceKeyPair.get("key2");
-				
+
 				debugMessage("Replace key from '" + key1 + "' to '" + key2 + "'", writers);
 				preparedExpectedResult = replaceKey(preparedExpectedResult, key1, key2);
 				preparedActualResult = replaceKey(preparedActualResult, key1, key2);
-	
-				replaceKeyIt.remove(); 
+
+				replaceKeyIt.remove();
 			}
 		}
-		
+
 		/* numeric replaceEverywhereKey */
 		debugMessage("Check replaceEverywhereKey properties", writers);
 		boolean replaceEverywhereKeyProcessed = false;
@@ -3651,7 +2506,7 @@ public class TestTool {
 				preparedExpectedResult = replaceKey(preparedExpectedResult, key1, key2);
 				preparedActualResult = replaceKey(preparedActualResult, key1, key2);
 
-				replaceEverywhereKeyIt.remove(); 
+				replaceEverywhereKeyIt.remove();
 			}
 		}
 
@@ -3702,11 +2557,11 @@ public class TestTool {
 				preparedActualResult = ignoreCurrentTimeBetweenKeys(preparedActualResult, key1, key2, pattern, margin, errorMessageOnRemainingString, false, writers);
 				debugMessage("For expected string", writers);
 				preparedExpectedResult = ignoreCurrentTimeBetweenKeys(preparedExpectedResult, key1, key2, pattern, margin, errorMessageOnRemainingString, true, writers);
-				
-				ignoreCurrentTimeBetweenKeysIt.remove(); 
+
+				ignoreCurrentTimeBetweenKeysIt.remove();
 			}
 		}
-		
+
 		/* numeric ignoreContentBeforeKey */
 		debugMessage("Check ignoreContentBeforeKey properties", writers);
 		boolean ignoreContentBeforeKeyProcessed = false;
@@ -3737,16 +2592,16 @@ public class TestTool {
 				Map.Entry ignoreContentBeforeKeyEntry = (Map.Entry) ignoreContentBeforeKeyIt.next();
 				HashMap<String, String> ignoreContentBeforeKeyPair = (HashMap<String, String>) ignoreContentBeforeKeyEntry.getValue();
 				String key = ignoreContentBeforeKeyPair.get("key");
-	
+
 				if (key == null) {
 					key = ignoreContentBeforeKeyPair.get("value");
 				}
-	
+
 				debugMessage("Ignore content before key '" + key + "'", writers);
 				preparedExpectedResult = ignoreContentBeforeKey(preparedExpectedResult, key);
 				preparedActualResult = ignoreContentBeforeKey(preparedActualResult, key);
-				
-				ignoreContentBeforeKeyIt.remove(); 
+
+				ignoreContentBeforeKeyIt.remove();
 			}
 		}
 
@@ -3788,11 +2643,11 @@ public class TestTool {
 				debugMessage("Ignore content before key '" + key + "'", writers);
 				preparedExpectedResult = ignoreContentBeforeKey(preparedExpectedResult, key);
 				preparedActualResult = ignoreContentBeforeKey(preparedActualResult, key);
-				
-				ignoreContentAfterKeyIt.remove(); 
+
+				ignoreContentAfterKeyIt.remove();
 			}
 		}
-		
+
 		debugMessage("Check ignoreContentAfterKey properties", writers);
 		if ((diffType != null && (diffType.equals(".xml") || diffType.equals(".wsdl")))
 				|| (diffType == null && (fileName.endsWith(".xml") || fileName.endsWith(".wsdl")))) {
@@ -4050,7 +2905,7 @@ public class TestTool {
 		}
 		return result;
 	}
-	
+
 	public static String ignoreCurrentTimeBetweenKeys(String string, String key1, String key2, String pattern, String margin, boolean errorMessageOnRemainingString, boolean isControlString, Map<String, Object> writers) {
 		String result = string;
 		String ignoreText = "IGNORE_CURRENT_TIME";
@@ -4198,143 +3053,130 @@ public class TestTool {
 	 * @param property
 	 * @param writers
 	 * @param session TODO
-	 *  
+	 *
 	 * @return A map with parameters
 	 */
-	private static Map<String, Object> createParametersMapFromParamProperties(Properties properties, String property, Map<String, Object> writers, boolean createParameterObjects, PipeLineSession session) {
+	public static Map<String, Object> createParametersMapFromParamProperties(Properties properties, String property, Map<String, Object> writers, boolean createParameterObjects, PipeLineSession session) {
 		debugMessage("Search parameters for property '" + property + "'", writers);
-		Map<String, Object> result = new HashMap<String, Object>();
+		final String _name = ".name";
+		final String _param = ".param";
+		final String _type = ".type";
+		Map<String, Object> result = new HashMap<>();
 		boolean processed = false;
 		int i = 1;
 		while (!processed) {
-			String name = properties.getProperty(property + ".param" + i + ".name");
+			String name = properties.getProperty(property + _param + i + _name);
 			if (name != null) {
 				Object value;
-				String type = properties.getProperty(property + ".param" + i + ".type");
+				String type = properties.getProperty(property + _param + i + _type);
 				if ("httpResponse".equals(type)) {
 					String outputFile;
-					String filename = properties.getProperty(property + ".param" + i + ".filename");
+					String filename = properties.getProperty(property + _param + i + ".filename");
 					if (filename != null) {
-						outputFile = properties.getProperty(property + ".param" + i + ".filename.absolutepath");
+						outputFile = properties.getProperty(property + _param + i + ".filename.absolutepath");
 					} else {
-						outputFile = properties.getProperty(property + ".param" + i + ".outputfile");
+						outputFile = properties.getProperty(property + _param + i + ".outputfile");
 					}
 					HttpServletResponseMock httpServletResponseMock = new HttpServletResponseMock();
 					httpServletResponseMock.setOutputFile(outputFile);
 					value = httpServletResponseMock;
-				} else if ("httpRequest".equals(type)) {
-					value = properties.getProperty(property + ".param" + i + ".value");
+				}
+				/** Support for httpRequest parameterType is removed because it depends on Spring and Http-client libraries that contain CVEs. Upgrading these libraries requires some work.
+				On the other hand, httpRequest parameter is only used in CreateRestViewPipe. It is unlikely to create a larva test for this pipe.
+				Therefore, it is decided to stop supporting it. */
+				/* else if ("httpRequest".equals(type)) {
+					value = properties.getProperty(property + _param + i + ".value");
 					if("multipart".equals(value)){
 						MockMultipartHttpServletRequest request = new MockMultipartHttpServletRequest();
 						// following line is required to avoid
 						// "(FileUploadException) the request was rejected because
 						// no multipart boundary was found"
-						request.setContentType(
-								"multipart/mixed;boundary=gc0p4Jq0M2Yt08jU534c0p");
-						List<Part> parts = new ArrayList<Part>();
+						request.setContentType("multipart/mixed;boundary=gc0p4Jq0M2Yt08jU534c0p");
+						List<Part> parts = new ArrayList<>();
 						boolean partsProcessed = false;
 						int j = 1;
 						while (!partsProcessed) {
-							String filename = properties.getProperty(property
-									+ ".param" + i + ".part" + j + ".filename");
+							String filename = properties.getProperty(property + _param + i + ".part" + j + ".filename");
 							if (filename == null) {
 								partsProcessed = true;
 							} else {
-								String partFile = properties.getProperty(property
-										+ ".param" + i + ".part" + j + ".filename.absolutepath");
-								String partType = properties.getProperty(property
-										+ ".param" + i + ".part" + j + ".type");
-								String partName = properties.getProperty(property
-										+ ".param" + i + ".part" + j + ".name");
+								String partFile = properties.getProperty(property + _param + i + ".part" + j + ".filename.absolutepath");
+								String partType = properties.getProperty(property + _param + i + ".part" + j + _type);
+								String partName = properties.getProperty(property + _param + i + ".part" + j + _name);
 								if ("file".equalsIgnoreCase(partType)) {
 									File file = new File(partFile);
 									try {
-										FilePart filePart = new FilePart(
-												"file" + j,
-												(partName == null
-														? file.getName()
-														: partName),
-												file);
+										FilePart filePart = new FilePart( "file" + j, (partName == null ? file.getName() : partName), file);
 										parts.add(filePart);
 									} catch (FileNotFoundException e) {
-										errorMessage(
-												"Could not read file '" + partFile
-														+ "': " + e.getMessage(),
-												e, writers);
+										errorMessage("Could not read file '" + partFile+ "': " + e.getMessage(), e, writers);
 									}
 								} else {
 									String string = readFile(partFile, writers);
-									StringPart stringPart = new StringPart(
-											(partName == null ? "string" + j
-													: partName),
-											string);
+									StringPart stringPart = new StringPart((partName == null ? "string" + j : partName), string);
 									parts.add(stringPart);
 								}
 								j++;
 							}
 						}
-						Part allParts[] = new Part[parts.size()];
+						Part[] allParts = new Part[parts.size()];
 						allParts = parts.toArray(allParts);
-						MultipartRequestEntity multipartRequestEntity = new MultipartRequestEntity(
-								allParts, new PostMethod().getParams());
+						MultipartRequestEntity multipartRequestEntity = new MultipartRequestEntity(allParts, new PostMethod().getParams());
 						ByteArrayOutputStream requestContent = new ByteArrayOutputStream();
 						try {
 							multipartRequestEntity.writeRequest(requestContent);
 						} catch (IOException e) {
-							errorMessage(
-									"Could not create multipart: " + e.getMessage(),
-									e, writers);
+							errorMessage("Could not create multipart: " + e.getMessage(), e, writers);
 						}
 						request.setContent(requestContent.toByteArray());
-						request.setContentType(
-								multipartRequestEntity.getContentType());
+						request.setContentType(multipartRequestEntity.getContentType());
 						value = request;
 					}
 					else{
-						MockHttpServletRequest request = new MockHttpServletRequest();
-						value = request;
+						value = new MockHttpServletRequest();
 					}
-				} else {
-					value = properties.getProperty(property + ".param" + i + ".value");
+				} */
+				else {
+					value = properties.getProperty(property + _param + i + ".value");
 					if (value == null) {
-						String filename = properties.getProperty(property + ".param" + i + ".valuefile.absolutepath");
+						String filename = properties.getProperty(property + _param + i + ".valuefile.absolutepath");
 						if (filename != null) {
-							value = readFile(filename, writers);
+							value = new FileMessage(new File(filename));
 						} else {
-							String inputStreamFilename = properties.getProperty(property + ".param" + i + ".valuefileinputstream.absolutepath");
+							String inputStreamFilename = properties.getProperty(property + _param + i + ".valuefileinputstream.absolutepath");
 							if (inputStreamFilename != null) {
-								try {
-									value = new FileInputStream(inputStreamFilename);
-								} catch(FileNotFoundException e) {
-									errorMessage("Could not read file '" + inputStreamFilename + "': " + e.getMessage(), e, writers);
-								}
+								errorMessage("valuefileinputstream is no longer supported use valuefile instead", writers);
 							}
 						}
 					}
 				}
-				if (value != null && value instanceof String) {
-					if ("node".equals(properties.getProperty(property + ".param" + i + ".type"))) {
-						try {
-							value = XmlUtils.buildNode((String)value, true);
-						} catch (DomBuilderException e) {
-							errorMessage("Could not build node for parameter '" + name + "' with value: " + value, e, writers);
-						}
-					} else if ("domdoc".equals(properties.getProperty(property + ".param" + i + ".type"))) {
-						try {
-							value = XmlUtils.buildDomDocument((String)value, true);
-						} catch (DomBuilderException e) {
-							errorMessage("Could not build node for parameter '" + name + "' with value: " + value, e, writers);
-						}
-					} else if ("list".equals(properties.getProperty(property + ".param" + i + ".type"))) {
-						List<String> parts = new ArrayList<String>(Arrays.asList(((String)value).split("\\s*(,\\s*)+")));
-						List<String> list = new LinkedList<String>();
+				if ("node".equals(type)) {
+					try {
+						value = XmlUtils.buildNode(Message.asString(value), true);
+					} catch (DomBuilderException | IOException e) {
+						errorMessage("Could not build node for parameter '" + name + "' with value: " + value, e, writers);
+					}
+				} else if ("domdoc".equals(type)) {
+					try {
+						value = XmlUtils.buildDomDocument(Message.asString(value), true);
+					} catch (DomBuilderException | IOException e) {
+						errorMessage("Could not build node for parameter '" + name + "' with value: " + value, e, writers);
+					}
+				} else if ("list".equals(type)) {
+					try {
+						List<String> parts = new ArrayList<>(Arrays.asList(Message.asString(value).split("\\s*(,\\s*)+")));
+						List<String> list = new LinkedList<>();
 						for (String part : parts) {
 							list.add(part);
 						}
 						value = list;
-					} else if ("map".equals(properties.getProperty(property + ".param" + i + ".type"))) {
-						List<String> parts = new ArrayList<String>(Arrays.asList(((String)value).split("\\s*(,\\s*)+")));
-						Map<String, String> map = new LinkedHashMap<String, String>();
+					} catch (IOException e) {
+						errorMessage("Could not build a list for parameter '" + name + "' with value: " + value, e, writers);
+					}
+				} else if ("map".equals(type)) {
+					try {
+						List<String> parts = new ArrayList<>(Arrays.asList(Message.asString(value).split("\\s*(,\\s*)+")));
+						Map<String, String> map = new LinkedHashMap<>();
 						for (String part : parts) {
 							String[] splitted = part.split("\\s*(=\\s*)+", 2);
 							if (splitted.length==2) {
@@ -4344,12 +3186,14 @@ public class TestTool {
 							}
 						}
 						value = map;
+					} catch (IOException e) {
+						errorMessage("Could not build a map for parameter '" + name + "' with value: " + value, e, writers);
 					}
 				}
 				if (createParameterObjects) {
-					String  pattern = properties.getProperty(property + ".param" + i + ".pattern");
+					String  pattern = properties.getProperty(property + _param + i + ".pattern");
 					if (value == null && pattern == null) {
-						errorMessage("Property '" + property + ".param" + i + " doesn't have a value or pattern", writers);
+						errorMessage("Property '" + property + _param + i + " doesn't have a value or pattern", writers);
 					} else {
 						try {
 							Parameter parameter = new Parameter();
@@ -4370,7 +3214,7 @@ public class TestTool {
 					}
 				} else {
 					if (value == null) {
-						errorMessage("Property '" + property + ".param" + i + ".value' or '" + property + ".param" + i + ".valuefile' or '" + property + ".param" + i + ".valuefileinputstream' not found while property '" + property + ".param" + i + ".name' exist", writers);
+						errorMessage("Property '" + property + _param + i + ".value' or '" + property + _param + i + ".valuefile' not found while property '" + property + _param + i + ".name' exist", writers);
 					} else {
 						result.put(name, value);
 						debugMessage("Add param with name '" + name + "' and value '" + value + "' for property '" + property + "'", writers);
@@ -4406,19 +3250,19 @@ public class TestTool {
 
 	/**
 	 * This method is used to provide a way to implement ignores based on an identifier.
-	 * For example: 
+	 * For example:
 	 * ignoreContentBetweenKeys.fieldA.key1=<field name="A">
 	 * ignoreContentBetweenKeys.fieldA.key2=</field>
-	 * 
+	 *
 	 * @param properties Properties to be checked
-	 * 
-	 * @return HashMap<String, HashMap<String, HashMap<String, String>>> as HashMap<'ignoreContentBetweenKeys', Hashmap<'fieldA', HashMap<'key1', '<field name="A">'> 
+	 *
+	 * @return HashMap<String, HashMap<String, HashMap<String, String>>> as HashMap<'ignoreContentBetweenKeys', Hashmap<'fieldA', HashMap<'key1', '<field name="A">'>
 	*/
 
 	public static HashMap<String, HashMap<String, HashMap<String, String>>> mapPropertiesToIgnores(Properties properties){
-		HashMap<String, HashMap<String, HashMap<String, String>>> returnMap = new HashMap<String, HashMap<String, HashMap<String, String>>>();
+		HashMap<String, HashMap<String, HashMap<String, String>>> returnMap = new HashMap<>();
 		Enumeration<String> enums = (Enumeration<String>) properties.propertyNames();
-		
+
 		// Loop through all properties
 		while (enums.hasMoreElements()) {
 			// Extract key
@@ -4437,7 +3281,7 @@ public class TestTool {
 
 				// Create return map for ignore if not exist
 				if(ignoreMap == null) {
-					ignoreMap = new HashMap<String, HashMap<String, String>>();
+					ignoreMap = new HashMap<>();
 					returnMap.put(ignore, ignoreMap);
 				}
 
@@ -4446,14 +3290,14 @@ public class TestTool {
 
 				// Create return map for identifier if not exist
 				if(idMap == null) {
-					idMap = new HashMap<String, String>();
+					idMap = new HashMap<>();
 					ignoreMap.put(id, idMap);
 				}
 
-				// Check attributes are provided 
+				// Check attributes are provided
 				if(!attributes.isEmpty()){
 					// Loop through attributes to be searched for
-					for (String attribute : attributes) { 		      
+					for (String attribute : attributes) {
 						if(key.endsWith("." + attribute)){
 							idMap.put(attribute, properties.getProperty(key));
 						}
@@ -4466,16 +3310,16 @@ public class TestTool {
 				}
 			}
 		}
-		
-		return returnMap; 
+
+		return returnMap;
 	}
 
 	/**
 	 * This method is used to de-couple the need of providing a set of attributes when calling mapPropertiesByIdentifier().
 	 * Caller of mapPropertiesByIdentifier() should not necescarrily know about all attributes related to an ignore.
-	 * 
+	 *
 	 * @param propertyName The name of the ignore we are checking, in the example 'ignoreContentBetweenKeys'
-	 * 
+	 *
 	 * @return ArrayList<String> attributes
 	*/
 	public static ArrayList<String> findAttributesForIgnore(String propertyName) {

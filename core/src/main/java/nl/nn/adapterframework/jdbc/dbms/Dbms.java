@@ -36,7 +36,7 @@ public enum Dbms {
 	private String key;
 	private String productName;
 	private Class<? extends IDbmsSupport> dbmsSupportClass;
-	
+
 	private Dbms(String key, Class<? extends IDbmsSupport> dbmsSupportClass) {
 		this(key, key, dbmsSupportClass);
 	}

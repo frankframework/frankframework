@@ -20,7 +20,10 @@ import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Stack;
 
 import org.apache.commons.io.output.XmlStreamWriter;
 import org.apache.commons.lang3.StringUtils;
@@ -53,7 +56,8 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	private int elementLevel=0;
 	private boolean elementJustStarted;
 	private boolean inCdata;
-	private List<PrefixMapping> namespaceDefinitions=new ArrayList<>();
+	private List<PrefixMapping> newNamespaceDefinitions=new ArrayList<>();
+	private Map<String,Stack<String>> activeNamespaceDefinitions=new HashMap<>();
 
 	private class PrefixMapping {
 
@@ -126,15 +130,25 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 		writer.append("=\"").append(XmlUtils.encodeChars(prefixMapping.uri)).append("\"");
 	}
 
-	private void storePrefixMapping(List<PrefixMapping> prefixMappingList, String prefix, String uri) {
-		PrefixMapping prefixMapping = new PrefixMapping(prefix,uri);
-		prefixMappingList.add(prefixMapping);
+	@Override
+	public void startPrefixMapping(String prefix, String uri) throws SAXException {
+		PrefixMapping mapping = new PrefixMapping(prefix,uri);
+		Stack<String> prefixMappingStack = activeNamespaceDefinitions.get(prefix);
+		if (prefixMappingStack==null) {
+			prefixMappingStack = new Stack<>();
+			activeNamespaceDefinitions.put(prefix, prefixMappingStack);
+		}
+		if (prefixMappingStack.isEmpty() || !prefixMappingStack.peek().equals(uri)) {
+			newNamespaceDefinitions.add(mapping);
+		}
+		prefixMappingStack.push(uri);
 	}
 
 	@Override
-	public void startPrefixMapping(String prefix, String uri) throws SAXException {
-		storePrefixMapping(namespaceDefinitions, prefix, uri);
+	public void endPrefixMapping(String prefix) throws SAXException {
+		activeNamespaceDefinitions.get(prefix).pop();
 	}
+
 
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
@@ -145,13 +159,16 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 			if (!textMode) {
 				writer.append("<"+qName);
 				for (int i=0; i<attributes.getLength(); i++) {
-					writer.append(" "+attributes.getQName(i)+"=\""+XmlUtils.encodeChars(attributes.getValue(i), true).replace("&#39;", "'")+"\"");
+					String attrValue = attributes.getValue(i);
+					if (attrValue!=null) {
+						writer.append(" "+attributes.getQName(i)+"=\""+XmlUtils.encodeChars(attrValue, true).replace("&#39;", "'")+"\"");
+					}
 				}
-				for (int i=0; i<namespaceDefinitions.size(); i++) {
-					writePrefixMapping(namespaceDefinitions.get(i));
+				for (int i=0; i<newNamespaceDefinitions.size(); i++) {
+					writePrefixMapping(newNamespaceDefinitions.get(i));
 				}
 			}
-			namespaceDefinitions.clear();
+			newNamespaceDefinitions.clear();
 			elementJustStarted=true;
 			elementLevel++;
 		} catch (IOException e) {

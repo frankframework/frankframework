@@ -38,7 +38,7 @@ public interface IPipe extends IConfigurable, IForwardTarget {
 	 * creating connections to databases etc. in the {@link #doPipe(Message, PipeLineSession) doPipe()} method.
 	 * As much as possible class-instantiating should take place in the
 	 * <code>configure()</code> method, to improve performance.
-	 */ 
+	 */
 	@Override
 	void configure() throws ConfigurationException;
 
@@ -88,8 +88,7 @@ public interface IPipe extends IConfigurable, IForwardTarget {
 	 * For instance, closing JMS connections, DBMS connections etc.
 	 */
 	void stop();
-	
-	
+
 	/**
 	 * returns <code>true</code> if the pipe or one of its children use the named session variable. 
 	 * Callers can use this to determine if a message needs to be preserved.

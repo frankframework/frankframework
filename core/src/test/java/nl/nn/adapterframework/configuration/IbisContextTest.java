@@ -89,7 +89,7 @@ public class IbisContextTest {
 			MessageEventListener events = context.getBean("MessageEventListener", MessageEventListener.class);
 			MessageKeeperMessage message = events.getMessageKeeper().getMessage(events.getMessageKeeper().size()-2);
 			assertNotNull("unable to find MessageKeeperMessage", message);
-			assertThat(message.getMessageText(), Matchers.endsWith("error configuring ClassLoader for configuration [ConfigWithNullClassLoader]: test-exception"));
+			assertThat(message.getMessageText(), Matchers.endsWith("error configuring ClassLoader for configuration [ConfigWithNullClassLoader]: (ClassLoaderException) test-exception"));
 		}
 	}
 

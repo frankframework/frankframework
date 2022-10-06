@@ -1,0 +1,5 @@
+<project default="cleanup">
+	<target name="cleanup">
+		<delete dir="${testdata.dir}/ManageFileSystem/" />
+	</target>
+</project>

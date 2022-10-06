@@ -41,6 +41,7 @@ import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.MessageKeeper;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunState;
 
 public class OpenApiTestBase extends Mockito {
@@ -117,7 +118,7 @@ public class OpenApiTestBase extends Mockito {
 
 		MockHttpServletRequest request = new MockHttpServletRequest(method.toUpperCase(), uri);
 		request.setServerName("mock-hostname");
-		request.setPathInfo(uri);
+		request.setPathInfo(Misc.urlDecode(uri)); //Should be decoded by the web container
 		request.setContextPath("/mock-context-path");
 		request.setServletPath("/mock-servlet-path");
 		request.setRequestURI(request.getContextPath()+request.getServletPath()+uri);
@@ -190,7 +191,7 @@ public class OpenApiTestBase extends Mockito {
 			listener.setMessageIdHeader(messageIdHeader);
 			return this;
 		}
-		
+
 		public AdapterBuilder setInputValidator(String xsdSchema, String requestRoot, String responseRoot, Parameter param) {
 			String ref = xsdSchema.substring(0, xsdSchema.indexOf("."))+"-"+responseRoot;
 			inputValidator = new Json2XmlValidator();
@@ -225,9 +226,9 @@ public class OpenApiTestBase extends Mockito {
 			return this;
 		}
 		public AdapterBuilder addExit(String exitCode) {
-			return addExit(exitCode, null, "false");
+			return addExit(exitCode, null, false);
 		}
-		public AdapterBuilder addExit(String exitCode, String responseRoot, String isEmpty) {
+		public AdapterBuilder addExit(String exitCode, String responseRoot, boolean isEmpty) {
 			PipeLineExit ple = new PipeLineExit();
 			ple.setCode(exitCode);
 			ple.setResponseRoot(responseRoot);
@@ -250,7 +251,7 @@ public class OpenApiTestBase extends Mockito {
 			return build(false);
 		}
 		/**
-		 * Create the adapter 
+		 * Create the adapter
 		 * @param start automatically start the adapter upon creation
 		 */
 		public Adapter build(boolean start) throws ConfigurationException {

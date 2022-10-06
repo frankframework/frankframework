@@ -45,13 +45,7 @@ import nl.nn.adapterframework.stream.Message;
  * the sender of the message can retry sending the message until a valid reply
  * is received in which case it can be certain that the message is stored in the
  * ibisstore.
- * 
- * Add a messageLog element with class {@link DummyTransactionalStorage} to
- * prevent the warning "... has no messageLog..." and enable the message
- * browser in the console. Set it's type to A to view the messages moved to the
- * messageLog by the {@link MessageStoreListener} or M to view the messages in
- * the messageStore which still need to be processed.
- * 
+ *
  * Example configuration:
  * <code><pre>
 		&lt;sender
@@ -62,17 +56,10 @@ import nl.nn.adapterframework.stream.Message;
 			>
 			&lt;param name="messageId" xpathExpression="/Envelope/Header/MessageID"/>
 		&lt;/sender>
-		&lt;!-- DummyTransactionalStorage to enable messagestore browser in the console (JdbcTransactionalStorage would store an extra record in the ibisstore) -->
-		&lt;messageLog
-			className="nl.nn.adapterframework.jdbc.DummyTransactionalStorage"
-			datasourceName="${jdbc.datasource.default}"
-			slotId="${instance.name}/ServiceName"
-			type="M"
-		/>
 </pre></code>
- * 
+ *
  * @ff.parameter messageId messageId to check for duplicates, when this parameter isn't present the messageId is read from sessionKey messageId
- * 
+ *
  * @author Jaco de Groot
  */
 @FrankDocGroup(name = "Senders")
@@ -82,10 +69,10 @@ public class MessageStoreSender extends JdbcTransactionalStorage<String> impleme
 	private ParameterList paramList = null;
 	private @Getter String sessionKeys = null;
 
-	{ 
+	{
 		setOnlyStoreWhenMessageIdUnique(true);
 	}
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		if (paramList != null) {
@@ -116,25 +103,23 @@ public class MessageStoreSender extends JdbcTransactionalStorage<String> impleme
 	@Override
 	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		try {
-			Message messageToStore=message;
+			String messageToStore = message.asString(); // if no session keys are specified, message is stored without escaping, for compatibility with normal messagestore operation.
 			if (sessionKeys != null) {
 				List<String> list = new ArrayList<>();
-				list.add(StringEscapeUtils.escapeCsv(message.asString()));
+				list.add(StringEscapeUtils.escapeCsv(messageToStore));
 				StringTokenizer tokenizer = new StringTokenizer(sessionKeys, ",");
 				while (tokenizer.hasMoreElements()) {
 					String sessionKey = (String)tokenizer.nextElement();
 					Message msg = session.getMessage(sessionKey);
-					if(!msg.isEmpty()) {
-						list.add(StringEscapeUtils.escapeCsv(msg.asString()));
-					}
+					list.add(StringEscapeUtils.escapeCsv(msg.asString()));
 				}
 				TextStringBuilder sb = new TextStringBuilder();
 				sb.appendWithSeparators(list, ",");
-				messageToStore = Message.asMessage(sb.toString());
+				messageToStore = sb.toString();
 			}
 			// the messageId to be inserted in the messageStore defaults to the messageId of the session
-			String messageId = session.getMessageId(); 
-			String correlationID = messageId;
+			String messageId = session.getMessageId();
+			String correlationID = session.getCorrelationId();
 			if (paramList != null && paramList.findParameter(PARAM_MESSAGEID) != null) {
 				try {
 					// the messageId to be inserted can also be specified via the parameter messageId
@@ -143,7 +128,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage<String> impleme
 					throw new SenderException("Could not resolve parameter messageId", e);
 				}
 			}
-			return new Message(storeMessage(messageId, correlationID, new Date(), null, null, messageToStore.asString()));
+			return new Message(storeMessage(messageId, correlationID, new Date(), null, null, messageToStore));
 		} catch (IOException e) {
 			throw new SenderException(getLogPrefix(),e);
 		}
@@ -158,7 +143,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage<String> impleme
 
 	/**
 	 * If set to <code>true</code>, the message is stored only if the MessageId is not present in the store yet.
-	 * 
+	 *
 	 * @ff.default <code>true</code>
 	 */
 	@Override

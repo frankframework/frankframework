@@ -35,12 +35,10 @@ import javax.xml.soap.AttachmentPart;
 import javax.xml.soap.MessageFactory;
 import javax.xml.soap.MimeHeader;
 import javax.xml.soap.SOAPConstants;
-import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
-import javax.xml.transform.stream.StreamSource;
+import javax.xml.transform.Source;
 import javax.xml.ws.WebServiceContext;
 
-import org.apache.soap.util.mime.ByteArrayDataSource;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,21 +48,41 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.w3c.dom.Element;
 
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.http.InputStreamDataSource;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageContext;
+import nl.nn.adapterframework.stream.UrlMessage;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.stream.Message;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SoapProviderTest {
+
+	@Spy
+	WebServiceContext webServiceContext = new WebServiceContextStub();
+
+	@InjectMocks
+	private SoapProviderStub SOAPProvider = new SoapProviderStub();
+
+	private static final String ATTACHMENT_CONTENT = "<dummy/>";
+	private static final String ATTACHMENT_MIMETYPE = "plain/text";
+
+	private static final String ATTACHMENT2_CONTENT = "<I'm a pdf file/>";
+	private static final String PART_NAME = "part_file";
+	private static final String ATTACHMENT2_NAME = "document.pdf";
+	private static final String ATTACHMENT2_MIMETYPE = "application/pdf";
+	private static final String MULTIPART_XML = "<parts><part type=\"file\" name=\""+ATTACHMENT2_NAME+"\" "
+			+ "sessionKey=\"part_file\" size=\"72833\" "
+			+ "mimeType=\""+ATTACHMENT2_MIMETYPE+"\"/></parts>";
+
+	private static final String BASEDIR = "/Soap/";
 
 	@BeforeClass
 	public static void setUp() {
 		Properties prop = System.getProperties();
 		String vendor = prop.getProperty("java.vendor");
-		System.out.println("JVM Vendor : " + vendor);
 		assumeThat(vendor, not(equalTo("IBM Corporation")));
-		
+
 	/*
 	 * The above exclusion of IBM JDK to work around the below error, seen when executing these tests with an IBM JDK:
 	 * 
@@ -86,56 +104,39 @@ public class SoapProviderTest {
 			at nl.nn.adapterframework.extensions.cxf.SoapProviderTest.createMessage(SoapProviderTest.java:98)
 			at nl.nn.adapterframework.extensions.cxf.SoapProviderTest.createMessage(SoapProviderTest.java:94)
 			at nl.nn.adapterframework.extensions.cxf.SoapProviderTest.sendMessageWithInputStreamAttachmentsTest(SoapProviderTest.java:228)
-	*/	
+	*/
 
 	}
-	
-	@Spy
-	WebServiceContext webServiceContext = new WebServiceContextStub();
 
-	@InjectMocks
-	private SoapProviderStub SOAPProvider = new SoapProviderStub();
-
-	private final String ATTACHMENT_CONTENT = "<dummy/>";
-	private final String ATTACHMENT_MIMETYPE = "plain/text";
-
-	private final String ATTACHMENT2_CONTENT = "<I'm a pdf file/>";
-	private final String ATTACHMENT2_NAME = "document.pdf";
-	private final String ATTACHMENT2_MIMETYPE = "application/pdf";
-	private final String MULTIPART_XML = "<parts><part type=\"file\" name=\""+ATTACHMENT2_NAME+"\" "
-			+ "sessionKey=\"part_file\" size=\"72833\" "
-			+ "mimeType=\""+ATTACHMENT2_MIMETYPE+"\"/></parts>";
-
-	private final String BASEDIR = "/Soap/";
-	protected InputStream getFile(String file) throws IOException {
+	protected Message getFile(String file) throws IOException {
 		URL url = this.getClass().getResource(BASEDIR+file);
 		if (url == null) {
 			throw new IOException("file not found");
 		}
-		return url.openStream();
+		return new UrlMessage(url);
 	}
 
-	private SOAPMessage createMessage(String filename) throws IOException, SOAPException {
+	private SOAPMessage createMessage(String filename) throws Exception {
 		return createMessage(filename, false, false);
 	}
 
-	private SOAPMessage createMessage(String filename, boolean addAttachment, boolean isSoap1_1) throws IOException, SOAPException {
+	private SOAPMessage createMessage(String filename, boolean addAttachment, boolean isSoap1_1) throws Exception {
 		MessageFactory factory = MessageFactory.newInstance(isSoap1_1 ? SOAPConstants.SOAP_1_1_PROTOCOL : SOAPConstants.SOAP_1_2_PROTOCOL);
 		SOAPMessage soapMessage = factory.createMessage();
-		StreamSource streamSource = new StreamSource(getFile(filename));
+		Source streamSource = getFile(filename).asSource();
 		soapMessage.getSOAPPart().setContent(streamSource);
 
 		if(addAttachment) {
 			InputStream fis = new ByteArrayInputStream(ATTACHMENT_CONTENT.getBytes());
-			DataHandler dataHander = new DataHandler(new ByteArrayDataSource(fis, ATTACHMENT_MIMETYPE));
-	
+			DataHandler dataHander = new DataHandler(new InputStreamDataSource(ATTACHMENT_MIMETYPE, fis));
+
 			AttachmentPart part = soapMessage.createAttachmentPart(dataHander);
 			soapMessage.addAttachmentPart(part);
 		}
 		return soapMessage;
 	}
 
-	private void assertAttachmentInSession(PipeLineSession session) throws DomBuilderException, IOException {
+	private void assertAttachmentInSession(PipeLineSession session) throws Exception {
 		assertNotNull(session.get("mimeHeaders"));
 
 		assertNotNull(session.get("attachments"));
@@ -150,6 +151,7 @@ public class SoapProviderTest {
 
 		//Verify that the attachment sent, was received properly
 		assertEquals(ATTACHMENT_CONTENT, attachmentMessage.asString());
+		assertEquals(ATTACHMENT_MIMETYPE, attachmentMessage.getContext().get(MessageContext.METADATA_MIMETYPE).toString());
 
 		//Verify the content type
 		Element mimeTypes = XmlUtils.getFirstChildTag(attachment, "mimeHeaders");
@@ -159,7 +161,7 @@ public class SoapProviderTest {
 		assertEquals(ATTACHMENT_MIMETYPE, mimeType);
 	}
 
-	private void assertAttachmentInReceivedMessage(SOAPMessage message) throws SOAPException, IOException {
+	private void assertAttachmentInReceivedMessage(SOAPMessage message) throws Exception {
 		assertEquals(1, message.countAttachments());
 
 		Iterator<?> attachmentParts = message.getAttachments();
@@ -167,7 +169,7 @@ public class SoapProviderTest {
 			AttachmentPart soapAttachmentPart = (AttachmentPart)attachmentParts.next();
 			String attachment = Misc.streamToString(soapAttachmentPart.getRawContent());
 			//ContentID should be equal to the filename
-			assertEquals(ATTACHMENT2_NAME, soapAttachmentPart.getContentId());
+			assertEquals(PART_NAME, soapAttachmentPart.getContentId());
 
 			//Validate the attachment's content
 			assertEquals(ATTACHMENT2_CONTENT, attachment);
@@ -195,14 +197,14 @@ public class SoapProviderTest {
 
 		SOAPMessage message = SOAPProvider.invoke(request);
 		String result = XmlUtils.nodeToString(message.getSOAPPart());
-		String expected = Misc.streamToString(getFile("correct-soapmsg.xml"));
+		String expected = getFile("correct-soapmsg.xml").asString();
 		assertEquals(expected.replaceAll("\r", ""), result.replaceAll("\r", ""));
 
 		PipeLineSession session = SOAPProvider.getSession();
 		assertNotNull(session.get("mimeHeaders"));
 
 		assertNotNull(session.get("attachments"));
-		assertEquals("<attachments />", session.get("attachments").toString().trim());
+		assertEquals("<attachments/>", session.get("attachments").toString().trim());
 	}
 
 	@Test
@@ -227,7 +229,7 @@ public class SoapProviderTest {
 
 		SOAPMessage message = SOAPProvider.invoke(request);
 		String result = XmlUtils.nodeToString(message.getSOAPPart());
-		String expected = Misc.streamToString(getFile("correct-soapmsg.xml"));
+		String expected = getFile("correct-soapmsg.xml").asString();
 		assertEquals(expected.replaceAll("\r", ""), result.replaceAll("\r", ""));
 
 		PipeLineSession session = SOAPProvider.getSession();
@@ -253,7 +255,7 @@ public class SoapProviderTest {
 		SOAPMessage message = SOAPProvider.invoke(request);
 
 		String result = XmlUtils.nodeToString(message.getSOAPPart());
-		String expected = Misc.streamToString(getFile("correct-soapmsg.xml"));
+		String expected = getFile("correct-soapmsg.xml").asString();
 		assertEquals(expected.replaceAll("\r", ""), result.replaceAll("\r", ""));
 
 		assertAttachmentInReceivedMessage(message);
@@ -278,10 +280,103 @@ public class SoapProviderTest {
 		SOAPMessage message = SOAPProvider.invoke(request);
 
 		String result = XmlUtils.nodeToString(message.getSOAPPart());
-		String expected = Misc.streamToString(getFile("correct-soapmsg.xml"));
+		String expected = getFile("correct-soapmsg.xml").asString();
 		assertEquals(expected.replaceAll("\r", ""), result.replaceAll("\r", ""));
 
 		assertAttachmentInReceivedMessage(message);
+	}
+
+	@Test
+	public void sendMessageWithXmlAttachmentsWithoutContentTypeBinary() throws Exception {
+		String attachmentFile = "correct-soapmsg.xml";
+		SOAPMessage request = createMessage("correct-soapmsg.xml");
+		PipeLineSession session = new PipeLineSession();
+
+		session.put("attachmentXmlSessionKey", "<parts><part sessionKey=\"part_file\"/></parts>");
+		session.put("part_file", getFile(attachmentFile));
+
+		SOAPProvider.setAttachmentXmlSessionKey("attachmentXmlSessionKey");
+		SOAPProvider.setSession(session);
+
+		SOAPMessage message = SOAPProvider.invoke(request);
+
+		String result = XmlUtils.nodeToString(message.getSOAPPart());
+		String expected = getFile("correct-soapmsg.xml").asString();
+		assertEquals(expected.replaceAll("\r", ""), result.replaceAll("\r", ""));
+
+		assertEquals(1, message.countAttachments());
+
+		testAttachment(message, getFile(attachmentFile).asString(), "application/xml");
+	}
+
+	@Test
+	public void sendMessageWithXmlAttachmentsWithoutContentTypeNonBinary() throws Exception {
+		String attachmentFile = "correct-soapmsg.xml";
+		SOAPMessage request = createMessage("correct-soapmsg.xml");
+		PipeLineSession session = new PipeLineSession();
+
+		session.put("attachmentXmlSessionKey", "<parts><part sessionKey=\"part_file\"/></parts>");
+		session.put("part_file", Message.asMessage(getFile(attachmentFile).asString())); //as String message / no message context
+
+		SOAPProvider.setAttachmentXmlSessionKey("attachmentXmlSessionKey");
+		SOAPProvider.setSession(session);
+
+		SOAPMessage message = SOAPProvider.invoke(request);
+
+		String result = XmlUtils.nodeToString(message.getSOAPPart());
+		String expected = getFile("correct-soapmsg.xml").asString();
+		assertEquals(expected.replaceAll("\r", ""), result.replaceAll("\r", ""));
+
+		assertEquals(1, message.countAttachments());
+
+		testAttachment(message, getFile(attachmentFile).asString(), "application/octet-stream");
+	}
+
+	@Test
+	public void sendMessageWithImageAttachmentsWithoutContentType() throws Exception {
+		String attachmentFile = "test-image.bmp";
+		SOAPMessage request = createMessage("correct-soapmsg.xml");
+		PipeLineSession session = new PipeLineSession();
+
+		session.put("attachmentXmlSessionKey", "<parts><part sessionKey=\"part_file\"/></parts>");
+		session.put("part_file", getFile(attachmentFile));
+
+		SOAPProvider.setAttachmentXmlSessionKey("attachmentXmlSessionKey");
+		SOAPProvider.setSession(session);
+
+		SOAPMessage message = SOAPProvider.invoke(request);
+
+		String result = XmlUtils.nodeToString(message.getSOAPPart());
+		String expected = getFile("correct-soapmsg.xml").asString();
+		assertEquals(expected.replaceAll("\r", ""), result.replaceAll("\r", ""));
+
+		assertEquals(1, message.countAttachments());
+
+		testAttachment(message, getFile(attachmentFile).asString(), "image/bmp");
+	}
+
+	private void testAttachment(SOAPMessage message, String expectedAttachmentContent, String expectedContentType) throws Exception {
+		//Test attachment
+		Iterator<?> attachmentParts = message.getAttachments();
+		while (attachmentParts.hasNext()) {
+			AttachmentPart soapAttachmentPart = (AttachmentPart)attachmentParts.next();
+			String attachment = Misc.streamToString(soapAttachmentPart.getRawContent());
+			//ContentID should be equal to the filename
+			assertEquals(PART_NAME, soapAttachmentPart.getContentId());
+
+			//Validate the attachment's content
+			assertEquals(expectedAttachmentContent, attachment);
+
+			//Make sure at least the content-type header has been set
+			Iterator<?> headers = soapAttachmentPart.getAllMimeHeaders();
+			String contentType = null;
+			while (headers.hasNext()) {
+				MimeHeader header = (MimeHeader) headers.next();
+				if("Content-Type".equalsIgnoreCase(header.getName()))
+					contentType = header.getValue();
+			}
+			assertEquals(expectedContentType, contentType);
+		}
 	}
 
 	@Test
@@ -303,7 +398,7 @@ public class SoapProviderTest {
 		SOAPMessage message = SOAPProvider.invoke(request);
 
 		String result = XmlUtils.nodeToString(message.getSOAPPart());
-		String expected = Misc.streamToString(getFile("correct-soapmsg.xml"));
+		String expected = getFile("correct-soapmsg.xml").asString();
 		assertEquals(expected.replaceAll("\r", ""), result.replaceAll("\r", ""));
 
 		//Validate an attachment was sent to the listener
@@ -364,16 +459,6 @@ public class SoapProviderTest {
 	}
 
 	@Test
-	public void soapActionInSessionKeySOAP1_2ActionIsAtTheBeginning() throws Throwable {
-		SOAPMessage request = createMessage("soapmsg1_2.xml");
-		String value = "SOAP1_2ActionIsAtTheBeginning";
-		webServiceContext.getMessageContext().put("Content-Type", "action="+value+";application/soap+xml; somethingelse");
-		SOAPProvider.invoke(request);
-		webServiceContext.getMessageContext().clear();
-		assertEquals(value, SOAPProvider.getSession().get("SOAPAction"));
-	}
-
-	@Test
 	public void noSoapActionInSessionKey1_2() throws Throwable {
 		SOAPMessage request = createMessage("soapmsg1_2.xml");
 		webServiceContext.getMessageContext().put("Content-Type", "application/soap+xml; somethingelse");
@@ -381,11 +466,11 @@ public class SoapProviderTest {
 		webServiceContext.getMessageContext().clear();
 		assertNull(SOAPProvider.getSession().get("SOAPAction"));
 	}
-	
+
 	@Test
 	public void emptySoapActionInSessionKey1_2() throws Throwable {
 		SOAPMessage request = createMessage("soapmsg1_2.xml");
-		webServiceContext.getMessageContext().put("Content-Type", "application/soap+xml; action=; somethingelse");
+		webServiceContext.getMessageContext().put("Content-Type", "application/soap+xml; action; somethingelse");
 		SOAPProvider.invoke(request);
 		webServiceContext.getMessageContext().clear();
 		assertNull(SOAPProvider.getSession().get("SOAPAction"));

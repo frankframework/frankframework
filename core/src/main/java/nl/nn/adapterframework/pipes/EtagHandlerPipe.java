@@ -33,6 +33,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.MessageUtils;
 
 /**
  * Pipe to manage RESTFUL etag caching
@@ -111,10 +112,9 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 			if(log.isDebugEnabled()) log.debug("found eTag cacheKey ["+cacheKey+"] with action ["+getAction()+"]");
 			switch (getAction()) {
 			case GENERATE:
-				try {
-					cache.put(cacheKey, ApiCacheManager.buildEtag(getRestPath()+"/"+getUriPattern(), message.asString().hashCode()));
-				} catch (IOException e) {
-					throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+				String hash = MessageUtils.generateMD5Hash(message);
+				if(hash != null) {
+					cache.put(cacheKey, hash);
 				}
 				returnCode = true;
 				break;
@@ -144,7 +144,7 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 				break;
 
 			default:
-				throw new PipeRunException(this, getLogPrefix(session)+"action not found ["+getAction()+"]"); 
+				throw new PipeRunException(this, getLogPrefix(session)+"action not found ["+getAction()+"]");
 			}
 
 			return new PipeRunResult(getSuccessForward(), returnCode);

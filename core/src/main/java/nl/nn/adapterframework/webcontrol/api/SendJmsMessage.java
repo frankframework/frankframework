@@ -41,6 +41,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -81,7 +82,9 @@ public final class SendJmsMessage extends Base {
 
 		if(StringUtils.isNotEmpty(messageProperty)) {
 			String[] keypair = messageProperty.split(",");
-			Parameter p = new Parameter(keypair[0], keypair[1]);
+			Parameter p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+			p.setName(keypair[0]);
+			p.setValue(keypair[1]);
 			try {
 				p.configure();
 			} catch (ConfigurationException e) {
@@ -89,7 +92,7 @@ public final class SendJmsMessage extends Base {
 			}
 			qms.addParameter(p);
 		}
-		
+
 		Attachment filePart = inputDataMap.getAttachment("file");
 		if(filePart != null) {
 			fileName = filePart.getContentDisposition().getParameter( "filename" );
@@ -158,7 +161,7 @@ public final class SendJmsMessage extends Base {
 						break;
 					}
 					rb+=chunk;
-				} 
+				}
 				String currentMessage = XmlUtils.readXml(b,0,rb,StreamUtil.DEFAULT_INPUT_STREAM_ENCODING,false);
 
 				processMessage(qms, currentMessage);
@@ -179,7 +182,7 @@ public final class SendJmsMessage extends Base {
 			qms.sendMessage(new Message(message), null);
 		} catch (Exception e) {
 			throw new ApiException("Error occured sending message", e);
-		} 
+		}
 		try {
 			qms.close();
 		} catch (Exception e) {

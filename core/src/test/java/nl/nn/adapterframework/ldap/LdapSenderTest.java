@@ -14,7 +14,6 @@ import org.custommonkey.xmlunit.DifferenceConstants;
 import org.custommonkey.xmlunit.DifferenceListener;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
@@ -55,7 +54,6 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 	}
 
 	@Override
-	@Before
 	public void setUp() throws Exception {
 		XMLUnit.setIgnoreWhitespace(true);
 		XMLUnit.setIgnoreAttributeOrder(true);
@@ -99,7 +97,7 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 
 		String result = sendMessage("cn=LEA Administrator,ou=groups,ou=development," + baseDNs).asString();
 
-		TestAssertions.assertEqualsIgnoreCRLF("<attributes>\n  <attribute name=\"mail\" value=\"leaadministrator@ibissource.org\" />\n  <attribute name=\"gidNumber\" value=\"505\" />\n</attributes>\n", result);
+		TestAssertions.assertEqualsIgnoreCRLF("<attributes>\n\t<attribute name=\"mail\" value=\"leaadministrator@ibissource.org\"/>\n\t<attribute name=\"gidNumber\" value=\"505\"/>\n</attributes>\n", result);
 	}
 
 	@Test

@@ -44,13 +44,15 @@ import com.sun.mail.smtp.SMTPMessage;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
- * {@link nl.nn.adapterframework.core.ISender sender} that sends a mail specified by an XML message.
+ * {@link ISender sender} that sends a mail specified by an XML message.
  * <p>
  * Sample email.xml:
  * <code><pre>
@@ -94,16 +96,17 @@ import nl.nn.adapterframework.util.XmlUtils;
  * or when the value of the attachment element is used. If <code>base64=true</code> then the value will be decoded before it's used.
  * <p>
  * <b>Compilation and Deployment Note:</b> mail.jar (v1.2) and activation.jar must appear BEFORE j2ee.jar.
- * Otherwise errors like the following might occur: <code>NoClassDefFoundException: com/sun/mail/util/MailDateFormat</code> 
- * 
+ * Otherwise errors like the following might occur: <code>NoClassDefFoundException: com/sun/mail/util/MailDateFormat</code>
+ *
  * @author Johan Verrips
  * @author Gerrit van Brakel
  */
 
+@Category("Advanced")
 public class MailSender extends MailSenderBase {
 
 	private @Getter String smtpHost;
-	
+
 	private Properties properties = new Properties();
 	private Session session = null;
 

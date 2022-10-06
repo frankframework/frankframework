@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2015 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.http;
 
-import java.io.IOException;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -31,17 +30,18 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.http.rest.ApiCacheManager;
+import nl.nn.adapterframework.http.rest.ApiListener;
 import nl.nn.adapterframework.pipes.JsonPipe;
 import nl.nn.adapterframework.pipes.JsonPipe.Direction;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.stream.Message;
 
 /**
- * Listener that allows a {@link nl.nn.adapterframework.receivers.Receiver} to receive messages as a REST webservice.
+ * Listener that allows a {@link Receiver} to receive messages as a REST webservice.
  * Prepends the configured URI pattern with <code>rest/</code>. When you are writing a new Frank config, you are recommended
- * to use an {@link nl.nn.adapterframework.http.rest.ApiListener} instead. You can find all serviced URI patterns
+ * to use an {@link ApiListener} instead. You can find all serviced URI patterns
  * in the Frank!Console: main menu item Webservice, heading Available REST Services.
- * 
+ *
  * <p>
  * Note:
  * Servlets' multipart configuration expects a Content-Type of <code>multipart/form-data</code> (see http://docs.oracle.com/javaee/6/api/javax/servlet/annotation/MultipartConfig.html).
@@ -52,6 +52,7 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class RestListener extends PushingListenerAdapter implements HasPhysicalDestination, HasSpecialDefaultValues {
 
+	private final @Getter(onMethod = @__(@Override)) String domain = "Http";
 	private @Getter String uriPattern;
 	private @Getter String method;
 	private @Getter String etagSessionKey;
@@ -103,13 +104,14 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		RestServiceDispatcher.getInstance().unregisterServiceClient(getUriPattern(), getMethod());
 	}
 
-	public String processRequest(String correlationId, String message, PipeLineSession requestContext) throws ListenerException {
-		HttpServletRequest httpServletRequest = (HttpServletRequest) requestContext.get(PipeLineSession.HTTP_REQUEST_KEY);
-		String response;
-		String contentType = (String) requestContext.get("contentType");
+	@Override
+	public Message processRequest(String correlationId, Message message, PipeLineSession session) throws ListenerException {
+		HttpServletRequest httpServletRequest = (HttpServletRequest) session.get(PipeLineSession.HTTP_REQUEST_KEY);
+		Message response;
+		String contentType = (String) session.get("contentType");
 
 		//Check if valid path
-		String requestRestPath = (String) requestContext.get("restPath");
+		String requestRestPath = (String) session.get("restPath");
 		if (!getRestPath().equals(requestRestPath)) {
 			throw new ListenerException("illegal restPath value [" + requestRestPath + "], must be [" + getRestPath() + "]");
 		}
@@ -128,23 +130,19 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		if(contentType == null || StringUtils.isEmpty(contentType) || contentType.equalsIgnoreCase("*/*")) {
 			switch(getProduces()) {
 				case XML:
-					requestContext.put("contentType", "application/xml");
+					session.put("contentType", "application/xml");
 					break;
 				case JSON:
-					requestContext.put("contentType", "application/json");
+					session.put("contentType", "application/json");
 					break;
 				case TEXT:
-					requestContext.put("contentType", "text/plain");
+					session.put("contentType", "text/plain");
 					break;
 				default:
 					throw new IllegalStateException("Unknown mediatype ["+getProduces()+"]");
 			}
-			
-			try {
-				response = super.processRequest(correlationId, new Message(message), requestContext).asString();
-			} catch (IOException e) {
-				throw new ListenerException("Failed to read result", e);
-			}
+
+			response = super.processRequest(correlationId, message, session);
 			if(response != null && !response.isEmpty())
 				eTag = response.hashCode();
 
@@ -157,41 +155,29 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 			}
 		}
 		else {
-			try {
-				response = super.processRequest(correlationId, new Message(message), requestContext).asString();
-			} catch (IOException e) {
-				throw new ListenerException("Failed to read result", e);
-			}
+			response = super.processRequest(correlationId, message, session);
 			if(response != null && !response.isEmpty())
 				eTag = response.hashCode();
 		}
 
-		if(!requestContext.containsKey("etag") && isGenerateEtag() && eTag != 0) { //The etag can be a negative integer...
-			requestContext.put("etag", ApiCacheManager.buildEtag(getRestPath()+"/"+getUriPattern(), eTag));
+		if(!session.containsKey("etag") && isGenerateEtag() && eTag != 0) { //The etag can be a negative integer...
+			session.put("etag", "rest_"+eTag);
 		}
 
 		return response;
 	}
 
-	public String transformToJson(String message) throws PipeRunException {
+	public Message transformToJson(Message message) throws PipeRunException {
 		JsonPipe pipe = new JsonPipe();
 		pipe.setDirection(Direction.XML2JSON);
-		PipeRunResult pipeResult = pipe.doPipe(new Message(message), new PipeLineSession());
-		try {
-			return pipeResult.getResult().asString();
-		} catch (IOException e) {
-			throw new PipeRunException(null,"cannot transform result",e);
-		}
+		PipeRunResult pipeResult = pipe.doPipe(message, new PipeLineSession());
+		return pipeResult.getResult();
 	}
 
-	public String transformToXml(String message) throws PipeRunException {
+	public Message transformToXml(Message message) throws PipeRunException {
 		JsonPipe pipe = new JsonPipe();
-		PipeRunResult pipeResult = pipe.doPipe(new Message(message), new PipeLineSession());
-		try {
-			return pipeResult.getResult().asString();
-		} catch (IOException e) {
-			throw new PipeRunException(null,"cannot transform result",e);
-		}
+		PipeRunResult pipeResult = pipe.doPipe(message, new PipeLineSession());
+		return pipeResult.getResult();
 	}
 
 	@Override
@@ -213,7 +199,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	public String getRestUriPattern() {
 		return getRestPath().substring(1) + "/" + getUriPattern();
 	}
-	
+
 
 	@IbisDoc({"Uri pattern to match, the {uri} part in https://mydomain.com/ibis4something/rest/{uri}, where mydomain.com and ibis4something refer to 'your ibis'. ", ""})
 	public void setUriPattern(String uriPattern) {
@@ -269,12 +255,12 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		retrieveMultipart = b;
 	}
 
-	@IbisDoc({"Mediatype (e.g. XML, JSON, TEXT) the {@link nl.nn.adapterframework.http.RestServiceDispatcher restServiceDispatcher} receives as input", "XML"})
+	@IbisDoc({"Mediatype (e.g. XML, JSON, TEXT) the {@link RestServiceDispatcher} receives as input", "XML"})
 	public void setConsumes(MediaTypes consumes) {
 		this.consumes = consumes;
 	}
 
-	@IbisDoc({"Mediatype (e.g. XML, JSON, TEXT) the {@link nl.nn.adapterframework.http.RestServiceDispatcher restServiceDispatcher} sends as output, if set to json the ibis will automatically try to convert the xml message", "XML"})
+	@IbisDoc({"Mediatype (e.g. XML, JSON, TEXT) the {@link RestServiceDispatcher} sends as output, if set to json the ibis will automatically try to convert the xml message", "XML"})
 	public void setProduces(MediaTypes produces) {
 		this.produces = produces;
 	}

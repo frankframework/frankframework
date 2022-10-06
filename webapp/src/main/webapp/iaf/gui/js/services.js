@@ -53,9 +53,11 @@ angular.module('iaf.beheerconsole')
 			var callback = args.shift();
 			var error = args.shift();
 			var intercept = args.shift();
+			var responseType = args.shift();
 
 			return $http.post(buildURI(uri), object, {
 				headers: headers,
+				responseType: responseType,
 				transformRequest: angular.identity,
 				intercept: intercept,
 			}).then(function(response){
@@ -721,12 +723,34 @@ angular.module('iaf.beheerconsole')
 			}
 			return input;
 		};
+	}).filter('dropLastChar', function() {
+		return function(input) {
+			if(input && input.length > 0) {
+				return input.substring(0, input.length-1);
+			}
+			return input;
+		};
 	}).filter('markDown', function() {
 		return function(input) {
 			if(!input) return;
 			input = input.replace(/(?:\r\n|\r|\n)/g, '<br />');
 			input = input.replace(/\[(.*?)\]\((.+?)\)/g, '<a target="_blank" href="$2" alt="$1">$1</a>');
 			return input;
+		};
+	}).filter('withJavaListener', function() {
+		return function(adapters) {
+			if(!adapters) return;
+			let schedulerEligibleAdapters={};
+			for(adapter in adapters) {
+				let receivers = adapters[adapter].receivers;
+				for(r in receivers) {
+					let receiver=receivers[r];
+					if(receiver.listener.class.startsWith('JavaListener')){
+						schedulerEligibleAdapters[adapter] = adapters[adapter];
+					}
+				}
+			}
+			return schedulerEligibleAdapters;
 		};
 	}).filter('dash', function() {
 		return function(input) {

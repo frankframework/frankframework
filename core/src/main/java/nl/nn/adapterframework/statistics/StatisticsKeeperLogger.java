@@ -24,6 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.FileUtils;
+import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
  * Logs statistics-keeper contents to log.
@@ -36,23 +37,25 @@ public class StatisticsKeeperLogger extends StatisticsKeeperXmlBuilder {
 	private String directory=null;
 	private int retentionDays=-1;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		AppConstants ac = AppConstants.getInstance();
 		if (directory==null)	{
 			setDirectory(ac.getResolvedProperty("log.dir"));
 		}
-		if (retentionDays<0) {	
+		if (retentionDays<0) {
 			setRetentionDays(ac.getInt("statistics.retention",7));
 		}
 	}
 
 
-	public void end(Object data) {
+	@Override
+	public void end(XmlBuilder data) {
 		super.end(data);
 
 		if (StringUtils.isNotEmpty(getDirectory())) {
-			AppConstants ac = AppConstants.getInstance();		
+			AppConstants ac = AppConstants.getInstance();
 			String filenamePattern=ac.getResolvedProperty("instance.name.lc")+"-stats_";
 			String extension=".log";
 			File outfile=FileUtils.getWeeklyRollingFile(directory, filenamePattern, extension, retentionDays);
@@ -60,7 +63,7 @@ public class StatisticsKeeperLogger extends StatisticsKeeperXmlBuilder {
 			FileWriter fw=null;
 			try {
 				fw = new FileWriter(outfile,true);
-				fw.write(getXml(data).toXML());
+				fw.write(data.toXML());
 				fw.write("\n");
 			} catch (IOException e) {
 				log.error("Could not write statistics to file ["+outfile.getPath()+"]",e);
@@ -75,8 +78,7 @@ public class StatisticsKeeperLogger extends StatisticsKeeperXmlBuilder {
 			}
 		}
 	}
-	
-	
+
 	public void setRetentionDays(int i) {
 		retentionDays = i;
 	}

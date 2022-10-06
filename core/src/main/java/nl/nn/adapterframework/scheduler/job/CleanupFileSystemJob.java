@@ -18,16 +18,15 @@ package nl.nn.adapterframework.scheduler.job;
 import java.util.ArrayList;
 import java.util.List;
 
-import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.util.DirectoryCleaner;
 
 public class CleanupFileSystemJob extends JobDef {
 
-	private List<DirectoryCleaner> directoryCleaners = new ArrayList<DirectoryCleaner>();
+	private List<DirectoryCleaner> directoryCleaners = new ArrayList<>();
 
 	@Override
-	public void execute(IbisManager ibisManager) {
+	public void execute() {
 		for (DirectoryCleaner directoryCleaner: directoryCleaners) {
 			directoryCleaner.cleanup();
 		}

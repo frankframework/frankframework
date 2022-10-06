@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2021 WeAreFrank!
+Copyright 2016-2022 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
@@ -28,7 +28,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -46,12 +45,9 @@ import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
-import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
@@ -75,6 +71,8 @@ import nl.nn.adapterframework.http.RestListener;
 import nl.nn.adapterframework.jdbc.JdbcSenderBase;
 import nl.nn.adapterframework.jms.JmsBrowser;
 import nl.nn.adapterframework.jms.JmsListenerBase;
+import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.management.bus.RequestMessageBuilder;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.AppConstants;
@@ -82,7 +80,6 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.RunState;
-import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
  * Get adapter information from either all or a specified adapter
@@ -94,6 +91,9 @@ import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 @Path("/")
 public final class ShowConfigurationStatus extends Base {
 	@Context Request request;
+	private static final String RECEIVERS="receivers";
+	private static final String PIPES="pipes";
+	private static final String MESSAGES="messages";
 
 	private boolean showCountMessageLog = AppConstants.getInstance().getBoolean("messageLog.count.show", true);
 
@@ -112,47 +112,40 @@ public final class ShowConfigurationStatus extends Base {
 	@Path("/adapters")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAdapters(@QueryParam("expanded") String expanded, @QueryParam("showPendingMsgCount") boolean showPendingMsgCount) throws ApiException {
-
-		TreeMap<String, Object> adapterList = new TreeMap<String, Object>();
+		TreeMap<String, Object> adapterList = new TreeMap<>();
 		for(Adapter adapter: getIbisManager().getRegisteredAdapters()) {
-
 			Map<String, Object> adapterInfo = mapAdapter(adapter);
 			if(expanded != null && !expanded.isEmpty()) {
 				if(expanded.equalsIgnoreCase("all")) {
-					adapterInfo.put("receivers", mapAdapterReceivers(adapter, showPendingMsgCount));
-					adapterInfo.put("pipes", mapAdapterPipes(adapter));
-					adapterInfo.put("messages", mapAdapterMessages(adapter));
-				}
-				else if(expanded.equalsIgnoreCase("receivers")) {
-					adapterInfo.put("receivers", mapAdapterReceivers(adapter, showPendingMsgCount));
-				}
-				else if(expanded.equalsIgnoreCase("pipes")) {
-					adapterInfo.put("pipes", mapAdapterPipes(adapter));
-				}
-				else if(expanded.equalsIgnoreCase("messages")) {
-					adapterInfo.put("messages", mapAdapterMessages(adapter));
-				}
-				else {
+					adapterInfo.put(RECEIVERS, mapAdapterReceivers(adapter, showPendingMsgCount));
+					adapterInfo.put(PIPES, mapAdapterPipes(adapter));
+					adapterInfo.put(MESSAGES, mapAdapterMessages(adapter));
+				} else if(expanded.equalsIgnoreCase(RECEIVERS)) {
+					adapterInfo.put(RECEIVERS, mapAdapterReceivers(adapter, showPendingMsgCount));
+				} else if(expanded.equalsIgnoreCase(PIPES)) {
+					adapterInfo.put(PIPES, mapAdapterPipes(adapter));
+				} else if(expanded.equalsIgnoreCase(MESSAGES)) {
+					adapterInfo.put(MESSAGES, mapAdapterMessages(adapter));
+				} else {
 					throw new ApiException("Invalid value ["+expanded+"] for parameter expanded supplied!");
 				}
 			}
-
 			adapterList.put((String) adapterInfo.get("name"), adapterInfo);
 		}
 
 		Response.ResponseBuilder response = null;
 
-		//Calculate the ETag on last modified date of user resource 
+		//Calculate the ETag on last modified date of user resource
 		EntityTag etag = new EntityTag(adapterList.hashCode() + "");
 
 		//Verify if it matched with etag available in http request
 		response = request.evaluatePreconditions(etag);
 
-		//If ETag matches the response will be non-null; 
+		//If ETag matches the response will be non-null
 		if (response != null) {
 			return response.tag(etag).build();
 		}
-		
+
 		response = Response.status(Response.Status.OK).entity(adapterList).tag(etag);
 		return response.build();
 	}
@@ -162,43 +155,37 @@ public final class ShowConfigurationStatus extends Base {
 	@Path("/adapters/{name}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAdapter(@PathParam("name") String name, @QueryParam("expanded") String expanded, @QueryParam("showPendingMsgCount") boolean showPendingMsgCount) throws ApiException {
-
 		Adapter adapter = getAdapter(name);
 		Map<String, Object> adapterInfo = mapAdapter(adapter);
-
 		if(expanded != null && !expanded.isEmpty()) {
 			if(expanded.equalsIgnoreCase("all")) {
-				adapterInfo.put("receivers", mapAdapterReceivers(adapter, showPendingMsgCount));
-				adapterInfo.put("pipes", mapAdapterPipes(adapter));
-				adapterInfo.put("messages", mapAdapterMessages(adapter));
-			}
-			else if(expanded.equalsIgnoreCase("receivers")) {
-				adapterInfo.put("receivers", mapAdapterReceivers(adapter, showPendingMsgCount));
-			}
-			else if(expanded.equalsIgnoreCase("pipes")) {
-				adapterInfo.put("pipes", mapAdapterPipes(adapter));
-			}
-			else if(expanded.equalsIgnoreCase("messages")) {
-				adapterInfo.put("messages", mapAdapterMessages(adapter));
-			}
-			else {
+				adapterInfo.put(RECEIVERS, mapAdapterReceivers(adapter, showPendingMsgCount));
+				adapterInfo.put(PIPES, mapAdapterPipes(adapter));
+				adapterInfo.put(MESSAGES, mapAdapterMessages(adapter));
+			} else if(expanded.equalsIgnoreCase(RECEIVERS)) {
+				adapterInfo.put(RECEIVERS, mapAdapterReceivers(adapter, showPendingMsgCount));
+			} else if(expanded.equalsIgnoreCase(PIPES)) {
+				adapterInfo.put(PIPES, mapAdapterPipes(adapter));
+			} else if(expanded.equalsIgnoreCase(MESSAGES)) {
+				adapterInfo.put(MESSAGES, mapAdapterMessages(adapter));
+			} else {
 				throw new ApiException("Invalid value ["+expanded+"] for parameter expanded supplied!");
 			}
 		}
 
 		Response.ResponseBuilder response = null;
 
-		//Calculate the ETag on last modified date of user resource 
+		//Calculate the ETag on last modified date of user resource
 		EntityTag etag = new EntityTag(adapterInfo.hashCode() + "");
 
 		//Verify if it matched with etag available in http request
 		response = request.evaluatePreconditions(etag);
 
-		//If ETag matches the response will be non-null; 
+		//If ETag matches the response will be non-null
 		if (response != null) {
 			return response.tag(etag).build();
 		}
-		
+
 		response = Response.status(Response.Status.OK).entity(adapterInfo).tag(etag);
 		return response.build();
 	}
@@ -210,8 +197,8 @@ public final class ShowConfigurationStatus extends Base {
 	public Response getIbisHealth(@PathParam("name") String name) throws ApiException {
 
 		Adapter adapter = getAdapter(name);
-		Map<String, Object> response = new HashMap<String, Object>();
-		List<String> errors = new ArrayList<String>();
+		Map<String, Object> response = new HashMap<>();
+		List<String> errors = new ArrayList<>();
 
 		RunState state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
 
@@ -224,8 +211,7 @@ public final class ShowConfigurationStatus extends Base {
 					state = RunState.ERROR;
 				}
 			}
-		}
-		else {
+		} else {
 			errors.add("adapter["+adapter.getName()+"] is in state["+state.toString()+"]");
 			state = RunState.ERROR;
 		}
@@ -234,7 +220,7 @@ public final class ShowConfigurationStatus extends Base {
 		if(state==RunState.ERROR) {
 			status = Response.Status.SERVICE_UNAVAILABLE;
 		}
-		if(errors.size() > 0)
+		if(!errors.isEmpty())
 			response.put("errors", errors);
 		response.put("status", status);
 
@@ -247,43 +233,46 @@ public final class ShowConfigurationStatus extends Base {
 	@Path("/adapters/")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response updateAdapters(LinkedHashMap<String, Object> json) throws ApiException {
+	public Response updateAdapters(Map<String, Object> json) throws ApiException {
 
-		Response.ResponseBuilder response = Response.status(Response.Status.NO_CONTENT); //PUT defaults to no content
 		IbisAction action = null;
 		ArrayList<String> adapters = new ArrayList<>();
 
-		for (Entry<String, Object> entry : json.entrySet()) {
-			String key = entry.getKey();
-			Object value = entry.getValue();
-			if(key.equalsIgnoreCase("action")) {//Start or stop an adapter!
-				if(value.equals("stop")) { action = IbisAction.STOPADAPTER; }
-				if(value.equals("start")) { action = IbisAction.STARTADAPTER; }
-			}
-			if(key.equalsIgnoreCase("adapters")) {
-				try {
-					adapters.addAll((ArrayList<String>) value);
-				}
-				catch(Exception e) {
-					return response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-				}
+		Object value = json.get("action");
+		if(value instanceof String) {
+			if(value.equals("stop")) { action = IbisAction.STOPADAPTER; }
+			if(value.equals("start")) { action = IbisAction.STARTADAPTER; }
+		}
+		if(action == null) {
+			throw new ApiException("no or unknown action provided", Response.Status.BAD_REQUEST);
+		}
+
+
+		Object adapterList = json.get("adapters");
+		if(adapterList != null) {
+			try {
+				adapters.addAll((ArrayList<String>) adapterList);
+			} catch(Exception e) {
+				throw new ApiException(e);
 			}
 		}
 
-		if(action != null) {
-			response.status(Response.Status.ACCEPTED);
-			if(adapters.isEmpty()) {
-				getIbisManager().handleAction(action, "*ALL*", "*ALL*", null, getUserPrincipalName(), false);
-			}
-			else {
-				for (Iterator<String> iterator = adapters.iterator(); iterator.hasNext();) {
-					String adapterName = iterator.next();
-					getIbisManager().handleAction(action, "", adapterName, null, getUserPrincipalName(), false);
-				}
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.IBISACTION);
+		builder.addHeader("action", action.name());
+		if(adapters.isEmpty()) {
+			builder.addHeader("configuration", "*ALL*");
+			builder.addHeader("adapter", "*ALL*");
+			callAsyncGateway(builder);
+		} else {
+			for (Iterator<String> iterator = adapters.iterator(); iterator.hasNext();) {
+				String adapterName = iterator.next();
+				builder.addHeader("configuration", getAdapter(adapterName).getConfiguration().getName());
+				builder.addHeader("adapter", adapterName);
+				callAsyncGateway(builder);
 			}
 		}
 
-		return response.build();
+		return Response.status(Response.Status.ACCEPTED).build(); //PUT defaults to no content
 	}
 
 	@PUT
@@ -291,27 +280,28 @@ public final class ShowConfigurationStatus extends Base {
 	@Path("/adapters/{adapterName}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response updateAdapter(@PathParam("adapterName") String adapterName, LinkedHashMap<String, Object> json) throws ApiException {
+	public Response updateAdapter(@PathParam("adapterName") String adapterName, Map<String, Object> json) throws ApiException {
 
 		getAdapter(adapterName); //Check if the adapter exists!
-		Response.ResponseBuilder response = Response.status(Response.Status.NO_CONTENT); //PUT defaults to no content
 
-		for (Entry<String, Object> entry : json.entrySet()) {
-			String key = entry.getKey();
-			Object value = entry.getValue();
-			if(key.equalsIgnoreCase("action")) {//Start or stop an adapter!
-				IbisAction action = null;
-
-				if(value.equals("stop")) { action = IbisAction.STOPADAPTER; }
-				if(value.equals("start")) { action = IbisAction.STARTADAPTER; }
-
-				getIbisManager().handleAction(action, "", adapterName, null, getUserPrincipalName(), false);
-
-				response.entity("{\"status\":\"ok\"}");
+		Object value = json.get("action");
+		if(value instanceof String) {
+			IbisAction action = null;
+			if(value.equals("stop")) { action = IbisAction.STOPADAPTER; }
+			if(value.equals("start")) { action = IbisAction.STARTADAPTER; }
+			if(action == null) {
+				throw new ApiException("no or unknown action provided", Response.Status.BAD_REQUEST);
 			}
+
+			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.IBISACTION);
+			builder.addHeader("action", action.name());
+			builder.addHeader("configuration", getAdapter(adapterName).getConfiguration().getName());
+			builder.addHeader("adapter", adapterName);
+			callAsyncGateway(builder);
+			return Response.status(Response.Status.ACCEPTED).entity("{\"status\":\"ok\"}").build();
 		}
 
-		return response.build();
+		return Response.status(Response.Status.BAD_REQUEST).build();
 	}
 
 	@PUT
@@ -319,7 +309,7 @@ public final class ShowConfigurationStatus extends Base {
 	@Path("/adapters/{adapterName}/receivers/{receiverName}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response updateReceiver(@PathParam("adapterName") String adapterName, @PathParam("receiverName") String receiverName, LinkedHashMap<String, Object> json) throws ApiException {
+	public Response updateReceiver(@PathParam("adapterName") String adapterName, @PathParam("receiverName") String receiverName, Map<String, Object> json) throws ApiException {
 
 		Adapter adapter = getAdapter(adapterName);
 
@@ -328,28 +318,27 @@ public final class ShowConfigurationStatus extends Base {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
 
-		Response.ResponseBuilder response = Response.status(Response.Status.NO_CONTENT); //PUT defaults to no content
-
-		for (Entry<String, Object> entry : json.entrySet()) {
-			String key = entry.getKey();
-			Object value = entry.getValue();
-			if(key.equalsIgnoreCase("action")) {//Start or stop an adapter!
-				IbisAction action = null;
-
-				if(value.equals("stop")) { action = IbisAction.STOPRECEIVER; }
-				else if(value.equals("start")) { action = IbisAction.STARTRECEIVER; }
-				else if(value.equals("incthread")) { action = IbisAction.INCTHREADS; }
-				else if(value.equals("decthread")) { action = IbisAction.DECTHREADS; }
-
-				if(action == null)
-					throw new ApiException("no or unknown action provided");
-
-				getIbisManager().handleAction(action, "", adapterName, receiverName, getUserPrincipalName(), false);
-				response.entity("{\"status\":\"ok\"}");
+		Object value = json.get("action");
+		if(value instanceof String) {
+			IbisAction action = null;
+			if(value.equals("stop")) { action = IbisAction.STOPRECEIVER; }
+			else if(value.equals("start")) { action = IbisAction.STARTRECEIVER; }
+			else if(value.equals("incthread")) { action = IbisAction.INCTHREADS; }
+			else if(value.equals("decthread")) { action = IbisAction.DECTHREADS; }
+			if(action == null) {
+				throw new ApiException("no or unknown action provided", Response.Status.BAD_REQUEST);
 			}
+
+			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.IBISACTION);
+			builder.addHeader("action", action.name());
+			builder.addHeader("configuration", getAdapter(adapterName).getConfiguration().getName());
+			builder.addHeader("adapter", adapterName);
+			builder.addHeader("receiver", receiverName);
+			callAsyncGateway(builder);
+			return Response.status(Response.Status.ACCEPTED).entity("{\"status\":\"ok\"}").build();
 		}
 
-		return response.build();
+		return Response.status(Response.Status.BAD_REQUEST).build();
 	}
 
 	@GET
@@ -395,22 +384,14 @@ public final class ShowConfigurationStatus extends Base {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters/{name}/flow")
 	@Produces(MediaType.TEXT_PLAIN)
-	public Response getAdapterFlow(@PathParam("name") String adapterName, @QueryParam("dot") boolean dot) throws ApiException {
-		Adapter adapter = getAdapter(adapterName);
+	@Deprecated
+	public Response getAdapterFlow(@PathParam("name") String adapterName) throws ApiException {
+		String configurationName = getAdapter(adapterName).getConfiguration().getName();
 
-		FlowDiagramManager flowDiagramManager = getFlowDiagramManager();
-
-		try {
-			ResponseBuilder response = Response.status(Response.Status.OK);
-			if(dot) {
-				response.entity(flowDiagramManager.generateDot(adapter)).type(MediaType.TEXT_PLAIN);
-			} else {
-				response.entity(flowDiagramManager.get(adapter)).type("image/svg+xml");
-			}
-			return response.build();
-		} catch (SAXException | TransformerException | IOException e) {
-			throw new ApiException(e);
-		}
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.FLOW);
+		builder.addHeader("configuration", configurationName);
+		builder.addHeader("adapter", adapterName);
+		return callSyncGateway(builder);
 	}
 
 	private Map<String, Object> addCertificateInfo(HasKeystore s) {
@@ -418,7 +399,7 @@ public final class ShowConfigurationStatus extends Base {
 		if (certificate == null || StringUtils.isEmpty(certificate))
 			return null;
 
-		Map<String, Object> certElem = new HashMap<String, Object>(4);
+		Map<String, Object> certElem = new HashMap<>(4);
 		certElem.put("name", certificate);
 		String certificateAuthAlias = s.getKeystoreAuthAlias();
 		certElem.put("authAlias", certificateAuthAlias);
@@ -436,19 +417,19 @@ public final class ShowConfigurationStatus extends Base {
 		return certElem;
 	}
 
-	private ArrayList<Object> getCertificateInfo(final URL url, final String password, KeystoreType KeystoreType, String prefix) {
-		ArrayList<Object> certificateList = new ArrayList<Object>();
-		try {
-			KeyStore keystore = KeyStore.getInstance(KeystoreType.name());
-			keystore.load(url.openStream(), password != null ? password.toCharArray() : null);
+	private ArrayList<Object> getCertificateInfo(final URL url, final String password, KeystoreType keystoreType, String prefix) {
+		ArrayList<Object> certificateList = new ArrayList<>();
+		try (InputStream stream = url.openStream()) {
+			KeyStore keystore = KeyStore.getInstance(keystoreType.name());
+			keystore.load(stream, password != null ? password.toCharArray() : null);
 			if (log.isInfoEnabled()) {
 				Enumeration<String> aliases = keystore.aliases();
 				while (aliases.hasMoreElements()) {
-					String alias = (String) aliases.nextElement();
-					ArrayList<Object> infoElem = new ArrayList<Object>();
+					String alias =  aliases.nextElement();
+					ArrayList<Object> infoElem = new ArrayList<>();
 					infoElem.add(prefix + " '" + alias + "':");
 					Certificate trustedcert = keystore.getCertificate(alias);
-					if (trustedcert != null && trustedcert instanceof X509Certificate) {
+					if (trustedcert instanceof X509Certificate) {
 						X509Certificate cert = (X509Certificate) trustedcert;
 						infoElem.add("Subject DN: " + cert.getSubjectDN());
 						infoElem.add("Signature Algorithm: " + cert.getSigAlgName());
@@ -468,19 +449,18 @@ public final class ShowConfigurationStatus extends Base {
 	private ArrayList<Object> mapAdapterPipes(Adapter adapter) {
 		if(!adapter.configurationSucceeded())
 			return null;
-
 		PipeLine pipeline = adapter.getPipeLine();
 		int totalPipes = pipeline.getPipes().size();
-		ArrayList<Object> pipes = new ArrayList<Object>(totalPipes);
+		ArrayList<Object> pipes = new ArrayList<>(totalPipes);
 
 		for (int i=0; i<totalPipes; i++) {
-			Map<String, Object> pipesInfo = new HashMap<String, Object>();
+			Map<String, Object> pipesInfo = new HashMap<>();
 			IPipe pipe = pipeline.getPipe(i);
 			Map<String, PipeForward> pipeForwards = pipe.getForwards();
 
 			String pipename = pipe.getName();
 
-			Map<String, String> forwards = new HashMap<String, String>();
+			Map<String, String> forwards = new HashMap<>();
 			for (PipeForward fwrd : pipeForwards.values()) {
 				forwards.put(fwrd.getName(), fwrd.getPath());
 			}
@@ -520,26 +500,11 @@ public final class ShowConfigurationStatus extends Base {
 				}
 				ITransactionalStorage<?> messageLog = msp.getMessageLog();
 				if (messageLog!=null) {
-					pipesInfo.put("hasMessageLog", true);
-					String messageLogCount;
-					try {
-						if (showCountMessageLog) {
-							messageLogCount=""+messageLog.getMessageCount();
-						} else {
-							messageLogCount="?";
-						}
-					} catch (Exception e) {
-						log.warn("Cannot determine number of messages in messageLog ["+messageLog.getName()+"]", e);
-						messageLogCount="error";
-					}
-					pipesInfo.put("messageLogCount", messageLogCount);
-
-					Map<String, Object> message = new HashMap<String, Object>();
-					message.put("name", messageLog.getName());
-					message.put("type", "log");
-					message.put("slotId", messageLog.getSlotId());
-					message.put("count", messageLogCount);
-					pipesInfo.put("message", message);
+					mapPipeMessageLog(messageLog, pipesInfo);
+				} else if(sender instanceof ITransactionalStorage) { // in case no message log specified
+					ITransactionalStorage<?> store = (ITransactionalStorage<?>) sender;
+					mapPipeMessageLog(store, pipesInfo);
+					pipesInfo.put("isSenderTransactionalStorage", true);
 				}
 			}
 			pipes.add(pipesInfo);
@@ -547,8 +512,31 @@ public final class ShowConfigurationStatus extends Base {
 		return pipes;
 	}
 
+	private void mapPipeMessageLog(ITransactionalStorage<?> store, Map<String, Object> data) {
+		data.put("hasMessageLog", true);
+		String messageLogCount;
+		try {
+			if (showCountMessageLog) {
+				messageLogCount=""+store.getMessageCount();
+			} else {
+				messageLogCount="?";
+			}
+		} catch (Exception e) {
+			log.warn("Cannot determine number of messages in messageLog ["+store.getName()+"]", e);
+			messageLogCount="error";
+		}
+		data.put("messageLogCount", messageLogCount);
+
+		Map<String, Object> message = new HashMap<>();
+		message.put("name", store.getName());
+		message.put("type", "log");
+		message.put("slotId", store.getSlotId());
+		message.put("count", messageLogCount);
+		data.put("message", message);
+	}
+
 	private ArrayList<Object> mapAdapterReceivers(Adapter adapter, boolean showPendingMsgCount) {
-		ArrayList<Object> receivers = new ArrayList<Object>();
+		ArrayList<Object> receivers = new ArrayList<>();
 
 		for (Receiver<?> receiver: adapter.getReceivers()) {
 			Map<String, Object> receiverInfo = new HashMap<>();
@@ -558,14 +546,14 @@ public final class ShowConfigurationStatus extends Base {
 			receiverInfo.put("name", receiver.getName());
 			receiverInfo.put("state", receiverRunState.name().toLowerCase());
 
-			Map<String, Object> messages = new HashMap<String, Object>(3);
+			Map<String, Object> messages = new HashMap<>(3);
 			messages.put("received", receiver.getMessagesReceived());
 			messages.put("retried", receiver.getMessagesRetried());
 			messages.put("rejected", receiver.getMessagesRejected());
-			receiverInfo.put("messages", messages);
+			receiverInfo.put(MESSAGES, messages);
 
 			Set<ProcessState> knownStates = receiver.knownProcessStates();
-			Map<ProcessState, Object> tsInfo = new LinkedHashMap<ProcessState, Object>();
+			Map<ProcessState, Object> tsInfo = new LinkedHashMap<>();
 			for (ProcessState state : knownStates) {
 				IMessageBrowser<?> ts = receiver.getMessageBrowser(state);
 				if(ts != null) {
@@ -585,7 +573,7 @@ public final class ShowConfigurationStatus extends Base {
 			ISender sender=null;
 			IListener<?> listener=receiver.getListener();
 			if(listener != null) {
-				Map<String, Object> listenerInfo = new HashMap<String, Object>();
+				Map<String, Object> listenerInfo = new HashMap<>();
 				listenerInfo.put("name", listener.getName());
 				listenerInfo.put("class", ClassUtils.nameOf(listener));
 				if (listener instanceof HasPhysicalDestination) {
@@ -649,9 +637,9 @@ public final class ShowConfigurationStatus extends Base {
 
 			ISender rsender = receiver.getSender();
 			if (rsender!=null) { // this sender has preference, but avoid overwriting listeners sender with null
-				sender=rsender; 
+				sender=rsender;
 			}
-			if (sender != null) { 
+			if (sender != null) {
 				receiverInfo.put("senderName", sender.getName());
 				receiverInfo.put("senderClass", ClassUtils.nameOf(sender));
 				if (sender instanceof HasPhysicalDestination) {
@@ -673,33 +661,29 @@ public final class ShowConfigurationStatus extends Base {
 
 	private ArrayList<Object> mapAdapterMessages(Adapter adapter) {
 		int totalMessages = adapter.getMessageKeeper().size();
-		//adapter.getMessageKeeper().get
-		ArrayList<Object> messages = new ArrayList<Object>(totalMessages);
+		ArrayList<Object> messages = new ArrayList<>(totalMessages);
 		for (int t=0; t<totalMessages; t++) {
-			Map<String, Object> message = new HashMap<String, Object>();
+			Map<String, Object> message = new HashMap<>();
 			MessageKeeperMessage msg = adapter.getMessageKeeper().getMessage(t);
-		
+
 			message.put("message", msg.getMessageText());
 			message.put("date", msg.getMessageDate());
 			message.put("level", msg.getMessageLevel());
 			message.put("capacity", adapter.getMessageKeeper().capacity());
-			
+
 			messages.add(message);
 		}
 		return messages;
 	}
 
 	private Map<String, Object> mapAdapter(Adapter adapter) {
-		Map<String, Object> adapterInfo = new HashMap<String, Object>();
+		Map<String, Object> adapterInfo = new HashMap<>();
 		Configuration config = adapter.getConfiguration();
 
 		String adapterName = adapter.getName();
 		adapterInfo.put("name", adapterName);
 		adapterInfo.put("description", adapter.getDescription());
 		adapterInfo.put("configuration", config.getName() );
-		// replace low line (x'5f') by asterisk (x'2a) so it's sorted before any digit and letter 
-		String nameUC = StringUtils.upperCase(StringUtils.replace(adapterName,"_", "*"));
-		adapterInfo.put("nameUC", nameUC);
 		RunState adapterRunState = adapter.getRunState();
 		adapterInfo.put("started", adapterRunState==RunState.STARTED);
 		String state = adapterRunState.toString().toLowerCase().replace("*", "");
@@ -719,12 +703,12 @@ public final class ShowConfigurationStatus extends Base {
 		int errorStoreMessageCount = 0;
 		int messageLogMessageCount = 0;
 		while(it.hasNext()) {
-			Receiver rcv = it.next();
+			Receiver<?> rcv = it.next();
 			if(rcv.isNumberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached()) {
 				adapterInfo.put("receiverReachedMaxExceptions", "true");
 			}
 
-			IMessageBrowser esmb = rcv.getMessageBrowser(ProcessState.ERROR);
+			IMessageBrowser<?> esmb = rcv.getMessageBrowser(ProcessState.ERROR);
 			if(esmb != null) {
 				try {
 					errorStoreMessageCount += esmb.getMessageCount();
@@ -732,7 +716,7 @@ public final class ShowConfigurationStatus extends Base {
 					log.warn("Cannot determine number of messages in errorstore of ["+rcv.getName()+"]", e);
 				}
 			}
-			IMessageBrowser mlmb = rcv.getMessageBrowser(ProcessState.DONE);
+			IMessageBrowser<?> mlmb = rcv.getMessageBrowser(ProcessState.DONE);
 			if(mlmb != null) {
 				try {
 					messageLogMessageCount += mlmb.getMessageCount();

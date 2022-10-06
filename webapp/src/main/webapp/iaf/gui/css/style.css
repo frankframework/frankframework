@@ -3507,6 +3507,10 @@ video {
 .modal-dialog {
   z-index: 2200;
 }
+.mermaidFlow .modal-dialog {
+  width: max-content;
+  margin: 60px auto;
+}
 .modal-body {
   padding: 20px 30px 30px 30px;
 }
@@ -5912,6 +5916,9 @@ body.body-small .vote-icon {
 }
 .metismenu .fa-backward {
   color: #fe41ff;
+}
+.metismenu .fa-sitemap {
+  color: #00abff;
 }
 /*
  *  Usage:

@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017 Integration Partners B.V.
+Copyright 2016-2017, 2022 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,21 +23,21 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 
+import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.logging.log4j.Logger;
 
 /**
  * Custom errors for the API.
- * 
+ *
  * @since	7.0-B1
  * @author	Niels Meijer
  */
 
-public class ApiException extends WebApplicationException implements Serializable
-{
+public class ApiException extends WebApplicationException implements Serializable {
 	private static final long serialVersionUID = 1L;
-	private Logger log = LogUtil.getLogger(this);
+	private transient Logger log = LogUtil.getLogger(this);
 
 	public ApiException() {
 		super();
@@ -48,48 +48,41 @@ public class ApiException extends WebApplicationException implements Serializabl
 	}
 
 	public ApiException(String msg, Throwable t) {
-		this(msg +": "+ t.getMessage(), t, Status.INTERNAL_SERVER_ERROR);
+		this(msg, t, Status.INTERNAL_SERVER_ERROR);
 	}
 
-	public ApiException(Throwable t, int status) {
-		this(t.getMessage(), t, Status.fromStatusCode(status));
+	private ApiException(Throwable t, int status) {
+		this(null, t, Status.fromStatusCode(status));
 	}
 
-	public ApiException(String msg, Throwable t, Status status) {
-		super(t, formatException(msg, status, MediaType.APPLICATION_JSON));
+	private ApiException(String msg, Throwable t, Status status) {
+		super(msg, t, formatException(IbisException.expandMessage(msg, t), status));
 
-		log.error(msg, t);
+		log.warn(msg, t);
 	}
 
 
 
 	public ApiException(String msg) {
-		super(formatException(msg, Status.INTERNAL_SERVER_ERROR, MediaType.APPLICATION_JSON));
+		this(msg, Status.INTERNAL_SERVER_ERROR);
 	}
 
 	public ApiException(String msg, int status) {
-		super(formatException(msg, Status.fromStatusCode(status), MediaType.APPLICATION_JSON));
+		this(msg, Status.fromStatusCode(status));
 	}
 
 	public ApiException(String msg, Status status) {
-		super(formatException(msg, status, MediaType.APPLICATION_JSON));
+		super(msg, formatException(msg, status));
 	}
 
-	public ApiException(String msg, int status, String MediaType) {
-		super(formatException(msg, Status.fromStatusCode(status), MediaType));
-	}
-
-	public ApiException(String msg, Status status, String MediaType) {
-		super(formatException(msg, status, MediaType));
-	}
-
-	private static Response formatException(String message, Status status, String mediaType) {
-		ResponseBuilder response = Response.status(status).type(mediaType);
+	protected static Response formatException(String message, Status status) {
+		ResponseBuilder response = Response.status(status).type(MediaType.TEXT_PLAIN);
 
 		if(message != null) {
 			message = message.replace("\"", "\\\"").replace("\n", " ").replace(System.getProperty("line.separator"), " ");
 
-			response.entity(("{\"status\":\"error\", \"error\":\"" + message + "\"}"));
+			response.type(MediaType.APPLICATION_JSON);
+			response.entity(("{\"status\":\""+status.getReasonPhrase()+"\", \"error\":\"" + message + "\"}"));
 		}
 		return response.build();
 	}

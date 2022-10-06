@@ -31,6 +31,7 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
@@ -39,11 +40,12 @@ import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * {@link IWritableFileSystem FileSystem} representation of the local filesystem.
- *  
+ *
  * @author Gerrit van Brakel
  *
  */
 public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFileSystem<Path> {
+	private final @Getter(onMethod = @__(@Override)) String domain = "LocalFilesystem";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String root;
@@ -52,7 +54,6 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	public void configure() throws ConfigurationException {
 		// No Action is required
 	}
-
 
 	@Override
 	public Path toFile(String filename) {
@@ -126,6 +127,7 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	public boolean isFolder(Path f) {
 		return Files.isDirectory(f);
 	}
+
 	@Override
 	public boolean folderExists(String folder) throws FileSystemException {
 		return isFolder(toFile(folder));
@@ -172,9 +174,9 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 			throw new FileSystemException("Cannot rename file ["+ source.toString() +"] to ["+ destination.toString() +"]", e);
 		}
 	}
-	
+
 	@Override
-	public Path moveFile(Path f, String destinationFolder, boolean createFolder) throws FileSystemException {
+	public Path moveFile(Path f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
 		if(createFolder && !folderExists(destinationFolder)) {
 			try {
 				Files.createDirectories(toFile(destinationFolder));
@@ -189,7 +191,7 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 		}
 	}
 	@Override
-	public Path copyFile(Path f, String destinationFolder, boolean createFolder) throws FileSystemException {
+	public Path copyFile(Path f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
 		if(createFolder && !folderExists(destinationFolder)) {
 			try {
 				Files.createDirectories(toFile(destinationFolder));
@@ -224,6 +226,11 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	}
 
 	@Override
+	public String getParentFolder(Path f) throws FileSystemException {
+		return getCanonicalName(f.getParent());
+	}
+
+	@Override
 	public String getCanonicalName(Path f) throws FileSystemException {
 		try {
 			return f.toFile().getCanonicalPath();
@@ -251,7 +258,7 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 		return "root ["+(getRoot()==null?"":getRoot())+"]";
 	}
 
-	@IbisDoc({"1", "Path to the folder that serves as the root of this virtual filesystem. All specifications of folders or files are relative to this root. "+
+	@IbisDoc({"Path to the folder that serves as the root of this virtual filesystem. All specifications of folders or files are relative to this root. "+
 			"When the root is left unspecified, absolute paths to files and folders can be used", "" })
 	public void setRoot(String root) {
 		this.root = root;

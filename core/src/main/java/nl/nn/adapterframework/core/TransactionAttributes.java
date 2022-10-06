@@ -38,8 +38,8 @@ public class TransactionAttributes implements HasTransactionAttribute {
 	public void configure() throws ConfigurationException {
 		txDef = configureTransactionAttributes(log, getTransactionAttribute(), getTransactionTimeout());
 	}
-	
-	public static TransactionDefinition configureTransactionAttributes(Logger log, TransactionAttribute transactionAttribute, int transactionTimeout) throws ConfigurationException {
+
+	public static TransactionDefinition configureTransactionAttributes(Logger log, TransactionAttribute transactionAttribute, int transactionTimeout) {
 		if (isTransacted(transactionAttribute) && transactionTimeout>0) {
 			Integer maximumTransactionTimeout = Misc.getMaximumTransactionTimeout();
 			if (maximumTransactionTimeout != null && transactionTimeout > maximumTransactionTimeout) {
@@ -50,10 +50,10 @@ public class TransactionAttributes implements HasTransactionAttribute {
 		if (log.isDebugEnabled()) log.debug("creating TransactionDefinition for transactionAttribute ["+transactionAttribute+"], timeout ["+transactionTimeout+"]");
 		return SpringTxManagerProxy.getTransactionDefinition(transactionAttribute.getTransactionAttributeNum(),transactionTimeout);
 	}
-	
-	
 
-	//@IbisDoc({"4", "If set to <code>true</code>, messages will be processed under transaction control. (see below)", "<code>false</code>"})
+
+
+	//@IbisDoc({"If set to <code>true</code>, messages will be processed under transaction control. (see below)", "<code>false</code>"})
 	@Deprecated
 	@ConfigurationWarning("implemented as setting of transacted=true as transactionAttribute=Required and transacted=false as transactionAttribute=Supports")
 	public void setTransacted(boolean transacted) {
@@ -68,7 +68,7 @@ public class TransactionAttributes implements HasTransactionAttribute {
 	}
 
 	public static boolean isTransacted(TransactionAttribute txAtt) {
-		return  txAtt==TransactionAttribute.REQUIRED || 
+		return  txAtt==TransactionAttribute.REQUIRED ||
 				txAtt==TransactionAttribute.REQUIRESNEW ||
 				txAtt==TransactionAttribute.MANDATORY;
 	}

@@ -28,7 +28,6 @@ import java.util.Set;
 import java.util.SortedMap;
 
 import javax.annotation.security.RolesAllowed;
-import javax.naming.NamingException;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -137,9 +136,6 @@ public final class Webservices extends Base {
 				if (adapter!=null) endpoint.put("adapter", adapter.getName());
 				if (receiver!=null) endpoint.put("receiver", receiver.getName());
 
-				String schemaResource = uriPattern.substring(1).replace("/", "_")+"_"+method+"_"+"openapi.json";
-				endpoint.put("schemaResource",schemaResource);
-
 				apiListeners.add(endpoint);
 			}
 		}
@@ -157,7 +153,7 @@ public final class Webservices extends Base {
 		@PathParam("resourceName") String resourceName,
 		@DefaultValue("true") @QueryParam("indent") boolean indent,
 		@DefaultValue("false") @QueryParam("useIncludes") boolean useIncludes) throws ApiException {
-	
+
 		String adapterName;
 		boolean zip;
 		int dotPos=resourceName.lastIndexOf('.');
@@ -168,7 +164,7 @@ public final class Webservices extends Base {
 			adapterName=resourceName;
 			zip=false;
 		}
-		
+
 		if (StringUtils.isEmpty(adapterName)) {
 			return Response.status(Response.Status.BAD_REQUEST).entity("<error>no adapter specified</error>").build();
 		}
@@ -177,7 +173,7 @@ public final class Webservices extends Base {
 			return Response.status(Response.Status.BAD_REQUEST).entity("<error>adapter not found</error>").build();
 		}
 		try {
-			String servletName = getServiceEndpoint(adapter); 
+			String servletName = getServiceEndpoint(adapter);
 			String generationInfo = "by FrankConsole";
 			WsdlGenerator wsdl = new WsdlGenerator(adapter.getPipeLine(), generationInfo);
 			wsdl.setIndent(indent);
@@ -192,7 +188,7 @@ public final class Webservices extends Base {
 						} else {
 							wsdl.wsdl(out, servletName);
 						}
-					} catch (ConfigurationException | XMLStreamException | NamingException e) {
+					} catch (ConfigurationException | XMLStreamException e) {
 						throw new WebApplicationException(e);
 					}
 				}
@@ -221,9 +217,9 @@ public final class Webservices extends Base {
 				} else {
 					endpoint = "rpcrouter";
 				}
-				String protocol = request.isSecure() ? "https://" : "http://";
-				int port = request.getServerPort();
-				String restBaseUrl = protocol + request.getServerName() + (port != 0 ? ":" + port : "") + request.getContextPath() + "/services/";
+				String protocol = servletRequest.isSecure() ? "https://" : "http://";
+				int port = servletRequest.getServerPort();
+				String restBaseUrl = protocol + servletRequest.getServerName() + (port != 0 ? ":" + port : "") + servletRequest.getContextPath() + "/services/";
 				endpoint = restBaseUrl + endpoint;
 				break;	//what if there are more than 1 WebServiceListener
 			}

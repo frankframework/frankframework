@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,10 +31,12 @@ public interface ItemList {
 	final String PRINT_FORMAT_COUNT="#,##0";
 	final String PRINT_FORMAT_TIME="#,##0";
 	final String PRINT_FORMAT_PERC="##0.0";
-	
-	final int ITEM_TYPE_INTEGER=1;
-	final int ITEM_TYPE_TIME=2;
-	final int ITEM_TYPE_FRACTION=3;
+
+	public enum Type {
+		INTEGER,
+		TIME,
+		FRACTION
+	}
 
 	final String ITEM_NAME_COUNT="count";
 	final String ITEM_NAME_MIN="min";
@@ -45,10 +47,10 @@ public interface ItemList {
 	final String ITEM_NAME_SUMSQ="sumsq";
 
 	final String ITEM_VALUE_NAN="-";
-	
+
 	int getItemCount();
 	String getItemName(int index);
-	int getItemType(int index);
+	Type getItemType(int index);
 	Object getItemValue(int index);
 
 }

@@ -4,12 +4,14 @@
 	<!ENTITY Cache SYSTEM "./ConfigurationCache.xml">
 	<!ENTITY Checksum SYSTEM "./ConfigurationChecksum.xml">
 	<!ENTITY Zip SYSTEM "./ConfigurationZip.xml">
+	<!ENTITY Echo SYSTEM "./ConfigurationEcho.xml">
 	<!ENTITY ErrorMessageFormatter SYSTEM "./ConfigurationErrorMessageFormatter.xml">
 	<!ENTITY ExceptionPipe SYSTEM "./ConfigurationExceptionPipe.xml">
 	<!ENTITY ExchangeMail SYSTEM "./ConfigurationExchangeMail.xml">
 	<!ENTITY Exits SYSTEM "./ConfigurationExits.xml">
 	<!ENTITY ReplacerPipe SYSTEM "./ConfigurationReplacerPipe.xml">
 	<!ENTITY ReplaceInputAndPreserve SYSTEM "./ConfigurationReplaceInputAndPreserve.xml">
+	<!ENTITY ForwardNameProvidingSenders SYSTEM "./ConfigurationForwardNameProvidingSenders.xml">
 	<!ENTITY CompareStringPipe SYSTEM "./ConfigurationCompareStringPipe.xml">
 	<!ENTITY CompareXmlStringPipe SYSTEM "./ConfigurationCompareXmlStringPipe.xml">
 	<!ENTITY QuerySender SYSTEM "./ConfigurationQuerySender.xml">
@@ -63,18 +65,20 @@
 	<!ENTITY ApiWsdlGenerator SYSTEM "./ConfigurationApiWsdlGenerator.xml">
 	<!ENTITY Unzip SYSTEM "./ConfigurationUnzip.xml">
 ]>
-<configuration name="MainConfig">
+<configuration>
 	&Authentication;
 	&Batch;
 	&Cache;
 	&Checksum;
 	&Zip;
+	&Echo;
 	&ErrorMessageFormatter;
 	&ExceptionPipe;
 	&ExchangeMail;
 	&Exits;
 	&ReplacerPipe;
 	&ReplaceInputAndPreserve;
+	&ForwardNameProvidingSenders;
 	&CompareStringPipe;
 	&CompareXmlStringPipe;
 	&QuerySender;

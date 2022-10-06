@@ -31,6 +31,7 @@ import java.util.StringTokenizer;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.ThreadContext;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -57,6 +58,7 @@ import nl.nn.adapterframework.core.IKnowsDeliveryCount;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IManagable;
 import nl.nn.adapterframework.core.IMessageBrowser;
+import nl.nn.adapterframework.core.IMessageBrowser.HideMethod;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPortConnectedListener;
@@ -71,6 +73,7 @@ import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -78,14 +81,16 @@ import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.core.TransactionAttributes;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.doc.ProtectedAttribute;
+import nl.nn.adapterframework.doc.Protected;
 import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.jms.JMSFacade;
 import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 import nl.nn.adapterframework.monitoring.EventPublisher;
 import nl.nn.adapterframework.monitoring.EventThrowing;
+import nl.nn.adapterframework.statistics.CounterStatistic;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -94,7 +99,6 @@ import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CompactSaxHandler;
 import nl.nn.adapterframework.util.Counter;
-import nl.nn.adapterframework.util.CounterStatistic;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.Misc;
@@ -106,6 +110,64 @@ import nl.nn.adapterframework.util.TransformerPool.OutputType;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
+ * Wrapper for a listener that specifies a channel for the incoming messages of a specific {@link Adapter}.
+ * By choosing a listener, the Frank developer determines how the messages are received.
+ * For example, an {@link nl.nn.adapterframework.http.rest.ApiListener} receives RESTful HTTP requests and a
+ * {@link JavaListener} receives messages from direct Java calls.
+ * <br/><br/>
+ * Apart from wrapping the listener, a {@link Receiver} can be configured
+ * to store received messages and to keep track of the processed / failed
+ * status of these messages.
+ * <br/><br/>
+ * There are two kinds of listeners: synchronous listeners and asynchronous listeners.
+ * Synchronous listeners are expected to return a response. The system that triggers the
+ * receiver typically waits for a response before proceeding its operation. When a
+ * {@link nl.nn.adapterframework.http.rest.ApiListener} receives a HTTP request, the listener is expected to return a
+ * HTTP response. Asynchronous listeners are not expected to return a response. The system that
+ * triggers the listener typically continues without waiting for the adapter to finish. When a
+ * receiver contains an asynchronous listener, it can have a sender that sends the transformed
+ * message to its destination. Receivers with an asynchronous listener can also have an error sender that is used
+ * by the receiver to send error messages. In other words: if the result state is SUCCESS then the
+ * message is sent by the ordinary sender, while the error sender is used if the result state
+ * is ERROR.
+ * <br/><br/>
+ * <b>Transaction control</b><br/><br/>
+ * If {@link #setTransacted(boolean) transacted} is set to <code>true</code>, messages will be received and processed under transaction control.
+ * This means that after a message has been read and processed and the transaction has ended, one of the following apply:
+ * <table border="1">
+ * <tr><th>situation</th><th>input listener</th><th>Pipeline</th><th>inProcess storage</th><th>errorSender</th><th>summary of effect</th></tr>
+ * <tr><td>successful</td><td>message read and committed</td><td>message processed</td><td>unchanged</td><td>unchanged</td><td>message processed</td></tr>
+ * <tr><td>procesing failed</td><td>message read and committed</td><td>message processing failed and rolled back</td><td>unchanged</td><td>message sent</td><td>message only transferred from listener to errroSender</td></tr>
+ * <tr><td>listening failed</td><td>unchanged: listening rolled back</td><td>no processing performed</td><td>unchanged</td><td>unchanged</td><td>no changes, input message remains on input available for listener</td></tr>
+ * <tr><td>transfer to inprocess storage failed</td><td>unchanged: listening rolled back</td><td>no processing performed</td><td>unchanged</td><td>unchanged</td><td>no changes, input message remains on input available for listener</td></tr>
+ * <tr><td>transfer to errorSender failed</td><td>message read and committed</td><td>message processing failed and rolled back</td><td>message present</td><td>unchanged</td><td>message only transferred from listener to inProcess storage</td></tr>
+ * </table>
+ * If the application or the server crashes in the middle of one or more transactions, these transactions
+ * will be recovered and rolled back after the server/application is restarted. Then always exactly one of
+ * the following applies for any message touched at any time by Ibis by a transacted receiver:
+ * <ul>
+ * <li>It is processed correctly by the pipeline and removed from the input-queue,
+ *     not present in inProcess storage and not send to the errorSender</li>
+ * <li>It is not processed at all by the pipeline, or processing by the pipeline has been rolled back;
+ *     the message is removed from the input queue and either (one of) still in inProcess storage <i>or</i> sent to the errorSender</li>
+ * </ul>
+ * </p>
+ *
+ * <p><b>commit or rollback</b><br>
+ * If {@link #setTransacted(boolean) transacted} is set to <code>true</code>, messages will be either committed or rolled back.
+ * All message-processing transactions are committed, unless one or more of the following apply:
+ * <ul>
+ * <li>The PipeLine is transacted and the exitState of the pipeline is not equal to SUCCESS</li>
+ * <li>a PipeRunException or another runtime-exception has been thrown by any Pipe or by the PipeLine</li>
+ * <li>the setRollBackOnly() method has been called on the userTransaction (not accessible by Pipes)</li>
+ * </ul>
+ * </p>
+ *
+ * @author Gerrit van Brakel
+ * @since 4.2
+ *
+ */
+/*
  * The receiver is the trigger and central communicator for the framework.
  * <br/>
  * The main responsibilities are:
@@ -123,45 +185,9 @@ import nl.nn.adapterframework.util.XmlUtils;
  * to do the actual work, which returns a <code>{@link PipeLineResult}</code>. The receiver
  * may observe the status in the <code>{@link PipeLineResult}</code> to perform committing
  * requests.
- * 
  *
- * </p>
- * <p><b>Transaction control</b><br>
- * If {@link #setTransacted(boolean) transacted} is set to <code>true</code>, messages will be received and processed under transaction control.
- * This means that after a message has been read and processed and the transaction has ended, one of the following apply:
- * <ul>
- * <table border="1">
- * <tr><th>situation</th><th>input listener</th><th>Pipeline</th><th>inProcess storage</th><th>errorSender</th><th>summary of effect</th></tr>
- * <tr><td>successful</td><td>message read and committed</td><td>message processed</td><td>unchanged</td><td>unchanged</td><td>message processed</td></tr>
- * <tr><td>procesing failed</td><td>message read and committed</td><td>message processing failed and rolled back</td><td>unchanged</td><td>message sent</td><td>message only transferred from listener to errroSender</td></tr>
- * <tr><td>listening failed</td><td>unchanged: listening rolled back</td><td>no processing performed</td><td>unchanged</td><td>unchanged</td><td>no changes, input message remains on input available for listener</td></tr>
- * <tr><td>transfer to inprocess storage failed</td><td>unchanged: listening rolled back</td><td>no processing performed</td><td>unchanged</td><td>unchanged</td><td>no changes, input message remains on input available for listener</td></tr>
- * <tr><td>transfer to errorSender failed</td><td>message read and committed</td><td>message processing failed and rolled back</td><td>message present</td><td>unchanged</td><td>message only transferred from listener to inProcess storage</td></tr>
- * </table> 
- * If the application or the server crashes in the middle of one or more transactions, these transactions 
- * will be recovered and rolled back after the server/application is restarted. Then allways exactly one of 
- * the following applies for any message touched at any time by Ibis by a transacted receiver:
- * <ul>
- * <li>It is processed correctly by the pipeline and removed from the input-queue, 
- *     not present in inProcess storage and not send to the errorSender</li> 
- * <li>It is not processed at all by the pipeline, or processing by the pipeline has been rolled back; 
- *     the message is removed from the input queue and either (one of) still in inProcess storage <i>or</i> sent to the errorSender</li>
- * </ul>
- * </p>
- *
- * <p><b>commit or rollback</b><br>
- * If {@link #setTransacted(boolean) transacted} is set to <code>true</code>, messages will be either committed or rolled back.
- * All message-processing transactions are committed, unless one or more of the following apply:
- * <ul>
- * <li>The PipeLine is transacted and the exitState of the pipeline is not equal to SUCCESS</li>
- * <li>a PipeRunException or another runtime-exception has been thrown by any Pipe or by the PipeLine</li>
- * <li>the setRollBackOnly() method has been called on the userTransaction (not accessible by Pipes)</li>
- * </ul>
- * </p>
- *
- * @author Gerrit van Brakel
- * @since 4.2
  */
+@Category("Basic")
 public class Receiver<M> extends TransactionAttributes implements IManagable, IReceiverStatistics, IMessageHandler<M>, IProvidesMessageBrowsers<Object>, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, IThreadCountControllable, BeanFactoryAware {
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
@@ -169,6 +195,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	public static final TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
 	public static final TransactionDefinition TXNEW_CTRL = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 	public TransactionDefinition TXNEW_PROC;
+
+	public static final String THREAD_CONTEXT_KEY_NAMEOF = "Receiver";
 
 	public static final String RCV_CONFIGURED_MONITOR_EVENT = "Receiver Configured";
 	public static final String RCV_CONFIGURATIONEXCEPTION_MONITOR_EVENT = "Exception Configuring Receiver";
@@ -187,18 +215,18 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	public static final int MAX_RETRY_INTERVAL=100;
 	public static final String RETRY_FLAG_SESSION_KEY="retry"; // a session variable with this key will be set "true" if the message is manually retried, is redelivered, or it's messageid has been seen before
 
-	public enum OnError { 
-		/** Don't stop the receiver when an error occurs.*/ 
+	public enum OnError {
+		/** Don't stop the receiver when an error occurs.*/
 		CONTINUE,
 
-		/** 
+		/**
 		 * If an error occurs (eg. connection is lost) the receiver will be stopped and marked as ERROR
 		 * Once every <code>recover.adapters.interval</code> it will be attempted to (re-) start the receiver.
 		 */
 		RECOVER,
 
 		/** Stop the receiver when an error occurs. */
-		CLOSE 
+		CLOSE
 	};
 
 	/** Currently, this feature is only implemented for {@link IPushingListener}s, like Tibco and SAP. */
@@ -240,7 +268,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	private @Getter boolean removeCompactMsgNamespaces = true;
 
 	private @Getter String hideRegex = null;
-	private @Getter String hideMethod = "all";
+	private @Getter HideMethod hideMethod = HideMethod.ALL;
 	private @Getter String hiddenInputSessionKeys=null;
 
 	private Counter numberOfExceptionsCaughtWithoutMessageBeingReceived = new Counter(0);
@@ -325,34 +353,29 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		return configurationSucceeded;
 	}
 
-	private PipeLineSession createProcessingContext(String correlationId, Map<String,Object> threadContext, String messageId) {
-		PipeLineSession pipelineSession = new PipeLineSession();
-		if (threadContext != null) {
-			pipelineSession.putAll(threadContext);
-			if (log.isDebugEnabled()) {
-				List<String> hiddenSessionKeys = new ArrayList<>();
-				if (getHiddenInputSessionKeys()!=null) {
-					StringTokenizer st = new StringTokenizer(getHiddenInputSessionKeys(), " ,;");
-					while (st.hasMoreTokens()) {
-						String key = st.nextToken();
-						hiddenSessionKeys.add(key);
-					}
+	private void showProcessingContext(String messageId, String correlationId, PipeLineSession session) {
+		if (log.isDebugEnabled()) {
+			List<String> hiddenSessionKeys = new ArrayList<>();
+			if (getHiddenInputSessionKeys()!=null) {
+				StringTokenizer st = new StringTokenizer(getHiddenInputSessionKeys(), " ,;");
+				while (st.hasMoreTokens()) {
+					String key = st.nextToken();
+					hiddenSessionKeys.add(key);
 				}
-
-				String contextDump = "PipeLineSession variables for messageId [" + messageId + "] correlationId [" + correlationId + "]:";
-				for (Iterator<String> it = pipelineSession.keySet().iterator(); it.hasNext();) {
-					String key = it.next();
-					Object value = pipelineSession.get(key);
-					if (key.equals("messageText")) {
-						value = "(... see elsewhere ...)";
-					}
-					String strValue = String.valueOf(value);
-					contextDump += " " + key + "=[" + (hiddenSessionKeys.contains(key)?hide(strValue):strValue) + "]";
-				}
-				log.debug(getLogPrefix()+contextDump);
 			}
+
+			String contextDump = "PipeLineSession variables for messageId [" + messageId + "] correlationId [" + correlationId + "]:";
+			for (Iterator<String> it = session.keySet().iterator(); it.hasNext();) {
+				String key = it.next();
+				Object value = session.get(key);
+				if (key.equals("messageText")) {
+					value = "(... see elsewhere ...)";
+				}
+				String strValue = String.valueOf(value);
+				contextDump += " " + key + "=[" + (hiddenSessionKeys.contains(key)?hide(strValue):strValue) + "]";
+			}
+			log.debug(getLogPrefix()+contextDump);
 		}
-		return pipelineSession;
 	}
 
 	private String hide(String string) {
@@ -363,31 +386,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		return hiddenString;
 	}
 
-	private void putSessionKeysIntoThreadContext(Map<String,Object>threadContext, PipeLineSession pipelineSession) {
-		if (StringUtils.isNotEmpty(getReturnedSessionKeys()) && threadContext != null) {
-			if (log.isDebugEnabled()) {
-				log.debug(getLogPrefix()+"setting returned session keys [" + getReturnedSessionKeys() + "]");
-			}
-			StringTokenizer st = new StringTokenizer(getReturnedSessionKeys(), " ,;");
-			while (st.hasMoreTokens()) {
-				String key = st.nextToken();
-				Object value = pipelineSession.get(key);
-				Message.asMessage(value).unscheduleFromCloseOnExitOf(pipelineSession);
-				if (log.isDebugEnabled()) {
-					log.debug(getLogPrefix()+"returning session key [" + key + "] value [" + value + "]");
-				}
-				threadContext.put(key, value);
-			}
-		}
-	}
-
-
 
 	protected String getLogPrefix() {
-		return "Receiver ["+getName()+"] "; 
-	}	
+		return "Receiver ["+getName()+"] ";
+	}
 
-	/** 
+	/**
 	 * sends an informational message to the log and to the messagekeeper of the adapter
 	 */
 	protected void info(String msg) {
@@ -396,7 +400,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			adapter.getMessageKeeper().add(getLogPrefix() + msg);
 	}
 
-	/** 
+	/**
 	 * sends a warning to the log and to the messagekeeper of the adapter
 	 */
 	protected void warn(String msg) {
@@ -405,7 +409,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			adapter.getMessageKeeper().add("WARNING: " + getLogPrefix() + msg, MessageKeeperLevel.WARN);
 	}
 
-	/** 
+	/**
 	 * sends a error message to the log and to the messagekeeper of the adapter
 	 */
 	protected void error(String msg, Throwable t) {
@@ -440,13 +444,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			if (timeoutGuard.cancel()) {
 				throw new TimeoutException("timeout exceeded while starting receiver");
 			}
-
-			throwEvent(RCV_STARTED_RUNNING_MONITOR_EVENT);
-			if (getListener() instanceof IPullingListener){
-				// start all threads. Also sets runstate=STARTED 
-				listenerContainer.start();
-			}
 		}
+		if (getListener() instanceof IPullingListener){
+			// start all threads. Also sets runstate=STARTED
+			listenerContainer.start();
+		}
+		throwEvent(RCV_STARTED_RUNNING_MONITOR_EVENT);
 	}
 
 	/**
@@ -518,7 +521,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				if(!isInRunState(RunState.EXCEPTION_STARTING)) { //Don't change the RunState when failed to start
 					throwEvent(RCV_SHUTDOWN_MONITOR_EVENT);
 					resetRetryInterval();
-	
+
 					info("stopped");
 				}
 			}
@@ -544,13 +547,13 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		}
 	}
 
- 	/**
- 	 * This method is called by the <code>IAdapter</code> to let the
- 	 * receiver do things to initialize itself before the <code>startListening</code>
- 	 * method is called.
- 	 * @see #startRunning
- 	 * @throws ConfigurationException when initialization did not succeed.
- 	 */ 
+	/**
+	 * This method is called by the <code>IAdapter</code> to let the
+	 * receiver do things to initialize itself before the <code>startListening</code>
+	 * method is called.
+	 * @see #startRunning
+	 * @throws ConfigurationException when initialization did not succeed.
+	 */
 	@Override
 	public void configure() throws ConfigurationException {
 		configurationSucceeded = false;
@@ -562,6 +565,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				} else {
 					setName(ClassUtils.nameOf(this));
 				}
+			}
+			if(getName().contains("/")) {
+				throw new ConfigurationException("It is not allowed to have '/' in receiver name ["+getName()+"]");
 			}
 
 			registerEvent(RCV_CONFIGURED_MONITOR_EVENT);
@@ -607,9 +613,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			}
 			if (!StringUtils.isEmpty(getElementToMove()) && !StringUtils.isEmpty(getElementToMoveChain())) {
 				throw new ConfigurationException("cannot have both an elementToMove and an elementToMoveChain specified");
-			}
-			if (!(getHideMethod().equalsIgnoreCase("all")) && (!(getHideMethod().equalsIgnoreCase("firstHalf")))) {
-				throw new ConfigurationException(getLogPrefix() + "invalid value for hideMethod [" + getHideMethod() + "], must be 'all' or 'firstHalf'");
 			}
 			if (getListener() instanceof ReceiverAware) {
 				((ReceiverAware)getListener()).setReceiver(this);
@@ -671,8 +674,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				targetProcessStates = ((IHasProcessState)getListener()).targetProcessStates();
 				supportProgrammaticRetry = knownProcessStates.contains(ProcessState.INPROCESS);
 			}
-			
-			
+
+
 			ITransactionalStorage<Serializable> messageLog = getMessageLog();
 			if (messageLog!=null) {
 				if (getListener() instanceof IProvidesMessageBrowsers && ((IProvidesMessageBrowsers)getListener()).getMessageBrowser(ProcessState.DONE)!=null) {
@@ -723,7 +726,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			if (targetProcessStates==null) {
 				targetProcessStates = ProcessState.getTargetProcessStates(knownProcessStates);
 			}
-			
+
 			if (isTransacted() && errorSender==null && errorStorage==null && !knownProcessStates().contains(ProcessState.ERROR)) {
 				ConfigurationWarnings.add(this, log, "sets transactionAttribute=" + getTransactionAttribute() + ", but has no errorSender or errorStorage. Messages processed with errors will be lost", SuppressKeys.TRANSACTION_SUPPRESS_KEY, getAdapter());
 			}
@@ -731,7 +734,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			if (StringUtils.isNotEmpty(getCorrelationIDXPath()) || StringUtils.isNotEmpty(getCorrelationIDStyleSheet())) {
 				correlationIDTp=TransformerPool.configureTransformer0(getLogPrefix(), this, getCorrelationIDNamespaceDefs(), getCorrelationIDXPath(), getCorrelationIDStyleSheet(),OutputType.TEXT,false,null,0);
 			}
-			
+
 			if (StringUtils.isNotEmpty(getHideRegex()) && getErrorStorage()!=null && StringUtils.isEmpty(getErrorStorage().getHideRegex())) {
 				getErrorStorage().setHideRegex(getHideRegex());
 				getErrorStorage().setHideMethod(getHideMethod());
@@ -792,7 +795,11 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			}
 			synchronized (runState) {
 				RunState currentRunState = getRunState();
-				if (currentRunState!=RunState.STOPPED && currentRunState!=RunState.ERROR && configurationSucceeded()) { // stopped OR in error after configuring the receiver
+				if (currentRunState!=RunState.STOPPED
+						&& currentRunState!=RunState.EXCEPTION_STOPPING
+						&& currentRunState!=RunState.EXCEPTION_STARTING
+						&& currentRunState!=RunState.ERROR
+						&& configurationSucceeded()) { // Only start the receiver if it is properly configured, and is not already starting or still stopping
 					if (currentRunState==RunState.STARTING || currentRunState==RunState.STARTED) {
 						log.info("already in state [" + currentRunState + "]");
 					} else {
@@ -874,7 +881,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	protected void startProcessingMessage(long waitingDuration) {
 		synchronized (threadsProcessing) {
 			int threadCount = (int) threadsProcessing.getValue();
-			
+
 			if (waitingDuration>=0) {
 				getIdleStatistics(threadCount).addValue(waitingDuration);
 			}
@@ -899,8 +906,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		} else {
 			rcvDate=new Date();
 		}
-		if (isTransacted() || 
-				(getErrorStorage() != null && 
+		if (isTransacted() ||
+				(getErrorStorage() != null &&
 					(!isCheckForDuplicates() || !getErrorStorage().containsMessageId(messageId) || !isDuplicateAndSkip(getMessageBrowser(ProcessState.ERROR), messageId, correlationId))
 				)
 			) {
@@ -944,7 +951,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			// no use trying again to send message on errorSender, will cause same exception!
 			return;
 		}
-		
+
 		Message message=null;
 		try {
 			if (errorSender!=null) {
@@ -973,12 +980,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 							if (message==null) {
 								message = messageSupplier.get();
 							}
-							sobj=message;
+							sobj=new MessageWrapper(message, originalMessageId);
 						}
 					}
 				}
 				errorStorage.storeMessage(originalMessageId, correlationId, receivedDate, comments, null, sobj);
-			} 
+			}
 			txManager.commit(txStatus);
 		} catch (Exception e) {
 			log.error(getLogPrefix()+"Exception moving message with id ["+originalMessageId+"] correlationId ["+correlationId+"] to error sender or error storage, original message: [" + message + "]", e);
@@ -993,27 +1000,37 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	/**
-	 * Process the received message with {@link #processRequest(IListener, String, Object, Message, Map)}.
+	 * Process the received message with {@link #processRequest(IListener, String, Object, Message, PipeLineSession)}.
 	 * A messageId is generated that is unique and consists of the name of this listener and a GUID
 	 */
 	@Override
-	public Message processRequest(IListener<M> origin, String correlationId, M rawMessage, Message message, Map<String,Object> context) throws ListenerException {
-		if (origin!=getListener()) {
-			throw new ListenerException("Listener requested ["+origin.getName()+"] is not my Listener");
-		}
-		if (getRunState() != RunState.STARTED) {
-			throw new ListenerException(getLogPrefix()+"is not started");
-		}
+	public Message processRequest(IListener<M> origin, String correlationId, M rawMessage, Message message, PipeLineSession session) throws ListenerException {
+		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(THREAD_CONTEXT_KEY_NAMEOF, ClassUtils.nameOf(getListener()))) {
+			if (origin!=getListener()) {
+				throw new ListenerException("Listener requested ["+origin.getName()+"] is not my Listener");
+			}
+			if (getRunState() != RunState.STARTED) {
+				throw new ListenerException(getLogPrefix()+"is not started");
+			}
 
-		if (context == null) {
-			context = new HashMap<>();
-		}
+			boolean sessionCreated=false;
+			try {
+				if (session==null) {
+					session = new PipeLineSession();
+					sessionCreated=true;
+				}
 
-		Date tsReceived = PipeLineSession.getTsReceived(context);
-		Date tsSent = PipeLineSession.getTsSent(context);
-		PipeLineSession.setListenerParameters(context, null, correlationId, tsReceived, tsSent);
-		String messageId = (String) context.get(PipeLineSession.originalMessageIdKey);
-		return processMessageInAdapter(rawMessage, message, messageId, correlationId, context, -1, false, false);
+				Date tsReceived = PipeLineSession.getTsReceived(session);
+				Date tsSent = PipeLineSession.getTsSent(session);
+				PipeLineSession.setListenerParameters(session, null, correlationId, tsReceived, tsSent);
+				String messageId = (String) session.get(PipeLineSession.messageIdKey);
+				return processMessageInAdapter(rawMessage, message, messageId, correlationId, session, -1, false, false);
+			} finally {
+				if (sessionCreated) {
+					session.close();
+				}
+			}
+		}
 	}
 
 
@@ -1023,134 +1040,139 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		processRawMessage(origin, rawMessage, null, -1, false);
 	}
 	@Override
-	public void processRawMessage(IListener<M> origin, M rawMessage, Map<String,Object> context, boolean duplicatesAlreadyChecked) throws ListenerException {
-		processRawMessage(origin, rawMessage, context, -1, duplicatesAlreadyChecked);
+	public void processRawMessage(IListener<M> origin, M rawMessage, PipeLineSession session, boolean duplicatesAlreadyChecked) throws ListenerException {
+		processRawMessage(origin, rawMessage, session, -1, duplicatesAlreadyChecked);
 	}
 
 	@Override
-	public void processRawMessage(IListener<M> origin, M rawMessage, Map<String,Object> threadContext, long waitingDuration, boolean duplicatesAlreadyChecked) throws ListenerException {
+	public void processRawMessage(IListener<M> origin, M rawMessage, PipeLineSession session, long waitingDuration, boolean duplicatesAlreadyChecked) throws ListenerException {
 		if (origin!=getListener()) {
 			throw new ListenerException("Listener requested ["+origin.getName()+"] is not my Listener");
 		}
-		processRawMessage(rawMessage, threadContext, waitingDuration, false, duplicatesAlreadyChecked);
+		processRawMessage(rawMessage, session, waitingDuration, false, duplicatesAlreadyChecked);
 	}
 
 	/**
-	 * All messages that for this receiver are pumped down to this method, so it actually
-	 * calls the {@link nl.nn.adapterframework.core.Adapter adapter} to process the message.<br/>
-
+	 * All messages that for this receiver are pumped down to this method, so it actually calls the {@link Adapter} to process the message.<br/>
 	 * Assumes that a transaction has been started where necessary.
 	 */
-	private void processRawMessage(Object rawMessageOrWrapper, Map<String,Object>threadContext, long waitingDuration, boolean manualRetry, boolean duplicatesAlreadyChecked) throws ListenerException {
-		if (rawMessageOrWrapper==null) {
-			log.debug(getLogPrefix()+"received null message, returning directly");
-			return;
-		}
-		long startExtractingMessage = System.currentTimeMillis();
-		if (threadContext==null) {
-			threadContext = new HashMap<>();
-		}
-		if(isForceRetryFlag()) {
-			threadContext.put(Receiver.RETRY_FLAG_SESSION_KEY, "true");
-		}
+	private void processRawMessage(Object rawMessageOrWrapper, PipeLineSession session, long waitingDuration, boolean manualRetry, boolean duplicatesAlreadyChecked) throws ListenerException {
+		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(THREAD_CONTEXT_KEY_NAMEOF, ClassUtils.nameOf(getListener()))) {
+			if (rawMessageOrWrapper==null) {
+				log.debug(getLogPrefix()+"received null message, returning directly");
+				return;
+			}
+			long startExtractingMessage = System.currentTimeMillis();
+			boolean sessionCreated=false;
+			if (session==null) {
+				session = new PipeLineSession();
+				sessionCreated = true;
+			}
+			try {
+				if(isForceRetryFlag()) {
+					session.put(Receiver.RETRY_FLAG_SESSION_KEY, "true");
+				}
 
-		Message message = null;
-		String technicalCorrelationId = null;
-		try {
-			message = getListener().extractMessage((M)rawMessageOrWrapper, threadContext);
-		} catch (Exception e) {
-			if(rawMessageOrWrapper instanceof MessageWrapper) { 
-				//somehow messages wrapped in MessageWrapper are in the ITransactionalStorage 
-				// There are, however, also Listeners that might use MessageWrapper as their raw message type,
-				// like JdbcListener
-				message = ((MessageWrapper)rawMessageOrWrapper).getMessage();
-			} else {
-				throw new ListenerException(e);
+				Message message = null;
+				String messageId = null;
+				try {
+					message = getListener().extractMessage((M)rawMessageOrWrapper, session);
+				} catch (Exception e) {
+					if(rawMessageOrWrapper instanceof MessageWrapper) {
+						//somehow messages wrapped in MessageWrapper are in the ITransactionalStorage
+						// There are, however, also Listeners that might use MessageWrapper as their raw message type,
+						// like JdbcListener
+						message = ((MessageWrapper)rawMessageOrWrapper).getMessage();
+					} else {
+						throw new ListenerException(e);
+					}
+				}
+				try {
+					messageId = getListener().getIdFromRawMessage((M)rawMessageOrWrapper, session);
+				} catch (Exception e) {
+					if(rawMessageOrWrapper instanceof MessageWrapper) { //somehow messages wrapped in MessageWrapper are in the ITransactionalStorage
+						MessageWrapper<M> wrapper = (MessageWrapper)rawMessageOrWrapper;
+						messageId = wrapper.getId();
+						session.putAll(wrapper.getContext());
+					} else {
+						throw new ListenerException(e);
+					}
+				}
+				String correlationId = session.getCorrelationId();
+				long endExtractingMessage = System.currentTimeMillis();
+				messageExtractionStatistics.addValue(endExtractingMessage-startExtractingMessage);
+				Message output = processMessageInAdapter(rawMessageOrWrapper, message, messageId, correlationId, session, waitingDuration, manualRetry, duplicatesAlreadyChecked);
+				try {
+					output.close();
+				} catch (Exception e) {
+					log.warn("Could not close result message ["+output+"]", e);
+				}
+				resetNumberOfExceptionsCaughtWithoutMessageBeingReceived();
+			} finally {
+				if (sessionCreated) {
+					session.close();
+				}
 			}
 		}
-		try {
-			technicalCorrelationId = getListener().getIdFromRawMessage((M)rawMessageOrWrapper, threadContext);
-		} catch (Exception e) {
-			if(rawMessageOrWrapper instanceof MessageWrapper) { //somehow messages wrapped in MessageWrapper are in the ITransactionalStorage 
-				MessageWrapper<M> wrapper = (MessageWrapper)rawMessageOrWrapper;
-				technicalCorrelationId = wrapper.getId();
-				threadContext.putAll(wrapper.getContext());
-			} else {
-				throw new ListenerException(e);
-			}
-		}
-		String messageId = (String)threadContext.get(PipeLineSession.originalMessageIdKey);
-		long endExtractingMessage = System.currentTimeMillis();
-		messageExtractionStatistics.addValue(endExtractingMessage-startExtractingMessage);
-		Message output = processMessageInAdapter(rawMessageOrWrapper, message, messageId, technicalCorrelationId, threadContext, waitingDuration, manualRetry, duplicatesAlreadyChecked);
-		try {
-			output.close();
-		} catch (Exception e) {
-			log.warn("Could not close result message ["+output+"]", e);
-		}
-		resetNumberOfExceptionsCaughtWithoutMessageBeingReceived();
 	}
 
-	
+
 	public void retryMessage(String storageKey) throws ListenerException {
 		if (!messageBrowsers.containsKey(ProcessState.ERROR)) {
 			throw new ListenerException(getLogPrefix()+"has no errorStorage, cannot retry storageKey ["+storageKey+"]");
 		}
-		Map<String,Object>threadContext = new HashMap<>();
-		if (getErrorStorage()==null) {
-			// if there is only a errorStorageBrowser, and no separate and transactional errorStorage,
-			// then the management of the errorStorage is left to the listener.
-			IMessageBrowser errorStorageBrowser = messageBrowsers.get(ProcessState.ERROR);
-			Object msg = errorStorageBrowser.browseMessage(storageKey);
-			processRawMessage(msg, threadContext, -1, true, false);
-			return;
-		}
-		PlatformTransactionManager txManager = getTxManager(); 
-		//TransactionStatus txStatus = txManager.getTransaction(TXNEW);
-		IbisTransaction itx = new IbisTransaction(txManager, TXNEW_PROC, "receiver [" + getName() + "]");
-		Serializable msg=null;
-		ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
-		try {
-			try {
-				msg = errorStorage.getMessage(storageKey);
-				processRawMessage(msg, threadContext, -1, true, false);
-			} catch (Throwable t) {
-				itx.setRollbackOnly();
-				throw new ListenerException(t);
-			} finally {
-				itx.commit();
+		try (PipeLineSession session = new PipeLineSession()) {
+			if (getErrorStorage()==null) {
+				// if there is only a errorStorageBrowser, and no separate and transactional errorStorage,
+				// then the management of the errorStorage is left to the listener.
+				IMessageBrowser<?> errorStorageBrowser = messageBrowsers.get(ProcessState.ERROR);
+				Object msg = errorStorageBrowser.browseMessage(storageKey);
+				processRawMessage(msg, session, -1, true, false);
+				return;
 			}
-		} catch (ListenerException e) {
-			IbisTransaction itxErrorStorage = new IbisTransaction(txManager, TXNEW_CTRL, "errorStorage of receiver [" + getName() + "]");
-			try {	
-				if (msg instanceof Serializable) {
-					String originalMessageId = (String)threadContext.get(PipeLineSession.originalMessageIdKey);
-					String correlationId = (String)threadContext.get(PipeLineSession.businessCorrelationIdKey);
-					String receivedDateStr = (String)threadContext.get(PipeLineSession.TS_RECEIVED_KEY);
+			PlatformTransactionManager txManager = getTxManager();
+			//TransactionStatus txStatus = txManager.getTransaction(TXNEW);
+			IbisTransaction itx = new IbisTransaction(txManager, TXNEW_PROC, "receiver [" + getName() + "]");
+			Serializable msg=null;
+			ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
+			try {
+				try {
+					msg = errorStorage.getMessage(storageKey);
+					processRawMessage(msg, session, -1, true, false);
+				} catch (Throwable t) {
+					itx.setRollbackOnly();
+					throw new ListenerException(t);
+				} finally {
+					itx.commit();
+				}
+			} catch (ListenerException e) {
+				IbisTransaction itxErrorStorage = new IbisTransaction(txManager, TXNEW_CTRL, "errorStorage of receiver [" + getName() + "]");
+				try {
+					String messageId = session.getMessageId();
+					String correlationId = session.getCorrelationId();
+					String receivedDateStr = (String)session.get(PipeLineSession.TS_RECEIVED_KEY);
 					if (receivedDateStr==null) {
 						log.warn(getLogPrefix()+PipeLineSession.TS_RECEIVED_KEY+" is unknown, cannot update comments");
 					} else {
 						Date receivedDate = DateUtils.parseToDate(receivedDateStr,DateUtils.FORMAT_FULL_GENERIC);
 						errorStorage.deleteMessage(storageKey);
-						errorStorage.storeMessage(originalMessageId, correlationId,receivedDate,"after retry: "+e.getMessage(),null, msg);	
+						errorStorage.storeMessage(messageId, correlationId,receivedDate,"after retry: "+e.getMessage(),null, msg);
 					}
-				} else {
-					log.warn(getLogPrefix()+"retried message is not serializable, cannot update comments");
+				} catch (SenderException e1) {
+					itxErrorStorage.setRollbackOnly();
+					log.warn(getLogPrefix()+"could not update comments in errorStorage",e1);
+				} finally {
+					itxErrorStorage.commit();
 				}
-			} catch (SenderException e1) {
-				itxErrorStorage.setRollbackOnly();
-				log.warn(getLogPrefix()+"could not update comments in errorStorage",e1);
-			} finally {
-				itxErrorStorage.commit();
+				throw e;
 			}
-			throw e;
 		}
 	}
 
 	/*
 	 * Assumes message is read, and when transacted, transaction is still open.
 	 */
-	private Message processMessageInAdapter(Object rawMessageOrWrapper, Message message, String messageId, String technicalCorrelationId, Map<String,Object>threadContext, long waitingDuration, boolean manualRetry, boolean duplicatesAlreadyChecked) throws ListenerException {
+	private Message processMessageInAdapter(Object rawMessageOrWrapper, Message message, String messageId, String correlationId, PipeLineSession session, long waitingDuration, boolean manualRetry, boolean duplicatesAlreadyChecked) throws ListenerException {
 		long startProcessingTimestamp = System.currentTimeMillis();
 //		if (message==null) {
 //			requestSizeStatistics.addValue(0);
@@ -1158,11 +1180,11 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 //			requestSizeStatistics.addValue(message.length());
 //		}
 		lastMessageDate = startProcessingTimestamp;
-		log.debug(getLogPrefix()+"received message with messageId ["+messageId+"] (technical) correlationId ["+technicalCorrelationId+"]");
+		log.debug(getLogPrefix()+"received message with messageId ["+messageId+"] correlationId ["+correlationId+"]");
 
 		if (StringUtils.isEmpty(messageId)) {
 			messageId=Misc.createSimpleUUID();
-			if (log.isDebugEnabled()) 
+			if (log.isDebugEnabled())
 				log.debug(getLogPrefix()+"generated messageId ["+messageId+"]");
 		}
 
@@ -1175,7 +1197,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				handler.setElementToMoveChain(getElementToMoveChain());
 				handler.setElementToMoveSessionKey(getElementToMoveSessionKey());
 				handler.setRemoveCompactMsgNamespaces(isRemoveCompactMsgNamespaces());
-				handler.setContext(threadContext);
+				handler.setContext(session);
 				try {
 					XmlUtils.parseXml(message.asInputSource(), handler);
 					message = new Message(handler.getXmlString());
@@ -1189,8 +1211,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				throw new ListenerException(msg, e);
 			}
 		}
-		
-		String businessCorrelationId=null;
+
+		String businessCorrelationId=session.get(PipeLineSession.correlationIdKey, correlationId);
 		if (correlationIDTp!=null) {
 			try {
 				message.preserve();
@@ -1206,20 +1228,18 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				} else {
 					cidText = "styleSheet ["+getCorrelationIDStyleSheet()+"]";
 				}
-				if (StringUtils.isNotEmpty(technicalCorrelationId)) {
-					log.info(getLogPrefix()+"did not find correlationId using "+cidText+", reverting to correlationId of transfer ["+technicalCorrelationId+"]");
-					businessCorrelationId=technicalCorrelationId;
+				if (StringUtils.isNotEmpty(correlationId)) {
+					log.info(getLogPrefix()+"did not find correlationId using "+cidText+", reverting to correlationId of transfer ["+correlationId+"]");
+					businessCorrelationId=correlationId;
 				}
 			}
-		} else {
-			businessCorrelationId=technicalCorrelationId;
 		}
 		if (StringUtils.isEmpty(businessCorrelationId) && StringUtils.isNotEmpty(messageId)) {
 			log.info(getLogPrefix()+"did not find (technical) correlationId, reverting to messageId ["+messageId+"]");
 			businessCorrelationId=messageId;
 		}
-		log.info(getLogPrefix()+"messageId [" + messageId + "] technicalCorrelationId [" + technicalCorrelationId + "] businessCorrelationId [" + businessCorrelationId + "]");
-		threadContext.put(PipeLineSession.businessCorrelationIdKey, businessCorrelationId);
+		log.info(getLogPrefix()+"messageId [" + messageId + "] correlationId [" + correlationId + "] businessCorrelationId [" + businessCorrelationId + "]");
+		session.put(PipeLineSession.correlationIdKey, businessCorrelationId);
 		String label=null;
 		if (labelTp!=null) {
 			try {
@@ -1232,22 +1252,22 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		}
 		try {
 			final Message messageFinal = message;
-			if (!duplicatesAlreadyChecked && hasProblematicHistory(messageId, manualRetry, rawMessageOrWrapper, () -> messageFinal, threadContext, businessCorrelationId)) {
+			if (!duplicatesAlreadyChecked && hasProblematicHistory(messageId, manualRetry, rawMessageOrWrapper, () -> messageFinal, session, businessCorrelationId)) {
 				if (!isTransacted()) {
 					log.warn(getLogPrefix()+"received message with messageId [" + messageId + "] which has a problematic history; aborting processing");
 				}
 				numRejected.increase();
-				setExitState(threadContext, ExitState.REJECTED, 500);
+				setExitState(session, ExitState.REJECTED, 500);
 				return Message.nullMessage();
 			}
 			if (isDuplicateAndSkip(getMessageBrowser(ProcessState.DONE), messageId, businessCorrelationId)) {
-				setExitState(threadContext, ExitState.SUCCESS, 304);
+				setExitState(session, ExitState.SUCCESS, 304);
 				return Message.nullMessage();
 			}
 			if (getCachedProcessResult(messageId)!=null) {
 				numRetried.increase();
 			}
-		} catch (Exception e) { 
+		} catch (Exception e) {
 			String msg="exception while checking history";
 			error(msg, e);
 			throw wrapExceptionAsListenerException(e);
@@ -1258,8 +1278,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		// update processing statistics
 		// count in processing statistics includes messages that are rolled back to input
 		startProcessingMessage(waitingDuration);
-		
-		PipeLineSession pipelineSession = null;
+
 		String errorMessage="";
 		boolean messageInError = false;
 		Message result = null;
@@ -1268,8 +1287,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			Message pipelineMessage;
 			if (getListener() instanceof IBulkDataListener) {
 				try {
-					IBulkDataListener<M> bdl = (IBulkDataListener<M>)getListener(); 
-					pipelineMessage=new Message(bdl.retrieveBulkData(rawMessageOrWrapper,message,threadContext));
+					IBulkDataListener<M> bdl = (IBulkDataListener<M>)getListener();
+					pipelineMessage=new Message(bdl.retrieveBulkData(rawMessageOrWrapper,message,session));
 				} catch (Throwable t) {
 					errorMessage = t.getMessage();
 					messageInError = true;
@@ -1280,23 +1299,22 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			} else {
 				pipelineMessage=message;
 			}
-			
+
 			numReceived.increase();
-			// Note: errorMessage is used to pass value from catch-clause to finally-clause!
-			pipelineSession = createProcessingContext(businessCorrelationId, threadContext, messageId);
+			showProcessingContext(messageId, businessCorrelationId, session);
 //			threadContext=pipelineSession; // this is to enable Listeners to use session variables, for instance in afterProcessMessage()
 			try {
 				if (getMessageLog()!=null) {
-					getMessageLog().storeMessage(messageId, businessCorrelationId, new Date(), RCV_MESSAGE_LOG_COMMENTS, label, pipelineMessage);
+					getMessageLog().storeMessage(messageId, businessCorrelationId, new Date(), RCV_MESSAGE_LOG_COMMENTS, label, new MessageWrapper(pipelineMessage, messageId));
 				}
 				log.debug(getLogPrefix()+"preparing TimeoutGuard");
 				TimeoutGuard tg = new TimeoutGuard("Receiver "+getName());
 				try {
 					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"activating TimeoutGuard with transactionTimeout ["+getTransactionTimeout()+"]s");
 					tg.activateGuard(getTransactionTimeout());
-					pipeLineResult = adapter.processMessageWithExceptions(businessCorrelationId, pipelineMessage, pipelineSession);
-					setExitState(threadContext, pipeLineResult.getState(), pipeLineResult.getExitCode());
-					pipelineSession.put("exitcode", ""+ pipeLineResult.getExitCode());
+					pipeLineResult = adapter.processMessageWithExceptions(messageId, pipelineMessage, session);
+					setExitState(session, pipeLineResult.getState(), pipeLineResult.getExitCode());
+					session.put("exitcode", ""+ pipeLineResult.getExitCode());
 					result=pipeLineResult.getResult();
 
 					errorMessage = "exitState ["+pipeLineResult.getState()+"], result [";
@@ -1341,14 +1359,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					pipeLineResult.setResult(adapter.formatErrorMessage("exception caught",t,message,messageId,this,startProcessingTimestamp));
 				}
 				throw wrapExceptionAsListenerException(t);
-			} finally {
-				putSessionKeysIntoThreadContext(threadContext, pipelineSession);
 			}
-//			if (result==null) {
-//				responseSizeStatistics.addValue(0);
-//			} else {
-//				responseSizeStatistics.addValue(result.length());
-//			}
 			if (getSender()!=null) {
 				String sendMsg = sendResultToSender(result);
 				if (sendMsg != null) {
@@ -1362,51 +1373,42 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					final Message messageFinal = message;
 					moveInProcessToError(messageId, businessCorrelationId, () -> messageFinal, new Date(startProcessingTimestamp), errorMessage, rawMessageOrWrapper, TXNEW_CTRL);
 				}
+				Map<String,Object> afterMessageProcessedMap=session;
 				try {
-					Map<String,Object> afterMessageProcessedMap=threadContext;
-					if (pipelineSession!=null) {
-						threadContext.putAll(pipelineSession);
-					}
-					try {
-						if (getListener() instanceof IHasProcessState && !itx.isRollbackOnly()) {
-							ProcessState targetState = messageInError && knownProcessStates.contains(ProcessState.ERROR) ? ProcessState.ERROR : ProcessState.DONE;
-							changeProcessState(rawMessageOrWrapper, targetState, errorMessage);
+					Object messageForAfterMessageProcessed = rawMessageOrWrapper;
+					if (getListener() instanceof IHasProcessState && !itx.isRollbackOnly()) {
+						ProcessState targetState = messageInError && knownProcessStates.contains(ProcessState.ERROR) ? ProcessState.ERROR : ProcessState.DONE;
+						Object movedMessage = changeProcessState(rawMessageOrWrapper, targetState, messageInError ? errorMessage : null);
+						if (movedMessage!=null) {
+							messageForAfterMessageProcessed = movedMessage;
 						}
-						getListener().afterMessageProcessed(pipeLineResult, rawMessageOrWrapper, afterMessageProcessedMap);
-					} catch (Exception e) {
-						if (manualRetry) {
-							// Somehow messages wrapped in MessageWrapper are in the ITransactionalStorage. 
-							// This might cause class cast exceptions.
-							// There are, however, also Listeners that might use MessageWrapper as their raw message type,
-							// like JdbcListener
-							error("Exception post processing after retry of message messageId ["+messageId+"] cid ["+technicalCorrelationId+"]", e); 
-						} else {
-							error("Exception post processing message messageId ["+messageId+"] cid ["+technicalCorrelationId+"]", e);
-						}
-						throw wrapExceptionAsListenerException(e);
 					}
-				} finally {
-					long finishProcessingTimestamp = System.currentTimeMillis();
-					finishProcessingMessage(finishProcessingTimestamp-startProcessingTimestamp);
-					if (!itx.isCompleted()) {
-						// NB: Spring will take care of executing a commit or a rollback;
-						// Spring will also ONLY commit the transaction if it was newly created
-						// by the above call to txManager.getTransaction().
-						//txManager.commit(txStatus);
-						itx.commit();
+					getListener().afterMessageProcessed(pipeLineResult, messageForAfterMessageProcessed, afterMessageProcessedMap);
+				} catch (Exception e) {
+					if (manualRetry) {
+						// Somehow messages wrapped in MessageWrapper are in the ITransactionalStorage.
+						// This might cause class cast exceptions.
+						// There are, however, also Listeners that might use MessageWrapper as their raw message type,
+						// like JdbcListener
+						error("Exception post processing after retry of message messageId ["+messageId+"] cid ["+correlationId+"]", e);
 					} else {
-						String msg="Transaction already completed; we didn't expect this";
-						warn(msg);
-						throw new ListenerException(getLogPrefix()+msg);
+						error("Exception post processing message messageId ["+messageId+"] cid ["+correlationId+"]", e);
 					}
+					throw wrapExceptionAsListenerException(e);
 				}
 			} finally {
-				if (pipelineSession != null ) {
-					if(!Message.isEmpty(result) && result.isScheduledForCloseOnExitOf(pipelineSession)) { //Don't close Message in case it's passed to a 'parent' adapter or ServiceDispatcher.
-						log.debug("unscheduling result message from close on exit");
-						result.unscheduleFromCloseOnExitOf(pipelineSession);
-					}
-					pipelineSession.close();
+				long finishProcessingTimestamp = System.currentTimeMillis();
+				finishProcessingMessage(finishProcessingTimestamp-startProcessingTimestamp);
+				if (!itx.isCompleted()) {
+					// NB: Spring will take care of executing a commit or a rollback;
+					// Spring will also ONLY commit the transaction if it was newly created
+					// by the above call to txManager.getTransaction().
+					//txManager.commit(txStatus);
+					itx.commit();
+				} else {
+					String msg="Transaction already completed; we didn't expect this";
+					warn(msg);
+					throw new ListenerException(getLogPrefix()+msg);
 				}
 			}
 		}
@@ -1444,7 +1446,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		ProcessResultCacheItem prci = getCachedProcessResult(messageId);
 		return prci!=null ? prci.comments : null;
 	}
-	
+
 	public int getDeliveryCount(String messageId, M rawMessage) {
 		IListener<M> origin = getListener(); // N.B. listener is not used when manualRetry==true
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"checking delivery count for messageId ["+messageId+"]");
@@ -1511,10 +1513,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			moveInProcessToErrorAndDoPostProcessing(origin, messageId, correlationId, (M)rawMessageOrWrapper, messageSupplier, threadContext, prci, comments); // cast to M is done only if !manualRetry
 			prci.receiveCount++; // make sure that the next time this message is seen, the retry interval will be increased
 			return true;
-		} 
+		}
 		return isCheckForDuplicates() && getMessageLog()!= null && getMessageLog().containsMessageId(messageId);
 	}
-	
+
 	private void resetProblematicHistory(String messageId) {
 		ProcessResultCacheItem prci = getCachedProcessResult(messageId);
 		if (prci!=null) {
@@ -1621,47 +1623,46 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			}
 		}
 	}
-	
+
 
 	@Override
-	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
+	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
 		Object recData=hski.openGroup(data,getName(),"receiver");
-		hski.handleScalar(recData,"messagesReceived", getMessagesReceived());
-		hski.handleScalar(recData,"messagesRetried", getMessagesRetried());
-		hski.handleScalar(recData,"messagesRejected", numRejected.getValue());
-		hski.handleScalar(recData,"messagesReceivedThisInterval", numReceived.getIntervalValue());
-		hski.handleScalar(recData,"messagesRetriedThisInterval", numRetried.getIntervalValue());
-		hski.handleScalar(recData,"messagesRejectedThisInterval", numRejected.getIntervalValue());
-		numReceived.performAction(action);
-		numRetried.performAction(action);
-		numRejected.performAction(action);
-		messageExtractionStatistics.performAction(action);
-		Object pstatData=hski.openGroup(recData,null,"procStats");
-		for(StatisticsKeeper pstat:getProcessStatistics()) {
-			hski.handleStatisticsKeeper(pstatData,pstat);
-			pstat.performAction(action);
-		}
-		hski.closeGroup(pstatData);
-
-		Object istatData=hski.openGroup(recData,null,"idleStats");
-		for(StatisticsKeeper istat:getIdleStatistics()) {
-			hski.handleStatisticsKeeper(istatData,istat);
-			istat.performAction(action);
-		}
-		hski.closeGroup(istatData);
-
-		Iterable<StatisticsKeeper> statsIter = getQueueingStatistics();
-		if (statsIter!=null) {
-			Object qstatData=hski.openGroup(recData,null,"queueingStats");
-			for(StatisticsKeeper qstat:statsIter) {
-				hski.handleStatisticsKeeper(qstatData,qstat);
-				qstat.performAction(action);
+		try {
+			hski.handleScalar(recData,"messagesReceived", numReceived);
+			hski.handleScalar(recData,"messagesRetried", numRetried);
+			hski.handleScalar(recData,"messagesRejected", numRejected);
+			hski.handleScalar(recData,"messagesReceivedThisInterval", numReceived.getIntervalValue());
+			hski.handleScalar(recData,"messagesRetriedThisInterval", numRetried.getIntervalValue());
+			hski.handleScalar(recData,"messagesRejectedThisInterval", numRejected.getIntervalValue());
+			messageExtractionStatistics.performAction(action);
+			Object pstatData=hski.openGroup(recData,null,"procStats");
+			for(StatisticsKeeper pstat:getProcessStatistics()) {
+				hski.handleStatisticsKeeper(pstatData,pstat);
+				pstat.performAction(action);
 			}
-			hski.closeGroup(qstatData);
+			hski.closeGroup(pstatData);
+
+			Object istatData=hski.openGroup(recData,null,"idleStats");
+			for(StatisticsKeeper istat:getIdleStatistics()) {
+				hski.handleStatisticsKeeper(istatData,istat);
+				istat.performAction(action);
+			}
+			hski.closeGroup(istatData);
+
+			Iterable<StatisticsKeeper> statsIter = getQueueingStatistics();
+			if (statsIter!=null) {
+				Object qstatData=hski.openGroup(recData,null,"queueingStats");
+				for(StatisticsKeeper qstat:statsIter) {
+					hski.handleStatisticsKeeper(qstatData,qstat);
+					qstat.performAction(action);
+				}
+				hski.closeGroup(qstatData);
+			}
+
+		} finally {
+			hski.closeGroup(recData);
 		}
-
-
-		hski.closeGroup(recData);
 	}
 
 
@@ -1670,7 +1671,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	public boolean isThreadCountReadable() {
 		if (getListener() instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)getListener();
-			
+
 			return tcc.isThreadCountReadable();
 		}
 		return getListener() instanceof IPullingListener;
@@ -1679,7 +1680,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	public boolean isThreadCountControllable() {
 		if (getListener() instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)getListener();
-			
+
 			return tcc.isThreadCountControllable();
 		}
 		return getListener() instanceof IPullingListener;
@@ -1689,7 +1690,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	public int getCurrentThreadCount() {
 		if (getListener() instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)getListener();
-			
+
 			return tcc.getCurrentThreadCount();
 		}
 		if (getListener() instanceof IPullingListener) {
@@ -1715,7 +1716,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	public void increaseThreadCount() {
 		if (getListener() instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)getListener();
-			
+
 			tcc.increaseThreadCount();
 		}
 		if (getListener() instanceof IPullingListener) {
@@ -1727,7 +1728,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	public void decreaseThreadCount() {
 		if (getListener() instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)getListener();
-			
+
 			tcc.decreaseThreadCount();
 		}
 		if (getListener() instanceof IPullingListener) {
@@ -1736,10 +1737,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	/**
-	 * Changes runstate. 
+	 * Changes runstate.
 	 * Always stops the receiver when state is `**ERROR**`
 	 */
-	@ProtectedAttribute
+	@Protected
 	public void setRunState(RunState state) {
 		if(RunState.ERROR.equals(state)) {
 			stopRunning();
@@ -1766,7 +1767,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		try {
 			if (getSender() != null) {
 				if (log.isDebugEnabled()) { log.debug("Receiver ["+getName()+"] sending result to configured sender"); }
-				getSender().sendMessage(result, null);
+				getSender().sendMessage(result, null); // sending correlated responses via a receiver embedded sender is not supported
 			}
 		} catch (Exception e) {
 			String msg = "caught exception in message post processing";
@@ -1829,17 +1830,17 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		} catch (IndexOutOfBoundsException e) {
 			result = null;
 		}
-	
+
 		if (result==null) {
 			while (processStatistics.size()<threadsProcessing+1){
 				result = new StatisticsKeeper((processStatistics.size()+1)+" threads processing");
 				processStatistics.add(processStatistics.size(), result);
 			}
 		}
-		
+
 		return processStatistics.get(threadsProcessing);
 	}
-	
+
 	protected synchronized StatisticsKeeper getIdleStatistics(int threadsProcessing) {
 		StatisticsKeeper result;
 		try {
@@ -1856,7 +1857,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		}
 		return idleStatistics.get(threadsProcessing);
 	}
-	
+
 	/**
 	 * Returns an iterator over the process-statistics
 	 * @return iterator
@@ -1865,7 +1866,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	public Iterable<StatisticsKeeper> getProcessStatistics() {
 		return processStatistics;
 	}
-	
+
 	/**
 	 * Returns an iterator over the idle-statistics
 	 * @return iterator
@@ -1876,7 +1877,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 	public Iterable<StatisticsKeeper> getQueueingStatistics() {
 		return queueingStatistics;
-	}		
+	}
 
 
 	public boolean isOnErrorContinue() {
@@ -1907,7 +1908,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	public long getLastMessageDate() {
 		return lastMessageDate;
 	}
-	
+
 //	public StatisticsKeeper getRequestSizeStatistics() {
 //		return requestSizeStatistics;
 //	}
@@ -1938,15 +1939,13 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		return result;
 	}
 
-	
-	
+
+
 	/**
-	 * Sets the listener used to receive messages from. If the listener implements the {@link nl.nn.adapterframework.core.INamedObject name} interface and no <code>getName()</code>
-	 * of the listener is empty, the name of this object is given to the listener.
-	 * 
+	 * Sets the listener used to receive messages from.
+	 *
 	 * @ff.mandatory
 	 */
-	@IbisDoc({"10", "The source of messages"})
 	public void setListener(IListener<M> newListener) {
 		listener = newListener;
 		if (listener instanceof RunStateEnquiring)  {
@@ -1954,7 +1953,11 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		}
 	}
 
-	@IbisDoc("20")
+	/**
+	 * Sender to which the response (output of {@link PipeLine}) should be sent. Applies if the receiver
+	 * has an asynchronous listener.
+	 * N.B. Sending correlated responses via this sender is not supported.
+	 */
 	public void setSender(ISender sender) {
 		this.sender = sender;
 	}
@@ -1977,30 +1980,29 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 
 	/**
-	 * Sets the errorSender.
-	 * @param errorSender The errorSender to set
+	 * Sender that will send the result in case the PipeLineExit state was not <code>SUCCESS</code>.
+	 * Applies if the receiver has an asynchronous listener.
 	 */
-	@IbisDoc({"30", "Sender that will receive the result in case the PipeLineExit state was not 'success'"})
 	public void setErrorSender(ISender errorSender) {
 		this.errorSender = errorSender;
 		errorSender.setName("errorSender of ["+getName()+"]");
 	}
 
-	@IbisDoc({"40", "Storage to keep track of messages that failed processing"})
+	@IbisDoc({"Storage to keep track of messages that failed processing"})
 	public void setErrorStorage(ITransactionalStorage<Serializable> errorStorage) {
 		this.errorStorage = errorStorage;
 	}
 
 
-	@IbisDoc({"50", "Storage to keep track of all messages processed correctly"})
+	@IbisDoc({"Storage to keep track of all messages processed correctly"})
 	public void setMessageLog(ITransactionalStorage<Serializable> messageLog) {
 		this.messageLog = messageLog;
 	}
 
 
 	/**
-	 * Sets the name of the Receiver. 
-	 * If the listener implements the {@link nl.nn.adapterframework.core.INamedObject name} interface and <code>getName()</code>
+	 * Sets the name of the Receiver.
+	 * If the listener implements the {@link INamedObject name} interface and <code>getName()</code>
 	 * of the listener is empty, the name of this object is given to the listener.
 	 */
 	@IbisDoc({"Name of the Receiver as known to the Adapter", ""})
@@ -2041,7 +2043,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	public void setStopTimeout(int i) {
 		stopTimeout = i;
 	}
-	
+
 	@IbisDoc({"If set to <code>true</code>, each message is checked for presence in the messageLog. If already present, it is not processed again. Only required for non XA compatible messaging. Requires messageLog!", "false"})
 	public void setCheckForDuplicates(boolean b) {
 		checkForDuplicates = b;
@@ -2096,7 +2098,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	public void setLabelNamespaceDefs(String labelNamespaceDefs) {
 		this.labelNamespaceDefs = labelNamespaceDefs;
 	}
-	
+
 	@IbisDoc({"Stylesheet to extract label from message", ""})
 	public void setLabelStyleSheet(String string) {
 		labelStyleSheet = string;
@@ -2126,13 +2128,13 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		removeCompactMsgNamespaces = b;
 	}
 
-	@IbisDoc({"Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&lt;=&lt;party&gt;).*?(?=&lt;/party&gt;) will replace every character between keys<party> and </party> ", ""})
+	@IbisDoc({"Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&lt;=&lt;party&gt;).*?(?=&lt;/party&gt;) will replace every character between keys &lt;party&gt; and &lt;/party&gt;", ""})
 	public void setHideRegex(String hideRegex) {
 		this.hideRegex = hideRegex;
 	}
 
-	@IbisDoc({"(Only used when hideRegex is not empty) either <code>all</code> or <code>firstHalf</code>. When <code>firstHalf</code> only the first half of the string is masked, otherwise (<code>all</code>) the entire string is masked", "all"})
-	public void setHideMethod(String hideMethod) {
+	@IbisDoc({"Only used when hideRegex is not empty", "all"})
+	public void setHideMethod(HideMethod hideMethod) {
 		this.hideMethod = hideMethod;
 	}
 

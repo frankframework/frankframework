@@ -15,11 +15,12 @@
 */
 package nl.nn.adapterframework.extensions.aspose.pipe;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,6 +30,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -44,13 +46,15 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.extensions.aspose.pipe.PdfPipe.DocumentAction;
 import nl.nn.adapterframework.pipes.PipeTestBase;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.UrlMessage;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Executes defined tests against the PdfPipe to ensure the correct working of this pipe.
- * 
+ *
  * @author Laurens Mäkel
  */
 
@@ -58,6 +62,8 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	private static final String REGEX_PATH_IGNORE = "(?<=convertedDocument=\").*(?=\")";
 	private static final String REGEX_TIJDSTIP_IGNORE = "(?<=Tijdstip:).*(?=\" n)";
 	private static final String[] REGEX_IGNORES = {REGEX_PATH_IGNORE, REGEX_TIJDSTIP_IGNORE};
+
+	private static final TimeZone TEST_TZ = TimeZone.getTimeZone("Europe/Amsterdam");
 	private Path pdfOutputLocation;
 
 	@Override
@@ -66,8 +72,8 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	}
 
 	@Override
-	public void setup() throws Exception {
-		super.setup();
+	public void setUp() throws Exception {
+		super.setUp();
 		pdfOutputLocation = Files.createTempDirectory("Pdf");
 		pipe.setPdfOutputLocation(pdfOutputLocation.toString());
 		pipe.setUnpackCommonFontsArchive(true);
@@ -89,7 +95,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 			try {
 				Files.delete(file);
 			} catch (IOException e) {
-				e.printStackTrace();
+				LogUtil.getLogger(PdfPipeTest.class).error("unable to delete file", e);
 				Assert.fail("unable to delete: "+ e.getMessage());
 			}
 		}
@@ -107,13 +113,13 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 		if(convertedDocumentMatcher.find()) { //Find converted document location
 			String convertedFilePath = convertedDocumentMatcher.group();
-			System.out.println("found converted file ["+convertedFilePath+"]");
+			log.debug("found converted file ["+convertedFilePath+"]");
 
 			URL expectedFileUrl = TestFileUtils.getTestFileURL(expectedFile);
 			assertNotNull("cannot find expected file ["+expectedFile+"]", expectedFileUrl);
 			File file = new File(expectedFileUrl.toURI());
 			String expectedFilePath = file.getPath();
-			System.out.println("converted relative path ["+expectedFile+"] to absolute file ["+expectedFilePath+"]");
+			log.debug("converted relative path ["+expectedFile+"] to absolute file ["+expectedFilePath+"]");
 
 			PDFUtil pdfUtil = new PDFUtil();
 			//remove Aspose evaluation copy information
@@ -142,7 +148,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 		PipeLineSession session = new PipeLineSession();
 		URL input = TestFileUtils.getTestFileURL(fileToConvert);
-		pipe.doPipe(Message.asMessage(new File(input.toURI())), session);
+		pipe.doPipe(new UrlMessage(input), session);
 
 		//returns <main conversionOption="0" mediaType="xxx/xxx" documentName="filename" numberOfPages="1" convertedDocument="xxx.pdf" />
 		return session.getMessage("documents").asString();
@@ -178,7 +184,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void emlFromGroupmailbox2Pdf() throws Exception {
-		assumeFalse("This test does not run on Travis-CI / GitHub Actions", TestAssertions.isTestRunningOnCI());
+		assumeTrue("This test only runs for Europe/Amsterdam due to the time being in the output PDF", TestAssertions.isTimeZone(TEST_TZ));
 		expectSuccessfullConversion("EmlFromGroupmailbox", "/PdfPipe/eml-from-groupmailbox.eml", "/PdfPipe/xml-results/eml-from-groupmailbox.xml", "/PdfPipe/results/eml-from-groupmailbox.pdf");
 	}
 
@@ -219,7 +225,6 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void ppt2Pdf() throws Exception {
-		assumeFalse("This test does not run on Travis-CI / GitHub Actions", TestAssertions.isTestRunningOnCI());
 		expectSuccessfullConversion("Ppt2Pdf", "/PdfPipe/ppt.ppt", "/PdfPipe/xml-results/ppt.xml", "/PdfPipe/results/ppt.pdf");
 	}
 
@@ -247,7 +252,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	public void emailWithAttachments() throws Exception {
 		expectSuccessfullConversion("Txt2Pdf", "/PdfPipe/nestedMail.msg", "/PdfPipe/xml-results/nestedMail.xml", "/PdfPipe/results/nestedMail.pdf");
 	}
-	
+
 	@Test
 	public void excel2pdf() throws Exception {
 		expectSuccessfullConversion("xls2pdf", "/PdfPipe/excel.xls", "/PdfPipe/xml-results/xls.xml", "/PdfPipe/results/excel.pdf");
@@ -262,27 +267,27 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	public void fontTestEmail() throws Exception {
 		expectSuccessfullConversion("fontTestEmail", "/PdfPipe/fonttest/fontTestEmail.msg", "/PdfPipe/xml-results/fontTestEmail.xml", "/PdfPipe/results/fontTestEmail.pdf");
 	}
-	
+
 	@Test
 	public void fontTestSlides() throws Exception {
 		expectSuccessfullConversion("fontTestSlides", "/PdfPipe/fonttest/fontTestSlides.msg", "/PdfPipe/xml-results/fontTestSlides.xml", "/PdfPipe/results/fontTestSlides.pdf");
 	}
-	
+
 	@Test
 	public void fontTestWord() throws Exception {
 		expectSuccessfullConversion("fontTestWord", "/PdfPipe/fonttest/fontTestWord.msg", "/PdfPipe/xml-results/fontTestWord.xml", "/PdfPipe/results/fontTestWord.pdf");
 	}
-	
+
 	@Test
 	public void mailWithExcelAttachment() throws Exception {
 		expectSuccessfullConversion("mailWithExcelAttachment", "/PdfPipe/MailWithAttachments/mailWithExcelAttachment.msg", "/PdfPipe/xml-results/mailWithExcelAttachment.xml", "/PdfPipe/results/mailWithExcelAttachment.pdf");
 	}
-	
+
 	@Test
 	public void mailWithImage() throws Exception {
 		expectSuccessfullConversion("mailWithImage", "/PdfPipe/MailWithAttachments/mailWithImage.msg", "/PdfPipe/xml-results/mailWithImage.xml", "/PdfPipe/results/mailWithImage.pdf");
 	}
-	
+
 	@Test
 	public void mailWithPdfAttachment() throws Exception {
 		expectSuccessfullConversion("mailWithPdfAttachment", "/PdfPipe/MailWithAttachments/mailWithPdfAttachment.msg", "/PdfPipe/xml-results/mailWithPdfAttachment.xml", "/PdfPipe/results/mailWithPdfAttachment.pdf");
@@ -290,9 +295,10 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void mailWithWordAttachment() throws Exception {
+		assumeTrue("This test only runs for Europe/Amsterdam due to the time being in the output PDF", TestAssertions.isTimeZone(TEST_TZ));
 		expectSuccessfullConversion("mailWithWordAttachment", "/PdfPipe/MailWithAttachments/mailWithWordAttachment.msg", "/PdfPipe/xml-results/mailWithWordAttachment.xml", "/PdfPipe/results/mailWithWordAttachment.pdf");
 	}
-	
+
 	@Test
 	public void multiThreadedMailWithWordAttachment() throws Exception {
 		pipe.setName("multiThreadedmailWithWordAttachment");
@@ -302,18 +308,21 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		pipe.start();
 
 		PipeLineSession session = new PipeLineSession();
-		List<URL> inputs = new ArrayList<URL>();
+		List<Message> inputs = new ArrayList<>();
+		URL url = TestFileUtils.getTestFileURL("/PdfPipe/MailWithAttachments/mailWithWordAttachment.msg");
+		assertNotNull("unable to find test file", url);
 		for(int i = 0; i<5; i++) {
-			inputs.add(TestFileUtils.getTestFileURL("/PdfPipe/MailWithAttachments/mailWithWordAttachment.msg"));
+			inputs.add(new UrlMessage(url));
 		}
 		String expected = TestFileUtils.getTestFileMessage("/PdfPipe/xml-results/mailWithWordAttachment.xml").asString();
 		inputs.parallelStream().forEach(item -> {
 			try {
-				PipeRunResult prr = pipe.doPipe(Message.asMessage(new File(item.toURI())), session);
+				PipeRunResult prr = pipe.doPipe(item, session);
 				Message result = prr.getResult();
-				MatchUtils.assertXmlEquals("Conversion XML does not match", applyIgnores(result.asString()), applyIgnores(expected), true);
+				MatchUtils.assertXmlEquals("Conversion XML does not match", applyIgnores(expected), applyIgnores(result.asString()), true);
 			} catch (Exception e) {
-				fail("Failed to execute test " + e.getMessage());
+				log.error("failed to execute test", e);
+				fail("Failed to execute test ("+e.getClass()+"): " + e.getMessage());
 			}
 		});
 	}
@@ -334,6 +343,10 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		pipe.setAction(DocumentAction.CONVERT); //without action the pipe will never reach the license block!
 		pipe.setLicense("");
 		pipe.configure();
+
+		List<String> warnings = getConfigurationWarnings().getWarnings();
+		assertEquals(1, warnings.size());
+		assertTrue(warnings.get(0).contains("Aspose License is not configured"));
 	}
 
 	@Test(expected = ConfigurationException.class)

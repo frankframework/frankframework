@@ -53,7 +53,7 @@ import nl.nn.adapterframework.util.StreamUtil;
 
 public class PkiUtil {
 	private static Logger log = LogUtil.getLogger(MethodHandles.lookup().lookupClass());
-	
+
 	public static HasTruststore keyStoreAsTrustStore(HasKeystore keystoreOwner) {
 		return new HasTruststore() {
 
@@ -141,7 +141,6 @@ public class PkiUtil {
 			public void setIgnoreCertificateExpiredException(boolean ignoreCertificateExpiredException) {
 				throw new NotImplementedException();
 			}
-			
 		};
 	}
 
@@ -158,10 +157,10 @@ public class PkiUtil {
 		}
 		KeyManagerFactory kmfactory = KeyManagerFactory.getInstance(algorithm);
 		kmfactory.init(keystore, password != null ? password.toCharArray(): null);
-		return kmfactory.getKeyManagers(); 
+		return kmfactory.getKeyManagers();
 	}
 
-	public static TrustManager[] createTrustManagers(final KeyStore keystore, String algorithm) throws KeyStoreException, NoSuchAlgorithmException { 
+	public static TrustManager[] createTrustManagers(final KeyStore keystore, String algorithm) throws KeyStoreException, NoSuchAlgorithmException {
 		if (keystore == null) {
 			throw new IllegalArgumentException("Keystore may not be null");
 		}
@@ -175,10 +174,9 @@ public class PkiUtil {
 		TrustManagerFactory tmfactory = TrustManagerFactory.getInstance(algorithm);
 		tmfactory.init(keystore);
 		TrustManager[] trustmanagers = tmfactory.getTrustManagers();
-		return trustmanagers; 
+		return trustmanagers;
 	}
 
-	
 	public static KeyStore createKeyStore(final URL url, final String password, KeystoreType keystoreType, String purpose) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
 		if (url == null) {
 			throw new IllegalArgumentException("Keystore url for "+purpose+" may not be null");
@@ -232,7 +230,7 @@ public class PkiUtil {
 		}
 		return privateKey;
 	}
-	
+
 	public static PublicKey getPublicKey(HasTruststore truststoreOwner, String purpose) throws EncryptionException {
 		Certificate certificate;
 		URL truststoreUrl = ClassUtils.getResourceURL(truststoreOwner, truststoreOwner.getTruststore());
@@ -258,7 +256,7 @@ public class PkiUtil {
 		}
 		return certificate.getPublicKey();
 	}
-	
+
 	private static byte[] loadPEM(URL resource) throws IOException {
 		InputStream in = resource.openStream();
 		String pem = StreamUtil.streamToString(in, null, "ISO_8859_1");
@@ -266,7 +264,7 @@ public class PkiUtil {
 		String encoded = parse.matcher(pem).replaceFirst("$1");
 		return Base64.decodeBase64(encoded);
 	}
-	
+
 	private static PrivateKey getPrivateKeyFromPem(URL resource) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
 		KeyFactory kf = KeyFactory.getInstance("RSA");
 		byte[] pkcs8EncodedKeySpec = loadPEM(resource);

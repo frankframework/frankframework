@@ -16,58 +16,56 @@
 package nl.nn.adapterframework.core;
 
 import lombok.Getter;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLine.ExitState;
+import nl.nn.adapterframework.doc.Category;
 
 /**
- * The PipeLineExit, that represents a terminator of the PipeLine, provides a placeholder
- * for a path (corresponding to a pipeforward) and a state (that is returned to the receiver).
- * 
- * <p>
- * <b>example:</b> <code><pre>
- *   &lt;exits&gt;
- *      &lt;exit path="EXIT" state="success" /&gt;
- *      &lt;exit path="Created" state="error" code="201" empty="true" /&gt;
- *      &lt;exit path="NotModified" state="error" code="304" empty="true" /&gt;
- *      &lt;exit path="BadRequest" state="error" code="400" empty="true" /&gt;
- *      &lt;exit path="NotAuthorized" state="error" code="401" empty="true" /&gt;
- *      &lt;exit path="NotAllowed" state="error" code="403" empty="true" /&gt;
- *      &lt;exit path="Teapot" state="success" code="418" /&gt;
- *      &lt;exit path="ServerError" state="error" code="500" /&gt;
- *   &lt;/exits&gt;
- * </pre></code>
- * </p>
- * 
+ * The Exit of a Pipeline that specifies the end state of a PipeLine. The state is returned to the receiver as well as
+ * the optionally specified http status code. Each Exit should have a unique name. See {@link PipeLineExits Exits}
+ * for examples.
+ * <br/><br/>
+ * When a Pipeline doesn't have an Exits element configured it will be initialized with one Exit having name READY and
+ * state SUCCESS.
+ * <br/><br/>
+ * The name of an Exit can be referenced by the <code>path</code> attribute of a Forward within a Pipe.
+ *
  * @author Johan Verrips
  * @author Niels Meijer
  */
+@Category("Basic")
 public class PipeLineExit implements IForwardTarget {
 
-	private @Getter String path;
+	private @Getter String name;
 	private @Getter ExitState state;
 	private @Getter int exitCode = 0;
 	private @Getter String responseRoot;
 	private @Getter boolean emptyResult = false;
+	private @Getter boolean skipValidation = false;
+	private @Getter boolean skipWrapping = false;
 
 	public boolean isSuccessExit() {
 		return getState()==ExitState.SUCCESS;
 	}
 
 	/**
-	 * Name of the pipeline exit
-	 * @ff.mandatory
+	 * The name of the Exit that can be referenced by a {@link PipeForward}'s <code>path</code> attribute. When a Pipeline doesn't have an Exits
+	 * element configured it will be initialized with one Exit having name READY (and state SUCCESS)
+	 * @ff.mandatory ignoreInCompatibilityMode
 	 */
-	public void setPath(String newPath) {
-		path = newPath;
+	public void setName(String name) {
+		this.name = name;
 	}
-	@Override
-	// getName() is required by {@link IForwardTarget}. It is required that it returns the path,
-	// this way PipeForwards can be resolved to either Pipes or PipeLineExits.
-	public String getName() {
-		return getPath();
+
+	@Deprecated
+	@ConfigurationWarning("The attribute 'path' has been renamed 'name'")
+	public void setPath(String path) {
+		setName(path);
 	}
 
 	/**
-	 * The exit state defines possible exists to the Pipeline.
+	 * The state of the Pipeline that is returned to the Receiver for this Exit. When a Pipeline doesn't have an Exits
+	 * element configured it will be initialized with one Exit having state SUCCESS (and name READY)
 	 * @ff.mandatory
 	 */
 	public void setState(ExitState value) {
@@ -83,7 +81,7 @@ public class PipeLineExit implements IForwardTarget {
 	}
 
 	/**
-	 * Configures the responseRoot in the OpenAPI schema for this exit. If not set, the responseRoot value of the validator will be used. If that contains multiple (comma separated) values, the first will be used for the exits with state <code>success</code>, the last for the other exits.
+	 * Configures the responseRoot in the OpenAPI schema for this exit. If not set, the responseRoot value of the validator will be used. If that contains multiple (comma separated) values, the first will be used for the exits with state <code>SUCCESS</code>, the last for the other exits.
 	 */
 	public void setResponseRoot(String responseRoot) {
 		this.responseRoot = responseRoot;
@@ -93,8 +91,24 @@ public class PipeLineExit implements IForwardTarget {
 	 * If using RestListener and set to <code>true</code>, this removes the output and shows a blank page, the output is still logged in the ladybug testtool
 	 * @ff.default <code>false</code>
 	 */
-	public void setEmpty(String b) {
-		emptyResult = Boolean.parseBoolean(b);
+	public void setEmpty(boolean b) {
+		emptyResult = b;
+	}
+
+	/**
+	 * If set to <code>true</code>, the output will not be wrapped by the OutputWrapper.
+	 * @ff.default <code>false</code>
+	 */
+	public void setSkipWrapping(boolean b) {
+		skipWrapping = b;
+	}
+
+	/**
+	 * If set to <code>true</code>, the output will not be validated or transformed by the validator.
+	 * @ff.default <code>false</code>
+	 */
+	public void setSkipValidation(boolean b) {
+		skipValidation = b;
 	}
 
 }

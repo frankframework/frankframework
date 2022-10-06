@@ -47,7 +47,7 @@ public class PasswordHashPipe extends FixedForwardPipe {
 	private String hashSessionKey;
 	private int rounds = 40000;
 	private String roundsSessionKey = null;
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();

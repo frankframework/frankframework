@@ -77,7 +77,7 @@ public class Init extends Base implements ApplicationContextAware {
 				if(method.getDeclaringClass() == getClass()) {
 					continue;
 				}
-				if(method.getDeclaringClass().getName().endsWith("ShowMonitors") && 
+				if(method.getDeclaringClass().getName().endsWith("ShowMonitors") &&
 					!AppConstants.getInstance().getBoolean("monitoring.enabled", false)) {
 					continue;
 				}

@@ -76,12 +76,15 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.encryption.KeystoreType;
 import nl.nn.adapterframework.encryption.PkiUtil;
+import nl.nn.adapterframework.http.HttpMessageEntity;
 import nl.nn.adapterframework.http.mime.MultipartEntityBuilder;
 import nl.nn.adapterframework.http.rest.ApiListener.AuthenticationMethods;
 import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.UrlMessage;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -152,10 +155,14 @@ public class ApiListenerServletTest extends Mockito {
 		headers.put("Content-Type", entity.getContentType().getValue());
 		headers.put("Content-Length", entity.getContentLength()+"");
 
-		return createRequest(uriPattern, method, new String(requestContent.toByteArray()), headers);
+		return doCreateRequest(uriPattern, method, requestContent.toByteArray(), headers);
 	}
 
 	private MockHttpServletRequest createRequest(String uriPattern, Methods method, String content, Map<String, String> headers) {
+		return doCreateRequest(uriPattern, method, (content==null)? "".getBytes():content.getBytes(), headers);
+	}
+
+	private MockHttpServletRequest doCreateRequest(String uriPattern, Methods method, byte[] content, Map<String, String> headers) {
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		request.setMethod(method.name());
 		if(uriPattern == null) return request; // there's no path nor any params, return a blank ServletRequest
@@ -191,10 +198,7 @@ public class ApiListenerServletTest extends Mockito {
 		}
 
 		if(!method.equals(Methods.GET)) {
-			if(content != null)
-				request.setContent(content.getBytes());
-			else
-				request.setContent("".getBytes()); //Empty content
+			request.setContent(content);
 		}
 
 		return request;
@@ -371,7 +375,6 @@ public class ApiListenerServletTest extends Mockito {
 		headers.put("content-type", "application/json");
 		Response result = service(createRequest(uri, Methods.POST, "{}", headers));
 		assertEquals(415, result.getStatus());
-		System.out.println(result);
 	}
 
 	@Test
@@ -391,13 +394,31 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	@Test
-	public void listenerMultipartContentISO8859() throws ServletException, IOException, ListenerException, ConfigurationException {
-		String uri="/listenerMultipartContent";
-		new ApiListenerBuilder(uri, Methods.POST, MediaTypes.MULTIPART, MediaTypes.JSON).build();
+	public void listenerDetectContentTypeAndCharsetISO8859() throws Exception {
+		String uri="/listenerDetectMimeType";
+		new ApiListenerBuilder(uri, Methods.POST, MediaTypes.TEXT, MediaTypes.DETECT).build();
+
+		URL url = ClassUtils.getResourceURL("/Util/MessageUtils/iso-8859-1.txt");
+		Message message = new UrlMessage(url);
+
+		// It does not need to compute the MimeType as the value should be provided by the HttpEntity
+		Response result = service(createRequest(uri, Methods.POST, new HttpMessageEntity(message, ContentType.parse("text/plain;charset=iso-8859-1"))));
+		assertEquals(200, result.getStatus());
+		assertTrue("Content-Type header does not contain [text/plain]", result.getContentType().contains("text/plain"));
+		assertTrue("Content-Type header does not contain correct [charset]", result.getContentType().contains("charset=ISO-8859-1"));
+		assertEquals(message.asString("ISO-8859-1"), result.getContentAsString());
+		assertEquals("OPTIONS, POST", result.getHeader("Allow"));
+		assertNull(result.getErrorMessage());
+	}
+
+	@Test
+	public void listenerMultipartContentDetectContentTypeAndCharsetISO8859() throws Exception {
+		String uri="/listenerMultipartContent_DETECT";
+		new ApiListenerBuilder(uri, Methods.POST, MediaTypes.MULTIPART, MediaTypes.DETECT).build();
 
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 		builder.setBoundary("gc0p4Jq0M2Yt08jU534c0p");
-		builder.addTextBody("string1", "<hello>â¬ Ã¨</hello>");//Defaults to ISO_8859_1
+		builder.addTextBody("string1", "<hello>â¬ Ã¨</hello>");//Defaults to 'text/plain;charset=ISO-8859-1'
 
 		URL url1 = ClassUtils.getResourceURL("/Documents/doc001.pdf");
 		builder.addBinaryBody("file1", url1.openStream(), ContentType.APPLICATION_OCTET_STREAM, "file1");
@@ -407,9 +428,57 @@ public class ApiListenerServletTest extends Mockito {
 
 		Response result = service(createRequest(uri, Methods.POST, builder.build()));
 		assertEquals(200, result.getStatus());
-		assertTrue("Content-Type header does not contain [application/json]", result.getContentType().contains("application/json"));
+		assertTrue("Content-Type header does not contain [text/plain]", result.getContentType().contains("text/plain"));
 		assertTrue("Content-Type header does not contain correct [charset]", result.getContentType().contains("charset=ISO-8859-1"));
-		assertEquals("<hello>â¬ Ã¨</hello>", result.getContentAsString()); //Parsed as UTF-8
+		assertEquals("<hello>â¬ Ã¨</hello>", result.getContentAsString());
+		assertEquals("OPTIONS, POST", result.getHeader("Allow"));
+		assertNull(result.getErrorMessage());
+	}
+
+	@Test
+	public void listenerMultipartContentISO8859_JSON() throws ServletException, IOException, ListenerException, ConfigurationException {
+		String uri="/listenerMultipartContent_JSON";
+		new ApiListenerBuilder(uri, Methods.POST, MediaTypes.MULTIPART, MediaTypes.JSON).build();
+
+		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+		builder.setBoundary("gc0p4Jq0M2Yt08jU534c0p");
+		builder.addTextBody("string1", "<hello>â¬ Ã¨</hello>");// ISO_8859_1 encoded but is since we don't set the charset, it will be parsed as UTF-8 (€ è)
+
+		URL url1 = ClassUtils.getResourceURL("/Documents/doc001.pdf");
+		builder.addPart("file1", new UrlMessage(url1));
+
+		URL url2 = ClassUtils.getResourceURL("/Documents/doc002.pdf");
+		builder.addPart("file2", new UrlMessage(url2));
+
+		Response result = service(createRequest(uri, Methods.POST, builder.build()));
+		assertEquals(200, result.getStatus());
+		assertTrue("Content-Type header does not contain [application/json]", result.getContentType().contains("application/json"));
+		assertTrue("Content-Type header does not contain correct [charset]", result.getContentType().contains("charset=UTF-8"));
+		assertEquals("<hello>€ è</hello>", result.getContentAsString()); //Parsed as UTF-8
+		assertEquals("OPTIONS, POST", result.getHeader("Allow"));
+		assertNull(result.getErrorMessage());
+	}
+
+	@Test
+	public void listenerMultipartContentISO8859_ANY() throws ServletException, IOException, ListenerException, ConfigurationException {
+		String uri="/listenerMultipartContent_ANY";
+		new ApiListenerBuilder(uri, Methods.POST, MediaTypes.MULTIPART, MediaTypes.ANY).build();
+
+		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+		builder.setBoundary("gc0p4Jq0M2Yt08jU534c0p");
+		builder.addTextBody("string1", "<hello>â¬ Ã¨</hello>");// ISO_8859_1 encoded but is since we don't set the charset, it will be parsed as UTF-8 (€ è)
+
+		URL url1 = ClassUtils.getResourceURL("/Documents/doc001.pdf");
+		builder.addBinaryBody("file1", url1.openStream(), ContentType.APPLICATION_OCTET_STREAM, "file1");
+
+		URL url2 = ClassUtils.getResourceURL("/Documents/doc002.pdf");
+		builder.addBinaryBody("file2", url2.openStream(), ContentType.APPLICATION_OCTET_STREAM, "file2");
+
+		Response result = service(createRequest(uri, Methods.POST, builder.build()));
+		assertEquals(200, result.getStatus());
+		assertTrue("Content-Type header does not contain [application/json]", result.getContentType().contains("text/plain"));
+		assertTrue("Content-Type header does not contain correct [charset]", result.getContentType().contains("charset=ISO-8859-1"));
+		assertEquals("<hello>â¬ Ã¨</hello>", result.getContentAsString()); //Parsed as ISO-8859-1
 		assertEquals("OPTIONS, POST", result.getHeader("Allow"));
 		assertNull(result.getErrorMessage());
 	}
@@ -554,7 +623,6 @@ public class ApiListenerServletTest extends Mockito {
 		headers.put("Accept", "application/json");
 		headers.put("content-type", "application/json");
 		Response result = service(createRequest(uri+"tralala", Methods.GET, null, headers));
-		System.out.println(session);
 
 		assertEquals(200, result.getStatus());
 		assertEquals("tralala", session.get("uriIdentifier_0"));
@@ -954,7 +1022,7 @@ public class ApiListenerServletTest extends Mockito {
 		assertEquals(200, result.getStatus());
 		assertEquals(PAYLOAD, session.get("ClaimsSet"));
 	}
-	
+
 	@Test
 	public void testJwtTokenWithRoleClaimAndEmptyAuthRoles() throws Exception {
 		new ApiListenerBuilder(JWT_VALIDATION_URI, Methods.GET)
@@ -1001,7 +1069,7 @@ public class ApiListenerServletTest extends Mockito {
 
 		return signedJWT.serialize();
 	}
-	
+
 	public MockHttpServletRequest prepareJWTRequest(String token) throws Exception {
 		Map<String, String> headers = new HashMap<String, String>();
 		headers.put("Authorization", "Bearer "+ (token != null ? token : createJWT()) );
@@ -1097,12 +1165,12 @@ public class ApiListenerServletTest extends Mockito {
 	private class MessageHandler implements IMessageHandler<Message> {
 
 		@Override
-		public void processRawMessage(IListener<Message> origin, Message message, Map<String, Object> context, boolean duplicatesAlreadyChecked) throws ListenerException {
+		public void processRawMessage(IListener<Message> origin, Message message, PipeLineSession session, boolean duplicatesAlreadyChecked) throws ListenerException {
 			fail("method should not be called");
 		}
 
 		@Override
-		public void processRawMessage(IListener<Message> origin, Message message, Map<String, Object> context, long waitingTime, boolean duplicatesAlreadyChecked) throws ListenerException {
+		public void processRawMessage(IListener<Message> origin, Message message, PipeLineSession session, long waitingTime, boolean duplicatesAlreadyChecked) throws ListenerException {
 			fail("method should not be called");
 		}
 
@@ -1113,7 +1181,7 @@ public class ApiListenerServletTest extends Mockito {
 
 
 		@Override
-		public Message processRequest(IListener<Message> origin, String correlationId, Message rawMessage, Message message, Map<String, Object> context) throws ListenerException {
+		public Message processRequest(IListener<Message> origin, String correlationId, Message rawMessage, Message message, PipeLineSession context) throws ListenerException {
 			if(session != null) {
 				context.putAll(session);
 			}

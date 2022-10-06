@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.http;
 
 import static nl.nn.adapterframework.testutil.TestAssertions.assertEqualsIgnoreCRLF;
+import static org.mockito.Mockito.spy;
 
 import java.io.ByteArrayInputStream;
 
@@ -181,12 +182,12 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.setAllowSelfSignedCertificates(true);
 			sender.setVerifyHostname(false);
 			sender.setMtomEnabled(true);
-	
+
 			sender.addParameter(new Parameter("file", "<xml>I just sent some text! :)</xml>"));
-	
+
 			sender.configure();
 			sender.open();
-	
+
 			String result = sender.sendMessage(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("simpleMockedWssMultipartMtom.txt"), result.trim());
 		} catch (SenderException e) {

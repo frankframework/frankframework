@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,13 +32,13 @@ import nl.nn.adapterframework.util.Misc;
 
 /**
  * Base Exception with compact but informative getMessage().
- * 
+ *
  * @author Gerrit van Brakel
  */
 public class IbisException extends Exception {
-	
+
 	private String expandedMessage = null;
-	
+
 	public IbisException() {
 		super();
 	}
@@ -51,10 +51,10 @@ public class IbisException extends Exception {
 	public IbisException(Throwable cause) {
 		super(cause);
 	}
-		
+
 	public static String getExceptionSpecificDetails(Throwable t) {
 		String result=null;
-		if (t instanceof AddressException) { 
+		if (t instanceof AddressException) {
 			AddressException ae = (AddressException)t;
 			String parsedString=ae.getRef();
 			if (StringUtils.isNotEmpty(parsedString)) {
@@ -70,7 +70,7 @@ public class IbisException extends Exception {
 			int line = spe.getLineNumber();
 			int col = spe.getColumnNumber();
 			String sysid = spe.getSystemId();
-			
+
 			String locationInfo=null;
 			if (StringUtils.isNotEmpty(sysid)) {
 				locationInfo = "SystemId ["+sysid+"]";
@@ -82,7 +82,7 @@ public class IbisException extends Exception {
 				locationInfo = Misc.concatStrings(locationInfo, " ", "column ["+col+"]");
 			}
 			result = Misc.concatStrings(locationInfo, ": ", result);
-		} 
+		}
 		if (t instanceof TransformerException) {
 			TransformerException te = (TransformerException)t;
 			SourceLocator locator = te.getLocator();
@@ -90,7 +90,7 @@ public class IbisException extends Exception {
 				int line = locator.getLineNumber();
 				int col = locator.getColumnNumber();
 				String sysid = locator.getSystemId();
-				
+
 				String locationInfo=null;
 				if (StringUtils.isNotEmpty(sysid)) {
 					locationInfo = "SystemId ["+sysid+"]";
@@ -103,7 +103,7 @@ public class IbisException extends Exception {
 				}
 				result = Misc.concatStrings(locationInfo, ": ", result);
 			}
-		} 
+		}
 		if (t instanceof SQLException) {
 			SQLException sqle = (SQLException)t;
 			int errorCode = sqle.getErrorCode();
@@ -114,34 +114,40 @@ public class IbisException extends Exception {
 			if (StringUtils.isNotEmpty(sqlState)) {
 				result = Misc.concatStrings("SQLState ["+sqlState+"]", ", ", result);
 			}
-		} 
+		}
 		if (t.getClass().getSimpleName().equals("OracleXAException")) { // do not use instanceof here, to avoid unnessecary dependency on Oracle class
 			oracle.jdbc.xa.OracleXAException oxae = (oracle.jdbc.xa.OracleXAException)t;
 			int xaError = oxae.getXAError();
 			if (xaError != 0) {
 				result = Misc.concatStrings("xaError ["+xaError +"] xaErrorMessage ["+oracle.jdbc.xa.OracleXAException.getXAErrorMessage(xaError)+"]", ", ", result);
 			}
-		} 
+		}
 		return result;
 	}
 
 	@Override
 	public String getMessage() {
 		if (expandedMessage == null) {
-			List<String> msgChain = getMessages(this, super.getMessage());
-			Throwable t = this;
-			for(String message:msgChain) {
-				String exceptionType = t instanceof IbisException ? "" : "("+t.getClass().getSimpleName()+")";
-				message = Misc.concatStrings(exceptionType, " ", message);
-				expandedMessage = Misc.concatStrings(expandedMessage, ": ", message);
-				t = getCause(t);
-			}
-			if (expandedMessage==null) {
-				// do not replace the following with toString(), this causes an endless loop. GvB
-				expandedMessage="no message, fields of this exception: "+ToStringBuilder.reflectionToString(this);
-			}
+			expandedMessage = expandMessage(super.getMessage(), this);
 		}
 		return expandedMessage;
+	}
+
+	public static String expandMessage(String msg, Throwable e) {
+		String result=null;
+		List<String> msgChain = getMessages(e, msg);
+		Throwable t = e;
+		for(String message:msgChain) {
+			String exceptionType = t instanceof IbisException ? "" : "("+t.getClass().getSimpleName()+")";
+			message = Misc.concatStrings(exceptionType, " ", message);
+			result = Misc.concatStrings(result, ": ", message);
+			t = getCause(t);
+		}
+		if (result==null) {
+			// do not replace the following with toString(), this causes an endless loop. GvB
+			result="no message, fields of this exception: "+ToStringBuilder.reflectionToString(e);
+		}
+		return result;
 	}
 
 	/**
@@ -178,7 +184,7 @@ public class IbisException extends Exception {
 		LinkedList<String> result;
 		if (cause !=null) {
 			String causeMessage = cause.getMessage();
-			String causeToString = cause.toString(); 
+			String causeToString = cause.toString();
 
 			if (cause instanceof IbisException) {
 				// in case of an IbisException, the recursion already happened in cause.getMessage(), so do not call getMessages() here.

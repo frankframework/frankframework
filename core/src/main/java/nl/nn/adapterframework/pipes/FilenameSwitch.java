@@ -56,7 +56,7 @@ public class FilenameSwitch extends AbstractPipe {
 			}
 		}
 	}
-	
+
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String forward="";
@@ -66,7 +66,7 @@ public class FilenameSwitch extends AbstractPipe {
 		} catch (IOException e) {
 			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
 		}
-	    PipeForward pipeForward=null;
+		PipeForward pipeForward=null;
 
 		int slashPos=sInput.lastIndexOf('/');
 		if (slashPos>0) {
@@ -82,20 +82,19 @@ public class FilenameSwitch extends AbstractPipe {
 		}
 		log.debug(getLogPrefix(session)+ "determined forward ["+forward+"]");
 
-		if (findForward(forward) != null) 
+		if (findForward(forward) != null)
 			pipeForward=findForward(forward);
 		else {
 			log.info(getLogPrefix(session)+"determined forward ["+forward+"], which is not defined. Will use ["+getNotFoundForwardName()+"] instead");
 			pipeForward=findForward(getNotFoundForwardName());
 		}
-		
+
 		if (pipeForward==null) {
-			  throw new PipeRunException (this, getLogPrefix(session)+"cannot find forward or pipe named ["+forward+"]");
+			throw new PipeRunException (this, getLogPrefix(session)+"cannot find forward or pipe named ["+forward+"]");
 		}
 		return new PipeRunResult(pipeForward, message);
 	}
-	
-	
+
 	@IbisDoc({"forward returned when the forward or pipename derived from the filename that was the input could not be found.", ""})
 	public void setNotFoundForwardName(String notFound){
 		notFoundForwardName=notFound;
@@ -103,7 +102,7 @@ public class FilenameSwitch extends AbstractPipe {
 	public String getNotFoundForwardName(){
 		return notFoundForwardName;
 	}
-	
+
 	@IbisDoc({"convert the result to lowercase, before searching for a corresponding forward", "true"})
 	public void setToLowercase(boolean b) {
 		toLowercase = b;

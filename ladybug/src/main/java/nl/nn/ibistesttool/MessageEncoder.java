@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -51,12 +51,12 @@ public class MessageEncoder extends MessageEncoderImpl {
 						try (InputStream inputStream = m.asInputStream()) {
 							IOUtils.copy(new BoundedInputStream(inputStream, testTool.getMaxMessageLength()), baos, testTool.getMaxMessageLength());
 							ToStringResult result = super.toString(baos.toByteArray(), charset);
-							result.setMessageClassName(m.getRequestClass().getTypeName());
+							result.setMessageClassName(m.getRequestClass());
 							return result;
 						} catch (IOException e) {
 							return super.toString(e, null);
 						}
-					} 
+					}
 					StringWriter writer = new StringWriter();
 					try (Reader reader = m.asReader()){
 						m.toStringPrefix(writer);
@@ -64,9 +64,9 @@ public class MessageEncoder extends MessageEncoderImpl {
 					} catch (IOException e) {
 						return super.toString(e, null);
 					}
-					return new ToStringResult(writer.toString(), null, m.getRequestClass().getTypeName());
+					return new ToStringResult(writer.toString(), null, m.getRequestClass());
 				}
-				return new ToStringResult(m.toStringPrefix()+WAITING_FOR_STREAM_MESSAGE, null, m.getRequestClass().getTypeName());
+				return new ToStringResult(m.toStringPrefix()+WAITING_FOR_STREAM_MESSAGE, null, m.getRequestClass());
 			}
 			return super.toString(m.asObject(), charset);
 		}
@@ -83,17 +83,13 @@ public class MessageEncoder extends MessageEncoderImpl {
 
 	@Override
 	@SneakyThrows
-	@SuppressWarnings("unchecked")
 	public <T> T toObject(Checkpoint originalCheckpoint, T messageToStub) {
 		if (messageToStub instanceof Message) {
 			// In case a stream is stubbed the replaced stream needs to be closed as next pipe will read and close the
 			// stub which would leave the replaced stream unclosed
-			Object object = ((Message)messageToStub).asObject();
-			if (object instanceof AutoCloseable) {
-				((AutoCloseable)object).close();
-			}
+			((Message)messageToStub).close();
 		}
-		return (T)toObject(originalCheckpoint);
+		return (T) Message.asMessage(super.toObject(originalCheckpoint, messageToStub));
 	}
 
 }

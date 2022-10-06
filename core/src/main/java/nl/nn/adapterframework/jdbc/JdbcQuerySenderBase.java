@@ -52,6 +52,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.jta.TransactionConnectorCoordinator;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -63,7 +64,9 @@ import nl.nn.adapterframework.pipes.Base64Pipe.Direction;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
+import nl.nn.adapterframework.stream.document.DocumentFormat;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.DB2DocumentWriter;
 import nl.nn.adapterframework.util.DB2XMLWriter;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -71,12 +74,11 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.xml.PrettyPrintFilter;
 
 /**
  * This executes the query that is obtained from the (here still abstract) method getStatement.
  * Descendent classes can override getStatement to provide meaningful statements.
- * If used with parameters, the values of the parameters will be applied to the statement. 
+ * If used with parameters, the values of the parameters will be applied to the statement.
  * Each occurrence of a questionmark ('?') will be replaced by a parameter value. Parameters are applied
  * in order: The n-th questionmark is replaced by the value of the n-th parameter.
  *
@@ -89,18 +91,19 @@ import nl.nn.adapterframework.xml.PrettyPrintFilter;
  *   <li>all other elements are assumed to be integers</li>
  * </ul>
  * </p>
- * 
+ *
  * Queries that return no data (queryType 'other') return a message indicating the number of rows processed
- * 
+ *
  * @ff.parameters all parameters present are applied to the statement to be executed
- * 
+ *
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
+@SupportsOutputStreaming
 public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 
-	public final static String UNP_START = "?{";
-	public final static String UNP_END = "}";
+	public static final String UNP_START = "?{";
+	public static final String UNP_END = "}";
 
 	private QueryType queryType = QueryType.OTHER;
 	private @Getter int maxRows=-1; // return all rows
@@ -130,14 +133,15 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	private @Getter boolean includeFieldDefinition=XmlUtils.isIncludeFieldDefinitionByDefault();
 	private @Getter String rowIdSessionKey=null;
 	private @Getter String packageContent = "db2";
-	protected String[] columnsReturnedList=null;
+	private @Getter String[] columnsReturnedList=null;
 	private @Getter boolean streamResultToServlet=false;
 	private @Getter String sqlDialect = AppConstants.getInstance().getString("jdbc.sqlDialect", null);
 	private @Getter boolean lockRows=false;
 	private @Getter int lockWait=-1;
 	private @Getter boolean avoidLocking=false;
+	private @Getter DocumentFormat outputFormat=null;
 	private @Getter boolean prettyPrint=false;
-	
+
 	private String convertedResultQuery;
 
 	public enum QueryType {
@@ -155,8 +159,12 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 
 	@Override
 	public void configure() throws ConfigurationException {
+		if (!BooleanUtils.isFalse(getUseNamedParams())) { // only allow duplicate parameter names if useNamedParams is set explicitly to false.
+			if (getParameterList()!=null) {
+				getParameterList().setNamesMustBeUnique(true);
+			}
+		}
 		super.configure();
-
 		if (StringUtils.isNotEmpty(getColumnsReturned())) {
 			List<String> tempList = new ArrayList<String>();
 			StringTokenizer st = new StringTokenizer(getColumnsReturned(),",");
@@ -279,7 +287,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			}
 		}
 	}
-	
+
 	protected QueryExecutionContext prepareStatementSet(H blockHandle, Connection connection, Message message, PipeLineSession session) throws SenderException {
 		try {
 			QueryExecutionContext result = getQueryExecutionContext(connection, message, session);
@@ -305,7 +313,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			log.warn(new SenderException(getLogPrefix() + "got exception closing result SQL statement",e ));
 		}
 	}
-	
+
 
 	protected PipeRunResult sendMessageOnConnection(Connection connection, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
 		try (JdbcSession jdbcSession = isAvoidLocking()?getDbmsSupport().prepareSessionForNonLockingRead(connection):null) {
@@ -321,7 +329,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			throw new SenderException(e);
 		}
 	}
-	
+
 
 	protected PipeRunResult executeStatementSet(QueryExecutionContext queryExecutionContext, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
 		try {
@@ -348,19 +356,19 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				case UPDATEBLOB:
 					if (StringUtils.isNotEmpty(getBlobSessionKey())) {
 						return new PipeRunResult(null, executeUpdateBlobQuery(statement,session==null?null:session.getMessage(getBlobSessionKey())));
-					} 
+					}
 					return new PipeRunResult(null, executeUpdateBlobQuery(statement, message));
 				case UPDATECLOB:
 					if (StringUtils.isNotEmpty(getClobSessionKey())) {
 						return new PipeRunResult(null, executeUpdateClobQuery(statement,session==null?null:session.getMessage(getClobSessionKey())));
-					} 
+					}
 					return new PipeRunResult(null, executeUpdateClobQuery(statement, message));
 				case PACKAGE:
 					return new PipeRunResult(null, executePackageQuery(queryExecutionContext));
 				case OTHER:
 					Message result = executeOtherQuery(queryExecutionContext, message, session);
 					if (getBatchSize()>0 && ++queryExecutionContext.iteration>=getBatchSize()) {
-						int results[]=statement.executeBatch();
+						int[] results=statement.executeBatch();
 						int numRowsAffected=0;
 						for (int i:results) {
 							numRowsAffected+=i;
@@ -490,10 +498,10 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				if (getDbmsSupport().isBlobType(rsmeta, 1)) {
 					if (response!=null) {
 						if (StringUtils.isNotEmpty(contentType)) {
-							response.setHeader("Content-Type", contentType); 
+							response.setHeader("Content-Type", contentType);
 						}
 						if (StringUtils.isNotEmpty(contentDisposition)) {
-							response.setHeader("Content-Disposition", contentDisposition); 
+							response.setHeader("Content-Disposition", contentDisposition);
 						}
 						JdbcUtil.streamBlob(getDbmsSupport(), resultset, 1, getBlobCharset(), isBlobsCompressed(), getBlobBase64Direction(), response.getOutputStream(), isCloseOutputstreamOnExit());
 						return new PipeRunResult(null, Message.nullMessage());
@@ -549,23 +557,30 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		}
 		try (MessageOutputStream target=MessageOutputStream.getTargetStream(this, session, next)) {
 			// Create XML and give the maxlength as a parameter
-			DB2XMLWriter db2xml = new DB2XMLWriter();
-			db2xml.setNullValue(getNullValue());
-			db2xml.setTrimSpaces(isTrimSpaces());
-			if (StringUtils.isNotEmpty(getBlobCharset())) db2xml.setBlobCharset(getBlobCharset());
-			db2xml.setDecompressBlobs(isBlobsCompressed());
-			db2xml.setGetBlobSmart(isBlobSmartGet());
-			ContentHandler handler = target.asContentHandler();
-			if (isPrettyPrint()) {
-				handler = new PrettyPrintFilter(handler);
+			if (getOutputFormat()==null) {
+				DB2XMLWriter db2xml = new DB2XMLWriter();
+				db2xml.setNullValue(getNullValue());
+				db2xml.setTrimSpaces(isTrimSpaces());
+				if (StringUtils.isNotEmpty(getBlobCharset())) db2xml.setBlobCharset(getBlobCharset());
+				db2xml.setDecompressBlobs(isBlobsCompressed());
+				db2xml.setGetBlobSmart(isBlobSmartGet());
+				ContentHandler handler = target.asContentHandler();
+				db2xml.getXML(getDbmsSupport(), resultset, getMaxRows(), isIncludeFieldDefinition(), handler, isPrettyPrint());
+				return target.getPipeRunResult();
 			}
-			db2xml.getXML(getDbmsSupport(), resultset, getMaxRows(), isIncludeFieldDefinition(), handler);
+			DB2DocumentWriter db2document = new DB2DocumentWriter();
+			db2document.setNullValue(getNullValue());
+			db2document.setTrimSpaces(isTrimSpaces());
+			if (StringUtils.isNotEmpty(getBlobCharset())) db2document.setBlobCharset(getBlobCharset());
+			db2document.setDecompressBlobs(isBlobsCompressed());
+			db2document.setGetBlobSmart(isBlobSmartGet());
+			db2document.writeDocument(getOutputFormat(), getDbmsSupport(), resultset, getMaxRows(), isIncludeFieldDefinition(), target, isPrettyPrint());
 			return target.getPipeRunResult();
 		} catch (Exception e) {
 			throw new JdbcException(e);
 		}
 	}
-	
+
 
 	private BlobOutputStream getBlobOutputStream(PreparedStatement statement, int blobColumn, boolean compressBlob) throws SQLException, JdbcException, IOException {
 		log.debug(getLogPrefix() + "executing an update BLOB command");
@@ -669,7 +684,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				if (queryExecutionContext.getQueryType()==QueryType.UPDATEBLOB) {
 					BlobOutputStream blobOutputStream = getBlobOutputStream(statement, blobColumn, isBlobsCompressed());
 					TransactionConnectorCoordinator.onEndChildThread(()-> {
-						blobOutputStream.close(); 
+						blobOutputStream.close();
 						connection.close();
 						log.warn(getLogPrefix()+"warnings: "+blobOutputStream.getWarnings().toXML());
 					});
@@ -701,7 +716,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 							log.warn(getLogPrefix()+"warnings: "+clobWriter.getWarnings().toXML());
 						}
 					};
-				} 
+				}
 				throw new IllegalArgumentException(getLogPrefix()+"illegal queryType ["+queryExecutionContext.getQueryType()+"], must be 'updateBlob' or 'updateClob'");
 			} catch (JdbcException | SQLException | IOException | ParameterException e) {
 				throw new StreamingException(getLogPrefix() + "cannot update CLOB or BLOB",e);
@@ -776,7 +791,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				pstmt.executeUpdate();
 				String pUitvoer = pstmt.getString(var);
 				return new Message(pUitvoer);
-			} 
+			}
 			log.debug(getLogPrefix() + "executing a package SQL command");
 			int numRowsAffected = pstmt.executeUpdate();
 			if (convertedResultQuery!=null) {
@@ -798,14 +813,14 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 
 	protected Message executeOtherQuery(QueryExecutionContext queryExecutionContext, Message message, PipeLineSession session) throws SenderException {
-		Connection connection = queryExecutionContext.getConnection(); 
-		PreparedStatement statement = queryExecutionContext.getStatement(); 
+		Connection connection = queryExecutionContext.getConnection();
+		PreparedStatement statement = queryExecutionContext.getStatement();
 		String query = queryExecutionContext.getQuery();
 		ParameterList parameterList = queryExecutionContext.getParameterList();
 		PreparedStatement resStmt = queryExecutionContext.getResultQueryStatement();
 		return executeOtherQuery(connection, statement, query, resStmt, message, session, parameterList);
 	}
-	
+
 	protected Message executeOtherQuery(Connection connection, PreparedStatement statement, String query, PreparedStatement resStmt, Message message, PipeLineSession session, ParameterList parameterList) throws SenderException {
 		try {
 			int numRowsAffected = 0;
@@ -858,7 +873,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		int startHaakje = message.indexOf('(');
 		int eindHaakje	= message.indexOf(')');
 		int beginOutput = message.indexOf('?');
-		if (startHaakje < 1) 
+		if (startHaakje < 1)
 			return message;
 		if (beginOutput < 0)
 			beginOutput = eindHaakje;
@@ -896,7 +911,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 									java.util.Date nDate = (java.util.Date)sdf.parseObject(element);
 									Timestamp sqlTimestamp = new Timestamp(nDate.getTime());
 									paramArray[idx] = sqlTimestamp;
-									 
+
 								} else {
 									String pattern = "yyyy-MM-dd";
 									SimpleDateFormat sdf = new SimpleDateFormat(pattern);
@@ -904,7 +919,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 									nDate = sdf.parse(element);
 									java.sql.Date sDate = new java.sql.Date(nDate.getTime());
 									paramArray[idx] = sDate;
-								}	
+								}
 							} else {
 								if (element.indexOf('.') >= 0) {
 									paramArray[idx] = new Float(element);
@@ -946,8 +961,8 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 
 	/**
-	 * Controls wheter the returned package content is db2 format or xml format. 
-	 * Possible values: 
+	 * Controls wheter the returned package content is db2 format or xml format.
+	 * Possible values:
 	 * <ul>
 	 * <li>select:</li> xml content s expected
 	 * <li><i>anything else</i>:</li> db2 content is expected
@@ -972,86 +987,87 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		return queryType;
 	}
 
-	@IbisDoc({"2", "When <code>true</code>, the value of the first column of the first row (or the startrow) is returned as the only result, as a simple non-xml value", "false"})
+	@IbisDoc({"When <code>true</code>, the value of the first column of the first row (or the startrow) is returned as the only result, as a simple non-xml value", "false"})
 	public void setScalar(boolean b) {
 		scalar = b;
 	}
 
-	@IbisDoc({"3", "When <code>true</code> and <code>scalar</code> is also <code>true</code>, but returns no value, one of the following is returned: <ul>" 
-				+ "<li>'[absent]' no row is found</li>" 
-				+ "<li>'[null]' a row is found, but the value is a SQL-NULL</li>" 
-				+ "<li>'[empty]' a row is found, but the value is a empty string</li>" 
+	@IbisDoc({"When <code>true</code> and <code>scalar</code> is also <code>true</code>, but returns no value, one of the following is returned: <ul>"
+				+ "<li>'[absent]' no row is found</li>"
+				+ "<li>'[null]' a row is found, but the value is a SQL-NULL</li>"
+				+ "<li>'[empty]' a row is found, but the value is a empty string</li>"
 				+ "</ul>", "false"})
 	public void setScalarExtended(boolean b) {
 		scalarExtended = b;
 	}
 
-	@IbisDoc({"4", "The maximum number of rows to be returned from the output of <code>select</code> queries, -1 means unlimited rows", "-1"})
+	@IbisDoc({"The maximum number of rows to be returned from the output of <code>select</code> queries, -1 means unlimited rows", "-1"})
 	public void setMaxRows(int i) {
 		maxRows = i;
 	}
 
-	@IbisDoc({"5", "The number of the first row to be returned from the output of <code>select</code> queries. Rows before this are skipped from the output.", "1"})
+	@IbisDoc({"The number of the first row to be returned from the output of <code>select</code> queries. Rows before this are skipped from the output.", "1"})
 	public void setStartRow(int i) {
 		startRow = i;
 	}
 
-	@IbisDoc({"6", "Value used in result as contents of fields that contain no value (sql-null)", "<i>empty string</i>"})
+	@IbisDoc({"Value used in result as contents of fields that contain no value (sql-null)", "<i>empty string</i>"})
 	public void setNullValue(String string) {
 		nullValue = string;
 	}
 
-	@IbisDoc({"7", "Query that can be used to obtain result of side-effect of update-query, like generated value of sequence. Example: SELECT mysequence.currval FROM dual", ""})
+	@IbisDoc({"Query that can be used to obtain result of side-effect of update-query, like generated value of sequence. Example: SELECT mysequence.currval FROM dual", ""})
 	public void setResultQuery(String string) {
 		resultQuery = string;
 	}
 
-	@IbisDoc({"8", "Comma separated list of columns whose values are to be returned. Works only if the driver implements jdbc 3.0 getGeneratedKeys(). Note: not all drivers support multiple values and returned field names may vary between drivers", ""})
+	/**
+	 * Comma separated list of columns whose values are to be returned. Works only if the driver implements jdbc 3.0 getGeneratedKeys().
+	 * Note: not all drivers support multiple values and returned field names may vary between drivers.
+	 * Works for H2 and Oracle. Could work for MS_SQL with a single identity column, with name GENERATED_KEYS, if a identity has been generated. Not supported for other DBMSes.
+	 */
 	public void setColumnsReturned(String string) {
 		columnsReturned = string;
 	}
-	public String[] getColumnsReturnedList() {
-		return columnsReturnedList;
-	}
 
-	@IbisDoc({"9", "Named parameters will be auto detected by default. Every string in the query which equals <code>"+UNP_START+"paramname"+UNP_END+"</code> will be replaced by the value of the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped.", "null"})
+	@IbisDoc({"Named parameters will be auto detected by default. Every string in the query which equals <code>"+UNP_START+"paramname"+UNP_END+"</code> will be replaced by the value of the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped.", "null"})
 	public void setUseNamedParams(Boolean b) {
 		useNamedParams = b;
 	}
 
-	@IbisDoc({"10", "when <code>true</code>, the result contains besides the returned rows also includes a header with information about the fetched fields", "application default (true)"})
+	@IbisDoc({"when <code>true</code>, the result contains besides the returned rows also includes a header with information about the fetched fields", "application default (true)"})
 	public void setIncludeFieldDefinition(boolean b) {
 		includeFieldDefinition = b;
 	}
 
-	@IbisDoc({"11", "Remove trailing blanks from all result values.", "true"})
+	@IbisDoc({"Remove trailing blanks from all result values.", "true"})
 	public void setTrimSpaces(boolean b) {
 		trimSpaces = b;
 	}
 
-	@IbisDoc({"12", "If specified, the rowid of the processed row is put in the pipelinesession under the specified key (only applicable for <code>querytype=other</code>). <b>Note:</b> If multiple rows are processed a SqlException is thrown.", ""})
+	@IbisDoc({"If specified, the rowid of the processed row is put in the pipelinesession under the specified key (only applicable for <code>querytype=other</code>). <b>Note:</b> If multiple rows are processed a SqlException is thrown.", ""})
 	public void setRowIdSessionKey(String string) {
 		rowIdSessionKey = string;
 	}
 
 
-	@IbisDoc({"13", "If set, the result is streamed to the HttpServletResponse object of the RestServiceDispatcher (instead of passed as bytes or as a String)", "false"})
+	@IbisDoc({"If set, the result is streamed to the HttpServletResponse object of the RestServiceDispatcher (instead of passed as bytes or as a String)", "false"})
 	@Deprecated
 	public void setStreamResultToServlet(boolean b) {
 		streamResultToServlet = b;
 	}
 
-	@IbisDoc({"14", "If set, the SQL dialect in which the queries are written and should be translated from to the actual SQL dialect", ""})
+	@IbisDoc({"If set, the SQL dialect in which the queries are written and should be translated from to the actual SQL dialect", ""})
 	public void setSqlDialect(String string) {
 		sqlDialect = string;
 	}
 
-	@IbisDoc({"15", "When set <code>true</code>, exclusive row-level locks are obtained on all the rows identified by the select statement (e.g. by appending ' FOR UPDATE NOWAIT SKIP LOCKED' to the end of the query)", "false"})
+	@IbisDoc({"When set <code>true</code>, exclusive row-level locks are obtained on all the rows identified by the select statement (e.g. by appending ' FOR UPDATE NOWAIT SKIP LOCKED' to the end of the query)", "false"})
 	public void setLockRows(boolean b) {
 		lockRows = b;
 	}
 
-	@IbisDoc({"16", "when set and >=0, ' FOR UPDATE WAIT #' is used instead of ' FOR UPDATE NOWAIT SKIP LOCKED'", "-1"})
+	@IbisDoc({"when set and >=0, ' FOR UPDATE WAIT #' is used instead of ' FOR UPDATE NOWAIT SKIP LOCKED'", "-1"})
 	public void setLockWait(int i) {
 		lockWait = i;
 	}
@@ -1061,28 +1077,28 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		this.synchronous = synchronous;
 	}
 
-	@IbisDoc({"20", "Only for querytype 'updateBlob': column that contains the BLOB to be updated", "1"})
+	@IbisDoc({"Only for querytype 'updateBlob': column that contains the BLOB to be updated", "1"})
 	public void setBlobColumn(int i) {
 		blobColumn = i;
 	}
 
-	@IbisDoc({"21", "For querytype 'updateBlob': key of session variable that contains the data (String or InputStream) to be loaded to the BLOB. When empty, the input of the pipe, which then must be a String, is used.<br/>"+
+	@IbisDoc({"For querytype 'updateBlob': key of session variable that contains the data (String or InputStream) to be loaded to the BLOB. When empty, the input of the pipe, which then must be a String, is used.<br/>"+
 					"For querytype 'select': key of session variable that contains the OutputStream, Writer or Filename to write the BLOB to", ""})
 	public void setBlobSessionKey(String string) {
 		blobSessionKey = string;
 	}
 
-	@IbisDoc({"22", "controls whether blobdata is stored compressed in the database", "true"})
+	@IbisDoc({"controls whether blobdata is stored compressed in the database", "true"})
 	public void setBlobsCompressed(boolean b) {
 		blobsCompressed = b;
 	}
 
-	@IbisDoc({"23", "controls whether the streamed blobdata will need to be base64 <code>encode</code> or <code>decode</code> or not.", ""})
+	@IbisDoc({"controls whether the streamed blobdata will need to be base64 <code>encode</code> or <code>decode</code> or not.", ""})
 	public void setBlobBase64Direction(Base64Pipe.Direction value) {
 		blobBase64Direction = value;
 	}
-	
-	@IbisDoc({"24", "Charset that is used to read and write BLOBs. This assumes the blob contains character data. " + 
+
+	@IbisDoc({"Charset that is used to read and write BLOBs. This assumes the blob contains character data. " +
 				"If blobCharset and blobSmartGet are not set, BLOBs are returned as bytes. Before version 7.6, blobs were base64 encoded after being read to accommodate for the fact that senders need to return a String. This is no longer the case", ""})
 	public void setBlobCharset(String string) {
 		if (StringUtils.isEmpty(string)) {
@@ -1091,50 +1107,54 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		blobCharset = string;
 	}
 
-	@IbisDoc({"25", "Controls automatically whether blobdata is stored compressed and/or serialized in the database", "false"})
+	@IbisDoc({"Controls automatically whether blobdata is stored compressed and/or serialized in the database", "false"})
 	public void setBlobSmartGet(boolean b) {
 		blobSmartGet = b;
 	}
 
 
-	@IbisDoc({"30", "Only for querytype 'updateClob': column that contains the CLOB to be updated", "1"})
+	@IbisDoc({"Only for querytype 'updateClob': column that contains the CLOB to be updated", "1"})
 	public void setClobColumn(int i) {
 		clobColumn = i;
 	}
 
-	@IbisDoc({"31", "For querytype 'updateClob': key of session variable that contains the CLOB (String or InputStream) to be loaded to the CLOB. When empty, the input of the pipe, which then must be a String, is used.<br/>"+
+	@IbisDoc({"For querytype 'updateClob': key of session variable that contains the CLOB (String or InputStream) to be loaded to the CLOB. When empty, the input of the pipe, which then must be a String, is used.<br/>"+
 					"For querytype 'select': key of session variable that contains the OutputStream, Writer or Filename to write the CLOB to", ""})
 	public void setClobSessionKey(String string) {
 		clobSessionKey = string;
 	}
 
-	@IbisDoc({"40", "When set to <code>false</code>, the Inputstream is not closed after it has been used to update a BLOB or CLOB", "true"})
+	@IbisDoc({"When set to <code>false</code>, the Inputstream is not closed after it has been used to update a BLOB or CLOB", "true"})
 	@Deprecated
 	public void setCloseInputstreamOnExit(boolean b) {
 		closeInputstreamOnExit = b;
 	}
 
-	@IbisDoc({"41", "When set to <code>false</code>, the Outputstream is not closed after BLOB or CLOB has been written to it", "true"})
+	@IbisDoc({"When set to <code>false</code>, the Outputstream is not closed after BLOB or CLOB has been written to it", "true"})
 	public void setCloseOutputstreamOnExit(boolean b) {
 		closeOutputstreamOnExit = b;
 	}
 
 
-	@IbisDoc({"42", "Charset used when reading a stream (that is e.g. going to be written to a BLOB or CLOB). When empty, the stream is copied directly to the BLOB, without conversion", ""})
-	 public void setStreamCharset(String string) {
+	@IbisDoc({"Charset used when reading a stream (that is e.g. going to be written to a BLOB or CLOB). When empty, the stream is copied directly to the BLOB, without conversion", ""})
+	public void setStreamCharset(String string) {
 		streamCharset = string;
 	}
 
-	@IbisDoc({"43", "If true, then select queries are executed in a way that avoids taking locks, e.g. with isolation mode 'read committed' instead of 'repeatable read'.", "false"})
+	@IbisDoc({"If true, then select queries are executed in a way that avoids taking locks, e.g. with isolation mode 'read committed' instead of 'repeatable read'.", "false"})
 	public void setAvoidLocking(boolean avoidLocking) {
 		this.avoidLocking = avoidLocking;
 	}
-	
-	@IbisDoc({"44", "If true and scalar=false, multiline indented XML is produced", "false"})
+
+	@IbisDoc({"If true and scalar=false, multiline indented XML is produced", "false"})
 	public void setPrettyPrint(boolean prettyPrint) {
 		this.prettyPrint = prettyPrint;
 	}
 
+	@IbisDoc({"The type of output. If not set then defaults to old-style XML. If set to XML, new-style XML is used. EXPERIMENTAL: datatypes like numbers are not yet rendered correctly", "false"})
+	public void setOutputFormat(DocumentFormat outputFormat) {
+		this.outputFormat = outputFormat;
+	}
 	public int getBatchSize() {
 		return 0;
 	}

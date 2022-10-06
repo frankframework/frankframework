@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,9 +22,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.ApplicationContextEvent;
 
 import lombok.Getter;
-import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
 
 public class ApplicationMessageEvent extends ApplicationContextEvent {
@@ -72,7 +73,7 @@ public class ApplicationMessageEvent extends ApplicationContextEvent {
 		}
 
 		if (e != null) {
-			m.append(": " + e.getMessage());
+			m.append(": (" + ClassUtils.nameOf(e) +") "+ e.getMessage());
 		}
 
 		Date date = new Date(getTimestamp());

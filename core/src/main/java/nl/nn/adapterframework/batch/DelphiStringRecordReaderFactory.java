@@ -36,11 +36,13 @@ public class DelphiStringRecordReaderFactory implements IReaderFactory {
 	private String separator="|";
 	private String separatorReplacement="_";
 
+	@Override
 	public void configure() throws ConfigurationException {
 	}
 
+	@Override
 	public Reader getReader(InputStream in, String charset, String streamId, PipeLineSession session) throws SenderException {
-		return new DelphiStringRecordReader(in,charset,getStringLength(),getStringsPerRecord(),getSeparator(),getSeparatorReplacement()); 
+		return new DelphiStringRecordReader(in,charset,getStringLength(),getStringsPerRecord(),getSeparator(),getSeparatorReplacement());
 	}
 
 	@IbisDoc({"separator placed between each string read", "|"})

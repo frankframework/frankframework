@@ -61,9 +61,9 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @author Gerrit van Brakel
  */
 public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements ICacheEnabled<String,Set<String>> {
-	
+
 	private boolean recursiveSearch = true;
-	
+
 	private LdapClient ldapClient;
 	private ICache<String, Set<String>> cache;
 
@@ -107,7 +107,7 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements I
 		if (message==null) {
 			throw new PipeRunException(this, getLogPrefix(session) + "input is null");
 		}
-		
+
 		String searchedDN;
 		try {
 			searchedDN = message.asString();
@@ -148,8 +148,7 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements I
 		return cache;
 	}
 
-	
-	@IbisDoc({"1", "when <code>true</code>, the memberOf attribute is also searched in all the found members", "true"})
+	@IbisDoc({"when <code>true</code>, the memberOf attribute is also searched in all the found members", "true"})
 	public void setRecursiveSearch(boolean b) {
 		recursiveSearch = b;
 	}

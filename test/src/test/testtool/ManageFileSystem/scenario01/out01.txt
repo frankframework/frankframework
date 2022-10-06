@@ -1,0 +1,34 @@
+<manageFileSystemRLY>
+	<completionInformation>
+		<returnCode>OK</returnCode>
+	</completionInformation>
+	<results>
+		<result item="1">
+TESTDATA_DIR/ManageFileSystem
+</result>
+		<result item="2">
+			<file name="test.txt" size="131" fSize="1 kB" canonicalName="TESTDATA_DIR\ManageFileSystem\test.txt" modificationDate="2022-06-21" modificationTime="08:48:55"/>
+		</result>
+		<result item="3">
+			<file name="test.txt" size="144" fSize="1 kB" canonicalName="TESTDATA_DIR\ManageFileSystem\test.txt" modificationDate="2022-06-21" modificationTime="08:48:55"/>
+		</result>
+		<result item="4">
+			<file name="test.txt" size="144" fSize="1 kB" canonicalName="TESTDATA_DIR\ManageFileSystem\test.txt" modificationDate="2022-06-21" modificationTime="08:48:55"/>
+		</result>
+		<result item="5">
+IyBGcmFuayFSdW5uZXIKClRoaXMgcHJvamVjdCB3aWxsIGhlbHAgeW91IHJ1biB5b3VyIEZyYW5rIGNvbmZpZ3VyYXRpb25zIHdpdGggVG9tY2F0LgoKQWRkIGEgc21hbGw+ append test
+</result>
+		<result item="6">
+TESTDATA_DIR/ManageFileSystem/myNewFolder1
+</result>
+		<result item="7">
+TESTDATA_DIR/ManageFileSystem/myNewFolder2
+</result>
+		<result item="8">
+test.txt
+</result>
+		<result item="9">
+test.txt
+</result>
+	</results>
+</manageFileSystemRLY>

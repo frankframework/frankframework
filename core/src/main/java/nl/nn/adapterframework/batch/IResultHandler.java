@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.batch;
 
 import java.util.List;
+import java.util.Map;
 
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -34,7 +35,7 @@ public interface IResultHandler extends IConfigurable {
 	public void setPipe(AbstractPipe pipe);
 	public void open() throws SenderException;
 	public void close() throws SenderException;
-	
+
 	/**
 	 * Called once, before the first record of a stream is presented to handleResult.
 	 * @param session  current PipeLineSession
@@ -51,7 +52,7 @@ public interface IResultHandler extends IConfigurable {
 	 * @param result transformed record
 	 */
 	void handleResult(PipeLineSession session, String streamId, String recordKey, String result) throws Exception;
-	
+
 	/**
 	 * Called when all records in the original file are handled.
 	 * @param session  current PipeLineSession
@@ -65,27 +66,26 @@ public interface IResultHandler extends IConfigurable {
 	 * @param streamId identification of the original file/stream/message containing the untransformed records
 	 */
 	void openRecordType(PipeLineSession session, String streamId) throws Exception;
-	
+
 	/**
 	 * @param session  current PipeLineSession
 	 * @param streamId identification of the original file/stream/message containing the untransformed records
 	 */
 	void closeRecordType(PipeLineSession session, String streamId) throws Exception;
-	
-	void openBlock(PipeLineSession session, String streamId, String blockName) throws Exception;
-	void closeBlock(PipeLineSession session, String streamId, String blockName) throws Exception;
+
+	void openBlock(PipeLineSession session, String streamId, String blockName, Map<String, Object> blocks) throws Exception;
+	void closeBlock(PipeLineSession session, String streamId, String blockName, Map<String, Object> blocks) throws Exception;
 
 	/**
 	 * @return true if this resulthandler should be used for all flows if no resulthandler is specified for that flow 
 	 */
 	boolean isDefault();
 	void setDefault(boolean isDefault);
-	
+
 	boolean hasPrefix();
 
 	/**
 	 * @return true causes groups of identical records, indicated by {@link IRecordHandler#isNewRecordType(PipeLineSession, boolean, List, List) newRecordType} to appear in a block. 
 	 */
 	boolean isBlockByRecordType();
-	
 }

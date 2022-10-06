@@ -30,6 +30,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * Registers a trigger in the scheduler so that the message is send to a javalistener
@@ -53,14 +54,14 @@ public class SchedulerSender extends SenderWithParametersBase {
 		if (StringUtils.isEmpty(cronExpressionPattern)) {
 			throw new ConfigurationException("Property [cronExpressionPattern] is empty");
 		}
-		
-		Parameter p = new Parameter();
+
+		Parameter p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 		p.setName("_cronexpression");
 		p.setPattern(cronExpressionPattern);
 		addParameter(p);
 
 		if (StringUtils.isNotEmpty(jobNamePattern)) {
-			p = new Parameter();
+			p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 			p.setName("_jobname");
 			p.setPattern(jobNamePattern);
 			addParameter(p);
@@ -86,12 +87,12 @@ public class SchedulerSender extends SenderWithParametersBase {
 	@Override
 	public Message sendMessage(Message message, PipeLineSession session) throws SenderException {
 		try {
-			String correlationID = session==null ? "" : session.getMessageId();
+			String correlationID = session==null ? "" : session.getCorrelationId();
 			ParameterValueList values = paramList.getValues(message, session);
 			String jobName = getName() + correlationID;
-			String cronExpression = values.getParameterValue("_cronexpression").asStringValue();
+			String cronExpression = values.get("_cronexpression").asStringValue();
 			if (StringUtils.isNotEmpty(jobNamePattern)) {
-				jobName = values.getParameterValue("_jobname").asStringValue();
+				jobName = values.get("_jobname").asStringValue();
 			}
 			schedule(jobName, cronExpression, correlationID, message.asString());
 			return new Message(jobName);

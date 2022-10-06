@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:integration="http://www.springframework.org/schema/integration"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration-5.2.xsd
+		"
+	>
+<!-- 	<integration:control-bus dispatcher-pool-size="25" auto-create-channels="true"/> -->
+	<integration:publish-subscribe-channel id="frank-management-bus" />
+
+	<bean name="gateway" class="nl.nn.adapterframework.lifecycle.Gateway" scope="singleton">
+		<property name="requestChannel" ref="frank-management-bus" />
+	</bean>
+
+	<context:property-placeholder />
+
+	<bean id="messageDispatcher" class="nl.nn.adapterframework.management.bus.MessageDispatcher">
+		<property name="packageName" value="nl.nn.adapterframework.management.bus" />
+	</bean>
+
+	<bean id="MessageEventListener" class="nl.nn.adapterframework.lifecycle.MessageEventListener" scope="singleton" />
+
+	<!-- We're not importing the unmanagedDeployment because we don't want to use JMS/JDBC endpoints -->
+	<!-- <import resource="springUnmanagedDeployment.xml"/> -->
+	<bean name="ibisManager" class="nl.nn.adapterframework.testutil.mock.MockIbisManager" />
+
+	<bean name="applicationWarnings" class="nl.nn.adapterframework.configuration.ApplicationWarnings"/>
+
+	<bean id="dataSourceFactory" class="nl.nn.adapterframework.testutil.mock.DataSourceFactoryMock" />
+
+	<bean name="isolatedServiceCaller" class="nl.nn.adapterframework.pipes.IsolatedServiceCaller" autowire="byName" scope="singleton" />
+</beans>

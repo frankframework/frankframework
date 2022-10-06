@@ -16,6 +16,7 @@ limitations under the License.
 package nl.nn.adapterframework.webcontrol.api;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -61,18 +62,20 @@ public final class ExecuteJdbcQuery extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getJdbcInfo() throws ApiException {
 
-		Map<String, Object> result = new HashMap<String, Object>();
+		Map<String, Object> result = new HashMap<>();
 
 		IDataSourceFactory dataSourceFactory = getIbisContext().getBean("dataSourceFactory", IDataSourceFactory.class);
-		result.put("datasources", dataSourceFactory.getDataSourceNames());
+		List<String> dataSourceNames = dataSourceFactory.getDataSourceNames();
+		dataSourceNames.sort(Comparator.naturalOrder()); //AlphaNumeric order
+		result.put("datasources", dataSourceNames);
 
-		List<String> resultTypes = new ArrayList<String>();
+		List<String> resultTypes = new ArrayList<>();
 		resultTypes.add("csv");
 		resultTypes.add("xml");
 		resultTypes.add("json");
 		result.put("resultTypes", resultTypes);
 
-		List<String> queryTypes = new ArrayList<String>();
+		List<String> queryTypes = new ArrayList<>();
 		queryTypes.add("AUTO");
 		queryTypes.add(QueryType.SELECT.toString());
 		queryTypes.add(QueryType.OTHER.toString());
@@ -137,12 +140,7 @@ public final class ExecuteJdbcQuery extends Base {
 		secLog.info(String.format("executing query [%s] on datasource [%s] queryType [%s] avoidLocking [%s]", query, datasource, queryType, avoidLocking));
 
 		//We have all info we need, lets execute the query!
-		DirectQuerySender qs;
-		try {
-			qs = (DirectQuerySender) getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
-		} catch (Exception e) {
-			throw new ApiException("An error occured on creating or closing the connection", e);
-		}
+		DirectQuerySender qs = getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
 
 		try {
 			qs.setName("QuerySender");

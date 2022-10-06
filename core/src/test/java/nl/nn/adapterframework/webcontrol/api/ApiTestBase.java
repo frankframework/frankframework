@@ -78,7 +78,7 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 	private SecurityContext securityContext = mock(SecurityContext.class);
 	private TestConfiguration configuration = null;
 
-	abstract public M createJaxRsResource();
+	public abstract M createJaxRsResource();
 
 	@Before
 	public void setUp() throws Exception {
@@ -121,7 +121,7 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 		try {
 			PipeLine pipeline = new PipeLine();
 			PipeLineExit exit = new PipeLineExit();
-			exit.setPath("EXIT");
+			exit.setName("EXIT");
 			exit.setState(ExitState.SUCCESS);
 			pipeline.registerPipeLineExit(exit);
 			EchoPipe pipe = new EchoPipe();
@@ -179,7 +179,7 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 					if(path != null && httpMethod != null) {
 						String rsResourceKey = compileKey(httpMethod.value(), path.value());
 
-						System.out.println("adding new JAX-RS resource key ["+rsResourceKey+"] method ["+classMethod.getName()+"]");
+						log.info("adding new JAX-RS resource key [{}] method [{}]", ()->rsResourceKey, classMethod::getName);
 						rsRequests.put(rsResourceKey, classMethod);
 					}
 					//Ignore security for now
@@ -216,11 +216,11 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 		 * @return JAX-RS method or `null` when no resource is found
 		 */
 		private Method findRequest(String rsResourceKey) {
-			String uriSegments[] = rsResourceKey.split("/");
+			String[] uriSegments = rsResourceKey.split("/");
 
 			for (Iterator<String> it = rsRequests.keySet().iterator(); it.hasNext();) {
 				String pattern = it.next();
-				String patternSegments[] = pattern.split("/");
+				String[] patternSegments = pattern.split("/");
 
 				if (patternSegments.length != uriSegments.length || patternSegments.length < uriSegments.length) {
 					continue;
@@ -259,7 +259,7 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 		public Response dispatchRequest(String httpMethod, String url, Object jsonOrFormdata, IbisRole role) {
 
 			String rsResourceKey = compileKey(httpMethod, url);
-			System.out.println("trying to dispatch request to ["+rsResourceKey+"]");
+			log.info("trying to dispatch request to [{}]", rsResourceKey);
 
 			if(httpMethod.equalsIgnoreCase("GET") && jsonOrFormdata != null) {
 				fail("can't use arguments on a GET request");
@@ -271,7 +271,7 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 				fail("can't find resource ["+url+"] method ["+httpMethod+"]");
 			}
 			String methodPath = method.getAnnotation(Path.class).value();
-			System.out.println("found JAX-RS resource ["+compileKey(httpMethod, methodPath)+"]");
+			log.debug("found JAX-RS resource [{}]", ()->compileKey(httpMethod, methodPath));
 
 			try {
 				Parameter[] parameters = method.getParameters(); //find all parameters in the JAX-RS method, and try to populate them.
@@ -286,12 +286,12 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 					if(isPathParameter) {
 						String pathValue = findPathParameter(parameter, methodPath, url);
 
-						System.out.println("setting method argument ["+i+"] to value ["+pathValue+"]");
+						log.debug("setting method argument [{}] to value [{}]", i, pathValue);
 						methodArguments[i] = pathValue;
 					} else if(isQueryParameter) {
 						Object value = findQueryParameter(parameter, url);
 
-						System.out.println("setting method argument ["+i+"] to value ["+value+"] with type ["+value.getClass().getSimpleName()+"]");
+						log.debug("setting method argument [{}] to value [{}] with type [{}]", i, value, value.getClass().getSimpleName());
 						methodArguments[i] = value;
 					} else {
 						Consumes consumes = AnnotationUtils.findAnnotation(method, Consumes.class);
@@ -306,7 +306,7 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 						if(mediaType.equals(MediaType.APPLICATION_JSON)) { //We need to convert our input to json
 							Object value = convertInputToParameterType(parameter, jsonOrFormdata);
 
-							System.out.println("setting method argument ["+i+"] to value ["+value+"] with type ["+value.getClass().getSimpleName()+"]");
+							log.debug("setting method argument [{}] to value [{}] with type [{}]", i, value, value.getClass().getSimpleName());
 							methodArguments[i] = value;
 						} else if(mediaType.equals(MediaType.MULTIPART_FORM_DATA)){
 							if(jsonOrFormdata instanceof List<?>) {
@@ -376,10 +376,10 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 		private String findPathParameter(Parameter parameter, String methodPath, String url) {
 			PathParam pathParameter = parameter.getAnnotation(PathParam.class);
 			String path = String.format("{%s}", pathParameter.value());
-			System.out.println("looking up path ["+path+"]");
+			log.debug("looking up path [{}]", path);
 
-			String pathSegments[] = methodPath.split("/");
-			String urlSegments[] = getPath(url).split("/");
+			String[] pathSegments = methodPath.split("/");
+			String[] urlSegments = getPath(url).split("/");
 			String pathValue = null;
 			for (int j = 0; j < pathSegments.length; j++) {
 				String segment = pathSegments[j];
@@ -404,9 +404,9 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 			if(questionMark == -1) {
 				fail("found query parameter ["+parameter+"] but not in URL ["+url+"]");
 			}
-	
+
 			String urlQueryParameters = url.substring(questionMark +1);
-			String urlQuerySegments[] = urlQueryParameters.split("&");
+			String[] urlQuerySegments = urlQueryParameters.split("&");
 			String queryValue = null;
 			for (String querySegment : urlQuerySegments) {
 				if(querySegment.startsWith(queryParameter.value()+"=")) {
@@ -417,13 +417,13 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 			if(queryValue == null) {
 				fail("unable to populate query param ["+queryParameter.value()+"]");
 			}
-	
+
 			Object value = null;
 			switch (parameter.getType().toGenericString()) {
 				case "boolean":
 					value = Boolean.parseBoolean(queryValue);
 					break;
-		
+
 				default:
 					fail("parameter type ["+parameter.getType()+"] not implemented");
 			}

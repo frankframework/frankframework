@@ -1,10 +1,13 @@
 package nl.nn.adapterframework.testutil;
 
+import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
+
+import nl.nn.adapterframework.jta.xa.XaDatasourceCommitStopper;
 
 public abstract class URLXADataSourceFactory extends URLDataSourceFactory {
 
@@ -14,13 +17,20 @@ public abstract class URLXADataSourceFactory extends URLDataSourceFactory {
 		BeanUtils.setProperty(xaDataSource, "URL", url);
 		if (StringUtils.isNotEmpty(userId)) BeanUtils.setProperty(xaDataSource, "user", userId);
 		if (StringUtils.isNotEmpty(password)) BeanUtils.setProperty(xaDataSource, "password", password);
+		xaDataSource = XaDatasourceCommitStopper.augmentXADataSource(xaDataSource);
 		return augmentXADataSource(xaDataSource, product);
+	}
+
+	@Override
+	protected DataSource augmentDatasource(CommonDataSource xaDataSource, String product) {
+		return super.augmentDatasource(xaDataSource, product);
 	}
 
 	protected abstract DataSource augmentXADataSource(XADataSource xaDataSource, String product);
 
+	@SuppressWarnings({ "unused", "null" }) //only used to verify that all datasources use the same setters
 	private void testClassMethods() {
-		org.h2.jdbcx.JdbcDataSource h2 = null; 
+		org.h2.jdbcx.JdbcDataSource h2 = null;
 		oracle.jdbc.xa.client.OracleXADataSource oracle = null;
 		com.microsoft.sqlserver.jdbc.SQLServerXADataSource mssql = null;
 		com.mysql.cj.jdbc.MysqlXADataSource mysql = null;
@@ -51,5 +61,4 @@ public abstract class URLXADataSourceFactory extends URLDataSourceFactory {
 		postgres.setUser("x");
 		postgres.setPassword("x");
 	}
-	
 }

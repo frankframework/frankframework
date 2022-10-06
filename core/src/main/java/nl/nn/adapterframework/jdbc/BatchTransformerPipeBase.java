@@ -41,7 +41,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * @since   4.7
  */
 public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
-	
+
 	protected FixedQuerySender querySender;
 
 	private final String FIXEDQUERYSENDER = "nl.nn.adapterframework.jdbc.FixedQuerySender";
@@ -53,7 +53,7 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 		querySender.setName("source of "+getName());
 		querySender.configure();
 	}
-	
+
 	@Override
 	public void start() throws PipeStartException {
 		try {
@@ -88,7 +88,6 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 				JdbcUtil.fullClose(conn, rs);
 			}
 		}
-		
 	}
 
 	protected abstract Reader getReader(ResultSet rs, String charset, String streamId, PipeLineSession session) throws SenderException;
@@ -128,7 +127,7 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 	public String getQuery() {
 		return querySender.getQuery();
 	}
-	
+
 	@IbisDocRef({"2", FIXEDQUERYSENDER})
 	public void setDatasourceName(String datasourceName) {
 		querySender.setDatasourceName(datasourceName);

@@ -12,6 +12,7 @@
 		<artifactId>ibis-adapterframework-docker-as</artifactId>
 		<version>${revision}</version>
 	</parent>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
@@ -25,7 +26,7 @@
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
-			<version>${h2.version}</version>
+			<version>${h2.driver.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.microsoft.sqlserver</groupId>
@@ -61,8 +62,12 @@
 			<artifactId>geronimo-jta_1.1_spec</artifactId>
 			<version>1.1.1</version>
 		</dependency>
-
-		<!-- required for ActiveMQ -->
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>artemis-jms-client-all</artifactId>
+			<version>${artemis.driver.version}</version>
+		</dependency>
+		<!-- required for ActiveMQ classic-->
 		<dependency>
 			<groupId>org.apache.activemq</groupId>
 			<artifactId>activemq-client</artifactId>
@@ -71,14 +76,12 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.7.31</version>
 		</dependency>
 		<dependency>
 			<groupId>org.fusesource.hawtbuf</groupId>
 			<artifactId>hawtbuf</artifactId>
 			<version>1.11</version>
 		</dependency>
-		
 	</dependencies>
 
 	<build>
@@ -87,7 +90,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
-				<version>3.1.2</version>
 				<executions>
 					<execution>
 						<id>copy-dependencies</id>
@@ -108,7 +110,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
-				<version>1.6</version>
 				<executions>
 					<execution>
 						<id>prepare-package</id>
@@ -132,10 +133,11 @@
 			</plugin>
 		</plugins>
 	</build>
-	
+
 	<modules>
-		<module>example</module>
 		<module>test</module>
+		<module>webapp</module>
+		<module>example</module>
 	</modules>
 
 </project>

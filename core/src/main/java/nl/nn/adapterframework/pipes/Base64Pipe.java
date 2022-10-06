@@ -18,8 +18,6 @@ package nl.nn.adapterframework.pipes;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.codec.binary.Base64InputStream;
@@ -34,6 +32,8 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.SupportsOutputStreaming;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
@@ -49,18 +49,20 @@ import nl.nn.adapterframework.util.StreamUtil;
  * @author  Niels Meijer
  * @version 2.0
  */
+@Category("Basic")
+@SupportsOutputStreaming
 public class Base64Pipe extends StreamingPipe {
 
 	private @Getter Direction direction = Direction.ENCODE;
 	private @Getter String charset = null;
 	private @Getter String lineSeparator = "auto";
 	private @Getter int lineLength = 76;
-	
+
 	private OutputTypes outputType = null;
 	private Boolean convertToString = false;
 
-	private byte lineSeparatorArray[];
-	
+	private byte[] lineSeparatorArray;
+
 	public enum Direction {
 		ENCODE,
 		DECODE;
@@ -87,11 +89,11 @@ public class Base64Pipe extends StreamingPipe {
 				setLineSeparatorArray(getLineSeparator());
 			}
 		}
-		
+
 		if (dir==Direction.DECODE && convertToString) {
 			setOutputType("string");
 		}
-		
+
 		if (getOutputTypeEnum()==null) {
 			setOutputType(dir==Direction.DECODE ? "bytes" : "string");
 		}
@@ -138,15 +140,9 @@ public class Base64Pipe extends StreamingPipe {
 		} else {
 			targetStream = target.asStream(outputCharset);
 		}
+
 		OutputStream base64 = new Base64OutputStream(targetStream, directionEncode, getLineLength(), lineSeparatorArray);
-		if (directionEncode && StringUtils.isNotEmpty(getCharset())) {
-			try {
-				return new MessageOutputStream(this, new OutputStreamWriter(base64, getCharset()), target);
-			} catch (UnsupportedEncodingException e) {
-				throw new StreamingException("cannot open OutputStreamWriter", e);
-			}
-		}
-		return new MessageOutputStream(this, base64, target);
+		return new MessageOutputStream(this, base64, target, directionEncode ? getCharset() : null);
 	}
 
 	/** @ff.default ENCODE */
@@ -160,7 +156,7 @@ public class Base64Pipe extends StreamingPipe {
 		convertToString = b;
 	}
 
-	@IbisDoc({"2", "Either <code>string</code> for character output or <code>bytes</code> for binary output. The value <code>stream</code> is no longer used. Streaming is automatic where possible", "string for direction=encode, bytes for direction=decode"})
+	@IbisDoc({"Either <code>string</code> for character output or <code>bytes</code> for binary output. The value <code>stream</code> is no longer used. Streaming is automatic where possible", "string for direction=encode, bytes for direction=decode"})
 	@Deprecated
 	@ConfigurationWarning("It should not be necessary to specify outputType. If you encounter a situation where it is, please report to Frank!Framework Core Team")
 	public void setOutputType(String outputType) {
@@ -174,17 +170,17 @@ public class Base64Pipe extends StreamingPipe {
 		return outputType;
 	}
 
-	@IbisDoc({"3", "Character encoding to be used to when reading input from strings for direction=encode or writing data for direction=decode.", ""})
+	@IbisDoc({"Character encoding to be used to when reading input from strings for direction=encode or writing data for direction=decode.", ""})
 	public void setCharset(String string) {
 		charset = string;
 	}
 
-	@IbisDoc({"4", " (Only used when direction=encode) Defines separator between lines. Special values: <code>auto</code>: platform default, <code>dos</code>: crlf, <code>unix</code>: lf", "auto"})
+	@IbisDoc({" (Only used when direction=encode) Defines separator between lines. Special values: <code>auto</code>: platform default, <code>dos</code>: crlf, <code>unix</code>: lf", "auto"})
 	public void setLineSeparator(String lineSeparator) {
 		this.lineSeparator = lineSeparator;
 	}
 
-	@IbisDoc({"5", " (Only used when direction=encode) Each line of encoded data will be at most of the given length (rounded down to nearest multiple of 4). If linelength &lt;= 0, then the output will not be divided into lines", "76"})
+	@IbisDoc({" (Only used when direction=encode) Each line of encoded data will be at most of the given length (rounded down to nearest multiple of 4). If linelength &lt;= 0, then the output will not be divided into lines", "76"})
 	public void setLineLength(int lineLength) {
 		this.lineLength = lineLength;
 	}

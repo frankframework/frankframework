@@ -28,7 +28,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
  * @since   4.7
  */
 public class Result2StringWriter extends ResultWriter {
-	
+
 	@Override
 	protected Writer createWriter(PipeLineSession session, String streamId) throws Exception {
 		return new StringWriter();
@@ -41,7 +41,7 @@ public class Result2StringWriter extends ResultWriter {
 		String result=null;
 		if (writer!=null) {
 			result = (writer).getBuffer().toString();
-		} 
+		}
 		return result;
 	}
 

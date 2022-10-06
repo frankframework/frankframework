@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2017, 2019 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,28 +29,31 @@ import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.doc.Protected;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.receivers.ServiceClient;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * Baseclass of a {@link IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.Receiver}
+ * Baseclass of a {@link IPushingListener IPushingListener} that enables a {@link Receiver}
  * to receive messages from Servlets.
  * </table>
- * @author  Gerrit van Brakel 
+ * @author  Gerrit van Brakel
  * @since   4.12
  */
 public abstract class PushingListenerAdapter implements IPushingListener<Message>, ServiceClient {
 	protected Logger log = LogUtil.getLogger(this);
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
-	private @Getter @Setter ApplicationContext applicationContext;
+
+	private @Getter String name;
+	private @Getter boolean applicationFaultsAsExceptions=true;
+	private @Getter boolean running;
 
 	private IMessageHandler<Message> handler;
-	private String name;
-	private boolean applicationFaultsAsExceptions=true;
-	private boolean running;
 
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
 	 */
@@ -85,16 +88,16 @@ public abstract class PushingListenerAdapter implements IPushingListener<Message
 	}
 
 	@Override
-	public Message processRequest(String correlationId, Message rawMessage, Map<String, Object> requestContext) throws ListenerException {
-		Message message = extractMessage(rawMessage, requestContext);
+	public Message processRequest(String correlationId, Message rawMessage, PipeLineSession session) throws ListenerException {
+		Message message = extractMessage(rawMessage, session);
 		try {
-			log.debug("PushingListenerAdapter.processRequerawMmessagest() for correlationId ["+correlationId+"]");
-			return handler.processRequest(this, correlationId, rawMessage, message, requestContext);
+			log.debug("PushingListenerAdapter.processRequest() for correlationId ["+correlationId+"]");
+			return handler.processRequest(this, correlationId, rawMessage, message, session);
 		} catch (ListenerException e) {
 			if (isApplicationFaultsAsExceptions()) {
 				log.debug("PushingListenerAdapter.processRequest() rethrows ListenerException...");
 				throw e;
-			} 
+			}
 			log.debug("PushingListenerAdapter.processRequest() formats ListenerException to errormessage");
 			return handler.formatException(null,correlationId, message, e);
 		}
@@ -107,15 +110,12 @@ public abstract class PushingListenerAdapter implements IPushingListener<Message
 		return ReflectionToStringBuilder.toStringExclude(this, "handler");
 	}
 
+	/**
+	 * Name of the listener as known to the adapter
+	 */
 	@Override
-	public String getName() {
-		return name;
-	}
-
-	@Override
-	@IbisDoc({"name of the listener as known to the adapter", ""})
 	public void setName(String name) {
-		this.name=name;
+		this.name = name;
 	}
 
 	@Override
@@ -127,16 +127,11 @@ public abstract class PushingListenerAdapter implements IPushingListener<Message
 //		this.exceptionListener=exceptionListener;
 	}
 
-	public boolean isApplicationFaultsAsExceptions() {
-		return applicationFaultsAsExceptions;
-	}
 	public void setApplicationFaultsAsExceptions(boolean b) {
 		applicationFaultsAsExceptions = b;
 	}
 
-	public boolean isRunning() {
-		return running;
-	}
+	@Protected
 	public void setRunning(boolean running) {
 		this.running = running;
 	}

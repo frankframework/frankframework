@@ -245,8 +245,8 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 			ConfigurationWarnings.add(this, log, "the use of Base64 is deprecated. Please use attribute [fileSessionKey] or set property [CmisSender.Base64FileContent] to false");
 		}
 
-		if (getAction().equals("create") && StringUtils.isEmpty(getFileSessionKey())) {
-			throw new ConfigurationException("fileSessionKey should be specified");
+		if (getAction().equals("create")){
+			checkStringAttributeOrParameter("fileSessionKey", getFileSessionKey(), "fileSessionKey");
 		}
 
 		if (getAction().equals("get") && isGetProperties() && isGetDocumentContent() && StringUtils.isEmpty(getFileSessionKey())) {
@@ -257,7 +257,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 			if (getParameterList().findParameter("userName") != null) {
 				ConfigurationWarnings.add(this, log, "parameter 'userName' has been replaced by 'username'");
 			}
-			
+
 			// Legacy; check if the session should be created runtime (and thus for each call)
 			if(getParameterList().findParameter("authAlias") != null || getParameterList().findParameter("username") != null || getParameterList().findParameter("userName") != null ) {
 				runtimeSession = true;
@@ -361,7 +361,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 				case GET:
 					return sendMessageForActionGet(cmisSession, message, session, pvl);
 				case CREATE:
-					return sendMessageForActionCreate(cmisSession, message, session);
+					return sendMessageForActionCreate(cmisSession, message, session, pvl);
 				case DELETE:
 					return sendMessageForActionDelete(cmisSession, message, session);
 				case FIND:
@@ -434,15 +434,14 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 			}
 			else if (getProperties) {
 				if(getDocumentContent) {
-					ContentStream contentStream = document.getContentStream();
-					InputStream inputStream = contentStream.getStream();
+					Message content = getMessageFromContentStream(document.getContentStream());
 
 					if(convert2Base64) {
-						byte[] bytes = Misc.streamToBytes(inputStream);
-						session.put(getFileSessionKey(), Base64.encodeBase64String(bytes));
+						session.put(getFileSessionKey(), Base64.encodeBase64String(content.asByteArray()));
 					}
 					else {
-						session.put(getFileSessionKey(), inputStream);
+						content.closeOnCloseOf(session, this);
+						session.put(getFileSessionKey(), content);
 					}
 				}
 
@@ -457,34 +456,36 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 				return new Message(cmisXml.toXML());
 			}
 			else {
-				ContentStream contentStream = document.getContentStream();
-				InputStream inputStream = contentStream.getStream();
+				Message content = getMessageFromContentStream(document.getContentStream());
+				content.closeOnCloseOf(session, this);
 
 				if (StringUtils.isNotEmpty(getFileSessionKey())) {
 					if(convert2Base64) {
-						byte[] bytes = Misc.streamToBytes(inputStream);
-						session.put(getFileSessionKey(), Base64.encodeBase64String(bytes));
+						session.put(getFileSessionKey(), Base64.encodeBase64String(content.asByteArray()));
 					} else {
-						session.put(getFileSessionKey(), inputStream);
+						session.put(getFileSessionKey(), content);
 					}
 					return Message.nullMessage();
 				}
-				session.put("contentStream:MimeType", contentStream.getMimeType());
-				session.put("contentStream:Filename", contentStream.getFileName());
 
-				MessageContext context = new MessageContext();
-				context.withName(contentStream.getFileName()).withMimeType(contentStream.getMimeType());
-				return new Message(inputStream, context);
+				return content;
 			}
 		} catch (IOException e) {
 			throw new SenderException(e);
 		}
 	}
 
-	private Message sendMessageForActionCreate(Session cmisSession, Message message, PipeLineSession session) throws SenderException {
+	private Message getMessageFromContentStream(ContentStream contentStream) {
+		InputStream inputStream = contentStream.getStream();
+		MessageContext context = new MessageContext();
+		context.withName(contentStream.getFileName()).withMimeType(contentStream.getMimeType());
+		return new Message(inputStream, context);
+	}
+
+	private Message sendMessageForActionCreate(Session cmisSession, Message message, PipeLineSession session, ParameterValueList pvl) throws SenderException {
 		String fileName = null;
 		try {
-			fileName = session.getMessage(getFilenameSessionKey()).asString();
+			fileName = session.getMessage( getParameterOverriddenAttributeValue(pvl, "filenameSessionKey", getFilenameSessionKey()) ).asString();
 		} catch (IOException e) {
 			throw new SenderException("Unable to get filename from session key ["+getFilenameSessionKey()+"]", e);
 		}
@@ -531,9 +532,9 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 
 		ContentStream contentStream;
 		try {
-			Message inputFromSessionKey = session.getMessage(getFileSessionKey());
+			Message inputFromSessionKey = session.getMessage( getParameterOverriddenAttributeValue(pvl, "fileSessionKey", getFileSessionKey()) );
 
-			if(convert2Base64 && inputFromSessionKey.asObject() instanceof String) {
+			if(convert2Base64 && !inputFromSessionKey.isBinary()) {
 				inputFromSessionKey = new Message(Base64.decodeBase64(inputFromSessionKey.asByteArray()));
 			}
 
@@ -630,8 +631,8 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		if (object.hasAllowableAction(Action.CAN_DELETE_OBJECT)) { //// You can delete
 			Document suppDoc = (Document) object;
 			suppDoc.delete(true);
-			String correlationID = session==null ? null : session.getMessageId();
-			return new Message(correlationID);
+			String messageID = session==null ? null : session.getMessageId();
+			return new Message(messageID);
 
 		}
 		//// You can't delete
@@ -892,7 +893,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 //				context.setIncludeRelationships(includeRelationships);
 //				context.setRenditionFilterString(renditionFilter);
 
-				ObjectList result = cmisSession.getBinding().getDiscoveryService().query(repositoryQueryId, statement, 
+				ObjectList result = cmisSession.getBinding().getDiscoveryService().query(repositoryQueryId, statement,
 						searchAllVersions, includeAllowableActions, includeRelationships, renditionFilter, maxItems, skipCount, null);
 				resultXml.addSubElement(CmisUtils.objectList2xml(result));
 				break;
@@ -909,8 +910,8 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 				BigInteger getChildren_maxItems = BigInteger.valueOf(XmlUtils.getChildTagAsLong(requestElement, "maxItems"));
 				BigInteger getChildren_skipCount = BigInteger.valueOf(XmlUtils.getChildTagAsLong(requestElement, "skipCount"));
 
-				ObjectInFolderList oifs = cmisSession.getBinding().getNavigationService().getChildren(rid, fid, getChildren_repositoryFilter, 
-						getChildren_repositoryOrderBy, getChildren_includeAllowableActions, getChildren_includeRelationships, 
+				ObjectInFolderList oifs = cmisSession.getBinding().getNavigationService().getChildren(rid, fid, getChildren_repositoryFilter,
+						getChildren_repositoryOrderBy, getChildren_includeAllowableActions, getChildren_includeRelationships,
 						getChildren_renditionFilter, getChildren_includePathSegment, getChildren_maxItems, getChildren_skipCount, null);
 
 				resultXml.addSubElement(CmisUtils.objectInFolderList2xml(oifs));
@@ -1063,7 +1064,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		return sessionBuilder.getKeyManagerAlgorithm();
 	}
 
-	
+
 	@Override
 	public void setTruststore(String truststore) {
 		sessionBuilder.setTruststore(truststore);

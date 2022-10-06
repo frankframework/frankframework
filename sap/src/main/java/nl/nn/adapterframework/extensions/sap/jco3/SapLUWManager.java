@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -58,7 +58,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 	private @Getter String action;
 	private @Getter String sapSystemName;
 	
-	private SapSystem sapSystem;
+	private SapSystemImpl sapSystem;
 
 
 	@Override
@@ -82,7 +82,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 			throw new ConfigurationException("action should be specified, it must be one of: "+
 				ACTION_BEGIN+", "+ACTION_COMMIT+", "+ACTION_ROLLBACK+", "+ACTION_RELEASE+".");
 		}
-		sapSystem=SapSystem.getSystem(getSapSystemName());
+		sapSystem=SapSystemImpl.getSystem(getSapSystemName());
 		if (sapSystem==null) {
 			throw new ConfigurationException(getLogPrefix(null)+"cannot find SapSystem ["+getSapSystemName()+"]");
 		}
@@ -152,25 +152,25 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 
 
 
-	public SapSystem getSapSystem() {
+	public SapSystemImpl getSapSystem() {
 		return sapSystem;
 	}
 
 
 
 
-	@IbisDoc({"1", "name of the SapSystem used by this object", ""})
+	@IbisDoc({"Name of the SapSystem used by this object", ""})
 	public void setSapSystemName(String string) {
 		sapSystemName = string;
 	}
 
 
-	@IbisDoc({"2", "one of: begin, commit, rollback, release", ""})
+	@IbisDoc({"One of: begin, commit, rollback, release", ""})
 	public void setAction(String string) {
 		action = string;
 	}
 
-	@IbisDoc({"3", "session key under which information is stored", ""})
+	@IbisDoc({"Session key under which information is stored", ""})
 	public void setLuwHandleSessionKey(String string) {
 		luwHandleSessionKey = string;
 	}

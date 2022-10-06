@@ -36,21 +36,21 @@ import com.ing.ifsa.IFSAQueue;
 import com.ing.ifsa.IFSAQueueConnectionFactory;
 
 /**
- * {@link nl.nn.adapterframework.jms.MessagingSource} for IFSA connections.
- * 
+ * {@link MessagingSource} for IFSA connections.
+ *
  * IFSA related IBIS objects can obtain an connection from this class. The physical connection is shared
  * between all IBIS objects that have the same ApplicationID.
- * 
+ *
  * @author Gerrit van Brakel
  */
 public class IfsaMessagingSource extends MessagingSource {
 
-	private final static String CLEANUP_ON_CLOSE_KEY="ifsa.cleanUpOnClose";
-	private static Boolean cleanUpOnClose=null; 
+	private static final String CLEANUP_ON_CLOSE_KEY="ifsa.cleanUpOnClose";
+	private static Boolean cleanUpOnClose=null;
 
 	private boolean preJms22Api;
 	private boolean xaEnabled;
-	
+
 	public IfsaMessagingSource(String applicationId, IFSAContext context, IFSAQueueConnectionFactory connectionFactory, Map messagingSourceMap, boolean preJms22Api, boolean xaEnabled) {
 		super(applicationId,context,connectionFactory,messagingSourceMap,null,false,true);
 		this.preJms22Api=preJms22Api;
@@ -74,7 +74,7 @@ public class IfsaMessagingSource extends MessagingSource {
 	public boolean canUseIfsaModeSessions() throws IfsaException {
 		return hasDynamicReplyQueue() && !useSingleDynamicReplyQueue();
 	}
-	
+
 	/**
 	 * Retrieves the reply queue for a <b>client</b> connection. If the
 	 * client is transactional the replyqueue is retrieved from IFSA,
@@ -82,7 +82,7 @@ public class IfsaMessagingSource extends MessagingSource {
 	 */
 	public Queue getClientReplyQueue(QueueSession session) throws IfsaException {
 		Queue replyQueue = null;
-	
+
 		try {
 			/*
 			 * if we don't know if we're using a dynamic reply queue, we can
@@ -95,17 +95,17 @@ public class IfsaMessagingSource extends MessagingSource {
 				log.debug("got dynamic reply queue [" +replyQueue.getQueueName()+"]");
 			} else { // Static
 				replyQueue = (Queue) ((IFSAContext)getContext()).lookupReply(getId());
-				log.debug("got static reply queue [" +replyQueue.getQueueName()+"]");            
+				log.debug("got static reply queue [" +replyQueue.getQueueName()+"]");
 			}
 			return replyQueue;
 		} catch (Exception e) {
 			throw new IfsaException(e);
 		}
 	}
-	
+
 	protected void releaseClientReplyQueue(Queue replyQueue) throws IfsaException {
 		if (hasDynamicReplyQueue()) { // Temporary Dynamic
-			releaseDynamicReplyQueue(replyQueue);		
+			releaseDynamicReplyQueue(replyQueue);
 		}
 	}
 
@@ -118,9 +118,9 @@ public class IfsaMessagingSource extends MessagingSource {
 	 */
 	public QueueReceiver getReplyReceiver(QueueSession session, Message sentMessage)
 		throws IfsaException {
-	
+
 		QueueReceiver queueReceiver;
-		    
+
 		String correlationId;
 		Queue replyQueue;
 		try {
@@ -129,7 +129,7 @@ public class IfsaMessagingSource extends MessagingSource {
 		} catch (JMSException e) {
 			throw new IfsaException(e);
 		}
-		
+
 		try {
 			if (hasDynamicReplyQueue() && !useSingleDynamicReplyQueue()) {
 				queueReceiver = session.createReceiver(replyQueue);
@@ -138,7 +138,7 @@ public class IfsaMessagingSource extends MessagingSource {
 				String selector="JMSCorrelationID='" + correlationId + "'";
 				queueReceiver = session.createReceiver(replyQueue, selector);
 				log.debug("created receiver on static or shared-dynamic reply queue - selector ["+selector+"]");
-			}	
+			}
 		} catch (JMSException e) {
 			throw new IfsaException(e);
 		}
@@ -146,7 +146,7 @@ public class IfsaMessagingSource extends MessagingSource {
 	}
 
 	public void closeReplyReceiver(QueueReceiver receiver) throws IfsaException {
-		try { 
+		try {
 			if (receiver!=null) {
 				Queue replyQueue = receiver.getQueue();
 				receiver.close();
@@ -164,7 +164,7 @@ public class IfsaMessagingSource extends MessagingSource {
 			throw new IfsaException("cannot lookup queue for service ["+serviceId+"]",e);
 		}
   	}
-  	
+
 	public IFSAQueue lookupProviderInput() throws IfsaException {
 		try {
 			return (IFSAQueue) ((IFSAContext)getContext()).lookupProviderInput();
@@ -172,11 +172,11 @@ public class IfsaMessagingSource extends MessagingSource {
 			throw new IfsaException("cannot lookup provider queue",e);
 		}
 	}
-	
+
 	protected String replaceLast(String string, char from, char to) {
 		int lastTo=string.lastIndexOf(to);
 		int lastFrom=string.lastIndexOf(from);
-		
+
 		if (lastFrom>0 && lastTo<lastFrom) {
 			String result = string.substring(0,lastFrom)+to+string.substring(lastFrom+1);
 			log.info("replacing for Ifsa-compatibility ["+string+"] by ["+result+"]");

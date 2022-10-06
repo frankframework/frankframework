@@ -65,7 +65,7 @@ public class SaxException extends SAXException {
 		if (locator!=null) {
 			// prefer this solution of creating a SaxException with locatin info in the messgage over creating 
 			// a SaxParseException, because that causes the location info to be duplicated in a combined errormessage
-			return new SaxException(getLocatedMessage(locator,message), e); 
+			return new SaxException(getLocatedMessage(locator,message), e);
 		}
 		return new SaxException(message, e);
 	}

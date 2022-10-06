@@ -47,7 +47,7 @@ import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
- * 
+ *
  * @ff.parameter from email address of the sender
  * @ff.parameter subject subject field of the message
  * @ff.parameter threadTopic (optional) conversation field of the message, used to correlate mails in mail viewer (header field "Thread-Topic"). Note: subject must end with value of threadTopic, but cann't be exactly the same
@@ -100,8 +100,8 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		}
 		sendEmail(mailSession);
 
-		String correlationID = session==null ? null : session.getMessageId();
-		return new Message(correlationID);
+		String messageID = session==null ? null : session.getMessageId();
+		return new Message(messageID);
 	}
 
 	/**
@@ -151,49 +151,49 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		MailSession mail = new MailSession();
 		try {
 			pvl = paramList.getValues(input, session);
-			pv = pvl.getParameterValue("from");
+			pv = pvl.get("from");
 			if (pv != null) {
 				from = new EMail(pv.asStringValue(null));
 				log.debug("MailSender [" + getName() + "] retrieved from-parameter [" + from + "]");
 				mail.setFrom(from);
 			}
-			pv = pvl.getParameterValue("subject");
+			pv = pvl.get("subject");
 			if (pv != null) {
 				subject = pv.asStringValue(null);
 				log.debug("MailSender [" + getName() + "] retrieved subject-parameter [" + subject + "]");
 				mail.setSubject(subject);
 			}
-			pv = pvl.getParameterValue("threadTopic");
+			pv = pvl.get("threadTopic");
 			if (pv != null) {
 				threadTopic = pv.asStringValue(null);
 				log.debug("MailSender [" + getName() + "] retrieved threadTopic-parameter [" + threadTopic + "]");
 				mail.setThreadTopic(threadTopic);
 			}
-			pv = pvl.getParameterValue("message");
+			pv = pvl.get("message");
 			if (pv != null) {
 				String message = pv.asStringValue("message");
 				log.debug("MailSender [" + getName() + "] retrieved message-parameter [" + message + "]");
 				mail.setMessage(message);
 			}
-			pv = pvl.getParameterValue("messageType");
+			pv = pvl.get("messageType");
 			if (pv != null) {
 				messageType = pv.asStringValue(null);
 				log.debug("MailSender [" + getName() + "] retrieved messageType-parameter [" + messageType + "]");
 				mail.setMessageType(messageType);
 			}
-			pv = pvl.getParameterValue("messageBase64");
+			pv = pvl.get("messageBase64");
 			if (pv != null) {
 				messageBase64 = pv.asBooleanValue(false);
 				log.debug("MailSender [" + getName() + "] retrieved messageBase64-parameter [" + messageBase64 + "]");
 				mail.setMessageBase64(messageBase64);
 			}
-			pv = pvl.getParameterValue("charset");
+			pv = pvl.get("charset");
 			if (pv != null) {
 				charset = pv.asStringValue(null);
 				log.debug("MailSender [" + getName() + "] retrieved charset-parameter [" + charset + "]");
 				mail.setCharSet(charset);
 			}
-			pv = pvl.getParameterValue("recipients");
+			pv = pvl.get("recipients");
 			Collection<EMail> recipientsCollection = retrieveRecipientsFromParameterList(pv);
 			if (recipientsCollection != null && !recipientsCollection.isEmpty()) {
 				recipients = new ArrayList<EMail>(recipientsCollection);
@@ -202,7 +202,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 				throw new SenderException("Recipients cannot be empty. At least one recipient is required");
 			}
 
-			pv = pvl.getParameterValue("attachments");
+			pv = pvl.get("attachments");
 			Collection<MailAttachmentStream> attachmentsCollection = retrieveAttachmentsFromParamList(pv, session);
 			if (attachmentsCollection != null && !attachmentsCollection.isEmpty()) {
 				attachments = new ArrayList<MailAttachmentStream>(attachmentsCollection);
@@ -667,18 +667,18 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	protected class MailAttachmentStream extends MailAttachmentBase<InputStream>{};
 
 	/**
-	 * Generic mail class 
+	 * Generic mail class
 	 * @author alisihab
 	 *
 	 */
 	public class EMail {
 		private InternetAddress emailAddress;
-		private String type; //"cc", "to", "from", "bcc" 
+		private String type; //"cc", "to", "from", "bcc"
 
 		public EMail(String address, String name, String type) throws SenderException {
 			try {
 				if (StringUtils.isNotEmpty(address)) {
-					InternetAddress ia[] = InternetAddress.parseHeader(address, true);
+					InternetAddress[] ia = InternetAddress.parseHeader(address, true);
 					if (ia.length==0) {
 						throw new AddressException("No address found in ["+address+"]");
 					}

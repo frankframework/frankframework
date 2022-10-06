@@ -21,28 +21,34 @@ package nl.nn.adapterframework.core;
  * @author  Johan Verrips
  */
 public class PipeRunException extends IbisException {
-	
-	IPipe pipeInError=null;
-public PipeRunException(IPipe pipe, String msg) {
-	super(msg);
-	setPipeInError(pipe);
-}
-public PipeRunException(IPipe pipe, String msg, Throwable e) {
-	super(msg, e);
-	setPipeInError(pipe);
-}
-/**
- * The pipe in error.
- * @return java.lang.String Name of the pipe in error
- */
-public IPipe getPipeInError() {
-	return pipeInError;
-}
-/**
- * The pipe in error. 
- * @param newPipeInError the pipe in error
- */
-protected void setPipeInError(IPipe newPipeInError) {
-	pipeInError = newPipeInError;
-}
+
+	IPipe pipeInError = null;
+
+	public PipeRunException(IPipe pipe, String msg) {
+		super(msg);
+		setPipeInError(pipe);
+	}
+
+	public PipeRunException(IPipe pipe, String msg, Throwable e) {
+		super(msg, e);
+		setPipeInError(pipe);
+	}
+
+	/**
+	 * The pipe in error.
+	 * 
+	 * @return java.lang.String Name of the pipe in error
+	 */
+	public IPipe getPipeInError() {
+		return pipeInError;
+	}
+
+	/**
+	 * The pipe in error.
+	 * 
+	 * @param newPipeInError the pipe in error
+	 */
+	protected void setPipeInError(IPipe newPipeInError) {
+		pipeInError = newPipeInError;
+	}
 }

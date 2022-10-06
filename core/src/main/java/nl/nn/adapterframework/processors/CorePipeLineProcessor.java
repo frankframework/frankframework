@@ -22,13 +22,11 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.xml.sax.SAXException;
 
 import lombok.Setter;
+import nl.nn.adapterframework.configuration.AdapterManager;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.IPipe;
@@ -52,32 +50,29 @@ import nl.nn.adapterframework.util.XmlUtils;
 /**
  * @author Jaco de Groot
  */
-public class CorePipeLineProcessor implements PipeLineProcessor, ApplicationContextAware {
+public class CorePipeLineProcessor implements PipeLineProcessor {
 	private Logger log = LogUtil.getLogger(this);
-	private PipeProcessor pipeProcessor;
-	private @Setter ApplicationContext applicationContext;
+	private @Setter PipeProcessor pipeProcessor;
+	private @Setter AdapterManager adapterManager;
 
 	@Override
 	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
 
-		if (message.isEmpty()) {
-			if (StringUtils.isNotEmpty(pipeLine.getAdapterToRunBeforeOnEmptyInput())) {
-				log.debug("running adapterBeforeOnEmptyInput");
-				IbisManager ibisManager = applicationContext.getBean(IbisManager.class);
-				IAdapter adapter = ibisManager.getRegisteredAdapter(pipeLine.getAdapterToRunBeforeOnEmptyInput());
-				if (adapter == null) {
-					log.warn("adapterToRunBefore with specified name [" + pipeLine.getAdapterToRunBeforeOnEmptyInput() + "] could not be retrieved");
-				} else {
-					PipeLineResult plr = adapter.processMessage(messageId, message, pipeLineSession);
-					if (plr == null || !plr.isSuccessful()) {
-						throw new PipeRunException(null, "adapterToRunBefore [" + pipeLine.getAdapterToRunBeforeOnEmptyInput() + "] ended with state [" + (plr==null?"null":plr.getState()) + "]");
-					}
-					message = plr.getResult();
-					log.debug("input after running adapterBeforeOnEmptyInput [" + message + "]");
+		if (message.isEmpty() && StringUtils.isNotEmpty(pipeLine.getAdapterToRunBeforeOnEmptyInput())) {
+			log.debug("running adapterBeforeOnEmptyInput");
+			IAdapter adapter = adapterManager.getAdapter(pipeLine.getAdapterToRunBeforeOnEmptyInput());
+			if (adapter == null) {
+				log.warn("adapterToRunBefore with specified name [" + pipeLine.getAdapterToRunBeforeOnEmptyInput() + "] could not be retrieved");
+			} else {
+				PipeLineResult plr = adapter.processMessage(messageId, message, pipeLineSession);
+				if (plr == null || !plr.isSuccessful()) {
+					throw new PipeRunException(null, "adapterToRunBefore [" + pipeLine.getAdapterToRunBeforeOnEmptyInput() + "] ended with state [" + (plr==null?"null":plr.getState()) + "]");
 				}
+				message = plr.getResult();
+				log.debug("input after running adapterBeforeOnEmptyInput [" + message + "]");
 			}
 		}
-		
+
 		// ready indicates whether the pipeline processing is complete
 		boolean ready=false;
 
@@ -159,22 +154,24 @@ public class CorePipeLineProcessor implements PipeLineProcessor, ApplicationCont
 					PipeLineExit plExit= (PipeLineExit)forwardTarget;
 					if(!plExit.isEmptyResult()) {
 						boolean outputWrapError = false;
-						IPipe outputWrapper = pipeLine.getOutputWrapper();
-						if (outputWrapper !=null) {
-							log.debug("wrapping PipeLineResult");
-							PipeRunResult wrapResult = pipeProcessor.processPipe(pipeLine, outputWrapper, message, pipeLineSession);
-							if (wrapResult!=null && !wrapResult.isSuccessful()) {
-								forwardTarget = pipeLine.resolveForward(outputWrapper, wrapResult.getPipeForward());
-								log.warn("forwarding execution flow to ["+forwardTarget.getName()+"] due to wrap fault");
-								outputWrapError = true;
-							} else {
-								log.debug("wrap succeeded");
-								message = wrapResult.getResult();
+						if (!plExit.isSkipWrapping()) {
+							IPipe outputWrapper = pipeLine.getOutputWrapper();
+							if (outputWrapper !=null) {
+								log.debug("wrapping PipeLineResult");
+								PipeRunResult wrapResult = pipeProcessor.processPipe(pipeLine, outputWrapper, message, pipeLineSession);
+								if (wrapResult!=null && !wrapResult.isSuccessful()) {
+									forwardTarget = pipeLine.resolveForward(outputWrapper, wrapResult.getPipeForward());
+									log.warn("forwarding execution flow to ["+forwardTarget.getName()+"] due to wrap fault");
+									outputWrapError = true;
+								} else {
+									log.debug("wrap succeeded");
+									message = wrapResult.getResult();
+								}
+								if(log.isDebugEnabled()) log.debug("PipeLineResult after wrapping: " + (message==null?"<null>":"("+message.getClass().getSimpleName()+") ["+message +"]" ));
 							}
-							if(log.isDebugEnabled()) log.debug("PipeLineResult after wrapping: " + (message==null?"<null>":"("+message.getClass().getSimpleName()+") ["+message +"]" ));
 						}
 
-						if (!outputWrapError) {
+						if (!outputWrapError && !plExit.isSkipValidation()) {
 							IValidator outputValidator = pipeLine.getOutputValidator();
 							if (outputValidator != null) {
 								if (outputValidationFailed) {
@@ -212,7 +209,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor, ApplicationCont
 						ExitState state=plExit.getState();
 						pipeLineResult.setState(state);
 						pipeLineResult.setExitCode(plExit.getExitCode());
-						if (message.asObject()!=null && !plExit.isEmptyResult()) { //TODO Replace with Message.isEmpty() once Larva can handle NULL responses...
+						if (!message.isNull() && !plExit.isEmptyResult()) { //TODO Replace with Message.isEmpty() once Larva can handle NULL responses...
 							pipeLineResult.setResult(message);
 						} else {
 							pipeLineResult.setResult(Message.nullMessage());
@@ -233,7 +230,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor, ApplicationCont
 					IPipe pipeToRun=(IPipe)forwardTarget;
 					PipeRunResult pipeRunResult = pipeProcessor.processPipe(pipeLine, pipeToRun, message, pipeLineSession);
 					message=pipeRunResult.getResult();
-	
+
 					// TODO: this should be moved to a StatisticsPipeProcessor
 					if (!(pipeToRun instanceof AbstractPipe) && !message.isEmpty()) {
 						StatisticsKeeper sizeStat = pipeLine.getPipeSizeStatistics(pipeToRun);
@@ -260,11 +257,6 @@ public class CorePipeLineProcessor implements PipeLineProcessor, ApplicationCont
 			}
 		}
 		return pipeLineResult;
-	}
-	
-	
-	public void setPipeProcessor(PipeProcessor pipeProcessor) {
-		this.pipeProcessor = pipeProcessor;
 	}
 
 }

@@ -23,7 +23,7 @@ import nl.nn.adapterframework.stream.ThreadConnector;
 public class ThreadConnectingFilter extends ExceptionCatchingFilter {
 
 	private ThreadConnector threadConnector;
-	
+
 	public ThreadConnectingFilter(ThreadConnector threadConnector, ContentHandler handler) {
 		super(handler);
 		this.threadConnector=threadConnector;
@@ -40,10 +40,14 @@ public class ThreadConnectingFilter extends ExceptionCatchingFilter {
 		}
 		throw new RuntimeException(t);
 	}
-	
+
 	@Override
 	public void startDocument() throws SAXException {
-		threadConnector.startThread(null);
+		try {
+			threadConnector.startThread(null);
+		} catch(Exception e) {
+			handleException(e); //Cleanup dangling threads, creates better Ladybug reports
+		}
 		super.startDocument();
 	}
 

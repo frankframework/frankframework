@@ -25,7 +25,7 @@ public class MailSenderTest extends MailSenderTestBase<MailSender> {
 					mailSession = super.createSession();
 					Provider provider = new Provider(Type.TRANSPORT, "smtp", TransportMock.class.getCanonicalName(), "IbisSource.org", "1.0");
 					mailSession.setProvider(provider);
-	
+
 					return mailSession;
 				} catch(Exception e) {
 					e.printStackTrace();
@@ -37,19 +37,14 @@ public class MailSenderTest extends MailSenderTestBase<MailSender> {
 			public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 				super.sendMessage(message, session);
 				session.put("mailSession", mailSession);
-				String correlationID = session.getMessageId();
-				return new Message(correlationID);
+				String messageID = session.getMessageId();
+				return new Message(messageID);
 			}
 		};
 		mailSender.setSmtpHost("localhost");
 		mailSender.setSmtpUserid("user123");
 		mailSender.setSmtpPassword("secret321");
 		return mailSender;
-	}
-
-	@Override
-	protected String getTestRootFolder() {
-		return "/MailSender/";
 	}
 
 	@Override

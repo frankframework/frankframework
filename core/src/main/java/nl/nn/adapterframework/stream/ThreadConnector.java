@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2019-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.jta.IThreadConnectableTransactionManager;
 import nl.nn.adapterframework.jta.TransactionConnector;
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class ThreadConnector<T> implements AutoCloseable {
@@ -41,26 +40,23 @@ public class ThreadConnector<T> implements AutoCloseable {
 		CREATED,
 		FINISHED;
 	};
-	
+
 	private ThreadState threadState=ThreadState.ANNOUNCED;
 	private TransactionConnector<?,?> transactionConnector;
 
 
-	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, String correlationId) {
+	public ThreadConnector(Object owner, String description, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, String correlationId) {
 		super();
 		this.threadLifeCycleEventListener=threadLifeCycleEventListener;
 		threadInfo=threadLifeCycleEventListener!=null?threadLifeCycleEventListener.announceChildThread(owner, correlationId):null;
 		parentThread=Thread.currentThread();
 		hideRegex= IbisMaskingLayout.getThreadLocalReplace();
-		transactionConnector = TransactionConnector.getInstance(txManager);
+		transactionConnector = TransactionConnector.getInstance(txManager, owner, description);
 	}
-	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, PipeLineSession session) {
-		this(owner, threadLifeCycleEventListener, txManager, session==null?null:session.getMessageId());
-		if (session!=null) {
-			session.scheduleCloseOnSessionExit(this, ClassUtils.nameOf(owner));
-		} 
+	public ThreadConnector(Object owner, String description, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, PipeLineSession session) {
+		this(owner, description, threadLifeCycleEventListener, txManager, session==null?null:session.getCorrelationId());
 	}
-	
+
 	public <R> R startThread(R input) {
 		childThread = Thread.currentThread();
 		if (transactionConnector!=null) {
@@ -132,7 +128,7 @@ public class ThreadConnector<T> implements AutoCloseable {
 		}
 		return result;
 	}
-	
+
 	@Override
 	public void close() throws IOException {
 		try {
@@ -151,11 +147,11 @@ public class ThreadConnector<T> implements AutoCloseable {
 					break;
 				case FINISHED:
 					break;
-				default: 
+				default:
 					throw new IllegalStateException("Unknown ThreadState ["+threadState+"]");
 				}
 			}
 		}
 	}
-	
+
 }

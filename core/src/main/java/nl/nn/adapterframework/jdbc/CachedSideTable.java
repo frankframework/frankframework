@@ -25,10 +25,10 @@ import java.util.Map;
  * @since  
  */
 public class CachedSideTable extends SideTable {
-	
+
 	private static Map cache=Collections.synchronizedMap(new HashMap());
 	private String mapKey;
-	
+
 	public CachedSideTable(String tableName, String keyColumn, String nameColumn, String sequence) {
 		super(tableName, keyColumn, nameColumn, sequence);
 		mapKey=tableName+"/"+keyColumn+"/"+nameColumn;

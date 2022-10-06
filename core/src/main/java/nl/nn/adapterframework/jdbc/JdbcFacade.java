@@ -62,7 +62,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * @since 	4.1
  */
 public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAEnabled, HasStatistics {
-
+	private final @Getter(onMethod = @__(@Override)) String domain = "JDBC";
 	private String datasourceName = null;
 	private String authAlias = null;
 	private String username = null;
@@ -191,12 +191,12 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 		} finally {
 			if (tg.cancel()) {
 				throw new TimeoutException(getLogPrefix()+"thread has been interrupted");
-			} 
+			}
 		}
 	}
 
 	@Override
-	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
+	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
 		hski.handleStatisticsKeeper(data, connectionStatistics);
 	}
 
@@ -226,7 +226,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 			try (Connection connection = getConnection()) {
 				DatabaseMetaData metadata = connection.getMetaData();
 				String result = metadata.getURL();
-	
+
 				String catalog=null;
 				catalog=connection.getCatalog();
 				result += catalog!=null ? ("/"+catalog):"";
@@ -238,7 +238,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 		return "unknown";
 	}
 
-	@IbisDoc({"2", "JNDI name of datasource to be used, can be configured via jmsRealm, too", "${"+JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY+"}"})
+	@IbisDoc({"JNDI name of datasource to be used, can be configured via jmsRealm, too", "${"+JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY+"}"})
 	public void setDatasourceName(String datasourceName) {
 		this.datasourceName = datasourceName;
 	}
@@ -246,15 +246,15 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 		return datasourceName;
 	}
 
-	@IbisDoc({ "3", "Authentication alias used to authenticate when connecting to database", "" })
+	@IbisDoc({"Authentication alias used to authenticate when connecting to database", "" })
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}
 	public String getAuthAlias() {
 		return authAlias;
 	}
-	
-	@IbisDoc({"4", "User name for authentication when connecting to database, when none found from <code>authAlias</code>", ""})
+
+	@IbisDoc({"User name for authentication when connecting to database, when none found from <code>authAlias</code>", ""})
 	public void setUsername(String username) {
 		this.username = username;
 	}
@@ -262,7 +262,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 		return username;
 	}
 
-	@IbisDoc({"5", "Password for authentication when connecting to database, when none found from <code>authAlias</code>", ""})
+	@IbisDoc({"Password for authentication when connecting to database, when none found from <code>authAlias</code>", ""})
 	public void setPassword(String password) {
 		this.password = password;
 	}
@@ -281,7 +281,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 		return transacted;
 	}
 
-	@IbisDoc({"6", "informs the sender that the obtained connection is from a pool", "true"})
+	@IbisDoc({"informs the sender that the obtained connection is from a pool", "true"})
 	public boolean isConnectionsArePooled() {
 		return connectionsArePooled || isTransacted();
 	}

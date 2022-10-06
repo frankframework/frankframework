@@ -15,7 +15,7 @@ import org.junit.Test;
 import nl.nn.adapterframework.testutil.MatchUtils;
 
 public class TestMap2Xml extends AlignTestBase {
-	
+
 	public void testStrings(String xmlIn, String mapInStr, URL schemaUrl, String targetNamespace, String rootElement, boolean checkRoundTrip, String expectedFailureReason) throws Exception {
 		System.out.println("schemaUrl ["+schemaUrl+"]");
 		if (xmlIn!=null) assertTrue("validated input",Utils.validate(schemaUrl, xmlIn));
@@ -33,22 +33,22 @@ public class TestMap2Xml extends AlignTestBase {
 			System.out.println("mapIn ["+mapInStr+"]");
 
 			String xmlAct = Properties2Xml.translate(mapIn, schemaUrl, rootElement, targetNamespace);
-	    	System.out.println("xml out="+xmlAct);
-	    	if (expectedFailureReason!=null) {
-	    		fail("Expected to fail");
-	    	}
-	    	if (xmlAct==null) {
-	    		fail("could not convert to xml");
-	    	}
-	       	assertTrue("converted XML is not aligned",  Utils.validate(schemaUrl, xmlAct));
-	       	MatchUtils.assertXmlEquals(null, xmlIn, xmlAct, true);
-	       	if (checkRoundTrip) {
-		       	Map<String,String> roundTrippedmap=Xml2Map.translate(xmlAct, schemaUrl);
+			System.out.println("xml out="+xmlAct);
+			if (expectedFailureReason!=null) {
+				fail("Expected to fail");
+			}
+			if (xmlAct==null) {
+				fail("could not convert to xml");
+			}
+			assertTrue("converted XML is not aligned",  Utils.validate(schemaUrl, xmlAct));
+			MatchUtils.assertXmlEquals(null, xmlIn, xmlAct, true);
+			if (checkRoundTrip) {
+				Map<String,String> roundTrippedmap=Xml2Map.translate(xmlAct, schemaUrl);
 				System.out.println("mapIn:\n"+mapInStr);
-		    	System.out.println("roundTrippedmap:\n"+MatchUtils.mapToString(roundTrippedmap));
-		    	assertEquals(mapInStr.trim(),MatchUtils.mapToString(roundTrippedmap).trim());
-//		    	assertMapEquals(mapIn,roundTrippedmap);
-	       	}
+				System.out.println("roundTrippedmap:\n"+MatchUtils.mapToString(roundTrippedmap));
+				assertEquals(mapInStr.trim(),MatchUtils.mapToString(roundTrippedmap).trim());
+//				assertMapEquals(mapIn,roundTrippedmap);
+			}
 		} catch (Exception e) {
 			if (expectedFailureReason==null) {
 				e.printStackTrace();
@@ -65,13 +65,13 @@ public class TestMap2Xml extends AlignTestBase {
 			}
 		}
 	}
-	
-   
+
+
 	@Override
 	public void testFiles(String schemaFile, String namespace, String rootElement, String inputFile, boolean potentialCompactionProblems, String expectedFailureReason) throws Exception {
 		URL schemaUrl=getSchemaURL(schemaFile);
-	   	String xmlString=getTestFile(inputFile+".xml");
-    	String mapString=getTestFile(inputFile+".properties");
+		String xmlString=getTestFile(inputFile+".xml");
+		String mapString=getTestFile(inputFile+".properties");
 		if (mapString==null) {
 			fail("no map input files found for ["+inputFile+"]");
 		}
@@ -79,32 +79,26 @@ public class TestMap2Xml extends AlignTestBase {
 	}
 
 	@Test
-    public void testNestedValue() throws Exception {
-    	testFiles("NestedValue/nestedValue.xsd","urn:gbpd","NestedValue","/NestedValue/nestedValue");
-    }
+	public void testNestedValue() throws Exception {
+		testFiles("NestedValue/nestedValue.xsd","urn:gbpd","NestedValue","/NestedValue/nestedValue");
+	}
 
 
-	
-    @Override
-	@Test
-	@Ignore("Map2XML does not support mixed content")
-    public void testMixedContent() throws Exception {
-		super.testMixedContent();
-    }
-
-    @Override
-	@Test
-	@Ignore("Map2XML does not support null values")
-    public void testNull() throws Exception {
-		super.testNull();
-    }
 
 	@Override
 	@Test
-	@Ignore("Map2XML does not support attributes")
-    public void testAttributes() throws Exception {
-		super.testAttributes();
-    }
+	@Ignore("Map2XML does not support mixed content")
+	public void testMixedContent() throws Exception {
+		super.testMixedContent();
+	}
+
+	@Override
+	@Test
+	@Ignore("Map2XML does not support null values")
+	public void testNull() throws Exception {
+		super.testNull();
+	}
+
 
 	@Override
 	@Test
@@ -126,7 +120,7 @@ public class TestMap2Xml extends AlignTestBase {
 	public void testOK_abc() throws Exception {
 		super.testOK_abc();
 	}
-	
+
 	@Override
 	@Test
 	@Ignore("Map2XML does not support arrays of complex values")
@@ -141,12 +135,12 @@ public class TestMap2Xml extends AlignTestBase {
 		super.testSingleComplexArray();
 	}
 
-    @Override
+	@Override
 	@Test
 	@Ignore("Map2XML does not support reporting 'unknown' elements")
-    public void testMixedContentUnknown() throws Exception {
+	public void testMixedContentUnknown() throws Exception {
 		super.testMixedContentUnknown();
-    }
+	}
 
 	@Test
 	@Ignore("Id is ambigous, special test in Json2XmlValidatorTest tests with fully specified Id")
@@ -154,25 +148,26 @@ public class TestMap2Xml extends AlignTestBase {
 		testFiles("DoubleId/Party.xsd","","Party","DoubleId/Party");
 	}
 
-    
-    @Override
-    @Test
+
+	@Override
+	@Test
 	@Ignore("No content")
 	public void testOptionalArray() throws Exception {
 		super.testMixedContentUnknown();
 	}
-	
-    @Override
+
+	@Override
 	@Test
 	@Ignore("Generates stackoverflow, known issue")
 	public void testFamilyTree() throws Exception {
 		testFiles("FamilyTree/family.xsd", "urn:family", "family", "FamilyTree/family", true);
 	}
 
+	@Override
 	@Test
-	@Ignore("Problem with converting property array into xml")
-	public void testTextAndAttributes() throws Exception {
-		super.testTextAndAttributes();
+	@Ignore("cannot decide what elements should be inserted at wildcard position")
+	public void testAnyElement() throws Exception {
+		super.testAnyElement();
 	}
 
 }

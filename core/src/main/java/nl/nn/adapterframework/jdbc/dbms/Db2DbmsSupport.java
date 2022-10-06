@@ -34,7 +34,6 @@ public class Db2DbmsSupport extends GenericDbmsSupport {
 	public Dbms getDbms() {
 		return Dbms.DB2;
 	}
-	
 
 	@Override
 	public String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery, int wait) throws JdbcException {
@@ -60,7 +59,7 @@ public class Db2DbmsSupport extends GenericDbmsSupport {
 	public String getFirstRecordQuery(String tableName) throws JdbcException {
 		String query="select * from "+tableName+" fetch first 1 rows only";
 		return query;
-	} 
+	}
 
 	@Override
 	public String getSchema(Connection conn) throws JdbcException {

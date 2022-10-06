@@ -29,18 +29,20 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.dispatcher.DispatcherManager;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.http.HttpSender;
+import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
 
 /**
  * Posts a message to another IBIS-adapter or application in the same JVM using IbisServiceDispatcher.
  *
- * An IbisJavaSender makes a call to a Receiver with a {@link nl.nn.adapterframework.receivers.JavaListener JavaListener}
+ * An IbisJavaSender makes a call to a Receiver with a {@link JavaListener}
  * or any other application in the same JVM that has registered a <code>RequestProcessor</code> with the IbisServiceDispatcher.
  *
  * Any parameters are copied to the PipeLineSession of the service called.
- * 
+ *
  * <h4>configuring IbisJavaSender and JavaListener</h4>
  * <ul>
  *   <li>Define a SenderPipe with an IbisJavaSender</li>
@@ -56,7 +58,10 @@ import nl.nn.adapterframework.util.Misc;
  * @author  Gerrit van Brakel
  * @since   4.4.5
  */
+@Category("Advanced")
 public class IbisJavaSender extends SenderWithParametersBase implements HasPhysicalDestination {
+
+	private final @Getter(onMethod = @__(@Override)) String domain = "JVM";
 
 	private @Getter String serviceName;
 	private @Getter String serviceNameSessionKey;
@@ -120,12 +125,12 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 				serviceName = getServiceName();
 			}
 
-			String correlationID = session==null ? null : session.getMessage(PipeLineSession.businessCorrelationIdKey).asString();
+			String correlationID = session==null ? null : session.getMessage(PipeLineSession.correlationIdKey).asString();
 			result = dm.processRequest(serviceName, correlationID, message.asString(), context);
 			if (isMultipartResponse()) {
 				return HttpSender.handleMultipartResponse(multipartResponseContentType, new ByteArrayInputStream(result.getBytes(multipartResponseCharset)), session);
 			}
-		
+
 		} catch (ParameterException e) {
 			throw new SenderException(getLogPrefix()+"exception evaluating parameters",e);
 		} catch (Exception e) {
@@ -143,28 +148,28 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 
 
 
-	/** 
-	 * ServiceName of the {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} that should be called.
+	/**
+	 * ServiceName of the {@link JavaListener} that should be called.
 	 */
 	public void setServiceName(String string) {
 		serviceName = string;
 	}
 
-	/** 
+	/**
 	 * Key of session variable to specify ServiceName of the JavaListener that should be called.
 	 */
 	public void setServiceNameSessionKey(String string) {
 		serviceNameSessionKey = string;
 	}
-	
-	/** 
+
+	/**
 	 * Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erroneous results. (Only for listeners that support it, like JavaListener)
 	 */
 	public void setReturnedSessionKeys(String string) {
 		returnedSessionKeys = string;
 	}
 
-	/** 
+	/**
 	 * Currently used to mimic the HttpSender when it is stubbed locally. It could be useful in other situations too although currently the response string is used which isn't streamed, it would be better to pass the multipart as an input stream in the context map in which case content type and charset could also be passed
 	 * @ff.default false
 	 */
@@ -172,7 +177,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 		multipartResponse = b;
 	}
 
-	/** 
+	/**
 	 * Set to 'DLL' to make the dispatcher communicate with a DLL set on the classpath
 	 */
 	public void setDispatchType(String type) throws ConfigurationException {

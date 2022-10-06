@@ -48,7 +48,7 @@ import lombok.Setter;
  * <br/>
  * @author Johan Verrips IOS
  */
-public class JndiBase implements IConfigurable{
+public class JndiBase implements IConfigurable {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
@@ -127,7 +127,7 @@ public class JndiBase implements IConfigurable{
 		if (StringUtils.isNotEmpty(getSecurityProtocol())) {
 			jndiEnv.put(Context.SECURITY_PROTOCOL, getSecurityProtocol());
 		}
-		
+
 		if (log.isDebugEnabled()) {
 			for(Iterator it=jndiEnv.keySet().iterator(); it.hasNext();) {
 				String key=(String) it.next();
@@ -137,85 +137,87 @@ public class JndiBase implements IConfigurable{
 		}
 		return jndiEnv;
 	}
-	
-    /**
-     *  Gets the Context<br/>
-     *  When InitialContextFactory and ProviderURL are set, these are used
-     *  to get the <code>Context</code>. Otherwise the the InitialContext is
-     *  retrieved without parameters.<br/>
-     *  <b>Notice:</b> you can set the parameters on the commandline with <br/>
-     *  java -Djava.naming.factory.initial= xxx -Djava.naming.provider.url=xxx
-     * <br/><br/>
-     */
-    public Context getContext() throws NamingException {
 
-        if (null == context) {
-        	Hashtable jndiEnv = getJndiEnv();
-        	if (jndiEnv.size()>0) {
+	/**
+	 * Gets the Context<br/>
+	 * When InitialContextFactory and ProviderURL are set, these are used to get the
+	 * <code>Context</code>. Otherwise the the InitialContext is retrieved without
+	 * parameters.<br/>
+	 * <b>Notice:</b> you can set the parameters on the commandline with <br/>
+	 * java -Djava.naming.factory.initial= xxx -Djava.naming.provider.url=xxx <br/>
+	 * <br/>
+	 */
+	public Context getContext() throws NamingException {
+		if(null == context) {
+			Hashtable jndiEnv = getJndiEnv();
+			if(jndiEnv.size() > 0) {
 				log.debug("creating initial JNDI-context using specified environment");
-                context = (Context) new InitialContext(jndiEnv);
-            } else {
+				context = (Context) new InitialContext(jndiEnv);
+			} else {
 				log.debug("creating initial JNDI-context");
-                context = (Context) new InitialContext();
-            }
-        }
-        return context;
-    }
-    
-	@IbisDoc({"maps to the field context.security_authentication", ""})
-    public void setAuthentication(String newAuthentication) {
-        authentication = newAuthentication;
-    }
+				context = (Context) new InitialContext();
+			}
+		}
+		return context;
+	}
 
-	@IbisDoc({"username to connect to context, maps to context.security_credentials", ""})
-    public void setCredentials(String newCredentials) {
-        credentials = newCredentials;
-    }
-    /**
-     *  Sets the value of initialContextFactoryName
-     */
-	@IbisDoc({"class to use as initial context factory", ""})
-    public void setInitialContextFactoryName(String value) {
-        initialContextFactoryName = value;
-    }
-    /**
-     *  Sets the value of providerURL
-     */
-	@IbisDoc({"", " "})
-    public void setProviderURL(String value) {
-        providerURL = value;
-    }
+	@IbisDoc({ "maps to the field context.security_authentication", "" })
+	public void setAuthentication(String newAuthentication) {
+		authentication = newAuthentication;
+	}
 
-	@IbisDoc({"maps to the field context.security_protocol", ""})
-    public void setSecurityProtocol(String securityProtocol) {
-        this.securityProtocol = securityProtocol;
-    }
-    /**
-     * Setter for <code>Context.URL_PKG_PREFIXES</code><br/>
-     * Creation date: (03-04-2003 8:50:36)
-     */
+	@IbisDoc({ "username to connect to context, maps to context.security_credentials", "" })
+	public void setCredentials(String newCredentials) {
+		credentials = newCredentials;
+	}
+
+	/**
+	 * Sets the value of initialContextFactoryName
+	 */
+	@IbisDoc({ "class to use as initial context factory", "" })
+	public void setInitialContextFactoryName(String value) {
+		initialContextFactoryName = value;
+	}
+
+	/**
+	 * Sets the value of providerURL
+	 */
+	public void setProviderURL(String value) {
+		providerURL = value;
+	}
+
+	@IbisDoc({ "maps to the field context.security_protocol", "" })
+	public void setSecurityProtocol(String securityProtocol) {
+		this.securityProtocol = securityProtocol;
+	}
+
+	/**
+	 * Setter for <code>Context.URL_PKG_PREFIXES</code><br/>
+	 * Creation date: (03-04-2003 8:50:36)
+	 */
 	@IbisDoc({"maps to the field context.url_pkg_prefixes", ""})
-    public void setUrlPkgPrefixes(String newUrlPkgPrefixes) {
-        urlPkgPrefixes = newUrlPkgPrefixes;
-    }
-    public String toString() {
-        ToStringBuilder ts = new ToStringBuilder(this);
-        ts.append("context", context);
-        ts.append("authentication", authentication);
-        ts.append("credentials", credentials);
-        ts.append("providerURL", providerURL);
-        ts.append("urlPkgPrefixes", urlPkgPrefixes);
-        ts.append("securityProtocol", securityProtocol);
-        ts.append("initialContextFactoryName", initialContextFactoryName);
+	public void setUrlPkgPrefixes(String newUrlPkgPrefixes) {
+		urlPkgPrefixes = newUrlPkgPrefixes;
+	}
 
-        return ts.toString();
+	@Override
+	public String toString() {
+		ToStringBuilder ts = new ToStringBuilder(this);
+		ts.append("context", context);
+		ts.append("authentication", authentication);
+		ts.append("credentials", credentials);
+		ts.append("providerURL", providerURL);
+		ts.append("urlPkgPrefixes", urlPkgPrefixes);
+		ts.append("securityProtocol", securityProtocol);
+		ts.append("initialContextFactoryName", initialContextFactoryName);
 
-    }
+		return ts.toString();
+	}
 
 	/**
 	 * loads JNDI (and other) properties from a JmsRealm
 	 * @see JmsRealm
-	 */ 
+	 */
 	public void setJmsRealm(String jmsRealmName) {
 		try {
 			JmsRealm.copyRealm(this, jmsRealmName);

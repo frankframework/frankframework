@@ -47,7 +47,7 @@ import org.apache.commons.io.FileUtils;
 */
 public class PDFUtil {
 
-	private final static Logger logger = Logger.getLogger(PDFUtil.class.getName());
+	private static final Logger logger = Logger.getLogger(PDFUtil.class.getName());
 	private String imageDestinationPath;
 	private boolean bTrimWhiteSpace;
 	private boolean bHighlightPdfDifference;
@@ -101,7 +101,7 @@ public class PDFUtil {
    * This method is used to change the level
    * @param level java.util.logging.Level 
    */
-	public void setLogLevel(java.util.logging.Level level){
+	public void setLogLevel(Level level){
 		logger.setLevel(level);
 	}
 		

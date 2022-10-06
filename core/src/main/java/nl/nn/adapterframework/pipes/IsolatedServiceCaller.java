@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -24,17 +25,15 @@ import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.task.TaskExecutor;
 
-import java.util.HashMap;
-
 /**
  * Helper class for IbisLocalSender that wraps around {@link ServiceDispatcher} to make calls to a local Ibis adapter in a separate thread.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.3
  */
 public class IsolatedServiceCaller {
 	protected Logger log = LogUtil.getLogger(this);
-	
+
 	/**
 	 * The thread-pool for spawning threads, injected by Spring
 	 */
@@ -48,15 +47,15 @@ public class IsolatedServiceCaller {
 		return taskExecutor;
 	}
 
-	public void callServiceAsynchronous(String serviceName, String correlationID, Message message, HashMap context, boolean targetIsJavaListener) throws ListenerException {
-		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(serviceName, correlationID, message, context, targetIsJavaListener, null);
+	public void callServiceAsynchronous(String serviceName, String correlationID, Message message, PipeLineSession session, boolean targetIsJavaListener) {
+		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(serviceName, correlationID, message, session, targetIsJavaListener, null);
 		getTaskExecutor().execute(ise);
 	}
-	
-	public Message callServiceIsolated(String serviceName, String correlationID, Message message, HashMap context, boolean targetIsJavaListener) throws ListenerException {
+
+	public Message callServiceIsolated(String serviceName, String correlationID, Message message, PipeLineSession session, boolean targetIsJavaListener) throws ListenerException {
 		Guard guard= new Guard();
 		guard.addResource();
-		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(serviceName, correlationID, message, context, targetIsJavaListener, guard);
+		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(serviceName, correlationID, message, session, targetIsJavaListener, guard);
 		getTaskExecutor().execute(ise);
 		try {
 			guard.waitForAllResources();
@@ -66,12 +65,10 @@ public class IsolatedServiceCaller {
 		if (ise.getThrowable()!=null) {
 			if (ise.getThrowable() instanceof ListenerException) {
 				throw (ListenerException)ise.getThrowable();
-			} else {
-				throw new ListenerException(ise.getThrowable());
 			}
-		} else {
-			return ise.getReply();
+			throw new ListenerException(ise.getThrowable());
 		}
+		return ise.getReply();
 	}
 
 }

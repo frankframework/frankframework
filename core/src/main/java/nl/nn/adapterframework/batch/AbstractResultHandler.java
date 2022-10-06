@@ -51,7 +51,7 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 	private boolean defaultResultHandler;
 	private @Getter boolean blockByRecordType=true;
 	private @Getter AbstractPipe pipe;
-	
+
 	protected ParameterList paramList = null;
 
 	@Override
@@ -95,7 +95,7 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 		this.pipe = pipe;
 	}
 
-	@IbisDoc({"1", "name of the resulthandler", ""})
+	@IbisDoc({"name of the resulthandler", ""})
 	@Override
 	public void setName(String string) {
 		name = string;
@@ -117,7 +117,7 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 		suffix = string;
 	}
 
-	@IbisDoc({"2", "if set <code>true</code>, this resulthandler is the default for all {@link recordhandlingflow flow}s that do not have a handler specified", "false"})
+	@IbisDoc({"if set <code>true</code>, this resulthandler is the default for all {@link recordhandlingflow flow}s that do not have a handler specified", "false"})
 	@Override
 	public void setDefault(boolean isDefault) {
 		this.defaultResultHandler = isDefault;

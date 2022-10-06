@@ -15,6 +15,7 @@
  */
 package nl.nn.adapterframework.pipes;
 
+import java.io.IOException;
 import java.net.URL;
 
 import org.apache.commons.lang3.StringUtils;
@@ -86,11 +87,11 @@ public class RhinoPipe extends FixedForwardPipe {
 				throw new ConfigurationException("got exception loading [" + getFileName() + "]", e);
 			}
 		}
-		if ((StringUtils.isEmpty(fileInput)) && inputString == null) { 
+		if ((StringUtils.isEmpty(fileInput)) && inputString == null) {
 			// No input from file or input string. Only from session-keys?
 			throw new ConfigurationException("has neither fileName nor inputString specified");
 		}
-		if (StringUtils.isEmpty(jsfunctionName)) { 
+		if (StringUtils.isEmpty(jsfunctionName)) {
 			// Cannot run the code in factory without any function start point
 			throw new ConfigurationException("JavaScript functionname not specified!");
 		}
@@ -101,18 +102,17 @@ public class RhinoPipe extends FixedForwardPipe {
 		//INIT
 		String eol = System.getProperty("line.separator");
 		if (message==null || message.isEmpty()) {
-			//No input from previous pipes. We will use filename and or string input.
-	        if ((StringUtils.isEmpty(fileInput)) && inputString==null && isLookupAtRuntime()) {  // No input from file or input string. Nowhere to GO!
-				throw new PipeRunException(this,getLogPrefix(session)+"No input specified anywhere. No string input, no file input and no previous pipe input");
-	        }
+			// No input from previous pipes. We will use filename and or string input.
+			if((StringUtils.isEmpty(fileInput)) && inputString == null && isLookupAtRuntime()) { // No input from file or input string. Nowhere to GO!
+				throw new PipeRunException(this, getLogPrefix(session) + "No input specified anywhere. No string input, no file input and no previous pipe input");
+			}
 		}
-		
-		
-		//Default console bindings. Used to map javascript commands to java commands as CONSTANT
-		//Console bindings do not work in Rhino. To print from jslib use java.lang.System.out.print("hello world!");
-		
-		//Get the input from the file at Run Time
-		if (StringUtils.isNotEmpty(getFileName()) && isLookupAtRuntime()) {
+
+		// Default console bindings. Used to map javascript commands to java commands as CONSTANT
+		// Console bindings do not work in Rhino. To print from jslib use java.lang.System.out.print("hello world!");
+
+		// Get the input from the file at Run Time
+		if(StringUtils.isNotEmpty(getFileName()) && isLookupAtRuntime()) {
 			URL resource = null;
 			try {
 				resource = ClassUtils.getResourceURL(this, getFileName());
@@ -159,7 +159,7 @@ public class RhinoPipe extends FixedForwardPipe {
 			cx.setLanguageVersion(Context.VERSION_1_2);
 			cx.setGeneratingDebug(true);
 		}
-		
+
 		// Load javascript factory with javascript functions from file, stringinput and paraminput
 		String jsResult = "";
 		try {
@@ -168,7 +168,7 @@ public class RhinoPipe extends FixedForwardPipe {
 			Function fct = (Function) scope.get(jsfunctionName, scope);
 			// Object result = fct.call(cx, scope, scope, new
 			// Object[]{jsfunctionArguments});
-			Object result = fct.call(cx, scope, scope, new Object[] { message.asObject() });
+			Object result = fct.call(cx, scope, scope, new Object[] { message.asString() });
 
 			jsResult = (String) Context.jsToJava(result, String.class);
 			if (isDebug() && log.isDebugEnabled()) {
@@ -178,6 +178,8 @@ public class RhinoPipe extends FixedForwardPipe {
 
 		} catch (EcmaError ex) {
 			throw new PipeRunException(this, "org.mozilla.javascript.EcmaError -> ", ex);
+		} catch (IOException ex) {
+			throw new PipeRunException(this, "unable to convert input message to string", ex);
 		} finally {
 			Context.exit();
 		}
@@ -228,7 +230,7 @@ public class RhinoPipe extends FixedForwardPipe {
 	public String getjsfunctionArguments() {
 		return jsfunctionArguments;
 	}
-	
+
 	@IbisDoc({"when set <code>true</code>, the lookup of the file will be done at runtime instead of at configuration time", "false"})
 	public void setLookupAtRuntime(boolean b) {
 		lookupAtRuntime = b;

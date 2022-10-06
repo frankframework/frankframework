@@ -37,7 +37,7 @@ public abstract class EnumUtils {
 
 	private static String getFieldName(Class<?> enumClass) {
 		String className = org.springframework.util.ClassUtils.getUserClass(enumClass).getSimpleName();
-		char c[] = className.toCharArray();
+		char[] c = className.toCharArray();
 		c[0] = Character.toLowerCase(c[0]);
 		return new String(c);
 	}

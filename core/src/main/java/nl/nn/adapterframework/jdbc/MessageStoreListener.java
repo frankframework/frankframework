@@ -21,14 +21,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.StringEscapeUtils;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ProcessState;
+import nl.nn.adapterframework.doc.Default;
+import nl.nn.adapterframework.doc.Optional;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
@@ -36,7 +40,7 @@ import nl.nn.adapterframework.util.Misc;
 /**
  * Read messages from the ibisstore previously stored by a
  * {@link MessageStoreSender}.
- * 
+ *
  * Example configuration:
  * <code><pre>
 		&lt;listener
@@ -53,7 +57,7 @@ import nl.nn.adapterframework.util.Misc;
 			slotId="${instance.name}/ServiceName"
 		/>
  * </pre></code>
- * 
+ *
  * @author Jaco de Groot
  */
 public class MessageStoreListener<M> extends JdbcTableListener<M> {
@@ -76,7 +80,7 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 		setStatusValueProcessed(IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode());
 		setStatusValueError(IMessageBrowser.StorageType.ERRORSTORAGE.getCode());
 	}
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -103,12 +107,13 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 		if (rawMessage != null && sessionKeys != null) {
 			MessageWrapper<?> messageWrapper = (MessageWrapper<?>)rawMessage;
 			try {
-				StringTokenizer strTokenizer = new StringTokenizer(messageWrapper.getMessage().asString(), ",");
-				messageWrapper.setMessage(new Message(strTokenizer.nextToken()));
-				int i = 0;
-				while (strTokenizer.hasMoreTokens()) {
-					threadContext.put(sessionKeysList.get(i), StringEscapeUtils.unescapeCsv(strTokenizer.nextToken()));
-					i++;
+				CSVParser parser = CSVParser.parse(messageWrapper.getMessage().asString(), CSVFormat.DEFAULT);
+				CSVRecord record = parser.getRecords().get(0);
+				messageWrapper.setMessage(new Message(record.get(0)));
+				for (int i=1; i<record.size();i++) {
+					if (sessionKeysList.size()>=i) {
+						threadContext.put(sessionKeysList.get(i-1), record.get(i));
+					}
 				}
 			} catch (IOException e) {
 				throw new ListenerException("cannot convert message",e);
@@ -119,13 +124,13 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 
 	protected IMessageBrowser<M> augmentMessageBrowser(IMessageBrowser<M> browser) {
 		if (browser!=null && browser instanceof JdbcTableMessageBrowser) {
-			JdbcTableMessageBrowser<Object> jtmb = (JdbcTableMessageBrowser<Object>)browser;
+			JdbcTableMessageBrowser<?> jtmb = (JdbcTableMessageBrowser<?>)browser;
 			jtmb.setExpiryDateField("EXPIRYDATE");
 			jtmb.setHostField("HOST");
 		}
 		return browser;
 	}
-	
+
 	@Override
 	public IMessageBrowser<M> getMessageBrowser(ProcessState state) {
 		IMessageBrowser<M> browser = super.getMessageBrowser(state);
@@ -160,89 +165,59 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 		this.sessionKeys = sessionKeys;
 	}
 
-	/**
-	 * Name of the table to be used
-	 * 
-	 * @ff.default IBISSTORE
-	 */
 	@Override
+	@Default ("IBISSTORE")
+	@Optional
 	public void setTableName(String string) {
 		super.setTableName(string);
 	}
 
-	/**
-	 * Primary key field of the table, used to identify messages
-	 * 
-	 * @ff.default MESSAGEKEY
-	 */
 	@Override
+	@Default ("MESSAGEKEY")
 	public void setKeyField(String fieldname) {
 		super.setKeyField(fieldname);
 	}
 
-	/**
-	 * field containing the message data
-	 * 
-	 * @ff.default MESSAGE
-	 */
 	@Override
+	@Default ("MESSAGE")
 	public void setMessageField(String fieldname) {
 		super.setMessageField(fieldname);
 	}
 
-	/**
-	 * Type of the field containing the message data
-	 * 
-	 * @ff.default BLOB
-	 */
 	@Override
+	@Default ("BLOB")
 	public void setMessageFieldType(MessageFieldType fieldtype) {
 		super.setMessageFieldType(fieldtype);
 	}
 
-	/**
-	 * Controls automatically whether blobdata is stored compressed and/or serialized in the database. N.B. When set true, then the BLOB will be converted into a string when read
-	 * 
-	 * @ff.default <code>true</code>
-	 */
 	@Override
+	@Default ("<code>true</code>")
 	public void setBlobSmartGet(boolean b) {
 		super.setBlobSmartGet(b);
 	}
 
-	/**
-	 * Field containing the status of the message
-	 * 
-	 * @ff.default TYPE
-	 */
 	@Override
+	@Default ("TYPE")
+	@Optional
 	public void setStatusField(String fieldname) {
 		super.setStatusField(fieldname);
 	}
 
-	/**
-	 * Field used to store the date and time of the last change of the statusField
-	 * 
-	 * @ff.default MESSAGEDATE
-	 */
 	@Override
+	@Default ("MESSAGEDATE")
 	public void setTimestampField(String fieldname) {
 		super.setTimestampField(fieldname);
 	}
 
-	/**
-	 * Field used to store the reason of the last change of the statusField
-	 * 
-	 * @ff.default COMMENTS
-	 */
 	@Override
+	@Default ("COMMENTS")
 	public void setCommentField(String commentField) {
 		super.setCommentField(commentField);
 	}
 
 	/**
 	 * Value of statusField indicating row is available to be processed. If set empty, any row not having any of the other status values is considered available.
-	 * 
+	 *
 	 * @ff.default <code>M</code>
 	 */
 	@Override
@@ -258,22 +233,16 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 		super.setStatusValueInProcess(string);
 	}
 
-	/**
-	 * Value of statusField indicating the processing of the row resulted in an error
-	 * 
-	 * @ff.default <code>E</code>
-	 */
 	@Override
+	@Default ("<code>E</code>")
+	@Optional
 	public void setStatusValueError(String string) {
 		super.setStatusValueError(string);
 	}
 
-	/**
-	 * Value of status field indicating row is processed OK
-	 * 
-	 * @ff.default <code>A</code>
-	 */
 	@Override
+	@Default ("<code>A</code>")
+	@Optional
 	public void setStatusValueProcessed(String string) {
 		super.setStatusValueProcessed(string);
 	}

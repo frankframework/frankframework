@@ -23,9 +23,10 @@ import java.util.Map;
 import nl.nn.adapterframework.util.ClassUtils;
 
 public class PathMessage extends Message {
-	
-	private Path path;
-	
+
+	private static final long serialVersionUID = -6810228164430433617L;
+	private transient Path path;
+
 	public PathMessage(Path path, Map<String,Object> context) {
 		super(() -> Files.newInputStream(path), new MessageContext(context)
 				.withModificationTime(path.toFile().lastModified())
@@ -39,16 +40,18 @@ public class PathMessage extends Message {
 	public PathMessage(Path path) {
 		this(path, new MessageContext());
 	}
-	
+
 	@Override
 	public long size() {
-		try {
-			return Files.size(path);
-		} catch (IOException e) {
-			log.debug("unable to determine size of stream ["+ClassUtils.nameOf(path)+"]", e);
-			return -1;
+		if (path!=null) {
+			try {
+				return Files.size(path);
+			} catch (IOException e) {
+				log.debug("unable to determine size of stream ["+ClassUtils.nameOf(path)+"]", e);
+				return -1;
+			}
 		}
+		return super.size();
 	}
-
 
 }

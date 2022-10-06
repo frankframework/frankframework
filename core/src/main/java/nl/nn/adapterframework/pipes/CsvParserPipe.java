@@ -43,11 +43,12 @@ import nl.nn.adapterframework.xml.SaxElementBuilder;
  *
  */
 public class CsvParserPipe extends StreamingPipe {
-	
+
 	private @Getter Boolean fileContainsHeader;
 	private @Getter String fieldNames;
 	private @Getter String fieldSeparator;
 	private @Getter HeaderCase headerCase=null;
+	private @Getter boolean prettyPrint=false;
 
 	private CSVFormat format = CSVFormat.DEFAULT;
 
@@ -55,7 +56,7 @@ public class CsvParserPipe extends StreamingPipe {
 		LOWERCASE,
 		UPPERCASE;
 	}
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -83,7 +84,7 @@ public class CsvParserPipe extends StreamingPipe {
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try (MessageOutputStream target=getTargetStream(session)) {
 			try (Reader reader = message.asReader()) {
-				try (SaxDocumentBuilder document = new SaxDocumentBuilder("csv", target.asContentHandler())) {
+				try (SaxDocumentBuilder document = new SaxDocumentBuilder("csv", target.asContentHandler(), isPrettyPrint())) {
 					CSVParser csvParser = format.parse(reader);
 					for (CSVRecord record : csvParser) {
 						try (SaxElementBuilder element = document.startElement("record")) {
@@ -106,27 +107,33 @@ public class CsvParserPipe extends StreamingPipe {
 				throw (PipeRunException)e;
 			}
 			throw new PipeRunException(this, "Cannot parse CSV", e);
-		}	
+		}
 	}
 
-	@IbisDoc({"1", "Specifies if the first line should be treated as header or as data", "true"})
+	@IbisDoc({"Specifies if the first line should be treated as header or as data", "true"})
 	public void setFileContainsHeader(Boolean fileContainsHeader) {
 		this.fileContainsHeader = fileContainsHeader;
 	}
 
-	@IbisDoc({"2", "Comma separated list of header names. If set, then <code>fileContainsHeader</code> defaults to false. If not set, headers are taken from the first line"})
+	@IbisDoc({"Comma separated list of header names. If set, then <code>fileContainsHeader</code> defaults to false. If not set, headers are taken from the first line"})
 	public void setFieldNames(String fieldNames) {
 		this.fieldNames = fieldNames;
 	}
 
-	@IbisDoc({"3", "Character that separates fields",","})
+	@IbisDoc({"Character that separates fields",","})
 	public void setFieldSeparator(String fieldSeparator) {
 		this.fieldSeparator = fieldSeparator;
 	}
 
-	@IbisDoc({"4", "When set, character casing will be changed for the header"})
+	@IbisDoc({"When set, character casing will be changed for the header"})
 	public void setHeaderCase(HeaderCase headerCase) {
 		this.headerCase = headerCase;
 	}
+
+	@IbisDoc({"Format the XML output in easy legible way"})
+	public void setPrettyPrint(boolean prettyPrint) {
+		this.prettyPrint = prettyPrint;
+	}
+
 
 }

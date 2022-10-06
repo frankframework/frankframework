@@ -29,7 +29,7 @@ import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
 public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPipeTestBase<P> {
-	
+
 	public static final String IDENTITY_STYLESHEET="/Xslt/identity.xslt";
 
 	protected abstract void setXpathExpression(String xpathExpression);
@@ -41,18 +41,19 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 	protected abstract void setRemoveNamespaces(boolean removeNamespaces);
 	protected abstract void setXslt2(boolean xslt2);
 	protected abstract void setOutputType(OutputType outputType);
- 
-	
+	protected abstract void setHandleLexicalEvents(boolean handleLexicalEvents);
+
+
 	@Override
-	public void setup() throws Exception {
+	public void setUp() throws Exception {
 		session = new PipeLineSession();
-		super.setup();
+		super.setUp();
 	}
 
 	protected void assertResultsAreCorrect(String expected, String actual, PipeLineSession session) {
-		assertEquals(expected,actual);	
+		assertEquals(expected,actual);
 	}
-	
+
 	protected void testXslt(String styleSheetName, String input, String expected, Boolean omitXmlDeclaration, Boolean indent, Boolean skipEmptyTags, Boolean removeNamespaces, Boolean xslt2) throws Exception {
 		setStyleSheetName(styleSheetName);
 		if (omitXmlDeclaration!=null) {
@@ -76,9 +77,9 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String result = Message.asString(prr.getResult());
 		assertResultsAreCorrect(expected,result.trim(),session);
-		
+
 	}
-	
+
 	@Test
 	public void basic() throws Exception {
 		String styleSheetName=  "/Xslt3/orgchart.xslt";
@@ -140,11 +141,11 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 	public void testSkipEmptyTags(String input, String expected, boolean omitXmlDeclaration, boolean indent) throws Exception {
 		testXslt(IDENTITY_STYLESHEET, input, expected, omitXmlDeclaration, indent, true, null, null);
 	}
-	
+
 	public void testRemoveNamespaces(String input, String expected, boolean omitXmlDeclaration, boolean indent) throws Exception {
 		testXslt(IDENTITY_STYLESHEET, input, expected, omitXmlDeclaration, indent, null, true, null);
 	}
-	
+
 	@Test
 	public void testSkipEmptyTagsNoOmitNoIndent() throws Exception {
 		testSkipEmptyTags("<root><a>a</a><b></b><c/></root>","<?xml version=\"1.0\" encoding=\"UTF-8\"?><root><a>a</a></root>",false,false);
@@ -166,14 +167,14 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		String lineSeparator="\n";
 		testSkipEmptyTags("<root><a>a</a><b></b><c/></root>","<root>"+lineSeparator+"\t<a>a</a>"+lineSeparator+"</root>",true,true);
 	}
-	
+
 	@Test
 	public void testRemoveNamespacesNoOmitNoIndent() throws Exception {
 		testRemoveNamespaces("<root xmlns=\"urn:fakenamespace\"><a>a</a><b></b><c/></root>","<?xml version=\"1.0\" encoding=\"UTF-8\"?><root><a>a</a><b/><c/></root>",false,false);
 	}
-	
+
 	@Test
-	@Ignore("Indent appears not to work in combination with Streaming and RemoveNamespaces. Ignore the test for now...")	
+	@Ignore("Indent appears not to work in combination with Streaming and RemoveNamespaces. Ignore the test for now...")
 	public void testRemoveNamespacesNoOmitIndent() throws Exception {
 		String lineSeparator=System.getProperty("line.separator");
 		testRemoveNamespaces("<ns:root xmlns:ns=\"urn:fakenamespace\"><ns:a>a</ns:a><ns:b></ns:b><c/></ns:root>","<?xml version=\"1.0\" encoding=\"UTF-8\"?><root>"+lineSeparator+"\t<a>a</a>"+lineSeparator+"\t<b/>"+lineSeparator+"\t<c/>"+lineSeparator+"</root>",false,true);
@@ -188,7 +189,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 //		String lineSeparator=System.getProperty("line.separator");
 //		testRemoveNamespaces("<root><a>a</a><b></b><c/></root>","<root>"+lineSeparator+"<a>a</a>"+lineSeparator+"<b/>"+lineSeparator+"<c/>"+lineSeparator+"</root>",true,true);
 //	}
-	
+
 	public void testBasic(String input, String expected, boolean omitXmlDeclaration, boolean indent) throws Exception {
 		testXslt(IDENTITY_STYLESHEET, input, expected, omitXmlDeclaration, indent, false, null, null);
 	}
@@ -209,7 +210,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		String expected = TestFileUtils.getTestFile("/Xslt/importDocument/out.xml");
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String result = Message.asString(prr.getResult());
-		
+
 		assertResultsAreCorrect(expected, result, session);
 	}
 
@@ -226,7 +227,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String result = Message.asString(prr.getResult());
-		
+
 		assertResultsAreCorrect(expected, result, session);
 	}
 
@@ -244,7 +245,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		String expected = TestFileUtils.getTestFile("/Xslt/importDocument/out.xml");
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String result = Message.asString(prr.getResult());
-		
+
 		assertResultsAreCorrect(expected, result, session);
 	}
 
@@ -262,7 +263,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		String expected = TestFileUtils.getTestFile("/Xslt/importDocument/out.xml");
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String result = Message.asString(prr.getResult());
-		
+
 		assertResultsAreCorrect(expected, result, session);
 	}
 
@@ -278,7 +279,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		String expected = TestFileUtils.getTestFile("/Xslt/importDocument/out.xml");
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String result = Message.asString(prr.getResult());
-		
+
 		assertResultsAreCorrect(expected, result, session);
 	}
 
@@ -295,7 +296,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String result = Message.asString(prr.getResult());
-		
+
 		assertResultsAreCorrect(expected, result, session);
 	}
 
@@ -326,7 +327,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String result = Message.asMessage(prr.getResult()).asString();
-		
+
 		assertResultsAreCorrect(expected, result, session);
 	}
 
@@ -341,10 +342,10 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String result = Message.asString(prr.getResult());
-		
+
 		assertResultsAreCorrect(expected, result, session);
 	}
-	
+
 	@Test
 	public void xpathNodeXml() throws Exception {
 		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
@@ -357,7 +358,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String result = Message.asString(prr.getResult());
-		
+
 		assertResultsAreCorrect(expected, result, session);
 	}
 	@Test
@@ -367,12 +368,13 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 
 		setStyleSheetName("/Xslt/AnyXml/Copy.xsl");
 		setOmitXmlDeclaration(true);
+		setHandleLexicalEvents(true);
 		pipe.configure();
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String result = Message.asMessage(prr.getResult()).asString();
-		
+
 		assertResultsAreCorrect(expected, result, session);
 	}
 
@@ -383,12 +385,13 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 
 		setStyleSheetName("/Xslt/AnyXml/CopyNoMethodConfigured.xsl");
 		setOmitXmlDeclaration(true);
+		setHandleLexicalEvents(true);
 		pipe.configure();
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String result = Message.asMessage(prr.getResult()).asString();
-		
+
 		assertResultsAreCorrect(expected, result, session);
 	}
 
@@ -399,13 +402,14 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 
 		setStyleSheetName("/Xslt/AnyXml/Copy.xsl");
 		setOmitXmlDeclaration(true);
+		setHandleLexicalEvents(true);
 		setIndent(true);
 		pipe.configure();
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String result = Message.asMessage(prr.getResult()).asString();
-		
+
 		assertResultsAreCorrect(expected, result, session);
 	}
 
@@ -421,12 +425,13 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/AsText.txt");
 
 		setStyleSheetName("/Xslt/AnyXml/CopyAsText.xsl");
+		setHandleLexicalEvents(true);
 		pipe.configure();
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String result = Message.asMessage(prr.getResult()).asString();
-		
+
 		assertResultsAreCorrect(expected.trim(), result.trim(), session); // trim is necessary on IBM JDK
 	}
 
@@ -441,7 +446,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String result = Message.asString(prr.getResult());
-		
+
 		assertResultsAreCorrect(expected.replaceAll("\\s", ""), result.replaceAll("\\s", ""), session);
 	}
 
@@ -454,13 +459,14 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		setXslt2(false);
 		setSkipEmptyTags(true);
 		setOmitXmlDeclaration(true);
+		setHandleLexicalEvents(true);
 		setIndent(true);
 		pipe.configure();
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String result = Message.asMessage(prr.getResult()).asString();
-		
+
 		assertResultsAreCorrect(expected, result, session);
 	}
 
@@ -470,6 +476,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		setXslt2(true);
 		setSkipEmptyTags(true);
 		setOmitXmlDeclaration(true);
+		setHandleLexicalEvents(true);
 		setIndent(true);
 		pipe.configure();
 		pipe.start();
@@ -478,7 +485,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String result = Message.asMessage(prr.getResult()).asString();
-		
+
 		assertResultsAreCorrect(expected, result, session);
 	}
 

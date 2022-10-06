@@ -45,8 +45,7 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 	private String localFilenamePattern=null;
 	private String localDirectory=null;;
 	private String remoteDirectory=null;
-	private boolean deleteAfterGet=false;
-	
+	private boolean deleteAfterGet = false;
 
 	public FtpFileRetrieverPipe() {
 		ftpSession = new FtpSession();
@@ -61,17 +60,17 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 //		}
 		ftpSession.configure();
 	}
-	
+
 	@Override
 	public void stop() {
 		super.stop();
-		try {		
+		try {
 			ftpSession.closeClient();
-		} catch(Exception e) {
-			log.warn(getLogPrefix(null)+"exception closing ftpSession",e);
+		} catch (Exception e) {
+			log.warn(getLogPrefix(null) + "exception closing ftpSession", e);
 		}
 	}
- 
+
 	/** 
 * @see nl.nn.adapterframework.core.IPipe#doPipe(Message, PipeLineSession)
 	 */
@@ -86,9 +85,9 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 		try {
 			boolean close = ! deleteAfterGet;
 			String localFilename = ftpSession.get(getParameterList(), session, localDirectory, remoteDirectory, orgFilename, localFilenamePattern, close);
-			if (deleteAfterGet) {
+			if(deleteAfterGet) {
 				ftpSession.deleteRemote(remoteDirectory, orgFilename, true);
-			} 
+			}
 			return new PipeRunResult(getSuccessForward(), localFilename);
 		}
 		catch(Exception e) {

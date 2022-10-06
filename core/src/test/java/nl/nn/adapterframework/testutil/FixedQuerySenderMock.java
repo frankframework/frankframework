@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.testutil;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -35,6 +36,8 @@ public class FixedQuerySenderMock extends FixedQuerySender {
 		if(mock != null) {
 			try {
 				Connection conn = Mockito.mock(Connection.class);
+				DatabaseMetaData md= Mockito.mock(DatabaseMetaData.class);
+				Mockito.doReturn(md).when(conn).getMetaData();
 				PreparedStatement stmt = Mockito.mock(PreparedStatement.class);
 				Mockito.doReturn(stmt).when(conn).prepareStatement(Mockito.anyString());
 				Mockito.doReturn(mock).when(stmt).executeQuery();
@@ -102,7 +105,7 @@ public class FixedQuerySenderMock extends FixedQuerySender {
 	}
 
 	public void addMockedQueries(Map<String, ResultSet> mocks) {
-		this.mocks = mocks;
+		this.mocks.putAll(mocks);
 	}
 
 	public void addMock(String query, ResultSet resultSet) {

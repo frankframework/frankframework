@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import java.util.Date;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.FrankDocGroup;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.jdbc.MessageStoreSender;
 
 /**
  * The <code>ITransactionalStorage</code> is responsible for storing and 
@@ -29,7 +29,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
  * @author  Gerrit van Brakel
  * @since   4.1
 */
-@FrankDocGroup(order = 50, name = "TransactionalStorages")
+@FrankDocGroup(order = 55, name = "TransactionalStorages")
 public interface ITransactionalStorage<S extends Serializable> extends IMessageBrowser<S>, INamedObject {
 
 	public static final int MAXCOMMENTLEN=1000;
@@ -39,10 +39,10 @@ public interface ITransactionalStorage<S extends Serializable> extends IMessageB
 	/**
 	 * Prepares the object for operation. After this
 	 * method is called the storeMessage() and retrieveMessage() methods may be called
-	 */ 
+	 */
 	public void open() throws Exception;
 	public void close();
-	
+
 	public void configure() throws ConfigurationException;
 
 	/**
@@ -51,22 +51,24 @@ public interface ITransactionalStorage<S extends Serializable> extends IMessageB
 	 * The messageId should be unique.
 	 */
 	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, S message) throws SenderException;
-	
+
 	/**
 	 * Retrieves and deletes the message.
 	 */
 	public S getMessage(String storageKey) throws ListenerException;
 
 
-	/**
-	 *  slotId allows using component to define a kind of 'subsection'.
-	 */	
-	@IbisDoc({"1", "Optional identifier for this storage, to be able to share the physical storage between a number of receivers and pipes", ""})
+	/** Optional identifier for this storage, to be able to share the physical storage between a number of receivers and pipes. */
 	public void setSlotId(String string);
 	public String getSlotId();
 
 
-	@IbisDoc({"2", "Possible values are E (error store), M (message store), L (message log for pipe) or A (message log for receiver). Receiver will always set type to E for errorStorage and always set type to A for messageLog. SenderPipe will set type to L for messageLog (when type isn't specified). See {@link MessagestoreSender} for type M", "E for errorstorage on receiver, A for messageLog on receiver and L for messageLog on Pipe"})
+	/**
+	 * Possible values are <code>E</code> (error store), <code>M</code> (message store), <code>L</code> (message log for Pipe) or <code>A</code> (message log for Receiver).<br/>
+	 * Receiver will always set type to <code>E</code> for errorStorage and always set type to <code>A</code> for messageLog. SenderPipe will set type to <code>L</code> for messageLog (when type isn't specified).<br/>
+	 * See {@link MessageStoreSender} for type <code>M</code>.
+	 * @ff.default <code>E</code> for errorStorage on Receiver<br/><code>A</code> for messageLog on Receiver<br/><code>L</code> for messageLog on Pipe
+	 */
 	public void setType(String string);
 	public String getType();
 }

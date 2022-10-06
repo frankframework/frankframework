@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,7 +25,10 @@ public interface IXmlValidator extends IValidator {
 	public ConfigurationException getConfigurationException();
 
 	public String getMessageRoot();
-	
+
+	/**
+	 * @return noNamespaceSchemalocation, if specified
+	 */
 	public String getSchema();
 	public String getSchemaLocation();
 	public Set<XSD> getXsds() throws ConfigurationException;

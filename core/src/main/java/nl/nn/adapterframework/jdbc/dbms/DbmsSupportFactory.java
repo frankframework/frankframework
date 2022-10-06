@@ -39,7 +39,7 @@ public class DbmsSupportFactory implements IDbmsSupportFactory {
 
 	private Map<DataSource, IDbmsSupport> dbmsSupport = new ConcurrentHashMap<>();
 
-	private Properties dbmsSupportMap; 
+	private Properties dbmsSupportMap;
 
 	@Override
 	public IDbmsSupport getDbmsSupport(DataSource datasource) {

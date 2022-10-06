@@ -2,7 +2,7 @@
 	<!ENTITY ConfigurationMFH SYSTEM "./Configuration_MFH.xml">
 	<!ENTITY UploadFile SYSTEM "./ConfigurationUploadFile.xml">
 ]>
-<configuration name="FileHandling">
+<configuration>
 	&ConfigurationMFH;
 	&UploadFile;
 </configuration>

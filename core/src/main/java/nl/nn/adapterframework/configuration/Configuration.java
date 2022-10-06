@@ -32,6 +32,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.Lifecycle;
 import org.springframework.context.LifecycleProcessor;
 import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.context.support.AbstractRefreshableConfigApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import lombok.Getter;
@@ -42,7 +43,7 @@ import nl.nn.adapterframework.configuration.extensions.SapSystems;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.ProtectedAttribute;
+import nl.nn.adapterframework.doc.Protected;
 import nl.nn.adapterframework.jdbc.migration.DatabaseMigratorBase;
 import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
@@ -50,9 +51,11 @@ import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle;
 import nl.nn.adapterframework.lifecycle.LazyLoadingEventListener;
 import nl.nn.adapterframework.lifecycle.SpringContextScope;
 import nl.nn.adapterframework.monitoring.MonitorManager;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.scheduler.job.IJob;
 import nl.nn.adapterframework.scheduler.job.Job;
-import nl.nn.adapterframework.statistics.HasStatistics;
+import nl.nn.adapterframework.statistics.HasStatistics.Action;
+import nl.nn.adapterframework.statistics.MetricsInitializer;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.statistics.StatisticsKeeperLogger;
 import nl.nn.adapterframework.util.AppConstants;
@@ -62,10 +65,17 @@ import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
- * The Configuration is the container of all configuration objects.
+ * Container of {@link Adapter Adapters} that belong together.
+ * A configuration may be deployed independently from other configurations.
+ * Names of nested elements like {@link Adapter Adapters}, {@link Receiver Receivers}, listeners and senders
+ * can be reused in other configurations.
+ * <br/><br/>
+ * Configurations are shown in the Frank!Console along with their {@link Adapter Adapters},
+ * {@link Receiver Receivers}, listeners and senders. The Adapter Status page of the Frank!Console
+ * has a tab for each configuration that only shows information
+ * about that configuration. See the Frank!Manual for details.
  *
  * @author Johan Verrips
- * @see    nl.nn.adapterframework.core.Adapter
  */
 public class Configuration extends ClassPathXmlApplicationContext implements IConfigurable, ApplicationContextAware, ConfigurableLifecycle {
 	protected Logger log = LogUtil.getLogger(this);
@@ -91,12 +101,16 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	private Date statisticsMarkDateMain=new Date();
 	private Date statisticsMarkDateDetails=statisticsMarkDateMain;
 
-	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski, Date now, Date mainMark, Date detailMark, int action) throws SenderException {
+	public Configuration() {
+		setConfigLocation(SpringContextScope.CONFIGURATION.getContextFile()); //Don't call the super(..), it will trigger a refresh.
+	}
+
+	private void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski, Date now, Date mainMark, Date detailMark, Action action, String rootName, String rootType) throws SenderException {
 		Object root = hski.start(now,mainMark,detailMark);
 		try {
-			Object groupData=hski.openGroup(root,AppConstants.getInstance().getString("instance.name",""),"instance");
+			Object groupData= hski.openGroup(root, rootName, rootType);
 			for (Adapter adapter : adapterManager.getAdapterList()) {
-				adapter.forEachStatisticsKeeperBody(hski,groupData,action);
+				adapter.iterateOverStatistics(hski,groupData,action);
 			}
 			IbisCacheManager.iterateOverStatistics(hski, groupData, action);
 			hski.closeGroup(groupData);
@@ -105,11 +119,9 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		}
 	}
 
-	public void dumpStatistics(int action) {
+	public void dumpStatistics(Action action) {
 		Date now = new Date();
-		boolean showDetails=(action == HasStatistics.STATISTICS_ACTION_FULL ||
-							 action == HasStatistics.STATISTICS_ACTION_MARK_FULL ||
-							 action == HasStatistics.STATISTICS_ACTION_RESET);
+		boolean showDetails=(action == Action.FULL || action == Action.MARK_FULL);
 		try {
 			if (statisticsHandler==null) {
 				statisticsHandler =new StatisticsKeeperLogger();
@@ -127,24 +139,26 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 //			skih.configure();
 //			skihc.registerIterationHandler(skih);
 
-			forEachStatisticsKeeper(statisticsHandler, now, statisticsMarkDateMain, showDetails ?statisticsMarkDateDetails : null, action);
+			forEachStatisticsKeeper(statisticsHandler, now, statisticsMarkDateMain, showDetails ?statisticsMarkDateDetails : null, action, AppConstants.getInstance().getString("instance.name",""), "instance");
 		} catch (Exception e) {
 			log.error("dumpStatistics() caught exception", e);
 		}
-		if (action==HasStatistics.STATISTICS_ACTION_RESET ||
-			action==HasStatistics.STATISTICS_ACTION_MARK_MAIN ||
-			action==HasStatistics.STATISTICS_ACTION_MARK_FULL) {
+		if (action==Action.MARK_MAIN || action==Action.MARK_FULL) {
 				statisticsMarkDateMain=now;
 		}
-		if (action==HasStatistics.STATISTICS_ACTION_RESET ||
-			action==HasStatistics.STATISTICS_ACTION_MARK_FULL) {
+		if (action==Action.MARK_FULL) {
 				statisticsMarkDateDetails=now;
 		}
 
 	}
 
-	public Configuration() {
-		setConfigLocation(SpringContextScope.CONFIGURATION.getContextFile()); //Don't call the super(..), it will trigger a refresh.
+	public void initMetrics() throws ConfigurationException {
+		StatisticsKeeperIterationHandler metricsInitializer = getBean(MetricsInitializer.class);
+		try {
+			forEachStatisticsKeeper(metricsInitializer, new Date(), statisticsMarkDateMain, statisticsMarkDateDetails, Action.FULL, getName(), "configuration");
+		} catch (SenderException e) {
+			throw new ConfigurationException("Cannot initialize metrics", e);
+		}
 	}
 
 	@Override
@@ -169,12 +183,10 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		if(ibisManager == null) {
 			throw new IllegalStateException("No IbisManager set");
 		}
-
-		setVersion(ConfigurationUtils.getConfigurationVersion(getClassLoader()));
 		if(StringUtils.isEmpty(getVersion())) {
-			log.info("unable to determine [configuration.version] for configuration [{}]", ()-> getName());
+			log.info("unable to determine [configuration.version] for configuration [{}]", this::getName);
 		} else {
-			log.debug("configuration [{}] found currentConfigurationVersion [{}]", ()-> getName(), ()-> getVersion());
+			log.debug("configuration [{}] found currentConfigurationVersion [{}]", this::getName, this::getVersion);
 		}
 
 		super.afterPropertiesSet(); //Triggers a context refresh
@@ -188,16 +200,17 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		}
 
 		ibisManager.addConfiguration(this); //Only if successfully refreshed, add the configuration
-		log.info("initialized Configuration [{}] with ClassLoader [{}]", ()-> toString(), ()-> getClassLoader());
+		log.info("initialized Configuration [{}] with ClassLoader [{}]", this::toString, this::getClassLoader);
 	}
 
 	/**
-	 * Don't manually call this method. Spring should automatically trigger 
+	 * Don't manually call this method. Spring should automatically trigger
 	 * this when super.afterPropertiesSet(); is called.
 	 */
 	@Override
 	public void refresh() throws BeansException, IllegalStateException {
 		setId(getId()); // Update the setIdCalled flag in AbstractRefreshableConfigApplicationContext. When wired through spring it calls the setBeanName method.
+		setVersion(ConfigurationUtils.getConfigurationVersion(getClassLoader()));
 
 		super.refresh();
 
@@ -215,7 +228,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		if(type.isAssignableFrom(ApplicationListener.class)) {
 			List<String> blacklist = Arrays.asList(super.getBeanNamesForType(LazyLoadingEventListener.class, includeNonSingletons, allowEagerInit));
 			List<String> beanNames = Arrays.asList(super.getBeanNamesForType(type, includeNonSingletons, allowEagerInit));
-			log.info("removing LazyLoadingEventListeners "+blacklist+" from Spring auto-magic event-based initialization");
+			log.info("removing LazyLoadingEventListeners {} from Spring auto-magic event-based initialization", blacklist);
 
 			return beanNames.stream().filter(str -> !blacklist.contains(str)).toArray(String[]::new);
 		}
@@ -224,7 +237,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 	/**
 	 * Spring method which starts the ApplicationContext.
-	 * Loads + digests the configuration and calls start() in all registered 
+	 * Loads + digests the configuration and calls start() in all registered
 	 * beans that implement the Spring {@link Lifecycle} interface.
 	 */
 	@Override
@@ -242,7 +255,10 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
-		log.info("configuring configuration ["+getId()+"]");
+		log.info("configuring configuration [{}]", this::getId);
+		if(getName().contains("/")) {
+			throw new ConfigurationException("It is not allowed to have '/' in configuration name ["+getName()+"]");
+		}
 		state = BootState.STARTING;
 		long start = System.currentTimeMillis();
 
@@ -252,12 +268,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 			ConfigurationDigester configurationDigester = getBean(ConfigurationDigester.class);
 			configurationDigester.digest();
 
-			FlowDiagramManager flowDiagramManager = getBean(FlowDiagramManager.class);
-			try {
-				flowDiagramManager.generate(this);
-			} catch (Exception e) { //Don't throw an exception when generating the flow fails
-				ConfigurationWarnings.add(this, log, "Error generating flow diagram for configuration ["+getName()+"]", e);
-			}
+			generateConfigurationFlow();
 
 			//Trigger a configure on all Lifecycle beans
 			LifecycleProcessor lifecycle = getBean(LIFECYCLE_PROCESSOR_BEAN_NAME, LifecycleProcessor.class);
@@ -269,12 +280,12 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 			publishEvent(new ConfigurationMessageEvent(this, "aborted starting; "+ e.getMessage()));
 			throw e;
 		}
-
+		initMetrics();
 		configured = true;
 
 		String msg;
 		if (isAutoStart()) {
-			getIbisManager().startConfiguration(this);
+			start();
 			msg = "startup in " + (System.currentTimeMillis() - start) + " ms";
 		}
 		else {
@@ -282,6 +293,19 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		}
 		secLog.info("Configuration [" + getName() + "] [" + getVersion()+"] " + msg);
 		publishEvent(new ConfigurationMessageEvent(this, msg));
+	}
+
+	/**
+	 * Generate a flow over the digested {@link Configuration}.
+	 * Uses {@link Configuration#getLoadedConfiguration()}.
+	 */
+	private void generateConfigurationFlow() {
+		FlowDiagramManager flowDiagramManager = getBean(FlowDiagramManager.class);
+		try {
+			flowDiagramManager.generate(this);
+		} catch (Exception e) { //Don't throw an exception when generating the flow fails
+			ConfigurationWarnings.add(this, log, "Error generating flow diagram for configuration ["+getName()+"]", e);
+		}
 	}
 
 	/** Execute any database changes before calling {@link #configure()}. */
@@ -408,16 +432,19 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	/**
-	 * Register an adapter with the configuration.
+	 * Add adapter.
 	 */
 	public void registerAdapter(Adapter adapter) {
 		adapter.setConfiguration(this);
 		adapterManager.registerAdapter(adapter);
 
-		log.debug("Configuration [" + getName() + "] registered adapter [" + adapter.toString() + "]");
+		log.debug("Configuration [{}] registered adapter [{}]", this::getName, adapter::toString);
 	}
 
 	// explicitly in this position, to have the right location in the XSD
+	/**
+	 * Container for jobs scheduled for periodic execution.
+	 */
 	public void setScheduleManager(ScheduleManager scheduleManager) {
 		this.scheduleManager = scheduleManager;
 	}
@@ -439,25 +466,25 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	public void registerStatisticsHandler(StatisticsKeeperIterationHandler handler) throws ConfigurationException {
-		log.debug("registerStatisticsHandler() registering ["+ClassUtils.nameOf(handler)+"]");
+		log.debug("registerStatisticsHandler() registering [{}]", ()->ClassUtils.nameOf(handler));
 		statisticsHandler=handler;
 		handler.configure();
 	}
 
-	/*
+	/**
 	 * Configurations should be wired through Spring, which in turn should call {@link #setBeanName(String)}.
-	 * Once the ConfigurationContext has a name it should not be changed anymore, hence 
+	 * Once the ConfigurationContext has a name it should not be changed anymore, hence
 	 * {@link AbstractRefreshableConfigApplicationContext#setBeanName(String) super.setBeanName(String)} only sets the name once.
 	 * If not created by Spring, the setIdCalled flag in AbstractRefreshableConfigApplicationContext wont be set, allowing the name to be updated.
-	 * 
+	 *
 	 * The DisplayName will always be updated, which is purely used for logging purposes.
 	 */
-	/** Name of the Configuration */
+	@Protected
 	@Override
 	public void setName(String name) {
 		if(StringUtils.isNotEmpty(name)) {
 			if(state == BootState.STARTING && !getName().equals(name)) {
-				publishEvent(new ConfigurationMessageEvent(this, "configuration name ["+getName()+"] does not match XML name attribute ["+name+"]", MessageKeeperLevel.WARN));
+				publishEvent(new ConfigurationMessageEvent(this, "name ["+getName()+"] does not match XML name attribute ["+name+"]", MessageKeeperLevel.WARN));
 			}
 			setBeanName(name);
 		}
@@ -468,10 +495,11 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	/** The version of the Configuration, typically provided by the BuildInfo.properties file. */
+	@Protected
 	public void setVersion(String version) {
 		if(StringUtils.isNotEmpty(version)) {
 			if(state == BootState.STARTING && this.version != null && !this.version.equals(version)) {
-				publishEvent(new ConfigurationMessageEvent(this, "configuration version ["+this.version+"] does not match XML version attribute ["+version+"]", MessageKeeperLevel.WARN));
+				publishEvent(new ConfigurationMessageEvent(this, "version ["+this.version+"] does not match XML version attribute ["+version+"]", MessageKeeperLevel.WARN));
 			}
 
 			this.version = version;
@@ -499,13 +527,13 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	/** The entire (raw) configuration */
-	@ProtectedAttribute
+	@Protected
 	public void setOriginalConfiguration(String originalConfiguration) {
 		this.originalConfiguration = originalConfiguration;
 	}
 
 	/** The loaded (with resolved properties) configuration */
-	@ProtectedAttribute
+	@Protected
 	public void setLoadedConfiguration(String loadedConfiguration) {
 		this.loadedConfiguration = loadedConfiguration;
 	}
@@ -530,6 +558,11 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		return null;
 	}
 
+	@Override
+	public ClassLoader getConfigurationClassLoader() {
+		return getClassLoader();
+	}
+
 	// Dummy setter to allow SapSystems being added to Configurations via Frank!Config XSD
 	public void setSapSystems(SapSystems sapSystems) {
 		// SapSystems self register;
@@ -543,27 +576,25 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	// Dummy setter to allow JmsRealms being added to Configurations via Frank!Config XSD
 	@Deprecated
 	public void registerJmsRealm(JmsRealm realm) {
-		// JmsRealm-objects self register in JmsRealmFactory;
-	}
-
-	@Override
-	public ClassLoader getConfigurationClassLoader() {
-		return getClassLoader();
+		JmsRealmFactory.getInstance().registerJmsRealm(realm); // For backwards compatibility to support old ibisdoc xsd
 	}
 
 	/**
-	 * Container for monitor objects 
+	 * Container for monitor objects
 	 */
 	public void setMonitoring(MonitorManager monitorManager) {
 		// Monitors self register in MonitorManager;
 	}
 	// above comment is used in FrankDoc
+	// Dummy setter to allow Monitors being added to Configurations via Frank!Config XSD
 	@Deprecated
 	public void registerMonitoring(MonitorManager factory) {
 	}
 
+
+
 	@Override
-	@ProtectedAttribute
+	@Protected
 	public void setBeanName(String name) {
 		super.setBeanName(name);
 		setDisplayName("ConfigurationContext [" + name + "]");

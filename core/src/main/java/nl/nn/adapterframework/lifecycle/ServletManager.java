@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2020 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2019-2020 Nationale-Nederlanden, 2021-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,20 +19,26 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.servlet.HttpConstraintElement;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRegistration;
+import javax.servlet.ServletRegistration.Dynamic;
 import javax.servlet.ServletSecurityElement;
 import javax.servlet.annotation.ServletSecurity;
+import javax.servlet.annotation.ServletSecurity.TransportGuarantee;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -62,8 +68,15 @@ public class ServletManager {
 	private ServletContext servletContext = null;
 	private List<String> registeredRoles = new ArrayList<>();
 	private Logger log = LogUtil.getLogger(this);
+	private AppConstants appConstants;
+	private Set<String> servlets = new TreeSet<>();
+	private static boolean webSecurityEnabled = true;
+	private static TransportGuarantee defaultTransportGuarantee = TransportGuarantee.CONFIDENTIAL;
 
-	private ServletContext getServletContext() {
+	protected static final String AUTH_ENABLED_KEY = "application.security.http.authentication";
+	protected static final String HTTPS_ENABLED_KEY = "application.security.http.transportGuarantee";
+
+	protected ServletContext getServletContext() {
 		return servletContext;
 	}
 
@@ -72,6 +85,30 @@ public class ServletManager {
 
 		//Add the default IBIS roles
 		registeredRoles.addAll(Arrays.asList("IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester", "IbisWebService"));
+
+		appConstants = AppConstants.getInstance();
+		setupDefaultSecuritySettings(appConstants);
+	}
+
+	protected static void setupDefaultSecuritySettings(Properties properties) {
+		boolean isDtapStageLoc = "LOC".equalsIgnoreCase(properties.getProperty("dtap.stage"));
+		String isAuthEnabled = properties.getProperty(AUTH_ENABLED_KEY);
+		webSecurityEnabled = StringUtils.isNotEmpty(isAuthEnabled) ? Boolean.parseBoolean(isAuthEnabled) : !isDtapStageLoc;
+
+		String constraintType = properties.getProperty(HTTPS_ENABLED_KEY);
+		if (StringUtils.isNotEmpty(constraintType)) {
+			try {
+				defaultTransportGuarantee = EnumUtils.parse(TransportGuarantee.class, constraintType);
+			} catch(IllegalArgumentException e) {
+				LogUtil.getLogger(ServletManager.class).error("unable to set TransportGuarantee", e);
+			}
+		} else if(isDtapStageLoc) {
+			defaultTransportGuarantee = TransportGuarantee.NONE;
+		}
+	}
+
+	public boolean isWebSecurityEnabled() {
+		return webSecurityEnabled;
 	}
 
 	/**
@@ -84,56 +121,57 @@ public class ServletManager {
 				registeredRoles.add(role);
 
 				getServletContext().declareRoles(role);
-				log.info("declared role ["+role+"]");
+				log.info("declared role [{}]", role);
 			}
 		}
 	}
 
-	public void registerServlet(String servletName, Servlet servletClass, String urlMapping) {
-		registerServlet(servletName, servletClass, urlMapping, new String[0], -1, null);
+	public void register(DynamicRegistration.Servlet servlet) {
+		Map<String, String> parameters = null;
+		if(servlet instanceof DynamicRegistration.ServletWithParameters)
+			parameters = ((DynamicRegistration.ServletWithParameters) servlet).getParameters();
+
+		registerServlet(servlet, parameters);
 	}
 
-	public void registerServlet(String servletName, Servlet servlet, String urlMapping, String[] roles, int loadOnStartup, Map<String, String> initParameters) {
-		log.info("instantiating IbisInitializer servlet name ["+servletName+"] servletClass ["+servlet+"] loadOnStartup ["+loadOnStartup+"]");
-		getServletContext().log("instantiating IbisInitializer servlet ["+servletName+"]");
+	public void register(Servlet servletClass, String servletName, String urlMapping) {
+		registerServlet(servletClass, servletName, urlMapping, new String[0], -1, null);
+	}
 
+	private void registerServlet(DynamicRegistration.Servlet servlet, Map<String, String> parameters) {
+		registerServlet(servlet, servlet.getName(), servlet.getUrlMapping(), servlet.getAccessGrantingRoles(), servlet.loadOnStartUp(), parameters);
+	}
 
-		AppConstants appConstants = AppConstants.getInstance();
+	private void registerServlet(Servlet servlet, String servletName, String urlMapping, String[] roles, int loadOnStartup, Map<String, String> initParameters) {
+		if(servletName.contains(" ")) {
+			throw new IllegalArgumentException("unable to instantiate servlet, servlet name may not contain spaces");
+		}
+		if(servlets.contains(servletName)) {
+			throw new IllegalArgumentException("unable to instantiate servlet, servlet name must be unique");
+		}
+
+		log.info("instantiating IbisInitializer servlet name [{}] servletClass [{}]", servletName, servlet);
+
 		String propertyPrefix = "servlet."+servletName+".";
-
 		if(!appConstants.getBoolean(propertyPrefix+"enabled", true))
 			return;
 
+		ServletSecurityElement security = getServletSecurity(propertyPrefix, roles);
+		StringBuilder builder = new StringBuilder("instantiating IbisInitializer servlet ["+servletName+"] using protocol ");
+		builder.append((security.getTransportGuarantee()==TransportGuarantee.CONFIDENTIAL)?"[HTTPS]":"[HTTP]");
+		if(security.getRolesAllowed().length > 0) {
+			builder.append(" and roles " + Arrays.asList(security.getRolesAllowed()));
+		} else if(!"LOC".equalsIgnoreCase(appConstants.getProperty("dtap.stage"))) {
+			builder.append(" with no authentication enabled!");
+		}
+		getServletContext().log(builder.toString());
+
 		ServletRegistration.Dynamic serv = getServletContext().addServlet(servletName, servlet);
-		ServletSecurity.TransportGuarantee transportGuarantee = getTransportGuarantee(propertyPrefix+"transportGuarantee");
-
-		String stage = appConstants.getString("dtap.stage", null);
-		String[] rolesCopy = new String[0];
-		if(roles != null && stage != null && !stage.equalsIgnoreCase("LOC"))
-			rolesCopy = roles;
-
-		String roleNames = appConstants.getString(propertyPrefix+"securityroles", null);
-		if(StringUtils.isNotEmpty(roleNames)) {
-			log.warn("property ["+propertyPrefix+"securityroles] has been replaced with ["+propertyPrefix+"securityRoles"+"]");
-		}
-		roleNames = appConstants.getString(propertyPrefix+"securityRoles", roleNames);
-
-		if(StringUtils.isNotEmpty(roleNames))
-			rolesCopy = roleNames.split(",");
-		declareRoles(rolesCopy);
-
-		HttpConstraintElement httpConstraintElement = new HttpConstraintElement(transportGuarantee, rolesCopy);
-		ServletSecurityElement constraint = new ServletSecurityElement(httpConstraintElement);
-
-		String urlMappingCopy = appConstants.getString(propertyPrefix+"urlMapping", urlMapping);
-		if(!urlMappingCopy.startsWith("/") && !urlMappingCopy.startsWith("*")) {
-			urlMappingCopy = "/"+urlMappingCopy;
-		}
-		serv.addMapping(urlMappingCopy);
 
 		int loadOnStartupCopy = appConstants.getInt(propertyPrefix+"loadOnStartup", loadOnStartup);
 		serv.setLoadOnStartup(loadOnStartupCopy);
-		serv.setServletSecurity(constraint);
+		serv.addMapping(getUrlMapping(propertyPrefix, urlMapping));
+		serv.setServletSecurity(security);
 
 		if(initParameters != null && !initParameters.isEmpty()) {
 			//Manually loop through the map as serv.setInitParameters will fail all parameters even if only 1 fails...
@@ -145,7 +183,59 @@ public class ServletManager {
 			}
 		}
 
-		if(log.isDebugEnabled()) log.debug("registered servlet ["+servletName+"] class ["+servlet+"] url ["+urlMapping+"] loadOnStartup ["+loadOnStartup+"]");
+		servlets.add(servletName);
+
+		if(log.isDebugEnabled()) logServletInfo(serv, loadOnStartupCopy);
+	}
+
+	private void logServletInfo(Dynamic serv, int loadOnStartupCopy) {
+		StringBuilder builder = new StringBuilder("registered");
+		builder.append(" servlet ["+serv.getName()+"]");
+		builder.append(" class ["+serv.getClassName()+"]");
+		builder.append(" url(s) "+serv.getMappings());
+		builder.append(" loadOnStartup ["+loadOnStartupCopy+"]");
+		log.debug(builder.toString());
+	}
+
+	private String[] getUrlMapping(String propertyPrefix, String defaultUrlMappings) {
+		String[] urlMappingsCopy = defaultUrlMappings.split(",");
+		String urlMappingOverride = appConstants.getString(propertyPrefix+"urlMapping", null);
+		if(StringUtils.isNotEmpty(urlMappingOverride)) {
+			urlMappingsCopy = urlMappingOverride.split(",");
+		}
+
+		List<String> mappings = new ArrayList<>();
+		for(String urlMapping : urlMappingsCopy) {
+			String mapping = urlMapping.trim();
+			if(!mapping.startsWith("/") && !mapping.startsWith("*")) {
+				mapping = "/"+mapping;
+			}
+			mappings.add(mapping);
+		}
+
+		return mappings.toArray(new String[0]);
+	}
+
+	private ServletSecurityElement getServletSecurity(String propertyPrefix, String[] defaultRoles) {
+		String[] rolesCopy = new String[0];
+		if(defaultRoles != null && webSecurityEnabled) {
+			rolesCopy = defaultRoles;
+		}
+
+		String roleNames = appConstants.getString(propertyPrefix+"securityroles", null);
+		if(StringUtils.isNotEmpty(roleNames)) {
+			log.warn("property ["+propertyPrefix+"securityroles] has been replaced with ["+propertyPrefix+"securityRoles"+"]");
+		}
+		roleNames = appConstants.getString(propertyPrefix+"securityRoles", roleNames);
+
+		if(StringUtils.isNotEmpty(roleNames)) {
+			rolesCopy = roleNames.split(",");
+		}
+		declareRoles(rolesCopy);
+
+		TransportGuarantee transportGuarantee = getTransportGuarantee(propertyPrefix+"transportGuarantee");
+		HttpConstraintElement httpConstraintElement = new HttpConstraintElement(transportGuarantee, rolesCopy);
+		return new ServletSecurityElement(httpConstraintElement);
 	}
 
 	private void log(String msg, Level level) {
@@ -155,25 +245,12 @@ public class ServletManager {
 		log.log(level, msg);
 	}
 
-	public void register(DynamicRegistration.Servlet servlet) {
-		Map<String, String> parameters = null;
-		if(servlet instanceof DynamicRegistration.ServletWithParameters)
-			parameters = ((DynamicRegistration.ServletWithParameters) servlet).getParameters();
-
-		registerServlet(servlet.getName(), servlet.getServlet(), servlet.getUrlMapping(), servlet.getRoles(), servlet.loadOnStartUp(), parameters);
-	}
-
 	public static ServletSecurity.TransportGuarantee getTransportGuarantee(String propertyName) {
 		AppConstants appConstants = AppConstants.getInstance();
 		String constraintType = appConstants.getString(propertyName, null);
-		if (StringUtils.isNotEmpty(constraintType))
-			return ServletSecurity.TransportGuarantee.valueOf(constraintType);
-
-		String stage = appConstants.getString("dtap.stage", null);
-		if (StringUtils.isNotEmpty(stage) && stage.equalsIgnoreCase("LOC")) {
-			return ServletSecurity.TransportGuarantee.NONE;
+		if (StringUtils.isNotEmpty(constraintType)) {
+			return EnumUtils.parse(TransportGuarantee.class, constraintType);
 		}
-		return ServletSecurity.TransportGuarantee.CONFIDENTIAL;
-
+		return defaultTransportGuarantee;
 	}
 }

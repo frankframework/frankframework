@@ -56,7 +56,7 @@ public class ReaderLineIterator implements IDataIterator<String> {
 		} catch (IOException e) {
 			throw new SenderException(e);
 		}
-		return result; 
+		return result;
 	}
 
 	@Override

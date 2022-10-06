@@ -64,7 +64,7 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 	private @Getter String blobCharset = null;
 	private @Getter boolean blobsCompressed=true;
 	private @Getter boolean blobSmartGet=false;
-	
+
 	private @Getter boolean trace=false;
 	private @Getter boolean peekUntransacted=true;
 
@@ -75,7 +75,7 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 
 	private String preparedSelectQuery;
 	private String preparedPeekQuery;
-	
+
 	public enum MessageFieldType {
 		STRING,
 		CLOB,
@@ -131,7 +131,7 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 			super.close();
 		}
 	}
-	
+
 	@Override
 	public Map<String,Object> openThread() throws ListenerException {
 		return new HashMap<>();
@@ -168,7 +168,7 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 			throw new ListenerException(getLogPrefix() + "caught exception retrieving message trigger using query [" + preparedPeekQuery + "]", e);
 		}
 	}
-	
+
 	@Override
 	public M getRawMessage(Map<String,Object> threadContext) throws ListenerException {
 		if (isConnectionsArePooled()) {
@@ -177,7 +177,7 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 			} catch (JdbcException | SQLException e) {
 				throw new ListenerException(e);
 			}
-		} 
+		}
 		synchronized (connection) {
 			return getRawMessage(connection,threadContext);
 		}
@@ -212,7 +212,7 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 		try {
 			M result;
 			String key=rs.getString(getKeyField());
-	
+
 			if (StringUtils.isNotEmpty(getMessageField())) {
 				Message message;
 				switch (getMessageFieldType()) {
@@ -220,7 +220,7 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 						message=new Message(JdbcUtil.getClobAsString(getDbmsSupport(), rs,getMessageField(),false));
 						break;
 					case BLOB:
-						if (isBlobSmartGet() || StringUtils.isNotEmpty(getBlobCharset())) {
+						if (isBlobSmartGet() || StringUtils.isNotEmpty(getBlobCharset())) { // in this case blob contains a String
 							message=new Message(JdbcUtil.getBlobAsString(getDbmsSupport(), rs,getMessageField(),getBlobCharset(),isBlobsCompressed(),isBlobSmartGet(),false));
 						} else {
 							try (InputStream blobStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), rs, getMessageField(), isBlobsCompressed())) {
@@ -248,8 +248,7 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 			throw new JdbcException(e);
 		}
 	}
-	
-	
+
 	@Override
 	public String getIdFromRawMessage(M rawMessage, Map<String,Object> context) throws ListenerException {
 		String id;
@@ -320,7 +319,7 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 			} catch (JdbcException|SQLException e) {
 				throw new ListenerException(e);
 			}
-		} 
+		}
 		synchronized (connection) {
 			return changeProcessState(connection, rawMessage, toState, reason);
 		}
@@ -377,33 +376,33 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 	}
 
 
-	@IbisDoc({"1", "Primary key field of the table, used to identify messages", ""})
+	@IbisDoc({"Primary key field of the table, used to identify messages", ""})
 	public void setKeyField(String fieldname) {
 		keyField = fieldname;
 	}
 
-	@IbisDoc({"2", "(Optional) field containing the message data", "<i>same as keyField</i>"})
+	@IbisDoc({"(Optional) field containing the message data", "<i>same as keyField</i>"})
 	public void setMessageField(String fieldname) {
 		messageField = fieldname;
 	}
 
-	@IbisDoc({"3", "Type of the field containing the message data", "<i>String</i>"})
+	@IbisDoc({"Type of the field containing the message data", "<i>String</i>"})
 	public void setMessageFieldType(MessageFieldType value) {
 		messageFieldType = value;
 	}
 
-	@IbisDoc({"4", "Controls whether BLOB is considered stored compressed in the database", "true"})
+	@IbisDoc({"Controls whether BLOB is considered stored compressed in the database", "true"})
 	public void setBlobsCompressed(boolean b) {
 		blobsCompressed = b;
 	}
 
-	@IbisDoc({"5", "Charset used to read BLOB. When specified, then the BLOB will be converted into a string", ""})
+	@IbisDoc({"Charset used to read BLOB. When specified, then the BLOB will be converted into a string", ""})
 	@Deprecated
 	public void setBlobCharset(String string) {
 		blobCharset = string;
 	}
 
-	@IbisDoc({"6", "Controls automatically whether blobdata is stored compressed and/or serialized in the database. N.B. When set true, then the BLOB will be converted into a string", "false"})
+	@IbisDoc({"Controls automatically whether blobdata is stored compressed and/or serialized in the database. N.B. When set true, then the BLOB will be converted into a string", "false"})
 	public void setBlobSmartGet(boolean b) {
 		blobSmartGet = b;
 	}

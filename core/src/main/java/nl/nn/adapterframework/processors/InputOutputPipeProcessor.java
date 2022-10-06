@@ -44,9 +44,9 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class InputOutputPipeProcessor extends PipeProcessorBase {
 	protected Logger secLog = LogUtil.getLogger("SEC");
-	
-	private final static String ME_START = "{sessionKey:";
-	private final static String ME_END = "}";
+
+	private static final String ME_START = "{sessionKey:";
+	private static final String ME_END = "}";
 
 	@Override
 	protected PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
@@ -55,11 +55,11 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 		INamedObject owner = pipeLine.getOwner();
 
 		IExtendedPipe pe=null;
-			
+
 		if (pipe instanceof IExtendedPipe) {
 			pe = (IExtendedPipe)pipe;
 		}
-		
+
 		if (pe!=null) {
 			if (StringUtils.isNotEmpty(pe.getGetInputFromSessionKey())) {
 				if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] replacing input for pipe ["+pe.getName()+"] with contents of sessionKey ["+pe.getGetInputFromSessionKey()+"]");
@@ -82,9 +82,11 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 
 		if (pipe instanceof FixedForwardPipe) {
 			FixedForwardPipe ffPipe = (FixedForwardPipe) pipe;
-			pipeRunResult = ffPipe.doInitialPipe(message, pipeLineSession);
+			if (ffPipe.skipPipe(message, pipeLineSession)) {
+				pipeRunResult = new PipeRunResult(ffPipe.getSuccessForward(), message);
+			}
 		}
-		
+
 		if (pipeRunResult==null){
 			pipeRunResult=chain.apply(message);
 		}
@@ -105,7 +107,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 					}
 				}
 			}
-			
+
 			if (pe.getChompCharSize() != null || pe.getElementToMove() != null || pe.getElementToMoveChain() != null) {
 				log.debug("Pipeline of adapter ["+owner.getName()+"] compact received message");
 				Message result = pipeRunResult.getResult();
@@ -136,7 +138,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 					}
 				}
 			}
-			
+
 			if (StringUtils.isNotEmpty(pe.getStoreResultInSessionKey())) {
 				if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] storing result for pipe ["+pe.getName()+"] under sessionKey ["+pe.getStoreResultInSessionKey()+"]");
 				Message result = pipeRunResult.getResult();
@@ -173,7 +175,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 			}
 			secLog.info(secLogMsg);
 		}
-		
+
 		return pipeRunResult;
 	}
 
@@ -219,5 +221,4 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 		buffer.append(invoerChars, copyFrom, invoerChars.length - copyFrom);
 		return buffer.toString();
 	}
-	
 }

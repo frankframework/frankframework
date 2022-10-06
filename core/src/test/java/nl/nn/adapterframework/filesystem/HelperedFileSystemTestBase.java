@@ -10,7 +10,7 @@ import org.junit.Before;
 public abstract class HelperedFileSystemTestBase extends FileSystemTestBase {
 
 	protected IFileSystemTestHelper helper;
-	
+
 	protected abstract IFileSystemTestHelper getFileSystemTestHelper() throws IOException;
 
 	/**
@@ -22,7 +22,7 @@ public abstract class HelperedFileSystemTestBase extends FileSystemTestBase {
 	protected boolean _fileExists(String folder, String filename) throws Exception {
 		return helper._fileExists(folder,filename);
 	}
-	
+
 	/**
 	 * Checks if a folder with the specified name exists.
 	 */
@@ -30,7 +30,7 @@ public abstract class HelperedFileSystemTestBase extends FileSystemTestBase {
 	protected boolean _folderExists(String folderName) throws Exception {
 		return helper._folderExists(folderName);
 	}
-	
+
 	/**
 	 * Deletes the file with the specified name.
 	 */
@@ -38,7 +38,7 @@ public abstract class HelperedFileSystemTestBase extends FileSystemTestBase {
 	protected void _deleteFile(String folder, String filename) throws Exception {
 		helper._deleteFile(folder, filename);
 	}
-	
+
 	/**
 	 * Creates a file with the specified name and returns output stream to be able to write that file.
 	 */
@@ -54,7 +54,7 @@ public abstract class HelperedFileSystemTestBase extends FileSystemTestBase {
 	protected InputStream _readFile(String folder, String filename) throws Exception {
 		return helper._readFile(folder, filename);
 	}
-	
+
 	/**
 	 * Creates a folder.
 	 */
@@ -72,12 +72,15 @@ public abstract class HelperedFileSystemTestBase extends FileSystemTestBase {
 	}
 
 	@Before
+	@Override
 	public void setUp() throws Exception {
+		super.setUp();
 		helper = getFileSystemTestHelper();
 		helper.setUp();
 	}
-	
+
 	@After
+	@Override
 	public void tearDown() throws Exception {
 		helper.tearDown();
 	}

@@ -25,6 +25,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
@@ -34,7 +35,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Pipe that compares lexicographically two strings.
- * 
+ *
  * @ff.parameter operand1 The first operand, holds v1. Defaults to input message
  * @ff.parameter operand2 The second operand, holds v2. Defaults to input message
  * @ff.parameter ignorepatterns (optional) contains a xml table with references to substrings which have to be ignored during the comparison. This xml table has the following layout:
@@ -57,6 +58,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  *
  * @author  Peter Leeuwenburgh
  */
+@Category("Basic")
 public class CompareStringPipe extends AbstractPipe {
 
 	private static final String LESSTHANFORWARD = "lessthan";
@@ -174,7 +176,7 @@ public class CompareStringPipe extends AbstractPipe {
 			log.debug("operand2 [" + operand2 + "]");
 		}
 
-		int comparison = operand1.compareTo(operand2);
+		int comparison = StringUtils.compare(operand1, operand2);
 		if (comparison == 0)
 			return new PipeRunResult(findForward(EQUALSFORWARD), message);
 		else if (comparison < 0)

@@ -1,25 +1,25 @@
 /*
-Copyright 2016-2022 WeAreFrank!
+   Copyright 2016-2022 WeAreFrank!
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+       http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -36,20 +36,6 @@ import javax.ws.rs.core.Response;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.jdbc.DirectQuerySender;
-import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
-import nl.nn.adapterframework.jms.JmsException;
-import nl.nn.adapterframework.jms.JmsRealm;
-import nl.nn.adapterframework.jms.JmsRealmFactory;
-import nl.nn.adapterframework.jms.JmsSender;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.XmlUtils;
-
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -57,9 +43,26 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
+import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.jdbc.DirectQuerySender;
+import nl.nn.adapterframework.jdbc.IDataSourceFactory;
+import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
+import nl.nn.adapterframework.jms.JmsException;
+import nl.nn.adapterframework.jms.JmsRealm;
+import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.jms.JmsSender;
+import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.management.bus.RequestMessageBuilder;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.XmlUtils;
+
 /**
  * Shows the used certificate.
- * 
+ *
  * @since	7.0-B1
  * @author	Niels Meijer
  */
@@ -77,16 +80,26 @@ public final class ShowSecurityItems extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getSecurityItems() throws ApiException {
 
-		Map<String, Object> returnMap = new HashMap<String, Object>();
+		Map<String, Object> returnMap = new HashMap<>();
 		returnMap.put("securityRoles", addApplicationDeploymentDescriptor());
 		returnMap.put("securityRoleBindings", getSecurityRoleBindings());
 		returnMap.put("jmsRealms", addJmsRealms());
+		returnMap.put("datasources", addDataSources());
 		returnMap.put("sapSystems", addSapSystems());
 		returnMap.put("authEntries", addAuthEntries());
 		returnMap.put("serverProps", addServerProps());
 		returnMap.put("xmlComponents", XmlUtils.getVersionInfo());
 
 		return Response.status(Response.Status.CREATED).entity(returnMap).build();
+	}
+
+	@GET
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/securityitems2")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getSecurityItems2() throws ApiException {
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.SECURITY_ITEMS);
+		return callSyncGateway(builder);
 	}
 
 	private Map<String, Object> addApplicationDeploymentDescriptor() {
@@ -111,7 +124,7 @@ public final class ShowSecurityItems extends Base {
 			log.debug("cannot get deployment descriptor", e);
 			return null;
 		}
-		
+
 		if (xmlDoc==null) {
 			log.debug("could get deployment descriptor");
 			return null;
@@ -169,7 +182,7 @@ public final class ShowSecurityItems extends Base {
 			log.debug("cannot get security role bindings", e);
 			return null;
 		}
-		
+
 		if (xmlDoc==null) {
 			log.debug("could get security role bindings");
 			return null;
@@ -186,7 +199,7 @@ public final class ShowSecurityItems extends Base {
 				for (int j = 0; j < fieldsInRowset.getLength(); j++) {
 					if (fieldsInRowset.item(j).getNodeType() == Node.ELEMENT_NODE) {
 						Element field = (Element) fieldsInRowset.item(j);
-						
+
 						if("role".equals(field.getNodeName())) {
 							role = field.getAttribute("href");
 							if(role.indexOf("#") > -1)
@@ -211,20 +224,18 @@ public final class ShowSecurityItems extends Base {
 		return resultList;
 	}
 
+	private String getConfigurationResources() {
+		String confResString = Misc.getConfigurationResources();
+		if (confResString != null) {
+			return XmlUtils.removeNamespaces(confResString);
+		}
+		return null;
+	}
+
 	private ArrayList<Object> addJmsRealms() {
 		List<String> jmsRealms = JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
 		ArrayList<Object> jmsRealmList = new ArrayList<>();
-		String confResString;
-
-		try {
-			confResString = Misc.getConfigurationResources();
-			if (confResString!=null) {
-				confResString = XmlUtils.removeNamespaces(confResString);
-			}
-		} catch (IOException e) {
-			log.warn("error getting configuration resources ["+e+"]");
-			confResString = null;
-		}
+		String confResString = getConfigurationResources();
 
 		for (String realmName : jmsRealms) {
 			Map<String, Object> realm = new HashMap<>();
@@ -233,28 +244,10 @@ public final class ShowSecurityItems extends Base {
 			String dsName = jmsRealm.getDatasourceName();
 			String qcfName = jmsRealm.getQueueConnectionFactoryName();
 			String tcfName = jmsRealm.getTopicConnectionFactoryName();
-			String dsInfo = null;
 			String cfInfo = null;
 
 			if(StringUtils.isNotEmpty(dsName)) {
-				DirectQuerySender qs = getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
-				qs.setJmsRealm(realmName);
-				try {
-					qs.configure();
-					dsInfo = qs.getDatasourceInfo();
-				} catch (JdbcException | ConfigurationException e) {
-					log.debug("no datasource ("+ClassUtils.nameOf(e)+"): "+e.getMessage());
-				}
-				realm.put("name", realmName);
-				realm.put("datasourceName", dsName);
-				realm.put("info", dsInfo);
-
-				if (confResString!=null) {
-					String connectionPoolProperties = Misc.getConnectionPoolProperties(confResString, "JDBC", dsName);
-					if (StringUtils.isNotEmpty(connectionPoolProperties)) {
-						realm.put("connectionPoolProperties", connectionPoolProperties);
-					}
-				}
+				realm = mapDataSource(realmName, dsName, confResString);
 			} else {
 				JmsSender js = new JmsSender();
 				js.setJmsRealm(realmName);
@@ -289,6 +282,49 @@ public final class ShowSecurityItems extends Base {
 		return jmsRealmList;
 	}
 
+	private ArrayList<Object> addDataSources() {
+		IDataSourceFactory dataSourceFactory = getIbisContext().getBean("dataSourceFactory", IDataSourceFactory.class);
+		List<String> dataSourceNames = dataSourceFactory.getDataSourceNames();
+		dataSourceNames.sort(Comparator.naturalOrder()); //AlphaNumeric order
+		String confResString = getConfigurationResources();
+
+		ArrayList<Object> dsList = new ArrayList<>();
+		for(String datasourceName : dataSourceNames) {
+			dsList.add(mapDataSource(null, datasourceName, confResString));
+		}
+		return dsList;
+	}
+
+	private Map<String, Object> mapDataSource(String jmsRealm, String datasourceName, String confResString) {
+		Map<String, Object> realm = new HashMap<>();
+		DirectQuerySender qs = getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
+
+		if(StringUtils.isNotEmpty(jmsRealm)) {
+			realm.put("name", jmsRealm);
+			qs.setJmsRealm(jmsRealm);
+		} else {
+			qs.setDatasourceName(datasourceName);
+		}
+
+		String dsInfo = null;
+		try {
+			qs.configure();
+			dsInfo = qs.getDatasourceInfo();
+		} catch (JdbcException | ConfigurationException e) {
+			log.debug("no datasource ("+ClassUtils.nameOf(e)+"): "+e.getMessage());
+		}
+		realm.put("datasourceName", datasourceName);
+		realm.put("info", dsInfo);
+
+		if (confResString!=null) {
+			String connectionPoolProperties = Misc.getConnectionPoolProperties(confResString, "JDBC", datasourceName);
+			if (StringUtils.isNotEmpty(connectionPoolProperties)) {
+				realm.put("connectionPoolProperties", connectionPoolProperties);
+			}
+		}
+		return realm;
+	}
+
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private ArrayList<Object> addSapSystems() {
 		ArrayList<Object> sapSystemList = new ArrayList<Object>();
@@ -306,7 +342,7 @@ public final class ShowSecurityItems extends Base {
 		} catch (Throwable t) {
 			log.debug("Caught NoClassDefFoundError, just no sapSystem available: " + t.getMessage());
 		}
-		
+
 		if (sapSystems!=null) {
 			Iterator<String> iter = sapSystems.iterator();
 			while (iter.hasNext()) {
@@ -326,6 +362,15 @@ public final class ShowSecurityItems extends Base {
 
 	private List<String> getAuthEntries() {
 		List<String> entries = new ArrayList<String>();
+		try {
+			Collection<String> knownAliases = CredentialFactory.getConfiguredAliases();
+			if (knownAliases!=null) {
+				entries.addAll(knownAliases); // start with all aliases in the CredentialProvider
+			}
+		} catch (Exception e) {
+			log.warn("could not retrieve aliases from CredentialFactory", e);
+		}
+		// and add all aliases that are used in the configuration
 		for (Configuration configuration : getIbisManager().getConfigurations()) {
 			String configString = configuration.getLoadedConfiguration();
 			if(configString == null) continue; //If a configuration can't be found, continue...
@@ -340,8 +385,7 @@ public final class ShowSecurityItems extends Base {
 						}
 					}
 				}
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				log.warn("an error occurred while evaulating 'authAlias' xPathExpression", e);
 			}
 		}

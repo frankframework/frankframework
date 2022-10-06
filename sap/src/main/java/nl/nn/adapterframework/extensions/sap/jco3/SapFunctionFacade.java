@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -50,13 +50,14 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @since   5.0
  */
 public abstract class SapFunctionFacade implements ISapFunctionFacade {
+	private final @Getter(onMethod = @__(@Override)) String domain = "SAP";
 	protected static Logger log = LogUtil.getLogger(SapFunctionFacade.class);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
 	private @Getter String name;
 	private @Getter String sapSystemName;
-	
+
 	private @Getter int correlationIdFieldIndex=0;
 	private @Getter String correlationIdFieldName;
 	private @Getter int requestFieldIndex=0;
@@ -65,7 +66,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 	private @Getter String replyFieldName;
 
 	private JCoFunctionTemplate ftemplate;
-	private SapSystem sapSystem;
+	private SapSystemImpl sapSystem;
 
 	protected String getLogPrefix() {
 		return this.getClass().getName()+" ["+getName()+"] ";
@@ -77,12 +78,12 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 //			throw new ConfigurationException("attribute sapSystemName must be specified");
 //		}
 		if (StringUtils.isNotEmpty(getSapSystemName())) {
-			sapSystem=SapSystem.getSystem(getSapSystemName());
+			sapSystem=SapSystemImpl.getSystem(getSapSystemName());
 			if (sapSystem==null) {
 				throw new ConfigurationException(getLogPrefix()+"cannot find SapSystem ["+getSapSystemName()+"]");
 			}
 		} else {
-			SapSystem.configureAll();
+			SapSystemImpl.configureAll();
 		}
 	}
 
@@ -105,7 +106,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 			}
 		} else {
 			log.info("open ALL SapSystems");
-			SapSystem.openSystems();
+			SapSystemImpl.openSystems();
 		}
 	}
 
@@ -116,7 +117,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 			sapSystem.closeSystem();
 			log.debug("closed local defined sapSystem");
 		} else {
-			SapSystem.closeSystems();
+			SapSystemImpl.closeSystems();
 			log.debug("closed all sapSystems");
 		}
 		ftemplate = null;
@@ -132,7 +133,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 		return result;
 	}
 
-	static protected void setParameters(JCoParameterList inputOrOutputParameterList, JCoParameterList tableParameterList, String message, int fieldIndex) throws SapException {
+	protected static void setParameters(JCoParameterList inputOrOutputParameterList, JCoParameterList tableParameterList, String message, int fieldIndex) throws SapException {
 		if (StringUtils.isNotEmpty(message)) {
 			if (fieldIndex>0) {
 				if (inputOrOutputParameterList != null) {
@@ -313,14 +314,14 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 		setParameters(output, function.getTableParameterList(), result, replyFieldIndex);
 	}
 
-	public SapSystem getSapSystem() throws SapException {
+	public SapSystemImpl getSapSystem() throws SapException {
 		if(sapSystem==null) {
 			throw new SapException("no fixed sapSystem specified");
 		}
 		return sapSystem;
 	}
-	public SapSystem getSapSystem(String systemName) throws SapException {
-		SapSystem sapSystem = SapSystem.getSystem(systemName);
+	public SapSystemImpl getSapSystem(String systemName) throws SapException {
+		SapSystemImpl sapSystem = SapSystemImpl.getSystem(systemName);
 		if(sapSystem==null) {
 			throw new SapException("cannot find sapSystem ["+systemName+"]");
 		}
@@ -334,7 +335,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 		return ftemplate;
 	}
 
-	protected JCoFunctionTemplate getFunctionTemplate(SapSystem sapSystem, String functionName) throws SapException {
+	protected JCoFunctionTemplate getFunctionTemplate(SapSystemImpl sapSystem, String functionName) throws SapException {
 		JCoFunctionTemplate functionTemplate;
 		try {
 			functionTemplate = sapSystem.getJcoRepository().getFunctionTemplate(functionName);
@@ -348,49 +349,49 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 	}
 
 	
-	@IbisDoc({"1", "Name of the Ibis-object", ""})
+	@IbisDoc({"Name of the Ibis-object"})
 	@Override
 	public void setName(String string) {
 		name = string;
 	}
 
-	@IbisDoc({"2", "name of the {@link SapSystem} used by this object", ""})
+	@IbisDoc({"Name of the {@link SapSystem} used by this object"})
 	@Override
 	public void setSapSystemName(String string) {
 		sapSystemName = string;
 	}
 	
-	@IbisDoc({"3", "Index of the field in the ImportParameterList of the RFC function that contains the correlationId", "0"})
+	@IbisDoc({"Index of the field in the ImportParameterList of the RFC function that contains the correlationId", "0"})
 	@Override
 	public void setCorrelationIdFieldIndex(int i) {
 		correlationIdFieldIndex = i;
 	}
 
-	@IbisDoc({"4", "Name of the field in the ImportParameterList of the RFC function that contains the correlationId", ""})
+	@IbisDoc({"Name of the field in the ImportParameterList of the RFC function that contains the correlationId"})
 	@Override
 	public void setCorrelationIdFieldName(String string) {
 		correlationIdFieldName = string;
 	}
 
-	@IbisDoc({"5", "Index of the field in the ImportParameterList of the RFC function that contains the whole request message contents", "0"})
+	@IbisDoc({"Index of the field in the ImportParameterList of the RFC function that contains the whole request message contents", "0"})
 	@Override
 	public void setRequestFieldIndex(int i) {
 		requestFieldIndex = i;
 	}
 
-	@IbisDoc({"6", "Name of the field in the ImportParameterList of the RFC function that contains the whole request message contents", ""})
+	@IbisDoc({"Name of the field in the ImportParameterList of the RFC function that contains the whole request message contents"})
 	@Override
 	public void setRequestFieldName(String string) {
 		requestFieldName = string;
 	}
 
-	@IbisDoc({"7", "Index of the field in the ExportParameterList of the RFC function that contains the whole reply message contents", "0"})
+	@IbisDoc({"Index of the field in the ExportParameterList of the RFC function that contains the whole reply message contents", "0"})
 	@Override
 	public void setReplyFieldIndex(int i) {
 		replyFieldIndex = i;
 	}
 
-	@IbisDoc({"8", "Name of the field in the ExportParameterList of the RFC function that contains the whole reply message contents", ""})
+	@IbisDoc({"Name of the field in the ExportParameterList of the RFC function that contains the whole reply message contents"})
 	@Override
 	public void setReplyFieldName(String string) {
 		replyFieldName = string;

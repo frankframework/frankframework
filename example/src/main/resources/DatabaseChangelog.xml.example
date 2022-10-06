@@ -2,7 +2,7 @@
 	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
-		http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+		https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.8.xsd">
 
 <!-- When using one of the following commands, a rollback script is not required
 AddColumn
@@ -23,7 +23,7 @@ RenameView
 TagDatabase
  -->
 
-	<changeSet id="Ibis4Example:1" author="Niels Meijer">
+	<changeSet id="Frank2Example:1" author="Niels Meijer">
 		<tagDatabase tag="tag1"/>
 	</changeSet>
 

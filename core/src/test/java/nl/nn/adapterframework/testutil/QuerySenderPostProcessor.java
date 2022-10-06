@@ -14,7 +14,7 @@ import lombok.Setter;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 
 /**
- * Enables the ability to provide a mockable FixedQuerySender. 
+ * Enables the ability to provide a mockable FixedQuerySender.
  * 
  * @See {@link TestConfiguration#mockQuery(String, ResultSet)}
  * @See {@link FixedQuerySenderMock}
@@ -22,13 +22,14 @@ import nl.nn.adapterframework.jdbc.FixedQuerySender;
  * @author Niels Meijer
  */
 public class QuerySenderPostProcessor implements BeanPostProcessor, ApplicationContextAware {
-	private final String FixedQuerySenderClassName = FixedQuerySender.class.getName();
+	private final String fixedQuerySenderSimpleName = FixedQuerySender.class.getSimpleName();
+	private final String fixedQuerySenderCanonicalName = FixedQuerySender.class.getCanonicalName();
 	private @Setter ApplicationContext applicationContext;
-	private Map<String, ResultSet> mocks = new HashMap<>();
+	private static Map<String, ResultSet> mocks = new HashMap<>();
 
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-		if(FixedQuerySenderClassName.equals(beanName)) {
+		if(fixedQuerySenderSimpleName.equals(beanName) || fixedQuerySenderCanonicalName.equals(beanName)) {
 			FixedQuerySenderMock qs = createMock();
 			qs.addMockedQueries(mocks);
 			return qs;

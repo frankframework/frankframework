@@ -39,7 +39,7 @@ public class StreamLineIteratorPipe extends StringIteratorPipe {
 
 	private @Getter String endOfLineString;
 	private @Getter String startOfLineString;
-	
+
 	protected Reader getReader(Message input, PipeLineSession session, Map<String,Object> threadContext) throws SenderException {
 		if (input==null) {
 			throw new SenderException("cannot obtain reader from null input");
@@ -61,8 +61,8 @@ public class StreamLineIteratorPipe extends StringIteratorPipe {
 		StringBuffer item = new StringBuffer(it.next());
 		if (StringUtils.isNotEmpty(getEndOfLineString()) || StringUtils.isNotEmpty(getStartOfLineString())) {
 			String peeked = ((PeekableDataIterator<String>)it).peek();
-			while (peeked!=null && 
-					(StringUtils.isEmpty(getStartOfLineString()) || !peeked.startsWith(getStartOfLineString())) && 
+			while (peeked!=null &&
+					(StringUtils.isEmpty(getStartOfLineString()) || !peeked.startsWith(getStartOfLineString())) &&
 					(StringUtils.isEmpty(getEndOfLineString())   || !item.toString().endsWith(getEndOfLineString()))) {
 				item.append(System.getProperty("line.separator")).append(it.next());
 				peeked = ((PeekableDataIterator<String>)it).peek();
@@ -71,16 +71,16 @@ public class StreamLineIteratorPipe extends StringIteratorPipe {
 		return item.toString();
 	}
 
-	@IbisDoc({"1", "If set, each record has to end with this string. If a line read doesn't end with this string more lines are added (including line separators) until the total record ends with the given string", ""})
+	@IbisDoc({"If set, each record has to end with this string. If a line read doesn't end with this string more lines are added (including line separators) until the total record ends with the given string", ""})
 	public void setEndOfLineString(String string) {
 		endOfLineString = string;
 	}
-	@IbisDoc({"2", "Marks the start of a new record. If set, a new record is started when this line is read.", ""})
+	@IbisDoc({"Marks the start of a new record. If set, a new record is started when this line is read.", ""})
 	public void setStartOfLineString(String string) {
 		startOfLineString = string;
 	}
 
-	@IbisDoc({"3", "If set to <code>false</code>, the inputstream is not closed after it has been used", "true"})
+	@IbisDoc({"If set to <code>false</code>, the inputstream is not closed after it has been used", "true"})
 	public void setCloseInputstreamOnExit(boolean b) {
 		setCloseIteratorOnExit(b);
 	}

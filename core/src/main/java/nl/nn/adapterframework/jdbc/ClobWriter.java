@@ -38,7 +38,7 @@ public class ClobWriter extends FilterWriter {
 	private ResultSet resultSet;
 	private XmlBuilder warnings;
 	private boolean open;
-	
+
 	public ClobWriter(IDbmsSupport dbmsSupport, Object clobUpdateHandle, int clobColumn, Writer clobWriter, ResultSet resultSet, XmlBuilder warnings) {
 		super(clobWriter);
 		this.dbmsSupport=dbmsSupport;

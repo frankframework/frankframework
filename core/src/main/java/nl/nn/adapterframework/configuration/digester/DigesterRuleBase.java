@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,9 +33,11 @@ import org.xml.sax.SAXParseException;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.scheduler.job.IJob;
+import nl.nn.adapterframework.scheduler.job.IbisActionJob;
 import nl.nn.adapterframework.scheduler.job.Job;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
@@ -53,7 +55,7 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 	private boolean includeLineInformation = AppConstants.getInstance().getBoolean("configuration.warnings.linenumbers", preparse);//True when pre-parsed
 
 	/**
-	 * Returns the name of the object. In case a Spring proxy is being used, 
+	 * Returns the name of the object. In case a Spring proxy is being used,
 	 * the name will be something like XsltPipe$$EnhancerBySpringCGLIB$$563e6b5d
 	 * ClassUtils.getUserClass() makes sure the original class will be returned.
 	 */
@@ -90,7 +92,7 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 	}
 
 	/**
-	 * @return an {@link nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader IConfigurationClassLoader}.
+	 * @return an {@link IConfigurationClassLoader}.
 	 */
 	protected final ClassLoader getClassLoader() {
 		if(applicationContext == null) {
@@ -138,7 +140,7 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 
 		//Since we are directly instantiating the correct job (by className), functions are no longer required by the digester's attribute handler.
 		//They are however still required for the JobFactory to determine the correct job class, in order to avoid ConfigurationWarnings.
-		if(top instanceof IJob && !(top instanceof Job)) {
+		if(top instanceof IJob && !(top instanceof Job) && !(top instanceof IbisActionJob)) {
 			map.remove("function");
 		}
 

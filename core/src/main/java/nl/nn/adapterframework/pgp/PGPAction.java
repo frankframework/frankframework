@@ -30,12 +30,13 @@ import name.neuhalfen.projects.crypto.bouncycastle.openpgp.keys.keyrings.InMemor
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.keys.keyrings.KeyringConfigs;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IScopeProvider;
+import nl.nn.adapterframework.pipes.PGPPipe;
 import nl.nn.adapterframework.util.ClassUtils;
 
 /**
  * This is an abstraction of general pgp actions
  * such as encryption, verification, etc.
- * to be used for {@link nl.nn.adapterframework.pipes.PGPPipe}
+ * to be used for {@link PGPPipe}
  *
  * @author Murat Kaan Meral
  */

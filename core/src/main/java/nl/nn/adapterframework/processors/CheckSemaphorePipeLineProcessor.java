@@ -51,7 +51,7 @@ public class CheckSemaphorePipeLineProcessor extends PipeLineProcessorBase {
 				pipeLineResult = pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
 			} catch(InterruptedException e) {
 				throw new PipeRunException(pipe, "Interrupted acquiring PipeLine semaphore", e);
-			} finally { 
+			} finally {
 				s.release();
 			}
 		} else { //no restrictions on the maximum number of threads (s==null)

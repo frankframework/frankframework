@@ -1,5 +1,4 @@
 <root>
 	<item>cid=[nameOfRequest]</item>
 	<item>messageId=[nameOfRequest]</item>
-	<item>tcid=[Test Tool correlation id]</item>
 </root>

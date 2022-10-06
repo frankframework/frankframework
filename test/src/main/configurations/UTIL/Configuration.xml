@@ -5,7 +5,7 @@
 	<!ENTITY TestSendMail SYSTEM "./ConfigurationTestSendMail.xml">
 	<!ENTITY ConfigurationXmlParsers SYSTEM "./ConfigurationXmlParsers.xml">
 ]>
-<configuration name="UTIL">
+<configuration>
 	<!-- Run Larva scenario's (on startup and once a day scheduled) -->
 	&Larva;
 	&TestSendMail;

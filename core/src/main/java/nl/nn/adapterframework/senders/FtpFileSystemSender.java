@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.senders;
 
-import org.apache.commons.net.ftp.FTPFile;
-
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.encryption.HasKeystore;
@@ -24,11 +22,12 @@ import nl.nn.adapterframework.encryption.HasTruststore;
 import nl.nn.adapterframework.encryption.KeystoreType;
 import nl.nn.adapterframework.filesystem.FileSystemSender;
 import nl.nn.adapterframework.filesystem.FtpFileSystem;
+import nl.nn.adapterframework.ftp.FTPFileRef;
 import nl.nn.adapterframework.ftp.FtpSession.FileType;
 import nl.nn.adapterframework.ftp.FtpSession.FtpType;
 import nl.nn.adapterframework.ftp.FtpSession.Prot;
 
-public class FtpFileSystemSender extends FileSystemSender<FTPFile, FtpFileSystem> implements HasKeystore, HasTruststore {
+public class FtpFileSystemSender extends FileSystemSender<FTPFileRef, FtpFileSystem> implements HasKeystore, HasTruststore {
 
 	private final String FTPFILESYSTEM = "nl.nn.adapterframework.filesystem.FtpFileSystem";
 
@@ -240,7 +239,6 @@ public class FtpFileSystemSender extends FileSystemSender<FTPFile, FtpFileSystem
 		return getFileSystem().getKeyManagerAlgorithm();
 	}
 
-	
 	@Override
 	@IbisDocRef({FTPFILESYSTEM})
 	public void setTruststore(String truststore) {

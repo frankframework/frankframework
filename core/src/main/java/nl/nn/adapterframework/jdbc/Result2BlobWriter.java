@@ -18,6 +18,7 @@ package nl.nn.adapterframework.jdbc;
 import java.io.Writer;
 import java.sql.ResultSet;
 
+import nl.nn.adapterframework.batch.IResultHandler;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.IbisDocRef;
@@ -26,8 +27,8 @@ import nl.nn.adapterframework.util.JdbcUtil;
 
 
 /**
- * {@link nl.nn.adapterframework.batch.IResultHandler ResultHandler} that writes the transformed record to a BLOB.
- * 
+ * {@link IResultHandler ResultHandler} that writes the transformed record to a BLOB.
+ *
  * @author  Gerrit van Brakel
  * @since   4.7
  */
@@ -59,7 +60,7 @@ public class Result2BlobWriter extends Result2LobWriterBase {
 		}
 	}
 
-	@IbisDoc({"1", "Column that contains the BLOB to be updated", "1"})
+	@IbisDoc({"Column that contains the BLOB to be updated", "1"})
 	public void setBlobColumn(int column) {
 		querySender.setBlobColumn(column);
 	}
@@ -74,5 +75,4 @@ public class Result2BlobWriter extends Result2LobWriterBase {
 		querySender.setBlobCharset(charset);
 	}
 
-	
 }

@@ -41,7 +41,7 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class IncreaseIntegerPipe extends FixedForwardPipe {
 
-	private final static String PARAMETER_INCREMENT = "increment";
+	private static final String PARAMETER_INCREMENT = "increment";
 
 	private @Getter String sessionKey=null;
 	private @Getter int increment=1;
@@ -69,7 +69,7 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 		if(pl != null && pl.size() > 0) {
 			try {
 				ParameterValueList pvl = pl.getValues(message, session);
-				ParameterValue pv = pvl.getParameterValue(PARAMETER_INCREMENT);
+				ParameterValue pv = pvl.get(PARAMETER_INCREMENT);
 				if(pv != null) {
 					incrementBy = pv.asIntegerValue(increment);
 				}

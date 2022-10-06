@@ -6,7 +6,7 @@
 	<!ENTITY ConfigurationWsdlGenerator SYSTEM "./ConfigurationWsdlGenerator.xml">
 	<!ENTITY ConfigurationJmsHeaders SYSTEM "./ConfigurationJmsHeaders.xml">
 ]>
-<configuration name="JMS">
+<configuration>
 	&ConfigurationCompactMessage;
 	&ConfigurationEsbJmsListenerSender;
 	&ConfigurationFxF3;

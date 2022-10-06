@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017-2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2017-2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -40,14 +41,15 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Collection of Senders, that are executed all at the same time.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.9
  */
+@Category("Advanced")
 public class ParallelSenders extends SenderSeries {
 
 	private @Getter int maxConcurrentThreads = 0;
-	private TaskExecutor executor;
+	private @Getter TaskExecutor executor;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -105,7 +107,7 @@ public class ParallelSenders extends SenderSeries {
 					resultXml.addAttribute("type", "null");
 				} else {
 					try {
-						resultXml.addAttribute("type", ClassUtils.nameOf(result.getRequestClass()));
+						resultXml.addAttribute("type", result.getRequestClass());
 						resultXml.setValue(XmlUtils.skipXmlDeclaration(result.asString()),false);
 					} catch (IOException e) {
 						throw new SenderException(getLogPrefix(),e);
@@ -115,7 +117,7 @@ public class ParallelSenders extends SenderSeries {
 				resultXml.addAttribute("type", ClassUtils.nameOf(throwable));
 				resultXml.setValue(throwable.getMessage());
 			}
-			resultsXml.addSubElement(resultXml); 
+			resultsXml.addSubElement(resultXml);
 		}
 		return new Message(resultsXml.toXML());
 	}
@@ -123,7 +125,7 @@ public class ParallelSenders extends SenderSeries {
 	@Override
 	public void setSynchronous(boolean value) {
 		if (!isSynchronous()) {
-			super.setSynchronous(value); 
+			super.setSynchronous(value);
 		}
 	}
 
@@ -144,7 +146,7 @@ public class ParallelSenders extends SenderSeries {
 	public void registerSender(ISender sender) {
 		super.registerSender(sender);
 	}
-	
+
 	@IbisDoc({"Set the upper limit to the amount of concurrent threads that can be run simultaneously. Use 0 to disable.", "0"})
 	public void setMaxConcurrentThreads(int maxThreads) {
 		if(maxThreads < 1)

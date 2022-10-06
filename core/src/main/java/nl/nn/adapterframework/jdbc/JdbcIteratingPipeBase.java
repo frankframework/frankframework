@@ -20,6 +20,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Map;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -45,6 +46,7 @@ import nl.nn.adapterframework.util.SpringUtils;
  */
 public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implements HasPhysicalDestination {
 
+	private final @Getter(onMethod = @__(@Override)) String domain = "JDBC";
 	protected MixedQuerySender querySender = new MixedQuerySender();
 
 	private final String FIXEDQUERYSENDER = "nl.nn.adapterframework.jdbc.FixedQuerySender";
@@ -100,7 +102,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 		querySender.close();
 	}
 
-	protected abstract IDataIterator<String> getIterator(IDbmsSupport dbmsSupport, Connection conn, ResultSet rs) throws SenderException; 
+	protected abstract IDataIterator<String> getIterator(IDbmsSupport dbmsSupport, Connection conn, ResultSet rs) throws SenderException;
 
 	@Override
 	protected IDataIterator<String> getIterator(Message message, PipeLineSession session, Map<String,Object> threadContext) throws SenderException {
@@ -151,7 +153,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 		querySender.setJmsRealm(jmsRealmName);
 	}
 
-	@IbisDoc({"1", "The SQL query text to be excecuted each time sendMessage() is called. When not set, the input message is taken as the query", ""})
+	@IbisDoc({"The SQL query text to be excecuted each time sendMessage() is called. When not set, the input message is taken as the query", ""})
 	public void setQuery(String query) {
 		querySender.setQuery(query);
 	}
@@ -175,7 +177,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 	public void setSqlDialect(String string) {
 		querySender.setSqlDialect(string);
 	}
-	
+
 	@IbisDocRef({"6", FIXEDQUERYSENDER})
 	public void setLockRows(boolean b) {
 		querySender.setLockRows(b);

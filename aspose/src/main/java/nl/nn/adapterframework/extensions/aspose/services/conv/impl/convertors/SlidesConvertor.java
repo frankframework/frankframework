@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021 WeAreFrank!
+   Copyright 2019, 2021-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,8 +21,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import org.apache.logging.log4j.Logger;
-import org.apache.tika.mime.MediaType;
+import org.springframework.http.MediaType;
 
 import com.aspose.slides.InvalidPasswordException;
 import com.aspose.slides.LoadOptions;
@@ -36,7 +37,7 @@ import nl.nn.adapterframework.util.LogUtil;
 /**
  * Converts the files which are required and supported by the aspose slides
  * library.
- * 
+ *
  */
 public class SlidesConvertor extends AbstractConvertor {
 
@@ -51,8 +52,8 @@ public class SlidesConvertor extends AbstractConvertor {
 		MEDIA_TYPE_LOAD_FORMAT_MAPPING = Collections.unmodifiableMap(map);
 	}
 
-	protected SlidesConvertor(String pdfOutputLocation) {
-		super(pdfOutputLocation, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[MEDIA_TYPE_LOAD_FORMAT_MAPPING.size()]));
+	protected SlidesConvertor(CisConfiguration configuration) {
+		super(configuration, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[MEDIA_TYPE_LOAD_FORMAT_MAPPING.size()]));
 	}
 
 	@Override

@@ -1,0 +1,3 @@
+<request action="DisableOutputEscaping">
+	<field>&lt;Document&gt;&lt;Header&gt;HeaderValue&lt;/Header&gt;&lt;Action&gt;ActionValue&lt;/Action&gt;&lt;/Document&gt;</field>
+</request>

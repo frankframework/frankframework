@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2017 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -34,9 +34,6 @@ import org.xml.sax.SAXException;
 
 public class DomTreeAligner extends Tree2Xml<Document,Node> {
 
-	public DomTreeAligner() {
-		super();
-	}
 	public DomTreeAligner(ValidatorHandler validatorHandler, List<XSModel> schemaInformation) {
 		super(validatorHandler, schemaInformation);
 	}
@@ -52,13 +49,13 @@ public class DomTreeAligner extends Tree2Xml<Document,Node> {
 		return dom.getDocumentElement();
 	}
 
-	
+
 	@Override
-	public String getNodeNamespaceURI(Node node) { 
+	public String getNodeNamespaceURI(Node node) {
 		return node.getNamespaceURI();
 	}
 
-	public String getNodeName(Node node) { 
+	public String getNodeName(Node node) {
 		return node.getLocalName();
 	}
 
@@ -67,7 +64,7 @@ public class DomTreeAligner extends Tree2Xml<Document,Node> {
 		Node childNode=node.getFirstChild();
 		return childNode==null?null:childNode.getNodeValue();
 	}
-	
+
 	@Override
 	public boolean hasChild(XSElementDeclaration elementDeclaration, Node node, String childName) throws SAXException {
 		// TODO this does not take overrideValues and defaultValues into account...
@@ -107,7 +104,7 @@ public class DomTreeAligner extends Tree2Xml<Document,Node> {
 		}
 		return children;
 	}
-	
+
 	@Override
 	public boolean isNil(XSElementDeclaration elementDeclaration, Node node) {
 		NamedNodeMap attrs= node.getAttributes();
@@ -133,11 +130,11 @@ public class DomTreeAligner extends Tree2Xml<Document,Node> {
 	public static String translate(Document xmlIn, URL schemaURL, boolean ignoreUndeclaredElements) throws SAXException {
 		ValidatorHandler validatorHandler = getValidatorHandler(schemaURL);
 		List<XSModel> schemaInformation = getSchemaInformation(schemaURL);
-		
+
 		// create the validator, setup the chain
 		DomTreeAligner dta = new DomTreeAligner(validatorHandler,schemaInformation);
 		dta.setIgnoreUndeclaredElements(ignoreUndeclaredElements);
-		
+
 		return dta.translate(xmlIn);
- 	}
+	}
 }

@@ -35,7 +35,7 @@ import nl.nn.adapterframework.filesystem.FileSystemSender;
 public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSystem> {
 
 //	private List<FileSystemAction> specificActions = Arrays.asList(FileSystemAction.CREATEBUCKET,FileSystemAction.DELETEBUCKET,FileSystemAction.RESTORE,FileSystemAction.COPYS3OBJECT);
-	
+
 	public AmazonS3Sender() {
 		setFileSystem(new AmazonS3FileSystem());
 //		addActions(specificActions);
@@ -121,7 +121,7 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 
 //		return super.sendMessage(message, session, next);
 //	}
-	
+
 	@IbisDoc({ "access key to access to the AWS resources owned by the account", "" })
 	public void setAccessKey(String accessKey) {
 		getFileSystem().setAccessKey(accessKey);
@@ -142,21 +142,21 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 		getFileSystem().setChunkedEncodingDisabled(chunkedEncodingDisabled);
 	}
 
-	@IbisDoc({ "set whether the client should be configured with global bucket access enabled.", "false" }) 
+	@IbisDoc({ "set whether the client should be configured with global bucket access enabled.", "false" })
 	public void setForceGlobalBucketAccessEnabled(boolean forceGlobalBucketAccessEnabled) {
 		getFileSystem().setForceGlobalBucketAccessEnabled(forceGlobalBucketAccessEnabled);
 	}
 
-	@IbisDoc({ "name of the region that the client will be created from", "eu-west-1" }) 
+	@IbisDoc({ "name of the region that the client will be created from", "eu-west-1" })
 	public void setClientRegion(String clientRegion) {
 		getFileSystem().setClientRegion(clientRegion);
 	}
 
-	@IbisDoc({ "name of the bucket to access", "" }) 
+	@IbisDoc({ "name of the bucket to access", "" })
 	public void setBucketName(String bucketName) {
 		getFileSystem().setBucketName(bucketName);
 	}
-	
+
 //	@IbisDoc({ "name of the destination bucket name can be used for copy action", "" }) 
 //	public void setDestinationBucketName(String destinationBucketName) {
 //		getFileSystem().setDestinationBucketName(destinationBucketName);
@@ -171,7 +171,7 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 //	public void setStorageClass(String storageClass) {
 //		getFileSystem().setStorageClass(storageClass);
 //	}
-	
+
 //	@IbisDoc({ "name of tier for restore action", "" }) 
 //	public void setTier(String tier) {
 //		getFileSystem().setTier(tier);
@@ -181,7 +181,7 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 //	public void setExpirationInDays(int expirationInDays) {
 //		getFileSystem().setExpirationInDays(expirationInDays);
 //	}
-	
+
 //	@IbisDoc({ "enables storage class for copy action", "false" }) 
 //	public void setStorageClassEnabled(boolean storageClassEnabled) {
 //		getFileSystem().setStorageClassEnabled(storageClassEnabled);
@@ -191,16 +191,14 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 //	public void setBucketCreationEnabled(boolean bucketCreationEnabled) {
 //		getFileSystem().setBucketCreationEnabled(bucketCreationEnabled);
 //	}
-	
+
 	@IbisDoc({ "setting proxy host", "" })
 	public void setProxyHost(String proxyHost) {
 		getFileSystem().setProxyHost(proxyHost);
 	}
-	
+
 	@IbisDoc({ "setting proxy port", "" })
 	public void setProxyPort(Integer proxyPort) {
 		getFileSystem().setProxyPort(proxyPort);
 	}
-
-	
 }

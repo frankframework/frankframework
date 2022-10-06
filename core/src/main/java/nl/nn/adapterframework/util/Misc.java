@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -56,18 +56,18 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.Inflater;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.json.JsonWriter;
-import javax.json.JsonWriterFactory;
-import javax.json.stream.JsonGenerator;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.InputSource;
 
+import jakarta.json.Json;
+import jakarta.json.JsonReader;
+import jakarta.json.JsonStructure;
+import jakarta.json.JsonWriter;
+import jakarta.json.JsonWriterFactory;
+import jakarta.json.stream.JsonGenerator;
+import nl.nn.adapterframework.core.IMessageBrowser.HideMethod;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
@@ -219,7 +219,7 @@ public class Misc {
 		}
 		return url;
 	}
-	
+
 	/**
 	 * Copies the content of the specified file to a writer.
 	 *
@@ -258,7 +258,7 @@ public class Misc {
 	public static void streamToStream(InputStream input, OutputStream output) throws IOException {
 		streamToStream(input, output, null);
 	}
-	
+
 	/**
 	 * Writes the content of an input stream to an output stream by copying the buffer of input stream to the buffer of the output stream.
 	 * If eof is specified, appends the eof(could represent a new line) to the outputstream
@@ -333,7 +333,7 @@ public class Misc {
 				}
 				out.write(buffer, 0, r);
 			}
-	
+
 			return out.toByteArray();
 		} finally {
 			inputStream.close();
@@ -369,6 +369,7 @@ public class Misc {
 	/**
 	 * Please consider using resourceToString() instead of relying on files.
 	 */
+	@Deprecated
 	private static String fileToString(String fileName) throws IOException {
 		return fileToString(fileName, null, false);
 	}
@@ -852,6 +853,19 @@ public class Misc {
 	}
 
 	// IBM specific methods using reflection so no dependency on the iaf-ibm module is required.
+	public static String getApplicationDeploymentDescriptorPath() throws IOException {
+		try {
+			return (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getApplicationDeploymentDescriptorPath").invoke(null);
+		} catch (Exception e) {
+			if("WAS".equals(AppConstants.getInstance().getString(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, ""))) {
+				throw new IOException(e);
+			}
+			log.debug("Caught NoClassDefFoundError for getApplicationDeploymentDescriptorPath, just not on Websphere Application Server", e);
+			return null;
+		}
+	}
+
+	// IBM specific methods using reflection so no dependency on the iaf-ibm module is required.
 	public static String getDeployedApplicationBindings() throws IOException {
 		String addp = getApplicationDeploymentDescriptorPath();
 		if (addp==null) {
@@ -861,19 +875,6 @@ public class Misc {
 		String appBndFile = addp + File.separator + "ibm-application-bnd.xmi";
 		log.debug("deployedApplicationBindingsFile [" + appBndFile + "]");
 		return fileToString(appBndFile);
-	}
-
-	// IBM specific methods using reflection so no dependency on the iaf-ibm module is required.
-	public static String getApplicationDeploymentDescriptorPath() throws IOException {
-		try {
-			return (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getApplicationDeploymentDescriptorPath").invoke(null);
-		} catch (Exception e) {
-			if("WAS".equals(AppConstants.getInstance().getString(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, ""))) {
-				throw new IOException(e);
-			}
-			log.debug("Caught NoClassDefFoundError for getApplicationDeploymentDescriptorPath, just not on Websphere Application Server: " + e.getMessage());
-			return null;
-		}
 	}
 
 	// IBM specific methods using reflection so no dependency on the iaf-ibm module is required.
@@ -889,12 +890,12 @@ public class Misc {
 	}
 
 	// IBM specific methods using reflection so no dependency on the iaf-ibm module is required.
-	public static String getConfigurationResources() throws IOException {
+	public static String getConfigurationResources() {
 		try {
 			String path = (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getConfigurationResourcePath").invoke(null);
 			return fileToString(path);
 		} catch (Exception e) {
-			log.debug("Caught NoClassDefFoundError for getConfigurationResources, just not on Websphere Application Server: " + e.getMessage());
+			log.debug("Caught NoClassDefFoundError for getConfigurationResources, just not on Websphere Application Server", e);
 			return null;
 		}
 	}
@@ -905,7 +906,7 @@ public class Misc {
 			String path = (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getConfigurationServerPath").invoke(null);
 			return fileToString(path);
 		} catch (Exception e) {
-			log.debug("Caught NoClassDefFoundError for getConfigurationServer, just not on Websphere Application Server: " + e.getMessage());
+			log.debug("Caught NoClassDefFoundError for getConfigurationServer, just not on Websphere Application Server", e);
 			return null;
 		}
 	}
@@ -925,7 +926,7 @@ public class Misc {
 					.getMethod("getConnectionPoolProperties", args_types)
 					.invoke(null, args);
 		} catch (Exception e) {
-			log.debug("Caught NoClassDefFoundError for getConnectionPoolProperties, just not on Websphere Application Server: " + e.getMessage());
+			log.debug("Caught NoClassDefFoundError for getConnectionPoolProperties, just not on Websphere Application Server", e);
 			return null;
 		}
 	}
@@ -941,8 +942,7 @@ public class Misc {
 					.getMethod("getJmsDestinations", args_types)
 					.invoke(null, args);
 		} catch (Exception e) {
-			log.debug("Caught NoClassDefFoundError for getJmsDestinations, just not on Websphere Application Server: "
-					+ e.getMessage());
+			log.debug("Caught NoClassDefFoundError for getJmsDestinations, just not on Websphere Application Server", e);
 			return null;
 		}
 	}
@@ -1262,15 +1262,14 @@ public class Misc {
 	 * @see #hideFirstHalf(String, String)
 	 * @see #hideAll(String, String)
 	 */
-	public static String cleanseMessage(String inputString, String regexForHiding, String hideMethod) {
+	public static String cleanseMessage(String inputString, String regexForHiding, HideMethod hideMethod) {
 		if (StringUtils.isEmpty(regexForHiding)) {
 			return inputString;
 		}
-		if ("firstHalf".equalsIgnoreCase(hideMethod)) {
+		if (hideMethod == HideMethod.FIRSTHALF) {
 			return hideFirstHalf(inputString, regexForHiding);
-		} else {
-			return hideAll(inputString, regexForHiding);
 		}
+		return hideAll(inputString, regexForHiding);
 	}
 
 	/**
@@ -1391,7 +1390,7 @@ public class Misc {
 			count++;
 		return count;
 	}
-	
+
 	public static String urlDecode(String input) {
 		try {
 			return URLDecoder.decode(input, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
@@ -1410,7 +1409,7 @@ public class Misc {
 
 	public static <T> void addToSortedListNonUnique(List<T> list, T item) {
 		int index = Misc.binarySearchResultToInsertionPoint(Collections.binarySearch(list, item, null));
-		list.add(index, item);		
+		list.add(index, item);
 	}
 
 	private static int binarySearchResultToInsertionPoint(int index) {
@@ -1424,17 +1423,17 @@ public class Misc {
 
 	public static String jsonPretty(String json) {
 		StringWriter sw = new StringWriter();
-		JsonReader jr = Json.createReader(new StringReader(json));
-		JsonObject jobj = jr.readObject();
+		try(JsonReader jr = Json.createReader(new StringReader(json))) {
+			JsonStructure jobj = jr.read();
 
-		Map<String, Object> properties = new HashMap<>(1);
-		properties.put(JsonGenerator.PRETTY_PRINTING, true);
+			Map<String, Object> properties = new HashMap<>(1);
+			properties.put(JsonGenerator.PRETTY_PRINTING, true);
 
-		JsonWriterFactory writerFactory = Json.createWriterFactory(properties);
-		try (JsonWriter jsonWriter = writerFactory.createWriter(sw)) {
-			jsonWriter.writeObject(jobj);
+			JsonWriterFactory writerFactory = Json.createWriterFactory(properties);
+			try (JsonWriter jsonWriter = writerFactory.createWriter(sw)) {
+				jsonWriter.write(jobj);
+			}
 		}
-
 		return sw.toString().trim();
 	}
 

@@ -48,7 +48,7 @@ import nl.nn.adapterframework.util.SpringUtils;
 public class CleanupDatabaseJob extends JobDef {
 	private @Getter int queryTimeout;
 
-	private class MessageLogObject {
+	protected class MessageLogObject {
 		private String datasourceName;
 		private String tableName;
 		private String expiryDateField;
@@ -99,8 +99,8 @@ public class CleanupDatabaseJob extends JobDef {
 	}
 
 	@Override
-	public boolean beforeExecuteJob(IbisManager ibisManager) {
-		Set<String> datasourceNames = getAllLockerDatasourceNames(ibisManager);
+	public boolean beforeExecuteJob() {
+		Set<String> datasourceNames = getAllLockerDatasourceNames();
 
 		for (String datasourceName : datasourceNames) {
 			FixedQuerySender qs = null;
@@ -139,12 +139,12 @@ public class CleanupDatabaseJob extends JobDef {
 	}
 
 	@Override
-	public void execute(IbisManager ibisManager) {
+	public void execute() {
 		Date date = new Date();
 
 		int maxRows = AppConstants.getInstance().getInt("cleanup.database.maxrows", 25000);
 
-		List<MessageLogObject> messageLogs = getAllMessageLogs(ibisManager);
+		List<MessageLogObject> messageLogs = getAllMessageLogs();
 
 		for (MessageLogObject mlo: messageLogs) {
 			FixedQuerySender qs = null;
@@ -193,9 +193,9 @@ public class CleanupDatabaseJob extends JobDef {
 	 * Locate all Lockers, and find out which datasources are used.
 	 * @return distinct list of all datasourceNames used by lockers
 	 */
-	protected Set<String> getAllLockerDatasourceNames(IbisManager ibisManager) {
+	protected Set<String> getAllLockerDatasourceNames() {
 		Set<String> datasourceNames = new HashSet<>();
-
+		IbisManager ibisManager = getIbisManager();
 		for (Configuration configuration : ibisManager.getConfigurations()) {
 			for (IJob jobdef : configuration.getScheduledJobs()) {
 				if (jobdef.getLocker()!=null) {
@@ -205,18 +205,18 @@ public class CleanupDatabaseJob extends JobDef {
 					}
 				}
 			}
-		}
 
-		for (IAdapter adapter : ibisManager.getRegisteredAdapters()) {
-			PipeLine pipeLine = adapter.getPipeLine();
-			if (pipeLine != null) {
-				for (IPipe pipe : pipeLine.getPipes()) {
-					if (pipe instanceof IExtendedPipe) {
-						IExtendedPipe extendedPipe = (IExtendedPipe)pipe;
-						if (extendedPipe.getLocker() != null) {
-							String datasourceName = extendedPipe.getLocker().getDatasourceName();
-							if(StringUtils.isNotEmpty(datasourceName)) {
-								datasourceNames.add(datasourceName);
+			for (IAdapter adapter : configuration.getRegisteredAdapters()) {
+				PipeLine pipeLine = adapter.getPipeLine();
+				if (pipeLine != null) {
+					for (IPipe pipe : pipeLine.getPipes()) {
+						if (pipe instanceof IExtendedPipe) {
+							IExtendedPipe extendedPipe = (IExtendedPipe)pipe;
+							if (extendedPipe.getLocker() != null) {
+								String datasourceName = extendedPipe.getLocker().getDatasourceName();
+								if(StringUtils.isNotEmpty(datasourceName)) {
+									datasourceNames.add(datasourceName);
+								}
 							}
 						}
 					}
@@ -242,18 +242,21 @@ public class CleanupDatabaseJob extends JobDef {
 		}
 	}
 
-	private List<MessageLogObject> getAllMessageLogs(IbisManager ibisManager) {
+	protected List<MessageLogObject> getAllMessageLogs() {
 		List<MessageLogObject> messageLogs = new ArrayList<>();
-		for(IAdapter adapter : ibisManager.getRegisteredAdapters()) {
-			for (Receiver<?> receiver: adapter.getReceivers()) {
-				collectMessageLogs(messageLogs, receiver.getMessageLog());
-			}
-			PipeLine pipeline = adapter.getPipeLine();
-			for (int i=0; i<pipeline.getPipes().size(); i++) {
-				IPipe pipe = pipeline.getPipe(i);
-				if (pipe instanceof MessageSendingPipe) {
-					MessageSendingPipe msp=(MessageSendingPipe)pipe;
-					collectMessageLogs(messageLogs, msp.getMessageLog());
+		IbisManager ibisManager = getIbisManager();
+		for (Configuration configuration : ibisManager.getConfigurations()) {
+			for(IAdapter adapter : configuration.getRegisteredAdapters()) {
+				for (Receiver<?> receiver: adapter.getReceivers()) {
+					collectMessageLogs(messageLogs, receiver.getMessageLog());
+				}
+				PipeLine pipeline = adapter.getPipeLine();
+				for (int i=0; i<pipeline.getPipes().size(); i++) {
+					IPipe pipe = pipeline.getPipe(i);
+					if (pipe instanceof MessageSendingPipe) {
+						MessageSendingPipe msp=(MessageSendingPipe)pipe;
+						collectMessageLogs(messageLogs, msp.getMessageLog());
+					}
 				}
 			}
 		}

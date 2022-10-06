@@ -94,7 +94,7 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 	 */
 	@Override
 	public String getIdFromRawMessage(String rawMessage, Map<String, Object> threadContext) throws ListenerException {
-		String correlationId = rawMessage.toString();
+		String correlationId = rawMessage;
 		PipeLineSession.setListenerParameters(threadContext, correlationId, correlationId, null, null);
 		return correlationId;
 	}
@@ -111,12 +111,12 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 				openClient(remoteDirectory);
 				List<String> names = ls(remoteDirectory, true, true);
 				log.debug("FtpListener [" + getName() + "] received ls result of ["+names.size()+"] files");
-				if (names.size() > 0) {
+				if (!names.isEmpty()) {
 					remoteFilenames.addAll(names);
 				}
 			}
 			catch(Exception e) {
-				throw new ListenerException("Exception retrieving contents of directory [" +remoteDirectory+ "]", e); 
+				throw new ListenerException("Exception retrieving contents of directory [" +remoteDirectory+ "]", e);
 			}
 			finally {
 				closeClient();
@@ -130,7 +130,7 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 		waitAWhile();
 		return null;
 	}
-	
+
 	private void waitAWhile() throws ListenerException {
 		try {
 			log.debug("FtpListener " + getName() + " starts waiting ["+responseTime+"] ms in chunks of ["+localResponseTime+"] ms");
@@ -142,7 +142,7 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 				Thread.sleep(responseTime-timeWaited);
 			}
 		}
-		catch(InterruptedException e) {		
+		catch(InterruptedException e) {
 			throw new ListenerException("Interrupted while listening", e);
 		}
 	}

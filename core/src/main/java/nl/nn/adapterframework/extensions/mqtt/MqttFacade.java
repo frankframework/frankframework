@@ -36,6 +36,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 public class MqttFacade implements HasPhysicalDestination, IConfigurable {
+	private final @Getter(onMethod = @__(@Override)) String domain = "MQTT";
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
@@ -57,7 +58,7 @@ public class MqttFacade implements HasPhysicalDestination, IConfigurable {
 	private String username;
 	private String password;
 	private String authAlias;
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getClientId())) {

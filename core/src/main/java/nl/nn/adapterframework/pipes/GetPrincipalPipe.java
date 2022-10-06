@@ -30,7 +30,7 @@ import nl.nn.adapterframework.stream.Message;
  * @since   4.7
  */
 public class GetPrincipalPipe extends FixedForwardPipe {
-	
+
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException{
 		Principal principal=session.getPrincipal();

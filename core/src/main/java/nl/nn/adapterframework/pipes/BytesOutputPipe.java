@@ -239,7 +239,7 @@ public class BytesOutputPipe extends FixedForwardPipe {
 			System.arraycopy(bytes, 0, newResult, result.length, bytes.length);
 			result = newResult;
 		}
-	
+
 		public byte[] getResult() {
 			return result;
 		}

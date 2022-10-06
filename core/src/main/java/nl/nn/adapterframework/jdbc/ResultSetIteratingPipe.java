@@ -39,7 +39,7 @@ import nl.nn.adapterframework.util.AppConstants;
 public class ResultSetIteratingPipe extends JdbcIteratingPipeBase {
 
 	private boolean suppressResultSetHoldabilityWarning = AppConstants.getInstance().getBoolean(SuppressKeys.RESULT_SET_HOLDABILITY.getKey(), false);
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();

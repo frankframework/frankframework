@@ -13,7 +13,7 @@
 		name="jdbc/ibis4test-h2"
 		factory="org.apache.naming.factory.BeanFactory"
 		type="org.h2.jdbcx.JdbcDataSource"
-		URL="jdbc:h2:file:./ibis4test;NON_KEYWORDS=VALUE;DB_CLOSE_ON_EXIT=FALSE;AUTO_SERVER=TRUE;TRACE_LEVEL_FILE=0"
+		URL="jdbc:h2:mem:ibis4test;NON_KEYWORDS=VALUE;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1;TRACE_LEVEL_FILE=0;"
 	/>
 
 	<Resource
@@ -31,7 +31,7 @@
 		name="jdbc/ibis4test-oracle"
 		factory="org.apache.naming.factory.BeanFactory"
 		type="oracle.jdbc.xa.client.OracleXADataSource"
-		URL="jdbc:oracle:thin:@host.docker.internal:1521:ORCLCDB"
+		URL="jdbc:oracle:thin:@host.docker.internal:1521:XE"
 		user="${testiaf_user/username:-testiaf_user}"
 		password="${testiaf_user/password:-testiaf_user00}"
 	/>
@@ -115,7 +115,7 @@
 		type="javax.sql.DataSource" 
 		driverClassName="org.postgresql.Driver"
 		url="jdbc:postgresql://host.docker.internal:5432/testiaf"
-		user="${testiaf_user/username:-testiaf_user}"
+		username="${testiaf_user/username:-testiaf_user}"
 		password="${testiaf_user/password:-testiaf_user00}"
 		maxTotal="10"
 		maxWaitMillis="5000"
@@ -127,7 +127,6 @@
 		factory="com.mongodb.client.MongoClientFactory"
 		connectionString="mongodb://testiaf_user:testiaf_user00@host.docker.internal"
 		auth="Container"
-		closeMethod="close"
 		singleton="true"
 	/>
 
@@ -179,6 +178,14 @@
 	<Resource name="jms/qcf-activemq"
 		factory="org.apache.naming.factory.BeanFactory"
 		type="org.apache.activemq.ActiveMQXAConnectionFactory"
-		brokerURL="tcp://host.docker.internal:61616"
-	/>	
+		brokerURL="tcp://host.docker.internal:61616?jms.xaAckMode=1"
+	/>
+
+	<!-- Activemq-artemis resource configuration -->
+	<Resource name="jms/qcf-artemis"
+		factory="org.apache.naming.factory.BeanFactory"
+		type="org.apache.activemq.artemis.jms.client.ActiveMQXAConnectionFactory"
+		brokerURL="tcp://host.docker.internal:61615"
+	/>
+
 </Context>

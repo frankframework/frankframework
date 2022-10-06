@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,12 +25,14 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.Mandatory;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
@@ -39,67 +41,69 @@ import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * XCom client voor het versturen van files via XCom.
-
  *
  * @author John Dekker
  */
 public class XComSender extends SenderWithParametersBase {
 
 	private File workingDir;
-	private String name;
-	private String fileOption = null;
-	private Boolean queue = null;
-	private Boolean truncation = null;
-	private Integer tracelevel = null;
-	private String logfile = null;
-	private String codeflag = null;
-	private String carriageflag = null;
-	private String port = null;
-	private String authAlias = null;
-	private String userid = null;
+	private @Getter FileOptionType fileOption = null;
+	private @Getter Boolean queue = null;
+	private @Getter Boolean truncation = null;
+	private @Getter Integer tracelevel = null;
+	private @Getter String logfile = null;
+	private @Getter CodeType codeflag = null;
+	private @Getter CarriageFlagType carriageflag = null;
+	private @Getter String port = null;
+	private @Getter String authAlias = null;
+	private @Getter String userid = null;
 	private String password = null;
-	private String compress = null;
-	private String remoteSystem = null;
-	private String remoteDirectory = null;
-	private String remoteFilePattern = null;
-	private String configFile = null;
-	private String workingDirName = ".";
-	private String xcomtcp = "xcomtcp";
+	private @Getter CompressType compress = null;
+	private @Getter String remoteSystem = null;
+	private @Getter String remoteDirectory = null;
+	private @Getter String remoteFilePattern = null;
+	private @Getter String configFile = null;
+	private @Getter String workingDirName = ".";
+	private @Getter String xcomtcp = "xcomtcp";
+
+
+	public enum FileOptionType {
+		CREATE,
+		APPEND,
+		REPLACE
+	}
+
+	public enum CompressType {
+		YES,
+		COMPACT,
+		LZLARGE,
+		LZMEDIUM,
+		LZSMALL,
+		RLE,
+		NO
+	}
+
+	public enum CodeType {
+		EBCDIC,
+		ASCII
+	}
+
+	public enum CarriageFlagType {
+		YES,
+		VLR,
+		VLR2,
+		MPACK,
+		XPACK,
+		NO
+	}
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (StringUtils.isNotEmpty(fileOption) &&
-				! "CREATE".equals(fileOption) && ! "APPEND".equals(fileOption) &&
-				! "REPLACE".equals(fileOption)
-		) {
-			throw new ConfigurationException("Attribute [fileOption] has incorrect value " + fileOption + ", should be one of CREATE | APPEND or REPLACE");
-		}
-		if (! StringUtils.isEmpty(compress) &&
-				! "YES".equals(compress) && ! "COMPACT".equals(compress) &&
-				! "LZLARGE".equals(compress) && ! "LZMEDIUM".equals(compress) &&
-				! "LZSMALL".equals(compress) && ! "RLE".equals(compress) &&
-				! "NO".equals(compress)
-		) {
-			throw new ConfigurationException("Attribute [compress] has incorrect value " + compress + ", should be one of YES | NO | RLE | COMPACT | LZLARGE | LZMEDIUM | LZSMALL");
-		}
-		if (! StringUtils.isEmpty(codeflag) &&
-				! "EBCDIC".equals(codeflag) && ! "ASCII".equals(codeflag)
-		) {
-			throw new ConfigurationException("Attribute [codeflag] has incorrect value " + fileOption + ", should be ASCII or EBCDIC");
-		}
-        if (! StringUtils.isEmpty(carriageflag) &&
-				! "YES".equals(carriageflag) && ! "VLR".equals(carriageflag) &&
-				! "VLR2".equals(carriageflag) && ! "MPACK".equals(carriageflag) &&
-				! "XPACK".equals(carriageflag) && ! "NO".equals(carriageflag)
-		) {
-			throw new ConfigurationException("Attribute [cariageflag] has incorrect value " + compress + ", should be one of YES | NO | VRL | VRL2 | MPACK | XPACK");
-		}
 		if (! StringUtils.isEmpty(port)) {
 			try {
 				Integer.parseInt(port);
-			}
-			catch(NumberFormatException e) {
-				throw new ConfigurationException("Attribute [port] is not a number");
+			} catch(NumberFormatException e) {
+				throw new ConfigurationException("Attribute [port] is not a number", e);
 			}
 		}
 		if (tracelevel != null && (tracelevel.intValue() < 0 || tracelevel.intValue() > 10)) {
@@ -108,11 +112,9 @@ public class XComSender extends SenderWithParametersBase {
 		if (StringUtils.isEmpty(workingDirName)) {
 			throw new ConfigurationException("Attribute [workingDirName] is not set");
 		}
-		else {
-			workingDir = new File(workingDirName);
-			if (! workingDir.isDirectory()) {
-				throw new ConfigurationException("Working directory [workingDirName=" + workingDirName + "] is not a directory");
-			}
+		workingDir = new File(workingDirName);
+		if (! workingDir.isDirectory()) {
+			throw new ConfigurationException("Working directory [workingDirName=" + workingDirName + "] is not a directory");
 		}
 	}
 
@@ -129,8 +131,8 @@ public class XComSender extends SenderWithParametersBase {
 		} catch (IOException e) {
 			throw new SenderException(getLogPrefix(),e);
 		}
-		for (Iterator filenameIt = getFileList(messageString).iterator(); filenameIt.hasNext(); ) {
-			String filename = (String)filenameIt.next();
+		for (Iterator<String> filenameIt = getFileList(messageString).iterator(); filenameIt.hasNext(); ) {
+			String filename = filenameIt.next();
 			log.debug("Start sending " + filename);
 
 			// get file to send
@@ -153,9 +155,8 @@ public class XComSender extends SenderWithParametersBase {
 				// wait until the process is completely finished
 				try {
 					p.waitFor();
-				}
-				catch(InterruptedException e) {
-					log.warn(getLogPrefix()+"has been interrupted");
+				} catch(InterruptedException e) {
+					log.warn(getLogPrefix()+"has been interrupted", e);
 				}
 
 				log.debug("output for " + localFile.getName() + " = " + output.toString());
@@ -203,8 +204,8 @@ public class XComSender extends SenderWithParametersBase {
 
 
 			// optional parameters
-			if (StringUtils.isNotEmpty(fileOption))
-				sb.append(" FILE_OPTION=").append(fileOption);
+			if (fileOption!=null)
+				sb.append(" FILE_OPTION=").append(fileOption.name());
 			if (queue != null)
 				sb.append(" QUEUE=").append(queue.booleanValue() ? "YES" : "NO");
 			if (tracelevel != null)
@@ -215,12 +216,12 @@ public class XComSender extends SenderWithParametersBase {
 				sb.append(" PORT=" + port);
 			if (! StringUtils.isEmpty(logfile))
 				sb.append(" XLOGFILE=" + logfile);
-			if (! StringUtils.isEmpty(compress))
-				sb.append(" COMPRESS=").append(compress);
-			if (! StringUtils.isEmpty(codeflag))
-				sb.append(" CODE_FLAG=").append(codeflag);
-			if (! StringUtils.isEmpty(carriageflag))
-				sb.append(" CARRIAGE_FLAG=").append(carriageflag);
+			if (compress!=null)
+				sb.append(" COMPRESS=").append(compress.name());
+			if (codeflag!=null)
+				sb.append(" CODE_FLAG=").append(codeflag.name());
+			if (carriageflag!=null)
+				sb.append(" CARRIAGE_FLAG=").append(carriageflag.name());
 			if (! StringUtils.isEmpty(cf.getUsername()))
 				sb.append(" USERID=").append(cf.getUsername());
 			if (inclPasswd && ! StringUtils.isEmpty(cf.getPassword()))
@@ -233,41 +234,18 @@ public class XComSender extends SenderWithParametersBase {
 		}
 	}
 
-	public String getXcomtcp() {
-		return xcomtcp;
-	}
-
-	private List getFileList(String message) {
+	private List<String> getFileList(String message) {
 		StringTokenizer st = new StringTokenizer(message, ";");
-		LinkedList list = new LinkedList();
+		List<String> list = new LinkedList<>();
 		while (st.hasMoreTokens()) {
 			list.add(st.nextToken());
 		}
 		return list;
 	}
 
-	@Override
-	public String getName() {
-		return name;
-	}
-
-	@Override
-	@IbisDoc({"name of the sender", ""})
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getFileOption() {
-		return fileOption;
-	}
-
 	@IbisDoc({"one of create, append or replace", ""})
-	public void setFileOption(String newVal) {
+	public void setFileOption(FileOptionType newVal) {
 		fileOption = newVal;
-	}
-
-	public String getRemoteDirectory() {
-		return remoteDirectory;
 	}
 
 	@IbisDoc({"remote directory is prefixed witht the remote file", ""})
@@ -275,59 +253,18 @@ public class XComSender extends SenderWithParametersBase {
 		remoteDirectory = string;
 	}
 
-	public String getCariageflag() {
-		return carriageflag;
+
+	public void setCarriageflag(CarriageFlagType value) {
+		carriageflag = value;
 	}
 
-	public String getCodeflag() {
-		return codeflag;
+	@IbisDoc({"characterset conversion", ""})
+	public void setCodeflag(CodeType value) {
+		codeflag = value;
 	}
 
-	public String getCompress() {
-		return compress;
-	}
-
-	public String getLogfile() {
-		return logfile;
-	}
-
-	public String getPort() {
-		return port;
-	}
-
-	public Boolean getQueue() {
-		return queue;
-	}
-
-	public String getRemoteSystem() {
-		return remoteSystem;
-	}
-
-	public Integer getTracelevel() {
-		return tracelevel;
-	}
-
-	public Boolean getTruncation() {
-		return truncation;
-	}
-
-	public String getUserid() {
-		return userid;
-	}
-
-	@IbisDoc({"one of yes, no, vrl, vrl2, mpack or xpack", ""})
-	public void setCarriageflag(String string) {
-		carriageflag = string;
-	}
-
-	@IbisDoc({"characterset conversion, one of ascii or ebcdic", ""})
-	public void setCodeflag(String string) {
-		codeflag = string;
-	}
-
-	@IbisDoc({"one of yes, no, rle, compact, lzlarge, lzmedium or lzsmall", ""})
-	public void setCompress(String string) {
-		compress = string;
+	public void setCompress(CompressType value) {
+		compress = value;
 	}
 
 	@IbisDoc({"name of logfile for xcomtcp to be used", ""})
@@ -370,19 +307,13 @@ public class XComSender extends SenderWithParametersBase {
 		userid = string;
 	}
 
-	public String getRemoteFilePattern() {
-		return remoteFilePattern;
-	}
-
 	@IbisDoc({"remote file to create. if empty, the name is equal to the local file", ""})
 	public void setRemoteFilePattern(String string) {
 		remoteFilePattern = string;
 	}
-	public String getWorkingDirName() {
-		return workingDirName;
-	}
 
 	@IbisDoc({"directory in which to run the xcomtcp command", ""})
+	@Mandatory
 	public void setWorkingDirName(String string) {
 		workingDirName = string;
 	}
@@ -390,10 +321,6 @@ public class XComSender extends SenderWithParametersBase {
 	@IbisDoc({"path to xcomtcp command", ""})
 	public void setXcomtcp(String string) {
 		xcomtcp = string;
-	}
-
-	public String getConfigFile() {
-		return configFile;
 	}
 
 	public void setConfigFile(String string) {
@@ -404,9 +331,5 @@ public class XComSender extends SenderWithParametersBase {
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
-	public String getAuthAlias() {
-		return authAlias;
-	}
-
 
 }

@@ -19,12 +19,17 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.FormBodyPart;
+import org.apache.http.entity.mime.FormBodyPartBuilder;
+import org.apache.http.entity.mime.content.InputStreamBody;
+import org.apache.http.entity.mime.content.StringBody;
 import org.w3c.dom.Element;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 
+@Deprecated
 public class MultipartHttpSender extends HttpSender {
 
 	public MultipartHttpSender() {
@@ -43,24 +48,33 @@ public class MultipartHttpSender extends HttpSender {
 		String partValue = element.getAttribute("value"); //Value when SessionKey is empty or not set
 		Message partObject = session.getMessage(sessionKey);
 
+		ContentType contentType = ContentType.create(mimeType, getCharSet());
 		if (partObject != null && partObject.isBinary()) {
 			InputStream fis = partObject.asInputStream();
 
 			if(StringUtils.isNotEmpty(fileName)) {
-				return createMultipartBodypart(partName, fis, fileName, mimeType);
+				return createMultipartBodypart(partName, fis, fileName, contentType);
 			}
 			else if("file".equalsIgnoreCase(partType)) {
-				return createMultipartBodypart(sessionKey, fis, partName, mimeType);
+				return createMultipartBodypart(sessionKey, fis, partName, contentType);
 			}
 			else {
-				return createMultipartBodypart(partName, fis, null, mimeType);
+				return createMultipartBodypart(partName, fis, null, contentType);
 			}
 		} else {
 			String value = partObject.asString();
 			if(StringUtils.isEmpty(value))
 				value = partValue;
 
-			return createMultipartBodypart(partName, value, mimeType);
+			return FormBodyPartBuilder.create().setName(partName).setBody(new StringBody(value, contentType)).build();
 		}
+	}
+
+	private FormBodyPart createMultipartBodypart(String name, InputStream is, String fileName, ContentType contentType) {
+		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appending filepart ["+name+"] with value ["+is+"] fileName ["+fileName+"] and contentType ["+contentType+"]");
+		FormBodyPartBuilder bodyPart = FormBodyPartBuilder.create()
+			.setName(name)
+			.setBody(new InputStreamBody(is, contentType, fileName));
+		return bodyPart.build();
 	}
 }
