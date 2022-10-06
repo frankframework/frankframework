@@ -19,22 +19,17 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.prometheus.PrometheusConfig;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 
-public class PrometheusRegistryConfigurator extends MetricsRegistryConfiguratorBase {
+public class PrometheusRegistryConfigurator extends MetricsRegistryConfiguratorBase<PrometheusConfig> {
 
-	public PrometheusRegistryConfigurator() {
-		super("prometheus");
+	private class Config extends MeterRegistryConfigBase implements PrometheusConfig {}
+
+	@Override
+	protected PrometheusConfig createConfig() {
+		return new Config();
 	}
 
 	@Override
-	protected MeterRegistry createRegistry() {
-
-		PrometheusConfig prometheusConfig = new PrometheusConfig() {
-			@Override
-			public String get(String s) {
-				return getProperty(s);
-			}
-
-		};
-		return new PrometheusMeterRegistry(prometheusConfig);
+	protected MeterRegistry createRegistry(PrometheusConfig config) {
+		return new PrometheusMeterRegistry(config);
 	}
 }
