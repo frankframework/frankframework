@@ -345,7 +345,7 @@ public class SecurityItems {
 	}
 
 	private List<String> getAuthEntries() {
-		List<String> entries = new ArrayList<>();
+		List<String> entries = new LinkedList<>();
 		try {
 			Collection<String> knownAliases = CredentialFactory.getConfiguredAliases();
 			if (knownAliases!=null) {
