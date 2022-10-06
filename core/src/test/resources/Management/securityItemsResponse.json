@@ -60,14 +60,14 @@
     ],
     "authEntries": [
         {
-            "password": "************",
-            "alias": "alias2",
-            "username": null
-        },
-        {
             "password": "*********",
             "alias": "alias1",
             "username": "username1"
+        },
+        {
+            "password": "************",
+            "alias": "alias2",
+            "username": null
         },
         {
             "password": "*** ERROR ***",
