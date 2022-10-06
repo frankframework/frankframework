@@ -105,7 +105,7 @@ public class FixedQuerySenderMock extends FixedQuerySender {
 	}
 
 	public void addMockedQueries(Map<String, ResultSet> mocks) {
-		this.mocks = mocks;
+		this.mocks.putAll(mocks);
 	}
 
 	public void addMock(String query, ResultSet resultSet) {
