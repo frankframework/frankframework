@@ -139,7 +139,7 @@ public class Adapter implements IAdapter, NamedBean {
 	private IErrorMessageFormatter errorMessageFormatter;
 
 	private RunStateManager runState = new RunStateManager();
-	private boolean configurationSucceeded = false;
+	private @Getter boolean configurationSucceeded = false;
 	private MessageKeeper messageKeeper; //instantiated in configure()
 	private boolean msgLogHumanReadable = APP_CONSTANTS.getBoolean("msg.log.humanReadable", false);
 
