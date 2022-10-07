@@ -31,6 +31,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.statistics.HasStatistics.Action;
@@ -41,7 +42,7 @@ import nl.nn.adapterframework.util.DateUtils;
 
 /**
  * Retrieves the statistics
- * 
+ *
  * @since	7.0-B1
  * @author	Niels Meijer
  */
@@ -119,8 +120,8 @@ public final class ShowAdapterStatistics extends Base {
 		Object handle = handler.start(null, null, null);
 		try {
 			adapter.getPipeLine().iterateOverStatistics(handler, tmp, Action.FULL);
-			statisticsMap.put("durationPerPipe", tmp.get("duration"));
-			statisticsMap.put("sizePerPipe", tmp.get("size"));
+			statisticsMap.put("durationPerPipe", tmp.get(PipeLine.PIPELINE_DURATION_STATS));
+			statisticsMap.put("sizePerPipe", tmp.get(PipeLine.PIPELINE_SIZE_STATS));
 		} catch (SenderException e) {
 			log.error("unable to parse pipeline statistics", e);
 		} finally {

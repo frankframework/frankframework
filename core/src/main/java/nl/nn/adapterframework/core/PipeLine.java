@@ -97,6 +97,10 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	public static final String INPUT_WRAPPER_NAME    = "- pipeline inputWrapper";
 	public static final String OUTPUT_WRAPPER_NAME   = "- pipeline outputWrapper";
 
+	public static final String PIPELINE_DURATION_STATS  = "duration";
+	public static final String PIPELINE_WAIT_STATS  = "wait";
+	public static final String PIPELINE_SIZE_STATS  = "msgsize";
+
 	// If you edit this default exit, please update the JavaDoc of class PipeLineExits as well.
 	private static final String DEFAULT_SUCCESS_EXIT_NAME = "READY";
 
@@ -369,7 +373,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	@Override
 	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
-		Object pipeStatsData = hski.openGroup(data, null, "duration");
+		Object pipeStatsData = hski.openGroup(data, null, PIPELINE_DURATION_STATS);
 		handlePipeStat(getInputValidator(),pipeStatistics,pipeStatsData, hski, true, action);
 		handlePipeStat(getOutputValidator(),pipeStatistics,pipeStatsData, hski, true, action);
 		handlePipeStat(getInputWrapper(),pipeStatistics,pipeStatsData, hski, true, action);
@@ -395,14 +399,17 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 				}
 			}
 		}
+		hski.closeGroup(pipeStatsData);
+
 		if (pipeWaitingStatistics.size() > 0) {
-			Object waitStatsData = hski.openGroup(data, null, "waitStats");
+			Object waitStatsData = hski.openGroup(data, null, PIPELINE_WAIT_STATS);
 			for (IPipe pipe : adapter.getPipeLine().getPipes()) {
 				handlePipeStat(pipe, pipeWaitingStatistics, waitStatsData, hski, false, action);
 			}
+			hski.closeGroup(waitStatsData);
 		}
-		hski.closeGroup(pipeStatsData);
-		Object sizeStatsData = hski.openGroup(data, null,"size");
+
+		Object sizeStatsData = hski.openGroup(data, null, PIPELINE_SIZE_STATS);
 		hski.handleStatisticsKeeper(sizeStatsData,getRequestSizeStats());
 		for (IPipe pipe : adapter.getPipeLine().getPipes()) {
 			if (pipe instanceof AbstractPipe) {
