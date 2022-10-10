@@ -71,8 +71,9 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 			throw new ConfigurationException("must specify statusValueProcessed");
 		}
 		String alias = StringUtils.isNotBlank(getTableAlias())?getTableAlias().trim():"";
-		setSelectQuery("SELECT "+getKeyField() + (StringUtils.isNotEmpty(getMessageField())?","+getMessageField():"")+
+		setSelectQuery("SELECT "+getKeyField() +
 								(StringUtils.isNotEmpty(getMessageIdField())?","+getMessageIdField():"")+(StringUtils.isNotEmpty(getCorrelationIdField())?","+getCorrelationIdField():"")+
+								(StringUtils.isNotEmpty(getMessageField())?","+getMessageField():"") +
 						" FROM "+getTableName() + (StringUtils.isNotBlank(tableAlias)?" "+tableAlias.trim():"") +
 						" WHERE "+getStatusField()+
 						(StringUtils.isNotEmpty(getStatusValue(ProcessState.AVAILABLE))?
