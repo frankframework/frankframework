@@ -1,6 +1,6 @@
 package nl.nn.adapterframework.jdbc;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -15,6 +15,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
@@ -24,9 +26,10 @@ import org.mockito.Mockito;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
-import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ProcessState;
+import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.dbms.ConcurrentJdbcActionTester;
 import nl.nn.adapterframework.jdbc.dbms.Dbms;
@@ -114,6 +117,18 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 
 		assertEquals(expected, listener.getSelectQuery());
 	}
+
+	@Test
+	public void testSelectQueryWithMessageIdAndCorrelationId() throws ConfigurationException {
+		listener.setMessageIdField("MIDFIELD");
+		listener.setCorrelationIdField("CIDFIELD");
+		listener.configure();
+
+		String expected = "SELECT TKEY,MIDFIELD,CIDFIELD FROM "+TEST_TABLE+" t WHERE TINT='1'";
+
+		assertEquals(expected, listener.getSelectQuery());
+	}
+
 	@Test
 	public void testUpdateStatusQuery() throws ConfigurationException {
 		listener.configure();
@@ -376,6 +391,28 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		testPeekMessage("NULL",false);
 	}
 
+	@Test
+	public void testGetIdFromRawMessage() throws Exception {
+		listener.setMessageIdField("tVARCHAR");
+		listener.setCorrelationIdField("tCLOB");
+		listener.configure();
+		listener.open();
+
+		JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO "+TEST_TABLE+" (TKEY,TINT,TVARCHAR,TCLOB) VALUES (10,1,'fakeMid','fakeCid')", null);
+		
+		Map<String,Object> context = new HashMap<>();
+		
+		Object rawMessage = listener.getRawMessage(context);
+		
+		String mid = listener.getIdFromRawMessage(rawMessage, context);
+		String cid = (String)context.get(PipeLineSession.correlationIdKey);
+		
+		assertEquals("fakeMid", mid);
+		assertEquals("fakeCid", cid);
+		
+	}
+
+	
 	@Test
 	public void testParallelGet() throws Exception {
 		if (!dbmsSupport.hasSkipLockedFunctionality()) {

@@ -61,6 +61,20 @@ import nl.nn.adapterframework.util.Misc;
  * @author Jaco de Groot
  */
 public class MessageStoreListener<M> extends JdbcTableListener<M> {
+	
+	private static final String DEFAULT_TABLE_NAME="IBISSTORE";
+	private static final String DEFAULT_KEY_FIELD="MESSAGEKEY";
+	private static final String DEFAULT_MESSAGE_FIELD="MESSAGE";
+	private static final String DEFAULT_MESSAGEID_FIELD="MESSAGEID";
+	private static final String DEFAULT_CORRELATIONID_FIELD="CORRELATIONID";
+	private static final String DEFAULT_STATUS_FIELD="TYPE";
+	private static final String DEFAULT_TIMESTAMP_FIELD="MESSAGEDATE";
+	private static final String DEFAULT_COMMENT_FIELD="COMMENTS";
+
+	private static final String DEFAULT_STATUS_VALUE_AVAILABLE=IMessageBrowser.StorageType.MESSAGESTORAGE.getCode();
+	private static final String DEFAULT_STATUS_VALUE_PROCESSED=IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode();
+	private static final String DEFAULT_STATUS_VALUE_ERROR=IMessageBrowser.StorageType.ERRORSTORAGE.getCode();
+
 	private @Getter String slotId;
 	private @Getter String sessionKeys = null;
 	private @Getter boolean moveToMessageLog = true;
@@ -68,17 +82,19 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 	private List<String> sessionKeysList;
 
 	{
-		setTableName("IBISSTORE");
-		setKeyField("MESSAGEKEY");
-		setMessageField("MESSAGE");
+		setTableName(DEFAULT_TABLE_NAME);
+		setKeyField(DEFAULT_KEY_FIELD);
+		setMessageField(DEFAULT_MESSAGE_FIELD);
+		setMessageIdField(DEFAULT_MESSAGEID_FIELD);
+		setCorrelationIdField(DEFAULT_CORRELATIONID_FIELD);
 		setMessageFieldType(MessageFieldType.BLOB);
 		setBlobSmartGet(true);
-		setStatusField("TYPE");
-		setTimestampField("MESSAGEDATE");
-		setCommentField("COMMENTS");
-		setStatusValueAvailable(IMessageBrowser.StorageType.MESSAGESTORAGE.getCode());
-		setStatusValueProcessed(IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode());
-		setStatusValueError(IMessageBrowser.StorageType.ERRORSTORAGE.getCode());
+		setStatusField(DEFAULT_STATUS_FIELD);
+		setTimestampField(DEFAULT_TIMESTAMP_FIELD);
+		setCommentField(DEFAULT_COMMENT_FIELD);
+		setStatusValueAvailable(DEFAULT_STATUS_VALUE_AVAILABLE);
+		setStatusValueProcessed(DEFAULT_STATUS_VALUE_PROCESSED);
+		setStatusValueError(DEFAULT_STATUS_VALUE_ERROR);
 	}
 
 	@Override
@@ -166,22 +182,34 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 	}
 
 	@Override
-	@Default ("IBISSTORE")
+	@Default (DEFAULT_TABLE_NAME)
 	@Optional
 	public void setTableName(String string) {
 		super.setTableName(string);
 	}
 
 	@Override
-	@Default ("MESSAGEKEY")
+	@Default (DEFAULT_KEY_FIELD)
 	public void setKeyField(String fieldname) {
 		super.setKeyField(fieldname);
 	}
 
 	@Override
-	@Default ("MESSAGE")
+	@Default (DEFAULT_MESSAGE_FIELD)
 	public void setMessageField(String fieldname) {
 		super.setMessageField(fieldname);
+	}
+
+	@Override
+	@Default (DEFAULT_MESSAGEID_FIELD)
+	public void setMessageIdField(String fieldname) {
+		super.setMessageIdField(fieldname);
+	}
+
+	@Override
+	@Default (DEFAULT_CORRELATIONID_FIELD)
+	public void setCorrelationIdField(String fieldname) {
+		super.setCorrelationIdField(fieldname);
 	}
 
 	@Override
@@ -197,20 +225,20 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 	}
 
 	@Override
-	@Default ("TYPE")
+	@Default (DEFAULT_STATUS_FIELD)
 	@Optional
 	public void setStatusField(String fieldname) {
 		super.setStatusField(fieldname);
 	}
 
 	@Override
-	@Default ("MESSAGEDATE")
+	@Default (DEFAULT_TIMESTAMP_FIELD)
 	public void setTimestampField(String fieldname) {
 		super.setTimestampField(fieldname);
 	}
 
 	@Override
-	@Default ("COMMENTS")
+	@Default (DEFAULT_COMMENT_FIELD)
 	public void setCommentField(String commentField) {
 		super.setCommentField(commentField);
 	}
