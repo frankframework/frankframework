@@ -127,7 +127,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	private @Getter INamedObject owner; // for logging purposes
 	private @Setter PipeLineProcessor pipeLineProcessor;
 
-	private Map<String, StatisticsKeeper> pipeStatistics = new Hashtable<String, StatisticsKeeper>(); // needless synchronization?
+	private Map<String, StatisticsKeeper> pipeStatistics = new Hashtable<String, StatisticsKeeper>();
 	private Map<String, StatisticsKeeper> pipeWaitingStatistics = new Hashtable<String, StatisticsKeeper>();
 	private @Getter StatisticsKeeper requestSizeStats;
 	private Map<String, StatisticsKeeper> pipeSizeStats = new Hashtable<String, StatisticsKeeper>();
