@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.testutil;
+package nl.nn.adapterframework.testutil.mock;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -18,6 +18,7 @@ import org.mockito.stubbing.Answer;
 
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.testutil.TestConfiguration;
 
 /**
  * Enables the ability to provide a mockable FixedQuerySender. In some places a new QuerySender is created to execute (custom) statements.

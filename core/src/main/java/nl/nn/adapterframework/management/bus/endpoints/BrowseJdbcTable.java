@@ -83,6 +83,12 @@ public class BrowseJdbcTable {
 			throw new IllegalStateException("Access to table ["+tableName+"] not allowed");
 		}
 
+		if(maxRow < minRow)
+			throw new IllegalStateException("Rownum max must be greater than or equal to Rownum min");
+		if (maxRow - minRow >= 100) {
+			throw new IllegalStateException("Difference between Rownum max and Rownum min must be less than hundred");
+		}
+
 		return doAction(datasource, tableName, where, order, numberOfRowsOnly, minRow, maxRow);
 	}
 
@@ -94,7 +100,7 @@ public class BrowseJdbcTable {
 		DirectQuerySender qs = ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
 
 		try {
-			qs.setName("QuerySender");
+			qs.setName("BrowseTableQuerySender");
 			qs.setDatasourceName(datasource);
 
 			qs.setQueryType("select");
@@ -195,36 +201,38 @@ public class BrowseJdbcTable {
 	}
 
 	private boolean readAllowed(String tableName) {
-		tableName = tableName.toLowerCase();
+		if(tableName == null) return false;
+
+		String table = tableName.toLowerCase();
 		List<String> rulesList = Arrays.asList(JDBC_PERMISSION_RULES.split("\\|"));
 		for (String rule: rulesList) {
 			List<String> parts = Arrays.asList(rule.trim().split("\\s+"));
 			if (parts.size() != 3) {
-				log.debug("invalid rule '" + rule + "' contains " + parts.size() + " part(s): " + parts);
-			} else {
-				String tablePattern = parts.get(0).toLowerCase();
-				if (tableName != null && tablePattern != null) {
-					String role = parts.get(1);
-					String type = parts.get(2);
-					log.debug("check allow read table '" + tableName + "' with rule table '" + tablePattern + "', role '" + role + "' and type '" + type + "'");
-					if ("*".equals(tablePattern) || tableName.equals(tablePattern)) {
-						log.debug("table match");
-						if ("*".equals(role) || BusMessageUtils.hasAuthority(role)) {
-							log.debug("role match");
-							if ("allow".equals(type)) {
-								log.debug("allow");
-								return true;
-							} else if ("deny".equals(type)) {
-								log.debug("deny");
-								return false;
-							} else {
-								log.error("invalid rule type");
-							}
+				log.debug("invalid rule [{}] contains {} part(s): {}", rule, parts.size(), parts);
+				continue;
+			}
+
+			String tablePattern = parts.get(0).toLowerCase();
+			if (tablePattern != null) {
+				String role = parts.get(1);
+				String type = parts.get(2);
+				log.debug("check allow read table [{}] with rule table [{}] role [{}] and type [{}]", table, tablePattern, role, type);
+				if ("*".equals(tablePattern) || table.equals(tablePattern)) {
+					log.debug("table match");
+					if ("*".equals(role) || BusMessageUtils.hasAuthority(role)) {
+						log.debug("role match, type [{}]", type);
+						if ("allow".equals(type)) {
+							return true;
+						} else if ("deny".equals(type)) {
+							return false;
+						} else {
+							log.error("invalid rule type");
 						}
 					}
 				}
 			}
 		}
+
 		log.debug("deny");
 		return false;
 	}

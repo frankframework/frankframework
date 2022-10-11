@@ -60,11 +60,11 @@ public final class BrowseJdbcTable extends FrankApiBase {
 			if(key.equalsIgnoreCase("numberOfRowsOnly")) {
 				numberOfRowsOnly = Boolean.parseBoolean(entry.getValue().toString());
 			}
-			if(key.equalsIgnoreCase("minRow") && entry.getValue() != "") {
+			if(key.equalsIgnoreCase("minRow") && !"".equals(entry.getValue())) {
 				minRow = Integer.parseInt(entry.getValue().toString());
 				minRow = Math.max(minRow, 0);
 			}
-			if(key.equalsIgnoreCase("maxRow") && entry.getValue() != "") {
+			if(key.equalsIgnoreCase("maxRow") && !"".equals(entry.getValue())) {
 				maxRow = Integer.parseInt(entry.getValue().toString());
 				maxRow = Math.max(maxRow, 1);
 			}
@@ -72,12 +72,6 @@ public final class BrowseJdbcTable extends FrankApiBase {
 
 		if(datasource == null || tableName == null) {
 			throw new ApiException("datasource and/or tableName not defined.", 400);
-		}
-
-		if(maxRow < minRow)
-			throw new ApiException("Rownum max must be greater than or equal to Rownum min", 400);
-		if (maxRow - minRow >= 100) {
-			throw new ApiException("Difference between Rownum max and Rownum min must be less than hundred", 400);
 		}
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.JDBC, BusAction.FIND);

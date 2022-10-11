@@ -60,7 +60,7 @@ public class BusTestBase {
 
 	/**
 	 * Add the ability to mock FixedQuerySender ResultSets. Enter the initial query and a mocked 
-	 * ResultSet using a {@link nl.nn.adapterframework.testutil.FixedQuerySenderMock.ResultSetBuilder ResultSetBuilder}.
+	 * ResultSet using a {@link nl.nn.adapterframework.testutil.mock.FixedQuerySenderMock.ResultSetBuilder ResultSetBuilder}.
 	 */
 	public void mockQuery(String query, ResultSet resultSet) {
 		qsPostProcessor.addMock(query, resultSet);

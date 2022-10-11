@@ -12,6 +12,7 @@ import org.springframework.context.ApplicationContextAware;
 
 import lombok.Setter;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
+import nl.nn.adapterframework.testutil.mock.FixedQuerySenderMock;
 
 /**
  * Enables the ability to provide a mockable FixedQuerySender.
