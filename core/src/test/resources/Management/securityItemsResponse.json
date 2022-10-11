@@ -2,7 +2,7 @@
     "securityRoles": {
         "SR_Admin": {
             "role-name": "IbisAdmin",
-            "allowed": true,
+            "allowed": false,
             "specialSubjects": [
                 "AllAuthenticatedUsers"
             ],
@@ -12,7 +12,7 @@
         },
         "SR_DataAdmin": {
             "role-name": "IbisDataAdmin",
-            "allowed": true,
+            "allowed": false,
             "specialSubjects": [
                 "AllAuthenticatedUsers"
             ],
@@ -22,7 +22,7 @@
         },
         "SR_Tester": {
             "role-name": "IbisTester",
-            "allowed": true,
+            "allowed": false,
             "specialSubjects": [
                 "AllAuthenticatedUsers"
             ],
@@ -32,7 +32,7 @@
         },
         "SR_Observer": {
             "role-name": "IbisObserver",
-            "allowed": true,
+            "allowed": false,
             "specialSubjects": [
                 "AllAuthenticatedUsers"
             ],
@@ -42,7 +42,7 @@
         },
         "SR_IbisWebService": {
             "role-name": "IbisWebService",
-            "allowed": true,
+            "allowed": false,
             "specialSubjects": [
                 "AllAuthenticatedUsers"
             ],
