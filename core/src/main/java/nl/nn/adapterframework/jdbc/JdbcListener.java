@@ -287,6 +287,12 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 		return mid;
 	}
 
+	protected String getKeyFromRawMessage(M rawMessage) throws ListenerException {
+		Map<String,Object> context = new HashMap<>();
+		getIdFromRawMessage(rawMessage, context); // populate context with storage key
+		return (String)context.get(STORAGE_KEY_KEY);
+	}
+
 	@Override
 	public Message extractMessage(M rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		Message message;
@@ -332,9 +338,7 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 
 	protected M changeProcessState(Connection connection, M rawMessage, ProcessState toState, String reason) throws ListenerException {
 		String query = getUpdateStatusQuery(toState);
-		Map<String,Object> context = new HashMap<>();
-		getIdFromRawMessage(rawMessage, context); // populate context with storage key
-		String key=(String)context.get(STORAGE_KEY_KEY);
+		String key=getKeyFromRawMessage(rawMessage);
 		return execute(connection, query, key) ? rawMessage : null;
 	}
 

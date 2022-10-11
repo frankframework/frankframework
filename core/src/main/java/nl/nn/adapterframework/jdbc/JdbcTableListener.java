@@ -102,7 +102,7 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 	@Override
 	protected M changeProcessState(Connection connection, M rawMessage, ProcessState toState, String reason) throws ListenerException {
 		String query = getUpdateStatusQuery(toState);
-		String key=getIdFromRawMessage(rawMessage, null);
+		String key=getKeyFromRawMessage(rawMessage);
 		List<String> parameters = new ArrayList<>();
 		if (StringUtils.isNotEmpty(getCommentField()) && query.substring(query.indexOf('?')+1).contains("?")) {
 			if (getMaxCommentLength()>=0 && reason!=null && reason.length()>getMaxCommentLength()) {
