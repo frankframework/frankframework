@@ -86,10 +86,7 @@ public class Adapter implements IAdapter, NamedBean {
 	private @Getter @Setter ApplicationContext applicationContext;
 
 	private Logger log = LogUtil.getLogger(this);
-	protected Logger msgLog = LogUtil.getLogger("MSG");
-
-	public static final Level MSGLOG_LEVEL_TERSE = Level.toLevel("TERSE");
-	public static final Level MSGLOG_LEVEL_TERSE_EFF = Level.DEBUG;
+	protected Logger msgLog = LogUtil.getLogger(LogUtil.MESSAGE_LOGGER);
 
 	public static final String PROCESS_STATE_OK = "OK";
 	public static final String PROCESS_STATE_ERROR = "ERROR";
@@ -102,7 +99,7 @@ public class Adapter implements IAdapter, NamedBean {
 	private @Getter boolean autoStart = APP_CONSTANTS.getBoolean("adapters.autoStart", true);
 	private @Getter boolean replaceNullMessage = false;
 	private @Getter int messageKeeperSize = 10; //default length of MessageKeeper
-	private Level msgLogLevel = Level.toLevel(APP_CONSTANTS.getProperty("msg.log.level.default", "BASIC"));
+	private Level msgLogLevel = Level.toLevel(APP_CONSTANTS.getProperty("msg.log.level.default", "INFO"));
 	private @Getter boolean msgLogHidden = APP_CONSTANTS.getBoolean("msg.log.hidden.default", true);
 	private @Getter String targetDesignDocument;
 
@@ -343,9 +340,9 @@ public class Adapter implements IAdapter, NamedBean {
 		try {
 			Message formattedErrorMessage= errorMessageFormatter.format(errorMessage, t, objectInError, originalMessage, messageID, receivedTime);
 
-			if(msgLog.isEnabled(MSGLOG_LEVEL_TERSE)) {
+			if(msgLog.isInfoEnabled()) {
 				String resultOrSize = (isMsgLogHidden()) ? "SIZE="+getFileSizeAsBytes(formattedErrorMessage) : formattedErrorMessage.toString();
-				msgLog.log(MSGLOG_LEVEL_TERSE_EFF, "formatted errormessage, result [{}]", resultOrSize);
+				msgLog.info("formatted errormessage, result [{}]", resultOrSize);
 			}
 
 			return formattedErrorMessage;
@@ -570,9 +567,7 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 
 		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.putAll(mdcValues)) {
-			if(msgLog.isEnabled(MSGLOG_LEVEL_TERSE)) {
-				msgLog.log(MSGLOG_LEVEL_TERSE_EFF, "returned from PipeLine");
-			}
+			msgLog.info("returned from PipeLine");
 			if (log.isDebugEnabled()) {
 				String exitCode = ", exit-code ["+result.getExitCode()+"]";
 				String format = "got exit-state [{}]"+(result.getExitCode()!=0 ? exitCode : "" ) +" and result [{}] from PipeLine";
@@ -653,9 +648,9 @@ public class Adapter implements IAdapter, NamedBean {
 							}
 						}
 
-						if(msgLog.isEnabled(MSGLOG_LEVEL_TERSE)) {
+						if(msgLog.isDebugEnabled()) {
 							String messageOrSize = (isMsgLogHidden()) ? "SIZE="+getFileSizeAsBytes(message) : message.toString();
-							msgLog.log(MSGLOG_LEVEL_TERSE_EFF, "received message [{}]{}", messageOrSize, additionalLogging);
+							msgLog.debug("received message [{}]{}", messageOrSize, additionalLogging);
 						}
 						log.info("Adapter [{}] received message with messageId [{}]{}", getName(), messageId, additionalLogging);
 
@@ -1011,31 +1006,43 @@ public class Adapter implements IAdapter, NamedBean {
 		this.messageKeeperSize = size;
 	}
 
+	private enum MessageLogLevel {
+		/** No logging */
+		OFF(Level.OFF),
+		/** Logs information from adapter level messages */
+		INFO(Level.INFO),
+		/** Same as INFO */
+		@Deprecated
+		BASIC(Level.INFO),
+		/** Logs information from pipe messages */
+		DEBUG(Level.DEBUG),
+		/** Same as DEBUG */
+		@Deprecated
+		TERSE(Level.DEBUG);
+		
+		private @Getter Level effectiveLevel;
+		
+		private MessageLogLevel(Level effectiveLevel) {
+			this.effectiveLevel = effectiveLevel;
+		}
+	}
+	
 	/**
 	 * Defines behaviour for logging messages. Configuration is done in the MSG appender in log4j4ibis.properties.
-	 * Possible values are: <table border='1'><tr><th>msgLogLevel</th><th>messages which are logged</th></tr>
-	 * <tr><td colspan='1'>Off</td> <td>No logging</td></tr>
-	 * <tr><td colspan='1'>Basic</td><td>Logs information from adapter level messages </td></tr>
-	 * <tr><td colspan='1'>Terse</td><td>Logs information from pipe messages.</td></tr>
-	 * <tr><td colspan='1'>All</td> <td>Logs all messages.</td></tr></table>
-	 * @ff.default <code>BASIC</code>
+	 * @ff.default <code>INFO, unless overridden by property msg.log.level.default</code>
 	 */
-	public void setMsgLogLevel(String level) throws ConfigurationException {
-		Level toSet = Level.toLevel(level);
-		if (toSet.name().equalsIgnoreCase(level)) //toLevel falls back to DEBUG, so to make sure the level has been changed this explicity check is used.
-			msgLogLevel = toSet;
-		else
-			throw new ConfigurationException("illegal value for msgLogLevel ["+level+"]");
+	public void setMsgLogLevel(MessageLogLevel level) throws ConfigurationException {
+		msgLogLevel = level.getEffectiveLevel();
 	}
 
 	@Deprecated
 	public void setRequestReplyLogging(boolean requestReplyLogging) {
 		if (requestReplyLogging) {
-			ConfigurationWarnings.add(this, log, "implementing setting of requestReplyLogging=true as msgLogLevel=Terse");
-			msgLogLevel = MSGLOG_LEVEL_TERSE;
+			ConfigurationWarnings.add(this, log, "implementing setting of requestReplyLogging=true as msgLogLevel=DEBUG");
+			msgLogLevel = Level.DEBUG;
 		} else {
-			ConfigurationWarnings.add(this, log, "implementing setting of requestReplyLogging=false as msgLogLevel=None");
-			msgLogLevel = Level.toLevel("OFF");
+			ConfigurationWarnings.add(this, log, "implementing setting of requestReplyLogging=false as msgLogLevel=OFF");
+			msgLogLevel = Level.OFF;
 		}
 	}
 

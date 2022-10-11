@@ -27,6 +27,9 @@ import org.apache.logging.log4j.Logger;
  */
 public class LogUtil {
 
+	public static final String MESSAGE_LOGGER="MSG";
+
+
 	public static Logger getRootLogger() {
 		return LogManager.getRootLogger();
 	}
@@ -48,10 +51,10 @@ public class LogUtil {
 	 */
 	public static Logger getMsgLogger(IAdapter adapter) {
 		if(StringUtils.isEmpty(adapter.getName())) {
-			return getLogger("MSG");
+			return getLogger(MESSAGE_LOGGER);
 		}
 
-		return LogManager.getLogger(String.format("MSG.%S", adapter.getName()));
+		return LogManager.getLogger(String.format("%s.%S", MESSAGE_LOGGER, adapter.getName()));
 	}
 
 	/**
@@ -59,9 +62,9 @@ public class LogUtil {
 	 */
 	public static Logger getMsgLogger(IAdapter adapter, INamedObject object) {
 		if(adapter == null || StringUtils.isEmpty(adapter.getName()) || StringUtils.isEmpty(object.getName())) {
-			return getLogger("MSG");
+			return getLogger(MESSAGE_LOGGER);
 		}
 
-		return LogManager.getLogger(String.format("MSG.%S.%S", adapter.getName(), object.getName()));
+		return LogManager.getLogger(String.format("%s.%S.%S", MESSAGE_LOGGER, adapter.getName(), object.getName()));
 	}
 }
