@@ -17,5 +17,5 @@ package nl.nn.adapterframework.management.bus;
 
 public enum BusTopic {
 
-	CONFIGURATION, FLOW, IBISACTION, LOGGING, SECURITY_ITEMS
+	CONFIGURATION, FLOW, IBISACTION, LOGGING, SECURITY_ITEMS, JDBC
 }
