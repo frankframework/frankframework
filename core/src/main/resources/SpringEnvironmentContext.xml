@@ -11,7 +11,11 @@
 		"
 	>
 <!-- 	<integration:control-bus dispatcher-pool-size="25" auto-create-channels="true"/> -->
-	<integration:publish-subscribe-channel id="frank-management-bus" />
+	<integration:publish-subscribe-channel id="frank-management-bus">
+		<integration:interceptors>
+			<bean class="org.springframework.integration.security.channel.SecurityContextPropagationChannelInterceptor"/>
+		</integration:interceptors>
+	</integration:publish-subscribe-channel>
 
 	<bean name="gateway" class="nl.nn.adapterframework.lifecycle.Gateway" scope="singleton">
 		<property name="requestChannel" ref="frank-management-bus" />

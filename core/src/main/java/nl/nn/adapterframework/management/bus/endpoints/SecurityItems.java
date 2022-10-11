@@ -33,6 +33,10 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.messaging.Message;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -86,6 +90,32 @@ public class SecurityItems {
 		return ResponseMessage.ok(returnMap);
 	}
 
+	private UserDetails getUserDetails() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		if(authentication != null && authentication.getPrincipal() instanceof UserDetails) {
+			return (UserDetails) authentication.getPrincipal();
+		}
+		return null;
+	}
+
+	/**
+	 * See AuthorityAuthorizationManager#ROLE_PREFIX
+	 */
+	private boolean hasAuthority(String role) {
+		UserDetails userDetails = getUserDetails();
+		boolean granted = false;
+		if(userDetails != null) {
+			for(GrantedAuthority authority : userDetails.getAuthorities()) {
+				String roleName = authority.getAuthority().substring(5); //chomp off the AuthorityAuthorizationManager#ROLE_PREFIX
+				granted = roleName.equals(role);
+				if(granted) {
+					return true;
+				}
+			}
+		}
+		return granted;
+	}
+
 	private Map<String, Object> getApplicationDeploymentDescriptor() {
 		String appDDString = null;
 		Map<String, Object> resultList = new HashMap<>();
@@ -93,7 +123,7 @@ public class SecurityItems {
 
 		try {
 			appDDString = Misc.getApplicationDeploymentDescriptor();
-			if (appDDString !=null) {
+			if (appDDString != null) {
 				appDDString = XmlUtils.skipXmlDeclaration(appDDString);
 				appDDString = XmlUtils.skipDocTypeDeclaration(appDDString);
 				appDDString = XmlUtils.removeNamespaces(appDDString);
@@ -109,12 +139,12 @@ public class SecurityItems {
 			return null;
 		}
 
-		if (xmlDoc==null) {
+		Map<String, Map<String, List<String>>> secBindings = getSecurityRoleBindings();
+
+		if (xmlDoc==null || secBindings == null) {
 			log.debug("could get deployment descriptor");
 			return null;
 		}
-
-		Map<String, Map<String, List<String>>> secBindings = getSecurityRoleBindings();
 
 		NodeList rowset = xmlDoc.getElementsByTagName("security-role");
 		for (int i = 0; i < rowset.getLength(); i++) {
@@ -128,14 +158,17 @@ public class SecurityItems {
 						tmp.put(field.getNodeName(), field.getTextContent());
 					}
 				}
-				if(secBindings.containsKey(row.getAttribute("id")))
+				if(secBindings.containsKey(row.getAttribute("id"))) {
 					tmp.putAll(secBindings.get(row.getAttribute("id")));
+				}
 				try {
 					if(tmp.containsKey("role-name")) {
 						String role = (String) tmp.get("role-name");
-						tmp.put("allowed", true); // TODO httpServletRequest.isUserInRole(role)
+						tmp.put("allowed", hasAuthority(role));
 					}
-				} catch(Exception e) {}
+				} catch(Exception e) {
+					log.warn("unable to check user authorities against the provided security roles", e);
+				}
 				resultList.put(row.getAttribute("id"), tmp); //items are stored under the security-role-id
 			}
 		}
@@ -359,7 +392,7 @@ public class SecurityItems {
 		// and add all aliases that are used in the configuration
 		for (Configuration configuration : getIbisManager().getConfigurations()) {
 			String configString = configuration.getLoadedConfiguration();
-			if(configString == null) continue; //If a configuration can't be found, continue...
+			if(StringUtils.isEmpty(configString)) continue; //If a configuration can't be found, continue...
 
 			try {
 				Collection<String> c = XmlUtils.evaluateXPathNodeSet(configString, "//@*[starts-with(name(),'authAlias') or ends-with(name(),'AuthAlias')]");
@@ -372,7 +405,7 @@ public class SecurityItems {
 					}
 				}
 			} catch (Exception e) {
-				log.warn("an error occurred while evaulating 'authAlias' xPathExpression", e);
+				log.warn("an error occurred while evaluating 'authAlias' xPathExpression", e);
 			}
 		}
 		return entries;
