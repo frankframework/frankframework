@@ -24,6 +24,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.SortedSet;
 
+import liquibase.exception.UnexpectedLiquibaseException;
+import liquibase.resource.AbstractResource;
 import liquibase.resource.InputStreamList;
 import liquibase.resource.ResourceAccessor;
 import nl.nn.adapterframework.core.Resource;
@@ -95,12 +97,54 @@ public class LiquibaseResourceAccessor implements ResourceAccessor {
 
 	@Override
 	public List<liquibase.resource.Resource> search(String path, boolean recursive) throws IOException {
-		return null;
-	}
+		if(!path.startsWith("/")) {
+			path = "/" + path; // only allow for absolute classpath files.
+		}
+		List<liquibase.resource.Resource> result = new LinkedList<>();
+		URL url = LiquibaseResourceAccessor.class.getResource(path);
+		if(url != null) {
+			try {
+				URI uri = url.toURI();
+				result.add(new AbstractResource(path, uri) {
 
+					@Override
+					public InputStream openInputStream() throws IOException {
+						return url.openStream();
+					}
+
+					@Override
+					public boolean exists() {
+						return true;
+					}
+
+					@Override
+					public liquibase.resource.Resource resolve(String other) {
+						try {
+							return get(resolvePath(other));
+						} catch (IOException e) {
+							throw new UnexpectedLiquibaseException(e);
+						}
+					}
+
+					@Override
+					public liquibase.resource.Resource resolveSibling(String other) {
+						try {
+							return get(resolveSiblingPath(other));
+						} catch (IOException e) {
+							throw new UnexpectedLiquibaseException(e);
+						}
+					}
+					
+				});
+			} catch (URISyntaxException e) {
+				LogUtil.getLogger(this).warn("unable to convert resource url ["+url+"]", e);
+			}
+		}
+		return result;
+	}
 	@Override
 	public List<liquibase.resource.Resource> getAll(String path) throws IOException {
-		return null;
+		return search(path, false);
 	}
 
 }
