@@ -1,17 +1,17 @@
 /*
-Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+       http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
 package nl.nn.adapterframework.jdbc.migration;
 
@@ -20,8 +20,9 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.SortedSet;
-import java.util.TreeSet;
 
 import liquibase.resource.InputStreamList;
 import liquibase.resource.ResourceAccessor;
@@ -70,9 +71,9 @@ public class LiquibaseResourceAccessor implements ResourceAccessor {
 	public InputStream openStream(String relativeTo, String path) throws IOException {
 		if(path.equals(resource.getSystemId())) {
 			return resource.openStream();
-		} else { // script may contain include(s)
-			return ClassUtils.getResourceURL(resource, path).openStream();
 		}
+		// script may contain include(s)
+		return ClassUtils.getResourceURL(resource, path).openStream();
 	}
 
 	@Override
@@ -81,9 +82,25 @@ public class LiquibaseResourceAccessor implements ResourceAccessor {
 	}
 
 	@Override
-	public SortedSet<String> describeLocations() {
-		SortedSet<String> set = new TreeSet<>();
-		set.add(resource.toString());
-		return set;
+	public List<String> describeLocations() {
+		List<String> list = new LinkedList<>();
+		list.add(resource.toString());
+		return list;
 	}
+
+	@Override
+	public void close() throws Exception {
+		// not necessary to close anything
+	}
+
+	@Override
+	public List<liquibase.resource.Resource> search(String path, boolean recursive) throws IOException {
+		return null;
+	}
+
+	@Override
+	public List<liquibase.resource.Resource> getAll(String path) throws IOException {
+		return null;
+	}
+
 }
