@@ -139,7 +139,7 @@ public class Adapter implements IAdapter, NamedBean {
 	private IErrorMessageFormatter errorMessageFormatter;
 
 	private RunStateManager runState = new RunStateManager();
-	private boolean configurationSucceeded = false;
+	private @Getter boolean configurationSucceeded = false;
 	private MessageKeeper messageKeeper; //instantiated in configure()
 	private boolean msgLogHumanReadable = APP_CONSTANTS.getBoolean("msg.log.humanReadable", false);
 
@@ -418,15 +418,18 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	private void iterateOverStatisticsBody(StatisticsKeeperIterationHandler hski, Object adapterData, Action action) throws SenderException {
-		hski.handleScalar(adapterData,"messagesInProcess", getNumOfMessagesInProcess());
-		hski.handleScalar(adapterData,"messagesProcessed", numOfMessagesProcessed);
-		hski.handleScalar(adapterData,"messagesInError", numOfMessagesInError);
-		hski.handleScalar(adapterData,"messagesProcessedThisInterval", numOfMessagesProcessed.getIntervalValue());
-		hski.handleScalar(adapterData,"messagesInErrorThisInterval", numOfMessagesInError.getIntervalValue());
-		hski.handleStatisticsKeeper(adapterData, statsMessageProcessingDuration);
+		Object pipelineData=hski.openGroup(adapterData,null,"pipeline");
+		hski.handleScalar(pipelineData,"messagesInProcess", getNumOfMessagesInProcess());
+		hski.handleScalar(pipelineData,"messagesProcessed", numOfMessagesProcessed);
+		hski.handleScalar(pipelineData,"messagesInError", numOfMessagesInError);
+		hski.handleScalar(pipelineData,"messagesProcessedThisInterval", numOfMessagesProcessed.getIntervalValue());
+		hski.handleScalar(pipelineData,"messagesInErrorThisInterval", numOfMessagesInError.getIntervalValue());
+		Object durationStatsData = hski.openGroup(pipelineData, null, "duration");
+		hski.handleStatisticsKeeper(durationStatsData, statsMessageProcessingDuration);
+		hski.closeGroup(durationStatsData);
 		statsMessageProcessingDuration.performAction(action);
 
-		Object hourData=hski.openGroup(adapterData,getName(),"processing by hour");
+		Object hourData=hski.openGroup(pipelineData,getName(),"processing by hour");
 		for (int i=0; i<getNumOfMessagesStartProcessingByHour().length; i++) {
 			String startTime;
 			if (i<10) {
@@ -438,8 +441,10 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 		hski.closeGroup(hourData);
 
+		hski.closeGroup(pipelineData);
+
 		if (action == Action.FULL || action == Action.MARK_FULL) {
-			Object recsData=hski.openGroup(adapterData,null,"receivers");
+			Object recsData=hski.openGroup(adapterData,null,"receiver");
 			for (Receiver<?> receiver: receivers) {
 				receiver.iterateOverStatistics(hski,recsData,action);
 			}
@@ -450,9 +455,9 @@ public class Adapter implements IAdapter, NamedBean {
 				((HasStatistics) cache).iterateOverStatistics(hski, recsData, action);
 			}
 
-			Object pipelineData=hski.openGroup(adapterData,null,"pipeline");
-			getPipeLine().iterateOverStatistics(hski, pipelineData, action);
-			hski.closeGroup(pipelineData);
+			Object pipeData=hski.openGroup(adapterData,null,"pipe");
+			getPipeLine().iterateOverStatistics(hski, pipeData, action);
+			hski.closeGroup(pipeData);
 		}
 	}
 

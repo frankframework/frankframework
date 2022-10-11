@@ -110,7 +110,9 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		try {
 			Object groupData= hski.openGroup(root, rootName, rootType);
 			for (Adapter adapter : adapterManager.getAdapterList()) {
-				adapter.iterateOverStatistics(hski,groupData,action);
+				if (adapter.isConfigurationSucceeded()) {
+					adapter.iterateOverStatistics(hski,groupData,action);
+				}
 			}
 			IbisCacheManager.iterateOverStatistics(hski, groupData, action);
 			hski.closeGroup(groupData);
