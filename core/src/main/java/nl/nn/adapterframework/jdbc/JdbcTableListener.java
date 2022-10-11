@@ -30,7 +30,6 @@ import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IProvidesMessageBrowsers;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.ProcessState;
 
 /**
@@ -72,7 +71,9 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 			throw new ConfigurationException("must specify statusValueProcessed");
 		}
 		String alias = StringUtils.isNotBlank(getTableAlias())?getTableAlias().trim():"";
-		setSelectQuery("SELECT "+getKeyField() + (StringUtils.isNotEmpty(getMessageField())?","+getMessageField():"")+
+		setSelectQuery("SELECT "+getKeyField() +
+								(StringUtils.isNotEmpty(getMessageIdField())?","+getMessageIdField():"")+(StringUtils.isNotEmpty(getCorrelationIdField())?","+getCorrelationIdField():"")+
+								(StringUtils.isNotEmpty(getMessageField())?","+getMessageField():"") +
 						" FROM "+getTableName() + (StringUtils.isNotBlank(tableAlias)?" "+tableAlias.trim():"") +
 						" WHERE "+getStatusField()+
 						(StringUtils.isNotEmpty(getStatusValue(ProcessState.AVAILABLE))?
@@ -101,7 +102,7 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 	@Override
 	protected M changeProcessState(Connection connection, M rawMessage, ProcessState toState, String reason) throws ListenerException {
 		String query = getUpdateStatusQuery(toState);
-		String key=getIdFromRawMessage(rawMessage, null);
+		String key=getKeyFromRawMessage(rawMessage);
 		List<String> parameters = new ArrayList<>();
 		if (StringUtils.isNotEmpty(getCommentField()) && query.substring(query.indexOf('?')+1).contains("?")) {
 			if (getMaxCommentLength()>=0 && reason!=null && reason.length()>getMaxCommentLength()) {
@@ -143,11 +144,6 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 		default:
 			throw new IllegalStateException("Unknown state ["+state+"]");
 		}
-	}
-
-	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String,Object> context) throws ListenerException {
-		// skip moving message to DONE or ERROR, as this is now performed by Receiver calling changeProcessState()
 	}
 
 	@Override
