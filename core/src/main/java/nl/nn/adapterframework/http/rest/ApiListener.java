@@ -30,6 +30,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.doc.Default;
 import nl.nn.adapterframework.http.HttpSenderBase;
 import nl.nn.adapterframework.http.PushingListenerAdapter;
 import nl.nn.adapterframework.jwt.JwtValidator;
@@ -74,6 +75,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter @Setter Receiver<String> receiver;
 
 	private @Getter String messageIdHeader = AppConstants.getInstance(getConfigurationClassLoader()).getString("apiListener.messageIdHeader", HttpSenderBase.MESSAGE_ID_HEADER);
+	private @Getter String correlationIdHeader = AppConstants.getInstance(getConfigurationClassLoader()).getString("apiListener.correlationIdHeader", HttpSenderBase.CORRELATION_ID_HEADER);
 	private @Getter String headerParams = null;
 	private @Getter String contentDispositionHeaderSessionKey;
 	private @Getter String charset = null;
@@ -287,15 +289,23 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	/**
-	 * Name of the header which contains the message-id
-	 * @ff.default message-id
+	 * Name of the header which contains the Message-Id.
 	 */
+	@Default(HttpSenderBase.MESSAGE_ID_HEADER)
 	public void setMessageIdHeader(String messageIdHeader) {
 		this.messageIdHeader = messageIdHeader;
 	}
 
 	/**
-	 * Unique string used to identify the operation. The id MUST be unique among all operations described in the OpenApi schema
+	 * Name of the header which contains the Correlation-Id.
+	 */
+	@Default(HttpSenderBase.CORRELATION_ID_HEADER)
+	public void setCorrelationIdHeader(String correlationIdHeader) {
+		this.correlationIdHeader = correlationIdHeader;
+	}
+
+	/**
+	 * Unique string used to identify the operation. The id MUST be unique among all operations described in the OpenApi schema.
 	 */
 	public void setOperationId(String operationId) {
 		this.operationId = operationId;
