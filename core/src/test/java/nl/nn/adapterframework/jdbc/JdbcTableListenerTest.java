@@ -399,20 +399,20 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		listener.open();
 
 		JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO "+TEST_TABLE+" (TKEY,TINT,TVARCHAR,TCLOB) VALUES (10,1,'fakeMid','fakeCid')", null);
-		
+
 		Map<String,Object> context = new HashMap<>();
-		
+
 		Object rawMessage = listener.getRawMessage(context);
-		
+
 		String mid = listener.getIdFromRawMessage(rawMessage, context);
 		String cid = (String)context.get(PipeLineSession.correlationIdKey);
-		
+
 		assertEquals("fakeMid", mid);
 		assertEquals("fakeCid", cid);
-		
+
 	}
 
-	
+
 	@Test
 	public void testParallelGet() throws Exception {
 		if (!dbmsSupport.hasSkipLockedFunctionality()) {

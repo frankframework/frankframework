@@ -61,7 +61,7 @@ import nl.nn.adapterframework.util.Misc;
  * @author Jaco de Groot
  */
 public class MessageStoreListener<M> extends JdbcTableListener<M> {
-	
+
 	private static final String DEFAULT_TABLE_NAME="IBISSTORE";
 	private static final String DEFAULT_KEY_FIELD="MESSAGEKEY";
 	private static final String DEFAULT_MESSAGE_FIELD="MESSAGE";

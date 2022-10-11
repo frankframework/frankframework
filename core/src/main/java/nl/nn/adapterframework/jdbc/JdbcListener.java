@@ -333,7 +333,7 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 	protected M changeProcessState(Connection connection, M rawMessage, ProcessState toState, String reason) throws ListenerException {
 		String query = getUpdateStatusQuery(toState);
 		Map<String,Object> context = new HashMap<>();
-		String mid=getIdFromRawMessage(rawMessage, context);
+		getIdFromRawMessage(rawMessage, context); // populate context with storage key
 		String key=(String)context.get(STORAGE_KEY_KEY);
 		return execute(connection, query, key) ? rawMessage : null;
 	}
