@@ -123,7 +123,7 @@ public class SecurityItems {
 
 		try {
 			appDDString = Misc.getApplicationDeploymentDescriptor();
-			if (appDDString !=null) {
+			if (appDDString != null) {
 				appDDString = XmlUtils.skipXmlDeclaration(appDDString);
 				appDDString = XmlUtils.skipDocTypeDeclaration(appDDString);
 				appDDString = XmlUtils.removeNamespaces(appDDString);
@@ -392,7 +392,7 @@ public class SecurityItems {
 		// and add all aliases that are used in the configuration
 		for (Configuration configuration : getIbisManager().getConfigurations()) {
 			String configString = configuration.getLoadedConfiguration();
-			if(configString == null) continue; //If a configuration can't be found, continue...
+			if(StringUtils.isEmpty(configString)) continue; //If a configuration can't be found, continue...
 
 			try {
 				Collection<String> c = XmlUtils.evaluateXPathNodeSet(configString, "//@*[starts-with(name(),'authAlias') or ends-with(name(),'AuthAlias')]");
@@ -405,7 +405,7 @@ public class SecurityItems {
 					}
 				}
 			} catch (Exception e) {
-				log.warn("an error occurred while evaulating 'authAlias' xPathExpression", e);
+				log.warn("an error occurred while evaluating 'authAlias' xPathExpression", e);
 			}
 		}
 		return entries;
