@@ -163,19 +163,26 @@ class MailConvertor extends AbstractConvertor {
 			Shape shape = (Shape) shapes[i];
 
 			// If images needs to be shrunk then scale to fit
-			if (shape.getImageData().getImageSize().getWidthPoints() > MAX_IMAGE_WIDTH_IN_POINTS) {
-				double scaleWidth = MAX_IMAGE_WIDTH_IN_POINTS / shape.getImageData().getImageSize().getWidthPoints();
+			if(shape.getWidth() > MAX_IMAGE_WIDTH_IN_POINTS || shape.getHeight() > MAX_IMAGE_HEIGHT_IN_POINTS){
 
-				double scaleHeight = MAX_IMAGE_HEIGHT_IN_POINTS / shape.getImageData().getImageSize().getHeightPoints();
+				// make sure that aspect ratio is locked
+				if(!shape.getAspectRatioLocked()){
+					shape.setAspectRatioLocked(true);
+				}
 
-				// Get the smallest scale factor so it will fit on the paper.
-				double scaleFactor = Math.min(scaleWidth, scaleHeight);
-
-				shape.setWidth(shape.getImageData().getImageSize().getWidthPoints() * scaleFactor);
-				shape.setHeight(shape.getImageData().getImageSize().getHeightPoints() * scaleFactor);
-
+				if (shape.getWidth() > MAX_IMAGE_WIDTH_IN_POINTS) {
+					shape.setWidth(scaleDimension(shape.getWidth(), MAX_IMAGE_WIDTH_IN_POINTS));
+				}
+				if (shape.getHeight() > MAX_IMAGE_HEIGHT_IN_POINTS) {
+					shape.setHeight(scaleDimension(shape.getHeight(), MAX_IMAGE_HEIGHT_IN_POINTS));
+				}
 			}
 		}
+	}
+
+	private double scaleDimension(Double currentValue, float maxValue){
+		double scaleFactor = maxValue / currentValue;
+		return scaleFactor * currentValue;
 	}
 
 	/**
