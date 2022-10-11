@@ -544,8 +544,18 @@ public class ApiListenerServlet extends HttpServletBase {
 						messageId = messageIdHeader;
 					}
 				}
-				PipeLineSession.setListenerParameters(messageContext, messageId, null, null, null); //We're only using this method to keep setting id/cid/tcid uniform
-				Message result = listener.processRequest(null, body, messageContext);
+				String correlationId = null;
+				if(StringUtils.isNotEmpty(listener.getCorrelationIdHeader())) {
+					String correlationIdHeader = request.getHeader(listener.getCorrelationIdHeader());
+					if(StringUtils.isNotEmpty(correlationIdHeader)) {
+						messageId = correlationIdHeader;
+					}
+				}
+				if (StringUtils.isEmpty(correlationId) && StringUtils.isNotEmpty(messageId)) {
+					correlationId = messageId;
+				}
+				PipeLineSession.setListenerParameters(messageContext, messageId, correlationId, null, null); //We're only using this method to keep setting mid/cid uniform
+				Message result = listener.processRequest(correlationId, body, messageContext);
 
 				/**
 				 * Calculate an eTag over the processed result and store in cache

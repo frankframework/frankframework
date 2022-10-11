@@ -179,6 +179,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private final String CONTEXT_KEY_STATUS_CODE="Http.StatusCode";
 	private final String CONTEXT_KEY_REASON_PHRASE="Http.ReasonPhrase";
 	public static final String MESSAGE_ID_HEADER = "Message-Id";
+	public static final String CORRELATION_ID_HEADER = "Correlation-Id";
 
 	private final @Getter(onMethod = @__(@Override)) String domain = "Http";
 
@@ -255,6 +256,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private @Getter String parametersToSkipWhenEmpty;
 
 	private final boolean APPEND_MESSAGEID_HEADER = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("http.headers.messageid", true);
+	private final boolean APPEND_CORRELATIONID_HEADER = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("http.headers.correlationid", true);
 	private boolean disableCookies = false;
 
 	private TransformerPool transformerPool=null;
@@ -705,8 +707,13 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				throw new MethodNotSupportedException("could not find implementation for method ["+getHttpMethod()+"]");
 
 			//Set all headers
-			if(session != null && APPEND_MESSAGEID_HEADER && StringUtils.isNotEmpty(session.getMessageId())) {
-				httpRequestBase.setHeader(MESSAGE_ID_HEADER, session.getMessageId());
+			if(session != null) {
+				if (APPEND_MESSAGEID_HEADER && StringUtils.isNotEmpty(session.getMessageId())) {
+					httpRequestBase.setHeader(MESSAGE_ID_HEADER, session.getMessageId());
+				}
+				if (APPEND_CORRELATIONID_HEADER && StringUtils.isNotEmpty(session.getCorrelationId())) {
+					httpRequestBase.setHeader(CORRELATION_ID_HEADER, session.getCorrelationId());
+				}
 			}
 			for (String param: headersParamsMap.keySet()) {
 				httpRequestBase.setHeader(param, headersParamsMap.get(param));
