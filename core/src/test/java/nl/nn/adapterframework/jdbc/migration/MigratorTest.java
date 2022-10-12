@@ -20,7 +20,9 @@ import org.apache.logging.log4j.core.config.Configurator;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.BytesResource;
 import nl.nn.adapterframework.core.Resource;
+import nl.nn.adapterframework.core.Resource.GlobalScopeProvider;
 import nl.nn.adapterframework.jdbc.TransactionManagerTestBase;
 import nl.nn.adapterframework.testutil.ConfigurationMessageEventListener;
 import nl.nn.adapterframework.testutil.TestAppender;
@@ -95,6 +97,24 @@ public class MigratorTest extends TransactionManagerTestBase {
 
 		String result = applyIgnores(writer.toString());
 		result = removeComments(result);
+		TestAssertions.assertEqualsIgnoreCRLF(sqlChanges, result);
+	}
+
+	@Test
+	public void testSQLWriterBytesResource() throws Exception {
+
+		Resource resource = Resource.getResource("/Migrator/DatabaseChangelog_plus_changes.xml");
+		assertNotNull(resource);
+		
+		resource = new BytesResource(resource.openStream(), "inputstreamresource.xml", new GlobalScopeProvider());
+		StringWriter writer = new StringWriter();
+		migrator.update(writer, resource);
+
+		String sqlChanges = TestFileUtils.getTestFile("/Migrator/sql_changes_"+getDataSourceName().toLowerCase()+".sql");
+
+		String result = applyIgnores(writer.toString());
+		result = removeComments(result);
+		result = result.replaceAll("inputstreamresource.xml", "Migrator/DatabaseChangelog_plus_changes.xml");
 		TestAssertions.assertEqualsIgnoreCRLF(sqlChanges, result);
 	}
 

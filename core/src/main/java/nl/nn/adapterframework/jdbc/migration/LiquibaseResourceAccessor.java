@@ -27,10 +27,14 @@ import liquibase.exception.UnexpectedLiquibaseException;
 import liquibase.resource.AbstractResource;
 import liquibase.resource.ResourceAccessor;
 import nl.nn.adapterframework.core.Resource;
+import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
+ * Liquibase ResourceAccessor that can return a resource supplied at construction time.
+ * This allows to generate scripts from an uploaded changelog file.
+ *
  * @author Niels Meijer
  */
 public class LiquibaseResourceAccessor implements ResourceAccessor {
@@ -49,48 +53,57 @@ public class LiquibaseResourceAccessor implements ResourceAccessor {
 	 */
 	@Override
 	public List<liquibase.resource.Resource> search(String path, boolean recursive) throws IOException {
-		URL url = ClassUtils.getResourceURL(resource, path);
-		List<liquibase.resource.Resource> result = new LinkedList<>();
-		if(url != null) {
-			try {
-				URI uri = url.toURI();
-				result.add(new AbstractResource(path, uri) {
-
-					@Override
-					public InputStream openInputStream() throws IOException {
-						return url.openStream();
-					}
-
-					@Override
-					public boolean exists() {
-						return true;
-					}
-
-					@Override
-					public liquibase.resource.Resource resolve(String other) {
-						try {
-							return get(resolvePath(other));
-						} catch (IOException e) {
-							throw new UnexpectedLiquibaseException(e);
-						}
-					}
-
-					@Override
-					public liquibase.resource.Resource resolveSibling(String other) {
-						try {
-							return get(resolveSiblingPath(other));
-						} catch (IOException e) {
-							throw new UnexpectedLiquibaseException(e);
-						}
-					}
-
-				});
-			} catch (URISyntaxException e) {
-				LogUtil.getLogger(this).warn("unable to convert resource url ["+url+"]", e);
-			}
+		if (path.equals(resource.getSystemId())) {
+			return asResourceList(path, null, ()->resource.openStream());
 		}
+		URL url = ClassUtils.getResourceURL(resource, path);
+		if (url==null) {
+			return null;
+		}
+		try {
+			return asResourceList(path, url.toURI(), ()->url.openStream());
+		} catch (URISyntaxException e) {
+			LogUtil.getLogger(this).warn("unable to convert resource url ["+url+"]", e);
+		}
+		return null;
+	}
+
+	protected List<liquibase.resource.Resource> asResourceList(String path, URI uri, ThrowingSupplier<InputStream,IOException> inputStreamSupplier) {
+		List<liquibase.resource.Resource> result = new LinkedList<>();
+		result.add(new AbstractResource(path, uri) {
+
+			@Override
+			public InputStream openInputStream() throws IOException {
+				return inputStreamSupplier.get();
+			}
+
+			@Override
+			public boolean exists() {
+				return true;
+			}
+
+			@Override
+			public liquibase.resource.Resource resolve(String other) {
+				try {
+					return get(resolvePath(other));
+				} catch (IOException e) {
+					throw new UnexpectedLiquibaseException(e);
+				}
+			}
+
+			@Override
+			public liquibase.resource.Resource resolveSibling(String other) {
+				try {
+					return get(resolveSiblingPath(other));
+				} catch (IOException e) {
+					throw new UnexpectedLiquibaseException(e);
+				}
+			}
+
+		});
 		return result;
 	}
+
 
 	@Override
 	public List<liquibase.resource.Resource> getAll(String path) throws IOException {

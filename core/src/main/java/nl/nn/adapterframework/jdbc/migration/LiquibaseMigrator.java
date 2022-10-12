@@ -1,23 +1,21 @@
 /*
-Copyright 2017 - 2021 WeAreFrank!
+   Copyright 2017-2022 WeAreFrank!
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+       http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
 package nl.nn.adapterframework.jdbc.migration;
 
-import java.io.IOException;
 import java.io.Writer;
-import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +43,6 @@ import liquibase.lockservice.LockService;
 import liquibase.lockservice.LockServiceFactory;
 import liquibase.resource.ResourceAccessor;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.BytesResource;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.util.AppConstants;
@@ -53,7 +50,7 @@ import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * LiquiBase implementation for IAF
- * 
+ *
  * @author	Niels Meijer
  * @since	7.0-B4
  *
@@ -68,20 +65,14 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 		AppConstants appConstants = AppConstants.getInstance(getConfigurationClassLoader());
 		String changeLogFile = appConstants.getString("liquibase.changeLogFile", "DatabaseChangelog.xml");
 
-		URL resource = getResource(changeLogFile);
+		Resource resource = Resource.getResource(this, changeLogFile);
 		if(resource == null) {
 			String msg = "unable to find database changelog file [" + changeLogFile + "]";
 			msg += " classLoader [" + getConfigurationClassLoader() + "]";
 			log.debug(msg);
 			return null;
 		}
-
-		try {
-			return new BytesResource(resource.openStream(), changeLogFile, getConfiguration());
-		} catch (IOException e) {
-			log.debug("unable to open or read changelog ["+changeLogFile+"]", e);
-		}
-		return null;
+		return resource;
 	}
 
 	private Liquibase createMigrator() throws SQLException, LiquibaseException {
