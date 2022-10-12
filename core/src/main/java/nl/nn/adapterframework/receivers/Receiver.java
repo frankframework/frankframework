@@ -904,7 +904,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		} else {
 			rcvDate=new Date();
 		}
-		if (isTransacted() ||
+		if (isTransacted() || getListener() instanceof IHasProcessState ||
 				(getErrorStorage() != null &&
 					(!isCheckForDuplicates() || !getErrorStorage().containsMessageId(messageId) || !isDuplicateAndSkip(getMessageBrowser(ProcessState.ERROR), messageId, correlationId))
 				)
