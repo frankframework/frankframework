@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.jdbc.migration;
 
 import java.io.Writer;
+import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +44,7 @@ import liquibase.lockservice.LockService;
 import liquibase.lockservice.LockServiceFactory;
 import liquibase.resource.ResourceAccessor;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.util.AppConstants;
@@ -65,11 +67,18 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 		AppConstants appConstants = AppConstants.getInstance(getConfigurationClassLoader());
 		String changeLogFile = appConstants.getString("liquibase.changeLogFile", "DatabaseChangelog.xml");
 
+		ClassLoader classLoader = getConfigurationClassLoader();
+		if (classLoader instanceof ClassLoaderBase) {
+			URL url = ((ClassLoaderBase)classLoader).getLocalResource(changeLogFile);
+			if (url==null) {
+				log.debug("database changelog file [{}] not found as local resource of classLoader [{}]", changeLogFile, classLoader);
+				return null;
+			}
+		}
+
 		Resource resource = Resource.getResource(this, changeLogFile);
 		if(resource == null) {
-			String msg = "unable to find database changelog file [" + changeLogFile + "]";
-			msg += " classLoader [" + getConfigurationClassLoader() + "]";
-			log.debug(msg);
+			log.debug("unable to find database changelog file [{}] in classLoader [{}]", changeLogFile, classLoader);
 			return null;
 		}
 		return resource;
