@@ -41,8 +41,8 @@ public class LiquibaseResourceAccessor implements ResourceAccessor {
 		this.resource = resource;
 	}
 
-	/** 
-	 * This method is primarily used by Liquibase to get the xsd 
+	/**
+	 * This method is primarily used by Liquibase to get the xsd
 	 * (/www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd) to validate against. (the path literally contains www.liquibase.org !)
 	 * Since the XSD is in the jar file and we do not want to override it, simply return null.
 	 * Then the default XSD in the Liquibase jar will be used.
@@ -83,7 +83,7 @@ public class LiquibaseResourceAccessor implements ResourceAccessor {
 							throw new UnexpectedLiquibaseException(e);
 						}
 					}
-					
+
 				});
 			} catch (URISyntaxException e) {
 				LogUtil.getLogger(this).warn("unable to convert resource url ["+url+"]", e);
