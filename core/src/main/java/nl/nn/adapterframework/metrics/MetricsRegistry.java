@@ -45,7 +45,6 @@ public class MetricsRegistry {
 	private Logger log = LogUtil.getLogger(this);
 
 	private static final String CONFIGURATOR_CLASS_SUFFIX=".configurator";
-	
 	private @Getter MeterRegistry registry;
 
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
