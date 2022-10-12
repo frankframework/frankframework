@@ -1,18 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <log4j2:Configuration status="warn" name="${ctx:instance.name}" strict="true" xmlns="http://logging.apache.org/log4j/2.0/config" xmlns:log4j2="log4j-config.xsd" packages="nl.nn.adapterframework.logging">
 	<!-- https://logging.apache.org/log4j/2.x/manual/customloglevels.html -->
-	<CustomLevels>
-		<CustomLevel name="TERSE" intLevel="550" /> <!-- between DEBUG and TRACE -->
-		<CustomLevel name="BASIC" intLevel="350" /> <!-- between INFO and DEBUG -->
-	</CustomLevels>
 
 	<Appenders>
-		<Appender type="Console" name="stdout">
+		<Appender name="stdout" type="Console">
 			<Layout type="IbisPatternLayout">
 				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %X{mid,cid} %c{2} - %m%nxEx{short}</Pattern>
 			</Layout>
 		</Appender>
-		<Appender type="RollingFile" name="file" fileName="${ctx:log.dir}/${ctx:instance.name.lc}.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}.log.%i">
+		<Appender name="file" type="RollingFile" fileName="${ctx:log.dir}/${ctx:instance.name.lc}.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}.log.%i">
 			<Filters>
 				<Filter type="IbisThreadFilter" onMatch="DENY" onMismatch="NEUTRAL" regex="${ctx:log.thread.rejectRegex}" />
 			</Filters>
@@ -24,7 +20,7 @@
 			</Policies>
 			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.maxBackupIndex}" fileIndex="min"  />
 		</Appender>
-		<Appender type="RollingFile" name="XML" fileName="${ctx:log.dir}/${ctx:instance.name.lc}_xml.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}_xml.log.%i">
+		<Appender name="XML" type="RollingFile" fileName="${ctx:log.dir}/${ctx:instance.name.lc}_xml.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}_xml.log.%i">
 			<Filters>
 				<Filter type="IbisThreadFilter" onMatch="DENY" onMismatch="NEUTRAL" regex="${ctx:log.thread.rejectRegex}" />
 			</Filters>
@@ -34,35 +30,35 @@
 			</Policies>
 			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.maxBackupIndex}" fileIndex="min" />
 		</Appender>
-		<Appender type="RollingFile" name="galm" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-galm.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-galm.log.%i">
+		<Appender name="galm" type="RollingFile" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-galm.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-galm.log.%i">
 			<Layout type="PatternLayout" pattern="%m%n"/>
 			<Policies>
 				<Policy type="SizeBasedTriggeringPolicy" size="100KB" />
 			</Policies>
 			<RolloverStrategy type="DefaultRolloverStrategy" max="5" fileIndex="min" />
 		</Appender>
-		<Appender type="RollingFile" name="msg-text" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-messages.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-messages.log.%i" append="true">
+		<Appender name="msg-text" type="RollingFile" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-messages.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-messages.log.%i" append="true">
 			<Layout type="PatternLayout" pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %X %x %m%n"/>
 			<Policies>
 				<Policy type="SizeBasedTriggeringPolicy" size="${ctx:log.maxFileSize}" />
 			</Policies>
 			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.msg.maxBackupIndex}" fileIndex="min" />
 		</Appender>
-		<Appender type="RollingFile" name="msg-json" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-messages.json" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-messages.json.%i" append="true">
+		<Appender name="msg-json" type="RollingFile" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-messages.json" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-messages.json.%i" append="true">
 			<JsonTemplateLayout eventTemplateUri="classpath:EcsLayout.json"/>
 			<Policies>
 				<Policy type="SizeBasedTriggeringPolicy" size="${ctx:log.maxFileSize}" />
 			</Policies>
 			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.msg.maxBackupIndex}" fileIndex="min" />
 		</Appender>
-		<Appender type="RollingFile" name="security" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-security.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-security.log.%i">
+		<Appender name="security" type="RollingFile" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-security.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-security.log.%i">
 			<Layout type="PatternLayout" pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %m%n"/>
 			<Policies>
 				<Policy type="SizeBasedTriggeringPolicy" size="${ctx:log.maxFileSize}" />
 			</Policies>
 			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.maxBackupIndex}" fileIndex="min" />
 		</Appender>
-		<Appender type="RollingFile" name="heartbeat" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-heartbeat.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-heartbeat.log.%i">
+		<Appender name="heartbeat" type="RollingFile" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-heartbeat.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-heartbeat.log.%i">
 			<Layout type="PatternLayout">
 				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %m%n</Pattern>
 			</Layout>
@@ -71,7 +67,7 @@
 			</Policies>
 			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.maxBackupIndex}" fileIndex="min" />
 		</Appender>
-		<Appender type="RollingFile" name="config" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-config.xml" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-config.xml.%i">
+		<Appender name="config" type="RollingFile" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-config.xml" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-config.xml.%i">
 			<Layout type="PatternLayout">
 				<Pattern>&lt;event datetime=&quot;%d{yyyy-MM-dd HH:mm:ss,SSS}&quot;&gt;%n%m%n&lt;/event&gt;</Pattern>
 			</Layout>
@@ -81,7 +77,7 @@
 			</Policies>
 			<RolloverStrategy type="DefaultRolloverStrategy" max="5" fileIndex="min" />
 		</Appender>
-		<Appender type="RollingFile" name="ladybug" fileName="${ctx:log.dir}/testtool4${ctx:instance.name.lc}.log" filePattern="${ctx:log.dir}/testtool4${ctx:instance.name.lc}.log.%i">
+		<Appender name="ladybug" type="RollingFile" fileName="${ctx:log.dir}/testtool4${ctx:instance.name.lc}.log" filePattern="${ctx:log.dir}/testtool4${ctx:instance.name.lc}.log.%i">
 			<Layout type="PatternLayout" pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %c %m%n"/>
 			<Policies>
 				<Policy type="SizeBasedTriggeringPolicy" size="${ctx:log.maxFileSize}" />
