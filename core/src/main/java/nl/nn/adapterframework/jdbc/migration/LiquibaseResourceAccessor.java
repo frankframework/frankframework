@@ -22,11 +22,9 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.SortedSet;
 
 import liquibase.exception.UnexpectedLiquibaseException;
 import liquibase.resource.AbstractResource;
-import liquibase.resource.InputStreamList;
 import liquibase.resource.ResourceAccessor;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -40,7 +38,6 @@ public class LiquibaseResourceAccessor implements ResourceAccessor {
 	private Resource resource;
 
 	public LiquibaseResourceAccessor(Resource resource) {
-		super();
 		this.resource = resource;
 	}
 
@@ -51,57 +48,9 @@ public class LiquibaseResourceAccessor implements ResourceAccessor {
 	 * Then the default XSD in the Liquibase jar will be used.
 	 */
 	@Override
-	public InputStreamList openStreams(String relativeTo, String streamPath) throws IOException {
-		String path = streamPath;
-		if(!streamPath.startsWith("/")) {
-			path = "/" + streamPath; // only allow for absolute classpath files.
-		}
-
-		URL url = LiquibaseResourceAccessor.class.getResource(path);
-		if(url != null) {
-			try {
-				URI uri = url.toURI();
-				return new InputStreamList(uri, url.openStream());
-			} catch (URISyntaxException e) {
-				LogUtil.getLogger(this).warn("unable to convert resource url ["+url+"]", e);
-			}
-		}
-		return null;
-	}
-
-	@Override
-	public InputStream openStream(String relativeTo, String path) throws IOException {
-		if(path.equals(resource.getSystemId())) {
-			return resource.openStream();
-		}
-		// script may contain include(s)
-		return ClassUtils.getResourceURL(resource, path).openStream();
-	}
-
-	@Override
-	public SortedSet<String> list(String relativeTo, String path, boolean recursive, boolean includeFiles, boolean includeDirectories) throws IOException {
-		return null;
-	}
-
-	@Override
-	public List<String> describeLocations() {
-		List<String> list = new LinkedList<>();
-		list.add(resource.toString());
-		return list;
-	}
-
-	@Override
-	public void close() throws Exception {
-		// not necessary to close anything
-	}
-
-	@Override
 	public List<liquibase.resource.Resource> search(String path, boolean recursive) throws IOException {
-		if(!path.startsWith("/")) {
-			path = "/" + path; // only allow for absolute classpath files.
-		}
+		URL url = ClassUtils.getResourceURL(resource, path);
 		List<liquibase.resource.Resource> result = new LinkedList<>();
-		URL url = LiquibaseResourceAccessor.class.getResource(path);
 		if(url != null) {
 			try {
 				URI uri = url.toURI();
@@ -142,9 +91,22 @@ public class LiquibaseResourceAccessor implements ResourceAccessor {
 		}
 		return result;
 	}
+
 	@Override
 	public List<liquibase.resource.Resource> getAll(String path) throws IOException {
 		return search(path, false);
+	}
+
+	@Override
+	public List<String> describeLocations() {
+		List<String> list = new LinkedList<>();
+		list.add(resource.toString());
+		return list;
+	}
+
+	@Override
+	public void close() throws Exception {
+		// not necessary to close anything
 	}
 
 }
