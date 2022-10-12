@@ -13,6 +13,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
@@ -23,6 +25,7 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.dbms.ConcurrentJdbcActionTester;
@@ -111,6 +114,18 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 
 		assertEquals(expected, listener.getSelectQuery());
 	}
+
+	@Test
+	public void testSelectQueryWithMessageIdAndCorrelationId() throws ConfigurationException {
+		listener.setMessageIdField("MIDFIELD");
+		listener.setCorrelationIdField("CIDFIELD");
+		listener.configure();
+
+		String expected = "SELECT TKEY,MIDFIELD,CIDFIELD FROM TEMP t WHERE TINT='1'";
+
+		assertEquals(expected, listener.getSelectQuery());
+	}
+
 	@Test
 	public void testUpdateStatusQuery() throws ConfigurationException {
 		listener.configure();
@@ -371,6 +386,27 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 	@Test
 	public void testPeekMessageSkipNullStatus() throws Exception {
 		testPeekMessage("NULL",false);
+	}
+
+	@Test
+	public void testGetIdFromRawMessage() throws Exception {
+		listener.setMessageIdField("tVARCHAR");
+		listener.setCorrelationIdField("tCLOB");
+		listener.configure();
+		listener.open();
+
+		JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO TEMP (TKEY,TINT,TVARCHAR,TCLOB) VALUES (10,1,'fakeMid','fakeCid')", null);
+
+		Map<String,Object> context = new HashMap<>();
+
+		Object rawMessage = listener.getRawMessage(context);
+
+		String mid = listener.getIdFromRawMessage(rawMessage, context);
+		String cid = (String)context.get(PipeLineSession.technicalCorrelationIdKey);
+
+		assertEquals("fakeMid", mid);
+		assertEquals("fakeCid", cid);
+
 	}
 
 	@Test
