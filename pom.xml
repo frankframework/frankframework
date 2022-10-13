@@ -10,7 +10,7 @@
 		<revision>7.9-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<log4j2.version>2.19.0</log4j2.version>
-		<cxf.version>3.5.3</cxf.version>
+		<cxf.version>3.5.4</cxf.version>
 		<btm.version>3.0.0-mk1</btm.version>
 		<narayana.version>5.12.7.Final</narayana.version>
 		<jboss-logging.version>3.4.2.Final</jboss-logging.version>
