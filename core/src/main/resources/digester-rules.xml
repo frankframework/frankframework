@@ -5,7 +5,7 @@
 
 	<rule pattern="configuration" factory="null"/>
 
-	<rule pattern="*/include" factory="nl.nn.adapterframework.configuration.digester.ConfigurationDigesterFactory" selfRegisterMethod="include"/>
+	<rule pattern="*/include" registerMethod="registerInclude" beanClass="nl.nn.adapterframework.configuration.Include" />
 
 	<rule pattern="configuration/jmsRealms" registerMethod="setJmsRealms" factory="nl.nn.adapterframework.configuration.digester.JmsRealmsFactory"/>
 	<rule pattern="*/jmsRealm" registerMethod="registerJmsRealm" beanClass="nl.nn.adapterframework.jms.JmsRealm"/>

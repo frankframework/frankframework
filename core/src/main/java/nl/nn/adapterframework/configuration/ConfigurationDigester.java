@@ -43,6 +43,7 @@ import org.xml.sax.XMLReader;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.digester.FrankDigesterRules;
+import nl.nn.adapterframework.configuration.digester.IncludeFilter;
 import nl.nn.adapterframework.configuration.filters.ElementRoleFilter;
 import nl.nn.adapterframework.configuration.filters.InitialCapsFilter;
 import nl.nn.adapterframework.configuration.filters.OnlyActiveFilter;
@@ -235,6 +236,8 @@ public class ConfigurationDigester implements ApplicationContextAware {
 
 		XmlWriter originalConfigWriter = new XmlWriter();
 		handler = new XmlTee(handler, originalConfigWriter);
+
+		handler = new IncludeFilter(handler, resource, appConstants);
 
 		XmlUtils.parseXml(resource, handler);
 		configuration.setOriginalConfiguration(originalConfigWriter.toString());
