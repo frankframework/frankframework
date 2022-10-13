@@ -340,10 +340,7 @@ public class Adapter implements IAdapter, NamedBean {
 		try {
 			Message formattedErrorMessage= errorMessageFormatter.format(errorMessage, t, objectInError, originalMessage, messageID, receivedTime);
 
-			if(msgLog.isInfoEnabled()) {
-				String resultOrSize = (isMsgLogHidden()) ? "SIZE="+getFileSizeAsBytes(formattedErrorMessage) : formattedErrorMessage.toString();
-				msgLog.info("formatted errormessage, result [{}]", resultOrSize);
-			}
+			logToMessageLogWithMessageContentsOrSize(Level.INFO, "Error", "result", formattedErrorMessage, null);
 
 			return formattedErrorMessage;
 		} catch (Exception e) {
@@ -561,21 +558,28 @@ public class Adapter implements IAdapter, NamedBean {
 		if (duration!=null) {
 			mdcValues.put("duration", duration);
 		}
-		mdcValues.put("size", getFileSizeAsBytes(result.getResult()));
-		if (!isMsgLogHidden()) {
-			mdcValues.put("result", result.getResult().toString());
-		}
-
-		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.putAll(mdcValues)) {
-			msgLog.info("returned from PipeLine");
-			if (log.isDebugEnabled()) {
-				String exitCode = ", exit-code ["+result.getExitCode()+"]";
-				String format = "got exit-state [{}]"+(result.getExitCode()!=0 ? exitCode : "" ) +" and result [{}] from PipeLine";
-				log.debug("Adapter [{}] messageId [{}] "+format, getName(), messageId, result.getState(), result.getResult());
-			}
+		
+		logToMessageLogWithMessageContentsOrSize(Level.INFO, "Pipeline returned", "result", result.getResult(), mdcValues);
+		if (log.isDebugEnabled()) {
+			String exitCode = ", exit-code ["+result.getExitCode()+"]";
+			String format = "got exit-state [{}]"+(result.getExitCode()!=0 ? exitCode : "" ) +" and result [{}] from PipeLine";
+			log.debug("Adapter [{}] messageId [{}] "+format, getName(), messageId, result.getState(), result.getResult());
 		}
 	}
 
+	private void logToMessageLogWithMessageContentsOrSize(Level level, String logMessage, String dataPrefix, Message data, Map<String,String> additionalMdcValues) {
+		Map<String,String> mdcValues = new HashMap<>();
+		mdcValues.put(dataPrefix+".size", getFileSizeAsBytes(data));
+		if (!isMsgLogHidden()) {
+			mdcValues.put(dataPrefix, data.toString());
+		}
+		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.putAll(mdcValues)) {
+			if (additionalMdcValues!=null) {
+				ctc.putAll(additionalMdcValues);
+			}
+			msgLog.log(level, logMessage);
+		}
+	}
 
 	@Override
 	public PipeLineResult processMessage(String messageId, Message message, PipeLineSession pipeLineSession) {
@@ -649,8 +653,7 @@ public class Adapter implements IAdapter, NamedBean {
 						}
 
 						if(msgLog.isDebugEnabled()) {
-							String messageOrSize = (isMsgLogHidden()) ? "SIZE="+getFileSizeAsBytes(message) : message.toString();
-							msgLog.debug("received message [{}]{}", messageOrSize, additionalLogging);
+							logToMessageLogWithMessageContentsOrSize(Level.DEBUG, "Pipeline started"+additionalLogging, "request", message, null);
 						}
 						log.info("Adapter [{}] received message with messageId [{}]{}", getName(), messageId, additionalLogging);
 
