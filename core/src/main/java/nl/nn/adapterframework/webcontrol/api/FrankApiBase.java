@@ -55,6 +55,8 @@ import nl.nn.adapterframework.util.StreamUtil;
  */
 
 public abstract class FrankApiBase implements ApplicationContextAware {
+	public static final String HEADER_DATASOURCE_NAME_KEY = "datasourceName";
+
 	@Context protected ServletConfig servletConfig;
 	@Context protected @Getter SecurityContext securityContext;
 	@Context protected @Getter HttpServletRequest servletRequest;

@@ -22,11 +22,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import nl.nn.adapterframework.util.LogUtil;
 
 public class BusMessageUtils {
-	private static Logger LOG = LogUtil.getLogger(BusMessageUtils.class);
+	private static final Logger LOG = LogUtil.getLogger(BusMessageUtils.class);
 
 	public static String getHeader(Message<?> message, String headerName) {
 		MessageHeaders headers = message.getHeaders();
@@ -46,6 +50,20 @@ public class BusMessageUtils {
 			String value = headers.get(headerName, String.class);
 			if(StringUtils.isNotEmpty(value)) {
 				return value;
+			}
+		}
+		return defaultValue;
+	}
+
+	public static Integer getIntHeader(Message<?> message, String headerName, Integer defaultValue) {
+		MessageHeaders headers = message.getHeaders();
+		if(headers.containsKey(headerName)) {
+			try {
+				return headers.get(headerName, Integer.class);
+			} catch (IllegalArgumentException e) {
+				Object header = headers.get(headerName);
+				LOG.warn("unable to parse header as integer", e);
+				return Integer.parseInt(""+header);
 			}
 		}
 		return defaultValue;
@@ -78,5 +96,31 @@ public class BusMessageUtils {
 		}
 
 		return builder.build();
+	}
+
+	public static UserDetails getUserDetails() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		if(authentication != null && authentication.getPrincipal() instanceof UserDetails) {
+			return (UserDetails) authentication.getPrincipal();
+		}
+		return null;
+	}
+
+	/**
+	 * See AuthorityAuthorizationManager#ROLE_PREFIX
+	 */
+	public static boolean hasAuthority(String authority) {
+		UserDetails userDetails = getUserDetails();
+		boolean granted = false;
+		if(userDetails != null) {
+			for(GrantedAuthority grantedAuthority : userDetails.getAuthorities()) {
+				String authorityName = grantedAuthority.getAuthority().substring(5); //chomp off the AuthorityAuthorizationManager#ROLE_PREFIX
+				granted = authorityName.equals(authority);
+				if(granted) {
+					return true;
+				}
+			}
+		}
+		return granted;
 	}
 }

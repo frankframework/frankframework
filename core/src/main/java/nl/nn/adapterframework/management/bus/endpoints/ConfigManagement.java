@@ -48,6 +48,7 @@ import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.management.bus.ActionSelector;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusAware;
+import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
@@ -99,7 +100,7 @@ public class ConfigManagement {
 	private Configuration getConfigurationByName(String configurationName) {
 		Configuration configuration = getIbisManager().getConfiguration(configurationName);
 		if(configuration == null) {
-			throw new IllegalStateException("configuration ["+configurationName+"] does not exists");
+			throw new BusException("configuration ["+configurationName+"] does not exists");
 		}
 		return configuration;
 	}
@@ -156,8 +157,7 @@ public class ConfigManagement {
 				return ResponseMessage.accepted();
 			}
 		} catch(Exception e) {
-			log.warn("unable to update configuration settings in database", e);
-			throw new IllegalStateException("unable to update configuration settings in database"); //don't pass e, we should limit sensitive information from being sent over the bus
+			throw new BusException("unable to update configuration settings in database", e);
 		}
 
 		log.debug("header [activate] or [autoreload] not found");
@@ -187,8 +187,7 @@ public class ConfigManagement {
 
 			return ResponseMessage.ok(result);
 		} catch (Exception e) {
-			log.error("failed to upload Configuration", e);
-			throw new IllegalStateException("failed to upload Configuration"); //don't pass e, we should limit sensitive information from being sent over the bus
+			throw new BusException("failed to upload Configuration", e);
 		}
 	}
 
@@ -208,8 +207,7 @@ public class ConfigManagement {
 		try {
 			configuration = ConfigurationUtils.getConfigFromDatabase(getIbisContext(), configurationName, datasourceName, version);
 		} catch (ConfigurationException e) {
-			log.warn("unable to download configuration from database", e);
-			throw new IllegalStateException("unable to download configuration from database"); //don't pass e, we should limit sensitive information from being sent over the bus
+			throw new BusException("unable to download configuration from database", e);
 		}
 		byte[] config = (byte[]) configuration.get("CONFIG");
 
@@ -235,8 +233,7 @@ public class ConfigManagement {
 		try {
 			ConfigurationUtils.removeConfigFromDatabase(getIbisContext(), configurationName, datasourceName, version);
 		} catch (Exception e) {
-			log.warn("unable to delete configuration from database", e);
-			throw new IllegalStateException("unable to delete configuration from database");
+			throw new BusException("unable to delete configuration from database", e);
 		}
 	}
 
@@ -249,7 +246,7 @@ public class ConfigManagement {
 		String configurationName = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_NAME_KEY);
 		Configuration configuration = getConfigurationByName(configurationName);
 		if(!configuration.isActive()) {
-			throw new IllegalStateException("configuration not active", configuration.getConfigurationException());
+			throw new BusException("configuration not active", configuration.getConfigurationException());
 		}
 
 		Map<String, Object> response = new HashMap<>();
@@ -300,7 +297,7 @@ public class ConfigManagement {
 		if (StringUtils.isEmpty(dataSourceName)) {
 			dataSourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
 			if (StringUtils.isEmpty(dataSourceName)) {
-				throw new IllegalStateException("no datasource specified and default datasource not found");
+				throw new BusException("no datasource specified and default datasource not found");
 			}
 		}
 
@@ -332,8 +329,7 @@ public class ConfigManagement {
 				}
 			}
 		} catch (Exception e) {
-			log.warn("unable to retrieve configuration from database", e);
-			throw new IllegalStateException("unable to retrieve configuration from database");
+			throw new BusException("unable to retrieve configuration from database", e);
 		} finally {
 			qs.close();
 		}

@@ -74,10 +74,10 @@ public class TestConfiguration extends Configuration {
 
 	/**
 	 * Add the ability to mock FixedQuerySender ResultSets. Enter the initial query and a mocked 
-	 * ResultSet using a {@link FixedQuerySenderMock.ResultSetBuilder ResultSetBuilder}.
+	 * ResultSet using a {@link nl.nn.adapterframework.testutil.mock.FixedQuerySenderMock.ResultSetBuilder ResultSetBuilder}.
 	 */
 	public void mockQuery(String query, ResultSet resultSet) {
-		qsPostProcessor.addMock(query, resultSet);
+		qsPostProcessor.addFixedQuerySenderMock(query, resultSet);
 	}
 
 	public void autowireByType(Object bean) {

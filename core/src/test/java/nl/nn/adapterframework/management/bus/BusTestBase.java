@@ -60,10 +60,18 @@ public class BusTestBase {
 
 	/**
 	 * Add the ability to mock FixedQuerySender ResultSets. Enter the initial query and a mocked 
-	 * ResultSet using a {@link nl.nn.adapterframework.testutil.FixedQuerySenderMock.ResultSetBuilder ResultSetBuilder}.
+	 * ResultSet using a {@link nl.nn.adapterframework.testutil.mock.FixedQuerySenderMock.ResultSetBuilder ResultSetBuilder}.
 	 */
-	public void mockQuery(String query, ResultSet resultSet) {
-		qsPostProcessor.addMock(query, resultSet);
+	public void mockFixedQuerySenderResult(String query, ResultSet resultSet) {
+		qsPostProcessor.addFixedQuerySenderMock(query, resultSet);
+	}
+
+	/**
+	 * Add the ability to mock DirectQuerySender ResultSets. Enter the name of the DirectQuerySender and a mocked Response Message.
+	 * NB: the response message must be well formed XML.
+	 */
+	public void mockDirectQuerySenderResult(String name, nl.nn.adapterframework.stream.Message message) {
+		qsPostProcessor.addDirectQuerySenderMock(name, message);
 	}
 
 	public final Message<?> callSyncGateway(MessageBuilder<?> input) {

@@ -9,7 +9,7 @@
 	default-autowire="byName"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-	<bean name="configurationDigester" class="nl.nn.adapterframework.testutil.ConfigurationDigesterMock" scope="singleton" />
+	<bean name="configurationDigester" class="nl.nn.adapterframework.testutil.mock.ConfigurationDigesterMock" scope="singleton" />
 
 	<bean name="lifecycleProcessor" class="nl.nn.adapterframework.lifecycle.ConfiguringLifecycleProcessor" />
 

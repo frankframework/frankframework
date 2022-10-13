@@ -7,9 +7,9 @@ import org.springframework.messaging.Message;
 
 import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
-import nl.nn.adapterframework.testutil.FixedQuerySenderMock.ResultSetBuilder;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.testutil.mock.FixedQuerySenderMock.ResultSetBuilder;
 
 public class TestSecurityItems extends BusTestBase {
 
@@ -29,7 +29,7 @@ public class TestSecurityItems extends BusTestBase {
 
 	@Test
 	public void getSecurityItems() throws Exception {
-		mockQuery("select datasource from database", ResultSetBuilder.create().build());
+		mockFixedQuerySenderResult("select datasource from database", ResultSetBuilder.create().build());
 
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.SECURITY_ITEMS);
 		request.setHeader("configuration", "testConfiguration");

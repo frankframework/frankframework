@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.testutil;
+package nl.nn.adapterframework.testutil.mock;
 
 import nl.nn.adapterframework.configuration.ConfigurationDigester;
 import nl.nn.adapterframework.configuration.ConfigurationException;

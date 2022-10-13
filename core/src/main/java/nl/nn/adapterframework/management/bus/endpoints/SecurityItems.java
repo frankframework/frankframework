@@ -33,10 +33,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.messaging.Message;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -58,6 +54,7 @@ import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.management.bus.BusAware;
+import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
@@ -88,32 +85,6 @@ public class SecurityItems {
 		returnMap.put("xmlComponents", XmlUtils.getVersionInfo());
 
 		return ResponseMessage.ok(returnMap);
-	}
-
-	private UserDetails getUserDetails() {
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		if(authentication != null && authentication.getPrincipal() instanceof UserDetails) {
-			return (UserDetails) authentication.getPrincipal();
-		}
-		return null;
-	}
-
-	/**
-	 * See AuthorityAuthorizationManager#ROLE_PREFIX
-	 */
-	private boolean hasAuthority(String role) {
-		UserDetails userDetails = getUserDetails();
-		boolean granted = false;
-		if(userDetails != null) {
-			for(GrantedAuthority authority : userDetails.getAuthorities()) {
-				String roleName = authority.getAuthority().substring(5); //chomp off the AuthorityAuthorizationManager#ROLE_PREFIX
-				granted = roleName.equals(role);
-				if(granted) {
-					return true;
-				}
-			}
-		}
-		return granted;
 	}
 
 	private Map<String, Object> getApplicationDeploymentDescriptor() {
@@ -164,7 +135,7 @@ public class SecurityItems {
 				try {
 					if(tmp.containsKey("role-name")) {
 						String role = (String) tmp.get("role-name");
-						tmp.put("allowed", hasAuthority(role));
+						tmp.put("allowed", BusMessageUtils.hasAuthority(role));
 					}
 				} catch(Exception e) {
 					log.warn("unable to check user authorities against the provided security roles", e);
