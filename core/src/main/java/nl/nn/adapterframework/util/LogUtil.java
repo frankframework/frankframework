@@ -72,11 +72,11 @@ public class LogUtil {
 
 		return LogManager.getLogger(String.format("%s.%S.%S", MESSAGE_LOGGER, adapter.getName(), object.getName()));
 	}
-	
+
 	public static CloseableThreadContext.Instance getThreadContext(Adapter adapter, String messageId, PipeLineSession session) {
 		String lastNDC= ThreadContext.peek();
 		String newNDC=adapter.getName();
-		CloseableThreadContext.Instance ctc = CloseableThreadContext.put("Adapter", adapter.getName());
+		CloseableThreadContext.Instance ctc = CloseableThreadContext.put("adapter", adapter.getName());
 		if (!newNDC.equals(lastNDC)) {
 			ctc.push(newNDC);
 		}
