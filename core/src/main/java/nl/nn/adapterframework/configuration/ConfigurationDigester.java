@@ -237,7 +237,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		XmlWriter originalConfigWriter = new XmlWriter();
 		handler = new XmlTee(handler, originalConfigWriter);
 
-		handler = new IncludeFilter(handler, resource, appConstants);
+		handler = new IncludeFilter(handler, resource);
 
 		XmlUtils.parseXml(resource, handler);
 		configuration.setOriginalConfiguration(originalConfigWriter.toString());

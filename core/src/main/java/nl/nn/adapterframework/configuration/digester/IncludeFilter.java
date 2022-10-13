@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.configuration.digester;
 
 import java.io.IOException;
-import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.Attributes;
@@ -38,18 +37,16 @@ public class IncludeFilter extends FullXmlFilter {
 	private String targetAttribute = "ref";
 
 	private IScopeProvider scopeProvider;
-	private Properties appConstants;
 
-	public IncludeFilter(ContentHandler handler, IScopeProvider scopeProvider, Properties appConstants) {
+	public IncludeFilter(ContentHandler handler, IScopeProvider scopeProvider) {
 		super(handler);
 		this.scopeProvider = scopeProvider;
-		this.appConstants = appConstants;
 	}
 
 	private void comment(String message) throws SAXException {
 		comment(message.toCharArray(), 0, message.length());
 	}
-	
+
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
 		if (localName.equals(targetElement)) {
@@ -80,7 +77,7 @@ public class IncludeFilter extends FullXmlFilter {
 				}
 			}
 			return;
-		} 
+		}
 		super.startElement(uri, localName, qName, atts);
 	}
 
