@@ -27,7 +27,7 @@ import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * Custom errorHandler for the FF!API to catch all unhandled exceptions.
+ * Catch Spring Channel exceptions. When the cause is instanceof BusException, throw it directly.
  * 
  * @author	Niels Meijer
  */

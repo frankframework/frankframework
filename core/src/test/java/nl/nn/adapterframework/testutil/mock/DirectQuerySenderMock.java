@@ -19,15 +19,15 @@ import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
+import nl.nn.adapterframework.management.bus.BusTestBase;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.mock.FixedQuerySenderMock.ResultSetBuilder;
 
 /**
- * Enables the ability to provide a mockable FixedQuerySender. In some places a new QuerySender is created to execute (custom) statements.
+ * Enables the ability to provide a mockable DirectQuerySender. In some places a new QuerySender is created to execute (custom) statements.
  * This allows the result to be mocked.
  * 
- * @See {@link TestConfiguration#mockQuery(String, ResultSet)}
+ * @See {@link BusTestBase#mockDirectQuerySenderResult(String, Message)}
  * 
  * @author Niels Meijer
  */
@@ -40,7 +40,6 @@ public class DirectQuerySenderMock extends DirectQuerySender {
 			try {
 				Connection conn = Mockito.mock(Connection.class);
 				DatabaseMetaData md= Mockito.mock(DatabaseMetaData.class);
-//				Mockito.doReturn(ResultSetBuilder.create().build()).when(md).getColumns(Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.isNull());
 				Mockito.doReturn(md).when(conn).getMetaData();
 				PreparedStatement stmt = Mockito.mock(PreparedStatement.class);
 				Mockito.doReturn(stmt).when(conn).prepareStatement(Mockito.anyString());
