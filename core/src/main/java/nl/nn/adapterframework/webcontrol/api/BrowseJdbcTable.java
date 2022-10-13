@@ -74,12 +74,4 @@ public final class BrowseJdbcTable extends FrankApiBase {
 		builder.addHeader("maxRow", maxRow);
 		return callSyncGateway(builder);
 	}
-
-	private String getValue(Map<String, Object> json, String key) {
-		Object val = json.get(key);
-		if(val != null) {
-			return val.toString();
-		}
-		return null;
-	}
 }

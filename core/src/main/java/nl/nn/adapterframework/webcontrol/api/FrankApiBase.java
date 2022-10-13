@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
+import java.util.Map;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
@@ -172,5 +173,17 @@ public abstract class FrankApiBase implements ApplicationContextAware {
 			return (T) str;
 		}
 		throw new IllegalArgumentException("cannot convert to class ["+clazz+"]");
+	}
+
+	/**
+	 * If present returns the value as String
+	 * Else returns NULL
+	 */
+	protected String getValue(Map<String, Object> json, String key) {
+		Object val = json.get(key);
+		if(val != null) {
+			return val.toString();
+		}
+		return null;
 	}
 }
