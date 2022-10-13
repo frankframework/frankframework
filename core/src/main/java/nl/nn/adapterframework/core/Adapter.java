@@ -558,7 +558,7 @@ public class Adapter implements IAdapter, NamedBean {
 		if (duration!=null) {
 			mdcValues.put("duration", duration);
 		}
-		
+
 		logToMessageLogWithMessageContentsOrSize(Level.INFO, "Pipeline returned", "result", result.getResult(), mdcValues);
 		if (log.isDebugEnabled()) {
 			String exitCode = ", exit-code ["+result.getExitCode()+"]";
@@ -1022,14 +1022,14 @@ public class Adapter implements IAdapter, NamedBean {
 		/** Same as DEBUG */
 		@Deprecated
 		TERSE(Level.DEBUG);
-		
+
 		private @Getter Level effectiveLevel;
-		
+
 		private MessageLogLevel(Level effectiveLevel) {
 			this.effectiveLevel = effectiveLevel;
 		}
 	}
-	
+
 	/**
 	 * Defines behaviour for logging messages. Configuration is done in the MSG appender in log4j4ibis.properties.
 	 * @ff.default <code>INFO, unless overridden by property msg.log.level.default</code>
