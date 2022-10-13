@@ -1781,8 +1781,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	@Override
-	public Message formatException(String extrainfo, String correlationId, Message message, Throwable t) {
-		return getAdapter().formatErrorMessage(extrainfo,t,message,correlationId,null,0);
+	public Message formatException(String extrainfo, String messageId, Message message, Throwable t) {
+		return getAdapter().formatErrorMessage(extrainfo,t,message,messageId,null,0);
 	}
 
 

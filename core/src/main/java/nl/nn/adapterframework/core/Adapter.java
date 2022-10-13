@@ -340,7 +340,9 @@ public class Adapter implements IAdapter, NamedBean {
 		try {
 			Message formattedErrorMessage= errorMessageFormatter.format(errorMessage, t, objectInError, originalMessage, messageID, receivedTime);
 
-			logToMessageLogWithMessageContentsOrSize(Level.INFO, "Error", "result", formattedErrorMessage, null);
+			try (final CloseableThreadContext.Instance ctc = LogUtil.getThreadContext(this, messageID, null)) {
+				logToMessageLogWithMessageContentsOrSize(Level.INFO, "Error", "result", formattedErrorMessage, null);
+			}
 
 			return formattedErrorMessage;
 		} catch (Exception e) {
@@ -602,8 +604,9 @@ public class Adapter implements IAdapter, NamedBean {
 					objectInError = this;
 				}
 			}
-			result.setResult(formatErrorMessage(msg, t, message, messageId, objectInError, startTime));
-			messageLogResult(messageId, result, null);
+			try (final CloseableThreadContext.Instance ctc = LogUtil.getThreadContext(this, messageId, pipeLineSession)) {
+				result.setResult(formatErrorMessage(msg, t, message, messageId, objectInError, startTime));
+			}
 			return result;
 		}
 	}
@@ -625,82 +628,77 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 
 		incNumOfMessagesInProcess(startTime);
-		String lastNDC= ThreadContext.peek();
-		String newNDC="mid [" + messageId + "]";
-		boolean ndcChanged=!newNDC.equals(lastNDC);
 
 		try {
-			try (final CloseableThreadContext.Instance ctc1 = ndcChanged ? CloseableThreadContext.push(newNDC): null) {
-				try (final CloseableThreadContext.Instance ctc2 = CloseableThreadContext.put("Adapter", getName()).put("mid", messageId).put("cid", pipeLineSession.getCorrelationId())) {
-					try {
-						if (StringUtils.isNotEmpty(composedHideRegex)) {
-							IbisMaskingLayout.addToThreadLocalReplace(composedHideRegex);
-						}
-
-						StringBuilder additionalLogging = new StringBuilder();
-
-						// xPathLogKeys is an EsbJmsListener thing
-						String xPathLogKeys = (String) pipeLineSession.get("xPathLogKeys");
-						if(StringUtils.isNotEmpty(xPathLogKeys)) {
-							StringTokenizer tokenizer = new StringTokenizer(xPathLogKeys, ",");
-							while (tokenizer.hasMoreTokens()) {
-								String logName = tokenizer.nextToken();
-								String xPathResult = (String) pipeLineSession.get(logName);
-								additionalLogging.append(" and ");
-								additionalLogging.append(logName);
-								additionalLogging.append(" [" + xPathResult + "]");
-							}
-						}
-
-						if(msgLog.isDebugEnabled()) {
-							logToMessageLogWithMessageContentsOrSize(Level.DEBUG, "Pipeline started"+additionalLogging, "request", message, null);
-						}
-						log.info("Adapter [{}] received message with messageId [{}]{}", getName(), messageId, additionalLogging);
-
-						if (Message.isEmpty(message) && isReplaceNullMessage()) {
-							log.debug("Adapter [" + getName() + "] replaces null message with messageId [" + messageId + "] by empty message");
-							message = new Message("");
-						}
-						result = pipeline.process(messageId, message, pipeLineSession);
-
-						String duration;
-						if(msgLogHumanReadable) {
-							duration = Misc.getAge(startTime);
-						} else {
-							duration = Misc.getDurationInMs(startTime);
-						}
-						messageLogResult(messageId, result, duration);
-						return result;
-
-					} catch (Throwable t) {
-						ListenerException e;
-						if (t instanceof ListenerException) {
-							e = (ListenerException) t;
-						} else {
-							e = new ListenerException(t);
-						}
-						processingSuccess = false;
-						incNumOfMessagesInError();
-						addErrorMessageToMessageKeeper("error processing message with messageId [" + messageId+"]: ",e);
-						throw e;
-					} finally {
-						long endTime = System.currentTimeMillis();
-						long duration = endTime - startTime;
-						//reset the InProcess fields, and increase processedMessagesCount
-						decNumOfMessagesInProcess(duration, processingSuccess);
-
-						if (log.isDebugEnabled()) { // for performance reasons
-							log.debug("Adapter: [" + getName()
-									+ "] STAT: Finished processing message with messageId [" + messageId
-									+ "] exit-state [" + result.getState()
-									+ "] started " + DateUtils.format(new Date(startTime), DateUtils.FORMAT_FULL_GENERIC)
-									+ " finished " + DateUtils.format(new Date(endTime), DateUtils.FORMAT_FULL_GENERIC)
-									+ " total duration: " + duration + " msecs");
-						} else {
-							log.info("Adapter [" + getName() + "] completed message with messageId [" + messageId + "] with exit-state [" + result.getState() + "]");
-						}
-						IbisMaskingLayout.removeThreadLocalReplace();
+			try (final CloseableThreadContext.Instance ctc = LogUtil.getThreadContext(this, messageId, pipeLineSession)) {
+				try {
+					if (StringUtils.isNotEmpty(composedHideRegex)) {
+						IbisMaskingLayout.addToThreadLocalReplace(composedHideRegex);
 					}
+
+					StringBuilder additionalLogging = new StringBuilder();
+
+					// xPathLogKeys is an EsbJmsListener thing
+					String xPathLogKeys = (String) pipeLineSession.get("xPathLogKeys");
+					if(StringUtils.isNotEmpty(xPathLogKeys)) {
+						StringTokenizer tokenizer = new StringTokenizer(xPathLogKeys, ",");
+						while (tokenizer.hasMoreTokens()) {
+							String logName = tokenizer.nextToken();
+							String xPathResult = (String) pipeLineSession.get(logName);
+							additionalLogging.append(" and ");
+							additionalLogging.append(logName);
+							additionalLogging.append(" [" + xPathResult + "]");
+						}
+					}
+
+					if(msgLog.isDebugEnabled()) {
+						logToMessageLogWithMessageContentsOrSize(Level.DEBUG, "Pipeline started"+additionalLogging, "request", message, null);
+					}
+					log.info("Adapter [{}] received message with messageId [{}]{}", getName(), messageId, additionalLogging);
+
+					if (Message.isEmpty(message) && isReplaceNullMessage()) {
+						log.debug("Adapter [" + getName() + "] replaces null message with messageId [" + messageId + "] by empty message");
+						message = new Message("");
+					}
+					result = pipeline.process(messageId, message, pipeLineSession);
+
+					String duration;
+					if(msgLogHumanReadable) {
+						duration = Misc.getAge(startTime);
+					} else {
+						duration = Misc.getDurationInMs(startTime);
+					}
+					messageLogResult(messageId, result, duration);
+					return result;
+
+				} catch (Throwable t) {
+					ListenerException e;
+					if (t instanceof ListenerException) {
+						e = (ListenerException) t;
+					} else {
+						e = new ListenerException(t);
+					}
+					processingSuccess = false;
+					incNumOfMessagesInError();
+					addErrorMessageToMessageKeeper("error processing message with messageId [" + messageId+"]: ",e);
+					throw e;
+				} finally {
+					long endTime = System.currentTimeMillis();
+					long duration = endTime - startTime;
+					//reset the InProcess fields, and increase processedMessagesCount
+					decNumOfMessagesInProcess(duration, processingSuccess);
+
+					if (log.isDebugEnabled()) { // for performance reasons
+						log.debug("Adapter: [" + getName()
+								+ "] STAT: Finished processing message with messageId [" + messageId
+								+ "] exit-state [" + result.getState()
+								+ "] started " + DateUtils.format(new Date(startTime), DateUtils.FORMAT_FULL_GENERIC)
+								+ " finished " + DateUtils.format(new Date(endTime), DateUtils.FORMAT_FULL_GENERIC)
+								+ " total duration: " + duration + " msecs");
+					} else {
+						log.info("Adapter [" + getName() + "] completed message with messageId [" + messageId + "] with exit-state [" + result.getState() + "]");
+					}
+					IbisMaskingLayout.removeThreadLocalReplace();
 				}
 			}
 		} finally {

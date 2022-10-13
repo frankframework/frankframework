@@ -15,11 +15,16 @@
 */
 package nl.nn.adapterframework.util;
 
-import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.INamedObject;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
+
+import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.PipeLineSession;
 
 /**
  * Log4j can now be started from any LogManager.getLogger() call
@@ -66,5 +71,21 @@ public class LogUtil {
 		}
 
 		return LogManager.getLogger(String.format("%s.%S.%S", MESSAGE_LOGGER, adapter.getName(), object.getName()));
+	}
+	
+	public static CloseableThreadContext.Instance getThreadContext(Adapter adapter, String messageId, PipeLineSession session) {
+		String lastNDC= ThreadContext.peek();
+		String newNDC=adapter.getName();
+		CloseableThreadContext.Instance ctc = CloseableThreadContext.put("Adapter", adapter.getName());
+		if (!newNDC.equals(lastNDC)) {
+			ctc.push(newNDC);
+		}
+		if (StringUtils.isNotEmpty(messageId)) {
+			ctc.put("mid", messageId);
+		}
+		if (session!=null && StringUtils.isNotEmpty(session.getCorrelationId())) {
+			ctc.put("cid", session.getCorrelationId());
+		}
+		return ctc;
 	}
 }
