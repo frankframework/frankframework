@@ -15,16 +15,17 @@
 */
 package nl.nn.adapterframework.metrics;
 
+import org.apache.commons.lang3.StringUtils;
+
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.influx.InfluxConfig;
 import io.micrometer.influx.InfluxMeterRegistry;
-import software.amazon.awssdk.utils.StringUtils;
 
 public class InfluxRegistryConfigurator extends MetricsRegistryConfiguratorBase<InfluxConfig> {
 
 	private class Config extends MeterRegistryConfigBase implements InfluxConfig {
-	
+
 		@Override
 		public String token() {
 			String result = get("influx.token");
