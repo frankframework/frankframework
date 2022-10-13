@@ -41,8 +41,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class StatisticsKeeper<B extends IBasics<S>, S> implements ItemList {
 
-	private static final boolean calculatePercentiles = true;
-
 	private String name = null;
 	private long first = Long.MIN_VALUE;
 	private long last = 0;
@@ -63,6 +61,16 @@ public class StatisticsKeeper<B extends IBasics<S>, S> implements ItemList {
 
 	public static final String percentileConfigKey="Statistics.percentiles";
 	public static final String DEFAULT_P_LIST="50,90,95,98";
+
+	public static final String PERCENTILE_PUBLISH_KEY="Statistics.percentiles.publish";
+	public static final String HISTOGRAM_PUBLISH_KEY="Statistics.histograms.publish";
+	public static final String PERCENTILES_INTERNAL_KEY="Statistics.percentiles.internal";
+	public static final String PERCENTILE_PRECISION_KEY="Statistics.percentiles.precision";
+
+	private boolean publishPercentiles;
+	private boolean publishHistograms;
+	private boolean calculatePercentiles;
+	private int percentilePrecision;
 
 	protected PercentileEstimator pest;
 
@@ -87,30 +95,39 @@ public class StatisticsKeeper<B extends IBasics<S>, S> implements ItemList {
 	}
 
 	public void initMetrics(MeterRegistry registry, String name, Iterable<Tag> tags) {
-		double[] serviceLevelObjectives = new double[classBoundaries.length];
-		for (int i=0;i<classBoundaries.length;i++) {
-			serviceLevelObjectives[i]=classBoundaries[i];
-		}
-		double[] percentiles = new double[pest.getNumPercentiles()];
-		for (int i=0;i<pest.getNumPercentiles();i++) {
-			percentiles[i]=((double)pest.getPercentage(i))/100;
-		}
 		DistributionSummary.Builder builder = DistributionSummary
 				.builder(name)
 				.baseUnit(getUnits())
 				.tags(tags)
-				.tag("name", getName())
-				.percentilePrecision(2)
-				.serviceLevelObjectives(serviceLevelObjectives)
-				.publishPercentiles(percentiles)
-//				.publishPercentileHistogram()
-				;
+				.tag("name", getName());
+		if (publishPercentiles || publishHistograms) {
+			builder.percentilePrecision(percentilePrecision);
+
+			if (pest!=null && pest.getNumPercentiles()>0) {
+				double[] percentiles = new double[pest.getNumPercentiles()];
+				for (int i=0;i<pest.getNumPercentiles();i++) {
+					percentiles[i]=((double)pest.getPercentage(i))/100;
+				}
+				builder.publishPercentiles(percentiles);
+				pest = new MicroMeterPercentileEstimator(distributionSummary, percentiles);
+			}
+
+			if (classBoundaries.length>0) {
+				double[] serviceLevelObjectives = new double[classBoundaries.length];
+				for (int i=0;i<classBoundaries.length;i++) {
+					serviceLevelObjectives[i]=classBoundaries[i];
+				}
+				builder.serviceLevelObjectives(serviceLevelObjectives);
+			}
+			if (publishHistograms) {
+				builder.publishPercentileHistogram();
+			}
+		}
 		DistributionSummary distributionSummary = builder.register(registry);
 
 		if (cumulative instanceof MicroMeterBasics) {
 			((MicroMeterBasics)cumulative).setDistributionSummary(distributionSummary);
 			mark=cumulative.takeSnapshot();
-			pest = new MicroMeterPercentileEstimator(distributionSummary, percentiles);
 		} else {
 			this.distributionSummary = distributionSummary;
 		}
@@ -128,7 +145,8 @@ public class StatisticsKeeper<B extends IBasics<S>, S> implements ItemList {
 
 		List classBoundariesBuffer = new ArrayList();
 
-		StringTokenizer tok = AppConstants.getInstance().getTokenizedProperty(boundaryConfigKey, defaultBoundaryList);
+		AppConstants appConstants = AppConstants.getInstance();
+		StringTokenizer tok = appConstants.getTokenizedProperty(boundaryConfigKey, defaultBoundaryList);
 
 		while (tok.hasMoreTokens()) {
 			classBoundariesBuffer.add(new Long(Long.parseLong(tok.nextToken())));
@@ -139,10 +157,16 @@ public class StatisticsKeeper<B extends IBasics<S>, S> implements ItemList {
 			classBoundaries[i] = ((Long) classBoundariesBuffer.get(i)).longValue();
 		}
 
+		publishPercentiles = appConstants.getBoolean(PERCENTILE_PUBLISH_KEY, false);
+		publishHistograms = appConstants.getBoolean(HISTOGRAM_PUBLISH_KEY, false);
+		calculatePercentiles = publishPercentiles || publishHistograms || appConstants.getBoolean(PERCENTILES_INTERNAL_KEY, true);
+		percentilePrecision = appConstants.getInt(PERCENTILE_PRECISION_KEY, 1);
+
 		if (calculatePercentiles) {
 //			pest = new PercentileEstimatorBase(percentileConfigKey,DEFAULT_P_LIST,1000);
 			pest = new PercentileEstimatorRanked(percentileConfigKey,DEFAULT_P_LIST,100);
 		}
+
 	}
 
 	public String getUnits() {
