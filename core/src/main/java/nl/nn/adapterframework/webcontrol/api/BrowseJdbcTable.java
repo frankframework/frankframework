@@ -16,7 +16,6 @@ limitations under the License.
 package nl.nn.adapterframework.webcontrol.api;
 
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
@@ -41,36 +40,22 @@ public final class BrowseJdbcTable extends FrankApiBase {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response execute(Map<String, Object> json) throws ApiException {
-		String datasource = null, tableName = null, where = "", order = "";
-		Boolean numberOfRowsOnly = false;
 		int minRow = 1;
 		int maxRow = 100;
 
-		for (Entry<String, Object> entry : json.entrySet()) {
-			String key = entry.getKey();
-			if(key.equalsIgnoreCase("datasource")) {
-				datasource = entry.getValue().toString();
-			}
-			if(key.equalsIgnoreCase("table")) {
-				tableName = entry.getValue().toString();
-			}
-			if(key.equalsIgnoreCase("where")) {
-				where = entry.getValue().toString();
-			}
-			if(key.equalsIgnoreCase("order")) { // the form field named 'order' is only used for 'group by', when number of rows only is true.
-				order = entry.getValue().toString();
-			}
-			if(key.equalsIgnoreCase("numberOfRowsOnly")) {
-				numberOfRowsOnly = Boolean.parseBoolean(entry.getValue().toString());
-			}
-			if(key.equalsIgnoreCase("minRow") && !"".equals(entry.getValue())) {
-				minRow = Integer.parseInt(entry.getValue().toString());
-				minRow = Math.max(minRow, 0);
-			}
-			if(key.equalsIgnoreCase("maxRow") && !"".equals(entry.getValue())) {
-				maxRow = Integer.parseInt(entry.getValue().toString());
-				maxRow = Math.max(maxRow, 1);
-			}
+		String datasource = getValue(json, "datasource");
+		String tableName = getValue(json, "table");
+		String where = getValue(json, "where");
+		String order = getValue(json, "order");
+		Boolean numberOfRowsOnly = Boolean.parseBoolean(getValue(json, "numberOfRowsOnly"));
+
+		String minRowStr = getValue(json, "minRow");
+		if(StringUtils.isNotEmpty(minRowStr)) {
+			minRow = Integer.parseInt(minRowStr);
+		}
+		String maxRowStr = getValue(json, "maxRow");
+		if(StringUtils.isNotEmpty(maxRowStr)) {
+			maxRow = Integer.parseInt(maxRowStr);
 		}
 
 		if(tableName == null) {
@@ -88,5 +73,13 @@ public final class BrowseJdbcTable extends FrankApiBase {
 		builder.addHeader("minRow", minRow);
 		builder.addHeader("maxRow", maxRow);
 		return callSyncGateway(builder);
+	}
+
+	private String getValue(Map<String, Object> json, String key) {
+		Object val = json.get(key);
+		if(val != null) {
+			return val.toString();
+		}
+		return null;
 	}
 }

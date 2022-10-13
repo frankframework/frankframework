@@ -109,13 +109,13 @@ public class BusMessageUtils {
 	/**
 	 * See AuthorityAuthorizationManager#ROLE_PREFIX
 	 */
-	public static boolean hasAuthority(String role) {
+	public static boolean hasAuthority(String authority) {
 		UserDetails userDetails = getUserDetails();
 		boolean granted = false;
 		if(userDetails != null) {
-			for(GrantedAuthority authority : userDetails.getAuthorities()) {
-				String roleName = authority.getAuthority().substring(5); //chomp off the AuthorityAuthorizationManager#ROLE_PREFIX
-				granted = roleName.equals(role);
+			for(GrantedAuthority grantedAuthority : userDetails.getAuthorities()) {
+				String authorityName = grantedAuthority.getAuthority().substring(5); //chomp off the AuthorityAuthorizationManager#ROLE_PREFIX
+				granted = authorityName.equals(authority);
 				if(granted) {
 					return true;
 				}

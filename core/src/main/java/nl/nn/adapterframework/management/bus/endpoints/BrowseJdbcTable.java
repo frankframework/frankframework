@@ -75,10 +75,10 @@ public class BrowseJdbcTable {
 		String datasource = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		String tableName = BusMessageUtils.getHeader(message, "table");
 		String where = BusMessageUtils.getHeader(message, "where");
-		String order = BusMessageUtils.getHeader(message, "order");
+		String order = BusMessageUtils.getHeader(message, "order"); // the form field named 'order' is only used for 'group by', when number of rows only is true.
 		boolean numberOfRowsOnly = BusMessageUtils.getBooleanHeader(message, "numberOfRowsOnly", false);
-		int minRow = BusMessageUtils.getIntHeader(message, "minRow", 1);
-		int maxRow = BusMessageUtils.getIntHeader(message, "maxRow", 100);
+		int minRow = Math.max(BusMessageUtils.getIntHeader(message, "minRow", 1), 0);
+		int maxRow = Math.max(BusMessageUtils.getIntHeader(message, "maxRow", 100), 1);
 
 		if (!readAllowed(tableName)) {
 			throw new BusException("Access to table ["+tableName+"] not allowed");
@@ -179,13 +179,13 @@ public class BrowseJdbcTable {
 				+ table
 				+ "</tableName>"
 				+ "<where>"
-				+ XmlUtils.encodeChars(where)
+				+ (where==null?"":XmlUtils.encodeChars(where))
 				+ "</where>"
 				+ "<numberOfRowsOnly>"
 				+ numberOfRowsOnly
 				+ "</numberOfRowsOnly>"
 				+ "<order>"
-				+ order
+				+ (order==null?"":order)
 				+ "</order>"
 				+ "<rownumMin>"
 				+ minRow
