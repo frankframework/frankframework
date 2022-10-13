@@ -105,7 +105,7 @@ public class MigratorTest extends TransactionManagerTestBase {
 
 		Resource resource = Resource.getResource("/Migrator/DatabaseChangelog_plus_changes.xml");
 		assertNotNull(resource);
-		
+
 		resource = new BytesResource(resource.openStream(), "inputstreamresource.xml", new GlobalScopeProvider());
 		StringWriter writer = new StringWriter();
 		migrator.update(writer, resource);
