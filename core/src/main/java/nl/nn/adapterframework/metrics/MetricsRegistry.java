@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
@@ -33,6 +34,7 @@ import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import lombok.Getter;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 
 /**
@@ -40,7 +42,9 @@ import nl.nn.adapterframework.util.Misc;
  *
  */
 public class MetricsRegistry {
+	private Logger log = LogUtil.getLogger(this);
 
+	private static final String CONFIGURATOR_CLASS_SUFFIX=".configurator";
 	private @Getter MeterRegistry registry;
 
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
@@ -48,11 +52,30 @@ public class MetricsRegistry {
 	public MetricsRegistry() {
 		CompositeMeterRegistry compositeRegistry = new CompositeMeterRegistry();
 
-		new PrometheusRegistryConfigurator().registerAt(compositeRegistry);
-		new StatsDRegistryConfigurator().registerAt(compositeRegistry);
-		new CloudWatchRegistryConfigurator().registerAt(compositeRegistry);
-		new InfluxRegistryConfigurator().registerAt(compositeRegistry);
-		new KairosDbRegistryConfigurator().registerAt(compositeRegistry);
+		for(Object keyObj:APP_CONSTANTS.keySet()) {
+			String key = (String)keyObj;
+			if (key.startsWith(MetricsRegistryConfiguratorBase.METRICS_EXPORT_PROPERTY_PREFIX) && key.endsWith(".enabled")) {
+				String tail = key.substring(MetricsRegistryConfiguratorBase.METRICS_EXPORT_PROPERTY_PREFIX.length());
+				String[] tailArr = tail.split("\\.");
+				if (tailArr.length==2 && APP_CONSTANTS.getBoolean(key, false)) {
+					String product=tailArr[0];
+					String configuratorClassNamePropertyKey = MetricsRegistryConfiguratorBase.METRICS_EXPORT_PROPERTY_PREFIX+product+CONFIGURATOR_CLASS_SUFFIX;
+					String configuratorClassName = APP_CONSTANTS.get(configuratorClassNamePropertyKey);
+					if (StringUtils.isEmpty(configuratorClassName)) {
+						log.warn("did not find value for property ["+configuratorClassNamePropertyKey+"] to enable configuration of enabled meter registy product ["+product+"]");
+						continue;
+					}
+					log.debug("using class ["+configuratorClassName+"] to configure enabled meter registy product ["+product+"]");
+					try {
+						Class<MetricsRegistryConfiguratorBase> configuratorClass = (Class<MetricsRegistryConfiguratorBase>) Class.forName(configuratorClassName);
+						MetricsRegistryConfiguratorBase configurator = configuratorClass.newInstance();
+						configurator.registerAt(compositeRegistry);
+					} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+						log.warn("Cannot configure meter registy product ["+product+"]", e);
+					}
+				}
+			}
+		}
 
 		this.registry = compositeRegistry;
 		configureRegistry();

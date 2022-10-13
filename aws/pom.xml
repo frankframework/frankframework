@@ -1,0 +1,65 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.ibissource</groupId>
+		<artifactId>ibis-adapterframework-parent</artifactId>
+		<version>${revision}</version>
+	</parent>
+
+	<artifactId>ibis-adapterframework-aws</artifactId>
+	<name>Ibis AdapterFramework support for AWS</name>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.amazonaws</groupId>
+			<artifactId>aws-java-sdk-s3</artifactId>
+			<version>1.12.292</version>
+		</dependency>
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-registry-cloudwatch2</artifactId>
+			<version>${micrometer.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-core</artifactId>
+			<classifier>tests</classifier>
+			<type>test-jar</type>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Test scoped and provided dependencies -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest-all</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+	</dependencies>
+</project>
