@@ -16,7 +16,6 @@
 		<spring-integration.version>5.5.15</spring-integration.version>
 		<j2v8.version>4.6.0</j2v8.version>
 		<jackson.version>2.13.4</jackson.version>
-		<micrometer.version>1.9.5</micrometer.version>
 		<saxon.version>10.8</saxon.version>
 	</properties>
 
@@ -84,11 +83,6 @@
 		<dependency>
 			<groupId>io.micrometer</groupId>
 			<artifactId>micrometer-registry-statsd</artifactId>
-			<version>${micrometer.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>io.micrometer</groupId>
-			<artifactId>micrometer-registry-cloudwatch2</artifactId>
 			<version>${micrometer.version}</version>
 		</dependency>
 		<dependency>
@@ -450,11 +444,6 @@
 			<groupId>com.sendgrid</groupId>
 			<artifactId>sendgrid-java</artifactId>
 			<version>4.9.3</version>
-		</dependency>
-		<dependency>
-			<groupId>com.amazonaws</groupId>
-			<artifactId>aws-java-sdk-s3</artifactId>
-			<version>1.12.292</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
