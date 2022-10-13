@@ -60,7 +60,7 @@ public class MessageStoreListenerTest extends JdbcTestBase {
 	public void testSelectQuery() throws ConfigurationException {
 		listener.configure();
 		
-		String expected = "SELECT MESSAGEKEY,MESSAGE FROM IBISSTORE t WHERE TYPE='M' AND (SLOTID='slot')";
+		String expected = "SELECT MESSAGEKEY,MESSAGEID,CORRELATIONID,MESSAGE FROM IBISSTORE t WHERE TYPE='M' AND (SLOTID='slot')";
 		
 		assertEquals(expected, listener.getSelectQuery());
 	}
@@ -70,7 +70,7 @@ public class MessageStoreListenerTest extends JdbcTestBase {
 		listener.setSlotId(null);
 		listener.configure();
 		
-		String expected = "SELECT MESSAGEKEY,MESSAGE FROM IBISSTORE t WHERE TYPE='M'";
+		String expected = "SELECT MESSAGEKEY,MESSAGEID,CORRELATIONID,MESSAGE FROM IBISSTORE t WHERE TYPE='M'";
 		
 		assertEquals(expected, listener.getSelectQuery());
 	}
@@ -80,7 +80,7 @@ public class MessageStoreListenerTest extends JdbcTestBase {
 		listener.setSelectCondition("t.TVARCHAR='x'");
 		listener.configure();
 		
-		String expected = "SELECT MESSAGEKEY,MESSAGE FROM IBISSTORE t WHERE TYPE='M' AND (SLOTID='slot' AND (t.TVARCHAR='x'))";
+		String expected = "SELECT MESSAGEKEY,MESSAGEID,CORRELATIONID,MESSAGE FROM IBISSTORE t WHERE TYPE='M' AND (SLOTID='slot' AND (t.TVARCHAR='x'))";
 		
 		assertEquals(expected, listener.getSelectQuery());
 	}
@@ -91,7 +91,7 @@ public class MessageStoreListenerTest extends JdbcTestBase {
 		listener.setSelectCondition("t.TVARCHAR='x'");
 		listener.configure();
 		
-		String expected = "SELECT MESSAGEKEY,MESSAGE FROM IBISSTORE t WHERE TYPE='M' AND ((t.TVARCHAR='x'))";
+		String expected = "SELECT MESSAGEKEY,MESSAGEID,CORRELATIONID,MESSAGE FROM IBISSTORE t WHERE TYPE='M' AND ((t.TVARCHAR='x'))";
 		
 		assertEquals(expected, listener.getSelectQuery());
 	}

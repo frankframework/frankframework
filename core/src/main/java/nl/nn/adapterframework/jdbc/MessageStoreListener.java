@@ -69,6 +69,8 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 		setTableName("IBISSTORE");
 		setKeyField("MESSAGEKEY");
 		setMessageField("MESSAGE");
+		setMessageIdField("MESSAGEID");
+		setCorrelationIdField("CORRELATIONID");
 		setMessageFieldType(MessageFieldType.BLOB);
 		setBlobSmartGet(true);
 		setStatusField("TYPE");
@@ -122,7 +124,7 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 
 	protected IMessageBrowser<M> augmentMessageBrowser(IMessageBrowser<M> browser) {
 		if (browser!=null && browser instanceof JdbcTableMessageBrowser) {
-			JdbcTableMessageBrowser<Object> jtmb = (JdbcTableMessageBrowser<Object>)browser;
+			JdbcTableMessageBrowser<?> jtmb = (JdbcTableMessageBrowser<?>)browser;
 			jtmb.setExpiryDateField("EXPIRYDATE");
 			jtmb.setHostField("HOST");
 		}
@@ -191,6 +193,26 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 	@Override
 	public void setMessageField(String fieldname) {
 		super.setMessageField(fieldname);
+	}
+
+	/**
+	 * MessageId Field
+	 * 
+	 * @ff.default MESSAGEID
+	 */
+	@Override
+	public void setMessageIdField(String fieldname) {
+		super.setMessageIdField(fieldname);
+	}
+
+	/**
+	 * CorrelationId Field
+	 * 
+	 * @ff.default CORRELATIONID
+	 */
+	@Override
+	public void setCorrelationIdField(String fieldname) {
+		super.setCorrelationIdField(fieldname);
 	}
 
 	/**
