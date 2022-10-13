@@ -19,7 +19,7 @@
 			<property name="processJavadoc" value="true" /> <!-- allow imports from javadoc comments -->
 		</module>
 		<module name="IllegalImport">
-			<property name="illegalPkgs" value="junit.framework, org.apache.commons.lang" />
+			<property name="illegalPkgs" value="junit.framework, org.apache.commons.lang, software.amazon" />
 			<property name="illegalClasses" value="org.apache.commons.codec.Charsets"/>
 		</module>
 	</module>

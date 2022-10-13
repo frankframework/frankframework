@@ -15,7 +15,7 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.annotation.security.RolesAllowed;
@@ -25,6 +25,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusTopic;
@@ -38,10 +40,11 @@ public final class BrowseJdbcTable extends FrankApiBase {
 	@Path("/jdbc/browse")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response execute(LinkedHashMap<String, Object> json) throws ApiException {
+	public Response execute(Map<String, Object> json) throws ApiException {
 		String datasource = null, tableName = null, where = "", order = "";
 		Boolean numberOfRowsOnly = false;
-		int minRow = 1, maxRow = 100;
+		int minRow = 1;
+		int maxRow = 100;
 
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
@@ -70,12 +73,14 @@ public final class BrowseJdbcTable extends FrankApiBase {
 			}
 		}
 
-		if(datasource == null || tableName == null) {
-			throw new ApiException("datasource and/or tableName not defined.", 400);
+		if(tableName == null) {
+			throw new ApiException("tableName not defined.", 400);
 		}
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.JDBC, BusAction.FIND);
-		builder.addHeader(HEADER_DATASOURCE_NAME_KEY, datasource);
+		if(StringUtils.isNotEmpty(datasource)) {
+			builder.addHeader(HEADER_DATASOURCE_NAME_KEY, datasource);
+		}
 		builder.addHeader("table", tableName);
 		builder.addHeader("where", where);
 		builder.addHeader("order", order);

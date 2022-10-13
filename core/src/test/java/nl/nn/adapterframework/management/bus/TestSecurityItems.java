@@ -29,7 +29,7 @@ public class TestSecurityItems extends BusTestBase {
 
 	@Test
 	public void getSecurityItems() throws Exception {
-		mockQuery("select datasource from database", ResultSetBuilder.create().build());
+		mockFixedQuerySenderResult("select datasource from database", ResultSetBuilder.create().build());
 
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.SECURITY_ITEMS);
 		request.setHeader("configuration", "testConfiguration");

@@ -43,6 +43,7 @@ import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.management.bus.ActionSelector;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusAware;
+import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
@@ -80,13 +81,13 @@ public class BrowseJdbcTable {
 		int maxRow = BusMessageUtils.getIntHeader(message, "maxRow", 100);
 
 		if (!readAllowed(tableName)) {
-			throw new IllegalStateException("Access to table ["+tableName+"] not allowed");
+			throw new BusException("Access to table ["+tableName+"] not allowed");
 		}
 
 		if(maxRow < minRow)
-			throw new IllegalStateException("Rownum max must be greater than or equal to Rownum min");
+			throw new BusException("Rownum max must be greater than or equal to Rownum min");
 		if (maxRow - minRow >= 100) {
-			throw new IllegalStateException("Difference between Rownum max and Rownum min must be less than hundred");
+			throw new BusException("Difference between Rownum max and Rownum min must be less than hundred");
 		}
 
 		return doAction(datasource, tableName, where, order, numberOfRowsOnly, minRow, maxRow);
@@ -100,7 +101,7 @@ public class BrowseJdbcTable {
 		DirectQuerySender qs = ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
 
 		try {
-			qs.setName("BrowseTableQuerySender");
+			qs.setName("BrowseTable QuerySender");
 			qs.setDatasourceName(datasource);
 
 			qs.setQueryType("select");
@@ -119,7 +120,7 @@ public class BrowseJdbcTable {
 			if(!numberOfRowsOnly || StringUtils.isNotEmpty(order)) {
 				try (Connection conn =qs.getConnection()) {
 					try (ResultSet rs = numberOfRowsOnly ? dbmsSupport.getTableColumns(conn, null, table, order) : dbmsSupport.getTableColumns(conn, table)) {
-						while(rs.next()) {
+						while(rs != null && rs.next()) {
 							field = "<field name=\"" + rs.getString(COLUMN_NAME).toUpperCase() + "\" type=\"" + DB2XMLWriter.getFieldType(rs.getInt(DATA_TYPE)) + "\" size=\"" + rs.getInt(COLUMN_SIZE) + "\"/>";
 							fielddefinition.append(field);
 							fieldDef.put(rs.getString(COLUMN_NAME).toUpperCase(), DB2XMLWriter.getFieldType(rs.getInt(DATA_TYPE)) + "("+rs.getInt(COLUMN_SIZE)+")");
@@ -137,8 +138,7 @@ public class BrowseJdbcTable {
 			}
 			result = qs.sendMessage(new nl.nn.adapterframework.stream.Message(query), null).asString();
 		} catch (Exception t) {
-			log.error("an error occured on executing jdbc query [{}]", query, t);
-			throw new IllegalStateException("an error occured on executing jdbc query ["+query+"]");
+			throw new BusException("an error occured on executing jdbc query ["+query+"]", t);
 		} finally {
 			qs.close();
 		}
@@ -148,13 +148,11 @@ public class BrowseJdbcTable {
 			try {
 				resultMap = new QueryOutputToListOfMaps().parseString(result);
 			} catch (IOException | SAXException e) {
-				log.error("query result could not be parsed", e);
-				throw new IllegalStateException("query result could not be parsed");
+				throw new BusException("query result could not be parsed", e);
 			}
 		}
 		if(resultMap == null) {
-			log.error("invalid query result");
-			throw new IllegalStateException("invalid query result [null]");
+			throw new BusException("invalid query result [null]");
 		}
 
 		Map<String, Object> resultObject = new HashMap<>();

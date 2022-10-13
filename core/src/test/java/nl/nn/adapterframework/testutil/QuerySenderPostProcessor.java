@@ -11,7 +11,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import lombok.Setter;
+import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.mock.DirectQuerySenderMock;
 import nl.nn.adapterframework.testutil.mock.FixedQuerySenderMock;
 
 /**
@@ -23,28 +26,36 @@ import nl.nn.adapterframework.testutil.mock.FixedQuerySenderMock;
  * @author Niels Meijer
  */
 public class QuerySenderPostProcessor implements BeanPostProcessor, ApplicationContextAware {
-	private final String fixedQuerySenderSimpleName = FixedQuerySender.class.getSimpleName();
-	private final String fixedQuerySenderCanonicalName = FixedQuerySender.class.getCanonicalName();
 	private @Setter ApplicationContext applicationContext;
-	private static Map<String, ResultSet> mocks = new HashMap<>();
+	private static Map<String, ResultSet> fixedQuerySenderMocks = new HashMap<>();
+	private static Map<String, Message> fixedDirectSenderMocks = new HashMap<>();
 
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-		if(fixedQuerySenderSimpleName.equals(beanName) || fixedQuerySenderCanonicalName.equals(beanName)) {
-			FixedQuerySenderMock qs = createMock();
-			qs.addMockedQueries(mocks);
+		if(FixedQuerySender.class.getCanonicalName().equals(bean.getClass().getCanonicalName())) {
+			FixedQuerySenderMock qs = createMock(FixedQuerySenderMock.class);
+			qs.addMockedQueries(fixedQuerySenderMocks);
+			return qs;
+		}
+		if(DirectQuerySender.class.getCanonicalName().equals(bean.getClass().getCanonicalName())) {
+			DirectQuerySenderMock qs = createMock(DirectQuerySenderMock.class);
+			qs.addMockedQueries(fixedDirectSenderMocks);
 			return qs;
 		}
 
 		return BeanPostProcessor.super.postProcessBeforeInitialization(bean, beanName);
 	}
 
-	public void addMock(String query, ResultSet resultSet) {
-		mocks.put(query, resultSet);
+	public void addFixedQuerySenderMock(String query, ResultSet resultSet) {
+		fixedQuerySenderMocks.put(query, resultSet);
 	}
 
-	private FixedQuerySenderMock createMock() {
-		return (FixedQuerySenderMock) applicationContext.getAutowireCapableBeanFactory()
-				.createBean(FixedQuerySenderMock.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+	public void addDirectQuerySenderMock(String name, Message resultSet) {
+		fixedDirectSenderMocks.put(name, resultSet);
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T> T createMock(Class<T> clazz) {
+		return (T) applicationContext.getAutowireCapableBeanFactory().createBean(clazz, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 	}
 }

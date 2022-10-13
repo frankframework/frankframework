@@ -27,6 +27,7 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.management.bus.BusAware;
+import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
@@ -76,7 +77,7 @@ public class ConfigFlow {
 		Adapter adapter = configuration.getRegisteredAdapter(adapterName);
 
 		if(adapter == null) {
-			throw new IllegalStateException("Adapter not found!"); //should be wrapped in a message?
+			throw new BusException("Adapter not found!");
 		}
 
 		return flowDiagramManager.get(adapter);
