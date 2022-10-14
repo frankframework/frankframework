@@ -434,6 +434,13 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	/**
+	 * Include the referenced Module in this configuration
+	 */
+	public void registerInclude(Include module) {
+		// method exists to trigger FrankDoc.
+	}
+
+	/**
 	 * Add adapter.
 	 */
 	public void registerAdapter(Adapter adapter) {
