@@ -74,11 +74,11 @@ public class LogUtil {
 	}
 
 	public static CloseableThreadContext.Instance getThreadContext(Adapter adapter, String messageId, PipeLineSession session) {
-		String lastNDC= ThreadContext.peek();
-		String newNDC=adapter.getName();
-		CloseableThreadContext.Instance ctc = CloseableThreadContext.put("adapter", adapter.getName());
-		if (!newNDC.equals(lastNDC)) {
-			ctc.push(newNDC);
+		String lastAdapter= ThreadContext.get("adapter");
+		String currentAdapter= adapter.getName();
+		CloseableThreadContext.Instance ctc = CloseableThreadContext.put("adapter", currentAdapter);
+		if (lastAdapter!=null && !lastAdapter.equals(currentAdapter)) {
+			ctc.push("caller="+lastAdapter);
 		}
 		if (StringUtils.isNotEmpty(messageId)) {
 			ctc.put("mid", messageId);
