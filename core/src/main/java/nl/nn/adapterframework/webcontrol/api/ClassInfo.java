@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import java.util.List;
-
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -26,41 +24,22 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.lang3.StringUtils;
-
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.management.bus.RequestMessageBuilder;
 
 /**
  * API to get class information
  */
 @Path("/")
-public class ClassInfo {
+public class ClassInfo extends FrankApiBase {
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/classinfo/{className}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getClassInfo(
-			@PathParam("className") String className,
-			@QueryParam("base") String baseClassName
-			) throws ApiException {
-		try {
-			Class baseClass;
-			if (StringUtils.isNotEmpty(baseClassName)) {
-				baseClass = Class.forName(baseClassName, false, this.getClass().getClassLoader());
-			} else {
-				baseClass = this.getClass();
-			}
-			ClassLoader classLoader = baseClass.getClassLoader();
-
-			Class clazz = classLoader.loadClass(className);
-
-			List<?> result = ClassUtils.getClassInfoList(clazz);
-
-			return Response.status(Response.Status.OK).entity(result).build();
-		} catch (Exception e) {
-			throw new ApiException("Could not determine classInfo for class ["+className+"]", e);
-		}
+	public Response getClassInfo(@PathParam("className") String className, @QueryParam("base") String baseClassName) {
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.DEBUG);
+		return callSyncGateway(builder);
 	}
 
 }

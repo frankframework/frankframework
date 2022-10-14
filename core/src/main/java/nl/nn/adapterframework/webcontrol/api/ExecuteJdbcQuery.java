@@ -1,27 +1,21 @@
 /*
-Copyright 2016-2021 WeAreFrank!
+   Copyright 2016-2022 WeAreFrank!
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+       http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
@@ -32,16 +26,11 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.logging.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.jdbc.DirectQuerySender;
-import nl.nn.adapterframework.jdbc.IDataSourceFactory;
-import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
-import nl.nn.adapterframework.jdbc.transformer.AbstractQueryOutputTransformer;
-import nl.nn.adapterframework.jdbc.transformer.QueryOutputToCSV;
-import nl.nn.adapterframework.jdbc.transformer.QueryOutputToJson;
-import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.management.bus.RequestMessageBuilder;
 
 /**
  * Executes a query.
@@ -51,37 +40,15 @@ import nl.nn.adapterframework.util.LogUtil;
  */
 
 @Path("/")
-public final class ExecuteJdbcQuery extends Base {
-
-	public static final String DBXML2CSV_XSLT="xml/xsl/dbxml2csv.xslt";
-	private Logger secLog = LogUtil.getLogger("SEC");
+public final class ExecuteJdbcQuery extends FrankApiBase {
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/jdbc")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getJdbcInfo() throws ApiException {
-
-		Map<String, Object> result = new HashMap<>();
-
-		IDataSourceFactory dataSourceFactory = getIbisContext().getBean("dataSourceFactory", IDataSourceFactory.class);
-		List<String> dataSourceNames = dataSourceFactory.getDataSourceNames();
-		dataSourceNames.sort(Comparator.naturalOrder()); //AlphaNumeric order
-		result.put("datasources", dataSourceNames);
-
-		List<String> resultTypes = new ArrayList<>();
-		resultTypes.add("csv");
-		resultTypes.add("xml");
-		resultTypes.add("json");
-		result.put("resultTypes", resultTypes);
-
-		List<String> queryTypes = new ArrayList<>();
-		queryTypes.add("AUTO");
-		queryTypes.add(QueryType.SELECT.toString());
-		queryTypes.add(QueryType.OTHER.toString());
-		result.put("queryTypes", queryTypes);
-
-		return Response.status(Response.Status.CREATED).entity(result).build();
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.JDBC, BusAction.GET);
+		return callSyncGateway(builder);
 	}
 
 	@POST
@@ -89,38 +56,22 @@ public final class ExecuteJdbcQuery extends Base {
 	@Path("/jdbc/query")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response execute(LinkedHashMap<String, Object> json) throws ApiException {
+	public Response execute(Map<String, Object> json) throws ApiException {
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.JDBC, BusAction.MANAGE);
+		String datasource = getValue(json, "datasource");
+		String query = getValue(json, "query");
+		String resultType = getValue(json, "resultType");
 
-		String datasource = null, resultType = null, query = null, queryType = null, result = "", returnType = MediaType.APPLICATION_XML;
-		boolean avoidLocking = false, trimSpaces=false;
-		for (Entry<String, Object> entry : json.entrySet()) {
-			String key = entry.getKey();
-			if(key.equalsIgnoreCase("datasource")) {
-				datasource = entry.getValue().toString();
-			}
-			if(key.equalsIgnoreCase("resultType")) {
-				resultType = entry.getValue().toString().toLowerCase();
-				if(resultType.equalsIgnoreCase("csv")) {
-					returnType = MediaType.TEXT_PLAIN;
-				}
-				if(resultType.equalsIgnoreCase("json")) {
-					returnType = MediaType.APPLICATION_JSON;
-				}
-			}
-			if(key.equalsIgnoreCase("avoidLocking")) {
-				avoidLocking = Boolean.parseBoolean(entry.getValue().toString());
-			}
-			if(key.equalsIgnoreCase("trimSpaces")) {
-				trimSpaces = Boolean.parseBoolean(entry.getValue().toString());
-			}
-			if(key.equalsIgnoreCase("query")) {
-				query = entry.getValue().toString();
-			}
-			if(key.equalsIgnoreCase("queryType")) {
-				queryType = entry.getValue().toString();
-			}
+		String avoidLocking = getValue(json, "avoidLocking");
+		if(StringUtils.isNotEmpty(resultType)) {
+			builder.addHeader("avoidLocking", Boolean.parseBoolean(avoidLocking));
+		}
+		String trimSpaces = getValue(json, "trimSpaces");
+		if(StringUtils.isNotEmpty(trimSpaces)) {
+			builder.addHeader("trimSpaces", Boolean.parseBoolean(trimSpaces));
 		}
 
+		String queryType = getValue(json, "queryType");
 		if("AUTO".equals(queryType)) {
 			queryType = "other"; // defaults to other
 
@@ -133,43 +84,16 @@ public final class ExecuteJdbcQuery extends Base {
 			}
 		}
 
-		if(datasource == null || resultType == null || query == null) {
+		if(resultType == null || query == null) {
 			throw new ApiException("Missing data, datasource, resultType and query are expected.", 400);
 		}
 
-		secLog.info(String.format("executing query [%s] on datasource [%s] queryType [%s] avoidLocking [%s]", query, datasource, queryType, avoidLocking));
-
-		//We have all info we need, lets execute the query!
-		DirectQuerySender qs = getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
-
-		try {
-			qs.setName("QuerySender");
-			qs.setDatasourceName(datasource);
-			qs.setQueryType(queryType);
-			qs.setTrimSpaces(trimSpaces);
-			qs.setAvoidLocking(avoidLocking);
-			qs.setBlobSmartGet(true);
-			qs.setPrettyPrint(true);
-			qs.configure(true);
-			qs.open();
-			Message message = qs.sendMessage(new Message(query), null);
-
-			if (resultType.equalsIgnoreCase("csv")) {
-				AbstractQueryOutputTransformer filter = new QueryOutputToCSV();
-				result = filter.parse(message);
-			} else if (resultType.equalsIgnoreCase("json")) {
-				AbstractQueryOutputTransformer filter = new QueryOutputToJson();
-				result = filter.parse(message);
-			} else {
-				result = message.asString();
-			}
-
-		} catch (Throwable t) {
-			throw new ApiException("Error executing query", t);
-		} finally {
-			qs.close();
-		}
-
-		return Response.status(Response.Status.CREATED).type(returnType).entity(result).build();
+		builder.addHeader(FrankApiBase.HEADER_DATASOURCE_NAME_KEY, datasource);
+		builder.addHeader("queryType", queryType);
+		builder.addHeader("query", query);
+		builder.addHeader("trimSpaces", trimSpaces);
+		builder.addHeader("avoidLocking", avoidLocking);
+		builder.addHeader("resultType", resultType);
+		return callSyncGateway(builder);
 	}
 }

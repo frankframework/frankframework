@@ -43,8 +43,15 @@ public class ResponseMessage {
 	}
 
 	public static Message<String> ok(String payload) {
+		return ok(payload, null);
+	}
+
+	public static Message<String> ok(String payload, MimeType mediaType) {
 		Map<String, Object> headers = new HashMap<>();
 		headers.put(STATUS_KEY, 200);
+		if(mediaType != null) {
+			headers.put(MIMETYPE_KEY, mediaType.toString());
+		}
 		return new GenericMessage<>(payload, headers);
 	}
 
