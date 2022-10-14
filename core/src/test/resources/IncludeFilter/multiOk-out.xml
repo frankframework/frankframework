@@ -1,0 +1,19 @@
+<root>
+	<!--start include 'MultiSubOk1.xml'-->
+	MultiSubOK1 header
+	<!--start include 'okA.xml'-->
+	OK-A contents
+<!--end include-->
+	<!--start include 'sub/okB.xml'-->
+	OK-B contents
+<!--end include-->
+	MultiSubOK1 header
+<!--end include-->
+	<!--start include 'okA.xml'-->
+	OK-A contents
+<!--end include-->
+	<main>main contents</main>
+	<!--start include 'sub/okB.xml'-->
+	OK-B contents
+<!--end include-->
+</root>

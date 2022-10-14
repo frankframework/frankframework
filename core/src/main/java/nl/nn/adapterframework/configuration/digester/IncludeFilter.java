@@ -17,6 +17,8 @@ package nl.nn.adapterframework.configuration.digester;
 
 import java.io.IOException;
 
+import javax.xml.transform.TransformerException;
+
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -24,10 +26,10 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
 
-import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.BodyOnlyFilter;
+import nl.nn.adapterframework.xml.ClassLoaderURIResolver;
 import nl.nn.adapterframework.xml.FullXmlFilter;
 import nl.nn.adapterframework.xml.SaxException;
 
@@ -36,11 +38,13 @@ public class IncludeFilter extends FullXmlFilter {
 	private String targetElement = "Include";
 	private String targetAttribute = "ref";
 
-	private IScopeProvider scopeProvider;
+	private Resource resource;
+	private ClassLoaderURIResolver uriResolver;
 
-	public IncludeFilter(ContentHandler handler, IScopeProvider scopeProvider) {
+	public IncludeFilter(ContentHandler handler, Resource resource) {
 		super(handler);
-		this.scopeProvider = scopeProvider;
+		this.resource = resource;
+		uriResolver = new ClassLoaderURIResolver(resource);
 	}
 
 	private void comment(String message) throws SAXException {
@@ -53,8 +57,13 @@ public class IncludeFilter extends FullXmlFilter {
 			String ref = atts.getValue(targetAttribute);
 			comment("start include '"+ref+"'");
 			if (StringUtils.isNotEmpty(ref)) {
-				Resource resource = Resource.getResource(scopeProvider, ref);
-				if (resource==null) {
+				Resource subResource;
+				try {
+					subResource = uriResolver.resolveToResource(ref, resource.getSystemId());
+				} catch (TransformerException e) {
+					throw new SaxException("Cannot open include ["+ref+"]", e);
+				}
+				if (subResource==null) {
 					throw new SaxException("Cannot find include ["+ref+"]");
 				}
 				XMLFilterImpl handlerTail = new BodyOnlyFilter(getContentHandler());
@@ -62,12 +71,13 @@ public class IncludeFilter extends FullXmlFilter {
 				// the below filters need to be included if the filter is placed higher in the chain
 				// includeHandler = new OnlyActiveFilter(includeHandler, appConstants);
 				// includeHandler = new ElementPropertyResolver(includeHandler, appConstants);
+				includeHandler = new IncludeFilter(includeHandler, subResource);
 				XMLReader curParent = getParent();
 				try {
 					if (curParent!=null) {
 						setParent(handlerTail);
 					}
-					XmlUtils.parseXml(resource, includeHandler);
+					XmlUtils.parseXml(subResource, includeHandler);
 				} catch (IOException e) {
 					throw new SaxException("Cannot parse include ["+ref+"]", e);
 				} finally {
