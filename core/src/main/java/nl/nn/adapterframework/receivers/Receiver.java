@@ -100,6 +100,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CompactSaxHandler;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunState;
@@ -195,7 +196,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	public static final TransactionDefinition TXNEW_CTRL = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 	public TransactionDefinition TXNEW_PROC;
 
-	public static final String THREAD_CONTEXT_KEY_NAMEOF = "receiver";
+	public static final String THREAD_CONTEXT_KEY_NAME = "listener";
+	public static final String THREAD_CONTEXT_KEY_TYPE = "listener.type";
 
 	public static final String RCV_CONFIGURED_MONITOR_EVENT = "Receiver Configured";
 	public static final String RCV_CONFIGURATIONEXCEPTION_MONITOR_EVENT = "Exception Configuring Receiver";
@@ -1004,7 +1006,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	 */
 	@Override
 	public Message processRequest(IListener<M> origin, String correlationId, M rawMessage, Message message, PipeLineSession session) throws ListenerException {
-		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(THREAD_CONTEXT_KEY_NAMEOF, ClassUtils.nameOf(getListener()))) {
+		try (final CloseableThreadContext.Instance ctc = getLoggingContext(getListener(), session)) {
 			if (origin!=getListener()) {
 				throw new ListenerException("Listener requested ["+origin.getName()+"] is not my Listener");
 			}
@@ -1056,7 +1058,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	 * Assumes that a transaction has been started where necessary.
 	 */
 	private void processRawMessage(Object rawMessageOrWrapper, PipeLineSession session, long waitingDuration, boolean manualRetry, boolean duplicatesAlreadyChecked) throws ListenerException {
-		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(THREAD_CONTEXT_KEY_NAMEOF, ClassUtils.nameOf(getListener()))) {
+		try (final CloseableThreadContext.Instance ctc = getLoggingContext(getListener(), session)) {
 			if (rawMessageOrWrapper==null) {
 				log.debug(getLogPrefix()+"received null message, returning directly");
 				return;
@@ -1113,6 +1115,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				}
 			}
 		}
+	}
+
+	private CloseableThreadContext.Instance getLoggingContext(IListener listener, PipeLineSession session) {
+		CloseableThreadContext.Instance result = LogUtil.getThreadContext(adapter, session.getMessageId(), session);
+		result.put(THREAD_CONTEXT_KEY_NAME, listener.getName()).put(THREAD_CONTEXT_KEY_TYPE, ClassUtils.classNameOf(listener));
+		return result;
 	}
 
 

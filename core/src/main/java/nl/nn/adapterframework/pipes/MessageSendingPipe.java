@@ -820,7 +820,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					if(msgLog.isDebugEnabled()) {
 						try (final CloseableThreadContext.Instance ctc = CloseableThreadContext
 								.put("pipe", getName())
-								.put("class", ClassUtils.nameOf(sender))
+								.put("sender.type", ClassUtils.classNameOf(sender))
 								.put("duration", duration)
 								.put("exit-state", exitState)
 								) {
