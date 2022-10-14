@@ -16,7 +16,6 @@ limitations under the License.
 package nl.nn.adapterframework.webcontrol.api;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -44,10 +43,10 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.spi.StandardLevel;
-import org.springframework.context.ApplicationEventPublisher;
 
-import nl.nn.adapterframework.logging.IbisMaskingLayout;
-import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.management.bus.RequestMessageBuilder;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -58,7 +57,7 @@ import nl.nn.adapterframework.util.LogUtil;
  */
 
 @Path("/")
-public class UpdateLoggingConfig extends Base {
+public class UpdateLoggingConfig extends FrankApiBase {
 
 	private static final String FF_PACKAGE_PREFIX = "nl.nn.adapterframework";
 
@@ -66,23 +65,8 @@ public class UpdateLoggingConfig extends Base {
 	@PermitAll
 	@Path("/server/logging")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getLogConfiguration() throws ApiException {
-
-		Map<String, Object> logSettings = new HashMap<String, Object>(3);
-		LoggerContext logContext = LoggerContext.getContext(false);
-		Logger rootLogger = logContext.getRootLogger();
-
-		logSettings.put("maxMessageLength", IbisMaskingLayout.getMaxLength());
-
-		List<String> errorLevels = new ArrayList<String>(Arrays.asList("DEBUG", "INFO", "WARN", "ERROR"));
-		logSettings.put("errorLevels", errorLevels);
-		logSettings.put("loglevel", rootLogger.getLevel().toString());
-
-		logSettings.put("logIntermediaryResults", AppConstants.getInstance().getBoolean("log.logIntermediaryResults", true));
-
-		logSettings.put("enableDebugger", AppConstants.getInstance().getBoolean("testtool.enabled", true));
-
-		return Response.status(Response.Status.CREATED).entity(logSettings).build();
+	public Response getLogConfiguration() {
+		return callSyncGateway(RequestMessageBuilder.create(this, BusTopic.LOG_CONFIGURATION, BusAction.GET));
 	}
 
 	@PUT
@@ -90,82 +74,18 @@ public class UpdateLoggingConfig extends Base {
 	@Path("/server/logging")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response updateLogConfiguration(LinkedHashMap<String, Object> json) {
+	public Response updateLogConfiguration(Map<String, Object> json) {
+		Level loglevel = Level.toLevel(getValue(json, "loglevel"), null);
+		Boolean logIntermediaryResults = Boolean.parseBoolean(getValue(json, "logIntermediaryResults"));
+		int maxMessageLength = Integer.parseInt(getValue(json, "maxMessageLength"));
+		Boolean enableDebugger = Boolean.parseBoolean(getValue(json, "enableDebugger"));
 
-		Boolean logIntermediaryResults = null;
-		int maxMessageLength = IbisMaskingLayout.getMaxLength();
-		Boolean enableDebugger = null;
-		StringBuilder msg = new StringBuilder();
-
-		for (Entry<String, Object> entry : json.entrySet()) {
-			String key = entry.getKey();
-			Object value = entry.getValue();
-			if(key.equalsIgnoreCase("loglevel")) {
-				Level loglevel = Level.toLevel(""+value, null);
-				LoggerContext logContext = LoggerContext.getContext(false);
-				Logger rootLogger = logContext.getRootLogger();
-				if(loglevel != null) {
-					String changmsg = "LogLevel changed from [" + rootLogger.getLevel() + "] to [" + loglevel +"]";
-					Configurator.setLevel(rootLogger.getName(), loglevel);
-					msg.append(changmsg);
-				}
-			}
-			else if(key.equalsIgnoreCase("logIntermediaryResults")) {
-				logIntermediaryResults = Boolean.parseBoolean(""+value);
-			}
-			else if(key.equalsIgnoreCase("maxMessageLength")) {
-				maxMessageLength = Integer.parseInt(""+value);
-			}
-			else if(key.equalsIgnoreCase("enableDebugger")) {
-				enableDebugger = Boolean.parseBoolean(""+value);
-			}
-		}
-
-		if(logIntermediaryResults != null) {
-			boolean logIntermediary = AppConstants.getInstance().getBoolean("log.logIntermediaryResults", true);
-			if(logIntermediary != logIntermediaryResults) {
-				AppConstants.getInstance().put("log.logIntermediaryResults", "" + logIntermediaryResults);
-
-				if(msg.length() > 0)
-					msg.append(", logIntermediaryResults from [" + logIntermediary+ "] to [" + logIntermediaryResults + "]");
-				else
-					msg.append("logIntermediaryResults changed from [" + logIntermediary+ "] to [" + logIntermediaryResults + "]");
-			}
-		}
-
-		if (maxMessageLength != IbisMaskingLayout.getMaxLength()) {
-			if(msg.length() > 0)
-				msg.append(", logMaxMessageLength from [" + IbisMaskingLayout.getMaxLength() + "] to [" + maxMessageLength + "]");
-			else
-				msg.append("logMaxMessageLength changed from [" + IbisMaskingLayout.getMaxLength() + "] to [" + maxMessageLength + "]");
-			IbisMaskingLayout.setMaxLength(maxMessageLength);
-		}
-
-		if (enableDebugger != null) {
-			boolean testtoolEnabled=AppConstants.getInstance().getBoolean("testtool.enabled", true);
-			if (testtoolEnabled!=enableDebugger) {
-				AppConstants.getInstance().put("testtool.enabled", "" + enableDebugger);
-				DebuggerStatusChangedEvent event = new DebuggerStatusChangedEvent(this, enableDebugger);
-				ApplicationEventPublisher applicationEventPublisher = getIbisManager().getApplicationEventPublisher();
-				if (applicationEventPublisher!=null) {
-					log.info("setting debugger enabled ["+enableDebugger+"]");
-					if(msg.length() > 0)
-						msg.append(", enableDebugger from [" + testtoolEnabled + "] to [" + enableDebugger + "]");
-					else
-						msg.append("enableDebugger changed from [" + testtoolEnabled + "] to [" + enableDebugger + "]");
-					applicationEventPublisher.publishEvent(event);
-				} else {
-					log.warn("no applicationEventPublisher, cannot set debugger enabled to ["+enableDebugger+"]");
-				}
-			}
-		}
-
-		if(msg.length() > 0) {
-			log.warn(msg.toString());
-			LogUtil.getLogger("SEC").info(msg.toString());
-		}
-
-		return Response.status(Response.Status.NO_CONTENT).build();
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.LOG_CONFIGURATION, BusAction.MANAGE);
+		builder.addHeader("logLevel", loglevel==null?null:loglevel.name());
+		builder.addHeader("logIntermediaryResults", logIntermediaryResults);
+		builder.addHeader("maxMessageLength", maxMessageLength);
+		builder.addHeader("enableDebugger", enableDebugger);
+		return callAsyncGateway(builder);
 	}
 
 	@GET

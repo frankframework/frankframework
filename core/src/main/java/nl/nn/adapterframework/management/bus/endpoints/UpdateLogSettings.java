@@ -21,8 +21,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.logging.log4j.core.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.messaging.Message;
 
 import lombok.Getter;
@@ -32,21 +35,27 @@ import nl.nn.adapterframework.logging.IbisMaskingLayout;
 import nl.nn.adapterframework.management.bus.ActionSelector;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusAware;
+import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.webcontrol.api.DebuggerStatusChangedEvent;
 
 @BusAware("frank-management-bus")
-@TopicSelector(BusTopic.LOGGING)
+@TopicSelector(BusTopic.LOG_CONFIGURATION)
 public class UpdateLogSettings {
 	private @Getter @Setter IbisManager ibisManager;
+	private static final String LOG_INTERMEDIARY_RESULTS_PROPERTY = "log.logIntermediaryResults";
+	private static final String TESTTOOL_ENABLED_PROPERTY = "testtool.enabled";
+	private Logger log = LogUtil.getLogger(this);
 
-	@ActionSelector(BusAction.STATUS)
+	@ActionSelector(BusAction.GET)
 	public Message<String> getLogConfiguration(Message<?> message) {
 		Map<String, Object> logSettings = new HashMap<>(3);
 		LoggerContext logContext = LoggerContext.getContext(false);
-		Logger rootLogger = logContext.getRootLogger();
+		org.apache.logging.log4j.core.Logger rootLogger = logContext.getRootLogger();
 
 		logSettings.put("maxMessageLength", IbisMaskingLayout.getMaxLength());
 
@@ -54,10 +63,76 @@ public class UpdateLogSettings {
 		logSettings.put("errorLevels", errorLevels);
 		logSettings.put("loglevel", rootLogger.getLevel().toString());
 
-		logSettings.put("logIntermediaryResults", AppConstants.getInstance().getBoolean("log.logIntermediaryResults", true));
+		logSettings.put("logIntermediaryResults", AppConstants.getInstance().getBoolean(LOG_INTERMEDIARY_RESULTS_PROPERTY, true));
 
-		logSettings.put("enableDebugger", AppConstants.getInstance().getBoolean("testtool.enabled", true));
+		logSettings.put("enableDebugger", AppConstants.getInstance().getBoolean(TESTTOOL_ENABLED_PROPERTY, true));
 
 		return ResponseMessage.ok(logSettings);
+	}
+
+	@ActionSelector(BusAction.MANAGE)
+	public void updateLogConfiguration(Message<?> message) {
+		String loglevelStr = BusMessageUtils.getHeader(message, "logLevel", null);
+		Level loglevel = Level.toLevel(loglevelStr, null);
+		Boolean logIntermediaryResults = BusMessageUtils.getBooleanHeader(message, "logIntermediaryResults", null);
+		Boolean enableDebugger = BusMessageUtils.getBooleanHeader(message, "enableDebugger", null);
+		Integer maxMessageLength = BusMessageUtils.getIntHeader(message, "maxMessageLength", null);
+
+		updateLogConfiguration(loglevel, logIntermediaryResults, maxMessageLength, enableDebugger);
+	}
+
+	private void updateLogConfiguration(Level loglevel, Boolean logIntermediaryResults, Integer maxMessageLength, Boolean enableDebugger) {
+		StringBuilder msg = new StringBuilder();
+
+		if(loglevel != null) {
+			LoggerContext logContext = LoggerContext.getContext(false);
+			org.apache.logging.log4j.core.Logger rootLogger = logContext.getRootLogger();
+			if(rootLogger.getLevel() != loglevel) {
+				msg.append("LogLevel changed from [" + rootLogger.getLevel() + "] to [" + loglevel +"]");
+				Configurator.setLevel(rootLogger.getName(), loglevel);
+			}
+		}
+
+		boolean logIntermediary = AppConstants.getInstance().getBoolean(LOG_INTERMEDIARY_RESULTS_PROPERTY, true);
+		if(logIntermediaryResults != null && logIntermediary != logIntermediaryResults) {
+			AppConstants.getInstance().put(LOG_INTERMEDIARY_RESULTS_PROPERTY, "" + logIntermediaryResults);
+
+			if(msg.length() > 0)
+				msg.append(", logIntermediaryResults from [" + logIntermediary+ "] to [" + logIntermediaryResults + "]");
+			else
+				msg.append("logIntermediaryResults changed from [" + logIntermediary+ "] to [" + logIntermediaryResults + "]");
+		}
+
+		if (maxMessageLength != null && maxMessageLength != IbisMaskingLayout.getMaxLength()) {
+			if(msg.length() > 0)
+				msg.append(", logMaxMessageLength from [" + IbisMaskingLayout.getMaxLength() + "] to [" + maxMessageLength + "]");
+			else
+				msg.append("logMaxMessageLength changed from [" + IbisMaskingLayout.getMaxLength() + "] to [" + maxMessageLength + "]");
+			IbisMaskingLayout.setMaxLength(maxMessageLength);
+		}
+
+		if (enableDebugger != null) {
+			boolean testtoolEnabled=AppConstants.getInstance().getBoolean(TESTTOOL_ENABLED_PROPERTY, true);
+			if (testtoolEnabled!=enableDebugger) {
+				AppConstants.getInstance().put(TESTTOOL_ENABLED_PROPERTY, "" + enableDebugger);
+				DebuggerStatusChangedEvent event = new DebuggerStatusChangedEvent(this, enableDebugger);
+				ApplicationEventPublisher applicationEventPublisher = getIbisManager().getApplicationEventPublisher();
+				if (applicationEventPublisher!=null) {
+					log.info("setting debugger enabled ["+enableDebugger+"]");
+					if(msg.length() > 0)
+						msg.append(", enableDebugger from [" + testtoolEnabled + "] to [" + enableDebugger + "]");
+					else
+						msg.append("enableDebugger changed from [" + testtoolEnabled + "] to [" + enableDebugger + "]");
+					applicationEventPublisher.publishEvent(event);
+				} else {
+					log.warn("no applicationEventPublisher, cannot set debugger enabled to ["+enableDebugger+"]");
+				}
+			}
+		}
+
+		if(msg.length() > 0) {
+			log.warn(msg::toString);
+			LogUtil.getLogger("SEC").info(msg::toString);
+		}
 	}
 }
