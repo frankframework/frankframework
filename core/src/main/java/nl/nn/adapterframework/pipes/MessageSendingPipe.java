@@ -107,7 +107,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 @SupportsOutputStreaming
 public class MessageSendingPipe extends StreamingPipe implements HasSender, HasStatistics {
-	protected Logger msgLog = LogUtil.getLogger("MSG");
+	protected Logger msgLog = LogUtil.getLogger(LogUtil.MESSAGE_LOGGER);
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
 	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";
@@ -193,9 +193,6 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		MESSAGEID, CORRELATIONID
 	}
 
-	/**
-	 * Checks whether a sender is defined for this pipe.
-	 */
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -820,13 +817,14 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 						duration = Misc.getDurationInMs(startTime);
 					}
 
-					if(msgLog.getLevel().isMoreSpecificThan(Adapter.MSGLOG_LEVEL_TERSE)) {
+					if(msgLog.isDebugEnabled()) {
 						try (final CloseableThreadContext.Instance ctc = CloseableThreadContext
-								.put("class", ClassUtils.nameOf(sender))
+								.put("pipe", getName())
+								.put("sender.type", ClassUtils.classNameOf(sender))
 								.put("duration", duration)
 								.put("exit-state", exitState)
 								) {
-							msgLog.log(Adapter.MSGLOG_LEVEL_TERSE_EFF, String.format("Sender [%s] got exit-state [%s]", sender.getName(), exitState));
+							msgLog.debug("Sender returned");
 						}
 					}
 				}
