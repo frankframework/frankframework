@@ -25,6 +25,7 @@ import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.StringUtils;
 
+import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.RequestMessageBuilder;
 import nl.nn.adapterframework.util.FileUtils;
@@ -50,7 +51,7 @@ public class ShowLogging extends FrankApiBase {
 			throw new ApiException("Access to path (" + directory + ") not allowed!");
 		}
 
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.LOGGING);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.LOGGING, BusAction.GET);
 		builder.addHeader("directory", directory);
 		builder.addHeader("sizeFormat", sizeFormat);
 		builder.addHeader("wildcard", wildcard);

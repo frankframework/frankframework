@@ -28,14 +28,15 @@ import org.springframework.integration.support.DefaultMessageBuilderFactory;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 
+import lombok.Getter;
 import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 public class RequestMessageBuilder {
 	private Map<String, Object> customHeaders = new HashMap<>();
 
 	private final FrankApiBase base;
-	private final BusTopic topic;
-	private final BusAction action;
+	private final @Getter BusTopic topic;
+	private final @Getter BusAction action;
 	private Object payload = "NONE";
 
 	public RequestMessageBuilder(FrankApiBase base, BusTopic topic) {

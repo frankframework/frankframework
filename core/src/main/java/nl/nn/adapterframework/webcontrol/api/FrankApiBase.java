@@ -75,8 +75,15 @@ public abstract class FrankApiBase implements ApplicationContextAware {
 		if(response != null) {
 			return BusMessageUtils.convertToJaxRsResponse(response);
 		}
-		return Response.serverError().build(); //TODO this should probably give an exception
+		StringBuilder errorMessage = new StringBuilder("did not receive a reply while sending message to topic ["+input.getTopic()+"]");
+		if(input.getAction() != null) {
+			errorMessage.append(" with action [");
+			errorMessage.append(input.getAction());
+			errorMessage.append("]");
+		}
+		throw new ApiException(errorMessage.toString());
 	}
+
 	public Response callAsyncGateway(RequestMessageBuilder input) throws ApiException {
 		Gateway gateway = getApplicationContext().getBean("gateway", Gateway.class);
 		gateway.sendAsyncMessage(input.build());

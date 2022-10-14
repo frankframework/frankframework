@@ -25,6 +25,7 @@ import org.springframework.integration.handler.ServiceActivatingHandler;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandler;
 
+import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.MessageDispatcher;
@@ -36,7 +37,7 @@ import nl.nn.adapterframework.util.Dir2Map;
  * Logging should work even when the application failed to start which is why it's not wired through the {@link MessageDispatcher}.
  */
 @IbisInitializer
-public class Logging {
+public class ShowLogDirectory {
 
 	private String defaultLogDirectory = AppConstants.getInstance().getResolvedProperty("logging.path").replace("\\\\", "\\");
 	private String defaultLogWildcard = AppConstants.getInstance().getProperty("logging.wildcard");
@@ -48,7 +49,10 @@ public class Logging {
 	 */
 	@Bean
 	public IntegrationFlow wireLogging() {
-		return IntegrationFlows.from("frank-management-bus").filter(MessageDispatcher.topicSelector(BusTopic.LOGGING)).handle(getHandler()).get();
+		return IntegrationFlows.from("frank-management-bus")
+				.filter(MessageDispatcher.topicSelector(BusTopic.LOGGING))
+				.filter(MessageDispatcher.actionSelector(BusAction.GET))
+				.handle(getHandler()).get();
 	}
 
 	public MessageHandler getHandler() {
