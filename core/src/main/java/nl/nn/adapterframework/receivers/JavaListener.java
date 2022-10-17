@@ -165,16 +165,17 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 					return result;
 				}
 			}) {
+			session.put(PipeLineSession.correlationIdKey, correlationId);
 			Message message =  new Message(rawMessage);
 			if (throwException) {
 				try {
-					return handler.processRequest(this, correlationId, rawMessage, message, session).asString();
+					return handler.processRequest(this, rawMessage, message, session).asString();
 				} catch (IOException e) {
 					throw new ListenerException("cannot convert stream", e);
 				}
 			}
 			try {
-				return handler.processRequest(this, correlationId, rawMessage, message, session).asString();
+				return handler.processRequest(this, rawMessage, message, session).asString();
 			} catch (ListenerException | IOException e) {
 				try {
 					return handler.formatException(null,correlationId, message, e).asString();

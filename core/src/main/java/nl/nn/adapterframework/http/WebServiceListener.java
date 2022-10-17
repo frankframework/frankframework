@@ -176,7 +176,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	}
 
 	@Override
-	public Message processRequest(String correlationId, Message message, PipeLineSession session) throws ListenerException {
+	public Message processRequest(Message message, PipeLineSession session) throws ListenerException {
 		if (!attachmentSessionKeysList.isEmpty()) {
 			XmlBuilder xmlMultipart = new XmlBuilder("parts");
 			for(String attachmentSessionKey: attachmentSessionKeysList) {
@@ -194,7 +194,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 			try {
 				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"received SOAPMSG [" + message + "]");
 				Message request = soapWrapper.getBody(message);
-				Message result = super.processRequest(correlationId, request, session);
+				Message result = super.processRequest(request, session);
 
 				String soapNamespace = SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE;
 				String soapProtocol = (String) session.get("soapProtocol");
@@ -209,7 +209,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 			}
 		}
 
-		return super.processRequest(correlationId, message, session);
+		return super.processRequest(message, session);
 	}
 
 	public String getLogPrefix() {

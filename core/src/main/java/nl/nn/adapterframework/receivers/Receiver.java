@@ -1001,11 +1001,11 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	/**
-	 * Process the received message with {@link #processRequest(IListener, String, Object, Message, PipeLineSession)}.
+	 * Process the received message with {@link #processRequest(IListener, Object, Message, PipeLineSession)}.
 	 * A messageId is generated that is unique and consists of the name of this listener and a GUID
 	 */
 	@Override
-	public Message processRequest(IListener<M> origin, String correlationId, M rawMessage, Message message, PipeLineSession session) throws ListenerException {
+	public Message processRequest(IListener<M> origin, M rawMessage, Message message, PipeLineSession session) throws ListenerException {
 		try (final CloseableThreadContext.Instance ctc = getLoggingContext(getListener(), session)) {
 			if (origin!=getListener()) {
 				throw new ListenerException("Listener requested ["+origin.getName()+"] is not my Listener");
@@ -1023,8 +1023,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 				Date tsReceived = PipeLineSession.getTsReceived(session);
 				Date tsSent = PipeLineSession.getTsSent(session);
-				PipeLineSession.setListenerParameters(session, null, correlationId, tsReceived, tsSent);
-				String messageId = (String) session.get(PipeLineSession.messageIdKey);
+				PipeLineSession.setListenerParameters(session, null, null, tsReceived, tsSent);
+				String messageId = session.getMessageId();
+				String correlationId = session.getCorrelationId();
 				return processMessageInAdapter(rawMessage, message, messageId, correlationId, session, -1, false, false);
 			} finally {
 				if (sessionCreated) {

@@ -186,7 +186,7 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 			doc = iterator.next();
 			if(log.isTraceEnabled()) log.trace(getLogPrefix()+"Processing document no. [" + doc.getIDocNumber() + "] of type ["+doc.getIDocType()+"]");
 			try {
-				handler.processRequest(this, null, null, new Message(xmlProcessor.render(doc)), null);
+				handler.processRequest(this, null, new Message(xmlProcessor.render(doc)), null);
 			} catch (Throwable t) {
 				log.warn(getLogPrefix()+"Exception caught and handed to SAP",t);
 				throw new JCoRuntimeException(JCoException.JCO_ERROR_APPLICATION_EXCEPTION, "IbisException", t.getMessage());

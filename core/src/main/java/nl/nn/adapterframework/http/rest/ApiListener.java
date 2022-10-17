@@ -137,8 +137,8 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	@Override
-	public Message processRequest(String correlationId, Message message, PipeLineSession requestContext) throws ListenerException {
-		Message result = super.processRequest(correlationId, message, requestContext);
+	public Message processRequest(Message message, PipeLineSession requestContext) throws ListenerException {
+		Message result = super.processRequest(message, requestContext);
 
 		//Return null when super.processRequest() returns an empty string
 		if(Message.isEmpty(result)) {

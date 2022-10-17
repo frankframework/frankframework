@@ -1181,7 +1181,7 @@ public class ApiListenerServletTest extends Mockito {
 
 
 		@Override
-		public Message processRequest(IListener<Message> origin, String correlationId, Message rawMessage, Message message, PipeLineSession context) throws ListenerException {
+		public Message processRequest(IListener<Message> origin, Message rawMessage, Message message, PipeLineSession context) throws ListenerException {
 			if(session != null) {
 				context.putAll(session);
 			}

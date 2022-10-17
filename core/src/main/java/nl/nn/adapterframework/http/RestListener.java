@@ -105,7 +105,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	}
 
 	@Override
-	public Message processRequest(String correlationId, Message message, PipeLineSession session) throws ListenerException {
+	public Message processRequest(Message message, PipeLineSession session) throws ListenerException {
 		HttpServletRequest httpServletRequest = (HttpServletRequest) session.get(PipeLineSession.HTTP_REQUEST_KEY);
 		Message response;
 		String contentType = (String) session.get("contentType");
@@ -142,7 +142,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 					throw new IllegalStateException("Unknown mediatype ["+getProduces()+"]");
 			}
 
-			response = super.processRequest(correlationId, message, session);
+			response = super.processRequest(message, session);
 			if(response != null && !response.isEmpty())
 				eTag = response.hashCode();
 
@@ -155,7 +155,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 			}
 		}
 		else {
-			response = super.processRequest(correlationId, message, session);
+			response = super.processRequest(message, session);
 			if(response != null && !response.isEmpty())
 				eTag = response.hashCode();
 		}

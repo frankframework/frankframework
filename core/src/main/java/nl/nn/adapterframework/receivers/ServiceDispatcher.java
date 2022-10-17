@@ -62,9 +62,9 @@ public class ServiceDispatcher  {
 	 *
 	 * @since 4.3
 	 */
-	public String dispatchRequest(String serviceName, String correlationId, String request, PipeLineSession session) throws ListenerException {
+	public String dispatchRequest(String serviceName, String request, PipeLineSession session) throws ListenerException {
 		if (log.isDebugEnabled()) {
-			log.debug("dispatchRequest for service ["+serviceName+"] correlationId ["+correlationId+"] message ["+request+"]");
+			log.debug("dispatchRequest for service ["+serviceName+"] correlationId ["+session.getCorrelationId()+"] message ["+request+"]");
 		}
 
 		ServiceClient client = registeredListeners.get(serviceName);
@@ -74,7 +74,7 @@ public class ServiceDispatcher  {
 
 		String result;
 		try {
-			result = client.processRequest(correlationId, new Message(request), session).asString();
+			result = client.processRequest(new Message(request), session).asString();
 		} catch (IOException e) {
 			throw new ListenerException(e);
 		}

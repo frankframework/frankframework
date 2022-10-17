@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -89,7 +89,7 @@ public class CmisEventDispatcher {
 		try {
 			messageContext.put(CMIS_EVENT_KEY, event.getLabel());
 			CmisEventListener listener = eventListeners.get(event);
-			String result = listener.processRequest(null, new Message(message), messageContext).asString();
+			String result = listener.processRequest(new Message(message), messageContext).asString();
 			if(StringUtils.isEmpty(result))
 				return XmlUtils.buildElement("<cmis/>");
 			else if (XmlUtils.isWellFormed(result, "cmis")) {
