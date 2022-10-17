@@ -79,10 +79,10 @@ public class RequestMessageBuilder {
 		builder.setHeader("uri", uriInfo.getRequestUri());
 		builder.setHeader("method", base.getServletRequest().getMethod());
 
-		if(!uriInfo.getQueryParameters().isEmpty()) {
+		if(uriInfo.getQueryParameters() != null && !uriInfo.getQueryParameters().isEmpty()) {
 			builder.setHeader("query", uriInfo.getQueryParameters());
 		}
-		if(!uriInfo.getPathParameters().isEmpty()) {
+		if(uriInfo.getPathParameters() != null && !uriInfo.getPathParameters().isEmpty()) {
 			builder.setHeader("path", uriInfo.getPathParameters());
 		}
 

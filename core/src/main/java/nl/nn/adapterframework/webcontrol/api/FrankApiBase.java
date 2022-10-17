@@ -35,6 +35,7 @@ import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.apache.cxf.jaxrs.spring.JAXRSServerFactoryBeanDefinitionParser.SpringJAXRSServerFactoryBean;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.messaging.Message;
@@ -55,7 +56,7 @@ import nl.nn.adapterframework.util.StreamUtil;
  * @author	Niels Meijer
  */
 
-public abstract class FrankApiBase implements ApplicationContextAware {
+public abstract class FrankApiBase implements ApplicationContextAware, InitializingBean {
 	public static final String HEADER_DATASOURCE_NAME_KEY = "datasourceName";
 
 	@Context protected ServletConfig servletConfig;
@@ -93,6 +94,10 @@ public abstract class FrankApiBase implements ApplicationContextAware {
 	@Override
 	public final void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
 		SpringJAXRSServerFactoryBean server = (SpringJAXRSServerFactoryBean) applicationContext.getBean("IAF-API");
 		serviceFactory = server.getServiceFactory();
 	}
@@ -190,6 +195,22 @@ public abstract class FrankApiBase implements ApplicationContextAware {
 		Object val = json.get(key);
 		if(val != null) {
 			return val.toString();
+		}
+		return null;
+	}
+
+	protected Integer getIntegerValue(Map<String, Object> json, String key) {
+		String value = getValue(json, key);
+		if(value != null) {
+			return Integer.parseInt(value);
+		}
+		return null;
+	}
+
+	protected Boolean getBooleanValue(Map<String, Object> json, String key) {
+		String value = getValue(json, key);
+		if(value != null) {
+			return Boolean.parseBoolean(value);
 		}
 		return null;
 	}

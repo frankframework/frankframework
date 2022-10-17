@@ -55,23 +55,7 @@ public class UpdateLogDefinitions {
 		Map<String, Object> result = new HashMap<>();
 
 		if(StringUtils.isEmpty(filter)) {
-			List<Object> defaultLoggers = new ArrayList<>();
-			Collection<LoggerConfig> loggerConfigs = logContext.getConfiguration().getLoggers().values();
-			for(LoggerConfig config : loggerConfigs) {
-				String name = config.getName();
-				if(StringUtils.isNotEmpty(name) && name.contains(".") && !name.startsWith(LogUtil.MESSAGE_LOGGER+".")) {
-					Map<String, Object> logger = new HashMap<>();
-					logger.put("name", name);
-					logger.put("level", config.getLevel().getStandardLevel());
-					Set<String> appenders = config.getAppenders().keySet();
-					if(!appenders.isEmpty()) {
-						logger.put("appenders", config.getAppenders().keySet());
-					}
-					defaultLoggers.add(logger);
-				}
-			}
-			result.put("definitions", defaultLoggers);
-
+			result.put("definitions", getLogDefinitions(logContext));
 			filter = FF_PACKAGE_PREFIX;
 		}
 
@@ -97,6 +81,25 @@ public class UpdateLogDefinitions {
 		result.put("loggers", registeredLoggers);
 
 		return ResponseMessage.ok(result);
+	}
+
+	public List<Object> getLogDefinitions(LoggerContext logContext) {
+		List<Object> defaultLoggers = new ArrayList<>();
+		Collection<LoggerConfig> loggerConfigs = logContext.getConfiguration().getLoggers().values();
+		for(LoggerConfig config : loggerConfigs) {
+			String name = config.getName();
+			if(StringUtils.isNotEmpty(name) && name.contains(".") && !name.startsWith(LogUtil.MESSAGE_LOGGER+".")) {
+				Map<String, Object> logger = new HashMap<>();
+				logger.put("name", name);
+				logger.put("level", config.getLevel().getStandardLevel());
+				Set<String> appenders = config.getAppenders().keySet();
+				if(!appenders.isEmpty()) {
+					logger.put("appenders", config.getAppenders().keySet());
+				}
+				defaultLoggers.add(logger);
+			}
+		}
+		return defaultLoggers;
 	}
 
 	@ActionSelector(BusAction.MANAGE)

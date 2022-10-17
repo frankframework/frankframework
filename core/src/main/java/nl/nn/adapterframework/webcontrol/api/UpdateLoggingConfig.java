@@ -60,9 +60,9 @@ public class UpdateLoggingConfig extends FrankApiBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateLogConfiguration(Map<String, Object> json) {
 		Level loglevel = Level.toLevel(getValue(json, "loglevel"), null);
-		Boolean logIntermediaryResults = Boolean.parseBoolean(getValue(json, "logIntermediaryResults"));
-		int maxMessageLength = Integer.parseInt(getValue(json, "maxMessageLength"));
-		Boolean enableDebugger = Boolean.parseBoolean(getValue(json, "enableDebugger"));
+		Boolean logIntermediaryResults = getBooleanValue(json, "logIntermediaryResults");
+		Integer maxMessageLength = getIntegerValue(json, "maxMessageLength");
+		Boolean enableDebugger = getBooleanValue(json, "enableDebugger");
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.LOG_CONFIGURATION, BusAction.MANAGE);
 		builder.addHeader("logLevel", loglevel==null?null:loglevel.name());
