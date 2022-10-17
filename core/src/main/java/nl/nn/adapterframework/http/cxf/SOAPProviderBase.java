@@ -177,7 +177,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 
 				try {
 					log.debug(getLogPrefix(messageId)+"processing message");
-					response = processRequest(messageId, soapMessage, pipelineSession);
+					response = processRequest(soapMessage, pipelineSession);
 				} catch (ListenerException e) {
 					String m = "Could not process SOAP message: " + e.getMessage();
 					log.error(m);
@@ -268,12 +268,11 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 
 	/**
 	 * Actually process the request
-	 * @param correlationId message identifier
 	 * @param message message that was received
 	 * @param pipelineSession messageContext (containing attachments if available)
 	 * @return response to send back
 	 */
-	abstract Message processRequest(String correlationId, Message message, PipeLineSession pipelineSession) throws ListenerException;
+	abstract Message processRequest(Message message, PipeLineSession pipelineSession) throws ListenerException;
 
 	/**
 	 * SessionKey containing attachment information, or null if no attachments

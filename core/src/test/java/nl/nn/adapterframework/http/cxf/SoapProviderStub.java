@@ -9,7 +9,7 @@ public class SoapProviderStub extends SOAPProviderBase {
 	PipeLineSession session = null;
 
 	@Override
-	Message processRequest(String correlationId, Message message, PipeLineSession pipelineSession) throws ListenerException {
+	Message processRequest(Message message, PipeLineSession pipelineSession) throws ListenerException {
 		if(session != null)
 			pipelineSession.putAll(session);
 

@@ -57,7 +57,7 @@ public class NamespaceUriProvider extends SOAPProviderBase {
 	}
 
 	@Override
-	Message processRequest(String correlationId, Message message, PipeLineSession pipelineSession) throws ListenerException {
+	Message processRequest(Message message, PipeLineSession pipelineSession) throws ListenerException {
 		String serviceName = findNamespaceUri();
 		log.debug("found namespace["+serviceName+"]");
 		try {

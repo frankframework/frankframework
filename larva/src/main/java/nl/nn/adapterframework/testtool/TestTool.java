@@ -1440,14 +1440,12 @@ public class TestTool {
 		if (listenerMessageHandler == null) {
 			errorMessage("No ListenerMessageHandler found", writers);
 		} else {
-			String correlationId = null;
 			Map<?, ?> context = new HashMap<Object, Object>();
 			ListenerMessage requestListenerMessage = (ListenerMessage)listenerInfo.get("listenerMessage");
 			if (requestListenerMessage != null) {
-				correlationId = requestListenerMessage.getCorrelationId();
 				context = requestListenerMessage.getContext();
 			}
-			ListenerMessage listenerMessage = new ListenerMessage(correlationId, fileContent, context);
+			ListenerMessage listenerMessage = new ListenerMessage(fileContent, context);
 			listenerMessageHandler.putResponseMessage(listenerMessage);
 			debugPipelineMessage(stepDisplayName, "Successfully put message on '" + queueName + "':", fileContent, writers);
 			logger.debug("Successfully put message on '" + queueName + "'");
@@ -1634,9 +1632,8 @@ public class TestTool {
 					if (result!=RESULT_OK) {
 						// Send a clean up reply because there is probably a
 						// thread waiting for a reply
-						String correlationId = null;
 						Map<?, ?> context = new HashMap<Object, Object>();
-						listenerMessage = new ListenerMessage(correlationId, TESTTOOL_CLEAN_UP_REPLY, context);
+						listenerMessage = new ListenerMessage(TESTTOOL_CLEAN_UP_REPLY, context);
 						listenerMessageHandler.putResponseMessage(listenerMessage);
 					}
 				}
