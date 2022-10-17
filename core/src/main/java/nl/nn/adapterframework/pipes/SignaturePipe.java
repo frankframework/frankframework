@@ -36,6 +36,8 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.encryption.AuthSSLContextFactory;
 import nl.nn.adapterframework.encryption.EncryptionException;
 import nl.nn.adapterframework.encryption.HasKeystore;
@@ -49,6 +51,7 @@ import nl.nn.adapterframework.stream.Message;
  * @ff.parameter signature the signature to verify
  * @ff.forward failure used when verification fails
  */
+@ElementType(ElementTypes.TRANSLATOR)
 public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 
 	public static final String PARAMETER_SIGNATURE="signature";

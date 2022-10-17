@@ -24,7 +24,9 @@ import org.apache.commons.lang3.StringUtils;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -37,7 +39,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  *
  * @see PipeLineSession
  */
-
+@ElementType(ElementTypes.SESSION)
 public class GetFromSession  extends FixedForwardPipe {
 
 	private String sessionKey;

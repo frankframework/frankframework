@@ -31,7 +31,9 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -44,6 +46,7 @@ import nl.nn.adapterframework.util.StreamUtil;
  * 
  * @author	Niels Meijer
  */
+@ElementType(ElementTypes.TRANSLATOR)
 public class HashPipe extends FixedForwardPipe {
 
 	private @Getter String charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;

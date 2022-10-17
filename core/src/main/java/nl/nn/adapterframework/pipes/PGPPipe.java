@@ -24,7 +24,9 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.pgp.Decrypt;
 import nl.nn.adapterframework.pgp.Encrypt;
 import nl.nn.adapterframework.pgp.PGPAction;
@@ -48,6 +50,7 @@ import nl.nn.adapterframework.stream.StreamingPipe;
  * you can seperate multiple values with ";" (semicolon).
  * </p>
  */
+@ElementType(ElementTypes.TRANSLATOR)
 public class PGPPipe extends StreamingPipe {
 
 	public enum Action {

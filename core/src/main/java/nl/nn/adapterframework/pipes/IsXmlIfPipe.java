@@ -23,7 +23,9 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -35,7 +37,7 @@ import nl.nn.adapterframework.stream.Message;
  * @author  Peter Leeuwenburgh
  * @since   4.3
  */
-
+@ElementType(ElementTypes.ROUTER)
 public class IsXmlIfPipe extends AbstractPipe {
 
 	private String thenForwardName = "then";

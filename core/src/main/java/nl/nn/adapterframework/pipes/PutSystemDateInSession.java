@@ -26,7 +26,9 @@ import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DateUtils;
 
@@ -39,6 +41,7 @@ import org.apache.commons.lang3.StringUtils;
  * @author  Jaco de Groot (***@dynasol.nl)
  * @since   4.2c
  */
+@ElementType(ElementTypes.SESSION)
 public class PutSystemDateInSession extends FixedForwardPipe {
 	public static final Object OBJECT = new Object();
 	public static final String FIXEDDATETIME  ="2001-12-17 09:30:47";

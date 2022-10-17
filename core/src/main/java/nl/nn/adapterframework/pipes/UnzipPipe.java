@@ -38,7 +38,9 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -92,6 +94,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @since   4.9
  * @author  Gerrit van Brakel
  */
+@ElementType(ElementTypes.TRANSLATOR)
 public class UnzipPipe extends FixedForwardPipe {
 
 	private @Getter String directory;

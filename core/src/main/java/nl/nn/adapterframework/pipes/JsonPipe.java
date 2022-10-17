@@ -29,7 +29,9 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.document.DocumentUtils;
 import nl.nn.adapterframework.stream.document.XmlDocumentBuilder;
@@ -42,6 +44,7 @@ import nl.nn.adapterframework.util.TransformerPool;
  * @author Martijn Onstwedder
  * @author Tom van der Heijden
  */
+@ElementType(ElementTypes.TRANSLATOR)
 public class JsonPipe extends FixedForwardPipe {
 	private @Getter Direction direction = Direction.JSON2XML;
 	private @Getter boolean addXmlRootElement=true;

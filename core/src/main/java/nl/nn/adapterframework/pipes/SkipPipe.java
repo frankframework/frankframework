@@ -18,7 +18,9 @@ package nl.nn.adapterframework.pipes;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -28,6 +30,7 @@ import nl.nn.adapterframework.stream.Message;
  * @author Jaco de Groot (***@dynasol.nl)
  *
  */
+@ElementType(ElementTypes.TRANSLATOR)
 public class SkipPipe extends FixedForwardPipe {
 
 	private int skip = 0;

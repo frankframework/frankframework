@@ -24,6 +24,8 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -37,6 +39,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  *
  * @author Gerrit van Brakel
  */
+@ElementType(ElementTypes.SESSION)
 public class MdcPipe extends FixedForwardPipe {
 
 	@Override
