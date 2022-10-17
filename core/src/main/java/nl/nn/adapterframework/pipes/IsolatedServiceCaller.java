@@ -47,15 +47,15 @@ public class IsolatedServiceCaller {
 		return taskExecutor;
 	}
 
-	public void callServiceAsynchronous(String serviceName, String correlationID, Message message, PipeLineSession session, boolean targetIsJavaListener) {
-		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(serviceName, correlationID, message, session, targetIsJavaListener, null);
+	public void callServiceAsynchronous(String serviceName, Message message, PipeLineSession session, boolean targetIsJavaListener) {
+		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(serviceName, message, session, targetIsJavaListener, null);
 		getTaskExecutor().execute(ise);
 	}
 
-	public Message callServiceIsolated(String serviceName, String correlationID, Message message, PipeLineSession session, boolean targetIsJavaListener) throws ListenerException {
+	public Message callServiceIsolated(String serviceName, Message message, PipeLineSession session, boolean targetIsJavaListener) throws ListenerException {
 		Guard guard= new Guard();
 		guard.addResource();
-		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(serviceName, correlationID, message, session, targetIsJavaListener, guard);
+		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(serviceName, message, session, targetIsJavaListener, guard);
 		getTaskExecutor().execute(ise);
 		try {
 			guard.waitForAllResources();

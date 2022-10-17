@@ -32,10 +32,10 @@ public class IsolatedServiceExecutor extends RequestReplyExecutor {
 	boolean targetIsJavaListener;
 	Guard guard;
 
-	public IsolatedServiceExecutor(String serviceName, String correlationID, Message message, PipeLineSession session, boolean targetIsJavaListener, Guard guard) {
+	public IsolatedServiceExecutor(String serviceName, Message message, PipeLineSession session, boolean targetIsJavaListener, Guard guard) {
 		super();
 		this.serviceName=serviceName;
-		this.correlationID=correlationID;
+		this.correlationID=session.getCorrelationId();
 		request=message;
 		this.session=session;
 		this.targetIsJavaListener=targetIsJavaListener;
