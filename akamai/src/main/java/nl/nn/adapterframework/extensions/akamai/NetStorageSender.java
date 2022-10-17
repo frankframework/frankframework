@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2017-2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -47,7 +47,6 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -280,22 +279,14 @@ public class NetStorageSender extends HttpSenderBase {
 
 		Message response = responseHandler.getResponseMessage();
 
-		String responseBody = null;
 		try {
-			responseBody = response.asString();
+			return response.asString();
 		} catch(IOException e) {
 			if(throwIOExceptionWhenParsingResponse) {
 				throw e;
 			}
 			return null;
 		}
-
-		int rbLength = responseBody.length();
-		long rbSizeWarn = Misc.getResponseBodySizeWarnByDefault();
-		if (rbLength >= rbSizeWarn) {
-			log.warn(getLogPrefix()+"retrieved result size [" +Misc.toFileSize(rbLength)+"] exceeds ["+Misc.toFileSize(rbSizeWarn)+"]");
-		}
-		return responseBody;
 	}
 
 	/** Only works in combination with the UPLOAD action. If set, and not specified as parameter, the sender will sign the file to be uploaded.*/
