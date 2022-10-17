@@ -62,7 +62,7 @@ public class BusMessageUtils {
 				return headers.get(headerName, Integer.class);
 			} catch (IllegalArgumentException e) {
 				Object header = headers.get(headerName);
-				LOG.warn("unable to parse header as integer", e);
+				LOG.info("unable to parse header as integer", e);
 				return Integer.parseInt(""+header);
 			}
 		}
@@ -76,7 +76,7 @@ public class BusMessageUtils {
 				return headers.get(headerName, Boolean.class);
 			} catch (IllegalArgumentException e) {
 				Object header = headers.get(headerName);
-				LOG.warn("unable to parse header as boolean", e);
+				LOG.info("unable to parse header as boolean", e);
 				return Boolean.parseBoolean(""+header);
 			}
 		}

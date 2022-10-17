@@ -35,6 +35,7 @@ public class Metrics extends Base implements InitializingBean {
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
+		super.afterPropertiesSet();
 		MetricsRegistry metrics = getApplicationContext().getBean("metricsRegistry", MetricsRegistry.class);
 		MeterRegistry metersRegistry = metrics.getRegistry();
 
