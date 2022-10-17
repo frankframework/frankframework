@@ -1230,6 +1230,12 @@ angular.module('iaf.beheerconsole')
 		var timeBoundaries = appConstants["Statistics.boundaries"].split(",");
 		var sizeBoundaries = appConstants["Statistics.size.boundaries"].split(",");
 		var percBoundaries = appConstants["Statistics.percentiles"].split(",");
+
+		var publishPercentiles   = appConstants["Statistics.percentiles.publish"] == "true";
+		var publishHistograms    = appConstants["Statistics.histograms.publish"] == "true";
+		var calculatePercentiles = appConstants["Statistics.percentiles.internal"] == "true";
+		var displayPercentiles = publishPercentiles || publishHistograms || calculatePercentiles;
+
 		Debug.info("appending Statistic.boundaries", timeBoundaries, sizeBoundaries, percBoundaries);
 
 		for(i in timeBoundaries) {
@@ -1240,10 +1246,12 @@ angular.module('iaf.beheerconsole')
 			var j = sizeBoundaries[i];
 			$scope.statisticsSizeBoundaries[j+"B"] = "< " + j + "B";
 		}
-		for(i in percBoundaries) {
-			var j = "p"+percBoundaries[i];
-			$scope.statisticsTimeBoundaries[j] = j;
-			$scope.statisticsSizeBoundaries[j] = j;
+		if (displayPercentiles) {
+			for(i in percBoundaries) {
+				var j = "p"+percBoundaries[i];
+				$scope.statisticsTimeBoundaries[j] = j;
+				$scope.statisticsSizeBoundaries[j] = j;
+			}
 		}
 	};
 	if(appConstants["Statistics.boundaries"]) {
