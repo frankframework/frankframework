@@ -82,10 +82,8 @@ public class Misc {
 	@Deprecated
 	public static final String DEFAULT_INPUT_STREAM_ENCODING=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	public static final String MESSAGE_SIZE_WARN_BY_DEFAULT_KEY = "message.size.warn.default";
-	public static final String RESPONSE_BODY_SIZE_WARN_BY_DEFAULT_KEY = "response.body.size.warn.default";
 
 	private static Long messageSizeWarnByDefault = null;
-	private static Long responseBodySizeWarnByDefault = null;
 	private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
 	public static final String LINE_SEPARATOR = System.lineSeparator();
 
@@ -112,9 +110,8 @@ public class Misc {
 		String uuidString = java.util.UUID.randomUUID().toString();
 		if (removeDashes) {
 			return uuidString.replaceAll("-", "");
-		} else {
-			return uuidString;
 		}
+		return uuidString;
 	}
 
 	public static String createRandomUUID() {
@@ -188,7 +185,7 @@ public class Misc {
 	 * @return integer that is converted from unsigned byte.
 	 */
 	public static int unsignedByteToInt(byte b) {
-		return (int) b & 0xFF;
+		return b & 0xFF;
 	}
 
 	/**
@@ -528,7 +525,7 @@ public class Misc {
 	}
 
 	/**
-	 * Concatenates two strings, if specified, uses the separator in between two strings. 
+	 * Concatenates two strings, if specified, uses the separator in between two strings.
 	 * Does not use any separators if both or one of the strings are empty.
 	 *<p>
 	 *     Example:
@@ -599,9 +596,8 @@ public class Misc {
 			char firstChar = string.charAt(0);
 			char lastChar = string.charAt(len - 1);
 			return firstChar + StringUtils.repeat("*", len - 2) + lastChar;
-		} else {
-			return StringUtils.repeat("*", len);
 		}
+		return StringUtils.repeat("*", len);
 	}
 
 	/**
@@ -1028,16 +1024,13 @@ public class Misc {
 			if (format) {
 				if (value > 0) {
 					return "1 kB";
-				} else {
-					return "0 kB";
 				}
-			} else {
-				return Long.toString(value) + (floor ? "B" : "");
+				return "0 kB";
 			}
-		} else {
-			float f = (float) value / divider;
-			return Math.round(f) + (format ? " " : "") + suffix;
+			return Long.toString(value) + (floor ? "B" : "");
 		}
+		float f = (float) value / divider;
+		return Math.round(f) + (format ? " " : "") + suffix;
 	}
 
 	public static synchronized long getMessageSizeWarnByDefault() {
@@ -1047,16 +1040,6 @@ public class Misc {
 			messageSizeWarnByDefault = new Long(definition);
 		}
 		return messageSizeWarnByDefault.longValue();
-	}
-
-	public static synchronized long getResponseBodySizeWarnByDefault() {
-		if (responseBodySizeWarnByDefault == null) {
-			String definitionString = AppConstants.getInstance().getString(RESPONSE_BODY_SIZE_WARN_BY_DEFAULT_KEY,
-					null);
-			long definition = toFileSize(definitionString, -1);
-			responseBodySizeWarnByDefault = new Long(definition);
-		}
-		return responseBodySizeWarnByDefault.longValue();
 	}
 
 	/**
@@ -1355,9 +1338,8 @@ public class Misc {
 				if ("WebContent".equalsIgnoreCase(name)
 						|| "target".equalsIgnoreCase(name)) {
 					return dir.getParent();
-				} else {
-					dir = dir.getParentFile();
 				}
+				dir = dir.getParentFile();
 			}
 		}
 		return null;
