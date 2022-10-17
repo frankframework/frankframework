@@ -29,7 +29,9 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.stream.Message;
@@ -51,7 +53,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * @author  Peter Leeuwenburgh
  * @since   4.9
  */
-
+@ElementType(ElementTypes.TRANSLATOR)
 public class DomainTransformerPipe extends FixedForwardPipe {
 
 	private static final String DT_START = "%![DT{";

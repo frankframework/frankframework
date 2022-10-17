@@ -22,7 +22,9 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.Category;
+import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -45,6 +47,7 @@ import org.apache.commons.lang3.StringUtils;
  * @author     Richard Punt / Gerrit van Brakel
  */
 @Category("Basic")
+@ElementType(ElementTypes.ROUTER)
 public class CompareIntegerPipe extends AbstractPipe {
 
 	private static final String LESSTHANFORWARD = "lessthan";

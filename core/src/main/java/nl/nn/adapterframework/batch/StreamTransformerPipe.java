@@ -36,6 +36,8 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.FileUtils;
@@ -51,6 +53,7 @@ import nl.nn.adapterframework.util.StreamUtil;
  * @author John Dekker / Gerrit van Brakel
  * @since   4.7
  */
+@ElementType(ElementTypes.TRANSLATOR)
 public class StreamTransformerPipe extends FixedForwardPipe {
 
 	public static final String originalBlockKey="originalBlock";

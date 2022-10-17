@@ -37,7 +37,9 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -50,6 +52,7 @@ import nl.nn.adapterframework.util.Misc;
  *
  * @author Jaco de Groot
  */
+@ElementType(ElementTypes.TRANSLATOR)
 public class XQueryPipe extends FixedForwardPipe {
 	private String xquery;
 	private String xqueryName;

@@ -29,6 +29,8 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.SupportsOutputStreaming;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
+import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -54,6 +56,7 @@ import nl.nn.adapterframework.util.SpringUtils;
  *
  * @author Gerrit van Brakel
  */
+@ElementType(ElementTypes.ENDPOINT)
 @SupportsOutputStreaming
 public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends StreamingPipe implements HasPhysicalDestination {
 

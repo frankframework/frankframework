@@ -29,7 +29,9 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.SupportsOutputStreaming;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.doc.Category;
+import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -52,6 +54,7 @@ import nl.nn.adapterframework.util.TransformerPool.OutputType;
  */
 @Category("Basic")
 @SupportsOutputStreaming
+@ElementType(ElementTypes.TRANSLATOR)
 public class XsltPipe extends StreamingPipe implements InitializingBean {
 
 	private String sessionKey=null;

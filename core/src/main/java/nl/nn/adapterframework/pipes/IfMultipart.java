@@ -23,6 +23,8 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 
@@ -30,6 +32,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * Selects an exitState, based on the content-type of a httpServletRequest
  * object as input.
  */
+@ElementType(ElementTypes.ROUTER)
 public class IfMultipart extends AbstractPipe {
 	private String thenForwardName = "then";
 	private String elseForwardName = "else";

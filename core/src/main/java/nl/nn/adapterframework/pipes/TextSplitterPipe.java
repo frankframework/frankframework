@@ -18,7 +18,9 @@ package nl.nn.adapterframework.pipes;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingPipe;
@@ -28,6 +30,7 @@ import nl.nn.adapterframework.xml.SaxDocumentBuilder;
  * Breaks up the text input in blocks of a maximum length. 
  * By default the maximum block length is 160 characters, to enable them to be send as SMS messages.
  */
+@ElementType(ElementTypes.TRANSLATOR)
 public class TextSplitterPipe extends StreamingPipe {
 
 	private int maxBlockLength=160;

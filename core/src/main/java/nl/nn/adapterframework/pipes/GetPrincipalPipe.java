@@ -20,6 +20,8 @@ import java.security.Principal;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -29,6 +31,7 @@ import nl.nn.adapterframework.stream.Message;
  * @author  Gerrit van Brakel
  * @since   4.7
  */
+@ElementType(ElementTypes.SESSION)
 public class GetPrincipalPipe extends FixedForwardPipe {
 
 	@Override
