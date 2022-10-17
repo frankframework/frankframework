@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ public class MessageProvider extends SOAPProviderBase {
 
 	@Override
 	Message processRequest(String correlationId, Message message, PipeLineSession pipelineSession) throws ListenerException {
-		return listener.processRequest(correlationId, message, pipelineSession);
+		return listener.processRequest(message, pipelineSession);
 	}
 
 	@Override

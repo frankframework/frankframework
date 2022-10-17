@@ -74,7 +74,7 @@ public class ServiceDispatcher  {
 
 		String result;
 		try {
-			result = client.processRequest(correlationId, new Message(request), session).asString();
+			result = client.processRequest(new Message(request), session).asString();
 		} catch (IOException e) {
 			throw new ListenerException(e);
 		}

@@ -88,8 +88,9 @@ public abstract class PushingListenerAdapter implements IPushingListener<Message
 	}
 
 	@Override
-	public Message processRequest(String correlationId, Message rawMessage, PipeLineSession session) throws ListenerException {
+	public Message processRequest(Message rawMessage, PipeLineSession session) throws ListenerException {
 		Message message = extractMessage(rawMessage, session);
+		String correlationId = session.getCorrelationId();
 		try {
 			log.debug("PushingListenerAdapter.processRequest() for correlationId ["+correlationId+"]");
 			return handler.processRequest(this, correlationId, rawMessage, message, session);
