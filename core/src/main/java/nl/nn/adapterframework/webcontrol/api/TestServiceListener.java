@@ -112,7 +112,7 @@ public final class TestServiceListener extends Base {
 			}
 
 			try (PipeLineSession session = new PipeLineSession()) {
-				dispatchResult = ServiceDispatcher.getInstance().dispatchRequest(serviceName, null, message, session);
+				dispatchResult = ServiceDispatcher.getInstance().dispatchRequest(serviceName, message, session);
 			} catch (ListenerException e) {
 				String msg = "Exception executing service ["+serviceName+"]";
 				log.warn(msg, e);

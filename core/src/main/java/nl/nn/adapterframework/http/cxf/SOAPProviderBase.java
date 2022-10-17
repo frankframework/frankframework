@@ -91,7 +91,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 		try (PipeLineSession pipelineSession = new PipeLineSession()) {
 			String messageId = Misc.createSimpleUUID();
 			PipeLineSession.setListenerParameters(pipelineSession, messageId, messageId, new Date(), null);
-			log.debug(getLogPrefix(messageId)+"received message");
+			log.debug((messageId)+"received message");
 			String soapProtocol = SOAPConstants.SOAP_1_1_PROTOCOL;
 
 			if (request == null) {
@@ -260,10 +260,9 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 
 	/**
 	 * Add log prefix to make it easier to debug
-	 * @param correlationId message identifier
 	 */
-	protected String getLogPrefix(String correlationId) {
-		return "correlationId["+correlationId+"] ";
+	protected String getLogPrefix(String messageId) {
+		return "mid ["+messageId+"] ";
 	}
 
 	/**

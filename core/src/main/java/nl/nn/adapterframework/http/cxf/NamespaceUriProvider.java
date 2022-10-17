@@ -61,7 +61,7 @@ public class NamespaceUriProvider extends SOAPProviderBase {
 		String serviceName = findNamespaceUri();
 		log.debug("found namespace["+serviceName+"]");
 		try {
-			return new Message(sd.dispatchRequest(serviceName, null, message.asString(), pipelineSession));
+			return new Message(sd.dispatchRequest(serviceName, message.asString(), pipelineSession));
 		} catch (IOException e) {
 			throw new ListenerException(e);
 		}

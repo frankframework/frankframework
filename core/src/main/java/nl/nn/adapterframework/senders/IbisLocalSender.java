@@ -231,7 +231,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 						}
 					} else {
 						log.debug(getLogPrefix()+"calling "+serviceIndication+" in same Thread");
-						result = new Message(ServiceDispatcher.getInstance().dispatchRequest(getServiceName(), correlationID, message.asString(), context));
+						result = new Message(ServiceDispatcher.getInstance().dispatchRequest(getServiceName(), message.asString(), context));
 					}
 				} catch (ListenerException | IOException e) {
 					if (ExceptionUtils.getRootCause(e) instanceof TimeoutException) {
