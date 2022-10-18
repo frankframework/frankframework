@@ -81,21 +81,21 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 					message = new Message(pe.getEmptyInputReplacement());
 				}
 			}
-	
+
 			if (pipe instanceof FixedForwardPipe) {
 				FixedForwardPipe ffPipe = (FixedForwardPipe) pipe;
 				if (ffPipe.skipPipe(message, pipeLineSession)) {
 					pipeRunResult = new PipeRunResult(ffPipe.getSuccessForward(), message);
 				}
 			}
-	
+
 			if (pipeRunResult==null){
 				pipeRunResult=chain.apply(message);
 			}
 			if (pipeRunResult==null){
 				throw new PipeRunException(pipe, "Pipeline of ["+pipeLine.getOwner().getName()+"] received null result from pipe ["+pipe.getName()+"]d");
 			}
-	
+
 			if (pe !=null) {
 				if (pe.isRestoreMovedElements()) {
 					if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] restoring from compacted result for pipe ["+pe.getName()+"]");
@@ -109,7 +109,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 						}
 					}
 				}
-	
+
 				if (pe.getChompCharSize() != null || pe.getElementToMove() != null || pe.getElementToMoveChain() != null) {
 					log.debug("Pipeline of adapter ["+owner.getName()+"] compact received message");
 					Message result = pipeRunResult.getResult();
@@ -140,7 +140,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 						}
 					}
 				}
-	
+
 				if (StringUtils.isNotEmpty(pe.getStoreResultInSessionKey())) {
 					if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] storing result for pipe ["+pe.getName()+"] under sessionKey ["+pe.getStoreResultInSessionKey()+"]");
 					Message result = pipeRunResult.getResult();
@@ -159,7 +159,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 					pipeRunResult.setResult(preservedObject);
 				}
 			}
-	
+
 			if (pe != null && pe.isWriteToSecLog()) {
 				String secLogMsg = "adapter [" + owner.getName() + "] pipe [" + pe.getName() + "]";
 				if (pe.getSecLogSessionKeys() != null) {
@@ -177,7 +177,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 				}
 				secLog.info(secLogMsg);
 			}
-	
+
 			return pipeRunResult;
 		}
 	}
