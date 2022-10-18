@@ -39,7 +39,7 @@ public final class ShowEnvironmentVariables extends FrankApiBase {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/environmentvariables")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response environmentVariables() throws ApiException {
+	public Response environmentVariables() {
 		return callSyncGateway(RequestMessageBuilder.create(this, BusTopic.ENVIRONMENT));
 	}
 }
