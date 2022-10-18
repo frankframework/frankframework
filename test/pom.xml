@@ -104,6 +104,17 @@
 							<classesDirectory>src/test/testtool</classesDirectory>
 						</configuration>
 					</execution>
+					<execution>
+						<id>zip-secrets</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<configuration>
+							<classifier>secrets</classifier>
+							<classesDirectory>src/main/secrets</classesDirectory>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 			<plugin>

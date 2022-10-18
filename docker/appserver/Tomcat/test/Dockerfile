@@ -12,6 +12,4 @@ COPY --chown=tomcat target/dependencies/ibis-adapterframework-test.war /usr/loca
 COPY --chown=tomcat target/dependencies/*.jar /usr/local/tomcat/lib/
 
 # provide database credentials
-RUN mkdir -p /opt/frank/secrets/testiaf_user \
-	&& echo "testiaf_user"   > /opt/frank/secrets/testiaf_user/username \
-	&& echo "testiaf_user00" > /opt/frank/secrets/testiaf_user/password
+COPY --chown=tomcat target/dependencies/secrets /opt/frank/secrets
