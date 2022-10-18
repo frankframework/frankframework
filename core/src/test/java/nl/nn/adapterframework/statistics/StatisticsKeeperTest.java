@@ -94,9 +94,9 @@ public class StatisticsKeeperTest {
 		assertEquals(sumsq, sk.getTotalSquare(), 0.001);
 		assertEquals(29.0, sk.getStdDev(), 1.0);
 		if (withPercentiles) {
-			assertEquals(49.5, getItemValueByName(sk, "p50"), 1.0);
-			assertEquals(94.5, getItemValueByName(sk, "p95"), 1.0);
-			assertEquals(97.5, getItemValueByName(sk, "p98"), 1.0);
+			assertEquals(49.5, getItemValueByName(sk, "p50"), 2.0);
+			assertEquals(94.5, getItemValueByName(sk, "p95"), 2.0);
+			assertEquals(97.5, getItemValueByName(sk, "p98"), 2.0);
 		}
 	}
 
