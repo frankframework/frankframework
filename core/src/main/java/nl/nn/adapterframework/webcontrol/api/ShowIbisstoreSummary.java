@@ -37,7 +37,7 @@ public final class ShowIbisstoreSummary extends FrankApiBase {
 	@Path("/jdbc/summary")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response execute(Map<String, Object> json) throws ApiException {
+	public Response execute(Map<String, Object> json) {
 
 		String query = null;
 		String datasource = null;

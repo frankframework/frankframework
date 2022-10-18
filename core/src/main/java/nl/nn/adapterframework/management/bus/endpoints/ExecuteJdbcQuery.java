@@ -89,11 +89,7 @@ public class ExecuteJdbcQuery {
 		String query = BusMessageUtils.getHeader(message, "query");
 		boolean trimSpaces = BusMessageUtils.getBooleanHeader(message, "trimSpaces", false);
 		boolean avoidLocking = BusMessageUtils.getBooleanHeader(message, "avoidLocking", false);
-		ResultType resultType = ResultType.XML;
-		String resultTypeString = BusMessageUtils.getHeader(message, "resultType");
-		if(StringUtils.isNotEmpty(resultTypeString)) {
-			resultType = EnumUtils.parse(ResultType.class, resultTypeString);
-		}
+		ResultType resultType = BusMessageUtils.getEnumHeader(message, "resultType", ResultType.class, ResultType.XML);
 
 		return doExecute(datasource, queryType, query, trimSpaces, avoidLocking, resultType);
 	}

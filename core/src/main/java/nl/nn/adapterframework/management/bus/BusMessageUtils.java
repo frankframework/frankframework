@@ -27,6 +27,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class BusMessageUtils {
@@ -122,5 +123,17 @@ public class BusMessageUtils {
 			}
 		}
 		return granted;
+	}
+
+	public static <E extends Enum<E>> E getEnumHeader(Message<?> message, String headerName, Class<E> enumClazz) {
+		return getEnumHeader(message, headerName, enumClazz, null);
+	}
+
+	public static <E extends Enum<E>> E getEnumHeader(Message<?> message, String headerName, Class<E> enumClazz, E defaultValue) {
+		String value = getHeader(message, headerName);
+		if(StringUtils.isNotEmpty(value)) {
+			return EnumUtils.parse(enumClazz, value);
+		}
+		return defaultValue;
 	}
 }

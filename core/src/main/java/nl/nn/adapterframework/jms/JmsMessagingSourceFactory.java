@@ -99,11 +99,14 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 		} else {
 			connectionFactory = new ConnectionFactoryWrapper(connectionFactory);
 		}
-		String connectionFactoryInfo = getConnectionFactoryInfo(connectionFactory);
-		if (connectionFactoryInfo==null) {
-			connectionFactoryInfo = connectionFactory.toString();
+
+		if(log.isInfoEnabled()) {
+			String connectionFactoryInfo = getConnectionFactoryInfo(connectionFactory);
+			if (connectionFactoryInfo==null) {
+				connectionFactoryInfo = connectionFactory.toString();
+			}
+			log.info(jmsFacade.getLogPrefix()+"looked up connection factory ["+cfName+"]: ["+connectionFactoryInfo+"]");
 		}
-		log.info(jmsFacade.getLogPrefix()+"looked up connection factory ["+cfName+"]: ["+connectionFactoryInfo+"]");
 		return new TransactionAwareConnectionFactoryProxy(connectionFactory);
 	}
 

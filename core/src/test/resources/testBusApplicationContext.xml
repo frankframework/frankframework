@@ -32,6 +32,7 @@
 	<bean name="applicationWarnings" class="nl.nn.adapterframework.configuration.ApplicationWarnings"/>
 
 	<bean id="dataSourceFactory" class="nl.nn.adapterframework.testutil.mock.DataSourceFactoryMock" />
+	<bean id="connectionFactoryFactory" class="nl.nn.adapterframework.testutil.mock.ConnectionFactoryFactoryMock" />
 
 	<bean name="isolatedServiceCaller" class="nl.nn.adapterframework.pipes.IsolatedServiceCaller" autowire="byName" scope="singleton" />
 </beans>
