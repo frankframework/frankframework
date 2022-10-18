@@ -62,7 +62,7 @@ public class FilePipeTest extends PipeTestBase<FilePipe> {
     @Test
     public void doTestFailAsEncodingNotSupportedBase64() throws Exception {
         exception.expect(PipeRunException.class);
-        exception.expectMessage("Pipe [FilePipe under test] msgId [null] Error while executing file action(s): (UnsupportedEncodingException) /");
+        exception.expectMessage("Error while executing file action(s): (UnsupportedEncodingException) /");
 
 
         PipeForward fw = new PipeForward();
