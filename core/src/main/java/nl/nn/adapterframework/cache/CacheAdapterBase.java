@@ -33,8 +33,8 @@ import nl.nn.adapterframework.util.TransformerPool.OutputType;
 /**
  * Baseclass for caching.
  * Provides key transformation functionality.
- * 
- * 
+ *
+ *
  * @author  Gerrit van Brakel
  * @since   4.11
  */
@@ -68,10 +68,10 @@ public abstract class CacheAdapterBase<V> implements ICache<String,V>, IConfigur
 			setName(ownerName+"_cache");
 		}
 		if (StringUtils.isNotEmpty(getKeyXPath()) || StringUtils.isNotEmpty(getKeyStyleSheet())) {
-			keyTp=TransformerPool.configureTransformer(getLogPrefix(), this, getKeyNamespaceDefs(), getKeyXPath(), getKeyStyleSheet(),getKeyXPathOutputType(),false,null);
+			keyTp=TransformerPool.configureTransformer(this, getKeyNamespaceDefs(), getKeyXPath(), getKeyStyleSheet(), getKeyXPathOutputType(),false,null);
 		}
 		if (StringUtils.isNotEmpty(getValueXPath()) || StringUtils.isNotEmpty(getValueStyleSheet())) {
-			valueTp=TransformerPool.configureTransformer(getLogPrefix(), this, getValueNamespaceDefs(), getValueXPath(), getValueStyleSheet(),getValueXPathOutputType(),false,null);
+			valueTp=TransformerPool.configureTransformer(this, getValueNamespaceDefs(), getValueXPath(), getValueStyleSheet(), getValueXPathOutputType(),false,null);
 		}
 	}
 

@@ -39,13 +39,13 @@ import nl.nn.adapterframework.util.Misc;
 
 /**
  * Rhino JavaScript Runtime Factory Pipe.
- * 
+ *
  * This pipe takes all input and pushes it into javascript runtime.
  * The invoke method is called to initialize the runtime
  * Afterward the results are evaluated.
- * 
+ *
  * @ff.parameters Any parameters defined on the pipe will be concatenated into one string and added to the input
- * 
+ *
  * @author Barry Jacobs
  * @deprecated Please use {@link JavascriptSender} instead
  */
@@ -104,7 +104,7 @@ public class RhinoPipe extends FixedForwardPipe {
 		if (message==null || message.isEmpty()) {
 			// No input from previous pipes. We will use filename and or string input.
 			if((StringUtils.isEmpty(fileInput)) && inputString == null && isLookupAtRuntime()) { // No input from file or input string. Nowhere to GO!
-				throw new PipeRunException(this, getLogPrefix(session) + "No input specified anywhere. No string input, no file input and no previous pipe input");
+				throw new PipeRunException(this, "No input specified anywhere. No string input, no file input and no previous pipe input");
 			}
 		}
 
@@ -117,15 +117,15 @@ public class RhinoPipe extends FixedForwardPipe {
 			try {
 				resource = ClassUtils.getResourceURL(this, getFileName());
 			} catch (Throwable e) {
-				throw new PipeRunException(this,getLogPrefix(session)+"got exception searching for ["+getFileName()+"]", e);
+				throw new PipeRunException(this,"got exception searching for ["+getFileName()+"]", e);
 			}
 			if (resource==null) {
-				throw new PipeRunException(this,getLogPrefix(session)+"cannot find resource ["+getFileName()+"]");
+				throw new PipeRunException(this,"cannot find resource ["+getFileName()+"]");
 			}
 			try {
 				fileInput = Misc.resourceToString(resource, Misc.LINE_SEPARATOR);
 			} catch (Throwable e) {
-				throw new PipeRunException(this,getLogPrefix(session)+"got exception loading ["+getFileName()+"]", e);
+				throw new PipeRunException(this,"got exception loading ["+getFileName()+"]", e);
 			}
 		}
 		//Get all params as input
@@ -134,7 +134,7 @@ public class RhinoPipe extends FixedForwardPipe {
 			try {
 				pvl = getParameterList().getValues(message, session);
 			} catch (ParameterException e) {
-				throw new PipeRunException(this,getLogPrefix(session)+"exception extracting parameters",e);
+				throw new PipeRunException(this,"exception extracting parameters",e);
 			}
 			for(ParameterValue pv : pvl) {
 				paramsInput = pv.asStringValue("") + eol + paramsInput ;
@@ -172,7 +172,7 @@ public class RhinoPipe extends FixedForwardPipe {
 
 			jsResult = (String) Context.jsToJava(result, String.class);
 			if (isDebug() && log.isDebugEnabled()) {
-				log.debug(getLogPrefix(session)+"jsResult ["+ jsResult+"]");
+				log.debug("jsResult ["+ jsResult+"]");
 			}
 
 

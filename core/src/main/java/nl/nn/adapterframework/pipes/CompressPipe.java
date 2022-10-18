@@ -126,10 +126,10 @@ public class CompressPipe extends StreamingPipe {
 		} catch(Exception e) {
 			PipeForward exceptionForward = findForward(PipeForward.EXCEPTION_FORWARD_NAME);
 			if (exceptionForward!=null) {
-				log.warn(getLogPrefix(session) + "exception occured, forwarded to ["+exceptionForward.getPath()+"]", e);
-				return new PipeRunResult(exceptionForward, new ErrorMessageFormatter().format(getLogPrefix(session),e,this,message,session.getMessageId(),0));
+				log.warn("exception occured, forwarded to ["+exceptionForward.getPath()+"]", e);
+				return new PipeRunResult(exceptionForward, new ErrorMessageFormatter().format(getName(),e,this,message,session.getMessageId(),0));
 			}
-			throw new PipeRunException(this, getLogPrefix(session) + "Unexpected exception during compression", e);
+			throw new PipeRunException(this, "Unexpected exception during compression", e);
 		}
 	}
 

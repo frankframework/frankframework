@@ -66,7 +66,7 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 
 	protected void assertUserIsInRole(PipeLineSession session, String role) throws SecurityException {
 		if (!session.isUserInRole(role)) {
-			throw new SecurityException(getLogPrefix(session)+"user is not in role ["+role+"]");
+			throw new SecurityException("user is not in role ["+role+"]");
 		}
 	}
 
@@ -78,7 +78,7 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 				try {
 					inputString = message.asString();
 				} catch (IOException e) {
-					throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+					throw new PipeRunException(this, "cannot open stream", e);
 				}
 				if (StringUtils.isEmpty(inputString)) {
 					throw new PipeRunException(this, "role cannot be empty");

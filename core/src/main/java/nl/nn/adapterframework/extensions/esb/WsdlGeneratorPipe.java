@@ -61,7 +61,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		Message fileInSession = session.getMessage(getSessionKey());
 		if (fileInSession == null) {
-			throw new PipeRunException(this, getLogPrefix(session) + "got null value from session under key [" + getSessionKey() + "]");
+			throw new PipeRunException(this, "got null value from session under key [" + getSessionKey() + "]");
 		}
 
 		File tempDir;
@@ -78,7 +78,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 				file.deleteOnExit();
 			}
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session) + " Exception on uploading and unzipping/writing file", e);
+			throw new PipeRunException(this, "Exception on uploading and unzipping/writing file", e);
 		}
 
 		File propertiesFile = new File(tempDir, getPropertiesFileName());
@@ -102,7 +102,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 				pipeLine = createPipeLineFromXsdFile(xsdFile);
 			}
 		} catch (Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session) + " Exception on generating wsdl", e);
+			throw new PipeRunException(this, "Exception on generating wsdl", e);
 		} finally {
 			if (originalClassLoader != null) {
 				Thread.currentThread().setContextClassLoader(originalClassLoader);
@@ -148,8 +148,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			dx.setPath(wsdlDir.getPath());
 			result = dx.getDirList();
 		} catch (Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ " Exception on generating wsdl", e);
+			throw new PipeRunException(this, "Exception on generating wsdl", e);
 		} finally {
 			try {
 				if (zipOut != null) {

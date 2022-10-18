@@ -27,9 +27,9 @@ import nl.nn.adapterframework.task.TimeoutGuard;
 
 /**
  * Extension to FixedForwardPipe for interrupting processing when timeout is exceeded.
- * 
+ *
  * @ff.parameter timeout When a parameter with name timeout is present, it is used instead of the timeout specified by the attribute
- * 
+ *
  * @author Peter Leeuwenburgh
  */
 public abstract class TimeoutGuardPipe extends FixedForwardPipe {
@@ -44,7 +44,7 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 			try {
 				pvl = getParameterList().getValues(message, session);
 			} catch (ParameterException e) {
-				throw new PipeRunException(this, getLogPrefix(session) + "exception on extracting parameters", e);
+				throw new PipeRunException(this, "exception on extracting parameters", e);
 			}
 		}
 		int timeout_work;
@@ -55,7 +55,7 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 			timeout_work = Integer.valueOf(timeout_work_str);
 		}
 
-		log.debug(getLogPrefix(session) + "setting timeout of [" + timeout_work + "] s");
+		log.debug("setting timeout of [" + timeout_work + "] s");
 		TimeoutGuard tg = new TimeoutGuard(timeout_work, getName()) {
 			@Override
 			protected void abort() {

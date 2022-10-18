@@ -44,18 +44,17 @@ public class ExceptionPipe extends FixedForwardPipe {
 		try {
 			errorMessage = message.asString();
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+			throw new PipeRunException(this, "cannot open stream", e);
 		}
 		if (StringUtils.isEmpty(errorMessage)) {
 			errorMessage="exception: "+getName();
 		}
 
-		if (isThrowException())
+		if (isThrowException()) {
 			throw new PipeRunException(this, errorMessage);
-		else {
-			log.error(errorMessage);
-			return new PipeRunResult(getSuccessForward(), errorMessage);
 		}
+		log.error(errorMessage);
+		return new PipeRunResult(getSuccessForward(), errorMessage);
 	}
 
 

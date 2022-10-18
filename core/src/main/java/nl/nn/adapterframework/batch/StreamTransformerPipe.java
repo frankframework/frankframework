@@ -96,7 +96,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 			}
 			return new BufferedReader(reader);
 		} catch (SenderException e) {
-			throw new PipeRunException(this,getLogPrefix(session)+"cannot create reader",e);
+			throw new PipeRunException(this, "cannot create reader", e);
 		}
 	}
 
@@ -104,7 +104,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (registeredManagers.size()==0) {
-			log.info(getLogPrefix(null)+"creating default manager");
+			log.info("creating default manager");
 			IRecordHandlerManager manager = new RecordHandlerManager();
 			manager.setInitial(true);
 			manager.setName("default");
@@ -148,7 +148,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 			try {
 				handler.open();
 			} catch (SenderException e) {
-				throw new PipeStartException(getLogPrefix(null)+"cannot start recordhandler ["+recordHandlerName+"]", e);
+				throw new PipeStartException("cannot start recordhandler ["+recordHandlerName+"]", e);
 			}
 		}
 		for (String resultHandlerName: registeredResultHandlers.keySet()) {
@@ -156,7 +156,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 			try {
 				handler.open();
 			} catch (SenderException e) {
-				throw new PipeStartException(getLogPrefix(null)+"cannot start resulthandler ["+resultHandlerName+"]", e);
+				throw new PipeStartException("cannot start resulthandler ["+resultHandlerName+"]", e);
 			}
 		}
 	}
@@ -169,7 +169,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 			try {
 				handler.close();
 			} catch (SenderException e) {
-				log.error(getLogPrefix(null)+"exception on closing recordhandler ["+recordHandlerName+"]", e);
+				log.error("exception on closing recordhandler ["+recordHandlerName+"]", e);
 			}
 		}
 		for (String resultHandlerName: registeredResultHandlers.keySet()) {
@@ -177,7 +177,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 			try {
 				handler.close();
 			} catch (SenderException e) {
-				log.error(getLogPrefix(null)+"exception on closing resulthandler ["+resultHandlerName+"]", e);
+				log.error("exception on closing resulthandler ["+resultHandlerName+"]", e);
 			}
 		}
 	}
@@ -292,7 +292,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 				try {
 					reader.close();
 				} catch (IOException e) {
-					log.warn(getLogPrefix(session)+"Exception closing reader",e);
+					log.warn("Exception closing reader",e);
 				}
 			}
 		}

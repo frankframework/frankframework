@@ -52,7 +52,7 @@ public class MdcPipe extends FixedForwardPipe {
 					values.put(pv.getName(), pv.asStringValue());
 				}
 			} catch (ParameterException e) {
-				throw new PipeRunException(this, getLogPrefix(session)+"exception extracting parameters", e);
+				throw new PipeRunException(this, "exception extracting parameters", e);
 			}
 			session.scheduleCloseOnSessionExit(CloseableThreadContext.putAll(values), ClassUtils.nameOf(this));
 		}

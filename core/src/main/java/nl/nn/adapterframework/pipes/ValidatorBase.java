@@ -86,7 +86,7 @@ public abstract class ValidatorBase extends FixedForwardPipe implements IDualMod
 			PipeForward forward = validate(input, session, responseMode, messageRoot);
 			return new PipeRunResult(forward, input);
 		} catch (Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session), e);
+			throw new PipeRunException(this, "Could not validate", e);
 		}
 
 	}

@@ -31,7 +31,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
 
 /**
  * Base pipe for querying LDAP.
- * 
+ *
  * @author Gerrit van Brakel
  */
 public abstract class LdapQueryPipeBase extends FixedForwardPipe {
@@ -80,12 +80,11 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 			try {
 				return doPipeWithException(message, session);
 			} catch (Throwable t) {
-				log.warn(getLogPrefix(session) + "exception occured, forwarding to exception-forward [" + exceptionForward.getPath() +"], exception:\n", t);
+				log.warn("exception occured, forwarding to exception-forward [" + exceptionForward.getPath() +"], exception:\n", t);
 				return new PipeRunResult(exceptionForward, message);
 			}
-		} else {
-			return doPipeWithException(message, session);
 		}
+		return doPipeWithException(message, session);
 	}
 
 	public abstract PipeRunResult doPipeWithException(Message message, PipeLineSession session) throws PipeRunException;

@@ -88,7 +88,7 @@ public class CompareIntegerPipe extends AbstractPipe {
 			try {
 				pvl = getParameterList().getValues(message, session);
 			} catch (ParameterException e) {
-				throw new PipeRunException(this, getLogPrefix(session) + "exception extracting parameters", e);
+				throw new PipeRunException(this, "exception extracting parameters", e);
 			}
 		}
 		Integer operand1 = getOperandValue(pvl, OPERAND1, getSessionKey1(), message, session);
@@ -116,14 +116,14 @@ public class CompareIntegerPipe extends AbstractPipe {
 				try {
 					operand = Integer.parseInt(session.getMessage(sessionkey).asString());
 				} catch (Exception e) {
-					throw new PipeRunException(this, getLogPrefix(session) + " Exception on getting [" + operandName + "] from session key ["+sessionkey+"]", e);
+					throw new PipeRunException(this, "Exception on getting [" + operandName + "] from session key ["+sessionkey+"]", e);
 				}
 			}
 			if (operand == null) {
 				try {
 					operand = new Integer(message.asString());
 				} catch (Exception e) {
-					throw new PipeRunException(this, getLogPrefix(session) + " Exception on getting [" + operandName + "] from input message", e);
+					throw new PipeRunException(this, "Exception on getting [" + operandName + "] from input message", e);
 				}
 			}
 		}

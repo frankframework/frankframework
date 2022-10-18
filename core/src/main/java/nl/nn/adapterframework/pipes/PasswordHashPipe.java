@@ -38,10 +38,10 @@ import nl.nn.adapterframework.util.PasswordHash;
  * isn't used a hash of the password is returned. In case hashSessionKey is used
  * it is validated against the hash in the session key which will determine
  * the forward to be used (success or failure).
- *  
- * 
+ *
+ *
  * @ff.forward failure when hashSessionKey is used and password doesn't validate against the hash
- * 
+ *
  * @author Jaco de Groot
  */
 @ElementType(ElementTypes.TRANSLATOR)
@@ -69,7 +69,7 @@ public class PasswordHashPipe extends FixedForwardPipe {
 		try {
 			input = message.asString();
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+			throw new PipeRunException(this, "cannot open stream", e);
 		}
 		if (StringUtils.isEmpty(getHashSessionKey())) {
 			try {

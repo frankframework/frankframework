@@ -72,7 +72,7 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
 
 	@Override
 	public void start() throws PipeStartException{
-		log.debug(getLogPrefix(null)+"creates proxy with class [" + proxyClassName + "]");
+		log.debug("creates proxy with class [" + proxyClassName + "]");
 		try {
 			createProxy(proxyClassName); // just to try if is possible...
 		} catch (ConfigurationException e) {
@@ -94,7 +94,7 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
 			else
 				proxy.setTracing(0);
 		} catch (Exception e) {
-			throw new ConfigurationException(getLogPrefix(null)+"could not create proxy ["+proxyName+"]", e);
+			throw new ConfigurationException("could not create proxy ["+proxyName+"]", e);
 		}
 		return proxy;
 	}
@@ -125,7 +125,7 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
 				if (preprocUrl == null)
 					throw new ConfigurationException("cannot find resource for preProcTransformer, URL-String [" + preProcStylesheetName + "]");
 
-				log.debug(getLogPrefix(null)+"creating preprocTransformer from URL [" + preprocUrl.toString() + "]");
+				log.debug("creating preprocTransformer from URL [" + preprocUrl.toString() + "]");
 				preProcTransformer = XmlUtils.createTransformer(preprocUrl);
 			} catch (javax.xml.transform.TransformerConfigurationException te) {
 				throw new ConfigurationException("got error creating transformer from file [" + preProcStylesheetName + "]", te);
@@ -138,7 +138,7 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
 				if (postprocUrl == null)
 					throw new ConfigurationException("cannot find resource for postProcTransformer, URL-String [" + postProcStylesheetName + "]");
 
-				log.debug(getLogPrefix(null)+"creating postprocTransformer from URL [" + postprocUrl.toString() + "]");
+				log.debug("creating postprocTransformer from URL [" + postprocUrl.toString() + "]");
 				postProcTransformer = XmlUtils.createTransformer(postprocUrl);
 			} catch (javax.xml.transform.TransformerConfigurationException te) {
 				throw new ConfigurationException("got error creating transformer from file [" + postProcStylesheetName + "]", te);
@@ -152,7 +152,7 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
 			if (schemaUrl == null)
 				throw new ConfigurationException("cannot find resource for proxyInputSchema, URL-String [" + proxyInputSchema + "]");
 
-			log.debug(getLogPrefix(null)+"creating CoolGenInputViewSchema from URL [" + schemaUrl.toString() + "]");
+			log.debug("creating CoolGenInputViewSchema from URL [" + schemaUrl.toString() + "]");
 
 			// construct a xslt-stylesheet to perform validation to supplied schema
 			stylesheet =
@@ -216,10 +216,10 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
 		// should be solved in another way in a more definitive implementation
 
 		try {
-			log.info(getLogPrefix(session)+"instantiating proxy ["+proxyClassName+"] as a temporary fix for broken comm-bridge connections");
+			log.info("instantiating proxy ["+proxyClassName+"] as a temporary fix for broken comm-bridge connections");
 			proxy = createProxy(proxyClassName);
 		} catch (ConfigurationException ce) {
-			String msg =getLogPrefix(session)+"cannot recreate proxy after exception";
+			String msg ="cannot recreate proxy after exception";
 			log.error(msg, ce);
 			throw new PipeRunException(this, msg, ce);
 		}
@@ -232,11 +232,7 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
 
 			if (preProcTransformer != null) {
 				proxypreProc = XmlUtils.transformXml(preProcTransformer, in);
-				log.debug(
-					getLogPrefix(session)
-						+ "] preprocessing transformed message into ["
-						+ proxypreProc
-						+ "]");
+				log.debug("preprocessing transformed message into ["+proxypreProc+"]");
 			} else
 				proxypreProc = message.asString();
 
@@ -251,7 +247,7 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
 			try {
 				proxy.clear();
 			} catch (PropertyVetoException e) {
-				throw new PipeRunException(this, getLogPrefix(session)+"cannot clear CoolGen proxy", e);
+				throw new PipeRunException(this, "cannot clear CoolGen proxy", e);
 			}
 			try {
 			proxy.executeXML(new StringReader(proxypreProc), proxyResult);
@@ -260,38 +256,34 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
 			String err = actionListener.toString();
 			if (err != null) {
 				// if an error occurs, recreate the proxy and throw an exception
-				log.debug(
-					getLogPrefix(session)
-						+ "got error, recreating proxy with class ["
-						+ proxyClassName
-						+ "]");
+				log.debug("got error, recreating proxy with class ["+ proxyClassName+ "]");
 				try {
 					proxy = createProxy(proxyClassName);
 				} catch (ConfigurationException e) {
-					throw new PipeRunException(this,  getLogPrefix(session)+"cannot recreate proxy ["+proxyClassName+"]", e);
+					throw new PipeRunException(this,  "cannot recreate proxy ["+proxyClassName+"]", e);
 				}
-				throw new PipeRunException(this,  getLogPrefix(session)+"error excuting proxy ["+proxyClassName+"]:"+ err);
+				throw new PipeRunException(this,  "error excuting proxy ["+proxyClassName+"]:"+ err);
 			}
 			} catch (XmlProxyException xpe) {
 				try {
 					proxy = createProxy(proxyClassName);
 				} catch (ConfigurationException ce) {
-					log.error(getLogPrefix(session)+"cannot recreate proxy", ce);
+					log.error("cannot recreate proxy", ce);
 				}
-				throw new PipeRunException(this,  getLogPrefix(session)+"error excecuting proxy", xpe);
+				throw new PipeRunException(this,  "error excecuting proxy", xpe);
 			}
 
 			if (postProcTransformer != null) {
-				log.debug(getLogPrefix(session)+" CoolGen proxy returned: [" + proxyResult.toString() + "]");
+				log.debug(" CoolGen proxy returned: [" + proxyResult.toString() + "]");
 				wrapperResult = XmlUtils.transformXml(postProcTransformer, proxyResult.toString());
 			} else
 				wrapperResult = proxyResult.toString();
 		} catch (SAXException e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"SAXException excecuting proxy", e);
+			throw new PipeRunException(this, "SAXException excecuting proxy", e);
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"IOException excecuting proxy", e);
+			throw new PipeRunException(this, "IOException excecuting proxy", e);
 		} catch (TransformerException e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"TransformerException excecuting proxy", e);
+			throw new PipeRunException(this, "TransformerException excecuting proxy", e);
 		}
 
 		return new PipeRunResult(getSuccessForward(),wrapperResult) ;

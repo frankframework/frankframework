@@ -67,11 +67,11 @@ public class RemoveFromSession extends FixedForwardPipe {
 			try {
 				sessionKeys = message.asString();
 			} catch (IOException e) {
-				throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+				throw new PipeRunException(this, "cannot open stream", e);
 			}
 		}
 		if (StringUtils.isEmpty(sessionKeys)) {
-			log.warn(getLogPrefix(session)+"no key specified");
+			log.warn("no key specified");
 			result="[null]";
 		} else {
 			StringTokenizer st = new StringTokenizer(sessionKeys, ",");
@@ -79,15 +79,15 @@ public class RemoveFromSession extends FixedForwardPipe {
 				String sk = st.nextToken();
 				Object skResult = session.remove(sk);
 				if (skResult==null) {
-					log.warn(getLogPrefix(session)+"key ["+sk+"] not found");
+					log.warn("key ["+sk+"] not found");
 					skResult="[null]";
 				} else {
 					try {
 						skResult = Message.asString(skResult);
 					} catch (IOException e) {
-						throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+						throw new PipeRunException(this, "cannot open stream", e);
 					}
-					log.debug(getLogPrefix(session) +"key ["+sk+"] removed");
+					log.debug("key ["+sk+"] removed");
 				}
 				if (result == null) {
 					result = (String)skResult;

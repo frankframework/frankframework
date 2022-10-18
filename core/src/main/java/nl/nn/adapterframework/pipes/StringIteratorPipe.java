@@ -31,7 +31,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * IteratingPipe that has Strings as items.
- * 
+ *
  * @author Gerrit van Brakel
  */
 public class StringIteratorPipe extends IteratingPipe<String> {
@@ -126,7 +126,7 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 					result = super.handleItem(itemInEnvelope);
 				}
 				if (getMaxItems()>0 && ++totalItems>=getMaxItems()) {
-					log.debug(getLogPrefix(session)+"count ["+totalItems+"] reached maxItems ["+getMaxItems()+"], stopping loop");
+					log.debug("count ["+totalItems+"] reached maxItems ["+getMaxItems()+"], stopping loop");
 					return StopReason.MAX_ITEMS_REACHED;
 				}
 				return result;

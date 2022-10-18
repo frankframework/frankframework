@@ -46,7 +46,7 @@ public class IfMultipart extends AbstractPipe {
 			forward = elseForwardName;
 		} else {
 			if (!(message.asObject() instanceof HttpServletRequest)) {
-				throw new PipeRunException(this, getLogPrefix(null) + "expected HttpServletRequest as input, got [" + ClassUtils.nameOf(message) + "]");
+				throw new PipeRunException(this, "expected HttpServletRequest as input, got [" + ClassUtils.nameOf(message) + "]");
 			}
 
 			HttpServletRequest request = (HttpServletRequest) message.asObject();
@@ -58,14 +58,14 @@ public class IfMultipart extends AbstractPipe {
 			}
 		}
 
-		log.debug(getLogPrefix(session) + "determined forward [" + forward + "]");
+		log.debug("determined forward [" + forward + "]");
 
 		pipeForward = findForward(forward);
 
 		if (pipeForward == null) {
-			throw new PipeRunException(this, getLogPrefix(null) + "cannot find forward or pipe named [" + forward + "]");
+			throw new PipeRunException(this, "cannot find forward or pipe named [" + forward + "]");
 		}
-		log.debug(getLogPrefix(session) + "resolved forward [" + forward + "] to path [" + pipeForward.getPath() + "]");
+		log.debug("resolved forward [" + forward + "] to path [" + pipeForward.getPath() + "]");
 		return new PipeRunResult(pipeForward, message);
 	}
 

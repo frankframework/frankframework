@@ -39,7 +39,7 @@ import nl.nn.adapterframework.webcontrol.DummySSLSocketFactory;
 /**
  * Pipe that checks if a specified dn exists as 'member' in another specified dn
  * in LDAP.
- * 
+ *
  * @author Peter Leeuwenburgh
  */
 public class LdapFindMemberPipe extends LdapQueryPipeBase {
@@ -57,7 +57,7 @@ public class LdapFindMemberPipe extends LdapQueryPipeBase {
 			try {
 				pvl = getParameterList().getValues(message, session);
 			} catch (ParameterException e) {
-				throw new PipeRunException(this, getLogPrefix(session) + "exception on extracting parameters", e);
+				throw new PipeRunException(this, "exception on extracting parameters", e);
 			}
 		}
 		dnSearchIn_work = getParameterValue(pvl, "dnSearchIn");
@@ -75,18 +75,17 @@ public class LdapFindMemberPipe extends LdapQueryPipeBase {
 			try {
 				found = findMember(getHost(), getPort(), dnSearchIn_work, isUseSsl(), dnFind_work, isRecursiveSearch());
 			} catch (NamingException e) {
-				throw new PipeRunException(this, getLogPrefix(session) + "exception on ldap lookup", e);
+				throw new PipeRunException(this, "exception on ldap lookup", e);
 			}
 		}
 
 		if (!found) {
-			String msg = getLogPrefix(session) + "dn [" + dnFind_work + "] not found as member in url [" + retrieveUrl(getHost(), getPort(), dnSearchIn_work, isUseSsl()) + "]";
+			String msg = "dn [" + dnFind_work + "] not found as member in url [" + retrieveUrl(getHost(), getPort(), dnSearchIn_work, isUseSsl()) + "]";
 			if (notFoundForward == null) {
 				throw new PipeRunException(this, msg);
-			} else {
-				log.info(msg);
-				return new PipeRunResult(notFoundForward, message);
 			}
+			log.info(msg);
+			return new PipeRunResult(notFoundForward, message);
 		}
 		return new PipeRunResult(getSuccessForward(), message);
 	}

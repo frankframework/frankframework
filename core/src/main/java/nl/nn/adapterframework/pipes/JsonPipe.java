@@ -66,7 +66,7 @@ public class JsonPipe extends FixedForwardPipe {
 			throw new ConfigurationException("direction must be set");
 		}
 		if (dir == Direction.XML2JSON) {
-			tpXml2Json = TransformerPool.configureStyleSheetTransformer(getLogPrefix(null), this, "/xml/xsl/xml2json.xsl", 0);
+			tpXml2Json = TransformerPool.configureStyleSheetTransformer(this, "/xml/xsl/xml2json.xsl", 0);
 		}
 	}
 
@@ -74,7 +74,7 @@ public class JsonPipe extends FixedForwardPipe {
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 
 		if (Message.isEmpty(message)) {
-			throw new PipeRunException(this, getLogPrefix(session) + "got "+(Message.isNull(message)?"null":"empty")+" input");
+			throw new PipeRunException(this, "got "+(Message.isNull(message)?"null":"empty")+" input");
 		}
 
 		try {
@@ -131,7 +131,7 @@ public class JsonPipe extends FixedForwardPipe {
 
 			return new PipeRunResult(getSuccessForward(), stringResult);
 		} catch (Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session) + " Exception on transforming input", e);
+			throw new PipeRunException(this, "Exception on transforming input", e);
 		}
 	}
 

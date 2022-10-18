@@ -84,7 +84,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 		}
 		sapSystem=SapSystemImpl.getSystem(getSapSystemName());
 		if (sapSystem==null) {
-			throw new ConfigurationException(getLogPrefix(null)+"cannot find SapSystem ["+getSapSystemName()+"]");
+			throw new ConfigurationException("cannot find SapSystem ["+getSapSystemName()+"]");
 		}
 	}
 
@@ -93,7 +93,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 		try {
 			SapLUWHandle.releaseHandle(session,getLuwHandleSessionKey());
 		} catch (JCoException e) {
-			throw new PipeRunException(this, getLogPrefix(null)+"could not release handle", e);
+			throw new PipeRunException(this, "could not release handle", e);
 		}
 	}
 
@@ -103,7 +103,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 			sapSystem.openSystem();
 		} catch (SapException e) {
 			stop();
-			throw new PipeStartException(getLogPrefix(null)+"exception starting SapSender", e);
+			throw new PipeStartException("exception starting SapSender", e);
 		}
 	}
 

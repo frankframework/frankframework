@@ -133,7 +133,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 			} catch (Throwable t2) {
 				t.addSuppressed(t2);
 			}
-			throw new SenderException(getLogPrefix(session), t);
+			throw new SenderException(t);
 		}
 	}
 

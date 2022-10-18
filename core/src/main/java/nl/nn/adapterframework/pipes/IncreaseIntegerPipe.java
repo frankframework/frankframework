@@ -36,9 +36,9 @@ import nl.nn.adapterframework.stream.Message;
 /**
  * Pipe that increases the integer value of a session variable.
  * Can be used in combination with {@link CompareIntegerPipe} to construct loops.
- * 
+ *
  * @ff.parameter increment integer value to be added to the session variable
- * 
+ *
  * @author Richard Punt / Gerrit van Brakel
  */
 @ElementType(ElementTypes.SESSION)
@@ -64,7 +64,7 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 		try {
 			sessionKeyString = session.getMessage(sessionKey).asString();
 		} catch (IOException e1) {
-			throw new PipeRunException(this, getLogPrefix(session) + "unable to determine sessionkey from pipeline session");
+			throw new PipeRunException(this, "unable to determine sessionkey from pipeline session");
 		}
 		Integer sessionKeyInteger = Integer.valueOf(sessionKeyString);
 		int incrementBy = increment;
@@ -77,13 +77,13 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 					incrementBy = pv.asIntegerValue(increment);
 				}
 			} catch (ParameterException e) {
-				throw new PipeRunException(this, getLogPrefix(session) + "exception extracting parameters", e);
+				throw new PipeRunException(this, "exception extracting parameters", e);
 			}
 		}
 		session.put(sessionKey, sessionKeyInteger.intValue() + incrementBy + "");
 
 		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix(session)+"stored ["+sessionKeyString+"] in pipeLineSession under key ["+getSessionKey()+"]");
+			log.debug("stored ["+sessionKeyString+"] in pipeLineSession under key ["+getSessionKey()+"]");
 		}
 		return new PipeRunResult(getSuccessForward(), message);
 	}

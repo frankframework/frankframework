@@ -139,7 +139,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		msgTransformerPool = TransformerPool.configureTransformer(getLogPrefix(null), this, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList(), false);
+		msgTransformerPool = TransformerPool.configureTransformer(this, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList(), false);
 		if (msgTransformerPool!=null) {
 			preprocessingStatisticsKeeper =  new StatisticsKeeper("-> message preprocessing");
 		}
@@ -271,7 +271,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		public StopReason handleItem(I item) throws SenderException, TimeoutException, IOException {
 			if (isRemoveDuplicates()) {
 				if (inputItems.indexOf(item)>=0) {
-					log.debug(getLogPrefix(session)+"duplicate item ["+item+"] will not be processed");
+					log.debug("duplicate item ["+item+"] will not be processed");
 					return null;
 				}
 				inputItems.add(item);
@@ -290,25 +290,25 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 					Map<String,Object>parameterValueMap = getParameterList()!=null?getParameterList().getValues(message, session).getValueMap():null;
 					String transformedMsg=msgTransformerPool.transform(message.asSource(),parameterValueMap);
 					if (log.isDebugEnabled()) {
-						log.debug(getLogPrefix(session)+"iteration ["+totalItems+"] transformed item ["+message+"] into ["+transformedMsg+"]");
+						log.debug("iteration ["+totalItems+"] transformed item ["+message+"] into ["+transformedMsg+"]");
 					}
 					message=new Message(transformedMsg);
 					long preprocessingEndTime = System.currentTimeMillis();
 					long preprocessingDuration = preprocessingEndTime - preprocessingStartTime;
 					preprocessingStatisticsKeeper.addValue(preprocessingDuration);
 				} catch (Exception e) {
-					throw new SenderException(getLogPrefix(session)+"cannot transform item",e);
+					throw new SenderException("cannot transform item",e);
 				}
 			} else {
 				if (log.isDebugEnabled()) {
-					log.debug(getLogPrefix(session)+"iteration ["+totalItems+"] item ["+message+"]");
+					log.debug("iteration ["+totalItems+"] item ["+message+"]");
 				}
 			}
 			if (childThreadSemaphore!=null) {
 				try {
 					childThreadSemaphore.acquire();
 				} catch (InterruptedException e) {
-					throw new SenderException(getLogPrefix(session)+ " interrupted waiting for thread",e);
+					throw new SenderException("interrupted waiting for thread",e);
 				}
 			}
 			try {
@@ -340,21 +340,21 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 						}
 					}
 					if (StringUtils.isNotEmpty(getTimeOutOnResult()) && getTimeOutOnResult().equals(itemResult)) {
-						throw new TimeoutException(getLogPrefix(session)+"timeOutOnResult ["+getTimeOutOnResult()+"]");
+						throw new TimeoutException("timeOutOnResult ["+getTimeOutOnResult()+"]");
 					}
 					if (StringUtils.isNotEmpty(getExceptionOnResult()) && getExceptionOnResult().equals(itemResult)) {
-						throw new SenderException(getLogPrefix(session)+"exceptionOnResult ["+getExceptionOnResult()+"]");
+						throw new SenderException("exceptionOnResult ["+getExceptionOnResult()+"]");
 					}
 				} catch (SenderException e) {
 					if (isIgnoreExceptions()) {
-						log.info(getLogPrefix(session)+"ignoring SenderException after excution of sender for item ["+item+"]",e);
+						log.info("ignoring SenderException after excution of sender for item ["+item+"]",e);
 						itemResult="<exception>"+XmlUtils.encodeChars(e.getMessage())+"</exception>";
 					} else {
 						throw e;
 					}
 				} catch (TimeoutException e) {
 					if (isIgnoreExceptions()) {
-						log.info(getLogPrefix(session)+"ignoring TimeOutException after excution of sender for item ["+item+"]",e);
+						log.info("ignoring TimeOutException after excution of sender for item ["+item+"]",e);
 						itemResult="<timeout>"+XmlUtils.encodeChars(e.getMessage())+"</timeout>";
 					} else {
 						throw e;
@@ -365,7 +365,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 						addResult(totalItems, message, itemResult);
 					}
 					if (getMaxItems()>0 && totalItems>=getMaxItems()) {
-						log.debug(getLogPrefix(session)+"count ["+totalItems+"] reached maxItems ["+getMaxItems()+"], stopping loop");
+						log.debug("count ["+totalItems+"] reached maxItems ["+getMaxItems()+"], stopping loop");
 						return StopReason.MAX_ITEMS_REACHED;
 					}
 					if (getStopConditionTp()!=null) {
@@ -375,16 +375,16 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 						long stopConditionDuration = stopConditionEndTime - stopConditionStartTime;
 						stopConditionStatisticsKeeper.addValue(stopConditionDuration);
 						if (StringUtils.isNotEmpty(stopConditionResult) && !stopConditionResult.equalsIgnoreCase("false")) {
-							log.debug(getLogPrefix(session)+"itemResult ["+itemResult+"] stopcondition result ["+stopConditionResult+"], stopping loop");
+							log.debug("itemResult ["+itemResult+"] stopcondition result ["+stopConditionResult+"], stopping loop");
 							return StopReason.STOP_CONDITION_MET;
 						}
-						log.debug(getLogPrefix(session)+"itemResult ["+itemResult+"] stopcondition result ["+stopConditionResult+"], continueing loop");
+						log.debug("itemResult ["+itemResult+"] stopcondition result ["+stopConditionResult+"], continueing loop");
 					}
 					return null;
 				} catch (SAXException e) {
-					throw new SenderException(getLogPrefix(session)+"cannot parse input",e);
+					throw new SenderException("cannot parse input",e);
 				} catch (TransformerException e) {
-					throw new SenderException(getLogPrefix(session)+"cannot serialize item",e);
+					throw new SenderException("cannot serialize item",e);
 				}
 			} finally {
 				if (!isParallel() && childThreadSemaphore!=null) {
@@ -395,10 +395,10 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		}
 		private void addResult(int count, Message message, String itemResult) throws IOException {
 			if (isRemoveXmlDeclarationInResults()) {
-				if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"removing XML declaration from ["+itemResult+"]");
+				if (log.isDebugEnabled()) log.debug("removing XML declaration from ["+itemResult+"]");
 				itemResult = XmlUtils.skipXmlDeclaration(itemResult);
 			}
-			if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"partial result ["+itemResult+"]");
+			if (log.isDebugEnabled()) log.debug("partial result ["+itemResult+"]");
 			String itemInput="";
 			if (isAddInputToResult()) {
 				itemInput = "<input>"+(isRemoveXmlDeclarationInResults()?XmlUtils.skipXmlDeclaration(message.asString()):message.asString())+"</input>";
@@ -423,7 +423,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 						addResult(count, pse.getRequest(), itemResult);
 					}
 				} catch (InterruptedException e) {
-					throw new SenderException(getLogPrefix(session)+"was interupted",e);
+					throw new SenderException("was interupted",e);
 				}
 			}
 		}
@@ -469,7 +469,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		} catch (SenderException | TimeoutException | IOException e) {
 			throw e;
 		} catch (Exception e) {
-			throw new SenderException(getLogPrefix(session)+"Exception on transforming input", e);
+			throw new SenderException("Exception on transforming input", e);
 		}
 	}
 

@@ -265,7 +265,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 				addOutputNamespaceTp = XmlUtils.getAddRootNamespaceTransformerPool(getOutputNamespace(), true, false);
 			}
 		} catch (TransformerConfigurationException e) {
-			throw new ConfigurationException(getLogPrefix(null) + "cannot create transformer", e);
+			throw new ConfigurationException("cannot create transformer", e);
 		}
 	}
 
@@ -304,7 +304,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 						bisDetailText = (String) session.get(getBisErrorReasonSessionKey());
 					}
 					if (isOmitResult()) {
-						throw new PipeRunException(this, getLogPrefix(session) + "bisError occured: errorCode [" + bisErrorCode + "], errorText [" + bisErrorText + "]");
+						throw new PipeRunException(this, "bisError occured: errorCode [" + bisErrorCode + "], errorText [" + bisErrorText + "]");
 					}
 				}
 				String bisResult = prepareResult(bisErrorCode, bisErrorText, getBisServiceName(), getBisActionName(), bisDetailText);
@@ -329,19 +329,19 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 			} else {
 				Message body = unwrapMessage(message, session);
 				if (Message.isEmpty(body)) {
-					throw new PipeRunException(this, getLogPrefix(session) + "SOAP body is empty or message is not a SOAP message");
+					throw new PipeRunException(this, "SOAP body is empty or message is not a SOAP message");
 				}
 				if (bisMessageHeaderTp != null) {
 					String messageHeader = bisMessageHeaderTp.transform(message.asSource());
 					if (messageHeader != null) {
 						session.put(getBisMessageHeaderSessionKey(), messageHeader);
-						log.debug(getLogPrefix(session) + "stored [" + messageHeader + "] in pipeLineSession under key [" + getBisMessageHeaderSessionKey() + "]");
+						log.debug("stored [" + messageHeader + "] in pipeLineSession under key [" + getBisMessageHeaderSessionKey() + "]");
 					}
 				}
 				if (bisErrorTp != null) {
 					String bisError = bisErrorTp.transform(message.asSource());
 					if (Boolean.valueOf(bisError).booleanValue()) {
-						throw new PipeRunException(this, getLogPrefix(session) + "bisErrorXPath [" + bisErrorXe + "] returns true");
+						throw new PipeRunException(this, "bisErrorXPath [" + bisErrorXe + "] returns true");
 					}
 				}
 				if (bodyMessageTp != null) {
@@ -354,7 +354,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 				}
 			}
 		} catch (Throwable t) {
-			throw new PipeRunException(this, getLogPrefix(session) + " Unexpected exception during (un)wrapping ", t);
+			throw new PipeRunException(this, " Unexpected exception during (un)wrapping ", t);
 
 		}
 		return new PipeRunResult(getSuccessForward(), result);

@@ -30,7 +30,7 @@ import nl.nn.adapterframework.stream.Message;
 
 /**
  * Selects an exitState, based on the last (filename) part of the path that is the input.
- * 
+ *
  * <p><b>Exits:</b>
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
@@ -64,7 +64,7 @@ public class FilenameSwitch extends AbstractPipe {
 		try {
 			sInput = message.asString();
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+			throw new PipeRunException(this, "cannot open stream", e);
 		}
 		PipeForward pipeForward=null;
 
@@ -80,17 +80,17 @@ public class FilenameSwitch extends AbstractPipe {
 		if (isToLowercase()) {
 			forward=forward.toLowerCase();
 		}
-		log.debug(getLogPrefix(session)+ "determined forward ["+forward+"]");
+		log.debug("determined forward ["+forward+"]");
 
 		if (findForward(forward) != null)
 			pipeForward=findForward(forward);
 		else {
-			log.info(getLogPrefix(session)+"determined forward ["+forward+"], which is not defined. Will use ["+getNotFoundForwardName()+"] instead");
+			log.info("determined forward ["+forward+"], which is not defined. Will use ["+getNotFoundForwardName()+"] instead");
 			pipeForward=findForward(getNotFoundForwardName());
 		}
 
 		if (pipeForward==null) {
-			throw new PipeRunException (this, getLogPrefix(session)+"cannot find forward or pipe named ["+forward+"]");
+			throw new PipeRunException (this, "cannot find forward or pipe named ["+forward+"]");
 		}
 		return new PipeRunResult(pipeForward, message);
 	}

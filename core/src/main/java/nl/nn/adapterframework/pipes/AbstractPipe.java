@@ -146,7 +146,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 				params.setNamesMustBeUnique(parameterNamesMustBeUnique);
 				params.configure();
 			} catch (ConfigurationException e) {
-				throw new ConfigurationException(getLogPrefix(null)+"while configuring parameters",e);
+				throw new ConfigurationException("while configuring parameters",e);
 			}
 		}
 
@@ -181,22 +181,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	 */
 	@Override
 	public abstract PipeRunResult doPipe (Message message, PipeLineSession session) throws PipeRunException;
-
-	/**
-	 * Convenience method for building up log statements.
-	 * This method may be called from within the <code>doPipe()</code> method with the current <code>PipeLineSession</code>
-	 * as a parameter. Then it will use this parameter to retrieve the messageId. The method can be called with a <code>null</code> parameter
-	 * from the <code>configure()</code>, <code>start()</code> and <code>stop()</code> methods.
-	 * @return String with the name of the pipe and the message id of the current message.
-	 */
-	protected String getLogPrefix(PipeLineSession session) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("Pipe ["+getName()+"] ");
-		if (session!=null) {
-			sb.append("msgId ["+session.getMessageId()+"] ");
-		}
-		return sb.toString();
-	}
 
 	@Override
 	public void start() throws PipeStartException {}
@@ -235,13 +219,13 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 				pipeForwards.put(forwardName, forward);
 			} else {
 				if (forward.getPath()!=null && forward.getPath().equals(current.getPath())) {
-					ConfigurationWarnings.add(this, log, "has forward ["+forwardName+"] which is already registered");
+					ConfigurationWarnings.add(this, log, "forward ["+forwardName+"] is already registered");
 				} else {
-					log.info(getLogPrefix(null)+"PipeForward ["+forwardName+"] already registered, pointing to ["+current.getPath()+"]. Ignoring new one, that points to ["+forward.getPath()+"]");
+					log.info("PipeForward ["+forwardName+"] already registered, pointing to ["+current.getPath()+"]. Ignoring new one, that points to ["+forward.getPath()+"]");
 				}
 			}
 		} else {
-			throw new ConfigurationException(getLogPrefix(null)+"has a forward without a name");
+			throw new ConfigurationException("forward without a name");
 		}
 	}
 
@@ -305,8 +289,9 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 
 	@Override
 	public String getEventSourceName() {
-		return getLogPrefix(null).trim();
+		return getName().trim();
 	}
+
 	@Override
 	public void registerEvent(String description) {
 		if (eventPublisher != null) {

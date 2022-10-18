@@ -61,13 +61,13 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </code></pre>
  * <br/>
  * For input, a 'naam' or a 'nummer'-attribute must be specified. If both are specified, their match is checked.
- * On output, 'nummer', 'naam' and 'waarde'-attributes are always present in each rubriek-element. 
+ * On output, 'nummer', 'naam' and 'waarde'-attributes are always present in each rubriek-element.
  * Where applicable 'index', 'recordnr', 'record' and 'recordindex' are present, too.
  * If sub-records exist, they are present with a 'sub' prefix to all attributes.
  * </p>
- * 
+ *
  * @ff.forward noConversionForwardName when successful, but no conversion took place
- * 
+ *
  * @author Gerrit van Brakel
  */
 @Category("NN-Special")
@@ -187,7 +187,7 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 		}
 		if (noConversionForward==null) {
 			noConversionForward=getSuccessForward();
-			log.info(getLogPrefix(null)+"no forward found for ["+getNoConversionForwardName()+"], setting to forward for succes ["+getSuccessForward().getPath()+"]");
+			log.info("no forward found for ["+getNoConversionForwardName()+"], setting to forward for succes ["+getSuccessForward().getPath()+"]");
 		}
 		initializeConversionTables();
 	}
@@ -203,13 +203,13 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 				String inputstring = message.asString();
 				String firstToken = new StringTokenizer(inputstring).nextToken();
 				if (firstToken.startsWith("<")) {
-					log.info(getLogPrefix(session)+"input is already XML, no conversion performed");
+					log.info("input is already XML, no conversion performed");
 					return new PipeRunResult(noConversionForward, inputstring);
 				}
 				result = makeXml(message.asString(),session);
 			}
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+			throw new PipeRunException(this, "cannot open stream", e);
 		}
 		return new PipeRunResult(getSuccessForward(), result);
 	}
@@ -244,7 +244,7 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 				SAXParserFactory parserFactory = XmlUtils.getSAXParserFactory();
 				saxParser = parserFactory.newSAXParser();
 			} catch (Throwable e) {
-				throw new ConfigurationException(getLogPrefix(null) + "cannot configure a parser", e);
+				throw new ConfigurationException("cannot configure a parser", e);
 			}
 
 			try {
@@ -332,7 +332,7 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 			return handler.getResult();
 
 		} catch (Throwable t) {
-			throw new PipeRunException(this, getLogPrefix(session) + "got error while transforming xml to adios, input [" + bericht + "]", t);
+			throw new PipeRunException(this, "got error while transforming xml to adios, input [" + bericht + "]", t);
 		}
 	}
 
@@ -433,7 +433,7 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 		return adiosDefinities;
 	}
 
-	/** Transformation direction. 
+	/** Transformation direction.
 	 * @ff.default Adios2Xml */
 	public void setDirection(Direction direction) {
 		this.direction = direction;

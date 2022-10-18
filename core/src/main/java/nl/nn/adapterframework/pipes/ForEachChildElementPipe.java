@@ -404,7 +404,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 				try {
 					filename = input.asString();
 				} catch (IOException e) {
-					throw new SenderException(getLogPrefix(session)+"cannot find filename", e);
+					throw new SenderException("cannot find filename", e);
 				}
 				src = new InputSource(new FileInputStream(filename));
 			} catch (FileNotFoundException e) {

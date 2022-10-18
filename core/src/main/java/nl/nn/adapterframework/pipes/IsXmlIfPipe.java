@@ -58,7 +58,7 @@ public class IsXmlIfPipe extends AbstractPipe {
 			try {
 				sInput = message.asString();
 			} catch (IOException e) {
-				throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+				throw new PipeRunException(this, "cannot open stream", e);
 			}
 			if (StringUtils.isEmpty(sInput)) {
 				if (isElseForwardOnEmptyInput()) {
@@ -76,17 +76,14 @@ public class IsXmlIfPipe extends AbstractPipe {
 			}
 		}
 
-		log.debug(getLogPrefix(session) + "determined forward [" + forward
-				+ "]");
+		log.debug("determined forward [" + forward + "]");
 
 		PipeForward pipeForward = findForward(forward);
 
 		if (pipeForward == null) {
-			throw new PipeRunException(this, getLogPrefix(null)
-					+ "cannot find forward or pipe named [" + forward + "]");
+			throw new PipeRunException(this, "cannot find forward or pipe named [" + forward + "]");
 		}
-		log.debug(getLogPrefix(session) + "resolved forward [" + forward
-				+ "] to path [" + pipeForward.getPath() + "]");
+		log.debug("resolved forward [" + forward + "] to path [" + pipeForward.getPath() + "]");
 		return new PipeRunResult(pipeForward, message);
 	}
 

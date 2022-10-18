@@ -56,7 +56,7 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 		try {
 			filename = input.asString();
 		} catch (IOException e) {
-			log.error("Could not read message ["+input+"] as String");
+			log.error("Could not read message ["+input+"] as String", e);
 		}
 		File file = new File(filename);
 		return file.getName();
@@ -101,14 +101,14 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 			try {
 				FileUtils.moveFileAfterProcessing(file, getMove2dirAfterTransform(), isDelete(),isOverwrite(), getNumberOfBackups());
 			} catch (Exception e) {
-				log.error(getLogPrefix(session),e);
+				log.error(e);
 			}
 			return result;
 		} catch (PipeRunException e) {
 			try {
 				FileUtils.moveFileAfterProcessing(file, getMove2dirAfterError(), isDelete(), isOverwrite(), getNumberOfBackups());
 			} catch (Exception e2) {
-				log.error(getLogPrefix(session)+"Could not move file after exception ["+e2+"]");
+				log.error("Could not move file after exception ["+e2+"]");
 			}
 			throw e;
 		}

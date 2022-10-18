@@ -52,7 +52,7 @@ public class GetFromSession  extends FixedForwardPipe {
 			try {
 				key = message.asString();
 			} catch (IOException e) {
-				throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+				throw new PipeRunException(this, "cannot open stream", e);
 			}
 		}
 
@@ -60,7 +60,7 @@ public class GetFromSession  extends FixedForwardPipe {
 
 		if (result == null) {
 			//why is null returned when nothing can be found?
-			log.warn(getLogPrefix(session)+"got null value from session under key ["+getSessionKey()+"]");
+			log.warn("got null value from session under key ["+getSessionKey()+"]");
 		}
 		else {
 			if (getType()==ParameterType.MAP && result instanceof Map) {
@@ -75,7 +75,7 @@ public class GetFromSession  extends FixedForwardPipe {
 				}
 				result = itemsXml.toXML();
 			}
-			log.debug(getLogPrefix(session) + "got [" + result.toString() + "] from pipeLineSession under key [" + getSessionKey() + "]");
+			log.debug("got [" + result.toString() + "] from pipeLineSession under key [" + getSessionKey() + "]");
 		}
 
 		return new PipeRunResult(getSuccessForward(), result);
