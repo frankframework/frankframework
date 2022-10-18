@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,9 @@
 */
 package nl.nn.adapterframework.core;
 
+import lombok.Getter;
+import nl.nn.credentialprovider.util.Misc;
+
 /**
  * Exception thrown when the <code>doPipe()</code> method
  * of a {@link IPipe Pipe} runs in error.
@@ -22,33 +25,16 @@ package nl.nn.adapterframework.core;
  */
 public class PipeRunException extends IbisException {
 
-	IPipe pipeInError = null;
+	private @Getter IPipe pipeInError = null;
 
 	public PipeRunException(IPipe pipe, String msg) {
-		super(msg);
-		setPipeInError(pipe);
+		super(Misc.concatStrings("Pipe ["+pipe.getName()+"]", " ", msg));
+		pipeInError = pipe;
 	}
 
 	public PipeRunException(IPipe pipe, String msg, Throwable e) {
-		super(msg, e);
-		setPipeInError(pipe);
+		super(Misc.concatStrings("Pipe ["+pipe.getName()+"]", " ", msg), e);
+		pipeInError = pipe;
 	}
 
-	/**
-	 * The pipe in error.
-	 * 
-	 * @return java.lang.String Name of the pipe in error
-	 */
-	public IPipe getPipeInError() {
-		return pipeInError;
-	}
-
-	/**
-	 * The pipe in error.
-	 * 
-	 * @param newPipeInError the pipe in error
-	 */
-	protected void setPipeInError(IPipe newPipeInError) {
-		pipeInError = newPipeInError;
-	}
 }

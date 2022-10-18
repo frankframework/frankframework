@@ -1,1 +1,1 @@
-cannot unzip: (EOFException) Unexpected end of ZLIB input stream: Unexpected end of ZLIB input stream
+Adapter [UnzipPipe] msgId [0a722fe4--2c744fc_183eb0a3993_-7aa3]: Pipe [unzipFile] cannot unzip: (EOFException) Unexpected end of ZLIB input stream: Unexpected end of ZLIB input stream

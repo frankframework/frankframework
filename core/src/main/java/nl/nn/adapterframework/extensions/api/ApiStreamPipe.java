@@ -66,87 +66,61 @@ public class ApiStreamPipe extends StreamPipe {
 			PipeLineSession session) throws PipeRunException {
 		if (firstStringPart == null) {
 			return "";
-		} else {
-			boolean retrieveMessage = false;
-			if (XmlUtils.isWellFormed(firstStringPart, "MessageID")) {
-				String rootNamespace = XmlUtils
-						.getRootNamespace(firstStringPart);
-				if ("http://www.w3.org/2005/08/addressing"
-						.equals(rootNamespace)) {
-					retrieveMessage = true;
-				}
-			}
-			if (retrieveMessage) {
-				String messageId = null;
-				try {
-					messageId = XmlUtils.evaluateXPathNodeSetFirstElement(
-							firstStringPart, "MessageID");
-				} catch (Exception e) {
-					throw new PipeRunException(this,
-							"Exception getting MessageID", e);
-				}
-				if (StringUtils.isEmpty(messageId)) {
-					throw new PipeRunException(this,
-							"Could not find messageId in request ["
-									+ firstStringPart + "]");
-				} else {
-					// TODO: create dummyQuerySender should be put in
-					// configure(), but gives an error
-					dummyQuerySender = createBean(FixedQuerySender.class);
-					dummyQuerySender.setJmsRealm(jmsRealm);
-					dummyQuerySender
-							.setQuery("SELECT count(*) FROM ALL_TABLES");
-					try {
-						dummyQuerySender.configure();
-					} catch (ConfigurationException e) {
-						throw new PipeRunException(this,
-								"Exception configuring dummy query sender", e);
-					}
-
-					String slotId = AppConstants.getInstance()
-							.getResolvedProperty("instance.name") + "/"
-							+ session.get("operation");
-					String selectMessageKeyResult = null;
-					try {
-						selectMessageKeyResult = selectMessageKey(slotId,
-								messageId);
-					} catch (Exception e) {
-						throw new PipeRunException(this,
-								"Exception getting messageKey", e);
-					}
-					if (StringUtils.isEmpty(selectMessageKeyResult)) {
-						throw new PipeRunException(this,
-								"Could not find message in MessageStore for slotId ["
-										+ slotId + "] and messageId ["
-										+ messageId + "]");
-					} else {
-						String selectMessageResult = null;
-						try {
-							selectMessageResult = selectMessage(
-									selectMessageKeyResult);
-						} catch (Exception e) {
-							throw new PipeRunException(this,
-									"Exception getting message", e);
-						}
-						if (StringUtils.isEmpty(selectMessageResult)) {
-							throw new PipeRunException(this,
-									"Could not find message in MessageStore with messageKey ["
-											+ selectMessageKeyResult + "]");
-						} else {
-							try {
-								deleteMessage(selectMessageKeyResult);
-							} catch (Exception e) {
-								throw new PipeRunException(this,
-										"Exception deleting message", e);
-							}
-						}
-						return selectMessageResult;
-					}
-				}
-			} else {
-				return firstStringPart;
+		}
+		boolean retrieveMessage = false;
+		if (XmlUtils.isWellFormed(firstStringPart, "MessageID")) {
+			String rootNamespace = XmlUtils.getRootNamespace(firstStringPart);
+			if ("http://www.w3.org/2005/08/addressing".equals(rootNamespace)) {
+				retrieveMessage = true;
 			}
 		}
+		if (retrieveMessage) {
+			String messageId = null;
+			try {
+				messageId = XmlUtils.evaluateXPathNodeSetFirstElement(firstStringPart, "MessageID");
+			} catch (Exception e) {
+				throw new PipeRunException(this, "Exception getting MessageID", e);
+			}
+			if (StringUtils.isEmpty(messageId)) {
+				throw new PipeRunException(this, "Could not find messageId in request [" + firstStringPart + "]");
+			}
+			// TODO: create dummyQuerySender should be put in configure(), but gives an error
+			dummyQuerySender = createBean(FixedQuerySender.class);
+			dummyQuerySender.setJmsRealm(jmsRealm);
+			dummyQuerySender.setQuery("SELECT count(*) FROM ALL_TABLES");
+			try {
+				dummyQuerySender.configure();
+			} catch (ConfigurationException e) {
+				throw new PipeRunException(this, "Exception configuring dummy query sender", e);
+			}
+
+			String slotId = AppConstants.getInstance().getResolvedProperty("instance.name") + "/" + session.get("operation");
+			String selectMessageKeyResult = null;
+			try {
+				selectMessageKeyResult = selectMessageKey(slotId, messageId);
+			} catch (Exception e) {
+				throw new PipeRunException(this, "Exception getting messageKey", e);
+			}
+			if (StringUtils.isEmpty(selectMessageKeyResult)) {
+				throw new PipeRunException(this, "Could not find message in MessageStore for slotId [" + slotId + "] and messageId [" + messageId + "]");
+			}
+			String selectMessageResult = null;
+			try {
+				selectMessageResult = selectMessage(selectMessageKeyResult);
+			} catch (Exception e) {
+				throw new PipeRunException(this, "Exception getting message", e);
+			}
+			if (StringUtils.isEmpty(selectMessageResult)) {
+				throw new PipeRunException(this, "Could not find message in MessageStore with messageKey [" + selectMessageKeyResult + "]");
+			}
+			try {
+				deleteMessage(selectMessageKeyResult);
+			} catch (Exception e) {
+				throw new PipeRunException(this, "Exception deleting message", e);
+			}
+			return selectMessageResult;
+		}
+		return firstStringPart;
 	}
 
 	private String selectMessageKey(String slotId, String messageId) throws JdbcException {

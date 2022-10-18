@@ -330,7 +330,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 				if (path!=null) {
 					PipeLineExit plExit= getPipeLineExits().get(path);
 					if (plExit==null && getPipe(path)==null){
-						ConfigurationWarnings.add(pipe, log, "Pipe has a forward of which the pipe to execute ["+path+"] is not defined");
+						ConfigurationWarnings.add(pipe, log, "has a forward of which the pipe to execute ["+path+"] is not defined");
 					}
 				}
 			}

@@ -48,7 +48,7 @@ import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Pipe to zip or unzip a message or file.
- * 
+ *
  * @author John Dekker
  * @author Jaco de Groot (***@dynasol.nl)
  */
@@ -64,10 +64,10 @@ public class CompressPipe extends StreamingPipe {
 	private @Getter FileFormat fileFormat;
 
 	public enum FileFormat {
-		/** Gzip format; also used when direction is compress and resultIsContent=<code>true</code> 
+		/** Gzip format; also used when direction is compress and resultIsContent=<code>true</code>
 		 * or when direction is decompress and messageIsContent=<code>true</code> */
 		GZ,
-		/** Zip format; also used when direction is compress and resultIsContent=<code>false</code> 
+		/** Zip format; also used when direction is compress and resultIsContent=<code>false</code>
 		 * or when direction is decompress and messageIsContent=<code>false</code> */
 		ZIP
 	}
@@ -127,7 +127,7 @@ public class CompressPipe extends StreamingPipe {
 			PipeForward exceptionForward = findForward(PipeForward.EXCEPTION_FORWARD_NAME);
 			if (exceptionForward!=null) {
 				log.warn("exception occured, forwarded to ["+exceptionForward.getPath()+"]", e);
-				return new PipeRunResult(exceptionForward, new ErrorMessageFormatter().format(getName(),e,this,message,session.getMessageId(),0));
+				return new PipeRunResult(exceptionForward, new ErrorMessageFormatter().format(null,e,this,message,session.getMessageId(),0));
 			}
 			throw new PipeRunException(this, "Unexpected exception during compression", e);
 		}
