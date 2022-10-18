@@ -545,7 +545,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			}
 		}
 	}
-	
+
 	/**
 	 * Close the pipeline. This will call the <code>stop()</code> method
 	 * of all registered <code>Pipes</code>
