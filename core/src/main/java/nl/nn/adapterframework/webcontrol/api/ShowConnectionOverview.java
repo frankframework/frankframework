@@ -32,7 +32,7 @@ public class ShowConnectionOverview extends FrankApiBase {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/connections")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getConnections() throws ApiException {
+	public Response getConnections() {
 		return callSyncGateway(RequestMessageBuilder.create(this, BusTopic.CONNECTION_OVERVIEW));
 	}
 }
