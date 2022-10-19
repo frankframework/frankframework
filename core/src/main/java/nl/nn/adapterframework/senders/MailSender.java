@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2019 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import javax.activation.CommandMap;
 import javax.activation.DataHandler;
 import javax.mail.BodyPart;
 import javax.mail.Message;
@@ -106,6 +107,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class MailSender extends MailSenderBase {
 
 	private @Getter String smtpHost;
+	private @Getter int smtpPort=25;
 
 	private Properties properties = new Properties();
 	private Session session = null;
@@ -118,6 +120,7 @@ public class MailSender extends MailSenderBase {
 		}
 
 		properties.put("mail.smtp.host", getSmtpHost());
+		properties.put("mail.smtp.port", getSmtpPort());
 		properties.put("mail.smtp.connectiontimeout", getTimeout() + "");
 		properties.put("mail.smtp.timeout", getTimeout() + "");
 		String userId = getCredentialFactory().getUsername();
@@ -143,11 +146,6 @@ public class MailSender extends MailSenderBase {
 		createSession(); //Test connection to SMTP host
 	}
 
-	@Override
-	public boolean isSynchronous() {
-		return false;
-	}
-
 	/**
 	 * Create the session during runtime
 	 */
@@ -168,7 +166,7 @@ public class MailSender extends MailSenderBase {
 	@Override
 	public String sendEmail(MailSession mailSession) throws SenderException {
 		Session session = createSession();
-		log.debug("sending mail using session ["+session+"]");
+		log.debug("sending mail using session [{}]", session);
 		return sendEmail(session, mailSession);
 	}
 
@@ -203,7 +201,7 @@ public class MailSender extends MailSenderBase {
 			log.debug("no attachments found to attach to mailSession");
 			msg.setContent(message, messageTypeWithCharset);
 		} else {
-			if(log.isDebugEnabled()) log.debug("found ["+attachmentList.size()+"] attachments to attach to mailSession");
+			log.debug("found [{}] attachments to attach to mailSession", attachmentList::size);
 			Multipart multipart = new MimeMultipart();
 			BodyPart messagePart = new MimeBodyPart();
 			messagePart.setContent(message, messageTypeWithCharset);
@@ -216,7 +214,7 @@ public class MailSender extends MailSenderBase {
 				if (StringUtils.isEmpty(name)) {
 					name = getDefaultAttachmentName() + counter;
 				}
-				log.debug("found attachment [" + attachment + "]");
+				log.debug("found attachment [{}]", attachment);
 
 				BodyPart messageBodyPart = new MimeBodyPart();
 				messageBodyPart.setFileName(name);
@@ -329,6 +327,13 @@ public class MailSender extends MailSenderBase {
 		}
 
 		try {
+			/*
+			 * Call CommandMap.getDefaultCommandMap() to cache the commandMap seen from the current classpath, in an attempt to avoid
+			 * (ClassCastException) com.sun.xml.internal.messaging.saaj.soap.StringDataContentHandler incompatible with javax.activation.DataContentHandler
+			 * (https://github.com/ibissource/iaf/issues/3880)
+			 */
+			CommandMap.getDefaultCommandMap();
+
 			msg.saveChanges();
 		} catch (Exception e) {
 			throw new SenderException("Error occurred while composing email", e);
@@ -361,7 +366,7 @@ public class MailSender extends MailSenderBase {
 		} else {
 			messageTypeWithCharset = messageType;
 		}
-		log.debug("MailSender [" + getName() + "] uses encoding [" + messageTypeWithCharset + "]");
+		log.debug("MailSender {}] uses encoding [{}]", getName(), messageTypeWithCharset);
 		return messageTypeWithCharset;
 	}
 
@@ -371,9 +376,7 @@ public class MailSender extends MailSenderBase {
 		try {
 			transport = session.getTransport("smtp");
 			transport.connect(getSmtpHost(), getCredentialFactory().getUsername(), getCredentialFactory().getPassword());
-			if (log.isDebugEnabled()) {
-				log.debug("MailSender [" + getName() + "] connected transport to URL [" + transport.getURLName() + "]");
-			}
+			log.debug("MailSender [{}] connected transport to URL [{}]", getName(), transport.getURLName());
 			transport.sendMessage(msg, msg.getAllRecipients());
 		} catch (Exception e) {
 			throw new SenderException("MailSender [" + getName() + "] cannot connect send message to smtpHost [" + getSmtpHost() + "]", e);
@@ -382,7 +385,7 @@ public class MailSender extends MailSenderBase {
 				try {
 					transport.close();
 				} catch (MessagingException e1) {
-					log.warn("MailSender [" + getName() + "] got exception closing connection", e1);
+					log.warn("MailSender [{}] got exception closing connection", getName(), e1);
 				}
 			}
 		}
@@ -391,6 +394,11 @@ public class MailSender extends MailSenderBase {
 	@IbisDoc({ "Name of the SMTP-host by which the messages are to be send", "" })
 	public void setSmtpHost(String newSmtpHost) {
 		smtpHost = newSmtpHost;
+	}
+
+	@IbisDoc({ "Port of the SMTP-host by which the messages are to be send", "25" })
+	public void setSmtpPort(int newSmtpPort) {
+		smtpPort = newSmtpPort;
 	}
 
 	public void setProperties(Properties properties) {
