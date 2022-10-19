@@ -491,7 +491,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	 * @param keyStoreAuthAlias The AuthAlias that contains the password for the keystore
 	 */
 	public void setKeyStoreAuthAlias(String keyStoreAuthAlias) {
-		this.keyStoreCredentials = new CredentialFactory(keyStoreAuthAlias, null, null);
+		this.keyStoreCredentials = new CredentialFactory(keyStoreAuthAlias);
 	}
 	public String getKeyStorePassword() {
 		if(keyStoreCredentials == null)
@@ -529,7 +529,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	 * @param merchantCertificateAuthAlias The AuthAlias that contains the password for the Merchant Certificate
 	 */
 	public void setMerchantCertificateAuthAlias(String merchantCertificateAuthAlias) {
-		this.merchantCertificateCredentials = new CredentialFactory(merchantCertificateAuthAlias, null, null);
+		this.merchantCertificateCredentials = new CredentialFactory(merchantCertificateAuthAlias);
 	}
 	public String getMerchantCertificatePassword() {
 		if(merchantCertificateCredentials == null)
@@ -598,7 +598,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	 * @param SAMLCertificateAuthAlias The AuthAlias that contains the password for the SAML Certificate
 	 */
 	public void setSAMLCertificateAuthAlias(String SAMLCertificateAuthAlias) {
-		this.SAMLCertificateCredentials = new CredentialFactory(SAMLCertificateAuthAlias, null, null);
+		this.SAMLCertificateCredentials = new CredentialFactory(SAMLCertificateAuthAlias);
 	}
 	public String getSAMLCertificatePassword() {
 		if(SAMLCertificateCredentials == null)
