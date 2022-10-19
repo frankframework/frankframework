@@ -22,7 +22,11 @@ secretsList = os.listdir(path_to_secrets)
 
 for secret in secretsList:
 	aliasName = secret
-	username=open(path_to_secrets+secret+"/username").read()
+	username = ""
+	try:
+		username=open(path_to_secrets+secret+"/username").read()
+	except:
+		print("Secret "+secret+" has no username")
 	password=open(path_to_secrets+secret+"/password").read()
 	
 	createAuthAlias(aliasName, username, password)
