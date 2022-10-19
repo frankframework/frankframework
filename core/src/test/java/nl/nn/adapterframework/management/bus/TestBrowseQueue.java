@@ -1,15 +1,27 @@
 package nl.nn.adapterframework.management.bus;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 
+import nl.nn.adapterframework.jms.JmsRealm;
+import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.testutil.mock.ConnectionFactoryFactoryMock;
 
 public class TestBrowseQueue extends BusTestBase {
+
+	@Before
+	public void setUp() {
+		JmsRealmFactory.getInstance().clear();
+		JmsRealm jmsRealm = new JmsRealm();
+		jmsRealm.setRealmName("dummyQCFAddedViaJmsRealm");
+		jmsRealm.setQueueConnectionFactoryName("dummyQCFAddedViaJmsRealm");
+		JmsRealmFactory.getInstance().registerJmsRealm(jmsRealm);
+	}
 
 	@Test
 	public void getConnectionFactoriesTest() throws Exception {
