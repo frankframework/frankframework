@@ -324,7 +324,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		}
 
 		if (getExtractElementsTp()!=null) {
-			if (log.isDebugEnabled()) log.debug("transforming input to obtain list of elements using xpath ["+getElementXPathExpression()+"]");
+			log.debug("transforming input to obtain list of elements using xpath [{}]", getElementXPathExpression());
 			TransformerFilter transformerFilter = getExtractElementsTp().getTransformerFilter(threadConnector, result.inputHandler);
 			if (getParameterList()!=null) {
 				try {
@@ -454,7 +454,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			for(Entry<AutoCloseable,String> entry:closeables.entrySet()) {
 				String label = entry.getValue();
 				try (AutoCloseable resource = entry.getKey()) {
-					log.debug("Closing resource "+label);
+					log.debug("Closing resource {}", label);
 				} catch (Exception e) {
 					if (mainException==null) {
 						mainException = new SenderException("Could not close resource "+label, e);

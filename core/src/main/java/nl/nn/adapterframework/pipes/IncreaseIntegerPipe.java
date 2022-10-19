@@ -82,9 +82,7 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 		}
 		session.put(sessionKey, sessionKeyInteger.intValue() + incrementBy + "");
 
-		if (log.isDebugEnabled()) {
-			log.debug("stored [{}] in pipeLineSession under key [{}]", sessionKeyString, getSessionKey());
-		}
+		log.debug("stored [{}] in pipeLineSession under key [{}]", sessionKeyString, getSessionKey());
 		return new PipeRunResult(getSuccessForward(), message);
 	}
 

@@ -63,9 +63,7 @@ public class ServiceDispatcher  {
 	 * @since 4.3
 	 */
 	public String dispatchRequest(String serviceName, String request, PipeLineSession session) throws ListenerException {
-		if (log.isDebugEnabled()) {
-			log.debug("dispatchRequest for service ["+serviceName+"] correlationId ["+session.getCorrelationId()+"] message ["+request+"]");
-		}
+		log.debug("dispatchRequest for service [{}] correlationId [{}] message [{}]", serviceName, session.getCorrelationId(), request);
 
 		ServiceClient client = registeredListeners.get(serviceName);
 		if (client == null) {

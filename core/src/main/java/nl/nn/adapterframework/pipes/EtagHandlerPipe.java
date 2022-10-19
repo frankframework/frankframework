@@ -109,7 +109,7 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 		if(cache != null && cache.containsKey(cacheKey)) {
 			Object returnCode = false;
 
-			if(log.isDebugEnabled()) log.debug("found eTag cacheKey ["+cacheKey+"] with action ["+getAction()+"]");
+			log.debug("found eTag cacheKey [{}] with action [{}]", cacheKey, getAction());
 			switch (getAction()) {
 			case GENERATE:
 				String hash = MessageUtils.generateMD5Hash(message);

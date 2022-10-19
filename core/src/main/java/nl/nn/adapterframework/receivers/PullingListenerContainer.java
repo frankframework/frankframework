@@ -152,7 +152,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 		@Override
 		public void run() {
 			ThreadContext.push(getName());
-			log.debug("taskExecutor ["+ToStringBuilder.reflectionToString(taskExecutor)+"]");
+			log.debug("taskExecutor [{}]", ()->ToStringBuilder.reflectionToString(taskExecutor));
 			receiver.setRunState(RunState.STARTED);
 			log.debug("started ControllerTask");
 			try {
@@ -162,7 +162,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 						pollToken.acquire();
 					}
 					if (isIdle() && receiver.getPollInterval()>0) {
-						if (log.isDebugEnabled() && receiver.getPollInterval()>600)log.debug("is idle, sleeping for ["+receiver.getPollInterval()+"] seconds");
+						if (log.isDebugEnabled() && receiver.getPollInterval()>600)log.debug("is idle, sleeping for [{}] seconds", receiver.getPollInterval());
 						for (int i=0; i<receiver.getPollInterval() && receiver.isInRunState(RunState.STARTED); i++) {
 							Thread.sleep(1000);
 						}
@@ -348,7 +348,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 						txStatus = receiver.isTransacted() || receiver.getTransactionAttribute() != TransactionAttribute.NOTSUPPORTED ? txManager.getTransaction(txNew) : null;
 						boolean noMoreRetries = receiver.getMaxRetries()>=0 && deliveryCount>receiver.getMaxRetries();
 						ProcessState targetState = noMoreRetries ? ProcessState.ERROR : ProcessState.AVAILABLE;
-						if (log.isDebugEnabled()) log.debug("noMoreRetries ["+noMoreRetries+"] deliveryCount ["+deliveryCount+"] targetState ["+targetState+"]");
+						log.debug("noMoreRetries [{}] deliveryCount [{}] targetState [{}]", noMoreRetries, deliveryCount, targetState);
 						String errorMessage = Misc.concatStrings(noMoreRetries? "too many retries":null, "; ", receiver.getCachedErrorMessage(messageId));
 						((IHasProcessState<M>)listener).changeProcessState(rawMessage, targetState, errorMessage!=null ? errorMessage : "processing not successful");
 						if (txStatus!=null) {

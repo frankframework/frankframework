@@ -130,7 +130,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		if (!responseMode) {
 			String sessionKey = getInputFormatSessionKey();
 			if (!session.containsKey(sessionKey)) {
-				if (log.isDebugEnabled()) log.debug("storing inputFormat ["+format+"] under session key ["+sessionKey+"]");
+				log.debug("storing inputFormat [{}] under session key [{}]", format, sessionKey);
 				session.put(sessionKey, format);
 			}
 		}
@@ -160,7 +160,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 				// message is XML
 				if (isAcceptNamespacelessXml()) {
 					messageToValidate=addNamespace(messageToValidate); // TODO: do this via a filter
-					//if (log.isDebugEnabled()) log.debug("added namespace to message ["+messageToValidate+"]");
+					//log.debug("added namespace to message [{}]", messageToValidate);
 				}
 				storeInputFormat(DocumentFormat.XML, session, responseMode);
 				if (getOutputFormat(session,responseMode) != DocumentFormat.JSON) {

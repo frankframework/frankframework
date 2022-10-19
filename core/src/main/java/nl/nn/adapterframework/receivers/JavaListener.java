@@ -142,9 +142,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 		if (!isOpen()) {
 			throw new ListenerException("JavaListener [" + getName() + "] is not opened");
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("JavaListener [" + getName() + "] processing correlationId [" + correlationId + "]");
-		}
+		log.debug("JavaListener [{}] processing correlationId [{}]" , getName(), correlationId);
 		if (context != null) {
 			Object object = context.get("httpRequest");
 			if (object != null) {
