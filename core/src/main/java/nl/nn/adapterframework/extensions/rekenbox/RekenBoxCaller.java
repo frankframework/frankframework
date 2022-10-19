@@ -86,7 +86,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 		}
 		formatter = new DecimalFormat("000000000000".substring(0,Long.toString(getMaxRequestNumber()).length()));
 		String baseFileName=getBaseFileName();
-		log.debug("first filename will be ["+baseFileName+"]");
+		log.debug("first filename will be [{}]", baseFileName);
 		requestCounter.decrease();
 	}
 

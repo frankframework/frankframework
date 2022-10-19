@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -80,12 +80,12 @@ public class FilenameSwitch extends AbstractPipe {
 		if (isToLowercase()) {
 			forward=forward.toLowerCase();
 		}
-		log.debug("determined forward ["+forward+"]");
+		log.debug("determined forward [{}]", forward);
 
 		if (findForward(forward) != null)
 			pipeForward=findForward(forward);
 		else {
-			log.info("determined forward ["+forward+"], which is not defined. Will use ["+getNotFoundForwardName()+"] instead");
+			log.info("determined forward [{}], which is not defined. Will use [{}] instead", forward, getNotFoundForwardName());
 			pipeForward=findForward(getNotFoundForwardName());
 		}
 

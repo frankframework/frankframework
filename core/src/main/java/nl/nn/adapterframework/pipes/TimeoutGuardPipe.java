@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 			timeout_work = Integer.valueOf(timeout_work_str);
 		}
 
-		log.debug("setting timeout of [" + timeout_work + "] s");
+		log.debug("setting timeout of [{}] s", timeout_work);
 		TimeoutGuard tg = new TimeoutGuard(timeout_work, getName()) {
 			@Override
 			protected void abort() {

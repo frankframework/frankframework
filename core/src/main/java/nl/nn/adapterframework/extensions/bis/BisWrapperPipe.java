@@ -335,7 +335,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 					String messageHeader = bisMessageHeaderTp.transform(message.asSource());
 					if (messageHeader != null) {
 						session.put(getBisMessageHeaderSessionKey(), messageHeader);
-						log.debug("stored [" + messageHeader + "] in pipeLineSession under key [" + getBisMessageHeaderSessionKey() + "]");
+						log.debug("stored [{}] in pipeLineSession under key [{}]", messageHeader, getBisMessageHeaderSessionKey());
 					}
 				}
 				if (bisErrorTp != null) {

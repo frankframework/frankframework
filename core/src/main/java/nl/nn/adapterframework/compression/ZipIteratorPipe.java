@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -115,15 +115,13 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 			try {
 				skipCurrent();
 				currentOpen=true;
-				if (log.isDebugEnabled()) {
-					log.debug("found zipEntry name ["+current.getName()+"] size ["+current.getSize()+"] compressed size ["+current.getCompressedSize()+"]");
-				}
+				log.debug("found zipEntry name [{}] size [{}] compressed size [{}]", current::getName, current::getSize, current::getCompressedSize);
 				String filename=current.getName();
 				if (isStreamingContents()) {
-					if (log.isDebugEnabled()) log.debug("storing stream to contents of zip entries under session key ["+getContentsSessionKey()+"]");
+					log.debug("storing stream to contents of zip entries under session key [{}]", ()->getContentsSessionKey());
 					session.put(getContentsSessionKey(),StreamUtil.dontClose(source)); // do this each time, to allow reuse of the session key when an item is optionally encoded
 				} else {
-					if (log.isDebugEnabled()) log.debug("storing contents of zip entry under session key ["+getContentsSessionKey()+"]");
+					log.debug("storing contents of zip entry under session key [{}]", ()->getContentsSessionKey());
 					String content;
 					if (isSkipBOM()) {
 						byte[] contentBytes = StreamUtil.streamToByteArray(StreamUtil.dontClose(source), true);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2015-2018, 2020 Nationale-Nederlanden
+   Copyright 2015-2018, 2020 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -168,7 +168,7 @@ public class CreateRestViewPipe extends XsltPipe {
 		int countSrcPrefix = StringUtils.countMatches(uri, "/");
 		String srcPrefix = StringUtils.repeat("../", countSrcPrefix);
 		session.put(SRCPREFIX, srcPrefix);
-		log.debug("stored [" + srcPrefix + "] in pipeLineSession under key [" + SRCPREFIX + "]");
+		log.debug("stored [{}] in pipeLineSession under key [{}]", srcPrefix, SRCPREFIX);
 
 		PipeRunResult prr = super.doPipe(input, session);
 		Message result = prr.getResult();
@@ -186,7 +186,7 @@ public class CreateRestViewPipe extends XsltPipe {
 		}
 
 		session.put(CONTENTTYPE, getContentType());
-		log.debug("stored [" + getContentType() + "] in pipeLineSession under key [" + CONTENTTYPE + "]");
+		log.debug("stored [{}] in pipeLineSession under key [{}]", getContentType(), CONTENTTYPE);
 
 		return new PipeRunResult(getSuccessForward(), newResult);
 	}

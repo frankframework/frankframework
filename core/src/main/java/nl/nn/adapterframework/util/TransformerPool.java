@@ -243,7 +243,7 @@ public class TransformerPool {
 				if (styleSheet==null) {
 					throw new ConfigurationException("cannot find ["+ styleSheetName + "] in scope ["+scopeProvider+"]");
 				}
-				if (log.isDebugEnabled()) log.debug("configuring stylesheet ["+styleSheetName+"] resource ["+styleSheet+"]");
+				log.debug("configuring stylesheet [{}] resource [{}]", styleSheetName, styleSheet);
 				result = TransformerPool.getInstance(styleSheet, xsltVersion);
 
 				if (xsltVersion!=0) {

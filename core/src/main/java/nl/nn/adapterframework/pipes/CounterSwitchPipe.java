@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2016, 2020 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -66,14 +66,14 @@ public class CounterSwitchPipe extends FixedForwardPipe {
 			forward = "" + (getDivisor() - (count % getDivisor()));
 		}
 
-		log.debug("determined forward [" + forward + "]");
+		log.debug("determined forward [{}]", forward);
 
 		pipeForward = findForward(forward);
 
 		if (pipeForward == null) {
 			throw new PipeRunException(this, "cannot find forward or pipe named [" + forward + "]");
 		}
-		log.debug("resolved forward [" + forward + "] to path [" + pipeForward.getPath() + "]");
+		log.debug("resolved forward [{}] to path [{}]", forward, pipeForward.getPath());
 		return new PipeRunResult(pipeForward, message);
 	}
 

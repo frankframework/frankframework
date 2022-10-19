@@ -192,12 +192,12 @@ public class UnzipPipe extends FixedForwardPipe {
 						tmpFile = tmpFile.isDirectory() ? tmpFile : tmpFile.getParentFile();
 						if (!tmpFile.exists()) {
 							if (tmpFile.mkdirs()) {	// Create directories included in the path
-								log.debug("created directory ["+tmpFile.getPath()+"]");
+								log.debug("created directory [{}]", tmpFile.getPath());
 							} else {
-								log.warn("directory ["+tmpFile.getPath()+"] could not be created");
+								log.warn("directory [{}] could not be created", tmpFile.getPath());
 							}
 						} else {
-							log.debug("directory entry ["+tmpFile.getPath()+"] already exists");
+							log.debug("directory entry [{}] already exists", tmpFile.getPath());
 						}
 					}
 
@@ -209,7 +209,7 @@ public class UnzipPipe extends FixedForwardPipe {
 						if (dotPos>=0) {
 							extension=entryname.substring(dotPos);
 							entryNameWithoutExtension=entryname.substring(0,dotPos);
-							log.debug("parsed filename ["+entryNameWithoutExtension+"] extension ["+extension+"]");
+							log.debug("parsed filename [{}] extension [{}]", entryNameWithoutExtension, extension);
 						} else {
 							entryNameWithoutExtension=entryname;
 						}
@@ -243,7 +243,7 @@ public class UnzipPipe extends FixedForwardPipe {
 								tmpFile.deleteOnExit();
 							}
 							try (FileOutputStream fileOutputStream = new FileOutputStream(tmpFile)) {
-								log.debug("writing ZipEntry ["+entryname+"] to file ["+tmpFile.getPath()+"]");
+								log.debug("writing ZipEntry [{}] to file [{}]", entryname, tmpFile.getPath());
 								count++;
 								Misc.streamToStream(inputStream, fileOutputStream);
 							}

@@ -123,7 +123,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 		}
 		if (StringUtils.isNotEmpty(getWssAuthAlias()) || StringUtils.isNotEmpty(getWssUserName())) {
 			wssCredentialFactory = new CredentialFactory(getWssAuthAlias(), getWssUserName(), getWssPassword());
-			log.debug("created CredentialFactory for username=[" + wssCredentialFactory.getUsername()+"]");
+			log.debug("created CredentialFactory for username=[{}]", wssCredentialFactory.getUsername());
 		}
 	}
 

@@ -87,7 +87,7 @@ public class RemoveFromSession extends FixedForwardPipe {
 					} catch (IOException e) {
 						throw new PipeRunException(this, "cannot open stream", e);
 					}
-					log.debug("key ["+sk+"] removed");
+					log.debug("key [{}] removed", sk);
 				}
 				if (result == null) {
 					result = (String)skResult;

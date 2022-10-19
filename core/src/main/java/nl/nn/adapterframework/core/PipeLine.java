@@ -184,7 +184,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		for (int i=0; i < pipes.size(); i++) {
 			IPipe pipe = getPipe(i);
 
-			log.debug("configuring Pipe ["+pipe.getName()+"]");
+			log.debug("configuring Pipe [{}]", pipe::getName);
 			if (pipe instanceof FixedForwardPipe) {
 				FixedForwardPipe ffpipe = (FixedForwardPipe)pipe;
 				// getSuccessForward will return null if it has not been set. See below configure(pipe)
@@ -574,9 +574,9 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	protected void stopPipe(String type, IPipe pipe) {
 		if (pipe!=null) {
 			try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put("pipe", pipe.getName())) {
-				log.debug("stopping "+type+" ["+pipe.getName()+"]");
+				log.debug("stopping {} [{}]", ()->type, pipe::getName);
 				pipe.stop();
-				log.debug("successfully stopped "+type+" [" + pipe.getName() + "]");
+				log.debug("successfully stopped {} [{}]", ()->type, pipe::getName);
 			}
 		}
 	}

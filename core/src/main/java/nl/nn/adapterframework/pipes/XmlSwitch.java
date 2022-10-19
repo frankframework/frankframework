@@ -157,7 +157,7 @@ public class XmlSwitch extends AbstractPipe {
 				throw new PipeRunException(this, "cannot open stream", e);
 			}
 		}
-		log.debug("determined forward ["+forward+"]");
+		log.debug("determined forward [{}]", forward);
 
 		if (StringUtils.isEmpty(forward) && getEmptyForwardName()!=null) {
 			throwEvent(XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT);
@@ -169,7 +169,7 @@ public class XmlSwitch extends AbstractPipe {
 				pipeForward=findForward(forward);
 			}
 			else {
-				log.info("determined forward ["+forward+"], which is not defined. Will use ["+getNotFoundForwardName()+"] instead");
+				log.info("determined forward [{}], which is not defined. Will use [{}] instead", forward, getNotFoundForwardName());
 				throwEvent(XML_SWITCH_FORWARD_NOT_FOUND_MONITOR_EVENT);
 				pipeForward=findForward(getNotFoundForwardName());
 			}

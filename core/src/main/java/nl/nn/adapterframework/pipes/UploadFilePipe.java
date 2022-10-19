@@ -95,9 +95,9 @@ public class UploadFilePipe extends FixedForwardPipe {
 
 		if (!dir.exists()) {
 			if (dir.mkdirs()) {
-				log.debug("created directory [" + dir.getPath() + "]");
+				log.debug("created directory [{}]", dir.getPath());
 			} else {
-				log.warn("directory [" + dir.getPath() + "] could not be created");
+				log.warn("directory [{}] could not be created", dir.getPath());
 			}
 		}
 

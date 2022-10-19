@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2021 WeAreFrank!
+   Copyright 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -126,7 +126,7 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 					result = super.handleItem(itemInEnvelope);
 				}
 				if (getMaxItems()>0 && ++totalItems>=getMaxItems()) {
-					log.debug("count ["+totalItems+"] reached maxItems ["+getMaxItems()+"], stopping loop");
+					log.debug("count [{}] reached maxItems [{}], stopping loop", totalItems, getMaxItems());
 					return StopReason.MAX_ITEMS_REACHED;
 				}
 				return result;

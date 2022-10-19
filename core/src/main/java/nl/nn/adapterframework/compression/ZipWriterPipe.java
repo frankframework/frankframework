@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -102,7 +102,7 @@ public class ZipWriterPipe extends FixedForwardPipe {
 	}
 
 	protected ZipWriter createZipWriter(PipeLineSession session, ParameterValueList pvl, Message message) throws PipeRunException {
-		if (log.isDebugEnabled()) log.debug("opening new zipstream");
+		log.debug("opening new zipstream");
 		OutputStream resultStream=null;
 		Object input=message.asObject();
 		if (input==null) {

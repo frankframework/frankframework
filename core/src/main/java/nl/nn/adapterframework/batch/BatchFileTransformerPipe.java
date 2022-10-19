@@ -101,7 +101,7 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 			try {
 				FileUtils.moveFileAfterProcessing(file, getMove2dirAfterTransform(), isDelete(),isOverwrite(), getNumberOfBackups());
 			} catch (Exception e) {
-				log.error(e);
+				log.error("Could not move file", e);
 			}
 			return result;
 		} catch (PipeRunException e) {

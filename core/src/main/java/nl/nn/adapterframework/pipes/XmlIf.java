@@ -101,7 +101,7 @@ public class XmlIf extends AbstractPipe {
 				}
 			}
 		} else {
-			log.debug("taking input from sessionKey ["+getSessionKey()+"]");
+			log.debug("taking input from sessionKey [{}]", getSessionKey());
 			try {
 				sInput=session.getMessage(getSessionKey()).asString();
 			} catch (IOException e) {
@@ -130,14 +130,14 @@ public class XmlIf extends AbstractPipe {
 			}
 		}
 
-		log.debug("determined forward [" + forward + "]");
+		log.debug("determined forward [{}]", forward);
 
 		pipeForward=findForward(forward);
 
 		if (pipeForward == null) {
 			throw new PipeRunException (this, "cannot find forward or pipe named [" + forward + "]");
 		}
-		log.debug("resolved forward [" + forward + "] to path ["+pipeForward.getPath()+"]");
+		log.debug("resolved forward [{}] to path [{}]", forward, pipeForward.getPath());
 		return new PipeRunResult(pipeForward, message);
 	}
 

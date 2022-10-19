@@ -271,7 +271,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		public StopReason handleItem(I item) throws SenderException, TimeoutException, IOException {
 			if (isRemoveDuplicates()) {
 				if (inputItems.indexOf(item)>=0) {
-					log.debug("duplicate item ["+item+"] will not be processed");
+					log.debug("duplicate item [{}] will not be processed", item);
 					return null;
 				}
 				inputItems.add(item);
@@ -289,9 +289,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 
 					Map<String,Object>parameterValueMap = getParameterList()!=null?getParameterList().getValues(message, session).getValueMap():null;
 					String transformedMsg=msgTransformerPool.transform(message.asSource(),parameterValueMap);
-					if (log.isDebugEnabled()) {
-						log.debug("iteration ["+totalItems+"] transformed item ["+message+"] into ["+transformedMsg+"]");
-					}
+					log.debug("iteration [{}] transformed item [{}] into [{}]", totalItems, message, transformedMsg);
 					message=new Message(transformedMsg);
 					long preprocessingEndTime = System.currentTimeMillis();
 					long preprocessingDuration = preprocessingEndTime - preprocessingStartTime;
@@ -300,9 +298,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 					throw new SenderException("cannot transform item",e);
 				}
 			} else {
-				if (log.isDebugEnabled()) {
-					log.debug("iteration ["+totalItems+"] item ["+message+"]");
-				}
+				log.debug("iteration [{}] item [{}]", totalItems, message);
 			}
 			if (childThreadSemaphore!=null) {
 				try {
@@ -365,7 +361,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 						addResult(totalItems, message, itemResult);
 					}
 					if (getMaxItems()>0 && totalItems>=getMaxItems()) {
-						log.debug("count ["+totalItems+"] reached maxItems ["+getMaxItems()+"], stopping loop");
+						log.debug("count [{}] reached maxItems [{}], stopping loop", totalItems, getMaxItems());
 						return StopReason.MAX_ITEMS_REACHED;
 					}
 					if (getStopConditionTp()!=null) {
@@ -375,10 +371,10 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 						long stopConditionDuration = stopConditionEndTime - stopConditionStartTime;
 						stopConditionStatisticsKeeper.addValue(stopConditionDuration);
 						if (StringUtils.isNotEmpty(stopConditionResult) && !stopConditionResult.equalsIgnoreCase("false")) {
-							log.debug("itemResult ["+itemResult+"] stopcondition result ["+stopConditionResult+"], stopping loop");
+							log.debug("itemResult [{}] stopcondition result [{}], stopping loop", itemResult, stopConditionResult);
 							return StopReason.STOP_CONDITION_MET;
 						}
-						log.debug("itemResult ["+itemResult+"] stopcondition result ["+stopConditionResult+"], continueing loop");
+						log.debug("itemResult [{}] stopcondition result [{}], continueing loop", itemResult, stopConditionResult);
 					}
 					return null;
 				} catch (SAXException e) {
@@ -395,10 +391,10 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		}
 		private void addResult(int count, Message message, String itemResult) throws IOException {
 			if (isRemoveXmlDeclarationInResults()) {
-				if (log.isDebugEnabled()) log.debug("removing XML declaration from ["+itemResult+"]");
+				log.debug("removing XML declaration from [{}]", itemResult);
 				itemResult = XmlUtils.skipXmlDeclaration(itemResult);
 			}
-			if (log.isDebugEnabled()) log.debug("partial result ["+itemResult+"]");
+			log.debug("partial result [{}]", itemResult);
 			String itemInput="";
 			if (isAddInputToResult()) {
 				itemInput = "<input>"+(isRemoveXmlDeclarationInResults()?XmlUtils.skipXmlDeclaration(message.asString()):message.asString())+"</input>";

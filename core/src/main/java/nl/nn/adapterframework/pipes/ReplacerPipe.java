@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 			if (getReplace() == null) {
 				throw new ConfigurationException("cannot have a null replace-attribute");
 			}
-			log.info("finds ["+getFind()+"] replaces with ["+getReplace()+"]");
+			log.info("finds [{}] replaces with [{}]", getFind(), getReplace());
 			if (!StringUtils.isEmpty(getLineSeparatorSymbol())) {
 				find=replace(find,lineSeparatorSymbol,System.getProperty("line.separator"));
 				replace=replace(replace,lineSeparatorSymbol,System.getProperty("line.separator"));

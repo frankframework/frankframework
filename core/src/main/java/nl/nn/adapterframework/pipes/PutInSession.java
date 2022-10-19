@@ -69,7 +69,7 @@ public class PutInSession extends FixedForwardPipe {
 				v = Message.asMessage(getValue());
 			}
 			session.put(getSessionKey(), v);
-			if (log.isDebugEnabled()) log.debug("stored [" + v + "] in pipeLineSession under key [" + getSessionKey() + "]");
+			log.debug("stored [{}] in pipeLineSession under key [{}]", v, getSessionKey());
 		}
 
 		ParameterList parameterList = getParameterList();
@@ -81,7 +81,7 @@ public class PutInSession extends FixedForwardPipe {
 						String name  = pv.getName();
 						Object value = pv.getValue();
 						session.put(name, value);
-						if (log.isDebugEnabled()) log.debug("stored ["+value+"] in pipeLineSession under key ["+name+"]");
+						log.debug("stored [{}] in pipeLineSession under key [{}]", value, name);
 					}
 				}
 			} catch (ParameterException e) {

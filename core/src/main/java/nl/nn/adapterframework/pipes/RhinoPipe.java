@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -171,10 +171,7 @@ public class RhinoPipe extends FixedForwardPipe {
 			Object result = fct.call(cx, scope, scope, new Object[] { message.asString() });
 
 			jsResult = (String) Context.jsToJava(result, String.class);
-			if (isDebug() && log.isDebugEnabled()) {
-				log.debug("jsResult ["+ jsResult+"]");
-			}
-
+			if (isDebug()) log.debug("jsResult [{}]", jsResult);
 
 		} catch (EcmaError ex) {
 			throw new PipeRunException(this, "org.mozilla.javascript.EcmaError -> ", ex);

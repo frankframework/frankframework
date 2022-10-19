@@ -146,11 +146,7 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 		}
 
 		session.put(this.getSessionKey(), formattedDate);
-
-		if (log.isDebugEnabled()) {
-			log.debug("stored ["+ formattedDate	+ "] in pipeLineSession under key [" + getSessionKey() + "]");
-		}
-
+		log.debug("stored [{}] in pipeLineSession under key [{}]", formattedDate, getSessionKey());
 		return new PipeRunResult(getSuccessForward(), message);
 	}
 

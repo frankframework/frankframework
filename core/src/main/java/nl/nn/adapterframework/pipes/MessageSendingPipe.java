@@ -238,7 +238,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				throw new ConfigurationException("while configuring sender",e);
 			}
 			if (getSender() instanceof HasPhysicalDestination) {
-				log.info("has sender on "+((HasPhysicalDestination)getSender()).getPhysicalDestinationName());
+				log.info("has sender on {}", ((HasPhysicalDestination)getSender()).getPhysicalDestinationName());
 			}
 			if (getListener() != null) {
 				if (getSender().isSynchronous()) {
@@ -250,7 +250,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					throw new ConfigurationException("while configuring listener",e);
 				}
 				if (getListener() instanceof HasPhysicalDestination) {
-					log.info("has listener on "+((HasPhysicalDestination)getListener()).getPhysicalDestinationName());
+					log.info("has listener on {}", ((HasPhysicalDestination)getListener()).getPhysicalDestinationName());
 				}
 			}
 
@@ -457,7 +457,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			if (messageLog!=null) {
 				preserve(input, session);
 			}
-			log.debug("input after wrapping ("+ClassUtils.nameOf(input)+") [" + input.toString() + "]");
+			log.debug("input after wrapping [{}]", input);
 		}
 
 		if (getInputValidator()!=null) {
@@ -487,15 +487,15 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				if (sfn != null) {
 					try {
 						result = new Message(Misc.resourceToString(ClassUtils.getResourceURL(this, sfn), Misc.LINE_SEPARATOR));
-						log.info("returning result from dynamic stub ["+sfn+"]");
+						log.info("returning result from dynamic stub [{}]", sfn);
 					} catch (Throwable e) {
 						throw new PipeRunException(this,"got exception loading result from stub [" + sfn + "]",e);
 					}
 				} else {
-					log.info("returning result from static stub ["+getStubFilename()+"]");
+					log.info("returning result from static stub [{}]", getStubFilename());
 				}
 			} else {
-				log.info("returning result from static stub ["+getStubFilename()+"]");
+				log.info("returning result from static stub [{}]", getStubFilename());
 			}
 		} else {
 			Map<String,Object> threadContext=new LinkedHashMap<String,Object>();
@@ -555,19 +555,19 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 
 				if (getSender().isSynchronous()) {
 					if (log.isInfoEnabled()) {
-						log.info("sent message to ["+ getSender().getName()+ "] synchronously");
+						log.info("sent message to [{}] synchronously", getSender().getName());
 					}
 					result = sendResult.getResult();
 				} else {
 					messageID = sendResult.getResult().asString();
 					if (log.isInfoEnabled()) {
-						log.info("sent message to [" + getSender().getName()+ "] messageID ["+ messageID+ "] linkMethod ["+ getLinkMethod()	+ "]");
+						log.info("sent message to [{}] messageID [{}] linkMethod [{}]", getSender().getName(), messageID, getLinkMethod());
 					}
 					// if linkMethod is MESSAGEID overwrite correlationID with the messageID
 					// as this will be used with the listener
 					if (getLinkMethod() == LinkMethod.MESSAGEID) {
 						correlationID = sendResult.getResult().asString();
-						if (log.isDebugEnabled()) log.debug("setting correlationId to listen for to messageId ["+correlationID+"]");
+						log.debug("setting correlationId to listen for to messageId [{}]", correlationID);
 					}
 				}
 
