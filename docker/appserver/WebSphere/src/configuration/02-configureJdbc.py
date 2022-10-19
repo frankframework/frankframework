@@ -7,18 +7,6 @@ server = 'server1'
 #p1 = AdminConfig.listTemplates('DataSource')
 #print 'DataSource templates: ', p1
 
-def createAuthAlias( aliasName, username, password, description ):
-	print "Creating Auth Alias ", aliasName
-	security = AdminConfig.getid('/Security:/')
-	alias = ['alias', aliasName ]
-	userid = ['userId', username ]
-	pw = ['password', password ]
-	descr = ['description', description ]
-	jaasAttrs = [alias, userid, pw, descr]
-	aliasId = AdminConfig.create('JAASAuthData', security, jaasAttrs)
-	AdminConfig.save()
-	return(aliasId)
-
 def createTemplatedProvider(templateName, implementationClass, classpath):
 	print "Creating JDBC Provider using template: ", templateName
 	providerName = templateName

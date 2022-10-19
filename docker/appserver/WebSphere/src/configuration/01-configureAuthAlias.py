@@ -5,14 +5,13 @@ node = AdminControl.getNode()
 server = 'server1'
 
 
-def createAuthAlias( aliasName, username, password, description ):
+def createAuthAlias( aliasName, username, password ):
 	print "Creating Auth Alias ", aliasName
 	security = AdminConfig.getid('/Security:/')
 	alias = ['alias', aliasName ]
 	userid = ['userId', username ]
 	pw = ['password', password ]
-	descr = ['description', description ]
-	jaasAttrs = [alias, userid, pw, descr]
+	jaasAttrs = [alias, userid, pw]
 	aliasId = AdminConfig.create('JAASAuthData', security, jaasAttrs)
 	AdminConfig.save()
 	return(aliasId)
@@ -25,8 +24,5 @@ for secret in secretsList:
 	aliasName = secret
 	username=open(path_to_secrets+secret+"/username").read()
 	password=open(path_to_secrets+secret+"/password").read()
-	print(aliasName)
-	print(username)
-	print(password)
 	
-	createAuthAlias( aliasName, username, password, '')
+	createAuthAlias(aliasName, username, password)
