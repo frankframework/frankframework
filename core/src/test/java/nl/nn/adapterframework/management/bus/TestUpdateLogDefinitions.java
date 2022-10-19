@@ -1,19 +1,18 @@
 package nl.nn.adapterframework.management.bus;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import java.util.Map;
 
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import nl.nn.adapterframework.testutil.MatchUtils;
-import nl.nn.adapterframework.testutil.TestFileUtils;
 
 /**
  * In the Log4J4Ibis.xml is a nl.nn.adapterframework.management.bus definition which we use here to test the BUS responses.
@@ -68,8 +67,8 @@ public class TestUpdateLogDefinitions extends BusTestBase {
 			assertEquals("DEBUG", loggers.get("nl.nn.adapterframework.management.bus.endpoints"));
 		}
 
-		String expectedJson = TestFileUtils.getTestFile("/Management/logDefinitionsWithBusFilter.json");
-		MatchUtils.assertJsonEquals(expectedJson, json);
+		assertThat(json, Matchers.containsString("\"nl.nn.adapterframework.management.bus\":"));
+		assertThat(json, Matchers.containsString("\"nl.nn.adapterframework.management.bus.endpoints\":"));
 	}
 
 	@Test

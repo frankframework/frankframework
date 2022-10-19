@@ -59,6 +59,7 @@ import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.NameComparatorBase;
 import nl.nn.adapterframework.util.RunState;
+import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.CONFIGURATION)
@@ -69,7 +70,7 @@ public class ConfigManagement {
 	private Logger log = LogUtil.getLogger(this);
 	private static final String HEADER_CONFIGURATION_NAME_KEY = "configuration";
 	private static final String HEADER_CONFIGURATION_VERSION_KEY = "version";
-	private static final String HEADER_DATASOURCE_NAME_KEY = "datasourceName";
+	private static final String HEADER_DATASOURCE_NAME_KEY = FrankApiBase.HEADER_DATASOURCE_NAME_KEY;
 
 	private IbisContext getIbisContext() {
 		return ibisManager.getIbisContext();

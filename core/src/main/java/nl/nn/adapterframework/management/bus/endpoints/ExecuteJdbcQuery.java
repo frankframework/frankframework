@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
@@ -44,7 +43,6 @@ import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
-import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
@@ -89,11 +87,7 @@ public class ExecuteJdbcQuery {
 		String query = BusMessageUtils.getHeader(message, "query");
 		boolean trimSpaces = BusMessageUtils.getBooleanHeader(message, "trimSpaces", false);
 		boolean avoidLocking = BusMessageUtils.getBooleanHeader(message, "avoidLocking", false);
-		ResultType resultType = ResultType.XML;
-		String resultTypeString = BusMessageUtils.getHeader(message, "resultType");
-		if(StringUtils.isNotEmpty(resultTypeString)) {
-			resultType = EnumUtils.parse(ResultType.class, resultTypeString);
-		}
+		ResultType resultType = BusMessageUtils.getEnumHeader(message, "resultType", ResultType.class, ResultType.XML);
 
 		return doExecute(datasource, queryType, query, trimSpaces, avoidLocking, resultType);
 	}
