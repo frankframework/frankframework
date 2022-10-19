@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.management.bus;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -58,8 +59,18 @@ public class ResponseMessage {
 	public static Message<InputStream> ok(InputStream stream, MimeType mediaType) {
 		Map<String, Object> headers = new HashMap<>();
 		headers.put(STATUS_KEY, 200);
-		headers.put(MIMETYPE_KEY, mediaType.toString());
+		if(mediaType != null) {
+			headers.put(MIMETYPE_KEY, mediaType.toString());
+		}
 		return new GenericMessage<>(stream, headers);
+	}
+
+	public static Message<Object> ok(nl.nn.adapterframework.stream.Message message) throws IOException {
+		Map<String, Object> headers = message.getContext();
+		if(message.isBinary()) {
+			return new GenericMessage<>(message.asInputStream(), headers);
+		}
+		return new GenericMessage<>(message.asString(), headers);
 	}
 
 	public static Message<String> noContent() {

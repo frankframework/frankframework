@@ -16,10 +16,12 @@
 package nl.nn.adapterframework.management.bus.endpoints;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationContext;
 import org.springframework.messaging.Message;
 
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
 import nl.nn.adapterframework.jms.JmsSender;
@@ -29,16 +31,21 @@ import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.QUEUE)
 public class SendJmsMessage {
 	private @Getter @Setter IbisManager ibisManager;
+	private @Getter @Setter ApplicationContext applicationContext;
 
 	@ActionSelector(BusAction.UPLOAD)
-	public void putMessageOnQueue(Message<?> message) {
+	public Message<Object> putMessageOnQueue(Message<?> message) {
 		String connectionFactory = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_CONNECTION_FACTORY_NAME_KEY);
 		if(StringUtils.isEmpty(connectionFactory)) {
 			throw new BusException("a connectionFactory must be provided");
@@ -48,22 +55,36 @@ public class SendJmsMessage {
 			throw new BusException("a destination must be provided");
 		}
 		boolean lookupDestination = BusMessageUtils.getBooleanHeader(message, "lookupDestination", false);
-		boolean synchronous = BusMessageUtils.getBooleanHeader(message, "synchronous", false);
+		boolean expectsReply = message.getHeaders().containsKey("replyChannel");
+		boolean persistent = message.getHeaders().containsKey("persistent");
 		String replyTo = BusMessageUtils.getHeader(message, "replyTo", null);
+		String messageProperty = BusMessageUtils.getHeader(message, "messageProperty", null);
 		DestinationType type = BusMessageUtils.getEnumHeader(message, "type", DestinationType.class);
 		if(type == null) {
 			throw new BusException("a DestinationType must be provided");
 		}
-		Object payload = message.getPayload();
-		if(payload == null) {
-			throw new BusException("no payload provided");
-		}
 
-		JmsSender qms = createJmsSender(connectionFactory, destination, type, replyTo, synchronous, lookupDestination);
-		processMessage(qms, payload);
+		JmsSender qms = createJmsSender(connectionFactory, destination, persistent, type, replyTo, expectsReply, lookupDestination);
+		if(StringUtils.isNotEmpty(messageProperty)) {
+			qms.addParameter(getMessagePropertyParameter(messageProperty));
+		}
+		return processMessage(qms, message.getPayload(), expectsReply);
 	}
 
-	private JmsSender createJmsSender(String connectionFactory, String destination, DestinationType type, String replyTo, boolean synchronous, boolean lookupDestination) {
+	private Parameter getMessagePropertyParameter(String messageProperty) {
+		String[] keypair = messageProperty.split(",");
+		Parameter p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+		p.setName(keypair[0]);
+		p.setValue(keypair[1]);
+		try {
+			p.configure();
+		} catch (ConfigurationException e) {
+			throw new BusException("Failed to configure message property ["+p.getName()+"]", e);
+		}
+		return p;
+	}
+
+	private JmsSender createJmsSender(String connectionFactory, String destination, boolean persistent, DestinationType type, String replyTo, boolean synchronous, boolean lookupDestination) {
 		JmsSender qms = getIbisManager().getIbisContext().createBeanAutowireByName(JmsSender.class);
 		qms.setName("SendJmsMessageAction");
 		if(type == DestinationType.QUEUE) {
@@ -73,6 +94,7 @@ public class SendJmsMessage {
 		}
 		qms.setDestinationName(destination);
 		qms.setDestinationType(type);
+		qms.setPersistent(persistent);
 		if (StringUtils.isNotEmpty(replyTo)) {
 			qms.setReplyToName(replyTo);
 		}
@@ -81,17 +103,19 @@ public class SendJmsMessage {
 		return qms;
 	}
 
-	private void processMessage(JmsSender qms, Object message) {
+	private Message<Object> processMessage(JmsSender qms, Object requestMessage, boolean expectsReply) {
 		try {
 			qms.open();
-			qms.sendMessage(nl.nn.adapterframework.stream.Message.asMessage(message), null);
+			nl.nn.adapterframework.stream.Message responseMessage = qms.sendMessage(nl.nn.adapterframework.stream.Message.asMessage(requestMessage), null);
+			return expectsReply ? ResponseMessage.ok(responseMessage) : null;
 		} catch (Exception e) {
 			throw new BusException("error occured sending message", e);
-		}
-		try {
-			qms.close();
-		} catch (Exception e) {
-			throw new BusException("error occured on closing connection", e);
+		} finally {
+			try {
+				qms.close();
+			} catch (Exception e) {
+				LogUtil.getLogger(this).error("unable to close connection", e);
+			}
 		}
 	}
 }

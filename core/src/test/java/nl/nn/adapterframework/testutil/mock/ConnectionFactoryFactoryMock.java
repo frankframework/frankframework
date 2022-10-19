@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
@@ -54,6 +55,7 @@ public class ConnectionFactoryFactoryMock implements IConnectionFactoryFactory {
 		doReturn(destinationQueue).when(session).createQueue(anyString());
 
 		MessageHandler handler = getMessageHandler();
+		doReturn(handler).when(session).createConsumer(isNull(), isNull());
 		doReturn(handler).when(session).createConsumer(any(Destination.class), anyString());
 		doReturn(handler).when(session).createProducer(any(Destination.class));
 
@@ -154,7 +156,7 @@ public class ConnectionFactoryFactoryMock implements IConnectionFactoryFactory {
 
 		@Override
 		public Message receive(long timeout) throws JMSException {
-			return (payload == null) ? mock(Message.class) : payload;
+			return (payload == null) ? TextMessageMock.newInstance() : payload;
 		}
 	}
 
@@ -162,6 +164,11 @@ public class ConnectionFactoryFactoryMock implements IConnectionFactoryFactory {
 		private @Getter @Setter String text;
 		public static TextMessageMock newInstance() {
 			return mock(TextMessageMock.class, CALLS_REAL_METHODS);
+		}
+
+		@Override
+		public Enumeration<String> getPropertyNames() throws JMSException {
+			return Collections.emptyEnumeration();
 		}
 	}
 }

@@ -34,17 +34,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
-import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.RequestMessageBuilder;
-import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -56,7 +49,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 
 @Path("/")
-public final class SendJmsMessage extends Base {
+public final class SendJmsMessage extends FrankApiBase {
 
 	@POST
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -86,23 +79,10 @@ public final class SendJmsMessage extends Base {
 		builder.addHeader("destination", destinationName);
 		builder.addHeader("type", destinationType);
 		builder.addHeader("replyTo", replyTo);
+		builder.addHeader("persistent", persistent);
 		builder.addHeader("synchronous", synchronous);
 		builder.addHeader("lookupDestination", lookupDestination);
-
-		JmsSender qms = jmsBuilder(connectionFactory, destinationName, persistent, destinationType, replyTo, synchronous, lookupDestination);
-
-		if(StringUtils.isNotEmpty(messageProperty)) {
-			String[] keypair = messageProperty.split(",");
-			Parameter p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
-			p.setName(keypair[0]);
-			p.setValue(keypair[1]);
-			try {
-				p.configure();
-			} catch (ConfigurationException e) {
-				throw new ApiException("Failed to configure message property ["+p.getName()+"]", e);
-			}
-			qms.addParameter(p);
-		}
+		builder.addHeader("messageProperty", messageProperty);
 
 		Attachment filePart = inputDataMap.getAttachment("file");
 		if(filePart != null) {
@@ -110,8 +90,7 @@ public final class SendJmsMessage extends Base {
 
 			if (StringUtils.endsWithIgnoreCase(fileName, ".zip")) {
 				try {
-					processZipFile(file, qms);
-
+					processZipFile(file, builder);
 					return Response.status(Response.Status.OK).build();
 				} catch (IOException e) {
 					throw new ApiException("error processing zip file", e);
@@ -131,36 +110,15 @@ public final class SendJmsMessage extends Base {
 		}
 
 		if(StringUtils.isEmpty(message)) {
-			throw new ApiException("must provide either a message or file", 400);
+			throw new ApiException("Neither a file nor a message was supplied", 400);
 		}
+
 		builder.setPayload(message);
-
-		callAsyncGateway(builder); //return this!
-
-		processMessage(qms, message);
-		return Response.status(Response.Status.OK).build();
+		return (synchronous) ? callSyncGateway(builder) : callAsyncGateway(builder);
 	}
 
-	private JmsSender jmsBuilder(String connectionFactory, String destination, boolean persistent, String type, String replyTo, boolean synchronous, boolean lookupDestination) {
-		JmsSender qms = getIbisContext().createBeanAutowireByName(JmsSender.class);
-		qms.setName("SendJmsMessageAction");
-		if(type.equals("QUEUE")) {
-			qms.setQueueConnectionFactoryName(connectionFactory);
-		} else {
-			qms.setTopicConnectionFactoryName(connectionFactory);
-		}
-		qms.setDestinationName(destination);
-		qms.setPersistent(persistent);
-		qms.setDestinationType(EnumUtils.parse(DestinationType.class, type));
-		if (StringUtils.isNotEmpty(replyTo)) {
-			qms.setReplyToName(replyTo);
-		}
-		qms.setSynchronous(synchronous);
-		qms.setLookupDestination(lookupDestination);
-		return qms;
-	}
 
-	private void processZipFile(InputStream file, JmsSender qms) throws IOException {
+	private void processZipFile(InputStream file, RequestMessageBuilder builder) throws IOException {
 		ZipInputStream archive = new ZipInputStream(file);
 		for (ZipEntry entry=archive.getNextEntry(); entry!=null; entry=archive.getNextEntry()) {
 			int size = (int)entry.getSize();
@@ -177,29 +135,11 @@ public final class SendJmsMessage extends Base {
 				}
 				String currentMessage = XmlUtils.readXml(b,0,rb,StreamUtil.DEFAULT_INPUT_STREAM_ENCODING,false);
 
-				processMessage(qms, currentMessage);
+				builder.setPayload(currentMessage);
+				callAsyncGateway(builder);
 			}
 			archive.closeEntry();
 		}
 		archive.close();
-	}
-
-	private void processMessage(JmsSender qms, String message) throws ApiException {
-		try {
-			qms.open();
-			/*
-			 * this used to be:
-			 *   qms.sendMessage(technicalCorrelationId,new Message(message), null);
-			 * Be aware that 'technicalCorrelationId' will not be used by default
-			 */
-			qms.sendMessage(new Message(message), null);
-		} catch (Exception e) {
-			throw new ApiException("Error occured sending message", e);
-		}
-		try {
-			qms.close();
-		} catch (Exception e) {
-			throw new ApiException("Error occured on closing connection", e);
-		}
 	}
 }
