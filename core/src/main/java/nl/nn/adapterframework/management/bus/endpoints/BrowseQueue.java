@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.management.bus.endpoints;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -26,11 +27,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.messaging.Message;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
+import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.jms.IConnectionFactoryFactory;
 import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
 import nl.nn.adapterframework.jms.JmsBrowser;
@@ -97,34 +102,14 @@ public class BrowseQueue {
 			jmsBrowser.setDestinationType(type);
 			jmsBrowser.setLookupDestination(lookupDestination);
 
-			List<Map<String, Object>> messages = new ArrayList<>();
+			List<MessageBrowsingItemDOA> messages = new ArrayList<>();
 			try (IMessageBrowsingIterator it = jmsBrowser.getIterator()) {
 				while (it.hasNext()) {
-					IMessageBrowsingIteratorItem item = it.next();
-					Map<String, Object> mbiMessage = new HashMap<>();
-					mbiMessage.put("comment", item.getCommentString());
-					mbiMessage.put("correlationId", item.getCorrelationId());
-					try {
-						mbiMessage.put("expiryDate", item.getExpiryDate());
-					} catch (Exception e) {
-						log.warn("Could not get expiryDate",e);
-					}
-					mbiMessage.put("host", item.getHost());
-					mbiMessage.put("id", item.getId());
-					try {
-						mbiMessage.put("insertDate", item.getInsertDate());
-					} catch (Exception e) {
-						log.warn("Could not get insertDate",e);
-					}
-					if(showPayload && item instanceof JmsMessageBrowserIteratorItem) {
-						mbiMessage.put("text", ((JmsMessageBrowserIteratorItem) item).getText());
-					}
-
-					messages.add(mbiMessage);
+					messages.add(new MessageBrowsingItemDOA(it.next(), showPayload));
 				}
 			}
 
-			log.debug("Browser returned [" + messages.size() + "] messages");
+			log.debug("Browser returned [{}] messages", messages::size);
 			returnMap.put("numberOfMessages", messages.size());
 
 			if(!rowNumbersOnly) {
@@ -135,6 +120,36 @@ public class BrowseQueue {
 		}
 		catch (Exception e) {
 			throw new BusException("Error occured browsing messages", e);
+		}
+	}
+
+	private class MessageBrowsingItemDOA {
+		private @Getter Date expiryDate;
+		private final @Getter String host;
+		private @Getter Date insertDate;
+		private final @Getter String comment;
+		private final @Getter String correlationId;
+		private final @Getter String id;
+		private @Getter @JsonInclude(Include.NON_NULL) String text;
+
+		public MessageBrowsingItemDOA(IMessageBrowsingIteratorItem item, boolean showPayload) throws ListenerException {
+			comment = item.getCommentString();
+			correlationId = item.getCorrelationId();
+			try {
+				expiryDate = item.getExpiryDate();
+			} catch (Exception e) {
+				log.warn("Could not get expiryDate", e);
+			}
+			host = item.getHost();
+			id = item.getId();
+			try {
+				insertDate = item.getInsertDate();
+			} catch (Exception e) {
+				log.warn("Could not get insertDate", e);
+			}
+			if(showPayload && item instanceof JmsMessageBrowserIteratorItem) {
+				text = ((JmsMessageBrowserIteratorItem) item).getText();
+			}
 		}
 	}
 }
