@@ -74,7 +74,7 @@ public class BrowseQueue {
 	}
 
 	@ActionSelector(BusAction.FIND)
-	public Message<String> putMessageOnQueue(Message<?> message) {
+	public Message<String> findMessagesOnQueue(Message<?> message) {
 		String connectionFactory = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_CONNECTION_FACTORY_NAME_KEY);
 		if(StringUtils.isEmpty(connectionFactory)) {
 			throw new BusException("a connectionFactory must be provided");

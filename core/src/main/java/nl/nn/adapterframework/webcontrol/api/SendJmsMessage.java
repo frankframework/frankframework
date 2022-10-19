@@ -37,6 +37,9 @@ import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
 import nl.nn.adapterframework.jms.JmsSender;
+import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.management.bus.RequestMessageBuilder;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.EnumUtils;
@@ -77,6 +80,14 @@ public final class SendJmsMessage extends Base {
 		boolean synchronous = resolveTypeFromMap(inputDataMap, "synchronous", boolean.class, false);
 		boolean lookupDestination = resolveTypeFromMap(inputDataMap, "lookupDestination", boolean.class, false);
 		String messageProperty = resolveTypeFromMap(inputDataMap, "property", String.class, "");
+
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.QUEUE, BusAction.UPLOAD);
+		builder.addHeader(HEADER_CONNECTION_FACTORY_NAME_KEY, connectionFactory);
+		builder.addHeader("destination", destinationName);
+		builder.addHeader("type", destinationType);
+		builder.addHeader("replyTo", replyTo);
+		builder.addHeader("synchronous", synchronous);
+		builder.addHeader("lookupDestination", lookupDestination);
 
 		JmsSender qms = jmsBuilder(connectionFactory, destinationName, persistent, destinationType, replyTo, synchronous, lookupDestination);
 
@@ -119,13 +130,15 @@ public final class SendJmsMessage extends Base {
 			message = resolveStringWithEncoding(inputDataMap, "message", fileEncoding);
 		}
 
-		if(message != null && message.length() > 0) {
-			processMessage(qms, message);
-			return Response.status(Response.Status.OK).build();
-		}
-		else {
+		if(StringUtils.isEmpty(message)) {
 			throw new ApiException("must provide either a message or file", 400);
 		}
+		builder.setPayload(message);
+
+		callAsyncGateway(builder); //return this!
+
+		processMessage(qms, message);
+		return Response.status(Response.Status.OK).build();
 	}
 
 	private JmsSender jmsBuilder(String connectionFactory, String destination, boolean persistent, String type, String replyTo, boolean synchronous, boolean lookupDestination) {

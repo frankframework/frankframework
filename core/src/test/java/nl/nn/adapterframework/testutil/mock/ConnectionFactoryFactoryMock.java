@@ -19,19 +19,29 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.ConnectionMetaData;
+import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 import javax.jms.Session;
+import javax.jms.TextMessage;
 import javax.naming.NamingException;
 
+import org.mockito.Mockito;
+
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.jms.IConnectionFactoryFactory;
 import nl.nn.adapterframework.jms.JmsTransactionalStorage;
 
 public class ConnectionFactoryFactoryMock implements IConnectionFactoryFactory {
 	private Map<String, ConnectionFactory> objects = new ConcurrentHashMap<>();
 	public static final String MOCK_CONNECTION_FACTORY_NAME = "dummyMockConnectionFactory";
+
+	private static ThreadLocal<MessageHandler> messageHandlers = new ThreadLocal<>();
 
 	public ConnectionFactoryFactoryMock() throws JMSException {
 		ConnectionFactory cf = mock(ConnectionFactory.class);
@@ -42,12 +52,31 @@ public class ConnectionFactoryFactoryMock implements IConnectionFactoryFactory {
 		Session session = mock(Session.class);
 		Queue destinationQueue = mock(Queue.class);
 		doReturn(destinationQueue).when(session).createQueue(anyString());
+
+		MessageHandler handler = getMessageHandler();
+		doReturn(handler).when(session).createConsumer(any(Destination.class), anyString());
+		doReturn(handler).when(session).createProducer(any(Destination.class));
+
 		QueueBrowser browser = new QueueBrowserMock(destinationQueue);
 		doReturn(browser).when(session).createBrowser(any(Queue.class));
 		doReturn(browser).when(session).createBrowser(any(Queue.class), anyString());
 		doReturn(session).when(connection).createSession(anyBoolean(), anyInt());
+		doReturn(TextMessageMock.newInstance()).when(session).createTextMessage();
 		doReturn(connection).when(cf).createConnection();
 		objects.put(MOCK_CONNECTION_FACTORY_NAME, cf);
+	}
+
+	public static MessageHandler getMessageHandler() {
+		return getMessageHandler(false);
+	}
+
+	public static synchronized MessageHandler getMessageHandler(boolean createNewInstance) {
+		MessageHandler handler = messageHandlers.get();
+		if(handler == null || createNewInstance) {
+			handler = MessageHandler.newInstance();
+			messageHandlers.set(handler);
+		}
+		return handler;
 	}
 
 	@Override
@@ -98,6 +127,41 @@ public class ConnectionFactoryFactoryMock implements IConnectionFactoryFactory {
 		@Override
 		public void close() throws JMSException {
 			// Nothing to close
+		}
+	}
+
+	//Use this to 'send' and 'receive' messages
+	public abstract static class MessageHandler extends Mockito implements MessageProducer, MessageConsumer {
+		private javax.jms.Message payload = null;
+		public static MessageHandler newInstance() {
+			return mock(MessageHandler.class, CALLS_REAL_METHODS);
+		}
+
+		@Override
+		public void send(Message message) throws JMSException {
+			send(null, message);
+		}
+
+		@Override
+		public void send(Destination destination, Message message) throws JMSException {
+			payload = message;
+		}
+
+		@Override
+		public Message receive() throws JMSException {
+			return receive(0);
+		}
+
+		@Override
+		public Message receive(long timeout) throws JMSException {
+			return (payload == null) ? mock(Message.class) : payload;
+		}
+	}
+
+	public abstract static class TextMessageMock extends Mockito implements TextMessage {
+		private @Getter @Setter String text;
+		public static TextMessageMock newInstance() {
+			return mock(TextMessageMock.class, CALLS_REAL_METHODS);
 		}
 	}
 }
