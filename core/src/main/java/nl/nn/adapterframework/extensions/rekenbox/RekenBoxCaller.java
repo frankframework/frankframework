@@ -173,10 +173,10 @@ public class RekenBoxCaller extends FixedForwardPipe {
 			Misc.stringToFile(rekenboxInput, inputFileName);
 
 			// precreating outputfile is necessary for L76HB000
-			log.debug("precreating outputfile [" + outputFileName + "]");
+			log.debug("precreating outputfile [{}]", outputFileName);
 			new File(outputFileName).createNewFile();
 
-			log.debug("will issue command [" + callAndArgs + "]");
+			log.debug("will issue command [{}]", callAndArgs);
 
 			// execute
 			Runtime rt = Runtime.getRuntime();
@@ -193,7 +193,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 				// read output
 				result = Misc.fileToString(outputFileName, "\n", true);
 			}
-			log.debug("completed call. Process exit code is: " + child.exitValue());
+			log.debug("completed call. Process exit code is: {}", child.exitValue());
 
 			// log.debug("Pipe ["+name+"] retrieved result ["+result+"]");
 			return new PipeRunResult(getSuccessForward(), result);

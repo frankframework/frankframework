@@ -80,7 +80,7 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 			try {
 				return doPipeWithException(message, session);
 			} catch (Throwable t) {
-				log.warn("exception occured, forwarding to exception-forward [" + exceptionForward.getPath() +"], exception:\n", t);
+				log.warn("exception occured, forwarding to exception-forward [{}]", exceptionForward.getPath(), t);
 				return new PipeRunResult(exceptionForward, message);
 			}
 		}

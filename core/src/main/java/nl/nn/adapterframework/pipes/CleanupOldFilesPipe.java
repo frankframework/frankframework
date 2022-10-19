@@ -74,13 +74,13 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 				for (Iterator<File> fileIt = delFiles.iterator(); fileIt.hasNext();) {
 					File file = fileIt.next();
 					if (file.delete()) {
-						log.info("deleted file ["+file.getAbsolutePath()+"]");
+						log.info("deleted file [{}]", file::getAbsolutePath);
 					} else {
-						log.warn("could not delete file ["+file.getAbsolutePath()+"]");
+						log.warn("could not delete file [{}]", file::getAbsolutePath);
 					}
 				}
 			} else {
-				log.info("no files match pattern ["+filename+"]");
+				log.info("no files match pattern [{}]", filename);
 			}
 
 			if (isDeleteEmptySubdirectories()) {
@@ -147,13 +147,13 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 			}
 			if (level>0 && directory.list().length==0) {
 				if (directory.delete()) {
-					log.info("deleted empty directory ["+directory.getAbsolutePath()+"]");
+					log.info("deleted empty directory [{}]", directory::getAbsolutePath);
 				} else {
-					log.warn("could not delete empty directory ["+directory.getAbsolutePath()+"]");
+					log.warn("could not delete empty directory [{}]", directory::getAbsolutePath);
 				}
 			}
 		} else {
-			log.warn("file ["+directory.getAbsolutePath()+"] is not a directory, cannot delete subdirectories");
+			log.warn("file [{}] is not a directory, cannot delete subdirectories", directory::getAbsolutePath);
 		}
 	}
 

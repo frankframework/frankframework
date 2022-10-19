@@ -539,9 +539,9 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	protected void startPipe(String type, IPipe pipe) throws PipeStartException {
 		if (pipe!=null) {
 			try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put("pipe", pipe.getName())) {
-				log.debug("starting "+type+" ["+pipe.getName()+"]");
+				log.debug("starting {}", type);
 				pipe.start();
-				log.debug("successfully started "+type+" [" + pipe.getName() + "]");
+				log.debug("successfully started {}", type);
 			}
 		}
 	}
@@ -574,9 +574,9 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	protected void stopPipe(String type, IPipe pipe) {
 		if (pipe!=null) {
 			try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put("pipe", pipe.getName())) {
-				log.debug("stopping {} [{}]", ()->type, pipe::getName);
+				log.debug("stopping {}", type);
 				pipe.stop();
-				log.debug("successfully stopped {} [{}]", ()->type, pipe::getName);
+				log.debug("successfully stopped {}", type);
 			}
 		}
 	}
