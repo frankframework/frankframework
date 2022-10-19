@@ -128,7 +128,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 			throw new ConfigurationException("has neither filename nor filenameSessionKey nor returnString specified");
 		}
 		if (StringUtils.isNotEmpty(getStyleSheetName())) {
-			transformerPool = TransformerPool.configureStyleSheetTransformer(getLogPrefix(null), this, getStyleSheetName(), 0);
+			transformerPool = TransformerPool.configureStyleSheetTransformer(this, getStyleSheetName(), 0);
 		}
 	}
 
@@ -140,7 +140,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 			try {
 				filename = session.getMessage(getFilenameSessionKey()).asString();
 			} catch (IOException e) {
-				throw new PipeRunException(this, getLogPrefix(session) + "unable to get filename from session key ["+getFilenameSessionKey()+"]", e);
+				throw new PipeRunException(this, "unable to get filename from session key ["+getFilenameSessionKey()+"]", e);
 			}
 		}
 		if (StringUtils.isNotEmpty(filename)) {
@@ -148,20 +148,20 @@ public class FixedResultPipe extends FixedForwardPipe {
 			try {
 				resource = ClassUtils.getResourceURL(this, filename);
 			} catch (Throwable e) {
-				throw new PipeRunException(this,getLogPrefix(session)+"got exception searching for ["+filename+"]", e);
+				throw new PipeRunException(this,"got exception searching for ["+filename+"]", e);
 			}
 			if (resource == null) {
 				PipeForward fileNotFoundForward = findForward(FILE_NOT_FOUND_FORWARD);
 				if (fileNotFoundForward != null) {
 					return new PipeRunResult(fileNotFoundForward, message);
 				}
-				throw new PipeRunException(this,getLogPrefix(session)+"cannot find resource ["+filename+"]");
+				throw new PipeRunException(this,"cannot find resource ["+filename+"]");
 			}
 			try {
 				Message msg = new UrlMessage(resource);
 				result = msg.asString();
 			} catch (Throwable e) {
-				throw new PipeRunException(this,getLogPrefix(session)+"got exception loading ["+filename+"]", e);
+				throw new PipeRunException(this,"got exception loading ["+filename+"]", e);
 			}
 		}
 		if (StringUtils.isNotEmpty(getReplaceFrom()) && result != null) {
@@ -180,7 +180,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 					result=replace(result, replaceFrom, pv.asStringValue(""));
 				}
 			} catch (ParameterException e) {
-				throw new PipeRunException(this, getLogPrefix(session)+"exception extracting parameters", e);
+				throw new PipeRunException(this, "exception extracting parameters", e);
 			}
 		}
 
@@ -193,13 +193,13 @@ public class FixedResultPipe extends FixedForwardPipe {
 			try{
 				result = transformerPool.transform(Message.asSource(result));
 			} catch (SAXException e) {
-				throw new PipeRunException(this, getLogPrefix(session)+"got error converting string [" + result + "] to source", e);
+				throw new PipeRunException(this, "got error converting string [" + result + "] to source", e);
 			} catch (IOException | TransformerException e) {
-				throw new PipeRunException(this, getLogPrefix(session)+"got error transforming message [" + result + "] with [" + getStyleSheetName() + "]", e);
+				throw new PipeRunException(this, "got error transforming message [" + result + "] with [" + getStyleSheetName() + "]", e);
 			}
 		}
 
-		log.debug("{}returning fixed result [{}]", getLogPrefix(session), result);
+		log.debug("returning fixed result [{}]", result);
 		return new PipeRunResult(getSuccessForward(), result);
 	}
 

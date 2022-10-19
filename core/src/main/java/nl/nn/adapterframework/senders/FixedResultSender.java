@@ -75,7 +75,7 @@ public class FixedResultSender extends SenderWithParametersBase {
 			throw new ConfigurationException("Pipe [" + getName() + "] has neither fileName nor returnString specified");
 		}
 		if(StringUtils.isNotEmpty(getStyleSheetName())) {
-			transformerPool = TransformerPool.configureStyleSheetTransformer(getLogPrefix(), this, getStyleSheetName(), 0);
+			transformerPool = TransformerPool.configureStyleSheetTransformer(this, getStyleSheetName(), 0);
 		}
 		if (StringUtils.isNotEmpty(getReplaceFrom())) {
 			returnString = replace(returnString, replaceFrom, replaceTo );

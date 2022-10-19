@@ -109,7 +109,7 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 				try {
 					fixedDateTime = session.getMessage(FIXEDDATE_STUB4TESTTOOL_KEY).asString();
 				} catch (IOException e1) {
-					throw new PipeRunException(this, getLogPrefix(session) + "unable to determine ["+FIXEDDATE_STUB4TESTTOOL_KEY+"] from pipeline session");
+					throw new PipeRunException(this, "unable to determine ["+FIXEDDATE_STUB4TESTTOOL_KEY+"] from pipeline session");
 				}
 				if (StringUtils.isEmpty(fixedDateTime)) {
 					fixedDateTime = FIXEDDATETIME;
@@ -146,11 +146,7 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 		}
 
 		session.put(this.getSessionKey(), formattedDate);
-
-		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix(session) + "stored ["+ formattedDate	+ "] in pipeLineSession under key [" + getSessionKey() + "]");
-		}
-
+		log.debug("stored [{}] in pipeLineSession under key [{}]", formattedDate, getSessionKey());
 		return new PipeRunResult(getSuccessForward(), message);
 	}
 

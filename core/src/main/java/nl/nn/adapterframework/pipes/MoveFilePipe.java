@@ -123,7 +123,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 				File[] srcFiles = FileUtils.getFiles(srcFile.getPath(), wc, null, -1);
 				int count = (srcFiles == null ? 0 : srcFiles.length);
 				if (count==0) {
-					log.info(getLogPrefix(session) + "no files with wildcard [" + wc + "] found in directory [" + srcFile.getAbsolutePath() +"]");
+					log.info("no files with wildcard [{}] found in directory [{}]", wc, srcFile.getAbsolutePath());
 				}
 				for (int i = 0; i < count; i++) {
 					dstFile = new File(getMove2dir(), retrieveDestinationChild(srcFiles[i].getName()));
@@ -131,7 +131,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 				}
 			}
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+			throw new PipeRunException(this, "cannot open stream", e);
 		}
 
 		/* if parent source directory is empty, delete the directory */
@@ -147,15 +147,15 @@ public class MoveFilePipe extends FixedForwardPipe {
 				if (srcDirectory.list().length==0) {
 					boolean success = srcDirectory.delete();
 					if(!success) {
-						log.warn(getLogPrefix(session) + "could not delete directory [" + srcDirectory.getAbsolutePath() + "]");
+						log.warn("could not delete directory [{}]", srcDirectory.getAbsolutePath());
 					} else {
-						log.info(getLogPrefix(session) + "deleted directory [" + srcDirectory.getAbsolutePath() + "]");
+						log.info("deleted directory [{}]", srcDirectory.getAbsolutePath());
 					}
 				} else {
-					log.info(getLogPrefix(session) + "directory [" + srcDirectory.getAbsolutePath() + "] is not empty");
+					log.info("directory [{}] is not empty", srcDirectory.getAbsolutePath());
 				}
 			} else {
-				log.info(getLogPrefix(session) + "directory [" + srcDirectory.getAbsolutePath() + "] doesn't exist");
+				log.info("directory [{}] doesn't exist", srcDirectory.getAbsolutePath());
 			}
 		}
 
@@ -181,35 +181,32 @@ public class MoveFilePipe extends FixedForwardPipe {
 			if (!dstFile.getParentFile().exists()) {
 				if (isCreateDirectory()) {
 					if (dstFile.getParentFile().mkdirs()) {
-						log.debug( getLogPrefix(session) + "created directory [" + dstFile.getParent() +"]");
+						log.debug( "created directory [{}]", dstFile.getParent());
 					} else {
-						log.warn( getLogPrefix(session) + "directory [" + dstFile.getParent() +"] could not be created");
+						log.warn( "directory [{}] could not be created", dstFile.getParent());
 					}
 				} else {
-					log.warn( getLogPrefix(session) + "directory [" + dstFile.getParent() +"] does not exists");
+					log.warn( "directory [{}] does not exists", dstFile.getParent());
 				}
 			}
 
 			if (isAppend()) {
 				if (FileUtils.appendFile(srcFile,dstFile,getNumberOfAttempts(), getWaitBeforeRetry()) == null) {
 					throw new PipeRunException(this, "Could not move file [" + srcFile.getAbsolutePath() + "] to file ["+dstFile.getAbsolutePath()+"]");
-				} else {
-					srcFile.delete();
-					log.info(getLogPrefix(session)+"moved file ["+srcFile.getAbsolutePath()+"] to file ["+dstFile.getAbsolutePath()+"]");
 				}
+				srcFile.delete();
+				log.info("moved file [{}] to file [{}]", srcFile.getAbsolutePath(), dstFile.getAbsolutePath());
 			} else {
 				if (!isOverwrite() && getNumberOfBackups()==0) {
 					if (dstFile.exists() && isThrowException()) {
 						throw new PipeRunException(this, "Could not move file [" + srcFile.getAbsolutePath() + "] to file ["+dstFile.getAbsolutePath()+"] because it already exists");
-					} else {
-						dstFile = FileUtils.getFreeFile(dstFile);
 					}
+					dstFile = FileUtils.getFreeFile(dstFile);
 				}
 				if (FileUtils.moveFile(srcFile, dstFile, isOverwrite(), getNumberOfBackups(), getNumberOfAttempts(), getWaitBeforeRetry()) == null) {
 					throw new PipeRunException(this, "Could not move file [" + srcFile.getAbsolutePath() + "] to file ["+dstFile.getAbsolutePath()+"]");
-				} else {
-					log.info(getLogPrefix(session)+"moved file ["+srcFile.getAbsolutePath()+"] to file ["+dstFile.getAbsolutePath()+"]");
 				}
+				log.info("moved file [{}] to file [{}]", srcFile.getAbsolutePath(), dstFile.getAbsolutePath());
 			}
 		} catch(Exception e) {
 			throw new PipeRunException(this, "Error while moving file [" + srcFile.getAbsolutePath() + "] to file ["+dstFile.getAbsolutePath()+"]", e);

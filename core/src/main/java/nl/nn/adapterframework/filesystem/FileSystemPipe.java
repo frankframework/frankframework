@@ -70,11 +70,7 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 		FS fileSystem = getFileSystem();
 		SpringUtils.autowireByName(getApplicationContext(), fileSystem);
 		fileSystem.configure();
-		try {
-			actor.configure(fileSystem, getParameterList(), this);
-		} catch (ConfigurationException e) {
-			throw new ConfigurationException(getLogPrefix(null),e);
-		}
+		actor.configure(fileSystem, getParameterList(), this);
 	}
 
 	@Override
@@ -119,7 +115,7 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 				pvl = paramList.getValues(message, session);
 			}
 		} catch (ParameterException e) {
-			throw new PipeRunException(this,getLogPrefix(session) + "Pipe [" + getName() + "] caught exception evaluating parameters", e);
+			throw new PipeRunException(this,"Pipe caught exception evaluating parameters", e);
 		}
 
 		Object result;

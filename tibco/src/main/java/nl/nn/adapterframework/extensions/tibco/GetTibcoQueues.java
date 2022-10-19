@@ -76,7 +76,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * else
  * <ul><li>one message on a specific Tibco queue including information about this message is returned (without removing it)</li></ul>
  * </p>
- * 
+ *
  * @ff.parameter url When a parameter with name url is present, it is used instead of the url specified by the attribute
  * @ff.parameter authAlias When a parameter with name authAlias is present, it is used instead of the authAlias specified by the attribute
  * @ff.parameter username When a parameter with name userName is present, it is used instead of the userName specified by the attribute
@@ -86,7 +86,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @ff.parameter showAge When set to <code>true</code> and <code>pendingMsgCount&gt;0</code> and <code>receiverCount=0</code>, the age of the current first message in the queue is shown in the queues overview (default is false)
  * @ff.parameter countOnly When set to <code>true</code> and <code>queueName</code> is filled, only the number of pending messages is returned (default is false)
  * @ff.parameter ldapUrl When present, principal descriptions are retrieved from this LDAP server
- * 
+ *
  * @author Peter Leeuwenburgh
  */
 
@@ -122,7 +122,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 			try {
 				pvl = getParameterList().getValues(input, session);
 			} catch (ParameterException e) {
-				throw new PipeRunException(this, getLogPrefix(session) + "exception on extracting parameters", e);
+				throw new PipeRunException(this, "exception on extracting parameters", e);
 			}
 		}
 
@@ -188,22 +188,21 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				result = getQueuesInfo(jSession, admin, showAge, ldapSender);
 			}
 		} catch (Exception e) {
-			String msg = getLogPrefix(session) + "exception on showing Tibco queues, url [" + url_work + "]"
-					+ (StringUtils.isNotEmpty(queueName_work) ? " queue [" + queueName_work + "]" : "");
+			String msg = "exception on showing Tibco queues, url [" + url_work + "]" + (StringUtils.isNotEmpty(queueName_work) ? " queue [" + queueName_work + "]" : "");
 			throw new PipeRunException(this, msg, e);
 		} finally {
 			if (admin != null) {
 				try {
 					admin.close();
 				} catch (TibjmsAdminException e) {
-					log.warn(getLogPrefix(session) + "exception on closing Tibjms Admin", e);
+					log.warn("exception on closing Tibjms Admin", e);
 				}
 			}
 			if (connection != null) {
 				try {
 					connection.close();
 				} catch (JMSException e) {
-					log.warn(getLogPrefix(session) + "exception on closing connection", e);
+					log.warn("exception on closing connection", e);
 				}
 			}
 		}
@@ -232,7 +231,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 			ldapSender.configure();
 			return ldapSender;
 		} catch (ConfigurationException e) {
-			log.warn(getLogPrefix(null) + "exception on retrieving ldapSender", e);
+			log.warn("exception on retrieving ldapSender", e);
 		}
 		return null;
 	}
@@ -331,7 +330,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				try {
 					queueBrowser.close();
 				} catch (JMSException e) {
-					log.warn(getLogPrefix(null) + "exception on closing queue browser", e);
+					log.warn("exception on closing queue browser", e);
 				}
 			}
 		}

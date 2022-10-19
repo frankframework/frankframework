@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -53,13 +53,13 @@ public class ReplacerPipe extends FixedForwardPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 //		if (StringUtils.isEmpty(getFind())) {
-//			throw new ConfigurationException(getLogPrefix(null) + "cannot have empty find-attribute");
+//			throw new ConfigurationException("cannot have empty find-attribute");
 //		}
 		if (StringUtils.isNotEmpty(getFind())) {
 			if (getReplace() == null) {
 				throw new ConfigurationException("cannot have a null replace-attribute");
 			}
-			log.info(getLogPrefix(null)+ "finds ["+getFind()+"] replaces with ["+getReplace()+"]");
+			log.info("finds [{}] replaces with [{}]", getFind(), getReplace());
 			if (!StringUtils.isEmpty(getLineSeparatorSymbol())) {
 				find=replace(find,lineSeparatorSymbol,System.getProperty("line.separator"));
 				replace=replace(replace,lineSeparatorSymbol,System.getProperty("line.separator"));
@@ -102,7 +102,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 		try {
 			input = message.asString();
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+			throw new PipeRunException(this, "cannot open stream", e);
 		}
 		if (StringUtils.isNotEmpty(getFind())) {
 			input = replace(input,getFind(),getReplace());

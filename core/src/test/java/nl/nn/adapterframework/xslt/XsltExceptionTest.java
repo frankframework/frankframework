@@ -23,7 +23,7 @@ public class XsltExceptionTest {
 		
 		String xpathExpression="*/*";
 		int xsltVersion = 1;
-		TransformerPool tp = TransformerPool.configureTransformer0(null, null, null, xpathExpression, null, OutputType.XML, false, null, xsltVersion);
+		TransformerPool tp = TransformerPool.configureTransformer0(null, null, xpathExpression, null, OutputType.XML, false, null, xsltVersion);
 		
 		XmlWriter writer = new XmlWriter();
 		

@@ -122,7 +122,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 			if (omitXmlDeclaration==null) {
 				omitXmlDeclaration=true;
 			}
-			transformerPool = TransformerPool.configureTransformer0(getLogPrefix(), this, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !omitXmlDeclaration, getParameterList(), getXsltVersion());
+			transformerPool = TransformerPool.configureTransformer0(this, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !omitXmlDeclaration, getParameterList(), getXsltVersion());
 		}
 		else if(StringUtils.isEmpty(getStyleSheetNameSessionKey())) {
 			throw new ConfigurationException(getLogPrefix()+" one of xpathExpression, styleSheetName or styleSheetNameSessionKey must be specified");
@@ -214,7 +214,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 			if (!Message.isEmpty(styleSheetNameToUse )) {
 				String styleSheetNameFromSessionKey = styleSheetNameToUse.asString();
 				if(!dynamicTransformerPoolMap.containsKey(styleSheetNameFromSessionKey)) {
-					dynamicTransformerPoolMap.put(styleSheetNameFromSessionKey, poolToUse = TransformerPool.configureTransformer(getLogPrefix(), this, null, null, styleSheetNameFromSessionKey, null, true, getParameterList()));
+					dynamicTransformerPoolMap.put(styleSheetNameFromSessionKey, poolToUse = TransformerPool.configureTransformer(this, null, null, styleSheetNameFromSessionKey, null, true, getParameterList()));
 					poolToUse.open();
 				} else {
 					poolToUse = dynamicTransformerPoolMap.get(styleSheetNameFromSessionKey);

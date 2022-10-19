@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2020 Nationale-Nederlanden
+   Copyright 2016, 2020 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -58,7 +58,7 @@ public class IsXmlIfPipe extends AbstractPipe {
 			try {
 				sInput = message.asString();
 			} catch (IOException e) {
-				throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+				throw new PipeRunException(this, "cannot open stream", e);
 			}
 			if (StringUtils.isEmpty(sInput)) {
 				if (isElseForwardOnEmptyInput()) {
@@ -76,17 +76,14 @@ public class IsXmlIfPipe extends AbstractPipe {
 			}
 		}
 
-		log.debug(getLogPrefix(session) + "determined forward [" + forward
-				+ "]");
+		log.debug("determined forward [{}]", forward);
 
 		PipeForward pipeForward = findForward(forward);
 
 		if (pipeForward == null) {
-			throw new PipeRunException(this, getLogPrefix(null)
-					+ "cannot find forward or pipe named [" + forward + "]");
+			throw new PipeRunException(this, "cannot find forward or pipe named [" + forward + "]");
 		}
-		log.debug(getLogPrefix(session) + "resolved forward [" + forward
-				+ "] to path [" + pipeForward.getPath() + "]");
+		log.debug("resolved forward [{}] to path [{}]", forward, pipeForward.getPath());
 		return new PipeRunResult(pipeForward, message);
 	}
 

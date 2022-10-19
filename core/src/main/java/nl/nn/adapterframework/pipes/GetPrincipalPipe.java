@@ -27,7 +27,7 @@ import nl.nn.adapterframework.stream.Message;
 /**
  * Returns the name of the user executing the request.
  *
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.7
  */
@@ -39,12 +39,12 @@ public class GetPrincipalPipe extends FixedForwardPipe {
 		Principal principal=session.getPrincipal();
 		String principalName = "";
 		if (principal==null) {
-			log.warn(getLogPrefix(session)+"no principal found");
+			log.warn("no principal found");
 		} else {
 			try {
 				principalName = principal.getName();
 			} catch (Throwable e) {
-				throw new PipeRunException(this,getLogPrefix(session)+"got exception getting name from principal",e);
+				throw new PipeRunException(this,"got exception getting name from principal",e);
 			}
 		}
 

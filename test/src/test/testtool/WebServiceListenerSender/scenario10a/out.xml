@@ -1,6 +1,6 @@
 <throwable>
   <class>nl.nn.adapterframework.core.SenderException</class>
-  <message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-WebServiceSenderTimeoutAddress]: (RequestProcessorException) RequestProcessor [ibis4test-WebServiceSenderTimeoutAddress] caught exception: Pipe [send2ws_no_forwards] msgId [Test Tool correlation id] caught timeout-exception: (SocketTimeoutException) Read timed out</message>
+  <message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-WebServiceSenderTimeoutAddress]: (RequestProcessorException) RequestProcessor [ibis4test-WebServiceSenderTimeoutAddress] caught exception: Pipe [send2ws_no_forwards] caught timeout-exception: (SocketTimeoutException) Read timed out</message>
   <cause>
     <throwable>
       <class>nl.nn.adapterframework.dispatcher.RequestProcessorException</class>
@@ -8,11 +8,11 @@
       <cause>
         <throwable>
           <class>nl.nn.adapterframework.core.ListenerException</class>
-          <message>Pipe [send2ws_no_forwards] msgId [Test Tool correlation id] caught timeout-exception: (SocketTimeoutException) Read timed out</message>
+          <message>Pipe [send2ws_no_forwards] caught timeout-exception: (SocketTimeoutException) Read timed out</message>
           <cause>
             <throwable>
               <class>nl.nn.adapterframework.core.PipeRunException</class>
-              <message>Pipe [send2ws_no_forwards] msgId [Test Tool correlation id] caught timeout-exception: (SocketTimeoutException) Read timed out</message>
+              <message>Pipe [send2ws_no_forwards] caught timeout-exception: (SocketTimeoutException) Read timed out</message>
               <cause>
                 <throwable>
                   <class>nl.nn.adapterframework.core.TimeoutException</class>

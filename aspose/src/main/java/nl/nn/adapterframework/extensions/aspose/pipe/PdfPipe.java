@@ -160,7 +160,7 @@ public class PdfPipe extends FixedForwardPipe {
 					throw new PipeRunException(this, "action attribute must be one of the followings: "+EnumUtils.getEnumList(DocumentAction.class));
 			}
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"cannot convert to stream",e);
+			throw new PipeRunException(this, "cannot convert to stream",e);
 		}
 	}
 

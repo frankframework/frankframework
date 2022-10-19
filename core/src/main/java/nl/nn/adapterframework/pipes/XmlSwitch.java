@@ -88,7 +88,7 @@ public class XmlSwitch extends AbstractPipe {
 			}
 		}
 		if (StringUtils.isNotEmpty(getXpathExpression()) || StringUtils.isNotEmpty(getStyleSheetName())) {
-			transformerPool = TransformerPool.configureTransformer0(getLogPrefix(null), this, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), OutputType.TEXT, false, getParameterList(), getXsltVersion());
+			transformerPool = TransformerPool.configureTransformer0(this, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), OutputType.TEXT, false, getParameterList(), getXsltVersion());
 		} else {
 			transformerPool = XmlUtils.getGetRootNodeNameTransformerPool();
 		}
@@ -103,7 +103,7 @@ public class XmlSwitch extends AbstractPipe {
 			try {
 				transformerPool.open();
 			} catch (Exception e) {
-				throw new PipeStartException(getLogPrefix(null)+"cannot start TransformerPool", e);
+				throw new PipeStartException("cannot start TransformerPool", e);
 			}
 		}
 	}
@@ -132,7 +132,7 @@ public class XmlSwitch extends AbstractPipe {
 			try {
 				forward = session.getMessage(getForwardNameSessionKey()).asString();
 			} catch (IOException e) {
-				throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+				throw new PipeRunException(this, "cannot open stream", e);
 			}
 		} else if(!(StringUtils.isEmpty(getXpathExpression()) && StringUtils.isEmpty(getStyleSheetName())) || StringUtils.isEmpty(getSessionKey())) {
 			try {
@@ -148,16 +148,16 @@ public class XmlSwitch extends AbstractPipe {
 					forward = transformerPool.transform(message, parametervalues, isNamespaceAware());
 				}
 			} catch (Throwable e) {
-				throw new PipeRunException(this, getLogPrefix(session) + "got exception on transformation", e);
+				throw new PipeRunException(this, "got exception on transformation", e);
 			}
 		} else if(StringUtils.isNotEmpty(getSessionKey())) {
 			try {
 				forward = session.getMessage(getSessionKey()).asString();
 			} catch (IOException e) {
-				throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+				throw new PipeRunException(this, "cannot open stream", e);
 			}
 		}
-		log.debug(getLogPrefix(session)+ "determined forward ["+forward+"]");
+		log.debug("determined forward [{}]", forward);
 
 		if (StringUtils.isEmpty(forward) && getEmptyForwardName()!=null) {
 			throwEvent(XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT);
@@ -169,14 +169,14 @@ public class XmlSwitch extends AbstractPipe {
 				pipeForward=findForward(forward);
 			}
 			else {
-				log.info(getLogPrefix(session)+"determined forward ["+forward+"], which is not defined. Will use ["+getNotFoundForwardName()+"] instead");
+				log.info("determined forward [{}], which is not defined. Will use [{}] instead", forward, getNotFoundForwardName());
 				throwEvent(XML_SWITCH_FORWARD_NOT_FOUND_MONITOR_EVENT);
 				pipeForward=findForward(getNotFoundForwardName());
 			}
 		}
 
 		if (pipeForward==null) {
-			throw new PipeRunException (this, getLogPrefix(session)+"cannot find forward or pipe named ["+forward+"]");
+			throw new PipeRunException (this, "cannot find forward or pipe named ["+forward+"]");
 		}
 		if(StringUtils.isNotEmpty(getStoreForwardInSessionKey())) {
 			session.put(getStoreForwardInSessionKey(), pipeForward.getName());

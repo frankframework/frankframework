@@ -236,7 +236,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 			PipeForward forward = validate(messageToValidate, session, responseMode, messageRoot);
 			return new PipeRunResult(forward, input);
 		} catch (Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session), e);
+			throw new PipeRunException(this, "Could not validate", e);
 		}
 
 	}
@@ -254,7 +254,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		if (storeRootFilter!=null) {
 			validatorHandler.setContentHandler(storeRootFilter);
 		}
-		ValidationResult resultEvent = validator.validate(messageToValidate, session, getLogPrefix(session), validatorHandler, storeRootFilter, context);
+		ValidationResult resultEvent = validator.validate(messageToValidate, session, validatorHandler, storeRootFilter, context);
 		return determineForward(resultEvent, session, responseMode);
 	}
 
@@ -286,7 +286,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		try {
 			input = message.asString();
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+			throw new PipeRunException(this, "cannot open stream", e);
 		}
 		if (XmlUtils.isWellFormed(input, "Envelope")) {
 			String inputRootNs;
@@ -296,7 +296,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 				throw new PipeRunException(this, "cannot extract root namespace", e);
 			}
 			if (inputRootNs.equals(getSoapNamespace())) {
-				log.debug(getLogPrefix(session) + "message to validate is a SOAP message");
+				log.debug("message to validate is a SOAP message");
 				boolean extractSoapBody = true;
 				if (StringUtils.isNotEmpty(getSchemaLocation())) {
 					StringTokenizer st = new StringTokenizer(getSchemaLocation(), ", \t\r\n\f");
@@ -307,7 +307,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 					}
 				}
 				if (extractSoapBody) {
-					log.debug(getLogPrefix(session) + "extract SOAP body for validation");
+					log.debug("extract SOAP body for validation");
 					try {
 						input = transformerPoolExtractSoapBody.transform(input, null, true);
 					} catch (Exception e) {
@@ -319,7 +319,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 						throw new PipeRunException(this, "cannot extract root namespace", e);
 					}
 					if (StringUtils.isNotEmpty(inputRootNs) && StringUtils.isEmpty(getSchemaLocation())) {
-						log.debug(getLogPrefix(session) + "remove namespaces from extracted SOAP body");
+						log.debug("remove namespaces from extracted SOAP body");
 						try {
 							input = transformerPoolRemoveNamespaces.transform(input, null, true);
 						} catch (Exception e) {
@@ -413,7 +413,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 				Map<String, Set<XSD>> xsdsGroupedByNamespace = SchemaUtils.getXsdsGroupedByNamespace(xsds, false);
 				xsds = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(this, xsdsGroupedByNamespace, null); // also handles addNamespaceToSchema
 			} catch(Exception e) {
-				throw new ConfigurationException(getLogPrefix(null) + "could not merge schema's", e);
+				throw new ConfigurationException("could not merge schema's", e);
 			}
 		}
 		List<Schema> schemas = new ArrayList<Schema>();
@@ -558,10 +558,10 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 				try {
 					return session.getMessage(schemaSessionKey).asString();
 				} catch(IOException e) {
-					throw new PipeRunException(null, getLogPrefix(session) + "cannot retrieve xsd from session variable [" + schemaSessionKey + "]");
+					throw new PipeRunException(null, "cannot retrieve xsd from session variable [" + schemaSessionKey + "]");
 				}
 			}
-			throw new PipeRunException(null, getLogPrefix(session) + "cannot retrieve xsd from session variable [" + schemaSessionKey + "]");
+			throw new PipeRunException(null, "cannot retrieve xsd from session variable [" + schemaSessionKey + "]");
 		}
 		return null;
 	}
@@ -573,7 +573,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		if (getSchemaSessionKey() != null) {
 			final URL url = ClassUtils.getResourceURL(this, schemaLocation);
 			if (url == null) {
-				throw new PipeRunException(this, getLogPrefix(session) + "could not find schema at [" + schemaLocation + "]");
+				throw new PipeRunException(this, "could not find schema at [" + schemaLocation + "]");
 			}
 			XSD xsd = new XSD();
 			try {

@@ -103,7 +103,7 @@ public class CompareStringPipe extends AbstractPipe {
 			try {
 				pvl = getParameterList().getValues(message, session);
 			} catch (ParameterException e) {
-				throw new PipeRunException(this, getLogPrefix(session) + "exception extracting parameters", e);
+				throw new PipeRunException(this, "exception extracting parameters", e);
 			}
 		}
 		String operand1 = getParameterValue(pvl, OPERAND1);
@@ -117,7 +117,7 @@ public class CompareStringPipe extends AbstractPipe {
 				}
 			}
 		} catch (Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session) + " Exception on getting operand1 from input message", e);
+			throw new PipeRunException(this, "Exception on getting operand1 from input message", e);
 		}
 		String operand2 = getParameterValue(pvl, OPERAND2);
 		try {
@@ -130,14 +130,14 @@ public class CompareStringPipe extends AbstractPipe {
 				}
 			}
 		} catch (Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session) + " Exception on getting operand2 from input message", e);
+			throw new PipeRunException(this, "Exception on getting operand2 from input message", e);
 		}
 		if (isXml()) {
 			try {
 				operand1 = XmlUtils.canonicalize(operand1);
 				operand2 = XmlUtils.canonicalize(operand2);
 			} catch (Exception e) {
-				throw new PipeRunException(this, getLogPrefix(session) + " Exception on pretty printing input", e);
+				throw new PipeRunException(this, "Exception on pretty printing input", e);
 			}
 		}
 
@@ -170,7 +170,7 @@ public class CompareStringPipe extends AbstractPipe {
 					}
 				}
 			} catch (Exception e) {
-				throw new PipeRunException(this, getLogPrefix(session) + " Exception on ignoring parts of input", e);
+				throw new PipeRunException(this, "Exception on ignoring parts of input", e);
 			}
 		}
 

@@ -113,11 +113,11 @@ public class SoapWrapper {
 		try {
 			responseBody.preserve();
 			faultCount = getFaultCount(responseBody);
-			log.debug("fault count=" + faultCount);
+			log.debug("fault count={}", faultCount);
 			if (faultCount > 0) {
 				faultCode = getFaultCode(responseBody);
 				faultString = getFaultString(responseBody);
-				log.debug("faultCode=" + faultCode + ", faultString=" + faultString);
+				log.debug("faultCode={}, faultString={}", faultCode, faultString);
 			}
 		} catch (SAXException|IOException e) {
 			log.debug("IOException extracting fault message", e);
@@ -172,9 +172,7 @@ public class SoapWrapper {
 			log.warn("getFaultCount(): could not extract fault count, result is empty");
 			return 0;
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("getFaultCount(): transformation result [" + faultCount + "]");
-		}
+		log.debug("getFaultCount(): transformation result [{}]", faultCount);
 		return Integer.parseInt(faultCount);
 	}
 
@@ -220,7 +218,7 @@ public class SoapWrapper {
 			StringTokenizer st1 = new StringTokenizer(namespaceDefs, ", \t\r\n\f");
 			while (st1.hasMoreTokens()) {
 				String namespaceDef = st1.nextToken();
-				log.debug("namespaceDef [" + namespaceDef + "]");
+				log.debug("namespaceDef [{}]", namespaceDef);
 				int separatorPos = namespaceDef.indexOf('=');
 				if (separatorPos < 1) {
 					namespaceClause.append(" xmlns=\"" + namespaceDef + "\"");
@@ -228,7 +226,7 @@ public class SoapWrapper {
 					namespaceClause.append(" xmlns:" + namespaceDef.substring(0, separatorPos) + "=\"" + namespaceDef.substring(separatorPos + 1) + "\"");
 				}
 			}
-			log.debug("namespaceClause [" + namespaceClause + "]");
+			log.debug("namespaceClause [{}]", namespaceClause);
 		}
 		String soapns = StringUtils.isNotEmpty(soapNamespace) ? soapNamespace : SoapVersion.SOAP11.namespace;
 		Message result = new Message("<soapenv:Envelope xmlns:soapenv=\"" + soapns + "\"" + encodingStyle + targetObjectNamespaceClause

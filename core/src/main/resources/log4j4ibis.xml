@@ -13,7 +13,7 @@
 				<Filter type="IbisThreadFilter" onMatch="DENY" onMismatch="NEUTRAL" regex="${ctx:log.thread.rejectRegex}" />
 			</Filters>
 			<Layout type="IbisPatternLayout">
-				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %X{mid,cid} %c{2} - %m%n%xEx{filters(${ctx:log.stacktrace.filters})}</Pattern>
+				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %X{mid,cid,adapter,pipe} %c{2} - %m%n%xEx{filters(${ctx:log.stacktrace.filters})}</Pattern>
 			</Layout>
 			<Policies>
 				<Policy type="SizeBasedTriggeringPolicy" size="${ctx:log.maxFileSize}" />

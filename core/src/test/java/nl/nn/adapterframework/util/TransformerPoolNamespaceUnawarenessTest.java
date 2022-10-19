@@ -39,7 +39,7 @@ public class TransformerPoolNamespaceUnawarenessTest {
 	public String xslt1_unaware_result = XSLT1_UNAWARE_RESULT_7_5678;
 
 	public TransformerPool getTransformerPool(String xpath, String stylesheet, int xsltVersion) throws ConfigurationException {
-		return TransformerPool.configureTransformer0("transformerpool test", null, null, xpath, stylesheet, OutputType.TEXT, false, null, xsltVersion);
+		return TransformerPool.configureTransformer0(null, null, xpath, stylesheet, OutputType.TEXT, false, null, xsltVersion);
 	}
 
 	public void testNamespaceInsensitiveTransformation(String xpath, String stylesheet, int xsltVersion, boolean namespaceAware, String expectedResult) throws Exception {

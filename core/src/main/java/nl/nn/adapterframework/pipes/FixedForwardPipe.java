@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -84,14 +84,14 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 		if (StringUtils.isNotEmpty(getOnlyIfSessionKey())) {
 			Object onlyIfActualValue = session.get(getOnlyIfSessionKey());
 			if (onlyIfActualValue==null || StringUtils.isNotEmpty(getOnlyIfValue()) && !getOnlyIfValue().equals(onlyIfActualValue)) {
-				if (log.isDebugEnabled()) log.debug("onlyIfSessionKey ["+getOnlyIfSessionKey()+"] value ["+onlyIfActualValue+"]: not found or not equal to value ["+getOnlyIfValue()+"]");
+				log.debug("onlyIfSessionKey [{}] value [{}]: not found or not equal to value [{}]", getOnlyIfSessionKey(), onlyIfActualValue, getOnlyIfValue());
 				return true;
 			}
 		}
 		if (StringUtils.isNotEmpty(getUnlessSessionKey())) {
 			Object unlessActualValue = session.get(getUnlessSessionKey());
 			if (unlessActualValue!=null && (StringUtils.isEmpty(getUnlessValue()) || getUnlessValue().equals(unlessActualValue))) {
-				if (log.isDebugEnabled()) log.debug("unlessSessionKey ["+getUnlessSessionKey()+"] value ["+unlessActualValue+"]: not found or equal to value ["+getUnlessValue()+"]");
+				log.debug("unlessSessionKey [{}] value [{}]: not found or equal to value [{}]", getUnlessSessionKey(), unlessActualValue, getUnlessValue());
 				return true;
 			}
 		}

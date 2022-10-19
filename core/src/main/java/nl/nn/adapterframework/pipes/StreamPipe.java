@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2018, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2016-2018, 2020 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -55,9 +55,9 @@ import nl.nn.adapterframework.util.Misc;
  * @ff.parameter contentType		the Content-Type header to set in case httpResponse was specified
  * @ff.parameter contentDisposition	the Content-Disposition header to set in case httpResponse was specified
  * @ff.parameter redirectLocation	the redirect location to set in case httpResponse was specified
- * 
+ *
  * @ff.forward antiVirusFailed the virus checking indicates a problem with the message
- * 
+ *
  * @author Jaco de Groot
  */
 public class StreamPipe extends FixedForwardPipe {
@@ -143,19 +143,19 @@ public class StreamPipe extends FixedForwardPipe {
 				inputStream = message.asInputStream();
 			}
 			if (httpResponse != null) {
-				HttpSender.streamResponseBody(inputStream, contentType, contentDisposition, httpResponse, log, getLogPrefix(session), redirectLocation);
+				HttpSender.streamResponseBody(inputStream, contentType, contentDisposition, httpResponse, log, "", redirectLocation);
 			} else if (httpRequest != null) {
 				StringBuilder partsString = new StringBuilder("<parts>");
 				String firstStringPart = null;
 				List<AntiVirusObject> antiVirusObjects = new ArrayList<AntiVirusObject>();
 				if (ServletFileUpload.isMultipartContent(httpRequest)) {
-					log.debug(getLogPrefix(session) + "request with content type [" + httpRequest.getContentType() + "] and length [" + httpRequest.getContentLength() + "] contains multipart content");
+					log.debug("request with content type [{}] and length [{}] contains multipart content", httpRequest.getContentType(), httpRequest.getContentLength());
 					DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
 					ServletFileUpload servletFileUpload = new ServletFileUpload(diskFileItemFactory);
 					List<FileItem> items = servletFileUpload.parseRequest(httpRequest);
 					int fileCounter = 0;
 					int stringCounter = 0;
-					log.debug(getLogPrefix(session) + "multipart request items size [" + items.size() + "]");
+					log.debug("multipart request items size [{}]", items.size());
 					String lastFoundFileName = null;
 					String lastFoundAVStatus = null;
 					String lastFoundAVMessage = null;
@@ -166,13 +166,13 @@ public class StreamPipe extends FixedForwardPipe {
 							String fieldValue = item.getString();
 							String fieldName = item.getFieldName();
 							if (isCheckAntiVirus() && fieldName.equalsIgnoreCase(getAntiVirusPartName())) {
-								log.debug(getLogPrefix(session) + "found antivirus status part [" + fieldName + "] with value [" + fieldValue + "]");
+								log.debug("found antivirus status part [{}] with value [{}]", fieldName, fieldValue);
 								lastFoundAVStatus = fieldValue;
 							} else if (isCheckAntiVirus() && fieldName.equalsIgnoreCase(getAntiVirusMessagePartName())) {
-								log.debug(getLogPrefix(session) + "found antivirus message part [" + fieldName + "] with value [" + fieldValue + "]");
+								log.debug("found antivirus message part [{}] with value [{}]", fieldName, fieldValue);
 								lastFoundAVMessage = fieldValue;
 							} else {
-								log.debug(getLogPrefix(session) + "found string part [" + fieldName + "] with value [" + fieldValue + "]");
+								log.debug("found string part [{}] with value [{}]", fieldName, fieldValue);
 								if (isExtractFirstStringPart() && firstStringPart == null) {
 									firstStringPart = fieldValue;
 								} else {
@@ -192,7 +192,7 @@ public class StreamPipe extends FixedForwardPipe {
 								lastFoundAVStatus = null;
 								lastFoundAVMessage = null;
 							}
-							log.debug(getLogPrefix(session) + "found file part [" + item.getName() + "]");
+							log.debug("found file part [{}]", item.getName());
 							String sessionKeyName = "part_file" + (++fileCounter > 1 ? fileCounter : "");
 							String fileName = FilenameUtils.getName(item.getName());
 							InputStream is = item.getInputStream();
@@ -211,7 +211,7 @@ public class StreamPipe extends FixedForwardPipe {
 						antiVirusObjects.add(new AntiVirusObject(lastFoundFileName, lastFoundAVStatus, lastFoundAVMessage));
 					}
 				} else {
-					log.debug(getLogPrefix(session) + "request with content type [" + httpRequest.getContentType() + "] and length [" + httpRequest.getContentLength() + "] does NOT contain multipart content");
+					log.debug("request with content type [{}] and length [{}] does NOT contain multipart content", httpRequest.getContentType(), httpRequest.getContentLength());
 				}
 				partsString.append("</parts>");
 				if (isExtractFirstStringPart()) {
@@ -271,13 +271,15 @@ public class StreamPipe extends FixedForwardPipe {
 	}
 
 	private void addSessionKey(PipeLineSession session, String key, Object value, String name) {
-		String message = getLogPrefix(session) + "setting sessionKey [" + key + "] to ";
-		if (value instanceof InputStream) {
-			message = message + "input stream of file [" + name + "]";
-		} else {
-			message = message + "[" + value + "]";
+		if (log.isDebugEnabled()) {
+			String message = "setting sessionKey [" + key + "] to ";
+			if (value instanceof InputStream) {
+				message = message + "input stream of file [" + name + "]";
+			} else {
+				message = message + "[" + value + "]";
+			}
+			log.debug(message);
 		}
-		log.debug(message);
 		session.put(key, value);
 	}
 

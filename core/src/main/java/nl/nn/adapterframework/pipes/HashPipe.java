@@ -43,7 +43,7 @@ import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Pipe that hashes the input message.
- * 
+ *
  * @author	Niels Meijer
  */
 @ElementType(ElementTypes.TRANSLATOR)
@@ -82,14 +82,14 @@ public class HashPipe extends FixedForwardPipe {
 			}
 		}
 		catch (Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session) + "exception extracting authAlias", e);
+			throw new PipeRunException(this, "exception extracting authAlias", e);
 		}
 
 		CredentialFactory accessTokenCf = new CredentialFactory(authAlias, "", secret);
 		String cfSecret = accessTokenCf.getPassword();
 
 		if(cfSecret == null || cfSecret.isEmpty())
-			throw new PipeRunException(this, getLogPrefix(session) + "empty secret, unable to hash");
+			throw new PipeRunException(this, "empty secret, unable to hash");
 
 		try {
 			Mac mac = Mac.getInstance(getAlgorithm().name());
@@ -116,16 +116,16 @@ public class HashPipe extends FixedForwardPipe {
 					break;
 
 				default: // Should never happen, as a ConfigurationException is thrown during configuration if another method is tried
-					throw new PipeRunException(this, getLogPrefix(session) + "error determining hashEncoding");
+					throw new PipeRunException(this, "error determining hashEncoding");
 			}
 
 			return new PipeRunResult(getSuccessForward(), hash);
 		}
 		catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session) + "error reading input", e);
+			throw new PipeRunException(this, "error reading input", e);
 		}
 		catch (IllegalStateException | InvalidKeyException | NoSuchAlgorithmException e) {
-			throw new PipeRunException(this, getLogPrefix(session) + "error creating hash", e);
+			throw new PipeRunException(this, "error creating hash", e);
 		}
 	}
 

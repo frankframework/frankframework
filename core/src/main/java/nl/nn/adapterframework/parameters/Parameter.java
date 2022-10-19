@@ -276,7 +276,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 			OutputType outputType=getType() == ParameterType.XML || getType()==ParameterType.NODE || getType()==ParameterType.DOMDOC ? OutputType.XML : OutputType.TEXT;
 			boolean includeXmlDeclaration=false;
 
-			transformerPool=TransformerPool.configureTransformer0("Parameter ["+getName()+"] ", this, getNamespaceDefs(),getXpathExpression(), getStyleSheetName(),outputType,includeXmlDeclaration,paramList,getXsltVersion());
+			transformerPool=TransformerPool.configureTransformer0(this, getNamespaceDefs(), getXpathExpression(),getStyleSheetName(), outputType,includeXmlDeclaration,paramList,getXsltVersion());
 		} else {
 			if (paramList!=null && StringUtils.isEmpty(getXpathExpression())) {
 				throw new ConfigurationException("Parameter ["+getName()+"] can only have parameters itself if a styleSheetName or xpathExpression is specified");
@@ -286,7 +286,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 			transformerPoolRemoveNamespaces = XmlUtils.getRemoveNamespacesTransformerPool(true,false);
 		}
 		if (StringUtils.isNotEmpty(getSessionKeyXPath())) {
-			tpDynamicSessionKey = TransformerPool.configureTransformer("SessionKey for parameter ["+getName()+"] ", this, getNamespaceDefs(), getSessionKeyXPath(), null,OutputType.TEXT,false,null);
+			tpDynamicSessionKey = TransformerPool.configureTransformer(this, getNamespaceDefs(), getSessionKeyXPath(), null, OutputType.TEXT,false,null);
 		}
 		if(getType()==null) {
 			log.info("parameter ["+getName()+" has no type. Setting the type to ["+ParameterType.STRING+"]");

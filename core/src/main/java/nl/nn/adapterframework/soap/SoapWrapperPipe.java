@@ -104,10 +104,10 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 			soapVersion=SoapVersion.AUTO;
 		}
 		if (StringUtils.isNotEmpty(getSoapHeaderStyleSheet())) {
-			soapHeaderTp = TransformerPool.configureStyleSheetTransformer(getLogPrefix(null), this, getSoapHeaderStyleSheet(), 0);
+			soapHeaderTp = TransformerPool.configureStyleSheetTransformer(this, getSoapHeaderStyleSheet(), 0);
 		}
 		if (StringUtils.isNotEmpty(getSoapBodyStyleSheet())) {
-			soapBodyTp = TransformerPool.configureStyleSheetTransformer(getLogPrefix(null), this, getSoapBodyStyleSheet(), 0);
+			soapBodyTp = TransformerPool.configureStyleSheetTransformer(this, getSoapBodyStyleSheet(), 0);
 		}
 		if (isRemoveOutputNamespaces()) {
 			removeOutputNamespacesTp = XmlUtils.getRemoveNamespacesTransformerPool(true, false);
@@ -123,7 +123,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 		}
 		if (StringUtils.isNotEmpty(getWssAuthAlias()) || StringUtils.isNotEmpty(getWssUserName())) {
 			wssCredentialFactory = new CredentialFactory(getWssAuthAlias(), getWssUserName(), getWssPassword());
-			log.debug(getLogPrefix(null) + "created CredentialFactory for username=[" + wssCredentialFactory.getUsername()+"]");
+			log.debug("created CredentialFactory for username=[{}]", wssCredentialFactory.getUsername());
 		}
 	}
 
@@ -134,42 +134,42 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 			try {
 				soapHeaderTp.open();
 			} catch (Exception e) {
-				throw new PipeStartException(getLogPrefix(null)+"cannot start SOAP Header TransformerPool", e);
+				throw new PipeStartException("cannot start SOAP Header TransformerPool", e);
 			}
 		}
 		if (soapBodyTp != null) {
 			try {
 				soapBodyTp.open();
 			} catch (Exception e) {
-				throw new PipeStartException(getLogPrefix(null)+"cannot start SOAP Body TransformerPool", e);
+				throw new PipeStartException("cannot start SOAP Body TransformerPool", e);
 			}
 		}
 		if (removeOutputNamespacesTp != null) {
 			try {
 				removeOutputNamespacesTp.open();
 			} catch (Exception e) {
-				throw new PipeStartException(getLogPrefix(null)+"cannot start Remove Output Namespaces TransformerPool", e);
+				throw new PipeStartException("cannot start Remove Output Namespaces TransformerPool", e);
 			}
 		}
 		if (removeUnusedOutputNamespacesTp != null) {
 			try {
 				removeUnusedOutputNamespacesTp.open();
 			} catch (Exception e) {
-				throw new PipeStartException(getLogPrefix(null)+"cannot start Remove Unused Output Namespaces TransformerPool", e);
+				throw new PipeStartException("cannot start Remove Unused Output Namespaces TransformerPool", e);
 			}
 		}
 		if (outputNamespaceTp != null) {
 			try {
 				outputNamespaceTp.open();
 			} catch (Exception e) {
-				throw new PipeStartException(getLogPrefix(null)+"cannot start Output Namespace TransformerPool", e);
+				throw new PipeStartException("cannot start Output Namespace TransformerPool", e);
 			}
 		}
 		if (rootTp != null) {
 			try {
 				rootTp.open();
 			} catch (Exception e) {
-				throw new PipeStartException(getLogPrefix(null)+"cannot start Root TransformerPool", e);
+				throw new PipeStartException("cannot start Root TransformerPool", e);
 			}
 		}
 	}
@@ -231,10 +231,10 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 				message.preserve();
 				result = unwrapMessage(message, session);
 				if (Message.isEmpty(result)) {
-					throw new PipeRunException(this, getLogPrefix(session) + "SOAP Body is empty or message is not a SOAP Message");
+					throw new PipeRunException(this, "SOAP Body is empty or message is not a SOAP Message");
 				}
 				if (!isIgnoreSoapFault() && soapWrapper.getFaultCount(message) > 0) {
-					throw new PipeRunException(this, getLogPrefix(session) + "SOAP Body contains SOAP Fault");
+					throw new PipeRunException(this, "SOAP Body contains SOAP Fault");
 				}
 				if (StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
 					String soapHeader = soapWrapper.getHeader(message);
@@ -251,7 +251,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 				}
 			}
 		} catch (Exception t) {
-			throw new PipeRunException(this, getLogPrefix(session) + " Unexpected exception during (un)wrapping ", t);
+			throw new PipeRunException(this, "Unexpected exception during (un)wrapping ", t);
 		}
 		return new PipeRunResult(getSuccessForward(), result);
 	}

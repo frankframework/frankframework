@@ -31,7 +31,7 @@ import nl.nn.adapterframework.util.ReaderLineIterator;
 
 /**
  * Sends a message to a Sender for each line of its input, that must be an InputStream.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.7
  */
@@ -47,7 +47,7 @@ public class StreamLineIteratorPipe extends StringIteratorPipe {
 		try {
 			return input.asReader();
 		} catch (Exception e) {
-			throw new SenderException(getLogPrefix(session)+"cannot open stream", e);
+			throw new SenderException("cannot open stream", e);
 		}
 	}
 
