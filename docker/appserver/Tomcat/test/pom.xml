@@ -51,7 +51,7 @@
 						</configuration>
 					</execution>
 					<execution>
-						<id>unpack-tests</id>
+						<id>unpack-secrets</id>
 						<phase>package</phase>
 						<goals>
 							<goal>unpack</goal>

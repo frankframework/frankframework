@@ -8,6 +8,7 @@ COPY --chown=was:root target/classes/*.py  /work/config/
 COPY --chown=was:root target/dependencies/*.jar /work/drivers/
 COPY --chown=was:root target/dependencies/ibis-adapterframework-ear.ear /work/app/adapterframework.ear
 COPY --chown=was:root target/dependencies/frank /opt/frank
+COPY --chown=was:root target/dependencies/secrets /opt/frank/secrets
 ENV ENABLE_BASIC_LOGGING=true
 ENV TZ=CET
 RUN /work/configure.sh
