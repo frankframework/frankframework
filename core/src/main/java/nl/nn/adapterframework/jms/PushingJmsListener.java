@@ -116,7 +116,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 		}
 		CredentialFactory credentialFactory=null;
 		if (StringUtils.isNotEmpty(getAuthAlias())) {
-			credentialFactory=new CredentialFactory(getAuthAlias(), null, null);
+			credentialFactory=new CredentialFactory(getAuthAlias());
 		}
 		try {
 			jmsConnector.configureEndpointConnection(this, getMessagingSource().getConnectionFactory(), credentialFactory,

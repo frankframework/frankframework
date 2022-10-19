@@ -389,7 +389,7 @@ public class SecurityItems {
 			Map<String, Object> ae = new HashMap<>();
 
 			ae.put("alias", authAlias);
-			CredentialFactory cf = new CredentialFactory(authAlias, null, null);
+			CredentialFactory cf = new CredentialFactory(authAlias);
 
 			String userName;
 			String passWord;

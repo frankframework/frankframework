@@ -16,12 +16,13 @@
 package nl.nn.credentialprovider;
 
 import java.util.Collection;
+import java.util.function.Supplier;
 
 public class WebSphereCredentialFactory implements ICredentialFactory {
 
 	@Override
-	public ICredentials getCredentials(String alias, String defaultUsername, String defaultPassword) {
-		return new WebSphereCredentials(alias, defaultUsername, defaultPassword);
+	public ICredentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {
+		return new WebSphereCredentials(alias, defaultUsernameSupplier, defaultPasswordSupplier);
 	}
 
 

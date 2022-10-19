@@ -11,7 +11,7 @@ public class CredentialFactoryTest {
 
 	@Test
 	public void testCredentialFactory() {
-		CredentialFactory cf = new CredentialFactory("alias1", null, null);
+		CredentialFactory cf = new CredentialFactory("alias1");
 		assertEquals("username1", cf.getUsername());
 		assertEquals("password1", cf.getPassword());
 	}
@@ -26,7 +26,7 @@ public class CredentialFactoryTest {
 	@Test
 	public void testCredentialFactoryUnknownAliasNoDefaults() {
 		assertThrows(NoSuchElementException.class, () -> {
-			CredentialFactory cf = new CredentialFactory("unknown", null, null);
+			CredentialFactory cf = new CredentialFactory("unknown");
 			assertEquals("fakeDefaultUsername", cf.getUsername());
 			assertEquals("fakeDefaultPassword", cf.getPassword());
 		});
