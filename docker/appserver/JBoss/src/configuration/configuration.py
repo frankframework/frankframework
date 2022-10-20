@@ -27,7 +27,7 @@ os.system("/home/jboss/jboss-eap-7.3/bin/jboss-cli.sh --command='"+command+"'")
 path_to_secrets="/opt/frank/secrets/"
 secretsList = os.listdir(path_to_secrets)
 
-os.system("/home/jboss/jboss-eap-7.3/elytron-tool.sh credential-store --create --location '/home/jboss/jboss-eap-7.3/standalone/data/CS.jceks' --password secret")
+os.system("/home/jboss/jboss-eap-7.3/bin/elytron-tool.sh credential-store --create --location '/home/jboss/jboss-eap-7.3/standalone/data/CS.jceks' --password secret")
 
 for secret in secretsList:
 	password=open(path_to_secrets+secret+"/password").read()
