@@ -2321,9 +2321,11 @@ angular.module('iaf.beheerconsole')
 		}
 
 		Api.Post("jms/message", fd, function(returnData) {
+			$scope.error = null;
 			$scope.processing = false;
 		}, function(errorData, status, errorMsg) {
-			$scope.processing = false;
+			$scope.processing = false
+			errorMsg = (errorMsg) ? errorMsg : "An unknown error occured, check the logs for more info.";
 			$scope.error = (errorData.error) ? errorData.error : errorMsg;
 		});
 	};
