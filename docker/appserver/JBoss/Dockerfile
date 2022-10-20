@@ -14,9 +14,12 @@ COPY target/dependencies/*.rar /home/jboss/jboss-eap-7.3/standalone/deployments/
 # Copy in standalone-configuration.xml
 COPY src/configuration/standalone.xml /home/jboss/jboss-eap-7.3/standalone/configuration/standalone.xml
 
+# Copy in secrets, mainly for database secrets to be configured at buildtime
+# The ibis will have access to these secrets via the credentialFactory, so different secrets can be mounted at runtime
+COPY target/dependencies/secrets /opt/frank/secrets
+
 # Copy configuration script for modules
 COPY src/configuration/configuration.py /home/configuration.py
-COPY target/dependencies/secrets /opt/frank/secrets
 RUN python3 /home/configuration.py
 
 # Add test scenarios explictly for easy CI

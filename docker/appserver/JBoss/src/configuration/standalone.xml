@@ -50,6 +50,7 @@
 		<property name="active.tibco" value="false"/>
 		<property name="active.jms" value="false"/>
 		<property name="active.ifsa" value="false"/>
+		<property name="credentialFactory.filesystem.root" value="/opt/frank/secrets"/>
 		<property name="credentialFactory.class" value="nl.nn.credentialprovider.PropertyFileCredentialFactory"/>
 		<property name="authAliases.expansion.allowed" value="testalias"/>
 		<property name="scenariosroot1.directory" value="/opt/frank/testtool"/>
