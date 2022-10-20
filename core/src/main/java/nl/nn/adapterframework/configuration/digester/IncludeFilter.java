@@ -66,7 +66,7 @@ public class IncludeFilter extends FullXmlFilter {
 				if (subResource==null) {
 					throw new SaxException("Cannot find include ["+ref+"]");
 				}
-				XMLFilterImpl handlerTail = new BodyOnlyFilter(getContentHandler());
+				XMLFilterImpl handlerTail = new BodyOnlyFilter(getContentHandler(), false);
 				ContentHandler includeHandler = handlerTail;
 				// the below filters need to be included if the filter is placed higher in the chain
 				// includeHandler = new OnlyActiveFilter(includeHandler, appConstants);
