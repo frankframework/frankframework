@@ -10,6 +10,7 @@ COPY src/configuration/standalone.xml /opt/jboss/wildfly/standalone/configuratio
 
 # Copy configuration script for modules
 COPY src/configuration/configuration.py /home/configuration.py
+COPY target/dependencies/secrets /opt/frank/secrets
 RUN python /home/configuration.py
 
 # Add test scenarios explictly for easy CI

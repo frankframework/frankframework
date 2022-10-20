@@ -49,7 +49,8 @@
 		<property name="active.tibco" value="false"/>
 		<property name="active.jms" value="false"/>
 		<property name="active.ifsa" value="false"/>
-		<property name="credentialFactory.class" value="nl.nn.credentialprovider.PropertyFileCredentialFactory"/>
+		<property name="credentialFactory.filesystem.root" value="/opt/frank/secrets"/>
+		<property name="credentialFactory.class" value="nl.nn.credentialprovider.FileSystemCredentialFactory"/>
 		<property name="authAliases.expansion.allowed" value="testalias"/>
 		<property name="scenariosroot1.directory" value="/opt/frank/testtool"/>
 		<property name="scenariosroot1.description" value="embedded testtool directory /opt/frank/testtool"/>
@@ -162,7 +163,7 @@
 					<xa-datasource-property name="URL">jdbc:oracle:thin:@host.docker.internal:1521:XE</xa-datasource-property>
 					<security>
 						<user-name>testiaf_user</user-name>
-						<password>testiaf_user00</password>
+                        <credential-reference store="CS" alias="testiaf_user"/>
 					</security>
 					<xa-pool>
 						<is-same-rm-override>false</is-same-rm-override>
@@ -187,7 +188,7 @@
 					</xa-pool>
 					<security>
 						<user-name>testiaf_user</user-name>
-						<password>testiaf_user00</password>
+                        <credential-reference store="CS" alias="testiaf_user"/>
 					</security>
 					<timeout>
 						<set-tx-query-timeout>false</set-tx-query-timeout>
@@ -202,7 +203,7 @@
 					<xa-datasource-property name="URL">jdbc:mysql://host.docker.internal:3307/testiaf</xa-datasource-property>
 					<security>
 						<user-name>testiaf_user</user-name>
-						<password>testiaf_user00</password>
+                        <credential-reference store="CS" alias="testiaf_user"/>
 					</security>
 				</xa-datasource>
 				<!-- Use MySQL driver for MariaDB for proper XA support. -->
@@ -211,7 +212,7 @@
 					<xa-datasource-property name="URL">jdbc:mysql://host.docker.internal:3307/testiaf</xa-datasource-property>
 					<security>
 						<user-name>testiaf_user</user-name>
-						<password>testiaf_user00</password>
+                        <credential-reference store="CS" alias="testiaf_user"/>
 					</security>
 				</xa-datasource>
 				<xa-datasource jndi-name="java:/jdbc/ibis4test-postgres-xa" pool-name="ibis4test-postgres">
@@ -219,7 +220,7 @@
 					<xa-datasource-property name="URL">jdbc:postgresql://host.docker.internal:5432/testiaf</xa-datasource-property>
 					<security>
 						<user-name>testiaf_user</user-name>
-						<password>testiaf_user00</password>
+                        <credential-reference store="CS" alias="testiaf_user"/>
 					</security>
 				</xa-datasource>	
                 <!-- End of Framework datasources -->
@@ -444,6 +445,11 @@
                     <server-ssl-context name="applicationSSC" key-manager="applicationKM"/>
                 </server-ssl-contexts>
             </tls>
+            <credential-stores>
+                <credential-store name="CS" relative-to="jboss.server.data.dir" location="CS.jceks" create="true">
+                    <credential-reference clear-text="secret"/>
+                </credential-store>
+            </credential-stores>
         </subsystem>
         <subsystem xmlns="urn:wildfly:elytron-oidc-client:1.0"/>
         <subsystem xmlns="urn:wildfly:health:1.0" security-enabled="false"/>
