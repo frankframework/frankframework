@@ -446,7 +446,7 @@
                 </server-ssl-contexts>
             </tls>
             <credential-stores>
-                <credential-store name="CS" relative-to="jboss.server.data.dir" location="CS.jceks" create="true">
+                <credential-store name="CS" relative-to="jboss.server.data.dir" location="CS.jceks">
                     <credential-reference clear-text="secret"/>
                 </credential-store>
             </credential-stores>

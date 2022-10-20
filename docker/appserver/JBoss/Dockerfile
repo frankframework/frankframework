@@ -16,6 +16,7 @@ COPY src/configuration/standalone.xml /home/jboss/jboss-eap-7.3/standalone/confi
 
 # Copy configuration script for modules
 COPY src/configuration/configuration.py /home/configuration.py
+COPY target/dependencies/secrets /opt/frank/secrets
 RUN python3 /home/configuration.py
 
 # Add test scenarios explictly for easy CI
