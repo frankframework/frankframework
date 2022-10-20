@@ -87,6 +87,7 @@ public final class SendJmsMessage extends FrankApiBase {
 		Attachment filePart = inputDataMap.getAttachment("file");
 		if(filePart != null) {
 			fileName = filePart.getContentDisposition().getParameter( "filename" );
+			file = filePart.getObject(InputStream.class);
 
 			if (StringUtils.endsWithIgnoreCase(fileName, ".zip")) {
 				try {
