@@ -33,6 +33,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.Mandatory;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -56,14 +57,19 @@ import nl.nn.adapterframework.util.StreamUtil;
  */
 public class ZipWriterPipe extends FixedForwardPipe {
 
-	private static final String ACTION_OPEN="open";
-	private static final String ACTION_WRITE="write";
-	private static final String ACTION_STREAM="stream";
-	private static final String ACTION_CLOSE="close";
-
+	private enum Action {
+		/** To open a new zip file or stream */
+		OPEN,
+		/** Create a new zip entry, and provide an OutputStream that another pipe can use to write the contents */
+		WRITE,
+		/** Write the input to the zip as a new entry */
+		STREAM,
+		/** To close the zip file or stream */
+		CLOSE;
+	}
 	private static final String PARAMETER_FILENAME="filename";
 
-	private @Getter String action=null;
+	private @Getter Action action=null;
 	private @Getter String zipWriterHandle="zipwriterhandle";
 	private @Getter boolean closeInputstreamOnExit=true;
 	private @Getter boolean closeOutputstreamOnExit=true;
@@ -76,19 +82,16 @@ public class ZipWriterPipe extends FixedForwardPipe {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (!(ACTION_OPEN.equals(getAction()) || ACTION_WRITE.equals(getAction())  || ACTION_STREAM.equals(getAction()) || ACTION_CLOSE.equals(getAction()))) {
-			throw new ConfigurationException("action must be either '"+ACTION_OPEN+"','"+ACTION_WRITE+"','"+ACTION_STREAM+"' or '"+ACTION_CLOSE+"'");
-		}
-		if (ACTION_OPEN.equals(getAction())) {
+		if (getAction() == Action.OPEN) {
 			filenameParameter=getParameterList().findParameter(PARAMETER_FILENAME);
 		}
-		if (ACTION_WRITE.equals(getAction()) || ACTION_STREAM.equals(getAction())) {
+		if (getAction() == Action.WRITE || getAction() == Action.STREAM) {
 			filenameParameter=getParameterList().findParameter(PARAMETER_FILENAME);
 			if (filenameParameter==null) {
 				throw new ConfigurationException("a parameter '"+PARAMETER_FILENAME+"' is required");
 			}
 		}
-		if (ACTION_CLOSE.equals(getAction())) {
+		if (getAction() == Action.CLOSE) {
 			filenameParameter=getParameterList().findParameter(PARAMETER_FILENAME);
 			if (filenameParameter!=null) {
 				throw new ConfigurationException("with action ["+getAction()+"] parameter '"+PARAMETER_FILENAME+"' cannot not be configured");
@@ -161,8 +164,8 @@ public class ZipWriterPipe extends FixedForwardPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
-		try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put("action", getAction())) {
-			if (ACTION_CLOSE.equals(getAction())) {
+		try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put("action", getAction().name())) {
+			if (getAction() == Action.CLOSE) {
 				closeZipWriterHandle(session,true);
 				return new PipeRunResult(getSuccessForward(),input);
 			}
@@ -176,7 +179,7 @@ public class ZipWriterPipe extends FixedForwardPipe {
 			}
 
 			ZipWriter sessionData=getZipWriter(session);
-			if (ACTION_OPEN.equals(getAction())) {
+			if (getAction() == Action.OPEN) {
 				if (sessionData!=null) {
 					throw new PipeRunException(this,"zipWriterHandle in session key ["+getZipWriterHandle()+"] is already open");
 				}
@@ -192,12 +195,12 @@ public class ZipWriterPipe extends FixedForwardPipe {
 				throw new PipeRunException(this,"filename cannot be empty");
 			}
 			try {
-				if (ACTION_STREAM.equals(getAction())) {
+				if (getAction() == Action.STREAM) {
 					sessionData.openEntry(filename);
 					PipeRunResult prr = new PipeRunResult(getSuccessForward(),sessionData.getZipoutput());
 					return prr;
 				}
-				if (ACTION_WRITE.equals(getAction())) {
+				if (getAction() == Action.WRITE) {
 					try {
 						if (isCompleteFileHeader()) {
 							sessionData.writeEntryWithCompletedHeader(filename, input, isCloseInputstreamOnExit(), getCharset());
@@ -215,7 +218,6 @@ public class ZipWriterPipe extends FixedForwardPipe {
 			}
 		}
 	}
-
 
 	@IbisDoc({"Only for action='write': If set to <code>false</code>, the inputstream is not closed after the zip entry is written", "true"})
 	public void setCloseInputstreamOnExit(boolean b) {
@@ -242,8 +244,8 @@ public class ZipWriterPipe extends FixedForwardPipe {
 		zipWriterHandle = string;
 	}
 
-	@IbisDoc({"One of <ul><li>open: To open a new zip file or stream</li> <li>close: To close the zip file or stream</li> <li>write: Write the input to the zip as a new entry</li> <li>stream: Create a new zip entry, and provide an outputstream that another pipe can use to write the contents</li> </ul>", ""})
-	public void setAction(String string) {
+	@Mandatory
+	public void setAction(Action string) {
 		action = string;
 	}
 

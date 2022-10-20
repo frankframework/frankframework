@@ -15,13 +15,17 @@
 */
 package nl.nn.adapterframework.metrics;
 
+import org.apache.logging.log4j.Logger;
+
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.core.instrument.config.MeterRegistryConfig;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.LogUtil;
 
 public abstract class MetricsRegistryConfiguratorBase<C extends MeterRegistryConfig> {
+	private Logger log = LogUtil.getLogger(this);
 
 	public static final String METRICS_EXPORT_PROPERTY_PREFIX="management.metrics.export.";
 
@@ -41,12 +45,13 @@ public abstract class MetricsRegistryConfiguratorBase<C extends MeterRegistryCon
 	}
 
 	protected CredentialFactory getCredentialFactory() {
-		return getCredentialFactory(config.prefix()+".username",config.prefix()+".password");
+		return getCredentialFactory("username","password");
 	}
 
 	protected CredentialFactory getCredentialFactory(String usernameKey, String passwordKey) {
 		if (credentialFactory==null) {
-			credentialFactory = new CredentialFactory(getProperty(config.prefix()+".authAlias"), getProperty(usernameKey), getProperty(passwordKey));
+			String prefix = config.prefix()+".";
+			credentialFactory = new CredentialFactory(getProperty(prefix+"authAlias"), ()->getProperty(prefix+usernameKey), ()->getProperty(prefix+passwordKey));
 		}
 		return credentialFactory;
 	}
@@ -54,8 +59,12 @@ public abstract class MetricsRegistryConfiguratorBase<C extends MeterRegistryCon
 
 	public void registerAt(CompositeMeterRegistry compositeRegistry) {
 		config = createConfig();
-		if ("true".equals(getProperty(config.prefix()+"."+"enabled"))) {
-			compositeRegistry.add(createRegistry(config));
+		try {
+			if ("true".equals(getProperty(config.prefix()+"."+"enabled"))) {
+				compositeRegistry.add(createRegistry(config));
+			}
+		} catch (Exception e) {
+			log.warn("Could not configure MeterRegistry ["+config.prefix()+"]", e);
 		}
 	}
 
@@ -71,6 +80,10 @@ public abstract class MetricsRegistryConfiguratorBase<C extends MeterRegistryCon
 
 		public String password() {
 			return getCredentialFactory().getPassword();
+		}
+
+		public String token() {
+			return getCredentialFactory(null, "token").getPassword();
 		}
 	}
 

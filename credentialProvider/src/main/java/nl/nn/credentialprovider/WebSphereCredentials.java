@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 
 import javax.security.auth.Subject;
@@ -40,12 +41,12 @@ import nl.nn.credentialprovider.util.ClassUtils;
 /**
  * Provides user-id and password from the WebSphere authentication-alias repository.
  * A default username and password can be set, too.
- * 
+ *
  * Note:
  * In WSAD the aliases are named just as you type them.
  * In WebSphere 5 and 6, and in RAD7/RSA7 aliases are prefixed with the name of the server.
  * It is therefore sensible to use a environment setting to find the name of the alias.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.4.2
  */
@@ -53,9 +54,9 @@ public class WebSphereCredentials extends Credentials implements CallbackHandler
 
 	private boolean initialized;
 	private boolean aliasFound;
-	
-	public WebSphereCredentials(String alias, String defaultUsername, String defaultPassword) {
-		super(alias, defaultUsername, defaultPassword);
+
+	public WebSphereCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {
+		super(alias, defaultUsernameSupplier, defaultPasswordSupplier);
 	}
 
 	public String invokeCharArrayGetter(Object o, String name) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
@@ -93,13 +94,13 @@ public class WebSphereCredentials extends Credentials implements CallbackHandler
 				} catch (Exception e) {
 					log.log(Level.WARNING, "exception setting alias ["+getAlias()+"] on AuthDataAliasCallback", e);
 				}
-			} 
+			}
 			if (cb instanceof NameCallback) {
 				NameCallback ncb = (NameCallback) cb;
 				log.info("setting name of NameCallback to alias ["+getAlias()+"]");
 				ncb.setName(getAlias());
 				continue;
-			} 
+			}
 			log.fine("ignoring callback of type ["+cb.getClass().getName()+"] for alias ["+getAlias()+"]");
 //			log.debug("contents of callback ["+ToStringBuilder.reflectionToString(cb)+"]");
 //			Class itf[] = cbc.getInterfaces();
@@ -114,7 +115,7 @@ public class WebSphereCredentials extends Credentials implements CallbackHandler
 //				ChoiceCallback ccb = (ChoiceCallback) cb;
 //				log.info("ChoiceCallback: "+ccb.getPrompt());
 //			}
-				
+
 		}
 		log.info("Handled callbacks for alias ["+getAlias()+"]");
 	}
@@ -145,12 +146,12 @@ public class WebSphereCredentials extends Credentials implements CallbackHandler
 //					ChoiceCallback ccb = (ChoiceCallback) cb;
 //					log.info("ChoiceCallback: "+ccb.getPrompt());
 //				}
-				
+
 			}
 		}
 	}
 
-	/** 
+	/**
 	 * return a loginContext, obtained by logging in using the obtained credentials
 	 */
 	public LoginContext getLoginContext() throws LoginException {
@@ -165,11 +166,11 @@ public class WebSphereCredentials extends Credentials implements CallbackHandler
 //	private class PasswordGetter implements PrivilegedAction {
 //
 //		Subject s;
-//		
+//
 //		public PasswordGetter(Subject s) {
 //			this.s=s;
 //		}
-//		
+//
 //		public Object run() {
 //			//log.debug("Subject: "+s.toString());
 //			//			log.info("Subject: "+ToStringBuilder.reflectionToString(s));
@@ -177,9 +178,9 @@ public class WebSphereCredentials extends Credentials implements CallbackHandler
 //			//			showSet(s.getPublicCredentials(),"PublicCredentials");
 //						Set pcs = s.getPrivateCredentials();
 //						return pcs.toArray()[0];
-//			//			log.info("Pwcred:"+pwcred.toString()+" "+ToStringBuilder.reflectionToString(pwcred)); 
+//			//			log.info("Pwcred:"+pwcred.toString()+" "+ToStringBuilder.reflectionToString(pwcred));
 //		};
-//		
+//
 //	}
 
 //	private void showSet(Set set, String string) {
@@ -221,14 +222,14 @@ public class WebSphereCredentials extends Credentials implements CallbackHandler
 			//showSet(s.getPrivateCredentials(),"PrivateCredentials");
 			//Object pwcred=Subject.doAsPrivileged(s,new PasswordGetter(s),AccessController.getContext());
 			//Object pwcred=AccessController.doPrivileged(new PasswordGetter(s));
-			
+
 			Object pwcred = s.getPrivateCredentials().toArray()[0];
 
 			setUsername(ClassUtils.invokeStringGetter(pwcred,"getUserName"));
 			setPassword(invokeCharArrayGetter(pwcred,"getPassword"));
 			aliasFound = true;
 		} catch (Exception e) {
-			NoSuchElementException nsee=new NoSuchElementException("cannot obtain credentials from authentication alias ["+getAlias()+"]"); 
+			NoSuchElementException nsee=new NoSuchElementException("cannot obtain credentials from authentication alias ["+getAlias()+"]");
 			nsee.initCause(e);
 			throw nsee;
 		}
@@ -240,5 +241,5 @@ public class WebSphereCredentials extends Credentials implements CallbackHandler
 		}
 		return aliasFound;
 	}
-	
+
 }

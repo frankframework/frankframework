@@ -118,7 +118,7 @@ public class AnsibleVaultCredentialFactoryTest {
 		String username = "fakeUsername";
 		String password = "fakePassword";
 
-		ICredentials mc = credentialFactory.getCredentials(alias, username, password);
+		ICredentials mc = credentialFactory.getCredentials(alias, ()->username, ()->password);
 
 		assertEquals(username, mc.getUsername());
 		assertEquals(password, mc.getPassword());
@@ -133,7 +133,7 @@ public class AnsibleVaultCredentialFactoryTest {
 		String expectedUsername = "username from alias";
 		String expectedPassword = "password from alias";
 
-		ICredentials mc = credentialFactory.getCredentials(alias, username, password);
+		ICredentials mc = credentialFactory.getCredentials(alias, ()->username, ()->password);
 
 		assertEquals(expectedUsername, mc.getUsername());
 		assertEquals(expectedPassword, mc.getPassword());
@@ -148,7 +148,7 @@ public class AnsibleVaultCredentialFactoryTest {
 		String expectedUsername = username;
 		String expectedPassword = "password from alias";
 
-		ICredentials mc = credentialFactory.getCredentials(alias, username, password);
+		ICredentials mc = credentialFactory.getCredentials(alias, ()->username, ()->password);
 
 		assertEquals(expectedUsername, mc.getUsername());
 		assertEquals(expectedPassword, mc.getPassword());
@@ -162,7 +162,7 @@ public class AnsibleVaultCredentialFactoryTest {
 		String password = null;
 
 		assertThrows(NoSuchElementException.class, () -> {
-			ICredentials mc = credentialFactory.getCredentials(alias, username, password);
+			ICredentials mc = credentialFactory.getCredentials(alias, ()->username, ()->password);
 			assertEquals(username, mc.getUsername());
 			assertEquals(password, mc.getPassword());
 		});
@@ -175,7 +175,7 @@ public class AnsibleVaultCredentialFactoryTest {
 		String username = "fakeUsername";
 		String password = "fakePassword";
 
-		ICredentials mc = credentialFactory.getCredentials(alias, username, password);
+		ICredentials mc = credentialFactory.getCredentials(alias, ()->username, ()->password);
 		assertEquals(username, mc.getUsername());
 		assertEquals(password, mc.getPassword());
 	}
@@ -190,7 +190,7 @@ public class AnsibleVaultCredentialFactoryTest {
 		String expectedUsername = null;
 		String expectedPassword = "Plain Credential";
 
-		ICredentials mc = credentialFactory.getCredentials(alias, username, password);
+		ICredentials mc = credentialFactory.getCredentials(alias, ()->username, ()->password);
 
 		assertEquals(expectedUsername, mc.getUsername());
 		assertEquals(expectedPassword, mc.getPassword());

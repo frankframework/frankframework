@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.metrics;
 
-import org.apache.commons.lang3.StringUtils;
-
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.influx.InfluxConfig;
@@ -24,23 +22,12 @@ import io.micrometer.influx.InfluxMeterRegistry;
 
 public class InfluxRegistryConfigurator extends MetricsRegistryConfiguratorBase<InfluxConfig> {
 
-	private class Config extends MeterRegistryConfigBase implements InfluxConfig {
-
-		@Override
-		public String token() {
-			String result = get("influx.token");
-			if (StringUtils.isEmpty(result)) {
-				result = password();
-			}
-			return result;
-		}
-	}
+	private class Config extends MeterRegistryConfigBase implements InfluxConfig {}
 
 	@Override
 	protected InfluxConfig createConfig() {
 		return new Config();
 	}
-
 
 	@Override
 	protected MeterRegistry createRegistry(InfluxConfig config) {

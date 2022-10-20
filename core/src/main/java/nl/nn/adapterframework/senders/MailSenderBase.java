@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 WeAreFrank!
+   Copyright 2019, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,9 +32,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -69,24 +70,24 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public abstract class MailSenderBase extends SenderWithParametersBase {
 
-	private String authAlias;
-	private String userId;
-	private String password;
-	private CredentialFactory cf;
+	private @Getter String authAlias;
+	private @Getter String userId;
+	private @Getter String password;
+	private @Getter CredentialFactory credentialFactory;
 
-	private String defaultAttachmentName = "attachment";
-	private String defaultMessageType = "text/plain";
-	private boolean defaultMessageBase64 = false;
-	private String defaultSubject;
-	private String defaultFrom;
-	private int timeout = 20000;
-	private String bounceAddress;
+	private @Getter String defaultAttachmentName = "attachment";
+	private @Getter String defaultMessageType = "text/plain";
+	private @Getter boolean defaultMessageBase64 = false;
+	private @Getter String defaultSubject;
+	private @Getter String defaultFrom;
+	private @Getter int timeout = 20000;
+	private @Getter String bounceAddress;
 
 	protected abstract String sendEmail(MailSession mailSession) throws SenderException;
 
 	@Override
 	public void configure() throws ConfigurationException {
-		cf = new CredentialFactory(getAuthAlias(), getUserId(), getPassword());
+		credentialFactory = new CredentialFactory(getAuthAlias(), getUserId(), getPassword());
 		super.configure();
 	}
 
@@ -121,7 +122,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		Collection<MailAttachmentStream> attachments = null;
 		if (pv != null) {
 			attachments = retrieveAttachments(pv.asCollection(), session);
-			log.debug("MailSender [" + getName() + "] retrieved attachments-parameter [" + attachments + "]");
+			log.debug("MailSender [{}] retrieved attachments-parameter [{}]", getName(), attachments);
 		}
 		return attachments;
 	}
@@ -131,7 +132,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		Collection<EMail> recipients = null;
 		if (pv != null) {
 			recipients = retrieveRecipients(pv.asCollection());
-			log.debug("MailSender [" + getName() + "] retrieved recipients-parameter [" + recipients + "]");
+			log.debug("MailSender [{}] retrieved recipients-parameter [{}]", getName(), recipients);
 		}
 		return recipients;
 	}
@@ -154,43 +155,43 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 			pv = pvl.get("from");
 			if (pv != null) {
 				from = new EMail(pv.asStringValue(null));
-				log.debug("MailSender [" + getName() + "] retrieved from-parameter [" + from + "]");
+				log.debug("MailSender [{}] retrieved from-parameter [{}]", getName(), from);
 				mail.setFrom(from);
 			}
 			pv = pvl.get("subject");
 			if (pv != null) {
 				subject = pv.asStringValue(null);
-				log.debug("MailSender [" + getName() + "] retrieved subject-parameter [" + subject + "]");
+				log.debug("MailSender [{}] retrieved subject-parameter [{}]", getName(), subject);
 				mail.setSubject(subject);
 			}
 			pv = pvl.get("threadTopic");
 			if (pv != null) {
 				threadTopic = pv.asStringValue(null);
-				log.debug("MailSender [" + getName() + "] retrieved threadTopic-parameter [" + threadTopic + "]");
+				log.debug("MailSender [{}] retrieved threadTopic-parameter [{}]", getName(), threadTopic);
 				mail.setThreadTopic(threadTopic);
 			}
 			pv = pvl.get("message");
 			if (pv != null) {
 				String message = pv.asStringValue("message");
-				log.debug("MailSender [" + getName() + "] retrieved message-parameter [" + message + "]");
+				log.debug("MailSender [{}] retrieved message-parameter [{}]", getName(), message);
 				mail.setMessage(message);
 			}
 			pv = pvl.get("messageType");
 			if (pv != null) {
 				messageType = pv.asStringValue(null);
-				log.debug("MailSender [" + getName() + "] retrieved messageType-parameter [" + messageType + "]");
+				log.debug("MailSender [{}] retrieved messageType-parameter [{}]", getName(), messageType);
 				mail.setMessageType(messageType);
 			}
 			pv = pvl.get("messageBase64");
 			if (pv != null) {
 				messageBase64 = pv.asBooleanValue(false);
-				log.debug("MailSender [" + getName() + "] retrieved messageBase64-parameter [" + messageBase64 + "]");
+				log.debug("MailSender [{}] retrieved messageBase64-parameter [{}]", getName(), messageBase64);
 				mail.setMessageBase64(messageBase64);
 			}
 			pv = pvl.get("charset");
 			if (pv != null) {
 				charset = pv.asStringValue(null);
-				log.debug("MailSender [" + getName() + "] retrieved charset-parameter [" + charset + "]");
+				log.debug("MailSender [{}] retrieved charset-parameter [{}]", getName(), charset);
 				mail.setCharSet(charset);
 			}
 			pv = pvl.get("recipients");
@@ -271,7 +272,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 					attachment = stringToMailAttachment(nodeValue, base64, mimeType);
 				}
 				attachment.setName(name);
-				log.debug("created attachment ["+attachment+"]");
+				log.debug("created attachment [{}]", attachment);
 				attachments.add(attachment);
 			}
 		}
@@ -385,26 +386,14 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		return false;
 	}
 
-	public String getAuthAlias() {
-		return authAlias;
-	}
-
 	@IbisDoc({ "authAlias used to obtain credentials for authentication", "" })
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}
 
-	public String getUserId() {
-		return userId;
-	}
-
 	@IbisDoc({ "userId on the smtphost", "" })
 	public void setUserId(String userId) {
 		this.userId = userId;
-	}
-
-	public String getPassword() {
-		return password;
 	}
 
 	@IbisDoc({ "password of userid", "" })
@@ -430,13 +419,6 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		setPassword(smtpPassword);
 	}
 
-	public CredentialFactory getCredentialFactory() {
-		return cf;
-	}
-
-	public void setCredentialFactory(CredentialFactory cf) {
-		this.cf = cf;
-	}
 
 
 	/**
@@ -446,9 +428,6 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	public void setDefaultSubject(String defaultSubject) {
 		this.defaultSubject = defaultSubject;
 	}
-	public String getDefaultSubject() {
-		return defaultSubject;
-	}
 
 	/**
 	 * Set the default for From
@@ -457,16 +436,10 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	public void setDefaultFrom(String defaultFrom) {
 		this.defaultFrom = defaultFrom;
 	}
-	public String getDefaultFrom() {
-		return defaultFrom;
-	}
 
 	@IbisDoc({ "Timeout <i>in milliseconds</i> for socket connection timeout and socket i/o timeouts", "20000" })
 	public void setTimeout(int timeout) {
 		this.timeout = timeout;
-	}
-	public int getTimeout() {
-		return timeout;
 	}
 
 	@IbisDoc({ "when this name is used, it will be followed by a number which is equal to the node's position",
@@ -474,32 +447,20 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	public void setDefaultAttachmentName(String defaultAttachmentName) {
 		this.defaultAttachmentName = defaultAttachmentName;
 	}
-	public String getDefaultAttachmentName() {
-		return defaultAttachmentName;
-	}
 
 	@IbisDoc({ "when messageType is not specified defaultMessageType will be used", "text/plain" })
 	public void setDefaultMessageType(String defaultMessageType) {
 		this.defaultMessageType = defaultMessageType;
-	}
-	public String getDefaultMessageType() {
-		return defaultMessageType;
 	}
 
 	@IbisDoc({ "when messageBase64 is not specified defaultMessageBase64 will be used", "false" })
 	public void setDefaultMessageBase64(boolean defaultMessageBase64) {
 		this.defaultMessageBase64 = defaultMessageBase64;
 	}
-	public boolean isDefaultMessageBase64() {
-		return defaultMessageBase64;
-	}
 
 	@IbisDoc({ "NDR return address when mail cannot be delivered. This adds a Return-Path header", "MAIL FROM attribute" })
 	public void setBounceAddress(String string) {
 		bounceAddress = string;
-	}
-	public String getBounceAddress() {
-		return bounceAddress;
 	}
 
 	/**

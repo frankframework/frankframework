@@ -18,6 +18,7 @@ package nl.nn.credentialprovider;
 
 
 import java.util.Collection;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -96,15 +97,15 @@ public class CredentialFactory {
 		return delegate==null || delegate.hasCredentials(findAlias(rawAlias));
 	}
 
-	public static ICredentials getCredentials(String rawAlias, String defaultUsername, String defaultPassword) {
+	public static ICredentials getCredentials(String rawAlias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {
 		ICredentialFactory delegate = getInstance().delegate;
 		if (delegate!=null) {
-			ICredentials result = delegate.getCredentials(findAlias(rawAlias), defaultUsername, defaultPassword);
+			ICredentials result = delegate.getCredentials(findAlias(rawAlias), defaultUsernameSupplier, defaultPasswordSupplier);
 			if (result!=null) {
 				return result;
 			}
 		}
-		return new Credentials(findAlias(rawAlias), defaultUsername, defaultPassword);
+		return new Credentials(findAlias(rawAlias), defaultUsernameSupplier, defaultPasswordSupplier);
 	}
 
 	public static Collection<String> getConfiguredAliases() throws Exception {

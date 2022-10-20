@@ -21,6 +21,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import nl.nn.credentialprovider.util.Misc;
 
@@ -31,12 +32,12 @@ public class FileSystemCredentials extends Credentials {
 	private String passwordfile;
 
 
-	public FileSystemCredentials(String alias, String defaultUsername, String defaultPassword, Path root) {
-		this(alias, defaultUsername, defaultPassword, null, null, root);
+	public FileSystemCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier, Path root) {
+		this(alias, defaultUsernameSupplier, defaultPasswordSupplier, null, null, root);
 	}
 
-	public FileSystemCredentials(String alias, String defaultUsername, String defaultPassword, String usernamefile, String passwordfile, Path root) {
-		super(alias, defaultUsername, defaultPassword);
+	public FileSystemCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier, String usernamefile, String passwordfile, Path root) {
+		super(alias, defaultUsernameSupplier, defaultPasswordSupplier);
 		this.root = root;
 		this.usernamefile = Misc.isNotEmpty(usernamefile) ? usernamefile : FileSystemCredentialFactory.USERNAME_FILE_DEFAULT;
 		this.passwordfile = Misc.isNotEmpty(passwordfile) ? passwordfile : FileSystemCredentialFactory.PASSWORD_FILE_DEFAULT;
@@ -69,7 +70,7 @@ public class FileSystemCredentials extends Credentials {
 					}
 				}
 			} catch (IOException e) {
-				NoSuchElementException nsee=new NoSuchElementException("cannot obtain credentials from authentication alias ["+getAlias()+"]"); 
+				NoSuchElementException nsee=new NoSuchElementException("cannot obtain credentials from authentication alias ["+getAlias()+"]");
 				nsee.initCause(e);
 				throw nsee;
 			}

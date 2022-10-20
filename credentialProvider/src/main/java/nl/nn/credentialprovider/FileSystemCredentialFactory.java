@@ -20,6 +20,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Supplier;
 
 import nl.nn.credentialprovider.util.AppConstants;
 import nl.nn.credentialprovider.util.Misc;
@@ -61,8 +62,8 @@ public class FileSystemCredentialFactory implements ICredentialFactory {
 	}
 
 	@Override
-	public ICredentials getCredentials(String alias, String defaultUsername, String defaultPassword) {
-		return new FileSystemCredentials(alias, defaultUsername, defaultPassword, usernamefile, passwordfile, root);
+	public ICredentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {
+		return new FileSystemCredentials(alias, defaultUsernameSupplier, defaultPasswordSupplier, usernamefile, passwordfile, root);
 	}
 
 	@Override

@@ -1,10 +1,5 @@
-<!DOCTYPE IOS-Adaptering [
-	<!ENTITY WebServiceListenerSender SYSTEM "./ConfigurationWebServiceListenerSender.xml">
-	<!ENTITY WebServiceListenerSenderNoSoap SYSTEM "./ConfigurationWebServiceListenerSenderNoSoap.xml">
-	<!ENTITY HttpListenerSender SYSTEM "./ConfigurationHttpListenerSender.xml">
-]>
-<configuration>
-	&WebServiceListenerSender;
-	&WebServiceListenerSenderNoSoap;
-	&HttpListenerSender;
-</configuration>
+<Configuration>
+	<Include ref="ConfigurationWebServiceListenerSender.xml"/>
+	<Include ref="ConfigurationWebServiceListenerSenderNoSoap.xml"/>
+	<Include ref="ConfigurationHttpListenerSender.xml"/>
+</Configuration>
