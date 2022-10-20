@@ -1,12 +1,6 @@
-<!DOCTYPE configuration [
-	<!ENTITY JdbcListener SYSTEM "./ConfigurationJdbcListener.xml">
-	<!ENTITY JdbcSenders SYSTEM "./ConfigurationJdbcSenders.xml">
-	<!ENTITY ConfigurationResultSetIteratingPipe SYSTEM "./ConfigurationResultSetIteratingPipe.xml">
-	<!ENTITY ManageDatabaseWrapper SYSTEM "./ConfigurationManageDatabaseWrapper.xml">
-]>
-<configuration>
-	&JdbcListener;
-	&JdbcSenders;
-	&ConfigurationResultSetIteratingPipe;
-	&ManageDatabaseWrapper;
-</configuration>
+<Configuration>
+	<Include ref="./ConfigurationJdbcListener.xml">
+	<Include ref="./ConfigurationJdbcSenders.xml">
+	<Include ref="./ConfigurationResultSetIteratingPipe.xml">
+	<Include ref="./ConfigurationManageDatabaseWrapper.xml">
+</Configuration>

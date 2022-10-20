@@ -1,6 +1,3 @@
-<!DOCTYPE configuration [
-	<!ENTITY ConfigurationSap SYSTEM "./ConfigurationSap.xml">
-]>
-<configuration active="${active.sap}">
-	&ConfigurationSap;
-</configuration>
+<Configuration active="${active.sap}">
+	<Include ref="ConfigurationSap.xml">
+</Configuration>
