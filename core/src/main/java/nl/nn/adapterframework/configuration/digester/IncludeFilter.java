@@ -35,6 +35,8 @@ import nl.nn.adapterframework.xml.SaxException;
 
 public class IncludeFilter extends FullXmlFilter {
 
+	private final char[] NEWLINE="\n".toCharArray();
+
 	private String targetElement = "Include";
 	private String targetAttribute = "ref";
 
@@ -55,7 +57,9 @@ public class IncludeFilter extends FullXmlFilter {
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
 		if (localName.equals(targetElement)) {
 			String ref = atts.getValue(targetAttribute);
+			characters(NEWLINE, 0, 1);
 			comment("start include '"+ref+"'");
+			characters(NEWLINE, 0, 1);
 			if (StringUtils.isNotEmpty(ref)) {
 				Resource subResource;
 				try {
@@ -86,6 +90,8 @@ public class IncludeFilter extends FullXmlFilter {
 					}
 				}
 			}
+			characters(NEWLINE, 0, 1);
+			comment("end include '"+ref+"'");
 			return;
 		}
 		super.startElement(uri, localName, qName, atts);
@@ -94,7 +100,6 @@ public class IncludeFilter extends FullXmlFilter {
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
 		if (localName.equals(targetElement)) {
-			comment("end include");
 			return;
 		}
 		super.endElement(uri, localName, qName);
