@@ -317,7 +317,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 				for (i=correlationIdToHexPrefix.length();i<correlationID.length();i++) {
 					int c=correlationID.charAt(i);
 					hexCorrelationID+=Integer.toHexString(c);
-				};
+				}
 				correlationID = hexCorrelationID;
 				if (log.isDebugEnabled()) log.debug("correlationId changed, based on hexidecimal values, to ["+correlationID+"]");
 			}

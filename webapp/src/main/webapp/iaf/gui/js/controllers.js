@@ -2270,6 +2270,15 @@ angular.module('iaf.beheerconsole')
 		angular.element("select[name='type']").val($scope.destinationTypes[0]);
 	});
 
+	$scope.file = null;
+	$scope.handleFile = function(files) {
+		if(files.length == 0) {
+			$scope.file = null;
+			return;
+		}
+		$scope.file = files[0]; //Can only parse 1 file!
+	};
+
 	$scope.submit = function(formData) {
 		$scope.processing = true;
 		if(!formData) return;
@@ -2294,25 +2303,29 @@ angular.module('iaf.beheerconsole')
 		if(formData.lookupDestination && formData.lookupDestination != "")
 			fd.append("lookupDestination", formData.lookupDestination);
 
-		if(!formData.message && !formData.file) {
-			$scope.error = "Please specify a file or message!";
-			return;
-		}
-
 		if(formData.propertyKey && formData.propertyKey != "" && formData.propertyValue && formData.propertyValue != "")
 			fd.append("property", formData.propertyKey+","+formData.propertyValue);
-		if(formData.message && formData.message != "")
-			fd.append("message", formData.message);
+		if(formData.message && formData.message != "") {
+			var encoding = (formData.encoding && formData.encoding != "") ? ";charset="+formData.encoding : "";
+			fd.append("message", new Blob([formData.message], {type: "text/plain"+encoding}), 'message');
+		}
 		if($scope.file)
 			fd.append("file", $scope.file, $scope.file.name);
 		if(formData.encoding && formData.encoding != "")
 			fd.append("encoding", formData.encoding);
 
+		if(!formData.message && !$scope.file) {
+			$scope.error = "Please specify a file or message!";
+			$scope.processing = false;
+			return;
+		}
+
 		Api.Post("jms/message", fd, function(returnData) {
-			//?
+			$scope.error = null;
 			$scope.processing = false;
 		}, function(errorData, status, errorMsg) {
 			$scope.processing = false;
+			errorMsg = (errorMsg) ? errorMsg : "An unknown error occured, check the logs for more info.";
 			$scope.error = (errorData.error) ? errorData.error : errorMsg;
 		});
 	};
