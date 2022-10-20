@@ -46,8 +46,8 @@ import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * Generic Source for JMS connection, to be shared for JMS Objects that can use the same. 
- * 
+ * Generic Source for JMS connection, to be shared for JMS Objects that can use the same.
+ *
  * @author  Gerrit van Brakel
  */
 public class MessagingSource  {
@@ -194,7 +194,7 @@ public class MessagingSource  {
 
 	protected Connection createConnection() throws JMSException {
 		if (StringUtils.isNotEmpty(authAlias)) {
-			CredentialFactory cf = new CredentialFactory(authAlias,null,null);
+			CredentialFactory cf = new CredentialFactory(authAlias);
 			if (log.isDebugEnabled()) log.debug("using userId ["+cf.getUsername()+"] to create Connection");
 			if (useJms102()) {
 				if (connectionFactory instanceof QueueConnectionFactory) {
