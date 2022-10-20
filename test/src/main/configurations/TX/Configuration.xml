@@ -1,17 +1,15 @@
 <Configuration>
-	<Include ref="MonitorConfig.xml">
+	<Include ref="TransactionTimeoutHandling.xml"/>
+	<Include ref="TransactionTimeoutFxfListener.xml"/>
 
-	<Include ref="TransactionTimeoutHandling.xml">
-	<Include ref="TransactionTimeoutFxfListener.xml">
+	<Include ref="TransactionHandlingMandatorySubAdapter.xml"/>
+	<Include ref="TransactionHandlingNotSupportedSubAdapter.xml"/>
 
-	<Include ref="TransactionHandlingMandatorySubAdapter.xml">
-	<Include ref="TransactionHandlingNotSupportedSubAdapter.xml">
+	<Include ref="TransactionHandlingNotSupportedSubAdapterException.xml"/>
+	<Include ref="TransactionHandlingRequiredSubAdapterException.xml"/>
 
-	<Include ref="TransactionHandlingNotSupportedSubAdapterException.xml">
-	<Include ref="TransactionHandlingRequiredSubAdapterException.xml">
+	<Include ref="TransactionHandlingMultiAdapter.xml"/>
+	<Include ref="TransactionHandlingMultiThread.xml"/>
 
-	<Include ref="TransactionHandlingMultiAdapter.xml">
-	<Include ref="TransactionHandlingMultiThread.xml">
-
-	<Include ref="MonitorConfig.xml">
+	<Include ref="MonitorConfig.xml"/>
 </Configuration>

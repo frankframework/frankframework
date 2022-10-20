@@ -1,6 +1,6 @@
 <Configuration>
-	<Include ref="./ConfigurationJdbcListener.xml">
-	<Include ref="./ConfigurationJdbcSenders.xml">
-	<Include ref="./ConfigurationResultSetIteratingPipe.xml">
-	<Include ref="./ConfigurationManageDatabaseWrapper.xml">
+	<Include ref="./ConfigurationJdbcListener.xml"/>
+	<Include ref="./ConfigurationJdbcSenders.xml"/>
+	<Include ref="./ConfigurationResultSetIteratingPipe.xml"/>
+	<Include ref="./ConfigurationManageDatabaseWrapper.xml"/>
 </Configuration>

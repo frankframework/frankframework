@@ -1,3 +1,3 @@
 <Configuration active="${active.sap}">
-	<Include ref="ConfigurationSap.xml">
+	<Include ref="ConfigurationSap.xml"/>
 </Configuration>

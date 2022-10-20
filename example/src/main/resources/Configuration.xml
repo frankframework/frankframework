@@ -1,5 +1,5 @@
 <Configuration>
-	<Include ref="ConfigurationHelloWorld.xml">
-	<Include ref="ConfigurationHelloWorlds.xml">
-	<Include ref="ConfigurationHelloBeautifulWorld.xml">
+	<Include ref="ConfigurationHelloWorld.xml"/>
+	<Include ref="ConfigurationHelloWorlds.xml"/>
+	<Include ref="ConfigurationHelloBeautifulWorld.xml"/>
 </Configuration>

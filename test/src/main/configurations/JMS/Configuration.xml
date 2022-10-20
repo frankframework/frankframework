@@ -1,8 +1,8 @@
 <Configuration>
-	<Include ref="ConfigurationCompactMessage.xml">
-	<Include ref="ConfigurationEsbJmsListenerSender.xml">
-	<Include ref="ConfigurationFxF3.xml">
-	<Include ref="ConfigurationJmsListenerSender.xml">
-	<Include ref="ConfigurationWsdlGenerator.xml">
-	<Include ref="ConfigurationJmsHeaders.xml">
+	<Include ref="ConfigurationCompactMessage.xml"/>
+	<Include ref="ConfigurationEsbJmsListenerSender.xml"/>
+	<Include ref="ConfigurationFxF3.xml"/>
+	<Include ref="ConfigurationJmsListenerSender.xml"/>
+	<Include ref="ConfigurationWsdlGenerator.xml"/>
+	<Include ref="ConfigurationJmsHeaders.xml"/>
 </Configuration>
