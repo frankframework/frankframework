@@ -311,11 +311,13 @@
 			<artifactId>spring-security-config</artifactId>
 			<version>${spring-security.version}</version>
 		</dependency>
+		<!-- not yet used, note that it depends on Spring 4.3.30 
 		<dependency>
 			<groupId>org.springframework.security.oauth</groupId>
 			<artifactId>spring-security-oauth2</artifactId>
 			<version>2.5.2.RELEASE</version>
 		</dependency>
+		-->
 
 		<dependency>
 			<groupId>org.mongodb</groupId>
@@ -731,9 +733,13 @@
 			<artifactId>stax-ex</artifactId>
 			<version>2.0.1</version>
 		</dependency>
-		<!--
-			Explicitly add the StAX2-API
-		-->
+		<!-- Explicity add woodstox to ensure this version is used -->
+		<dependency>
+			<groupId>com.fasterxml.woodstox</groupId>
+			<artifactId>woodstox-core</artifactId>
+			<version>6.3.1</version>
+		</dependency>
+		<!-- Explicitly add the StAX2-API to ensure this version is used -->
 		<dependency>
 			<groupId>org.codehaus.woodstox</groupId>
 			<artifactId>stax2-api</artifactId>
@@ -764,7 +770,7 @@
 		<dependency>
 			<groupId>com.nimbusds</groupId>
 			<artifactId>nimbus-jose-jwt</artifactId>
-			<version>9.25.3</version>
+			<version>9.25.6</version>
 		</dependency>
 
 		<dependency>
@@ -782,12 +788,12 @@
 		<dependency>
 			<groupId>com.ibm.icu</groupId>
 			<artifactId>icu4j</artifactId>
-			<version>71.1</version>
+			<version>72.1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.ibm.icu</groupId>
 			<artifactId>icu4j-charset</artifactId>
-			<version>71.1</version>
+			<version>72.1</version>
 		</dependency>
 
 		<!-- Test scoped dependencies -->
