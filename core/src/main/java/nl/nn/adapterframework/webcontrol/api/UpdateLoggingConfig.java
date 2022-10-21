@@ -183,7 +183,7 @@ public class UpdateLoggingConfig extends Base {
 			Collection<LoggerConfig> loggerConfigs = logContext.getConfiguration().getLoggers().values();
 			for(LoggerConfig config : loggerConfigs) {
 				String name = config.getName();
-				if(StringUtils.isNotEmpty(name) && name.contains(".") && !name.startsWith("MSG.")) {
+				if(StringUtils.isNotEmpty(name) && name.contains(".") && !name.startsWith(LogUtil.MESSAGE_LOGGER+".")) {
 					Map<String, Object> logger = new HashMap<>();
 					logger.put("name", name);
 					logger.put("level", config.getLevel().getStandardLevel());

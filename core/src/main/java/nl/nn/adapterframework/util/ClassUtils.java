@@ -265,12 +265,6 @@ public abstract class ClassUtils {
 	 * returns the className of the object, without the package name.
 	 */
 	public static String nameOf(Object o) {
-		if (o==null) {
-			return "<null>";
-		}
-		if(o instanceof Class) {
-			return org.springframework.util.ClassUtils.getUserClass((Class<?>)o).getSimpleName();
-		}
 		String tail=null;
 		if (o instanceof INamedObject) {
 			String name = ((INamedObject)o).getName();
@@ -278,13 +272,26 @@ public abstract class ClassUtils {
 				tail = "["+ name +"]";
 			}
 		}
+		return Misc.concatStrings(classNameOf(o), " ", tail);
+	}
+
+	/**
+	 * returns the className of the object, like {@link #nameOf(Object)}, but without [name] suffix for a {@link INamedObject}.
+	 */
+	public static String classNameOf(Object o) {
+		if (o==null) {
+			return "<null>";
+		}
+		if(o instanceof Class) {
+			return org.springframework.util.ClassUtils.getUserClass((Class<?>)o).getSimpleName();
+		}
 		Class<?> clazz = org.springframework.util.ClassUtils.getUserClass(o);
 		String simpleName = clazz.getSimpleName();
 
 		if (StringUtils.isEmpty(simpleName)) {
 			simpleName = clazz.getTypeName();
 		}
-		return Misc.concatStrings(simpleName, " ", tail);
+		return simpleName;
 	}
 
 	public static void invokeSetter(Object o, String name, Object value) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
