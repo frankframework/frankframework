@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="7.8-SNAPSHOT">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="7.8-RC2">
   <xs:element name="Configuration" type="ConfigurationType" />
   <xs:complexType name="ConfigurationType">
     <xs:sequence>
@@ -54,16 +54,6 @@
     <xs:attribute name="messageKeeperSize" type="frankInt">
       <xs:annotation>
         <xs:documentation>number of message displayed in ibisconsole Default: 10</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="msgLogLevel" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Defines behaviour for logging messages. Configuration is done in the MSG appender in log4j4ibis.properties.
- Possible values are: &lt;table border='1'&gt;&lt;tr&gt;&lt;th&gt;msgLogLevel&lt;/th&gt;&lt;th&gt;messages which are logged&lt;/th&gt;&lt;/tr&gt;
- &lt;tr&gt;&lt;td colspan='1'&gt;Off&lt;/td&gt; &lt;td&gt;No logging&lt;/td&gt;&lt;/tr&gt;
- &lt;tr&gt;&lt;td colspan='1'&gt;Basic&lt;/td&gt;&lt;td&gt;Logs information from adapter level messages &lt;/td&gt;&lt;/tr&gt;
- &lt;tr&gt;&lt;td colspan='1'&gt;Terse&lt;/td&gt;&lt;td&gt;Logs information from pipe messages.&lt;/td&gt;&lt;/tr&gt;
- &lt;tr&gt;&lt;td colspan='1'&gt;All&lt;/td&gt; &lt;td&gt;Logs all messages.&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt; Default: &lt;code&gt;BASIC&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="requestReplyLogging" type="frankBoolean" />
@@ -216,10 +206,13 @@
         <xs:documentation>Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&amp;lt;=&amp;lt;party&amp;gt;).*?(?=&amp;lt;/party&amp;gt;) will replace every character between keys &amp;lt;party&amp;gt; and &amp;lt;/party&amp;gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="hideMethod" type="xs:string">
+    <xs:attribute name="hideMethod">
       <xs:annotation>
-        <xs:documentation>(Only used when hideRegex is not empty) either &lt;code&gt;all&lt;/code&gt; or &lt;code&gt;firstHalf&lt;/code&gt;. When &lt;code&gt;firstHalf&lt;/code&gt; only the first half of the string is masked, otherwise (&lt;code&gt;all&lt;/code&gt;) the entire string is masked Default: all</xs:documentation>
+        <xs:documentation>Only used when hideRegex is not empty Default: all</xs:documentation>
       </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="HideMethodAttributeValuesType variableRef" />
+      </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="hiddenInputSessionKeys" type="xs:string">
       <xs:annotation>
@@ -256,6 +249,9 @@
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="type">
+      <xs:annotation>
+        <xs:documentation>The target data type of the parameter, related to the database or XSLT stylesheet to which the parameter is applied.</xs:documentation>
+      </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="ParameterTypeAttributeValuesType variableRef" />
       </xs:simpleType>
@@ -323,7 +319,7 @@
     </xs:attribute>
     <xs:attribute name="pattern" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Value of parameter is determined using substitution and formating, following MessageFormat syntax with named parameters. The expression can contain references
+        <xs:documentation>Value of parameter is determined using substitution and formatting, following MessageFormat syntax with named parameters. The expression can contain references
  to session-variables or other parameters using {name-of-parameter} and is formatted using java.text.MessageFormat.
  &lt;br/&gt;If for instance &lt;code&gt;fname&lt;/code&gt; is a parameter or session variable that resolves to eric, then the pattern
  'hi {fname}, hoe gaat het?' resolves to 'hi eric, hoe gaat het?'.&lt;br/&gt;
@@ -2663,6 +2659,92 @@
  Please consider when moving emails across mailboxes that there will be a null value returned instead of the newly created identifier. Default: |</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="keystore" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Resource url to keystore or certificate. If none specified, the JVMs default keystore will be used.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreType">
+      <xs:annotation>
+        <xs:documentation>Type of keystore Default: pkcs12</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="keystoreAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias used to obtain keystore password</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystorePassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to access keystore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keyManagerAlgorithm" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Key manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Alias to obtain specific certificate or key in keystore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAliasAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAliasPassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststore" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Resource url to truststore. If none specified, the JVMs default truststore will be used.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststoreType">
+      <xs:annotation>
+        <xs:documentation>Type of truststore Default: jks</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="truststoreAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias used to obtain truststore password</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststorePassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to access truststore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="trustManagerAlgorithm" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Trust manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="verifyHostname" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self signed certificates are accepted Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ignoreCertificateExpiredException" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="ExchangeFolderSenderCumulativeAttributeGroup">
     <xs:attributeGroup ref="ExchangeFolderSenderDeclaredAttributeGroup" />
@@ -4538,7 +4620,7 @@
     </xs:attribute>
     <xs:attribute name="prefix" type="xs:string">
       <xs:annotation>
-        <xs:documentation>prefix to be prefixed on all database objects (tables, indices, sequences), e.g. to access a different Oracle schema</xs:documentation>
+        <xs:documentation>Prefix to be prefixed on all database objects (tables, indices, sequences), e.g. to access a different Oracle schema</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="order">
@@ -4551,10 +4633,13 @@
         <xs:documentation>Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&amp;lt;=&amp;lt;party&amp;gt;).*?(?=&amp;lt;/party&amp;gt;) will replace every character between keys &amp;lt;party&amp;gt; and &amp;lt;/party&amp;gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="hideMethod" type="xs:string">
+    <xs:attribute name="hideMethod">
       <xs:annotation>
-        <xs:documentation>(Only used when hideRegex is not empty) either &lt;code&gt;all&lt;/code&gt; or &lt;code&gt;firstHalf&lt;/code&gt;. When &lt;code&gt;firstHalf&lt;/code&gt; only the first half of the string is masked, otherwise (&lt;code&gt;all&lt;/code&gt;) the entire string is masked Default: all</xs:documentation>
+        <xs:documentation>(Only used when hideRegex is not empty) Specifies the way to hide Default: ALL</xs:documentation>
       </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="HideMethodAttributeValuesType variableRef" />
+      </xs:simpleType>
     </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="JdbcMessageBrowserCumulativeAttributeGroup">
@@ -6568,6 +6653,92 @@
  Please consider when moving emails across mailboxes that there will be a null value returned instead of the newly created identifier. Default: |</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="keystore" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Resource url to keystore or certificate. If none specified, the JVMs default keystore will be used.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreType">
+      <xs:annotation>
+        <xs:documentation>Type of keystore Default: pkcs12</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="keystoreAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias used to obtain keystore password</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystorePassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to access keystore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keyManagerAlgorithm" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Key manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Alias to obtain specific certificate or key in keystore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAliasAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAliasPassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststore" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Resource url to truststore. If none specified, the JVMs default truststore will be used.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststoreType">
+      <xs:annotation>
+        <xs:documentation>Type of truststore Default: jks</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="truststoreAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias used to obtain truststore password</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststorePassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to access truststore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="trustManagerAlgorithm" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Trust manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="verifyHostname" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self signed certificates are accepted Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ignoreCertificateExpiredException" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="ExchangeMailListenerCumulativeAttributeGroup">
     <xs:attributeGroup ref="ExchangeMailListenerDeclaredAttributeGroup" />
@@ -7120,7 +7291,7 @@
     </xs:attribute>
     <xs:attribute name="messageField" type="xs:string">
       <xs:annotation>
-        <xs:documentation>(Optional) field containing the message data Default: &lt;i&gt;same as keyField&lt;/i&gt;</xs:documentation>
+        <xs:documentation>Field containing the message data Default: &lt;i&gt;same as keyField&lt;/i&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="messageFieldType">
@@ -7130,6 +7301,16 @@
       <xs:simpleType>
         <xs:union memberTypes="MessageFieldTypeAttributeValuesType variableRef" />
       </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="messageIdField" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Field containing the message Id Default: &lt;i&gt;same as keyField&lt;/i&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="correlationIdField" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Field containing the correlationId Default: &lt;i&gt;same as messageIdField&lt;/i&gt;</xs:documentation>
+      </xs:annotation>
     </xs:attribute>
     <xs:attribute name="blobsCompressed" type="frankBoolean">
       <xs:annotation>
@@ -7276,7 +7457,17 @@
     </xs:attribute>
     <xs:attribute name="messageField" type="xs:string">
       <xs:annotation>
-        <xs:documentation>(Optional) field containing the message data Default: &lt;i&gt;same as keyField&lt;/i&gt;</xs:documentation>
+        <xs:documentation>Field containing the message data Default: &lt;i&gt;same as keyField&lt;/i&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="messageIdField" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Field containing the message Id Default: &lt;i&gt;same as keyField&lt;/i&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="correlationIdField" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Field containing the correlationId Default: &lt;i&gt;same as messageIdField&lt;/i&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="messageFieldType">
@@ -7733,10 +7924,13 @@
         <xs:documentation>Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&amp;lt;=&amp;lt;party&amp;gt;).*?(?=&amp;lt;/party&amp;gt;) will replace every character between keys &amp;lt;party&amp;gt; and &amp;lt;/party&amp;gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="hideMethod" type="xs:string">
+    <xs:attribute name="hideMethod">
       <xs:annotation>
-        <xs:documentation>(Only used when hideRegex is not empty) either &lt;code&gt;all&lt;/code&gt; or &lt;code&gt;firstHalf&lt;/code&gt;. When &lt;code&gt;firstHalf&lt;/code&gt; only the first half of the string is masked, otherwise (&lt;code&gt;all&lt;/code&gt;) the entire string is masked Default: all</xs:documentation>
+        <xs:documentation>(Only used when hideRegex is not empty) Specifies the way to hide Default: ALL</xs:documentation>
       </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="HideMethodAttributeValuesType variableRef" />
+      </xs:simpleType>
     </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="JmsMessageBrowserCumulativeAttributeGroup">
@@ -11242,6 +11436,15 @@
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
+      <xs:element name="MdcPipe">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="MdcPipeType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="pipe" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
       <xs:element name="MoveFilePipe">
         <xs:complexType>
           <xs:complexContent>
@@ -12063,7 +12266,7 @@
     <xs:attribute ref="namespaceDefs" />
     <xs:attribute name="outputType">
       <xs:annotation>
-        <xs:documentation>only valid for xpathexpression Default: text</xs:documentation>
+        <xs:documentation>Only valid for xpathexpression Default: text</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="OutputTypeAttributeValuesType variableRef" />
@@ -12129,133 +12332,137 @@
     </xs:attribute>
     <xs:attribute name="correlationIDStyleSheet" type="xs:string">
       <xs:annotation>
-        <xs:documentation>stylesheet to extract correlationid from message</xs:documentation>
+        <xs:documentation>Stylesheet to extract correlationid from message</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="correlationIDXPath" type="xs:string">
       <xs:annotation>
-        <xs:documentation>xpath expression to extract correlationid from message</xs:documentation>
+        <xs:documentation>XPath expression to extract correlationid from message</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="correlationIDNamespaceDefs" type="xs:string">
       <xs:annotation>
-        <xs:documentation>namespace defintions for correlationidxpath. must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions</xs:documentation>
+        <xs:documentation>Namespace defintions for correlationIDXPath. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceUri&lt;/code&gt;-definitions</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="correlationIDSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>key of a pipelinesession-variable. is specified, the value of the pipelinesession variable is used as input for the xpathexpression or stylesheet, instead of the current input message</xs:documentation>
+        <xs:documentation>Key of a PipelineSession-variable. If specified, the value of the PipelineSession variable is used as input for the XPathExpression or stylesheet, instead of the current input message</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="labelStyleSheet" type="xs:string">
       <xs:annotation>
-        <xs:documentation>stylesheet to extract label from message</xs:documentation>
+        <xs:documentation>Stylesheet to extract label from message</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="labelXPath" type="xs:string">
       <xs:annotation>
-        <xs:documentation>xpath expression to extract label from message</xs:documentation>
+        <xs:documentation>XPath expression to extract label from message</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="labelNamespaceDefs" type="xs:string">
       <xs:annotation>
-        <xs:documentation>namespace defintions for labelxpath. must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions</xs:documentation>
+        <xs:documentation>Namespace defintions for labelXPath. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceUri&lt;/code&gt;-definitions</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="auditTrailXPath" type="xs:string">
       <xs:annotation>
-        <xs:documentation>xpath expression to extract audit trail from message</xs:documentation>
+        <xs:documentation>XPath expression to extract audit trail from message</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="auditTrailNamespaceDefs" type="xs:string">
       <xs:annotation>
-        <xs:documentation>namespace defintions for audittrailxpath. must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions</xs:documentation>
+        <xs:documentation>Namespace defintions for auditTrailXPath. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceUri&lt;/code&gt;-definitions</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="auditTrailSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>key of a pipelinesession-variable. if specified, the value of the pipelinesession variable is used as audit trail (instead of the default 'no audit trail)</xs:documentation>
+        <xs:documentation>Key of a PipelineSession-variable. If specified, the value of the PipelineSession variable is used as audit trail (instead of the default 'no audit trail)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="useInputForExtract" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>when set &lt;code&gt;true&lt;/code&gt;, the input of a pipe is used to extract audit trail, correlationid and label (instead of the wrapped input) Default: true</xs:documentation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the input of the Pipe is used to extract audit trail, correlationid and label (instead of the wrapped input) Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="hideRegex" type="xs:string">
       <xs:annotation>
-        <xs:documentation>next to common usage in AbstractPipe, also strings in the error/logstore are masked</xs:documentation>
+        <xs:documentation>Next to common usage in AbstractPipe, also strings in the error/logstore are masked</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="hideMethod" type="xs:string">
+    <xs:attribute name="hideMethod">
       <xs:annotation>
-        <xs:documentation>(only used when hideregex is not empty and only applies to error/logstore) either &lt;code&gt;all&lt;/code&gt; or &lt;code&gt;firsthalf&lt;/code&gt;. when &lt;code&gt;firsthalf&lt;/code&gt; only the first half of the string is masked, otherwise (&lt;code&gt;all&lt;/code&gt;) the entire string is masked Default: all</xs:documentation>
+        <xs:documentation>(Only used when hideRegex is not empty and only applies to error/logstore) Default: all</xs:documentation>
       </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="HideMethodAttributeValuesType variableRef" />
+      </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="checkXmlWellFormed" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>when set &lt;code&gt;true&lt;/code&gt;, the xml well-formedness of the result is checked Default: false</xs:documentation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the XML Well-Formedness of the result is checked Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="checkRootTag" type="xs:string">
       <xs:annotation>
-        <xs:documentation>when set, besides the xml well-formedness the root element of the result is checked to be equal to the value set</xs:documentation>
+        <xs:documentation>If set, besides the XML Well-Formedness the root element of the result is checked to be equal to the value set</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="resultOnTimeOut" type="xs:string">
       <xs:annotation>
-        <xs:documentation>result returned when no return-message was received within the timeout limit (e.g. 'receiver timed out').</xs:documentation>
+        <xs:documentation>The message (e.g. 'receiver timed out') that is returned when the time listening for a reply message
+ exceeds the timeout, or in other situations no reply message is received.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="maxRetries" type="frankInt">
       <xs:annotation>
-        <xs:documentation>the number of times a processing attempt is retried after a timeout or an exception is caught or after a incorrect reply is received (see also &lt;code&gt;retryxpath&lt;/code&gt;) Default: 0</xs:documentation>
+        <xs:documentation>The number of times a processing attempt is retried after a timeout or an exception is caught or after an incorrect reply is received (see also &lt;code&gt;retryXPath&lt;/code&gt;) Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="retryMinInterval" type="frankInt">
       <xs:annotation>
-        <xs:documentation>the starting number of seconds waited after an unsuccessful processing attempt before another processing attempt is made. each next retry this interval is doubled with a upper limit of &lt;code&gt;retrymaxinterval&lt;/code&gt; Default: 1</xs:documentation>
+        <xs:documentation>The starting number of seconds waited after an unsuccessful processing attempt before another processing attempt is made. Each next retry this interval is doubled with a upper limit of &lt;code&gt;retryMaxInterval&lt;/code&gt; Default: 1</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="retryMaxInterval" type="frankInt">
       <xs:annotation>
-        <xs:documentation>the maximum number of seconds waited after an unsuccessful processing attempt before another processing attempt is made Default: 600</xs:documentation>
+        <xs:documentation>The maximum number of seconds waited after an unsuccessful processing attempt before another processing attempt is made Default: 600</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="retryXPath" type="xs:string">
       <xs:annotation>
-        <xs:documentation>xpath expression evaluated on each technical successful reply. retry is done if condition returns true</xs:documentation>
+        <xs:documentation>XPath expression evaluated on each technical successful reply. Retry is done if condition returns true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="retryNamespaceDefs" type="xs:string">
       <xs:annotation>
-        <xs:documentation>namespace defintions for retryxpath. must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions</xs:documentation>
+        <xs:documentation>Namespace defintions for retryXPath. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceUri&lt;/code&gt;-definitions</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="presumedTimeOutInterval" type="frankInt">
       <xs:annotation>
-        <xs:documentation>when the previous call was a timeout, the maximum time &lt;i&gt;in seconds&lt;/i&gt; after this timeout to presume the current call is also a timeout. a value of -1 indicates to never presume timeouts Default: 10</xs:documentation>
+        <xs:documentation>If the previous call was a timeout, the maximum time &lt;i&gt;in seconds&lt;/i&gt; after this timeout to presume the current call is also a timeout. Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="streamResultToServlet" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>if set, the result is first base64 decoded and then streamed to the httpservletresponse object Default: false</xs:documentation>
+        <xs:documentation>If set, the result is first base64 decoded and then streamed to the HttpServletResponse object Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="stubFileName" type="xs:string" />
     <xs:attribute name="stubFilename" type="xs:string">
       <xs:annotation>
-        <xs:documentation>when set, the pipe returns a message from a file, instead of doing the regular process</xs:documentation>
+        <xs:documentation>If set, the pipe returns a message from a file, instead of doing the regular process</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="timeOutOnResult" type="xs:string">
       <xs:annotation>
-        <xs:documentation>when not empty, a timeoutexception is thrown when the result equals this value (for testing purposes only)</xs:documentation>
+        <xs:documentation>If not empty, a TimeoutException is thrown when the result equals this value (for testing purposes only)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="exceptionOnResult" type="xs:string">
       <xs:annotation>
-        <xs:documentation>when not empty, a piperunexception is thrown when the result equals this value (for testing purposes only)</xs:documentation>
+        <xs:documentation>If not empty, a PipeRunException is thrown when the result equals this value (for testing purposes only)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -12405,7 +12612,7 @@
     <xs:attribute ref="namespaceDefs" />
     <xs:attribute name="outputType">
       <xs:annotation>
-        <xs:documentation>only valid for xpathexpression Default: text</xs:documentation>
+        <xs:documentation>Only valid for xpathexpression Default: text</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="OutputTypeAttributeValuesType variableRef" />
@@ -13437,6 +13644,9 @@
   </xs:complexType>
   <xs:group name="SenderPipeDeclaredChildGroup">
     <xs:sequence>
+      <xs:group ref="MessageLogElementGroup" minOccurs="0" maxOccurs="1" />
+      <xs:group ref="InputWrapperElementGroup" minOccurs="0" maxOccurs="1" />
+      <xs:group ref="InputValidatorElementGroup" minOccurs="0" maxOccurs="1" />
       <xs:group ref="SenderElementGroup" minOccurs="1" maxOccurs="1" />
       <xs:group ref="ListenerElementGroup_2" minOccurs="0" maxOccurs="1" />
     </xs:sequence>
@@ -13476,7 +13686,9 @@
   <xs:group name="SenderPipeCumulativeChildGroup">
     <xs:sequence>
       <xs:group ref="SenderPipeDeclaredChildGroup" />
-      <xs:group ref="MessageSendingPipeCumulativeChildGroup" />
+      <xs:group ref="OutputValidatorElementGroup" minOccurs="0" maxOccurs="1" />
+      <xs:group ref="OutputWrapperElementGroup" minOccurs="0" maxOccurs="1" />
+      <xs:group ref="AbstractPipeDeclaredChildGroup" />
     </xs:sequence>
   </xs:group>
   <xs:complexType name="GetFromSessionType">
@@ -14310,6 +14522,26 @@
     <xs:attributeGroup ref="MessageSendingPipeCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.MailSenderPipe" />
   </xs:complexType>
+  <xs:complexType name="MdcPipeType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="AbstractPipeDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="MdcPipeCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.MdcPipe" />
+  </xs:complexType>
+  <xs:attributeGroup name="MdcPipeDeclaredAttributeGroup">
+    <xs:attribute name="export" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; the ThreadContext parameters will be exported from the current PipeLine up in the call tree. Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="MdcPipeCumulativeAttributeGroup">
+    <xs:attributeGroup ref="MdcPipeDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+  </xs:attributeGroup>
   <xs:complexType name="MoveFilePipeType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -16355,6 +16587,7 @@
       <xs:pattern value="[iI][nN][pP][uU][tT][sS][tT][rR][eE][aA][mM]" />
       <xs:pattern value="[bB][yY][tT][eE][sS]" />
       <xs:pattern value="[bB][iI][nN][aA][rR][yY]" />
+      <xs:pattern value="[cC][hH][aA][rR][aA][cC][tT][eE][rR]" />
       <xs:pattern value="[lL][iI][sS][tT]" />
       <xs:pattern value="[mM][aA][pP]" />
     </xs:restriction>
@@ -16530,6 +16763,12 @@
       <xs:pattern value="[nN][oO][nN][eE]" />
       <xs:pattern value="[aA][sS][cC]" />
       <xs:pattern value="[dD][eE][sS][cC]" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="HideMethodAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[aA][lL][lL]" />
+      <xs:pattern value="[fF][iI][rR][sS][tT][hH][aA][lL][fF]" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="MongoActionAttributeValuesType">
@@ -17579,7 +17818,7 @@
   </xs:attribute>
   <xs:attribute name="peekQuery" type="xs:string">
     <xs:annotation>
-      <xs:documentation>(only used when &lt;code&gt;peekUntransacted=true&lt;/code&gt;) peek query to determine if the select query should be executed. Peek queries are, unlike select queries, executed without a transaction and without a rowlock Default: selectQuery</xs:documentation>
+      <xs:documentation>(only used when &lt;code&gt;peekUntransacted&lt;/code&gt;=&lt;code&gt;true&lt;/code&gt;) Peek query to determine if the select query should be executed. Peek queries are, unlike select queries, executed without a transaction and without a rowlock Default: selectQuery</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="blobCharset" type="xs:string">
@@ -17643,7 +17882,8 @@
   </xs:attribute>
   <xs:attribute name="storeResultInSessionKey" type="xs:string">
     <xs:annotation>
-      <xs:documentation>If set, the result (before replacing when &lt;code&gt;true&lt;/code&gt;) is stored under this session key</xs:documentation>
+      <xs:documentation>If set, the pipe result is copied to a session key that has the name defined by this attribute. The
+ pipe result is still written as the output message as usual.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="maxThreads" type="frankInt">
