@@ -1047,6 +1047,7 @@
       <xs:pattern value="[iI][nN][pP][uU][tT][sS][tT][rR][eE][aA][mM]" />
       <xs:pattern value="[bB][yY][tT][eE][sS]" />
       <xs:pattern value="[bB][iI][nN][aA][rR][yY]" />
+      <xs:pattern value="[cC][hH][aA][rR][aA][cC][tT][eE][rR]" />
       <xs:pattern value="[lL][iI][sS][tT]" />
       <xs:pattern value="[mM][aA][pP]" />
     </xs:restriction>
@@ -3441,6 +3442,94 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
         <xs:documentation>proxy domain</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="keystore" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Resource url to keystore or certificate. If none specified, the JVMs default keystore will be used.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreType">
+      <xs:simpleType>
+        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef">
+          <xs:annotation>
+            <xs:documentation>Type of keystore Default: pkcs12</xs:documentation>
+          </xs:annotation>
+        </xs:union>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="keystoreAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias used to obtain keystore password</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystorePassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to access keystore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keyManagerAlgorithm" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Key manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Alias to obtain specific certificate or key in keystore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAliasAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAliasPassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststore" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Resource url to truststore. If none specified, the JVMs default truststore will be used.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststoreType">
+      <xs:simpleType>
+        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef">
+          <xs:annotation>
+            <xs:documentation>Type of truststore Default: jks</xs:documentation>
+          </xs:annotation>
+        </xs:union>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="truststoreAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias used to obtain truststore password</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststorePassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to access truststore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="trustManagerAlgorithm" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Trust manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="verifyHostname" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self signed certificates are accepted Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ignoreCertificateExpiredException" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="ExchangeFolderSenderCumulativeAttributeGroup">
     <xs:attributeGroup ref="ExchangeFolderSenderDeclaredAttributeGroup" />
@@ -5110,6 +5199,11 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
   </xs:attributeGroup>
   <xs:attributeGroup name="JsonXsltSenderCumulativeAttributeGroup">
     <xs:attributeGroup ref="JsonXsltSenderDeclaredAttributeGroup" />
+    <xs:attribute name="streamingXslt" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If true, then this sender will process the XSLT while streaming in a different thread. Can be used to switch streaming off for debugging purposes Default: set by appconstant xslt.streaming.default</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="styleSheetName" type="xs:string">
       <xs:annotation>
         <xs:documentation>Location of stylesheet to apply to the input message</xs:documentation>
@@ -5192,6 +5286,11 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.senders.XsltSender" />
   </xs:complexType>
   <xs:attributeGroup name="XsltSenderDeclaredAttributeGroup">
+    <xs:attribute name="streamingXslt" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If true, then this sender will process the XSLT while streaming in a different thread. Can be used to switch streaming off for debugging purposes Default: set by appconstant xslt.streaming.default</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="styleSheetName" type="xs:string">
       <xs:annotation>
         <xs:documentation>Location of stylesheet to apply to the input message</xs:documentation>
@@ -5789,7 +5888,7 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
     </xs:attribute>
     <xs:attribute name="prefix" type="xs:string">
       <xs:annotation>
-        <xs:documentation>prefix to be prefixed on all database objects (tables, indices, sequences), e.g. to access a different Oracle schema</xs:documentation>
+        <xs:documentation>Prefix to be prefixed on all database objects (tables, indices, sequences), e.g. to access a different Oracle schema</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="order">
@@ -7836,7 +7935,7 @@ Listener that allows a nl.nn.adapterframework.receivers.Receiver to receive mess
     </xs:attribute>
     <xs:attribute name="updateEtag" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Automatically generate and validate etags Default: &lt;code&gt;true&lt;/code&gt;</xs:documentation>
+        <xs:documentation>Automatically generate and validate etags Default: &lt;code&gt;false&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="authenticationMethod">
@@ -8424,6 +8523,94 @@ Listener that allows a nl.nn.adapterframework.receivers.Receiver to receive mess
     <xs:attribute name="proxyDomain" type="xs:string">
       <xs:annotation>
         <xs:documentation>proxy domain</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystore" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Resource url to keystore or certificate. If none specified, the JVMs default keystore will be used.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreType">
+      <xs:simpleType>
+        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef">
+          <xs:annotation>
+            <xs:documentation>Type of keystore Default: pkcs12</xs:documentation>
+          </xs:annotation>
+        </xs:union>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="keystoreAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias used to obtain keystore password</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystorePassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to access keystore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keyManagerAlgorithm" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Key manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Alias to obtain specific certificate or key in keystore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAliasAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAliasPassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststore" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Resource url to truststore. If none specified, the JVMs default truststore will be used.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststoreType">
+      <xs:simpleType>
+        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef">
+          <xs:annotation>
+            <xs:documentation>Type of truststore Default: jks</xs:documentation>
+          </xs:annotation>
+        </xs:union>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="truststoreAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias used to obtain truststore password</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststorePassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to access truststore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="trustManagerAlgorithm" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Trust manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="verifyHostname" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self signed certificates are accepted Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ignoreCertificateExpiredException" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -9045,7 +9232,7 @@ Listener that allows a nl.nn.adapterframework.receivers.Receiver to receive mess
     </xs:attribute>
     <xs:attribute name="peekQuery" type="xs:string">
       <xs:annotation>
-        <xs:documentation>(only used when &lt;code&gt;peekUntransacted=true&lt;/code&gt;) peek query to determine if the select query should be executed. Peek queries are, unlike select queries, executed without a transaction and without a rowlock Default: selectQuery</xs:documentation>
+        <xs:documentation>(only used when &lt;code&gt;peekUntransacted&lt;/code&gt;=&lt;code&gt;true&lt;/code&gt;) Peek query to determine if the select query should be executed. Peek queries are, unlike select queries, executed without a transaction and without a rowlock Default: selectQuery</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="keyField" type="xs:string">
@@ -9055,7 +9242,7 @@ Listener that allows a nl.nn.adapterframework.receivers.Receiver to receive mess
     </xs:attribute>
     <xs:attribute name="messageField" type="xs:string">
       <xs:annotation>
-        <xs:documentation>(Optional) field containing the message data Default: &lt;i&gt;same as keyField&lt;/i&gt;</xs:documentation>
+        <xs:documentation>Field containing the message data Default: &lt;i&gt;same as keyField&lt;/i&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="messageFieldType">
@@ -9066,6 +9253,16 @@ Listener that allows a nl.nn.adapterframework.receivers.Receiver to receive mess
           </xs:annotation>
         </xs:union>
       </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="messageIdField" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Field containing the message Id Default: &lt;i&gt;same as keyField&lt;/i&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="correlationIdField" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Field containing the correlationId Default: &lt;i&gt;same as messageIdField&lt;/i&gt;</xs:documentation>
+      </xs:annotation>
     </xs:attribute>
     <xs:attribute name="blobsCompressed" type="frankBoolean">
       <xs:annotation>
@@ -9175,7 +9372,7 @@ Listener that allows a nl.nn.adapterframework.receivers.Receiver to receive mess
     </xs:attribute>
     <xs:attribute name="statusValueError" type="xs:string" use="required">
       <xs:annotation>
-        <xs:documentation>"Value of statusField indicating the processing of the row resulted in an error</xs:documentation>
+        <xs:documentation>Value of statusField indicating the processing of the row resulted in an error</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="statusValueProcessed" type="xs:string" use="required">
@@ -9239,7 +9436,17 @@ Listener that allows a nl.nn.adapterframework.receivers.Receiver to receive mess
     </xs:attribute>
     <xs:attribute name="messageField" type="xs:string">
       <xs:annotation>
-        <xs:documentation>(Optional) field containing the message data Default: &lt;i&gt;same as keyField&lt;/i&gt;</xs:documentation>
+        <xs:documentation>Field containing the message data Default: &lt;i&gt;same as keyField&lt;/i&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="messageIdField" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Field containing the message Id Default: &lt;i&gt;same as keyField&lt;/i&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="correlationIdField" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Field containing the correlationId Default: &lt;i&gt;same as messageIdField&lt;/i&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="messageFieldType">
@@ -9331,7 +9538,7 @@ Listener that allows a nl.nn.adapterframework.receivers.Receiver to receive mess
     </xs:attribute>
     <xs:attribute name="peekQuery" type="xs:string">
       <xs:annotation>
-        <xs:documentation>(only used when &lt;code&gt;peekUntransacted=true&lt;/code&gt;) peek query to determine if the select query should be executed. Peek queries are, unlike select queries, executed without a transaction and without a rowlock Default: selectQuery</xs:documentation>
+        <xs:documentation>(only used when &lt;code&gt;peekUntransacted&lt;/code&gt;=&lt;code&gt;true&lt;/code&gt;) Peek query to determine if the select query should be executed. Peek queries are, unlike select queries, executed without a transaction and without a rowlock Default: selectQuery</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="blobsCompressed" type="frankBoolean">
@@ -14772,7 +14979,7 @@ IteratingPipe that has Strings as items.</xs:documentation>
         <xs:annotation>
           <xs:documentation>Text2XmlPipe - nl.nn.adapterframework.pipes.Text2XmlPipe used as Pipe
 
-Pipe for converting text to or from xml.</xs:documentation>
+Pipe for converting TEXT to XML.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -17349,6 +17556,11 @@ A true multi-threaded Listener-class.</xs:documentation>
   </xs:attributeGroup>
   <xs:attributeGroup name="JsonXsltPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="JsonXsltPipeDeclaredAttributeGroup" />
+    <xs:attribute name="streamingXslt" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If true, then this pipe will process the XSLT while streaming in a different thread. Can be used to switch streaming xslt off for debugging purposes Default: set by appconstant xslt.streaming.default</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="styleSheetName" type="xs:string">
       <xs:annotation>
         <xs:documentation>Location of stylesheet to apply to the input message</xs:documentation>
@@ -17527,6 +17739,11 @@ A true multi-threaded Listener-class.</xs:documentation>
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.XsltPipe" />
   </xs:complexType>
   <xs:attributeGroup name="XsltPipeDeclaredAttributeGroup">
+    <xs:attribute name="streamingXslt" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If true, then this pipe will process the XSLT while streaming in a different thread. Can be used to switch streaming xslt off for debugging purposes Default: set by appconstant xslt.streaming.default</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="styleSheetName" type="xs:string">
       <xs:annotation>
         <xs:documentation>Location of stylesheet to apply to the input message</xs:documentation>
@@ -18336,6 +18553,11 @@ A true multi-threaded Listener-class.</xs:documentation>
         <xs:documentation>directory to save resulting pdf files after conversion. If not set then a temporary directory will be created and the conversion results will be stored in that directory.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="loadExternalResources" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>when set to true, external resources, such as stylesheets and images found in HTML pages, will be loaded from the internet Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:simpleType name="DocumentActionAttributeValuesType">
     <xs:restriction base="xs:string">
@@ -19102,7 +19324,7 @@ A true multi-threaded Listener-class.</xs:documentation>
     </xs:attribute>
     <xs:attribute name="replaceNonXmlChars" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Replace all non xml chars (not in the &lt;a href=\"http://www.w3.org/tr/2006/rec-xml-20060816/#nt-char\"&gt;character range as specified by the xml specification&lt;/a&gt;) 
+        <xs:documentation>Replace all non xml chars (not in the &lt;a href=\"http://www.w3.org/tr/2006/rec-xml-20060816/#nt-char\"&gt;character range as specified by the xml specification&lt;/a&gt;)
  with the inverted question mark (0x00bf) Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
