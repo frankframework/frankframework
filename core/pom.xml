@@ -15,6 +15,7 @@
 		<spring-security.version>5.7.3</spring-security.version>
 		<j2v8.version>4.6.0</j2v8.version>
 		<jackson.version>2.13.4</jackson.version>
+		<jackson-databind.version>2.13.4.2</jackson-databind.version>
 		<micrometer.version>1.9.3</micrometer.version>
 		<saxon.version>10.8</saxon.version>
 	</properties>
@@ -658,7 +659,7 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>${jackson.version}</version>
+			<version>${jackson-databind.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
