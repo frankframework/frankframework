@@ -1015,14 +1015,14 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			if (getRunState() != RunState.STARTED) {
 				throw new ListenerException(getLogPrefix()+"is not started");
 			}
-	
+
 			boolean sessionCreated=false;
 			try {
 				if (session==null) {
 					session = new PipeLineSession();
 					sessionCreated=true;
 				}
-	
+
 				Date tsReceived = PipeLineSession.getTsReceived(session);
 				Date tsSent = PipeLineSession.getTsSent(session);
 				PipeLineSession.setListenerParameters(session, null, correlationId, tsReceived, tsSent);
@@ -1077,7 +1077,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				if(isForceRetryFlag()) {
 					session.put(Receiver.RETRY_FLAG_SESSION_KEY, "true");
 				}
-	
+
 				Message message = null;
 				String technicalCorrelationId = null;
 				try {
