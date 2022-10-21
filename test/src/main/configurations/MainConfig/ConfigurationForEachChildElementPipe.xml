@@ -38,6 +38,16 @@
 			<pipe name="exception" className="nl.nn.adapterframework.pipes.ExceptionPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
+			<pipe name="mdc local" className="nl.nn.adapterframework.pipes.MdcPipe">
+				<param name="mdc1" value="mdc1_value_local" />
+				<param name="mdc_local" value="mdc_local_value" />
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<pipe name="mdc export" className="nl.nn.adapterframework.pipes.MdcPipe" export="true">
+				<param name="mdc1" value="mdc1_value_export" />
+				<param name="mdc_export" value="mdc_export_value" />
+				<forward name="success" path="EXIT" />
+			</pipe>
 		</pipeline>
 	</adapter>
 </module>
