@@ -45,7 +45,10 @@ import nl.nn.adapterframework.util.ClassUtils;
 @ElementType(ElementTypes.SESSION)
 public class MdcPipe extends FixedForwardPipe {
 
-	/** If set <code>true</code> the ThreadContext parameters will be exported from the current PipeLine up in the call tree */
+	/** 
+	 * If set <code>true</code> the ThreadContext parameters will be exported from the current PipeLine up in the call tree.
+	 * @ff.default false
+	 */
 	private @Getter @Setter boolean export;
 
 	@Override
