@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.pipes;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import org.apache.logging.log4j.ThreadContext;
 import org.junit.Test;
@@ -29,6 +30,27 @@ public class MdcPipeTest extends PipeTestBase<MdcPipe>{
 		assertEquals(input, prr.getResult().asString());
 		assertEquals("success", prr.getPipeForward().getName());
 		assertEquals("paramValue", ThreadContext.get("paramName"));
+
+		session.close();
+		assertNull(ThreadContext.get("paramName"));
 	}
 
+	@Test
+	public void testMdcPipeExport() throws Exception {
+		pipe.addParameter(new Parameter("paramName", "paramValue"));
+		pipe.setExport(true);
+		configureAndStartPipe();
+
+		String input = "fakeInput";
+		ThreadContext.clearMap();
+
+		PipeRunResult prr = doPipe(input);
+
+		assertEquals(input, prr.getResult().asString());
+		assertEquals("success", prr.getPipeForward().getName());
+		assertEquals("paramValue", ThreadContext.get("paramName"));
+
+		session.close();
+		assertEquals("paramValue", ThreadContext.get("paramName"));
+	}
 }
