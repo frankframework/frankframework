@@ -19,7 +19,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.logging.log4j.CloseableThreadContext;
+import org.apache.logging.log4j.ThreadContext;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -42,6 +45,9 @@ import nl.nn.adapterframework.util.ClassUtils;
 @ElementType(ElementTypes.SESSION)
 public class MdcPipe extends FixedForwardPipe {
 
+	/** If set <code>true</code> the ThreadContext parameters will be exported from the current PipeLine up in the call tree */
+	private @Getter @Setter boolean export;
+
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		if (!getParameterList().isEmpty()) {
@@ -54,7 +60,11 @@ public class MdcPipe extends FixedForwardPipe {
 			} catch (ParameterException e) {
 				throw new PipeRunException(this, "exception extracting parameters", e);
 			}
-			session.scheduleCloseOnSessionExit(CloseableThreadContext.putAll(values), ClassUtils.nameOf(this));
+			if (isExport()) {
+				ThreadContext.putAll(values);
+			} else {
+				session.scheduleCloseOnSessionExit(CloseableThreadContext.putAll(values), ClassUtils.nameOf(this));
+			}
 		}
 		return new PipeRunResult(getSuccessForward(),message);
 	}
