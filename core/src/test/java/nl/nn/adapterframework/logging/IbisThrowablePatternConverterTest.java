@@ -53,7 +53,7 @@ public class IbisThrowablePatternConverterTest {
 		final StringBuilder sb = new StringBuilder();
 		converter.format(event, sb);
 		final String result = sb.toString();
-		assertThat(result, startsWith("nl.nn.adapterframework.core.PipeRunException: Pipe [null] CompareIntegerPipe: Pipe [null] XsltPipe: Pipe [null] XmlSwitch: Pipe [null] UnzipPipe"));
+		assertThat(result, startsWith("nl.nn.adapterframework.core.PipeRunException: CompareIntegerPipe: XsltPipe: XmlSwitch: UnzipPipe"));
 		assertThat(result, containsString(") ~[junit")); // stacktrace must contain package information
 
 		int firstCausedBy = result.indexOf("Caused by");
