@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.management.bus.endpoints;
 
+import javax.annotation.security.RolesAllowed;
+
 import org.springframework.messaging.Message;
 
 import lombok.Getter;
@@ -25,22 +27,21 @@ import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.TopicSelector;
-import nl.nn.adapterframework.util.EnumUtils;
 
 @BusAware("frank-management-bus")
 public class HandleIbisManagerAction {
 	private @Getter @Setter IbisManager ibisManager;
 
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@TopicSelector(BusTopic.IBISACTION)
 	public void handleIbisAction(Message<?> message) {
-		String actionName = BusMessageUtils.getHeader(message, "action");
-		String configurationName = BusMessageUtils.getHeader(message, "configuration");
+		IbisAction action = BusMessageUtils.getEnumHeader(message, "action", IbisAction.class);
+		String configurationName = BusMessageUtils.getHeader(message, "configuration", "*ALL*");
 		String adapterName = BusMessageUtils.getHeader(message, "adapter");
 		String receiverName = BusMessageUtils.getHeader(message, "receiver");
 		String userPrincipalName = BusMessageUtils.getHeader(message, "issuedBy");
-		boolean isAdmin = BusMessageUtils.getBooleanHeader(message, "isAdmin", false); //limits the use of a FULL_RELOAD
 
-		IbisAction action = EnumUtils.parse(IbisAction.class, actionName);
+		boolean isAdmin = BusMessageUtils.hasAnyRole("IbisAdmin", "IbisTester"); //limits the use of a FULL_RELOAD
 		getIbisManager().handleAction(action, configurationName, adapterName, receiverName, userPrincipalName, isAdmin);
 	}
 }

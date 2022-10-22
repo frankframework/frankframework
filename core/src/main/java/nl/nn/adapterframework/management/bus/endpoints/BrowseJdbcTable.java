@@ -217,7 +217,7 @@ public class BrowseJdbcTable {
 				log.debug("check allow read table [{}] with rule table [{}] role [{}] and type [{}]", table, tablePattern, role, type);
 				if ("*".equals(tablePattern) || table.equals(tablePattern)) {
 					log.debug("table match");
-					if ("*".equals(role) || BusMessageUtils.hasAuthority(role)) {
+					if ("*".equals(role) || BusMessageUtils.hasRole(role)) {
 						log.debug("role match, type [{}]", type);
 						if ("allow".equals(type)) {
 							return true;

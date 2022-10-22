@@ -77,7 +77,6 @@ public final class ShowConfiguration extends FrankApiBase {
 		if(value instanceof String && "reload".equals(value)) {
 			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.IBISACTION);
 			builder.addHeader("action", IbisAction.FULLRELOAD.name());
-			builder.addHeader("configuration", "*ALL*");
 			callAsyncGateway(builder);
 			return Response.status(Response.Status.ACCEPTED).entity("{\"status\":\"ok\"}").build();
 		}
