@@ -32,8 +32,8 @@ import nl.nn.adapterframework.management.bus.TopicSelector;
 public class HandleIbisManagerAction {
 	private @Getter @Setter IbisManager ibisManager;
 
-	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@TopicSelector(BusTopic.IBISACTION)
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public void handleIbisAction(Message<?> message) {
 		IbisAction action = BusMessageUtils.getEnumHeader(message, "action", IbisAction.class);
 		String configurationName = BusMessageUtils.getHeader(message, "configuration", "*ALL*");

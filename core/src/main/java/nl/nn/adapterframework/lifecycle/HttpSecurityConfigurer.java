@@ -65,7 +65,7 @@ import nl.nn.adapterframework.util.SpringUtils;
  */
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(jsr250Enabled = true)
+@EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false)
 public class HttpSecurityConfigurer implements ApplicationContextAware {
 
 	private @Setter ApplicationContext applicationContext;
