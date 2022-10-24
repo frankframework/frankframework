@@ -542,6 +542,12 @@
 			<artifactId>spymemcached</artifactId>
 			<version>2.12.3</version>
 		</dependency>
+		<!-- snakeyaml explicitly defined to avoid CVE's -->
+		<dependency>
+			<groupId>org.yaml</groupId>
+			<artifactId>snakeyaml</artifactId>
+			<version>1.33</version>
+		</dependency>
 		<dependency>
 			<groupId>org.liquibase</groupId>
 			<artifactId>liquibase-core</artifactId>
