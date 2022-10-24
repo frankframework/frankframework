@@ -196,7 +196,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @ff.parameter authAlias overrides authAlias specified by the attribute <code>authAlias</code>
  * @ff.parameter username overrides username specified by the attribute <code>username</code>
  * @ff.parameter password overrides password specified by the attribute <code>password</code>
- * @ff.forward   notFound if the requested object could not be found
+ * @ff.forward   notFound if the requested object could not be found for actions GET, UPDATE and DELETE
  *
  * @author	Peter Leeuwenburgh
  * @author	Niels Meijer
