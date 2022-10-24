@@ -1,5 +1,5 @@
 ARG JBOSS_VERSION=7.3.0-centos
-FROM daggerok/jboss-eap-7.3:${JBOSS_VERSION} AS iaf-test-as-jboss
+FROM daggerok/jboss-eap-7.3:${JBOSS_VERSION} AS jboss-eap-with-python
 
 USER root
 RUN sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-* \
@@ -7,16 +7,23 @@ RUN sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-* \
 	&& yum install -y --nogpgcheck python3
 USER jboss
 
+# Create credential store in separate image
+FROM jboss-eap-with-python AS jboss-iaf-test-CredentialStoreCreator
+COPY src/configuration/createCS.py /home/createCS.py
+COPY target/dependencies/secrets /opt/frank/secrets
+
+RUN python3 /home/createCS.py
+
+FROM jboss-eap-with-python AS iaf-test-as-jboss
 # Copy dependencies
 COPY target/dependencies/*.jar /home/jboss/jboss-eap-7.3/standalone/lib/ext/
 COPY target/dependencies/*.rar /home/jboss/jboss-eap-7.3/standalone/deployments/ 
 
 # Copy in standalone-configuration.xml
-COPY src/configuration/standalone.xml /home/jboss/jboss-eap-7.3/standalone/configuration/standalone.xml
+COPY  src/configuration/standalone.xml /home/jboss/jboss-eap-7.3/standalone/configuration/standalone.xml
 
-# Copy in secrets, mainly for database secrets to be configured at buildtime
-# The ibis will have access to these secrets via the credentialFactory, so different secrets can be mounted at runtime
-COPY target/dependencies/secrets /opt/frank/secrets
+# Copy in the created credential store
+COPY --from=jboss-iaf-test-CredentialStoreCreator --chown=jboss:jboss /home/jboss/jboss-eap-7.3/standalone/data/CS.jceks /home/jboss/jboss-eap-7.3/standalone/data/CS.jceks
 
 # Copy configuration script for modules
 COPY src/configuration/configuration.py /home/configuration.py
