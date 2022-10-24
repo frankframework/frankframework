@@ -65,3 +65,5 @@ overview.html
 checkstyle.xml
 .template
 TransformerHandlerImpl.java
+secrets/
+secrets\

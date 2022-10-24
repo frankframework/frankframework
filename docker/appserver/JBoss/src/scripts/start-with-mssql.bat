@@ -1,4 +1,4 @@
 docker container stop iaf-test-as-jboss
 docker container rm iaf-test-as-jboss
 
-docker run --publish 80:8080 -e jdbc.dbms.default=mssql --name iaf-test-as-jboss iaf-test-as-jboss
+docker run --publish 80:8080 -e jdbc.dbms.default=mssql --mount type=bind,src=%~dp0/../../../../../test/src/main/secrets,dst=/opt/frank/secrets --name iaf-test-as-jboss iaf-test-as-jboss

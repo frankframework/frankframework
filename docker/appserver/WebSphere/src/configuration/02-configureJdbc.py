@@ -7,18 +7,6 @@ server = 'server1'
 #p1 = AdminConfig.listTemplates('DataSource')
 #print 'DataSource templates: ', p1
 
-def createAuthAlias( aliasName, username, password, description ):
-	print "Creating Auth Alias ", aliasName
-	security = AdminConfig.getid('/Security:/')
-	alias = ['alias', aliasName ]
-	userid = ['userId', username ]
-	pw = ['password', password ]
-	descr = ['description', description ]
-	jaasAttrs = [alias, userid, pw, descr]
-	aliasId = AdminConfig.create('JAASAuthData', security, jaasAttrs)
-	AdminConfig.save()
-	return(aliasId)
-
 def createTemplatedProvider(templateName, implementationClass, classpath):
 	print "Creating JDBC Provider using template: ", templateName
 	providerName = templateName
@@ -55,7 +43,7 @@ createDatasource('ibis4test-h2', 'H2 JDBC Driver (XA)', [], [
 		[['name', 'URL'],['value', 'jdbc:h2:file:/work/ibis4test;NON_KEYWORDS=VALUE;DB_CLOSE_ON_EXIT=FALSE;AUTO_SERVER=TRUE']]
 	])
 
-authAliasName = 'jdbcTestIaf'
+authAliasName = 'testiaf_user'
 
 createTemplatedDatasource('ibis4test-oracle', 'Oracle JDBC Driver (XA)', 'Oracle JDBC Driver XA DataSource', authAliasName, [
 		[['name', 'URL'],['value', 'jdbc:oracle:thin:@host.docker.internal:1521:XE']]
@@ -90,8 +78,3 @@ createDatasource('ibis4test-mariadb', 'MySQL JDBC Driver', authAliasName, [
 createDatasource('ibis4test-postgres-xa', 'PostgreSQL JDBC Driver', authAliasName, [
 		[['name', 'URL'],  ['value', 'jdbc:postgresql://host.docker.internal:5432/testiaf']]
 	])
-
-
-createAuthAlias( authAliasName, 'testiaf_user', 'testiaf_user00', 'alias for iaf-test datasources' )
-createAuthAlias( 'testAuthAlias', 'testUser', 'testPassword', 'alias for authentication tests' )
-createAuthAlias( 'mongodb', 'testiaf_user', 'testiaf_user00', 'alias for mongodb test database' )

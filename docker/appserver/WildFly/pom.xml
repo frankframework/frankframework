@@ -111,6 +111,25 @@
 							<outputDirectory>${project.build.directory}/dependencies/frank/testtool</outputDirectory>
 						</configuration>
 					</execution>
+					<execution>
+						<id>unpack-secrets</id>
+						<phase>package</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>org.ibissource</groupId>
+									<artifactId>ibis-adapterframework-test</artifactId>
+									<classifier>secrets</classifier>
+									<excludes>META-INF/</excludes>
+								</artifactItem>
+							</artifactItems>
+							<excludeTransitive>true</excludeTransitive>
+							<outputDirectory>${project.build.directory}/dependencies/secrets</outputDirectory>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 			<plugin>
