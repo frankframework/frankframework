@@ -23,6 +23,8 @@ import org.springframework.messaging.Message;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.management.bus.ActionSelector;
+import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
@@ -36,6 +38,7 @@ public class DebugInformation {
 	private @Getter @Setter IbisManager ibisManager;
 
 	@TopicSelector(BusTopic.DEBUG)
+	@ActionSelector(BusAction.GET)
 	public Message<String> getClassInfo(Message<?> message) {
 		String baseClassName = BusMessageUtils.getHeader(message, "baseClassName");
 		String className = BusMessageUtils.getHeader(message, "className");

@@ -22,6 +22,7 @@ import javax.ws.rs.ext.Provider;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.messaging.MessageHandlingException;
+import org.springframework.security.access.AccessDeniedException;
 
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.util.LogUtil;
@@ -40,12 +41,16 @@ public class SpringBusExceptionHandler implements ExceptionMapper<MessageHandlin
 	@Override
 	public Response toResponse(MessageHandlingException mhe) {
 		Throwable cause = mhe.getCause();
-		while(cause != null && !(cause instanceof BusException)) {
+		for(int i = 0; i < 5 && cause != null; i++) {
+			if(cause instanceof BusException || cause instanceof AccessDeniedException) {
+				break;
+			}
 			cause = cause.getCause();
 		}
 
 		if(cause != null) { //Found a BusException, throw it directly
-			return ApiException.formatException(cause.getMessage(), Status.INTERNAL_SERVER_ERROR);
+			log.info("caught exception while sending/receiving information from the Application Bus", cause);
+			return ApiException.formatException(cause.getMessage(), cause instanceof AccessDeniedException ? Status.FORBIDDEN : Status.INTERNAL_SERVER_ERROR);
 		}
 
 		log.warn("unhandled exception while sending/receiving information from the Application Bus", mhe);

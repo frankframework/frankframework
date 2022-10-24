@@ -135,7 +135,7 @@ public class SecurityItems {
 				try {
 					if(tmp.containsKey("role-name")) {
 						String role = (String) tmp.get("role-name");
-						tmp.put("allowed", BusMessageUtils.hasAuthority(role));
+						tmp.put("allowed", BusMessageUtils.hasRole(role));
 					}
 				} catch(Exception e) {
 					log.warn("unable to check user authorities against the provided security roles", e);

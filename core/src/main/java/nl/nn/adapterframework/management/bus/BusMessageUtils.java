@@ -107,16 +107,25 @@ public class BusMessageUtils {
 		return null;
 	}
 
+	public static boolean hasAnyRole(String... roles) {
+		for(String role : roles) {
+			if(hasRole(role)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	/**
 	 * See AuthorityAuthorizationManager#ROLE_PREFIX
 	 */
-	public static boolean hasAuthority(String authority) {
-		UserDetails userDetails = getUserDetails();
+	public static boolean hasRole(String role) {
 		boolean granted = false;
+		UserDetails userDetails = getUserDetails();
 		if(userDetails != null) {
 			for(GrantedAuthority grantedAuthority : userDetails.getAuthorities()) {
 				String authorityName = grantedAuthority.getAuthority().substring(5); //chomp off the AuthorityAuthorizationManager#ROLE_PREFIX
-				granted = authorityName.equals(authority);
+				granted = authorityName.equals(role);
 				if(granted) {
 					return true;
 				}

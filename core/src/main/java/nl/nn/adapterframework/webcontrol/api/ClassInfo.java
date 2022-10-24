@@ -24,6 +24,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.RequestMessageBuilder;
 
@@ -38,7 +39,7 @@ public class ClassInfo extends FrankApiBase {
 	@Path("/classinfo/{className}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getClassInfo(@PathParam("className") String className, @QueryParam("base") String baseClassName) {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.DEBUG);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.DEBUG, BusAction.GET);
 		return callSyncGateway(builder);
 	}
 

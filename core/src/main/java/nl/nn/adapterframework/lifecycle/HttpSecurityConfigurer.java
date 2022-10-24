@@ -24,6 +24,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.authority.mapping.MappableAttributesRetriever;
@@ -64,6 +65,7 @@ import nl.nn.adapterframework.util.SpringUtils;
  */
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false)
 public class HttpSecurityConfigurer implements ApplicationContextAware {
 
 	private @Setter ApplicationContext applicationContext;
