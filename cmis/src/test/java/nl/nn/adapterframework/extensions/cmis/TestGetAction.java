@@ -15,9 +15,12 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import nl.nn.adapterframework.extensions.cmis.CmisSender.CmisAction;
+import nl.nn.adapterframework.extensions.cmis.CmisSessionBuilder.BindingTypes;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestAssertions;
+import nl.nn.adapterframework.util.EnumUtils;
 
 @RunWith(Parameterized.class)
 public class TestGetAction extends CmisSenderTestBase {
@@ -84,8 +87,8 @@ public class TestGetAction extends CmisSenderTestBase {
 		sender.setGetDocumentContent(getDocumentContent);
 
 		sender.setStreamResultToServlet(resultToServlet);
-		sender.setBindingType(bindingType);
-		sender.setAction(action);
+		sender.setBindingType(EnumUtils.parse(BindingTypes.class, bindingType));
+		sender.setAction(EnumUtils.parse(CmisAction.class, action));
 		sender.configure();
 
 		if(!STUBBED) {
@@ -122,8 +125,8 @@ public class TestGetAction extends CmisSenderTestBase {
 
 	@Test
 	public void sendMessageStreamResult() throws Exception {
-		sender.setBindingType(bindingType);
-		sender.setAction(action);
+		sender.setBindingType(EnumUtils.parse(BindingTypes.class, bindingType));
+		sender.setAction(EnumUtils.parse(CmisAction.class, action));
 		sender.configure();
 
 		Message actualResult = sender.sendMessage(input, session);

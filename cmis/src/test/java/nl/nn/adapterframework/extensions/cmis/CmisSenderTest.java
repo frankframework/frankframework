@@ -1,13 +1,12 @@
 package nl.nn.adapterframework.extensions.cmis;
 
-import static org.junit.Assert.assertEquals;
-
-import org.apache.chemistry.opencmis.commons.enums.BindingType;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisConnectionException;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.extensions.cmis.CmisSender.CmisAction;
+import nl.nn.adapterframework.extensions.cmis.CmisSessionBuilder.BindingTypes;
 import nl.nn.adapterframework.senders.SenderTestBase;
 
 public class CmisSenderTest extends SenderTestBase<CmisSender> {
@@ -15,33 +14,6 @@ public class CmisSenderTest extends SenderTestBase<CmisSender> {
 	@Override
 	public CmisSender createSender() {
 		return new CmisSender();
-	}
-
-	@Test
-	public void testValidAction() {
-		String dummyString = "CREATE";
-		sender.setAction(dummyString);
-
-		assertEquals(dummyString.toLowerCase(), sender.getAction());
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void testInvalidAction() {
-		String dummyString = "CREATED";
-		sender.setAction(dummyString);
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void testNonExistingBindingType() {
-		sender.setBindingType("WEBTOMBROWSER");
-	}
-
-	@Test
-	public void testExistingBindingTypes() {
-		sender.setBindingType(BindingType.BROWSER.value());
-		sender.setBindingType(BindingType.ATOMPUB.value());
-		sender.setBindingType(BindingType.WEBSERVICES.value());
-		//All BindingTypes should be parsed (and thus not throw an exception)
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -60,8 +32,8 @@ public class CmisSenderTest extends SenderTestBase<CmisSender> {
 		sender.setUrl(dummyString);
 		sender.setOverrideEntryPointWSDL(dummyString);
 		sender.setRepository(dummyString);
-		sender.setBindingType("browser");
-		sender.setAction("dynamic");
+		sender.setBindingType(BindingTypes.BROWSER);
+		sender.setAction(CmisAction.DYNAMIC);
 		sender.configure();
 		sender.open();
 	}
@@ -72,8 +44,8 @@ public class CmisSenderTest extends SenderTestBase<CmisSender> {
 		sender.setUrl(dummyString);
 		sender.setOverrideEntryPointWSDL(dummyString);
 		sender.setRepository(dummyString);
-		sender.setBindingType("webservices");
-		sender.setAction("create");
+		sender.setBindingType(BindingTypes.WEBSERVICES);
+		sender.setAction(CmisAction.CREATE);
 		sender.configure();
 	}
 
@@ -82,8 +54,8 @@ public class CmisSenderTest extends SenderTestBase<CmisSender> {
 		String dummyString = "dummyString";
 		sender.setUrl(dummyString);
 		sender.setRepository(dummyString);
-		sender.setBindingType("webservices");
-		sender.setAction("get");
+		sender.setBindingType(BindingTypes.WEBSERVICES);
+		sender.setAction(CmisAction.GET);
 		sender.setGetProperties(true);
 		sender.configure();
 	}
@@ -93,8 +65,8 @@ public class CmisSenderTest extends SenderTestBase<CmisSender> {
 		String dummyString = "dummyString";
 		sender.setUrl(dummyString);
 		sender.setRepository(dummyString);
-		sender.setBindingType("webservices");
-		sender.setAction("find");
+		sender.setBindingType(BindingTypes.WEBSERVICES);
+		sender.setAction(CmisAction.FIND);
 		sender.configure();
 		sender.open();//Should configure and open just fine, but fail trying to connect to an endpoint.
 	}

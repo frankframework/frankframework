@@ -15,11 +15,14 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import nl.nn.adapterframework.extensions.cmis.CmisSender.CmisAction;
+import nl.nn.adapterframework.extensions.cmis.CmisSessionBuilder.BindingTypes;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.UrlMessage;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.Misc;
 
 @SuppressWarnings("deprecation")
@@ -72,8 +75,8 @@ public class TestCreateAction extends CmisSenderTestBase {
 	}
 
 	private void configure() throws Exception {
-		sender.setBindingType(bindingType);
-		sender.setAction(action);
+		sender.setBindingType(EnumUtils.parse(BindingTypes.class, bindingType));
+		sender.setAction(EnumUtils.parse(CmisAction.class, action));
 		sender.configure();
 
 		if(!STUBBED) {
