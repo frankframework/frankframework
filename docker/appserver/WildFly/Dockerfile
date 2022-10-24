@@ -1,6 +1,13 @@
 ARG WILDFLY_VERSION=26.1.1.Final
-FROM quay.io/wildfly/wildfly:${WILDFLY_VERSION} AS iaf-test-as-wildfly
+FROM quay.io/wildfly/wildfly:${WILDFLY_VERSION} AS wildfly-iaf-test-base
 
+FROM wildfly-iaf-test-base AS wildfly-iaf-test-CredentialStoreCreator
+COPY src/configuration/createCS.py /home/createCS.py
+COPY target/dependencies/secrets /opt/frank/secrets
+
+RUN python /home/createCS.py
+
+FROM wildfly-iaf-test-base AS iaf-test-as-wildfly
 # Copy dependencies
 COPY target/dependencies/*.jar /opt/jboss/wildfly/standalone/lib/ext/
 COPY target/dependencies/*.rar /opt/jboss/wildfly/standalone/deployments/ 
@@ -8,9 +15,9 @@ COPY target/dependencies/*.rar /opt/jboss/wildfly/standalone/deployments/
 # Copy in standalone-configuration.xml
 COPY src/configuration/standalone.xml /opt/jboss/wildfly/standalone/configuration/standalone.xml
 
-# Copy in secrets, mainly for database secrets to be configured at buildtime
-# The ibis will have access to these secrets via the credentialFactory, so different secrets can be mounted at runtime
-COPY target/dependencies/secrets /opt/frank/secrets
+# Copy in the created credential store
+# chown is needed because otherwise permissions of the directory conflict with JBoss, resulting in WFLYSRV0126
+COPY --from=wildfly-iaf-test-CredentialStoreCreator --chown=jboss:jboss /opt/jboss/wildfly/standalone/data/CS.jceks /opt/jboss/wildfly/standalone/data/CS.jceks
 
 # Copy configuration script for modules
 COPY src/configuration/configuration.py /home/configuration.py
