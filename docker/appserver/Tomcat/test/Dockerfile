@@ -11,5 +11,4 @@ COPY --chown=tomcat target/dependencies/ibis-adapterframework-test.war /usr/loca
 # copy any additional drivers
 COPY --chown=tomcat target/dependencies/*.jar /usr/local/tomcat/lib/
 
-# provide database credentials
-COPY --chown=tomcat target/dependencies/secrets /opt/frank/secrets
+# Credentials need to be mounted in /opt/frank/secrets at runtime

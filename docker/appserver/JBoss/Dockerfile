@@ -20,9 +20,10 @@ COPY target/dependencies/*.jar /home/jboss/jboss-eap-7.3/standalone/lib/ext/
 COPY target/dependencies/*.rar /home/jboss/jboss-eap-7.3/standalone/deployments/ 
 
 # Copy in standalone-configuration.xml
-COPY  src/configuration/standalone.xml /home/jboss/jboss-eap-7.3/standalone/configuration/standalone.xml
+COPY src/configuration/standalone.xml /home/jboss/jboss-eap-7.3/standalone/configuration/standalone.xml
 
 # Copy in the created credential store
+# chown is needed because otherwise permissions of the directory conflict with JBoss, resulting in WFLYSRV0126
 COPY --from=jboss-iaf-test-CredentialStoreCreator --chown=jboss:jboss /home/jboss/jboss-eap-7.3/standalone/data/CS.jceks /home/jboss/jboss-eap-7.3/standalone/data/CS.jceks
 
 # Copy configuration script for modules

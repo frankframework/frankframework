@@ -11,4 +11,7 @@ COPY --chown=was:root target/dependencies/frank /opt/frank
 COPY --chown=was:root target/dependencies/secrets /opt/frank/secrets
 ENV ENABLE_BASIC_LOGGING=true
 ENV TZ=CET
-RUN /work/configure.sh
+RUN /work/configure.sh \
+	# Remove secrets from final image, they would still persist in image layers, but this is good enough for test
+	# WAS doesn't really have options to import them (xor is easily decoded) and Docker Buildkit requires some additional changes to CI
+	&& rm -rf /opt/frank/secrets
