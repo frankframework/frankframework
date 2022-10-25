@@ -1026,7 +1026,7 @@ public class CmisSender extends SenderWithParametersBase implements IForwardName
 		sessionBuilder.setBindingType(bindingType);
 	}
 
-	@IbisDoc({"If <code>action</code>=<code>create</code> the sessionKey that contains the file to use. If <code>action</code>=<code>get</code> and <code>getproperties=true</code> the sessionKey to store the result in", ""})
+	@IbisDoc({"If <code>action</code>=<code>create</code> the sessionKey that contains the file to use. If <code>action</code>=<code>get</code> and <code>getProperties</code>=<code>true</code> the sessionKey to store the result in", ""})
 	public void setFileSessionKey(String string) {
 		fileSessionKey = string;
 	}
@@ -1044,12 +1044,12 @@ public class CmisSender extends SenderWithParametersBase implements IForwardName
 
 	@Deprecated
 	@ConfigurationWarning("attribute 'fileInputStreamSessionKey' is replaced with 'fileSessionKey'")
-	@IbisDoc({"If <code>action</code>=<code>create</code> the session key that contains the input stream of the file to use. When <code>action</code>=<code>get</code> and <code>getproperties=true</code>: the session key in which the input stream of the document is stored", ""})
+	@IbisDoc({"If <code>action</code>=<code>create</code> the session key that contains the input stream of the file to use. When <code>action</code>=<code>get</code> and <code>getProperties</code>=<code>true</code>: the session key in which the input stream of the document is stored", ""})
 	public void setFileInputStreamSessionKey(String string) {
 		setFileSessionKey(string);
 	}
 
-	@IbisDoc({"If <code>action</code>=<code>create</code> the session key that contains the base64 encoded content of the file to use. When <code>action</code>=<code>get</code> and <code>getproperties=true</code>: the session key in which the base64 encoded content of the document is stored", ""})
+	@IbisDoc({"If <code>action</code>=<code>create</code> the session key that contains the base64 encoded content of the file to use. When <code>action</code>=<code>get</code> and <code>getProperties</code>=<code>true</code>: the session key in which the base64 encoded content of the document is stored", ""})
 	@ConfigurationWarning("attribute 'fileContentSessionKey' is replaced with 'fileSessionKey', please note that the 'fileSessionKey' result will not BASE64 encode the content")
 	@Deprecated
 	public void setFileContentSessionKey(String string) {
