@@ -39,6 +39,7 @@ import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.ProcessMetrics;
 
@@ -83,8 +84,12 @@ public class ServerStatistics implements ApplicationContextAware {
 		Date date = new Date();
 		returnMap.put("serverTime", date.getTime());
 		returnMap.put("machineName" , Misc.getHostname());
-		ApplicationMetrics metrics = getApplicationContext().getBean("metrics", ApplicationMetrics.class);
-		returnMap.put("uptime", (metrics != null) ? metrics.getUptimeDate() : "");
+		try {
+			ApplicationMetrics metrics = getApplicationContext().getBean("metrics", ApplicationMetrics.class);
+			returnMap.put("uptime", (metrics != null) ? metrics.getUptimeDate() : "");
+		} catch (Exception e) {
+			LogUtil.getLogger(this).info("unable to determine application uptime", e);
+		}
 
 		return ResponseMessage.ok(returnMap);
 	}
