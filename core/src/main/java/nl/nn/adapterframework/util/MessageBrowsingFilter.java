@@ -1,17 +1,17 @@
 /*
 Copyright 2021-2022 WeAreFrank!
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+       http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
 package nl.nn.adapterframework.util;
 
@@ -21,6 +21,8 @@ import java.util.Date;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
@@ -37,13 +39,13 @@ public class MessageBrowsingFilter {
 	private String comment = null;
 	private String message = null;
 	private String label = null;
-	private Date startDate = null;
-	private Date endDate = null;
+	private @Getter Date startDate = null;
+	private @Getter Date endDate = null;
 
-	private int maxMessages = 0;
-	private int skipMessages = 0;
+	private @Getter int maxMessages = 0;
+	private @Getter int skipMessages = 0;
 
-	private SortOrder sortOrder = SortOrder.NONE;
+	private @Getter @Setter SortOrder sortOrder = SortOrder.NONE;
 	private IMessageBrowser<?> storage = null;
 	private IListener listener = null;
 
@@ -56,12 +58,6 @@ public class MessageBrowsingFilter {
 		this.skipMessages = skipMessages;
 	}
 
-	public void setSortOrder(SortOrder order) {
-		sortOrder = order;
-	}
-	public SortOrder getSortOrder() {
-		return sortOrder;
-	}
 
 	public boolean matchAny(IMessageBrowsingIteratorItem iterItem) throws ListenerException, IOException {
 		int count = 0;
@@ -201,14 +197,6 @@ public class MessageBrowsingFilter {
 				throw new ApiException("could not parse date from ["+endDateMask+"] msg["+ex.getMessage()+"]");
 			}
 		}
-	}
-
-	public int skipMessages() {
-		return skipMessages;
-	}
-
-	public int maxMessages() {
-		return maxMessages;
 	}
 
 	@Override
