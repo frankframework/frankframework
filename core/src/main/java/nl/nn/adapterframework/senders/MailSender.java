@@ -327,13 +327,6 @@ public class MailSender extends MailSenderBase {
 		}
 
 		try {
-//			/*
-//			 * Call CommandMap.getDefaultCommandMap() to cache the commandMap seen from the current classpath, in an attempt to avoid
-//			 * (ClassCastException) com.sun.xml.internal.messaging.saaj.soap.StringDataContentHandler incompatible with javax.activation.DataContentHandler
-//			 * (https://github.com/ibissource/iaf/issues/3880)
-//			 */
-//			CommandMap.getDefaultCommandMap();
-//
 			msg.saveChanges();
 		} catch (Exception e) {
 			throw new SenderException("Error occurred while composing email", e);
