@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,8 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import javax.mail.BodyPart;
-import javax.mail.internet.MimeMultipart;
+import jakarta.mail.BodyPart;
+import jakarta.mail.internet.MimeMultipart;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
@@ -51,11 +51,11 @@ public class MtomResponseWrapper extends HttpServletResponseWrapper {
 
 	private ContentType contentType;
 
-	public MtomResponseWrapper(ServletResponse response) throws IOException {
+	public MtomResponseWrapper(ServletResponse response) {
 		this((HttpServletResponse) response);
 	}
 
-	public MtomResponseWrapper(HttpServletResponse response) throws IOException {
+	public MtomResponseWrapper(HttpServletResponse response) {
 		super(response);
 	}
 
@@ -68,9 +68,8 @@ public class MtomResponseWrapper extends HttpServletResponseWrapper {
 		// Als mimeType == text/html dan geen multipart doen :)
 		if(!contentType.getMimeType().contains("multipart")) {
 			return super.getOutputStream();
-		} else {
-			return new DelegatingServletOutputStream(new MtomOutputStream(super.getOutputStream()));
 		}
+		return new DelegatingServletOutputStream(new MtomOutputStream(super.getOutputStream()));
 	}
 
 	/**

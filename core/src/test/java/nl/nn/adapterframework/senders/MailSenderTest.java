@@ -1,8 +1,8 @@
 package nl.nn.adapterframework.senders;
 
-import javax.mail.Provider;
-import javax.mail.Provider.Type;
-import javax.mail.Session;
+import jakarta.mail.Provider;
+import jakarta.mail.Provider.Type;
+import jakarta.mail.Session;
 
 import org.junit.Test;
 
