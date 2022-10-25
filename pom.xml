@@ -686,12 +686,12 @@
 										</excludes>
 										<message>Prevent the use of STAX1, use STAX 2 (org.codehaus.woodstox:stax2-api) instead!</message>
 									</bannedDependencies>
-									<bannedDependencies>
-										<!-- the activation framework was renamed to the jarkata activation framework -->
+<!-- 									<bannedDependencies>
+										<! - - the activation framework was renamed to the jarkata activation framework - - >
 										<excludes>
 											<exclude>javax.activation:javax.activation-api</exclude>
 											<exclude>com.sun.activation:javax.activation</exclude>
-									<!-- 	<exclude>javax.activation:activation</exclude> -->
+									<!- - 	<exclude>javax.activation:activation</exclude> - - >
 										</excludes>
 										<message>use com.sun.activation:jakarta.activation instead of jakarta.activation:jakarta.activation-api</message>
 									</bannedDependencies>
@@ -701,6 +701,7 @@
 										</excludes>
 										<message>the implementation com.sun.activation:jakarta.activation is included and it contains the api classes too</message>
 									</bannedDependencies>
+-->
 								</rules>
 							</configuration>
 						</execution>
