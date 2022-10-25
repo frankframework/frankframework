@@ -23,18 +23,18 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
-import javax.activation.CommandMap;
-import javax.activation.DataHandler;
-import javax.mail.BodyPart;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Multipart;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-import javax.mail.util.ByteArrayDataSource;
+//import jakarta.activation.CommandMap;
+import jakarta.activation.DataHandler;
+import jakarta.mail.BodyPart;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Multipart;
+import jakarta.mail.Session;
+import jakarta.mail.Transport;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMultipart;
+import jakarta.mail.util.ByteArrayDataSource;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
@@ -327,13 +327,6 @@ public class MailSender extends MailSenderBase {
 		}
 
 		try {
-			/*
-			 * Call CommandMap.getDefaultCommandMap() to cache the commandMap seen from the current classpath, in an attempt to avoid
-			 * (ClassCastException) com.sun.xml.internal.messaging.saaj.soap.StringDataContentHandler incompatible with javax.activation.DataContentHandler
-			 * (https://github.com/ibissource/iaf/issues/3880)
-			 */
-			CommandMap.getDefaultCommandMap();
-
 			msg.saveChanges();
 		} catch (Exception e) {
 			throw new SenderException("Error occurred while composing email", e);

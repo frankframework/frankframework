@@ -3,8 +3,8 @@ package nl.nn.adapterframework.http.mime;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import javax.mail.BodyPart;
-import javax.mail.internet.MimeBodyPart;
+import jakarta.mail.BodyPart;
+import jakarta.mail.internet.MimeBodyPart;
 
 import org.junit.Test;
 

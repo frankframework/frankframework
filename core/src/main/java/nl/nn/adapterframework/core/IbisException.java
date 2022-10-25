@@ -19,7 +19,7 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.mail.internet.AddressException;
+import jakarta.mail.internet.AddressException;
 import javax.xml.transform.SourceLocator;
 import javax.xml.transform.TransformerException;
 

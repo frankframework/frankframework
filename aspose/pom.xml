@@ -211,7 +211,7 @@
 		<dependency>
 			<groupId>com.sun.mail</groupId>
 			<artifactId>dsn</artifactId>
-			<version>1.6.7</version>
+			<version>2.0.1</version>
 		</dependency>
 
 		<!-- LOG4J to SLF4J Bridge required for ehcache -->

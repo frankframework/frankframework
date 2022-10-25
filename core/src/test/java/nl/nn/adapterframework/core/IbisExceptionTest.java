@@ -8,7 +8,7 @@ import java.sql.SQLException;
 import java.util.NoSuchElementException;
 
 import javax.jms.JMSException;
-import javax.mail.internet.AddressException;
+import jakarta.mail.internet.AddressException;
 
 import org.junit.Test;
 
