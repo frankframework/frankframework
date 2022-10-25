@@ -55,7 +55,7 @@ import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
-import nl.nn.adapterframework.management.bus.doa.ConfigurationDAO;
+import nl.nn.adapterframework.management.bus.dao.ConfigurationDAO;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunState;
