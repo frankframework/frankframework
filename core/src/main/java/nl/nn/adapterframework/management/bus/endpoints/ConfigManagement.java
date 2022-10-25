@@ -20,10 +20,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -53,11 +55,9 @@ import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
+import nl.nn.adapterframework.management.bus.dao.ConfigurationDAO;
 import nl.nn.adapterframework.receivers.Receiver;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.NameComparatorBase;
 import nl.nn.adapterframework.util.RunState;
 import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
@@ -65,7 +65,6 @@ import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 @TopicSelector(BusTopic.CONFIGURATION)
 public class ConfigManagement {
 
-	private String orderBy = AppConstants.getInstance().getProperty("iaf-api.configurations.orderby", "version").trim();
 	private @Getter @Setter IbisManager ibisManager;
 	private Logger log = LogUtil.getLogger(this);
 	private static final String HEADER_CONFIGURATION_NAME_KEY = "configuration";
@@ -99,6 +98,9 @@ public class ConfigManagement {
 	}
 
 	private Configuration getConfigurationByName(String configurationName) {
+		if(StringUtils.isEmpty(configurationName)) {
+			throw new BusException("no configuration name specified");
+		}
 		Configuration configuration = getIbisManager().getConfiguration(configurationName);
 		if(configuration == null) {
 			throw new BusException("configuration ["+configurationName+"] does not exists");
@@ -114,20 +116,29 @@ public class ConfigManagement {
 	@ActionSelector(BusAction.FIND)
 	public Message<String> getConfigurationDetailsByName(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_NAME_KEY);
-		Configuration configuration = getConfigurationByName(configurationName);
+		if(StringUtils.isNotEmpty(configurationName)) {
+			Configuration configuration = getConfigurationByName(configurationName);
 
-		if("DatabaseClassLoader".equals(configuration.getClassLoaderType())) {
-			String datasourceName = BusMessageUtils.getHeader(message, HEADER_DATASOURCE_NAME_KEY);
-			List<Map<String, Object>> configs = getConfigsFromDatabase(configurationName, datasourceName);
+			if("DatabaseClassLoader".equals(configuration.getClassLoaderType())) {
+				String datasourceName = BusMessageUtils.getHeader(message, HEADER_DATASOURCE_NAME_KEY);
+				List<ConfigurationDAO> configs = getConfigsFromDatabase(configurationName, datasourceName);
 
-			for(Map<String, Object> config: configs) {
-				config.put("loaded", config.get("version").toString().equals(configuration.getVersion()));
+				for(ConfigurationDAO config: configs) {
+					config.setLoaded(config.getVersion().equals(configuration.getVersion()));
+				}
+
+				return ResponseMessage.ok(configs);
 			}
 
-			return ResponseMessage.ok(configs);
+			return ResponseMessage.ok(Collections.singletonList(new ConfigurationDAO(configuration)));
 		}
 
-		return ResponseMessage.noContent();
+		List<ConfigurationDAO> configs = new LinkedList<>();
+		for (Configuration configuration : getIbisManager().getConfigurations()) {
+			configs.add(new ConfigurationDAO(configuration));
+		}
+		configs.sort(new ConfigurationDAO.NameComparator());
+		return ResponseMessage.ok(configs);
 	}
 
 	/**
@@ -166,7 +177,7 @@ public class ConfigManagement {
 	}
 
 	@ActionSelector(BusAction.UPLOAD)
-	public Message<?> uploadConfiguration(Message<InputStream> message) {
+	public Message<String> uploadConfiguration(Message<InputStream> message) {
 		boolean multipleConfigs = BusMessageUtils.getBooleanHeader(message, "multiple_configs", false);
 		boolean activateConfig = BusMessageUtils.getBooleanHeader(message, "activate_config", true);
 		boolean automaticReload = BusMessageUtils.getBooleanHeader(message, "automatic_reload", false);
@@ -292,8 +303,8 @@ public class ConfigManagement {
 		return ResponseMessage.ok(response);
 	}
 
-	private List<Map<String, Object>> getConfigsFromDatabase(String configurationName, String dataSourceName) {
-		List<Map<String, Object>> returnMap = new ArrayList<>();
+	private List<ConfigurationDAO> getConfigsFromDatabase(String configurationName, String dataSourceName) {
+		List<ConfigurationDAO> configurations = new LinkedList<>();
 
 		if (StringUtils.isEmpty(dataSourceName)) {
 			dataSourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
@@ -314,17 +325,18 @@ public class ConfigManagement {
 					stmt.setString(1, configurationName);
 					try (ResultSet rs = stmt.executeQuery()) {
 						while (rs.next()) {
-							Map<String, Object> config = new HashMap<>();
-							config.put("name", rs.getString(1));
-							config.put("version", rs.getString(2));
-							config.put("filename", rs.getString(3));
-							config.put("user", rs.getString(4));
-							config.put("active", rs.getBoolean(5));
-							config.put("autoreload", rs.getBoolean(6));
+							String name = rs.getString(1);
+							String version = rs.getString(2);
+							ConfigurationDAO configDoa = new ConfigurationDAO(name, version);
 
+							String filename = rs.getString(3);
+							String user = rs.getString(4);
+							boolean active = rs.getBoolean(5);
+							boolean autoreload = rs.getBoolean(6);
 							Date creationDate = rs.getDate(7);
-							config.put("created", DateUtils.format(creationDate, DateUtils.FORMAT_GENERICDATETIME));
-							returnMap.add(config);
+
+							configDoa.setDatabaseAttributes(filename, creationDate, user, active, autoreload);
+							configurations.add(configDoa);
 						}
 					}
 				}
@@ -335,17 +347,7 @@ public class ConfigManagement {
 			qs.close();
 		}
 
-		returnMap.sort(new NameComparatorBase<Map<String, Object>>() {
-
-			@Override
-			public int compare(Map<String, Object> obj1, Map<String, Object> obj2) {
-				String filename1 = (String) obj1.get(orderBy);
-				String filename2 = (String) obj2.get(orderBy);
-
-				return -compareNames(filename1, filename2); //invert the results as we want the latest version first
-			}
-
-		});
-		return returnMap;
+		configurations.sort(new ConfigurationDAO.VersionComparator());
+		return configurations;
 	}
 }

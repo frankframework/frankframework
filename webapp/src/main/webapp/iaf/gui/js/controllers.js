@@ -54,12 +54,14 @@ angular.module('iaf.beheerconsole')
 					Debug.setLevel(3);
 				}
 
-				$scope.updateConfigurations(data.configurations);
-
 				//Was it able to retrieve the serverinfo without logging in?
 				if(!$scope.loggedin) {
 					Idle.setTimeout(false);
 				}
+
+				Api.Get("server/configurations", function(data) {
+					$scope.updateConfigurations(data);
+				});
 				Hooks.call("init", false);
 			}, function(message, statusCode, statusText) {
 				if(statusCode == 500) {

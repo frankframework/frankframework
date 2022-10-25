@@ -43,4 +43,21 @@ public class TestConfigManagement extends BusTestBase {
 		Message<?> response = callSyncGateway(request);
 		assertEquals(LOADED_RESULT, response.getPayload());
 	}
+
+	@Test
+	public void findConfigurations() {
+		MessageBuilder request = createRequestMessage("NONE", BusTopic.CONFIGURATION, BusAction.FIND);
+		request.setHeader("loaded", true);
+		Message<?> response = callSyncGateway(request);
+		assertEquals("[{\"name\":\"TestConfiguration\",\"stubbed\":false,\"state\":\"STARTING\",\"type\":\"JunitTestClassLoaderWrapper\"}]", response.getPayload());
+	}
+
+	@Test
+	public void findTestConfiguration() {
+		MessageBuilder request = createRequestMessage("NONE", BusTopic.CONFIGURATION, BusAction.FIND);
+		request.setHeader("configuration", TestConfiguration.TEST_CONFIGURATION_NAME);
+		request.setHeader("loaded", true);
+		Message<?> response = callSyncGateway(request);
+		assertEquals("[{\"name\":\"TestConfiguration\",\"stubbed\":false,\"state\":\"STARTING\",\"type\":\"JunitTestClassLoaderWrapper\"}]", response.getPayload());
+	}
 }

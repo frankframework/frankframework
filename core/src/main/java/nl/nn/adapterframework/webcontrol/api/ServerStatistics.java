@@ -16,7 +16,6 @@ limitations under the License.
 package nl.nn.adapterframework.webcontrol.api;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -36,19 +35,18 @@ import javax.ws.rs.core.Response.Status;
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.ProcessState;
-import nl.nn.adapterframework.lifecycle.ApplicationMetrics;
 import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle.BootState;
 import nl.nn.adapterframework.lifecycle.MessageEventListener;
+import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.management.bus.RequestMessageBuilder;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.MessageKeeper;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.ProcessMetrics;
 import nl.nn.adapterframework.util.RunState;
 
 /**
@@ -68,99 +66,17 @@ public class ServerStatistics extends Base {
 	@PermitAll
 	@Path("/server/info")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getServerInformation() throws ApiException {
-		Map<String, Object> returnMap = new HashMap<>();
-
-		AppConstants appConstants = AppConstants.getInstance();
-		Map<String, Object> framework = new HashMap<>(2);
-		framework.put("name", "FF!");
-		framework.put("version", appConstants.getProperty("application.version"));
-		returnMap.put("framework", framework);
-
-		Map<String, Object> instance = new HashMap<>(2);
-		instance.put("version", appConstants.getProperty("instance.version"));
-		instance.put("name", getIbisContext().getApplicationName());
-		returnMap.put("instance", instance);
-
-		String dtapStage = appConstants.getProperty("dtap.stage");
-		returnMap.put("dtap.stage", dtapStage);
-		String dtapSide = appConstants.getProperty("dtap.side");
-		returnMap.put("dtap.side", dtapSide);
-
-		returnMap.put("configurations", getConfigurations());
-
-		String user = getUserPrincipalName();
-		if(user != null) {
-			returnMap.put("userName", user);
-		}
-
-		returnMap.put("applicationServer", servletConfig.getServletContext().getServerInfo());
-		returnMap.put("javaVersion", System.getProperty("java.runtime.name") + " (" + System.getProperty("java.runtime.version") + ")");
-		Map<String, Object> fileSystem = new HashMap<>(2);
-		fileSystem.put("totalSpace", Misc.getFileSystemTotalSpace());
-		fileSystem.put("freeSpace", Misc.getFileSystemFreeSpace());
-		returnMap.put("fileSystem", fileSystem);
-		returnMap.put("processMetrics", ProcessMetrics.toMap());
-		Date date = new Date();
-		returnMap.put("serverTime", date.getTime());
-		returnMap.put("machineName" , Misc.getHostname());
-		ApplicationMetrics metrics = getIbisContext().getBean("metrics", ApplicationMetrics.class);
-		returnMap.put("uptime", (metrics != null) ? metrics.getUptimeDate() : "");
-
-		return Response.status(Response.Status.OK).entity(returnMap).build();
+	public Response getServerInformation() {
+		return callSyncGateway(RequestMessageBuilder.create(this, BusTopic.STATUS, BusAction.GET));
 	}
 
 	@GET
 	@PermitAll
 	@Path("/server/configurations")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getAllConfigurations() throws ApiException {
-		return Response.status(Response.Status.OK).entity(getConfigurations()).build();
+	public Response getAllConfigurations() {
+		return callSyncGateway(RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.FIND));
 	}
-
-	private List<Map<String, Object>> getConfigurations() {
-		List<Map<String, Object>> configurations = new ArrayList<>();
-
-		for (Configuration configuration : getIbisManager().getConfigurations()) {
-			Map<String, Object> cfg = new HashMap<>();
-			cfg.put("name", configuration.getName());
-			cfg.put("version", configuration.getVersion());
-			cfg.put("stubbed", configuration.isStubbed());
-			cfg.put("state", configuration.getState());
-
-			cfg.put("type", configuration.getClassLoaderType());
-			if(configuration.getConfigurationException() != null) {
-				cfg.put("exception", configuration.getConfigurationException().getMessage());
-			}
-
-			ClassLoader classLoader = configuration.getClassLoader();
-			if(classLoader instanceof DatabaseClassLoader) {
-				cfg.put("filename", ((DatabaseClassLoader) classLoader).getFileName());
-				cfg.put("created", ((DatabaseClassLoader) classLoader).getCreationDate());
-				cfg.put("user", ((DatabaseClassLoader) classLoader).getUser());
-			}
-
-			String parentConfig = AppConstants.getInstance().getString("configurations." + configuration.getName() + ".parentConfig", null);
-			if(parentConfig != null)
-				cfg.put("parent", parentConfig);
-
-				configurations.add(cfg);
-		}
-
-		configurations.sort(new Comparator<Map<String, Object>>() {
-			@Override
-			public int compare(Map<String, Object> lhs, Map<String, Object> rhs) {
-				String name1 = (String) lhs.get("name");
-				String name2 = (String) rhs.get("name");
-				if(name1 == null || name2 == null) return 0;
-
-				return name1.startsWith("IAF_") ? -1 : name2.startsWith("IAF_") ? 1 : name1.compareTo(name2);
-			}
-		});
-
-		return configurations;
-	}
-
 
 	@GET
 	@PermitAll
