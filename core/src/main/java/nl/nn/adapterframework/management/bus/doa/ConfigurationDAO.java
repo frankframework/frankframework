@@ -29,7 +29,8 @@ import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.NameComparatorBase;
 
 @JsonInclude(Include.NON_NULL)
-public class ConfigurationDOA {
+public class ConfigurationDAO {
+	private static final String DEFAULT_FF_CONFIGURATION_PREFIX = "IAF_";
 
 	private final @Getter String name;
 	private final @Getter String version;
@@ -47,12 +48,12 @@ public class ConfigurationDOA {
 
 	private @Getter String parent;
 
-	public ConfigurationDOA(String name, String version) {
+	public ConfigurationDAO(String name, String version) {
 		this.name = name;
 		this.version = version;
 	}
 
-	public ConfigurationDOA(Configuration configuration) {
+	public ConfigurationDAO(Configuration configuration) {
 		name = configuration.getName();
 		version = configuration.getVersion();
 		stubbed = configuration.isStubbed();
@@ -91,9 +92,9 @@ public class ConfigurationDOA {
 		this.loaded = loaded;
 	}
 
-	public static class VersionComparator extends NameComparatorBase<ConfigurationDOA> {
+	public static class VersionComparator extends NameComparatorBase<ConfigurationDAO> {
 		@Override
-		public int compare(ConfigurationDOA lhs, ConfigurationDOA rhs) {
+		public int compare(ConfigurationDAO lhs, ConfigurationDAO rhs) {
 			String version1 = lhs.getVersion();
 			String version2 = rhs.getVersion();
 
@@ -101,17 +102,17 @@ public class ConfigurationDOA {
 		}
 	}
 
-	public static class NameComparator extends NameComparatorBase<ConfigurationDOA> {
+	public static class NameComparator extends NameComparatorBase<ConfigurationDAO> {
 		@Override
-		public int compare(ConfigurationDOA lhs, ConfigurationDOA rhs) {
+		public int compare(ConfigurationDAO lhs, ConfigurationDAO rhs) {
 			String name1 = lhs.getName();
 			String name2 = rhs.getName();
 			if(name1 == null || name2 == null) return 0;
 
-			if(name1.startsWith("IAF_")) {
+			if(name1.startsWith(DEFAULT_FF_CONFIGURATION_PREFIX)) {
 				return -1;
 			}
-			return name2.startsWith("IAF_") ? 1 : compareNames(name1, name2);
+			return name2.startsWith(DEFAULT_FF_CONFIGURATION_PREFIX) ? 1 : compareNames(name1, name2);
 		}
 	}
 }

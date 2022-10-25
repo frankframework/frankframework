@@ -55,7 +55,7 @@ import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
-import nl.nn.adapterframework.management.bus.doa.ConfigurationDOA;
+import nl.nn.adapterframework.management.bus.doa.ConfigurationDAO;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunState;
@@ -121,23 +121,23 @@ public class ConfigManagement {
 
 			if("DatabaseClassLoader".equals(configuration.getClassLoaderType())) {
 				String datasourceName = BusMessageUtils.getHeader(message, HEADER_DATASOURCE_NAME_KEY);
-				List<ConfigurationDOA> configs = getConfigsFromDatabase(configurationName, datasourceName);
+				List<ConfigurationDAO> configs = getConfigsFromDatabase(configurationName, datasourceName);
 
-				for(ConfigurationDOA config: configs) {
+				for(ConfigurationDAO config: configs) {
 					config.setLoaded(config.getVersion().equals(configuration.getVersion()));
 				}
 
 				return ResponseMessage.ok(configs);
 			}
 
-			return ResponseMessage.ok(Collections.singletonList(new ConfigurationDOA(configuration)));
+			return ResponseMessage.ok(Collections.singletonList(new ConfigurationDAO(configuration)));
 		}
 
-		List<ConfigurationDOA> configs = new LinkedList<>();
+		List<ConfigurationDAO> configs = new LinkedList<>();
 		for (Configuration configuration : getIbisManager().getConfigurations()) {
-			configs.add(new ConfigurationDOA(configuration));
+			configs.add(new ConfigurationDAO(configuration));
 		}
-		configs.sort(new ConfigurationDOA.NameComparator());
+		configs.sort(new ConfigurationDAO.NameComparator());
 		return ResponseMessage.ok(configs);
 	}
 
@@ -303,8 +303,8 @@ public class ConfigManagement {
 		return ResponseMessage.ok(response);
 	}
 
-	private List<ConfigurationDOA> getConfigsFromDatabase(String configurationName, String dataSourceName) {
-		List<ConfigurationDOA> configurations = new LinkedList<>();
+	private List<ConfigurationDAO> getConfigsFromDatabase(String configurationName, String dataSourceName) {
+		List<ConfigurationDAO> configurations = new LinkedList<>();
 
 		if (StringUtils.isEmpty(dataSourceName)) {
 			dataSourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
@@ -327,7 +327,7 @@ public class ConfigManagement {
 						while (rs.next()) {
 							String name = rs.getString(1);
 							String version = rs.getString(2);
-							ConfigurationDOA configDoa = new ConfigurationDOA(name, version);
+							ConfigurationDAO configDoa = new ConfigurationDAO(name, version);
 
 							String filename = rs.getString(3);
 							String user = rs.getString(4);
@@ -347,7 +347,7 @@ public class ConfigManagement {
 			qs.close();
 		}
 
-		configurations.sort(new ConfigurationDOA.VersionComparator());
+		configurations.sort(new ConfigurationDAO.VersionComparator());
 		return configurations;
 	}
 }
