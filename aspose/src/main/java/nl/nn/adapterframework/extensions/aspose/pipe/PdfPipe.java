@@ -16,12 +16,18 @@
 package nl.nn.adapterframework.extensions.aspose.pipe;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
+import nl.nn.adapterframework.stream.MessageOutputStream;
+import nl.nn.adapterframework.stream.StreamingPipe;
+import nl.nn.adapterframework.util.*;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -41,10 +47,6 @@ import nl.nn.adapterframework.extensions.aspose.services.conv.impl.CisConversion
 import nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors.PdfAttachmentUtil;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.EnumUtils;
-import nl.nn.adapterframework.util.XmlBuilder;
 
 
 /**
@@ -52,7 +54,9 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * With combine action you can attach files into main pdf file.
  *
  */
-public class PdfPipe extends FixedForwardPipe {
+public class PdfPipe extends StreamingPipe {
+
+	private static final String CONVERTED_DOCUMENTS_CONTEXT_KEY = "Converted.Documents.";
 
 	private static final String FILENAME_SESSION_KEY = "fileName";
 
@@ -154,13 +158,40 @@ public class PdfPipe extends FixedForwardPipe {
 					XmlBuilder main = new XmlBuilder("main");
 					cisConversionResult.buildXmlFromResult(main, true);
 
-					session.put("documents", main.toXML());
+					Message message = new Message(main.toXML());
+					populateContext(cisConversionResult, session, message, 0);
+
+					session.put("documents", message);
+
+
 					return new PipeRunResult(getSuccessForward(), main.toXML());
 				default:
 					throw new PipeRunException(this, "action attribute must be one of the followings: "+EnumUtils.getEnumList(DocumentAction.class));
 			}
 		} catch (IOException e) {
 			throw new PipeRunException(this, "cannot convert to stream",e);
+		}
+	}
+
+	private void populateContext(CisConversionResult result, PipeLineSession session, Message message, int index) throws PipeRunException {
+		try (MessageOutputStream target=getTargetStream(session)) {
+			try (OutputStream out = target.asStream()) {
+				File file = result.getPdfResultFile();
+				try(FileInputStream fis = new FileInputStream(file)){
+					StreamUtil.copyStream(fis, out, 4096);
+				}
+				message.getContext().put(CONVERTED_DOCUMENTS_CONTEXT_KEY+index, out);
+
+				List<CisConversionResult> attachmentList = result.getAttachments();
+				if (attachmentList != null && !attachmentList.isEmpty()) {
+					for (int i = 0; i < attachmentList.size(); i++) {
+						index++;
+						populateContext(attachmentList.get(i), session, message, index);
+					}
+				}
+			}
+		} catch (Exception e) {
+			throw new PipeRunException(this, "Exception was thrown during creation of handlers.", e);
 		}
 	}
 
