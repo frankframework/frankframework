@@ -31,16 +31,6 @@ public class ServerStatisticsTest extends ApiTestBase<ServerStatistics> {
 	}
 
 	@Test
-	public void testServerHealth() {
-		Response response = dispatcher.dispatchRequest(HttpMethod.GET, "/server/health");
-		assertEquals(503, response.getStatus());
-		assertEquals(MediaType.APPLICATION_JSON, response.getMediaType().toString());
-
-		//We never start the configuration, so it will always stay in state STARTING
-		assertEquals("{\"errors\":[\"configuration[TestConfiguration] is in state[STARTING]\",\"adapter[dummyAdapter] is in state[STOPPED]\"],\"status\":\"SERVICE_UNAVAILABLE\"}", response.getEntity());
-	}
-
-	@Test
 	public void testServerWarnings() {
 		Response response = dispatcher.dispatchRequest(HttpMethod.GET, "/server/warnings");
 		assertEquals(200, response.getStatus());

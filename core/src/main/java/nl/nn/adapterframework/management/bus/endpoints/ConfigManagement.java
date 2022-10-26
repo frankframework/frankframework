@@ -72,7 +72,7 @@ public class ConfigManagement {
 	 * header loaded to differentiate between the loaded and original (raw) XML.
 	 */
 	@ActionSelector(BusAction.GET)
-	public Message<String> getXMLConfiguration(Message<?> message) {
+	public Message<Object> getXMLConfiguration(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_CONFIGURATION_NAME_KEY);
 		boolean loadedConfiguration = BusMessageUtils.getBooleanHeader(message, "loaded", false);
 		StringBuilder result = new StringBuilder();
@@ -86,7 +86,7 @@ public class ConfigManagement {
 			}
 		}
 
-		return ResponseMessage.ok(result.toString());
+		return ResponseMessage.Builder.create().withPayload(result.toString()).withMimeType(MediaType.APPLICATION_XML).raw();
 	}
 
 	private Configuration getConfigurationByName(String configurationName) {
@@ -154,18 +154,18 @@ public class ConfigManagement {
 		try {
 			if(activate != null) {
 				if(ConfigurationUtils.activateConfig(getIbisContext(), configurationName, version, activate, datasourceName)) {
-					return ResponseMessage.accepted();
+					return ResponseMessage.Builder.accepted();
 				}
 			}
 			else if(autoreload != null && ConfigurationUtils.autoReloadConfig(getIbisContext(), configurationName, version, autoreload, datasourceName)) {
-				return ResponseMessage.accepted();
+				return ResponseMessage.Builder.accepted();
 			}
 		} catch(Exception e) {
 			throw new BusException("unable to update configuration settings in database", e);
 		}
 
 		log.debug("header [activate] or [autoreload] not found");
-		return ResponseMessage.badRequest();
+		return ResponseMessage.Builder.badRequest();
 	}
 
 	@ActionSelector(BusAction.UPLOAD)

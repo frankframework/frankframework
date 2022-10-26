@@ -59,14 +59,14 @@ public class IbisstoreSummary {
 	private @Getter @Setter IbisManager ibisManager;
 
 	@TopicSelector(BusTopic.IBISSTORE_SUMMARY)
-	public Message<String> showIbisStoreSummary(Message<?> message) {
+	public Message<Object> showIbisStoreSummary(Message<?> message) {
 		String datasource = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		String query = BusMessageUtils.getHeader(message, "query");
 
 		return execute(datasource, query);
 	}
 
-	private Message<String> execute(String datasource, String query) {
+	private Message<Object> execute(String datasource, String query) {
 		String result = "";
 		try {
 			IbisstoreSummaryQuerySender qs;
@@ -91,7 +91,7 @@ public class IbisstoreSummary {
 		}
 
 		String resultObject = "{ \"result\":"+result+"}";
-		return ResponseMessage.ok(resultObject);
+		return ResponseMessage.Builder.create().withPayload(resultObject).raw();
 	}
 
 	private Map<String, SlotIdRecord> getSlotmap() {

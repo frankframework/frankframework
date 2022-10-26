@@ -114,19 +114,19 @@ public class UpdateLogDefinitions {
 				LoggerContext logContext = LoggerContext.getContext(false);
 				logContext.reconfigure();
 				log2SecurityLog("reconfigured logdefinitions");
-				return ResponseMessage.accepted();
+				return ResponseMessage.Builder.accepted();
 			}
 
-			return ResponseMessage.noContent();
+			return ResponseMessage.Builder.noContent();
 		}
 
 		if(StringUtils.isNotEmpty(logPackage) && level != null) {
 			Configurator.setLevel(logPackage, level);
 			log2SecurityLog("changed logdefinition ["+logPackage+"] to level ["+level.getStandardLevel().name()+"]");
-			return ResponseMessage.accepted();
+			return ResponseMessage.Builder.accepted();
 		}
 
-		return ResponseMessage.badRequest();
+		return ResponseMessage.Builder.badRequest();
 	}
 
 	private void log2SecurityLog(String logMessage) {

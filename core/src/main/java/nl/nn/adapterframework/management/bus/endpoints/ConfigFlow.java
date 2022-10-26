@@ -43,10 +43,10 @@ public class ConfigFlow {
 	public Message<?> getFlowDiagram(Message<?> message) throws IOException {
 		InputStream flow = getFlow(message);
 		if(flow != null) {
-			return ResponseMessage.ok(flow, flowDiagramManager.getMediaType());
+			return ResponseMessage.Builder.create().withPayload(flow).withMimeType(flowDiagramManager.getMediaType()).raw();
 		}
 
-		return ResponseMessage.noContent(); //No flow file present
+		return ResponseMessage.Builder.noContent(); //No flow file present
 	}
 
 	private InputStream getFlow(Message<?> message) throws IOException {
