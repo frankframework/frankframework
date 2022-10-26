@@ -36,7 +36,7 @@ def createDatasource(datasourceName, providerName, authAlias, properties):
 createTemplatedProvider('Oracle JDBC Driver (XA)', 		 'oracle.jdbc.xa.client.OracleXADataSource', 		'/work/drivers/ojdbc${oracle.driver.jdkversion}.jar')
 createTemplatedProvider('Microsoft SQL Server JDBC Driver (XA)', 'com.microsoft.sqlserver.jdbc.SQLServerXADataSource',  '/work/drivers/mssql-jdbc.jar')
 createProvider('H2 JDBC Driver (XA)', 'org.h2.jdbcx.JdbcDataSource', 'classpath=/work/drivers/h2.jar,xa=true')
-createProvider('MySQL JDBC Driver', 'com.mysql.cj.jdbc.MysqlXADataSource', 'classpath=/work/drivers/mysql-connector-java.jar')
+createProvider('MySQL JDBC Driver', 'com.mysql.cj.jdbc.MysqlXADataSource', 'classpath=/work/drivers/mysql-connector-j.jar')
 createProvider('PostgreSQL JDBC Driver', 'org.postgresql.xa.PGXADataSource', 'classpath=/work/drivers/postgresql.jar')
 
 createDatasource('ibis4test-h2', 'H2 JDBC Driver (XA)', [], [
