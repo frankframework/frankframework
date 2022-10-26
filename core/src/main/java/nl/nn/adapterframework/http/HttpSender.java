@@ -424,7 +424,7 @@ public class HttpSender extends HttpSenderBase {
 		}
 
 		String name = partObject.isBinary() ? partSessionKey : partName;
-		String filename = partObject.isBinary() ? partSessionKey : null; // #3917: Salesforce complains if character parts do have a filename, and if binary parts do not have a filename
+		String filename = partObject.isBinary() ? partName : null; // #3917: Salesforce complains if character parts do have a filename, and if binary parts do not have a filename
 		return FormBodyPartBuilder.create(name, new MessageContentBody(partObject, mimeType, filename)).build();
 	}
 
