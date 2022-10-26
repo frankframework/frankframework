@@ -176,7 +176,7 @@ public class PdfPipe extends StreamingPipe {
 	private void populateContext(CisConversionResult result, PipeLineSession session, Message message, int index) throws PipeRunException {
 		try (MessageOutputStream target=getTargetStream(session)) {
 			try (OutputStream out = target.asStream()) {
-				File file = result.getPdfResultFile();
+				File file = new File(result.getResultFilePath());
 				try(FileInputStream fis = new FileInputStream(file)){
 					StreamUtil.copyStream(fis, out, 4096);
 				}
