@@ -15,11 +15,7 @@
 */
 package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.text.SimpleDateFormat;
+import java.io.*;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -34,7 +30,6 @@ import com.aspose.pdf.Document;
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
 import nl.nn.adapterframework.extensions.aspose.services.util.ConvertorUtil;
-import nl.nn.adapterframework.extensions.aspose.services.util.FileUtil;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -101,14 +96,10 @@ abstract class AbstractConvertor implements Convertor {
 		checkForSupportedMediaType(mediaType);
 
 		CisConversionResult result = new CisConversionResult();
-		File resultFile = null;
 		try {
-			resultFile = UniqueFileGenerator.getUniqueFile(configuration.getPdfOutputLocation(), this.getClass().getSimpleName(), "pdf");
 			result.setConversionOption(conversionOption);
 			result.setMediaType(mediaType);
 			result.setDocumentName(ConvertorUtil.createTidyNameWithoutExtension(filename));
-			result.setPdfResultFile(resultFile);
-			result.setResultFilePath(resultFile.getAbsolutePath());
 
 			LOGGER.debug("Convert to file... " + filename);
 			convert(mediaType, message, result, charset);
@@ -121,23 +112,24 @@ abstract class AbstractConvertor implements Convertor {
 				result.setFailureReason(createTechnishefoutMsg(e));
 			}
 			// Clear the file to state that the conversion has failed.
-			result.setPdfResultFile(null);
+			result.clear();
 		}
 		return result;
 	}
 
-	protected int getNumberOfPages(File file) throws IOException {
-		int result = 0;
-		if(file != null) {
-			try (InputStream inStream = new FileInputStream(file)){
-				Document doc = new Document(inStream);
-				result = doc.getPages().size();
-			} catch (IOException e) {
-				throw e;
-			}
+	protected int getNumberOfPages(CisConversionResult result) {
+		int pages = 0;
+
+		try {
+			ByteArrayInputStream stream = result.getConversionResult();
+			Document doc = new Document(stream);
+			pages = doc.getPages().size();
+			stream.close();
+		} catch (IOException e) {
+			return pages;
 		}
 
-		return result;
+		return pages;
 	}
 
 	protected String createTechnishefoutMsg(Exception e) {
@@ -149,23 +141,6 @@ abstract class AbstractConvertor implements Convertor {
 		msg.append(tijdstip);
 		msg.append(")");
 		return msg.toString();
-	}
-
-	protected void deleteFile(File file) throws IOException {
-		FileUtil.deleteFile(file);
-	}
-
-	/**
-	 * Create a unique file in the pdfOutputLocation with the given extension
-	 */
-	protected File getUniqueFile() {
-
-		SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
-		int count = atomicCount.addAndGet(1);
-
-		String fileNamePdf = String.format("conv_%s_%s_%05d%s", this.getClass().getSimpleName(),
-				format.format(new Date()), count, ".bin");
-		return new File(configuration.getPdfOutputLocation(), fileNamePdf);
 	}
 
 	protected abstract boolean isPasswordException(Exception e);

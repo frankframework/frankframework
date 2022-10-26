@@ -23,12 +23,14 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
@@ -59,9 +61,9 @@ import nl.nn.adapterframework.util.LogUtil;
  */
 
 public class PdfPipeTest extends PipeTestBase<PdfPipe> {
-	private static final String REGEX_PATH_IGNORE = "(?<=convertedDocument=\").*(?=\")";
+	private static final String REGEX_PATH_IGNORE = "(?<=sessionKey=\").*(?=\")";
 	private static final String REGEX_TIJDSTIP_IGNORE = "(?<=Tijdstip:).*(?=\" n)";
-	private static final String[] REGEX_IGNORES = {REGEX_PATH_IGNORE, REGEX_TIJDSTIP_IGNORE};
+	private static final String[] REGEX_IGNORES = {REGEX_TIJDSTIP_IGNORE};
 
 	private static final TimeZone TEST_TZ = TimeZone.getTimeZone("Europe/Amsterdam");
 	private Path pdfOutputLocation;
@@ -75,7 +77,6 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	public void setUp() throws Exception {
 		super.setUp();
 		pdfOutputLocation = Files.createTempDirectory("Pdf");
-		pipe.setPdfOutputLocation(pdfOutputLocation.toString());
 		pipe.setUnpackCommonFontsArchive(true);
 	}
 
@@ -102,7 +103,8 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	}
 
 	public void expectSuccessfullConversion(String pipeName, String fileToConvert, String metadataXml, String expectedFile) throws Exception {
-		String documentMetadata = executeConversion(pipeName, fileToConvert);
+		PipeLineSession session = new PipeLineSession();
+		String documentMetadata = executeConversion(pipeName, fileToConvert, session);
 		String expected = TestFileUtils.getTestFile(metadataXml);
 
 		MatchUtils.assertXmlEquals("Conversion XML does not match", applyIgnores(expected), applyIgnores(documentMetadata), true);
@@ -112,8 +114,13 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		Matcher convertedDocumentMatcher = convertedDocumentPattern.matcher(documentMetadata);
 
 		if(convertedDocumentMatcher.find()) { //Find converted document location
-			String convertedFilePath = convertedDocumentMatcher.group();
-			log.debug("found converted file ["+convertedFilePath+"]");
+			String sessionKey = convertedDocumentMatcher.group();
+			Message convertedFile = (Message) session.get(sessionKey);
+			File f = new File(System.getProperty("java.io.tmpdir") + "/" + new Date().getTime() + ".pdf");
+			try (FileOutputStream fos = new FileOutputStream(f)) {
+				fos.write(convertedFile.asByteArray());
+			}
+			log.debug("found converted file sessionKey ["+sessionKey+"]");
 
 			URL expectedFileUrl = TestFileUtils.getTestFileURL(expectedFile);
 			assertNotNull("cannot find expected file ["+expectedFile+"]", expectedFileUrl);
@@ -125,8 +132,8 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 			//remove Aspose evaluation copy information
 			pdfUtil.excludeText("(Created with an evaluation copy of Aspose.([a-zA-Z]+). To discover the full versions of our APIs please visit: https:\\/\\/products.aspose.com\\/([a-zA-Z]+)\\/)");
 //			pdfUtil.enableLog();
-			boolean compare = pdfUtil.compare(convertedFilePath, file.getPath());
-			assertTrue("pdf files ["+convertedFilePath+"] and ["+expectedFilePath+"] should match", compare);
+			boolean compare = pdfUtil.compare(f.getAbsolutePath(), file.getPath());
+			assertTrue("pdf files ["+f.getAbsolutePath()+"] and ["+expectedFilePath+"] should match", compare);
 		}
 		else {
 			fail("failed to extract converted file from documentMetadata xml");
@@ -134,19 +141,19 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	}
 
 	public void expectUnsuccessfullConversion(String name, String fileToConvert, String fileContaingExpectedXml) throws Exception {
-		String actualXml = executeConversion(name, fileToConvert);
+		PipeLineSession session = new PipeLineSession();
+		String actualXml = executeConversion(name, fileToConvert, session);
 		String expected = TestFileUtils.getTestFile(fileContaingExpectedXml);
 
 		MatchUtils.assertXmlEquals("Conversion XML does not match", applyIgnores(expected), applyIgnores(actualXml), true);
 	}
 
-	public String executeConversion(String pipeName, String fileToConvert) throws Exception {
+	public String executeConversion(String pipeName, String fileToConvert, PipeLineSession session) throws Exception {
 		pipe.setName(pipeName);
 		pipe.setAction(DocumentAction.CONVERT);
 		pipe.configure();
 		pipe.start();
 
-		PipeLineSession session = new PipeLineSession();
 		URL input = TestFileUtils.getTestFileURL(fileToConvert);
 		pipe.doPipe(new UrlMessage(input), session);
 
@@ -337,11 +344,6 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		});
 	}
 
-	@Test(expected = ConfigurationException.class)
-	public void wrongPdfOutputLocation() throws Exception {
-		pipe.setPdfOutputLocation("not a valid location");
-		pipe.configure();
-	}
 
 	@Test
 	public void nullAction() throws Exception {

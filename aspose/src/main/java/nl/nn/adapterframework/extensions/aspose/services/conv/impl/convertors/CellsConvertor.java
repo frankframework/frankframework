@@ -60,11 +60,11 @@ class CellsConvertor extends AbstractConvertor {
 			Style style = workbook.getDefaultStyle();
 			LOGGER.debug("Default font: " + style.getFont());
 
-			workbook.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.PDF);
-			result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
+			workbook.save(result.getConversionResultHandle(), SaveFormat.PDF);
+			result.setNumberOfPages(getNumberOfPages(result));
 
 			// Add original file as attachment to resulting pdf file.
-			PdfAttachmentUtil pdfAttachmentUtil = new PdfAttachmentUtil(result.getPdfResultFile());
+			PdfAttachmentUtil pdfAttachmentUtil = new PdfAttachmentUtil(result.getConversionResult());
 			pdfAttachmentUtil.addAttachmentToPdf(message, result.getDocumentName(), FILE_TYPE_MAP.get(mediaType));
 		}
 	}

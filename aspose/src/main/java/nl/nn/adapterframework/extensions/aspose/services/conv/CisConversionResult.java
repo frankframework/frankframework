@@ -15,11 +15,16 @@
 */
 package nl.nn.adapterframework.extensions.aspose.services.conv;
 
-import java.io.File;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import lombok.Getter;
+import lombok.Setter;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.stream.Message;
+import org.apache.cxf.common.util.StringUtils;
 import org.springframework.http.MediaType;
 
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
@@ -32,12 +37,17 @@ public class CisConversionResult {
 
 	private static final String PASSWORD_MESSAGE = "Omzetten naar PDF mislukt. Reden: bestand is beveiligd met een wachtwoord!";
 
-	private ConversionOption conversionOption;
-	private MediaType mediaType;
-	private String documentName;
-	private String failureReason;
-	private int numberOfPages;
-	private String resultFilePath;
+	private @Getter @Setter ConversionOption conversionOption;
+	private @Getter @Setter MediaType mediaType;
+	private @Getter @Setter String documentName;
+	private @Getter @Setter String failureReason;
+	private @Getter @Setter int numberOfPages;
+
+	private @Getter ByteArrayOutputStream conversionResultHandle = new ByteArrayOutputStream();
+	public ByteArrayInputStream getConversionResult(){
+		return new ByteArrayInputStream(conversionResultHandle.toByteArray());
+	}
+
 	/**
 	 * List with documents which where part of the source document (e.g. attachments
 	 * in mails). Will be an empty list if there are no attachments.
@@ -49,10 +59,6 @@ public class CisConversionResult {
 	 */
 	private List<CisConversionResult> attachments = new ArrayList<>();
 
-	/**
-	 * Converted document when succeeded (otherwise <code>null</code>) -
-	 */
-	private File pdfResultFile;
 
 	public static CisConversionResult createCisConversionResult(ConversionOption conversionOption, MediaType mediaType,
 			String documentName, File pdfResultFile, String failureReason, List<CisConversionResult> argAttachments) {
@@ -61,7 +67,6 @@ public class CisConversionResult {
 		cisConversionResult.setConversionOption(conversionOption);
 		cisConversionResult.setMediaType(mediaType);
 		cisConversionResult.setDocumentName(documentName);
-		cisConversionResult.setPdfResultFile(pdfResultFile);
 		cisConversionResult.setFailureReason(failureReason);
 		if (argAttachments != null) {
 			for (CisConversionResult attachment : argAttachments) {
@@ -104,45 +109,6 @@ public class CisConversionResult {
 		return createFailureResult(conversionOption, mediaTypeReceived, filename, msg.toString(), null);
 	}
 
-	public ConversionOption getConversionOption() {
-		return conversionOption;
-	}
-
-	public void setConversionOption(ConversionOption conversionOption) {
-		this.conversionOption = conversionOption;
-	}
-
-	public MediaType getMediaType() {
-		return mediaType;
-	}
-
-	public void setMediaType(MediaType mediaType) {
-		this.mediaType = mediaType;
-	}
-
-	public String getDocumentName() {
-		return documentName;
-	}
-
-	public void setDocumentName(String documentName) {
-		this.documentName = documentName;
-	}
-
-	public File getPdfResultFile() {
-		return pdfResultFile;
-	}
-
-	public void setPdfResultFile(File pdfResultFile) {
-		this.pdfResultFile = pdfResultFile;
-	}
-
-	public String getFailureReason() {
-		return failureReason;
-	}
-
-	public void setFailureReason(String failureReason) {
-		this.failureReason = failureReason;
-	}
 
 	public List<CisConversionResult> getAttachments() {
 		return Collections.unmodifiableList(attachments);
@@ -156,29 +122,15 @@ public class CisConversionResult {
 		return failureReason == null;
 	}
 
-	public int getNumberOfPages() {
-		return numberOfPages;
+	public void clear(){
+		conversionResultHandle = new ByteArrayOutputStream();
 	}
-
-	public void setNumberOfPages(int numberOfPages) {
-		this.numberOfPages = numberOfPages;
-	}
-
-	public String getResultFilePath() {
-		return resultFilePath;
-	}
-
-	public void setResultFilePath(String resultFilePath) {
-		this.resultFilePath = resultFilePath;
-	}
-
 	@Override
 	public final String toString() { //HIER
 		StringBuilder builder = new StringBuilder(super.toString());
 		builder.append(String.format("ConversionOption=[%s]", getConversionOption()));
 		builder.append(String.format("mediaType=[%s]", getMediaType()));
 		builder.append(String.format("documentName=[%s]", getDocumentName()));
-		builder.append(String.format("pdfResultFile=[%s]", getPdfResultFile() == null ? "null" : getPdfResultFile().getName()));
 		builder.append(String.format("failureReason=[%s]", getFailureReason()));
 		builder.append(String.format("attachments=[%s]", getAttachments()));
 
@@ -198,7 +150,9 @@ public class CisConversionResult {
 			main.addAttribute("documentName", this.getDocumentName());
 			main.addAttribute("failureReason", this.getFailureReason());
 			main.addAttribute("numberOfPages", this.getNumberOfPages());
-			main.addAttribute("convertedDocument", this.getResultFilePath());
+			if(StringUtils.isEmpty(getFailureReason())){
+				main.addAttribute("sessionKey", this.getSessionKeyName());
+			}
 		}
 		List<CisConversionResult> attachmentList = cisConversionResult.getAttachments();
 		if (attachmentList != null && !attachmentList.isEmpty()) {
@@ -212,12 +166,31 @@ public class CisConversionResult {
 				attachmentAsXml.addAttribute("documentName", attachment.getDocumentName());
 				attachmentAsXml.addAttribute("failureReason", attachment.getFailureReason());
 				attachmentAsXml.addAttribute("numberOfPages", attachment.getNumberOfPages());
-				attachmentAsXml.addAttribute("convertedDocument", attachment.getResultFilePath());
+				if(StringUtils.isEmpty(attachment.getFailureReason())){
+					attachmentAsXml.addAttribute("sessionKey", attachment.getSessionKeyName());
+				}
 				attachmentsAsXml.addSubElement(attachmentAsXml);
 
 				buildXmlFromResult(attachmentAsXml, attachment, false);
 			}
 			main.addSubElement(attachmentsAsXml);
+		}
+	}
+
+	private @Getter @Setter String sessionKeyName = "Converted.Document.";
+	public void populateSession(PipeLineSession session){
+		populateSession(this, session, 0);
+	}
+
+	private void populateSession(CisConversionResult result, PipeLineSession session, int index){
+		result.setSessionKeyName(result.getSessionKeyName()+index);
+		session.put(result.getSessionKeyName(), new Message(result.getConversionResult()));
+		List<CisConversionResult> attachmentList = result.getAttachments();
+		if (attachmentList != null && !attachmentList.isEmpty()) {
+			for (int i = 0; i < attachmentList.size(); i++) {
+				index++;
+				populateSession(attachmentList.get(i), session, index);
+			}
 		}
 	}
 }

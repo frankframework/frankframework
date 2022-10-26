@@ -15,12 +15,7 @@
 */
 package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,7 +36,7 @@ import nl.nn.adapterframework.util.LogUtil;
 /**
  * This class will combine seperate pdf files to a single pdf with attachments.
  * None existing files in a CisConversionResult will be skipped!
- * 
+ *
  */
 public class PdfAttachmentUtil {
 
@@ -49,17 +44,17 @@ public class PdfAttachmentUtil {
 
 	private List<CisConversionResult> cisConversionResultList;
 
-	private File rootPdf;
+	private ByteArrayInputStream rootPdf;
 
 	private Document pdfDocument;
 
-	public PdfAttachmentUtil(CisConversionResult cisConversionResultAttachment, File rootFile) {
+	public PdfAttachmentUtil(CisConversionResult cisConversionResultAttachment, ByteArrayInputStream rootFile) {
 		this.cisConversionResultList = new ArrayList<>();
 		cisConversionResultList.add(cisConversionResultAttachment);
 		this.rootPdf = rootFile;
 	}
 
-	public PdfAttachmentUtil(File pdfResultFile) {
+	public PdfAttachmentUtil(ByteArrayInputStream pdfResultFile) {
 		this.rootPdf = pdfResultFile;
 	}
 
@@ -78,16 +73,14 @@ public class PdfAttachmentUtil {
 	 * Note: Nothing is changed to the given cisConversionResult object and its
 	 * underlying files.
 	 * </p>
-	 * 
+	 *
 	 * if there are no attachments null is returned otherwise rootPdf.
 	 */
-	protected void addAttachmentInSinglePdf() throws IOException {
+	protected void addAttachmentInSinglePdf() {
 		try {
 			for (CisConversionResult cisConversionResultAttachment : cisConversionResultList) {
-				if (cisConversionResultAttachment.getPdfResultFile() != null) {
-					try (InputStream attachmentDocumentStream = new BufferedInputStream(new FileInputStream(cisConversionResultAttachment.getPdfResultFile()))) {
-						addFileToPdf(attachmentDocumentStream, cisConversionResultAttachment.getDocumentName(), ConvertorUtil.PDF_FILETYPE);
-					}
+				if (cisConversionResultAttachment.getConversionResult() != null) {
+					addFileToPdf(cisConversionResultAttachment.getConversionResult(), cisConversionResultAttachment.getDocumentName(), ConvertorUtil.PDF_FILETYPE);
 				} else {
 					LOGGER.debug("Skipping file because it is not available.");
 				}
@@ -117,7 +110,7 @@ public class PdfAttachmentUtil {
 		LOGGER.debug("Adding attachment with document name \"" + documentName + "\" (original: \"" + fileName + "\")");
 
 		// Add an attachment to document's attachment collection
-		getPdfDocument(rootPdf.getAbsolutePath()).getEmbeddedFiles().add(new FileSpecification(attachmentDocumentStream, documentName));
+		getPdfDocument(rootPdf).getEmbeddedFiles().add(new FileSpecification(attachmentDocumentStream, documentName));
 	}
 
 	private String convertToValidFileName(String value) {
@@ -131,11 +124,11 @@ public class PdfAttachmentUtil {
 		return result;
 	}
 
-	private Document getPdfDocument(String filePath) {
+	private Document getPdfDocument(InputStream stream) {
 
 		if (pdfDocument == null) {
 			// Open the base pdf.
-			pdfDocument = new Document(filePath);
+			pdfDocument = new Document(stream);
 
 			// UseAttachments means "Optional attachments panel set to visible" used so that
 			// the attachments are shown.

@@ -15,11 +15,7 @@
 */
 package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
@@ -108,10 +104,10 @@ class MailConvertor extends AbstractConvertor {
 		// Overrules the default documentname.
 		result.setDocumentName(ConvertorUtil.createTidyNameWithoutExtension(eml.getSubject()));
 
-		File tempMHtmlFile = UniqueFileGenerator.getUniqueFile(configuration.getPdfOutputLocation(), this.getClass().getSimpleName(), null);
+		ByteArrayOutputStream tempMHtmlFileBAOS = new ByteArrayOutputStream();
 		String date = new SimpleDateFormat(MAIL_HEADER_DATEFORMAT).format(eml.getDate());
 		eml.getHeaders().set_Item("Date", date);
-		eml.save(tempMHtmlFile.getAbsolutePath(), options);
+		eml.save(tempMHtmlFileBAOS, options);
 
 		// Load the stream in Word document
 		HtmlLoadOptions loadOptions = new HtmlLoadOptions();
@@ -119,18 +115,16 @@ class MailConvertor extends AbstractConvertor {
 		loadOptions.setWebRequestTimeout(0);
 
 		Long startTime = new Date().getTime();
-		try(FileInputStream fis = new FileInputStream(tempMHtmlFile)){
+		try(ByteArrayInputStream fis = new ByteArrayInputStream(tempMHtmlFileBAOS.toByteArray())){
 			Document doc = new Document(fis, loadOptions);
 			new Fontsetter(configuration.getFontsDirectory()).setFontSettings(doc);
 			resizeInlineImages(doc);
 
-			doc.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.PDF);
+			doc.save(result.getConversionResultHandle(), SaveFormat.PDF);
 
-			result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
+			result.setNumberOfPages(getNumberOfPages(result));
 			Long endTime = new Date().getTime();
 			LOGGER.info("Conversion completed in " + (endTime - startTime) + "ms");
-		} finally {
-			Files.delete(tempMHtmlFile.toPath());
 		}
 
 		// Convert and (optional add) any attachment of the mail.
@@ -143,13 +137,11 @@ class MailConvertor extends AbstractConvertor {
 			// If it is an singlepdf add the file to the the current pdf.
 			if (ConversionOption.SINGLEPDF.equals(result.getConversionOption()) && cisConversionResultAttachment.isConversionSuccessfull()) {
 				try {
-					PdfAttachmentUtil pdfAttachmentUtil = new PdfAttachmentUtil(cisConversionResultAttachment, result.getPdfResultFile());
+					PdfAttachmentUtil pdfAttachmentUtil = new PdfAttachmentUtil(cisConversionResultAttachment, result.getConversionResult());
 					pdfAttachmentUtil.addAttachmentInSinglePdf();
 				} finally {
-					deleteFile(cisConversionResultAttachment.getPdfResultFile());
 					// Clear the file because it is now incorporated in the file it self.
-					cisConversionResultAttachment.setPdfResultFile(null);
-					cisConversionResultAttachment.setResultFilePath(null);
+					cisConversionResultAttachment.clear();
 				}
 
 			}

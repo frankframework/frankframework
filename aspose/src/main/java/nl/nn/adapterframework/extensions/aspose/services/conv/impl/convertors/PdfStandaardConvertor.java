@@ -15,10 +15,8 @@
 */
 package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
-
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
+import nl.nn.adapterframework.util.StreamUtil;
 import org.springframework.http.MediaType;
 
 import com.aspose.pdf.exceptions.InvalidPasswordException;
@@ -38,8 +36,8 @@ public class PdfStandaardConvertor extends AbstractConvertor {
 
 	@Override
 	public void convert(MediaType mediaType, Message message, CisConversionResult result, String charset) throws Exception {
-		Files.copy(message.asInputStream(charset), Paths.get(result.getPdfResultFile().getCanonicalPath()));
-		result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
+		StreamUtil.copyStream(message.asInputStream(charset), result.getConversionResultHandle(), 8192);
+		result.setNumberOfPages(getNumberOfPages(result));
 	}
 
 	@Override
