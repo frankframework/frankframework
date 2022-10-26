@@ -64,11 +64,11 @@ public class SlidesConvertor extends AbstractConvertor {
 		try (InputStream inputStream = message.asInputStream(charset)) {
 			Presentation presentation = new Presentation(inputStream, MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType));
 			long startTime = new Date().getTime();
-			presentation.save(result.getConversionResultHandle(), SaveFormat.Pdf);
+			presentation.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.Pdf);
 			long endTime = new Date().getTime();
 			LOGGER.info("Conversion(save operation in convert method) takes  :::  " + (endTime - startTime) + " ms");
 			presentation.dispose();
-			result.setNumberOfPages(getNumberOfPages(result));
+			result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
 		}
 	}
 

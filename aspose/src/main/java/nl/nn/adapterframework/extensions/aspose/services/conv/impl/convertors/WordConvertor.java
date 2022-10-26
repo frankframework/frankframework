@@ -101,10 +101,10 @@ class WordConvertor extends AbstractConvertor {
 			saveOptions.setMemoryOptimization(true);
 
 			long startTime = new Date().getTime();
-			doc.save(result.getConversionResultHandle(), saveOptions);
+			doc.save(result.getPdfResultFile().getAbsolutePath(), saveOptions);
 			long endTime = new Date().getTime();
 			LOGGER.debug("Conversion(save operation in convert method) took  :::  " + (endTime - startTime) + " ms");
-			result.setNumberOfPages(getNumberOfPages(result));
+			result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
 		}
 	}
 

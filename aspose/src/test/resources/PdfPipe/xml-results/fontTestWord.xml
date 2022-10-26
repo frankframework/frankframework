@@ -1,6 +1,6 @@
-<main conversionOption="0" documentName="fonttest word(Aspose" mediaType="application/vnd.ms-outlook" numberOfPages="1" sessionKey="ConvertedDocument0">
+<main conversionOption="0" mediaType="application/vnd.ms-outlook" documentName="fonttest word(Aspose" numberOfPages="1" convertedDocument="IGNORE">
 	<attachments>
-		<attachment conversionOption="0" documentName="Fonttest Word 2003" mediaType="application/msword" numberOfPages="1" sessionKey="ConvertedDocument1"/>
-		<attachment conversionOption="0" documentName="Fonttest Word 2013" mediaType="application/vnd.openxmlformats-officedocument.wordprocessingml.document" numberOfPages="1" sessionKey="ConvertedDocument2"/>
+		<attachment conversionOption="0" mediaType="application/msword" documentName="Fonttest Word 2003" numberOfPages="1"/>
+		<attachment conversionOption="0" mediaType="application/vnd.openxmlformats-officedocument.wordprocessingml.document" documentName="Fonttest Word 2013" numberOfPages="1"/>
 	</attachments>
 </main>

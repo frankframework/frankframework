@@ -62,12 +62,12 @@ public class PdfConvertor extends AbstractConvertor {
 
 		try (InputStream inputStream = message.asInputStream(charset)) {
 			Document doc = new Document(inputStream, MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType));
-			doc.save(result.getConversionResultHandle(), SaveFormat.Pdf);
+			doc.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.Pdf);
 			doc.freeMemory();
 			doc.dispose();
 			doc.close();
 		}
-		result.setNumberOfPages(getNumberOfPages(result));
+		result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
 	}
 
 	@Override
