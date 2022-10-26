@@ -767,6 +767,72 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	}
 
 	@Test
+	public void simpleMultipartFromParametersNoPartName() throws Throwable {
+		sender = getSender();
+		Message input = new Message("<xml>input</xml>");
+
+		sender.setMethodType(HttpMethod.POST);
+		sender.setParamsInUrl(false);
+		sender.setInputMessageParam("request");
+		sender.setMtomContentTransferEncoding("binary");
+
+		String xmlMultipart = "<parts><part type=\"file\" "
+				+ "sessionKey=\"part_file\" size=\"72833\" "
+				+ "mimeType=\"application/pdf\"/>"
+				+ "<part sessionKey=\"stringPart\" "
+				+ "mimeType=\"text/plain\"/></parts>";
+		session.put("multipartXml", xmlMultipart);
+		session.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
+
+		sender.setMultipartXmlSessionKey("multipartXml");
+		sender.addParameter(new Parameter("string-part", "<string content/>"));
+
+		session.put("stringPart", new Message("mock pdf content"));
+		session.put("binaryPart", Message.asMessage(new Message("mock pdf content").asInputStream()));
+		sender.addParameter(ParameterBuilder.create().withName("binary-part").withSessionKey("binaryPart"));
+
+		sender.configure();
+		sender.open();
+
+		String result = sendMessage(input).asString();
+		assertEqualsIgnoreCRLF(getFile("simpleMultipartFromParametersAndMultipartXmlNoPartName.txt"), result.trim());
+	}
+
+	@Test
+	public void simpleMtomFromParametersNoPartName() throws Throwable {
+		sender = getSender();
+		Message input = new Message("<xml>input</xml>");
+
+		sender.setMethodType(HttpMethod.POST);
+		sender.setParamsInUrl(false);
+		sender.setInputMessageParam("request");
+		sender.setPostType(PostType.MTOM);
+		sender.setMtomContentTransferEncoding("base64");
+
+		String xmlMultipart = "<parts><part type=\"file\" "
+				+ "sessionKey=\"part_file\" size=\"72833\" "
+				+ "mimeType=\"application/pdf\"/>"
+				+ "<part sessionKey=\"stringPart\" "
+				+ "mimeType=\"text/plain\"/></parts>";
+		session.put("multipartXml", xmlMultipart);
+		session.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
+
+		sender.setMultipartXmlSessionKey("multipartXml");
+		sender.addParameter(new Parameter("string-part", "<string content/>"));
+
+		session.put("stringPart", new Message("mock pdf content"));
+		session.put("binaryPart", Message.asMessage(new Message("mock pdf content").asInputStream()));
+		sender.addParameter(ParameterBuilder.create().withName("binary-part").withSessionKey("binaryPart"));
+
+		sender.configure();
+		sender.open();
+
+		String result = sendMessage(input).asString();
+		assertEqualsIgnoreCRLF(getFile("simpleMtomFromParametersAndMultipartXmlNoPartName.txt"), result.trim());
+	}
+
+
+	@Test
 	public void postTypeMtom() throws Throwable {
 		sender = getSender();
 		Message input = new Message("<xml>input</xml>");

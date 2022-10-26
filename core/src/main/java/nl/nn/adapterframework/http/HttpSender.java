@@ -424,7 +424,8 @@ public class HttpSender extends HttpSenderBase {
 		}
 
 		String name = partObject.isBinary() || StringUtils.isBlank(partName) ? partSessionKey : partName;
-		return FormBodyPartBuilder.create(name, new MessageContentBody(partObject, mimeType, partName)).build();
+		String filename = StringUtils.isNotBlank(partName) ? partName : null;
+		return FormBodyPartBuilder.create(name, new MessageContentBody(partObject, mimeType, filename)).build();
 	}
 
 	@Override
