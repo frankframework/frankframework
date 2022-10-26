@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.management.bus;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -75,6 +74,7 @@ public class ResponseMessage {
 			} else {
 				json = toJson(payload);
 			}
+			headers.put(MIMETYPE_KEY, MediaType.APPLICATION_JSON.toString());
 			return new GenericMessage<>(json, headers);
 		}
 
@@ -83,7 +83,7 @@ public class ResponseMessage {
 				ObjectMapper objectMapper = new ObjectMapper();
 				return objectMapper.writeValueAsString(payload);
 			} catch (JacksonException e) {
-				throw new IllegalStateException();
+				throw new BusException("unable to convert response to JSON", e);
 			}
 		}
 
@@ -103,38 +103,27 @@ public class ResponseMessage {
 			}
 			return new GenericMessage<>(payload, headers);
 		}
-
-		public static Message<String> accepted() {
-			Map<String, Object> headers = new HashMap<>();
-			headers.put(STATUS_KEY, 202);
-			return new GenericMessage<>(NO_CONTENT_PAYLOAD, headers);
-		}
-
-		public static Message<String> noContent() {
-			Map<String, Object> headers = new HashMap<>();
-			headers.put(STATUS_KEY, 204);
-			return new GenericMessage<>(NO_CONTENT_PAYLOAD, headers);
-		}
-
-		public static Message<String> badRequest() {
-			Map<String, Object> headers = new HashMap<>();
-			headers.put(STATUS_KEY, 400);
-			return new GenericMessage<>(NO_CONTENT_PAYLOAD, headers);
-		}
 	}
 
-	// This method should be removed at some point, every argument should/must be a DOA and not a map...
 	public static Message<String> ok(Object mapOrList) {
-		try {
-			ObjectMapper objectMapper = new ObjectMapper();
-			String result = objectMapper.writeValueAsString(mapOrList);
+		return Builder.create().withPayload(mapOrList).toJson();
+	}
 
-			Map<String, Object> headers = new HashMap<>();
-			headers.put(STATUS_KEY, 200);
-			headers.put(MIMETYPE_KEY, MediaType.APPLICATION_JSON.toString());
-			return new GenericMessage<>(result, headers);
-		} catch (JacksonException e) {
-			throw new IllegalStateException();
-		}
+	public static Message<String> accepted() {
+		Map<String, Object> headers = new HashMap<>();
+		headers.put(STATUS_KEY, 202);
+		return new GenericMessage<>(NO_CONTENT_PAYLOAD, headers);
+	}
+
+	public static Message<String> noContent() {
+		Map<String, Object> headers = new HashMap<>();
+		headers.put(STATUS_KEY, 204);
+		return new GenericMessage<>(NO_CONTENT_PAYLOAD, headers);
+	}
+
+	public static Message<String> badRequest() {
+		Map<String, Object> headers = new HashMap<>();
+		headers.put(STATUS_KEY, 400);
+		return new GenericMessage<>(NO_CONTENT_PAYLOAD, headers);
 	}
 }

@@ -46,7 +46,7 @@ public class ConfigFlow {
 			return ResponseMessage.Builder.create().withPayload(flow).withMimeType(flowDiagramManager.getMediaType()).raw();
 		}
 
-		return ResponseMessage.Builder.noContent(); //No flow file present
+		return ResponseMessage.noContent(); //No flow file present
 	}
 
 	private InputStream getFlow(Message<?> message) throws IOException {

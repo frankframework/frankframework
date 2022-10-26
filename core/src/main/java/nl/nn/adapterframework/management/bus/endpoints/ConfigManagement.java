@@ -154,18 +154,18 @@ public class ConfigManagement {
 		try {
 			if(activate != null) {
 				if(ConfigurationUtils.activateConfig(getIbisContext(), configurationName, version, activate, datasourceName)) {
-					return ResponseMessage.Builder.accepted();
+					return ResponseMessage.accepted();
 				}
 			}
 			else if(autoreload != null && ConfigurationUtils.autoReloadConfig(getIbisContext(), configurationName, version, autoreload, datasourceName)) {
-				return ResponseMessage.Builder.accepted();
+				return ResponseMessage.accepted();
 			}
 		} catch(Exception e) {
 			throw new BusException("unable to update configuration settings in database", e);
 		}
 
 		log.debug("header [activate] or [autoreload] not found");
-		return ResponseMessage.Builder.badRequest();
+		return ResponseMessage.badRequest();
 	}
 
 	@ActionSelector(BusAction.UPLOAD)
