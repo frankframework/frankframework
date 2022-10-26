@@ -105,8 +105,9 @@ public class ResponseMessage {
 		}
 	}
 
-	public static Message<String> ok(Object mapOrList) {
-		return Builder.create().withPayload(mapOrList).toJson();
+	/** Payload is converted to JSON + status code 200 */
+	public static Message<String> ok(Object payload) {
+		return Builder.create().withPayload(payload).toJson();
 	}
 
 	public static Message<String> accepted() {
