@@ -171,6 +171,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	private @Getter @Setter boolean verifyHostname=true;
 	private @Getter @Setter boolean ignoreCertificateExpiredException=false;
 
+	private @Getter CredentialFactory credentials=null;
+	private @Getter CredentialFactory proxyCredentials=null;
 
 	private ConfidentialClientApplication client;
 	private MsalClientAdapter msalClientAdapter;
@@ -190,13 +192,24 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			throw new ConfigurationException("either url or mailAddress needs to be specified");
 		}
 
+		if (StringUtils.isNotEmpty(getTenantId())) {
+			credentials = new CredentialFactory(getAuthAlias(), getClientId(), getClientSecret());
+		} else {
+			credentials = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
+		}
+		if (StringUtils.isNotEmpty(getProxyHost()) && (StringUtils.isNotEmpty(getProxyAuthAlias()) || StringUtils.isNotEmpty(getProxyUsername()) || StringUtils.isNotEmpty(getProxyPassword()))) {
+			proxyCredentials = new CredentialFactory(getProxyAuthAlias(), getProxyUsername(), getProxyPassword());
+		}
+
 		if( StringUtils.isNotEmpty(getTenantId()) ){
 			msalClientAdapter = applicationContext!=null ? SpringUtils.createBean(applicationContext, MsalClientAdapter.class): new MsalClientAdapter();
 			msalClientAdapter.setProxyHost(getProxyHost());
 			msalClientAdapter.setProxyPort(getProxyPort());
-			CredentialFactory proxyCredentials = getProxyCredentials();
-			msalClientAdapter.setProxyUsername(proxyCredentials.getUsername());
-			msalClientAdapter.setProxyPassword(proxyCredentials.getPassword());
+			CredentialFactory proxyCf = getProxyCredentials();
+			if (proxyCf!=null) {
+				msalClientAdapter.setProxyUsername(proxyCf.getUsername());
+				msalClientAdapter.setProxyPassword(proxyCf.getPassword());
+			}
 
 			msalClientAdapter.setKeystore(getKeystore());
 			msalClientAdapter.setKeystoreType(getKeystoreType());
@@ -317,17 +330,17 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			CredentialFactory cf = getCredentials();
 			// use deprecated Basic Authentication. Support will end 2021-Q3!
 			log.warn("Using deprecated Basic Authentication method for authentication to Exchange Web Services");
-			ExchangeCredentials credentials = new WebCredentials(cf.getUsername(), cf.getPassword());
-			exchangeService.setCredentials(credentials);
+			ExchangeCredentials exchangeCredentials = new WebCredentials(cf.getUsername(), cf.getPassword());
+			exchangeService.setCredentials(exchangeCredentials);
 		}
 
 		if(StringUtils.isNotEmpty(getMailAddress())){
 			setMailboxOnService(exchangeService, getMailAddress());
 		}
 
-		if (StringUtils.isNotEmpty(getProxyHost()) && (StringUtils.isNotEmpty(getProxyAuthAlias()) || StringUtils.isNotEmpty(getProxyUsername()) || StringUtils.isNotEmpty(getProxyPassword()))) {
-			CredentialFactory proxyCf = new CredentialFactory(getProxyAuthAlias(), getProxyUsername(), getProxyPassword());
-			WebProxyCredentials webProxyCredentials = new WebProxyCredentials(proxyCf.getUsername(), proxyCf.getPassword(), getProxyDomain());
+		if (StringUtils.isNotEmpty(getProxyHost())) {
+			CredentialFactory proxyCf = getProxyCredentials();
+			WebProxyCredentials webProxyCredentials = proxyCf !=null ? new WebProxyCredentials(proxyCf.getUsername(), proxyCf.getPassword(), getProxyDomain()) : null;
 			WebProxy webProxy = new WebProxy(getProxyHost(), getProxyPort(), webProxyCredentials);
 			exchangeService.setWebProxy(webProxy);
 		}
@@ -1079,17 +1092,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			log.warn("Could not get url", e);
 		}
 		return Misc.concatStrings("url [" + url + "] mailAddress [" + (getMailAddress() == null ? "" : getMailAddress()) + "]", " ", result);
-	}
-
-	private CredentialFactory getCredentials(){
-		if (StringUtils.isNotEmpty(getTenantId())) {
-			return new CredentialFactory(getAuthAlias(), getClientId(), getClientSecret());
-		}
-		return new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
-	}
-
-	private CredentialFactory getProxyCredentials(){
-		return new CredentialFactory(getProxyAuthAlias(), getProxyUsername(), getProxyPassword());
 	}
 
 	private void setMailboxOnService(ExchangeService service, String mailbox){
