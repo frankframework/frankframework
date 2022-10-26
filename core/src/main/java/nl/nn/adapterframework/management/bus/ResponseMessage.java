@@ -34,12 +34,76 @@ public class ResponseMessage {
 	public static final String CONTENT_DISPOSITION_KEY = "meta:contentdisposition";
 	public static final String NO_CONTENT_PAYLOAD = "no-content";
 
-	public class Headers {
-		private int status = 200;
+	public static class Builder {
+		private Object payload;
+		private Map<String, Object> headers = new HashMap<>();
 
-		public Headers withStatus(int status) {
-			this.status = status;
+		private Builder() {
+			headers.put(STATUS_KEY, 200);
+		}
+
+		public static Builder create() {
+			return new Builder();
+		}
+
+		public Builder withPayload(Object payload) {
+			this.payload = payload;
 			return this;
+		}
+
+		public Builder withStatus(int status) {
+			headers.put(STATUS_KEY, status);
+			return this;
+		}
+
+		public Builder withMimeType(MimeType mimeType) {
+			if(mimeType != null) {
+				headers.put(MIMETYPE_KEY, mimeType.toString());
+			}
+			return this;
+		}
+
+		public Message<String> toJson() {
+			String stringInput = null;
+			if(payload instanceof nl.nn.adapterframework.stream.Message) {
+				try {
+					stringInput = ((nl.nn.adapterframework.stream.Message) payload).asString();
+				} catch (IOException e) {
+					throw new BusException("unable to convert payload to message", e);
+				}
+			} else if(payload instanceof String) {
+				stringInput = (String) payload;
+			} else {
+				stringInput = payload.toString();
+			}
+			String json = toJson(stringInput);
+			return new GenericMessage<>(json, headers);
+		}
+
+		private static String toJson(Object payload) {
+			try {
+				ObjectMapper objectMapper = new ObjectMapper();
+				return objectMapper.writeValueAsString(payload);
+			} catch (JacksonException e) {
+				throw new IllegalStateException();
+			}
+		}
+
+		public Message<?> raw() {
+			if(payload instanceof nl.nn.adapterframework.stream.Message) {
+				nl.nn.adapterframework.stream.Message message = (nl.nn.adapterframework.stream.Message) payload;
+				Map<String, Object> messageContext = message.getContext();
+				this.headers.putAll(messageContext);
+				try {
+					if(message.isBinary()) {
+						return new GenericMessage<>(message.asInputStream(), headers);
+					}
+					return new GenericMessage<>(message.asString(), headers);
+				} catch (IOException e) {
+					throw new BusException("unable to convert payload to message", e);
+				}
+			}
+			return new GenericMessage<>(payload, headers);
 		}
 	}
 
@@ -92,10 +156,10 @@ public class ResponseMessage {
 	}
 
 	// This method should be removed at some point, every argument should/must be a DOA and not a map...
-	public static Message<String> ok(Object configs) {
+	public static Message<String> ok(Object mapOrList) {
 		try {
 			ObjectMapper objectMapper = new ObjectMapper();
-			String result = objectMapper.writeValueAsString(configs);
+			String result = objectMapper.writeValueAsString(mapOrList);
 
 			Map<String, Object> headers = new HashMap<>();
 			headers.put(STATUS_KEY, 200);

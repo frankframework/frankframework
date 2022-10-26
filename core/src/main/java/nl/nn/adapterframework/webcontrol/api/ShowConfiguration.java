@@ -100,7 +100,7 @@ public final class ShowConfiguration extends FrankApiBase {
 	@Path("/configurations/{configuration}/health")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getConfigurationHealth(@PathParam("configuration") String configurationName) throws ApiException {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.STATUS);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.HEALTH);
 		builder.addHeader("configuration", configurationName);
 		return callSyncGateway(builder);
 	}
