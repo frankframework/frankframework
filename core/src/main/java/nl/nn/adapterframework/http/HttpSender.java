@@ -423,9 +423,8 @@ public class HttpSender extends HttpSenderBase {
 			mimeType = MimeType.valueOf(partMimeType);
 		}
 
-		String name = partObject.isBinary() ? partSessionKey : partName;
-		String filename = partObject.isBinary() ? partName : null; // #3917: Salesforce complains if character parts do have a filename, and if binary parts do not have a filename
-		return FormBodyPartBuilder.create(name, new MessageContentBody(partObject, mimeType, filename)).build();
+		String name = partObject.isBinary() || StringUtils.isBlank(partName) ? partSessionKey : partName;
+		return FormBodyPartBuilder.create(name, new MessageContentBody(partObject, mimeType, partName)).build();
 	}
 
 	@Override
