@@ -24,8 +24,8 @@ import nl.nn.adapterframework.stream.MessageOutputStream;
 public interface ICollector extends AutoCloseable {
 
 	Message writeItem(Message input, PipeLineSession session, ParameterValueList pvl, Object attributeSource) throws CollectionException, TimeoutException;
-	
-	@Deprecated
+
+	/** present to support the deprecated 'STREAM' action, cannot set to Deprecated, because TestAnnotationUtils.findInterfacesWithAnnotations() will complain */
 	Message streamItem(Message input, PipeLineSession session, ParameterValueList pvl, Object attributeSource) throws CollectionException;
 
 	default MessageOutputStream provideOutputStream(PipeLineSession session, ParameterValueList pvl, Object attributeSource) throws CollectionException {
