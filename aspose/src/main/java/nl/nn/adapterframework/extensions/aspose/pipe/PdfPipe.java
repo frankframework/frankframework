@@ -25,6 +25,7 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
+import nl.nn.adapterframework.stream.FileMessage;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.util.*;
@@ -159,7 +160,7 @@ public class PdfPipe extends StreamingPipe {
 					cisConversionResult.buildXmlFromResult(main, true);
 
 					Message message = new Message(main.toXML());
-					populateContext(cisConversionResult, session, message, 0);
+					populateContext(cisConversionResult, message, 0);
 
 					session.put("documents", message);
 
@@ -173,26 +174,18 @@ public class PdfPipe extends StreamingPipe {
 		}
 	}
 
-	private void populateContext(CisConversionResult result, PipeLineSession session, Message message, int index) throws PipeRunException {
-		try (MessageOutputStream target=getTargetStream(session)) {
-			try (OutputStream out = target.asStream()) {
-				if(StringUtils.isNotEmpty(result.getResultFilePath())){
-					try(FileInputStream fis = new FileInputStream(result.getResultFilePath())){
-						StreamUtil.copyStream(fis, out, 4096);
-					}
-					message.getContext().put(CONVERTED_DOCUMENTS_CONTEXT_KEY+index, out);
-				}
+	private void populateContext(CisConversionResult result, Message message, int index) {
+		if(StringUtils.isNotEmpty(result.getResultFilePath())){
+			FileMessage document = new FileMessage(new File(result.getResultFilePath()));
+			message.getContext().put(CONVERTED_DOCUMENTS_CONTEXT_KEY+index, document);
+		}
 
-				List<CisConversionResult> attachmentList = result.getAttachments();
-				if (attachmentList != null && !attachmentList.isEmpty()) {
-					for (int i = 0; i < attachmentList.size(); i++) {
-						index++;
-						populateContext(attachmentList.get(i), session, message, index);
-					}
-				}
+		List<CisConversionResult> attachmentList = result.getAttachments();
+		if (attachmentList != null && !attachmentList.isEmpty()) {
+			for (int i = 0; i < attachmentList.size(); i++) {
+				index++;
+				populateContext(attachmentList.get(i), message, index);
 			}
-		} catch (Exception e) {
-			throw new PipeRunException(this, "Exception was thrown during creation of handlers.", e);
 		}
 	}
 
