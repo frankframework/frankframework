@@ -643,7 +643,15 @@ public class HttpSender extends HttpSenderBase {
 		multipartResponse = b;
 	}
 
-	@IbisDoc({"If set and <code>methodType</code>=<code>POST</code> and <code>paramsInUrl</code>=<code>false</code>, a multipart/form-data entity is created instead of a request body. For each part element in the session key a part in the multipart entity is created", ""})
+	/**
+	 * If set and <code>methodType</code>=<code>POST</code> and <code>paramsInUrl</code>=<code>false</code>, a multipart/form-data entity is created instead of a request body.
+	 * For each part element in the session key a part in the multipart entity is created. Part elements can contain the following attributes:
+	 * <ul>
+	 * <li>name: optional, used as 'filename' in Content-Disposition</li>
+	 * <li>sessionKey: mandatory, refers to contents of part</li>
+	 * <li>mimeType: optional MIME type</li>
+	 * </ul>
+	 */
 	public void setMultipartXmlSessionKey(String multipartXmlSessionKey) {
 		this.multipartXmlSessionKey = multipartXmlSessionKey;
 	}
