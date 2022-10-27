@@ -50,12 +50,10 @@ public class ZipWriter implements ICollector {
 	private @Getter ZipOutputStream zipoutput;
 	private boolean entryOpen=false;
 	private @Getter @Setter boolean closeOnExit;
-	private Object attributeSource;
 
-	private ZipWriter(OutputStream resultStream, boolean closeOnExit, Object attributeSource) {
+	public ZipWriter(OutputStream resultStream, boolean closeOnExit) {
 		super();
 		this.closeOnExit=closeOnExit;
-		this.attributeSource=attributeSource;
 		zipoutput=new ZipOutputStream(resultStream);
 	}
 
@@ -64,15 +62,9 @@ public class ZipWriter implements ICollector {
 	}
 
 	public static ZipWriter createZipWriter(PipeLineSession session, String handlekey, OutputStream resultStream, boolean closeOnExit) {
-		ZipWriter handle=new ZipWriter(resultStream,closeOnExit, null);
+		ZipWriter handle=new ZipWriter(resultStream,closeOnExit);
 		session.put(handlekey,handle);
 		handle.log.debug("opened new zipstream [{}]", handlekey);
-		return handle;
-	}
-
-	// for use as Collector
-	public static ZipWriter createZipWriter(PipeLineSession session, OutputStream resultStream, boolean closeOnExit, Object attributeSource) {
-		ZipWriter handle=new ZipWriter(resultStream,closeOnExit, attributeSource);
 		return handle;
 	}
 

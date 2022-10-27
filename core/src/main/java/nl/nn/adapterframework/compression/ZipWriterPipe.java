@@ -123,7 +123,7 @@ public class ZipWriterPipe extends CollectorPipe<ZipWriter> {
 		if (resultStream==null) {
 			throw new PipeRunException(this,"did not find OutputStream or HttpResponse, and could not find filename");
 		}
-		return ZipWriter.createZipWriter(session,resultStream,isCloseOutputstreamOnExit(), this);
+		return new ZipWriter(resultStream,isCloseOutputstreamOnExit());
 	}
 
 
