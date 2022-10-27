@@ -30,7 +30,6 @@ import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.Configuration;
@@ -38,7 +37,6 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.ProcessState;
-import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle.BootState;
 import nl.nn.adapterframework.lifecycle.MessageEventListener;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusTopic;
@@ -47,7 +45,6 @@ import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.MessageKeeper;
-import nl.nn.adapterframework.util.RunState;
 
 /**
  * Collection of server and application statistics and information.
@@ -202,7 +199,6 @@ public class ServerStatistics extends Base {
 	@Path("/server/health")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getIbisHealth() {
-
 		Map<String, Object> response = new HashMap<>();
 
 		try {
@@ -226,57 +222,7 @@ public class ServerStatistics extends Base {
 			throw new ApiException(e);
 		}
 
-		Map<RunState, Integer> stateCount = new HashMap<>();
-		List<String> errors = new ArrayList<>();
 
-		for(Configuration config : getIbisManager().getConfigurations()) {
-			BootState state = config.getState();
-			if(state != BootState.STARTED) {
-				if(config.getConfigurationException() != null) {
-					errors.add("configuration["+config.getName()+"] is in state[ERROR]");
-				} else {
-					errors.add("configuration["+config.getName()+"] is in state["+state+"]");
-				}
-				stateCount.put(RunState.ERROR, 1); //We're not really using stateCount other then to determine the HTTP response code.
-			}
-		}
-
-		for (Adapter adapter : getIbisManager().getRegisteredAdapters()) {
-			RunState state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
-
-			if(state==RunState.STARTED) {
-				for (Receiver<?> receiver: adapter.getReceivers()) {
-					RunState rState = receiver.getRunState();
-
-					if(rState!=RunState.STARTED) {
-						errors.add("receiver["+receiver.getName()+"] of adapter["+adapter.getName()+"] is in state["+rState.toString()+"]");
-						state = RunState.ERROR;
-					}
-				}
-			}
-			else {
-				errors.add("adapter["+adapter.getName()+"] is in state["+state.toString()+"]");
-				state = RunState.ERROR;
-			}
-
-			int count;
-			if(stateCount.containsKey(state))
-				count = stateCount.get(state);
-			else
-				count = 0;
-
-			stateCount.put(state, ++count);
-		}
-
-		Status status = Response.Status.OK;
-		if(stateCount.containsKey(RunState.ERROR))
-			status = Response.Status.SERVICE_UNAVAILABLE;
-
-		if(!errors.isEmpty()) {
-			response.put("errors", errors);
-		}
-		response.put("status", status);
-
-		return Response.status(status).entity(response).build();
+		return callSyncGateway(RequestMessageBuilder.create(this, BusTopic.HEALTH));
 	}
 }

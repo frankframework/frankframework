@@ -107,7 +107,7 @@ public class SendJmsMessage {
 		try {
 			qms.open();
 			nl.nn.adapterframework.stream.Message responseMessage = qms.sendMessage(nl.nn.adapterframework.stream.Message.asMessage(requestMessage), null);
-			return expectsReply ? ResponseMessage.ok(responseMessage) : null;
+			return expectsReply ? ResponseMessage.Builder.create().withPayload(responseMessage).raw() : null;
 		} catch (Exception e) {
 			throw new BusException("error occured sending message", e);
 		} finally {

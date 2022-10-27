@@ -19,17 +19,13 @@ import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
-import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -44,7 +40,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
-import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.management.bus.ActionSelector;
@@ -56,9 +51,7 @@ import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.management.bus.dao.ConfigurationDAO;
-import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.RunState;
 import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 @BusAware("frank-management-bus")
@@ -67,7 +60,6 @@ public class ConfigManagement {
 
 	private @Getter @Setter IbisManager ibisManager;
 	private Logger log = LogUtil.getLogger(this);
-	private static final String HEADER_CONFIGURATION_NAME_KEY = "configuration";
 	private static final String HEADER_CONFIGURATION_VERSION_KEY = "version";
 	private static final String HEADER_DATASOURCE_NAME_KEY = FrankApiBase.HEADER_DATASOURCE_NAME_KEY;
 
@@ -80,8 +72,8 @@ public class ConfigManagement {
 	 * header loaded to differentiate between the loaded and original (raw) XML.
 	 */
 	@ActionSelector(BusAction.GET)
-	public Message<String> getXMLConfiguration(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_NAME_KEY);
+	public Message<Object> getXMLConfiguration(Message<?> message) {
+		String configurationName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_CONFIGURATION_NAME_KEY);
 		boolean loadedConfiguration = BusMessageUtils.getBooleanHeader(message, "loaded", false);
 		StringBuilder result = new StringBuilder();
 
@@ -94,7 +86,7 @@ public class ConfigManagement {
 			}
 		}
 
-		return ResponseMessage.ok(result.toString());
+		return ResponseMessage.Builder.create().withPayload(result.toString()).withMimeType(MediaType.APPLICATION_XML).raw();
 	}
 
 	private Configuration getConfigurationByName(String configurationName) {
@@ -115,7 +107,7 @@ public class ConfigManagement {
 	 */
 	@ActionSelector(BusAction.FIND)
 	public Message<String> getConfigurationDetailsByName(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_NAME_KEY);
+		String configurationName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_CONFIGURATION_NAME_KEY);
 		if(StringUtils.isNotEmpty(configurationName)) {
 			Configuration configuration = getConfigurationByName(configurationName);
 
@@ -151,7 +143,7 @@ public class ConfigManagement {
 	 */
 	@ActionSelector(BusAction.MANAGE)
 	public Message<String> manageConfiguration(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_NAME_KEY);
+		String configurationName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_CONFIGURATION_NAME_KEY);
 		getConfigurationByName(configurationName); //Validate the configuration exists
 
 		String version = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_VERSION_KEY);
@@ -210,7 +202,7 @@ public class ConfigManagement {
 	 */
 	@ActionSelector(BusAction.DOWNLOAD)
 	public Message<byte[]> downloadConfiguration(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_NAME_KEY);
+		String configurationName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_CONFIGURATION_NAME_KEY);
 		getConfigurationByName(configurationName); //Validate the configuration exists
 		String version = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_VERSION_KEY);
 		String datasourceName = BusMessageUtils.getHeader(message, HEADER_DATASOURCE_NAME_KEY);
@@ -237,7 +229,7 @@ public class ConfigManagement {
 	 */
 	@ActionSelector(BusAction.DELETE)
 	public void deleteConfiguration(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_NAME_KEY);
+		String configurationName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_CONFIGURATION_NAME_KEY);
 		getConfigurationByName(configurationName); //Validate the configuration exists
 		String version = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_VERSION_KEY);
 		String datasourceName = BusMessageUtils.getHeader(message, HEADER_DATASOURCE_NAME_KEY);
@@ -247,60 +239,6 @@ public class ConfigManagement {
 		} catch (Exception e) {
 			throw new BusException("unable to delete configuration from database", e);
 		}
-	}
-
-	/**
-	 * @return The status of a configuration. If an Adapter is not in state STARTED it is flagged as NOT-OK.
-	 * header configuration The name of the Configuration to delete
-	 */
-	@ActionSelector(BusAction.STATUS)
-	public Message<String> getConfigurationHealth(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_NAME_KEY);
-		Configuration configuration = getConfigurationByName(configurationName);
-		if(!configuration.isActive()) {
-			throw new BusException("configuration not active", configuration.getConfigurationException());
-		}
-
-		Map<String, Object> response = new HashMap<>();
-		Map<RunState, Integer> stateCount = new EnumMap<>(RunState.class);
-		List<String> errors = new ArrayList<>();
-
-		for (IAdapter adapter : configuration.getRegisteredAdapters()) {
-			RunState state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
-
-			if(state==RunState.STARTED) {
-				for (Receiver<?> receiver: adapter.getReceivers()) {
-					RunState rState = receiver.getRunState();
-
-					if(rState!=RunState.STARTED) {
-						errors.add("receiver["+receiver.getName()+"] of adapter["+adapter.getName()+"] is in state["+rState.toString()+"]");
-						state = RunState.ERROR;
-					}
-				}
-			}
-			else {
-				errors.add("adapter["+adapter.getName()+"] is in state["+state.toString()+"]");
-				state = RunState.ERROR;
-			}
-
-			int count;
-			if(stateCount.containsKey(state))
-				count = stateCount.get(state);
-			else
-				count = 0;
-
-			stateCount.put(state, ++count);
-		}
-
-		Status status = Status.OK;
-		if(stateCount.containsKey(RunState.ERROR))
-			status = Status.SERVICE_UNAVAILABLE;
-
-		if(!errors.isEmpty())
-			response.put("errors", errors);
-		response.put("status", status);
-
-		return ResponseMessage.ok(response);
 	}
 
 	private List<ConfigurationDAO> getConfigsFromDatabase(String configurationName, String dataSourceName) {

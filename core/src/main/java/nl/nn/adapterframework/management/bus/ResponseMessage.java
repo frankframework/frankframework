@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.management.bus;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,49 +33,81 @@ public class ResponseMessage {
 	public static final String CONTENT_DISPOSITION_KEY = "meta:contentdisposition";
 	public static final String NO_CONTENT_PAYLOAD = "no-content";
 
-	public class Headers {
-		private int status = 200;
+	public static class Builder {
+		private Object payload;
+		private Map<String, Object> headers = new HashMap<>();
 
-		public Headers withStatus(int status) {
-			this.status = status;
+		private Builder() {
+			headers.put(STATUS_KEY, 200);
+		}
+
+		public static Builder create() {
+			return new Builder();
+		}
+
+		public Builder withPayload(Object payload) {
+			this.payload = payload;
 			return this;
 		}
-	}
 
-	public static Message<String> ok(String payload) {
-		return ok(payload, null);
-	}
-
-	public static Message<String> ok(String payload, MimeType mediaType) {
-		Map<String, Object> headers = new HashMap<>();
-		headers.put(STATUS_KEY, 200);
-		if(mediaType != null) {
-			headers.put(MIMETYPE_KEY, mediaType.toString());
+		public Builder withStatus(int status) {
+			headers.put(STATUS_KEY, status);
+			return this;
 		}
-		return new GenericMessage<>(payload, headers);
-	}
 
-	public static Message<InputStream> ok(InputStream stream, MimeType mediaType) {
-		Map<String, Object> headers = new HashMap<>();
-		headers.put(STATUS_KEY, 200);
-		if(mediaType != null) {
-			headers.put(MIMETYPE_KEY, mediaType.toString());
+		public Builder withMimeType(MimeType mimeType) {
+			if(mimeType != null) {
+				headers.put(MIMETYPE_KEY, mimeType.toString());
+			}
+			return this;
 		}
-		return new GenericMessage<>(stream, headers);
-	}
 
-	public static Message<Object> ok(nl.nn.adapterframework.stream.Message message) throws IOException {
-		Map<String, Object> headers = message.getContext();
-		if(message.isBinary()) {
-			return new GenericMessage<>(message.asInputStream(), headers);
+		public Message<String> toJson() {
+			String json = null;
+			if(payload instanceof nl.nn.adapterframework.stream.Message) {
+				try {
+					String stringInput = ((nl.nn.adapterframework.stream.Message) payload).asString();
+					json = toJson(stringInput);
+				} catch (IOException e) {
+					throw new BusException("unable to convert payload to message", e);
+				}
+			} else {
+				json = toJson(payload);
+			}
+			headers.put(MIMETYPE_KEY, MediaType.APPLICATION_JSON.toString());
+			return new GenericMessage<>(json, headers);
 		}
-		return new GenericMessage<>(message.asString(), headers);
+
+		private static String toJson(Object payload) {
+			try {
+				ObjectMapper objectMapper = new ObjectMapper();
+				return objectMapper.writeValueAsString(payload);
+			} catch (JacksonException e) {
+				throw new BusException("unable to convert response to JSON", e);
+			}
+		}
+
+		public Message<Object> raw() {
+			if(payload instanceof nl.nn.adapterframework.stream.Message) {
+				nl.nn.adapterframework.stream.Message message = (nl.nn.adapterframework.stream.Message) payload;
+				Map<String, Object> messageContext = message.getContext();
+				this.headers.putAll(messageContext);
+				try {
+					if(message.isBinary()) {
+						return new GenericMessage<>(message.asInputStream(), headers);
+					}
+					return new GenericMessage<>(message.asString(), headers);
+				} catch (IOException e) {
+					throw new BusException("unable to convert payload to message", e);
+				}
+			}
+			return new GenericMessage<>(payload, headers);
+		}
 	}
 
-	public static Message<String> noContent() {
-		Map<String, Object> headers = new HashMap<>();
-		headers.put(STATUS_KEY, 204);
-		return new GenericMessage<>(NO_CONTENT_PAYLOAD, headers);
+	/** Payload is converted to JSON + status code 200 */
+	public static Message<String> ok(Object payload) {
+		return Builder.create().withPayload(payload).toJson();
 	}
 
 	public static Message<String> accepted() {
@@ -85,24 +116,15 @@ public class ResponseMessage {
 		return new GenericMessage<>(NO_CONTENT_PAYLOAD, headers);
 	}
 
+	public static Message<String> noContent() {
+		Map<String, Object> headers = new HashMap<>();
+		headers.put(STATUS_KEY, 204);
+		return new GenericMessage<>(NO_CONTENT_PAYLOAD, headers);
+	}
+
 	public static Message<String> badRequest() {
 		Map<String, Object> headers = new HashMap<>();
 		headers.put(STATUS_KEY, 400);
 		return new GenericMessage<>(NO_CONTENT_PAYLOAD, headers);
-	}
-
-	// This method should be removed at some point, every argument should/must be a DOA and not a map...
-	public static Message<String> ok(Object configs) {
-		try {
-			ObjectMapper objectMapper = new ObjectMapper();
-			String result = objectMapper.writeValueAsString(configs);
-
-			Map<String, Object> headers = new HashMap<>();
-			headers.put(STATUS_KEY, 200);
-			headers.put(MIMETYPE_KEY, MediaType.APPLICATION_JSON.toString());
-			return new GenericMessage<>(result, headers);
-		} catch (JacksonException e) {
-			throw new IllegalStateException();
-		}
 	}
 }

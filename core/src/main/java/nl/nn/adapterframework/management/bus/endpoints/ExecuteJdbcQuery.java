@@ -81,7 +81,7 @@ public class ExecuteJdbcQuery {
 	}
 
 	@ActionSelector(BusAction.MANAGE)
-	public Message<String> executeJdbcQuery(Message<?> message) {
+	public Message<Object> executeJdbcQuery(Message<?> message) {
 		String datasource = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		String queryType = BusMessageUtils.getHeader(message, "queryType", "select");
 		String query = BusMessageUtils.getHeader(message, "query");
@@ -92,7 +92,7 @@ public class ExecuteJdbcQuery {
 		return doExecute(datasource, queryType, query, trimSpaces, avoidLocking, resultType);
 	}
 
-	private Message<String> doExecute(String datasource, String queryType, String query, boolean trimSpaces, boolean avoidLocking, ResultType resultType) {
+	private Message<Object> doExecute(String datasource, String queryType, String query, boolean trimSpaces, boolean avoidLocking, ResultType resultType) {
 		secLog.info(String.format("executing query [%s] on datasource [%s] queryType [%s] avoidLocking [%s]", query, datasource, queryType, avoidLocking));
 
 		DirectQuerySender qs = ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
@@ -133,6 +133,6 @@ public class ExecuteJdbcQuery {
 			qs.close();
 		}
 
-		return ResponseMessage.ok(result, mimetype);
+		return ResponseMessage.Builder.create().withPayload(result).withMimeType(mimetype).raw();
 	}
 }
