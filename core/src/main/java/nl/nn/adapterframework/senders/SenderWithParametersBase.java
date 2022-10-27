@@ -19,9 +19,13 @@ import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISenderWithParameters;
+import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Provides a base class for senders with parameters.
@@ -77,6 +81,15 @@ public abstract class SenderWithParametersBase extends SenderBase implements ISe
 		}
 		return attributeValue;
 	}
+
+	protected ParameterValueList getParameterValueList(Message input, PipeLineSession session) throws SenderException {
+		try {
+			return getParameterList()!=null ? getParameterList().getValues(input, session) : null;
+		} catch (ParameterException e) {
+			throw new SenderException("cannot determine parameter values", e);
+		}
+	}
+
 
 	@Override
 	public boolean consumesSessionVariable(String sessionKey) {
