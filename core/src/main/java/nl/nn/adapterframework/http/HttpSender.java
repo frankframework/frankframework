@@ -423,8 +423,9 @@ public class HttpSender extends HttpSenderBase {
 			mimeType = MimeType.valueOf(partMimeType);
 		}
 
-		String name = partObject.isBinary() ? partSessionKey : partName;
-		return FormBodyPartBuilder.create(name, new MessageContentBody(partObject, mimeType, partName)).build();
+		String name = partObject.isBinary() || StringUtils.isBlank(partName) ? partSessionKey : partName;
+		String filename = StringUtils.isNotBlank(partName) ? partName : null;
+		return FormBodyPartBuilder.create(name, new MessageContentBody(partObject, mimeType, filename)).build();
 	}
 
 	@Override
@@ -642,7 +643,16 @@ public class HttpSender extends HttpSenderBase {
 		multipartResponse = b;
 	}
 
-	@IbisDoc({"If set and <code>methodType</code>=<code>POST</code> and <code>paramsInUrl</code>=<code>false</code>, a multipart/form-data entity is created instead of a request body. For each part element in the session key a part in the multipart entity is created", ""})
+	/**
+	 * If set and <code>methodType</code>=<code>POST</code> and <code>paramsInUrl</code>=<code>false</code>, a multipart/form-data entity is created instead of a request body.
+	 * For each part element in the session key a part in the multipart entity is created. Part elements can contain the following attributes:
+	 * <ul>
+	 * <li>name: optional, used as 'filename' in Content-Disposition</li>
+	 * <li>sessionKey: mandatory, refers to contents of part</li>
+	 * <li>mimeType: optional MIME type</li>
+	 * </ul>
+	 * The name of the part is determined by the name attribute, unless that is empty, or the contents is binary. In those cases the sessionKey name is used as name of the part.
+	 */
 	public void setMultipartXmlSessionKey(String multipartXmlSessionKey) {
 		this.multipartXmlSessionKey = multipartXmlSessionKey;
 	}
