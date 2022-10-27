@@ -16,18 +16,15 @@
 package nl.nn.adapterframework.extensions.aspose.pipe;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
+import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.FileMessage;
-import nl.nn.adapterframework.stream.MessageOutputStream;
-import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.util.*;
 import org.apache.commons.lang3.StringUtils;
 
@@ -46,7 +43,6 @@ import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResul
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionService;
 import nl.nn.adapterframework.extensions.aspose.services.conv.impl.CisConversionServiceImpl;
 import nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors.PdfAttachmentUtil;
-import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
 
 
@@ -55,7 +51,7 @@ import nl.nn.adapterframework.stream.Message;
  * With combine action you can attach files into main pdf file.
  *
  */
-public class PdfPipe extends StreamingPipe {
+public class PdfPipe extends FixedForwardPipe {
 
 	private static final String CONVERTED_DOCUMENTS_CONTEXT_KEY = "Converted.Documents.";
 
