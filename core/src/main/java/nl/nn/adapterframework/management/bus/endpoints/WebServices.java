@@ -26,8 +26,12 @@ import java.util.SortedMap;
 
 import org.springframework.messaging.Message;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
@@ -54,50 +58,15 @@ public class WebServices {
 	public Message<String> getWebServices(Message<?> message) {
 		Map<String, Object> returnMap = new HashMap<>();
 
-		List<Map<String, Object>> webServices = new ArrayList<>();
-		for (Adapter adapter : getIbisManager().getRegisteredAdapters()) {
-			for (Receiver receiver: adapter.getReceivers()) {
-				IListener listener = receiver.getListener();
-				if (listener instanceof RestListener) {
-					RestListener rl = (RestListener) listener;
-					Map<String, Object> service = new HashMap<>();
-					service.put("name", adapter.getName() + " "+  receiver.getName());
-					service.put("method", rl.getMethod());
-					service.put("view", rl.isView());
-					service.put("uriPattern", rl.getUriPattern());
-					webServices.add(service);
-				}
-			}
-		}
-		returnMap.put("services", webServices);
+		returnMap.put("services", getRestListeners());
+		returnMap.put("wsdls", getWsdls());
+		returnMap.put("apiListeners", getApiListeners());
 
-		List<Map<String, Object>> wsdls = new ArrayList<>();
-		for (Adapter adapter : getIbisManager().getRegisteredAdapters()) {
-			Map<String, Object> wsdlMap = null;
-			try {
-				if(WsdlGeneratorUtils.canProvideWSDL(adapter)) { // check eligibility
-					wsdlMap = new HashMap<>(2);
-					WsdlGenerator wsdl = new WsdlGenerator(adapter.getPipeLine());
-					wsdlMap.put("name", wsdl.getName());
-					wsdlMap.put("extension", WSDL_EXTENSION);
-				}
-			} catch (Exception e) {
-				wsdlMap.put("name", adapter.getName());
+		return ResponseMessage.ok(returnMap);
+	}
 
-				if (e.getMessage() != null) {
-					wsdlMap.put("error", e.getMessage());
-				} else {
-					wsdlMap.put("error", e.toString());
-				}
-			}
-			if(wsdlMap != null) {
-				wsdls.add(wsdlMap);
-			}
-		}
-		returnMap.put("wsdls", wsdls);
-
-		//ApiListeners
-		List<Map<String, Object>> apiListeners = new LinkedList<>();
+	private List<ListenerDAO> getApiListeners() {
+		List<ListenerDAO> apiListeners = new LinkedList<>();
 		SortedMap<String, ApiDispatchConfig> patternClients = ApiServiceDispatcher.getInstance().getPatternClients();
 		for (Entry<String, ApiDispatchConfig> client : patternClients.entrySet()) {
 			ApiDispatchConfig config = client.getValue();
@@ -105,20 +74,88 @@ public class WebServices {
 			Set<HttpMethod> methods = config.getMethods();
 			for (HttpMethod method : methods) {
 				ApiListener listener = config.getApiListener(method);
-				Receiver receiver = listener.getReceiver();
+				Receiver<?> receiver = listener.getReceiver();
 				IAdapter adapter = receiver == null? null : receiver.getAdapter();
-				Map<String, Object> endpoint = new HashMap<>();
-				String uriPattern = listener.getUriPattern();
-				endpoint.put("uriPattern", uriPattern);
-				endpoint.put("method", method);
-				if (adapter!=null) endpoint.put("adapter", adapter.getName());
-				if (receiver!=null) endpoint.put("receiver", receiver.getName());
+				ListenerDAO dao = new ListenerDAO(listener);
+				if (adapter!=null) dao.setAdapter(adapter);
+				if (receiver!=null) dao.setReceiver(receiver);
 
-				apiListeners.add(endpoint);
+				apiListeners.add(dao);
 			}
 		}
-		returnMap.put("apiListeners", apiListeners);
+		return apiListeners;
+	}
 
-		return ResponseMessage.ok(returnMap);
+	private List<Map<String, Object>> getWsdls() {
+		List<Map<String, Object>> wsdls = new ArrayList<>();
+		for (Configuration config : getIbisManager().getConfigurations()) {
+			for (Adapter adapter : config.getRegisteredAdapters()) {
+				Map<String, Object> wsdlMap = null;
+				try {
+					if(WsdlGeneratorUtils.canProvideWSDL(adapter)) { // check eligibility
+						wsdlMap = new HashMap<>(2);
+						WsdlGenerator wsdl = new WsdlGenerator(adapter.getPipeLine());
+						wsdlMap.put("name", wsdl.getName());
+						wsdlMap.put("extension", WSDL_EXTENSION);
+					}
+				} catch (Exception e) {
+					wsdlMap = new HashMap<>(2);
+					wsdlMap.put("name", adapter.getName());
+					wsdlMap.put("error", e.getMessage() != null ? e.getMessage() : e.toString());
+				}
+				if(wsdlMap != null) {
+					wsdls.add(wsdlMap);
+				}
+			}
+		}
+		return wsdls;
+	}
+
+	public List<ListenerDAO> getRestListeners() {
+		List<ListenerDAO> restListeners = new ArrayList<>();
+
+		for (Configuration config : getIbisManager().getConfigurations()) {
+			for (Adapter adapter : config.getRegisteredAdapters()) {
+				for (Receiver receiver: adapter.getReceivers()) {
+					IListener listener = receiver.getListener();
+					if (listener instanceof RestListener) {
+						ListenerDAO dao = new ListenerDAO((RestListener) listener);
+						dao.setAdapter(adapter);
+						dao.setReceiver(receiver);
+						restListeners.add(dao);
+					}
+				}
+			}
+		}
+		return restListeners;
+	}
+
+	@JsonInclude(Include.NON_NULL)
+	public class ListenerDAO {
+		private final @Getter String name;
+		private final @Getter String method;
+		private final @Getter String uriPattern;
+		private @Getter String receiver;
+		private @Getter String adapter;
+
+		public ListenerDAO(RestListener listener) {
+			this.name = listener.getName();
+			this.method = listener.getMethod();
+			this.uriPattern = listener.getUriPattern();
+		}
+
+		public ListenerDAO(ApiListener listener) {
+			this.name = listener.getName();
+			this.method = listener.getMethod().name();
+			this.uriPattern = listener.getUriPattern();
+		}
+
+		public void setReceiver(Receiver<?> receiver) {
+			this.receiver = receiver.getName();
+		}
+
+		public void setAdapter(IAdapter adapter) {
+			this.adapter = adapter.getName();
+		}
 	}
 }
