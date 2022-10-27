@@ -16,6 +16,7 @@ import nl.nn.adapterframework.http.HttpSender.PostType;
 import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.testutil.PropertyUtil;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -140,15 +141,7 @@ public class HttpSenderOAuthTest {
 		String multiPartXml = "<parts>\n<part sessionKey=\"entity_document\" mimeType=\"application/xml\"/>\n"+
 				"<part name=\"versiondata\" sessionKey=\"versiondata\" mimeType=\"image/png\"/>\n</parts>\n";
 		String entity_document = "<document>\n" +
-		"<BrokerVisible_VA__c>true</BrokerVisible_VA__c>\n" +
-		"<Description>external description test CM99999999</Description>\n" +
-		"<TypeOfDocument__c>Offerte</TypeOfDocument__c>\n" +
-		"<Direction__c>Inbound</Direction__c>\n" +
-		"<reference__c>Mijn ref 15</reference__c>\n" +
-		"<status__c>Open</status__c>\n" +
-		"<Title>fectory</Title>\n" +
-		"<Type__c>Document</Type__c>\n" +
-		"<PathOnClient>fectory1.png</PathOnClient>\n" +
+		"<PathOnClient>file1.png</PathOnClient>\n" +
 		"</document>";
 
 		String versiondataB64 = "iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAIAAACQKrqGAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAfpJREFUeNo0UkuP0zAYtBM3TZt0U9LuImilslR099DyEBISFw78A8QN7lz4Y5UQB7j1zF44VnCohCr6TNs0NF3n4cSxHUzYndt8Go/n8xiyPFcByHA4S8P5rykCUC1rJQiCa6xCePGo12q1QAFFJQywjDgbutoYWtVgOUpYeghdZ8cz5nneEeP/UgQ+fSG+f3BmgEZ3hEr2nglVx91f32/2Pn5onZ97rosAME9OUPr1cxxHwWoe+E45YCUCOAUpwNv+5WTyipUq7mI2Xy76/T76XYOL+QKHLudUNzSrZpCUbik4u7ikGZ9OpxQfkyRezGpIffO2+vxlup4TkWdmzU8EEumf1fr1+3etp8+2u30ShZZlhUkM81zkOfCWq1CvILOaU6ZqyverqxePn5zZ9d1mjzHOIaAsk4khhDmyLbY/6CwRQiQp5zjertZS2jhtZlykKcmiCOVSC2BJKJAzBZmGpo1/frt3tzGZTGazhW3bjVO7UilLCwSLNxNAyEAIqeMf4xBHDx90zZqVJMlms8H42Ol0KKXopglFieN4uVw6jjMYDOr1erlclnNd12VWzrl0VcAtfN8PgqDb7bbbbUkJIVEUNZtNSaWuaOsW/84pShiGo9FI2khXXkDO5eLyJ9xINU2TFw2Hw4QQSYtdQdUwWAFZVa/X+yvAAHMyLPKLDsUAAAAAAElFTkSuQmCC";
@@ -156,7 +149,7 @@ public class HttpSenderOAuthTest {
 
 		PipeLineSession session = new PipeLineSession();
 		session.put("multiPartXml", multiPartXml);
-		session.put("entity_document", entity_document);
+		session.put("entity_document", new Message(entity_document, new MessageContext().withName("entity.xml")));
 		session.put("versiondata", versiondata);
 
 		HttpSender sender = new HttpSender();
@@ -194,8 +187,8 @@ public class HttpSenderOAuthTest {
 
 		Message result = sender.sendMessage(new Message(multiPartXml), session);
 
-		assertEquals("201", session.get("resultCode"));
 		assertThat(result.asString(), StringContains.containsString("success"));
+		assertEquals("201", session.get("resultCode"));
 	}
 
 }
