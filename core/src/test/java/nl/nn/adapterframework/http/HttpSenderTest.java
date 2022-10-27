@@ -33,6 +33,7 @@ import nl.nn.adapterframework.http.HttpSender.PostType;
 import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.stream.UrlMessage;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestFileUtils;
@@ -782,7 +783,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 				+ "<part sessionKey=\"stringPart\" "
 				+ "mimeType=\"text/plain\"/></parts>";
 		session.put("multipartXml", xmlMultipart);
-		session.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
+		session.put("part_file", new Message(new ByteArrayInputStream("<dummy xml file/>".getBytes()), new MessageContext().withName("PartFile.xml")));
 
 		sender.setMultipartXmlSessionKey("multipartXml");
 		sender.addParameter(new Parameter("string-part", "<string content/>"));
@@ -815,7 +816,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 				+ "<part sessionKey=\"stringPart\" "
 				+ "mimeType=\"text/plain\"/></parts>";
 		session.put("multipartXml", xmlMultipart);
-		session.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
+		session.put("part_file", new Message(new ByteArrayInputStream("<dummy xml file/>".getBytes()), new MessageContext().withName("PartFile.xml")));
 
 		sender.setMultipartXmlSessionKey("multipartXml");
 		sender.addParameter(new Parameter("string-part", "<string content/>"));
