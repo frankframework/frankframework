@@ -15,17 +15,22 @@
 */
 package nl.nn.adapterframework.management.bus;
 
+import java.nio.charset.StandardCharsets;
+
+import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.util.DigestUtils;
 
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -84,7 +89,7 @@ public class BusMessageUtils {
 		return defaultValue;
 	}
 
-	public static Response convertToJaxRsResponse(Message<?> response) {
+	public static ResponseBuilder convertToJaxRsResponse(Message<?> response) {
 		MessageHeaders headers = response.getHeaders();
 		int status = (int) headers.get(ResponseMessage.STATUS_KEY);
 		String mimeType = (String) headers.get(ResponseMessage.MIMETYPE_KEY);
@@ -96,7 +101,23 @@ public class BusMessageUtils {
 			builder.header("Content-Disposition", contentDisposition);
 		}
 
-		return builder.build();
+		return builder;
+	}
+
+	/** Shallow eTag generation, saves bandwidth but not computing power */
+	public static EntityTag generateETagHeaderValue(Message<?> response) {
+		MessageHeaders headers = response.getHeaders();
+		String mime = headers.get(ResponseMessage.MIMETYPE_KEY, String.class);
+		if(MediaType.APPLICATION_JSON.toString().equals(mime)) {
+			String json = (String) response.getPayload();
+			return generateETagHeaderValue(json, true);
+		}
+		return null;
+	}
+
+	private static EntityTag generateETagHeaderValue(String json, boolean isWeak) {
+		byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
+		return new EntityTag(DigestUtils.md5DigestAsHex(bytes), isWeak);
 	}
 
 	public static UserDetails getUserDetails() {
