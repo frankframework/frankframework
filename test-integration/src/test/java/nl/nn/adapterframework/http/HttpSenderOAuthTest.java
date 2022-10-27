@@ -135,7 +135,7 @@ public class HttpSenderOAuthTest {
 
 	@Test
 	public void test3917MultipleBinaryParts() throws Exception {
-		String url = "https://nn-nl--test.my.salesforce.com/services/data/v55.0/sobjects/contentversion";
+		String url = PropertyUtil.getProperty(PROPERTY_FILE, "salesforceUrl");
 		String accept = "application/xml";
 		String multiPartXml = "<parts>\n<part sessionKey=\"entity_document\" mimeType=\"application/xml\"/>\n"+
 				"<part name=\"versiondata\" sessionKey=\"versiondata\" mimeType=\"image/png\"/>\n</parts>\n";
