@@ -25,7 +25,10 @@ import java.util.List;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.FileMessage;
-import nl.nn.adapterframework.util.*;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.EnumUtils;
+import nl.nn.adapterframework.util.XmlBuilder;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -80,7 +83,7 @@ public class PdfPipe extends FixedForwardPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if(getAction() == null) {
-			throw new ConfigurationException("please specify an action for pdf pipe ["+getName()+"]. possible values: "+EnumUtils.getEnumList(DocumentAction.class));
+			throw new ConfigurationException("please specify an action for pdf pipe ["+getName()+"]. possible values: "+ EnumUtils.getEnumList(DocumentAction.class));
 		}
 		if(StringUtils.isNotEmpty(getPdfOutputLocation())) {
 			File outputLocation = new File(getPdfOutputLocation());
@@ -93,7 +96,7 @@ public class PdfPipe extends FixedForwardPipe {
 			}
 		} else {
 			try {
-				String ibisTempDir=AppConstants.getInstance().getResolvedProperty("ibis.tmpdir");
+				String ibisTempDir= AppConstants.getInstance().getResolvedProperty("ibis.tmpdir");
 				if(StringUtils.isNotEmpty(ibisTempDir)) {
 					setPdfOutputLocation(Files.createTempDirectory(Paths.get(ibisTempDir),"Pdf").toString());
 				} else {
