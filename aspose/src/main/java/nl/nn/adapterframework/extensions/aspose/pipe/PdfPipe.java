@@ -176,11 +176,12 @@ public class PdfPipe extends StreamingPipe {
 	private void populateContext(CisConversionResult result, PipeLineSession session, Message message, int index) throws PipeRunException {
 		try (MessageOutputStream target=getTargetStream(session)) {
 			try (OutputStream out = target.asStream()) {
-				File file = new File(result.getResultFilePath());
-				try(FileInputStream fis = new FileInputStream(file)){
-					StreamUtil.copyStream(fis, out, 4096);
+				if(StringUtils.isNotEmpty(result.getResultFilePath())){
+					try(FileInputStream fis = new FileInputStream(result.getResultFilePath())){
+						StreamUtil.copyStream(fis, out, 4096);
+					}
+					message.getContext().put(CONVERTED_DOCUMENTS_CONTEXT_KEY+index, out);
 				}
-				message.getContext().put(CONVERTED_DOCUMENTS_CONTEXT_KEY+index, out);
 
 				List<CisConversionResult> attachmentList = result.getAttachments();
 				if (attachmentList != null && !attachmentList.isEmpty()) {
