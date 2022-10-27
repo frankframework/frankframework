@@ -1,16 +1,22 @@
 package nl.nn.adapterframework.http;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.net.URLEncoder;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.hamcrest.core.StringContains;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.http.HttpSender.PostType;
 import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.testutil.PropertyUtil;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -19,7 +25,7 @@ public class HttpSenderOAuthTest {
 
 	protected String PROPERTY_FILE = "HttpSenderOAuth.properties";
 
-	
+
 	protected String tokenBaseUrl  = PropertyUtil.getProperty(PROPERTY_FILE, "tokenBaseUrl");
 	protected String dataBaseUrl   = PropertyUtil.getProperty(PROPERTY_FILE, "dataBaseUrl");
 	protected String apiContext    = PropertyUtil.getProperty(PROPERTY_FILE, "apiContext");
@@ -39,18 +45,18 @@ public class HttpSenderOAuthTest {
 	protected String truststorePassword = PropertyUtil.getProperty(PROPERTY_FILE, "truststorePassword");
 
 	protected boolean useProxy = false;
-	
+
 
 	@Test
 	public void testRetrieveTokenViaGetLikePost() throws Exception {
-		
-		String tokenUrl = tokenEndpoint 
+
+		String tokenUrl = tokenEndpoint
 				+"?grant_type=password"
 				+"&username="+ URLEncoder.encode(username)
 				+"&password="+ URLEncoder.encode(password)
 				+"&client_id="+ client_id
 				+"&client_secret="+ client_secret;
-		
+
 		HttpSender sender = new HttpSender();
 		sender.setUrl(tokenUrl);
 		sender.setMethodType(HttpMethod.POST);
@@ -67,23 +73,23 @@ public class HttpSenderOAuthTest {
 		sender.setAllowSelfSignedCertificates(true);
 		sender.setResultStatusCodeSessionKey("StatusCode");
 		sender.setTimeout(10000);
-		
+
 		sender.setHeadersParams("Accept,Content-Type");
-		
+
 //		sender.addParameter(new Parameter("Accept", "application/json"));
 //		sender.addParameter(new Parameter("Content-Type", "application/json"));
-		
+
 		sender.configure();
 		sender.open();
-		
+
 		PipeLineSession session = new PipeLineSession();
-		
+
 		Message result = sender.sendMessage(new Message("<dummy/>"), session);
-		
+
 		//log.debug("result: "+result.asString());
 		assertEquals("200", session.getMessage("StatusCode").asString());
 	}
-	
+
 	@Test
 	public void testEmbeddedOAuth() throws Exception {
 		HttpSender sender = new HttpSender();
@@ -107,16 +113,16 @@ public class HttpSenderOAuthTest {
 		sender.setResultStatusCodeSessionKey("StatusCode");
 		sender.setTimeout(1000);
 		sender.setMaxExecuteRetries(0);
-		
+
 		sender.configure();
 		sender.open();
-		
+
 		PipeLineSession session = new PipeLineSession();
-		
+
 		Message result = sender.sendMessage(new Message(""), session);
 		log.debug("result: "+result.asString());
 		assertEquals("200", session.getMessage("StatusCode").asString());
-		
+
 		log.debug("Wait 1 second");
 		Thread.sleep(1000);
 		log.debug("Test again");
@@ -125,4 +131,64 @@ public class HttpSenderOAuthTest {
 		log.debug("result: "+result.asString());
 		assertEquals("200", session.getMessage("StatusCode").asString());
 	}
+
+
+
+	@Test
+	public void test3917MultipleBinaryParts() throws Exception {
+		String url = "https://nn-nl--test.my.salesforce.com/services/data/v55.0/sobjects/contentversion";
+		String accept = "application/xml";
+		String multiPartXml = "<parts>\n<part sessionKey=\"entity_document\" mimeType=\"application/xml\"/>\n"+
+				"<part name=\"versiondata\" sessionKey=\"versiondata\" mimeType=\"image/png\"/>\n</parts>\n";
+		String entity_document = "<document>\n" +
+		"<PathOnClient>file1.png</PathOnClient>\n" +
+		"</document>";
+
+		String versiondataB64 = "iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAIAAACQKrqGAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAfpJREFUeNo0UkuP0zAYtBM3TZt0U9LuImilslR099DyEBISFw78A8QN7lz4Y5UQB7j1zF44VnCohCr6TNs0NF3n4cSxHUzYndt8Go/n8xiyPFcByHA4S8P5rykCUC1rJQiCa6xCePGo12q1QAFFJQywjDgbutoYWtVgOUpYeghdZ8cz5nneEeP/UgQ+fSG+f3BmgEZ3hEr2nglVx91f32/2Pn5onZ97rosAME9OUPr1cxxHwWoe+E45YCUCOAUpwNv+5WTyipUq7mI2Xy76/T76XYOL+QKHLudUNzSrZpCUbik4u7ikGZ9OpxQfkyRezGpIffO2+vxlup4TkWdmzU8EEumf1fr1+3etp8+2u30ShZZlhUkM81zkOfCWq1CvILOaU6ZqyverqxePn5zZ9d1mjzHOIaAsk4khhDmyLbY/6CwRQiQp5zjertZS2jhtZlykKcmiCOVSC2BJKJAzBZmGpo1/frt3tzGZTGazhW3bjVO7UilLCwSLNxNAyEAIqeMf4xBHDx90zZqVJMlms8H42Ol0KKXopglFieN4uVw6jjMYDOr1erlclnNd12VWzrl0VcAtfN8PgqDb7bbbbUkJIVEUNZtNSaWuaOsW/84pShiGo9FI2khXXkDO5eLyJ9xINU2TFw2Hw4QQSYtdQdUwWAFZVa/X+yvAAHMyLPKLDsUAAAAAAElFTkSuQmCC";
+		byte[] versiondata = Base64.decodeBase64(versiondataB64);
+
+		PipeLineSession session = new PipeLineSession();
+		session.put("multiPartXml", multiPartXml);
+		session.put("entity_document", new Message(entity_document, new MessageContext().withName("entity.xml")));
+		session.put("versiondata", versiondata);
+
+		HttpSender sender = new HttpSender();
+		sender.setUrl(url);
+		sender.setTokenEndpoint(tokenEndpoint);
+		sender.setClientId(client_id);
+		sender.setClientSecret(client_secret);
+		sender.setUsername(username);
+		sender.setPassword(password);
+		if (useProxy) {
+			sender.setProxyHost(proxyHost);
+			sender.setProxyPort(Integer.parseInt(proxyPort));
+			sender.setProxyUsername(proxyUsername);
+			sender.setProxyPassword(proxyPassword);
+		}
+		if (StringUtils.isNotEmpty(truststore)) {
+			sender.setTruststore(truststore);
+			sender.setTruststorePassword(truststorePassword);
+		}
+		sender.setAllowSelfSignedCertificates(true);
+
+		sender.setHeadersParams("Accept");
+		sender.setUrl(url);
+		sender.setMethodType(HttpMethod.POST);
+		sender.setPostType(PostType.FORMDATA);
+		sender.setMultipartXmlSessionKey("multiPartXml");
+
+		sender.setTimeout(20000);
+
+		sender.addParameter(new Parameter("Accept", accept));
+		sender.setResultStatusCodeSessionKey("resultCode");
+
+		sender.configure();
+		sender.open();
+
+		Message result = sender.sendMessage(new Message(multiPartXml), session);
+
+		assertThat(result.asString(), StringContains.containsString("success"));
+		assertEquals("201", session.get("resultCode"));
+	}
+
 }

@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
-import java.util.Map;
 
 import org.apache.http.entity.mime.MIME;
 import org.apache.http.entity.mime.content.ContentBody;
@@ -28,7 +27,6 @@ import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
 
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageUtils;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -58,10 +56,10 @@ public class MessageContentBody implements ContentBody {
 		}
 		this.mimeType = type;
 
-		Map<String, Object> context = message.getContext();
-		if(context != null && filename == null) {
-			this.filename = (String) context.get(MessageContext.METADATA_NAME);
-		}
+//		Map<String, Object> context = message.getContext();
+//		if(context != null && filename == null) {
+//			this.filename = (String) context.get(MessageContext.METADATA_NAME); // This might trigger issue #3917, introducing a filename where it must be empty.
+//		}
 		log.debug("creating part from message [{}] name [{}] contentType [{}]", message, filename, contentType);
 	}
 
