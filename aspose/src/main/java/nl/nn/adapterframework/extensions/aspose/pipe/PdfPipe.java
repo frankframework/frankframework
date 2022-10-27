@@ -164,7 +164,7 @@ public class PdfPipe extends StreamingPipe {
 					session.put("documents", message);
 
 
-					return new PipeRunResult(getSuccessForward(), main.toXML());
+					return new PipeRunResult(getSuccessForward(), message);
 				default:
 					throw new PipeRunException(this, "action attribute must be one of the followings: "+EnumUtils.getEnumList(DocumentAction.class));
 			}
