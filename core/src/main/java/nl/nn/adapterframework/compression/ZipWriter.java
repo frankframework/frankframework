@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package nl.nn.adapterframework.compression;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -25,27 +26,36 @@ import java.util.zip.ZipOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import lombok.Getter;
+import lombok.Setter;
+import nl.nn.adapterframework.collection.CollectionException;
+import nl.nn.adapterframework.collection.ICollector;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 
 /**
  * Helper class to create Zip archives.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.9.10
  */
-public class ZipWriter {
+public class ZipWriter implements ICollector {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private ZipOutputStream zipoutput;
+	private @Getter ZipOutputStream zipoutput;
 	private boolean entryOpen=false;
-	private boolean closeOnExit;
+	private @Getter @Setter boolean closeOnExit;
+	private Object attributeSource;
 
-	private ZipWriter(OutputStream resultStream, boolean closeOnExit) {
+	private ZipWriter(OutputStream resultStream, boolean closeOnExit, Object attributeSource) {
 		super();
 		this.closeOnExit=closeOnExit;
+		this.attributeSource=attributeSource;
 		zipoutput=new ZipOutputStream(resultStream);
 	}
 
@@ -54,9 +64,15 @@ public class ZipWriter {
 	}
 
 	public static ZipWriter createZipWriter(PipeLineSession session, String handlekey, OutputStream resultStream, boolean closeOnExit) {
-		ZipWriter handle=new ZipWriter(resultStream,closeOnExit);
+		ZipWriter handle=new ZipWriter(resultStream,closeOnExit, null);
 		session.put(handlekey,handle);
-		if (handle.log.isDebugEnabled()) handle.log.debug(handle.getLogPrefix(handlekey)+"opened new zipstream");
+		handle.log.debug("opened new zipstream [{}]", handlekey);
+		return handle;
+	}
+
+	// for use as Collector
+	public static ZipWriter createZipWriter(PipeLineSession session, OutputStream resultStream, boolean closeOnExit, Object attributeSource) {
+		ZipWriter handle=new ZipWriter(resultStream,closeOnExit, attributeSource);
 		return handle;
 	}
 
@@ -83,7 +99,8 @@ public class ZipWriter {
 	}
 
 
-	protected void close() throws CompressionException {
+	@Override
+	public void close() throws CompressionException {
 		closeEntry();
 		try {
 			if (isCloseOnExit()) {
@@ -95,6 +112,41 @@ public class ZipWriter {
 			throw new CompressionException("Cannot close ZipStream",e);
 		}
 	}
+
+	@Override
+	public Message writeItem(Message input, PipeLineSession session, ParameterValueList pvl, Object attributeSource) throws CollectionException, TimeoutException {
+		String filename = pvl.get(ZipWriterPipe.PARAMETER_FILENAME).asStringValue();
+		String charset;
+		boolean completeFileHeader;
+		try {
+			charset=ClassUtils.invokeStringGetter(attributeSource, "getCharset");
+			completeFileHeader=(Boolean)ClassUtils.invokeGetter(attributeSource, "isCompleteFileHeader");
+		} catch (SecurityException | NoSuchMethodException | IllegalArgumentException | IllegalAccessException | InvocationTargetException e) {
+			throw new CollectionException("cannot read field values", e);
+		}
+		try {
+			if (completeFileHeader) {
+				writeEntryWithCompletedHeader(filename, input, false, charset);
+			} else {
+				writeEntry(filename, input, false, charset);
+			}
+			return input;
+		} catch (IOException | CompressionException e) {
+			throw new CollectionException("cannot write item", e);
+		}
+	}
+
+	@Override
+	public Message streamItem(Message input, PipeLineSession session, ParameterValueList pvl, Object attributeSource) throws CollectionException {
+		String filename = pvl.get(ZipWriterPipe.PARAMETER_FILENAME).asStringValue();
+		try {
+			openEntry(filename);
+		} catch (CompressionException e) {
+			throw new CollectionException("cannot prepare collection to stream item", e);
+		}
+		return Message.asMessage(getZipoutput());
+	}
+
 
 	public void writeEntry(String filename, Message contents, boolean close, String charset) throws CompressionException, IOException {
 		if (StringUtils.isEmpty(filename)) {
@@ -140,21 +192,6 @@ public class ZipWriter {
 			getZipoutput().write(contentBytes, 0, contentBytes.length);
 		}
 		getZipoutput().closeEntry();
-	}
-
-	public String getLogPrefix(String handlekey) {
-		return "ZipWriterHandle ["+handlekey+"] ";
-	}
-
-	public void setCloseOnExit(boolean b) {
-		closeOnExit = b;
-	}
-	public boolean isCloseOnExit() {
-		return closeOnExit;
-	}
-
-	public ZipOutputStream getZipoutput() {
-		return zipoutput;
 	}
 
 }

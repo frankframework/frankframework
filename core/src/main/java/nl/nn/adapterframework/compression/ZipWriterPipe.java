@@ -23,21 +23,17 @@ import java.io.OutputStream;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.CloseableThreadContext;
 
 import lombok.Getter;
+import nl.nn.adapterframework.collection.CollectorPipe;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.doc.Mandatory;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.StreamUtil;
 
@@ -55,22 +51,10 @@ import nl.nn.adapterframework.util.StreamUtil;
  * @author  Gerrit van Brakel
  * @since   4.9.10
  */
-public class ZipWriterPipe extends FixedForwardPipe {
+public class ZipWriterPipe extends CollectorPipe<ZipWriter> {
 
-	private enum Action {
-		/** To open a new zip file or stream */
-		OPEN,
-		/** Create a new zip entry, and provide an OutputStream that another pipe can use to write the contents */
-		WRITE,
-		/** Write the input to the zip as a new entry */
-		STREAM,
-		/** To close the zip file or stream */
-		CLOSE;
-	}
-	private static final String PARAMETER_FILENAME="filename";
+	public static final String PARAMETER_FILENAME="filename";
 
-	private @Getter Action action=null;
-	private @Getter String zipWriterHandle="zipwriterhandle";
 	private @Getter boolean closeInputstreamOnExit=true;
 	private @Getter boolean closeOutputstreamOnExit=true;
 	private @Getter String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
@@ -78,6 +62,9 @@ public class ZipWriterPipe extends FixedForwardPipe {
 
 	private Parameter filenameParameter=null; //used for with action=open for main filename, with action=write for entryfilename
 
+	{
+		setCollection("zipwriterhandle");
+	}
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -99,12 +86,8 @@ public class ZipWriterPipe extends FixedForwardPipe {
 		}
 	}
 
-
-	protected ZipWriter getZipWriter(PipeLineSession session) {
-		return ZipWriter.getZipWriter(session,getZipWriterHandle());
-	}
-
-	protected ZipWriter createZipWriter(PipeLineSession session, ParameterValueList pvl, Message message) throws PipeRunException {
+	@Override
+	protected ZipWriter openCollection(Message message, PipeLineSession session, ParameterValueList pvl) throws PipeRunException {
 		log.debug("opening new zipstream");
 		OutputStream resultStream=null;
 		Object input=message.asObject();
@@ -140,84 +123,10 @@ public class ZipWriterPipe extends FixedForwardPipe {
 		if (resultStream==null) {
 			throw new PipeRunException(this,"did not find OutputStream or HttpResponse, and could not find filename");
 		}
-		ZipWriter sessionData=ZipWriter.createZipWriter(session,getZipWriterHandle(),resultStream,isCloseOutputstreamOnExit());
-		return sessionData;
+		return ZipWriter.createZipWriter(session,resultStream,isCloseOutputstreamOnExit(), this);
 	}
 
 
-	protected void closeZipWriterHandle(PipeLineSession session, boolean mustFind) throws PipeRunException {
-		ZipWriter sessionData=getZipWriter(session);
-		if (sessionData==null) {
-			if (mustFind) {
-				throw new PipeRunException(this,"cannot find session data");
-			}
-			log.debug("did find session data, assuming already closed");
-		} else {
-			try {
-				sessionData.close();
-			} catch (CompressionException e) {
-				throw new PipeRunException(this,"cannot close",e);
-			}
-		}
-		session.remove(getZipWriterHandle());
-	}
-
-	@Override
-	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
-		try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put("action", getAction().name())) {
-			if (getAction() == Action.CLOSE) {
-				closeZipWriterHandle(session,true);
-				return new PipeRunResult(getSuccessForward(),input);
-			}
-			ParameterValueList pvl=null;
-			try {
-				if (getParameterList()!=null) {
-					pvl = getParameterList().getValues(input, session);
-				}
-			} catch (ParameterException e1) {
-				throw new PipeRunException(this,"cannot determine filename",e1);
-			}
-
-			ZipWriter sessionData=getZipWriter(session);
-			if (getAction() == Action.OPEN) {
-				if (sessionData!=null) {
-					throw new PipeRunException(this,"zipWriterHandle in session key ["+getZipWriterHandle()+"] is already open");
-				}
-				sessionData=createZipWriter(session,pvl,input);
-				return new PipeRunResult(getSuccessForward(),input);
-			}
-			// from here on action must be 'write' or 'stream'
-			if (sessionData==null) {
-				throw new PipeRunException(this,"zipWriterHandle in session key ["+getZipWriterHandle()+"] is not open");
-			}
-			String filename = pvl.get(PARAMETER_FILENAME).asStringValue();
-			if (StringUtils.isEmpty(filename)) {
-				throw new PipeRunException(this,"filename cannot be empty");
-			}
-			try {
-				if (getAction() == Action.STREAM) {
-					sessionData.openEntry(filename);
-					PipeRunResult prr = new PipeRunResult(getSuccessForward(),sessionData.getZipoutput());
-					return prr;
-				}
-				if (getAction() == Action.WRITE) {
-					try {
-						if (isCompleteFileHeader()) {
-							sessionData.writeEntryWithCompletedHeader(filename, input, isCloseInputstreamOnExit(), getCharset());
-						} else {
-							sessionData.writeEntry(filename, input, isCloseInputstreamOnExit(), getCharset());
-						}
-					} catch (IOException e) {
-						throw new PipeRunException(this,"cannot add data to zipentry for ["+filename+"]",e);
-					}
-					return new PipeRunResult(getSuccessForward(),input);
-				}
-				throw new PipeRunException(this,"illegal action ["+getAction()+"]");
-			} catch (CompressionException e) {
-				throw new PipeRunException(this,"cannot add zipentry for ["+filename+"]",e);
-			}
-		}
-	}
 
 	@IbisDoc({"Only for action='write': If set to <code>false</code>, the inputstream is not closed after the zip entry is written", "true"})
 	public void setCloseInputstreamOnExit(boolean b) {
@@ -240,13 +149,10 @@ public class ZipWriterPipe extends FixedForwardPipe {
 	}
 
 	@IbisDoc({"Session key used to refer to zip session. Must be specified with another value if ZipWriterPipes are nested", "zipwriterhandle"})
+	@Deprecated
+	@ConfigurationWarning("Replaced with attribute collection")
 	public void setZipWriterHandle(String string) {
-		zipWriterHandle = string;
-	}
-
-	@Mandatory
-	public void setAction(Action string) {
-		action = string;
+		setCollection(string);
 	}
 
 	@IbisDoc({"Only for action='write': If set to <code>true</code>, the fields 'crc-32', 'compressed size' and 'uncompressed size' in the zip entry file header are set explicitly (note: compression ratio is zero)", "false"})
