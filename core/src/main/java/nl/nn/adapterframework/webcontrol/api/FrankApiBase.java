@@ -63,6 +63,7 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 	public static final String HEADER_DATASOURCE_NAME_KEY = "datasourceName";
 	public static final String HEADER_CONNECTION_FACTORY_NAME_KEY = "connectionFactory";
 	public static final String HEADER_CONFIGURATION_NAME_KEY = "configuration";
+	public static final String HEADER_ADAPTER_NAME_KEY = "adapter";
 
 	@Context protected ServletConfig servletConfig;
 	@Context protected @Getter SecurityContext securityContext;

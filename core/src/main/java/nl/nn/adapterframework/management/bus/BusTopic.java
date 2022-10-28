@@ -17,7 +17,9 @@ package nl.nn.adapterframework.management.bus;
 
 public enum BusTopic {
 
+	APPLICATION,
 	CONFIGURATION,
+	ADAPTER,
 	FLOW,
 	IBISACTION,
 	LOGGING,
@@ -32,6 +34,5 @@ public enum BusTopic {
 	INLINESTORAGE_SUMMARY,
 	QUEUE,
 	HEALTH,
-	WEBSERVICES,
-	APPLICATION
+	WEBSERVICES
 }
