@@ -49,11 +49,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import lombok.SneakyThrows;
+import nl.nn.adapterframework.functional.ThrowingRunnable;
 import nl.nn.adapterframework.stream.Message;
 
 /**
  * Functions to read and write from one stream to another.
- * 
+ *
  * @author  Gerrit van Brakel
  */
 public class StreamUtil {
@@ -134,6 +135,20 @@ public class StreamUtil {
 		}
 
 		return new NonClosingReaderFilter(reader);
+	}
+
+	public static OutputStream dontClose(OutputStream stream) {
+		class NonClosingOutputStreamFilter extends FilterOutputStream {
+			public NonClosingOutputStreamFilter(OutputStream out) {
+				super(out);
+			}
+			@Override
+			public void close() throws IOException {
+				// do not close
+			}
+		}
+
+		return new NonClosingOutputStreamFilter(stream);
 	}
 
 	public static String readerToString(Reader reader, String endOfLineString) throws IOException {
@@ -251,7 +266,7 @@ public class StreamUtil {
 		return zipOutputStream;
 	}
 
-	public static InputStream onClose(InputStream stream, Runnable onClose) {
+	public static InputStream onClose(InputStream stream, ThrowingRunnable<IOException> onClose) {
 		return new FilterInputStream(stream) {
 			@Override
 			public void close() throws IOException {
@@ -264,7 +279,7 @@ public class StreamUtil {
 		};
 	}
 
-	public static OutputStream onClose(OutputStream stream, Runnable onClose) {
+	public static OutputStream onClose(OutputStream stream, ThrowingRunnable<IOException> onClose) {
 		return new FilterOutputStream(stream) {
 			@Override
 			public void close() throws IOException {
@@ -277,7 +292,7 @@ public class StreamUtil {
 		};
 	}
 
-	public static Reader onClose(Reader reader, Runnable onClose) {
+	public static Reader onClose(Reader reader, ThrowingRunnable<IOException> onClose) {
 		return new FilterReader(reader) {
 			@Override
 			public void close() throws IOException {
@@ -290,7 +305,7 @@ public class StreamUtil {
 		};
 	}
 
-	public static Writer onClose(Writer writer, Runnable onClose) {
+	public static Writer onClose(Writer writer, ThrowingRunnable<IOException> onClose) {
 		return new FilterWriter(writer) {
 			@Override
 			public void close() throws IOException {
@@ -303,7 +318,7 @@ public class StreamUtil {
 		};
 	}
 
-	@SneakyThrows // throw the IOException thrown by resource.close(), without declaring it as a checked Exception (that would be incompatible with the use in lambda's below) 
+	@SneakyThrows // throw the IOException thrown by resource.close(), without declaring it as a checked Exception (that would be incompatible with the use in lambda's below)
 	private static void closeResource(AutoCloseable resource) {
 		resource.close();
 	}
