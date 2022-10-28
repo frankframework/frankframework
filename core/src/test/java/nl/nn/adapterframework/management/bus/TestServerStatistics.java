@@ -10,8 +10,8 @@ import org.springframework.messaging.Message;
 public class TestServerStatistics extends BusTestBase {
 
 	@Test
-	public void getOriginalConfigurationByName() {
-		MessageBuilder request = createRequestMessage("NONE", BusTopic.STATUS, BusAction.GET);
+	public void getServerInformation() {
+		MessageBuilder request = createRequestMessage("NONE", BusTopic.APPLICATION, BusAction.GET);
 		Message<?> response = callSyncGateway(request);
 
 		String result = response.getPayload().toString();
@@ -24,5 +24,16 @@ public class TestServerStatistics extends BusTestBase {
 		assertThat(result, CoreMatchers.containsString("\"dtap.side\":\"")); //String
 		assertThat(result, CoreMatchers.containsString("\"processMetrics\":{")); //Object
 		assertThat(result, CoreMatchers.containsString("\"machineName\":\"")); //String
+	}
+
+	@Test
+	public void getApplicationWarnings() {
+		MessageBuilder request = createRequestMessage("NONE", BusTopic.APPLICATION, BusAction.WARNINGS);
+		Message<?> response = callSyncGateway(request);
+
+		String result = response.getPayload().toString();
+		assertThat(result, CoreMatchers.containsString("{\"errorStoreCount\":0")); //No errors in the IbisStore
+		assertThat(result, CoreMatchers.containsString("\"totalErrorStoreCount\":0"));
+		assertThat(result, CoreMatchers.containsString("\"messages\":[{\"date\":")); //Messages object with an Array with Objects
 	}
 }

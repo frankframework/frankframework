@@ -19,8 +19,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
@@ -30,12 +28,12 @@ import javax.xml.soap.AttachmentPart;
 import javax.xml.soap.MimeHeader;
 import javax.xml.soap.SOAPException;
 
-import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaMetadataKeys;
+import org.springframework.util.DigestUtils;
 import org.springframework.util.MimeType;
 
 import com.ibm.icu.text.CharsetDetector;
@@ -255,20 +253,10 @@ public abstract class MessageUtils {
 	 */
 	public static String generateMD5Hash(Message message) {
 		try {
-			MessageDigest digest = MessageDigest.getInstance("MD5");
-
 			message.preserve();
 			try (InputStream inputStream = message.asInputStream()) {
-				byte[] byteArray = new byte[1024];
-				int readLength;
-				while ((readLength = inputStream.read(byteArray)) != -1) {
-					digest.update(byteArray, 0, readLength);
-				}
+				return DigestUtils.md5DigestAsHex(inputStream);
 			}
-
-			return Hex.encodeHexString(digest.digest());
-		} catch (NoSuchAlgorithmException e) {
-			LOG.warn("hash algorithm does not exist", e);
 		} catch (IllegalStateException | IOException e) {
 			LOG.warn("unable to read Message or write the etag", e);
 		}
