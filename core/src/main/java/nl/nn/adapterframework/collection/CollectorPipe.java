@@ -15,20 +15,16 @@
 */
 package nl.nn.adapterframework.collection;
 
-import org.apache.logging.log4j.CloseableThreadContext;
-
-import lombok.Getter;
-import lombok.Setter;
+import nl.nn.adapterframework.collection.CollectionActor.Action;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingPipe;
-import nl.nn.adapterframework.util.ClassUtils;
 
 /**
  * Base class for pipes that combine a number of items.
@@ -37,93 +33,51 @@ import nl.nn.adapterframework.util.ClassUtils;
  *
  * @param <C>
  */
-public abstract class CollectorPipe<C extends ICollector> extends StreamingPipe{
+public abstract class CollectorPipe<E extends ICollectingElement<C>, C extends ICollector<E>> extends StreamingPipe implements ICollectingElement<C> {
 
-	protected enum Action {
-		/** To initiate a new collection */
-		OPEN,
-		/** add a part to to an existing collection */
-		WRITE,
-		/** Create a new collection entry, and provide an OutputStream that another pipe can use to write the contents */
-		@Deprecated
-		STREAM,
-		/** Finalize the collection */
-		CLOSE;
+	private CollectionActor<E, C> actor = new CollectionActor<E, C>();
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void configure() throws ConfigurationException {
+		super.configure();
+		actor.configure(getParameterList(), (E)this);
 	}
 
-	/** @ff.mandatory */
-	private @Getter @Setter Action action=null;
-
-	/** Session key used to refer to collection. Must be specified with another value if multiple CollectorPipes are active at the same time in the same session
-	  * @ff.default collection
-	 */
-	private @Getter @Setter String collection="collection";
-
-	protected abstract C openCollection(Message input, PipeLineSession session, ParameterValueList pvl) throws PipeRunException;
-
-	protected C getCollection(PipeLineSession session) throws PipeRunException {
-		C result = (C)session.get(getCollection());
-		if (result==null && getAction()!=Action.OPEN) {
-			throw new PipeRunException(this,"cannot find collection under key ["+getCollection()+"]");
-		}
-		return result;
-	}
-
+	@SuppressWarnings("unchecked")
 	@Override
 	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
-		try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put("action", getAction().name())) {
-			C collection = getCollection(session);
-			switch(getAction()) {
-				case OPEN:
-					if (collection!=null) {
-						throw new PipeRunException(this,"collection in session key ["+getCollection()+"] is already open");
-					}
-					collection = openCollection(input, session, getParameterValueList(input, session));
-					session.scheduleCloseOnSessionExit(collection, ClassUtils.nameOf(this));
-					session.put(getCollection(), collection);
-					return new PipeRunResult(getSuccessForward(), Message.nullMessage());
-				case WRITE:
-					try {
-						Message result = collection.writeItem(input, session, getParameterValueList(input, session), this);
-						return new PipeRunResult(getSuccessForward(), result);
-					} catch (CollectionException | TimeoutException e) {
-						throw new PipeRunException(this,"cannot write to collection", e);
-					}
-				case STREAM:
-					try {
-						Message result = collection.streamItem(input, session, getParameterValueList(input, session), this);
-						return new PipeRunResult(getSuccessForward(), result);
-					} catch (CollectionException e) {
-						throw new PipeRunException(this,"cannot prepare collection to stream", e);
-					}
-				case CLOSE:
-					try {
-						collection.close();
-						return new PipeRunResult(getSuccessForward(), input);
-					} catch (Exception e) {
-						throw new PipeRunException(this,"cannot close",e);
-					} finally {
-						session.remove(getCollection());
-					}
-				default:
-					throw new PipeRunException(this, "Unknown action ["+getAction()+"]");
-			}
+		try {
+			return new PipeRunResult(getSuccessForward(), actor.doAction(input, session, (E)this));
+		} catch (CollectionException e) {
+			throw new PipeRunException(this,"", e);
 		}
 	}
 
 	@Override
 	protected boolean canProvideOutputStream() {
-		return getAction()==Action.WRITE && super.canProvideOutputStream();
+		return actor.canProvideOutputStream() && super.canProvideOutputStream();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
-		try {
-			C collection = getCollection(session);
-			return collection.provideOutputStream(session, getParameterValueList(null, session), this);
-		} catch (CollectionException | PipeRunException e) {
-			throw new StreamingException("cannot provide outputstream to collection", e);
-		}
+		return actor.provideOutputStream(session, (E)this);
 	}
 
+	@IbisDocRef({CollectionActor.CLASSNAME})
+	public void setAction(Action action) {
+		actor.setAction(action);
+	}
+	public Action getAction() {
+		return actor.getAction();
+	}
+
+	@IbisDocRef({CollectionActor.CLASSNAME})
+	public void setCollection(String collection) {
+		actor.setCollection(collection);
+	}
+	public String getCollection() {
+		return actor.getCollection();
+	}
 }

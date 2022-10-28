@@ -15,20 +15,22 @@
 */
 package nl.nn.adapterframework.collection;
 
+import java.io.OutputStream;
+
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 
-public interface ICollector extends AutoCloseable {
+public interface ICollector<E extends ICollectingElement> extends AutoCloseable {
 
-	Message writeItem(Message input, PipeLineSession session, ParameterValueList pvl, Object attributeSource) throws CollectionException, TimeoutException;
+	Message writeItem(Message input, PipeLineSession session, ParameterValueList pvl, E collectingElement) throws CollectionException, TimeoutException;
 
 	/** present to support the deprecated 'STREAM' action, cannot set to Deprecated, because TestAnnotationUtils.findInterfacesWithAnnotations() will complain */
-	Message streamItem(Message input, PipeLineSession session, ParameterValueList pvl, Object attributeSource) throws CollectionException;
+	OutputStream streamItem(Message input, PipeLineSession session, ParameterValueList pvl, E collectingElement) throws CollectionException;
 
-	default MessageOutputStream provideOutputStream(PipeLineSession session, ParameterValueList pvl, Object attributeSource) throws CollectionException {
+	default MessageOutputStream provideOutputStream(PipeLineSession session, ParameterValueList pvl, E collectingElement) throws CollectionException {
 		return null;
 	}
 

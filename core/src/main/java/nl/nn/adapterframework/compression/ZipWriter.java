@@ -15,28 +15,38 @@
 */
 package nl.nn.adapterframework.compression;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.collection.CollectionActor.Action;
 import nl.nn.adapterframework.collection.CollectionException;
 import nl.nn.adapterframework.collection.ICollector;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Helper class to create Zip archives.
@@ -44,8 +54,11 @@ import nl.nn.adapterframework.util.Misc;
  * @author  Gerrit van Brakel
  * @since   4.9.10
  */
-public class ZipWriter implements ICollector {
-	protected Logger log = LogUtil.getLogger(this);
+public class ZipWriter implements ICollector<IZipWritingElement> {
+	protected static Logger log = LogUtil.getLogger(ZipWriter.class);
+
+	public static final String PARAMETER_FILENAME="filename";
+	public static final String PARAMETER_CONTENTS="contents";
 
 	private @Getter ZipOutputStream zipoutput;
 	private boolean entryOpen=false;
@@ -66,6 +79,67 @@ public class ZipWriter implements ICollector {
 		session.put(handlekey,handle);
 		handle.log.debug("opened new zipstream [{}]", handlekey);
 		return handle;
+	}
+
+	public static void configure(Action action, ParameterList parameterList) throws ConfigurationException {
+		switch (action) {
+			case OPEN:
+				break;
+			case WRITE:
+			case STREAM:
+				Parameter filenameParameter=parameterList.findParameter(PARAMETER_FILENAME);
+				Parameter contentsParameter=parameterList.findParameter(PARAMETER_CONTENTS);
+				if (filenameParameter==null && contentsParameter==null) {
+					throw new ConfigurationException("parameter '"+PARAMETER_FILENAME+"' or parameter '"+PARAMETER_CONTENTS+"' is required");
+				}
+				break;
+			case CLOSE:
+				if (parameterList.findParameter(PARAMETER_FILENAME)!=null) {
+					throw new ConfigurationException("with action ["+action+"] parameter '"+PARAMETER_FILENAME+"' cannot not be configured");
+				}
+				break;
+			default:
+				throw new ConfigurationException("unknwon action ["+action+"]");
+		}
+	}
+
+	public static ZipWriter openCollection(Message message, PipeLineSession session, ParameterValueList pvl, IZipWritingElement writingElement) throws CollectionException {
+		log.debug("opening new zipstream");
+		OutputStream resultStream=null;
+		Object input=message.asObject();
+		if (input==null) {
+			throw new CollectionException("input cannot be null, must be OutputStream, HttpResponse or String containing filename");
+		}
+		if (input instanceof OutputStream) {
+			resultStream=(OutputStream)input;
+		} else if (input instanceof HttpServletResponse) {
+			ParameterValue pv=pvl.get(PARAMETER_FILENAME);
+			if (pv==null) {
+				throw new CollectionException("parameter '"+PARAMETER_FILENAME+"' not found, but required if stream is HttpServletResponse");
+			}
+			String filename=pv.asStringValue("download.zip");
+			try {
+				HttpServletResponse response=(HttpServletResponse)input;
+				StreamUtil.openZipDownload(response,filename);
+				resultStream=response.getOutputStream();
+			} catch (IOException e) {
+				throw new CollectionException("cannot open download for ["+filename+"]",e);
+			}
+		} else if (input instanceof String) {
+			String filename=(String)input;
+			if (StringUtils.isEmpty(filename)) {
+				throw new CollectionException("input string cannot be empty but must contain a filename");
+			}
+			try {
+				resultStream =new FileOutputStream(filename);
+			} catch (FileNotFoundException e) {
+				throw new CollectionException("cannot create file ["+filename+"] a specified by input message",e);
+			}
+		}
+		if (resultStream==null) {
+			throw new CollectionException("did not find OutputStream or HttpResponse, and could not find filename");
+		}
+		return new ZipWriter(resultStream,writingElement.isCloseOutputstreamOnExit());
 	}
 
 	public void openEntry(String filename) throws CompressionException {
@@ -106,37 +180,69 @@ public class ZipWriter implements ICollector {
 	}
 
 	@Override
-	public Message writeItem(Message input, PipeLineSession session, ParameterValueList pvl, Object attributeSource) throws CollectionException, TimeoutException {
-		String filename = pvl.get(ZipWriterPipe.PARAMETER_FILENAME).asStringValue();
-		String charset;
-		boolean completeFileHeader;
+	public Message writeItem(Message input, PipeLineSession session, ParameterValueList pvl, IZipWritingElement writingElement) throws CollectionException, TimeoutException {
+		String filename = pvl.get(PARAMETER_FILENAME).asStringValue();
+		String charset = writingElement.getCharset();
+		boolean completeFileHeader = writingElement.isCompleteFileHeader();
 		try {
-			charset=ClassUtils.invokeStringGetter(attributeSource, "getCharset");
-			completeFileHeader=(Boolean)ClassUtils.invokeGetter(attributeSource, "isCompleteFileHeader");
-		} catch (SecurityException | NoSuchMethodException | IllegalArgumentException | IllegalAccessException | InvocationTargetException e) {
-			throw new CollectionException("cannot read field values", e);
-		}
-		try {
-			if (completeFileHeader) {
-				writeEntryWithCompletedHeader(filename, input, false, charset);
-			} else {
-				writeEntry(filename, input, false, charset);
+			ParameterValue pv = pvl.get(PARAMETER_CONTENTS);
+			Message contents = pv!=null ? pv.asMessage() : null;
+			boolean inputIsSource = Message.isNull(contents);
+			if (inputIsSource) {
+				contents = input;
 			}
-			return input;
+			if (completeFileHeader) {
+				writeEntryWithCompletedHeader(filename, contents, false, charset);
+			} else {
+				writeEntry(filename, contents, false, charset);
+			}
+			return inputIsSource ? Message.nullMessage() : input;
 		} catch (IOException | CompressionException e) {
 			throw new CollectionException("cannot write item", e);
 		}
 	}
 
 	@Override
-	public Message streamItem(Message input, PipeLineSession session, ParameterValueList pvl, Object attributeSource) throws CollectionException {
-		String filename = pvl.get(ZipWriterPipe.PARAMETER_FILENAME).asStringValue();
+	public MessageOutputStream provideOutputStream(PipeLineSession session, ParameterValueList pvl, IZipWritingElement writingElement) throws CollectionException {
+		String filename = pvl.get(PARAMETER_FILENAME).asStringValue();
+		String charset = writingElement.getCharset();
+		boolean completeFileHeader = writingElement.isCompleteFileHeader();
+
+		if (completeFileHeader) {
+			return null;
+		}
+		ParameterValue pv = pvl.get(PARAMETER_CONTENTS);
+		Message contents = pv!=null ? pv.asMessage() : null;
+		boolean inputIsSource = Message.isNull(contents);
+		if (!inputIsSource) {
+			return null;
+		}
+		try {
+			openEntry(filename);
+			OutputStream stream = StreamUtil.dontClose(getZipoutput());
+			return new MessageOutputStream(writingElement, stream, (IForwardTarget)null, charset) {
+
+				@Override
+				public void afterClose() throws Exception {
+					stream.flush();
+					closeEntry();
+				}
+
+			};
+		} catch (CompressionException e) {
+			throw new CollectionException("cannot prepare collection to stream item", e);
+		}
+	}
+
+	@Override
+	public OutputStream streamItem(Message input, PipeLineSession session, ParameterValueList pvl, IZipWritingElement writingElement) throws CollectionException {
+		String filename = pvl.get(PARAMETER_FILENAME).asStringValue();
 		try {
 			openEntry(filename);
 		} catch (CompressionException e) {
 			throw new CollectionException("cannot prepare collection to stream item", e);
 		}
-		return Message.asMessage(getZipoutput());
+		return getZipoutput();
 	}
 
 
@@ -185,5 +291,6 @@ public class ZipWriter implements ICollector {
 		}
 		getZipoutput().closeEntry();
 	}
+
 
 }

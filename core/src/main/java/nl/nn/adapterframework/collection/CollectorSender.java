@@ -15,13 +15,14 @@
 */
 package nl.nn.adapterframework.collection;
 
-import lombok.Getter;
-import lombok.Setter;
+import nl.nn.adapterframework.collection.CollectionActor.Action;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
@@ -34,42 +35,53 @@ import nl.nn.adapterframework.stream.StreamingSenderBase;
  *
  * @author Gerrit van Brakel
  */
-public class CollectionSender extends StreamingSenderBase {
+public abstract class CollectorSender<E extends ICollectingElement<C>, C extends ICollector<E>> extends StreamingSenderBase implements ICollectingElement<C> {
 
-	/** Session key used to refer to collection. Must be specified with another value if multiple CollectorPipes are active at the same time in the same session
-	  * @ff.default collection
-	 */
-	private @Getter @Setter String collection="collection";
+	private CollectionActor<E, C> actor = new CollectionActor<E, C>();
 
 
+	@SuppressWarnings("unchecked")
+	@Override
+	public void configure() throws ConfigurationException {
+		super.configure();
+		actor.configure(getParameterList(), (E)this);
+	}
+
+	@SuppressWarnings("unchecked")
 	@Override
 	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
 		try {
-			ICollector collection = getCollection(session);
-			Message result = collection.writeItem(message, session, getParameterValueList(message, session), this);
-			return new PipeRunResult(null, result);
+			return new PipeRunResult(null, actor.doAction(message, session, (E)this));
 		} catch (CollectionException e) {
 			throw new SenderException(e);
 		}
 	}
 
 	@Override
+	protected boolean canProvideOutputStream() {
+		return actor.canProvideOutputStream() && super.canProvideOutputStream();
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
 	public MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
-		try {
-			ICollector collection = getCollection(session);
-			return collection.provideOutputStream(session, getParameterValueList(null, session), this);
-		} catch (CollectionException | SenderException e) {
-			throw new StreamingException(e);
-		}
+		return actor.provideOutputStream(session, (E)this);
 	}
 
-	protected ICollector getCollection(PipeLineSession session) throws CollectionException {
-		ICollector result = (ICollector)session.get(getCollection());
-		if (result==null) {
-			throw new CollectionException("cannot find collection data under key ["+getCollection()+"]");
-		}
-		return result;
+	@IbisDocRef({CollectionActor.CLASSNAME})
+	public void setAction(Action action) {
+		actor.setAction(action);
+	}
+	public Action getAction() {
+		return actor.getAction();
 	}
 
+	@IbisDocRef({CollectionActor.CLASSNAME})
+	public void setCollection(String collection) {
+		actor.setCollection(collection);
+	}
+	public String getCollection() {
+		return actor.getCollection();
+	}
 
 }
