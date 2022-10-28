@@ -24,25 +24,25 @@ public class CollectionSenderTest extends SenderTestBase<CollectorSender> {
 			}
 		};
 	}
-	
+
 
 	@Test
 	public void testOpen() throws Exception {
 		sender.setAction(Action.OPEN);
 		sender.configure();
 		sender.open();
-		
+
 		String input = "testOpen";
-		
+
 		Message result = sendMessage(input);
-		
+
 		TestCollector collector = (TestCollector)session.get("collection");
 
 		assertEquals(true, collector.open);
 		assertEquals(input, collector.input.toString());
 		assertEquals(session, collector.session);
 	}
-	
+
 	@Test
 	public void testClose() throws Exception {
 		sender.setAction(Action.CLOSE);
@@ -51,10 +51,10 @@ public class CollectionSenderTest extends SenderTestBase<CollectorSender> {
 
 		TestCollector collector = new TestCollector();
 		session.put("collection", collector);
-		
+
 		String input = "testClose";
 		Message result = sendMessage(input);
-		
+
 		assertEquals(false, collector.open);
 	}
 
@@ -66,10 +66,10 @@ public class CollectionSenderTest extends SenderTestBase<CollectorSender> {
 
 		TestCollector collector = new TestCollector();
 		session.put("collection", collector);
-		
+
 		String input = "testWrite";
 		Message result = sendMessage(input);
-		
+
 		assertEquals(true, collector.open);
 		assertEquals(input, collector.input.toString());
 		assertEquals(session, collector.session);
@@ -84,13 +84,13 @@ public class CollectionSenderTest extends SenderTestBase<CollectorSender> {
 
 		TestCollector collector = new TestCollector();
 		session.put("collection", collector);
-		
+
 		String input = "testStream";
 		Message result = sendMessage(input);
-		
+
 		assertNotNull(result.asObject());
 		assertEquals(collector.outputStream, result.asObject());
-		
+
 		assertEquals(true, collector.open);
 		assertEquals(input, collector.input.toString());
 		assertEquals(session, collector.session);
