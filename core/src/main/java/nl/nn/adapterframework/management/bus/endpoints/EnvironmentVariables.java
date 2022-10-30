@@ -23,26 +23,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.logging.log4j.Logger;
 import org.springframework.messaging.Message;
 
-import lombok.Getter;
-import lombok.Setter;
 import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 
 @BusAware("frank-management-bus")
-public class EnvironmentVariables {
-	private @Getter @Setter IbisManager ibisManager;
-	private Logger log = LogUtil.getLogger(this);
+public class EnvironmentVariables extends BusEndpointBase {
 
 	@TopicSelector(BusTopic.ENVIRONMENT)
 	public Message<String> getEnvironmentVariables(Message<?> message) {

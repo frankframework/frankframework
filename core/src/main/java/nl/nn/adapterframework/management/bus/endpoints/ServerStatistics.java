@@ -23,19 +23,14 @@ import java.util.Map;
 
 import javax.servlet.ServletContext;
 
-import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.messaging.Message;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.context.WebApplicationContext;
 
-import lombok.Getter;
-import lombok.Setter;
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.ProcessState;
@@ -58,12 +53,9 @@ import nl.nn.adapterframework.util.ProcessMetrics;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.APPLICATION)
-public class ServerStatistics implements ApplicationContextAware {
-	private @Getter @Setter IbisManager ibisManager;
-	private @Getter @Setter ApplicationContext applicationContext;
+public class ServerStatistics extends BusEndpointBase {
 	private static final int MAX_MESSAGE_SIZE = AppConstants.getInstance().getInt("adapter.message.max.size", 0);
 	private static boolean showCountErrorStore = AppConstants.getInstance().getBoolean("errorStore.count.show", true);
-	private Logger log = LogUtil.getLogger(this);
 
 	@ActionSelector(BusAction.GET)
 	public Message<String> getServerInformation(Message<?> message) {
@@ -113,8 +105,8 @@ public class ServerStatistics implements ApplicationContextAware {
 	@ActionSelector(BusAction.WARNINGS)
 	public Message<String> getApplicationWarnings() {
 		Map<String, Object> returnMap = new HashMap<>();
-		ApplicationWarnings globalConfigWarnings = getIbisManager().getIbisContext().getBean("applicationWarnings", ApplicationWarnings.class);
-		MessageEventListener eventListener = getIbisManager().getIbisContext().getBean("MessageEventListener", MessageEventListener.class);
+		ApplicationWarnings globalConfigWarnings = getBean("applicationWarnings", ApplicationWarnings.class);
+		MessageEventListener eventListener = getBean("MessageEventListener", MessageEventListener.class);
 
 		long totalErrorStoreCount = 0;
 		if(!showCountErrorStore)
@@ -210,7 +202,7 @@ public class ServerStatistics implements ApplicationContextAware {
 	}
 
 	private String getApplicationServer() {
-		return getApplicationServer(applicationContext);
+		return getApplicationServer(getApplicationContext());
 	}
 
 	private String getApplicationServer(ApplicationContext ac) {

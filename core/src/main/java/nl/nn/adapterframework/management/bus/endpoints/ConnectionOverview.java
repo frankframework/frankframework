@@ -23,10 +23,7 @@ import java.util.Map;
 
 import org.springframework.messaging.Message;
 
-import lombok.Getter;
-import lombok.Setter;
 import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IListener;
@@ -41,8 +38,7 @@ import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.Receiver;
 
 @BusAware("frank-management-bus")
-public class ConnectionOverview {
-	private @Getter @Setter IbisManager ibisManager;
+public class ConnectionOverview extends BusEndpointBase {
 
 	@TopicSelector(BusTopic.CONNECTION_OVERVIEW)
 	public Message<String> getAllConnections(Message<?> message) {

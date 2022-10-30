@@ -26,9 +26,6 @@ import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 import org.springframework.util.MimeType;
 
-import lombok.Getter;
-import lombok.Setter;
-import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.IDataSourceFactory;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
@@ -48,8 +45,7 @@ import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.JDBC)
-public class ExecuteJdbcQuery {
-	private @Getter @Setter IbisManager ibisManager;
+public class ExecuteJdbcQuery extends BusEndpointBase {
 	private Logger secLog = LogUtil.getLogger("SEC");
 
 	public enum ResultType {
@@ -60,7 +56,7 @@ public class ExecuteJdbcQuery {
 	public Message<String> getJdbcInfo(Message<?> message) {
 		Map<String, Object> result = new HashMap<>();
 
-		IDataSourceFactory dataSourceFactory = ibisManager.getIbisContext().getBean("dataSourceFactory", IDataSourceFactory.class);
+		IDataSourceFactory dataSourceFactory = getBean("dataSourceFactory", IDataSourceFactory.class);
 		List<String> dataSourceNames = dataSourceFactory.getDataSourceNames();
 		dataSourceNames.sort(Comparator.naturalOrder()); //AlphaNumeric order
 		result.put("datasources", dataSourceNames);
@@ -95,7 +91,7 @@ public class ExecuteJdbcQuery {
 	private Message<Object> doExecute(String datasource, String queryType, String query, boolean trimSpaces, boolean avoidLocking, ResultType resultType) {
 		secLog.info(String.format("executing query [%s] on datasource [%s] queryType [%s] avoidLocking [%s]", query, datasource, queryType, avoidLocking));
 
-		DirectQuerySender qs = ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
+		DirectQuerySender qs = createBean(DirectQuerySender.class);
 		String result = null;
 		MimeType mimetype;
 

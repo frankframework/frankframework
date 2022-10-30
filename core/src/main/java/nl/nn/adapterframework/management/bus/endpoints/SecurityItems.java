@@ -31,7 +31,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.springframework.messaging.Message;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -39,12 +38,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-import lombok.Getter;
-import lombok.Setter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.IDataSourceFactory;
 import nl.nn.adapterframework.jdbc.JdbcException;
@@ -60,18 +55,11 @@ import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
 
 @BusAware("frank-management-bus")
-public class SecurityItems {
-	private @Getter @Setter IbisManager ibisManager;
-	private Logger log = LogUtil.getLogger(this);
-
-	private IbisContext getIbisContext() {
-		return ibisManager.getIbisContext();
-	}
+public class SecurityItems extends BusEndpointBase {
 
 	@TopicSelector(BusTopic.SECURITY_ITEMS)
 	public Message<String> getSecurityItems(Message<?> message) {
@@ -271,7 +259,7 @@ public class SecurityItems {
 	}
 
 	private ArrayList<Object> addDataSources() {
-		IDataSourceFactory dataSourceFactory = getIbisContext().getBean("dataSourceFactory", IDataSourceFactory.class);
+		IDataSourceFactory dataSourceFactory = getBean("dataSourceFactory", IDataSourceFactory.class);
 		List<String> dataSourceNames = dataSourceFactory.getDataSourceNames();
 		dataSourceNames.sort(Comparator.naturalOrder()); //AlphaNumeric order
 		String confResString = getConfigurationResources();
@@ -285,7 +273,7 @@ public class SecurityItems {
 
 	private Map<String, Object> mapDataSource(String jmsRealm, String datasourceName, String confResString) {
 		Map<String, Object> realm = new HashMap<>();
-		FixedQuerySender qs = getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
+		FixedQuerySender qs = createBean(FixedQuerySender.class);
 
 		qs.setQuery("select datasource from database");
 		if(StringUtils.isNotEmpty(jmsRealm)) {

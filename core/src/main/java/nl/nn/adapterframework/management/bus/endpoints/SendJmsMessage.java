@@ -16,13 +16,9 @@
 package nl.nn.adapterframework.management.bus.endpoints;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.context.ApplicationContext;
 import org.springframework.messaging.Message;
 
-import lombok.Getter;
-import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.management.bus.ActionSelector;
@@ -35,14 +31,11 @@ import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.QUEUE)
-public class SendJmsMessage {
-	private @Getter @Setter IbisManager ibisManager;
-	private @Getter @Setter ApplicationContext applicationContext;
+public class SendJmsMessage extends BusEndpointBase {
 
 	@ActionSelector(BusAction.UPLOAD)
 	public Message<Object> putMessageOnQueue(Message<?> message) {
@@ -73,7 +66,7 @@ public class SendJmsMessage {
 
 	private Parameter getMessagePropertyParameter(String messageProperty) {
 		String[] keypair = messageProperty.split(",");
-		Parameter p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+		Parameter p = createBean(Parameter.class);
 		p.setName(keypair[0]);
 		p.setValue(keypair[1]);
 		try {
@@ -85,7 +78,7 @@ public class SendJmsMessage {
 	}
 
 	private JmsSender createJmsSender(String connectionFactory, String destination, boolean persistent, DestinationType type, String replyTo, boolean synchronous, boolean lookupDestination) {
-		JmsSender qms = getIbisManager().getIbisContext().createBeanAutowireByName(JmsSender.class);
+		JmsSender qms = createBean(JmsSender.class);
 		qms.setName("SendJmsMessageAction");
 		if(type == DestinationType.QUEUE) {
 			qms.setQueueConnectionFactoryName(connectionFactory);

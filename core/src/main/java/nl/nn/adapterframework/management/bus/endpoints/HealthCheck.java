@@ -27,10 +27,7 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.messaging.Message;
 
-import lombok.Getter;
-import lombok.Setter;
 import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle.BootState;
@@ -45,8 +42,7 @@ import nl.nn.adapterframework.util.RunState;
 import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 @BusAware("frank-management-bus")
-public class HealthCheck {
-	private @Getter @Setter IbisManager ibisManager;
+public class HealthCheck extends BusEndpointBase {
 
 	@TopicSelector(BusTopic.HEALTH)
 	public Message<String> getHealth(Message<?> message) {

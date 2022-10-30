@@ -30,9 +30,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import lombok.Getter;
-import lombok.Setter;
 import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
@@ -50,8 +48,7 @@ import nl.nn.adapterframework.soap.WsdlGenerator;
 import nl.nn.adapterframework.soap.WsdlGeneratorUtils;
 
 @BusAware("frank-management-bus")
-public class WebServices {
-	private @Getter @Setter IbisManager ibisManager;
+public class WebServices extends BusEndpointBase {
 	private static final String WSDL_EXTENSION = ".wsdl";
 
 	@TopicSelector(BusTopic.WEBSERVICES)
