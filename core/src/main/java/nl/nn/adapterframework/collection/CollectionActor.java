@@ -48,8 +48,7 @@ public class CollectionActor<E extends ICollectingElement<C>, C extends ICollect
 		OPEN,
 		/** add a part to to an existing collection */
 		WRITE,
-		/** Create a new collection entry, and provide an OutputStream that another pipe can use to write the contents */
-		@Deprecated
+		/** Create a new collection entry, and return an OutputStream that the next element can use to write an item to */
 		STREAM,
 		/** Finalize the collection */
 		CLOSE;

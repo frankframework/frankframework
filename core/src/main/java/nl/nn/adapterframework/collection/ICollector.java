@@ -25,11 +25,13 @@ import nl.nn.adapterframework.stream.MessageOutputStream;
 
 public interface ICollector<E extends ICollectingElement> extends AutoCloseable {
 
+	/** write (or add) a single item to the collection*/
 	Message writeItem(Message input, PipeLineSession session, ParameterValueList pvl, E collectingElement) throws CollectionException, TimeoutException;
 
-	/** present to support the deprecated 'STREAM' action, cannot set to Deprecated, because TestAnnotationUtils.findInterfacesWithAnnotations() will complain */
+	/** return an OutputStream message that can be used to write a single item to */
 	OutputStream streamItem(Message input, PipeLineSession session, ParameterValueList pvl, E collectingElement) throws CollectionException;
 
+	/** provide a MessageOutputStream message that can be used to write a single item to */
 	default MessageOutputStream provideOutputStream(PipeLineSession session, ParameterValueList pvl, E collectingElement) throws CollectionException {
 		return null;
 	}
