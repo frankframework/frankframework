@@ -221,30 +221,6 @@ public final class ShowConfigurationStatus extends Base {
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{name}/pipes")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getAdapterPipes(@PathParam("name") String adapterName) {
-		throw new ApiException("not implemented!");
-	}
-
-	@GET
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{name}/messages")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getAdapterMessages(@PathParam("name") String adapterName) {
-		throw new ApiException("not implemented!");
-	}
-
-	@GET
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{name}/receivers")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getAdapterReceivers(@PathParam("name") String adapterName, @QueryParam("showPendingMsgCount") boolean showPendingMsgCount) {
-		throw new ApiException("not implemented!");
-	}
-
-	@GET
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters/{name}/flow")
 	@Produces(MediaType.TEXT_PLAIN)
 	@Deprecated
