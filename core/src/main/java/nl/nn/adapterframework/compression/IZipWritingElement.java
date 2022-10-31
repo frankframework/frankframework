@@ -22,6 +22,7 @@ public interface IZipWritingElement extends ICollectingElement<ZipWriter>, IConf
 
 	String getCharset();
 	boolean isCompleteFileHeader();
+	boolean isCloseInputstreamOnExit();
 	boolean isCloseOutputstreamOnExit();
 
 }

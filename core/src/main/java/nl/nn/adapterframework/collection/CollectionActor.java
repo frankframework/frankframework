@@ -46,10 +46,12 @@ public class CollectionActor<E extends ICollectingElement<C>, C extends ICollect
 	public enum Action {
 		/** To initiate a new collection */
 		OPEN,
-		/** add a part to to an existing collection */
+		/** Add an item to to an existing collection */
 		WRITE,
 		/** Create a new collection entry, and return an OutputStream that the next element can use to write an item to */
 		STREAM,
+		/** Combination of WRITE and CLOSE: Add an item to to an existing collection, then finalize the collection */
+		LAST,
 		/** Finalize the collection */
 		CLOSE;
 	}
@@ -90,8 +92,17 @@ public class CollectionActor<E extends ICollectingElement<C>, C extends ICollect
 					session.put(getCollection(), collection);
 					return input; // assumes input has not been consumed
 				case WRITE:
+				case LAST:
 					try {
-						return collection.writeItem(input, session, getParameterValueList(input, session), element);
+						Message result = collection.writeItem(input, session, getParameterValueList(input, session), element);
+						if (getAction()==Action.LAST) {
+							try {
+								collection.close();
+							} catch (Exception e) {
+								throw new CollectionException("cannot close",e);
+							}
+						}
+						return result;
 					} catch (CollectionException | TimeoutException e) {
 						throw new CollectionException("cannot write to collection", e);
 					}

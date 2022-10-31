@@ -86,6 +86,7 @@ public class ZipWriter implements ICollector<IZipWritingElement> {
 			case OPEN:
 				break;
 			case WRITE:
+			case LAST:
 			case STREAM:
 				Parameter filenameParameter=parameterList.findParameter(PARAMETER_FILENAME);
 				Parameter contentsParameter=parameterList.findParameter(PARAMETER_CONTENTS);
@@ -192,9 +193,9 @@ public class ZipWriter implements ICollector<IZipWritingElement> {
 				contents = input;
 			}
 			if (completeFileHeader) {
-				writeEntryWithCompletedHeader(filename, contents, false, charset);
+				writeEntryWithCompletedHeader(filename, contents, writingElement.isCloseInputstreamOnExit(), charset);
 			} else {
-				writeEntry(filename, contents, false, charset);
+				writeEntry(filename, contents, writingElement.isCloseInputstreamOnExit(), charset);
 			}
 			return inputIsSource ? Message.nullMessage() : input;
 		} catch (IOException | CompressionException e) {
@@ -242,7 +243,7 @@ public class ZipWriter implements ICollector<IZipWritingElement> {
 		} catch (CompressionException e) {
 			throw new CollectionException("cannot prepare collection to stream item", e);
 		}
-		return getZipoutput();
+		return StreamUtil.dontClose(getZipoutput());
 	}
 
 
