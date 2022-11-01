@@ -24,15 +24,12 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.springframework.messaging.Message;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import lombok.Getter;
-import lombok.Setter;
-import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
@@ -49,19 +46,16 @@ import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.QUEUE)
-public class BrowseQueue {
-	private @Getter @Setter IbisManager ibisManager;
-	private Logger log = LogUtil.getLogger(this);
+public class BrowseQueue extends BusEndpointBase {
 
 	@ActionSelector(BusAction.GET)
 	public Message<String> getConnectionFactories(Message<?> message) {
 		Map<String, Object> returnMap = new HashMap<>();
-		IConnectionFactoryFactory connectionFactoryFactory = getIbisManager().getIbisContext().getBean("connectionFactoryFactory", IConnectionFactoryFactory.class);
+		IConnectionFactoryFactory connectionFactoryFactory = getBean("connectionFactoryFactory", IConnectionFactoryFactory.class);
 		Set<String> connectionFactories = new LinkedHashSet<>();
 		// connection factories used in configured jmsSenders etc.
 		connectionFactories.addAll(connectionFactoryFactory.getConnectionFactoryNames());
@@ -91,7 +85,7 @@ public class BrowseQueue {
 		Map<String, Object> returnMap = new HashMap<>();
 
 		try {
-			JmsBrowser<javax.jms.Message> jmsBrowser = getIbisManager().getIbisContext().createBeanAutowireByName(JmsBrowser.class);
+			JmsBrowser<javax.jms.Message> jmsBrowser = createBean(JmsBrowser.class);
 			jmsBrowser.setName("BrowseQueueAction");
 			if(type == DestinationType.QUEUE) {
 				jmsBrowser.setQueueConnectionFactoryName(connectionFactory);

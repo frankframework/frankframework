@@ -28,13 +28,9 @@ import java.util.Map;
 import javax.xml.transform.Transformer;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.springframework.messaging.Message;
 import org.xml.sax.SAXException;
 
-import lombok.Getter;
-import lombok.Setter;
-import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.dbms.Dbms;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
@@ -51,23 +47,19 @@ import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DB2XMLWriter;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 @BusAware("frank-management-bus")
-public class BrowseJdbcTable {
+public class BrowseJdbcTable extends BusEndpointBase {
 
 	private static final String DB2XML_XSLT = "xml/xsl/BrowseJdbcTableExecute.xsl";
 	private static final String JDBC_PERMISSION_RULES = AppConstants.getInstance().getResolvedProperty("browseJdbcTable.permission.rules");
 	private static final String COLUMN_NAME = "COLUMN_NAME";
 	private static final String DATA_TYPE = "DATA_TYPE";
 	private static final String COLUMN_SIZE = "COLUMN_SIZE";
-	private Logger log = LogUtil.getLogger(this);
 	private String countColumnName = "ROWCOUNTER";
 	private String rnumColumnName = "RNUM";
-
-	private @Getter @Setter IbisManager ibisManager;
 
 	@TopicSelector(BusTopic.JDBC)
 	@ActionSelector(BusAction.FIND)
@@ -98,7 +90,7 @@ public class BrowseJdbcTable {
 		String result = "";
 		String query = null;
 
-		DirectQuerySender qs = ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
+		DirectQuerySender qs = createBean(DirectQuerySender.class);
 
 		try {
 			qs.setName("BrowseTable QuerySender");

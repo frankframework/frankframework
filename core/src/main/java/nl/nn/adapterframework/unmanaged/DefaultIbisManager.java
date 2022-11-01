@@ -118,6 +118,7 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 	public void handleAction(IbisAction action, String configurationName, String adapterName, String receiverName, String commandIssuedBy, boolean isAdmin) {
 		switch (action) {
 		case STOPADAPTER:
+			//TODO use provided configuration and check if adapter exists
 			if (adapterName.equals("*ALL*")) {
 				if (configurationName.equals("*ALL*")) {
 					log.info("Stopping all adapters on request of [" + commandIssuedBy+"]");
@@ -139,6 +140,7 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 			break;
 
 		case STARTADAPTER:
+			//TODO use provided configuration and check if adapter exists
 			if (adapterName.equals("*ALL*")) {
 				if (configurationName.equals("*ALL*")) {
 					log.info("Starting all adapters on request of [" + commandIssuedBy+"]");
@@ -165,6 +167,7 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 			break;
 
 		case STOPRECEIVER:
+			//TODO use provided configuration and check if receiver exists
 			for (Configuration configuration : configurations) {
 				if (configuration.getRegisteredAdapter(adapterName) != null) {
 					Adapter adapter = configuration.getRegisteredAdapter(adapterName);
@@ -191,6 +194,7 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 			break;
 
 		case STARTRECEIVER:
+			//TODO use provided configuration and check if receiver exists
 			for (Configuration configuration : configurations) {
 				if (configuration.getRegisteredAdapter(adapterName) != null) {
 					Adapter adapter = configuration.getRegisteredAdapter(adapterName);

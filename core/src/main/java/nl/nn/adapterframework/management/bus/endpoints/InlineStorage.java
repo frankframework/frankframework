@@ -21,14 +21,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import org.apache.logging.log4j.Logger;
 import org.springframework.messaging.Message;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
@@ -40,12 +38,9 @@ import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.receivers.Receiver;
-import nl.nn.adapterframework.util.LogUtil;
 
 @BusAware("frank-management-bus")
-public class InlineStorage {
-	private Logger log = LogUtil.getLogger(this);
-	private @Getter @Setter IbisManager ibisManager;
+public class InlineStorage extends BusEndpointBase {
 
 	@TopicSelector(BusTopic.INLINESTORAGE_SUMMARY)
 	public Message<String> getProcessStores(Message<?> message) {
