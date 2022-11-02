@@ -15,11 +15,14 @@
 */
 package nl.nn.credentialprovider;
 
+import java.util.NoSuchElementException;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.credential.store.CredentialStore;
 import org.wildfly.security.credential.store.CredentialStoreException;
+import org.wildfly.security.credential.store.UnsupportedCredentialTypeException;
 import org.wildfly.security.password.Password;
 import org.wildfly.security.password.interfaces.ClearPassword;
 
@@ -34,30 +37,35 @@ public class WildFlyCredentials extends Credentials {
 
 	@Override
 	protected void getCredentialsFromAlias() {
-		String clearPassword = null;
-
 		try {
-			if (cs.exists(getAlias()+"/username", PasswordCredential.class)) {
-				Password username = cs.retrieve(getAlias(), PasswordCredential.class).getPassword();
-				if (username instanceof ClearPassword) {
-					clearPassword = new String(((ClearPassword) username).getPassword());
-					log.info("found username [" + clearPassword + "]");
-					setUsername(clearPassword);
-				}
+			if (aliasExists("") || aliasExists("/username")) {
+				setIfExists("/username", this::setUsername);
+				setIfExists("", this::setPassword);
+			} else {
+				throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+getAlias()+"]: alias not found");
 			}
-			if (cs.exists(getAlias(), PasswordCredential.class)) {
-				Password password = cs.retrieve(getAlias(), PasswordCredential.class).getPassword();
-				if (password instanceof ClearPassword) {
-					clearPassword = new String(((ClearPassword) password).getPassword());
-					log.info("found password [" + clearPassword + "]");
-					setPassword(clearPassword);
-				}
-			}
-		} catch (CredentialStoreException | IllegalStateException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			NoSuchElementException nsee=new NoSuchElementException("cannot obtain credentials from authentication alias ["+getAlias()+"]");
+			nsee.initCause(e);
+			throw nsee;
 		}
-
 	}
 
+	private boolean aliasExists(String suffix) throws UnsupportedCredentialTypeException, CredentialStoreException {
+		String key=getAlias()+suffix;
+		return (cs.exists(key, PasswordCredential.class));
+	}
+
+
+	private void setIfExists(String suffix, Consumer<String> setter) throws UnsupportedCredentialTypeException, CredentialStoreException, IllegalStateException {
+		String key=getAlias()+suffix;
+		if (cs.exists(key, PasswordCredential.class)) {
+			Password credential = cs.retrieve(key, PasswordCredential.class).getPassword();
+			if (credential instanceof ClearPassword) {
+				String value = new String(((ClearPassword) credential).getPassword());
+				setter.accept(value);
+			}
+		}
+	}
 
 }

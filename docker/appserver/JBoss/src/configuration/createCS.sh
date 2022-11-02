@@ -2,7 +2,7 @@
 #
 # converts filesystem credentials into WildFly credentials
 
-SERVER_DIR=/opt/jboss/wildfly
+SERVER_DIR=/home/jboss/jboss-eap-7.3
 SECRETS_TOOL=$SERVER_DIR/bin/elytron-tool.sh
 SECRETS_LOCATION=$SERVER_DIR/standalone/data/CS.jceks
 SECRETS_PASSWORD=secret

@@ -93,7 +93,7 @@ public class WildFlyCredentialFactory implements ICredentialFactory {
 	private CredentialStore getCredentialStore(String credentialStore) {
 		if (cs==null) {
 			ServiceContainer registry = CurrentServiceContainer.getServiceContainer();
-	
+
 			if (registry==null) {
 				log.info("no ServiceContainer registry found");
 				return null;
