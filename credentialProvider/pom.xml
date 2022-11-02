@@ -43,6 +43,12 @@
 			<artifactId>jboss-as-server</artifactId>
 			<version>7.2.0.Final</version>
 			<scope>provided</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.jboss.as</groupId>
+					<artifactId>jboss-as-domain-http-interface</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.wildfly.security</groupId>
