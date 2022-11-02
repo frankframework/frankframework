@@ -44,7 +44,8 @@ public class ZipWriterSender extends CollectorSender<IZipWritingElement, ZipWrit
 	private @Getter String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	private @Getter boolean completeFileHeader=false;
 
-	{
+	public ZipWriterSender() {
+		super();
 		setCollection("zipwriterhandle");
 	}
 

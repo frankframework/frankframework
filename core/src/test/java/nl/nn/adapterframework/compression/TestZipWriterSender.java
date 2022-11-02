@@ -60,7 +60,7 @@ public class TestZipWriterSender extends SenderTestBase<ZipWriterSender>{
 		ZipWriter zipWriter = prepareZipWriter();
 		String fileContents = "some text to be compressed";
 
-		Message result = sendMessage(fileContents);
+		sendMessage(fileContents);
 		//assertEquals(fileContents, prr.getResult().asString()); // ZipWriterPipe used to return it's input 
 
 		zipWriter.close();

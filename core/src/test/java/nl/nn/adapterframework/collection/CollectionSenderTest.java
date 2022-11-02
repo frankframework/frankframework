@@ -34,7 +34,7 @@ public class CollectionSenderTest extends SenderTestBase<CollectorSender> {
 
 		String input = "testOpen";
 
-		Message result = sendMessage(input);
+		sendMessage(input);
 
 		TestCollector collector = (TestCollector)session.get("collection");
 
