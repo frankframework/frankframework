@@ -2,10 +2,10 @@ ARG WILDFLY_VERSION=26.1.1.Final
 FROM quay.io/wildfly/wildfly:${WILDFLY_VERSION} AS wildfly-iaf-test-base
 
 FROM wildfly-iaf-test-base AS wildfly-iaf-test-CredentialStoreCreator
-COPY src/configuration/createCS.py /home/createCS.py
+COPY src/configuration/createCS.sh /home/createCS.sh
 COPY target/dependencies/secrets /opt/frank/secrets
 
-RUN python /home/createCS.py
+RUN /home/createCS.sh
 
 FROM wildfly-iaf-test-base AS iaf-test-as-wildfly
 # Copy dependencies
