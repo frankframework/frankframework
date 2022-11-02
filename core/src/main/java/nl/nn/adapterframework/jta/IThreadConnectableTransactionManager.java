@@ -24,5 +24,4 @@ public interface IThreadConnectableTransactionManager<T,R> extends PlatformTrans
 
 	public R suspendTransaction(T transaction);
 	public void resumeTransaction(T transaction, R resources);
-	
 }
