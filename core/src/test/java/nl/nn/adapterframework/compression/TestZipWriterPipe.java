@@ -86,7 +86,7 @@ public class TestZipWriterPipe extends StreamingPipeTestBase<ZipWriterPipe>{
 		pipe.addParameter(new Parameter("filename","fakeFilename"));
 		configureAndStartPipe();
 
-		ZipWriter zipWriter = prepareZipWriter();
+		prepareZipWriter();
 		String fileContents = "some text to be compressed";
 
 		PipeRunResult prr = doPipe(fileContents);
@@ -95,7 +95,6 @@ public class TestZipWriterPipe extends StreamingPipeTestBase<ZipWriterPipe>{
 
 		assertEquals(166, baos.size());
 
-		
 		ZipInputStream zipin = new ZipInputStream(new ByteArrayInputStream(baos.toByteArray()));
 		ZipEntry entry = zipin.getNextEntry();
 		assertEquals("fakeFilename", entry.getName());
