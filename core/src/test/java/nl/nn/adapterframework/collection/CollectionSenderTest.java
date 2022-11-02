@@ -53,7 +53,7 @@ public class CollectionSenderTest extends SenderTestBase<CollectorSender> {
 		session.put("collection", collector);
 
 		String input = "testClose";
-		Message result = sendMessage(input);
+		sendMessage(input);
 
 		assertEquals(false, collector.open);
 	}
@@ -68,7 +68,7 @@ public class CollectionSenderTest extends SenderTestBase<CollectorSender> {
 		session.put("collection", collector);
 
 		String input = "testWrite";
-		Message result = sendMessage(input);
+		sendMessage(input);
 
 		assertEquals(true, collector.open);
 		assertEquals(input, collector.input.toString());
