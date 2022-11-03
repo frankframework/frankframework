@@ -140,7 +140,7 @@ public class WildFlyCredentialFactoryTest {
 
 		WildFlyCredentials wfc = (WildFlyCredentials)credentialFactory.getCredentials("b", () -> "defaultUsername", () -> "defaultPassword");
 		assertEquals("b", wfc.getAlias());
-		assertEquals("", wfc.getUsername());
+		assertEquals("defaultUsername", wfc.getUsername());
 		assertEquals("b-value", wfc.getPassword());
 	}
 
@@ -152,7 +152,7 @@ public class WildFlyCredentialFactoryTest {
 		WildFlyCredentials wfc = (WildFlyCredentials)credentialFactory.getCredentials("c", () -> "defaultUsername", () -> "defaultPassword");
 		assertEquals("c", wfc.getAlias());
 		assertEquals("c/username-value", wfc.getUsername());
-		assertEquals("", wfc.getPassword());
+		assertEquals("defaultPassword", wfc.getPassword());
 	}
 
 	@Test
