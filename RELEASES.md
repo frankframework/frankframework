@@ -22,7 +22,8 @@ Upcoming (7.8)
   - default array element containers are '<item>' instead of '<array>'
   - multidimensional arrays with scalar values are not flattened into one dimensional arrays any more
 - MessageSendingPipe and descendants (like SenderPipe and ForEachChildElementPipe) no longer set presumedTimeOutInterval by default.
-
+- Parameter with an attribute value set to an empty string will have the empty string as result. Previously the input message would be used. This behaviour can be reobtained
+  by setting defaultValueMethod="input".
 
 7.7
 ---
