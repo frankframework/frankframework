@@ -23,7 +23,6 @@ import nl.nn.adapterframework.util.ClassUtils;
 /* 
  * Interface to be implemented by Senders that beside their proper result return a state, 
  * that can be used to determine a forward. 
- * N.B. the state is provided in the form of a PipeForward, of which only the name is to be used.
  */
 public interface IForwardNameProvidingSender extends ISenderWithParameters {
 

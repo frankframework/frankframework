@@ -29,6 +29,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -65,9 +66,10 @@ public class ParallelSenders extends SenderSeries {
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult doSendMessageAndProvideForwardName(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		Guard guard = new Guard();
 		Map<ISender, ParallelSenderExecutor> executorMap = new LinkedHashMap<>();
+		boolean success=true;
 
 		for (ISender sender: getSenders()) {
 			guard.addResource();
@@ -114,12 +116,13 @@ public class ParallelSenders extends SenderSeries {
 					}
 				}
 			} else {
+				success=false;
 				resultXml.addAttribute("type", ClassUtils.nameOf(throwable));
 				resultXml.setValue(throwable.getMessage());
 			}
 			resultsXml.addSubElement(resultXml);
 		}
-		return new Message(resultsXml.toXML());
+		return new SenderResult(success, new Message(resultsXml.toXML()));
 	}
 
 	@Override

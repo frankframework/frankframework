@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -55,6 +55,7 @@ public class ParallelSenderExecutor extends RequestReplyExecutor {
 			long t1 = System.currentTimeMillis();
 			try {
 				reply = sender.sendMessage(request,session);
+				reply.preserve(); // consume the message immediately, to release any resources (like connections) associated with the sender execution
 			} catch (Throwable tr) {
 				throwable = tr;
 				log.warn("SenderExecutor caught exception",tr);

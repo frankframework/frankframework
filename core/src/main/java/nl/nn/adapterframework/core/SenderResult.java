@@ -27,19 +27,27 @@ public class SenderResult {
 
 	private @Getter @Setter String forwardName;
 	private @Getter boolean success;
-	private @Getter Message result;
+	private @Getter @Setter Message result;
 
 	public SenderResult() {
 		super();
 	}
 
+	public SenderResult(String result) {
+		this(null, true, new Message(result));
+	}
+
+	public SenderResult(Message result) {
+		this(null, true, result);
+	}
+
+	public SenderResult(boolean success, Message result) {
+		this(null, success, result);
+	}
+
 	public SenderResult(String forwardName, boolean success, Message result) {
 		this.forwardName = forwardName;
 		this.success = success;
-		this.result = result;
-	}
-
-	public void setResult(Message result) {
 		this.result = result;
 	}
 

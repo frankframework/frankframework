@@ -403,7 +403,7 @@ public class CmisSender extends SenderWithParametersBase implements IForwardName
 		} catch (CmisObjectNotFoundException e) {
 			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
 				log.info(getLogPrefix() + "document with id [" + message + "] not found", e);
-				return new SenderResult(null, true, new Message(getResultOnNotFound()));
+				return new SenderResult(getResultOnNotFound());
 			}
 			return new SenderResult(NOT_FOUND_FORWARD_NAME, false, Message.nullMessage());
 		}
@@ -556,7 +556,7 @@ public class CmisSender extends SenderWithParametersBase implements IForwardName
 			Folder folder = cmisSession.getRootFolder();
 			Document document = folder.createDocument(props, contentStream, VersioningState.NONE);
 			log.debug(getLogPrefix() + "created new document [ " + document.getId() + "]");
-			return new SenderResult(null, true, new Message(document.getId()));
+			return new SenderResult(document.getId());
 		}
 		ObjectId objectId = cmisSession.createDocument(props, null, contentStream, VersioningState.NONE);
 		log.debug(getLogPrefix() + "created new document [ " + objectId.getId() + "]");
@@ -629,7 +629,7 @@ public class CmisSender extends SenderWithParametersBase implements IForwardName
 		} catch (CmisObjectNotFoundException e) {
 			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
 				log.info(getLogPrefix() + "document with id [" + message + "] not found", e);
-				return new SenderResult(null, true, new Message(getResultOnNotFound()));
+				return new SenderResult(getResultOnNotFound());
 			}
 			return new SenderResult(NOT_FOUND_FORWARD_NAME, false, Message.nullMessage());
 		}
@@ -698,7 +698,7 @@ public class CmisSender extends SenderWithParametersBase implements IForwardName
 			cmisXml.addAttribute("totalNumItems", q.getTotalNumItems());
 			cmisXml.addSubElement(rowsetXml);
 		}
-		return new SenderResult(null, true, new Message(cmisXml.toXML()));
+		return new SenderResult(cmisXml.toXML());
 	}
 
 	private CmisObject getCmisObject(Session cmisSession, Message message) throws SenderException, CmisObjectNotFoundException {
@@ -934,7 +934,7 @@ public class CmisSender extends SenderWithParametersBase implements IForwardName
 				throw new CmisNotSupportedException("Operation not implemented");
 		}
 
-		return new SenderResult(null, true, new Message(resultXml.toXML()));
+		return new SenderResult(resultXml.toXML());
 	}
 
 	private SenderResult sendMessageForActionUpdate(Session cmisSession, Message message) throws SenderException{
@@ -963,7 +963,7 @@ public class CmisSender extends SenderWithParametersBase implements IForwardName
 		} catch (CmisObjectNotFoundException e) {
 			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
 				log.info(getLogPrefix() + "document with id [" + message + "] not found", e);
-				return new SenderResult(null, true, new Message(getResultOnNotFound()));
+				return new SenderResult(getResultOnNotFound());
 			}
 			return new SenderResult(NOT_FOUND_FORWARD_NAME, false, Message.nullMessage());
 		}

@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.senders.SenderBase;
 import nl.nn.adapterframework.senders.SenderSeries;
@@ -32,17 +33,18 @@ public class InputOutputSenderWrapperProcessorTest {
 		SenderWrapperProcessor target = new SenderWrapperProcessor() {
 
 			@Override
-			public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeoutException {
-				return senderWrapperBase.sendMessage(message, session);
+			public SenderResult sendMessageAndProvideForwardName(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeoutException {
+				return senderWrapperBase.sendMessageAndProvideForwardName(message, session);
 			}
 		};
 		
 		processor.setSenderWrapperProcessor(target);
 
-		Message actual = processor.sendMessage(sender, new Message(input), session);
+		SenderResult actual = processor.sendMessageAndProvideForwardName(sender, new Message(input), session);
 		
 		assertEquals("unexpected output of last sender", expectedSecondSenderOutput, secondSenderOutput);
-		assertEquals("unexpected wrapper output", expectedWrapperOutput, actual.asString());
+		assertEquals("unexpected wrapper output", expectedWrapperOutput, actual.getResult().asString());
+		assertEquals("unexpected wrapper output", true, actual.isSuccess());
 		assertEquals("unexpected session variable value", expectedSessionKeyValue, Message.asString(session.get("storedResult")));
 	}
 	
