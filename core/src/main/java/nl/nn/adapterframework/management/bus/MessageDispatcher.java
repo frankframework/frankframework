@@ -63,7 +63,7 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 		ClassPathBeanDefinitionScanner scanner = scan();
 		String[] names = scanner.getRegistry().getBeanDefinitionNames();
 		for (String beanName : names) {
-			log.info("scanning bean [{}] for ServiceActivators", beanName);
+			log.debug("scanning bean [{}] for ServiceActivators", beanName);
 			BeanDefinition beanDef = scanner.getRegistry().getBeanDefinition(beanName);
 			findServiceActivators(beanDef);
 		}

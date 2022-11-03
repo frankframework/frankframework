@@ -75,16 +75,20 @@ public class BusTestBase {
 	}
 
 	public final Message<?> callSyncGateway(MessageBuilder<?> input) {
-		Gateway gateway = getConfiguration().getBean("gateway", Gateway.class);
+		Gateway gateway = getParentContext().getBean("gateway", Gateway.class);
+		gateway.setErrorChannel(null); //Somehow Spring is setting an ErrorChannel we do not want!
 		Message<?> response = gateway.sendSyncMessage(input.build());
 		if(response != null) {
 			return response;
 		}
-		throw new IllegalStateException("expected a reply");
+		String topic = input.getHeader("topic", String.class);
+		String action = input.getHeader("action", String.class);
+		throw new IllegalStateException("expected a reply while sending a message to topic ["+topic+"] action ["+action+"]");
 	}
 
 	public final void callAsyncGateway(MessageBuilder<?> input) {
-		Gateway gateway = getConfiguration().getBean("gateway", Gateway.class);
+		Gateway gateway = getParentContext().getBean("gateway", Gateway.class);
+		gateway.setErrorChannel(null); //Somehow Spring is setting an ErrorChannel we do not want!
 		gateway.sendAsyncMessage(input.build());
 	}
 
@@ -93,7 +97,7 @@ public class BusTestBase {
 	}
 
 	protected final <T> MessageBuilder<T> createRequestMessage(T payload, BusTopic topic, BusAction action) {
-		DefaultMessageBuilderFactory factory = getConfiguration().getBean("messageBuilderFactory", DefaultMessageBuilderFactory.class);
+		DefaultMessageBuilderFactory factory = getParentContext().getBean("messageBuilderFactory", DefaultMessageBuilderFactory.class);
 		MessageBuilder<T> builder = factory.withPayload(payload);
 		builder.setHeader(TopicSelector.TOPIC_HEADER_NAME, topic.name());
 		if(action != null) {

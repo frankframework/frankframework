@@ -54,7 +54,7 @@ public class TestHealth extends BusTestBase {
 
 	@Test
 	public void getIbisHealth() {
-		MessageBuilder request = createRequestMessage("NONE", BusTopic.HEALTH);
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.HEALTH);
 		Message<?> response = callSyncGateway(request);
 
 		String result = response.getPayload().toString();
@@ -63,7 +63,7 @@ public class TestHealth extends BusTestBase {
 
 	@Test
 	public void getConfigurationHealth() {
-		MessageBuilder request = createRequestMessage("NONE", BusTopic.HEALTH);
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.HEALTH);
 		request.setHeader("configuration", TestConfiguration.TEST_CONFIGURATION_NAME);
 		Message<?> response = callSyncGateway(request);
 
@@ -73,7 +73,7 @@ public class TestHealth extends BusTestBase {
 
 	@Test
 	public void getAdapterHealth() {
-		MessageBuilder request = createRequestMessage("NONE", BusTopic.HEALTH);
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.HEALTH);
 		request.setHeader("configuration", TestConfiguration.TEST_CONFIGURATION_NAME);
 		request.setHeader("adapter", "TestAdapter");
 		Message<?> response = callSyncGateway(request);
