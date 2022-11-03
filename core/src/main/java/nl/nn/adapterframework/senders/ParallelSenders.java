@@ -104,7 +104,13 @@ public class ParallelSenders extends SenderSeries {
 			resultXml.addAttribute("senderName", sender.getName());
 			Throwable throwable = pse.getThrowable();
 			if (throwable==null) {
-				Message result = pse.getReply();
+				SenderResult senderResult = pse.getReply();
+				success &= senderResult.isSuccess();
+				resultXml.addAttribute("success", senderResult.isSuccess());
+				if (senderResult.getForwardName()!=null) {
+					resultXml.addAttribute("forwardName", senderResult.getForwardName());
+				}
+				Message result = senderResult.getResult();
 				if (result==null) {
 					resultXml.addAttribute("type", "null");
 				} else {
@@ -118,6 +124,7 @@ public class ParallelSenders extends SenderSeries {
 			} else {
 				success=false;
 				resultXml.addAttribute("type", ClassUtils.nameOf(throwable));
+				resultXml.addAttribute("success", false);
 				resultXml.setValue(throwable.getMessage());
 			}
 			resultsXml.addSubElement(resultXml);

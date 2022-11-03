@@ -30,6 +30,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.stream.Message;
@@ -121,7 +122,7 @@ public class ShadowSender extends ParallelSenders {
 	 * We override this from the parallel sender as we should only execute the original and shadowsenders here!
 	 */
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessageAndProvideForwardName(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		Guard primaryGuard = new Guard();
 		Guard shadowGuard = new Guard();
 		Map<ISender, ParallelSenderExecutor> executorMap = new ConcurrentHashMap<>();
@@ -200,20 +201,26 @@ public class ShadowSender extends ParallelSenders {
 	}
 
 	protected void addResult(SaxDocumentBuilder builder, ISender sender, Map<ISender, ParallelSenderExecutor> executorMap, String tagName) throws SAXException, IOException {
-		try (SaxElementBuilder senderResult = builder.startElement(tagName)) {
+		try (SaxElementBuilder resultXml = builder.startElement(tagName)) {
 			ParallelSenderExecutor pse = executorMap.get(sender);
 
 			StatisticsKeeper sk = getStatisticsKeeper(sender);
-			senderResult.addAttribute("duration", ""+sk.getLast());
+			resultXml.addAttribute("duration", ""+sk.getLast());
 
-			senderResult.addAttribute("senderClass", ClassUtils.nameOf(sender));
-			senderResult.addAttribute("senderName", sender.getName());
+			resultXml.addAttribute("senderClass", ClassUtils.nameOf(sender));
+			resultXml.addAttribute("senderName", sender.getName());
 			Throwable throwable = pse.getThrowable();
 			if (throwable==null) {
-				Message result = pse.getReply();
-				senderResult.addValue(XmlUtils.skipXmlDeclaration(result.asString()));
+				SenderResult senderResult = pse.getReply();
+				resultXml.addAttribute("success", Boolean.toString(senderResult.isSuccess()));
+				if (senderResult.getForwardName()!=null) {
+					resultXml.addAttribute("forwardName", senderResult.getForwardName());
+				}
+				Message result = senderResult.getResult();
+				resultXml.addValue(XmlUtils.skipXmlDeclaration(result.asString()));
 			} else {
-				senderResult.addValue(throwable.getMessage());
+				resultXml.addAttribute("success", "false");
+				resultXml.addValue(throwable.getMessage());
 			}
 		}
 	}

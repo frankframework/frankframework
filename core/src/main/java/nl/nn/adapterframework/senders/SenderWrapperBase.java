@@ -84,6 +84,11 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 
 	protected abstract boolean isSenderConfigured();
 
+	@Override
+	public final Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		return IForwardNameProvidingSender.super.sendMessage(message, session);
+	}
+	
 	public abstract SenderResult doSendMessageAndProvideForwardName(Message message, PipeLineSession session) throws SenderException, TimeoutException;
 
 	@Override
