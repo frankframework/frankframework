@@ -58,7 +58,7 @@ public class WildFlyCredentialFactory implements ICredentialFactory {
 	public ICredentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {
 		CredentialStore cs = getCredentialStore(credentialStore);
 		if (cs==null) {
-			return null;
+			throw new NoSuchElementException("CredentialStore [" + credentialStore + "] not found");
 		}
 		return new WildFlyCredentials(cs, alias, defaultUsernameSupplier, defaultPasswordSupplier);
 	}
@@ -67,9 +67,9 @@ public class WildFlyCredentialFactory implements ICredentialFactory {
 	public boolean hasCredentials(String alias) {
 		CredentialStore cs = getCredentialStore(credentialStore);
 		try {
-			return cs!=null && cs.exists(alias, PasswordCredential.class);
+			return cs!=null && (cs.exists(alias, PasswordCredential.class) || cs.exists(alias+"/username", PasswordCredential.class));
 		} catch (CredentialStoreException e) {
-			e.printStackTrace();
+			log.fine(()->"exception testing for alias ["+alias+"] ("+e.getClass().getName()+") :"+e.getMessage());
 			return false;
 		}
 	}
@@ -80,14 +80,17 @@ public class WildFlyCredentialFactory implements ICredentialFactory {
 		if (cs==null) {
 			return null;
 		}
-		Set<String> aliasList = new LinkedHashSet<>();
-		for (String csAlias : cs.getAliases()) {
-			if (csAlias.endsWith("/username")) {
-				csAlias = csAlias.substring(0, csAlias.length()-9);
+		Set<String> result = new LinkedHashSet<>();
+		Set<String> aliases = cs.getAliases();
+		if (aliases!=null) {
+			for (String csAlias : aliases) {
+				if (csAlias.endsWith("/username")) {
+					csAlias = csAlias.substring(0, csAlias.length()-9);
+				}
+				result.add(csAlias);
 			}
-			aliasList.add(csAlias);
 		}
-		return aliasList;
+		return result;
 	}
 
 	private CredentialStore getCredentialStore(String credentialStore) {
@@ -95,12 +98,11 @@ public class WildFlyCredentialFactory implements ICredentialFactory {
 			ServiceContainer registry = CurrentServiceContainer.getServiceContainer();
 
 			if (registry==null) {
-				log.info("no ServiceContainer registry found");
-				return null;
+				throw new IllegalStateException("no ServiceContainer registry found");
 			}
 			ServiceController<?> credStoreService = registry.getService(ServiceName.of(SERVICE_NAME_CRED_STORE, credentialStore));
 			if (credStoreService == null) {
-				throw new NoSuchElementException("CredentialStore [" + credentialStore + "] not found");
+				throw new NoSuchElementException("ServiceController for CredentialStore [" + credentialStore + "] not found");
 			}
 			cs = (CredentialStore) credStoreService.getValue();
 		}

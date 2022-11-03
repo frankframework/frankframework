@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -59,11 +59,13 @@ public class Credentials implements ICredentials {
 					}
 				}
 			}
-			if ((username==null || username.equals("")) && usernameSupplier!=null) {
-				username = usernameSupplier.get();
-			}
-			if ((password==null || password.equals("")) && passwordSupplier!=null) {
-				password = passwordSupplier.get();
+			if ((username==null || username.equals("")) && (password==null || password.equals(""))) {
+				if (usernameSupplier!=null) {
+					username = usernameSupplier.get();
+				}
+				if (passwordSupplier!=null) {
+					password = passwordSupplier.get();
+				}
 			}
 			gotCredentials=true;
 		}
