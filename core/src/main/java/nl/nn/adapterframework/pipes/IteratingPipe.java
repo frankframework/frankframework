@@ -39,6 +39,7 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
@@ -412,7 +413,12 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 						count++;
 						String itemResult;
 						if (pse.getThrowable() == null) {
-							itemResult = pse.getReply().asString();
+							SenderResult senderResult = pse.getReply();
+							if (senderResult.isSuccess()) {
+								itemResult = senderResult.getResult().asString();
+							} else {
+								itemResult = "<exception>"+XmlUtils.encodeChars(senderResult.getResult().asString())+"</exception>";
+							}
 						} else {
 							itemResult = "<exception>"+XmlUtils.encodeChars(pse.getThrowable().getMessage())+"</exception>";
 						}

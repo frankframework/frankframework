@@ -26,7 +26,7 @@ import nl.nn.adapterframework.stream.Message;
 public class SenderResult {
 
 	private @Getter @Setter String forwardName;
-	private @Getter boolean success;
+	private @Getter @Setter boolean success;
 	private @Getter @Setter Message result;
 
 	public SenderResult() {

@@ -15,15 +15,17 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import org.apache.logging.log4j.Logger;
+import org.springframework.core.task.TaskExecutor;
+
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.LogUtil;
-import org.apache.logging.log4j.Logger;
-import org.springframework.core.task.TaskExecutor;
 
 /**
  * Helper class for IbisLocalSender that wraps around {@link ServiceDispatcher} to make calls to a local Ibis adapter in a separate thread.
@@ -52,7 +54,7 @@ public class IsolatedServiceCaller {
 		getTaskExecutor().execute(ise);
 	}
 
-	public Message callServiceIsolated(String serviceName, Message message, PipeLineSession session, boolean targetIsJavaListener) throws ListenerException {
+	public SenderResult callServiceIsolated(String serviceName, Message message, PipeLineSession session, boolean targetIsJavaListener) throws ListenerException {
 		Guard guard= new Guard();
 		guard.addResource();
 		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(serviceName, message, session, targetIsJavaListener, guard);

@@ -204,7 +204,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 	@Override
 	public SenderResult sendMessageAndProvideForwardName(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		String correlationID = session==null ? null : session.getCorrelationId();
-		Message result = null;
+		SenderResult result = null;
 		try (PipeLineSession context = new PipeLineSession()) {
 			if (paramList!=null) {
 				try {
@@ -227,11 +227,11 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 						} else {
 							log.debug(getLogPrefix()+"calling "+serviceIndication+" in asynchronously");
 							isolatedServiceCaller.callServiceAsynchronous(getServiceName(), message, context, false);
-							result = message;
+							result = new SenderResult(message);
 						}
 					} else {
 						log.debug(getLogPrefix()+"calling "+serviceIndication+" in same Thread");
-						result = new Message(ServiceDispatcher.getInstance().dispatchRequest(getServiceName(), message.asString(), context));
+						result = new SenderResult(ServiceDispatcher.getInstance().dispatchRequest(getServiceName(), message.asString(), context));
 					}
 				} catch (ListenerException | IOException e) {
 					if (ExceptionUtils.getRootCause(e) instanceof TimeoutException) {
@@ -275,11 +275,11 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 						} else {
 							log.debug(getLogPrefix()+"calling "+serviceIndication+" in asynchronously");
 							isolatedServiceCaller.callServiceAsynchronous(javaListener, message, context, true);
-							result = message;
+							result = new SenderResult(message);
 						}
 					} else {
 						log.debug(getLogPrefix()+"calling "+serviceIndication+" in same Thread");
-						result = new Message(listener.processRequest(correlationID,message.asString(),context));
+						result = new SenderResult(listener.processRequest(correlationID,message.asString(),context));
 					}
 				} catch (ListenerException | IOException e) {
 					if (ExceptionUtils.getRootCause(e) instanceof TimeoutException) {
@@ -299,7 +299,9 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 			ExitState exitState = (ExitState)context.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
 			Object exitCode = context.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
 			String forwardName = exitCode !=null ? exitCode.toString() : null;
-			return new SenderResult(forwardName, exitState==ExitState.SUCCESS, result);
+			result.setSuccess(exitState==ExitState.SUCCESS);
+			result.setForwardName(forwardName);
+			return result;
 		}
 	}
 
