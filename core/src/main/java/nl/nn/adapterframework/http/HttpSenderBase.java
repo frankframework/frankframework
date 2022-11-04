@@ -817,7 +817,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		}
 		result.getContext().put(CONTEXT_KEY_STATUS_CODE, statusCode);
 		result.getContext().put(CONTEXT_KEY_REASON_PHRASE, reasonPhrase);
-		return new SenderResult(Integer.toString(statusCode), success, result);
+		return new SenderResult(success, result, reasonPhrase, Integer.toString(statusCode));
 	}
 
 	@Override

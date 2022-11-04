@@ -100,7 +100,7 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 		SenderResult result = sender.sendMessageAndProvideForwardName(new Message("fakeInput"), session);
 		
 		assertFalse(result.isSuccess());
-		assertThat(result.getResult().asString(), containsString("<result senderClass=\"ExceptionThrowingSender\" type=\"SenderException\">fakeException</result>"));
+		assertThat(result.getResult().asString(), containsString("<result senderClass=\"ExceptionThrowingSender\" type=\"SenderException\" success=\"false\">fakeException</result>"));
 	}
 	
 	@Test

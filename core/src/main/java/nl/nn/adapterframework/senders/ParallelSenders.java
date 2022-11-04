@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.util.ConcurrencyThrottleSupport;
@@ -70,6 +71,7 @@ public class ParallelSenders extends SenderSeries {
 		Guard guard = new Guard();
 		Map<ISender, ParallelSenderExecutor> executorMap = new LinkedHashMap<>();
 		boolean success=true;
+		String errorMessage=null;
 
 		for (ISender sender: getSenders()) {
 			guard.addResource();
@@ -110,6 +112,12 @@ public class ParallelSenders extends SenderSeries {
 				if (senderResult.getForwardName()!=null) {
 					resultXml.addAttribute("forwardName", senderResult.getForwardName());
 				}
+				if (StringUtils.isNotEmpty(senderResult.getErrorMessage())) {
+					resultXml.addAttribute("errorMessage", senderResult.getErrorMessage());
+					if (errorMessage==null) {
+						errorMessage=senderResult.getErrorMessage();
+					}
+				}
 				Message result = senderResult.getResult();
 				if (result==null) {
 					resultXml.addAttribute("type", "null");
@@ -129,7 +137,7 @@ public class ParallelSenders extends SenderSeries {
 			}
 			resultsXml.addSubElement(resultXml);
 		}
-		return new SenderResult(success, new Message(resultsXml.toXML()));
+		return new SenderResult(success, new Message(resultsXml.toXML()), errorMessage, null);
 	}
 
 	@Override

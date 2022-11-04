@@ -257,10 +257,13 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 				prr.setResult(ibisDebugger.senderOutput(sender, correlationId, prr.getResult()));
 				return (M)prr;
 			case SENDERRESULT:
-				SenderResult senderResult = result!=null ? (SenderResult)result : new SenderResult();
+				SenderResult senderResult = result!=null ? (SenderResult)result : new SenderResult(Message.nullMessage());
 				ibisDebugger.showValue(correlationId, "success", senderResult.isSuccess());
 				if (senderResult.getForwardName()!=null) {
 					ibisDebugger.showValue(correlationId, "forwardName", senderResult.getForwardName());
+				}
+				if (StringUtils.isNotEmpty(senderResult.getErrorMessage())) {
+					ibisDebugger.showValue(correlationId, "errorMessage", senderResult.getErrorMessage());
 				}
 				senderResult.setResult(ibisDebugger.senderOutput(sender, correlationId, senderResult.getResult()));
 				return (M)senderResult;

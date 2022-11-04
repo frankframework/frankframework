@@ -266,7 +266,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 							throw new SenderException(msg);
 						}
 						log.info(getLogPrefix()+msg);
-						return new SenderResult("error", false, new Message("<error>"+msg+"</error>"));
+						return new SenderResult(new Message("<error>"+msg+"</error>"), msg);
 					}
 					if (isIsolated()) {
 						if (isSynchronous()) {
@@ -300,6 +300,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 			Object exitCode = context.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
 			String forwardName = exitCode !=null ? exitCode.toString() : null;
 			result.setSuccess(exitState==ExitState.SUCCESS);
+			result.setErrorMessage("exitState="+exitState);
 			result.setForwardName(forwardName);
 			return result;
 		}
