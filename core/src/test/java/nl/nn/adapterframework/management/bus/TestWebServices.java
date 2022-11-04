@@ -64,13 +64,15 @@ public class TestWebServices extends BusTestBase {
 	}
 
 	@After
-	public void tearDown() {
+	@Override
+	public void tearDown() throws Exception {
 		if(adapter != null) {
 			getConfiguration().getAdapterManager().unRegisterAdapter(adapter);
 		}
 		if(apiListener != null) {
 			ApiServiceDispatcher.getInstance().unregisterServiceClient(apiListener);
 		}
+		super.tearDown();
 	}
 
 	@Test

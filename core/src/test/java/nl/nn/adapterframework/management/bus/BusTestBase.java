@@ -4,6 +4,7 @@ import static org.junit.Assert.fail;
 
 import java.sql.ResultSet;
 
+import org.junit.After;
 import org.junit.Before;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
@@ -68,6 +69,11 @@ public class BusTestBase {
 	@Before
 	public void setUp() throws Exception {
 		getConfiguration(); //Create configuration
+	}
+
+	@After
+	public void tearDown() throws Exception {
+		getConfiguration().close();
 	}
 
 	/**
