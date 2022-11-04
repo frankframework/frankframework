@@ -159,7 +159,7 @@ public class ShadowSender extends ParallelSenders {
 					log.error("failed to send ShadowSender result to ["+resultSender.getName()+"]");
 				}
 			} catch (InterruptedException e) {
-				log.warn(getLogPrefix()+"result collection thrad was interupted", e);
+				log.warn(getLogPrefix()+"result collection thread was interupted", e);
 			}
 		};
 
