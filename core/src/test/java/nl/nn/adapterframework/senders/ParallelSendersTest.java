@@ -90,33 +90,33 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 		int maxDuration = (DELAY * amountOfDelaySendersInWrapper) + 1000;
 		assertTrue("Test took ["+duration+"]s, maxDuration ["+maxDuration+"]s", duration < maxDuration);
 	}
-	
+
 	@Test
 	public void testSingleExceptionHandling() throws Exception {
 		sender.registerSender(new ExceptionThrowingSender());
 		sender.configure();
 		sender.open();
-		
+
 		SenderResult result = sender.sendMessageAndProvideForwardName(new Message("fakeInput"), session);
-		
+
 		assertFalse(result.isSuccess());
 		assertThat(result.getResult().asString(), containsString("<result senderClass=\"ExceptionThrowingSender\" type=\"SenderException\" success=\"false\">fakeException</result>"));
 	}
-	
+
 	@Test
 	public void testExceptionHandling() throws Exception {
 		sender.registerSender(new EchoSender());
 		sender.registerSender(new ExceptionThrowingSender());
 		sender.registerSender(new EchoSender());
-		
+
 		sender.configure();
 		sender.open();
-		
+
 		SenderResult result = sender.sendMessageAndProvideForwardName(new Message("fakeInput"), session);
-		
+
 		assertFalse(result.isSuccess());
 	}
-	
+
 	private class ExceptionThrowingSender extends SenderBase {
 		@Override
 		public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {

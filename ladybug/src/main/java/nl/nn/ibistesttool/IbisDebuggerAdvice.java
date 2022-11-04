@@ -204,7 +204,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		PIPERUNRESULT,
 		SENDERRESULT;
 	}
-	
+
 	private <M> M debugSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, PipeLineSession session, int messageParamIndex, SenderReturnType returnType) throws Throwable {
 		if (!isEnabled()) {
 			return (M)proceedingJoinPoint.proceed();

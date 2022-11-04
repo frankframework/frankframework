@@ -34,7 +34,7 @@ import nl.nn.adapterframework.stream.Message;
 
 /**
  * Baseclass for Wrappers for senders, that allows to get input from a session variable, and to store output in a session variable.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.9
  */
@@ -88,7 +88,7 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 	public final Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		return IForwardNameProvidingSender.super.sendMessage(message, session);
 	}
-	
+
 	public abstract SenderResult doSendMessageAndProvideForwardName(Message message, PipeLineSession session) throws SenderException, TimeoutException;
 
 	@Override
