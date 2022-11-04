@@ -17,6 +17,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.lifecycle.Gateway;
 import nl.nn.adapterframework.testutil.QuerySenderPostProcessor;
 import nl.nn.adapterframework.testutil.TestConfiguration;
+import nl.nn.adapterframework.util.LogUtil;
 
 public class BusTestBase {
 
@@ -44,9 +45,13 @@ public class BusTestBase {
 	protected final Configuration getConfiguration() {
 		if(configuration == null) {
 			Configuration config = new TestConfiguration(TestConfiguration.TEST_CONFIGURATION_FILE);
-			System.err.println(getParentContext());
-			getParentContext().getAutowireCapableBeanFactory().autowireBeanProperties(config, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
-			configuration = (Configuration) getParentContext().getAutowireCapableBeanFactory().initializeBean(config, TestConfiguration.TEST_CONFIGURATION_NAME);
+			try {
+				getParentContext().getAutowireCapableBeanFactory().autowireBeanProperties(config, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+				configuration = (Configuration) getParentContext().getAutowireCapableBeanFactory().initializeBean(config, TestConfiguration.TEST_CONFIGURATION_NAME);
+			} catch (Exception e) {
+				LogUtil.getLogger(this).error("unable to create "+TestConfiguration.TEST_CONFIGURATION_NAME, e);
+				fail("unable to create "+TestConfiguration.TEST_CONFIGURATION_NAME);
+			}
 
 			try {
 				configuration.configure();
