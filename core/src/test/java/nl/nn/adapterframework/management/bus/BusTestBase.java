@@ -4,6 +4,7 @@ import static org.junit.Assert.fail;
 
 import java.sql.ResultSet;
 
+import org.junit.Before;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -19,8 +20,8 @@ import nl.nn.adapterframework.testutil.TestConfiguration;
 
 public class BusTestBase {
 
-	private static Configuration configuration;
-	private static ApplicationContext parentContext;
+	private Configuration configuration;
+	private ApplicationContext parentContext;
 	private QuerySenderPostProcessor qsPostProcessor = new QuerySenderPostProcessor();
 
 	private final ApplicationContext getParentContext() {
@@ -43,6 +44,7 @@ public class BusTestBase {
 	protected final Configuration getConfiguration() {
 		if(configuration == null) {
 			Configuration config = new TestConfiguration(TestConfiguration.TEST_CONFIGURATION_FILE);
+			System.err.println(getParentContext());
 			getParentContext().getAutowireCapableBeanFactory().autowireBeanProperties(config, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 			configuration = (Configuration) getParentContext().getAutowireCapableBeanFactory().initializeBean(config, TestConfiguration.TEST_CONFIGURATION_NAME);
 
@@ -56,6 +58,11 @@ public class BusTestBase {
 			configuration.setOriginalConfiguration("<original authAlias=\"test\" />");
 		}
 		return configuration;
+	}
+
+	@Before
+	public void setUp() throws Exception {
+		getConfiguration(); //Create configuration
 	}
 
 	/**

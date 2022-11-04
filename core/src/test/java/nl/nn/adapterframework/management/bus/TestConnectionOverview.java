@@ -19,8 +19,10 @@ import nl.nn.adapterframework.util.SpringUtils;
 public class TestConnectionOverview extends BusTestBase {
 	private Adapter adapter;
 
+	@Override
 	@Before
 	public void setUp() throws Exception {
+		super.setUp();
 		adapter = registerAdapter(getConfiguration());
 	}
 

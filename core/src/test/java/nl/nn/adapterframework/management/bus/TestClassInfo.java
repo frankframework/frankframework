@@ -12,7 +12,7 @@ public class TestClassInfo extends BusTestBase {
 
 	@Test
 	public void getClassByName() {
-		MessageBuilder request = createRequestMessage("NONE", BusTopic.DEBUG, BusAction.GET);
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.DEBUG, BusAction.GET);
 		String className = TestScopeProvider.class.getCanonicalName();
 		request.setHeader("className", className);
 		String jsonResponse = (String) callSyncGateway(request).getPayload();
@@ -25,7 +25,7 @@ public class TestClassInfo extends BusTestBase {
 
 	@Test
 	public void getClassWithBase() {
-		MessageBuilder request = createRequestMessage("NONE", BusTopic.DEBUG, BusAction.GET);
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.DEBUG, BusAction.GET);
 		String className = TestScopeProvider.class.getCanonicalName();
 		request.setHeader("className", className);
 		request.setHeader("baseClassName", this.getClass().getCanonicalName());

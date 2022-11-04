@@ -24,7 +24,9 @@ public class TestWebServices extends BusTestBase {
 	private ApiListener apiListener;
 
 	@Before
+	@Override
 	public void setUp() throws Exception {
+		super.setUp();
 		adapter = registerAdapterWithRestListener(getConfiguration());
 		registerDummyApiListener();
 	}
@@ -73,7 +75,7 @@ public class TestWebServices extends BusTestBase {
 
 	@Test
 	public void getWebServices() throws Exception {
-		MessageBuilder request = createRequestMessage("NONE", BusTopic.WEBSERVICES);
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.WEBSERVICES);
 		Message<?> response = callSyncGateway(request);
 
 		String result = response.getPayload().toString();

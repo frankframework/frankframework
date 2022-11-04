@@ -21,7 +21,9 @@ public class TestHealth extends BusTestBase {
 	private Adapter adapter;
 
 	@Before
+	@Override
 	public void setUp() throws Exception {
+		super.setUp();
 		adapter = registerAdapter(getConfiguration());
 	}
 

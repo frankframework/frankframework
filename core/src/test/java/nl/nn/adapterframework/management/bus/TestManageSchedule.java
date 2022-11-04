@@ -5,9 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.FixMethodOrder;
 import org.junit.Test;
-import org.junit.runners.MethodSorters;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 
@@ -21,10 +19,10 @@ import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.SpringUtils;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING) //Methods below are prefixed to ensure the start order
 public class TestManageSchedule extends BusTestBase {
 	private Adapter adapter;
 
+	@Override
 	@Before
 	public void setUp() throws Exception {
 		adapter = registerAdapter(getConfiguration());
@@ -58,7 +56,7 @@ public class TestManageSchedule extends BusTestBase {
 	}
 
 	@Test
-	public void aGetSchedules() throws Exception {
+	public void getSchedules() throws Exception {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.SCHEDULER, BusAction.GET);
 		Message<?> response = callSyncGateway(request);
 
@@ -69,7 +67,7 @@ public class TestManageSchedule extends BusTestBase {
 	}
 
 	@Test
-	public void bManageScheduleWithoutOperation() {
+	public void manageScheduleWithoutOperation() {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.SCHEDULER, BusAction.MANAGE);
 		try {
 			callSyncGateway(request);
@@ -80,7 +78,7 @@ public class TestManageSchedule extends BusTestBase {
 	}
 
 	@Test
-	public void dStartSchedule() {
+	public void startSchedule() {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.SCHEDULER, BusAction.MANAGE);
 		request.setHeader("operation", "start");
 		Message<?> response = callSyncGateway(request);
@@ -91,8 +89,19 @@ public class TestManageSchedule extends BusTestBase {
 	}
 
 	@Test
-	public void ePauzeSchedule() {
+	public void pauzeSchedule() {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.SCHEDULER, BusAction.MANAGE);
+		request.setHeader("operation", "pause");
+		try {
+			callSyncGateway(request);
+		} catch (Exception e) {
+			assertTrue(e.getCause() instanceof BusException);
+			assertEquals("can only pause a started scheduler", e.getCause().getMessage());
+		}
+
+		request.setHeader("operation", "start");
+		callSyncGateway(request);
+
 		request.setHeader("operation", "pause");
 		Message<?> response = callSyncGateway(request);
 
@@ -102,7 +111,7 @@ public class TestManageSchedule extends BusTestBase {
 	}
 
 	@Test
-	public void fStopSchedule() {
+	public void stopSchedule() {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.SCHEDULER, BusAction.MANAGE);
 		request.setHeader("operation", "stop");
 		Message<?> response = callSyncGateway(request);

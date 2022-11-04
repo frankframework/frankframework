@@ -11,7 +11,7 @@ public class TestEnvironmentVariables extends BusTestBase {
 
 	@Test
 	public void testEnvironmentVariables() {
-		MessageBuilder request = createRequestMessage("NONE", BusTopic.ENVIRONMENT);
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.ENVIRONMENT);
 		Message<String> jsonResponse = (Message<String>) callSyncGateway(request);
 
 		assertThat(jsonResponse.getPayload(), Matchers.containsString("\"test.property\":\"one2drie\""));

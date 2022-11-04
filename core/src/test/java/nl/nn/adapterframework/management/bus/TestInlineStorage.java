@@ -36,7 +36,9 @@ public class TestInlineStorage extends BusTestBase {
 	}
 
 	@Before
+	@Override
 	public void setUp() throws Exception {
+		super.setUp();
 		adapter = registerAdapter(getConfiguration());
 	}
 
