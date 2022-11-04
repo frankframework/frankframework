@@ -272,7 +272,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 	 * see property
 	 * http://apache.org/xml/features/validation/schema-full-checking
 	 * </p>
-	 * @default <code>false</code>
+	 * @ff.default <code>false</code>
 	 */
 	public void setFullSchemaChecking(boolean fullSchemaChecking) {
 		this.fullSchemaChecking = fullSchemaChecking;
