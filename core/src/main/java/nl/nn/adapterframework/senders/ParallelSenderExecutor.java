@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,9 +17,11 @@ package nl.nn.adapterframework.senders;
 
 import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IForwardNameProvidingSender;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.RequestReplyExecutor;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Guard;
@@ -54,7 +56,12 @@ public class ParallelSenderExecutor extends RequestReplyExecutor {
 		try {
 			long t1 = System.currentTimeMillis();
 			try {
-				reply = sender.sendMessage(request,session);
+				if (sender instanceof IForwardNameProvidingSender) {
+					reply = ((IForwardNameProvidingSender)sender).sendMessageAndProvideForwardName(request,session);
+				} else {
+					reply = new SenderResult(sender.sendMessage(request,session));
+				}
+				reply.getResult().preserve(); // consume the message immediately, to release any resources (like connections) associated with the sender execution
 			} catch (Throwable tr) {
 				throwable = tr;
 				log.warn("SenderExecutor caught exception",tr);

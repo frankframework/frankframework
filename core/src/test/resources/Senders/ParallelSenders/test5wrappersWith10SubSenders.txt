@@ -1,32 +1,32 @@
 <results>
-	<result senderClass="SenderSeries" senderName="Wrapper0" type="String">
+	<result senderClass="SenderSeries" senderName="Wrapper0" success="true" type="String">
 		<dummy/>
 	</result>
-	<result senderClass="SenderSeries" senderName="Wrapper1" type="String">
+	<result senderClass="SenderSeries" senderName="Wrapper1" success="true" type="String">
 		<dummy/>
 	</result>
-	<result senderClass="SenderSeries" senderName="Wrapper2" type="String">
+	<result senderClass="SenderSeries" senderName="Wrapper2" success="true" type="String">
 		<dummy/>
 	</result>
-	<result senderClass="SenderSeries" senderName="Wrapper3" type="String">
+	<result senderClass="SenderSeries" senderName="Wrapper3" success="true" type="String">
 		<dummy/>
 	</result>
-	<result senderClass="SenderSeries" senderName="Wrapper4" type="String">
+	<result senderClass="SenderSeries" senderName="Wrapper4" success="true" type="String">
 		<dummy/>
 	</result>
-	<result senderClass="SenderSeries" senderName="Wrapper5" type="String">
+	<result senderClass="SenderSeries" senderName="Wrapper5" success="true" type="String">
 		<dummy/>
 	</result>
-	<result senderClass="SenderSeries" senderName="Wrapper6" type="String">
+	<result senderClass="SenderSeries" senderName="Wrapper6" success="true" type="String">
 		<dummy/>
 	</result>
-	<result senderClass="SenderSeries" senderName="Wrapper7" type="String">
+	<result senderClass="SenderSeries" senderName="Wrapper7" success="true" type="String">
 		<dummy/>
 	</result>
-	<result senderClass="SenderSeries" senderName="Wrapper8" type="String">
+	<result senderClass="SenderSeries" senderName="Wrapper8" success="true" type="String">
 		<dummy/>
 	</result>
-	<result senderClass="SenderSeries" senderName="Wrapper9" type="String">
+	<result senderClass="SenderSeries" senderName="Wrapper9" success="true" type="String">
 		<dummy/>
 	</result>
 </results>

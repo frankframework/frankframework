@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,15 @@
 */
 package nl.nn.adapterframework.senders;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IForwardNameProvidingSender;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -28,13 +32,15 @@ import nl.nn.adapterframework.stream.Message;
 /**
  * Wrapper for senders, that allows to get input from a session variable, and to store output in a session variable.
  * 
- * @ff.parameters any parameters defined on the senderwrapper will be handed to the sender, if this is a {@link ISenderWithParameters ISenderWithParameters}
+ * @ff.parameters any parameters defined on the SenderWrapper will be handed to the sender, if this is a {@link ISenderWithParameters}
  * 
  * @author  Gerrit van Brakel
  * @since   4.9
  */
 public class SenderWrapper extends SenderWrapperBase {
-	private ISender sender;
+
+	/** specification of sender to send messages with */
+	private @Getter @Setter ISender sender;
 
 	@Override
 	protected boolean isSenderConfigured() {
@@ -58,8 +64,11 @@ public class SenderWrapper extends SenderWrapperBase {
 	}
 
 	@Override
-	public Message doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		return sender.sendMessage(message,session);
+	public SenderResult doSendMessageAndProvideForwardName(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		if (sender instanceof IForwardNameProvidingSender) {
+			return ((IForwardNameProvidingSender)sender).sendMessageAndProvideForwardName(message, session);
+		}
+		return new SenderResult(sender.sendMessage(message,session));
 	}
 
 	@Override
@@ -72,13 +81,5 @@ public class SenderWrapper extends SenderWrapperBase {
 	@Override
 	public boolean isSynchronous() {
 		return getSender().isSynchronous();
-	}
-
-	/** specification of sender to send messages with */
-	public void setSender(ISender sender) {
-		this.sender=sender;
-	}
-	protected ISender getSender() {
-		return sender;
 	}
 }
