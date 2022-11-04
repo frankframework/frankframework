@@ -10,7 +10,7 @@
         "threadPoolSize": 5,
         "schedulerClass": "org.quartz.impl.StdScheduler",
         "jobsExecuted": 0,
-        "name": "IbisScheduler",
+        "name": "TestScheduler",
         "state": "paused",
         "runningSince": 0,
         "shutdown": false,
