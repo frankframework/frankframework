@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,9 +19,10 @@ import lombok.Setter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -30,10 +31,10 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Performs a reload on database configuration.
- * 
+ *
  * <p>It is possible to set the name of the configuration with the parameter 'name'.</p>
  * <p>You can dynamically set 'forceReload' attribute with the parameter 'forceReload'.</p>
- * 
+ *
  * @author	Lars Sinke
  * @author	Niels Meijer
  */
@@ -43,7 +44,7 @@ public class ReloadSender extends SenderWithParametersBase {
 	private @Setter IbisManager ibisManager;
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 
 		String configName = null;
 		String newVersion = null;
@@ -84,12 +85,12 @@ public class ReloadSender extends SenderWithParametersBase {
 			if (forceReload || (currentVersion != null && !newVersion.equals(currentVersion))) {
 				IbisContext ibisContext = ibisManager.getIbisContext();
 				ibisContext.reload(configName);
-				return new Message("Reload " + configName + " succeeded");
+				return new SenderResult("Reload " + configName + " succeeded");
 			}
-			return new Message("Reload " + configName + " skipped");
+		} else {
+			log.warn("Configuration [" + configName + "] not loaded yet");
 		}
-		log.warn("Configuration [" + configName + "] not loaded yet");
-		return new Message("Reload " + configName + " skipped");
+		return new SenderResult(true, new Message("Reload " + configName + " skipped"), null, "skipped");
 	}
 
 	@IbisDoc({"reload the configuration regardless of the version", "false"})

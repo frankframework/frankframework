@@ -76,7 +76,7 @@ public class MsalClientAdapter extends HttpSenderBase implements IHttpClient {
 		Message request = new Message(httpRequest.body());
 
 		try {
-			Message response = sendMessage(request, session);
+			Message response = sendMessageOrThrow(request, session);
 			return new MsalResponse(response, session);
 		} catch (Exception e) {
 			log.error("An exception occurred whilst connecting with MSAL HTTPS call to [" + httpRequest.url().toString() + "]", e);

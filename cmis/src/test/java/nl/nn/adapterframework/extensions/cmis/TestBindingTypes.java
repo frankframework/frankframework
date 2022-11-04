@@ -127,7 +127,7 @@ public class TestBindingTypes extends CmisSenderTestBase {
 
 		configure();
 
-		String actualResult = sender.sendMessage(input, session).asString();
+		String actualResult = sender.sendMessageOrThrow(input, session).asString();
 		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 	}
 
@@ -137,7 +137,7 @@ public class TestBindingTypes extends CmisSenderTestBase {
 
 		configure();
 
-		assertTrue(Message.isEmpty(sender.sendMessage(input, session)));
+		assertTrue(Message.isEmpty(sender.sendMessageOrThrow(input, session)));
 		String base64 = (String) session.get("fileContent");
 		TestAssertions.assertEqualsIgnoreRNTSpace(Base64.encodeBase64String(expectedResult.getBytes()), base64);
 	}

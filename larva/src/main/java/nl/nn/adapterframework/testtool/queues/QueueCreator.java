@@ -278,7 +278,7 @@ public class QueueCreator {
 
 						deleteQuerySender.configure();
 						deleteQuerySender.open();
-						deleteQuerySender.sendMessage(TestTool.TESTTOOL_DUMMY_MESSAGE, null);
+						deleteQuerySender.sendMessageOrThrow(TestTool.TESTTOOL_DUMMY_MESSAGE, null);
 						deleteQuerySender.close();
 					} catch(ConfigurationException e) {
 						closeQueues(queues, properties, writers, correlationId);
@@ -326,7 +326,7 @@ public class QueueCreator {
 						try {
 							PipeLineSession session = new PipeLineSession();
 							session.put(PipeLineSession.correlationIdKey, correlationId);
-							String result = prePostFixedQuerySender.sendMessage(TestTool.TESTTOOL_DUMMY_MESSAGE, session).asString();
+							String result = prePostFixedQuerySender.sendMessageOrThrow(TestTool.TESTTOOL_DUMMY_MESSAGE, session).asString();
 							querySendersInfo.put("prePostQueryFixedQuerySender", prePostFixedQuerySender);
 							querySendersInfo.put("prePostQueryResult", result);
 						} catch(TimeoutException e) {

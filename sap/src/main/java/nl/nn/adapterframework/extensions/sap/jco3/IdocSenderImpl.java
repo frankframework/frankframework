@@ -24,6 +24,7 @@ import com.sap.conn.jco.JCoDestination;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -54,7 +55,7 @@ public abstract class IdocSenderImpl extends SapSenderBase {
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		String tid=null;
 		try {
 			ParameterValueList pvl = null;
@@ -82,7 +83,7 @@ public abstract class IdocSenderImpl extends SapSenderBase {
 				throw new SenderException("could not obtain TID to send Idoc");
 			}
 			JCoIDoc.send(idoc,IDocFactory.IDOC_VERSION_DEFAULT ,destination,tid);
-			return new Message(tid);
+			return new SenderResult(tid);
 		} catch (Exception e) {
 			throw new SenderException(e);
 		}

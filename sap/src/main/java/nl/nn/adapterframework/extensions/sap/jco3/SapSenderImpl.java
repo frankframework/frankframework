@@ -25,6 +25,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.sap.ISapSender;
@@ -96,7 +97,7 @@ public abstract class SapSenderImpl extends SapSenderBase implements ISapSender 
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		String tid=null;
 		try {
 			ParameterValueList pvl = null;
@@ -126,9 +127,9 @@ public abstract class SapSenderImpl extends SapSenderBase implements ISapSender 
 			}
 
 			if (isSynchronous()) {
-				return functionResult2message(function);
+				return new SenderResult(functionResult2message(function));
 			}
-			return new Message(tid);
+			return new SenderResult(tid);
 		} catch (Exception e) {
 			throw new SenderException(e);
 		}

@@ -35,7 +35,7 @@ public class MessageStoreSenderTest extends SenderTestBase<MessageStoreSender> {
 
 		String input = "<dummy/>";
 		Message message = new Message(input);
-		String result = sender.sendMessage(message, session).asString();
+		String result = sender.sendMessageOrThrow(message, session).asString();
 		assertEquals(input, result);
 	}
 
@@ -51,7 +51,7 @@ public class MessageStoreSenderTest extends SenderTestBase<MessageStoreSender> {
 
 		String input = "<dummy/>";
 		Message message = new Message(input);
-		String result = sender.sendMessage(message, session).asString();
+		String result = sender.sendMessageOrThrow(message, session).asString();
 		assertEquals(input+",value1,value2,value3", result);
 	}
 }

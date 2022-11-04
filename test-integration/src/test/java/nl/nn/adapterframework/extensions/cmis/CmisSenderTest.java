@@ -128,11 +128,11 @@ public class CmisSenderTest {
 		if (testViaHttpSender) {
 			Message message=new Message(""); 
 
-			result=httpSenders[index].sendMessage(message, session).asString();
+			result=httpSenders[index].sendMessageOrThrow(message, session).asString();
 			
 		} else {
 			Message message=new Message("<cmis><id>"+id+"</id></cmis>");
-			result=cmisSenders[index].sendMessage(message, session).asString();
+			result=cmisSenders[index].sendMessageOrThrow(message, session).asString();
 		}
 		
 		assertNotNull(result);

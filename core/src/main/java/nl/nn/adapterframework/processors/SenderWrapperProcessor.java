@@ -24,12 +24,12 @@ import nl.nn.adapterframework.stream.Message;
 
 /**
  * Interface for handlers in SenderWrapper processor chain.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.11
  */
 public interface SenderWrapperProcessor {
 
-	public SenderResult sendMessageAndProvideForwardName(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeoutException;
+	public SenderResult sendMessage(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeoutException;
 
 }

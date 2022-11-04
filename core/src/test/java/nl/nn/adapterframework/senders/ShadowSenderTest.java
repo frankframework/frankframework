@@ -24,6 +24,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -64,7 +65,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 		private @Getter @Setter Message result;
 
 		@Override
-		public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 			result = Message.asMessage(message);
 			return super.sendMessage(message, session);
 		}
@@ -73,8 +74,8 @@ public class ShadowSenderTest extends ParallelSendersTest {
 	private ISender createOriginalSender() {
 		EchoSender originalSender = new EchoSender() {
 			@Override
-			public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-				return new Message(ORIGINAL_SENDER_RESULT);
+			public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+				return new SenderResult(ORIGINAL_SENDER_RESULT);
 			}
 		};
 		originalSender.setName(ORIGINAL_SENDER_NAME);
@@ -133,7 +134,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(new Message(INPUT_MESSAGE), session).asString();
+		String result = sender.sendMessageOrThrow(new Message(INPUT_MESSAGE), session).asString();
 		assertEquals(ORIGINAL_SENDER_RESULT, result);
 
 		if (!waitForCompletionOfShadows) {
@@ -182,7 +183,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 
 		sender.configure();
 		sender.open();
-		String result = sender.sendMessage(new Message(INPUT_MESSAGE), session).asString();
+		String result = sender.sendMessageOrThrow(new Message(INPUT_MESSAGE), session).asString();
 		assertEquals(ORIGINAL_SENDER_RESULT, result);
 
 		Thread.sleep(3000); // wait for results to be collected in the background

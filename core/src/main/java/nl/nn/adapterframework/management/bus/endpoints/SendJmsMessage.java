@@ -99,7 +99,7 @@ public class SendJmsMessage extends BusEndpointBase {
 	private Message<Object> processMessage(JmsSender qms, Object requestMessage, boolean expectsReply) {
 		try {
 			qms.open();
-			nl.nn.adapterframework.stream.Message responseMessage = qms.sendMessage(nl.nn.adapterframework.stream.Message.asMessage(requestMessage), null);
+			nl.nn.adapterframework.stream.Message responseMessage = qms.sendMessageOrThrow(nl.nn.adapterframework.stream.Message.asMessage(requestMessage), null);
 			return expectsReply ? ResponseMessage.Builder.create().withPayload(responseMessage).raw() : null;
 		} catch (Exception e) {
 			throw new BusException("error occured sending message", e);

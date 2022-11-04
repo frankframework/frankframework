@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
@@ -50,8 +51,8 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </pre>
  * </code>
  * </p>
- * 
- * 
+ *
+ *
  * <p>
  * <b>example (browse output):</b>
  * <code>
@@ -75,7 +76,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </pre>
  * </code>
  * </p>
- * 
+ *
  * <p>
  * <b>example (remove output):</b>
  * <code>
@@ -86,7 +87,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </pre>
  * </code>
  * </p>
- * 
+ *
  * @author  Peter Leeuwenburgh
  */
 public class XmlJmsBrowserSender extends SenderWithParametersBase {
@@ -97,7 +98,7 @@ public class XmlJmsBrowserSender extends SenderWithParametersBase {
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		Element queueBrowserElement;
 		String root = null;
 		String jmsRealm = null;
@@ -198,6 +199,6 @@ public class XmlJmsBrowserSender extends SenderWithParametersBase {
 						+ "exception on closing message browser iterator", e);
 			}
 		}
-		return new Message(result.toXML());
+		return new SenderResult(result.toXML());
 	}
 }

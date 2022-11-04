@@ -67,7 +67,7 @@ public class ParallelSenders extends SenderSeries {
 	}
 
 	@Override
-	public SenderResult doSendMessageAndProvideForwardName(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		Guard guard = new Guard();
 		Map<ISender, ParallelSenderExecutor> executorMap = new LinkedHashMap<>();
 		boolean success=true;

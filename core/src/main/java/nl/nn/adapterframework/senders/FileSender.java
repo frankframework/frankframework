@@ -17,9 +17,10 @@ package nl.nn.adapterframework.senders;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -49,9 +50,9 @@ public class FileSender extends FileHandler implements ISenderWithParameters {
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		try {
-			return Message.asMessage(handle(message, session, getParameterList()));
+			return new SenderResult(Message.asMessage(handle(message, session, getParameterList())));
 		} catch(Exception e) {
 			throw new SenderException(e);
 		}

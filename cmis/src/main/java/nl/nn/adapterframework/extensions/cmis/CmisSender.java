@@ -347,7 +347,7 @@ public class CmisSender extends SenderWithParametersBase implements IForwardName
 	}
 
 	@Override
-	public SenderResult sendMessageAndProvideForwardName(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		Session cmisSession = null;
 		try {
 			ParameterValueList pvl=null;

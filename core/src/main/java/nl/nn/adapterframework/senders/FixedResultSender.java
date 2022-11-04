@@ -28,6 +28,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -83,7 +84,7 @@ public class FixedResultSender extends SenderWithParametersBase {
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		String result=returnString;
 		if (paramList!=null) {
 			ParameterValueList pvl;
@@ -113,7 +114,7 @@ public class FixedResultSender extends SenderWithParametersBase {
 			}
 		}
 		log.debug("returning fixed result [" + result + "]");
-		return new Message(result);
+		return new SenderResult(result);
 	}
 
 	public static String replace (String target, String from, String to) {

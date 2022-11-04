@@ -78,7 +78,7 @@ public class SchedulerSenderTest extends SchedulerTestBase {
 		assertFalse(schedulerHelper.contains(JOB_NAME, "test"));
 
 		schedulerSender.configure();
-		Message name = schedulerSender.sendMessage(new Message("message"), null);
+		Message name = schedulerSender.sendMessage(new Message("message"), null).getResult();
 		assertEquals(JOB_NAME, name.asString());
 
 		assertTrue(schedulerHelper.contains(JOB_NAME, "test"));

@@ -25,7 +25,6 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IForwardNameProvidingSender;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLine.ExitState;
@@ -90,7 +89,7 @@ import nl.nn.adapterframework.util.Misc;
  * @since  4.2
  */
 @Category("Basic")
-public class IbisLocalSender extends SenderWithParametersBase implements IForwardNameProvidingSender, HasPhysicalDestination {
+public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination {
 
 	private final @Getter(onMethod = @__(@Override)) String domain = "Local";
 
@@ -171,16 +170,6 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 		}
 	}
 
-	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		SenderResult senderResult = sendMessageAndProvideForwardName(message, session);
-		Message result = senderResult.getResult();
-		if (!senderResult.isSuccess()) {
-			throw new SenderException(getLogPrefix()+"call to "+getServiceIndication(session)+" unsuccessful, resulting in forward/exitCode ["+senderResult.getForwardName()+"]");
-		}
-		return result;
-	}
-
 	protected String getServiceIndication(PipeLineSession session) throws SenderException {
 		String serviceIndication;
 		if (StringUtils.isNotEmpty(getServiceName())) {
@@ -202,7 +191,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 	}
 
 	@Override
-	public SenderResult sendMessageAndProvideForwardName(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		String correlationID = session==null ? null : session.getCorrelationId();
 		SenderResult result = null;
 		try (PipeLineSession context = new PipeLineSession()) {

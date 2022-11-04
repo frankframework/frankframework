@@ -73,7 +73,6 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IForwardNameProvidingSender;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.Resource;
@@ -174,7 +173,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 //TODO: Fix javadoc!
 
-public abstract class HttpSenderBase extends SenderWithParametersBase implements IForwardNameProvidingSender, HasPhysicalDestination, HasKeystore, HasTruststore {
+public abstract class HttpSenderBase extends SenderWithParametersBase implements HasPhysicalDestination, HasKeystore, HasTruststore {
 
 	private final String CONTEXT_KEY_STATUS_CODE="Http.StatusCode";
 	private final String CONTEXT_KEY_REASON_PHRASE="Http.ReasonPhrase";
@@ -649,25 +648,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		SenderResult senderResult = sendMessageAndProvideForwardName(message, session);
-		Message result = senderResult.getResult();
-		if (!senderResult.isSuccess()) {
-			int statusCode = (int)result.getContext().get(CONTEXT_KEY_STATUS_CODE);
-			String reasonPhrase = (String)result.getContext().get(CONTEXT_KEY_REASON_PHRASE);
-			String body;
-			try {
-				body = result.asString();
-			} catch (IOException e) {
-				body = "Cannot extract responseBody ("+ClassUtils.nameOf(e)+"): "+e.getMessage();
-			}
-			throw new SenderException(getLogPrefix() + "httpstatus [" + statusCode + "] reason [" + reasonPhrase + "] body [" + body +"]");
-		}
-		return result;
-	}
-
-	@Override
-	public SenderResult sendMessageAndProvideForwardName(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		ParameterValueList pvl = null;
 		try {
 			if (paramList !=null) {

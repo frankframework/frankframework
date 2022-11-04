@@ -325,9 +325,14 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 						}
 						long senderStartTime= System.currentTimeMillis();
 						if (sender instanceof IBlockEnabledSender<?>) {
-							itemResult = ((IBlockEnabledSender)sender).sendMessage(blockHandle, message, session).asString();
+							SenderResult senderResult=((IBlockEnabledSender)sender).sendMessage(blockHandle, message, session);
+							if (senderResult.isSuccess()) {
+								itemResult = senderResult.getResult().asString();
+							} else {
+								throw new SenderException(senderResult.getErrorMessage());
+							}
 						} else {
-							itemResult = sender.sendMessage(message, session).asString();
+							itemResult = sender.sendMessageOrThrow(message, session).asString();
 						}
 						long senderEndTime = System.currentTimeMillis();
 						long senderDuration = senderEndTime - senderStartTime;

@@ -139,7 +139,7 @@ public class MailSendingTestHelper implements IFileSystemTestHelper {
 
 		Message msg=new Message(email.toXML());
 		System.out.println("email: ["+msg+"]");
-		mailSender.sendMessage(msg, null);
+		mailSender.sendMessageOrThrow(msg, null);
 		Thread.sleep(5000);
 	}
 }

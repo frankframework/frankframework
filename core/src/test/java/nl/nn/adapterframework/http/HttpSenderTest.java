@@ -72,7 +72,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		sender.sendMessage(null, null);
+		sender.sendMessageOrThrow(null, null);
 	}
 
 	@Test
@@ -86,7 +86,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, session).asString();
+		String result = sender.sendMessageOrThrow(input, session).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpGetWithoutPRC.txt"), result.trim());
 	}
 
@@ -164,7 +164,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpGet.txt"), result.trim());
 	}
 
@@ -182,7 +182,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpGetEncodeMessage.txt"), result.trim());
 	}
 
@@ -199,7 +199,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpGetWithContentType.txt"), result.trim());
 	}
 
@@ -218,7 +218,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpGetWithContentTypeAndCharset.txt"), result.trim());
 	}
 
@@ -234,7 +234,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpPost.txt"), result.trim());
 	}
 
@@ -252,7 +252,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpPostEncodeMessage.txt"), result.trim());
 	}
 
@@ -273,7 +273,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpPostAppendParamsToBody.txt"), result.trim());
 	}
 
@@ -296,7 +296,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpPostAppendParamsToBodyAndEmptyBody.txt"), result.trim());
 	}
 
@@ -317,7 +317,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpPostAppendParamsToBodyAndEmptyBody.txt"), result.trim());
 	}
 
@@ -333,7 +333,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpPut.txt"), result.trim());
 	}
 
@@ -349,7 +349,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpPatch.txt"), result.trim());
 	}
 
@@ -369,7 +369,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpGetWithParams.txt"), result.trim());
 	}
 
@@ -392,7 +392,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpGetWithUrlParamAndPath.txt"), result.trim());
 	}
 
@@ -409,7 +409,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpPostCharset.txt"), result.trim());
 	}
 
@@ -430,7 +430,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpGetWithParams.txt"), result.trim());
 	}
 
@@ -452,7 +452,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpPostUrlEncoded.txt"), result);
 	}
 
@@ -474,7 +474,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpPostUrlEncoded.txt"), result);
 	}
 
@@ -491,7 +491,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpPostJSON.txt"), result);
 	}
 
@@ -510,7 +510,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("binaryHttpPostJSON.txt"), result);
 	}
 
@@ -530,7 +530,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("binaryHttpPostPDF.txt"), result);
 	}
 
@@ -547,7 +547,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpPutJSON.txt"), result);
 	}
 
@@ -566,7 +566,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("binaryHttpPutJSON.txt"), result);
 	}
 
@@ -592,7 +592,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpMultipart.txt"), result.trim());
 	}
 
@@ -618,7 +618,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpMultipart.txt"), result.trim());
 	}
 
@@ -645,7 +645,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpMtom.txt"), result.trim());
 	}
 
@@ -670,7 +670,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("multipartWithoutFirstBodyPartName.txt"), result.trim());
 	}
 
@@ -696,7 +696,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("mtomWithoutFirstBodyPartName.txt"), result.trim());
 	}
 
@@ -856,7 +856,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpMtom.txt"), result.trim());
 	}
 
@@ -887,7 +887,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("parametersToSkip.txt"), result.trim());
 	}
 
@@ -922,7 +922,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("parametersToSkip.txt"), result.trim());
 	}
 
@@ -969,7 +969,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("specialCharactersInURLParam.txt"), result.trim());
 	}
 
@@ -989,7 +989,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("specialCharactersDoubleEscaped.txt"), result.trim());
 	}
 
@@ -1007,7 +1007,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		sender.sendMessage(input, pls).asString();
+		sender.sendMessageOrThrow(input, pls).asString();
 
 		// We expect sendMessage to throw expection
 		assertTrue(false);
@@ -1025,7 +1025,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		Message input = new Message("");
 		PipeLineSession pls = new PipeLineSession(session);
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("paramsWithoutValue.txt"), result.trim());
 	}
 
@@ -1042,7 +1042,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		Message input = new Message("");
 		PipeLineSession pls = new PipeLineSession(session);
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("paramsWithoutValue-skipped.txt"), result.trim());
 	}
 
@@ -1059,7 +1059,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		Message input = new Message("");
 		PipeLineSession pls = new PipeLineSession(session);
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("paramsWithoutValue-skipped.txt"), result.trim());
 	}
 
@@ -1161,7 +1161,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpHead.txt"), result.trim());
 	}
 }

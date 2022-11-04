@@ -61,7 +61,7 @@ public class LocalFileSystemSenderTest extends FileSystemSenderTest<LocalFileSys
 			fout.write("tja".getBytes());
 		}
 
-		Message result = sender.sendMessage(Message.nullMessage(), null);
+		Message result = sender.sendMessageOrThrow(Message.nullMessage(), null);
 
 		assertEquals("bb.txt", result.asString());
 		assertTrue(dest.exists());
@@ -89,7 +89,7 @@ public class LocalFileSystemSenderTest extends FileSystemSenderTest<LocalFileSys
 		try (FileOutputStream fout = new FileOutputStream(src)) {
 			fout.write("tja".getBytes());
 		}
-		Message result = sender.sendMessage(Message.nullMessage(), null);
+		Message result = sender.sendMessageOrThrow(Message.nullMessage(), null);
 
 		assertEquals("bb.txt", result.asString());
 		assertTrue(dest.exists());
