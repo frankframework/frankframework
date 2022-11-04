@@ -3,4 +3,4 @@ call %~dp0/../../scripts/clean_iaf.bat
 echo "clean %PRODUCT% iaf-test maven project" 
 call %MVN% %CLI_OPTS% -f %~dp0/../%PRODUCT% -s "%MVN_SETTINGS%" clean
 
-call %~dp0/build-start-body.bat
+call %~dp0/full-build-start-body.bat

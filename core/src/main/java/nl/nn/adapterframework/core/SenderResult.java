@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.core;
 
+import org.apache.commons.lang3.StringUtils;
+
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.stream.Message;
@@ -25,22 +27,28 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class SenderResult {
 
+	private @Getter @Setter boolean success;
+	private @Getter @Setter Message result;
+	private @Getter @Setter String errorMessage;
 	private @Getter @Setter String forwardName;
-	private @Getter boolean success;
-	private @Getter Message result;
 
-	public SenderResult() {
-		super();
+	public SenderResult(String result) {
+		this(new Message(result));
 	}
 
-	public SenderResult(String forwardName, boolean success, Message result) {
-		this.forwardName = forwardName;
+	public SenderResult(Message result) {
+		this(true, result, null, null);
+	}
+
+	public SenderResult(Message result, String errorMessage) {
+		this(StringUtils.isEmpty(errorMessage), result, errorMessage, null);
+	}
+
+	public SenderResult(boolean success, Message result, String errorMessage, String forwardName) {
 		this.success = success;
+		this.forwardName = forwardName;
 		this.result = result;
-	}
-
-	public void setResult(Message result) {
-		this.result = result;
+		this.errorMessage = errorMessage;
 	}
 
 }

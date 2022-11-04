@@ -70,4 +70,15 @@ public class TestHealth extends BusTestBase {
 		String result = response.getPayload().toString();
 		assertEquals("{\"errors\":[\"adapter[TestAdapter] is in state[STOPPED]\"],\"status\":\"SERVICE_UNAVAILABLE\"}", result);
 	}
+
+	@Test
+	public void getAdapterHealth() {
+		MessageBuilder request = createRequestMessage("NONE", BusTopic.HEALTH);
+		request.setHeader("configuration", TestConfiguration.TEST_CONFIGURATION_NAME);
+		request.setHeader("adapter", "TestAdapter");
+		Message<?> response = callSyncGateway(request);
+
+		String result = response.getPayload().toString();
+		assertEquals("{\"errors\":[\"adapter[TestAdapter] is in state[STOPPED]\"],\"status\":\"SERVICE_UNAVAILABLE\"}", result);
+	}
 }

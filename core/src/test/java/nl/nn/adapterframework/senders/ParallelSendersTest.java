@@ -1,5 +1,8 @@
 package nl.nn.adapterframework.senders;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -7,6 +10,10 @@ import java.io.IOException;
 
 import org.junit.Test;
 
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
@@ -82,5 +89,38 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 		long duration = System.currentTimeMillis() - startTime;
 		int maxDuration = (DELAY * amountOfDelaySendersInWrapper) + 1000;
 		assertTrue("Test took ["+duration+"]s, maxDuration ["+maxDuration+"]s", duration < maxDuration);
+	}
+
+	@Test
+	public void testSingleExceptionHandling() throws Exception {
+		sender.registerSender(new ExceptionThrowingSender());
+		sender.configure();
+		sender.open();
+
+		SenderResult result = sender.sendMessageAndProvideForwardName(new Message("fakeInput"), session);
+
+		assertFalse(result.isSuccess());
+		assertThat(result.getResult().asString(), containsString("<result senderClass=\"ExceptionThrowingSender\" type=\"SenderException\" success=\"false\">fakeException</result>"));
+	}
+
+	@Test
+	public void testExceptionHandling() throws Exception {
+		sender.registerSender(new EchoSender());
+		sender.registerSender(new ExceptionThrowingSender());
+		sender.registerSender(new EchoSender());
+
+		sender.configure();
+		sender.open();
+
+		SenderResult result = sender.sendMessageAndProvideForwardName(new Message("fakeInput"), session);
+
+		assertFalse(result.isSuccess());
+	}
+
+	private class ExceptionThrowingSender extends SenderBase {
+		@Override
+		public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+			throw new SenderException("fakeException");
+		}
 	}
 }

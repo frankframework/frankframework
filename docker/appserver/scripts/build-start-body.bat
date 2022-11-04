@@ -1,5 +1,3 @@
-call %~dp0/../../scripts/build_iaf.bat
-
 docker image rm %IMAGE_NAME%
 
 echo "build %PRODUCT% iaf-test docker image" 

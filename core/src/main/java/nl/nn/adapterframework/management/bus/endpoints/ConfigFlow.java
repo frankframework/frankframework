@@ -21,10 +21,8 @@ import java.io.InputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.messaging.Message;
 
-import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusException;
@@ -35,8 +33,7 @@ import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 @BusAware("frank-management-bus")
-public class ConfigFlow {
-	private @Getter @Setter IbisManager ibisManager;
+public class ConfigFlow extends BusEndpointBase {
 	private @Setter FlowDiagramManager flowDiagramManager;
 
 	@TopicSelector(BusTopic.FLOW)

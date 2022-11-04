@@ -28,18 +28,14 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.GenericMessage;
 
-import lombok.Getter;
-import lombok.Setter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.management.bus.ActionSelector;
@@ -51,20 +47,17 @@ import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.management.bus.dao.ConfigurationDAO;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.CONFIGURATION)
-public class ConfigManagement {
+public class ConfigManagement extends BusEndpointBase {
 
-	private @Getter @Setter IbisManager ibisManager;
-	private Logger log = LogUtil.getLogger(this);
 	private static final String HEADER_CONFIGURATION_VERSION_KEY = "version";
 	private static final String HEADER_DATASOURCE_NAME_KEY = FrankApiBase.HEADER_DATASOURCE_NAME_KEY;
 
 	private IbisContext getIbisContext() {
-		return ibisManager.getIbisContext();
+		return getIbisManager().getIbisContext();
 	}
 
 	/**
@@ -251,7 +244,7 @@ public class ConfigManagement {
 			}
 		}
 
-		FixedQuerySender qs = getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
+		FixedQuerySender qs = createBean(FixedQuerySender.class);
 		qs.setDatasourceName(dataSourceName);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		try {

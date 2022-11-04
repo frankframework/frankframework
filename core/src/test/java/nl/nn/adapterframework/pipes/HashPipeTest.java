@@ -117,7 +117,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 		pipe.setSecret("Aardappel");
 		pipe.setHashEncoding(HashEncoding.Hex);
 		pipe.setAlgorithm(HashAlgorithm.HmacSHA512);
-		pipe.addParameter(new Parameter("secret", ""));
+		pipe.addParameter(new Parameter("secret", null));
 		pipe.configure();
 		pipe.start();
 

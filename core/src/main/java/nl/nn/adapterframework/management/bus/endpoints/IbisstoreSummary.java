@@ -30,9 +30,6 @@ import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonStructure;
-import lombok.Getter;
-import lombok.Setter;
-import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.IPipe;
@@ -55,8 +52,7 @@ import nl.nn.adapterframework.webcontrol.api.ApiException;
 import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 @BusAware("frank-management-bus")
-public class IbisstoreSummary {
-	private @Getter @Setter IbisManager ibisManager;
+public class IbisstoreSummary extends BusEndpointBase {
 
 	@TopicSelector(BusTopic.IBISSTORE_SUMMARY)
 	public Message<Object> showIbisStoreSummary(Message<?> message) {
@@ -70,7 +66,7 @@ public class IbisstoreSummary {
 		String result = "";
 		try {
 			IbisstoreSummaryQuerySender qs;
-			qs = getIbisManager().getIbisContext().createBeanAutowireByName(IbisstoreSummaryQuerySender.class);
+			qs = createBean(IbisstoreSummaryQuerySender.class);
 			qs.setSlotmap(getSlotmap());
 			try {
 				qs.setName("QuerySender");

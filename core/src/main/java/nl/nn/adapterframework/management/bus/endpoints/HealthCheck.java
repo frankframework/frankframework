@@ -27,10 +27,7 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.messaging.Message;
 
-import lombok.Getter;
-import lombok.Setter;
 import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle.BootState;
@@ -45,20 +42,59 @@ import nl.nn.adapterframework.util.RunState;
 import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 @BusAware("frank-management-bus")
-public class HealthCheck {
-	private @Getter @Setter IbisManager ibisManager;
+public class HealthCheck extends BusEndpointBase {
 
 	@TopicSelector(BusTopic.HEALTH)
 	public Message<String> getHealth(Message<?> message) {
-//		String adapterName = BusMessageUtils.getHeader(message, "adapter");
-
 		String configurationName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_CONFIGURATION_NAME_KEY);
 		if(StringUtils.isNotEmpty(configurationName)) {
 			Configuration configuration = getConfigurationByName(configurationName);
+
+			String adapterName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_ADAPTER_NAME_KEY);
+			if(StringUtils.isNotEmpty(adapterName)) {
+				Adapter adapter = configuration.getRegisteredAdapter(adapterName);
+
+				if(adapter == null) {
+					throw new BusException("adapter ["+adapterName+"] does not exist");
+				}
+
+				return getAdapterHealth(adapter);
+			}
 			return getConfigurationHealth(configuration);
 		}
 
 		return getIbisHealth();
+	}
+
+	private Message<String> getAdapterHealth(Adapter adapter) {
+		Map<String, Object> response = new HashMap<>();
+		List<String> errors = new ArrayList<>();
+
+		RunState state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
+
+		if(state==RunState.STARTED) {
+			for (Receiver<?> receiver: adapter.getReceivers()) {
+				RunState rState = receiver.getRunState();
+
+				if(rState!=RunState.STARTED) {
+					errors.add("receiver["+receiver.getName()+"] of adapter["+adapter.getName()+"] is in state["+rState.toString()+"]");
+					state = RunState.ERROR;
+				}
+			}
+		} else {
+			errors.add("adapter["+adapter.getName()+"] is in state["+state.toString()+"]");
+			state = RunState.ERROR;
+		}
+
+		Status status = Response.Status.OK;
+		if(state==RunState.ERROR) {
+			status = Response.Status.SERVICE_UNAVAILABLE;
+		}
+		if(!errors.isEmpty())
+			response.put("errors", errors);
+		response.put("status", status);
+
+		return ResponseMessage.Builder.create().withPayload(response).withStatus(status.getStatusCode()).toJson();
 	}
 
 	private Message<String> getIbisHealth() {

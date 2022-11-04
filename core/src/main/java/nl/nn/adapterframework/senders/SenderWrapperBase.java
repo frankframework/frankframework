@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,8 +22,10 @@ import lombok.Setter;
 import nl.nn.adapterframework.cache.ICache;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IForwardNameProvidingSender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.processors.SenderWrapperProcessor;
@@ -32,11 +34,11 @@ import nl.nn.adapterframework.stream.Message;
 
 /**
  * Baseclass for Wrappers for senders, that allows to get input from a session variable, and to store output in a session variable.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public abstract class SenderWrapperBase extends SenderWithParametersBase implements HasStatistics, ICacheEnabled<String,String> {
+public abstract class SenderWrapperBase extends SenderWithParametersBase implements IForwardNameProvidingSender, HasStatistics, ICacheEnabled<String,String> {
 
 	private @Getter String getInputFromSessionKey;
 	private @Getter String getInputFromFixedValue=null;
@@ -82,14 +84,19 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 
 	protected abstract boolean isSenderConfigured();
 
-	public abstract Message doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException;
+	@Override
+	public final Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		return IForwardNameProvidingSender.super.sendMessage(message, session);
+	}
+
+	public abstract SenderResult doSendMessageAndProvideForwardName(Message message, PipeLineSession session) throws SenderException, TimeoutException;
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessageAndProvideForwardName(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		if (senderWrapperProcessor!=null) {
-			return senderWrapperProcessor.sendMessage(this, message, session);
+			return senderWrapperProcessor.sendMessageAndProvideForwardName(this, message, session);
 		}
-		return doSendMessage(message, session);
+		return doSendMessageAndProvideForwardName(message, session);
 	}
 
 	@Override

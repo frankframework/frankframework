@@ -23,9 +23,11 @@ import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IForwardNameProvidingSender;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
@@ -75,18 +77,27 @@ public class SenderSeries extends SenderWrapperBase {
 	}
 
 	@Override
-	public Message doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult doSendMessageAndProvideForwardName(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		String correlationID = session==null ? null : session.getCorrelationId();
+		SenderResult result=null;
 		long t1 = System.currentTimeMillis();
 		for (ISender sender: getSenders()) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"sending correlationID ["+correlationID+"] message ["+message+"] to sender ["+sender.getName()+"]");
-			message = sender.sendMessage(message,session);
+			if (sender instanceof IForwardNameProvidingSender) {
+				result = ((IForwardNameProvidingSender)sender).sendMessageAndProvideForwardName(message, session);
+				if (!result.isSuccess()) {
+					return result;
+				}
+			} else {
+				result = new SenderResult(sender.sendMessage(message,session));
+			}
+			message = result.getResult();
 			long t2 = System.currentTimeMillis();
 			StatisticsKeeper sk = getStatisticsKeeper(sender);
 			sk.addValue(t2-t1);
 			t1=t2;
 		}
-		return message;
+		return result!=null ? result : new SenderResult(message);
 	}
 
 	@Override

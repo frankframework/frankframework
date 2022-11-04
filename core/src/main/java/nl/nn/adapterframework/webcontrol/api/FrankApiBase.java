@@ -24,7 +24,10 @@ import java.util.Map;
 import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.EntityTag;
+import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
@@ -60,12 +63,14 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 	public static final String HEADER_DATASOURCE_NAME_KEY = "datasourceName";
 	public static final String HEADER_CONNECTION_FACTORY_NAME_KEY = "connectionFactory";
 	public static final String HEADER_CONFIGURATION_NAME_KEY = "configuration";
+	public static final String HEADER_ADAPTER_NAME_KEY = "adapter";
 
 	@Context protected ServletConfig servletConfig;
 	@Context protected @Getter SecurityContext securityContext;
 	@Context protected @Getter HttpServletRequest servletRequest;
 	private @Getter ApplicationContext applicationContext;
 	@Context protected @Getter UriInfo uriInfo;
+	@Context private Request rsRequest;
 
 	private JAXRSServiceFactoryBean serviceFactory = null;
 
@@ -73,11 +78,27 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 	protected static String HATEOASImplementation = AppConstants.getInstance().getString("ibis-api.hateoasImplementation", "default");
 
 	public Response callSyncGateway(RequestMessageBuilder input) throws ApiException {
+		return callSyncGateway(input, false);
+	}
+
+	@SuppressWarnings("unchecked")
+	public Response callSyncGateway(RequestMessageBuilder input, boolean evaluateEtag) throws ApiException {
 		Gateway gateway = getApplicationContext().getBean("gateway", Gateway.class);
 		Message<?> response = gateway.sendSyncMessage(input.build());
 		if(response != null) {
-			return BusMessageUtils.convertToJaxRsResponse(response);
+			EntityTag eTag = null;
+			if(evaluateEtag) {
+				eTag = BusMessageUtils.generateETagHeaderValue(response);
+			}
+			if(eTag != null) {
+				ResponseBuilder builder = rsRequest.evaluatePreconditions(eTag);
+				if(builder != null) { //If the eTag matches the response will be non-null
+					return builder.tag(eTag).build(); //Append the tag and force a 304 (Not Modified) or 412 (Precondition Failed)
+				}
+			}
+			return BusMessageUtils.convertToJaxRsResponse(response).tag(eTag).build();
 		}
+
 		StringBuilder errorMessage = new StringBuilder("did not receive a reply while sending message to topic ["+input.getTopic()+"]");
 		if(input.getAction() != null) {
 			errorMessage.append(" with action [");

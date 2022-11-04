@@ -62,6 +62,11 @@ public class ResponseMessage {
 			return this;
 		}
 
+		public Builder setHeader(String key, String value) {
+			headers.put(key, value);
+			return this;
+		}
+
 		public Message<String> toJson() {
 			String json = null;
 			if(payload instanceof nl.nn.adapterframework.stream.Message) {

@@ -1,32 +1,32 @@
 <results>
-	<result senderClass="TestSender" senderName="Sender0" type="String">
+	<result senderClass="TestSender" senderName="Sender0" success="true" type="String">
 		<dummy/>
 	</result>
-	<result senderClass="TestSender" senderName="Sender1" type="String">
+	<result senderClass="TestSender" senderName="Sender1" success="true" type="String">
 		<dummy/>
 	</result>
-	<result senderClass="TestSender" senderName="Sender2" type="String">
+	<result senderClass="TestSender" senderName="Sender2" success="true" type="String">
 		<dummy/>
 	</result>
-	<result senderClass="TestSender" senderName="Sender3" type="String">
+	<result senderClass="TestSender" senderName="Sender3" success="true" type="String">
 		<dummy/>
 	</result>
-	<result senderClass="TestSender" senderName="Sender4" type="String">
+	<result senderClass="TestSender" senderName="Sender4" success="true" type="String">
 		<dummy/>
 	</result>
-	<result senderClass="TestSender" senderName="Sender5" type="String">
+	<result senderClass="TestSender" senderName="Sender5" success="true" type="String">
 		<dummy/>
 	</result>
-	<result senderClass="TestSender" senderName="Sender6" type="String">
+	<result senderClass="TestSender" senderName="Sender6" success="true" type="String">
 		<dummy/>
 	</result>
-	<result senderClass="TestSender" senderName="Sender7" type="String">
+	<result senderClass="TestSender" senderName="Sender7" success="true" type="String">
 		<dummy/>
 	</result>
-	<result senderClass="TestSender" senderName="Sender8" type="String">
+	<result senderClass="TestSender" senderName="Sender8" success="true" type="String">
 		<dummy/>
 	</result>
-	<result senderClass="TestSender" senderName="Sender9" type="String">
+	<result senderClass="TestSender" senderName="Sender9" success="true" type="String">
 		<dummy/>
 	</result>
 </results>

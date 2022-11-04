@@ -274,6 +274,37 @@ public class ParameterTest {
 	}
 
 	@Test
+	public void testValueSetEmptyDoesNotResolveToMessage() throws ConfigurationException, ParameterException {
+		Parameter p = new Parameter();
+		p.setName("dummy");
+		p.setValue("");
+		p.configure();
+
+		PipeLineSession session = new PipeLineSession();
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+
+		Message message = new Message("fakeMessage");
+
+		assertEquals("", p.getValue(alreadyResolvedParameters, message, session, false));
+	}
+
+	@Test
+	public void testValueSetEmptyDoesResolveToMessageWhenDefaultValueIsSetToInput() throws ConfigurationException, ParameterException {
+		Parameter p = new Parameter();
+		p.setName("dummy");
+		p.setValue("");
+		p.setDefaultValueMethods("input");
+		p.configure();
+
+		PipeLineSession session = new PipeLineSession();
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+
+		Message message = new Message("fakeMessage");
+
+		assertEquals("fakeMessage", p.getValue(alreadyResolvedParameters, message, session, false));
+	}
+
+	@Test
 	public void testEmptyDefault() throws ConfigurationException, ParameterException {
 		Parameter p = new Parameter();
 		p.setName("dummy");

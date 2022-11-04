@@ -9,10 +9,10 @@ USER jboss
 
 # Create credential store in separate image
 FROM jboss-eap-with-python AS jboss-iaf-test-CredentialStoreCreator
-COPY src/configuration/createCS.py /home/createCS.py
+COPY src/configuration/createCS.sh /home/createCS.sh
 COPY target/dependencies/secrets /opt/frank/secrets
 
-RUN python3 /home/createCS.py
+RUN /home/createCS.sh
 
 FROM jboss-eap-with-python AS iaf-test-as-jboss
 # Copy dependencies

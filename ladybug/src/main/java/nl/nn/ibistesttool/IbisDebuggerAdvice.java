@@ -34,6 +34,7 @@ import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IBlockEnabledSender;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
 import nl.nn.adapterframework.core.IExtendedPipe;
+import nl.nn.adapterframework.core.IForwardNameProvidingSender;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipe;
@@ -45,6 +46,7 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.RequestReplyExecutor;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -197,7 +199,13 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		return pipeRunResult;
 	}
 
-	private <M> M debugSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, PipeLineSession session, int messageParamIndex, boolean expectPipeRunResult) throws Throwable {
+	private enum SenderReturnType {
+		MESSAGE,
+		PIPERUNRESULT,
+		SENDERRESULT;
+	}
+
+	private <M> M debugSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, PipeLineSession session, int messageParamIndex, SenderReturnType returnType) throws Throwable {
 		if (!isEnabled()) {
 			return (M)proceedingJoinPoint.proceed();
 		}
@@ -231,38 +239,65 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		}
 		if (sender instanceof SenderWrapperBase && ((SenderWrapperBase)sender).isPreserveInput()) {
 			// signal in the debugger that the result of the sender has been replaced with the original input
-			result = (M)ibisDebugger.preserveInput(correlationId, (Message)result);
+			if (returnType==SenderReturnType.SENDERRESULT) {
+				SenderResult senderResult = (SenderResult)result;
+				senderResult.setResult(ibisDebugger.preserveInput(correlationId, senderResult.getResult()));
+			} else {
+				result = (M)ibisDebugger.preserveInput(correlationId, (Message)result);
+			}
 		}
-		if (expectPipeRunResult) {
-			// Create PipeRunResult when streaming sender is stubbed, this will forward to the next pipe and process the
-			// message in a streaming.auto=false way (also when at the time of the original report the message was
-			// processed with streaming.auto=true)
-			PipeRunResult prr = result!=null ? (PipeRunResult)result : new PipeRunResult();
-			prr.setResult(ibisDebugger.senderOutput(sender, correlationId, prr.getResult()));
-			return (M)prr;
+		switch (returnType) {
+			case MESSAGE:
+				return (M)ibisDebugger.senderOutput(sender, correlationId, Message.asMessage(result));
+			case PIPERUNRESULT:
+				// Create PipeRunResult when streaming sender is stubbed, this will forward to the next pipe and process the
+				// message in a streaming.auto=false way (also when at the time of the original report the message was
+				// processed with streaming.auto=true)
+				PipeRunResult prr = result!=null ? (PipeRunResult)result : new PipeRunResult();
+				prr.setResult(ibisDebugger.senderOutput(sender, correlationId, prr.getResult()));
+				return (M)prr;
+			case SENDERRESULT:
+				SenderResult senderResult = result!=null ? (SenderResult)result : new SenderResult(Message.nullMessage());
+				ibisDebugger.showValue(correlationId, "success", senderResult.isSuccess());
+				if (senderResult.getForwardName()!=null) {
+					ibisDebugger.showValue(correlationId, "forwardName", senderResult.getForwardName());
+				}
+				if (StringUtils.isNotEmpty(senderResult.getErrorMessage())) {
+					ibisDebugger.showValue(correlationId, "errorMessage", senderResult.getErrorMessage());
+				}
+				senderResult.setResult(ibisDebugger.senderOutput(sender, correlationId, senderResult.getResult()));
+				return (M)senderResult;
+			default:
+				throw new IllegalStateException("Unknown ReturnType ["+returnType+"]");
 		}
-		return (M)ibisDebugger.senderOutput(sender, correlationId, Message.asMessage(result));
 	}
 
 	/**
 	 * Provides advice for {@link ISender#sendMessage(Message message, PipeLineSession session)}
 	 */
 	public Message debugSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, PipeLineSession session) throws Throwable {
-		return debugSenderInputOutputAbort(proceedingJoinPoint, message, session, 0, false);
+		return debugSenderInputOutputAbort(proceedingJoinPoint, message, session, 0, SenderReturnType.MESSAGE);
+	}
+
+	/**
+	 * Provides advice for {@link IForwardNameProvidingSender#sendMessageAndProvideForwardName(Message message, PipeLineSession session)}
+	 */
+	public SenderResult debugForwardNameProvidingSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, PipeLineSession session) throws Throwable {
+		return debugSenderInputOutputAbort(proceedingJoinPoint, message, session, 0, SenderReturnType.SENDERRESULT);
 	}
 
 	/**
 	 * Provides advice for {@link IBlockEnabledSender#sendMessage(Object blockHandle, Message message, PipeLineSession session)}
 	 */
 	public Message debugBlockEnabledSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Object blockHandle, Message message, PipeLineSession session) throws Throwable {
-		return debugSenderInputOutputAbort(proceedingJoinPoint, message, session, 1, false);
+		return debugSenderInputOutputAbort(proceedingJoinPoint, message, session, 1, SenderReturnType.MESSAGE);
 	}
 
 	/**
 	 * Provides advice for {@link IStreamingSender#sendMessage(Message message, PipeLineSession session, IForwardTarget next)}
 	 */
 	public PipeRunResult debugStreamingSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, PipeLineSession session, IForwardTarget next) throws Throwable {
-		return debugSenderInputOutputAbort(proceedingJoinPoint, message, session, 0, true);
+		return debugSenderInputOutputAbort(proceedingJoinPoint, message, session, 0, SenderReturnType.PIPERUNRESULT);
 	}
 
 	/**
@@ -328,11 +363,11 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 
 
 	/**
-	 * Provides advice for {@link CacheSenderWrapperProcessor#sendMessage(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session)}
+	 * Provides advice for {@link CacheSenderWrapperProcessor#sendMessageAndProvideForwardName(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session)}
 	 */
-	public Message debugSenderGetInputFrom(ProceedingJoinPoint proceedingJoinPoint, SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws Throwable {
+	public SenderResult debugSenderGetInputFrom(ProceedingJoinPoint proceedingJoinPoint, SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws Throwable {
 		if (!isEnabled()) {
-			return (Message)proceedingJoinPoint.proceed();
+			return (SenderResult)proceedingJoinPoint.proceed();
 		}
 		String correlationId = getCorrelationId(session);
 		message = debugGetInputFrom(session, correlationId, message,
@@ -344,7 +379,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		}
 		Object[] args = proceedingJoinPoint.getArgs();
 		args[1] = message;
-		return (Message)proceedingJoinPoint.proceed(args); // this message contains the original result, before replacing via preserveInput
+		return (SenderResult)proceedingJoinPoint.proceed(args); // this message contains the original result, before replacing via preserveInput
 	}
 
 	public <M> M debugReplyListenerInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, ICorrelatedPullingListener<M> listener, String correlationId, PipeLineSession pipeLineSession) throws Throwable {
@@ -490,8 +525,8 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			} finally {
 				Throwable throwable = requestReplyExecutor.getThrowable();
 				if (throwable == null) {
-					Message reply = requestReplyExecutor.getReply();
-					reply = (Message)threadConnector.endThread(reply);
+					SenderResult reply = requestReplyExecutor.getReply();
+					reply = threadConnector.endThread(reply);
 					requestReplyExecutor.setReply(reply);
 				} else {
 					throwable = threadConnector.abortThread(throwable);

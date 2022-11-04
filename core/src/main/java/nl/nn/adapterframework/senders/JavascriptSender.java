@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2019-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.javascript.J2V8;
@@ -115,7 +116,7 @@ public class JavascriptSender extends SenderSeries {
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException {
+	public SenderResult sendMessageAndProvideForwardName(Message message, PipeLineSession session) throws SenderException {
 
 		Object jsResult = "";
 		int numberOfParameters = 0;
@@ -169,9 +170,9 @@ public class JavascriptSender extends SenderSeries {
 		// It is recommended to have the result of the Javascript function be of type String, which will be the output of the sender
 		String result = String.valueOf(jsResult);
 		if(StringUtils.isEmpty(result) || "null".equals(result) || "undefined".equals(result)) {
-			return Message.nullMessage();
+			return new SenderResult(Message.nullMessage());
 		}
-		return new Message(result);
+		return new SenderResult(result);
 	}
 
 	/**

@@ -401,11 +401,12 @@ public class CmisSender extends SenderWithParametersBase implements IForwardName
 		try {
 			object = getCmisObject(cmisSession, message);
 		} catch (CmisObjectNotFoundException e) {
+			String errorMessage= "document with id [" + message + "] not found";
 			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
-				log.info(getLogPrefix() + "document with id [" + message + "] not found", e);
-				return new SenderResult(null, true, new Message(getResultOnNotFound()));
+				log.info(getLogPrefix() + errorMessage, e);
+				return new SenderResult(getResultOnNotFound());
 			}
-			return new SenderResult(NOT_FOUND_FORWARD_NAME, false, Message.nullMessage());
+			return new SenderResult(false, Message.nullMessage(), errorMessage, NOT_FOUND_FORWARD_NAME);
 		}
 
 		Document document = (Document) object;
@@ -438,7 +439,7 @@ public class CmisSender extends SenderWithParametersBase implements IForwardName
 				Misc.streamToStream(inputStream, outputStream);
 				log.debug(getLogPrefix() + "copied document content input stream [" + inputStream + "] to output stream [" + outputStream + "]");
 
-				return new SenderResult(null, true, Message.nullMessage());
+				return new SenderResult(Message.nullMessage());
 			}
 			else if (getProperties) {
 				if(getDocumentContent) {
@@ -461,7 +462,7 @@ public class CmisSender extends SenderWithParametersBase implements IForwardName
 				}
 				cmisXml.addSubElement(propertiesXml);
 
-				return new SenderResult(null, true, new Message(cmisXml.toXML()));
+				return new SenderResult(cmisXml.toXML());
 			}
 			else {
 				Message content = getMessageFromContentStream(document.getContentStream());
@@ -473,10 +474,10 @@ public class CmisSender extends SenderWithParametersBase implements IForwardName
 					} else {
 						session.put(getFileSessionKey(), content);
 					}
-					return new SenderResult(null, true, Message.nullMessage());
+					return new SenderResult(Message.nullMessage());
 				}
 
-				return new SenderResult(null, true, content);
+				return new SenderResult(content);
 			}
 		} catch (IOException e) {
 			throw new SenderException(e);
@@ -556,11 +557,11 @@ public class CmisSender extends SenderWithParametersBase implements IForwardName
 			Folder folder = cmisSession.getRootFolder();
 			Document document = folder.createDocument(props, contentStream, VersioningState.NONE);
 			log.debug(getLogPrefix() + "created new document [ " + document.getId() + "]");
-			return new SenderResult(null, true, new Message(document.getId()));
+			return new SenderResult(document.getId());
 		}
 		ObjectId objectId = cmisSession.createDocument(props, null, contentStream, VersioningState.NONE);
 		log.debug(getLogPrefix() + "created new document [ " + objectId.getId() + "]");
-		return new SenderResult(null, true, new Message(objectId.getId()));
+		return new SenderResult(objectId.getId());
 	}
 
 	private void processProperties(Element propertiesElement, Map<String, Object> props) throws SenderException {
@@ -627,17 +628,18 @@ public class CmisSender extends SenderWithParametersBase implements IForwardName
 		try {
 			object = getCmisObject(cmisSession, message);
 		} catch (CmisObjectNotFoundException e) {
+			String errorMessage="document with id [" + message + "] not found";
 			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
-				log.info(getLogPrefix() + "document with id [" + message + "] not found", e);
-				return new SenderResult(null, true, new Message(getResultOnNotFound()));
+				log.info(getLogPrefix() + errorMessage, e);
+				return new SenderResult(getResultOnNotFound());
 			}
-			return new SenderResult(NOT_FOUND_FORWARD_NAME, false, Message.nullMessage());
+			return new SenderResult(false, Message.nullMessage(), errorMessage, NOT_FOUND_FORWARD_NAME);
 		}
 		if (object.hasAllowableAction(Action.CAN_DELETE_OBJECT)) { //// You can delete
 			Document suppDoc = (Document) object;
 			suppDoc.delete(true);
 			String messageID = session==null ? null : session.getMessageId();
-			return new SenderResult(null, true, new Message(messageID));
+			return new SenderResult(messageID);
 
 		}
 		//// You can't delete
@@ -698,7 +700,7 @@ public class CmisSender extends SenderWithParametersBase implements IForwardName
 			cmisXml.addAttribute("totalNumItems", q.getTotalNumItems());
 			cmisXml.addSubElement(rowsetXml);
 		}
-		return new SenderResult(null, true, new Message(cmisXml.toXML()));
+		return new SenderResult(cmisXml.toXML());
 	}
 
 	private CmisObject getCmisObject(Session cmisSession, Message message) throws SenderException, CmisObjectNotFoundException {
@@ -934,7 +936,7 @@ public class CmisSender extends SenderWithParametersBase implements IForwardName
 				throw new CmisNotSupportedException("Operation not implemented");
 		}
 
-		return new SenderResult(null, true, new Message(resultXml.toXML()));
+		return new SenderResult(resultXml.toXML());
 	}
 
 	private SenderResult sendMessageForActionUpdate(Session cmisSession, Message message) throws SenderException{
@@ -961,14 +963,15 @@ public class CmisSender extends SenderWithParametersBase implements IForwardName
 		try {
 			object = cmisSession.getObject(cmisSession.createObjectId(objectId));
 		} catch (CmisObjectNotFoundException e) {
+			String errorMessage="document with id [" + message + "] not found";
 			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
-				log.info(getLogPrefix() + "document with id [" + message + "] not found", e);
-				return new SenderResult(null, true, new Message(getResultOnNotFound()));
+				log.info(getLogPrefix() + errorMessage, e);
+				return new SenderResult(getResultOnNotFound());
 			}
-			return new SenderResult(NOT_FOUND_FORWARD_NAME, false, Message.nullMessage());
+			return new SenderResult(false, Message.nullMessage(), errorMessage, NOT_FOUND_FORWARD_NAME);
 		}
 		object.updateProperties(props);
-		return new SenderResult(null, true, new Message(object.getId()));
+		return new SenderResult(object.getId());
 	}
 
 

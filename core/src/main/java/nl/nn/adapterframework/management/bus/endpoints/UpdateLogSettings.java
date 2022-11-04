@@ -22,15 +22,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.messaging.Message;
 
-import lombok.Getter;
-import lombok.Setter;
-import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
 import nl.nn.adapterframework.management.bus.ActionSelector;
 import nl.nn.adapterframework.management.bus.BusAction;
@@ -45,11 +41,9 @@ import nl.nn.adapterframework.webcontrol.api.DebuggerStatusChangedEvent;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.LOG_CONFIGURATION)
-public class UpdateLogSettings {
-	private @Getter @Setter IbisManager ibisManager;
+public class UpdateLogSettings extends BusEndpointBase {
 	private static final String LOG_INTERMEDIARY_RESULTS_PROPERTY = "log.logIntermediaryResults";
 	private static final String TESTTOOL_ENABLED_PROPERTY = "testtool.enabled";
-	private Logger log = LogUtil.getLogger(this);
 
 	@ActionSelector(BusAction.GET)
 	public Message<String> getLogConfiguration(Message<?> message) {

@@ -37,6 +37,7 @@ public class MessageUtilsTest {
 		String hash = MessageUtils.generateMD5Hash(message);
 		assertNotNull(hash);
 		assertEquals("hash should be the same", MessageUtils.generateMD5Hash(message), hash);
+		assertEquals("c72b9698fa1927e1dd12d3cf26ed84b2", hash);
 	}
 
 	@Test
