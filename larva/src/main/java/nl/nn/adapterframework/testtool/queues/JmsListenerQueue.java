@@ -34,6 +34,7 @@ public class JmsListenerQueue extends HashMap<String, Object> implements Queue {
 	public JmsListenerQueue(PullingJmsListener jmsListener) {
 		super();
 		this.jmsListener=jmsListener;
+		put("jmsListener", jmsListener);
 	}
 
 	@Override
