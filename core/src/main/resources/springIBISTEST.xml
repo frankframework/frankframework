@@ -28,12 +28,6 @@
 		<constructor-arg value="${jdbc.datasource.default}" />
 	</bean>
 
-	<bean id="ibisTestDataSource" class="org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy">
-		<property name="targetDataSource">
-			<ref bean="h2DataSource"/>
-		</property>
-	</bean>
-
 	<bean id="h2DataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
 		<property name="driverClassName" value="org.h2.Driver"/>
 		<property name="url" value="jdbc:h2:mem:ibisTestDataSource;DB_CLOSE_DELAY=-1"/>
@@ -43,4 +37,7 @@
 	<bean id="cxf" class="org.apache.cxf.bus.spring.SpringBus" destroy-method="shutdown">
 		<property name="id" value="ff-soap-bus"/>
 	</bean>
+	
+	<!-- metrics registry -->
+	<bean name="metricsRegistry" class="nl.nn.adapterframework.metrics.MetricsRegistry" autowire="byName"/>
 </beans>
