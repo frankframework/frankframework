@@ -15,20 +15,18 @@
 */
 package nl.nn.adapterframework.management.bus;
 
-import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.integration.support.DefaultMessageBuilderFactory;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 
 import lombok.Getter;
+import nl.nn.adapterframework.http.HttpUtils;
 import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 public class RequestMessageBuilder {
@@ -50,6 +48,9 @@ public class RequestMessageBuilder {
 	}
 
 	public RequestMessageBuilder addHeader(String key, Object value) {
+		if(TopicSelector.TOPIC_HEADER_NAME.equals(key)) {
+			throw new IllegalStateException("unable to override topic header");
+		}
 		customHeaders.put(key, value);
 		return this;
 	}
@@ -86,23 +87,12 @@ public class RequestMessageBuilder {
 			builder.setHeader("path", uriInfo.getPathParameters());
 		}
 
-		String user = getUserPrincipalName(base.getSecurityContext());
-		if(StringUtils.isNotEmpty(user)) {
-			builder.setHeader("issuedBy", user);
-		}
+		builder.setHeader("issuedBy", HttpUtils.getExtendedCommandIssuedBy(base.getServletRequest()));
 
 		for(Entry<String, Object> customHeader : customHeaders.entrySet()) {
 			builder.setHeader(customHeader.getKey(), customHeader.getValue());
 		}
 
 		return builder.build();
-	}
-
-	private static String getUserPrincipalName(SecurityContext securityContext) {
-		Principal principal = securityContext.getUserPrincipal();
-		if(principal != null && StringUtils.isNotEmpty(principal.getName())) {
-			return principal.getName();
-		}
-		return null;
 	}
 }

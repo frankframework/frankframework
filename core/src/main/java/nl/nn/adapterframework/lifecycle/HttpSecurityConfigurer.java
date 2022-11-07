@@ -15,8 +15,12 @@
 */
 package nl.nn.adapterframework.lifecycle;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
@@ -27,6 +31,8 @@ import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.authority.mapping.MappableAttributesRetriever;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
@@ -66,21 +72,36 @@ import nl.nn.adapterframework.util.SpringUtils;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false)
-public class HttpSecurityConfigurer implements ApplicationContextAware {
+public class HttpSecurityConfigurer implements ApplicationContextAware, InitializingBean {
 
+	private static final String ROLE_PREFIX = "ROLE_"; //see AuthorityAuthorizationManager#ROLE_PREFIX
 	private @Setter ApplicationContext applicationContext;
+	private @Setter @Autowired ServletManager servletManager;
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-		http.requestMatcher(AnyRequestMatcher.INSTANCE);
-		AuthenticationManager authManager = getAuthenticationManager(http);
-		http.addFilter(getProcessingFilter(authManager));
-		http.authenticationManager(authManager);
-		http.headers().frameOptions().sameOrigin();
+		if(servletManager.isWebSecurityEnabled()) {
+			http.requestMatcher(AnyRequestMatcher.INSTANCE);
+			AuthenticationManager authManager = getAuthenticationManager(http);
+			http.addFilter(getProcessingFilter(authManager));
+			http.authenticationManager(authManager);
+		} else {
+			http.anonymous().authorities(getDefaultAuthorities());
+		}
 
+		http.headers().frameOptions().sameOrigin();
 		http.csrf().disable();
 		http.logout();
 		return http.build();
+	}
+
+	private List<GrantedAuthority> getDefaultAuthorities() {
+		List<String> ibisRoles = servletManager.getDefaultIbisRoles();
+		List<GrantedAuthority> grantedAuthorities = new ArrayList<>(ibisRoles.size());
+		for (String role : ibisRoles) {
+			grantedAuthorities.add(new SimpleGrantedAuthority(ROLE_PREFIX + role));
+		}
+		return grantedAuthorities;
 	}
 
 	//see AuthenticationManagerFactoryBean
@@ -112,5 +133,12 @@ public class HttpSecurityConfigurer implements ApplicationContextAware {
 
 	private MappableAttributesRetriever getWebXmlSecurityRoles() {
 		return SpringUtils.createBean(applicationContext, WebXmlMappableAttributesRetriever.class);
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		if(servletManager == null) {
+			throw new IllegalStateException("unable to initialize Spring Security, ServletManager not set");
+		}
 	}
 }

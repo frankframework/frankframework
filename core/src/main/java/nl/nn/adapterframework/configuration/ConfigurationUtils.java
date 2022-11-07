@@ -24,6 +24,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -464,10 +465,15 @@ public class ConfigurationUtils {
 		try {
 			qs.open();
 			conn = qs.getConnection();
+			if(!qs.getDbmsSupport().isTablePresent(conn, "IBISCONFIG")) {
+				log.warn("unable to load configurations from database, table [IBISCONFIG] is not present");
+				return Collections.emptyList();
+			}
+
 			String query = "SELECT DISTINCT(NAME) FROM IBISCONFIG WHERE ACTIVECONFIG='"+(qs.getDbmsSupport().getBooleanValue(true))+"'";
 			PreparedStatement stmt = conn.prepareStatement(query);
 			rs = stmt.executeQuery();
-			List<String> stringList = new ArrayList<String>();
+			List<String> stringList = new ArrayList<>();
 			while (rs.next()) {
 				stringList.add(rs.getString(1));
 			}

@@ -18,6 +18,7 @@ package nl.nn.adapterframework.management.bus.endpoints;
 import javax.annotation.security.RolesAllowed;
 
 import org.springframework.messaging.Message;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
 import nl.nn.adapterframework.management.bus.BusAware;
@@ -35,9 +36,14 @@ public class HandleIbisManagerAction extends BusEndpointBase {
 		String configurationName = BusMessageUtils.getHeader(message, "configuration", "*ALL*");
 		String adapterName = BusMessageUtils.getHeader(message, "adapter");
 		String receiverName = BusMessageUtils.getHeader(message, "receiver");
-		String userPrincipalName = BusMessageUtils.getHeader(message, "issuedBy");
+		String userPrincipalName = null;
+		UserDetails user = BusMessageUtils.getUserDetails();
+		boolean isAdmin = false;
+		if(user != null) {
+			userPrincipalName = user.getUsername();
+			isAdmin = BusMessageUtils.hasAnyRole("IbisAdmin", "IbisTester"); //limits the use of a FULL_RELOAD
+		}
 
-		boolean isAdmin = BusMessageUtils.hasAnyRole("IbisAdmin", "IbisTester"); //limits the use of a FULL_RELOAD
 		getIbisManager().handleAction(action, configurationName, adapterName, receiverName, userPrincipalName, isAdmin);
 	}
 }

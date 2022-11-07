@@ -40,6 +40,8 @@ public class ClassInfo extends FrankApiBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getClassInfo(@PathParam("className") String className, @QueryParam("base") String baseClassName) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.DEBUG, BusAction.GET);
+		builder.addHeader("className", className);
+		builder.addHeader("baseClassName", baseClassName);
 		return callSyncGateway(builder);
 	}
 

@@ -1873,11 +1873,12 @@ angular.module('iaf.beheerconsole')
 		$scope.state.push({type:type, message: message});
 	};
 
+	$scope.selectedConfiguration = "";
 	$scope.form = {
 			name:"",
 			group:"",
 			adapter:"",
-			receiver:"",
+			listener:"",
 			cron:"",
 			interval:"",
 			message:"",
@@ -1893,8 +1894,9 @@ angular.module('iaf.beheerconsole')
 
 		fd.append("name", $scope.form.name);
 		fd.append("group", $scope.form.group);
+		fd.append("configuration", $scope.selectedConfiguration);
 		fd.append("adapter", $scope.form.adapter);
-		fd.append("receiver", $scope.form.receiver);
+		fd.append("listener", $scope.form.listener);
 		fd.append("cron", $scope.form.cron);
 		fd.append("interval", $scope.form.interval);
 		fd.append("persistent", $scope.form.persistent);
@@ -1905,11 +1907,12 @@ angular.module('iaf.beheerconsole')
 
 		Api.Post("schedules", fd, function(data) {
 			$scope.addLocalAlert("success", "Successfully added schedule!");
+			$scope.selectedConfiguration = "";
 			$scope.form = {
 					name:"",
 					group:"",
 					adapter:"",
-					receiver:"",
+					listener:"",
 					cron:"",
 					interval:"",
 					message:"",
@@ -1932,12 +1935,13 @@ angular.module('iaf.beheerconsole')
 	};
 	var url ="schedules/"+$stateParams.group+"/job/"+$stateParams.name;
 	$scope.editMode = true;
+	$scope.selectedConfiguration = "";
 
 	$scope.form = {
 			name:"",
 			group:"",
 			adapter:"",
-			receiver:"",
+			listener:"",
 			cron:"",
 			interval:"",
 			message:"",
@@ -1947,27 +1951,13 @@ angular.module('iaf.beheerconsole')
 			persistent:true,
 	};
 
-	function findReceiver() {
-		let adapter = $scope.form.adapter;
-		let listener = $scope.form.listener;
-		let receivers = ($scope.adapters && $scope.adapters[adapter]) ? $scope.adapters[adapter].receivers : null;
-		if(receivers != null) {
-			for(i in receivers) {
-				let receiver = receivers[i];
-				if(listener == receiver.listener.name) {
-					$scope.form.receiver = receiver.name;
-				}
-			}
-		}
-	}
-
 	Api.Get(url, function(data) {
+		$scope.selectedConfiguration = data.configuration;
 		$scope.form = {
 				name: data.name,
 				group: data.group,
 				adapter: data.adapter,
 				listener: data.listener,
-				receiver: null,
 				cron: data.triggers[0].cronExpression || "",
 				interval: data.triggers[0].repeatInterval || "",
 				message: data.message,
@@ -1976,7 +1966,6 @@ angular.module('iaf.beheerconsole')
 				lockkey: data.lockkey,
 				persistent: true,
 		};
-		findReceiver();
 	});
 
 	$scope.submit = function(form) {
@@ -1985,8 +1974,9 @@ angular.module('iaf.beheerconsole')
 
 		fd.append("name", $scope.form.name);
 		fd.append("group", $scope.form.group);
+		fd.append("configuration", $scope.selectedConfiguration);
 		fd.append("adapter", $scope.form.adapter);
-		fd.append("receiver", $scope.form.receiver);
+		fd.append("listener", $scope.form.listener);
 		if($scope.form.cron)
 			fd.append("cron", $scope.form.cron);
 		if($scope.form.interval)

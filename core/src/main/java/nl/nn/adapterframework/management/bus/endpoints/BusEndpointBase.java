@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.management.bus.endpoints;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
@@ -27,6 +28,7 @@ import nl.nn.adapterframework.util.SpringUtils;
 
 public class BusEndpointBase implements ApplicationContextAware, InitializingBean {
 	protected Logger log = LogUtil.getLogger(this);
+	private Logger secLog = LogUtil.getLogger("SEC");
 	private ApplicationContext applicationContext;
 	private IbisManager ibisManager;
 
@@ -58,5 +60,11 @@ public class BusEndpointBase implements ApplicationContextAware, InitializingBea
 		}
 
 		ibisManager = applicationContext.getBean("ibisManager", IbisManager.class);
+	}
+
+	protected final void log2SecurityLog(String message, String issuedBy) {
+		String logMessage = (StringUtils.isEmpty(issuedBy)) ? message : message+" issued by "+issuedBy;
+		log.info(logMessage);
+		secLog.info(logMessage);
 	}
 }

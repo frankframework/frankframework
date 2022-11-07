@@ -72,6 +72,7 @@ public class ServletManager {
 	private Set<String> servlets = new TreeSet<>();
 	private static boolean webSecurityEnabled = true;
 	private static TransportGuarantee defaultTransportGuarantee = TransportGuarantee.CONFIDENTIAL;
+	private static final List<String> DEFAULT_IBIS_ROLES = Arrays.asList("IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester", "IbisWebService");
 
 	protected static final String AUTH_ENABLED_KEY = "application.security.http.authentication";
 	protected static final String HTTPS_ENABLED_KEY = "application.security.http.transportGuarantee";
@@ -84,7 +85,7 @@ public class ServletManager {
 		this.servletContext = servletContext;
 
 		//Add the default IBIS roles
-		registeredRoles.addAll(Arrays.asList("IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester", "IbisWebService"));
+		registeredRoles.addAll(DEFAULT_IBIS_ROLES);
 
 		appConstants = AppConstants.getInstance();
 		setupDefaultSecuritySettings(appConstants);
@@ -252,5 +253,9 @@ public class ServletManager {
 			return EnumUtils.parse(TransportGuarantee.class, constraintType);
 		}
 		return defaultTransportGuarantee;
+	}
+
+	public List<String> getDefaultIbisRoles() {
+		return DEFAULT_IBIS_ROLES;
 	}
 }

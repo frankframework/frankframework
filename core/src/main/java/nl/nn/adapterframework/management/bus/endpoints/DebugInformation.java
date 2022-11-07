@@ -39,6 +39,10 @@ public class DebugInformation extends BusEndpointBase {
 		String baseClassName = BusMessageUtils.getHeader(message, "baseClassName");
 		String className = BusMessageUtils.getHeader(message, "className");
 
+		if(StringUtils.isEmpty(className)) {
+			throw new BusException("className may not be empty");
+		}
+
 		return getClassInfo(baseClassName, className);
 	}
 

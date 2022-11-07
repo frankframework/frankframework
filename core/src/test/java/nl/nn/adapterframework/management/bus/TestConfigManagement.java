@@ -14,7 +14,7 @@ public class TestConfigManagement extends BusTestBase {
 
 	@Test
 	public void getOriginalConfigurationByName() {
-		MessageBuilder request = createRequestMessage("NONE", BusTopic.CONFIGURATION, BusAction.GET);
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.CONFIGURATION, BusAction.GET);
 		request.setHeader("configuration", TestConfiguration.TEST_CONFIGURATION_NAME);
 		Message<?> response = callSyncGateway(request);
 		assertEquals(ORIGINAL_RESULT, response.getPayload());
@@ -22,14 +22,14 @@ public class TestConfigManagement extends BusTestBase {
 
 	@Test
 	public void getOriginalConfigurations() {
-		MessageBuilder request = createRequestMessage("NONE", BusTopic.CONFIGURATION, BusAction.GET);
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.CONFIGURATION, BusAction.GET);
 		Message<?> response = callSyncGateway(request);
 		assertEquals(ORIGINAL_RESULT, response.getPayload());
 	}
 
 	@Test
 	public void getLoadedConfigurationByName() {
-		MessageBuilder request = createRequestMessage("NONE", BusTopic.CONFIGURATION, BusAction.GET);
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.CONFIGURATION, BusAction.GET);
 		request.setHeader("configuration", TestConfiguration.TEST_CONFIGURATION_NAME);
 		request.setHeader("loaded", true);
 		Message<?> response = callSyncGateway(request);
@@ -38,7 +38,7 @@ public class TestConfigManagement extends BusTestBase {
 
 	@Test
 	public void getLoadedConfigurations() {
-		MessageBuilder request = createRequestMessage("NONE", BusTopic.CONFIGURATION, BusAction.GET);
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.CONFIGURATION, BusAction.GET);
 		request.setHeader("loaded", true);
 		Message<?> response = callSyncGateway(request);
 		assertEquals(LOADED_RESULT, response.getPayload());
@@ -46,7 +46,7 @@ public class TestConfigManagement extends BusTestBase {
 
 	@Test
 	public void findConfigurations() {
-		MessageBuilder request = createRequestMessage("NONE", BusTopic.CONFIGURATION, BusAction.FIND);
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.CONFIGURATION, BusAction.FIND);
 		request.setHeader("loaded", true);
 		Message<?> response = callSyncGateway(request);
 		assertEquals("[{\"name\":\"TestConfiguration\",\"stubbed\":false,\"state\":\"STARTING\",\"type\":\"JunitTestClassLoaderWrapper\"}]", response.getPayload());
@@ -54,7 +54,7 @@ public class TestConfigManagement extends BusTestBase {
 
 	@Test
 	public void findTestConfiguration() {
-		MessageBuilder request = createRequestMessage("NONE", BusTopic.CONFIGURATION, BusAction.FIND);
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.CONFIGURATION, BusAction.FIND);
 		request.setHeader("configuration", TestConfiguration.TEST_CONFIGURATION_NAME);
 		request.setHeader("loaded", true);
 		Message<?> response = callSyncGateway(request);

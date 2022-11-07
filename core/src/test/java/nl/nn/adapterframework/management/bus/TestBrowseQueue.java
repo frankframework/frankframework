@@ -14,8 +14,10 @@ import nl.nn.adapterframework.testutil.mock.ConnectionFactoryFactoryMock;
 
 public class TestBrowseQueue extends BusTestBase {
 
+	@Override
 	@Before
-	public void setUp() {
+	public void setUp() throws Exception {
+		super.setUp();
 		JmsRealmFactory.getInstance().clear();
 		JmsRealm jmsRealm = new JmsRealm();
 		jmsRealm.setRealmName("dummyQCFAddedViaJmsRealm");

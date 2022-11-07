@@ -1,0 +1,21 @@
+{
+    "scheduler": {
+        "paused": true,
+        "threadPoolClass": "org.quartz.simpl.SimpleThreadPool",
+        "isSchedulerRemote": false,
+        "started": false,
+        "version": "2.3.2",
+        "jobStoreSupportsPersistence": false,
+        "instanceId": "one",
+        "threadPoolSize": 5,
+        "schedulerClass": "org.quartz.impl.StdScheduler",
+        "jobsExecuted": 0,
+        "name": "TestScheduler",
+        "state": "paused",
+        "runningSince": 0,
+        "shutdown": false,
+        "jobStoreClass": "org.quartz.simpl.RAMJobStore"
+    },
+    "jobs": {
+    }
+}
