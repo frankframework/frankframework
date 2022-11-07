@@ -28,7 +28,6 @@ import javax.ws.rs.core.Response;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.RequestMessageBuilder;
-import nl.nn.adapterframework.util.AppConstants;
 
 /**
  * Collection of server and application statistics and information.
@@ -38,7 +37,7 @@ import nl.nn.adapterframework.util.AppConstants;
  */
 
 @Path("/")
-public class ServerStatistics extends Base {
+public class ServerStatistics extends FrankApiBase {
 
 	@GET
 	@PermitAll
@@ -69,30 +68,15 @@ public class ServerStatistics extends Base {
 	@Path("/server/health")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getIbisHealth() {
-		Map<String, Object> response = new HashMap<>();
-
 		try {
-			getIbisManager();
-		}
-		catch(ApiException e) {
+			return callSyncGateway(RequestMessageBuilder.create(this, BusTopic.HEALTH));
+		} catch(ApiException e) {
+			Map<String, Object> response = new HashMap<>();
 			response.put("status", Response.Status.INTERNAL_SERVER_ERROR);
-			response.put("error", e.getMessage());
-
-			Throwable cause = e.getCause();
-			if(cause != null && cause.getStackTrace() != null) {
-				String dtapStage = AppConstants.getInstance().getString("dtap.stage", null);
-				if((!"ACC".equals(dtapStage) && !"PRD".equals(dtapStage))) {
-					response.put("stackTrace", cause.getStackTrace());
-				}
-			}
-
+			response.put("error", "unable to connect to backend system: "+e.getMessage());
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(response).build();
-		}
-		catch(Exception e) {
+		} catch (Exception e) {
 			throw new ApiException(e);
 		}
-
-
-		return callSyncGateway(RequestMessageBuilder.create(this, BusTopic.HEALTH));
 	}
 }

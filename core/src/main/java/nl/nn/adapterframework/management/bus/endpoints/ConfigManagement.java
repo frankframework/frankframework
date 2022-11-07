@@ -35,7 +35,6 @@ import org.springframework.messaging.support.GenericMessage;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
-import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.management.bus.ActionSelector;
@@ -55,10 +54,6 @@ public class ConfigManagement extends BusEndpointBase {
 
 	private static final String HEADER_CONFIGURATION_VERSION_KEY = "version";
 	private static final String HEADER_DATASOURCE_NAME_KEY = FrankApiBase.HEADER_DATASOURCE_NAME_KEY;
-
-	private IbisContext getIbisContext() {
-		return getIbisManager().getIbisContext();
-	}
 
 	/**
 	 * @return Configuration XML
@@ -146,11 +141,11 @@ public class ConfigManagement extends BusEndpointBase {
 
 		try {
 			if(activate != null) {
-				if(ConfigurationUtils.activateConfig(getIbisContext(), configurationName, version, activate, datasourceName)) {
+				if(ConfigurationUtils.activateConfig(getApplicationContext(), configurationName, version, activate, datasourceName)) {
 					return ResponseMessage.accepted();
 				}
 			}
-			else if(autoreload != null && ConfigurationUtils.autoReloadConfig(getIbisContext(), configurationName, version, autoreload, datasourceName)) {
+			else if(autoreload != null && ConfigurationUtils.autoReloadConfig(getApplicationContext(), configurationName, version, autoreload, datasourceName)) {
 				return ResponseMessage.accepted();
 			}
 		} catch(Exception e) {
@@ -174,9 +169,9 @@ public class ConfigManagement extends BusEndpointBase {
 		Map<String, String> result = new LinkedHashMap<>();
 		try {
 			if(multipleConfigs) {
-				result = ConfigurationUtils.processMultiConfigZipFile(getIbisContext(), datasourceName, activateConfig, automaticReload, file, user);
+				result = ConfigurationUtils.processMultiConfigZipFile(getApplicationContext(), datasourceName, activateConfig, automaticReload, file, user);
 			} else {
-				String configName=ConfigurationUtils.addConfigToDatabase(getIbisContext(), datasourceName, activateConfig, automaticReload, filename, file, user);
+				String configName=ConfigurationUtils.addConfigToDatabase(getApplicationContext(), datasourceName, activateConfig, automaticReload, filename, file, user);
 				if(configName != null) {
 					result.put(configName, "loaded");
 				}
@@ -202,7 +197,7 @@ public class ConfigManagement extends BusEndpointBase {
 
 		Map<String, Object> configuration;
 		try {
-			configuration = ConfigurationUtils.getConfigFromDatabase(getIbisContext(), configurationName, datasourceName, version);
+			configuration = ConfigurationUtils.getConfigFromDatabase(getApplicationContext(), configurationName, datasourceName, version);
 		} catch (ConfigurationException e) {
 			throw new BusException("unable to download configuration from database", e);
 		}
@@ -228,7 +223,7 @@ public class ConfigManagement extends BusEndpointBase {
 		String datasourceName = BusMessageUtils.getHeader(message, HEADER_DATASOURCE_NAME_KEY);
 
 		try {
-			ConfigurationUtils.removeConfigFromDatabase(getIbisContext(), configurationName, datasourceName, version);
+			ConfigurationUtils.removeConfigFromDatabase(getApplicationContext(), configurationName, datasourceName, version);
 		} catch (Exception e) {
 			throw new BusException("unable to delete configuration from database", e);
 		}

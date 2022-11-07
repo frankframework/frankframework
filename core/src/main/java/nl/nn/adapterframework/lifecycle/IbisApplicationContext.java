@@ -199,10 +199,12 @@ public class IbisApplicationContext implements Closeable {
 		}
 	}
 
+	@Deprecated
 	public <T> T getBean(String beanName, Class<T> beanClass) {
 		return applicationContext.getBean(beanName, beanClass);
 	}
 
+	@Deprecated
 	public <T> T createBeanAutowireByName(Class<T> beanClass) {
 		return SpringUtils.createBean(applicationContext, beanClass);
 	}

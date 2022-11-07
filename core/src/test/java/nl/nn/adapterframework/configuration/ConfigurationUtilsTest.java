@@ -35,6 +35,8 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
@@ -50,7 +52,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class ConfigurationUtilsTest extends Mockito {
 
-	private IbisContext ibisContext = spy(new IbisContext());
+	private ApplicationContext applicationContext = mock(ApplicationContext.class);
 	private PreparedStatementMock stmt;
 
 	private static final String STUB4TESTTOOL_XSLT_VALIDATORS_PARAM = "disableValidators";
@@ -78,7 +80,10 @@ public class ConfigurationUtilsTest extends Mockito {
 			}
 		}).when(conn).prepareStatement(anyString());
 
-		doReturn(fq).when(ibisContext).createBeanAutowireByName(FixedQuerySender.class);
+		//Mock applicationContext.getAutowireCapableBeanFactory().createBean(beanClass, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+		AutowireCapableBeanFactory beanFactory = mock(AutowireCapableBeanFactory.class);
+		doReturn(beanFactory).when(applicationContext).getAutowireCapableBeanFactory();
+		doReturn(fq).when(beanFactory).createBean(FixedQuerySender.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 
 		// STUB a TransactionManager
 		PlatformTransactionManager ptm = new PlatformTransactionManager() {
@@ -98,7 +103,7 @@ public class ConfigurationUtilsTest extends Mockito {
 				// STUB
 			}
 		};
-		doReturn(ptm).when(ibisContext).getBean("txManager", PlatformTransactionManager.class);
+		doReturn(ptm).when(applicationContext).getBean("txManager", PlatformTransactionManager.class);
 	}
 
 	@Test
@@ -110,7 +115,7 @@ public class ConfigurationUtilsTest extends Mockito {
 		String filename = FilenameUtils.getName(zip.getFile());
 		assertNotNull("filename cannot be determined", filename);
 
-		boolean result = ConfigurationUtils.addConfigToDatabase(ibisContext, "fakeDataSource", false, false, "ConfigurationName", "001_20191002-1300", filename, zip.openStream(), "dummy-user");
+		boolean result = ConfigurationUtils.addConfigToDatabase(applicationContext, "fakeDataSource", false, false, "ConfigurationName", "001_20191002-1300", filename, zip.openStream(), "dummy-user");
 		assertTrue("file uploaded to mock database", result);
 		Map<String, Object> parameters = stmt.getNamedParameters();
 
@@ -129,7 +134,7 @@ public class ConfigurationUtilsTest extends Mockito {
 		String filename = FilenameUtils.getName(zip.getFile());
 		assertNotNull("filename cannot be determined", filename);
 
-		String result = ConfigurationUtils.addConfigToDatabase(ibisContext, "fakeDataSource", false, false, filename, zip.openStream(), "dummy-user");
+		String result = ConfigurationUtils.addConfigToDatabase(applicationContext, "fakeDataSource", false, false, filename, zip.openStream(), "dummy-user");
 		assertNotNull("file uploaded to mock database", result);
 		Map<String, Object> parameters = stmt.getNamedParameters();
 
@@ -148,7 +153,7 @@ public class ConfigurationUtilsTest extends Mockito {
 		assertNotNull("filename cannot be determined", filename);
 
 		BuildInfoValidator.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "_SC";
-		String result = ConfigurationUtils.addConfigToDatabase(ibisContext, "fakeDataSource", false, false, filename, zip.openStream(), "dummy-user");
+		String result = ConfigurationUtils.addConfigToDatabase(applicationContext, "fakeDataSource", false, false, filename, zip.openStream(), "dummy-user");
 		assertNotNull("file uploaded to mock database", result);
 		Map<String, Object> parameters = stmt.getNamedParameters();
 
@@ -167,7 +172,7 @@ public class ConfigurationUtilsTest extends Mockito {
 		assertNotNull("filename cannot be determined", filename);
 
 		BuildInfoValidator.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "_SPECIAL";
-		String result = ConfigurationUtils.addConfigToDatabase(ibisContext, "fakeDataSource", false, false, filename, zip.openStream(), "dummy-user");
+		String result = ConfigurationUtils.addConfigToDatabase(applicationContext, "fakeDataSource", false, false, filename, zip.openStream(), "dummy-user");
 		assertNotNull("file uploaded to mock database", result);
 		Map<String, Object> parameters = stmt.getNamedParameters();
 
@@ -184,7 +189,7 @@ public class ConfigurationUtilsTest extends Mockito {
 		assertNotNull("multiConfig.zip not found", zip);
 
 		BuildInfoValidator.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "";
-		Map<String, String> result = ConfigurationUtils.processMultiConfigZipFile(ibisContext, "fakeDataSource", false, false, zip.openStream(), "user");
+		Map<String, String> result = ConfigurationUtils.processMultiConfigZipFile(applicationContext, "fakeDataSource", false, false, zip.openStream(), "user");
 		assertNotEquals("file uploaded to mock database", 0, result.size());
 		assertEquals("{ConfigurationName: 001_20191002-1300=loaded, ConfigurationName: 002_20191002-1400=loaded, noBuildInfoZip.jar=no [BuildInfo.properties] present in configuration}",result.toString());
 
@@ -522,7 +527,7 @@ public class ConfigurationUtilsTest extends Mockito {
 		String directory = STUB4TESTTOOL_DIRECTORY + "/DisableStub";
 		stub4testtoolTest(directory, false);
 	}
-	
+
 	private void stub4testtoolTest(String baseDirectory, boolean disableValidators) throws Exception {
 		Map<String, Object> parameters = new Hashtable<String, Object>();
 		parameters.put(STUB4TESTTOOL_XSLT_VALIDATORS_PARAM, disableValidators);
