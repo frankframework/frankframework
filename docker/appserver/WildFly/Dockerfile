@@ -2,7 +2,7 @@ ARG WILDFLY_VERSION=26.1.1.Final
 FROM quay.io/wildfly/wildfly:${WILDFLY_VERSION} AS wildfly-iaf-test-base
 
 FROM wildfly-iaf-test-base AS wildfly-iaf-test-CredentialStoreCreator
-COPY --chmod=0755 src/configuration/createCS.sh /home/createCS.sh
+COPY src/configuration/createCS.sh /home/createCS.sh
 COPY target/dependencies/secrets /opt/frank/secrets
 
 RUN /home/createCS.sh
