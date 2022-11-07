@@ -66,7 +66,6 @@ import org.custommonkey.xmlunit.XMLUnit;
 import jakarta.json.JsonException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
@@ -76,9 +75,9 @@ import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.jms.PullingJmsListener;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.senders.DelaySender;
 import nl.nn.adapterframework.stream.FileMessage;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testtool.queues.Queue;
 import nl.nn.adapterframework.testtool.queues.QueueCreator;
 import nl.nn.adapterframework.testtool.queues.QueueWrapper;
 import nl.nn.adapterframework.util.AppConstants;
@@ -104,9 +103,9 @@ public class TestTool {
 	protected static final String TESTTOOL_BIFNAME = "Test Tool bif name";
 	public static final nl.nn.adapterframework.stream.Message TESTTOOL_DUMMY_MESSAGE = new nl.nn.adapterframework.stream.Message("<TestTool>Dummy message</TestTool>");
 	protected static final String TESTTOOL_CLEAN_UP_REPLY = "<TestTool>Clean up reply</TestTool>";
-	private static final int RESULT_ERROR = 0;
-	private static final int RESULT_OK = 1;
-	private static final int RESULT_AUTOSAVED = 2;
+	public static final int RESULT_ERROR = 0;
+	public static final int RESULT_OK = 1;
+	public static final int RESULT_AUTOSAVED = 2;
 	// dirty solution by Marco de Reus:
 	private static String zeefVijlNeem = "";
 	private static Writer silentOut = null;
@@ -294,7 +293,7 @@ public class TestTool {
 						if (steps != null) {
 							synchronized(STEP_SYNCHRONIZER) {
 								debugMessage("Open queues", writers);
-								Map<String, Map<String, Object>> queues = QueueCreator.openQueues(scenarioDirectory, properties, ibisContext, writers, timeout, correlationId);
+								Map<String, Queue> queues = QueueCreator.openQueues(scenarioDirectory, properties, ibisContext, writers, timeout, correlationId);
 								if (queues != null) {
 									debugMessage("Execute steps", writers);
 									boolean allStepsPassed = true;
@@ -1211,7 +1210,7 @@ public class TestTool {
 		return steps;
 	}
 
-	public static boolean closeQueues(Map<String, Map<String, Object>> queues, Properties properties, Map<String, Object> writers, String correlationId) {
+	public static boolean closeQueues(Map<String, Queue> queues, Properties properties, Map<String, Object> writers, String correlationId) {
 		boolean remainingMessagesFound = false;
 		Iterator<String> iterator;
 		debugMessage("Close jms senders", writers);
@@ -1377,7 +1376,7 @@ public class TestTool {
 		return remainingMessagesFound;
 	}
 
-	private static int executeJmsSenderWrite(String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileContent, String correlationId) {
+	private static int executeJmsSenderWrite(String stepDisplayName, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileContent, String correlationId) {
 		int result = RESULT_ERROR;
 
 		Map<?, ?> jmsSenderInfo = (Map<?, ?>)queues.get(queueName);
@@ -1414,48 +1413,29 @@ public class TestTool {
 		return result;
 	}
 
-	private static int executeSenderWrite(String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String senderType, String fileContent, String correlationId) {
-		int result = RESULT_ERROR;
-		Map senderInfo = (Map)queues.get(queueName);
-		ISender sender = (ISender)senderInfo.get(senderType + "Sender");
-		Boolean convertExceptionToMessage = (Boolean)senderInfo.get("convertExceptionToMessage");
-		PipeLineSession session = (PipeLineSession)senderInfo.get("session");
-		SenderThread senderThread = new SenderThread(sender, fileContent, session, convertExceptionToMessage.booleanValue(), correlationId);
-		senderThread.start();
-		senderInfo.put(senderType + "SenderThread", senderThread);
-		if(senderInfo instanceof QueueWrapper) {
-			((QueueWrapper) senderInfo).setSenderThread(senderThread);
+	private static int executeQueueWrite(String stepDisplayName, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileContent, String correlationId) {
+		Queue queue = queues.get(queueName);
+		if (queue==null) {
+			errorMessage("Property '" + queueName + ".className' not found or not valid", writers);
+			return RESULT_ERROR;
 		}
-		debugPipelineMessage(stepDisplayName, "Successfully started thread writing to '" + queueName + "':", fileContent, writers);
-		logger.debug("Successfully started thread writing to '" + queueName + "'");
-		result = RESULT_OK;
-		return result;
-	}
-
-	private static int executeJavaOrWebServiceListenerWrite(String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileContent) {
 		int result = RESULT_ERROR;
-
-		Map<?, ?> listenerInfo = (Map<?, ?>)queues.get(queueName);
-		ListenerMessageHandler listenerMessageHandler = (ListenerMessageHandler)listenerInfo.get("listenerMessageHandler");
-		if (listenerMessageHandler == null) {
-			errorMessage("No ListenerMessageHandler found", writers);
-		} else {
-			Map<?, ?> context = new HashMap<Object, Object>();
-			ListenerMessage requestListenerMessage = (ListenerMessage)listenerInfo.get("listenerMessage");
-			if (requestListenerMessage != null) {
-				context = requestListenerMessage.getContext();
+		try {
+			result = queue.executeWrite(stepDisplayName, fileContent, correlationId);
+			if (result == RESULT_OK) {
+				debugPipelineMessage(stepDisplayName, "Successfully wrote message to '" + queueName + "':", fileContent, writers);
+				logger.debug("Successfully wrote message to '" + queueName + "'");
 			}
-			ListenerMessage listenerMessage = new ListenerMessage(fileContent, context);
-			listenerMessageHandler.putResponseMessage(listenerMessage);
-			debugPipelineMessage(stepDisplayName, "Successfully put message on '" + queueName + "':", fileContent, writers);
-			logger.debug("Successfully put message on '" + queueName + "'");
-			result = RESULT_OK;
+		} catch(TimeoutException e) {
+			errorMessage("Time out sending message to '" + queueName + "': " + e.getMessage(), e, writers);
+		} catch(SenderException e) {
+			errorMessage("Could not send message to '" + queueName + "': " + e.getMessage(), e, writers);
 		}
-
 		return result;
 	}
 
-	private static int executeFileSenderWrite(String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileContent) {
+
+	private static int executeFileSenderWrite(String stepDisplayName, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileContent) {
 		int result = RESULT_ERROR;
 		Map<?, ?> fileSenderInfo = (Map<?, ?>)queues.get(queueName);
 		FileSender fileSender = (FileSender)fileSenderInfo.get("fileSender");
@@ -1469,21 +1449,7 @@ public class TestTool {
 		return result;
 	}
 
-	private static int executeDelaySenderWrite(String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileContent) {
-		int result = RESULT_ERROR;
-		Map<?, ?> delaySenderInfo = (Map<?, ?>)queues.get(queueName);
-		DelaySender delaySender = (DelaySender)delaySenderInfo.get("delaySender");
-		try {
-			delaySender.sendMessage(new nl.nn.adapterframework.stream.Message(fileContent), null);
-			debugPipelineMessage(stepDisplayName, "Successfully written to '" + queueName + "':", fileContent, writers);
-			result = RESULT_OK;
-		} catch(Exception e) {
-			errorMessage("Exception writing to file: " + e.getMessage(), e, writers);
-		}
-		return result;
-	}
-
-	private static int executeXsltProviderListenerWrite(String step, String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent, Properties properties) {
+	private static int executeXsltProviderListenerWrite(String step, String stepDisplayName, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent, Properties properties) {
 		int result = RESULT_ERROR;
 		Map<?, ?> xsltProviderListenerInfo = (Map<?, ?>)queues.get(queueName);
 		XsltProviderListener xsltProviderListener = (XsltProviderListener)xsltProviderListenerInfo.get("xsltProviderListener");
@@ -1500,7 +1466,7 @@ public class TestTool {
 		return result;
 	}
 
-	private static int executeJmsListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent) {
+	private static int executeJmsListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent) {
 		int result = RESULT_ERROR;
 
 		Map jmsListenerInfo = (Map)queues.get(queueName);
@@ -1546,52 +1512,43 @@ public class TestTool {
 		return result;
 	}
 
-	private static int executeSenderRead(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String senderType, String fileName, String fileContent) {
+
+	private static int executeQueueRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent) {
 		int result = RESULT_ERROR;
 
-		Map<?, ?> senderInfo = (Map<?, ?>)queues.get(queueName);
-		SenderThread senderThread = (SenderThread)senderInfo.remove(senderType + "SenderThread");
-		if(senderInfo instanceof QueueWrapper) {
-			((QueueWrapper) senderInfo).removeSenderThread();
+		Queue queue = queues.get(queueName);
+		if (queue==null) {
+			errorMessage("Property '" + queueName + ".className' not found or not valid", writers);
+			return RESULT_ERROR;
 		}
-		if (senderThread == null) {
-			errorMessage("No SenderThread found, no " + senderType + "Sender.write request?", writers);
-		} else {
-			SenderException senderException = senderThread.getSenderException();
-			if (senderException == null) {
-				IOException ioException = senderThread.getIOException();
-				if (ioException == null) {
-					TimeoutException timeOutException = senderThread.getTimeOutException();
-					if (timeOutException == null) {
-						String message = senderThread.getResponse();
-						if (message == null) {
-							if ("".equals(fileName)) {
-								result = RESULT_OK;
-							} else {
-								errorMessage("Could not read " + senderType + "Sender message (null returned)", writers);
-							}
-						} else {
-							if ("".equals(fileName)) {
-								debugPipelineMessage(stepDisplayName, "Unexpected message read from '" + queueName + "':", message, writers);
-							} else {
-								result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName);
-							}
-						}
-					} else {
-						errorMessage("Could not read " + senderType + "Sender message (TimeOutException): " + timeOutException.getMessage(), timeOutException, writers);
-					}
+		try {
+			String message = queue.executeRead(step, stepDisplayName, properties, fileName, fileContent);
+			if (message == null) {
+				if ("".equals(fileName)) {
+					result = RESULT_OK;
 				} else {
-					errorMessage("Could not read " + senderType + "Sender message (IOException): " + ioException.getMessage(), ioException, writers);
+					errorMessage("Could not read Sender response (null returned)", writers);
 				}
 			} else {
-				errorMessage("Could not read " + senderType + "Sender message (SenderException): " + senderException.getMessage(), senderException, writers);
+				if ("".equals(fileName)) {
+					debugPipelineMessage(stepDisplayName, "Unexpected message read from '" + queueName + "':", message, writers);
+				} else {
+					result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName);
+				}
 			}
+		} catch (TimeoutException e) {
+			errorMessage("Could not read Sender response (TimeoutException): " + e.getMessage(), e, writers);
+		} catch (IOException e) {
+			errorMessage("Could not read Sender response (IOException): " + e.getMessage(), e, writers);
+		} catch (SenderException e) {
+			errorMessage("Could not read Sender response (SenderException): " + e.getMessage(), e, writers);
 		}
 
 		return result;
 	}
 
-	private static int executeJavaListenerOrWebServiceListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent, int parameterTimeout) {
+
+	private static int executeJavaListenerOrWebServiceListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent, int parameterTimeout) {
 		int result = RESULT_ERROR;
 
 		Map listenerInfo = (Map)queues.get(queueName);
@@ -1643,7 +1600,7 @@ public class TestTool {
 		return result;
 	}
 
-	private static int executeFixedQuerySenderRead(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent, String correlationId) {
+	private static int executeFixedQuerySenderRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent, String correlationId) {
 		int result = RESULT_ERROR;
 
 		Map querySendersInfo = (Map)queues.get(queueName);
@@ -1708,7 +1665,7 @@ public class TestTool {
 		return result;
 	}
 
-	private static int executeFileListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent) {
+	private static int executeFileListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent) {
 		int result = RESULT_ERROR;
 		Map<?, ?> fileListenerInfo = (Map<?, ?>)queues.get(queueName);
 		FileListener fileListener = (FileListener)fileListenerInfo.get("fileListener");
@@ -1732,7 +1689,7 @@ public class TestTool {
 		return result;
 	}
 
-	private static int executeFileSenderRead(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent) {
+	private static int executeFileSenderRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent) {
 		int result = RESULT_ERROR;
 		Map<?, ?> fileSenderInfo = (Map<?, ?>)queues.get(queueName);
 		FileSender fileSender = (FileSender)fileSenderInfo.get("fileSender");
@@ -1756,7 +1713,7 @@ public class TestTool {
 		return result;
 	}
 
-	private static int executeXsltProviderListenerRead(String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileContent, Map<String, Object> xsltParameters) {
+	private static int executeXsltProviderListenerRead(String stepDisplayName, Properties properties, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileContent, Map<String, Object> xsltParameters) {
 		int result = RESULT_ERROR;
 		Map<?, ?> xsltProviderListenerInfo = (Map<?, ?>)queues.get(queueName);
 		if (xsltProviderListenerInfo == null) {
@@ -1778,7 +1735,7 @@ public class TestTool {
 		return result;
 	}
 
-	public static int executeStep(String step, Properties properties, String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers, int parameterTimeout, String correlationId) {
+	public static int executeStep(String step, Properties properties, String stepDisplayName, Map<String, Queue> queues, Map<String, Object> writers, int parameterTimeout, String correlationId) {
 		int stepPassed = RESULT_ERROR;
 		String fileName = properties.getProperty(step);
 		String fileNameAbsolutePath = properties.getProperty(step + ".absolutepath");
@@ -1812,16 +1769,8 @@ public class TestTool {
 						stepPassed = executeJmsListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
 					} else 	if ("nl.nn.adapterframework.jdbc.FixedQuerySender".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeFixedQuerySenderRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent, correlationId);
-					} else if ("nl.nn.adapterframework.http.IbisWebServiceSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeSenderRead(step, stepDisplayName, properties, queues, writers, queueName, "ibisWebService", fileName, fileContent);
-					} else if ("nl.nn.adapterframework.http.WebServiceSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeSenderRead(step, stepDisplayName, properties, queues, writers, queueName, "webService", fileName, fileContent);
 					} else if ("nl.nn.adapterframework.http.WebServiceListener".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeJavaListenerOrWebServiceListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent, parameterTimeout);
-					} else if ("nl.nn.adapterframework.http.HttpSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeSenderRead(step, stepDisplayName, properties, queues, writers, queueName, "http", fileName, fileContent);
-					} else if ("nl.nn.adapterframework.senders.IbisJavaSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeSenderRead(step, stepDisplayName, properties, queues, writers, queueName, "ibisJava", fileName, fileContent);
 					} else if ("nl.nn.adapterframework.receivers.JavaListener".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeJavaListenerOrWebServiceListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent, parameterTimeout);
 					} else if ("nl.nn.adapterframework.testtool.FileListener".equals(properties.get(queueName + ".className"))) {
@@ -1831,7 +1780,7 @@ public class TestTool {
 					} else if ("nl.nn.adapterframework.testtool.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeXsltProviderListenerRead(stepDisplayName, properties, queues, writers, queueName, fileContent, createParametersMapFromParamProperties(properties, step, writers, false, null));
 					} else {
-						errorMessage("Property '" + queueName + ".className' not found or not valid", writers);
+						stepPassed = executeQueueRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
 					}
 				} else {
 					String resolveProperties = properties.getProperty("scenario.resolveProperties");
@@ -1843,26 +1792,10 @@ public class TestTool {
 
 					if ("nl.nn.adapterframework.jms.JmsSender".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeJmsSenderWrite(stepDisplayName, queues, writers, queueName, fileContent, correlationId);
-					} else if ("nl.nn.adapterframework.http.IbisWebServiceSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeSenderWrite(stepDisplayName, queues, writers, queueName, "ibisWebService", fileContent, correlationId);
-					} else if ("nl.nn.adapterframework.http.WebServiceSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeSenderWrite(stepDisplayName, queues, writers, queueName, "webService", fileContent, correlationId);
-					} else if ("nl.nn.adapterframework.http.WebServiceListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeJavaOrWebServiceListenerWrite(stepDisplayName, queues, writers, queueName, fileContent);
-					} else if ("nl.nn.adapterframework.http.HttpSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeSenderWrite(stepDisplayName, queues, writers, queueName, "http", fileContent, correlationId);
-					} else if ("nl.nn.adapterframework.senders.IbisJavaSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeSenderWrite(stepDisplayName, queues, writers, queueName, "ibisJava", fileContent, correlationId);
-					} else if ("nl.nn.adapterframework.receivers.JavaListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeJavaOrWebServiceListenerWrite(stepDisplayName, queues, writers, queueName, fileContent);
-					} else if ("nl.nn.adapterframework.testtool.FileSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeFileSenderWrite(stepDisplayName, queues, writers, queueName, fileContent);
 					} else if ("nl.nn.adapterframework.testtool.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeXsltProviderListenerWrite(step, stepDisplayName, queues, writers, queueName, fileName, fileContent, properties);
-					} else if ("nl.nn.adapterframework.senders.DelaySender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeDelaySenderWrite(stepDisplayName, queues, writers, queueName, fileContent);
 					} else {
-						errorMessage("Property '" + queueName + ".className' not found or not valid", writers);
+						stepPassed = executeQueueWrite(stepDisplayName, queues, writers, queueName, fileContent, correlationId);
 					}
 				}
 			}
