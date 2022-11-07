@@ -34,6 +34,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGenerator;
+import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.integration.core.MessageSelector;
@@ -126,6 +127,7 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 			selectors.add(actionSelector(action.value()));
 		}
 		selectors.add(topicSelector(topic));
+		selectors.add(activeSelector(applicationContext));
 
 		MessageFilter filter = new MessageFilter(selectors);
 		filter.setDiscardChannel(nullChannel);
@@ -146,6 +148,10 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 		}
 	}
 
+	private MessageSelector activeSelector(ApplicationContext applicationContext) {
+		return message -> ((AbstractApplicationContext) applicationContext).isActive();
+	}
+
 	public static MessageSelector topicSelector(BusTopic topic) {
 		return message -> {
 			String topicHeader = (String) message.getHeaders().get(TopicSelector.TOPIC_HEADER_NAME);
@@ -154,8 +160,8 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 	}
 
 	public static MessageSelector actionSelector(BusAction action) {
-		return m -> {
-			String actionHeader = (String) m.getHeaders().get(ActionSelector.ACTION_HEADER_NAME);
+		return message -> {
+			String actionHeader = (String) message.getHeaders().get(ActionSelector.ACTION_HEADER_NAME);
 			return action.name().equalsIgnoreCase(actionHeader);
 		};
 	}

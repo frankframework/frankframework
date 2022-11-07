@@ -33,10 +33,12 @@ import org.hamcrest.core.StringContains;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 
 import nl.nn.adapterframework.configuration.ClassLoaderException;
 import nl.nn.adapterframework.configuration.ClassLoaderManager;
+import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
 import nl.nn.adapterframework.jms.JmsRealm;
@@ -91,7 +93,15 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 		URL file = this.getClass().getResource(JAR_FILE);
 		doReturn(Misc.streamToBytes(file.openStream())).when(rs).getBytes(anyInt());
 		doReturn(rs).when(stmt).executeQuery();
-		doReturn(fq).when(ibisContext).createBeanAutowireByName(FixedQuerySender.class);
+
+		// Mock applicationContext.getAutowireCapableBeanFactory().createBean(beanClass, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+		AutowireCapableBeanFactory beanFactory = mock(AutowireCapableBeanFactory.class);
+		IbisManager ibisManager = mock(IbisManager.class);
+		doReturn(ibisManager).when(ibisContext).getIbisManager();
+		ApplicationContext applicationContext = mock(ApplicationContext.class);
+		doReturn(applicationContext).when(ibisManager).getApplicationContext();
+		doReturn(beanFactory).when(applicationContext).getAutowireCapableBeanFactory();
+		doReturn(fq).when(beanFactory).createBean(FixedQuerySender.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 
 		@SuppressWarnings("rawtypes") //IbisContext.log is a void method
 		Answer answer = new Answer() {

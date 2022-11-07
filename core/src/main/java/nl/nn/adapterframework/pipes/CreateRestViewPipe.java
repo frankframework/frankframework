@@ -23,19 +23,17 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
 
-import lombok.Getter;
-import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.RestListener;
-import nl.nn.adapterframework.lifecycle.ApplicationMetrics;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.ProcessMetrics;
@@ -141,7 +139,6 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class CreateRestViewPipe extends XsltPipe {
 	private static final String CONTENTTYPE = "contentType";
 	private static final String SRCPREFIX = "srcPrefix";
-	private @Getter @Setter ApplicationMetrics metrics;
 
 	private String contentType = "text/html";
 	private AppConstants appConstants;
@@ -199,7 +196,7 @@ public class CreateRestViewPipe extends XsltPipe {
 				+ httpServletRequest.getServerName() + "</serverName>"
 				+ "</servletRequest>" + "</requestInfo>";
 		parameters.put("requestInfo", XmlUtils.buildNode(requestInfoXml));
-		parameters.put("upTime", XmlUtils.buildNode("<upTime>" + (metrics==null?"null":metrics.getUptime()) + "</upTime>"));
+		parameters.put("upTime", XmlUtils.buildNode("<upTime>" + getUptime() + "</upTime>"));
 		String machineNameXml = "<machineName>" + Misc.getHostname() + "</machineName>";
 		parameters.put("machineName", XmlUtils.buildNode(machineNameXml));
 		String fileSystemXml = "<fileSystem>" + "<totalSpace>"
@@ -215,6 +212,10 @@ public class CreateRestViewPipe extends XsltPipe {
 		parameters.put(SRCPREFIX, srcPrefix);
 
 		return parameters;
+	}
+
+	private String getUptime() {
+		return DateUtils.format(getApplicationContext().getStartupDate(), DateUtils.FORMAT_GENERICDATETIME);
 	}
 
 	private String retrieveMenuBarParameter(String srcPrefix) {

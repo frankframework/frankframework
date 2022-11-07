@@ -1,9 +1,9 @@
 package nl.nn.adapterframework.testutil;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.WeakHashMap;
 
 import javax.naming.NamingException;
@@ -74,12 +74,13 @@ public enum TransactionManagerType {
 
 	public synchronized void closeConfigurationContext() {
 		if(this == TransactionManagerType.DATASOURCE) {
-			Set<String> productKeys = datasourceConfigurations.keySet();
-			for (String productKey : productKeys) {
-				TestConfiguration ac = datasourceConfigurations.remove(productKey);
+			Iterator<TestConfiguration> it = datasourceConfigurations.values().iterator();
+			while(it.hasNext()) {
+				TestConfiguration ac = it.next();
 				if(ac != null) {
 					ac.close();
 				}
+				it.remove();
 			}
 		} else {
 			TestConfiguration ac = transactionManagerConfigurations.remove(this);
