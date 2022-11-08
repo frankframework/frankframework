@@ -1413,7 +1413,7 @@ public class TestTool {
 		return result;
 	}
 
-	private static int executeQueueWrite(String stepDisplayName, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileContent, String correlationId) {
+	private static int executeQueueWrite(String stepDisplayName, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileContent, String correlationId, Map<String, Object> xsltParameters) {
 		Queue queue = queues.get(queueName);
 		if (queue==null) {
 			errorMessage("Property '" + queueName + ".className' not found or not valid", writers);
@@ -1421,50 +1421,19 @@ public class TestTool {
 		}
 		int result = RESULT_ERROR;
 		try {
-			result = queue.executeWrite(stepDisplayName, fileContent, correlationId);
+			result = queue.executeWrite(stepDisplayName, fileContent, correlationId, xsltParameters);
 			if (result == RESULT_OK) {
 				debugPipelineMessage(stepDisplayName, "Successfully wrote message to '" + queueName + "':", fileContent, writers);
 				logger.debug("Successfully wrote message to '" + queueName + "'");
 			}
 		} catch(TimeoutException e) {
 			errorMessage("Time out sending message to '" + queueName + "': " + e.getMessage(), e, writers);
-		} catch(SenderException e) {
-			errorMessage("Could not send message to '" + queueName + "': " + e.getMessage(), e, writers);
-		}
-		return result;
-	}
-
-
-	private static int executeFileSenderWrite(String stepDisplayName, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileContent) {
-		int result = RESULT_ERROR;
-		Map<?, ?> fileSenderInfo = (Map<?, ?>)queues.get(queueName);
-		FileSender fileSender = (FileSender)fileSenderInfo.get("fileSender");
-		try {
-			fileSender.sendMessage(fileContent);
-			debugPipelineMessage(stepDisplayName, "Successfully written to '" + queueName + "':", fileContent, writers);
-			result = RESULT_OK;
 		} catch(Exception e) {
-			errorMessage("Exception writing to file: " + e.getMessage(), e, writers);
+			errorMessage("Could not send message to '" + queueName + "' ("+e.getClass().getSimpleName()+"): " + e.getMessage(), e, writers);
 		}
 		return result;
 	}
 
-	private static int executeXsltProviderListenerWrite(String step, String stepDisplayName, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent, Properties properties) {
-		int result = RESULT_ERROR;
-		Map<?, ?> xsltProviderListenerInfo = (Map<?, ?>)queues.get(queueName);
-		XsltProviderListener xsltProviderListener = (XsltProviderListener)xsltProviderListenerInfo.get("xsltProviderListener");
-		String message = xsltProviderListener.getResult();
-		if (message == null) {
-			if ("".equals(fileName)) {
-				result = RESULT_OK;
-			} else {
-				errorMessage("Could not read result (null returned)", writers);
-			}
-		} else {
-			result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName);
-		}
-		return result;
-	}
 
 	private static int executeJmsListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent) {
 		int result = RESULT_ERROR;
@@ -1527,7 +1496,7 @@ public class TestTool {
 				if ("".equals(fileName)) {
 					result = RESULT_OK;
 				} else {
-					errorMessage("Could not read Sender response (null returned)", writers);
+					errorMessage("Could not read from ["+queueName+"] (null returned)", writers);
 				}
 			} else {
 				if ("".equals(fileName)) {
@@ -1536,12 +1505,8 @@ public class TestTool {
 					result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName);
 				}
 			}
-		} catch (TimeoutException e) {
-			errorMessage("Could not read Sender response (TimeoutException): " + e.getMessage(), e, writers);
-		} catch (IOException e) {
-			errorMessage("Could not read Sender response (IOException): " + e.getMessage(), e, writers);
-		} catch (SenderException e) {
-			errorMessage("Could not read Sender response (SenderException): " + e.getMessage(), e, writers);
+		} catch (Exception e) {
+			errorMessage("Could not read from ["+queueName+"] ("+e.getClass().getSimpleName()+"): " + e.getMessage(), e, writers);
 		}
 
 		return result;
@@ -1665,76 +1630,6 @@ public class TestTool {
 		return result;
 	}
 
-	private static int executeFileListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent) {
-		int result = RESULT_ERROR;
-		Map<?, ?> fileListenerInfo = (Map<?, ?>)queues.get(queueName);
-		FileListener fileListener = (FileListener)fileListenerInfo.get("fileListener");
-		String message = null;
-		try {
-			message = fileListener.getMessage();
-		} catch(Exception e) {
-			if (!"".equals(fileName)) {
-				errorMessage("Could not read file from '" + queueName + "': " + e.getMessage(), e, writers);
-			}
-		}
-		if (message == null) {
-			if ("".equals(fileName)) {
-				result = RESULT_OK;
-			} else {
-				errorMessage("Could not read file (null returned)", writers);
-			}
-		} else {
-			result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName);
-		}
-		return result;
-	}
-
-	private static int executeFileSenderRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent) {
-		int result = RESULT_ERROR;
-		Map<?, ?> fileSenderInfo = (Map<?, ?>)queues.get(queueName);
-		FileSender fileSender = (FileSender)fileSenderInfo.get("fileSender");
-		String message = null;
-		try {
-			message = fileSender.getMessage();
-		} catch(Exception e) {
-			if (!"".equals(fileName)) {
-				errorMessage("Could not read file from '" + queueName + "': " + e.getMessage(), e, writers);
-			}
-		}
-		if (message == null) {
-			if ("".equals(fileName)) {
-				result = RESULT_OK;
-			} else {
-				errorMessage("Could not read file (null returned)", writers);
-			}
-		} else {
-			result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName);
-		}
-		return result;
-	}
-
-	private static int executeXsltProviderListenerRead(String stepDisplayName, Properties properties, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileContent, Map<String, Object> xsltParameters) {
-		int result = RESULT_ERROR;
-		Map<?, ?> xsltProviderListenerInfo = (Map<?, ?>)queues.get(queueName);
-		if (xsltProviderListenerInfo == null) {
-			errorMessage("No info found for xslt provider listener '" + queueName + "'", writers);
-		} else {
-			XsltProviderListener xsltProviderListener = (XsltProviderListener)xsltProviderListenerInfo.get("xsltProviderListener");
-			if (xsltProviderListener == null) {
-				errorMessage("XSLT provider listener not found for '" + queueName + "'", writers);
-			} else {
-				try {
-					xsltProviderListener.processRequest(fileContent, xsltParameters);
-					result = RESULT_OK;
-				} catch(ListenerException e) {
-					errorMessage("Could not transform xml: " + e.getMessage(), e, writers);
-				}
-				debugPipelineMessage(stepDisplayName, "Result:", fileContent, writers);
-			}
-		}
-		return result;
-	}
-
 	public static int executeStep(String step, Properties properties, String stepDisplayName, Map<String, Queue> queues, Map<String, Object> writers, int parameterTimeout, String correlationId) {
 		int stepPassed = RESULT_ERROR;
 		String fileName = properties.getProperty(step);
@@ -1773,12 +1668,9 @@ public class TestTool {
 						stepPassed = executeJavaListenerOrWebServiceListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent, parameterTimeout);
 					} else if ("nl.nn.adapterframework.receivers.JavaListener".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeJavaListenerOrWebServiceListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent, parameterTimeout);
-					} else if ("nl.nn.adapterframework.testtool.FileListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeFileListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
-					} else if ("nl.nn.adapterframework.testtool.FileSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeFileSenderRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
 					} else if ("nl.nn.adapterframework.testtool.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeXsltProviderListenerRead(stepDisplayName, properties, queues, writers, queueName, fileContent, createParametersMapFromParamProperties(properties, step, writers, false, null));
+						Map<String, Object> xsltParameters = createParametersMapFromParamProperties(properties, step, writers, false, null);
+						stepPassed = executeQueueWrite(stepDisplayName, queues, writers, queueName, fileContent, correlationId, xsltParameters); // XsltProviderListener has .read and .write reversed
 					} else {
 						stepPassed = executeQueueRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
 					}
@@ -1793,9 +1685,9 @@ public class TestTool {
 					if ("nl.nn.adapterframework.jms.JmsSender".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeJmsSenderWrite(stepDisplayName, queues, writers, queueName, fileContent, correlationId);
 					} else if ("nl.nn.adapterframework.testtool.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeXsltProviderListenerWrite(step, stepDisplayName, queues, writers, queueName, fileName, fileContent, properties);
+						stepPassed = executeQueueRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);  // XsltProviderListener has .read and .write reversed
 					} else {
-						stepPassed = executeQueueWrite(stepDisplayName, queues, writers, queueName, fileContent, correlationId);
+						stepPassed = executeQueueWrite(stepDisplayName, queues, writers, queueName, fileContent, correlationId, null);
 					}
 				}
 			}
