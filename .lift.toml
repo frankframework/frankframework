@@ -1,0 +1,2 @@
+build = "mvn -Pibissource,codecoverage"
+jdkVersion = "8"
