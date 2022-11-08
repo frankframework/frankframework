@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,9 +29,9 @@ import nl.nn.adapterframework.util.ClassUtils;
 
 /**
  * Translate a record into XML, then send it using a sender.
- * 
+ *
  * @ff.parameters any parameters defined on the recordHandler will be handed to the sender, if this is a {@link ISenderWithParameters ISenderWithParameters}
- * 
+ *
  * @author  John Dekker
  */
 public class RecordXml2Sender extends RecordXmlTransformer {
@@ -62,7 +62,7 @@ public class RecordXml2Sender extends RecordXmlTransformer {
 	@Override
 	public String handleRecord(PipeLineSession session, List<String> parsedRecord) throws Exception {
 		String xml = super.handleRecord(session,parsedRecord);
-		return getSender().sendMessage(new Message(xml), session).asString();
+		return getSender().sendMessageOrThrow(new Message(xml), session).asString();
 	}
 
 

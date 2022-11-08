@@ -116,7 +116,7 @@ public class JavascriptSender extends SenderSeries {
 	}
 
 	@Override
-	public SenderResult sendMessageAndProvideForwardName(Message message, PipeLineSession session) throws SenderException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException {
 
 		Object jsResult = "";
 		int numberOfParameters = 0;

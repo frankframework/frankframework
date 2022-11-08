@@ -54,7 +54,7 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 		assertNotNull("cannot find expected result file", expected);
 
 		Message message = new Message("<dummy/>");
-		String result = sender.sendMessage(message, session).asString();
+		String result = sender.sendMessageOrThrow(message, session).asString();
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
 
 		long duration = System.currentTimeMillis() - startTime;
@@ -83,7 +83,7 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 		assertNotNull("cannot find expected result file", expected);
 
 		Message message = new Message("<dummy/>");
-		String result = sender.sendMessage(message, session).asString();
+		String result = sender.sendMessageOrThrow(message, session).asString();
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
 
 		long duration = System.currentTimeMillis() - startTime;
@@ -97,7 +97,7 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 		sender.configure();
 		sender.open();
 
-		SenderResult result = sender.sendMessageAndProvideForwardName(new Message("fakeInput"), session);
+		SenderResult result = sender.sendMessage(new Message("fakeInput"), session);
 
 		assertFalse(result.isSuccess());
 		assertThat(result.getResult().asString(), containsString("<result senderClass=\"ExceptionThrowingSender\" type=\"SenderException\" success=\"false\">fakeException</result>"));
@@ -112,14 +112,14 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 		sender.configure();
 		sender.open();
 
-		SenderResult result = sender.sendMessageAndProvideForwardName(new Message("fakeInput"), session);
+		SenderResult result = sender.sendMessage(new Message("fakeInput"), session);
 
 		assertFalse(result.isSuccess());
 	}
 
 	private class ExceptionThrowingSender extends SenderBase {
 		@Override
-		public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 			throw new SenderException("fakeException");
 		}
 	}

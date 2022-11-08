@@ -62,7 +62,6 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.IForwardNameProvidingSender;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
@@ -201,7 +200,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author	Peter Leeuwenburgh
  * @author	Niels Meijer
  */
-public class CmisSender extends SenderWithParametersBase implements IForwardNameProvidingSender, HasKeystore, HasTruststore {
+public class CmisSender extends SenderWithParametersBase implements HasKeystore, HasTruststore {
 
 	private final String NOT_FOUND_FORWARD_NAME="notFound";
 
@@ -347,7 +346,7 @@ public class CmisSender extends SenderWithParametersBase implements IForwardName
 	}
 
 	@Override
-	public SenderResult sendMessageAndProvideForwardName(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		Session cmisSession = null;
 		try {
 			ParameterValueList pvl=null;

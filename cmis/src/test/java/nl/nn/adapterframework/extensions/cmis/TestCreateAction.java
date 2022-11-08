@@ -102,7 +102,7 @@ public class TestCreateAction extends CmisSenderTestBase {
 		sender.setFileSessionKey("fileContent");
 		configure();
 
-		Message actualResult = sender.sendMessage(input, session);
+		Message actualResult = sender.sendMessageOrThrow(input, session);
 		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
 	}
 
@@ -113,7 +113,7 @@ public class TestCreateAction extends CmisSenderTestBase {
 		sender.addParameter(fileSessionKey);
 		configure();
 
-		Message actualResult = sender.sendMessage(input, session);
+		Message actualResult = sender.sendMessageOrThrow(input, session);
 		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
 	}
 
@@ -123,7 +123,7 @@ public class TestCreateAction extends CmisSenderTestBase {
 		sender.setFileSessionKey("fileContent");
 		configure();
 
-		Message actualResult = sender.sendMessage(input, session);
+		Message actualResult = sender.sendMessageOrThrow(input, session);
 		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
 	}
 
@@ -134,7 +134,7 @@ public class TestCreateAction extends CmisSenderTestBase {
 		sender.addParameter(fileSessionKey);
 		configure();
 
-		Message actualResult = sender.sendMessage(input, session);
+		Message actualResult = sender.sendMessageOrThrow(input, session);
 		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
 	}
 
@@ -147,7 +147,7 @@ public class TestCreateAction extends CmisSenderTestBase {
 		sender.setFileSessionKey("fileContent");
 		configure();
 
-		Message actualResult = sender.sendMessage(input, session);
+		Message actualResult = sender.sendMessageOrThrow(input, session);
 		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
 	}
 
@@ -161,7 +161,7 @@ public class TestCreateAction extends CmisSenderTestBase {
 		sender.addParameter(fileSessionKey);
 		configure();
 
-		Message actualResult = sender.sendMessage(input, session);
+		Message actualResult = sender.sendMessageOrThrow(input, session);
 		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
 	}
 
@@ -171,7 +171,7 @@ public class TestCreateAction extends CmisSenderTestBase {
 		sender.setFileContentSessionKey("fileContent");
 		configure();
 
-		Message actualResult = sender.sendMessage(input, session);
+		Message actualResult = sender.sendMessageOrThrow(input, session);
 		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
 	}
 
@@ -181,7 +181,7 @@ public class TestCreateAction extends CmisSenderTestBase {
 		sender.setFileContentSessionKey("fileContent");
 		configure();
 
-		Message actualResult = sender.sendMessage(input, session);
+		Message actualResult = sender.sendMessageOrThrow(input, session);
 		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
 	}
 
@@ -194,7 +194,7 @@ public class TestCreateAction extends CmisSenderTestBase {
 		sender.setFileContentSessionKey("fileContent");
 		configure();
 
-		Message actualResult = sender.sendMessage(input, session);
+		Message actualResult = sender.sendMessageOrThrow(input, session);
 		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
 	}
 
@@ -204,7 +204,7 @@ public class TestCreateAction extends CmisSenderTestBase {
 		sender.setFileInputStreamSessionKey("fis");
 		configure();
 
-		Message actualResult = sender.sendMessage(input, session);
+		Message actualResult = sender.sendMessageOrThrow(input, session);
 		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
 	}
 
@@ -214,7 +214,7 @@ public class TestCreateAction extends CmisSenderTestBase {
 		sender.setFileInputStreamSessionKey("fis");
 		configure();
 
-		Message actualResult = sender.sendMessage(input, session);
+		Message actualResult = sender.sendMessageOrThrow(input, session);
 		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
 	}
 
@@ -227,7 +227,7 @@ public class TestCreateAction extends CmisSenderTestBase {
 		sender.setFileInputStreamSessionKey("fis");
 		configure();
 
-		Message actualResult = sender.sendMessage(input, session);
+		Message actualResult = sender.sendMessageOrThrow(input, session);
 		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
 	}
 
@@ -241,7 +241,7 @@ public class TestCreateAction extends CmisSenderTestBase {
 		sender.setFileInputStreamSessionKey("fis");
 		configure();
 
-		Message actualResult = sender.sendMessage(input, session);
+		Message actualResult = sender.sendMessageOrThrow(input, session);
 		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
 	}
 

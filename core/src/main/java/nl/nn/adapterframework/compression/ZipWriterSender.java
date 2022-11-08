@@ -20,9 +20,10 @@ import java.io.UnsupportedEncodingException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -33,12 +34,12 @@ import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action='write'.
- * Filename and contents are taken from parameters. If one of the parameters is not present, the input message 
+ * Filename and contents are taken from parameters. If one of the parameters is not present, the input message
  * is used for either filename or contents.
  *
  * @ff.parameter filename filename of the zipentry
  * @ff.parameter contents contents of the zipentry
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.9.10
  */
@@ -67,7 +68,7 @@ public class ZipWriterSender extends SenderWithParametersBase {
 
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		ParameterValueList pvl;
 		try {
 			pvl = paramList.getValues(message, session);
@@ -89,7 +90,7 @@ public class ZipWriterSender extends SenderWithParametersBase {
 				Message paramValue=Message.asMessage(pvl.get(PARAMETER_CONTENTS).getValue());
 				sessionData.writeEntry(filename,paramValue,isCloseInputstreamOnExit(),getCharset());
 			}
-			return message;
+			return new SenderResult(message);
 		} catch (UnsupportedEncodingException e) {
 			throw new SenderException(getLogPrefix()+"cannot encode zip entry", e);
 		} catch (CompressionException e) {

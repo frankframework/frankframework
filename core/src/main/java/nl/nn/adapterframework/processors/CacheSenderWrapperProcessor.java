@@ -34,10 +34,10 @@ import nl.nn.adapterframework.stream.Message;
 public class CacheSenderWrapperProcessor extends SenderWrapperProcessorBase {
 
 	@Override
-	public SenderResult sendMessageAndProvideForwardName(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		ICache<String,String> cache=senderWrapperBase.getCache();
 		if (cache==null) {
-			return senderWrapperProcessor.sendMessageAndProvideForwardName(senderWrapperBase, message, session);
+			return senderWrapperProcessor.sendMessage(senderWrapperBase, message, session);
 		}
 
 		String key;
@@ -48,7 +48,7 @@ public class CacheSenderWrapperProcessor extends SenderWrapperProcessorBase {
 		}
 		if (key==null) {
 			if (log.isDebugEnabled()) log.debug("cache key is null, will not use cache");
-			return senderWrapperProcessor.sendMessageAndProvideForwardName(senderWrapperBase, message, session);
+			return senderWrapperProcessor.sendMessage(senderWrapperBase, message, session);
 		}
 		if (log.isDebugEnabled()) log.debug("cache key [{}]", key);
 		SenderResult result;
@@ -58,7 +58,7 @@ public class CacheSenderWrapperProcessor extends SenderWrapperProcessorBase {
 			result = new SenderResult(cacheResult);
 		} else {
 			if (log.isDebugEnabled()) log.debug("no cached results found using key [{}]", key);
-			result = senderWrapperProcessor.sendMessageAndProvideForwardName(senderWrapperBase, message, session);
+			result = senderWrapperProcessor.sendMessage(senderWrapperBase, message, session);
 			if (log.isDebugEnabled()) log.debug("caching result using key [{}]", key);
 			if (result.isSuccess()) {
 				String cacheValue = cache.transformValue(result.getResult(), session);

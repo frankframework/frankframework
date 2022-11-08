@@ -84,7 +84,7 @@ public class HttpSenderOAuthTest {
 
 		PipeLineSession session = new PipeLineSession();
 
-		Message result = sender.sendMessage(new Message("<dummy/>"), session);
+		Message result = sender.sendMessageOrThrow(new Message("<dummy/>"), session);
 
 		//log.debug("result: "+result.asString());
 		assertEquals("200", session.getMessage("StatusCode").asString());
@@ -119,7 +119,7 @@ public class HttpSenderOAuthTest {
 
 		PipeLineSession session = new PipeLineSession();
 
-		Message result = sender.sendMessage(new Message(""), session);
+		Message result = sender.sendMessageOrThrow(new Message(""), session);
 		log.debug("result: "+result.asString());
 		assertEquals("200", session.getMessage("StatusCode").asString());
 
@@ -127,7 +127,7 @@ public class HttpSenderOAuthTest {
 		Thread.sleep(1000);
 		log.debug("Test again");
 
-		result = sender.sendMessage(new Message(""), session);
+		result = sender.sendMessageOrThrow(new Message(""), session);
 		log.debug("result: "+result.asString());
 		assertEquals("200", session.getMessage("StatusCode").asString());
 	}
@@ -184,7 +184,7 @@ public class HttpSenderOAuthTest {
 		sender.configure();
 		sender.open();
 
-		Message result = sender.sendMessage(new Message(multiPartXml), session);
+		Message result = sender.sendMessageOrThrow(new Message(multiPartXml), session);
 
 		assertThat(result.asString(), StringContains.containsString("success"));
 		assertEquals("201", session.get("resultCode"));

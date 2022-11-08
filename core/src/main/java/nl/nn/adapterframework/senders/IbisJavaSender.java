@@ -27,6 +27,7 @@ import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.dispatcher.DispatcherManager;
 import nl.nn.adapterframework.doc.Category;
@@ -93,7 +94,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		String result = null;
 		HashMap context = null;
 		try {
@@ -128,7 +129,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 			String correlationID = session==null ? null : session.getMessage(PipeLineSession.correlationIdKey).asString();
 			result = dm.processRequest(serviceName, correlationID, message.asString(), context);
 			if (isMultipartResponse()) {
-				return HttpSender.handleMultipartResponse(multipartResponseContentType, new ByteArrayInputStream(result.getBytes(multipartResponseCharset)), session);
+				return new SenderResult(HttpSender.handleMultipartResponse(multipartResponseContentType, new ByteArrayInputStream(result.getBytes(multipartResponseCharset)), session));
 			}
 
 		} catch (ParameterException e) {
@@ -143,9 +144,8 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 				Misc.copyContext(getReturnedSessionKeys(), context, session, this);
 			}
 		}
-		return new Message(result);
+		return new SenderResult(result);
 	}
-
 
 
 	/**

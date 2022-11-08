@@ -18,7 +18,6 @@ package nl.nn.adapterframework.senders;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IForwardNameProvidingSender;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -31,9 +30,9 @@ import nl.nn.adapterframework.stream.Message;
 
 /**
  * Wrapper for senders, that allows to get input from a session variable, and to store output in a session variable.
- * 
+ *
  * @ff.parameters any parameters defined on the SenderWrapper will be handed to the sender, if this is a {@link ISenderWithParameters}
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.9
  */
@@ -64,11 +63,8 @@ public class SenderWrapper extends SenderWrapperBase {
 	}
 
 	@Override
-	public SenderResult doSendMessageAndProvideForwardName(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		if (sender instanceof IForwardNameProvidingSender) {
-			return ((IForwardNameProvidingSender)sender).sendMessageAndProvideForwardName(message, session);
-		}
-		return new SenderResult(sender.sendMessage(message,session));
+	public SenderResult doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		return sender.sendMessage(message, session);
 	}
 
 	@Override

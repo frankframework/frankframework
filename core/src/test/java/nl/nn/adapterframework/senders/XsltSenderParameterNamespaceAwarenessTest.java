@@ -58,7 +58,7 @@ public class XsltSenderParameterNamespaceAwarenessTest extends SenderTestBase<Xs
 		sender.configure();
 		sender.open();
 
-		Message result = sender.sendMessage(new Message(input), session);
+		Message result = sender.sendMessageOrThrow(new Message(input), session);
 
 		assertEquals(expectedResult, result.asString());
 	}

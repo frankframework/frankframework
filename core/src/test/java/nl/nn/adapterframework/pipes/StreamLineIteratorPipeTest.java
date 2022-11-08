@@ -12,6 +12,7 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.pipes.IteratingPipe.StopReason;
 import nl.nn.adapterframework.stream.Message;
@@ -332,11 +333,11 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 		// returns the renderer that does not surround the input with brackets
 		return new BlockEnabledRenderer() {
 			@Override
-			public Message sendMessage(String blockHandle, Message message, PipeLineSession session) throws SenderException, TimeoutException {
+			public SenderResult sendMessage(String blockHandle, Message message, PipeLineSession session) throws SenderException, TimeoutException {
 				try {
 					String result = message.asString();
 					resultLog.append(result+"\n");
-					return new Message(result);
+					return new SenderResult(result);
 				} catch (IOException e) {
 					throw new SenderException(e);
 				}

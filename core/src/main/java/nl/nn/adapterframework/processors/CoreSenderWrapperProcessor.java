@@ -29,8 +29,8 @@ import nl.nn.adapterframework.stream.Message;
 public class CoreSenderWrapperProcessor implements SenderWrapperProcessor {
 
 	@Override
-	public SenderResult sendMessageAndProvideForwardName(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		return senderWrapperBase.doSendMessageAndProvideForwardName(message, session);
+	public SenderResult sendMessage(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		return senderWrapperBase.doSendMessage(message, session);
 	}
 
 }
