@@ -9,7 +9,7 @@ USER jboss
 
 # Create credential store in separate image
 FROM jboss-eap-with-python AS jboss-iaf-test-CredentialStoreCreator
-COPY --chmod=0755 src/configuration/createCS.sh /home/createCS.sh
+COPY src/configuration/createCS.sh /home/createCS.sh
 COPY target/dependencies/secrets /opt/frank/secrets
 
 RUN /home/createCS.sh
