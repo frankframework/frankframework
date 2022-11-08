@@ -770,18 +770,22 @@ angular.module('iaf.beheerconsole')
 		});
 	};
 	$scope.stopAll = function() {
-		var adapters = Array();
-		for(adapter in $filter('configurationFilter')($scope.adapters, $scope)) {
-			adapters.push(adapter);
+		let compiledAdapterList = Array();
+		let adapters = $filter('configurationFilter')($scope.adapters, $scope);
+		for(adapter in adapters) {
+			let configuration = adapters[adapter].configuration;
+			compiledAdapterList.push(configuration+"/"+adapter);
 		}
-		Api.Put("adapters", {"action": "stop", "adapters": adapters});
+		Api.Put("adapters", {"action": "stop", "adapters": compiledAdapterList});
 	};
 	$scope.startAll = function() {
-		var adapters = Array();
-		for(adapter in $filter('configurationFilter')($scope.adapters, $scope)) {
-			adapters.push(adapter);
+		let compiledAdapterList = Array();
+		let adapters = $filter('configurationFilter')($scope.adapters, $scope);
+		for(adapter in adapters) {
+			let configuration = adapters[adapter].configuration;
+			compiledAdapterList.push(configuration+"/"+adapter);
 		}
-		Api.Put("adapters", {"action": "start", "adapters": adapters});
+		Api.Put("adapters", {"action": "start", "adapters": compiledAdapterList});
 	};
 	$scope.reloadConfiguration = function() {
 		if($scope.selectedConfiguration == "All") return;
@@ -830,7 +834,7 @@ angular.module('iaf.beheerconsole')
 	$scope.showReferences = function() {
 		window.open($scope.configurationFlowDiagram);
 	};
-	$scope.configurationFlowDiagram;
+	$scope.configurationFlowDiagram = null;
 	$scope.updateConfigurationFlowDiagram = function(configurationName) {
 		var url = Misc.getServerPath() + 'iaf/api/configurations/';
 		if(configurationName == "All") {
@@ -873,27 +877,27 @@ angular.module('iaf.beheerconsole')
 
 	$scope.startAdapter = function(adapter) {
 		adapter.state = 'starting';
-		Api.Put("adapters/" + Misc.escapeURL(adapter.name), {"action": "start"});
+		Api.Put("configurations/"+adapter.configuration+"/adapters/" + Misc.escapeURL(adapter.name), {"action": "start"});
 	};
 	$scope.stopAdapter = function(adapter) {
 		adapter.state = 'stopping';
-		Api.Put("adapters/" + Misc.escapeURL(adapter.name), {"action": "stop"});
+		Api.Put("configurations/"+adapter.configuration+"/adapters/" + Misc.escapeURL(adapter.name), {"action": "stop"});
 	};
 	$scope.startReceiver = function(adapter, receiver) {
 		receiver.state = 'loading';
-		Api.Put("adapters/" + Misc.escapeURL(adapter.name) + "/receivers/" + Misc.escapeURL(receiver.name), {"action": "start"});
+		Api.Put("configurations/"+adapter.configuration+"/adapters/" + Misc.escapeURL(adapter.name) + "/receivers/" + Misc.escapeURL(receiver.name), {"action": "start"});
 	};
 	$scope.stopReceiver = function(adapter, receiver) {
 		receiver.state = 'loading';
-		Api.Put("adapters/" + Misc.escapeURL(adapter.name) + "/receivers/" + Misc.escapeURL(receiver.name), {"action": "stop"});
+		Api.Put("configurations/"+adapter.configuration+"/adapters/" + Misc.escapeURL(adapter.name) + "/receivers/" + Misc.escapeURL(receiver.name), {"action": "stop"});
 	};
 	$scope.addThread = function(adapter, receiver) {
 		receiver.state = 'loading';
-		Api.Put("adapters/" + Misc.escapeURL(adapter.name) + "/receivers/" + Misc.escapeURL(receiver.name), {"action": "incthread"});
+		Api.Put("configurations/"+adapter.configuration+"/adapters/" + Misc.escapeURL(adapter.name) + "/receivers/" + Misc.escapeURL(receiver.name), {"action": "incthread"});
 	};
 	$scope.removeThread = function(adapter, receiver) {
 		receiver.state = 'loading';
-		Api.Put("adapters/" + Misc.escapeURL(adapter.name) + "/receivers/" + Misc.escapeURL(receiver.name), {"action": "decthread"});
+		Api.Put("configurations/"+adapter.configuration+"/adapters/" + Misc.escapeURL(adapter.name) + "/receivers/" + Misc.escapeURL(receiver.name), {"action": "decthread"});
 	};
 
 }])

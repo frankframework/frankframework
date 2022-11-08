@@ -35,11 +35,9 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
-import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.RequestMessageBuilder;
-import nl.nn.adapterframework.receivers.Receiver;
 
 /**
  * Get adapter information from either all or a specified adapter
@@ -49,27 +47,8 @@ import nl.nn.adapterframework.receivers.Receiver;
  */
 
 @Path("/")
-public final class ShowConfigurationStatus extends Base {
-
-	private Adapter getAdapter(String adapterName) {
-		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
-
-		if(adapter == null){
-			throw new ApiException("Adapter not found!");
-		}
-
-		return adapter;
-	}
-
-	private String getConfigurationNameByAdapter(String adapterName) {
-		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
-
-		if(adapter == null){
-			throw new ApiException("Adapter not found!");
-		}
-
-		return adapter.getConfiguration().getName();
-	}
+public final class ShowConfigurationStatus extends FrankApiBase {
+	private static final String REDIRECT_MESSAGE_PREFIX = "either provide the configuration as query param or use endpoint /configurations/<config>";
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -86,18 +65,19 @@ public final class ShowConfigurationStatus extends Base {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters/{name}")
 	@Produces(MediaType.APPLICATION_JSON)
+	@Deprecated
 	public Response getAdapterOld(@PathParam("name") String name, @QueryParam("configuration") String configuration, @QueryParam("expanded") String expanded, @QueryParam("showPendingMsgCount") boolean showPendingMsgCount) {
 		if(StringUtils.isNotEmpty(configuration)) {
-			return getAdapterNew(configuration, name, expanded, showPendingMsgCount);
+			return getAdapter(configuration, name, expanded, showPendingMsgCount);
 		}
-		throw new ApiException("either provide the configuration as query param or use endpoint /configurations/<config>/adapters/"+name, Status.MOVED_PERMANENTLY);
+		throw new ApiException(REDIRECT_MESSAGE_PREFIX+"/adapters/"+name, Status.BAD_REQUEST);
 	}
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/configurations/{configuration}/adapters/{name}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getAdapterNew(@PathParam("configuration") String configuration, @PathParam("name") String name, @QueryParam("expanded") String expanded, @QueryParam("showPendingMsgCount") boolean showPendingMsgCount) {
+	public Response getAdapter(@PathParam("configuration") String configuration, @PathParam("name") String name, @QueryParam("expanded") String expanded, @QueryParam("showPendingMsgCount") boolean showPendingMsgCount) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.ADAPTER, BusAction.FIND);
 		builder.addHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(FrankApiBase.HEADER_ADAPTER_NAME_KEY, name);
@@ -111,9 +91,21 @@ public final class ShowConfigurationStatus extends Base {
 	@PermitAll
 	@Path("/adapters/{name}/health")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getIbisHealth(@PathParam("name") String name) {
+	@Deprecated
+	public Response getIbisHealthOld(@PathParam("name") String name, @QueryParam("configuration") String configuration) {
+		if(StringUtils.isNotEmpty(configuration)) {
+			return getIbisHealth(configuration, name);
+		}
+		throw new ApiException(REDIRECT_MESSAGE_PREFIX+"/adapters/"+name+"/health", Status.BAD_REQUEST);
+	}
+
+	@GET
+	@PermitAll
+	@Path("/configurations/{configuration}/adapters/{name}/health")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getIbisHealth(@PathParam("configuration") String configuration, @PathParam("name") String name) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.HEALTH);
-		builder.addHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, getConfigurationNameByAdapter(name));
+		builder.addHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(FrankApiBase.HEADER_ADAPTER_NAME_KEY, name);
 
 		return callSyncGateway(builder);
@@ -156,8 +148,16 @@ public final class ShowConfigurationStatus extends Base {
 			callAsyncGateway(builder);
 		} else {
 			for (Iterator<String> iterator = adapters.iterator(); iterator.hasNext();) {
-				String adapterName = iterator.next();
-				builder.addHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, getConfigurationNameByAdapter(adapterName));
+				String adapterNameWithPossibleConfigurationName = iterator.next();
+				int slash = adapterNameWithPossibleConfigurationName.indexOf("/");
+				String adapterName;
+				if(slash > -1) {
+					adapterName = adapterNameWithPossibleConfigurationName.substring(slash+1);
+					String configurationName = adapterNameWithPossibleConfigurationName.substring(0, slash);
+					builder.addHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, configurationName);
+				} else {
+					adapterName = adapterNameWithPossibleConfigurationName;
+				}
 				builder.addHeader(FrankApiBase.HEADER_ADAPTER_NAME_KEY, adapterName);
 				callAsyncGateway(builder);
 			}
@@ -168,13 +168,23 @@ public final class ShowConfigurationStatus extends Base {
 
 	@PUT
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}")
+	@Path("/adapters/{adapter}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response updateAdapter(@PathParam("adapterName") String adapterName, Map<String, Object> json) {
+	@Deprecated
+	public Response updateAdapterOld(@PathParam("adapter") String adapter, @QueryParam("configuration") String configuration, Map<String, Object> json) {
+		if(StringUtils.isNotEmpty(configuration)) {
+			return updateAdapter(configuration, adapter, json);
+		}
+		throw new ApiException(REDIRECT_MESSAGE_PREFIX+"/adapters/"+adapter, Status.BAD_REQUEST);
+	}
 
-		getAdapter(adapterName); //Check if the adapter exists!
-
+	@PUT
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/configurations/{configuration}/adapters/{adapter}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response updateAdapter(@PathParam("configuration") String configuration, @PathParam("adapter") String adapter, Map<String, Object> json) {
 		Object value = json.get("action");
 		if(value instanceof String) {
 			IbisAction action = null;
@@ -186,8 +196,8 @@ public final class ShowConfigurationStatus extends Base {
 
 			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.IBISACTION);
 			builder.addHeader("action", action.name());
-			builder.addHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, getConfigurationNameByAdapter(adapterName));
-			builder.addHeader(FrankApiBase.HEADER_ADAPTER_NAME_KEY, adapterName);
+			builder.addHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, configuration);
+			builder.addHeader(FrankApiBase.HEADER_ADAPTER_NAME_KEY, adapter);
 			callAsyncGateway(builder);
 			return Response.status(Response.Status.ACCEPTED).entity("{\"status\":\"ok\"}").build();
 		}
@@ -197,17 +207,23 @@ public final class ShowConfigurationStatus extends Base {
 
 	@PUT
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/receivers/{receiverName}")
+	@Path("/adapters/{adapter}/receivers/{receiver}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response updateReceiver(@PathParam("adapterName") String adapterName, @PathParam("receiverName") String receiverName, Map<String, Object> json) {
-
-		Adapter adapter = getAdapter(adapterName);
-		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
-		if(receiver == null) {
-			throw new ApiException("Receiver ["+receiverName+"] not found!");
+	@Deprecated
+	public Response updateReceiverOld(@QueryParam("configuration") String configuration, @PathParam("adapter") String adapter, @PathParam("receiver") String receiver, Map<String, Object> json) {
+		if(StringUtils.isNotEmpty(configuration)) {
+			return updateReceiverOld(configuration, adapter, receiver, json);
 		}
+		throw new ApiException(REDIRECT_MESSAGE_PREFIX+"/adapters/"+adapter+"/receivers/"+receiver, Status.BAD_REQUEST);
+	}
 
+	@PUT
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/configurations/{configuration}/adapters/{adapter}/receivers/{receiver}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response updateReceiver(@PathParam("configuration") String configuration, @PathParam("adapter") String adapter, @PathParam("receiver") String receiver, Map<String, Object> json) {
 		Object value = json.get("action");
 		if(value instanceof String) {
 			IbisAction action = null;
@@ -221,9 +237,9 @@ public final class ShowConfigurationStatus extends Base {
 
 			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.IBISACTION);
 			builder.addHeader("action", action.name());
-			builder.addHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, getConfigurationNameByAdapter(adapterName));
-			builder.addHeader(FrankApiBase.HEADER_ADAPTER_NAME_KEY, adapterName);
-			builder.addHeader("receiver", receiverName);
+			builder.addHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, configuration);
+			builder.addHeader(FrankApiBase.HEADER_ADAPTER_NAME_KEY, adapter);
+			builder.addHeader("receiver", receiver);
 			callAsyncGateway(builder);
 			return Response.status(Response.Status.ACCEPTED).entity("{\"status\":\"ok\"}").build();
 		}
@@ -233,13 +249,23 @@ public final class ShowConfigurationStatus extends Base {
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{name}/flow")
+	@Path("/adapters/{adapter}/flow")
 	@Produces(MediaType.TEXT_PLAIN)
 	@Deprecated
-	public Response getAdapterFlow(@PathParam("name") String adapterName) {
+	public Response getAdapterFlowOld(@PathParam("adapter") String adapter, @QueryParam("configuration") String configuration) {
+		if(StringUtils.isNotEmpty(configuration)) {
+			return getAdapterFlow(configuration, adapter);
+		}
+		throw new ApiException(REDIRECT_MESSAGE_PREFIX+"/adapters/"+adapter+"/flow", Status.BAD_REQUEST);
+	}
+
+	@GET
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/configurations/{configuration}/adapters/{adapter}/flow")
+	public Response getAdapterFlow(@PathParam("configuration") String configuration, @PathParam("adapter") String adapter) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.FLOW);
-		builder.addHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, getConfigurationNameByAdapter(adapterName));
-		builder.addHeader(FrankApiBase.HEADER_ADAPTER_NAME_KEY, adapterName);
+		builder.addHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, configuration);
+		builder.addHeader(FrankApiBase.HEADER_ADAPTER_NAME_KEY, adapter);
 		return callSyncGateway(builder);
 	}
 }

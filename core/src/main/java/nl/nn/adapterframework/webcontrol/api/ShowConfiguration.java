@@ -114,16 +114,6 @@ public final class ShowConfiguration extends FrankApiBase {
 		return callSyncGateway(builder);
 	}
 
-	@GET
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/configurations/{configuration}/adapters/{name}/flow")
-	public Response getAdapterFlow(@PathParam("configuration") String configurationName, @PathParam("name") String adapterName) throws ApiException {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.FLOW);
-		builder.addHeader("configuration", configurationName);
-		builder.addHeader("adapter", adapterName);
-		return callSyncGateway(builder);
-	}
-
 	@PUT
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/configurations/{configuration}")
