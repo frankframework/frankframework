@@ -43,12 +43,14 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.senders.DelaySender;
 import nl.nn.adapterframework.stream.FileMessage;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testtool.FileListener;
 import nl.nn.adapterframework.testtool.FileSender;
 import nl.nn.adapterframework.testtool.HttpServletResponseMock;
 import nl.nn.adapterframework.testtool.ListenerMessage;
 import nl.nn.adapterframework.testtool.ListenerMessageHandler;
 import nl.nn.adapterframework.testtool.SenderThread;
 import nl.nn.adapterframework.testtool.TestTool;
+import nl.nn.adapterframework.testtool.XsltProviderListener;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -295,15 +297,20 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 	}
 	
 	@Override
-	public int executeWrite(String stepDisplayName, String fileContent, String correlationId) throws TimeoutException, SenderException {
+	public int executeWrite(String stepDisplayName, String fileContent, String correlationId, Map<String, Object> parameters) throws TimeoutException, SenderException, ListenerException {
 		if(get() instanceof FileSender) {
-			FileSender fileSender = (FileSender)get("fileSender");
+			FileSender fileSender = (FileSender)get();
 			fileSender.sendMessage(fileContent);
 			return TestTool.RESULT_OK;
 		}
 		if(get() instanceof DelaySender) {
-			DelaySender delaySender = (DelaySender)get("delaySender");
+			DelaySender delaySender = (DelaySender)get();
 			delaySender.sendMessage(new nl.nn.adapterframework.stream.Message(fileContent), null);
+			return TestTool.RESULT_OK;
+		}
+		if(get() instanceof XsltProviderListener) {
+			XsltProviderListener xsltProviderListener = (XsltProviderListener)get();
+			xsltProviderListener.processRequest(fileContent, parameters);
 			return TestTool.RESULT_OK;
 		}
 		if(get() instanceof ISender) {
@@ -334,9 +341,21 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 	}
 
 	
-	public String executeRead(String step, String stepDisplayName, Properties properties, String fileName, String fileContent) throws SenderException, IOException, TimeoutException {
+	@Override
+	public String executeRead(String step, String stepDisplayName, Properties properties, String fileName, String fileContent) throws SenderException, IOException, TimeoutException, ListenerException {
+		if(get() instanceof FileSender) {
+			FileSender fileSender = (FileSender)get();
+			return fileSender.getMessage();
+		}
+		if(get() instanceof FileListener) {
+			FileListener fileListener = (FileListener)get();
+			return fileListener.getMessage();
+		}
+		if(get() instanceof XsltProviderListener) {
+			XsltProviderListener xsltProviderListener = (XsltProviderListener)get();
+			return xsltProviderListener.getResult();
+		}
 		if(get() instanceof ISender) {
-	
 			SenderThread senderThread = (SenderThread)remove("SenderThread");
 			removeSenderThread();
 			if (senderThread == null) {

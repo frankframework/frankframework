@@ -17,6 +17,7 @@ package nl.nn.adapterframework.testtool.queues;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.lang3.NotImplementedException;
@@ -54,7 +55,7 @@ public class JmsSenderQueue extends HashMap<String, Object> implements Queue {
 	}
 
 	@Override
-	public int executeWrite(String stepDisplayName, String fileContent, String correlationId) throws TimeoutException, SenderException {
+	public int executeWrite(String stepDisplayName, String fileContent, String correlationId, Map<String, Object> parameters) throws TimeoutException, SenderException {
 		throw new NotImplementedException("executeWrite");
 	}
 
