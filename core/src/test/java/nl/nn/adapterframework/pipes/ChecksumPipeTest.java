@@ -56,7 +56,7 @@ public class ChecksumPipeTest extends StreamingPipeTestBase<ChecksumPipe> {
 
 		assertNotNull(result);
 	}
-	
+
 	@Test(expected = Exception.class)
 	public void cantCalculate() throws Exception {
 		doPipe(pipe, new Message((String)null), session);
@@ -98,6 +98,22 @@ public class ChecksumPipeTest extends StreamingPipeTestBase<ChecksumPipe> {
 		URL file = TestFileUtils.getTestFileURL("/Pipes/2.txt");
 		assertEquals(expected, calculateChecksum(file.getPath(), ChecksumType.SHA, true));
 		assertEquals(expected, calculateChecksum(file.openStream(), ChecksumType.SHA));
+	}
+
+	@Test
+	public void testFileChecksumSHA256() throws Exception {
+		String expected = "3820468c2a496ce70b6bb24af2b7601f404d7f5d5141e5e24315b660261a74fa";
+		URL file = TestFileUtils.getTestFileURL("/Pipes/2.txt");
+		assertEquals(expected, calculateChecksum(file.getPath(), ChecksumType.SHA256, true));
+		assertEquals(expected, calculateChecksum(file.openStream(), ChecksumType.SHA256));
+	}
+
+	@Test
+	public void testFileChecksumSHA512() throws Exception {
+		String expected = "5adf3f57356b3aaf1d4023602e13619243644a399c41e2817fb03366d9daeae229f803189754c8004c27f9eafaa33475f41fae0d2d265508f4be3c0185312011";
+		URL file = TestFileUtils.getTestFileURL("/Pipes/2.txt");
+		assertEquals(expected, calculateChecksum(file.getPath(), ChecksumType.SHA512, true));
+		assertEquals(expected, calculateChecksum(file.openStream(), ChecksumType.SHA512));
 	}
 
 	@Test
