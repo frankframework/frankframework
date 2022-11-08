@@ -30,6 +30,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.Mandatory;
@@ -124,7 +125,7 @@ public class XComSender extends SenderWithParametersBase {
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		String messageString;
 		try {
 			messageString = message.asString();
@@ -171,7 +172,7 @@ public class XComSender extends SenderWithParametersBase {
 				throw new SenderException("Error while executing command " + getCommand(session, localFile, false), e);
 			}
 		}
-		return message;
+		return new SenderResult(message);
 	}
 
 	private String getCommand(PipeLineSession session, File localFile, boolean inclPasswd) throws SenderException {

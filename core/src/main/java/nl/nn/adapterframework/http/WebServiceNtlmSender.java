@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -55,6 +55,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
@@ -152,7 +153,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements Ha
 
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		String result = null;
 		HttpPost httpPost = new HttpPost(getUrl());
 		try {
@@ -196,7 +197,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements Ha
 		} finally {
 			httpPost.releaseConnection();
 		}
-		return new Message(result);
+		return new SenderResult(result);
 	}
 
 	@Override

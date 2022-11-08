@@ -64,7 +64,7 @@ public abstract class SenderTestBase<S extends ISender> extends ConfiguredTestBa
 		return sendMessage(message, session);
 	}
 	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		return sender.sendMessage(message, session);
+		return sender.sendMessageOrThrow(message, session);
 	}
 
 	/**

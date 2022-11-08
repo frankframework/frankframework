@@ -122,7 +122,7 @@ public class ShadowSender extends ParallelSenders {
 	 * We override this from the parallel sender as we should only execute the original and shadowsenders here!
 	 */
 	@Override
-	public SenderResult sendMessageAndProvideForwardName(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		Guard primaryGuard = new Guard();
 		Guard shadowGuard = new Guard();
 		Map<ISender, ParallelSenderExecutor> executorMap = new ConcurrentHashMap<>();
@@ -152,7 +152,7 @@ public class ShadowSender extends ParallelSenders {
 				// Collect the results of the (Shadow)Sender and send them to the resultSender.
 				try {
 					Message result = collectResults(executorMap, message, session);
-					resultSender.sendMessage(result, session);
+					resultSender.sendMessageOrThrow(result, session);
 				} catch (IOException | SAXException e) {
 					log.error("unable to compose result message", e);
 				} catch(TimeoutException | SenderException se) {

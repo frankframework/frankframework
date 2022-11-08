@@ -137,7 +137,7 @@ public class J2V8 implements JavascriptEngine<V8> {
 			public Object invoke(V8Object receiver, V8Array parameters) {
 				try {
 					Message msg = Message.asMessage(parameters.get(0));
-					return sender.sendMessage(msg, session).asString();
+					return sender.sendMessageOrThrow(msg, session).asString();
 				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}

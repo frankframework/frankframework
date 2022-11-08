@@ -23,7 +23,6 @@ import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IForwardNameProvidingSender;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
@@ -77,19 +76,15 @@ public class SenderSeries extends SenderWrapperBase {
 	}
 
 	@Override
-	public SenderResult doSendMessageAndProvideForwardName(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		String correlationID = session==null ? null : session.getCorrelationId();
 		SenderResult result=null;
 		long t1 = System.currentTimeMillis();
 		for (ISender sender: getSenders()) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"sending correlationID ["+correlationID+"] message ["+message+"] to sender ["+sender.getName()+"]");
-			if (sender instanceof IForwardNameProvidingSender) {
-				result = ((IForwardNameProvidingSender)sender).sendMessageAndProvideForwardName(message, session);
-				if (!result.isSuccess()) {
-					return result;
-				}
-			} else {
-				result = new SenderResult(sender.sendMessage(message,session));
+			result = sender.sendMessage(message, session);
+			if (!result.isSuccess()) {
+				return result;
 			}
 			message = result.getResult();
 			long t2 = System.currentTimeMillis();

@@ -99,7 +99,7 @@ public class IdinSenderTest extends Mockito {
 	public void randomMessage() throws SenderException, TimeoutException, SAXException, IOException {
 		String message = "<test><woop>1</woop></test>";
 		PipeLineSession session = null;
-		String result = sender.sendMessage(new Message(message), session).asString();
+		String result = sender.sendMessageOrThrow(new Message(message), session).asString();
 		//TODO compare
 	}
 
@@ -108,7 +108,7 @@ public class IdinSenderTest extends Mockito {
 	public void normal() throws SenderException, TimeoutException, IOException {
 		String message = "<idin/>";
 		PipeLineSession session = null;
-		String result = sender.sendMessage(new Message(message), session).asString();
+		String result = sender.sendMessageOrThrow(new Message(message), session).asString();
 		//TODO assertEquals("result", result);
 	}
 
@@ -117,7 +117,7 @@ public class IdinSenderTest extends Mockito {
 	public void issuersByCountry() throws SenderException, TimeoutException, IOException {
 		String message = "<idin><issuersByCountry>true</issuersByCountry></idin>";
 		PipeLineSession session = null;
-		String result = sender.sendMessage(new Message(message), session).asString();
+		String result = sender.sendMessageOrThrow(new Message(message), session).asString();
 		//TODO assertEquals("result", result);
 	}
 }

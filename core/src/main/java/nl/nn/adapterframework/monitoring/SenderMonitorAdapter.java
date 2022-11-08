@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ public class SenderMonitorAdapter extends MonitorAdapterBase {
 	@Override
 	public void fireEvent(String eventSource, EventTypeEnum eventType, SeverityEnum severity, String message, Throwable t) {
 		try {
-			getSender().sendMessage(new Message(makeXml(eventSource, eventType, severity, message, t)),null);
+			getSender().sendMessageOrThrow(new Message(makeXml(eventSource, eventType, severity, message, t)),null);
 		} catch (Exception e) {
 			log.error("Could not signal event", e);
 		}

@@ -1253,13 +1253,13 @@ public class TestTool {
 						String preResult = (String)querySendersInfo.get("prePostQueryResult");
 						PipeLineSession session = new PipeLineSession();
 						session.put(PipeLineSession.correlationIdKey, correlationId);
-						String postResult = prePostFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, session).asString();
+						String postResult = prePostFixedQuerySender.sendMessageOrThrow(TESTTOOL_DUMMY_MESSAGE, session).asString();
 						if (!preResult.equals(postResult)) {
 
 							String message = null;
 							FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)querySendersInfo.get("readQueryQueryFixedQuerySender");
 							try {
-								message = readQueryFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, session).asString();
+								message = readQueryFixedQuerySender.sendMessageOrThrow(TESTTOOL_DUMMY_MESSAGE, session).asString();
 							} catch(TimeoutException e) {
 								errorMessage("Time out on execute query for '" + name + "': " + e.getMessage(), e, writers);
 							} catch(IOException | SenderException e) {
@@ -1401,7 +1401,7 @@ public class TestTool {
 			if (providedCorrelationId == null) {
 				providedCorrelationId = correlationId;
 			}
-			jmsSender.sendMessage(new nl.nn.adapterframework.stream.Message(fileContent), null);
+			jmsSender.sendMessageOrThrow(new nl.nn.adapterframework.stream.Message(fileContent), null);
 			debugPipelineMessage(stepDisplayName, "Successfully written to '" + queueName + "':", fileContent, writers);
 			result = RESULT_OK;
 		} catch(TimeoutException e) {
@@ -1585,7 +1585,7 @@ public class TestTool {
 				debugPipelineMessage(stepDisplayName, "Pre result '" + queueName + "':", preResult, writers);
 				PipeLineSession session = new PipeLineSession();
 				session.put(PipeLineSession.correlationIdKey, correlationId);
-				String postResult = prePostFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, session).asString();
+				String postResult = prePostFixedQuerySender.sendMessageOrThrow(TESTTOOL_DUMMY_MESSAGE, session).asString();
 				debugPipelineMessage(stepDisplayName, "Post result '" + queueName + "':", postResult, writers);
 				if (preResult.equals(postResult)) {
 					newRecordFound = false;
@@ -1606,7 +1606,7 @@ public class TestTool {
 			try {
 				PipeLineSession session = new PipeLineSession();
 				session.put(PipeLineSession.correlationIdKey, correlationId);
-				message = readQueryFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, session).asString();
+				message = readQueryFixedQuerySender.sendMessageOrThrow(TESTTOOL_DUMMY_MESSAGE, session).asString();
 			} catch(TimeoutException e) {
 				errorMessage("Time out on execute query for '" + queueName + "': " + e.getMessage(), e, writers);
 			} catch(IOException | SenderException e) {

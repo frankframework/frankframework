@@ -332,7 +332,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 					}
 					PipeLineSession pipeLineSession = new PipeLineSession();
 					pipeLineSession.put(PipeLineSession.correlationIdKey,replyCid);
-					getSender().sendMessage(plr.getResult(), pipeLineSession);
+					getSender().sendMessageOrThrow(plr.getResult(), pipeLineSession);
 				}
 			}
 		} catch (JMSException | SenderException | TimeoutException | NamingException | IOException | JmsException e) {

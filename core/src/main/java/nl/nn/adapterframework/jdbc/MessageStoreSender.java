@@ -30,6 +30,7 @@ import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -101,7 +102,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage<String> impleme
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		try {
 			String messageToStore = message.asString(); // if no session keys are specified, message is stored without escaping, for compatibility with normal messagestore operation.
 			if (sessionKeys != null) {
@@ -128,7 +129,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage<String> impleme
 					throw new SenderException("Could not resolve parameter messageId", e);
 				}
 			}
-			return new Message(storeMessage(messageId, correlationID, new Date(), null, null, messageToStore));
+			return new SenderResult(storeMessage(messageId, correlationID, new Date(), null, null, messageToStore));
 		} catch (IOException e) {
 			throw new SenderException(getLogPrefix(),e);
 		}

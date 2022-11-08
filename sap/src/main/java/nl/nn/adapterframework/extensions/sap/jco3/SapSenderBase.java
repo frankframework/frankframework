@@ -26,14 +26,12 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.extensions.sap.jco3.tx.DestinationFactoryUtils;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.stream.Message;
 
 /**
  * Base class for functions that call SAP.
@@ -85,11 +83,6 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 	@Override
 	public void close() {
 		closeFacade();
-	}
-
-	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		return sendMessage(message,null);
 	}
 
 	public SapSystemImpl getSystem(ParameterValueList pvl) throws SapException {

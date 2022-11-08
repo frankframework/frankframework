@@ -53,7 +53,7 @@ public class MailSenderTest2 extends SenderTestBase<MailSender> {
 
 		sender.configure();
 		sender.open();
-		sender.sendMessage(new Message(mailInput), session);
+		sender.sendMessageOrThrow(new Message(mailInput), session);
 
 		MimeMessage[] messages = greenMail.getReceivedMessages();
 		assertEquals(1, messages.length);

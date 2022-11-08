@@ -1,13 +1,13 @@
 package nl.nn.adapterframework.senders;
 
+import org.junit.Test;
+
 import jakarta.mail.Provider;
 import jakarta.mail.Provider.Type;
 import jakarta.mail.Session;
-
-import org.junit.Test;
-
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.senders.mail.MailSenderTestBase;
 import nl.nn.adapterframework.senders.mail.TransportMock;
@@ -34,11 +34,11 @@ public class MailSenderTest extends MailSenderTestBase<MailSender> {
 			}
 
 			@Override
-			public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+			public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 				super.sendMessage(message, session);
 				session.put("mailSession", mailSession);
 				String messageID = session.getMessageId();
-				return new Message(messageID);
+				return new SenderResult(messageID);
 			}
 		};
 		mailSender.setSmtpHost("localhost");

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import lombok.Setter;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DomBuilderException;
@@ -79,9 +80,9 @@ public class Afm2EdiFactSender implements ISender {
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException {
 		try {
-			return new Message(execute(message.asString()));
+			return new SenderResult(execute(message.asString()));
 		} catch (Exception e) {
 			throw new SenderException("transforming AFM-XML to EdiFact",e);
 		}
@@ -160,7 +161,7 @@ public class Afm2EdiFactSender implements ISender {
 		return resultaat.toString();
 	}
 	public char[] getCloseResultaat() {
-		// UNZ 
+		// UNZ
 		char unzRegel[] = new char[23];
 		for (int i = 0; i < 23; i++)
 			unzRegel[i] = ' ';

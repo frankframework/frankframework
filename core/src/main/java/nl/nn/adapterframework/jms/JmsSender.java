@@ -40,6 +40,7 @@ import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -147,8 +148,8 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		return sendMessage(message, session, null);
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		return new SenderResult(sendMessage(message, session, null));
 	}
 
 	public Message sendMessage(Message message, PipeLineSession session, String soapHeader) throws SenderException, TimeoutException {

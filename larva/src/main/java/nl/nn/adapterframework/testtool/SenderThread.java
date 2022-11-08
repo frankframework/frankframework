@@ -59,7 +59,7 @@ public class SenderThread extends Thread {
 				session = new PipeLineSession();
 			}
 			session.put(PipeLineSession.correlationIdKey, correlationId);
-			response = sender.sendMessage(new Message(request), session).asString();
+			response = sender.sendMessageOrThrow(new Message(request), session).asString();
 		} catch(SenderException e) {
 			if (convertExceptionToMessage) {
 				response = Util.throwableToXml(e);

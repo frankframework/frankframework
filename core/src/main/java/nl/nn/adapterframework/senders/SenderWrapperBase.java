@@ -22,7 +22,6 @@ import lombok.Setter;
 import nl.nn.adapterframework.cache.ICache;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IForwardNameProvidingSender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
@@ -38,7 +37,7 @@ import nl.nn.adapterframework.stream.Message;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public abstract class SenderWrapperBase extends SenderWithParametersBase implements IForwardNameProvidingSender, HasStatistics, ICacheEnabled<String,String> {
+public abstract class SenderWrapperBase extends SenderWithParametersBase implements HasStatistics, ICacheEnabled<String,String> {
 
 	private @Getter String getInputFromSessionKey;
 	private @Getter String getInputFromFixedValue=null;
@@ -84,19 +83,14 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 
 	protected abstract boolean isSenderConfigured();
 
-	@Override
-	public final Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		return IForwardNameProvidingSender.super.sendMessage(message, session);
-	}
-
-	public abstract SenderResult doSendMessageAndProvideForwardName(Message message, PipeLineSession session) throws SenderException, TimeoutException;
+	public abstract SenderResult doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException;
 
 	@Override
-	public SenderResult sendMessageAndProvideForwardName(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		if (senderWrapperProcessor!=null) {
-			return senderWrapperProcessor.sendMessageAndProvideForwardName(this, message, session);
+			return senderWrapperProcessor.sendMessage(this, message, session);
 		}
-		return doSendMessageAndProvideForwardName(message, session);
+		return doSendMessage(message, session);
 	}
 
 	@Override

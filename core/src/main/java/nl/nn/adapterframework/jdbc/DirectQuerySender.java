@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -107,8 +108,8 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 
 	@Override
 	// implements IBlockEnabledSender.sendMessage()
-	public Message sendMessage(Connection blockHandle, Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		return sendMessageOnConnection(blockHandle, message, session, null).getResult();
+	public SenderResult sendMessage(Connection blockHandle, Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		return new SenderResult(sendMessageOnConnection(blockHandle, message, session, null).getResult());
 	}
 
 	@Override

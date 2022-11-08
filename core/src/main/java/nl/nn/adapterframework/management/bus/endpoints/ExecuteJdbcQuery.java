@@ -106,7 +106,7 @@ public class ExecuteJdbcQuery extends BusEndpointBase {
 			qs.configure(true);
 			qs.open();
 
-			nl.nn.adapterframework.stream.Message message = qs.sendMessage(new nl.nn.adapterframework.stream.Message(query), null);
+			nl.nn.adapterframework.stream.Message message = qs.sendMessageOrThrow(new nl.nn.adapterframework.stream.Message(query), null);
 
 			switch (resultType) {
 			case CSV:

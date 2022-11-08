@@ -33,7 +33,7 @@ import nl.nn.adapterframework.stream.Message;
 public class InputOutputSenderWrapperProcessor extends SenderWrapperProcessorBase {
 
 	@Override
-	public SenderResult sendMessageAndProvideForwardName(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		Message senderInput=message;
 		if (StringUtils.isNotEmpty(senderWrapperBase.getStoreInputInSessionKey())) {
 			try {
@@ -62,7 +62,7 @@ public class InputOutputSenderWrapperProcessor extends SenderWrapperProcessorBas
 				throw new SenderException("Could not preserve input",e);
 			}
 		}
-		SenderResult result = senderWrapperProcessor.sendMessageAndProvideForwardName(senderWrapperBase, senderInput, session);
+		SenderResult result = senderWrapperProcessor.sendMessage(senderWrapperBase, senderInput, session);
 		if (result.isSuccess()) {
 			if (StringUtils.isNotEmpty(senderWrapperBase.getStoreResultInSessionKey())) {
 				if (!senderWrapperBase.isPreserveInput()) {
