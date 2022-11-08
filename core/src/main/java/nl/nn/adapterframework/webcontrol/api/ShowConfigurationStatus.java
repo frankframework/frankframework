@@ -30,6 +30,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -85,9 +86,20 @@ public final class ShowConfigurationStatus extends Base {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters/{name}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getAdapter(@PathParam("name") String name, @QueryParam("configuration") String configuration, @QueryParam("expanded") String expanded, @QueryParam("showPendingMsgCount") boolean showPendingMsgCount) {
+	public Response getAdapterOld(@PathParam("name") String name, @QueryParam("configuration") String configuration, @QueryParam("expanded") String expanded, @QueryParam("showPendingMsgCount") boolean showPendingMsgCount) {
+		if(StringUtils.isNotEmpty(configuration)) {
+			return getAdapterNew(configuration, name, expanded, showPendingMsgCount);
+		}
+		throw new ApiException("either provide the configuration as query param or use endpoint /configurations/<config>/adapters/"+name, Status.MOVED_PERMANENTLY);
+	}
+
+	@GET
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/configurations/{configuration}/adapters/{name}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getAdapterNew(@PathParam("configuration") String configuration, @PathParam("name") String name, @QueryParam("expanded") String expanded, @QueryParam("showPendingMsgCount") boolean showPendingMsgCount) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.ADAPTER, BusAction.FIND);
-		builder.addHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, getConfigurationNameByAdapter(name));
+		builder.addHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(FrankApiBase.HEADER_ADAPTER_NAME_KEY, name);
 
 		builder.addHeader("showPendingMsgCount", showPendingMsgCount);
