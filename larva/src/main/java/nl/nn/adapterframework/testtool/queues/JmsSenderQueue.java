@@ -30,7 +30,7 @@ import nl.nn.adapterframework.jms.JmsSender;
 public class JmsSenderQueue extends HashMap<String, Object> implements Queue {
 
 	private JmsSender jmsSender;
-	
+
 	public JmsSenderQueue(JmsSender jmsSender, String useCorrelationIdFrom, String jmsCorrelationId) {
 		super();
 		this.jmsSender=jmsSender;

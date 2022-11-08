@@ -295,7 +295,7 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 			((IListener<?>) get()).close();
 		}
 	}
-	
+
 	@Override
 	public int executeWrite(String stepDisplayName, String fileContent, String correlationId, Map<String, Object> parameters) throws TimeoutException, SenderException, ListenerException {
 		if(get() instanceof FileSender) {
@@ -305,7 +305,7 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 		}
 		if(get() instanceof DelaySender) {
 			DelaySender delaySender = (DelaySender)get();
-			delaySender.sendMessage(new nl.nn.adapterframework.stream.Message(fileContent), null);
+			delaySender.sendMessage(new Message(fileContent), null);
 			return TestTool.RESULT_OK;
 		}
 		if(get() instanceof XsltProviderListener) {
@@ -340,7 +340,7 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 		throw new SenderException("Could not perform executeWrite() for queue ["+get()+"]");
 	}
 
-	
+
 	@Override
 	public String executeRead(String step, String stepDisplayName, Properties properties, String fileName, String fileContent) throws SenderException, IOException, TimeoutException, ListenerException {
 		if(get() instanceof FileSender) {

@@ -25,9 +25,9 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 
 public interface Queue extends Map<String,Object> {
-	
+
 	void configure() throws ConfigurationException;
-	
+
 	void open() throws ConfigurationException;
 
 	int executeWrite(String stepDisplayName, String fileContent, String correlationId, Map<String, Object> xsltParameters) throws TimeoutException, SenderException, ListenerException;;
