@@ -315,16 +315,16 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 		}
 		if(get() instanceof ISender) {
 			ISender sender = (ISender)get();
-			Boolean convertExceptionToMessage = (Boolean)get("convertExceptionToMessage");
-			PipeLineSession session = (PipeLineSession)get("session");
+			Boolean convertExceptionToMessage = (Boolean)get(CONVERT_MESSAGE_TO_EXCEPTION_KEY);
+			PipeLineSession session = getSession();
 			SenderThread senderThread = new SenderThread(sender, fileContent, session, convertExceptionToMessage.booleanValue(), correlationId);
 			senderThread.start();
-			put("SenderThread", senderThread);
+			put(SENDER_THREAD_KEY, senderThread);
 			setSenderThread(senderThread); // 'put' and 'set' do something similar
 			return TestTool.RESULT_OK;
 		}
 		if(get() instanceof IListener<?>) {
-			ListenerMessageHandler listenerMessageHandler = (ListenerMessageHandler)get(MESSAGE_HANDLER_KEY);
+			ListenerMessageHandler listenerMessageHandler = getMessageHandler();
 			if (listenerMessageHandler == null) {
 				throw new NoSuchElementException("No ListenerMessageHandler found");
 			}
@@ -356,7 +356,7 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 			return xsltProviderListener.getResult();
 		}
 		if(get() instanceof ISender) {
-			SenderThread senderThread = (SenderThread)remove("SenderThread");
+			SenderThread senderThread = (SenderThread)remove(SENDER_THREAD_KEY);
 			removeSenderThread();
 			if (senderThread == null) {
 				throw new SenderException("No SenderThread found, no corresponding write request?");

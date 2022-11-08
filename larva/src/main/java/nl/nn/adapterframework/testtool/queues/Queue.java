@@ -30,7 +30,7 @@ public interface Queue extends Map<String,Object> {
 
 	void open() throws ConfigurationException;
 
-	int executeWrite(String stepDisplayName, String fileContent, String correlationId, Map<String, Object> xsltParameters) throws TimeoutException, SenderException, ListenerException;;
+	int executeWrite(String stepDisplayName, String fileContent, String correlationId, Map<String, Object> xsltParameters) throws TimeoutException, SenderException, ListenerException;
 	String executeRead(String step, String stepDisplayName, Properties properties, String fileName, String fileContent) throws SenderException, IOException, TimeoutException, ListenerException;
 
 }
