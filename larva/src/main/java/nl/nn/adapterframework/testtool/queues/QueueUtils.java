@@ -30,10 +30,10 @@ import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Reflection helper to create Larva Queues'
- * 
+ *
  * When a class is created it will attempt to set the name and disable HTTP SSL capabilities by default
  * When setting the bean properties it loops through the available setter methods and looks for a matching property.
- * 
+ *
  * @author Niels Meijer
  */
 public class QueueUtils {
