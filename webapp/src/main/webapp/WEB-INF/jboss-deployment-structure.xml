@@ -41,6 +41,7 @@ In order to find all modules:
 			<module name="javax.jws.api" export="true"/>	<!-- java.lang.NoClassDefFoundError: javax/jws/WebService -->
 			<module name="javax.jms.api" export="true"/>
 			<module name="module.frank-framework" />
+			<module name="org.jboss.as.server"/> <!-- for WildFlyCredentialFactory -->
 		</dependencies>
 		<exclude-subsystems>
 			<subsystem name="webservices" />	<!-- To avoid apache CXF conflict -->
