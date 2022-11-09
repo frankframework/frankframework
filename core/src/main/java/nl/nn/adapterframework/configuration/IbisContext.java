@@ -29,6 +29,7 @@ import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
@@ -260,7 +261,7 @@ public class IbisContext extends IbisApplicationContext {
 	 * @param configurationName name of the configuration to load or null when you want to load all configurations
 	 * 
 	 * @see ClassLoaderManager#get(String)
-	 * @see ConfigurationUtils#retrieveAllConfigNames(IbisContext)
+	 * @see ConfigurationUtils#retrieveAllConfigNames(ApplicationContext)
 	 * @see #createAndConfigureConfigurationWithClassLoader(ClassLoader, String, ClassLoaderException)
 	 */
 	public void load(String configurationName) {
@@ -314,7 +315,7 @@ public class IbisContext extends IbisApplicationContext {
 
 	/** Helper method to create stubbed configurations used in JunitTests */
 	protected Map<String, String> retrieveAllConfigNames() {
-		return ConfigurationUtils.retrieveAllConfigNames(this);
+		return ConfigurationUtils.retrieveAllConfigNames(getApplicationContext());
 	}
 
 	/**

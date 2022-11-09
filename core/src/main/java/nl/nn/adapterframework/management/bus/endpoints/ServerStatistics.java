@@ -34,7 +34,6 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.ProcessState;
-import nl.nn.adapterframework.lifecycle.ApplicationMetrics;
 import nl.nn.adapterframework.lifecycle.MessageEventListener;
 import nl.nn.adapterframework.management.bus.ActionSelector;
 import nl.nn.adapterframework.management.bus.BusAction;
@@ -69,7 +68,7 @@ public class ServerStatistics extends BusEndpointBase {
 
 		Map<String, Object> instance = new HashMap<>(2);
 		instance.put("version", appConstants.getProperty("instance.version"));
-		instance.put("name", getIbisManager().getIbisContext().getApplicationName());
+		instance.put("name", appConstants.getProperty("instance.name"));
 		returnMap.put("instance", instance);
 
 		String dtapStage = appConstants.getProperty("dtap.stage");
@@ -93,8 +92,7 @@ public class ServerStatistics extends BusEndpointBase {
 		returnMap.put("serverTime", date.getTime());
 		returnMap.put("machineName" , Misc.getHostname());
 		try {
-			ApplicationMetrics metrics = getApplicationContext().getBean("metrics", ApplicationMetrics.class);
-			returnMap.put("uptime", (metrics != null) ? metrics.getUptimeDate() : "");
+			returnMap.put("uptime", getApplicationContext().getStartupDate());
 		} catch (Exception e) {
 			LogUtil.getLogger(this).info("unable to determine application uptime", e);
 		}
@@ -105,7 +103,6 @@ public class ServerStatistics extends BusEndpointBase {
 	@ActionSelector(BusAction.WARNINGS)
 	public Message<String> getApplicationWarnings() {
 		Map<String, Object> returnMap = new HashMap<>();
-		ApplicationWarnings globalConfigWarnings = getBean("applicationWarnings", ApplicationWarnings.class);
 		MessageEventListener eventListener = getBean("MessageEventListener", MessageEventListener.class);
 
 		long totalErrorStoreCount = 0;
@@ -165,6 +162,7 @@ public class ServerStatistics extends BusEndpointBase {
 		returnMap.put("totalErrorStoreCount", totalErrorStoreCount);
 
 		//Global warnings
+		ApplicationWarnings globalConfigWarnings = getBean("applicationWarnings", ApplicationWarnings.class);
 		if (globalConfigWarnings.size()>0) {
 			List<Object> warnings = new ArrayList<>();
 			for (int j=0; j<globalConfigWarnings.size(); j++) {

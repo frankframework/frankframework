@@ -172,12 +172,12 @@ public class StatusRecordingTransactionManagerImplementationTest<S extends Statu
 		fs1.configure();
 		fs1.open();
 		try {
-			fs1.sendMessage(new Message("DROP TABLE "+tableName),null);
+			fs1.sendMessageOrThrow(new Message("DROP TABLE "+tableName),null);
 		} catch (Exception e) {
 			log.warn(e);
 		}
 
-		fs1.sendMessage(new Message("CREATE TABLE "+tableName+"(id char(1))"),null);
+		fs1.sendMessageOrThrow(new Message("CREATE TABLE "+tableName+"(id char(1))"),null);
 		fs1.close();
 	}
 
@@ -210,8 +210,8 @@ public class StatusRecordingTransactionManagerImplementationTest<S extends Statu
 			TransactionStatus txStatus = txManager.getTransaction(txDef);
 			try {
 
-				fs1.sendMessage(new Message("INSERT INTO "+tableName+" (id) VALUES ('x')"),null);
-				fs2.sendMessage(new Message("INSERT INTO "+tableName+" (id) VALUES ('x')"),null);
+				fs1.sendMessageOrThrow(new Message("INSERT INTO "+tableName+" (id) VALUES ('x')"),null);
+				fs2.sendMessageOrThrow(new Message("INSERT INTO "+tableName+" (id) VALUES ('x')"),null);
 			} finally {
 				txManager.commit(txStatus);
 			}

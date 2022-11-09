@@ -36,7 +36,9 @@ public class TestInlineStorage extends BusTestBase {
 	}
 
 	@Before
+	@Override
 	public void setUp() throws Exception {
+		super.setUp();
 		adapter = registerAdapter(getConfiguration());
 	}
 
@@ -63,10 +65,12 @@ public class TestInlineStorage extends BusTestBase {
 	}
 
 	@After
-	public void tearDown() {
+	@Override
+	public void tearDown() throws Exception {
 		if(adapter != null) {
 			getConfiguration().getAdapterManager().unRegisterAdapter(adapter);
 		}
+		super.tearDown();
 	}
 
 	@Test

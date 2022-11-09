@@ -28,12 +28,12 @@ import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action='write'.
- * Filename and contents are taken from parameters. If one of the parameters is not present, the input message 
+ * Filename and contents are taken from parameters. If one of the parameters is not present, the input message
  * is used for either filename or contents.
  *
  * @ff.parameter filename filename of the zipentry
  * @ff.parameter contents contents of the zipentry
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.9.10
  */

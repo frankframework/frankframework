@@ -25,6 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Properties;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -36,21 +37,28 @@ import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.senders.DelaySender;
 import nl.nn.adapterframework.stream.FileMessage;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testtool.FileListener;
+import nl.nn.adapterframework.testtool.FileSender;
 import nl.nn.adapterframework.testtool.HttpServletResponseMock;
+import nl.nn.adapterframework.testtool.ListenerMessage;
 import nl.nn.adapterframework.testtool.ListenerMessageHandler;
 import nl.nn.adapterframework.testtool.SenderThread;
+import nl.nn.adapterframework.testtool.TestTool;
+import nl.nn.adapterframework.testtool.XsltProviderListener;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.XmlUtils;
 
-public class QueueWrapper extends HashMap<String, Object> {
+public class QueueWrapper extends HashMap<String, Object> implements Queue {
 	private static final String CONVERT_MESSAGE_TO_EXCEPTION_KEY = "convertExceptionToMessage";
 	private static final String PIPELINESESSION_KEY = "session";
 	private static final String MESSAGE_HANDLER_KEY = "listenerMessageHandler";
-	private static final String SENDER_THREAD_KEY = "asdfasdfadsfasfdfafsd";
+	private static final String SENDER_THREAD_KEY = "defaultSenderThread";
 	private final String queueKey;
 
 	private QueueWrapper(IConfigurable configurable) {
@@ -255,12 +263,14 @@ public class QueueWrapper extends HashMap<String, Object> {
 		return create(configurable).invokeSetters(defaultTimeout, queueProperties);
 	}
 
+	@Override
 	public void configure() throws ConfigurationException {
 		if(!(get() instanceof WebServiceListener)) {//requires a configuration as parent
 			get().configure();
 		}
 	}
 
+	@Override
 	public void open() throws ConfigurationException {
 		try {
 			if(get() instanceof ISender) {
@@ -285,4 +295,88 @@ public class QueueWrapper extends HashMap<String, Object> {
 			((IListener<?>) get()).close();
 		}
 	}
+
+	@Override
+	public int executeWrite(String stepDisplayName, String fileContent, String correlationId, Map<String, Object> parameters) throws TimeoutException, SenderException, ListenerException {
+		if(get() instanceof FileSender) {
+			FileSender fileSender = (FileSender)get();
+			fileSender.sendMessage(fileContent);
+			return TestTool.RESULT_OK;
+		}
+		if(get() instanceof DelaySender) {
+			DelaySender delaySender = (DelaySender)get();
+			delaySender.sendMessage(new Message(fileContent), null);
+			return TestTool.RESULT_OK;
+		}
+		if(get() instanceof XsltProviderListener) {
+			XsltProviderListener xsltProviderListener = (XsltProviderListener)get();
+			xsltProviderListener.processRequest(fileContent, parameters);
+			return TestTool.RESULT_OK;
+		}
+		if(get() instanceof ISender) {
+			ISender sender = (ISender)get();
+			Boolean convertExceptionToMessage = (Boolean)get(CONVERT_MESSAGE_TO_EXCEPTION_KEY);
+			PipeLineSession session = getSession();
+			SenderThread senderThread = new SenderThread(sender, fileContent, session, convertExceptionToMessage.booleanValue(), correlationId);
+			senderThread.start();
+			put(SENDER_THREAD_KEY, senderThread);
+			setSenderThread(senderThread); // 'put' and 'set' do something similar
+			return TestTool.RESULT_OK;
+		}
+		if(get() instanceof IListener<?>) {
+			ListenerMessageHandler listenerMessageHandler = getMessageHandler();
+			if (listenerMessageHandler == null) {
+				throw new NoSuchElementException("No ListenerMessageHandler found");
+			}
+			Map<?, ?> context = new HashMap<Object, Object>();
+			ListenerMessage requestListenerMessage = (ListenerMessage)get("listenerMessage");
+			if (requestListenerMessage != null) {
+				context = requestListenerMessage.getContext();
+			}
+			ListenerMessage listenerMessage = new ListenerMessage(fileContent, context);
+			listenerMessageHandler.putResponseMessage(listenerMessage);
+			return TestTool.RESULT_OK;
+		}
+		throw new SenderException("Could not perform executeWrite() for queue ["+get()+"]");
+	}
+
+
+	@Override
+	public String executeRead(String step, String stepDisplayName, Properties properties, String fileName, String fileContent) throws SenderException, IOException, TimeoutException, ListenerException {
+		if(get() instanceof FileSender) {
+			FileSender fileSender = (FileSender)get();
+			return fileSender.getMessage();
+		}
+		if(get() instanceof FileListener) {
+			FileListener fileListener = (FileListener)get();
+			return fileListener.getMessage();
+		}
+		if(get() instanceof XsltProviderListener) {
+			XsltProviderListener xsltProviderListener = (XsltProviderListener)get();
+			return xsltProviderListener.getResult();
+		}
+		if(get() instanceof ISender) {
+			SenderThread senderThread = (SenderThread)remove(SENDER_THREAD_KEY);
+			removeSenderThread();
+			if (senderThread == null) {
+				throw new SenderException("No SenderThread found, no corresponding write request?");
+			}
+			SenderException senderException = senderThread.getSenderException();
+			if (senderException != null) {
+				throw senderException;
+			}
+			IOException ioException = senderThread.getIOException();
+			if (ioException != null) {
+				throw ioException;
+			}
+			TimeoutException timeOutException = senderThread.getTimeOutException();
+			if (timeOutException != null) {
+				throw timeOutException;
+			}
+			return senderThread.getResponse();
+		}
+		throw new SenderException("Could not perform executeRead() for queue ["+get()+"]");
+	}
+
+
 }

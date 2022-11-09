@@ -14,6 +14,7 @@ import org.mockito.Mockito;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
@@ -72,12 +73,12 @@ public class DirectQuerySenderMock extends DirectQuerySender {
 	}
 
 	@Override
-	public Message sendMessage(Connection blockHandle, Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(Connection blockHandle, Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		Message mockResult = mocks.get(getName());
 		if(!Message.isNull(mockResult)) {
-			return mockResult;
+			return new SenderResult(mockResult);
 		}
-		return message;
+		return new SenderResult(message);
 	}
 
 	@Override

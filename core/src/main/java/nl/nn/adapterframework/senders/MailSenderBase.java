@@ -24,19 +24,19 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import jakarta.mail.internet.AddressException;
-import jakarta.mail.internet.InternetAddress;
-
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import jakarta.mail.internet.AddressException;
+import jakarta.mail.internet.InternetAddress;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterValue;
@@ -92,7 +92,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		MailSession mailSession;
 		try {
 			mailSession = extract(message, session);
@@ -102,7 +102,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		sendEmail(mailSession);
 
 		String messageID = session==null ? null : session.getMessageId();
-		return new Message(messageID);
+		return new SenderResult(messageID);
 	}
 
 	/**

@@ -108,7 +108,7 @@ public class TestGetAction extends CmisSenderTestBase {
 		sender.setFileInputStreamSessionKey("fis");
 		configure();
 
-		String actualResult = sender.sendMessage(input, session).asString();
+		String actualResult = sender.sendMessageOrThrow(input, session).asString();
 		if(!getProperties && !resultToServlet) {
 			assertNull(actualResult);
 		} else {
@@ -129,7 +129,7 @@ public class TestGetAction extends CmisSenderTestBase {
 		sender.setAction(EnumUtils.parse(CmisAction.class, action));
 		sender.configure();
 
-		Message actualResult = sender.sendMessage(input, session);
+		Message actualResult = sender.sendMessageOrThrow(input, session);
 		assertTrue(actualResult.asObject() instanceof InputStream);
 		assertEquals(GET_RESULT_FOR_INPUT, actualResult.asString());
 	}
@@ -139,7 +139,7 @@ public class TestGetAction extends CmisSenderTestBase {
 		sender.setFileContentSessionKey("fileContent");
 		configure();
 
-		String actualResult = sender.sendMessage(input, session).asString();
+		String actualResult = sender.sendMessageOrThrow(input, session).asString();
 		if(!getProperties && !resultToServlet) {
 			assertNull(actualResult);
 		} else {
@@ -159,7 +159,7 @@ public class TestGetAction extends CmisSenderTestBase {
 		sender.setFileInputStreamSessionKey("fis");
 		configureWithParameters();
 
-		String actualResult = sender.sendMessage(input, session).asString();
+		String actualResult = sender.sendMessageOrThrow(input, session).asString();
 		if(!getProperties && !resultToServlet) {
 			assertNull(actualResult);
 		} else {
@@ -179,7 +179,7 @@ public class TestGetAction extends CmisSenderTestBase {
 		sender.setFileContentSessionKey("fileContent");
 		configureWithParameters();
 
-		String actualResult = sender.sendMessage(input, session).asString();
+		String actualResult = sender.sendMessageOrThrow(input, session).asString();
 		if(!getProperties && !resultToServlet) {
 			assertNull(actualResult);
 		} else {

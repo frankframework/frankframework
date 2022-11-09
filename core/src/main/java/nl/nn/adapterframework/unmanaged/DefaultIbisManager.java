@@ -22,11 +22,14 @@ import java.util.List;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.cache.IbisCacheManager;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisContext;
@@ -53,6 +56,7 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 	private List<Configuration> configurations = new ArrayList<>();
 	private PlatformTransactionManager transactionManager;
 	private ApplicationEventPublisher applicationEventPublisher;
+	private @Getter @Setter ApplicationContext applicationContext;
 
 	@Override
 	public void setIbisContext(IbisContext ibisContext) {

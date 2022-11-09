@@ -4,6 +4,8 @@ import static org.junit.Assert.fail;
 
 import java.sql.ResultSet;
 
+import org.junit.After;
+import org.junit.Before;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -16,11 +18,12 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.lifecycle.Gateway;
 import nl.nn.adapterframework.testutil.QuerySenderPostProcessor;
 import nl.nn.adapterframework.testutil.TestConfiguration;
+import nl.nn.adapterframework.util.LogUtil;
 
 public class BusTestBase {
 
-	private static Configuration configuration;
-	private static ApplicationContext parentContext;
+	private Configuration configuration;
+	private ApplicationContext parentContext;
 	private QuerySenderPostProcessor qsPostProcessor = new QuerySenderPostProcessor();
 
 	private final ApplicationContext getParentContext() {
@@ -43,8 +46,13 @@ public class BusTestBase {
 	protected final Configuration getConfiguration() {
 		if(configuration == null) {
 			Configuration config = new TestConfiguration(TestConfiguration.TEST_CONFIGURATION_FILE);
-			getParentContext().getAutowireCapableBeanFactory().autowireBeanProperties(config, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
-			configuration = (Configuration) getParentContext().getAutowireCapableBeanFactory().initializeBean(config, TestConfiguration.TEST_CONFIGURATION_NAME);
+			try {
+				getParentContext().getAutowireCapableBeanFactory().autowireBeanProperties(config, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+				configuration = (Configuration) getParentContext().getAutowireCapableBeanFactory().initializeBean(config, TestConfiguration.TEST_CONFIGURATION_NAME);
+			} catch (Exception e) {
+				LogUtil.getLogger(this).error("unable to create "+TestConfiguration.TEST_CONFIGURATION_NAME, e);
+				fail("unable to create "+TestConfiguration.TEST_CONFIGURATION_NAME);
+			}
 
 			try {
 				configuration.configure();
@@ -56,6 +64,16 @@ public class BusTestBase {
 			configuration.setOriginalConfiguration("<original authAlias=\"test\" />");
 		}
 		return configuration;
+	}
+
+	@Before
+	public void setUp() throws Exception {
+		getConfiguration(); //Create configuration
+	}
+
+	@After
+	public void tearDown() throws Exception {
+		getConfiguration().close();
 	}
 
 	/**
@@ -75,16 +93,20 @@ public class BusTestBase {
 	}
 
 	public final Message<?> callSyncGateway(MessageBuilder<?> input) {
-		Gateway gateway = getConfiguration().getBean("gateway", Gateway.class);
+		Gateway gateway = getParentContext().getBean("gateway", Gateway.class);
+		gateway.setErrorChannel(null); //Somehow Spring is setting an ErrorChannel we do not want!
 		Message<?> response = gateway.sendSyncMessage(input.build());
 		if(response != null) {
 			return response;
 		}
-		throw new IllegalStateException("expected a reply");
+		String topic = input.getHeader("topic", String.class);
+		String action = input.getHeader("action", String.class);
+		throw new IllegalStateException("expected a reply while sending a message to topic ["+topic+"] action ["+action+"]");
 	}
 
 	public final void callAsyncGateway(MessageBuilder<?> input) {
-		Gateway gateway = getConfiguration().getBean("gateway", Gateway.class);
+		Gateway gateway = getParentContext().getBean("gateway", Gateway.class);
+		gateway.setErrorChannel(null); //Somehow Spring is setting an ErrorChannel we do not want!
 		gateway.sendAsyncMessage(input.build());
 	}
 
@@ -93,7 +115,7 @@ public class BusTestBase {
 	}
 
 	protected final <T> MessageBuilder<T> createRequestMessage(T payload, BusTopic topic, BusAction action) {
-		DefaultMessageBuilderFactory factory = getConfiguration().getBean("messageBuilderFactory", DefaultMessageBuilderFactory.class);
+		DefaultMessageBuilderFactory factory = getParentContext().getBean("messageBuilderFactory", DefaultMessageBuilderFactory.class);
 		MessageBuilder<T> builder = factory.withPayload(payload);
 		builder.setHeader(TopicSelector.TOPIC_HEADER_NAME, topic.name());
 		if(action != null) {

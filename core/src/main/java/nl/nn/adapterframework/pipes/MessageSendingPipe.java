@@ -39,7 +39,6 @@ import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
 import nl.nn.adapterframework.core.IDualModeValidator;
-import nl.nn.adapterframework.core.IForwardNameProvidingSender;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowser.HideMethod;
 import nl.nn.adapterframework.core.IPipe;
@@ -101,7 +100,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @ff.forward illegalResult
  * @ff.forward presumedTimeout
  * @ff.forward interrupt
- * @ff.forward "&lt;defined-by-sender&gt;" any forward, as returned by name by a {@link IForwardNameProvidingSender}
+ * @ff.forward "&lt;defined-by-sender&gt;" any forward, as returned by name by {@link ISender sender}
  *
  * @author  Gerrit van Brakel
  */
@@ -756,8 +755,8 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			try {
 				if (sender instanceof IStreamingSender && canStreamToNextPipe()) {
 					sendResult =  ((IStreamingSender)sender).sendMessage(input, session, getNextPipe());
-				} else if (sender instanceof IForwardNameProvidingSender) {
-					SenderResult senderResult = ((IForwardNameProvidingSender)sender).sendMessageAndProvideForwardName(input, session);
+				} else {
+					SenderResult senderResult = sender.sendMessage(input, session);
 					PipeForward forward = null;
 					String forwardName = senderResult.getForwardName();
 					if (StringUtils.isNotEmpty(forwardName)) {
@@ -768,10 +767,6 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 						forward = findForward(forwardName);
 					}
 					sendResult = new PipeRunResult(forward, senderResult.getResult());
-				} else {
-					// result has a messageID for async senders, the result for sync senders
-					Message result = sender.sendMessage(input, session);
-					sendResult = new PipeRunResult(null,result);
 				}
 			} catch (SenderException se) {
 				exitState = PipeForward.EXCEPTION_FORWARD_NAME;

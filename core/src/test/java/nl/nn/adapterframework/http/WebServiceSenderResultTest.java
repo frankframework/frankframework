@@ -112,7 +112,7 @@ public class WebServiceSenderResultTest extends Mockito {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(new Message("tralala"), pls).asString();
+		String result = sender.sendMessageOrThrow(new Message("tralala"), pls).asString();
 		assertEquals("<TestElement xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\">test value</TestElement>", result);
 
 		int multipartAttachmentCount = 0;
@@ -139,7 +139,7 @@ public class WebServiceSenderResultTest extends Mockito {
 		sender.configure();
 		sender.open();
 
-		sender.sendMessage(new Message("tralala"), pls).asString();
+		sender.sendMessageOrThrow(new Message("tralala"), pls).asString();
 	}
 
 	@Test
@@ -153,7 +153,7 @@ public class WebServiceSenderResultTest extends Mockito {
 		sender.configure();
 		sender.open();
 
-		sender.sendMessage(new Message("tralala"), pls).asString();
+		sender.sendMessageOrThrow(new Message("tralala"), pls).asString();
 	}
 
 	@Test
@@ -168,7 +168,7 @@ public class WebServiceSenderResultTest extends Mockito {
 		sender.configure();
 		sender.open();
 
-		sender.sendMessage(new Message("tralala"), pls);
+		sender.sendMessageOrThrow(new Message("tralala"), pls);
 	}
 
 	@Test
@@ -180,7 +180,7 @@ public class WebServiceSenderResultTest extends Mockito {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(new Message("tralala"), pls).asString();
+		String result = sender.sendMessageOrThrow(new Message("tralala"), pls).asString();
 		assertEquals("<TestElement xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\">test value</TestElement>", result.trim());
 
 		int multipartAttachmentCount = 0;

@@ -46,6 +46,6 @@ public abstract class JdbcSenderTestBase<S extends JdbcSenderBase<?>> extends Jd
 		return sendMessage(message, session);
 	}
 	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		return sender.sendMessage(message, session);
+		return sender.sendMessageOrThrow(message, session);
 	}
 }

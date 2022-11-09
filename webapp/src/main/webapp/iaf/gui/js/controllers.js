@@ -770,18 +770,22 @@ angular.module('iaf.beheerconsole')
 		});
 	};
 	$scope.stopAll = function() {
-		var adapters = Array();
-		for(adapter in $filter('configurationFilter')($scope.adapters, $scope)) {
-			adapters.push(adapter);
+		let compiledAdapterList = Array();
+		let adapters = $filter('configurationFilter')($scope.adapters, $scope);
+		for(adapter in adapters) {
+			let configuration = adapters[adapter].configuration;
+			compiledAdapterList.push(configuration+"/"+adapter);
 		}
-		Api.Put("adapters", {"action": "stop", "adapters": adapters});
+		Api.Put("adapters", {"action": "stop", "adapters": compiledAdapterList});
 	};
 	$scope.startAll = function() {
-		var adapters = Array();
-		for(adapter in $filter('configurationFilter')($scope.adapters, $scope)) {
-			adapters.push(adapter);
+		let compiledAdapterList = Array();
+		let adapters = $filter('configurationFilter')($scope.adapters, $scope);
+		for(adapter in adapters) {
+			let configuration = adapters[adapter].configuration;
+			compiledAdapterList.push(configuration+"/"+adapter);
 		}
-		Api.Put("adapters", {"action": "start", "adapters": adapters});
+		Api.Put("adapters", {"action": "start", "adapters": compiledAdapterList});
 	};
 	$scope.reloadConfiguration = function() {
 		if($scope.selectedConfiguration == "All") return;
@@ -830,7 +834,7 @@ angular.module('iaf.beheerconsole')
 	$scope.showReferences = function() {
 		window.open($scope.configurationFlowDiagram);
 	};
-	$scope.configurationFlowDiagram;
+	$scope.configurationFlowDiagram = null;
 	$scope.updateConfigurationFlowDiagram = function(configurationName) {
 		var url = Misc.getServerPath() + 'iaf/api/configurations/';
 		if(configurationName == "All") {
@@ -873,27 +877,27 @@ angular.module('iaf.beheerconsole')
 
 	$scope.startAdapter = function(adapter) {
 		adapter.state = 'starting';
-		Api.Put("adapters/" + Misc.escapeURL(adapter.name), {"action": "start"});
+		Api.Put("configurations/"+adapter.configuration+"/adapters/" + Misc.escapeURL(adapter.name), {"action": "start"});
 	};
 	$scope.stopAdapter = function(adapter) {
 		adapter.state = 'stopping';
-		Api.Put("adapters/" + Misc.escapeURL(adapter.name), {"action": "stop"});
+		Api.Put("configurations/"+adapter.configuration+"/adapters/" + Misc.escapeURL(adapter.name), {"action": "stop"});
 	};
 	$scope.startReceiver = function(adapter, receiver) {
 		receiver.state = 'loading';
-		Api.Put("adapters/" + Misc.escapeURL(adapter.name) + "/receivers/" + Misc.escapeURL(receiver.name), {"action": "start"});
+		Api.Put("configurations/"+adapter.configuration+"/adapters/" + Misc.escapeURL(adapter.name) + "/receivers/" + Misc.escapeURL(receiver.name), {"action": "start"});
 	};
 	$scope.stopReceiver = function(adapter, receiver) {
 		receiver.state = 'loading';
-		Api.Put("adapters/" + Misc.escapeURL(adapter.name) + "/receivers/" + Misc.escapeURL(receiver.name), {"action": "stop"});
+		Api.Put("configurations/"+adapter.configuration+"/adapters/" + Misc.escapeURL(adapter.name) + "/receivers/" + Misc.escapeURL(receiver.name), {"action": "stop"});
 	};
 	$scope.addThread = function(adapter, receiver) {
 		receiver.state = 'loading';
-		Api.Put("adapters/" + Misc.escapeURL(adapter.name) + "/receivers/" + Misc.escapeURL(receiver.name), {"action": "incthread"});
+		Api.Put("configurations/"+adapter.configuration+"/adapters/" + Misc.escapeURL(adapter.name) + "/receivers/" + Misc.escapeURL(receiver.name), {"action": "incthread"});
 	};
 	$scope.removeThread = function(adapter, receiver) {
 		receiver.state = 'loading';
-		Api.Put("adapters/" + Misc.escapeURL(adapter.name) + "/receivers/" + Misc.escapeURL(receiver.name), {"action": "decthread"});
+		Api.Put("configurations/"+adapter.configuration+"/adapters/" + Misc.escapeURL(adapter.name) + "/receivers/" + Misc.escapeURL(receiver.name), {"action": "decthread"});
 	};
 
 }])
@@ -1873,11 +1877,12 @@ angular.module('iaf.beheerconsole')
 		$scope.state.push({type:type, message: message});
 	};
 
+	$scope.selectedConfiguration = "";
 	$scope.form = {
 			name:"",
 			group:"",
 			adapter:"",
-			receiver:"",
+			listener:"",
 			cron:"",
 			interval:"",
 			message:"",
@@ -1893,8 +1898,9 @@ angular.module('iaf.beheerconsole')
 
 		fd.append("name", $scope.form.name);
 		fd.append("group", $scope.form.group);
+		fd.append("configuration", $scope.selectedConfiguration);
 		fd.append("adapter", $scope.form.adapter);
-		fd.append("receiver", $scope.form.receiver);
+		fd.append("listener", $scope.form.listener);
 		fd.append("cron", $scope.form.cron);
 		fd.append("interval", $scope.form.interval);
 		fd.append("persistent", $scope.form.persistent);
@@ -1905,11 +1911,12 @@ angular.module('iaf.beheerconsole')
 
 		Api.Post("schedules", fd, function(data) {
 			$scope.addLocalAlert("success", "Successfully added schedule!");
+			$scope.selectedConfiguration = "";
 			$scope.form = {
 					name:"",
 					group:"",
 					adapter:"",
-					receiver:"",
+					listener:"",
 					cron:"",
 					interval:"",
 					message:"",
@@ -1932,12 +1939,13 @@ angular.module('iaf.beheerconsole')
 	};
 	var url ="schedules/"+$stateParams.group+"/job/"+$stateParams.name;
 	$scope.editMode = true;
+	$scope.selectedConfiguration = "";
 
 	$scope.form = {
 			name:"",
 			group:"",
 			adapter:"",
-			receiver:"",
+			listener:"",
 			cron:"",
 			interval:"",
 			message:"",
@@ -1947,27 +1955,13 @@ angular.module('iaf.beheerconsole')
 			persistent:true,
 	};
 
-	function findReceiver() {
-		let adapter = $scope.form.adapter;
-		let listener = $scope.form.listener;
-		let receivers = ($scope.adapters && $scope.adapters[adapter]) ? $scope.adapters[adapter].receivers : null;
-		if(receivers != null) {
-			for(i in receivers) {
-				let receiver = receivers[i];
-				if(listener == receiver.listener.name) {
-					$scope.form.receiver = receiver.name;
-				}
-			}
-		}
-	}
-
 	Api.Get(url, function(data) {
+		$scope.selectedConfiguration = data.configuration;
 		$scope.form = {
 				name: data.name,
 				group: data.group,
 				adapter: data.adapter,
 				listener: data.listener,
-				receiver: null,
 				cron: data.triggers[0].cronExpression || "",
 				interval: data.triggers[0].repeatInterval || "",
 				message: data.message,
@@ -1976,7 +1970,6 @@ angular.module('iaf.beheerconsole')
 				lockkey: data.lockkey,
 				persistent: true,
 		};
-		findReceiver();
 	});
 
 	$scope.submit = function(form) {
@@ -1985,8 +1978,9 @@ angular.module('iaf.beheerconsole')
 
 		fd.append("name", $scope.form.name);
 		fd.append("group", $scope.form.group);
+		fd.append("configuration", $scope.selectedConfiguration);
 		fd.append("adapter", $scope.form.adapter);
-		fd.append("receiver", $scope.form.receiver);
+		fd.append("listener", $scope.form.listener);
 		if($scope.form.cron)
 			fd.append("cron", $scope.form.cron);
 		if($scope.form.interval)

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -35,6 +36,7 @@ import java.util.zip.ZipInputStream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
@@ -44,10 +46,12 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
+import nl.nn.adapterframework.lifecycle.ApplicationMessageEvent;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
+import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 
 /**
@@ -125,11 +129,11 @@ public class ConfigurationUtils {
 		return version;
 	}
 
-	public static Map<String, Object> getConfigFromDatabase(IbisContext ibisContext, String name, String dataSourceName) throws ConfigurationException {
-		return getConfigFromDatabase(ibisContext, name, dataSourceName, null);
+	public static Map<String, Object> getConfigFromDatabase(ApplicationContext applicationContext, String name, String dataSourceName) throws ConfigurationException {
+		return getConfigFromDatabase(applicationContext, name, dataSourceName, null);
 	}
 
-	public static Map<String, Object> getConfigFromDatabase(IbisContext ibisContext, String name, String dataSourceName, String version) throws ConfigurationException {
+	public static Map<String, Object> getConfigFromDatabase(ApplicationContext applicationContext, String name, String dataSourceName, String version) throws ConfigurationException {
 		String workdataSourceName = dataSourceName;
 		if (StringUtils.isEmpty(workdataSourceName)) {
 			workdataSourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
@@ -141,7 +145,7 @@ public class ConfigurationUtils {
 
 		Connection conn = null;
 		ResultSet rs = null;
-		FixedQuerySender qs = ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+		FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
 		qs.setDatasourceName(workdataSourceName);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
@@ -150,7 +154,7 @@ public class ConfigurationUtils {
 			conn = qs.getConnection();
 			String query;
 			if(version == null) {//Return active config
-				query = "SELECT CONFIG, VERSION, FILENAME, CRE_TYDST, RUSER FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG='"+(qs.getDbmsSupport().getBooleanValue(true))+"'";
+				query = "SELECT CONFIG, VERSION, FILENAME, CRE_TYDST, RUSER FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG="+(qs.getDbmsSupport().getBooleanValue(true));
 				PreparedStatement stmt = conn.prepareStatement(query);
 				stmt.setString(1, name);
 				rs = stmt.executeQuery();
@@ -189,15 +193,15 @@ public class ConfigurationUtils {
 	 * @return name of the configuration if successful SQL update
 	 * @throws ConfigurationException when SQL error occurs or filename validation fails
 	 */
-	public static String addConfigToDatabase(IbisContext ibisContext, String datasource, boolean activate_config, boolean automatic_reload, String fileName, InputStream file, String ruser) throws ConfigurationException {
+	public static String addConfigToDatabase(ApplicationContext applicationContext, String datasource, boolean activate_config, boolean automatic_reload, String fileName, InputStream file, String ruser) throws ConfigurationException {
 		BuildInfoValidator configDetails = new BuildInfoValidator(file);
-		if(addConfigToDatabase(ibisContext, datasource, activate_config, automatic_reload, configDetails.getName(), configDetails.getVersion(), fileName, configDetails.getJar(), ruser)) {
+		if(addConfigToDatabase(applicationContext, datasource, activate_config, automatic_reload, configDetails.getName(), configDetails.getVersion(), fileName, configDetails.getJar(), ruser)) {
 			return configDetails.getName() +": "+ configDetails.getVersion();
 		}
 		return null;
 	}
 
-	public static Map<String, String> processMultiConfigZipFile(IbisContext ibisContext, String datasource, boolean activate_config, boolean automatic_reload, InputStream file, String ruser) throws IOException, ConfigurationException {
+	public static Map<String, String> processMultiConfigZipFile(ApplicationContext applicationContext, String datasource, boolean activate_config, boolean automatic_reload, InputStream file, String ruser) throws IOException, ConfigurationException {
 		Map<String, String> result = new LinkedHashMap<>();
 		if (file.available() > 0) {
 			try (ZipInputStream zipInputStream = new ZipInputStream(file)) {
@@ -205,7 +209,7 @@ public class ConfigurationUtils {
 				while ((zipEntry = zipInputStream.getNextEntry()) != null) {
 					String entryName = zipEntry.getName();
 					try {
-						String configName = ConfigurationUtils.addConfigToDatabase(ibisContext, datasource, activate_config, automatic_reload, entryName, StreamUtil.dontClose(zipInputStream), ruser);
+						String configName = ConfigurationUtils.addConfigToDatabase(applicationContext, datasource, activate_config, automatic_reload, entryName, StreamUtil.dontClose(zipInputStream), ruser);
 						result.put(configName, "loaded");
 					} catch (ConfigurationException e) {
 						log.error("an error occured while trying to store new configuration using datasource ["+datasource+"]", e);
@@ -217,7 +221,7 @@ public class ConfigurationUtils {
 		return result;
 	}
 
-	public static boolean addConfigToDatabase(IbisContext ibisContext, String dataSourceName, boolean activateConfig, boolean automaticReload, String name, String version, String fileName, InputStream file, String ruser) throws ConfigurationException {
+	public static boolean addConfigToDatabase(ApplicationContext applicationContext, String dataSourceName, boolean activateConfig, boolean automaticReload, String name, String version, String fileName, InputStream file, String ruser) throws ConfigurationException {
 		String workdataSourceName = dataSourceName;
 		if (StringUtils.isEmpty(workdataSourceName)) {
 			workdataSourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
@@ -225,12 +229,12 @@ public class ConfigurationUtils {
 
 		Connection conn = null;
 		ResultSet rs = null;
-		FixedQuerySender qs = ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+		FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
 		qs.setDatasourceName(workdataSourceName);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
 
-		PlatformTransactionManager txManager = ibisContext.getBean("txManager", PlatformTransactionManager.class);
+		PlatformTransactionManager txManager = applicationContext.getBean("txManager", PlatformTransactionManager.class);
 		TransactionDefinition txDef = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 		IbisTransaction itx = new IbisTransaction(txManager , txDef, "add config ["+name+"] to database");
 		try {
@@ -239,7 +243,7 @@ public class ConfigurationUtils {
 			int updated = 0;
 
 			if (activateConfig) {
-				String query = ("UPDATE IBISCONFIG SET ACTIVECONFIG = '"+(qs.getDbmsSupport().getBooleanValue(false))+"' WHERE NAME=?");
+				String query = ("UPDATE IBISCONFIG SET ACTIVECONFIG="+(qs.getDbmsSupport().getBooleanValue(false))+" WHERE NAME=?");
 				PreparedStatement stmt = conn.prepareStatement(query);
 				stmt.setString(1, name);
 				updated = stmt.executeUpdate();
@@ -277,10 +281,10 @@ public class ConfigurationUtils {
 		}
 	}
 
-	public static void removeConfigFromDatabase(IbisContext ibisContext, String name, String jmsRealm, String version) throws ConfigurationException {
+	public static void removeConfigFromDatabase(ApplicationContext applicationContext, String name, String jmsRealm, String version) throws ConfigurationException {
 		Connection conn = null;
 		ResultSet rs = null;
-		FixedQuerySender qs = ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+		FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
 		qs.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
@@ -293,9 +297,7 @@ public class ConfigurationUtils {
 			stmt.setString(1, name);
 			stmt.setString(2, version);
 			stmt.execute();
-		} catch (SenderException e) {
-			throw new ConfigurationException(e);
-		} catch (JdbcException | SQLException e) {
+		} catch (SenderException | JdbcException | SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {
 			JdbcUtil.fullClose(conn, rs);
@@ -307,7 +309,7 @@ public class ConfigurationUtils {
 	 * Set the all ACTIVECONFIG to false and specified version to true
 	 * @param value 
 	 */
-	public static boolean activateConfig(IbisContext ibisContext, String name, String version, boolean value, String dataSourceName) throws SenderException, ConfigurationException, JdbcException, SQLException {
+	public static boolean activateConfig(ApplicationContext applicationContext, String name, String version, boolean value, String dataSourceName) throws SenderException, ConfigurationException, JdbcException, SQLException {
 		String workdataSourceName = dataSourceName;
 		if (StringUtils.isEmpty(workdataSourceName)) {
 			workdataSourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
@@ -315,7 +317,7 @@ public class ConfigurationUtils {
 
 		Connection conn = null;
 		ResultSet rs = null;
-		FixedQuerySender qs = ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+		FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
 		qs.setDatasourceName(workdataSourceName);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
@@ -333,14 +335,14 @@ public class ConfigurationUtils {
 			selectStmt.setString(2, version);
 			rs = selectStmt.executeQuery();
 			if(rs.next()) {
-				String query = "UPDATE IBISCONFIG SET ACTIVECONFIG='"+booleanValueFalse+"' WHERE NAME=?";
+				String query = "UPDATE IBISCONFIG SET ACTIVECONFIG="+booleanValueFalse+" WHERE NAME=?";
 
 				PreparedStatement stmt = conn.prepareStatement(query);
 				stmt.setString(1, name);
 				updated = stmt.executeUpdate();
 
 				if(updated > 0) {
-					String query2 = "UPDATE IBISCONFIG SET ACTIVECONFIG='"+booleanValueTrue+"' WHERE NAME=? AND VERSION=?";
+					String query2 = "UPDATE IBISCONFIG SET ACTIVECONFIG="+booleanValueTrue+" WHERE NAME=? AND VERSION=?";
 					PreparedStatement stmt2 = conn.prepareStatement(query2);
 					stmt2.setString(1, name);
 					stmt2.setString(2, version);
@@ -357,7 +359,7 @@ public class ConfigurationUtils {
 	/**
 	 * Toggle AUTORELOAD
 	 */
-	public static boolean autoReloadConfig(IbisContext ibisContext, String name, String version, boolean booleanValue, String dataSourceName) throws SenderException, ConfigurationException, JdbcException, SQLException {
+	public static boolean autoReloadConfig(ApplicationContext applicationContext, String name, String version, boolean booleanValue, String dataSourceName) throws SenderException, ConfigurationException, JdbcException, SQLException {
 		String workdataSourceName = dataSourceName;
 		if (StringUtils.isEmpty(workdataSourceName)) {
 			workdataSourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
@@ -365,7 +367,7 @@ public class ConfigurationUtils {
 
 		Connection conn = null;
 		ResultSet rs = null;
-		FixedQuerySender qs = ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+		FixedQuerySender qs =  SpringUtils.createBean(applicationContext, FixedQuerySender.class);
 		qs.setDatasourceName(workdataSourceName);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
@@ -380,7 +382,7 @@ public class ConfigurationUtils {
 			selectStmt.setString(2, version);
 			rs = selectStmt.executeQuery();
 			if(rs.next()) {
-				String query = "UPDATE IBISCONFIG SET AUTORELOAD='"+qs.getDbmsSupport().getBooleanValue(booleanValue)+"' WHERE NAME=? AND VERSION=?";
+				String query = "UPDATE IBISCONFIG SET AUTORELOAD="+qs.getDbmsSupport().getBooleanValue(booleanValue)+" WHERE NAME=? AND VERSION=?";
 
 				PreparedStatement stmt = conn.prepareStatement(query);
 				stmt.setString(1, name);
@@ -398,7 +400,7 @@ public class ConfigurationUtils {
 	 * 
 	 * @return A map with all configurations to load (KEY = ConfigurationName, VALUE = ClassLoaderType)
 	 */
-	public static Map<String, String> retrieveAllConfigNames(IbisContext ibisContext) {
+	public static Map<String, String> retrieveAllConfigNames(ApplicationContext applicationContext) {
 		Map<String, String> allConfigNameItems = new LinkedHashMap<>();
 
 		StringTokenizer tokenizer = new StringTokenizer(CONFIGURATIONS, ",");
@@ -424,13 +426,13 @@ public class ConfigurationUtils {
 					}
 				}
 			} catch (Exception e) {
-				ibisContext.log("failed to autoload configurations", MessageKeeperLevel.WARN, e);
+				applicationContext.publishEvent(new ApplicationMessageEvent(applicationContext, "failed to autoload configurations", MessageKeeperLevel.WARN, e));
 			}
 		}
 		if (CONFIG_AUTO_DB_CLASSLOADER) {
 			log.info("scanning database for configurations");
 			try {
-				List<String> dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisContext);
+				List<String> dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(applicationContext);
 				if (dbConfigNames != null && !dbConfigNames.isEmpty()) {
 					log.debug("found database configurations "+dbConfigNames.toString()+"");
 					for (String dbConfigName : dbConfigNames) {
@@ -445,7 +447,7 @@ public class ConfigurationUtils {
 				}
 			}
 			catch (ConfigurationException e) {
-				ibisContext.log("error retrieving database configurations", MessageKeeperLevel.WARN, e);
+				applicationContext.publishEvent(new ApplicationMessageEvent(applicationContext, "error retrieving database configurations", MessageKeeperLevel.WARN, e));
 			}
 		}
 
@@ -454,20 +456,25 @@ public class ConfigurationUtils {
 		return allConfigNameItems;
 	}
 
-	public static List<String> retrieveConfigNamesFromDatabase(IbisContext ibisContext) throws ConfigurationException {
+	public static List<String> retrieveConfigNamesFromDatabase(ApplicationContext applicationContext) throws ConfigurationException {
 		Connection conn = null;
 		ResultSet rs = null;
-		FixedQuerySender qs = ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+		FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
 		qs.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
 		try {
 			qs.open();
 			conn = qs.getConnection();
-			String query = "SELECT DISTINCT(NAME) FROM IBISCONFIG WHERE ACTIVECONFIG='"+(qs.getDbmsSupport().getBooleanValue(true))+"'";
+			if(!qs.getDbmsSupport().isTablePresent(conn, "IBISCONFIG")) {
+				log.warn("unable to load configurations from database, table [IBISCONFIG] is not present");
+				return Collections.emptyList();
+			}
+
+			String query = "SELECT DISTINCT(NAME) FROM IBISCONFIG WHERE ACTIVECONFIG="+(qs.getDbmsSupport().getBooleanValue(true));
 			PreparedStatement stmt = conn.prepareStatement(query);
 			rs = stmt.executeQuery();
-			List<String> stringList = new ArrayList<String>();
+			List<String> stringList = new ArrayList<>();
 			while (rs.next()) {
 				stringList.add(rs.getString(1));
 			}

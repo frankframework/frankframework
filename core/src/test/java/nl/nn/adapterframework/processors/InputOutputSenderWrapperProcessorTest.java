@@ -33,14 +33,14 @@ public class InputOutputSenderWrapperProcessorTest {
 		SenderWrapperProcessor target = new SenderWrapperProcessor() {
 
 			@Override
-			public SenderResult sendMessageAndProvideForwardName(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeoutException {
-				return senderWrapperBase.sendMessageAndProvideForwardName(message, session);
+			public SenderResult sendMessage(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeoutException {
+				return senderWrapperBase.sendMessage(message, session);
 			}
 		};
 		
 		processor.setSenderWrapperProcessor(target);
 
-		SenderResult actual = processor.sendMessageAndProvideForwardName(sender, new Message(input), session);
+		SenderResult actual = processor.sendMessage(sender, new Message(input), session);
 		
 		assertEquals("unexpected output of last sender", expectedSecondSenderOutput, secondSenderOutput);
 		assertEquals("unexpected wrapper output", expectedWrapperOutput, actual.getResult().asString());
@@ -52,19 +52,19 @@ public class InputOutputSenderWrapperProcessorTest {
 		SenderSeries senderSeries = new SenderSeries();
 		senderSeries.registerSender(new SenderBase() {
 			@Override
-			public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+			public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 				try {
-					return new Message("Sender 1: ["+message.asString()+"]");
+					return new SenderResult("Sender 1: ["+message.asString()+"]");
 				} catch (IOException e) {
 					throw new SenderException(e);
 				}
 			}});
 		senderSeries.registerSender(new SenderBase() {
 			@Override
-			public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+			public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 				try {
 					secondSenderOutput = "Sender 2: ["+message.asString()+"]";
-					return new Message(secondSenderOutput);
+					return new SenderResult(secondSenderOutput);
 				} catch (IOException e) {
 					throw new SenderException(e);
 				}

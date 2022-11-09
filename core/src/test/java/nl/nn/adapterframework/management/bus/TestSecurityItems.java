@@ -14,7 +14,9 @@ import nl.nn.adapterframework.testutil.mock.FixedQuerySenderMock.ResultSetBuilde
 public class TestSecurityItems extends BusTestBase {
 
 	@Before
-	public void setUp() {
+	@Override
+	public void setUp() throws Exception {
+		super.setUp();
 		JmsRealmFactory.getInstance().clear();
 		JmsRealm jdbcRealm = new JmsRealm();
 		jdbcRealm.setRealmName("dummyJmsRealm1");

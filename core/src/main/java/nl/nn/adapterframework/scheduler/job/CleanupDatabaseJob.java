@@ -119,7 +119,7 @@ public class CleanupDatabaseJob extends JobDef {
 				qs.configure();
 				qs.open();
 
-				Message result = qs.sendMessage(Message.nullMessage(), null);
+				Message result = qs.sendMessageOrThrow(Message.nullMessage(), null);
 				String resultString = result.asString();
 				int numberOfRowsAffected = Integer.parseInt(resultString);
 				if(numberOfRowsAffected > 0) {
@@ -167,7 +167,7 @@ public class CleanupDatabaseJob extends JobDef {
 
 				boolean deletedAllRecords = false;
 				while(!deletedAllRecords) {
-					Message result = qs.sendMessage(Message.nullMessage(), null);
+					Message result = qs.sendMessageOrThrow(Message.nullMessage(), null);
 					String resultString = result.asString();
 					log.info("deleted [" + resultString + "] rows");
 					int numberOfRowsAffected = Integer.valueOf(resultString);

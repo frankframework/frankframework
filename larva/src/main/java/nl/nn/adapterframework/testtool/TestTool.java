@@ -42,11 +42,13 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.zip.ZipInputStream;
 
@@ -66,7 +68,6 @@ import org.custommonkey.xmlunit.XMLUnit;
 import jakarta.json.JsonException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
@@ -76,9 +77,9 @@ import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.jms.PullingJmsListener;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.senders.DelaySender;
 import nl.nn.adapterframework.stream.FileMessage;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testtool.queues.Queue;
 import nl.nn.adapterframework.testtool.queues.QueueCreator;
 import nl.nn.adapterframework.testtool.queues.QueueWrapper;
 import nl.nn.adapterframework.util.AppConstants;
@@ -104,9 +105,9 @@ public class TestTool {
 	protected static final String TESTTOOL_BIFNAME = "Test Tool bif name";
 	public static final nl.nn.adapterframework.stream.Message TESTTOOL_DUMMY_MESSAGE = new nl.nn.adapterframework.stream.Message("<TestTool>Dummy message</TestTool>");
 	protected static final String TESTTOOL_CLEAN_UP_REPLY = "<TestTool>Clean up reply</TestTool>";
-	private static final int RESULT_ERROR = 0;
-	private static final int RESULT_OK = 1;
-	private static final int RESULT_AUTOSAVED = 2;
+	public static final int RESULT_ERROR = 0;
+	public static final int RESULT_OK = 1;
+	public static final int RESULT_AUTOSAVED = 2;
 	// dirty solution by Marco de Reus:
 	private static String zeefVijlNeem = "";
 	private static Writer silentOut = null;
@@ -294,7 +295,7 @@ public class TestTool {
 						if (steps != null) {
 							synchronized(STEP_SYNCHRONIZER) {
 								debugMessage("Open queues", writers);
-								Map<String, Map<String, Object>> queues = QueueCreator.openQueues(scenarioDirectory, properties, ibisContext, writers, timeout, correlationId);
+								Map<String, Queue> queues = QueueCreator.openQueues(scenarioDirectory, properties, ibisContext, writers, timeout, correlationId);
 								if (queues != null) {
 									debugMessage("Execute steps", writers);
 									boolean allStepsPassed = true;
@@ -1211,7 +1212,7 @@ public class TestTool {
 		return steps;
 	}
 
-	public static boolean closeQueues(Map<String, Map<String, Object>> queues, Properties properties, Map<String, Object> writers, String correlationId) {
+	public static boolean closeQueues(Map<String, Queue> queues, Properties properties, Map<String, Object> writers, String correlationId) {
 		boolean remainingMessagesFound = false;
 		Iterator<String> iterator;
 		debugMessage("Close jms senders", writers);
@@ -1254,13 +1255,13 @@ public class TestTool {
 						String preResult = (String)querySendersInfo.get("prePostQueryResult");
 						PipeLineSession session = new PipeLineSession();
 						session.put(PipeLineSession.correlationIdKey, correlationId);
-						String postResult = prePostFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, session).asString();
+						String postResult = prePostFixedQuerySender.sendMessageOrThrow(TESTTOOL_DUMMY_MESSAGE, session).asString();
 						if (!preResult.equals(postResult)) {
 
 							String message = null;
 							FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)querySendersInfo.get("readQueryQueryFixedQuerySender");
 							try {
-								message = readQueryFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, session).asString();
+								message = readQueryFixedQuerySender.sendMessageOrThrow(TESTTOOL_DUMMY_MESSAGE, session).asString();
 							} catch(TimeoutException e) {
 								errorMessage("Time out on execute query for '" + name + "': " + e.getMessage(), e, writers);
 							} catch(IOException | SenderException e) {
@@ -1377,7 +1378,7 @@ public class TestTool {
 		return remainingMessagesFound;
 	}
 
-	private static int executeJmsSenderWrite(String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileContent, String correlationId) {
+	private static int executeJmsSenderWrite(String stepDisplayName, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileContent, String correlationId) {
 		int result = RESULT_ERROR;
 
 		Map<?, ?> jmsSenderInfo = (Map<?, ?>)queues.get(queueName);
@@ -1402,7 +1403,7 @@ public class TestTool {
 			if (providedCorrelationId == null) {
 				providedCorrelationId = correlationId;
 			}
-			jmsSender.sendMessage(new nl.nn.adapterframework.stream.Message(fileContent), null);
+			jmsSender.sendMessageOrThrow(new nl.nn.adapterframework.stream.Message(fileContent), null);
 			debugPipelineMessage(stepDisplayName, "Successfully written to '" + queueName + "':", fileContent, writers);
 			result = RESULT_OK;
 		} catch(TimeoutException e) {
@@ -1414,93 +1415,29 @@ public class TestTool {
 		return result;
 	}
 
-	private static int executeSenderWrite(String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String senderType, String fileContent, String correlationId) {
-		int result = RESULT_ERROR;
-		Map senderInfo = (Map)queues.get(queueName);
-		ISender sender = (ISender)senderInfo.get(senderType + "Sender");
-		Boolean convertExceptionToMessage = (Boolean)senderInfo.get("convertExceptionToMessage");
-		PipeLineSession session = (PipeLineSession)senderInfo.get("session");
-		SenderThread senderThread = new SenderThread(sender, fileContent, session, convertExceptionToMessage.booleanValue(), correlationId);
-		senderThread.start();
-		senderInfo.put(senderType + "SenderThread", senderThread);
-		if(senderInfo instanceof QueueWrapper) {
-			((QueueWrapper) senderInfo).setSenderThread(senderThread);
+	private static int executeQueueWrite(String stepDisplayName, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileContent, String correlationId, Map<String, Object> xsltParameters) {
+		Queue queue = queues.get(queueName);
+		if (queue==null) {
+			errorMessage("Property '" + queueName + ".className' not found or not valid", writers);
+			return RESULT_ERROR;
 		}
-		debugPipelineMessage(stepDisplayName, "Successfully started thread writing to '" + queueName + "':", fileContent, writers);
-		logger.debug("Successfully started thread writing to '" + queueName + "'");
-		result = RESULT_OK;
-		return result;
-	}
-
-	private static int executeJavaOrWebServiceListenerWrite(String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileContent) {
 		int result = RESULT_ERROR;
-
-		Map<?, ?> listenerInfo = (Map<?, ?>)queues.get(queueName);
-		ListenerMessageHandler listenerMessageHandler = (ListenerMessageHandler)listenerInfo.get("listenerMessageHandler");
-		if (listenerMessageHandler == null) {
-			errorMessage("No ListenerMessageHandler found", writers);
-		} else {
-			Map<?, ?> context = new HashMap<Object, Object>();
-			ListenerMessage requestListenerMessage = (ListenerMessage)listenerInfo.get("listenerMessage");
-			if (requestListenerMessage != null) {
-				context = requestListenerMessage.getContext();
-			}
-			ListenerMessage listenerMessage = new ListenerMessage(fileContent, context);
-			listenerMessageHandler.putResponseMessage(listenerMessage);
-			debugPipelineMessage(stepDisplayName, "Successfully put message on '" + queueName + "':", fileContent, writers);
-			logger.debug("Successfully put message on '" + queueName + "'");
-			result = RESULT_OK;
-		}
-
-		return result;
-	}
-
-	private static int executeFileSenderWrite(String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileContent) {
-		int result = RESULT_ERROR;
-		Map<?, ?> fileSenderInfo = (Map<?, ?>)queues.get(queueName);
-		FileSender fileSender = (FileSender)fileSenderInfo.get("fileSender");
 		try {
-			fileSender.sendMessage(fileContent);
-			debugPipelineMessage(stepDisplayName, "Successfully written to '" + queueName + "':", fileContent, writers);
-			result = RESULT_OK;
-		} catch(Exception e) {
-			errorMessage("Exception writing to file: " + e.getMessage(), e, writers);
-		}
-		return result;
-	}
-
-	private static int executeDelaySenderWrite(String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileContent) {
-		int result = RESULT_ERROR;
-		Map<?, ?> delaySenderInfo = (Map<?, ?>)queues.get(queueName);
-		DelaySender delaySender = (DelaySender)delaySenderInfo.get("delaySender");
-		try {
-			delaySender.sendMessage(new nl.nn.adapterframework.stream.Message(fileContent), null);
-			debugPipelineMessage(stepDisplayName, "Successfully written to '" + queueName + "':", fileContent, writers);
-			result = RESULT_OK;
-		} catch(Exception e) {
-			errorMessage("Exception writing to file: " + e.getMessage(), e, writers);
-		}
-		return result;
-	}
-
-	private static int executeXsltProviderListenerWrite(String step, String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent, Properties properties) {
-		int result = RESULT_ERROR;
-		Map<?, ?> xsltProviderListenerInfo = (Map<?, ?>)queues.get(queueName);
-		XsltProviderListener xsltProviderListener = (XsltProviderListener)xsltProviderListenerInfo.get("xsltProviderListener");
-		String message = xsltProviderListener.getResult();
-		if (message == null) {
-			if ("".equals(fileName)) {
-				result = RESULT_OK;
-			} else {
-				errorMessage("Could not read result (null returned)", writers);
+			result = queue.executeWrite(stepDisplayName, fileContent, correlationId, xsltParameters);
+			if (result == RESULT_OK) {
+				debugPipelineMessage(stepDisplayName, "Successfully wrote message to '" + queueName + "':", fileContent, writers);
+				logger.debug("Successfully wrote message to '" + queueName + "'");
 			}
-		} else {
-			result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName);
+		} catch(TimeoutException e) {
+			errorMessage("Time out sending message to '" + queueName + "': " + e.getMessage(), e, writers);
+		} catch(Exception e) {
+			errorMessage("Could not send message to '" + queueName + "' ("+e.getClass().getSimpleName()+"): " + e.getMessage(), e, writers);
 		}
 		return result;
 	}
 
-	private static int executeJmsListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent) {
+
+	private static int executeJmsListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent) {
 		int result = RESULT_ERROR;
 
 		Map jmsListenerInfo = (Map)queues.get(queueName);
@@ -1546,52 +1483,39 @@ public class TestTool {
 		return result;
 	}
 
-	private static int executeSenderRead(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String senderType, String fileName, String fileContent) {
+
+	private static int executeQueueRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent) {
 		int result = RESULT_ERROR;
 
-		Map<?, ?> senderInfo = (Map<?, ?>)queues.get(queueName);
-		SenderThread senderThread = (SenderThread)senderInfo.remove(senderType + "SenderThread");
-		if(senderInfo instanceof QueueWrapper) {
-			((QueueWrapper) senderInfo).removeSenderThread();
+		Queue queue = queues.get(queueName);
+		if (queue==null) {
+			errorMessage("Property '" + queueName + ".className' not found or not valid", writers);
+			return RESULT_ERROR;
 		}
-		if (senderThread == null) {
-			errorMessage("No SenderThread found, no " + senderType + "Sender.write request?", writers);
-		} else {
-			SenderException senderException = senderThread.getSenderException();
-			if (senderException == null) {
-				IOException ioException = senderThread.getIOException();
-				if (ioException == null) {
-					TimeoutException timeOutException = senderThread.getTimeOutException();
-					if (timeOutException == null) {
-						String message = senderThread.getResponse();
-						if (message == null) {
-							if ("".equals(fileName)) {
-								result = RESULT_OK;
-							} else {
-								errorMessage("Could not read " + senderType + "Sender message (null returned)", writers);
-							}
-						} else {
-							if ("".equals(fileName)) {
-								debugPipelineMessage(stepDisplayName, "Unexpected message read from '" + queueName + "':", message, writers);
-							} else {
-								result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName);
-							}
-						}
-					} else {
-						errorMessage("Could not read " + senderType + "Sender message (TimeOutException): " + timeOutException.getMessage(), timeOutException, writers);
-					}
+		try {
+			String message = queue.executeRead(step, stepDisplayName, properties, fileName, fileContent);
+			if (message == null) {
+				if ("".equals(fileName)) {
+					result = RESULT_OK;
 				} else {
-					errorMessage("Could not read " + senderType + "Sender message (IOException): " + ioException.getMessage(), ioException, writers);
+					errorMessage("Could not read from ["+queueName+"] (null returned)", writers);
 				}
 			} else {
-				errorMessage("Could not read " + senderType + "Sender message (SenderException): " + senderException.getMessage(), senderException, writers);
+				if ("".equals(fileName)) {
+					debugPipelineMessage(stepDisplayName, "Unexpected message read from '" + queueName + "':", message, writers);
+				} else {
+					result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName);
+				}
 			}
+		} catch (Exception e) {
+			errorMessage("Could not read from ["+queueName+"] ("+e.getClass().getSimpleName()+"): " + e.getMessage(), e, writers);
 		}
 
 		return result;
 	}
 
-	private static int executeJavaListenerOrWebServiceListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent, int parameterTimeout) {
+
+	private static int executeJavaListenerOrWebServiceListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent, int parameterTimeout) {
 		int result = RESULT_ERROR;
 
 		Map listenerInfo = (Map)queues.get(queueName);
@@ -1643,7 +1567,7 @@ public class TestTool {
 		return result;
 	}
 
-	private static int executeFixedQuerySenderRead(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent, String correlationId) {
+	private static int executeFixedQuerySenderRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent, String correlationId) {
 		int result = RESULT_ERROR;
 
 		Map querySendersInfo = (Map)queues.get(queueName);
@@ -1663,7 +1587,7 @@ public class TestTool {
 				debugPipelineMessage(stepDisplayName, "Pre result '" + queueName + "':", preResult, writers);
 				PipeLineSession session = new PipeLineSession();
 				session.put(PipeLineSession.correlationIdKey, correlationId);
-				String postResult = prePostFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, session).asString();
+				String postResult = prePostFixedQuerySender.sendMessageOrThrow(TESTTOOL_DUMMY_MESSAGE, session).asString();
 				debugPipelineMessage(stepDisplayName, "Post result '" + queueName + "':", postResult, writers);
 				if (preResult.equals(postResult)) {
 					newRecordFound = false;
@@ -1684,7 +1608,7 @@ public class TestTool {
 			try {
 				PipeLineSession session = new PipeLineSession();
 				session.put(PipeLineSession.correlationIdKey, correlationId);
-				message = readQueryFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, session).asString();
+				message = readQueryFixedQuerySender.sendMessageOrThrow(TESTTOOL_DUMMY_MESSAGE, session).asString();
 			} catch(TimeoutException e) {
 				errorMessage("Time out on execute query for '" + queueName + "': " + e.getMessage(), e, writers);
 			} catch(IOException | SenderException e) {
@@ -1708,77 +1632,7 @@ public class TestTool {
 		return result;
 	}
 
-	private static int executeFileListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent) {
-		int result = RESULT_ERROR;
-		Map<?, ?> fileListenerInfo = (Map<?, ?>)queues.get(queueName);
-		FileListener fileListener = (FileListener)fileListenerInfo.get("fileListener");
-		String message = null;
-		try {
-			message = fileListener.getMessage();
-		} catch(Exception e) {
-			if (!"".equals(fileName)) {
-				errorMessage("Could not read file from '" + queueName + "': " + e.getMessage(), e, writers);
-			}
-		}
-		if (message == null) {
-			if ("".equals(fileName)) {
-				result = RESULT_OK;
-			} else {
-				errorMessage("Could not read file (null returned)", writers);
-			}
-		} else {
-			result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName);
-		}
-		return result;
-	}
-
-	private static int executeFileSenderRead(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent) {
-		int result = RESULT_ERROR;
-		Map<?, ?> fileSenderInfo = (Map<?, ?>)queues.get(queueName);
-		FileSender fileSender = (FileSender)fileSenderInfo.get("fileSender");
-		String message = null;
-		try {
-			message = fileSender.getMessage();
-		} catch(Exception e) {
-			if (!"".equals(fileName)) {
-				errorMessage("Could not read file from '" + queueName + "': " + e.getMessage(), e, writers);
-			}
-		}
-		if (message == null) {
-			if ("".equals(fileName)) {
-				result = RESULT_OK;
-			} else {
-				errorMessage("Could not read file (null returned)", writers);
-			}
-		} else {
-			result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName);
-		}
-		return result;
-	}
-
-	private static int executeXsltProviderListenerRead(String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileContent, Map<String, Object> xsltParameters) {
-		int result = RESULT_ERROR;
-		Map<?, ?> xsltProviderListenerInfo = (Map<?, ?>)queues.get(queueName);
-		if (xsltProviderListenerInfo == null) {
-			errorMessage("No info found for xslt provider listener '" + queueName + "'", writers);
-		} else {
-			XsltProviderListener xsltProviderListener = (XsltProviderListener)xsltProviderListenerInfo.get("xsltProviderListener");
-			if (xsltProviderListener == null) {
-				errorMessage("XSLT provider listener not found for '" + queueName + "'", writers);
-			} else {
-				try {
-					xsltProviderListener.processRequest(fileContent, xsltParameters);
-					result = RESULT_OK;
-				} catch(ListenerException e) {
-					errorMessage("Could not transform xml: " + e.getMessage(), e, writers);
-				}
-				debugPipelineMessage(stepDisplayName, "Result:", fileContent, writers);
-			}
-		}
-		return result;
-	}
-
-	public static int executeStep(String step, Properties properties, String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers, int parameterTimeout, String correlationId) {
+	public static int executeStep(String step, Properties properties, String stepDisplayName, Map<String, Queue> queues, Map<String, Object> writers, int parameterTimeout, String correlationId) {
 		int stepPassed = RESULT_ERROR;
 		String fileName = properties.getProperty(step);
 		String fileNameAbsolutePath = properties.getProperty(step + ".absolutepath");
@@ -1812,26 +1666,15 @@ public class TestTool {
 						stepPassed = executeJmsListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
 					} else 	if ("nl.nn.adapterframework.jdbc.FixedQuerySender".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeFixedQuerySenderRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent, correlationId);
-					} else if ("nl.nn.adapterframework.http.IbisWebServiceSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeSenderRead(step, stepDisplayName, properties, queues, writers, queueName, "ibisWebService", fileName, fileContent);
-					} else if ("nl.nn.adapterframework.http.WebServiceSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeSenderRead(step, stepDisplayName, properties, queues, writers, queueName, "webService", fileName, fileContent);
 					} else if ("nl.nn.adapterframework.http.WebServiceListener".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeJavaListenerOrWebServiceListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent, parameterTimeout);
-					} else if ("nl.nn.adapterframework.http.HttpSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeSenderRead(step, stepDisplayName, properties, queues, writers, queueName, "http", fileName, fileContent);
-					} else if ("nl.nn.adapterframework.senders.IbisJavaSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeSenderRead(step, stepDisplayName, properties, queues, writers, queueName, "ibisJava", fileName, fileContent);
 					} else if ("nl.nn.adapterframework.receivers.JavaListener".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeJavaListenerOrWebServiceListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent, parameterTimeout);
-					} else if ("nl.nn.adapterframework.testtool.FileListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeFileListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
-					} else if ("nl.nn.adapterframework.testtool.FileSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeFileSenderRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
 					} else if ("nl.nn.adapterframework.testtool.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeXsltProviderListenerRead(stepDisplayName, properties, queues, writers, queueName, fileContent, createParametersMapFromParamProperties(properties, step, writers, false, null));
+						Map<String, Object> xsltParameters = createParametersMapFromParamProperties(properties, step, writers, false, null);
+						stepPassed = executeQueueWrite(stepDisplayName, queues, writers, queueName, fileContent, correlationId, xsltParameters); // XsltProviderListener has .read and .write reversed
 					} else {
-						errorMessage("Property '" + queueName + ".className' not found or not valid", writers);
+						stepPassed = executeQueueRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
 					}
 				} else {
 					String resolveProperties = properties.getProperty("scenario.resolveProperties");
@@ -1843,26 +1686,10 @@ public class TestTool {
 
 					if ("nl.nn.adapterframework.jms.JmsSender".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeJmsSenderWrite(stepDisplayName, queues, writers, queueName, fileContent, correlationId);
-					} else if ("nl.nn.adapterframework.http.IbisWebServiceSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeSenderWrite(stepDisplayName, queues, writers, queueName, "ibisWebService", fileContent, correlationId);
-					} else if ("nl.nn.adapterframework.http.WebServiceSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeSenderWrite(stepDisplayName, queues, writers, queueName, "webService", fileContent, correlationId);
-					} else if ("nl.nn.adapterframework.http.WebServiceListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeJavaOrWebServiceListenerWrite(stepDisplayName, queues, writers, queueName, fileContent);
-					} else if ("nl.nn.adapterframework.http.HttpSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeSenderWrite(stepDisplayName, queues, writers, queueName, "http", fileContent, correlationId);
-					} else if ("nl.nn.adapterframework.senders.IbisJavaSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeSenderWrite(stepDisplayName, queues, writers, queueName, "ibisJava", fileContent, correlationId);
-					} else if ("nl.nn.adapterframework.receivers.JavaListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeJavaOrWebServiceListenerWrite(stepDisplayName, queues, writers, queueName, fileContent);
-					} else if ("nl.nn.adapterframework.testtool.FileSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeFileSenderWrite(stepDisplayName, queues, writers, queueName, fileContent);
 					} else if ("nl.nn.adapterframework.testtool.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeXsltProviderListenerWrite(step, stepDisplayName, queues, writers, queueName, fileName, fileContent, properties);
-					} else if ("nl.nn.adapterframework.senders.DelaySender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeDelaySenderWrite(stepDisplayName, queues, writers, queueName, fileContent);
+						stepPassed = executeQueueRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);  // XsltProviderListener has .read and .write reversed
 					} else {
-						errorMessage("Property '" + queueName + ".className' not found or not valid", writers);
+						stepPassed = executeQueueWrite(stepDisplayName, queues, writers, queueName, fileContent, correlationId, null);
 					}
 				}
 			}
@@ -2037,615 +1864,13 @@ public class TestTool {
 			printableActualResult = XmlUtils.replaceNonValidXmlCharacters(actualResult);
 		}
 
-		String preparedExpectedResult = printableExpectedResult;
-		String preparedActualResult = printableActualResult;
-
 		// Map all identifier based properties once
 		HashMap<String, HashMap<String, HashMap<String, String>>> ignoreMap = mapPropertiesToIgnores(properties);
 
-		/* numeric decodeUnzipContentBetweenKeys */
-		debugMessage("Check decodeUnzipContentBetweenKeys properties", writers);
-		boolean decodeUnzipContentBetweenKeysProcessed = false;
-		int i = 1;
-		while (!decodeUnzipContentBetweenKeysProcessed) {
-			String key1 = properties.getProperty("decodeUnzipContentBetweenKeys" + i + ".key1");
-			String key2 = properties.getProperty("decodeUnzipContentBetweenKeys" + i + ".key2");
-			boolean replaceNewlines = false;
-			if ("true".equals(properties.getProperty("decodeUnzipContentBetweenKeys" + i + ".replaceNewlines"))) {
-				replaceNewlines = true;
-			}
-			if (key1 != null && key2 != null) {
-				debugMessage("Decode and unzip content between key1 '" + key1 + "' and key2 '" + key2 + "' (replaceNewlines is " + replaceNewlines + ")", writers);
-				preparedExpectedResult = decodeUnzipContentBetweenKeys(preparedExpectedResult, key1, key2, replaceNewlines, writers);
-				preparedActualResult = decodeUnzipContentBetweenKeys(preparedActualResult, key1, key2, replaceNewlines, writers);
-				i++;
-			} else {
-				decodeUnzipContentBetweenKeysProcessed = true;
-			}
-		}
+		String preparedExpectedResult = prepareResultForCompare(printableExpectedResult, properties, ignoreMap, writers);
+		String preparedActualResult = prepareResultForCompare(printableActualResult, properties, ignoreMap, writers);
 
-		/* identifier based decodeUnzipContentBetweenKeys */
-		HashMap<String, HashMap<String, String>> decodeUnzipContentBetweenKeys = ignoreMap.get("decodeUnzipContentBetweenKeys");
 
-		if (decodeUnzipContentBetweenKeys!=null) {
-			Iterator decodeUnzipContentBetweenKeysIt = decodeUnzipContentBetweenKeys.entrySet().iterator();
-			while (decodeUnzipContentBetweenKeysIt.hasNext()) {
-				Map.Entry decodeUnzipContentBetweenKeysEntry = (Map.Entry) decodeUnzipContentBetweenKeysIt.next();
-				HashMap<String, String> decodeUnzipContentBetweenKeysPair = (HashMap<String, String>) decodeUnzipContentBetweenKeysEntry.getValue();
-				String key1 = decodeUnzipContentBetweenKeysPair.get("key1");
-				String key2 = decodeUnzipContentBetweenKeysPair.get("key2");
-				boolean replaceNewlines = false;
-
-				if ("true".equals(decodeUnzipContentBetweenKeysPair.get("replaceNewlines"))) {
-					replaceNewlines = true;
-				}
-				if (key1 != null && key2 != null) {
-					debugMessage("Decode and unzip content between key1 '" + key1 + "' and key2 '" + key2 + "' (replaceNewlines is " + replaceNewlines + ")", writers);
-					preparedExpectedResult = decodeUnzipContentBetweenKeys(preparedExpectedResult, key1, key2, replaceNewlines, writers);
-					preparedActualResult = decodeUnzipContentBetweenKeys(preparedActualResult, key1, key2, replaceNewlines, writers);
-					i++;
-				} else {
-					decodeUnzipContentBetweenKeysProcessed = true;
-				}
-
-				decodeUnzipContentBetweenKeysIt.remove();
-			}
-		}
-
-		/* numeric canonicaliseFilePathContentBetweenKeys */
-		debugMessage("Check canonicaliseFilePathContentBetweenKeys properties", writers);
-		boolean canonicaliseFilePathContentBetweenKeysProcessed = false;
-		i = 1;
-		while (!canonicaliseFilePathContentBetweenKeysProcessed) {
-			String key1 = properties.getProperty("canonicaliseFilePathContentBetweenKeys" + i + ".key1");
-			String key2 = properties.getProperty("canonicaliseFilePathContentBetweenKeys" + i + ".key2");
-			if (key1 != null && key2 != null) {
-				debugMessage("Canonicalise filepath content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
-				preparedExpectedResult = canonicaliseFilePathContentBetweenKeys(preparedExpectedResult, key1, key2, writers);
-				preparedActualResult = canonicaliseFilePathContentBetweenKeys(preparedActualResult, key1, key2, writers);
-				i++;
-			} else {
-				canonicaliseFilePathContentBetweenKeysProcessed = true;
-			}
-		}
-
-		/* identifier based canonicaliseFilePathContentBetweenKeys */
-		HashMap<String, HashMap<String, String>> canonicaliseFilePathContentBetweenKeys = ignoreMap.get("canonicaliseFilePathContentBetweenKeys");
-		if (canonicaliseFilePathContentBetweenKeys!=null) {
-			Iterator canonicaliseFilePathContentBetweenKeysIt = canonicaliseFilePathContentBetweenKeys.entrySet().iterator();
-			while (canonicaliseFilePathContentBetweenKeysIt.hasNext()) {
-				Map.Entry canonicaliseFilePathContentBetweenKeysEntry = (Map.Entry) canonicaliseFilePathContentBetweenKeysIt.next();
-				HashMap<String, String> canonicaliseFilePathContentBetweenKeysPair = (HashMap<String, String>) canonicaliseFilePathContentBetweenKeysEntry.getValue();
-
-				String key1 = canonicaliseFilePathContentBetweenKeysPair.get("key1");
-				String key2 = canonicaliseFilePathContentBetweenKeysPair.get("key2");
-
-				debugMessage("Canonicalise filepath content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
-				preparedExpectedResult = canonicaliseFilePathContentBetweenKeys(preparedExpectedResult, key1, key2, writers);
-				preparedActualResult = canonicaliseFilePathContentBetweenKeys(preparedActualResult, key1, key2, writers);
-
-				canonicaliseFilePathContentBetweenKeysIt.remove();
-			}
-		}
-
-		/* numeric formatDecimalContentBetweenKeys */
-		debugMessage("Check formatDecimalContentBetweenKeys properties", writers);
-		boolean formatDecimalContentBetweenKeysProcessed = false;
-		i = 1;
-		while (!formatDecimalContentBetweenKeysProcessed) {
-			String key1 = properties.getProperty("formatDecimalContentBetweenKeys" + i + ".key1");
-			String key2 = properties.getProperty("formatDecimalContentBetweenKeys" + i + ".key2");
-			if (key1 != null && key2 != null) {
-				debugMessage("Format decimal content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
-				preparedExpectedResult = formatDecimalContentBetweenKeys(preparedExpectedResult, key1, key2, writers);
-				preparedActualResult = formatDecimalContentBetweenKeys(preparedActualResult, key1, key2, writers);
-				i++;
-			} else {
-				formatDecimalContentBetweenKeysProcessed = true;
-			}
-		}
-
-		/* identifier based formatDecimalContentBetweenKeys */
-		HashMap<String, HashMap<String, String>> formatDecimalContentBetweenKeys = ignoreMap.get("formatDecimalContentBetweenKeys");
-		if (formatDecimalContentBetweenKeys!=null) {
-			Iterator formatDecimalContentBetweenKeysIt = formatDecimalContentBetweenKeys.entrySet().iterator();
-			while (formatDecimalContentBetweenKeysIt.hasNext()) {
-				Map.Entry formatDecimalContentBetweenKeysEntry = (Map.Entry) formatDecimalContentBetweenKeysIt.next();
-				HashMap<String, String> formatDecimalContentBetweenKeysPair = (HashMap<String, String>) formatDecimalContentBetweenKeysEntry.getValue();
-
-				String key1 = formatDecimalContentBetweenKeysPair.get("key1");
-				String key2 = formatDecimalContentBetweenKeysPair.get("key2");
-
-				debugMessage("Format decimal content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
-					preparedExpectedResult = formatDecimalContentBetweenKeys(preparedExpectedResult, key1, key2, writers);
-					preparedActualResult = formatDecimalContentBetweenKeys(preparedActualResult, key1, key2, writers);
-
-				formatDecimalContentBetweenKeysIt.remove();
-			}
-		}
-
-		/* numeric ignoreRegularExpressionKey */
-		debugMessage("Check ignoreRegularExpressionKey properties", writers);
-		boolean ignoreRegularExpressionKeyProcessed = false;
-		i = 1;
-		while (!ignoreRegularExpressionKeyProcessed) {
-			String key = properties.getProperty("ignoreRegularExpressionKey" + i + ".key");
-			if (key != null) {
-				debugMessage("Ignore regular expression key '" + key + "'", writers);
-				preparedExpectedResult = ignoreRegularExpression(preparedExpectedResult, key);
-				preparedActualResult = ignoreRegularExpression(preparedActualResult, key);
-				i++;
-			} else {
-				ignoreRegularExpressionKeyProcessed = true;
-			}
-		}
-
-		/* identifier based ignoreRegularExpressionKey */
-		HashMap<String, HashMap<String, String>> ignoreRegularExpressionKey = ignoreMap.get("ignoreRegularExpressionKey");
-		if (ignoreRegularExpressionKey!=null) {
-		Iterator ignoreRegularExpressionKeyIt = ignoreRegularExpressionKey.entrySet().iterator();
-			while (ignoreRegularExpressionKeyIt.hasNext()) {
-				Map.Entry ignoreRegularExpressionKeyEntry = (Map.Entry) ignoreRegularExpressionKeyIt.next();
-				HashMap<String, String> ignoreRegularExpressionKeyItPair = (HashMap<String, String>) ignoreRegularExpressionKeyEntry.getValue();
-
-				String key = ignoreRegularExpressionKeyItPair.get("key");
-
-				debugMessage("Ignore regular expression key '" + key + "'", writers);
-				preparedExpectedResult = ignoreRegularExpression(preparedExpectedResult, key);
-				preparedActualResult = ignoreRegularExpression(preparedActualResult, key);
-
-				ignoreRegularExpressionKeyIt.remove();
-			}
-		}
-
-		/* numeric removeRegularExpressionKey */
-		debugMessage("Check removeRegularExpressionKey properties", writers);
-		boolean removeRegularExpressionKeyProcessed = false;
-		i = 1;
-		while (!removeRegularExpressionKeyProcessed) {
-			String key = properties.getProperty("removeRegularExpressionKey" + i + ".key");
-			if (key != null) {
-				debugMessage("Remove regular expression key '" + key + "'", writers);
-				preparedExpectedResult = removeRegularExpression(preparedExpectedResult, key);
-				preparedActualResult = removeRegularExpression(preparedActualResult, key);
-				i++;
-			} else {
-				removeRegularExpressionKeyProcessed = true;
-			}
-		}
-
-		/* identifier based removeRegularExpressionKey */
-		HashMap<String, HashMap<String, String>> removeRegularExpressionKey = ignoreMap.get("removeRegularExpressionKey");
-		if (removeRegularExpressionKey!=null) {
-			Iterator removeRegularExpressionKeyIt = removeRegularExpressionKey.entrySet().iterator();
-			while (removeRegularExpressionKeyIt.hasNext()) {
-				Map.Entry removeRegularExpressionKeyEntry = (Map.Entry) removeRegularExpressionKeyIt.next();
-				HashMap<String, String> removeRegularExpressionKeyPair = (HashMap<String, String>) removeRegularExpressionKeyEntry.getValue();
-				String key = removeRegularExpressionKeyPair.get("key");
-
-				debugMessage("Remove regular expression key '" + key + "'", writers);
-				preparedExpectedResult = removeRegularExpression(preparedExpectedResult, key);
-				preparedActualResult = removeRegularExpression(preparedActualResult, key);
-
-				removeRegularExpressionKeyIt.remove();
-			}
-		}
-
-		/* numeric replaceRegularExpressionKeys */
-		debugMessage("Check replaceRegularExpressionKeys properties", writers);
-		boolean replaceRegularExpressionKeysProcessed = false;
-		i = 1;
-		while (!replaceRegularExpressionKeysProcessed) {
-			String key1 = properties.getProperty("replaceRegularExpressionKeys" + i + ".key1");
-			String key2 = properties.getProperty("replaceRegularExpressionKeys" + i + ".key2");
-			if (key1 != null && key2 != null) {
-				debugMessage("Replace regular expression from '" + key1 + "' to '" + key2 + "'", writers);
-				preparedExpectedResult = replaceRegularExpression(preparedExpectedResult, key1, key2);
-				preparedActualResult = replaceRegularExpression(preparedActualResult, key1, key2);
-				i++;
-			} else {
-				replaceRegularExpressionKeysProcessed = true;
-			}
-		}
-
-		/* identifier based replaceRegularExpressionKeys */
-		HashMap<String, HashMap<String, String>> replaceRegularExpressionKeys = ignoreMap.get("replaceRegularExpressionKeys");
-		if (replaceRegularExpressionKeys!=null) {
-		Iterator replaceRegularExpressionKeysIt = replaceRegularExpressionKeys.entrySet().iterator();
-			while (replaceRegularExpressionKeysIt.hasNext()) {
-				Map.Entry replaceRegularExpressionKeysEntry = (Map.Entry) replaceRegularExpressionKeysIt.next();
-				HashMap<String, String> replaceRegularExpressionKeysPair = (HashMap<String, String>) replaceRegularExpressionKeysEntry.getValue();
-				String key1 = replaceRegularExpressionKeysPair.get("key1");
-				String key2 = replaceRegularExpressionKeysPair.get("key2");
-
-				debugMessage("Replace regular expression from '" + key1 + "' to '" + key2 + "'", writers);
-				preparedExpectedResult = replaceRegularExpression(preparedExpectedResult, key1, key2);
-				preparedActualResult = replaceRegularExpression(preparedActualResult, key1, key2);
-
-				replaceRegularExpressionKeysIt.remove();
-			}
-		}
-
-		/* numeric ignoreContentBetweenKeys */
-		debugMessage("Check ignoreContentBetweenKeys properties", writers);
-		boolean ignoreContentBetweenKeysProcessed = false;
-		i = 1;
-		while (!ignoreContentBetweenKeysProcessed) {
-			String key1 = properties.getProperty("ignoreContentBetweenKeys" + i + ".key1");
-			String key2 = properties.getProperty("ignoreContentBetweenKeys" + i + ".key2");
-			if (key1 != null && key2 != null) {
-				debugMessage("Ignore content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
-				preparedExpectedResult = ignoreContentBetweenKeys(preparedExpectedResult, key1, key2);
-				preparedActualResult = ignoreContentBetweenKeys(preparedActualResult, key1, key2);
-				i++;
-			} else {
-				ignoreContentBetweenKeysProcessed = true;
-			}
-		}
-
-		/* identifier based ignoreContentBetweenKeys */
-		HashMap<String, HashMap<String, String>> ignoreContentBetweenKeys = ignoreMap.get("ignoreContentBetweenKeys");
-		if (ignoreContentBetweenKeys!=null) {
-			Iterator ignoreContentBetweenKeysIt = ignoreContentBetweenKeys.entrySet().iterator();
-			while (ignoreContentBetweenKeysIt.hasNext()) {
-				Map.Entry ignoreContentBetweenKeysEntry = (Map.Entry) ignoreContentBetweenKeysIt.next();
-				HashMap<String, String> ignoreContentBetweenKeysPair = (HashMap<String, String>) ignoreContentBetweenKeysEntry.getValue();
-				String key1 = ignoreContentBetweenKeysPair.get("key1");
-				String key2 = ignoreContentBetweenKeysPair.get("key2");
-
-				debugMessage("Ignore content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
-				preparedExpectedResult = ignoreContentBetweenKeys(preparedExpectedResult, key1, key2);
-				preparedActualResult = ignoreContentBetweenKeys(preparedActualResult, key1, key2);
-
-				ignoreContentBetweenKeysIt.remove();
-			}
-		}
-
-		/* numeric ignoreKeysAndContentBetweenKeys */
-		debugMessage("Check ignoreKeysAndContentBetweenKeys properties", writers);
-		boolean ignoreKeysAndContentBetweenKeysProcessed = false;
-		i = 1;
-		while (!ignoreKeysAndContentBetweenKeysProcessed) {
-			String key1 = properties.getProperty("ignoreKeysAndContentBetweenKeys" + i + ".key1");
-			String key2 = properties.getProperty("ignoreKeysAndContentBetweenKeys" + i + ".key2");
-			if (key1 != null && key2 != null) {
-				debugMessage("Ignore keys and content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
-				preparedExpectedResult = ignoreKeysAndContentBetweenKeys(preparedExpectedResult, key1, key2);
-				preparedActualResult = ignoreKeysAndContentBetweenKeys(preparedActualResult, key1, key2);
-				i++;
-			} else {
-				ignoreKeysAndContentBetweenKeysProcessed = true;
-			}
-		}
-
-		/* identifier based ignoreKeysAndContentBetweenKeys */
-		HashMap<String, HashMap<String, String>> ignoreKeysAndContentBetweenKeys = ignoreMap.get("ignoreKeysAndContentBetweenKeys");
-		if (ignoreKeysAndContentBetweenKeys!=null) {
-			Iterator ignoreKeysAndContentBetweenKeysIt = ignoreKeysAndContentBetweenKeys.entrySet().iterator();
-			while (ignoreKeysAndContentBetweenKeysIt.hasNext()) {
-				Map.Entry ignoreKeysAndContentBetweenKeysEntry = (Map.Entry) ignoreKeysAndContentBetweenKeysIt.next();
-				HashMap<String, String> ignoreKeysAndContentBetweenKeysPair = (HashMap<String, String>) ignoreKeysAndContentBetweenKeysEntry.getValue();
-				String key1 = ignoreKeysAndContentBetweenKeysPair.get("key1");
-				String key2 = ignoreKeysAndContentBetweenKeysPair.get("key2");
-
-				debugMessage("Ignore keys and content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
-				preparedExpectedResult = ignoreKeysAndContentBetweenKeys(preparedExpectedResult, key1, key2);
-				preparedActualResult = ignoreKeysAndContentBetweenKeys(preparedActualResult, key1, key2);
-
-				ignoreKeysAndContentBetweenKeysIt.remove();
-			}
-		}
-
-		/* numeric removeKeysAndContentBetweenKeys */
-		debugMessage("Check removeKeysAndContentBetweenKeys properties", writers);
-		boolean removeKeysAndContentBetweenKeysProcessed = false;
-		i = 1;
-		while (!removeKeysAndContentBetweenKeysProcessed) {
-			String key1 = properties.getProperty("removeKeysAndContentBetweenKeys" + i + ".key1");
-			String key2 = properties.getProperty("removeKeysAndContentBetweenKeys" + i + ".key2");
-			if (key1 != null && key2 != null) {
-				debugMessage("Remove keys and content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
-				preparedExpectedResult = removeKeysAndContentBetweenKeys(preparedExpectedResult, key1, key2);
-				preparedActualResult = removeKeysAndContentBetweenKeys(preparedActualResult, key1, key2);
-				i++;
-			} else {
-				removeKeysAndContentBetweenKeysProcessed = true;
-			}
-		}
-
-		/* identifier based removeKeysAndContentBetweenKeys */
-		HashMap<String, HashMap<String, String>> removeKeysAndContentBetweenKeys = ignoreMap.get("removeKeysAndContentBetweenKeys");
-		if (removeKeysAndContentBetweenKeys!=null) {
-			Iterator removeKeysAndContentBetweenKeysIt = removeKeysAndContentBetweenKeys.entrySet().iterator();
-			while (removeKeysAndContentBetweenKeysIt.hasNext()) {
-				Map.Entry removeKeysAndContentBetweenKeysEntry = (Map.Entry) removeKeysAndContentBetweenKeysIt.next();
-				HashMap<String, String> removeKeysAndContentBetweenKeysPair = (HashMap<String, String>) removeKeysAndContentBetweenKeysEntry.getValue();
-				String key1 = removeKeysAndContentBetweenKeysPair.get("key1");
-				String key2 = removeKeysAndContentBetweenKeysPair.get("key2");
-
-				debugMessage("Remove keys and content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
-				preparedExpectedResult = removeKeysAndContentBetweenKeys(preparedExpectedResult, key1, key2);
-				preparedActualResult = removeKeysAndContentBetweenKeys(preparedActualResult, key1, key2);
-
-				removeKeysAndContentBetweenKeysIt.remove();
-			}
-		}
-
-		/* numeric ignoreKey */
-		debugMessage("Check ignoreKey properties", writers);
-		boolean ignoreKeyProcessed = false;
-		i = 1;
-		while (!ignoreKeyProcessed) {
-			String key = properties.getProperty("ignoreKey" + i);
-			if (key != null) {
-				debugMessage("Ignore key '" + key + "'", writers);
-				preparedExpectedResult = ignoreKey(preparedExpectedResult, key);
-				preparedActualResult = ignoreKey(preparedActualResult, key);
-				i++;
-			} else {
-				ignoreKeyProcessed = true;
-			}
-		}
-
-		/* identifier based ignoreKey */
-		HashMap<String, HashMap<String, String>> ignoreKey = ignoreMap.get("ignoreKey");
-		if (ignoreKey!=null) {
-			Iterator ignoreKeyIt = ignoreKey.entrySet().iterator();
-			while (ignoreKeyIt.hasNext()) {
-				Map.Entry ignoreKeyEntry = (Map.Entry) ignoreKeyIt.next();
-				HashMap<String, String> ignoreKeyPair = (HashMap<String, String>) ignoreKeyEntry.getValue();
-				String key = ignoreKeyPair.get("value");
-
-				debugMessage("Ignore key '" + key + "'", writers);
-				preparedExpectedResult = ignoreKey(preparedExpectedResult, key);
-				preparedActualResult = ignoreKey(preparedActualResult, key);
-
-				ignoreKeyIt.remove();
-			}
-		}
-
-		/* numeric removeKey */
-		debugMessage("Check removeKey properties", writers);
-		boolean removeKeyProcessed = false;
-		i = 1;
-		while (!removeKeyProcessed) {
-			String key = properties.getProperty("removeKey" + i);
-			if (key != null) {
-				debugMessage("Remove key '" + key + "'", writers);
-				preparedExpectedResult = removeKey(preparedExpectedResult, key);
-				preparedActualResult = removeKey(preparedActualResult, key);
-				i++;
-			} else {
-				removeKeyProcessed = true;
-			}
-		}
-
-		/* identifier based removeKey */
-		HashMap<String, HashMap<String, String>> removeKey = ignoreMap.get("removeKey");
-		if (removeKey!=null) {
-			Iterator removeKeyIt = removeKey.entrySet().iterator();
-			while (removeKeyIt.hasNext()) {
-				Map.Entry removeKeyEntry = (Map.Entry) removeKeyIt.next();
-				HashMap<String, String> removeKeyPair = (HashMap<String, String>) removeKeyEntry.getValue();
-				String key = removeKeyPair.get("value");
-
-				debugMessage("Remove key '" + key + "'", writers);
-				preparedExpectedResult = removeKey(preparedExpectedResult, key);
-				preparedActualResult = removeKey(preparedActualResult, key);
-
-				removeKeyIt.remove();
-			}
-		}
-
-		/* numeric replaceKey */
-		debugMessage("Check replaceKey properties", writers);
-		boolean replaceKeyProcessed = false;
-		i = 1;
-		while (!replaceKeyProcessed) {
-			String key1 = properties.getProperty("replaceKey" + i + ".key1");
-			String key2 = properties.getProperty("replaceKey" + i + ".key2");
-			if (key1 != null && key2 != null) {
-				debugMessage("Replace key from '" + key1 + "' to '" + key2 + "'", writers);
-				preparedExpectedResult = replaceKey(preparedExpectedResult, key1, key2);
-				preparedActualResult = replaceKey(preparedActualResult, key1, key2);
-				i++;
-			} else {
-				replaceKeyProcessed = true;
-			}
-		}
-
-		/* identifier based replaceKey */
-		HashMap<String, HashMap<String, String>> replaceKey = ignoreMap.get("replaceKey");
-		if (replaceKey!=null) {
-			Iterator replaceKeyIt = replaceKey.entrySet().iterator();
-			while (replaceKeyIt.hasNext()) {
-				Map.Entry replaceKeyEntry = (Map.Entry) replaceKeyIt.next();
-				HashMap<String, String> replaceKeyPair = (HashMap<String, String>) replaceKeyEntry.getValue();
-				String key1 = replaceKeyPair.get("key1");
-				String key2 = replaceKeyPair.get("key2");
-
-				debugMessage("Replace key from '" + key1 + "' to '" + key2 + "'", writers);
-				preparedExpectedResult = replaceKey(preparedExpectedResult, key1, key2);
-				preparedActualResult = replaceKey(preparedActualResult, key1, key2);
-
-				replaceKeyIt.remove();
-			}
-		}
-
-		/* numeric replaceEverywhereKey */
-		debugMessage("Check replaceEverywhereKey properties", writers);
-		boolean replaceEverywhereKeyProcessed = false;
-		i = 1;
-		while (!replaceEverywhereKeyProcessed) {
-			String key1 = properties.getProperty("replaceEverywhereKey" + i + ".key1");
-			String key2 = properties.getProperty("replaceEverywhereKey" + i + ".key2");
-			if (key1 != null && key2 != null) {
-				debugMessage("Replace key from '" + key1 + "' to '" + key2 + "'", writers);
-				preparedExpectedResult = replaceKey(preparedExpectedResult, key1, key2);
-				preparedActualResult = replaceKey(preparedActualResult, key1, key2);
-				i++;
-			} else {
-				replaceEverywhereKeyProcessed = true;
-			}
-		}
-
-		/* identifier based replaceEverywhereKey */
-		HashMap<String, HashMap<String, String>> replaceEverywhereKey = ignoreMap.get("replaceEverywhereKey");
-		if (replaceEverywhereKey!=null) {
-			Iterator replaceEverywhereKeyIt = replaceEverywhereKey.entrySet().iterator();
-			while (replaceEverywhereKeyIt.hasNext()) {
-				Map.Entry replaceEverywhereKeyEntry = (Map.Entry) replaceEverywhereKeyIt.next();
-				HashMap<String, String> replaceEverywhereKeyPair = (HashMap<String, String>) replaceEverywhereKeyEntry.getValue();
-				String key1 = replaceEverywhereKeyPair.get("key1");
-				String key2 = replaceEverywhereKeyPair.get("key2");
-
-				debugMessage("Replace key from '" + key1 + "' to '" + key2 + "'", writers);
-				preparedExpectedResult = replaceKey(preparedExpectedResult, key1, key2);
-				preparedActualResult = replaceKey(preparedActualResult, key1, key2);
-
-				replaceEverywhereKeyIt.remove();
-			}
-		}
-
-		/* numeric ignoreCurrentTimeBetweenKeys */
-		debugMessage("Check ignoreCurrentTimeBetweenKeys properties", writers);
-		boolean ignoreCurrentTimeBetweenKeysProcessed = false;
-		i = 1;
-		while (!ignoreCurrentTimeBetweenKeysProcessed) {
-			String key1 = properties.getProperty("ignoreCurrentTimeBetweenKeys" + i + ".key1");
-			String key2 = properties.getProperty("ignoreCurrentTimeBetweenKeys" + i + ".key2");
-			String pattern = properties.getProperty("ignoreCurrentTimeBetweenKeys" + i + ".pattern");
-			String margin = properties.getProperty("ignoreCurrentTimeBetweenKeys" + i + ".margin");
-			boolean errorMessageOnRemainingString = true;
-			if ("false".equals(properties.getProperty("ignoreCurrentTimeBetweenKeys" + i + ".errorMessageOnRemainingString"))) {
-				errorMessageOnRemainingString = false;
-			}
-			if (key1 != null && key2 != null && margin != null) {
-				debugMessage("Ignore current time between key1 '" + key1 + "' and key2 '" + key2 + "' (errorMessageOnRemainingString is " + errorMessageOnRemainingString + ")", writers);
-				debugMessage("For result string", writers);
-				preparedActualResult = ignoreCurrentTimeBetweenKeys(preparedActualResult, key1, key2, pattern, margin, errorMessageOnRemainingString, false, writers);
-				debugMessage("For expected string", writers);
-				preparedExpectedResult = ignoreCurrentTimeBetweenKeys(preparedExpectedResult, key1, key2, pattern, margin, errorMessageOnRemainingString, true, writers);
-				i++;
-			} else {
-				ignoreCurrentTimeBetweenKeysProcessed = true;
-			}
-		}
-
-		/* identifier based ignoreCurrentTimeBetweenKeys */
-		HashMap<String, HashMap<String, String>> ignoreCurrentTimeBetweenKeys = ignoreMap.get("ignoreCurrentTimeBetweenKeys");
-		if (ignoreCurrentTimeBetweenKeys!=null) {
-			Iterator ignoreCurrentTimeBetweenKeysIt = ignoreCurrentTimeBetweenKeys.entrySet().iterator();
-			while (ignoreCurrentTimeBetweenKeysIt.hasNext()) {
-				Map.Entry ignoreCurrentTimeBetweenKeysEntry = (Map.Entry) ignoreCurrentTimeBetweenKeysIt.next();
-				HashMap<String, String> ignoreCurrentTimeBetweenKeysPair = (HashMap<String, String>) ignoreCurrentTimeBetweenKeysEntry.getValue();
-				String key1 = ignoreCurrentTimeBetweenKeysPair.get("key1");
-				String key2 = ignoreCurrentTimeBetweenKeysPair.get("key2");
-				String pattern = ignoreCurrentTimeBetweenKeysPair.get("pattern");
-				String margin = ignoreCurrentTimeBetweenKeysPair.get("margin");
-				boolean errorMessageOnRemainingString = true;
-
-				if ("false".equals(ignoreCurrentTimeBetweenKeysPair.get("errorMessageOnRemainingString"))) {
-					errorMessageOnRemainingString = false;
-				}
-
-				debugMessage("Ignore current time between key1 '" + key1 + "' and key2 '" + key2 + "' (errorMessageOnRemainingString is " + errorMessageOnRemainingString + ")", writers);
-				debugMessage("For result string", writers);
-				preparedActualResult = ignoreCurrentTimeBetweenKeys(preparedActualResult, key1, key2, pattern, margin, errorMessageOnRemainingString, false, writers);
-				debugMessage("For expected string", writers);
-				preparedExpectedResult = ignoreCurrentTimeBetweenKeys(preparedExpectedResult, key1, key2, pattern, margin, errorMessageOnRemainingString, true, writers);
-
-				ignoreCurrentTimeBetweenKeysIt.remove();
-			}
-		}
-
-		/* numeric ignoreContentBeforeKey */
-		debugMessage("Check ignoreContentBeforeKey properties", writers);
-		boolean ignoreContentBeforeKeyProcessed = false;
-		i = 1;
-		while (!ignoreContentBeforeKeyProcessed) {
-			String key = properties.getProperty("ignoreContentBeforeKey" + i);
-			if (key == null) {
-				key = properties.getProperty("ignoreContentBeforeKey" + i + ".key");
-			}
-			if (key != null) {
-				debugMessage("Ignore content before key '" + key + "'", writers);
-				preparedExpectedResult = ignoreContentBeforeKey(preparedExpectedResult, key);
-				preparedActualResult = ignoreContentBeforeKey(preparedActualResult, key);
-				i++;
-			} else {
-				ignoreContentBeforeKeyProcessed = true;
-			}
-		}
-
-		/* identifier based ignoreContentBeforeKey */
-		HashMap<String, HashMap<String, String>> ignoreContentBeforeKey = ignoreMap.get("ignoreContentBeforeKey");
-
-		// merge all without .key attribute as well
-		// TODO: ignoreContentBeforeKey.putAll(mapPropertiesByIdentifier("ignoreContentBeforeKey", properties, new ArrayList()));
-		if (ignoreContentBeforeKey!=null) {
-			Iterator ignoreContentBeforeKeyIt = ignoreContentBeforeKey.entrySet().iterator();
-			while (ignoreContentBeforeKeyIt.hasNext()) {
-				Map.Entry ignoreContentBeforeKeyEntry = (Map.Entry) ignoreContentBeforeKeyIt.next();
-				HashMap<String, String> ignoreContentBeforeKeyPair = (HashMap<String, String>) ignoreContentBeforeKeyEntry.getValue();
-				String key = ignoreContentBeforeKeyPair.get("key");
-
-				if (key == null) {
-					key = ignoreContentBeforeKeyPair.get("value");
-				}
-
-				debugMessage("Ignore content before key '" + key + "'", writers);
-				preparedExpectedResult = ignoreContentBeforeKey(preparedExpectedResult, key);
-				preparedActualResult = ignoreContentBeforeKey(preparedActualResult, key);
-
-				ignoreContentBeforeKeyIt.remove();
-			}
-		}
-
-		/* numeric ignoreContentAfterKey */
-		debugMessage("Check ignoreContentAfterKey properties", writers);
-		boolean ignoreContentAfterKeyProcessed = false;
-		i = 1;
-		while (!ignoreContentAfterKeyProcessed) {
-			String key = properties.getProperty("ignoreContentAfterKey" + i);
-			if (key == null) {
-				key = properties.getProperty("ignoreContentAfterKey" + i + ".key");
-			}
-			if (key != null) {
-				debugMessage("Ignore content after key '" + key + "'", writers);
-				preparedExpectedResult = ignoreContentAfterKey(preparedExpectedResult, key);
-				preparedActualResult = ignoreContentAfterKey(preparedActualResult, key);
-				i++;
-			} else {
-				ignoreContentAfterKeyProcessed = true;
-			}
-		}
-
-		/* identifier based ignoreContentAfterKey */
-		HashMap<String, HashMap<String, String>> ignoreContentAfterKey = ignoreMap.get("ignoreContentAfterKey");
-
-		// merge all without .key attribute aswell
-		// TODO: ignoreContentAfterKey.putAll(mapPropertiesByIdentifier("ignoreContentAfterKey", properties, new ArrayList()));
-		if (ignoreContentAfterKey!=null) {
-			Iterator ignoreContentAfterKeyIt = ignoreContentAfterKey.entrySet().iterator();
-			while (ignoreContentAfterKeyIt.hasNext()) {
-				Map.Entry ignoreContentAfterKeyEntry = (Map.Entry) ignoreContentAfterKeyIt.next();
-				HashMap<String, String> ignoreContentAfterKeyPair = (HashMap<String, String>) ignoreContentAfterKeyEntry.getValue();
-				String key = ignoreContentAfterKeyPair.get("key");
-
-				if (key == null) {
-					key = ignoreContentAfterKeyPair.get("value");
-				}
-
-				debugMessage("Ignore content before key '" + key + "'", writers);
-				preparedExpectedResult = ignoreContentBeforeKey(preparedExpectedResult, key);
-				preparedActualResult = ignoreContentBeforeKey(preparedActualResult, key);
-
-				ignoreContentAfterKeyIt.remove();
-			}
-		}
-
-		debugMessage("Check ignoreContentAfterKey properties", writers);
 		if ((diffType != null && (diffType.equals(".xml") || diffType.equals(".wsdl")))
 				|| (diffType == null && (fileName.endsWith(".xml") || fileName.endsWith(".wsdl")))) {
 			// xml diff
@@ -2699,10 +1924,10 @@ public class TestTool {
 				StringBuilder diffActual = new StringBuilder();
 				StringBuilder diffExcpected = new StringBuilder();
 				int j = formattedPreparedActualResult.length();
-				if (formattedPreparedExpectedResult.length() > i) {
+				if (formattedPreparedExpectedResult.length() > j) {
 					j = formattedPreparedExpectedResult.length();
 				}
-				for (i = 0; i < j; i++) {
+				for (int i = 0; i < j; i++) {
 					if (i >= formattedPreparedActualResult.length() || i >= formattedPreparedExpectedResult.length()
 							|| formattedPreparedActualResult.charAt(i) != formattedPreparedExpectedResult.charAt(i)) {
 						if (message == null) {
@@ -2740,6 +1965,124 @@ public class TestTool {
 		}
 		return ok;
 	}
+
+	public static String prepareResultForCompare(String input, Properties properties, HashMap<String, HashMap<String, HashMap<String, String>>> ignoreMap, Map<String, Object> writers) {
+		String result = input;
+		result = doActionBetweenKeys("decodeUnzipContentBetweenKeys", result, properties, ignoreMap, writers, (value, pp, key1, key2)-> {
+			boolean replaceNewlines = !"true".equals(pp.apply("replaceNewlines"));
+			return decodeUnzipContentBetweenKeys(value, key1, key2, replaceNewlines, writers);
+		});
+
+		result = doActionBetweenKeys("canonicaliseFilePathContentBetweenKeys", result, properties, ignoreMap, writers, (value, pp, key1, key2)->canonicaliseFilePathContentBetweenKeys(value,key1,key2,writers));
+		result = doActionBetweenKeys("formatDecimalContentBetweenKeys", result, properties, ignoreMap, writers, (value, pp, key1, key2)->formatDecimalContentBetweenKeys(value,key1,key2,writers));
+		result = doActionWithSingleKey("ignoreRegularExpressionKey", result, properties, ignoreMap, writers, (value, pp, key)->ignoreRegularExpression(value,key));
+		result = doActionWithSingleKey("removeRegularExpressionKey", result, properties, ignoreMap, writers, (value, pp, key)->removeRegularExpression(value,key));
+
+		result = doActionBetweenKeys("replaceRegularExpressionKeys", result, properties, ignoreMap, writers, (value, pp, key1, key2)->replaceRegularExpression(value,key1,key2));
+		result = doActionBetweenKeys("ignoreContentBetweenKeys", result, properties, ignoreMap, writers, (value, pp, key1, key2)->ignoreContentBetweenKeys(value,key1,key2));
+		result = doActionBetweenKeys("ignoreKeysAndContentBetweenKeys", result, properties, ignoreMap, writers, (value, pp, key1, key2)->ignoreKeysAndContentBetweenKeys(value,key1,key2));
+		result = doActionBetweenKeys("removeKeysAndContentBetweenKeys", result, properties, ignoreMap, writers, (value, pp, key1, key2)->removeKeysAndContentBetweenKeys(value,key1,key2));
+
+		result = doActionWithSingleKey("ignoreKey", result, properties, ignoreMap, writers, (value, pp, key)->ignoreKey(value,key));
+		result = doActionWithSingleKey("removeKey", result, properties, ignoreMap, writers, (value, pp, key)->removeKey(value,key));
+
+		result = doActionBetweenKeys("replaceKey", result, properties, ignoreMap, writers, (value, pp, key1, key2)->replaceKey(value,key1,key2));
+		result = doActionBetweenKeys("replaceEverywhereKey", result, properties, ignoreMap, writers, (value, pp, key1, key2)->replaceKey(value,key1,key2));
+
+		result = doActionBetweenKeys("ignoreCurrentTimeBetweenKeys", result, properties, ignoreMap, writers, (value, pp, key1, key2)-> {
+			String pattern = pp.apply("pattern");
+			String margin = pp.apply("margin");
+			boolean errorMessageOnRemainingString = !"false".equals(pp.apply("errorMessageOnRemainingString"));
+			return ignoreCurrentTimeBetweenKeys(value, key1, key2, pattern, margin, errorMessageOnRemainingString, false, writers);
+		});
+
+		result = doActionWithSingleKey("ignoreContentBeforeKey", result, properties, ignoreMap, writers, (value, pp, key)->ignoreContentBeforeKey(value,key));
+		result = doActionWithSingleKey("ignoreContentAfterKey", result, properties, ignoreMap, writers, (value, pp, key)->ignoreContentAfterKey(value,key));
+		return result;
+	}
+
+	public interface BetweenKeysAction {
+		String format(String value, Function<String,String> propertyProvider, String key1, String key2);
+	}
+	public interface SingleKeyAction {
+		String format(String value, Function<String, String> propertyProvider, String key1);
+	}
+
+	public static String doActionBetweenKeys(String key, String value, Properties properties, HashMap<String, HashMap<String, HashMap<String, String>>> ignoreMap, Map<String, Object> writers, BetweenKeysAction action) {
+		String result = value;
+		debugMessage("Check "+key+" properties", writers);
+		boolean lastKeyIndexProcessed = false;
+		int i = 1;
+		while (!lastKeyIndexProcessed) {
+			String keyPrefix = key + i + ".";
+			String key1 = properties.getProperty(keyPrefix + "key1");
+			String key2 = properties.getProperty(keyPrefix + "key2");
+			if (key1 != null && key2 != null) {
+				debugMessage(key + " between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
+				result = action.format(result, k -> properties.getProperty(keyPrefix + k), key1, key2);
+				i++;
+			} else {
+				lastKeyIndexProcessed = true;
+			}
+		}
+
+		HashMap<String, HashMap<String, String>> keySpecMap = ignoreMap.get(key);
+		if (keySpecMap!=null) {
+			Iterator<Entry<String,HashMap<String,String>>> keySpecIt = keySpecMap.entrySet().iterator();
+			while (keySpecIt.hasNext()) {
+				Entry<String,HashMap<String,String>> spec = keySpecIt.next();
+				HashMap<String, String> keyPair = (HashMap<String, String>) spec.getValue();
+
+				String key1 = keyPair.get("key1");
+				String key2 = keyPair.get("key2");
+
+				debugMessage(key + " between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
+				result = action.format(result, k -> keyPair.get(k), key1, key2);
+			}
+		}
+
+		return result;
+	}
+
+	public static String doActionWithSingleKey(String keyName, String value, Properties properties, HashMap<String, HashMap<String, HashMap<String, String>>> ignoreMap, Map<String, Object> writers, SingleKeyAction action) {
+		String result = value;
+		debugMessage("Check "+keyName+" properties", writers);
+		boolean lastKeyIndexProcessed = false;
+		int i = 1;
+		while (!lastKeyIndexProcessed) {
+			String keyPrefix = keyName + i;
+			String key = properties.getProperty(keyPrefix);
+			if (key==null) {
+				key = properties.getProperty(keyPrefix + ".key");
+			}
+			if (key != null) {
+				debugMessage(keyName+ " key '" + key + "'", writers);
+				result = action.format(result, k -> properties.getProperty(keyPrefix + "." + k), key);
+				i++;
+			} else {
+				lastKeyIndexProcessed = true;
+			}
+		}
+
+		HashMap<String, HashMap<String, String>> keySpecMap = ignoreMap.get(keyName);
+		if (keySpecMap!=null) {
+			Iterator<Entry<String,HashMap<String,String>>> keySpecIt = keySpecMap.entrySet().iterator();
+			while (keySpecIt.hasNext()) {
+				Entry<String,HashMap<String,String>> spec = (Map.Entry) keySpecIt.next();
+				HashMap<String, String> keyPair = (HashMap<String, String>) spec.getValue();
+
+				String key = keyPair.get("key");
+
+				debugMessage(keyName + " key '" + key + "'", writers);
+				result = action.format(result, k -> keyPair.get(k), key);
+
+				keySpecIt.remove();
+			}
+		}
+
+		return result;
+	}
+
 
 	public static String ignoreContentBetweenKeys(String string, String key1, String key2) {
 		String result = string;

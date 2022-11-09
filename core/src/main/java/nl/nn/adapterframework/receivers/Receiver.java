@@ -957,7 +957,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		try {
 			if (errorSender!=null) {
 				message = messageSupplier.get();
-				errorSender.sendMessage(message, null);
+				errorSender.sendMessageOrThrow(message, null);
 			}
 			if (errorStorage!=null) {
 				Serializable sobj;
@@ -1775,7 +1775,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		try {
 			if (getSender() != null) {
 				if (log.isDebugEnabled()) { log.debug("Receiver ["+getName()+"] sending result to configured sender"); }
-				getSender().sendMessage(result, null); // sending correlated responses via a receiver embedded sender is not supported
+				getSender().sendMessageOrThrow(result, null); // sending correlated responses via a receiver embedded sender is not supported
 			}
 		} catch (Exception e) {
 			String msg = "caught exception in message post processing";

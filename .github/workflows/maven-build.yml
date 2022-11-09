@@ -16,6 +16,7 @@ on:
       - "**.yml"
       - "**.txt"
       - "**.png"
+      - "**.toml"
       - ".github/**"
       - "docker/**"
       - "webapp/src/main/webapp/iaf/**"
@@ -28,6 +29,7 @@ on:
       - "**.yml"
       - "**.txt"
       - "**.png"
+      - "**.toml"
       - ".github/**"
       - "docker/**"
       - "webapp/src/main/webapp/iaf/**"
@@ -37,6 +39,7 @@ jobs:
 
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         java: [ '8', '11' ]
 

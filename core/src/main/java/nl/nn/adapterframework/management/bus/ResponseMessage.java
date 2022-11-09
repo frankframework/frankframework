@@ -31,7 +31,6 @@ public class ResponseMessage {
 	public static final String STATUS_KEY = "meta:status";
 	public static final String MIMETYPE_KEY = "meta:type";
 	public static final String CONTENT_DISPOSITION_KEY = "meta:contentdisposition";
-	public static final String NO_CONTENT_PAYLOAD = "no-content";
 
 	public static class Builder {
 		private Object payload;
@@ -115,21 +114,25 @@ public class ResponseMessage {
 		return Builder.create().withPayload(payload).toJson();
 	}
 
-	public static Message<String> accepted() {
+	private static Message<String> createNoContentResponse(int statuscode) {
 		Map<String, Object> headers = new HashMap<>();
-		headers.put(STATUS_KEY, 202);
-		return new GenericMessage<>(NO_CONTENT_PAYLOAD, headers);
+		headers.put(STATUS_KEY, statuscode);
+		return new GenericMessage<>("no-content", headers);
+	}
+
+	public static Message<String> created() {
+		return createNoContentResponse(201);
+	}
+
+	public static Message<String> accepted() {
+		return createNoContentResponse(202);
 	}
 
 	public static Message<String> noContent() {
-		Map<String, Object> headers = new HashMap<>();
-		headers.put(STATUS_KEY, 204);
-		return new GenericMessage<>(NO_CONTENT_PAYLOAD, headers);
+		return createNoContentResponse(204);
 	}
 
 	public static Message<String> badRequest() {
-		Map<String, Object> headers = new HashMap<>();
-		headers.put(STATUS_KEY, 400);
-		return new GenericMessage<>(NO_CONTENT_PAYLOAD, headers);
+		return createNoContentResponse(400);
 	}
 }

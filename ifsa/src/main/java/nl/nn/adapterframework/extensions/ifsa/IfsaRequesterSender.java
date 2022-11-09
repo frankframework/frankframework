@@ -38,6 +38,7 @@ import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.extensions.ifsa.jms.IfsaFacade;
 import nl.nn.adapterframework.extensions.ifsa.jms.PushingIfsaProviderListener;
@@ -165,7 +166,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 
 		try {
 			if (isSynchronous()) {
@@ -204,7 +205,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 			BIF=(String)session.get(PushingIfsaProviderListener.THREAD_CONTEXT_BIFNAME_KEY);
 		}
 		try {
-			return new Message(sendMessage(message.asString(), params, BIF,null));
+			return new SenderResult(sendMessage(message.asString(), params, BIF,null));
 		} catch (IOException e) {
 			throw new SenderException(getLogPrefix(),e);
 		}

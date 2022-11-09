@@ -34,7 +34,6 @@ import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IBlockEnabledSender;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
 import nl.nn.adapterframework.core.IExtendedPipe;
-import nl.nn.adapterframework.core.IForwardNameProvidingSender;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipe;
@@ -273,24 +272,17 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	}
 
 	/**
-	 * Provides advice for {@link ISender#sendMessage(Message message, PipeLineSession session)}
+	 * Provides advice for {@link ISender#sendMessageOrThrow(Message message, PipeLineSession session)}
 	 */
-	public Message debugSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, PipeLineSession session) throws Throwable {
-		return debugSenderInputOutputAbort(proceedingJoinPoint, message, session, 0, SenderReturnType.MESSAGE);
-	}
-
-	/**
-	 * Provides advice for {@link IForwardNameProvidingSender#sendMessageAndProvideForwardName(Message message, PipeLineSession session)}
-	 */
-	public SenderResult debugForwardNameProvidingSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, PipeLineSession session) throws Throwable {
+	public SenderResult debugSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, PipeLineSession session) throws Throwable {
 		return debugSenderInputOutputAbort(proceedingJoinPoint, message, session, 0, SenderReturnType.SENDERRESULT);
 	}
 
 	/**
 	 * Provides advice for {@link IBlockEnabledSender#sendMessage(Object blockHandle, Message message, PipeLineSession session)}
 	 */
-	public Message debugBlockEnabledSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Object blockHandle, Message message, PipeLineSession session) throws Throwable {
-		return debugSenderInputOutputAbort(proceedingJoinPoint, message, session, 1, SenderReturnType.MESSAGE);
+	public SenderResult debugBlockEnabledSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Object blockHandle, Message message, PipeLineSession session) throws Throwable {
+		return debugSenderInputOutputAbort(proceedingJoinPoint, message, session, 1, SenderReturnType.SENDERRESULT);
 	}
 
 	/**
@@ -363,7 +355,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 
 
 	/**
-	 * Provides advice for {@link CacheSenderWrapperProcessor#sendMessageAndProvideForwardName(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session)}
+	 * Provides advice for {@link CacheSenderWrapperProcessor#sendMessage(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session)}
 	 */
 	public SenderResult debugSenderGetInputFrom(ProceedingJoinPoint proceedingJoinPoint, SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws Throwable {
 		if (!isEnabled()) {

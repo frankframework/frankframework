@@ -11,7 +11,7 @@ public class TestServerStatistics extends BusTestBase {
 
 	@Test
 	public void getServerInformation() {
-		MessageBuilder request = createRequestMessage("NONE", BusTopic.APPLICATION, BusAction.GET);
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.APPLICATION, BusAction.GET);
 		Message<?> response = callSyncGateway(request);
 
 		String result = response.getPayload().toString();
@@ -28,7 +28,7 @@ public class TestServerStatistics extends BusTestBase {
 
 	@Test
 	public void getApplicationWarnings() {
-		MessageBuilder request = createRequestMessage("NONE", BusTopic.APPLICATION, BusAction.WARNINGS);
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.APPLICATION, BusAction.WARNINGS);
 		Message<?> response = callSyncGateway(request);
 
 		String result = response.getPayload().toString();

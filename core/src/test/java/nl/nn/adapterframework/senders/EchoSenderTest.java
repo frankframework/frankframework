@@ -24,7 +24,7 @@ public class EchoSenderTest extends SenderTestBase<EchoSender> {
 		sender.open();
 		String input = "<dummy/>";
 		Message message = new Message(input);
-		String result = sender.sendMessage(message, session).asString();
+		String result = sender.sendMessageOrThrow(message, session).asString();
 		assertEquals(input, result);
 	}
 }

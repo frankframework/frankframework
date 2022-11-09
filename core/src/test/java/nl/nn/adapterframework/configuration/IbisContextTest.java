@@ -66,7 +66,7 @@ public class IbisContextTest {
 			Configuration config = context.getIbisManager().getConfiguration(configurationName);
 			assertNotNull("test configuration ["+configurationName+"] not found", config);
 			assertEquals(configurationName, config.getName());
-	
+
 			ConfigurationException ex = config.getConfigurationException();
 			assertNotNull("configuration should have an exception", ex);
 			assertThat(ex.getMessage(), Matchers.startsWith("error instantiating ClassLoader"));
@@ -80,7 +80,7 @@ public class IbisContextTest {
 	public void nullClassLoader() {
 		String configurationName = "ConfigWithNullClassLoader";
 
-		try(IbisContext context = new IbisTestContext(configurationName, TestClassLoader.class)) {
+		try(IbisTestContext context = new IbisTestContext(configurationName, TestClassLoader.class)) {
 			context.init(false);
 
 			assertEquals("TestConfiguration", context.getApplicationName());

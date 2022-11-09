@@ -177,7 +177,7 @@ angular.module('iaf.beheerconsole')
 		},
 		link: function(scope) {
 			let adapter = scope.adapter;
-			let uri = Misc.getServerPath() + 'iaf/api/adapters/' + Misc.escapeURL(adapter.name) + "/flow?"+adapter.upSince;
+			let uri = Misc.getServerPath() + 'iaf/api/configurations/'+adapter.configuration+'/adapters/' + Misc.escapeURL(adapter.name) + "/flow?"+adapter.upSince;
 			scope.flow = {"image":null,"url":uri};
 			$http.get(uri).then(function(data) {
 				let status = (data && data.status) ? data.status : 204;

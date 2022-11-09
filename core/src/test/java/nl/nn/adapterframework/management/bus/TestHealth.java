@@ -21,7 +21,9 @@ public class TestHealth extends BusTestBase {
 	private Adapter adapter;
 
 	@Before
+	@Override
 	public void setUp() throws Exception {
+		super.setUp();
 		adapter = registerAdapter(getConfiguration());
 	}
 
@@ -46,15 +48,17 @@ public class TestHealth extends BusTestBase {
 	}
 
 	@After
-	public void tearDown() {
+	@Override
+	public void tearDown() throws Exception {
 		if(adapter != null) {
 			getConfiguration().getAdapterManager().unRegisterAdapter(adapter);
 		}
+		super.tearDown();
 	}
 
 	@Test
 	public void getIbisHealth() {
-		MessageBuilder request = createRequestMessage("NONE", BusTopic.HEALTH);
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.HEALTH);
 		Message<?> response = callSyncGateway(request);
 
 		String result = response.getPayload().toString();
@@ -63,7 +67,7 @@ public class TestHealth extends BusTestBase {
 
 	@Test
 	public void getConfigurationHealth() {
-		MessageBuilder request = createRequestMessage("NONE", BusTopic.HEALTH);
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.HEALTH);
 		request.setHeader("configuration", TestConfiguration.TEST_CONFIGURATION_NAME);
 		Message<?> response = callSyncGateway(request);
 
@@ -73,7 +77,7 @@ public class TestHealth extends BusTestBase {
 
 	@Test
 	public void getAdapterHealth() {
-		MessageBuilder request = createRequestMessage("NONE", BusTopic.HEALTH);
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.HEALTH);
 		request.setHeader("configuration", TestConfiguration.TEST_CONFIGURATION_NAME);
 		request.setHeader("adapter", "TestAdapter");
 		Message<?> response = callSyncGateway(request);

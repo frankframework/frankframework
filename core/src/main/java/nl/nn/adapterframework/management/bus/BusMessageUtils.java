@@ -94,7 +94,10 @@ public class BusMessageUtils {
 		int status = (int) headers.get(ResponseMessage.STATUS_KEY);
 		String mimeType = (String) headers.get(ResponseMessage.MIMETYPE_KEY);
 
-		ResponseBuilder builder = Response.status(status).entity(response.getPayload()).type(mimeType);
+		ResponseBuilder builder = Response.status(status).type(mimeType);
+		if(mimeType != null && !"no-content".equals(response.getPayload())) {
+			builder.entity(response.getPayload());
+		}
 
 		String contentDisposition = (String) headers.get(ResponseMessage.CONTENT_DISPOSITION_KEY);
 		if(contentDisposition != null) {
@@ -162,7 +165,11 @@ public class BusMessageUtils {
 	public static <E extends Enum<E>> E getEnumHeader(Message<?> message, String headerName, Class<E> enumClazz, E defaultValue) {
 		String value = getHeader(message, headerName);
 		if(StringUtils.isNotEmpty(value)) {
-			return EnumUtils.parse(enumClazz, value);
+			try {
+				return EnumUtils.parse(enumClazz, value);
+			} catch (IllegalArgumentException e) {
+				throw new BusException("unable to parse value ["+value+"]", e);
+			}
 		}
 		return defaultValue;
 	}

@@ -110,22 +110,6 @@
 					"
 					execution(
 						*
-						nl.nn.adapterframework.core.IForwardNameProvidingSender.sendMessageAndProvideForwardName(
-							nl.nn.adapterframework.stream.Message,
-							nl.nn.adapterframework.core.PipeLineSession
-						)
-					)
-					and
-					args(message, session)
-					"
-				method="debugForwardNameProvidingSenderInputOutputAbort"
-				arg-names="message, session"
-			/>
-			<aop:around
-				pointcut=
-					"
-					execution(
-						*
 						nl.nn.adapterframework.core.IBlockEnabledSender+.sendMessage(
 							*,
 							nl.nn.adapterframework.stream.Message,

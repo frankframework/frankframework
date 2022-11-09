@@ -25,6 +25,7 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.IteratingPipe.StopReason;
@@ -156,7 +157,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		}
 
 		@Override
-		public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 			callCounter++;
 			if (sc!=null) sc.mark("out");
 			try {
