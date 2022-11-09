@@ -43,7 +43,7 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 	private FtpSession ftpSession;
 
 	private String localFilenamePattern=null;
-	private String localDirectory=null;;
+	private String localDirectory=null;
 	private String remoteDirectory=null;
 	private boolean deleteAfterGet = false;
 

@@ -42,11 +42,13 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.zip.ZipInputStream;
 
@@ -1862,615 +1864,13 @@ public class TestTool {
 			printableActualResult = XmlUtils.replaceNonValidXmlCharacters(actualResult);
 		}
 
-		String preparedExpectedResult = printableExpectedResult;
-		String preparedActualResult = printableActualResult;
-
 		// Map all identifier based properties once
 		HashMap<String, HashMap<String, HashMap<String, String>>> ignoreMap = mapPropertiesToIgnores(properties);
 
-		/* numeric decodeUnzipContentBetweenKeys */
-		debugMessage("Check decodeUnzipContentBetweenKeys properties", writers);
-		boolean decodeUnzipContentBetweenKeysProcessed = false;
-		int i = 1;
-		while (!decodeUnzipContentBetweenKeysProcessed) {
-			String key1 = properties.getProperty("decodeUnzipContentBetweenKeys" + i + ".key1");
-			String key2 = properties.getProperty("decodeUnzipContentBetweenKeys" + i + ".key2");
-			boolean replaceNewlines = false;
-			if ("true".equals(properties.getProperty("decodeUnzipContentBetweenKeys" + i + ".replaceNewlines"))) {
-				replaceNewlines = true;
-			}
-			if (key1 != null && key2 != null) {
-				debugMessage("Decode and unzip content between key1 '" + key1 + "' and key2 '" + key2 + "' (replaceNewlines is " + replaceNewlines + ")", writers);
-				preparedExpectedResult = decodeUnzipContentBetweenKeys(preparedExpectedResult, key1, key2, replaceNewlines, writers);
-				preparedActualResult = decodeUnzipContentBetweenKeys(preparedActualResult, key1, key2, replaceNewlines, writers);
-				i++;
-			} else {
-				decodeUnzipContentBetweenKeysProcessed = true;
-			}
-		}
+		String preparedExpectedResult = prepareResultForCompare(printableExpectedResult, properties, ignoreMap, writers);
+		String preparedActualResult = prepareResultForCompare(printableActualResult, properties, ignoreMap, writers);
 
-		/* identifier based decodeUnzipContentBetweenKeys */
-		HashMap<String, HashMap<String, String>> decodeUnzipContentBetweenKeys = ignoreMap.get("decodeUnzipContentBetweenKeys");
 
-		if (decodeUnzipContentBetweenKeys!=null) {
-			Iterator decodeUnzipContentBetweenKeysIt = decodeUnzipContentBetweenKeys.entrySet().iterator();
-			while (decodeUnzipContentBetweenKeysIt.hasNext()) {
-				Map.Entry decodeUnzipContentBetweenKeysEntry = (Map.Entry) decodeUnzipContentBetweenKeysIt.next();
-				HashMap<String, String> decodeUnzipContentBetweenKeysPair = (HashMap<String, String>) decodeUnzipContentBetweenKeysEntry.getValue();
-				String key1 = decodeUnzipContentBetweenKeysPair.get("key1");
-				String key2 = decodeUnzipContentBetweenKeysPair.get("key2");
-				boolean replaceNewlines = false;
-
-				if ("true".equals(decodeUnzipContentBetweenKeysPair.get("replaceNewlines"))) {
-					replaceNewlines = true;
-				}
-				if (key1 != null && key2 != null) {
-					debugMessage("Decode and unzip content between key1 '" + key1 + "' and key2 '" + key2 + "' (replaceNewlines is " + replaceNewlines + ")", writers);
-					preparedExpectedResult = decodeUnzipContentBetweenKeys(preparedExpectedResult, key1, key2, replaceNewlines, writers);
-					preparedActualResult = decodeUnzipContentBetweenKeys(preparedActualResult, key1, key2, replaceNewlines, writers);
-					i++;
-				} else {
-					decodeUnzipContentBetweenKeysProcessed = true;
-				}
-
-				decodeUnzipContentBetweenKeysIt.remove();
-			}
-		}
-
-		/* numeric canonicaliseFilePathContentBetweenKeys */
-		debugMessage("Check canonicaliseFilePathContentBetweenKeys properties", writers);
-		boolean canonicaliseFilePathContentBetweenKeysProcessed = false;
-		i = 1;
-		while (!canonicaliseFilePathContentBetweenKeysProcessed) {
-			String key1 = properties.getProperty("canonicaliseFilePathContentBetweenKeys" + i + ".key1");
-			String key2 = properties.getProperty("canonicaliseFilePathContentBetweenKeys" + i + ".key2");
-			if (key1 != null && key2 != null) {
-				debugMessage("Canonicalise filepath content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
-				preparedExpectedResult = canonicaliseFilePathContentBetweenKeys(preparedExpectedResult, key1, key2, writers);
-				preparedActualResult = canonicaliseFilePathContentBetweenKeys(preparedActualResult, key1, key2, writers);
-				i++;
-			} else {
-				canonicaliseFilePathContentBetweenKeysProcessed = true;
-			}
-		}
-
-		/* identifier based canonicaliseFilePathContentBetweenKeys */
-		HashMap<String, HashMap<String, String>> canonicaliseFilePathContentBetweenKeys = ignoreMap.get("canonicaliseFilePathContentBetweenKeys");
-		if (canonicaliseFilePathContentBetweenKeys!=null) {
-			Iterator canonicaliseFilePathContentBetweenKeysIt = canonicaliseFilePathContentBetweenKeys.entrySet().iterator();
-			while (canonicaliseFilePathContentBetweenKeysIt.hasNext()) {
-				Map.Entry canonicaliseFilePathContentBetweenKeysEntry = (Map.Entry) canonicaliseFilePathContentBetweenKeysIt.next();
-				HashMap<String, String> canonicaliseFilePathContentBetweenKeysPair = (HashMap<String, String>) canonicaliseFilePathContentBetweenKeysEntry.getValue();
-
-				String key1 = canonicaliseFilePathContentBetweenKeysPair.get("key1");
-				String key2 = canonicaliseFilePathContentBetweenKeysPair.get("key2");
-
-				debugMessage("Canonicalise filepath content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
-				preparedExpectedResult = canonicaliseFilePathContentBetweenKeys(preparedExpectedResult, key1, key2, writers);
-				preparedActualResult = canonicaliseFilePathContentBetweenKeys(preparedActualResult, key1, key2, writers);
-
-				canonicaliseFilePathContentBetweenKeysIt.remove();
-			}
-		}
-
-		/* numeric formatDecimalContentBetweenKeys */
-		debugMessage("Check formatDecimalContentBetweenKeys properties", writers);
-		boolean formatDecimalContentBetweenKeysProcessed = false;
-		i = 1;
-		while (!formatDecimalContentBetweenKeysProcessed) {
-			String key1 = properties.getProperty("formatDecimalContentBetweenKeys" + i + ".key1");
-			String key2 = properties.getProperty("formatDecimalContentBetweenKeys" + i + ".key2");
-			if (key1 != null && key2 != null) {
-				debugMessage("Format decimal content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
-				preparedExpectedResult = formatDecimalContentBetweenKeys(preparedExpectedResult, key1, key2, writers);
-				preparedActualResult = formatDecimalContentBetweenKeys(preparedActualResult, key1, key2, writers);
-				i++;
-			} else {
-				formatDecimalContentBetweenKeysProcessed = true;
-			}
-		}
-
-		/* identifier based formatDecimalContentBetweenKeys */
-		HashMap<String, HashMap<String, String>> formatDecimalContentBetweenKeys = ignoreMap.get("formatDecimalContentBetweenKeys");
-		if (formatDecimalContentBetweenKeys!=null) {
-			Iterator formatDecimalContentBetweenKeysIt = formatDecimalContentBetweenKeys.entrySet().iterator();
-			while (formatDecimalContentBetweenKeysIt.hasNext()) {
-				Map.Entry formatDecimalContentBetweenKeysEntry = (Map.Entry) formatDecimalContentBetweenKeysIt.next();
-				HashMap<String, String> formatDecimalContentBetweenKeysPair = (HashMap<String, String>) formatDecimalContentBetweenKeysEntry.getValue();
-
-				String key1 = formatDecimalContentBetweenKeysPair.get("key1");
-				String key2 = formatDecimalContentBetweenKeysPair.get("key2");
-
-				debugMessage("Format decimal content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
-					preparedExpectedResult = formatDecimalContentBetweenKeys(preparedExpectedResult, key1, key2, writers);
-					preparedActualResult = formatDecimalContentBetweenKeys(preparedActualResult, key1, key2, writers);
-
-				formatDecimalContentBetweenKeysIt.remove();
-			}
-		}
-
-		/* numeric ignoreRegularExpressionKey */
-		debugMessage("Check ignoreRegularExpressionKey properties", writers);
-		boolean ignoreRegularExpressionKeyProcessed = false;
-		i = 1;
-		while (!ignoreRegularExpressionKeyProcessed) {
-			String key = properties.getProperty("ignoreRegularExpressionKey" + i + ".key");
-			if (key != null) {
-				debugMessage("Ignore regular expression key '" + key + "'", writers);
-				preparedExpectedResult = ignoreRegularExpression(preparedExpectedResult, key);
-				preparedActualResult = ignoreRegularExpression(preparedActualResult, key);
-				i++;
-			} else {
-				ignoreRegularExpressionKeyProcessed = true;
-			}
-		}
-
-		/* identifier based ignoreRegularExpressionKey */
-		HashMap<String, HashMap<String, String>> ignoreRegularExpressionKey = ignoreMap.get("ignoreRegularExpressionKey");
-		if (ignoreRegularExpressionKey!=null) {
-		Iterator ignoreRegularExpressionKeyIt = ignoreRegularExpressionKey.entrySet().iterator();
-			while (ignoreRegularExpressionKeyIt.hasNext()) {
-				Map.Entry ignoreRegularExpressionKeyEntry = (Map.Entry) ignoreRegularExpressionKeyIt.next();
-				HashMap<String, String> ignoreRegularExpressionKeyItPair = (HashMap<String, String>) ignoreRegularExpressionKeyEntry.getValue();
-
-				String key = ignoreRegularExpressionKeyItPair.get("key");
-
-				debugMessage("Ignore regular expression key '" + key + "'", writers);
-				preparedExpectedResult = ignoreRegularExpression(preparedExpectedResult, key);
-				preparedActualResult = ignoreRegularExpression(preparedActualResult, key);
-
-				ignoreRegularExpressionKeyIt.remove();
-			}
-		}
-
-		/* numeric removeRegularExpressionKey */
-		debugMessage("Check removeRegularExpressionKey properties", writers);
-		boolean removeRegularExpressionKeyProcessed = false;
-		i = 1;
-		while (!removeRegularExpressionKeyProcessed) {
-			String key = properties.getProperty("removeRegularExpressionKey" + i + ".key");
-			if (key != null) {
-				debugMessage("Remove regular expression key '" + key + "'", writers);
-				preparedExpectedResult = removeRegularExpression(preparedExpectedResult, key);
-				preparedActualResult = removeRegularExpression(preparedActualResult, key);
-				i++;
-			} else {
-				removeRegularExpressionKeyProcessed = true;
-			}
-		}
-
-		/* identifier based removeRegularExpressionKey */
-		HashMap<String, HashMap<String, String>> removeRegularExpressionKey = ignoreMap.get("removeRegularExpressionKey");
-		if (removeRegularExpressionKey!=null) {
-			Iterator removeRegularExpressionKeyIt = removeRegularExpressionKey.entrySet().iterator();
-			while (removeRegularExpressionKeyIt.hasNext()) {
-				Map.Entry removeRegularExpressionKeyEntry = (Map.Entry) removeRegularExpressionKeyIt.next();
-				HashMap<String, String> removeRegularExpressionKeyPair = (HashMap<String, String>) removeRegularExpressionKeyEntry.getValue();
-				String key = removeRegularExpressionKeyPair.get("key");
-
-				debugMessage("Remove regular expression key '" + key + "'", writers);
-				preparedExpectedResult = removeRegularExpression(preparedExpectedResult, key);
-				preparedActualResult = removeRegularExpression(preparedActualResult, key);
-
-				removeRegularExpressionKeyIt.remove();
-			}
-		}
-
-		/* numeric replaceRegularExpressionKeys */
-		debugMessage("Check replaceRegularExpressionKeys properties", writers);
-		boolean replaceRegularExpressionKeysProcessed = false;
-		i = 1;
-		while (!replaceRegularExpressionKeysProcessed) {
-			String key1 = properties.getProperty("replaceRegularExpressionKeys" + i + ".key1");
-			String key2 = properties.getProperty("replaceRegularExpressionKeys" + i + ".key2");
-			if (key1 != null && key2 != null) {
-				debugMessage("Replace regular expression from '" + key1 + "' to '" + key2 + "'", writers);
-				preparedExpectedResult = replaceRegularExpression(preparedExpectedResult, key1, key2);
-				preparedActualResult = replaceRegularExpression(preparedActualResult, key1, key2);
-				i++;
-			} else {
-				replaceRegularExpressionKeysProcessed = true;
-			}
-		}
-
-		/* identifier based replaceRegularExpressionKeys */
-		HashMap<String, HashMap<String, String>> replaceRegularExpressionKeys = ignoreMap.get("replaceRegularExpressionKeys");
-		if (replaceRegularExpressionKeys!=null) {
-		Iterator replaceRegularExpressionKeysIt = replaceRegularExpressionKeys.entrySet().iterator();
-			while (replaceRegularExpressionKeysIt.hasNext()) {
-				Map.Entry replaceRegularExpressionKeysEntry = (Map.Entry) replaceRegularExpressionKeysIt.next();
-				HashMap<String, String> replaceRegularExpressionKeysPair = (HashMap<String, String>) replaceRegularExpressionKeysEntry.getValue();
-				String key1 = replaceRegularExpressionKeysPair.get("key1");
-				String key2 = replaceRegularExpressionKeysPair.get("key2");
-
-				debugMessage("Replace regular expression from '" + key1 + "' to '" + key2 + "'", writers);
-				preparedExpectedResult = replaceRegularExpression(preparedExpectedResult, key1, key2);
-				preparedActualResult = replaceRegularExpression(preparedActualResult, key1, key2);
-
-				replaceRegularExpressionKeysIt.remove();
-			}
-		}
-
-		/* numeric ignoreContentBetweenKeys */
-		debugMessage("Check ignoreContentBetweenKeys properties", writers);
-		boolean ignoreContentBetweenKeysProcessed = false;
-		i = 1;
-		while (!ignoreContentBetweenKeysProcessed) {
-			String key1 = properties.getProperty("ignoreContentBetweenKeys" + i + ".key1");
-			String key2 = properties.getProperty("ignoreContentBetweenKeys" + i + ".key2");
-			if (key1 != null && key2 != null) {
-				debugMessage("Ignore content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
-				preparedExpectedResult = ignoreContentBetweenKeys(preparedExpectedResult, key1, key2);
-				preparedActualResult = ignoreContentBetweenKeys(preparedActualResult, key1, key2);
-				i++;
-			} else {
-				ignoreContentBetweenKeysProcessed = true;
-			}
-		}
-
-		/* identifier based ignoreContentBetweenKeys */
-		HashMap<String, HashMap<String, String>> ignoreContentBetweenKeys = ignoreMap.get("ignoreContentBetweenKeys");
-		if (ignoreContentBetweenKeys!=null) {
-			Iterator ignoreContentBetweenKeysIt = ignoreContentBetweenKeys.entrySet().iterator();
-			while (ignoreContentBetweenKeysIt.hasNext()) {
-				Map.Entry ignoreContentBetweenKeysEntry = (Map.Entry) ignoreContentBetweenKeysIt.next();
-				HashMap<String, String> ignoreContentBetweenKeysPair = (HashMap<String, String>) ignoreContentBetweenKeysEntry.getValue();
-				String key1 = ignoreContentBetweenKeysPair.get("key1");
-				String key2 = ignoreContentBetweenKeysPair.get("key2");
-
-				debugMessage("Ignore content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
-				preparedExpectedResult = ignoreContentBetweenKeys(preparedExpectedResult, key1, key2);
-				preparedActualResult = ignoreContentBetweenKeys(preparedActualResult, key1, key2);
-
-				ignoreContentBetweenKeysIt.remove();
-			}
-		}
-
-		/* numeric ignoreKeysAndContentBetweenKeys */
-		debugMessage("Check ignoreKeysAndContentBetweenKeys properties", writers);
-		boolean ignoreKeysAndContentBetweenKeysProcessed = false;
-		i = 1;
-		while (!ignoreKeysAndContentBetweenKeysProcessed) {
-			String key1 = properties.getProperty("ignoreKeysAndContentBetweenKeys" + i + ".key1");
-			String key2 = properties.getProperty("ignoreKeysAndContentBetweenKeys" + i + ".key2");
-			if (key1 != null && key2 != null) {
-				debugMessage("Ignore keys and content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
-				preparedExpectedResult = ignoreKeysAndContentBetweenKeys(preparedExpectedResult, key1, key2);
-				preparedActualResult = ignoreKeysAndContentBetweenKeys(preparedActualResult, key1, key2);
-				i++;
-			} else {
-				ignoreKeysAndContentBetweenKeysProcessed = true;
-			}
-		}
-
-		/* identifier based ignoreKeysAndContentBetweenKeys */
-		HashMap<String, HashMap<String, String>> ignoreKeysAndContentBetweenKeys = ignoreMap.get("ignoreKeysAndContentBetweenKeys");
-		if (ignoreKeysAndContentBetweenKeys!=null) {
-			Iterator ignoreKeysAndContentBetweenKeysIt = ignoreKeysAndContentBetweenKeys.entrySet().iterator();
-			while (ignoreKeysAndContentBetweenKeysIt.hasNext()) {
-				Map.Entry ignoreKeysAndContentBetweenKeysEntry = (Map.Entry) ignoreKeysAndContentBetweenKeysIt.next();
-				HashMap<String, String> ignoreKeysAndContentBetweenKeysPair = (HashMap<String, String>) ignoreKeysAndContentBetweenKeysEntry.getValue();
-				String key1 = ignoreKeysAndContentBetweenKeysPair.get("key1");
-				String key2 = ignoreKeysAndContentBetweenKeysPair.get("key2");
-
-				debugMessage("Ignore keys and content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
-				preparedExpectedResult = ignoreKeysAndContentBetweenKeys(preparedExpectedResult, key1, key2);
-				preparedActualResult = ignoreKeysAndContentBetweenKeys(preparedActualResult, key1, key2);
-
-				ignoreKeysAndContentBetweenKeysIt.remove();
-			}
-		}
-
-		/* numeric removeKeysAndContentBetweenKeys */
-		debugMessage("Check removeKeysAndContentBetweenKeys properties", writers);
-		boolean removeKeysAndContentBetweenKeysProcessed = false;
-		i = 1;
-		while (!removeKeysAndContentBetweenKeysProcessed) {
-			String key1 = properties.getProperty("removeKeysAndContentBetweenKeys" + i + ".key1");
-			String key2 = properties.getProperty("removeKeysAndContentBetweenKeys" + i + ".key2");
-			if (key1 != null && key2 != null) {
-				debugMessage("Remove keys and content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
-				preparedExpectedResult = removeKeysAndContentBetweenKeys(preparedExpectedResult, key1, key2);
-				preparedActualResult = removeKeysAndContentBetweenKeys(preparedActualResult, key1, key2);
-				i++;
-			} else {
-				removeKeysAndContentBetweenKeysProcessed = true;
-			}
-		}
-
-		/* identifier based removeKeysAndContentBetweenKeys */
-		HashMap<String, HashMap<String, String>> removeKeysAndContentBetweenKeys = ignoreMap.get("removeKeysAndContentBetweenKeys");
-		if (removeKeysAndContentBetweenKeys!=null) {
-			Iterator removeKeysAndContentBetweenKeysIt = removeKeysAndContentBetweenKeys.entrySet().iterator();
-			while (removeKeysAndContentBetweenKeysIt.hasNext()) {
-				Map.Entry removeKeysAndContentBetweenKeysEntry = (Map.Entry) removeKeysAndContentBetweenKeysIt.next();
-				HashMap<String, String> removeKeysAndContentBetweenKeysPair = (HashMap<String, String>) removeKeysAndContentBetweenKeysEntry.getValue();
-				String key1 = removeKeysAndContentBetweenKeysPair.get("key1");
-				String key2 = removeKeysAndContentBetweenKeysPair.get("key2");
-
-				debugMessage("Remove keys and content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
-				preparedExpectedResult = removeKeysAndContentBetweenKeys(preparedExpectedResult, key1, key2);
-				preparedActualResult = removeKeysAndContentBetweenKeys(preparedActualResult, key1, key2);
-
-				removeKeysAndContentBetweenKeysIt.remove();
-			}
-		}
-
-		/* numeric ignoreKey */
-		debugMessage("Check ignoreKey properties", writers);
-		boolean ignoreKeyProcessed = false;
-		i = 1;
-		while (!ignoreKeyProcessed) {
-			String key = properties.getProperty("ignoreKey" + i);
-			if (key != null) {
-				debugMessage("Ignore key '" + key + "'", writers);
-				preparedExpectedResult = ignoreKey(preparedExpectedResult, key);
-				preparedActualResult = ignoreKey(preparedActualResult, key);
-				i++;
-			} else {
-				ignoreKeyProcessed = true;
-			}
-		}
-
-		/* identifier based ignoreKey */
-		HashMap<String, HashMap<String, String>> ignoreKey = ignoreMap.get("ignoreKey");
-		if (ignoreKey!=null) {
-			Iterator ignoreKeyIt = ignoreKey.entrySet().iterator();
-			while (ignoreKeyIt.hasNext()) {
-				Map.Entry ignoreKeyEntry = (Map.Entry) ignoreKeyIt.next();
-				HashMap<String, String> ignoreKeyPair = (HashMap<String, String>) ignoreKeyEntry.getValue();
-				String key = ignoreKeyPair.get("value");
-
-				debugMessage("Ignore key '" + key + "'", writers);
-				preparedExpectedResult = ignoreKey(preparedExpectedResult, key);
-				preparedActualResult = ignoreKey(preparedActualResult, key);
-
-				ignoreKeyIt.remove();
-			}
-		}
-
-		/* numeric removeKey */
-		debugMessage("Check removeKey properties", writers);
-		boolean removeKeyProcessed = false;
-		i = 1;
-		while (!removeKeyProcessed) {
-			String key = properties.getProperty("removeKey" + i);
-			if (key != null) {
-				debugMessage("Remove key '" + key + "'", writers);
-				preparedExpectedResult = removeKey(preparedExpectedResult, key);
-				preparedActualResult = removeKey(preparedActualResult, key);
-				i++;
-			} else {
-				removeKeyProcessed = true;
-			}
-		}
-
-		/* identifier based removeKey */
-		HashMap<String, HashMap<String, String>> removeKey = ignoreMap.get("removeKey");
-		if (removeKey!=null) {
-			Iterator removeKeyIt = removeKey.entrySet().iterator();
-			while (removeKeyIt.hasNext()) {
-				Map.Entry removeKeyEntry = (Map.Entry) removeKeyIt.next();
-				HashMap<String, String> removeKeyPair = (HashMap<String, String>) removeKeyEntry.getValue();
-				String key = removeKeyPair.get("value");
-
-				debugMessage("Remove key '" + key + "'", writers);
-				preparedExpectedResult = removeKey(preparedExpectedResult, key);
-				preparedActualResult = removeKey(preparedActualResult, key);
-
-				removeKeyIt.remove();
-			}
-		}
-
-		/* numeric replaceKey */
-		debugMessage("Check replaceKey properties", writers);
-		boolean replaceKeyProcessed = false;
-		i = 1;
-		while (!replaceKeyProcessed) {
-			String key1 = properties.getProperty("replaceKey" + i + ".key1");
-			String key2 = properties.getProperty("replaceKey" + i + ".key2");
-			if (key1 != null && key2 != null) {
-				debugMessage("Replace key from '" + key1 + "' to '" + key2 + "'", writers);
-				preparedExpectedResult = replaceKey(preparedExpectedResult, key1, key2);
-				preparedActualResult = replaceKey(preparedActualResult, key1, key2);
-				i++;
-			} else {
-				replaceKeyProcessed = true;
-			}
-		}
-
-		/* identifier based replaceKey */
-		HashMap<String, HashMap<String, String>> replaceKey = ignoreMap.get("replaceKey");
-		if (replaceKey!=null) {
-			Iterator replaceKeyIt = replaceKey.entrySet().iterator();
-			while (replaceKeyIt.hasNext()) {
-				Map.Entry replaceKeyEntry = (Map.Entry) replaceKeyIt.next();
-				HashMap<String, String> replaceKeyPair = (HashMap<String, String>) replaceKeyEntry.getValue();
-				String key1 = replaceKeyPair.get("key1");
-				String key2 = replaceKeyPair.get("key2");
-
-				debugMessage("Replace key from '" + key1 + "' to '" + key2 + "'", writers);
-				preparedExpectedResult = replaceKey(preparedExpectedResult, key1, key2);
-				preparedActualResult = replaceKey(preparedActualResult, key1, key2);
-
-				replaceKeyIt.remove();
-			}
-		}
-
-		/* numeric replaceEverywhereKey */
-		debugMessage("Check replaceEverywhereKey properties", writers);
-		boolean replaceEverywhereKeyProcessed = false;
-		i = 1;
-		while (!replaceEverywhereKeyProcessed) {
-			String key1 = properties.getProperty("replaceEverywhereKey" + i + ".key1");
-			String key2 = properties.getProperty("replaceEverywhereKey" + i + ".key2");
-			if (key1 != null && key2 != null) {
-				debugMessage("Replace key from '" + key1 + "' to '" + key2 + "'", writers);
-				preparedExpectedResult = replaceKey(preparedExpectedResult, key1, key2);
-				preparedActualResult = replaceKey(preparedActualResult, key1, key2);
-				i++;
-			} else {
-				replaceEverywhereKeyProcessed = true;
-			}
-		}
-
-		/* identifier based replaceEverywhereKey */
-		HashMap<String, HashMap<String, String>> replaceEverywhereKey = ignoreMap.get("replaceEverywhereKey");
-		if (replaceEverywhereKey!=null) {
-			Iterator replaceEverywhereKeyIt = replaceEverywhereKey.entrySet().iterator();
-			while (replaceEverywhereKeyIt.hasNext()) {
-				Map.Entry replaceEverywhereKeyEntry = (Map.Entry) replaceEverywhereKeyIt.next();
-				HashMap<String, String> replaceEverywhereKeyPair = (HashMap<String, String>) replaceEverywhereKeyEntry.getValue();
-				String key1 = replaceEverywhereKeyPair.get("key1");
-				String key2 = replaceEverywhereKeyPair.get("key2");
-
-				debugMessage("Replace key from '" + key1 + "' to '" + key2 + "'", writers);
-				preparedExpectedResult = replaceKey(preparedExpectedResult, key1, key2);
-				preparedActualResult = replaceKey(preparedActualResult, key1, key2);
-
-				replaceEverywhereKeyIt.remove();
-			}
-		}
-
-		/* numeric ignoreCurrentTimeBetweenKeys */
-		debugMessage("Check ignoreCurrentTimeBetweenKeys properties", writers);
-		boolean ignoreCurrentTimeBetweenKeysProcessed = false;
-		i = 1;
-		while (!ignoreCurrentTimeBetweenKeysProcessed) {
-			String key1 = properties.getProperty("ignoreCurrentTimeBetweenKeys" + i + ".key1");
-			String key2 = properties.getProperty("ignoreCurrentTimeBetweenKeys" + i + ".key2");
-			String pattern = properties.getProperty("ignoreCurrentTimeBetweenKeys" + i + ".pattern");
-			String margin = properties.getProperty("ignoreCurrentTimeBetweenKeys" + i + ".margin");
-			boolean errorMessageOnRemainingString = true;
-			if ("false".equals(properties.getProperty("ignoreCurrentTimeBetweenKeys" + i + ".errorMessageOnRemainingString"))) {
-				errorMessageOnRemainingString = false;
-			}
-			if (key1 != null && key2 != null && margin != null) {
-				debugMessage("Ignore current time between key1 '" + key1 + "' and key2 '" + key2 + "' (errorMessageOnRemainingString is " + errorMessageOnRemainingString + ")", writers);
-				debugMessage("For result string", writers);
-				preparedActualResult = ignoreCurrentTimeBetweenKeys(preparedActualResult, key1, key2, pattern, margin, errorMessageOnRemainingString, false, writers);
-				debugMessage("For expected string", writers);
-				preparedExpectedResult = ignoreCurrentTimeBetweenKeys(preparedExpectedResult, key1, key2, pattern, margin, errorMessageOnRemainingString, true, writers);
-				i++;
-			} else {
-				ignoreCurrentTimeBetweenKeysProcessed = true;
-			}
-		}
-
-		/* identifier based ignoreCurrentTimeBetweenKeys */
-		HashMap<String, HashMap<String, String>> ignoreCurrentTimeBetweenKeys = ignoreMap.get("ignoreCurrentTimeBetweenKeys");
-		if (ignoreCurrentTimeBetweenKeys!=null) {
-			Iterator ignoreCurrentTimeBetweenKeysIt = ignoreCurrentTimeBetweenKeys.entrySet().iterator();
-			while (ignoreCurrentTimeBetweenKeysIt.hasNext()) {
-				Map.Entry ignoreCurrentTimeBetweenKeysEntry = (Map.Entry) ignoreCurrentTimeBetweenKeysIt.next();
-				HashMap<String, String> ignoreCurrentTimeBetweenKeysPair = (HashMap<String, String>) ignoreCurrentTimeBetweenKeysEntry.getValue();
-				String key1 = ignoreCurrentTimeBetweenKeysPair.get("key1");
-				String key2 = ignoreCurrentTimeBetweenKeysPair.get("key2");
-				String pattern = ignoreCurrentTimeBetweenKeysPair.get("pattern");
-				String margin = ignoreCurrentTimeBetweenKeysPair.get("margin");
-				boolean errorMessageOnRemainingString = true;
-
-				if ("false".equals(ignoreCurrentTimeBetweenKeysPair.get("errorMessageOnRemainingString"))) {
-					errorMessageOnRemainingString = false;
-				}
-
-				debugMessage("Ignore current time between key1 '" + key1 + "' and key2 '" + key2 + "' (errorMessageOnRemainingString is " + errorMessageOnRemainingString + ")", writers);
-				debugMessage("For result string", writers);
-				preparedActualResult = ignoreCurrentTimeBetweenKeys(preparedActualResult, key1, key2, pattern, margin, errorMessageOnRemainingString, false, writers);
-				debugMessage("For expected string", writers);
-				preparedExpectedResult = ignoreCurrentTimeBetweenKeys(preparedExpectedResult, key1, key2, pattern, margin, errorMessageOnRemainingString, true, writers);
-
-				ignoreCurrentTimeBetweenKeysIt.remove();
-			}
-		}
-
-		/* numeric ignoreContentBeforeKey */
-		debugMessage("Check ignoreContentBeforeKey properties", writers);
-		boolean ignoreContentBeforeKeyProcessed = false;
-		i = 1;
-		while (!ignoreContentBeforeKeyProcessed) {
-			String key = properties.getProperty("ignoreContentBeforeKey" + i);
-			if (key == null) {
-				key = properties.getProperty("ignoreContentBeforeKey" + i + ".key");
-			}
-			if (key != null) {
-				debugMessage("Ignore content before key '" + key + "'", writers);
-				preparedExpectedResult = ignoreContentBeforeKey(preparedExpectedResult, key);
-				preparedActualResult = ignoreContentBeforeKey(preparedActualResult, key);
-				i++;
-			} else {
-				ignoreContentBeforeKeyProcessed = true;
-			}
-		}
-
-		/* identifier based ignoreContentBeforeKey */
-		HashMap<String, HashMap<String, String>> ignoreContentBeforeKey = ignoreMap.get("ignoreContentBeforeKey");
-
-		// merge all without .key attribute as well
-		// TODO: ignoreContentBeforeKey.putAll(mapPropertiesByIdentifier("ignoreContentBeforeKey", properties, new ArrayList()));
-		if (ignoreContentBeforeKey!=null) {
-			Iterator ignoreContentBeforeKeyIt = ignoreContentBeforeKey.entrySet().iterator();
-			while (ignoreContentBeforeKeyIt.hasNext()) {
-				Map.Entry ignoreContentBeforeKeyEntry = (Map.Entry) ignoreContentBeforeKeyIt.next();
-				HashMap<String, String> ignoreContentBeforeKeyPair = (HashMap<String, String>) ignoreContentBeforeKeyEntry.getValue();
-				String key = ignoreContentBeforeKeyPair.get("key");
-
-				if (key == null) {
-					key = ignoreContentBeforeKeyPair.get("value");
-				}
-
-				debugMessage("Ignore content before key '" + key + "'", writers);
-				preparedExpectedResult = ignoreContentBeforeKey(preparedExpectedResult, key);
-				preparedActualResult = ignoreContentBeforeKey(preparedActualResult, key);
-
-				ignoreContentBeforeKeyIt.remove();
-			}
-		}
-
-		/* numeric ignoreContentAfterKey */
-		debugMessage("Check ignoreContentAfterKey properties", writers);
-		boolean ignoreContentAfterKeyProcessed = false;
-		i = 1;
-		while (!ignoreContentAfterKeyProcessed) {
-			String key = properties.getProperty("ignoreContentAfterKey" + i);
-			if (key == null) {
-				key = properties.getProperty("ignoreContentAfterKey" + i + ".key");
-			}
-			if (key != null) {
-				debugMessage("Ignore content after key '" + key + "'", writers);
-				preparedExpectedResult = ignoreContentAfterKey(preparedExpectedResult, key);
-				preparedActualResult = ignoreContentAfterKey(preparedActualResult, key);
-				i++;
-			} else {
-				ignoreContentAfterKeyProcessed = true;
-			}
-		}
-
-		/* identifier based ignoreContentAfterKey */
-		HashMap<String, HashMap<String, String>> ignoreContentAfterKey = ignoreMap.get("ignoreContentAfterKey");
-
-		// merge all without .key attribute aswell
-		// TODO: ignoreContentAfterKey.putAll(mapPropertiesByIdentifier("ignoreContentAfterKey", properties, new ArrayList()));
-		if (ignoreContentAfterKey!=null) {
-			Iterator ignoreContentAfterKeyIt = ignoreContentAfterKey.entrySet().iterator();
-			while (ignoreContentAfterKeyIt.hasNext()) {
-				Map.Entry ignoreContentAfterKeyEntry = (Map.Entry) ignoreContentAfterKeyIt.next();
-				HashMap<String, String> ignoreContentAfterKeyPair = (HashMap<String, String>) ignoreContentAfterKeyEntry.getValue();
-				String key = ignoreContentAfterKeyPair.get("key");
-
-				if (key == null) {
-					key = ignoreContentAfterKeyPair.get("value");
-				}
-
-				debugMessage("Ignore content before key '" + key + "'", writers);
-				preparedExpectedResult = ignoreContentBeforeKey(preparedExpectedResult, key);
-				preparedActualResult = ignoreContentBeforeKey(preparedActualResult, key);
-
-				ignoreContentAfterKeyIt.remove();
-			}
-		}
-
-		debugMessage("Check ignoreContentAfterKey properties", writers);
 		if ((diffType != null && (diffType.equals(".xml") || diffType.equals(".wsdl")))
 				|| (diffType == null && (fileName.endsWith(".xml") || fileName.endsWith(".wsdl")))) {
 			// xml diff
@@ -2524,10 +1924,10 @@ public class TestTool {
 				StringBuilder diffActual = new StringBuilder();
 				StringBuilder diffExcpected = new StringBuilder();
 				int j = formattedPreparedActualResult.length();
-				if (formattedPreparedExpectedResult.length() > i) {
+				if (formattedPreparedExpectedResult.length() > j) {
 					j = formattedPreparedExpectedResult.length();
 				}
-				for (i = 0; i < j; i++) {
+				for (int i = 0; i < j; i++) {
 					if (i >= formattedPreparedActualResult.length() || i >= formattedPreparedExpectedResult.length()
 							|| formattedPreparedActualResult.charAt(i) != formattedPreparedExpectedResult.charAt(i)) {
 						if (message == null) {
@@ -2565,6 +1965,121 @@ public class TestTool {
 		}
 		return ok;
 	}
+
+	public static String prepareResultForCompare(String input, Properties properties, HashMap<String, HashMap<String, HashMap<String, String>>> ignoreMap, Map<String, Object> writers) {
+		String result = input;
+		result = doActionBetweenKeys("decodeUnzipContentBetweenKeys", result, properties, ignoreMap, writers, (value, pp, key1, key2)-> {
+			boolean replaceNewlines = !"true".equals(pp.apply("replaceNewlines"));
+			return decodeUnzipContentBetweenKeys(value, key1, key2, replaceNewlines, writers);
+		});
+
+		result = doActionBetweenKeys("canonicaliseFilePathContentBetweenKeys", result, properties, ignoreMap, writers, (value, pp, key1, key2)->canonicaliseFilePathContentBetweenKeys(value,key1,key2,writers));
+		result = doActionBetweenKeys("formatDecimalContentBetweenKeys", result, properties, ignoreMap, writers, (value, pp, key1, key2)->formatDecimalContentBetweenKeys(value,key1,key2,writers));
+		result = doActionWithSingleKey("ignoreRegularExpressionKey", result, properties, ignoreMap, writers, (value, pp, key)->ignoreRegularExpression(value,key));
+		result = doActionWithSingleKey("removeRegularExpressionKey", result, properties, ignoreMap, writers, (value, pp, key)->removeRegularExpression(value,key));
+
+		result = doActionBetweenKeys("replaceRegularExpressionKeys", result, properties, ignoreMap, writers, (value, pp, key1, key2)->replaceRegularExpression(value,key1,key2));
+		result = doActionBetweenKeys("ignoreContentBetweenKeys", result, properties, ignoreMap, writers, (value, pp, key1, key2)->ignoreContentBetweenKeys(value,key1,key2));
+		result = doActionBetweenKeys("ignoreKeysAndContentBetweenKeys", result, properties, ignoreMap, writers, (value, pp, key1, key2)->ignoreKeysAndContentBetweenKeys(value,key1,key2));
+		result = doActionBetweenKeys("removeKeysAndContentBetweenKeys", result, properties, ignoreMap, writers, (value, pp, key1, key2)->removeKeysAndContentBetweenKeys(value,key1,key2));
+
+		result = doActionWithSingleKey("ignoreKey", result, properties, ignoreMap, writers, (value, pp, key)->ignoreKey(value,key));
+		result = doActionWithSingleKey("removeKey", result, properties, ignoreMap, writers, (value, pp, key)->removeKey(value,key));
+
+		result = doActionBetweenKeys("replaceKey", result, properties, ignoreMap, writers, (value, pp, key1, key2)->replaceKey(value,key1,key2));
+		result = doActionBetweenKeys("replaceEverywhereKey", result, properties, ignoreMap, writers, (value, pp, key1, key2)->replaceKey(value,key1,key2));
+
+		result = doActionBetweenKeys("ignoreCurrentTimeBetweenKeys", result, properties, ignoreMap, writers, (value, pp, key1, key2)-> {
+			String pattern = pp.apply("pattern");
+			String margin = pp.apply("margin");
+			boolean errorMessageOnRemainingString = !"false".equals(pp.apply("errorMessageOnRemainingString"));
+			return ignoreCurrentTimeBetweenKeys(value, key1, key2, pattern, margin, errorMessageOnRemainingString, false, writers);
+		});
+
+		result = doActionWithSingleKey("ignoreContentBeforeKey", result, properties, ignoreMap, writers, (value, pp, key)->ignoreContentBeforeKey(value,key));
+		result = doActionWithSingleKey("ignoreContentAfterKey", result, properties, ignoreMap, writers, (value, pp, key)->ignoreContentAfterKey(value,key));
+		return result;
+	}
+
+	public interface BetweenKeysAction {
+		String format(String value, Function<String,String> propertyProvider, String key1, String key2);
+	}
+	public interface SingleKeyAction {
+		String format(String value, Function<String, String> propertyProvider, String key1);
+	}
+
+	public static String doActionBetweenKeys(String key, String value, Properties properties, HashMap<String, HashMap<String, HashMap<String, String>>> ignoreMap, Map<String, Object> writers, BetweenKeysAction action) {
+		String result = value;
+		debugMessage("Check "+key+" properties", writers);
+		boolean lastKeyIndexProcessed = false;
+		int i = 1;
+		while (!lastKeyIndexProcessed) {
+			String keyPrefix = key + i + ".";
+			String key1 = properties.getProperty(keyPrefix + "key1");
+			String key2 = properties.getProperty(keyPrefix + "key2");
+			if (key1 != null && key2 != null) {
+				debugMessage(key + " between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
+				result = action.format(result, k -> properties.getProperty(keyPrefix + k), key1, key2);
+				i++;
+			} else {
+				lastKeyIndexProcessed = true;
+			}
+		}
+
+		HashMap<String, HashMap<String, String>> keySpecMap = ignoreMap.get(key);
+		if (keySpecMap!=null) {
+			Iterator<Entry<String,HashMap<String,String>>> keySpecIt = keySpecMap.entrySet().iterator();
+			while (keySpecIt.hasNext()) {
+				Entry<String,HashMap<String,String>> spec = keySpecIt.next();
+				HashMap<String, String> keyPair = (HashMap<String, String>) spec.getValue();
+
+				String key1 = keyPair.get("key1");
+				String key2 = keyPair.get("key2");
+
+				debugMessage(key + " between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
+				result = action.format(result, k -> keyPair.get(k), key1, key2);
+			}
+		}
+
+		return result;
+	}
+
+	public static String doActionWithSingleKey(String keyName, String value, Properties properties, HashMap<String, HashMap<String, HashMap<String, String>>> ignoreMap, Map<String, Object> writers, SingleKeyAction action) {
+		String result = value;
+		debugMessage("Check "+keyName+" properties", writers);
+		boolean lastKeyIndexProcessed = false;
+		int i = 1;
+		while (!lastKeyIndexProcessed) {
+			String keyPrefix = keyName + i + ".";
+			String key = properties.getProperty(keyPrefix + "key");
+			if (key != null) {
+				debugMessage(keyName+ " key '" + key + "'", writers);
+				result = action.format(value, k -> properties.getProperty(keyPrefix + k), key);
+				i++;
+			} else {
+				lastKeyIndexProcessed = true;
+			}
+		}
+
+		HashMap<String, HashMap<String, String>> keySpecMap = ignoreMap.get(keyName);
+		if (keySpecMap!=null) {
+			Iterator<Entry<String,HashMap<String,String>>> keySpecIt = keySpecMap.entrySet().iterator();
+			while (keySpecIt.hasNext()) {
+				Entry<String,HashMap<String,String>> spec = (Map.Entry) keySpecIt.next();
+				HashMap<String, String> keyPair = (HashMap<String, String>) spec.getValue();
+
+				String key = keyPair.get("key");
+
+				debugMessage(keyName + " key '" + key + "'", writers);
+				result = action.format(value, k -> keyPair.get(k), key);
+
+				keySpecIt.remove();
+			}
+		}
+
+		return result;
+	}
+
 
 	public static String ignoreContentBetweenKeys(String string, String key1, String key2) {
 		String result = string;

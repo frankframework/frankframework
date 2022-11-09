@@ -33,7 +33,7 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
     private static String sourceFolderPath;
 
     @ClassRule
-    public static TemporaryFolder testFolderDest = new TemporaryFolder();;
+    public static TemporaryFolder testFolderDest = new TemporaryFolder();
 
     private static String destFolderPath;
 

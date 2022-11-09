@@ -249,7 +249,7 @@ public class MessagingSource  {
 	}
 
 	public Session createSession(boolean transacted, int acknowledgeMode) throws IbisException {
-		Connection connection=null;;
+		Connection connection=null;
 		Session session;
 		try {
 			connection = getConnection();
