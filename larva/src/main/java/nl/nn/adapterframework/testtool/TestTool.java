@@ -2050,11 +2050,14 @@ public class TestTool {
 		boolean lastKeyIndexProcessed = false;
 		int i = 1;
 		while (!lastKeyIndexProcessed) {
-			String keyPrefix = keyName + i + ".";
-			String key = properties.getProperty(keyPrefix + "key");
+			String keyPrefix = keyName + i;
+			String key = properties.getProperty(keyPrefix);
+			if (key==null) {
+				key = properties.getProperty(keyPrefix + ".key");
+			}
 			if (key != null) {
 				debugMessage(keyName+ " key '" + key + "'", writers);
-				result = action.format(value, k -> properties.getProperty(keyPrefix + k), key);
+				result = action.format(result, k -> properties.getProperty(keyPrefix + "." + k), key);
 				i++;
 			} else {
 				lastKeyIndexProcessed = true;
@@ -2071,7 +2074,7 @@ public class TestTool {
 				String key = keyPair.get("key");
 
 				debugMessage(keyName + " key '" + key + "'", writers);
-				result = action.format(value, k -> keyPair.get(k), key);
+				result = action.format(result, k -> keyPair.get(k), key);
 
 				keySpecIt.remove();
 			}
