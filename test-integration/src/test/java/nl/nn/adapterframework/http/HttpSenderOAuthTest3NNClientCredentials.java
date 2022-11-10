@@ -52,7 +52,7 @@ public class HttpSenderOAuthTest3NNClientCredentials {
 				"?grant_type=client_credentials"
 				+"&client_id="+ client_id
 				+"&client_secret="+ client_secret;
-		
+
 		HttpSender sender = new HttpSender();
 		sender.setContentType("application/x-www-form-urlencoded");
 		sender.setUrl(tokenUrl);
@@ -92,7 +92,7 @@ public class HttpSenderOAuthTest3NNClientCredentials {
 	public void testSendClientCredentialsTokenRequestUsingBasicAuthentication() throws Exception {
 
 		String tokenUrl = tokenEndpoint+"?grant_type=client_credentials";
-		
+
 		HttpSender sender = new HttpSender();
 		sender.setContentType("application/x-www-form-urlencoded");
 		sender.setUsername(client_id);
@@ -129,9 +129,9 @@ public class HttpSenderOAuthTest3NNClientCredentials {
 		assertEquals("200", session.getMessage("StatusCode").asString());
 		assertThat(result.asString(), containsString("\"access_token\":"));
 	}
-	
 
-	
+
+
 	@Test
 	public void testEmbeddedOAuthWitClientCredentialsOnly() throws Exception {
 		HttpSender sender = new HttpSender();
@@ -140,7 +140,7 @@ public class HttpSenderOAuthTest3NNClientCredentials {
 		sender.setClientId(client_id);
 		sender.setClientSecret(client_secret);
 		sender.setAuthenticatedTokenRequest(authTokenReq);
-		
+
 		sender.setMethodType(HttpMethod.POST);
 		sender.setHeadersParams("Accept");
 //		sender.setUsername(username);
@@ -159,7 +159,7 @@ public class HttpSenderOAuthTest3NNClientCredentials {
 		sender.setResultStatusCodeSessionKey("StatusCode");
 		sender.setTimeout(1000);
 		sender.setMaxExecuteRetries(0);
-		
+
 		sender.addParameter(new Parameter("Accept", "application/json"));
 
 		sender.configure();

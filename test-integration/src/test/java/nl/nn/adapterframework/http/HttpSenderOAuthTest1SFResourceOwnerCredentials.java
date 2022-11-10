@@ -139,6 +139,8 @@ public class HttpSenderOAuthTest1SFResourceOwnerCredentials {
 		assertThat(result.asString(), containsString("\"access_token\":"));
 	}
 
+
+
 	@Test
 	public void testEmbeddedOAuthResourceOwnerCredentialsFlow() throws Exception {
 		HttpSender sender = new HttpSender();
@@ -182,7 +184,7 @@ public class HttpSenderOAuthTest1SFResourceOwnerCredentials {
 		assertEquals("200", session.getMessage("StatusCode").asString());
 	}
 
-	
+
 
 	@Test
 	@Ignore

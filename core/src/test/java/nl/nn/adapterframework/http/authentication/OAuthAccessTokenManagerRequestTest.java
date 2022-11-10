@@ -70,12 +70,6 @@ public class OAuthAccessTokenManagerRequestTest {
 
 	@Test
 	public void testRetrieveAccessTokenWithResourceOwnerPasswordGrantUsingRequestParameters() throws Exception {
-		String scope = "email";
-		String clientId = "fakeClientId";
-		String clientSecret = "fakeClientSecret";
-		String tokenEndpoint = "http://fakeTokenEndpoint";
-
-		CredentialFactory client_cf = new CredentialFactory(null, clientId, clientSecret);
 		Credentials credentials = new UsernamePasswordCredentials("fakeCredentialUserName", "fakeCredentialPassword");
 
 		tokenManager = new TestableOAuthAccessTokenManager(false, false);
@@ -95,12 +89,6 @@ public class OAuthAccessTokenManagerRequestTest {
 	}
 	@Test
 	public void testRetrieveAccessTokenWithResourceOwnerPasswordGrantUsingBasicAuthentication() throws Exception {
-		String scope = "email";
-		String clientId = "fakeClientId";
-		String clientSecret = "fakeClientSecret";
-		String tokenEndpoint = "http://fakeTokenEndpoint";
-
-		CredentialFactory client_cf = new CredentialFactory(null, clientId, clientSecret);
 		Credentials credentials = new UsernamePasswordCredentials("fakeCredentialUserName", "fakeCredentialPassword");
 
 		tokenManager = new TestableOAuthAccessTokenManager(false, true);
