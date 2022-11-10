@@ -15,6 +15,8 @@ Upcoming (7.9)
 - Session variable 'id' has been renamed 'mid', session variables 'messageId' and 'tcid' have been removed.
 - Duplicate detection might fail for messages received after an upgrade if the earlier version of the message was received before the upgrade. 
   This is in cases where a received (JMS) correlationId is used to send a response.
+- The ZipWriterPipe with action=WRITE does no longer have its input as its response, but rather a null message. If necessary, the previous behaviour can be obtained by setting preserveInput=true.
+- The ZipWriterSender with action=WRITE (the default) and no content parameter does no longer have its input as its response, but rather a null message.
 - Parameter with an attribute value set to an empty string will have the empty string as result. Previously the input message would be used. This behaviour can be reobtained by setting
   defaultValueMethod="input".
 
