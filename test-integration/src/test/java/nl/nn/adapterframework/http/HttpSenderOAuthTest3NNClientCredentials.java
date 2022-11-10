@@ -139,7 +139,7 @@ public class HttpSenderOAuthTest3NNClientCredentials {
 		sender.setTokenEndpoint(tokenEndpoint);
 		sender.setClientId(client_id);
 		sender.setClientSecret(client_secret);
-		//sender.setAuthenticatedTokenRequest(authTokenReq);
+		sender.setAuthenticatedTokenRequest(authTokenReq);
 
 		sender.setMethodType(HttpMethod.POST);
 		sender.setHeadersParams("Accept");
