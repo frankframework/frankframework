@@ -182,22 +182,20 @@ public class ZipWriter implements ICollector<IZipWritingElement> {
 
 	@Override
 	public Message writeItem(Message input, PipeLineSession session, ParameterValueList pvl, IZipWritingElement writingElement) throws CollectionException, TimeoutException {
-		String filename = pvl.get(PARAMETER_FILENAME).asStringValue();
+		String filename = ParameterValueList.getValue(pvl, PARAMETER_FILENAME, "");
 		String charset = writingElement.getCharset();
 		boolean completeFileHeader = writingElement.isCompleteFileHeader();
 		try {
-			ParameterValue pv = pvl.get(PARAMETER_CONTENTS);
-			Message contents = pv!=null ? pv.asMessage() : null;
-			boolean inputIsSource = Message.isNull(contents);
-			if (inputIsSource) {
-				contents = input;
+			Message contents = ParameterValueList.getValue(pvl, PARAMETER_CONTENTS, input);
+			if (StringUtils.isEmpty(filename) && contents!=input) {
+				filename = input.asString();
 			}
 			if (completeFileHeader) {
 				writeEntryWithCompletedHeader(filename, contents, writingElement.isCloseInputstreamOnExit(), charset);
 			} else {
 				writeEntry(filename, contents, writingElement.isCloseInputstreamOnExit(), charset);
 			}
-			return inputIsSource ? Message.nullMessage() : input;
+			return contents==input ? Message.nullMessage() : input;
 		} catch (IOException | CompressionException e) {
 			throw new CollectionException("cannot write item", e);
 		}
@@ -205,17 +203,15 @@ public class ZipWriter implements ICollector<IZipWritingElement> {
 
 	@Override
 	public MessageOutputStream provideOutputStream(PipeLineSession session, ParameterValueList pvl, IZipWritingElement writingElement) throws CollectionException {
-		String filename = pvl.get(PARAMETER_FILENAME).asStringValue();
+		String filename = ParameterValueList.getValue(pvl, PARAMETER_FILENAME, "");
 		String charset = writingElement.getCharset();
 		boolean completeFileHeader = writingElement.isCompleteFileHeader();
 
-		if (completeFileHeader) {
+		if (completeFileHeader || StringUtils.isEmpty(filename)) {
 			return null;
 		}
-		ParameterValue pv = pvl.get(PARAMETER_CONTENTS);
-		Message contents = pv!=null ? pv.asMessage() : null;
-		boolean inputIsSource = Message.isNull(contents);
-		if (!inputIsSource) {
+		Message contents = ParameterValueList.getValue(pvl, PARAMETER_CONTENTS, Message.nullMessage());
+		if (!Message.isNull(contents)) { // cannot provide OutputStream if contents is something else as the input message
 			return null;
 		}
 		try {
@@ -237,10 +233,10 @@ public class ZipWriter implements ICollector<IZipWritingElement> {
 
 	@Override
 	public OutputStream streamItem(Message input, PipeLineSession session, ParameterValueList pvl, IZipWritingElement writingElement) throws CollectionException {
-		String filename = pvl.get(PARAMETER_FILENAME).asStringValue();
 		try {
+			String filename = ParameterValueList.getValue(pvl, PARAMETER_FILENAME, input.asString());
 			openEntry(filename);
-		} catch (CompressionException e) {
+		} catch (CompressionException | IOException e) {
 			throw new CollectionException("cannot prepare collection to stream item", e);
 		}
 		return StreamUtil.dontClose(getZipoutput());
