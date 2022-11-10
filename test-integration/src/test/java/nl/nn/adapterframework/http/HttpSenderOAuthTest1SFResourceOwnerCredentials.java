@@ -187,7 +187,6 @@ public class HttpSenderOAuthTest1SFResourceOwnerCredentials {
 
 
 	@Test
-	@Ignore
 	public void test3917MultipleBinaryParts() throws Exception {
 		String url = PropertyUtil.getProperty(PROPERTY_FILE, "salesforceUrl");
 		String accept = "application/xml";
