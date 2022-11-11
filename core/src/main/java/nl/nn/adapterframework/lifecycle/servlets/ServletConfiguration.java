@@ -1,3 +1,18 @@
+/*
+   Copyright 2022 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.lifecycle.servlets;
 
 import java.util.ArrayList;
@@ -9,6 +24,8 @@ import javax.servlet.annotation.ServletSecurity.TransportGuarantee;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -16,11 +33,12 @@ import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.lifecycle.DynamicRegistration.Servlet;
-import nl.nn.adapterframework.lifecycle.ServletManager;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.SpringUtils;
 
 //servlets:
 //  IAF-API:
@@ -36,17 +54,19 @@ import nl.nn.adapterframework.util.LogUtil;
 //      type: AD
 //      domain: company.org
 //      endpoint: 10.1.2.3
-public class ServletConfiguration {
+public class ServletConfiguration implements ApplicationContextAware {
 	private AppConstants appConstants = AppConstants.getInstance();
 	private Logger log = LogUtil.getLogger(this);
+	private @Setter ApplicationContext applicationContext;
 
-	protected static final String AUTH_ENABLED_KEY = "application.security.http.authentication";
-	protected static final String HTTPS_ENABLED_KEY = "application.security.http.transportGuarantee";
+	private static final String AUTH_ENABLED_KEY = "application.security.http.authentication";
+	private static final String HTTPS_ENABLED_KEY = "application.security.http.transportGuarantee";
+	private static final String HTTP_SECURITY_BEAN_NAME = "org.springframework.security.config.annotation.web.configuration.HttpSecurityConfiguration.httpSecurity";
 
 	private final @Getter String name;
 	private @Getter List<String> securityRoles;
 	private @Getter List<String> urlMapping;
-	private @Getter int loadOnStartup;
+	private @Getter int loadOnStartup = -1;
 	private @Getter boolean enabled = true;
 	private @Getter TransportGuarantee transportGuarantee = TransportGuarantee.NONE;
 	private @Getter AuthenticationType authentication = AuthenticationType.ANONYMOUS;
@@ -60,7 +80,6 @@ public class ServletConfiguration {
 		this.urlMapping = configureUrlMapping(servlet.getUrlMapping());
 		this.securityRoles = servlet.getAccessGrantingRoles() == null ? Collections.emptyList() : Arrays.asList(servlet.getAccessGrantingRoles());
 		this.loadOnStartup = servlet.loadOnStartUp();
-		if(this.name.equals("IAF-API")) authentication = AuthenticationType.AD;
 
 		defaultSecuritySettings();
 //		loadYaml();
@@ -88,7 +107,7 @@ public class ServletConfiguration {
 			try {
 				transportGuarantee = EnumUtils.parse(TransportGuarantee.class, constraintType);
 			} catch(IllegalArgumentException e) {
-				LogUtil.getLogger(ServletManager.class).error("unable to set TransportGuarantee", e);
+				log.error("unable to set TransportGuarantee for servlet ["+name+"]", e);
 			}
 		} else if(isDtapStageLoc) {
 			transportGuarantee = TransportGuarantee.NONE;
@@ -142,12 +161,19 @@ public class ServletConfiguration {
 		return mappings;
 	}
 
-	public SecurityFilterChain configure(HttpSecurity http) {
+	public SecurityFilterChain getSecurityFilterChain() {
+		HttpSecurity httpSecurityConfigurer = applicationContext.getBean(HTTP_SECURITY_BEAN_NAME, HttpSecurity.class);
+		return configureHttpSecurity(httpSecurityConfigurer);
+	}
+
+	private SecurityFilterChain configureHttpSecurity(HttpSecurity http) {
 		try {
 			http.headers().frameOptions().sameOrigin();
 			http.csrf().disable();
 			http.requestMatcher(getRequestMatcher());
-			return authentication.getAuthenticator().configure(this, http);
+			IAuthenticator authenticator = authentication.getAuthenticator();
+			SpringUtils.autowireByName(applicationContext, authenticator);
+			return authenticator.configure(this, http);
 		} catch (Exception e) {
 			throw new IllegalStateException("unable to configure Spring Security", e);
 		}
@@ -172,10 +198,11 @@ public class ServletConfiguration {
 		StringBuilder builder = new StringBuilder(" servlet ["+name+"]");
 		builder.append(" url(s) "+urlMapping);
 		builder.append(" loadOnStartup ["+loadOnStartup+"]");
-
 		builder.append(" protocol "+(transportGuarantee==TransportGuarantee.CONFIDENTIAL?"[HTTPS]":"[HTTP]"));
+		builder.append(" authenticationType ["+authentication+"]");
+
 		if(isAuthenticationEnabled()) {
-			builder.append(" and roles "+getSecurityRoles());
+			builder.append(" roles "+getSecurityRoles());
 		} else {
 			builder.append(" with no authentication enabled!");
 		}

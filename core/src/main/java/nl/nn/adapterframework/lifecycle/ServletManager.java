@@ -40,7 +40,6 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
 import lombok.Setter;
@@ -49,6 +48,7 @@ import nl.nn.adapterframework.lifecycle.servlets.ServletConfiguration;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * <p>
@@ -145,7 +145,9 @@ public class ServletManager implements ApplicationContextAware {
 	}
 
 	private void registerServlet(DynamicRegistration.Servlet servlet, Map<String, String> parameters) {
-		registerServlet(servlet, new ServletConfiguration(servlet), parameters);
+		ServletConfiguration config = new ServletConfiguration(servlet);
+		SpringUtils.autowireByType(applicationContext, config);
+		registerServlet(servlet, config, parameters);
 	}
 
 	private void registerServlet(Servlet servlet, ServletConfiguration config, Map<String, String> initParameters) {
@@ -179,19 +181,19 @@ public class ServletManager implements ApplicationContextAware {
 		}
 
 		servlets.add(servletName);
-		if(log.isDebugEnabled()) logServletInfo(serv, config);
+		logServletInfo(serv, config);
 		configureHttp(config);
 	}
 
 	private void logServletInfo(Dynamic serv, ServletConfiguration config) {
 		StringBuilder builder = new StringBuilder("registered");
 		builder.append(" servlet ["+serv.getName()+"]");
-		builder.append(" class ["+serv.getClassName()+"]");
 		builder.append(" configuration ");
 		builder.append(config);
 
 		getServletContext().log(builder.toString());
 
+		builder.append(" class ["+serv.getClassName()+"]");
 		log.debug(builder.toString());
 	}
 
@@ -223,9 +225,7 @@ public class ServletManager implements ApplicationContextAware {
 	}
 
 	private SecurityFilterChain configureHttp(ServletConfiguration config) {
-		HttpSecurity httpSecurityConfigurer = applicationContext.getBean("org.springframework.security.config.annotation.web.configuration.HttpSecurityConfiguration.httpSecurity", HttpSecurity.class);
-
-		SecurityFilterChain chain = config.configure(httpSecurityConfigurer);
+		SecurityFilterChain chain = config.getSecurityFilterChain();
 		ConfigurableListableBeanFactory beanFactory = ((ConfigurableApplicationContext)applicationContext).getBeanFactory();
 		String name = "HttpSecurityChain-"+config.getName();
 		beanFactory.registerSingleton(name, chain); //Register the SecurityFilter in the WebXmlBeanFactory so the WebSecurityConfiguration can configure them
