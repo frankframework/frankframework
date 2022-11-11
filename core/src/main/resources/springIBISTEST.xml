@@ -24,7 +24,7 @@
 		factory-bean="dataSourceFactory"
 		factory-method="add"
 		>
-		<constructor-arg ref="ibisTestDataSource" />
+		<constructor-arg ref="h2DataSource" />
 		<constructor-arg value="${jdbc.datasource.default}" />
 	</bean>
 
