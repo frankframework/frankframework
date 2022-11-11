@@ -10,11 +10,15 @@
 	<artifactId>ibis-adapterframework-ladybug</artifactId>
 	<name>Ibis AdapterFramework Ladybug</name>
 
+	<properties>
+		<ladybug.version>2.3-20221111.190616</ladybug.version>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-ladybug</artifactId>
-			<version>2.3-20221019.184922</version>
+			<version>${ladybug.version}</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.codehaus.woodstox</groupId>
