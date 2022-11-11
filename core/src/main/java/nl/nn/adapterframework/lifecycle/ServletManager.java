@@ -36,7 +36,16 @@ import javax.servlet.annotation.ServletSecurity.TransportGuarantee;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.SecurityFilterChain;
 
+import lombok.Setter;
+import nl.nn.adapterframework.lifecycle.servlets.AuthenticationType;
+import nl.nn.adapterframework.lifecycle.servlets.ServletConfiguration;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -63,16 +72,16 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author Niels Meijer
  *
  */
-public class ServletManager {
+public class ServletManager implements ApplicationContextAware {
 
 	private ServletContext servletContext = null;
 	private List<String> registeredRoles = new ArrayList<>();
 	private Logger log = LogUtil.getLogger(this);
-	private AppConstants appConstants;
 	private Set<String> servlets = new TreeSet<>();
 	private static boolean webSecurityEnabled = true;
 	private static TransportGuarantee defaultTransportGuarantee = TransportGuarantee.CONFIDENTIAL;
-	private static final List<String> DEFAULT_IBIS_ROLES = Arrays.asList("IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester", "IbisWebService");
+	public static final List<String> DEFAULT_IBIS_ROLES = Arrays.asList("IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester", "IbisWebService");
+	private @Setter ApplicationContext applicationContext;
 
 	protected static final String AUTH_ENABLED_KEY = "application.security.http.authentication";
 	protected static final String HTTPS_ENABLED_KEY = "application.security.http.transportGuarantee";
@@ -87,7 +96,7 @@ public class ServletManager {
 		//Add the default IBIS roles
 		registeredRoles.addAll(DEFAULT_IBIS_ROLES);
 
-		appConstants = AppConstants.getInstance();
+		AppConstants appConstants = AppConstants.getInstance();
 		setupDefaultSecuritySettings(appConstants);
 	}
 
@@ -135,48 +144,33 @@ public class ServletManager {
 		registerServlet(servlet, parameters);
 	}
 
-	public void register(Servlet servletClass, String servletName, String urlMapping) {
-		registerServlet(servletClass, servletName, urlMapping, new String[0], -1, null);
-	}
-
 	private void registerServlet(DynamicRegistration.Servlet servlet, Map<String, String> parameters) {
-		registerServlet(servlet, servlet.getName(), servlet.getUrlMapping(), servlet.getAccessGrantingRoles(), servlet.loadOnStartUp(), parameters);
+		registerServlet(servlet, new ServletConfiguration(servlet), parameters);
 	}
 
-	private void registerServlet(Servlet servlet, String servletName, String urlMapping, String[] roles, int loadOnStartup, Map<String, String> initParameters) {
-		if(servletName.contains(" ")) {
-			throw new IllegalArgumentException("unable to instantiate servlet, servlet name may not contain spaces");
-		}
+	private void registerServlet(Servlet servlet, ServletConfiguration config, Map<String, String> initParameters) {
+		String servletName = config.getName();
 		if(servlets.contains(servletName)) {
 			throw new IllegalArgumentException("unable to instantiate servlet, servlet name must be unique");
 		}
 
 		log.info("instantiating IbisInitializer servlet name [{}] servletClass [{}]", servletName, servlet);
 
-		String propertyPrefix = "servlet."+servletName+".";
-		if(!appConstants.getBoolean(propertyPrefix+"enabled", true))
+		if(!config.isEnabled()) {
+			log.info("skip instantiating servlet name [{}] not enabled", servletName);
 			return;
-
-		ServletSecurityElement security = getServletSecurity(propertyPrefix, roles);
-		StringBuilder builder = new StringBuilder("instantiating IbisInitializer servlet ["+servletName+"] using protocol ");
-		builder.append((security.getTransportGuarantee()==TransportGuarantee.CONFIDENTIAL)?"[HTTPS]":"[HTTP]");
-		if(security.getRolesAllowed().length > 0) {
-			builder.append(" and roles " + Arrays.asList(security.getRolesAllowed()));
-		} else if(!"LOC".equalsIgnoreCase(appConstants.getProperty("dtap.stage"))) {
-			builder.append(" with no authentication enabled!");
 		}
-		getServletContext().log(builder.toString());
+
 
 		ServletRegistration.Dynamic serv = getServletContext().addServlet(servletName, servlet);
 
-		int loadOnStartupCopy = appConstants.getInt(propertyPrefix+"loadOnStartup", loadOnStartup);
-		serv.setLoadOnStartup(loadOnStartupCopy);
-		serv.addMapping(getUrlMapping(propertyPrefix, urlMapping));
-		serv.setServletSecurity(security);
+		serv.setLoadOnStartup(config.getLoadOnStartup());
+		serv.addMapping(config.getUrlMapping().toArray(new String[0]));
+		serv.setServletSecurity(getServletSecurity(config));
 
 		if(initParameters != null && !initParameters.isEmpty()) {
 			//Manually loop through the map as serv.setInitParameters will fail all parameters even if only 1 fails...
-			for (String key : initParameters.keySet()) {
+			for(String key : initParameters.keySet()) {
 				String value = initParameters.get(key);
 				if(!serv.setInitParameter(key, value)) {
 					log("unable to set init-parameter ["+key+"] with value ["+value+"] for servlet ["+servletName+"]", Level.ERROR);
@@ -185,57 +179,30 @@ public class ServletManager {
 		}
 
 		servlets.add(servletName);
-
-		if(log.isDebugEnabled()) logServletInfo(serv, loadOnStartupCopy);
+		if(log.isDebugEnabled()) logServletInfo(serv, config);
+		configureHttp(config);
 	}
 
-	private void logServletInfo(Dynamic serv, int loadOnStartupCopy) {
+	private void logServletInfo(Dynamic serv, ServletConfiguration config) {
 		StringBuilder builder = new StringBuilder("registered");
 		builder.append(" servlet ["+serv.getName()+"]");
 		builder.append(" class ["+serv.getClassName()+"]");
-		builder.append(" url(s) "+serv.getMappings());
-		builder.append(" loadOnStartup ["+loadOnStartupCopy+"]");
+		builder.append(" configuration ");
+		builder.append(config);
+
+		getServletContext().log(builder.toString());
+
 		log.debug(builder.toString());
 	}
 
-	private String[] getUrlMapping(String propertyPrefix, String defaultUrlMappings) {
-		String[] urlMappingsCopy = defaultUrlMappings.split(",");
-		String urlMappingOverride = appConstants.getString(propertyPrefix+"urlMapping", null);
-		if(StringUtils.isNotEmpty(urlMappingOverride)) {
-			urlMappingsCopy = urlMappingOverride.split(",");
+	private ServletSecurityElement getServletSecurity(ServletConfiguration config) {
+		String[] roles = new String[0];
+		if(config.isAuthenticationEnabled() && config.getAuthentication() == AuthenticationType.JEE) {
+			roles = config.getSecurityRoles().toArray(new String[0]);
+			declareRoles(roles);
 		}
+		HttpConstraintElement httpConstraintElement = new HttpConstraintElement(config.getTransportGuarantee(), roles);
 
-		List<String> mappings = new ArrayList<>();
-		for(String urlMapping : urlMappingsCopy) {
-			String mapping = urlMapping.trim();
-			if(!mapping.startsWith("/") && !mapping.startsWith("*")) {
-				mapping = "/"+mapping;
-			}
-			mappings.add(mapping);
-		}
-
-		return mappings.toArray(new String[0]);
-	}
-
-	private ServletSecurityElement getServletSecurity(String propertyPrefix, String[] defaultRoles) {
-		String[] rolesCopy = new String[0];
-		if(defaultRoles != null && webSecurityEnabled) {
-			rolesCopy = defaultRoles;
-		}
-
-		String roleNames = appConstants.getString(propertyPrefix+"securityroles", null);
-		if(StringUtils.isNotEmpty(roleNames)) {
-			log.warn("property ["+propertyPrefix+"securityroles] has been replaced with ["+propertyPrefix+"securityRoles"+"]");
-		}
-		roleNames = appConstants.getString(propertyPrefix+"securityRoles", roleNames);
-
-		if(StringUtils.isNotEmpty(roleNames)) {
-			rolesCopy = roleNames.split(",");
-		}
-		declareRoles(rolesCopy);
-
-		TransportGuarantee transportGuarantee = getTransportGuarantee(propertyPrefix+"transportGuarantee");
-		HttpConstraintElement httpConstraintElement = new HttpConstraintElement(transportGuarantee, rolesCopy);
 		return new ServletSecurityElement(httpConstraintElement);
 	}
 
@@ -255,7 +222,14 @@ public class ServletManager {
 		return defaultTransportGuarantee;
 	}
 
-	public List<String> getDefaultIbisRoles() {
-		return DEFAULT_IBIS_ROLES;
+	private SecurityFilterChain configureHttp(ServletConfiguration config) {
+		HttpSecurity httpSecurityConfigurer = applicationContext.getBean("org.springframework.security.config.annotation.web.configuration.HttpSecurityConfiguration.httpSecurity", HttpSecurity.class);
+
+		SecurityFilterChain chain = config.configure(httpSecurityConfigurer);
+		ConfigurableListableBeanFactory beanFactory = ((ConfigurableApplicationContext)applicationContext).getBeanFactory();
+		String name = "HttpSecurityChain-"+config.getName();
+		beanFactory.registerSingleton(name, chain); //Register the SecurityFilter in the WebXmlBeanFactory so the WebSecurityConfiguration can configure them
+
+		return chain;
 	}
 }

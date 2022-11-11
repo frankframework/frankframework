@@ -5,7 +5,7 @@
 	<Appenders>
 		<Appender name="stdout" type="Console">
 			<Layout type="IbisPatternLayout">
-				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %X{mid,cid} %c{2} - %m%nxEx{short}</Pattern>
+				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %X{mid,cid} %c{2} - %m%n%xEx{short}</Pattern>
 			</Layout>
 		</Appender>
 		<Appender name="file" type="RollingFile" fileName="${ctx:log.dir}/${ctx:instance.name.lc}.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}.log.%i">
@@ -102,6 +102,9 @@
 		<Logger name="org.quartz" level="WARN" />
 		<Logger name="nl.nn.adapterframework.configuration.digester" level="WARN" />
 		<Logger name="microsoft.exchange" level="INFO" />
+		<Logger name="org.springframework.security.web" level="INFO" />
+		<Logger name="org.springframework.security.ldap" level="WARN" />
+
 
 		<Logger name="liquibase.migrationLog" level="INFO">
 			<AppenderRef ref="stdout"/>

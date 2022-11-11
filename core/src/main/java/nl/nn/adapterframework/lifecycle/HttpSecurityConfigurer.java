@@ -15,37 +15,13 @@
 */
 package nl.nn.adapterframework.lifecycle;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.authority.mapping.MappableAttributesRetriever;
-import org.springframework.security.web.AuthenticationEntryPoint;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
-import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
-import org.springframework.security.web.authentication.preauth.PreAuthenticatedGrantedAuthoritiesUserDetailsService;
-import org.springframework.security.web.authentication.preauth.j2ee.J2eeBasedPreAuthenticatedWebAuthenticationDetailsSource;
-import org.springframework.security.web.authentication.preauth.j2ee.J2eePreAuthenticatedProcessingFilter;
-import org.springframework.security.web.authentication.preauth.j2ee.WebXmlMappableAttributesRetriever;
-import org.springframework.security.web.util.matcher.AnyRequestMatcher;
-
-import lombok.Setter;
-import nl.nn.adapterframework.util.SpringUtils;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.provisioning.UserDetailsManager;
 
 
 /**
@@ -72,73 +48,15 @@ import nl.nn.adapterframework.util.SpringUtils;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false)
-public class HttpSecurityConfigurer implements ApplicationContextAware, InitializingBean {
+public class HttpSecurityConfigurer {
 
-	private static final String ROLE_PREFIX = "ROLE_"; //see AuthorityAuthorizationManager#ROLE_PREFIX
-	private @Setter ApplicationContext applicationContext;
-	private @Setter @Autowired ServletManager servletManager;
+	private UserDetailsManager test() {
+		UserDetails user = User.withDefaultPasswordEncoder()
+				.username("user")
+				.password("password")
+				.roles("IbisTester")
+				.build();
 
-	@Bean
-	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-		if(servletManager.isWebSecurityEnabled()) {
-			http.requestMatcher(AnyRequestMatcher.INSTANCE);
-			AuthenticationManager authManager = getAuthenticationManager(http);
-			http.addFilter(getProcessingFilter(authManager));
-			http.authenticationManager(authManager);
-		} else {
-			http.anonymous().authorities(getDefaultAuthorities());
-		}
-
-		http.headers().frameOptions().sameOrigin();
-		http.csrf().disable();
-		http.logout();
-		return http.build();
-	}
-
-	private List<GrantedAuthority> getDefaultAuthorities() {
-		List<String> ibisRoles = servletManager.getDefaultIbisRoles();
-		List<GrantedAuthority> grantedAuthorities = new ArrayList<>(ibisRoles.size());
-		for (String role : ibisRoles) {
-			grantedAuthorities.add(new SimpleGrantedAuthority(ROLE_PREFIX + role));
-		}
-		return grantedAuthorities;
-	}
-
-	//see AuthenticationManagerFactoryBean
-	private AuthenticationManager getAuthenticationManager(HttpSecurity http) {
-		AuthenticationProvider provider = getAuthenticationProvider(http);
-		return new ProviderManager(Arrays.<AuthenticationProvider>asList(provider));
-	}
-
-	//see JeeConfigurer.init
-	private PreAuthenticatedAuthenticationProvider getAuthenticationProvider(HttpSecurity http) {
-		PreAuthenticatedAuthenticationProvider authenticationProvider = new PreAuthenticatedAuthenticationProvider();
-		authenticationProvider.setPreAuthenticatedUserDetailsService(new PreAuthenticatedGrantedAuthoritiesUserDetailsService());
-		http.authenticationProvider(authenticationProvider).setSharedObject(AuthenticationEntryPoint.class, new Http403ForbiddenEntryPoint());
-		return authenticationProvider;
-	}
-
-	private J2eePreAuthenticatedProcessingFilter getProcessingFilter(AuthenticationManager authManager) {
-		J2eePreAuthenticatedProcessingFilter filter = new J2eePreAuthenticatedProcessingFilter();
-		filter.setAuthenticationDetailsSource(getAuthenticationDetailsSource());
-		filter.setAuthenticationManager(authManager);
-		return filter;
-	}
-
-	private J2eeBasedPreAuthenticatedWebAuthenticationDetailsSource getAuthenticationDetailsSource() {
-		J2eeBasedPreAuthenticatedWebAuthenticationDetailsSource authenticationDetailSource = new J2eeBasedPreAuthenticatedWebAuthenticationDetailsSource();
-		authenticationDetailSource.setMappableRolesRetriever(getWebXmlSecurityRoles());
-		return authenticationDetailSource;
-	}
-
-	private MappableAttributesRetriever getWebXmlSecurityRoles() {
-		return SpringUtils.createBean(applicationContext, WebXmlMappableAttributesRetriever.class);
-	}
-
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		if(servletManager == null) {
-			throw new IllegalStateException("unable to initialize Spring Security, ServletManager not set");
-		}
+		return new InMemoryUserDetailsManager(user);
 	}
 }
