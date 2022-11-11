@@ -216,7 +216,7 @@ public class MessageStoreListenerTest extends JdbcTestBase {
 		listener.open();
 
 		String message ="fakeMessage";
-		String storageKey = insertARecord(message, 'M');
+		insertARecord(message, 'M');
 
 		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
 
@@ -229,7 +229,7 @@ public class MessageStoreListenerTest extends JdbcTestBase {
 		listener.open();
 
 		String message ="fakeMessage";
-		String storageKey = insertARecord(message, 'M');
+		insertARecord(message, 'M');
 
 		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
 
@@ -273,10 +273,10 @@ public class MessageStoreListenerTest extends JdbcTestBase {
 
 		IMessageBrowsingIterator iterator = browser.getIterator();
 		assertTrue(iterator.hasNext());
-		
+
 		IMessageBrowsingIteratorItem item = iterator.next();
 		assertNotNull(item);
-		
+
 		assertEquals(storageKey, item.getId());
 		assertEquals("fakeMid", item.getOriginalId());
 		assertEquals("fakeCid", item.getCorrelationId());

@@ -65,7 +65,7 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 
 		String message = createMessage();
 		String storageKey = insertARecord(blobsCompressed, message, 'E');
-		
+
 		String data = storage.browseMessage(storageKey);
 		assertEquals(message, data);
 	}
@@ -118,14 +118,14 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 
 		String message = createMessage();
 		String storageKey = insertARecord(blobsCompressed, message, 'E');
-		
+
 		Object o = storage.browseMessage(storageKey);
 		assertNotNull(o);
 		assertEquals(message, o);
-		
+
 	}
-	
-	
+
+
 	private String insertARecord(boolean blobsCompressed, String message, char type) throws SQLException, IOException {
 		try (Connection connection = getConnection()) {
 			try (PreparedStatement stmt = prepareStatement(connection, type)) {
@@ -149,7 +149,7 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 			}
 		}
 	}
-	
+
 	private PreparedStatement prepareStatement(Connection connection, char type) throws SQLException {
 		String query ="INSERT INTO "+tableName+" (" +
 			(dbmsSupport.autoIncrementKeyMustBeInserted() ? storage.getKeyField()+"," : "")

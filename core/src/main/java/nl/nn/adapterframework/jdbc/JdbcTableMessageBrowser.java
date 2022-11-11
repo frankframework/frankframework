@@ -147,7 +147,7 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 			order = getOrder();
 			if (order == null) {
 				order = SortOrder.ASC;
-			};
+			}
 		}
 		return "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport)+provideFirstRowsHintAfterFirstKeyword(dbmsSupport)+ getListClause(false)+ getWhereClause(whereClause,false)+
 				(StringUtils.isNotEmpty(getDateField())? " ORDER BY "+getDateField()+ " "+order.name():"")+provideTrailingFirstRowsHint(dbmsSupport);
