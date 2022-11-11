@@ -52,11 +52,13 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 		this(tableListener);
 		parent=tableListener;
 		setKeyField(tableListener.getKeyField());
-		setIdField(tableListener.getKeyField());
+		setIdField(tableListener.getMessageIdField());
+		setCorrelationIdField(tableListener.getCorrelationIdField());
 		setTableName(tableListener.getTableName());
 		tableAlias = tableListener.getTableAlias();
 		setMessageField(StringUtils.isNotEmpty(tableListener.getMessageField())?tableListener.getMessageField():tableListener.getKeyField());
 		setDateField(tableListener.getTimestampField());
+		setCommentField(tableListener.getCommentField());
 		setType(storageType.getCode());
 		selectCondition=tableListener.getStatusField()+ "='"+statusValue+"'";
 		if (StringUtils.isNotEmpty(tableListener.getSelectCondition())) {
@@ -143,6 +145,9 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 		}
 		if(order == SortOrder.NONE) { //If no order has been set, use the default (DESC for messages and ASC for errors)
 			order = getOrder();
+			if (order == null) {
+				order = SortOrder.ASC;
+			};
 		}
 		return "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport)+provideFirstRowsHintAfterFirstKeyword(dbmsSupport)+ getListClause(false)+ getWhereClause(whereClause,false)+
 				(StringUtils.isNotEmpty(getDateField())? " ORDER BY "+getDateField()+ " "+order.name():"")+provideTrailingFirstRowsHint(dbmsSupport);
