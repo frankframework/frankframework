@@ -316,12 +316,23 @@
 
 	<bean name="pipeDescriptionProvider" class="nl.nn.ibistesttool.PipeDescriptionProvider" autowire="byName"/>
 
+	<bean name="observerRoles" class="java.util.ArrayList">
+		<constructor-arg>
+			<list>
+				<value>IbisObserver</value>
+				<value>IbisDataAdmin</value>
+				<value>IbisAdmin</value>
+				<value>IbisTester</value>
+			</list>
+		</constructor-arg>
+	</bean>
+
 	<bean name="dataAdminRoles" class="java.util.ArrayList">
 		<constructor-arg>
 			<list>
-				<value>IbisTester</value>
-				<value>IbisAdmin</value>
 				<value>IbisDataAdmin</value>
+				<value>IbisAdmin</value>
+				<value>IbisTester</value>
 			</list>
 		</constructor-arg>
 	</bean>
