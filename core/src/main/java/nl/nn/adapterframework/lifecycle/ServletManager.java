@@ -40,6 +40,8 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
 import lombok.Setter;
@@ -72,6 +74,8 @@ import nl.nn.adapterframework.util.SpringUtils;
  * @author Niels Meijer
  *
  */
+@EnableWebSecurity
+@EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false)
 public class ServletManager implements ApplicationContextAware {
 
 	private ServletContext servletContext = null;

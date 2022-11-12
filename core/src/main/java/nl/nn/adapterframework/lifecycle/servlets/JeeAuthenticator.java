@@ -23,6 +23,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.JeeConfigurer;
 import org.springframework.security.core.authority.mapping.MappableAttributesRetriever;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
@@ -36,6 +37,10 @@ import org.springframework.security.web.authentication.preauth.j2ee.WebXmlMappab
 import lombok.Setter;
 import nl.nn.adapterframework.util.SpringUtils;
 
+/* https://docs.spring.io/spring-security/site/docs/3.0.x/reference/introduction.html
+ * https://stackoverflow.com/questions/9831268/how-to-use-j2eepreauthenticatedprocessingfilter-and-a-custom-authentication-prov
+ * https://docs.spring.io/spring-security/site/docs/3.0.x/reference/authz-arch.html
+ */
 public class JeeAuthenticator implements IAuthenticator, ApplicationContextAware {
 	private @Setter ApplicationContext applicationContext;
 
@@ -50,17 +55,26 @@ public class JeeAuthenticator implements IAuthenticator, ApplicationContextAware
 	//see AuthenticationManagerFactoryBean
 	private AuthenticationManager getAuthenticationManager(HttpSecurity http) {
 		AuthenticationProvider provider = getAuthenticationProvider(http);
-		return new ProviderManager(Arrays.<AuthenticationProvider>asList(provider));
+		return new ProviderManager(Arrays.asList(provider));
 	}
 
-	//see JeeConfigurer.init
+	/**
+	 * The J2EE authentication provider. The JeeConfigurer isn't used because of the custom AuthenticationDetailsSource.
+	 * See {@link JeeConfigurer#init(org.springframework.security.config.annotation.web.HttpSecurityBuilder)}
+	 */
 	private PreAuthenticatedAuthenticationProvider getAuthenticationProvider(HttpSecurity http) {
-		PreAuthenticatedAuthenticationProvider authenticationProvider = new PreAuthenticatedAuthenticationProvider();
+		PreAuthenticatedAuthenticationProvider authenticationProvider = new PreAuthenticatedAuthenticationProvider(); // Converts the AuthenticationToken into UserDetails
 		authenticationProvider.setPreAuthenticatedUserDetailsService(new PreAuthenticatedGrantedAuthoritiesUserDetailsService());
-		http.authenticationProvider(authenticationProvider).setSharedObject(AuthenticationEntryPoint.class, new Http403ForbiddenEntryPoint());
+		http.authenticationProvider(authenticationProvider).setSharedObject(AuthenticationEntryPoint.class, getEntryPoint());
 		return authenticationProvider;
 	}
 
+	//When using JEE the container authenticates clients (401) we therefore only have to authorize them. If not authorized, return a 403.
+	private AuthenticationEntryPoint getEntryPoint() {
+		return new Http403ForbiddenEntryPoint();
+	}
+
+	// Checks if the user has been logged in and returns the HttpRequest.getUserPrincipal
 	private J2eePreAuthenticatedProcessingFilter getProcessingFilter(AuthenticationManager authManager) {
 		J2eePreAuthenticatedProcessingFilter filter = new J2eePreAuthenticatedProcessingFilter();
 		filter.setAuthenticationDetailsSource(getAuthenticationDetailsSource());
@@ -68,12 +82,14 @@ public class JeeAuthenticator implements IAuthenticator, ApplicationContextAware
 		return filter;
 	}
 
+	// Checks which roles the user(principal) has by performing HttpRequest.isUserInRole
 	private J2eeBasedPreAuthenticatedWebAuthenticationDetailsSource getAuthenticationDetailsSource() {
 		J2eeBasedPreAuthenticatedWebAuthenticationDetailsSource authenticationDetailSource = new J2eeBasedPreAuthenticatedWebAuthenticationDetailsSource();
 		authenticationDetailSource.setMappableRolesRetriever(getWebXmlSecurityRoles());
 		return authenticationDetailSource;
 	}
 
+	// Reads the web.xml file 'security-roles'
 	private MappableAttributesRetriever getWebXmlSecurityRoles() {
 		return SpringUtils.createBean(applicationContext, WebXmlMappableAttributesRetriever.class);
 	}
