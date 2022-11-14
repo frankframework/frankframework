@@ -58,7 +58,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	private TestTool testTool;
 	protected IbisManager ibisManager;
 	private PipeDescriptionProvider pipeDescriptionProvider;
-	private List<String> rerunRoles;
+	private List<String> testerRoles;
 
 	protected Set<String> inRerun = new HashSet<String>();
 
@@ -75,8 +75,8 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 		this.pipeDescriptionProvider = pipeDescriptionProvider;
 	}
 
-	public void setRerunRoles(List<String> rerunRoles) {
-		this.rerunRoles = rerunRoles;
+	public void setTesterRoles(List<String> testerRoles) {
+		this.testerRoles = testerRoles;
 	}
 
 	@Override
@@ -262,7 +262,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	@Override
 	public String rerun(String correlationId, Report originalReport, SecurityContext securityContext, ReportRunner reportRunner) {
 		String errorMessage = null;
-		if (securityContext.isUserInRoles(rerunRoles)) {
+		if (securityContext.isUserInRoles(testerRoles)) {
 			int i = 0;
 			List<Checkpoint> checkpoints = originalReport.getCheckpoints();
 			Checkpoint checkpoint = checkpoints.get(i);
