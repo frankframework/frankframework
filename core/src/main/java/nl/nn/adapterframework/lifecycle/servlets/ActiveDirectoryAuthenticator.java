@@ -15,15 +15,21 @@
 */
 package nl.nn.adapterframework.lifecycle.servlets;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.naming.Context;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -32,29 +38,29 @@ import org.springframework.security.ldap.authentication.ad.ActiveDirectoryLdapAu
 import org.springframework.security.ldap.userdetails.LdapUserDetailsMapper;
 import org.springframework.security.web.SecurityFilterChain;
 
+import lombok.Setter;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.StringResolver;
 
-public class ActiveDirectoryAuthenticator implements IAuthenticator {
-	private String domainName = null;
+public class ActiveDirectoryAuthenticator extends ServletAuthenticatorBase implements InitializingBean {
+
+	private @Setter String domainName = null;
 	/** LDAP server endpoint, eg: ldap://10.1.2.3 */
-	private String url = AppConstants.getInstance().getProperty("ldap.auth.url");
+	private @Setter String url = AppConstants.getInstance().getProperty("ldap.auth.url");
 	/** Domain root DN, eg: DC=company,DC=org */
-	private String rootDn = AppConstants.getInstance().getProperty("ldap.auth.user.base");
-	private boolean followReferrals = true;
+	private @Setter String rootDn = AppConstants.getInstance().getProperty("ldap.auth.user.base");
+	private @Setter boolean followReferrals = true;
 	/** defaults to (&(objectClass=user)(userPrincipalName={0})) */
-	private String searchFilter = null;
+	private @Setter String searchFilter = null;
 
-	private String roleMappingProperties = "role-mapping.properties";
-
-	//ldap.auth.observer.base
-	//ldap.auth.dataadmin.base
-	private String tempMappingIbisTester = AppConstants.getInstance().getProperty("ldap.auth.tester.base");
+	private @Setter String roleMappingFile = "ldap-role-mapping.properties";
+	private URL roleMappingURL = null;
 
 	@Override
-	public SecurityFilterChain configure(ServletConfiguration config, HttpSecurity http) throws Exception {
+	public SecurityFilterChain configure(HttpSecurity http) throws Exception {
 		ActiveDirectoryLdapAuthenticationProvider provider = new ActiveDirectoryLdapAuthenticationProvider(domainName, url, rootDn);
-		provider.setConvertSubErrorCodesToExceptions(LogUtil.getLogger(ServletConfiguration.class).isDebugEnabled());
+		provider.setConvertSubErrorCodesToExceptions(log.isDebugEnabled());
 
 		if(StringUtils.isNotEmpty(searchFilter)) provider.setSearchFilter(searchFilter);
 		Map<String, Object> environment = new HashMap<>();
@@ -67,14 +73,35 @@ public class ActiveDirectoryAuthenticator implements IAuthenticator {
 		roleMapper.setRolePrefix("");
 		provider.setUserDetailsContextMapper(roleMapper);
 
-		provider.setAuthoritiesMapper(new LdapAuthorityMapper(roleMappingProperties));
+		provider.setAuthoritiesMapper(new LdapAuthorityMapper(roleMappingURL));
+
 		http.authenticationProvider(provider).httpBasic();
 		return http.build();
 	}
 
 	public class LdapAuthorityMapper implements GrantedAuthoritiesMapper {
-		public LdapAuthorityMapper(String roleMappingFile) {
-			// TODO Use actual file
+		Map<String, SimpleGrantedAuthority> roleToAuthorityMapping = new HashMap<>();
+
+		public LdapAuthorityMapper(URL roleMappingURL) throws IOException {
+			Properties roleMappingProperties = new Properties();
+			try(InputStream stream = roleMappingURL.openStream()) {
+				roleMappingProperties.load(stream);
+			} catch (IOException e) {
+				throw new IOException("unable to open LDAP role-mapping file ["+roleMappingFile+"]", e);
+			}
+
+			for(String role : getSecurityRoles()) {
+				String value = roleMappingProperties.getProperty(role);
+				if(StringUtils.isEmpty(value)) {
+					log.warn("LDAP role [{}] has not been mapped to anything, ignoring this role", role);
+					continue;
+				}
+
+				String resolvedValue = StringResolver.substVars(value, AppConstants.getInstance());
+				if(StringUtils.isNotEmpty(role) && StringUtils.isNotEmpty(resolvedValue)) {
+					roleToAuthorityMapping.put(resolvedValue, new SimpleGrantedAuthority("ROLE_"+role));
+				}
+			}
 		}
 
 		@Override
@@ -82,11 +109,20 @@ public class ActiveDirectoryAuthenticator implements IAuthenticator {
 			List<GrantedAuthority> mappedAuthorities = new ArrayList<>();
 			for(GrantedAuthority grantedAuthority : authorities) {
 				String canonicalRoleName = grantedAuthority.getAuthority();
-				if(canonicalRoleName.equals(tempMappingIbisTester)) { //If the user contains this role (s)he will get the ROLE_IbisTester authority
-					mappedAuthorities.add(new SimpleGrantedAuthority("ROLE_IbisObserver"));
+				SimpleGrantedAuthority authority = roleToAuthorityMapping.get(canonicalRoleName);
+				if(authority != null) {
+					mappedAuthorities.add(authority);
 				}
 			}
 			return mappedAuthorities;
+		}
+	}
+
+	@Override
+	public void afterPropertiesSet() throws FileNotFoundException {
+		roleMappingURL = ClassUtils.getResourceURL(roleMappingFile);
+		if(roleMappingURL == null) {
+			throw new FileNotFoundException("unable to find LDAP role-mapping file ["+roleMappingFile+"]");
 		}
 	}
 }

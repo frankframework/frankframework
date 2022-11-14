@@ -17,10 +17,12 @@ package nl.nn.adapterframework.lifecycle;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.TreeSet;
 
 import javax.servlet.HttpConstraintElement;
@@ -36,16 +38,14 @@ import javax.servlet.annotation.ServletSecurity.TransportGuarantee;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.web.SecurityFilterChain;
 
 import lombok.Setter;
 import nl.nn.adapterframework.lifecycle.servlets.AuthenticationType;
+import nl.nn.adapterframework.lifecycle.servlets.IAuthenticator;
+import nl.nn.adapterframework.lifecycle.servlets.JeeAuthenticator;
 import nl.nn.adapterframework.lifecycle.servlets.ServletConfiguration;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.EnumUtils;
@@ -74,14 +74,13 @@ import nl.nn.adapterframework.util.SpringUtils;
  * @author Niels Meijer
  *
  */
-@EnableWebSecurity
-@EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false)
-public class ServletManager implements ApplicationContextAware {
+public class ServletManager implements ApplicationContextAware, InitializingBean {
 
 	private ServletContext servletContext = null;
 	private List<String> registeredRoles = new ArrayList<>();
 	private Logger log = LogUtil.getLogger(this);
 	private Set<String> servlets = new TreeSet<>();
+	private Map<String, IAuthenticator> authenticators = new HashMap<>();
 	private static boolean webSecurityEnabled = true;
 	private static TransportGuarantee defaultTransportGuarantee = TransportGuarantee.CONFIDENTIAL;
 	public static final List<String> DEFAULT_IBIS_ROLES = Arrays.asList("IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester", "IbisWebService");
@@ -102,6 +101,43 @@ public class ServletManager implements ApplicationContextAware {
 
 		AppConstants appConstants = AppConstants.getInstance();
 		setupDefaultSecuritySettings(appConstants);
+	}
+
+	@Override // After initialization but before other servlets are wired
+	public void afterPropertiesSet() throws Exception {
+		resolveAuthenticators();
+		log.info("found Authenticators {}", authenticators::values);
+	}
+
+	public void startAuthenticators() {
+		log.info("starting Authenticators {}", authenticators::values);
+		for(IAuthenticator authenticator : authenticators.values()) {
+			authenticator.build();
+		}
+	}
+
+	private void resolveAuthenticators() {
+		StringTokenizer tokenizer = AppConstants.getInstance().getTokenizedProperty("application.security.http.authenticators");
+		while(tokenizer.hasMoreTokens()) {
+			String token = tokenizer.nextToken();
+			if(StringUtils.isNotEmpty(token)) {
+				resolveAndConfigureAuthenticator(token);
+			}
+		}
+	}
+
+	private void resolveAndConfigureAuthenticator(String authenticatorName) {
+		String properyPrefix = "application.security.http.authenticators."+authenticatorName;
+		String type = AppConstants.getInstance().getProperty(properyPrefix+".type");
+		AuthenticationType auth = null;
+		try {
+			auth = EnumUtils.parse(AuthenticationType.class, type);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalStateException("invalid authenticator type", e);
+		}
+		Class<? extends IAuthenticator> clazz = auth.getAuthenticator().getClass();
+		IAuthenticator authenticator = SpringUtils.createBean(applicationContext, clazz);
+		authenticators.put(authenticatorName, authenticator);
 	}
 
 	protected static void setupDefaultSecuritySettings(Properties properties) {
@@ -150,8 +186,17 @@ public class ServletManager implements ApplicationContextAware {
 
 	private void registerServlet(DynamicRegistration.Servlet servlet, Map<String, String> parameters) {
 		ServletConfiguration config = new ServletConfiguration(servlet);
-		SpringUtils.autowireByType(applicationContext, config);
+
 		registerServlet(servlet, config, parameters);
+
+		String authenticatorName = config.getAuthenticatorName();
+		if(StringUtils.isNotEmpty(authenticatorName)) {
+			IAuthenticator authenticator = authenticators.get(authenticatorName);
+			if(authenticator == null) {
+				throw new IllegalStateException("unable to configure servlet security, authenticator ["+authenticatorName+"] does not exist");
+			}
+			authenticator.registerServlet(config);
+		}
 	}
 
 	private void registerServlet(Servlet servlet, ServletConfiguration config, Map<String, String> initParameters) {
@@ -186,7 +231,6 @@ public class ServletManager implements ApplicationContextAware {
 
 		servlets.add(servletName);
 		logServletInfo(serv, config);
-		configureHttp(config);
 	}
 
 	private void logServletInfo(Dynamic serv, ServletConfiguration config) {
@@ -203,7 +247,7 @@ public class ServletManager implements ApplicationContextAware {
 
 	private ServletSecurityElement getServletSecurity(ServletConfiguration config) {
 		String[] roles = new String[0];
-		if(config.isAuthenticationEnabled() && config.getAuthentication() == AuthenticationType.JEE) {
+		if(config.isAuthenticationEnabled() && authenticators.get(config.getAuthenticatorName()) instanceof JeeAuthenticator) {// Only add roles when using  Container Based Authentication
 			roles = config.getSecurityRoles().toArray(new String[0]);
 			declareRoles(roles);
 		}
@@ -226,14 +270,5 @@ public class ServletManager implements ApplicationContextAware {
 			return EnumUtils.parse(TransportGuarantee.class, constraintType);
 		}
 		return defaultTransportGuarantee;
-	}
-
-	private SecurityFilterChain configureHttp(ServletConfiguration config) {
-		SecurityFilterChain chain = config.getSecurityFilterChain();
-		ConfigurableListableBeanFactory beanFactory = ((ConfigurableApplicationContext)applicationContext).getBeanFactory();
-		String name = "HttpSecurityChain-"+config.getName();
-		beanFactory.registerSingleton(name, chain); //Register the SecurityFilter in the WebXmlBeanFactory so the WebSecurityConfiguration can configure them
-
-		return chain;
 	}
 }

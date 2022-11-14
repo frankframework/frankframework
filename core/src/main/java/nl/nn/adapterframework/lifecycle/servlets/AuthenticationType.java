@@ -20,8 +20,9 @@ import lombok.Getter;
 //LdapAuthenticationProvider
 public enum AuthenticationType {
 	AD(ActiveDirectoryAuthenticator.class),
-	JEE(JeeAuthenticator.class),
-	ANONYMOUS(NoOpAuthenticator.class);
+	CONTAINER(JeeAuthenticator.class),
+	IN_MEMORY(InMemoryAuthenticator.class),
+	NO_AUTH(NoOpAuthenticator.class);
 
 	private final @Getter IAuthenticator authenticator;
 

@@ -16,9 +16,9 @@
 package nl.nn.adapterframework.lifecycle.servlets;
 
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
@@ -34,18 +34,16 @@ import org.springframework.security.web.authentication.preauth.j2ee.J2eeBasedPre
 import org.springframework.security.web.authentication.preauth.j2ee.J2eePreAuthenticatedProcessingFilter;
 import org.springframework.security.web.authentication.preauth.j2ee.WebXmlMappableAttributesRetriever;
 
-import lombok.Setter;
 import nl.nn.adapterframework.util.SpringUtils;
 
 /* https://docs.spring.io/spring-security/site/docs/3.0.x/reference/introduction.html
  * https://stackoverflow.com/questions/9831268/how-to-use-j2eepreauthenticatedprocessingfilter-and-a-custom-authentication-prov
  * https://docs.spring.io/spring-security/site/docs/3.0.x/reference/authz-arch.html
  */
-public class JeeAuthenticator implements IAuthenticator, ApplicationContextAware {
-	private @Setter ApplicationContext applicationContext;
+public class JeeAuthenticator extends ServletAuthenticatorBase {
 
 	@Override
-	public SecurityFilterChain configure(ServletConfiguration config, HttpSecurity http) throws Exception {
+	public SecurityFilterChain configure(HttpSecurity http) throws Exception {
 		AuthenticationManager authManager = getAuthenticationManager(http);
 		http.addFilter(getProcessingFilter(authManager));
 		http.authenticationManager(authManager);
@@ -91,6 +89,24 @@ public class JeeAuthenticator implements IAuthenticator, ApplicationContextAware
 
 	// Reads the web.xml file 'security-roles'
 	private MappableAttributesRetriever getWebXmlSecurityRoles() {
-		return SpringUtils.createBean(applicationContext, WebXmlMappableAttributesRetriever.class);
+		DelegatedMappableAttributesRetriever attributeRetriever = new DelegatedMappableAttributesRetriever();
+		MappableAttributesRetriever webXml = SpringUtils.createBean(getApplicationContext(), WebXmlMappableAttributesRetriever.class);
+		attributeRetriever.addMappableAttributes(webXml.getMappableAttributes());
+		attributeRetriever.addMappableAttributes(new HashSet<>(getSecurityRoles()));
+		return attributeRetriever;
+	}
+
+	public static class DelegatedMappableAttributesRetriever implements MappableAttributesRetriever {
+
+		private Set<String> mappableAttributes = new HashSet<>();
+
+		@Override
+		public Set<String> getMappableAttributes() {
+			return mappableAttributes;
+		}
+
+		public void addMappableAttributes(Set<String> mappableAttributes) {
+			this.mappableAttributes.addAll(mappableAttributes);
+		}
 	}
 }

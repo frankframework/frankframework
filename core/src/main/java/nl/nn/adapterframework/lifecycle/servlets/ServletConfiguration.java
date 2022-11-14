@@ -24,21 +24,12 @@ import javax.servlet.annotation.ServletSecurity.TransportGuarantee;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.security.web.util.matcher.OrRequestMatcher;
-import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import lombok.Getter;
-import lombok.Setter;
 import nl.nn.adapterframework.lifecycle.DynamicRegistration.Servlet;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.SpringUtils;
 
 //servlets:
 //  IAF-API:
@@ -50,18 +41,12 @@ import nl.nn.adapterframework.util.SpringUtils;
 //      - IbisTester
 //    urlMapping: iaf/api/*
 //    loadOnStartup: 0
-//    authentication:
-//      type: AD
-//      domain: company.org
-//      endpoint: 10.1.2.3
-public class ServletConfiguration implements ApplicationContextAware {
+//    authenticator: myAuthenticatorID
+public class ServletConfiguration {
 	private AppConstants appConstants = AppConstants.getInstance();
 	private Logger log = LogUtil.getLogger(this);
-	private @Setter ApplicationContext applicationContext;
 
-	private static final String AUTH_ENABLED_KEY = "application.security.http.authentication";
 	private static final String HTTPS_ENABLED_KEY = "application.security.http.transportGuarantee";
-	private static final String HTTP_SECURITY_BEAN_NAME = "org.springframework.security.config.annotation.web.configuration.HttpSecurityConfiguration.httpSecurity";
 
 	private final @Getter String name;
 	private @Getter List<String> securityRoles;
@@ -69,7 +54,7 @@ public class ServletConfiguration implements ApplicationContextAware {
 	private @Getter int loadOnStartup = -1;
 	private @Getter boolean enabled = true;
 	private @Getter TransportGuarantee transportGuarantee = TransportGuarantee.NONE;
-	private @Getter AuthenticationType authentication = AuthenticationType.ANONYMOUS;
+	private @Getter String authenticatorName = null;
 
 	public ServletConfiguration(Servlet servlet) {
 		this.name = servlet.getName();
@@ -82,7 +67,6 @@ public class ServletConfiguration implements ApplicationContextAware {
 		this.loadOnStartup = servlet.loadOnStartUp();
 
 		defaultSecuritySettings();
-//		loadYaml();
 		loadProperties();
 
 		if(urlMapping.isEmpty()) {
@@ -91,16 +75,11 @@ public class ServletConfiguration implements ApplicationContextAware {
 	}
 
 	public boolean isAuthenticationEnabled() {
-		return !securityRoles.isEmpty() && authentication != AuthenticationType.ANONYMOUS;
+		return !securityRoles.isEmpty() && authenticatorName != null;
 	}
 
 	private void defaultSecuritySettings() {
 		boolean isDtapStageLoc = "LOC".equalsIgnoreCase(appConstants.getProperty("dtap.stage"));
-		String isAuthEnabled = appConstants.getProperty(AUTH_ENABLED_KEY);
-		boolean webSecurityEnabled = StringUtils.isNotEmpty(isAuthEnabled) ? Boolean.parseBoolean(isAuthEnabled) : !isDtapStageLoc;
-		if(!webSecurityEnabled) {
-			authentication = AuthenticationType.ANONYMOUS;
-		}
 
 		String constraintType = appConstants.getProperty(HTTPS_ENABLED_KEY);
 		if (StringUtils.isNotEmpty(constraintType)) {
@@ -128,6 +107,7 @@ public class ServletConfiguration implements ApplicationContextAware {
 		if(StringUtils.isNotEmpty(mapping)) {
 			this.urlMapping = configureUrlMapping(mapping);
 		}
+		this.authenticatorName = appConstants.getString(propertyPrefix+"authenticator", null);
 	}
 
 	private void configureServletSecurity(String propertyPrefix) {
@@ -161,45 +141,13 @@ public class ServletConfiguration implements ApplicationContextAware {
 		return mappings;
 	}
 
-	public SecurityFilterChain getSecurityFilterChain() {
-		HttpSecurity httpSecurityConfigurer = applicationContext.getBean(HTTP_SECURITY_BEAN_NAME, HttpSecurity.class);
-		return configureHttpSecurity(httpSecurityConfigurer);
-	}
-
-	private SecurityFilterChain configureHttpSecurity(HttpSecurity http) {
-		try {
-			http.headers().frameOptions().sameOrigin();
-			http.csrf().disable();
-			http.requestMatcher(getRequestMatcher());
-			IAuthenticator authenticator = authentication.getAuthenticator();
-			SpringUtils.autowireByName(applicationContext, authenticator);
-			return authenticator.configure(this, http);
-		} catch (Exception e) {
-			throw new IllegalStateException("unable to configure Spring Security", e);
-		}
-	}
-
-	private RequestMatcher getRequestMatcher() {
-		List<RequestMatcher> requestMatchers = new ArrayList<>();
-		for(String url : this.getUrlMapping()) {
-			String matcherUrl = url;
-			if(url.endsWith("*")) {
-				matcherUrl = url+"*";
-			}
-
-			requestMatchers.add(new AntPathRequestMatcher(matcherUrl, null, false));
-		}
-
-		return (requestMatchers.size() == 1) ? requestMatchers.get(0) : new OrRequestMatcher(requestMatchers);
-	}
-
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder(" servlet ["+name+"]");
 		builder.append(" url(s) "+urlMapping);
 		builder.append(" loadOnStartup ["+loadOnStartup+"]");
 		builder.append(" protocol "+(transportGuarantee==TransportGuarantee.CONFIDENTIAL?"[HTTPS]":"[HTTP]"));
-		builder.append(" authenticationType ["+authentication+"]");
+		builder.append(" authenticatior ["+authenticatorName+"]");
 
 		if(isAuthenticationEnabled()) {
 			builder.append(" roles "+getSecurityRoles());
