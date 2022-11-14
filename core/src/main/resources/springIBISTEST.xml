@@ -24,14 +24,8 @@
 		factory-bean="dataSourceFactory"
 		factory-method="add"
 		>
-		<constructor-arg ref="ibisTestDataSource" />
+		<constructor-arg ref="h2DataSource" />
 		<constructor-arg value="${jdbc.datasource.default}" />
-	</bean>
-
-	<bean id="ibisTestDataSource" class="org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy">
-		<property name="targetDataSource">
-			<ref bean="h2DataSource"/>
-		</property>
 	</bean>
 
 	<bean id="h2DataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
@@ -43,4 +37,7 @@
 	<bean id="cxf" class="org.apache.cxf.bus.spring.SpringBus" destroy-method="shutdown">
 		<property name="id" value="ff-soap-bus"/>
 	</bean>
+	
+	<!-- metrics registry -->
+	<bean name="metricsRegistry" class="nl.nn.adapterframework.metrics.MetricsRegistry" autowire="byName"/>
 </beans>
