@@ -42,7 +42,7 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 
 	private void setSecurityRoles(List<String> securityRoles) {
 		if(securityRoles == null || securityRoles.isEmpty()) {
-			securityRoles = ServletManager.DEFAULT_IBIS_ROLES;
+			securityRoles = ServletManager.DEFAULT_IBIS_ROLES; //TODO make it so when you specify no roles it disables authorization
 		}
 		this.securityRoles.addAll(securityRoles);
 	}
@@ -58,7 +58,7 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 				throw new IllegalStateException("endpoint already configured");
 			}
 
-			log.info("registering url [{}] to lookup pattern [{}]", url, matcherUrl);
+			log.info("registering url [{}] with lookup pattern [{}]", url, matcherUrl);
 			endpoints.add(matcherUrl);
 		}
 	}
