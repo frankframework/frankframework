@@ -35,7 +35,7 @@ public class HttpSecurityConfigurer implements InitializingBean {
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		if(servletManager == null) {
-			throw new IllegalStateException("no ServletManager found");
+			throw new IllegalStateException("unable to initialize Spring Security, ServletManager not set");
 		}
 
 		servletManager.startAuthenticators();
