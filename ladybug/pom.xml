@@ -63,7 +63,7 @@
 		<dependency><!-- prevent compile error: cannot access javax.enterprise.context.Dependent -->
 			<groupId>io.quarkus</groupId>
 			<artifactId>quarkus-arc</artifactId>
-			<version>1.13.4.Final</version><!-- 2.7.0.Final doesn't compile with Java 8 -->
+			<version>1.13.7.Final</version><!-- 2.7.0.Final doesn't compile with Java 8 -->
 			<scope>provided</scope>
 		</dependency>
 
