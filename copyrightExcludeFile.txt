@@ -67,3 +67,4 @@ checkstyle.xml
 TransformerHandlerImpl.java
 secrets/
 secrets\
+.toml

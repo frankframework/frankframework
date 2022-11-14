@@ -18,10 +18,12 @@ package nl.nn.adapterframework.senders;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.StringTokenizer;
 
 //import jakarta.activation.CommandMap;
 import jakarta.activation.DataHandler;
@@ -108,9 +110,11 @@ public class MailSender extends MailSenderBase {
 
 	private @Getter String smtpHost;
 	private @Getter int smtpPort=25;
+	private @Getter String domainWhitelist;
 
 	private Properties properties = new Properties();
 	private Session session = null;
+	private ArrayList<String> allowedDomains = new ArrayList<String>();
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -135,6 +139,13 @@ public class MailSender extends MailSenderBase {
 				properties.remove("mail.smtp.from"); //Make sure it's not set twice?
 			}
 			properties.put("mail.smtp.from", getBounceAddress());
+		}
+		
+		if (StringUtils.isNotEmpty(getDomainWhitelist())) {
+			StringTokenizer st = new StringTokenizer(getDomainWhitelist(), ",");
+			while (st.hasMoreTokens()) {
+				allowedDomains.add(st.nextToken());
+			}
 		}
 	}
 
@@ -183,11 +194,18 @@ public class MailSender extends MailSenderBase {
 			} else {
 				recipientType = Message.RecipientType.TO;
 			}
-			msg.addRecipient(recipientType, recipient.getInternetAddress());
+
 			recipientsFound = true;
-			if (log.isDebugEnabled()) {
-				sb.append("[recipient [" + recipient + "]]");
+			
+			if(allowedDomains.isEmpty() || allowedDomains.contains(StringUtils.substringAfter(recipient.getAddress(),'@').toLowerCase())) {
+				msg.addRecipient(recipientType, recipient.getInternetAddress());
+				if (log.isDebugEnabled()) {
+					sb.append("[recipient [" + recipient + "]]");
+				}
+			} else {
+				log.warn("Recipient [" + recipient + "] ignored, not in domain whitelist [" + getDomainWhitelist() + "]");
 			}
+
 		}
 		if (!recipientsFound) {
 			throw new SenderException("MailSender [" + getName() + "] did not find any valid recipients");
@@ -253,8 +271,17 @@ public class MailSender extends MailSenderBase {
 
 
 		// send the message
-		putOnTransport(session, msg);
-
+		// Only send if some recipients remained after whitelisting
+		try {
+			if (msg.getAllRecipients() != null && msg.getAllRecipients().length > 0) {
+				putOnTransport(session, msg);
+			} else if (log.isDebugEnabled()) {
+				log.debug("No recipients left after whitelisting, mail is not send");
+			}
+		} catch (MessagingException e) {
+			throw new SenderException("Error occurred while getting mail recipients", e);
+		}
+		
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		try {
 			msg.writeTo(out);
@@ -392,6 +419,11 @@ public class MailSender extends MailSenderBase {
 	@IbisDoc({ "Port of the SMTP-host by which the messages are to be send", "25" })
 	public void setSmtpPort(int newSmtpPort) {
 		smtpPort = newSmtpPort;
+	}
+
+	/** Comma separated list of domains to which mails can be send, domains not on the list are filtered out. Empty allows all domains */
+	public void setDomainWhitelist(String domainWhitelist) {
+		this.domainWhitelist = domainWhitelist;
 	}
 
 	public void setProperties(Properties properties) {
