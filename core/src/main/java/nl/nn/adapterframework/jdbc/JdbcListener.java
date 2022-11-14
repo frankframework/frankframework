@@ -213,6 +213,21 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 		}
 	}
 
+	private String getValueOrDefaultIfColumnDoesNotExistInTable(ResultSet rs, String columnName, String defaultValue) {
+		if (StringUtils.isEmpty(columnName)) {
+			return defaultValue;
+		}
+		try {
+			int index = rs.findColumn(columnName);
+			if (index>0) {
+				return rs.getString(index);
+			}
+		} catch (SQLException e) {
+			// ignore exception, assume columnName does not exist
+		}
+		return null; // do not return defaultValue, as the column probably exists, but not in this result set
+	}
+
 	protected M extractRawMessage(ResultSet rs) throws JdbcException {
 		try {
 			M result;
@@ -246,8 +261,8 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 				}
 				// log.debug("building wrapper for key ["+key+"], message ["+message+"]");
 				MessageWrapper<?> mw = new MessageWrapper<Object>();
-				String messageId = StringUtils.isNotEmpty(getMessageIdField()) ? rs.getString(getMessageIdField()) : key;
-				String correlationId = StringUtils.isNotEmpty(getCorrelationIdField()) ? rs.getString(getCorrelationIdField()) : messageId;
+				String messageId = getValueOrDefaultIfColumnDoesNotExistInTable(rs, getMessageIdField(), key);
+				String correlationId = getValueOrDefaultIfColumnDoesNotExistInTable(rs, getCorrelationIdField(), messageId);
 				mw.setId(messageId);
 				mw.getContext().put(CORRELATION_ID_KEY, correlationId);
 				mw.getContext().put(STORAGE_KEY_KEY, key);
