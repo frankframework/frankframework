@@ -44,7 +44,7 @@ public class OAuthAccessTokenManagerTest {
 
 		CredentialFactory client_cf = new CredentialFactory(null, clientId, clientSecret);
 
-		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenEndpoint, scope, client_cf, true, httpSender, expiry);
+		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenEndpoint, scope, client_cf, true, false, httpSender, expiry);
 
 		String accessToken = accessTokenManager.getAccessToken(null, true);
 
@@ -60,7 +60,7 @@ public class OAuthAccessTokenManagerTest {
 
 		CredentialFactory client_cf = new CredentialFactory(null, clientId, clientSecret);
 
-		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenEndpoint, scope, client_cf, true, httpSender, expiry);
+		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenEndpoint, scope, client_cf, true, false, httpSender, expiry);
 
 		String accessToken = accessTokenManager.getAccessToken(null, true);
 
@@ -76,7 +76,7 @@ public class OAuthAccessTokenManagerTest {
 
 		CredentialFactory client_cf = new CredentialFactory(null, clientId, clientSecret);
 
-		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenEndpoint, scope, client_cf, true, httpSender, expiry);
+		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenEndpoint, scope, client_cf, true, false, httpSender, expiry);
 
 		HttpAuthenticationException exception = assertThrows(HttpAuthenticationException.class, ()->accessTokenManager.getAccessToken(null, true));
 		assertThat(exception.getMessage(), containsString("unauthorized_client"));
@@ -91,7 +91,7 @@ public class OAuthAccessTokenManagerTest {
 
 		CredentialFactory client_cf = new CredentialFactory(null, clientId, clientSecret);
 
-		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenEndpoint, scope, client_cf, true, httpSender, expiry);
+		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenEndpoint, scope, client_cf, true, false, httpSender, expiry);
 
 		HttpAuthenticationException exception = assertThrows(HttpAuthenticationException.class, ()->accessTokenManager.getAccessToken(null, true));
 		assertThat(exception.getMessage(), containsString("404"));
