@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.lifecycle;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -48,6 +49,7 @@ import nl.nn.adapterframework.lifecycle.servlets.IAuthenticator;
 import nl.nn.adapterframework.lifecycle.servlets.JeeAuthenticator;
 import nl.nn.adapterframework.lifecycle.servlets.ServletConfiguration;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.SpringUtils;
@@ -127,8 +129,9 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 	}
 
 	private void resolveAndConfigureAuthenticator(String authenticatorName) {
-		String properyPrefix = "application.security.http.authenticators."+authenticatorName;
-		String type = AppConstants.getInstance().getProperty(properyPrefix+".type");
+		AppConstants appConstants = AppConstants.getInstance();
+		String properyPrefix = "application.security.http.authenticators."+authenticatorName+".";
+		String type = AppConstants.getInstance().getProperty(properyPrefix+"type");
 		AuthenticationType auth = null;
 		try {
 			auth = EnumUtils.parse(AuthenticationType.class, type);
@@ -137,7 +140,24 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 		}
 		Class<? extends IAuthenticator> clazz = auth.getAuthenticator().getClass();
 		IAuthenticator authenticator = SpringUtils.createBean(applicationContext, clazz);
+
+		for(Method method: clazz.getMethods()) {
+			if(!method.getName().startsWith("set") || method.getParameterTypes().length != 1)
+				continue;
+
+			String setter = firstCharToLower(method.getName().substring(3));
+			String value = appConstants.getProperty(properyPrefix+setter);
+			if(StringUtils.isEmpty(value))
+				continue;
+
+			ClassUtils.invokeSetter(authenticator, method, value);
+		}
+
 		authenticators.put(authenticatorName, authenticator);
+	}
+
+	private String firstCharToLower(String input) {
+		return input.substring(0, 1).toLowerCase() + input.substring(1);
 	}
 
 	protected static void setupDefaultSecuritySettings(Properties properties) {

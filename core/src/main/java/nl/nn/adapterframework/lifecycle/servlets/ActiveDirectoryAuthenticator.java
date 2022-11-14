@@ -49,7 +49,7 @@ public class ActiveDirectoryAuthenticator extends ServletAuthenticatorBase imple
 	/** LDAP server endpoint, eg: ldap://10.1.2.3 */
 	private @Setter String url = AppConstants.getInstance().getProperty("ldap.auth.url");
 	/** Domain root DN, eg: DC=company,DC=org */
-	private @Setter String rootDn = AppConstants.getInstance().getProperty("ldap.auth.user.base");
+	private @Setter String baseDn = AppConstants.getInstance().getProperty("ldap.auth.user.base");
 	private @Setter boolean followReferrals = true;
 	/** defaults to (&(objectClass=user)(userPrincipalName={0})) */
 	private @Setter String searchFilter = null;
@@ -59,7 +59,11 @@ public class ActiveDirectoryAuthenticator extends ServletAuthenticatorBase imple
 
 	@Override
 	public SecurityFilterChain configure(HttpSecurity http) throws Exception {
-		ActiveDirectoryLdapAuthenticationProvider provider = new ActiveDirectoryLdapAuthenticationProvider(domainName, url, rootDn);
+		if(StringUtils.isEmpty(url)) {
+			throw new IllegalArgumentException("url may not be empty");
+		}
+
+		ActiveDirectoryLdapAuthenticationProvider provider = new ActiveDirectoryLdapAuthenticationProvider(domainName, url, baseDn);
 		provider.setConvertSubErrorCodesToExceptions(log.isDebugEnabled());
 
 		if(StringUtils.isNotEmpty(searchFilter)) provider.setSearchFilter(searchFilter);
@@ -75,7 +79,9 @@ public class ActiveDirectoryAuthenticator extends ServletAuthenticatorBase imple
 
 		provider.setAuthoritiesMapper(new LdapAuthorityMapper(roleMappingURL));
 
-		http.authenticationProvider(provider).httpBasic();
+		http.authenticationProvider(provider);
+		String realmName = StringUtils.isNotEmpty(domainName) ? domainName : url;
+		http.httpBasic().realmName(realmName);
 		return http.build();
 	}
 

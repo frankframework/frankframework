@@ -30,7 +30,7 @@ import lombok.Setter;
 @EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false) //Enables JSR 250 (JAX-RS) annotations
 public class HttpSecurityConfigurer implements InitializingBean {
 
-	private @Autowired @Setter ServletManager servletManager;
+	private @Setter @Autowired ServletManager servletManager;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {

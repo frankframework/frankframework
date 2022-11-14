@@ -41,7 +41,7 @@ public class InMemoryAuthenticator extends ServletAuthenticatorBase {
 
 	@Override
 	public SecurityFilterChain configure(HttpSecurity http) throws Exception {
-		http.httpBasic(); //BasicAuthenticationEntryPoint
+		http.httpBasic().realmName("InMemoryAuthenticator"); //BasicAuthenticationEntryPoint
 		http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
 		UserDetails user = User.builder()

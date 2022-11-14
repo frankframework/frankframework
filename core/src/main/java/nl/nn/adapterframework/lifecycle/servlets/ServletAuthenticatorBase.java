@@ -90,6 +90,8 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 			http.headers().frameOptions().sameOrigin();
 			http.csrf().disable();
 			http.requestMatcher(getRequestMatcher());
+			http.formLogin().disable();
+
 			return configure(http);
 		} catch (Exception e) {
 			throw new IllegalStateException("unable to configure Spring Security", e);
