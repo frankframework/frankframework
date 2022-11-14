@@ -49,7 +49,7 @@ public class MultipartEntity extends BasicHttpEntity implements HttpEntity {
 
 	@Override
 	public boolean isChunked() {
-		return getContentLength() == -1;
+		return getContentLength() != -1;
 	}
 
 	@Override
