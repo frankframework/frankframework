@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,65 +16,143 @@
 package nl.nn.adapterframework.http;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.mime.FormBodyPart;
-import org.apache.http.entity.mime.FormBodyPartBuilder;
-import org.apache.http.entity.mime.content.InputStreamBody;
-import org.apache.http.entity.mime.content.StringBody;
-import org.w3c.dom.Element;
+import org.apache.http.HttpEntity;
 
+import lombok.Getter;
+import nl.nn.adapterframework.collection.CollectionActor;
+import nl.nn.adapterframework.collection.CollectionActor.Action;
+import nl.nn.adapterframework.collection.CollectionException;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
+import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.doc.IbisDocRef;
+import nl.nn.adapterframework.http.mime.IMultipartCollectingElement;
+import nl.nn.adapterframework.http.mime.MultipartCollector;
+import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 
-@Deprecated
-public class MultipartHttpSender extends HttpSender {
+/**
+ * Collector that builds up a MultipartEntity, and sends it upon CLOSE.
+ *
+ * @author Gerrit van Brakel
+ *
+ */
+public class MultipartHttpSender extends HttpSender implements IMultipartCollectingElement {
 
-	public MultipartHttpSender() {
+	private static final String ATTRIBUTE_AND_PARAMETER_PARTNAME="partname";
+
+	private CollectionActor<IMultipartCollectingElement, MultipartCollector> actor = new CollectionActor<>();
+
+	private @Getter String partname;
+	private @Getter String filename;
+	private @Getter String mimeType;
+
+	{
 		setPostType(PostType.FORMDATA);
 		setMethodType(HttpMethod.POST);
 		setFirstBodyPartName("message");
 	}
 
 	@Override
-	protected FormBodyPart elementToFormBodyPart(Element element, PipeLineSession session) throws IOException {
-		String partType = element.getAttribute("type"); //File or otherwise
-		String partName = element.getAttribute("name"); //Name of the part
-		String fileName = (StringUtils.isNotEmpty(element.getAttribute("filename"))) ? element.getAttribute("filename") : element.getAttribute("fileName"); //Name of the file
-		String sessionKey = element.getAttribute("sessionKey"); //SessionKey to retrieve data from
-		String mimeType = element.getAttribute("mimeType"); //MimeType of the part
-		String partValue = element.getAttribute("value"); //Value when SessionKey is empty or not set
-		Message partObject = session.getMessage(sessionKey);
-
-		ContentType contentType = ContentType.create(mimeType, getCharSet());
-		if (partObject != null && partObject.isBinary()) {
-			InputStream fis = partObject.asInputStream();
-
-			if(StringUtils.isNotEmpty(fileName)) {
-				return createMultipartBodypart(partName, fis, fileName, contentType);
-			}
-			else if("file".equalsIgnoreCase(partType)) {
-				return createMultipartBodypart(sessionKey, fis, partName, contentType);
-			}
-			else {
-				return createMultipartBodypart(partName, fis, null, contentType);
-			}
-		} else {
-			String value = partObject.asString();
-			if(StringUtils.isEmpty(value))
-				value = partValue;
-
-			return FormBodyPartBuilder.create().setName(partName).setBody(new StringBody(value, contentType)).build();
+	public void configure() throws ConfigurationException {
+		actor.configure(getParameterList(), this);
+		if (getParameterList()!=null) {
+			getParameterList().configure();
+		}
+		switch(actor.getAction()) {
+			case OPEN:
+				configureContent();
+				break;
+			case WRITE:
+				checkStringAttributeOrParameter(ATTRIBUTE_AND_PARAMETER_PARTNAME, getPartname(), ATTRIBUTE_AND_PARAMETER_PARTNAME);
+				break;
+			case CLOSE:
+				super.configure();
+				break;
+			default:
+				throw new ConfigurationException("Unknown action ["+actor.getAction()+"]");
 		}
 	}
 
-	private FormBodyPart createMultipartBodypart(String name, InputStream is, String fileName, ContentType contentType) {
-		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appending filepart ["+name+"] with value ["+is+"] fileName ["+fileName+"] and contentType ["+contentType+"]");
-		FormBodyPartBuilder bodyPart = FormBodyPartBuilder.create()
-			.setName(name)
-			.setBody(new InputStreamBody(is, contentType, fileName));
-		return bodyPart.build();
+	@Override
+	public void open() throws SenderException {
+		if (actor.getAction()==Action.CLOSE) {
+			super.open();
+		}
+	}
+
+	@Override
+	public void close() throws SenderException {
+		if (actor.getAction()==Action.CLOSE) {
+			super.close();
+		}
+	}
+
+	@Override
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		switch(actor.getAction()) {
+			case OPEN:
+				try {
+					actor.doAction(message, session, this);
+					if (StringUtils.isNotEmpty(getFirstBodyPartName())) {
+						actor.getCollection(session).getEntityBuilder().addPart(createStringBodypart(message));
+						if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+getFirstBodyPartName()+"] with value ["+message+"]");
+					}
+				} catch (CollectionException e) {
+					throw new SenderException(e);
+				}
+			case CLOSE:
+				return super.sendMessage(message, session);
+			default:
+				try {
+					return new SenderResult(actor.doAction(message, session, this));
+				} catch (CollectionException e) {
+					throw new SenderException(e);
+				}
+		}
+	}
+
+	@Override
+	public MultipartCollector openCollection(Message input, PipeLineSession session, ParameterValueList pvl) throws CollectionException {
+		return MultipartCollector.openCollection(input, session, pvl, this);
+	}
+
+	@Override
+	protected HttpEntity createMultiPartEntity(Message message, ParameterValueList parameters, PipeLineSession session) throws SenderException, IOException {
+		try {
+			//actor.getCollection(session).getEntityBuilder().setCharset(Charset.forName(getCharSet())); // TODO: for backward compatibility, should be removed when results prove to be identical
+			return actor.getCollection(session).getEntity();
+		} catch (CollectionException e) {
+			throw new SenderException(e);
+		}
+	}
+
+	@IbisDocRef({CollectionActor.CLASSNAME})
+	public void setAction(Action action) {
+		actor.setAction(action);
+	}
+
+	@IbisDocRef({CollectionActor.CLASSNAME})
+	public void setCollection(String collection) {
+		actor.setCollection(collection);
+	}
+
+	/** Name of the part in the Multipart. */
+	public void setPartname(String partname) {
+		this.partname = partname;
+	}
+
+	/** MIME type of the part in the Multipart. */
+	public void setMimeType(String mimeType) {
+		this.mimeType = mimeType;
+	}
+
+	/** Filename of the part in the Multipart. */
+	public void setFilename(String filename) {
+		this.filename = filename;
 	}
 }

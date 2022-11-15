@@ -358,26 +358,10 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			}
 		}
 
-		if(StringUtils.isNotEmpty(getContentType())) {
-			fullContentType = ContentType.parse(getContentType());
-			if(fullContentType != null && fullContentType.getCharset() == null) {
-				fullContentType = fullContentType.withCharset(getCharSet());
-			}
-		}
+		configureContent();
 
 		if (getMaxConnections() <= 0) {
 			throw new ConfigurationException(getLogPrefix()+"maxConnections is set to ["+getMaxConnections()+"], which is not enough for adequate operation");
-		}
-
-		try {
-			if (urlParameter == null) {
-				if (StringUtils.isEmpty(getUrl())) {
-					throw new ConfigurationException(getLogPrefix()+"url must be specified, either as attribute, or as parameter");
-				}
-				staticUri = getURI(getUrl());
-			}
-		} catch (URISyntaxException e) {
-			throw new ConfigurationException(getLogPrefix()+"cannot interpret url ["+getUrl()+"]", e);
 		}
 
 		AuthSSLContextFactory.verifyKeystoreConfiguration(this, this);
@@ -437,6 +421,25 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				return isFollowRedirects();
 			}
 		});
+	}
+
+	protected void configureContent() throws ConfigurationException {
+		if(StringUtils.isNotEmpty(getContentType())) {
+			fullContentType = ContentType.parse(getContentType());
+			if(fullContentType != null && fullContentType.getCharset() == null) {
+				fullContentType = fullContentType.withCharset(getCharSet());
+			}
+		}
+		try {
+			if (urlParameter == null) {
+				if (StringUtils.isEmpty(getUrl())) {
+					throw new ConfigurationException(getLogPrefix()+"url must be specified, either as attribute, or as parameter");
+				}
+				staticUri = getURI(getUrl());
+			}
+		} catch (URISyntaxException e) {
+			throw new ConfigurationException(getLogPrefix()+"cannot interpret url ["+getUrl()+"]", e);
+		}
 	}
 
 	@Override

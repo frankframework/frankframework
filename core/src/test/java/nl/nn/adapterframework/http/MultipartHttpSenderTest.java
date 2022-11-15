@@ -22,9 +22,11 @@ import java.io.ByteArrayInputStream;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.collection.CollectionActor.Action;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.http.HttpSender.PostType;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.ParameterBuilder;
 
 public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSender> {
 
@@ -35,24 +37,33 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 
 	@Test
 	public void simpleMockedMultipartHttp1() throws Throwable {
-		MultipartHttpSender sender = getSender();
+		MultipartHttpSender senderOpen= getSender();
+		senderOpen.setAction(Action.OPEN);
+		senderOpen.configure();
+		senderOpen.open();
+
+		MultipartHttpSender senderWrite= new MultipartHttpSender();
+		senderWrite.setAction(Action.WRITE);
+		senderWrite.setPartname("part_file");
+		senderWrite.setFilename("document.pdf");
+		senderWrite.addParameter(ParameterBuilder.create().withName("contents").withSessionKey("part_file"));
+		senderWrite.setMimeType("application/pdf");
+		senderWrite.configure();
+		senderWrite.open();
+
+		MultipartHttpSender senderClose = getSender();
+		senderClose.setAction(Action.CLOSE);
+		senderClose.configure();
+		senderClose.open();
+
 		Message input = new Message("<xml>input</xml>");
+		Message fileMessage = new Message(new ByteArrayInputStream("<dummy xml file/>".getBytes()));
+
+		senderOpen.sendMessage(input, session);
+		senderWrite.sendMessage(fileMessage, session);
 
 		try {
-			PipeLineSession pls = new PipeLineSession(session);
-
-			String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
-					+ "sessionKey=\"part_file\" size=\"72833\" "
-					+ "mimeType=\"application/pdf\"/></parts>";
-			pls.put("multipartXml", xmlMultipart);
-			pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
-
-			sender.setMultipartXmlSessionKey("multipartXml");
-
-			sender.configure();
-			sender.open();
-
-			String result = sender.sendMessageOrThrow(input, pls).asString();
+			String result = senderClose.sendMessageOrThrow(Message.nullMessage(), session).asString();
 			assertEqualsIgnoreCRLF(getFile("simpleMockedMultipartHttp1.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -65,24 +76,34 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 
 	@Test
 	public void simpleMockedMultipartHttp2() throws Throwable {
-		MultipartHttpSender sender = getSender();
-		Message input = new Message("<xml>input</xml>");
+		MultipartHttpSender senderOpen= getSender();
+		senderOpen.setAction(Action.OPEN);
+		senderOpen.configure();
+		senderOpen.open();
+
+		MultipartHttpSender senderWrite= new MultipartHttpSender();
+		senderWrite.setAction(Action.WRITE);
+		senderWrite.setPartname("dummy");
+		senderWrite.setFilename("document.pdf");
+		senderWrite.setMimeType("application/pdf");
+		senderWrite.configure();
+		senderWrite.open();
+
+		MultipartHttpSender senderClose = getSender();
+		senderClose.setAction(Action.CLOSE);
+		senderClose.configure();
+		senderClose.open();
+
+		Message inputOpen = new Message("<xml>input</xml>");
+		Message inputWrite = new Message(new ByteArrayInputStream("<dummy xml file/>".getBytes()));
+		Message inputClose = Message.nullMessage();
 
 		try {
-			PipeLineSession pls = new PipeLineSession(session);
 
-			String xmlMultipart = "<parts><part name=\"dummy\" filename=\"document.pdf\" "
-					+ "sessionKey=\"part_file\" size=\"72833\" "
-					+ "mimeType=\"application/pdf\"/></parts>";
-			pls.put("multipartXml", xmlMultipart);
-			pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
+			senderOpen.sendMessage(inputOpen, session);
+			senderWrite.sendMessage(inputWrite, session);
 
-			sender.setMultipartXmlSessionKey("multipartXml");
-
-			sender.configure();
-			sender.open();
-
-			String result = sender.sendMessageOrThrow(input, pls).asString();
+			String result = senderClose.sendMessageOrThrow(inputClose, session).asString();
 			assertEqualsIgnoreCRLF(getFile("simpleMockedMultipartHttp2.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -95,24 +116,32 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 
 	@Test
 	public void simpleMockedMultipartHttp3() throws Throwable {
-		MultipartHttpSender sender = getSender();
-		Message input = new Message("<xml>input</xml>");
+		MultipartHttpSender senderOpen= getSender();
+		senderOpen.setAction(Action.OPEN);
+		senderOpen.configure();
+		senderOpen.open();
+
+		MultipartHttpSender senderWrite= new MultipartHttpSender();
+		senderWrite.setAction(Action.WRITE);
+		senderWrite.setPartname("dummy");
+		senderWrite.setMimeType("application/json");
+		senderWrite.configure();
+		senderWrite.open();
+
+		MultipartHttpSender senderClose = getSender();
+		senderClose.setAction(Action.CLOSE);
+		senderClose.configure();
+		senderClose.open();
+
+		Message inputOpen = new Message("<xml>input</xml>");
+		Message inputWrite = new Message("{json:true}");
+		Message inputClose = Message.nullMessage();
 
 		try {
-			PipeLineSession pls = new PipeLineSession(session);
+			senderOpen.sendMessage(inputOpen, session);
+			senderWrite.sendMessage(inputWrite, session);
 
-			String xmlMultipart = "<parts><part name=\"dummy\" "
-					+ "value=\"{json:true}\" size=\"72833\" "
-					+ "mimeType=\"application/json\"/></parts>";
-			pls.put("multipartXml", xmlMultipart);
-			pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
-
-			sender.setMultipartXmlSessionKey("multipartXml");
-
-			sender.configure();
-			sender.open();
-
-			String result = sender.sendMessageOrThrow(input, pls).asString();
+			String result = senderClose.sendMessageOrThrow(inputClose, session).asString();
 			assertEqualsIgnoreCRLF(getFile("simpleMockedMultipartHttp3.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -125,25 +154,34 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 
 	@Test
 	public void simpleMockedMultipartMtom1() throws Throwable {
-		MultipartHttpSender sender = getSender();
-		Message input = new Message("<xml>input</xml>");
+		MultipartHttpSender senderOpen= getSender();
+		senderOpen.setAction(Action.OPEN);
+		senderOpen.setPostType(PostType.MTOM);
+		senderOpen.configure();
+		senderOpen.open();
+
+		MultipartHttpSender senderWrite= new MultipartHttpSender();
+		senderWrite.setAction(Action.WRITE);
+		senderWrite.setPartname("part_file");
+		senderWrite.setFilename("document.pdf");
+		senderWrite.setMimeType("application/pdf");
+		senderWrite.configure();
+		senderWrite.open();
+
+		MultipartHttpSender senderClose = getSender();
+		senderClose.setAction(Action.CLOSE);
+		senderClose.configure();
+		senderClose.open();
+
+		Message inputOpen = new Message("<xml>input</xml>");
+		Message inputWrite = new Message(new ByteArrayInputStream("<dummy xml file/>".getBytes()));
+		Message inputClose = Message.nullMessage();
 
 		try {
-			PipeLineSession pls = new PipeLineSession(session);
+			senderOpen.sendMessage(inputOpen, session);
+			senderWrite.sendMessage(inputWrite, session);
 
-			String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
-					+ "sessionKey=\"part_file\" size=\"72833\" "
-					+ "mimeType=\"application/pdf\"/></parts>";
-			pls.put("multipartXml", xmlMultipart);
-			pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
-
-			sender.setMtomEnabled(true);
-			sender.setMultipartXmlSessionKey("multipartXml");
-
-			sender.configure();
-			sender.open();
-
-			String result = sender.sendMessageOrThrow(input, pls).asString();
+			String result = senderClose.sendMessageOrThrow(inputClose, session).asString();
 			assertEqualsIgnoreCRLF(getFile("simpleMockedMultipartMtom1.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -156,25 +194,34 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 
 	@Test
 	public void simpleMockedMultipartMtom2() throws Throwable {
-		MultipartHttpSender sender = getSender();
-		Message input = new Message("<xml>input</xml>");
+		MultipartHttpSender senderOpen= getSender();
+		senderOpen.setAction(Action.OPEN);
+		senderOpen.setPostType(PostType.MTOM);
+		senderOpen.configure();
+		senderOpen.open();
+
+		MultipartHttpSender senderWrite= new MultipartHttpSender();
+		senderWrite.setAction(Action.WRITE);
+		senderWrite.setPartname("dummy");
+		senderWrite.setFilename("document.pdf");
+		senderWrite.setMimeType("application/pdf");
+		senderWrite.configure();
+		senderWrite.open();
+
+		MultipartHttpSender senderClose = getSender();
+		senderClose.setAction(Action.CLOSE);
+		senderClose.configure();
+		senderClose.open();
+
+		Message inputOpen = new Message("<xml>input</xml>");
+		Message inputWrite = new Message(new ByteArrayInputStream("<dummy xml file/>".getBytes()));
+		Message inputClose = Message.nullMessage();
 
 		try {
-			PipeLineSession pls = new PipeLineSession(session);
+			senderOpen.sendMessage(inputOpen, session);
+			senderWrite.sendMessage(inputWrite, session);
 
-			String xmlMultipart = "<parts><part name=\"dummy\" filename=\"document.pdf\" "
-					+ "sessionKey=\"part_file\" size=\"72833\" "
-					+ "mimeType=\"application/pdf\"/></parts>";
-			pls.put("multipartXml", xmlMultipart);
-			pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
-
-			sender.setMtomEnabled(true);
-			sender.setMultipartXmlSessionKey("multipartXml");
-
-			sender.configure();
-			sender.open();
-
-			String result = sender.sendMessageOrThrow(input, pls).asString();
+			String result = senderClose.sendMessageOrThrow(inputClose, session).asString();
 			assertEqualsIgnoreCRLF(getFile("simpleMockedMultipartMtom2.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -187,25 +234,33 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 
 	@Test
 	public void simpleMockedMultipartMtom3() throws Throwable {
-		MultipartHttpSender sender = getSender();
-		Message input = new Message("<xml>input</xml>");
+		MultipartHttpSender senderOpen= getSender();
+		senderOpen.setAction(Action.OPEN);
+		senderOpen.setPostType(PostType.MTOM);
+		senderOpen.configure();
+		senderOpen.open();
+
+		MultipartHttpSender senderWrite= new MultipartHttpSender();
+		senderWrite.setAction(Action.WRITE);
+		senderWrite.setPartname("dummy");
+		senderWrite.setMimeType("application/json");
+		senderWrite.configure();
+		senderWrite.open();
+
+		MultipartHttpSender senderClose = getSender();
+		senderClose.setAction(Action.CLOSE);
+		senderClose.configure();
+		senderClose.open();
+
+		Message inputOpen = new Message("<xml>input</xml>");
+		Message inputWrite = new Message("{json:true}");
+		Message inputClose = Message.nullMessage();
 
 		try {
-			PipeLineSession pls = new PipeLineSession(session);
+			senderOpen.sendMessage(inputOpen, session);
+			senderWrite.sendMessage(inputWrite, session);
 
-			String xmlMultipart = "<parts><part name=\"dummy\" "
-					+ "value=\"{json:true}\" size=\"72833\" "
-					+ "mimeType=\"application/json\"/></parts>";
-			pls.put("multipartXml", xmlMultipart);
-			pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
-
-			sender.setMtomEnabled(true);
-			sender.setMultipartXmlSessionKey("multipartXml");
-
-			sender.configure();
-			sender.open();
-
-			String result = sender.sendMessageOrThrow(input, pls).asString();
+			String result = senderClose.sendMessageOrThrow(inputClose, session).asString();
 			assertEqualsIgnoreCRLF(getFile("simpleMockedMultipartMtom3.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();

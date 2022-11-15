@@ -339,7 +339,7 @@ public class HttpSender extends HttpSenderBase {
 		return hmethod;
 	}
 
-	private FormBodyPart createStringBodypart(Message message) {
+	protected FormBodyPart createStringBodypart(Message message) {
 		MimeType mimeType = (postType == PostType.MTOM) ? APPLICATION_XOP_XML : MediaType.TEXT_PLAIN; // only the first part is XOP+XML, other parts should use their own content-type
 		FormBodyPartBuilder bodyPart = FormBodyPartBuilder.create(getFirstBodyPartName(), new MessageContentBody(message, mimeType));
 
@@ -351,7 +351,7 @@ public class HttpSender extends HttpSenderBase {
 		return bodyPart.build();
 	}
 
-	private HttpEntity createMultiPartEntity(Message message, ParameterValueList parameters, PipeLineSession session) throws SenderException, IOException {
+	protected HttpEntity createMultiPartEntity(Message message, ParameterValueList parameters, PipeLineSession session) throws SenderException, IOException {
 		MultipartEntityBuilder entity = MultipartEntityBuilder.create();
 
 		entity.setCharset(Charset.forName(getCharSet()));

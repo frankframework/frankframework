@@ -59,7 +59,7 @@ public class CollectionActor<E extends ICollectingElement<C>, C extends ICollect
 	/** @ff.default WRITE */
 	private @Getter @Setter Action action=Action.WRITE;
 
-	/** Session key used to refer to collection. Must be specified with another value if multiple CollectorPipes are active at the same time in the same session
+	/** Session key used to refer to collection. Must be specified with another value if multiple CollectorPipes or Senders are active at the same time in the same session
 	  * @ff.default collection
 	 */
 	private @Getter @Setter String collection="collection";
@@ -71,7 +71,7 @@ public class CollectionActor<E extends ICollectingElement<C>, C extends ICollect
 	}
 
 
-	protected C getCollection(PipeLineSession session) throws CollectionException {
+	public C getCollection(PipeLineSession session) throws CollectionException {
 		C result = (C)session.get(getCollection());
 		if (result==null && getAction()!=Action.OPEN) {
 			throw new CollectionException("cannot find collection under key ["+getCollection()+"]");

@@ -228,7 +228,9 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 
 	private String getBoundary(String contentType) {
 		String boundary = contentType.substring(contentType.indexOf("boundary=")+9);
-		boundary = boundary.substring(0, boundary.indexOf(";"));
+		if (boundary.indexOf(";")>0) {
+			boundary = boundary.substring(0, boundary.indexOf(";"));
+		}
 		return boundary.replaceAll("\"", "");
 	}
 }
