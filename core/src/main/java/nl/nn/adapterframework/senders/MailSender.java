@@ -196,7 +196,7 @@ public class MailSender extends MailSenderBase {
 			}
 
 			recipientsFound = true;
-			
+
 			if(allowedDomains.isEmpty() || allowedDomains.contains(StringUtils.substringAfter(recipient.getAddress(),'@').toLowerCase())) {
 				msg.addRecipient(recipientType, recipient.getInternetAddress());
 				if (log.isDebugEnabled()) {
@@ -281,7 +281,7 @@ public class MailSender extends MailSenderBase {
 		} catch (MessagingException e) {
 			throw new SenderException("Error occurred while getting mail recipients", e);
 		}
-		
+
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		try {
 			msg.writeTo(out);
