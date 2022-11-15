@@ -300,7 +300,7 @@ public abstract class ClassUtils {
 		}
 
 		try {//Only always grab the first value because we explicitly check method.getParameterTypes().length != 1
-			Object castValue = getCastValue(method.getParameterTypes()[0], valueToSet);
+			Object castValue = castAsType(method.getParameterTypes()[0], valueToSet);
 			if(log.isDebugEnabled()) log.debug("trying to set method ["+method.getName()+"] with value ["+valueToSet+"] of type ["+castValue.getClass().getCanonicalName()+"] on ["+ClassUtils.nameOf(bean)+"]");
 
 			method.invoke(bean, castValue);
@@ -309,8 +309,8 @@ public abstract class ClassUtils {
 		}
 	}
 
-	private static Object getCastValue(Class<?> class1, String value) {
-		String className = class1.getName().toLowerCase();
+	private static Object castAsType(Class<?> type, String value) {
+		String className = type.getName().toLowerCase();
 		if("boolean".equals(className))
 			return Boolean.parseBoolean(value);
 		else if("int".equals(className) || "integer".equals(className))
