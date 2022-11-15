@@ -27,6 +27,7 @@ import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
 import nl.nn.adapterframework.lifecycle.DynamicRegistration.Servlet;
+import nl.nn.adapterframework.lifecycle.ServletManager;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -46,14 +47,12 @@ public class ServletConfiguration {
 	private AppConstants appConstants = AppConstants.getInstance();
 	private Logger log = LogUtil.getLogger(this);
 
-	private static final String HTTPS_ENABLED_KEY = "application.security.http.transportGuarantee";
-
 	private final @Getter String name;
 	private @Getter List<String> securityRoles;
 	private @Getter List<String> urlMapping;
 	private @Getter int loadOnStartup = -1;
 	private @Getter boolean enabled = true;
-	private @Getter TransportGuarantee transportGuarantee = TransportGuarantee.NONE;
+	private @Getter TransportGuarantee transportGuarantee;
 	private @Getter String authenticatorName = null;
 
 	public ServletConfiguration(Servlet servlet) {
@@ -75,22 +74,13 @@ public class ServletConfiguration {
 	}
 
 	public boolean isAuthenticationEnabled() {
-		return !securityRoles.isEmpty() && authenticatorName != null;
+		return !securityRoles.isEmpty() && !"NONE".equals(authenticatorName);
 	}
 
 	private void defaultSecuritySettings() {
-		boolean isDtapStageLoc = "LOC".equalsIgnoreCase(appConstants.getProperty("dtap.stage"));
-
-		String constraintType = appConstants.getProperty(HTTPS_ENABLED_KEY);
-		if (StringUtils.isNotEmpty(constraintType)) {
-			try {
-				transportGuarantee = EnumUtils.parse(TransportGuarantee.class, constraintType);
-			} catch(IllegalArgumentException e) {
-				log.error("unable to set TransportGuarantee for servlet ["+name+"]", e);
-			}
-		} else if(isDtapStageLoc) {
-			transportGuarantee = TransportGuarantee.NONE;
-		}
+		transportGuarantee = ServletManager.getDefaultTransportGuarantee();
+		AuthenticationType defaultType = ServletManager.isWebSecurityEnabled() ? AuthenticationType.CONTAINER : AuthenticationType.NONE;
+		authenticatorName = defaultType.name();
 	}
 
 	private void loadProperties() {
@@ -107,7 +97,7 @@ public class ServletConfiguration {
 		if(StringUtils.isNotEmpty(mapping)) {
 			this.urlMapping = configureUrlMapping(mapping);
 		}
-		this.authenticatorName = appConstants.getString(propertyPrefix+"authenticator", null);
+		this.authenticatorName = appConstants.getString(propertyPrefix+"authenticator", authenticatorName);
 	}
 
 	private void configureServletSecurity(String propertyPrefix) {

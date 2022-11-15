@@ -72,6 +72,8 @@ import nl.nn.adapterframework.util.SpringUtils;
  * <code>servlet.servlet-name.urlMapping</code> - path the servlet listens to<br/>
  * <code>servlet.servlet-name.loadOnStartup</code> - automatically load or use lazy-loading (affects application startup time)<br/>
  * </p>
+ * NOTE:
+ * Both CONTAINER and NONE are non-configurable default authenticators.
  * 
  * @author Niels Meijer
  *
@@ -107,8 +109,19 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 
 	@Override // After initialization but before other servlets are wired
 	public void afterPropertiesSet() throws Exception {
+		addDefaultAuthenticator(AuthenticationType.CONTAINER);
+		addDefaultAuthenticator(AuthenticationType.NONE);
+
 		resolveAuthenticators();
 		log.info("found Authenticators {}", authenticators::values);
+	}
+
+	private void addDefaultAuthenticator(AuthenticationType type) {
+		if(!authenticators.containsKey(type.name())) {
+			Class<? extends IAuthenticator> clazz = type.getAuthenticator().getClass();
+			IAuthenticator authenticator = SpringUtils.createBean(applicationContext, clazz);
+			authenticators.put(type.name(), authenticator);
+		}
 	}
 
 	public void startAuthenticators() {
@@ -177,8 +190,12 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 		}
 	}
 
-	public boolean isWebSecurityEnabled() {
+	public static boolean isWebSecurityEnabled() {
 		return webSecurityEnabled;
+	}
+
+	public static TransportGuarantee getDefaultTransportGuarantee() {
+		return defaultTransportGuarantee;
 	}
 
 	/**
@@ -231,7 +248,6 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 			log.info("skip instantiating servlet name [{}] not enabled", servletName);
 			return;
 		}
-
 
 		ServletRegistration.Dynamic serv = getServletContext().addServlet(servletName, servlet);
 

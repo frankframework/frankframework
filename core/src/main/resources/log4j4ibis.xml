@@ -105,7 +105,6 @@
 		<Logger name="org.springframework.security.web" level="INFO" />
 		<Logger name="org.springframework.security.ldap" level="WARN" />
 
-
 		<Logger name="liquibase.migrationLog" level="INFO">
 			<AppenderRef ref="stdout"/>
 			<AppenderRef ref="config"/>

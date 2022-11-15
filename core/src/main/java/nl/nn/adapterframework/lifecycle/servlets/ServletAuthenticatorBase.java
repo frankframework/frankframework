@@ -1,3 +1,18 @@
+/*
+   Copyright 2022 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.lifecycle.servlets;
 
 import java.util.ArrayList;
@@ -23,7 +38,7 @@ import nl.nn.adapterframework.util.LogUtil;
 public abstract class ServletAuthenticatorBase implements IAuthenticator, ApplicationContextAware {
 	private static final String HTTP_SECURITY_BEAN_NAME = "org.springframework.security.config.annotation.web.configuration.HttpSecurityConfiguration.httpSecurity";
 
-	protected Logger log = LogUtil.getLogger(this);
+	protected final Logger log = LogUtil.getLogger(this);
 
 	private @Getter ApplicationContext applicationContext;
 	private @Getter Set<String> endpoints = new HashSet<>();
@@ -42,7 +57,7 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 
 	private void setSecurityRoles(List<String> securityRoles) {
 		if(securityRoles == null || securityRoles.isEmpty()) {
-			securityRoles = ServletManager.DEFAULT_IBIS_ROLES; //TODO make it so when you specify no roles it disables authorization
+			securityRoles = ServletManager.DEFAULT_IBIS_ROLES;
 		}
 		this.securityRoles.addAll(securityRoles);
 	}
@@ -87,10 +102,14 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 
 	private SecurityFilterChain configureHttpSecurity(HttpSecurity http) {
 		try {
-			http.headers().frameOptions().sameOrigin();
+			//Apply defaults to disable bloated filters, see DefaultSecurityFilterChain.getFilters for the actual list.
+			http.headers().frameOptions().sameOrigin(); //Allow same origin iframe request
 			http.csrf().disable();
 			http.requestMatcher(getRequestMatcher());
-			http.formLogin().disable();
+			http.formLogin().disable(); //Disable the form login filter
+			http.anonymous().disable(); //Disable the default anonymous filter
+			http.logout().disable(); //Disable the logout endpoint on every filter
+//			http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS); //Disables cookies
 
 			return configure(http);
 		} catch (Exception e) {
