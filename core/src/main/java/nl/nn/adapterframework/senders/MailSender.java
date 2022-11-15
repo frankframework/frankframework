@@ -140,7 +140,7 @@ public class MailSender extends MailSenderBase {
 			}
 			properties.put("mail.smtp.from", getBounceAddress());
 		}
-		
+
 		if (StringUtils.isNotEmpty(getDomainWhitelist())) {
 			StringTokenizer st = new StringTokenizer(getDomainWhitelist(), ",");
 			while (st.hasMoreTokens()) {
