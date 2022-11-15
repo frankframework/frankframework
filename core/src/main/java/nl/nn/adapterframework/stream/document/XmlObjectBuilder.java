@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package nl.nn.adapterframework.stream.document;
 
 import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
 
 public class XmlObjectBuilder extends ObjectBuilder {
@@ -24,8 +25,9 @@ public class XmlObjectBuilder extends ObjectBuilder {
 	private SaxElementBuilder current;
 
 	public XmlObjectBuilder(SaxElementBuilder current, String elementName) throws SAXException {
-		this.current = current.startElement(elementName);
+		this.current = current.startElement(XmlUtils.cleanseElementName(elementName));
 	}
+
 	@Override
 	public void close() throws SAXException {
 		try {
@@ -34,11 +36,12 @@ public class XmlObjectBuilder extends ObjectBuilder {
 			super.close();
 		}
 	}
-	
+
 	@Override
 	public INodeBuilder addField(String fieldName) throws SAXException {
 		return new XmlNodeBuilder(current, fieldName);
 	}
+
 	@Override
 	public ArrayBuilder addRepeatedField(String fieldName) throws SAXException {
 		return new XmlArrayBuilder(current, fieldName);
