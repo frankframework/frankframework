@@ -17,6 +17,7 @@ package nl.nn.adapterframework.stream.document;
 
 import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
 
 public class XmlObjectBuilder extends ObjectBuilder {
@@ -24,7 +25,7 @@ public class XmlObjectBuilder extends ObjectBuilder {
 	private SaxElementBuilder current;
 
 	public XmlObjectBuilder(SaxElementBuilder current, String elementName) throws SAXException {
-		this.current = current.startElement(elementName);
+		this.current = current.startElement(XmlUtils.cleanseElementName(elementName));
 	}
 
 	@Override
@@ -43,7 +44,7 @@ public class XmlObjectBuilder extends ObjectBuilder {
 
 	@Override
 	public void addAttribute(String name, String value) throws SAXException {
-		current.addAttribute(name, value);
+		current.addAttribute(XmlUtils.cleanseElementName(name), value);
 	}
 
 	@Override
