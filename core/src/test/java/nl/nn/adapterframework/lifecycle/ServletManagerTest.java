@@ -3,6 +3,10 @@ package nl.nn.adapterframework.lifecycle;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,10 +27,14 @@ import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.context.ApplicationContext;
 import org.springframework.mock.web.MockServletContext;
 
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.lifecycle.servlets.IAuthenticator;
+import nl.nn.adapterframework.lifecycle.servlets.ServletConfiguration;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.credentialprovider.util.Misc;
 
@@ -35,7 +43,7 @@ public class ServletManagerTest {
 	private static ServletManager manager;
 
 	@BeforeClass
-	public static void prepare() {
+	public static void prepare() throws Exception {
 		ServletContext context = new MockServletContext() {
 			private Map<String, Dynamic> dynamic = new HashMap<>();
 			@Override
@@ -48,6 +56,27 @@ public class ServletManagerTest {
 			}
 		};
 		manager = new ServletManager(context);
+
+		ApplicationContext applicationContext = mock(ApplicationContext.class);
+		AutowireCapableBeanFactory beanFactory = mock(AutowireCapableBeanFactory.class);
+		doReturn(beanFactory).when(applicationContext).getAutowireCapableBeanFactory();
+		doReturn(new DummyAuthenticator()).when(beanFactory).createBean(isA(IAuthenticator.class.getClass()), eq(AutowireCapableBeanFactory.AUTOWIRE_BY_NAME), eq(false));
+		manager.setApplicationContext(applicationContext);
+
+		manager.afterPropertiesSet();
+	}
+
+	private static class DummyAuthenticator implements IAuthenticator {
+
+		@Override
+		public void registerServlet(ServletConfiguration config) {
+			// NOOP
+		}
+
+		@Override
+		public void build() {
+			// NOOP
+		}
 	}
 
 	@Before
@@ -55,6 +84,7 @@ public class ServletManagerTest {
 		Properties properties = new Properties();
 		properties.setProperty("dtap.stage", "ACC");
 		properties.setProperty(ServletManager.HTTPS_ENABLED_KEY, "confidential");
+		properties.setProperty(ServletManager.AUTH_ENABLED_KEY, "false");
 
 		ServletManager.setupDefaultSecuritySettings(properties);
 	}

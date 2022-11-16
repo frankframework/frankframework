@@ -27,7 +27,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 /**
- * Dummy SSLSocketFactory for LoginFilter.
+ * Dummy SSLSocketFactory for LdapFindMemberPipe.
  * 
  * (to avoid java.security.InvalidAlgorithmParameterException: the trustAnchors parameter must be non-empty).
  * 

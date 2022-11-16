@@ -27,16 +27,15 @@ import nl.nn.adapterframework.util.LogUtil;
 public class VerifyServerSecurityBean implements InitializingBean {
 
 	private Logger log = LogUtil.getLogger(this);
-	private ServletManager servletManager;
 
 	@Autowired
 	public void setServletManager(ServletManager servletManager) {
-		this.servletManager = servletManager;
+		//Ensure this bean is loaded after the ServletManager has been instantiated
 	}
 
 	@Override
 	public void afterPropertiesSet() {
-		if(!servletManager.isWebSecurityEnabled()) {
+		if(!ServletManager.isWebSecurityEnabled()) {
 			AppConstants appConstants = AppConstants.getInstance();
 			boolean isDtapStageLoc = "LOC".equalsIgnoreCase(appConstants.getProperty("dtap.stage"));
 			if(appConstants.getBoolean("security.constraint.warning", !isDtapStageLoc)) {
