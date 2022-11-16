@@ -1,15 +1,15 @@
 package nl.nn.credentialprovider;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collection;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class PropertyFileCredentialFactoryTest {
 
@@ -17,7 +17,7 @@ public class PropertyFileCredentialFactoryTest {
 
 	private PropertyFileCredentialFactory credentialFactory;
 
-	@Before
+	@BeforeEach
 	public void setup() throws IOException {
 		String propertiesUrl = this.getClass().getResource(PROPERTIES_FILE).toExternalForm();
 		String propertiesFile =  Paths.get(propertiesUrl.substring(propertiesUrl.indexOf(":/")+2)).toString();

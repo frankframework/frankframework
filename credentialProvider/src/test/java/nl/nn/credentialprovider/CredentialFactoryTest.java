@@ -1,11 +1,11 @@
 package nl.nn.credentialprovider;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-@Ignore("Can only run before other tests that use CredentialFactory")
+@Disabled("Can only run before other tests that use CredentialFactory")
 public class CredentialFactoryTest {
 
 	@Test
@@ -15,12 +15,11 @@ public class CredentialFactoryTest {
 		assertEquals("fakeUsername", c.getUsername());
 		assertEquals("fakePassword", c.getPassword());
 	}
-	
+
 	@Test
 	public void testFindAliasWithPrefix() {
 		ICredentials c = CredentialFactory.getCredentials("fakePrefix:account", null, null);
 		assertEquals("fakeUsername", c.getUsername());
 		assertEquals("fakePassword", c.getPassword());
 	}
-	
 }

@@ -1,21 +1,20 @@
 package nl.nn.credentialprovider;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import org.junit.Before;
-import org.junit.Test;
-
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class MapCredentialsTest {
 
 	private Map<String,String> aliases;
 
-	@Before
+	@BeforeEach
 	public void setup() {
 		aliases = new HashMap<>();
 		aliases.put("noUsername/password","password from alias");

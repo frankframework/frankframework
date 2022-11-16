@@ -1,8 +1,8 @@
 package nl.nn.credentialprovider;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
@@ -15,8 +15,8 @@ import java.util.Collection;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import net.wedjaa.ansible.vault.crypto.VaultHandler;
 
@@ -29,7 +29,7 @@ public class AnsibleVaultCredentialFactoryTest {
 
 	private AnsibleVaultCredentialFactory credentialFactory;
 
-	@Before
+	@BeforeEach
 	public void setup() throws IOException {
 		String vaultUrl = this.getClass().getResource(ANSIBLE_VAULT_FILE).toExternalForm();
 		String vaultFile =  Paths.get(vaultUrl.substring(vaultUrl.indexOf(":/")+2)).toString();
