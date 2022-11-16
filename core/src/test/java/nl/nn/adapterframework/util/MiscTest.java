@@ -415,7 +415,7 @@ public class MiscTest {
 		from.put("a", 15);
 		from.put("b", 16);
 		Misc.copyContext(keys, from, to, null);
-		assertTrue(from.equals(to));
+		assertEquals(from,to);
 	}
 
 	/**
