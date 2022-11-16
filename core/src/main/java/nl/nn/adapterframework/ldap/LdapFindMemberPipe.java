@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2019, 2020 Nationale-Nederlanden
+   Copyright 2016, 2019-2020 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,14 +27,13 @@ import javax.naming.ldap.InitialLdapContext;
 
 import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.webcontrol.DummySSLSocketFactory;
 
 /**
  * Pipe that checks if a specified dn exists as 'member' in another specified dn
@@ -108,8 +107,7 @@ public class LdapFindMemberPipe extends LdapQueryPipeBase {
 				ctx = new InitialDirContext(env);
 			} catch (CommunicationException e) {
 				log.info("Cannot create constructor for DirContext ["+ e.getMessage() + "], will try again with dummy SocketFactory",e);
-				env.put("java.naming.ldap.factory.socket", DummySSLSocketFactory.class.getName());
-				ctx = new InitialLdapContext(env, null);
+				ctx = new InitialLdapContext(env, null); //Try again without connection request controls.
 			}
 			Attribute attrs = ctx.getAttributes("").get("member");
 			if (attrs != null) {
