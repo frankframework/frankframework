@@ -1213,10 +1213,13 @@ public class XmlUtils {
 			return 0x0;
 	}
 
+	public static String cleanseElementName(String candidateName) {
+		return candidateName!=null ? candidateName.replaceAll("[^\\w\\-\\.]", "_") : null;
+	}
+
 	/**
 	 * encodes a url
 	 */
-
 	public static String encodeURL(String url) {
 		String mark = "-_.!~*'()\"";
 		StringBuilder encodedUrl = new StringBuilder();
