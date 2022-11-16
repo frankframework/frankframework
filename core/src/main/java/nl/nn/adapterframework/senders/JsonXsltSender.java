@@ -93,7 +93,7 @@ public class JsonXsltSender extends XsltSender {
 		MessageOutputStream prev = new MessageOutputStream(this,xjw,target,threadLifeCycleEventListener, txManager, session, null);
 		ContentHandler handler = super.createHandler(input, threadConnector, session, poolToUse, prev);
 		if (getXmlDebugger()!=null) {
-			handler = getXmlDebugger().inspectXml(session, "XML to be converted to JSON", handler, (resource,label)->target.closeOnClose(resource));
+			handler = getXmlDebugger().inspectXml(session, "output XML to be converted to JSON", handler, (resource,label)->target.closeOnClose(resource));
 		}
 		return handler;
 	}
@@ -102,7 +102,7 @@ public class JsonXsltSender extends XsltSender {
 	@Override
 	protected XMLReader getXmlReader(PipeLineSession session, ContentHandler handler, BiConsumer<AutoCloseable,String> closeOnCloseRegister) throws ParserConfigurationException, SAXException {
 		if (getXmlDebugger()!=null) {
-			handler = getXmlDebugger().inspectXml(session, "JSON converted to XML", handler, closeOnCloseRegister);
+			handler = getXmlDebugger().inspectXml(session, "input JSON converted to XML", handler, closeOnCloseRegister);
 		}
 		return new JsonXslt3XmlReader(handler);
 	}

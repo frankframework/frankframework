@@ -29,6 +29,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.dispatcher.DispatcherManager;
 import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.http.HttpSender;
@@ -140,11 +141,12 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 			if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 				log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
 			}
-			if (session!=null) {
-				Misc.copyContext(getReturnedSessionKeys(), context, session, this);
-			}
+			Misc.copyContext(getReturnedSessionKeys(), context, session, this);
 		}
-		return new SenderResult(result);
+		ExitState exitState = (ExitState)context.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
+		Object exitCode = context.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
+		String forwardName = exitCode !=null ? exitCode.toString() : null;
+		return new SenderResult(exitState==ExitState.SUCCESS, new Message(result), "exitState="+exitState, forwardName);
 	}
 
 

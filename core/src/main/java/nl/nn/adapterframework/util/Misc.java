@@ -836,14 +836,25 @@ public class Misc {
 		return localHost;
 	}
 
-	public static void copyContext(String keys, Map<String,Object> from, PipeLineSession to, INamedObject requester) {
-		if (StringUtils.isNotEmpty(keys) && from!=null && to!=null) {
-			StringTokenizer st = new StringTokenizer(keys,",;");
-			while (st.hasMoreTokens()) {
-				String key=st.nextToken();
-				Object value=from.get(key);
-				Message.asMessage(value).closeOnCloseOf(to, requester);
-				to.put(key,value);
+	public static void copyContext(String keys, Map<String,Object> from, Map<String,Object> to, INamedObject requester) {
+		if (to!=null) {
+			log.debug("returning context, returned sessionkeys ["+keys+"]");
+			to.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, from.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY));
+			to.put(PipeLineSession.EXIT_STATE_CONTEXT_KEY, from.get(PipeLineSession.EXIT_STATE_CONTEXT_KEY));
+			if (StringUtils.isNotEmpty(keys) && from!=null && to!=null) {
+				StringTokenizer st = new StringTokenizer(keys,",;");
+				while (st.hasMoreTokens()) {
+					String key=st.nextToken();
+					Object value=from.get(key);
+					Message message = Message.asMessage(value);
+					if (from instanceof PipeLineSession) {
+						message.unscheduleFromCloseOnExitOf((PipeLineSession)from);
+					}
+					if (to instanceof PipeLineSession) {
+						Message.asMessage(value).closeOnCloseOf((PipeLineSession)to, requester);
+					}
+					to.put(key,value);
+				}
 			}
 		}
 	}

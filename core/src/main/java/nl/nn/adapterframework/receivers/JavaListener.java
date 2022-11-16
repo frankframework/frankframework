@@ -154,33 +154,24 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 				}
 			}
 		}
-		try (PipeLineSession session = new PipeLineSession(context) {
-
-				@Override
-				public Object put(String key, Object value) {
-					Object result = super.put(key,value);
-					context.put(key, value);
-					return result;
-				}
-			}) {
-			session.put(PipeLineSession.correlationIdKey, correlationId);
-			Message message =  new Message(rawMessage);
-			if (throwException) {
-				try {
-					return handler.processRequest(this, rawMessage, message, session).asString();
-				} catch (IOException e) {
-					throw new ListenerException("cannot convert stream", e);
-				}
-			}
+		// Do not autoclose session.
+		context.put(PipeLineSession.correlationIdKey, correlationId);
+		Message message =  new Message(rawMessage);
+		if (throwException) {
 			try {
-				return handler.processRequest(this, rawMessage, message, session).asString();
-			} catch (ListenerException | IOException e) {
-				try {
-					return handler.formatException(null,correlationId, message, e).asString();
-				} catch (IOException e1) {
-					e.addSuppressed(e1);
-					throw new ListenerException(e);
-				}
+				return handler.processRequest(this, rawMessage, message, context).asString();
+			} catch (IOException e) {
+				throw new ListenerException("cannot convert stream", e);
+			}
+		}
+		try {
+			return handler.processRequest(this, rawMessage, message, context).asString();
+		} catch (ListenerException | IOException e) {
+			try {
+				return handler.formatException(null,correlationId, message, e).asString();
+			} catch (IOException e1) {
+				e.addSuppressed(e1);
+				throw new ListenerException(e);
 			}
 		}
 	}
