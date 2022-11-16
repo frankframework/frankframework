@@ -17,13 +17,10 @@ package nl.nn.adapterframework.senders;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
-import java.util.StringTokenizer;
 
 //import jakarta.activation.CommandMap;
 import jakarta.activation.DataHandler;
@@ -46,6 +43,7 @@ import org.w3c.dom.Node;
 import com.sun.mail.smtp.SMTPMessage;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
@@ -110,11 +108,9 @@ public class MailSender extends MailSenderBase {
 
 	private @Getter String smtpHost;
 	private @Getter int smtpPort=25;
-	private @Getter String domainWhitelist;
 
 	private Properties properties = new Properties();
 	private Session session = null;
-	private ArrayList<String> allowedDomains = new ArrayList<String>();
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -139,13 +135,6 @@ public class MailSender extends MailSenderBase {
 				properties.remove("mail.smtp.from"); //Make sure it's not set twice?
 			}
 			properties.put("mail.smtp.from", getBounceAddress());
-		}
-
-		if (StringUtils.isNotEmpty(getDomainWhitelist())) {
-			StringTokenizer st = new StringTokenizer(getDomainWhitelist(), ",");
-			while (st.hasMoreTokens()) {
-				allowedDomains.add(st.nextToken());
-			}
 		}
 	}
 
@@ -175,44 +164,18 @@ public class MailSender extends MailSenderBase {
 	}
 
 	@Override
-	public String sendEmail(MailSession mailSession) throws SenderException {
+	public String sendEmail(MailSessionBase mailSession) throws SenderException {
 		Session session = createSession();
 		log.debug("sending mail using session [{}]", session);
-		return sendEmail(session, mailSession);
+		return sendEmail(session, (MailSession)mailSession);
 	}
 
-	private void setRecipient(MailSession mailSession, MimeMessage msg, StringBuffer sb) throws UnsupportedEncodingException, MessagingException, SenderException {
-		boolean recipientsFound = false;
-		List<EMail> emailList = mailSession.getRecipientList();
-		for (EMail recipient : emailList) {
-			String type = recipient.getType();
-			Message.RecipientType recipientType;
-			if ("cc".equalsIgnoreCase(type)) {
-				recipientType = Message.RecipientType.CC;
-			} else if ("bcc".equalsIgnoreCase(type)) {
-				recipientType = Message.RecipientType.BCC;
-			} else {
-				recipientType = Message.RecipientType.TO;
-			}
-
-			recipientsFound = true;
-
-			if(allowedDomains.isEmpty() || allowedDomains.contains(StringUtils.substringAfter(recipient.getAddress(),'@').toLowerCase())) {
-				msg.addRecipient(recipientType, recipient.getInternetAddress());
-				if (log.isDebugEnabled()) {
-					sb.append("[recipient [" + recipient + "]]");
-				}
-			} else {
-				log.warn("Recipient [" + recipient + "] ignored, not in domain whitelist [" + getDomainWhitelist() + "]");
-			}
-
-		}
-		if (!recipientsFound) {
-			throw new SenderException("MailSender [" + getName() + "] did not find any valid recipients");
-		}
+	@Override
+	protected MailSession createMailSession() throws SenderException {
+		return new MailSession();
 	}
 
-	private void setAttachments(MailSession mailSession, MimeMessage msg, String messageTypeWithCharset) throws MessagingException {
+	private void setAttachments(MailSessionBase mailSession, MimeMessage msg, String messageTypeWithCharset) throws MessagingException {
 		List<MailAttachmentStream> attachmentList = mailSession.getAttachmentList();
 		String message = mailSession.getMessage();
 		if (attachmentList == null || attachmentList.size() == 0) {
@@ -269,17 +232,12 @@ public class MailSender extends MailSenderBase {
 
 		MimeMessage msg = createMessage(session, mailSession, logBuffer);
 
-
 		// send the message
 		// Only send if some recipients remained after whitelisting
-		try {
-			if (msg.getAllRecipients() != null && msg.getAllRecipients().length > 0) {
-				putOnTransport(session, msg);
-			} else if (log.isDebugEnabled()) {
-				log.debug("No recipients left after whitelisting, mail is not send");
-			}
-		} catch (MessagingException e) {
-			throw new SenderException("Error occurred while getting mail recipients", e);
+		if (mailSession.hasWhitelistedRecipients()) {
+			putOnTransport(session, msg);
+		} else if (log.isDebugEnabled()) {
+			log.debug("No recipients left after whitelisting, mail is not send");
 		}
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -294,6 +252,8 @@ public class MailSender extends MailSenderBase {
 
 	private MimeMessage createMessage(Session session, MailSession mailSession, StringBuffer logBuffer) throws SenderException {
 		SMTPMessage msg = new SMTPMessage(session);
+		mailSession.setSmtpMessage(msg);
+		
 		try {
 			msg.setFrom(mailSession.getFrom().getInternetAddress());
 		} catch (Exception e) {
@@ -319,7 +279,7 @@ public class MailSender extends MailSenderBase {
 		}
 
 		try {
-			setRecipient(mailSession, msg, logBuffer);
+			mailSession.setRecipientsOnMessage(logBuffer);
 		} catch (Exception e) {
 			throw new SenderException("Error occurred while processing recipients", e);
 		}
@@ -421,12 +381,43 @@ public class MailSender extends MailSenderBase {
 		smtpPort = newSmtpPort;
 	}
 
-	/** Comma separated list of domains to which mails can be send, domains not on the list are filtered out. Empty allows all domains */
-	public void setDomainWhitelist(String domainWhitelist) {
-		this.domainWhitelist = domainWhitelist;
-	}
-
 	public void setProperties(Properties properties) {
 		this.properties = properties;
+	}
+	
+	public class MailSession extends MailSessionBase {
+		private @Getter @Setter SMTPMessage smtpMessage = null;
+		
+		public MailSession() throws SenderException {
+			super();
+		}
+
+		@Override
+		protected void addRecipientToMessage(EMail recipient) throws SenderException {
+			String type = recipient.getType();
+			Message.RecipientType recipientType;
+			if ("cc".equalsIgnoreCase(type)) {
+				recipientType = Message.RecipientType.CC;
+			} else if ("bcc".equalsIgnoreCase(type)) {
+				recipientType = Message.RecipientType.BCC;
+			} else {
+				recipientType = Message.RecipientType.TO;
+			}
+
+			try {
+				smtpMessage.addRecipient(recipientType, recipient.getInternetAddress());
+			} catch (Exception e) {
+				throw new SenderException("Error occurred while processing recipients", e);
+			}
+		}
+
+		@Override
+		protected boolean hasWhitelistedRecipients() throws SenderException {
+			try {
+				return smtpMessage.getAllRecipients() != null && smtpMessage.getAllRecipients().length > 0;
+			} catch (MessagingException e) {
+				throw new SenderException("Error occurred while getting mail recipients", e);
+			}
+		}
 	}
 }

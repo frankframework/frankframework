@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang3.StringUtils;
@@ -82,18 +83,29 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	private @Getter String defaultFrom;
 	private @Getter int timeout = 20000;
 	private @Getter String bounceAddress;
+	private @Getter String domainWhitelist;
 
-	protected abstract String sendEmail(MailSession mailSession) throws SenderException;
+	private ArrayList<String> allowedDomains = new ArrayList<String>();
+
+	protected abstract String sendEmail(MailSessionBase mailSession) throws SenderException;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		credentialFactory = new CredentialFactory(getAuthAlias(), getUserId(), getPassword());
+
+		if (StringUtils.isNotEmpty(getDomainWhitelist())) {
+			StringTokenizer st = new StringTokenizer(getDomainWhitelist(), ",");
+			while (st.hasMoreTokens()) {
+				allowedDomains.add(st.nextToken());
+			}
+		}
+
 		super.configure();
 	}
 
 	@Override
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		MailSession mailSession;
+		MailSessionBase mailSession;
 		try {
 			mailSession = extract(message, session);
 		} catch (DomBuilderException e) {
@@ -108,8 +120,8 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	/**
 	 * Reads fields from either paramList or Xml file
 	 */
-	public MailSession extract(Message input, PipeLineSession session) throws SenderException, DomBuilderException {
-		MailSession mailSession;
+	public MailSessionBase extract(Message input, PipeLineSession session) throws SenderException, DomBuilderException {
+		MailSessionBase mailSession;
 		if (paramList == null) {
 			mailSession = parseXML(input, session);
 		} else {
@@ -137,7 +149,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		return recipients;
 	}
 
-	private MailSession readParameters(Message input, PipeLineSession session) throws SenderException {
+	private MailSessionBase readParameters(Message input, PipeLineSession session) throws SenderException {
 		EMail from = null;
 		String subject = null;
 		String threadTopic = null;
@@ -149,7 +161,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		ParameterValueList pvl=null;
 		ParameterValue pv;
 
-		MailSession mail = new MailSession();
+		MailSessionBase mail = createMailSession();
 		try {
 			pvl = paramList.getValues(input, session);
 			pv = pvl.get("from");
@@ -302,7 +314,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		return attachment;
 	}
 
-	private MailSession parseXML(Message input, PipeLineSession session) throws SenderException, DomBuilderException {
+	private MailSessionBase parseXML(Message input, PipeLineSession session) throws SenderException, DomBuilderException {
 		Element from;
 		String subject;
 		String threadTopic;
@@ -314,7 +326,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		Collection<Node> attachments;
 		Element replyTo = null;
 
-		MailSession mailSession = new MailSession();
+		MailSessionBase mailSession = createMailSession();
 
 		Element emailElement = XmlUtils.buildElement(input);
 		from = XmlUtils.getFirstChildTag(emailElement, "from");
@@ -369,6 +381,8 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		return mailSession;
 	}
 
+	protected abstract MailSessionBase createMailSession() throws SenderException;
+	
 	private EMail getEmailAddress(Element element, String type) throws SenderException {
 		if (element == null) {
 			return null;
@@ -379,7 +393,6 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		}
 		return null;
 	}
-
 
 	@Override
 	public boolean isSynchronous() {
@@ -463,10 +476,15 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		bounceAddress = string;
 	}
 
+	/** Comma separated list of domains to which mails can be send, domains not on the list are filtered out. Empty allows all domains */
+	public void setDomainWhitelist(String domainWhitelist) {
+		this.domainWhitelist = domainWhitelist;
+	}
+	
 	/**
 	 * Generic email class
 	 */
-	public class MailSession {
+	public abstract class MailSessionBase {
 		private EMail from = null;
 		private EMail replyto = null;
 		private List<EMail> recipients = new ArrayList<EMail>();
@@ -479,11 +497,39 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		private String threadTopic = null;
 		private Collection<Node> headers;
 		private String bounceAddress = getBounceAddress();
-
-		public MailSession() throws SenderException {
+		
+		public MailSessionBase() throws SenderException {
 			from = new EMail(getDefaultFrom(),"from");
 		}
 
+		public void setRecipientsOnMessage(StringBuffer logBuffer) throws SenderException {
+			boolean recipientsFound = false;
+			List<EMail> emailList = getRecipientList();
+			for (EMail recipient : emailList) {
+				recipientsFound = true;
+
+				if(isRecipientWhitelisted(recipient)) {
+					addRecipientToMessage(recipient);
+					if (log.isDebugEnabled()) {
+						logBuffer.append("[recipient [" + recipient + "]]");
+					}
+				} else {
+					log.warn("Recipient [" + recipient + "] ignored, not in domain whitelist [" + getDomainWhitelist() + "]");
+				}
+			}
+			if (!recipientsFound) {
+				throw new SenderException("Sender [" + getName() + "] did not find any valid recipients");
+			}
+		}
+		
+		private boolean isRecipientWhitelisted(EMail recipient) {
+			return allowedDomains.isEmpty() || allowedDomains.contains(StringUtils.substringAfter(recipient.getAddress(),'@').toLowerCase());
+		}
+		
+		protected abstract void addRecipientToMessage(EMail recipient) throws SenderException;
+		
+		protected abstract boolean hasWhitelistedRecipients() throws SenderException;
+		
 		public EMail getFrom() {
 			return from;
 		}

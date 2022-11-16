@@ -38,6 +38,9 @@ import com.sendgrid.helpers.mail.objects.Content;
 import com.sendgrid.helpers.mail.objects.Email;
 import com.sendgrid.helpers.mail.objects.Personalization;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.SenderException;
@@ -95,53 +98,64 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	public String sendEmail(MailSession mailSession) throws SenderException {
+	public String sendEmail(MailSessionBase mailSession) throws SenderException {
 		String result = null;
 
 		Mail mail = null;
 
 		try {
-			mail = createEmail(mailSession);
+			mail = createEmail((GridMailSession)mailSession);
 		} catch (Exception e) {
 			throw new SenderException("Exception occured while composing email", e);
 		}
 
-		try {
-			Request request = new Request();
-			request.setMethod(Method.POST);
-			request.setEndpoint("mail/send");
-			request.setBody(mail.build());
-			Response response = sendGrid.api(request);
-			result = response.getBody();
-			log.debug("Mail send result" + result);
-			return result;
-		} catch (Exception e) {
-			throw new SenderException(
-					getLogPrefix() + "exception sending mail with subject [" + mail.getSubject() + "]", e);
+		if (mailSession.hasWhitelistedRecipients()) {
+			try {
+				Request request = new Request();
+				request.setMethod(Method.POST);
+				request.setEndpoint("mail/send");
+				request.setBody(mail.build());
+				Response response = sendGrid.api(request);
+				result = response.getBody();
+				log.debug("Mail send result" + result);
+				return result;
+			} catch (Exception e) {
+				throw new SenderException(
+						getLogPrefix() + "exception sending mail with subject [" + mail.getSubject() + "]", e);
+			}
+		} else {
+			if (log.isDebugEnabled()) {
+				log.debug("No recipients left after whitelisting, mail is not send");
+			}
+			return "Mail not send, no recipients left after whitelisting";
 		}
 	}
 
+	@Override
+	protected GridMailSession createMailSession() throws SenderException {
+		return new GridMailSession();
+	}
+	
 	/**
 	 * Creates sendgrid mail object
 	 */
-	private Mail createEmail(MailSession mailSession) throws SenderException, DomBuilderException, IOException {
+	private Mail createEmail(GridMailSession gridMailSession) throws SenderException, DomBuilderException, IOException {
 		Mail mail = new Mail();
-		Personalization personalization = new Personalization();
+		Personalization personalization = gridMailSession.getPersonalization();
 
-		List<EMail> emailList = mailSession.getRecipientList();
-		EMail from = mailSession.getFrom();
-		EMail replyTo = mailSession.getReplyto();
-		setEmailAddresses(mail, personalization, emailList, from, replyTo);
+		EMail from = gridMailSession.getFrom();
+		EMail replyTo = gridMailSession.getReplyto();
+		setEmailAddresses(mail, gridMailSession, from, replyTo);
 
-		String subject = mailSession.getSubject();
+		String subject = gridMailSession.getSubject();
 		setSubject(mail, personalization, subject);
 
-		setMessage(mail, mailSession);
+		setMessage(mail, gridMailSession);
 
-		List<MailAttachmentStream> attachmentList = mailSession.getAttachmentList();
+		List<MailAttachmentStream> attachmentList = gridMailSession.getAttachmentList();
 		setAttachments(mail, attachmentList);
 
-		Collection<Node> headers = mailSession.getHeaders();
+		Collection<Node> headers = gridMailSession.getHeaders();
 		setHeader(mail, personalization, headers);
 		mail.addPersonalization(personalization);
 		return mail;
@@ -188,7 +202,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	/**
 	 * Sets content of email to mail Object
 	 */
-	private void setMessage(Mail mail, MailSession mailSession) {
+	private void setMessage(Mail mail, MailSessionBase mailSession) {
 		String message = mailSession.getMessage();
 		String messageType = mailSession.getMessageType();
 
@@ -237,35 +251,12 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	 * @param from 
 	 * @throws SenderException 
 	 */
-	private void setEmailAddresses(Mail mail, Personalization personalization, List<EMail> list, EMail from,
+	private void setEmailAddresses(Mail mail, GridMailSession gridMailSession, EMail from,
 			EMail replyTo) throws SenderException {
-		if (list != null && !list.isEmpty()) {
-			for (EMail e : list) {
-				if ("cc".equalsIgnoreCase(e.getType())) {
-					Email cc = new Email();
-					cc.setName(e.getName());
-					cc.setEmail(e.getAddress());
-					personalization.addCc(cc);
-				} else if ("bcc".equalsIgnoreCase(e.getType())) {
-					Email bcc = new Email();
-					bcc.setName(e.getName());
-					bcc.setEmail(e.getAddress());
-					personalization.addBcc(bcc);
-				} else if ("to".equalsIgnoreCase(e.getType())) {
-					Email to = new Email();
-					to.setEmail(e.getAddress());
-					to.setName(e.getName());
-					personalization.addTo(to);
-				} else {
-					throw new SenderException("Recipients not found");
-				}
-			}
-		} else {
-			throw new SenderException("Recipients not found");
-		}
+		gridMailSession.setRecipientsOnMessage(new StringBuffer());
+		
 		Email fromEmail = new Email();
 		if (from != null && from.getAddress() != null && !from.getAddress().isEmpty()) {
-			fromEmail.setEmail(from.getAddress());
 			fromEmail.setEmail(from.getAddress());
 			fromEmail.setName(from.getName());
 			mail.setFrom(fromEmail);
@@ -539,5 +530,47 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	@IbisDocRef({HTTPSENDERBASE})
 	public void setProtocol(String protocol) {
 		httpSender.setProtocol(protocol);
+	}
+	
+	public class GridMailSession extends MailSessionBase {
+		private @Getter @Setter Personalization personalization = null;
+		
+		public GridMailSession() throws SenderException {
+			super();
+			this.setPersonalization(new Personalization());
+		}
+
+		@Override
+		protected void addRecipientToMessage(EMail recipient) throws SenderException {
+			if ("cc".equalsIgnoreCase(recipient.getType())) {
+				Email cc = new Email();
+				cc.setName(recipient.getName());
+				cc.setEmail(recipient.getAddress());
+				personalization.addCc(cc);
+			} else if ("bcc".equalsIgnoreCase(recipient.getType())) {
+				Email bcc = new Email();
+				bcc.setName(recipient.getName());
+				bcc.setEmail(recipient.getAddress());
+				personalization.addBcc(bcc);
+			} else if ("to".equalsIgnoreCase(recipient.getType())) {
+				Email to = new Email();
+				to.setEmail(recipient.getAddress());
+				to.setName(recipient.getName());
+				personalization.addTo(to);
+			} else {
+				throw new SenderException("Recipients not found");
+			}
+		}
+
+		@Override
+		protected boolean hasWhitelistedRecipients() {
+			List<Email> tos = personalization.getTos();
+			List<Email> ccs = personalization.getCcs();
+			List<Email> bccs = personalization.getBccs();
+
+			return (tos != null && tos.size() > 0)
+				|| (ccs != null && ccs.size() > 0)
+				|| (bccs != null && bccs.size() > 0);
+		}
 	}
 }
