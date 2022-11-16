@@ -265,13 +265,13 @@ public class RestServiceDispatcher {
 
 				if(ifNoneMatch != null && ifNoneMatch.equalsIgnoreCase(cachedEtag) && method.equalsIgnoreCase("GET")) {
 					//Exit with 304
-					context.put("exitcode", 304);
+					context.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 304);
 					if(log.isDebugEnabled()) log.trace("aborting request with status 304, matched if-none-match ["+ifNoneMatch+"]");
 					return null;
 				}
 				if(ifMatch != null && !ifMatch.equalsIgnoreCase(cachedEtag) && !method.equalsIgnoreCase("GET")) {
 					//Exit with 412
-					context.put("exitcode", 412);
+					context.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 412);
 					if(log.isDebugEnabled()) log.trace("aborting request with status 412, matched if-match ["+ifMatch+"] method ["+method+"]");
 					return null;
 				}
@@ -288,7 +288,7 @@ public class RestServiceDispatcher {
 				cache.put(etagCacheKey, context.get("etag"));
 			}
 
-			if (result == null && !context.containsKey("exitcode")) {
+			if (result == null && !context.containsKey(PipeLineSession.EXIT_CODE_CONTEXT_KEY)) {
 				log.warn("result is null!");
 			}
 			return result;

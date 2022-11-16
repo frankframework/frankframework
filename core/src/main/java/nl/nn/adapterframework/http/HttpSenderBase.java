@@ -801,6 +801,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		if (result==null) {
 			result = Message.nullMessage();
 		}
+		log.debug("Storing [{}]=[{}], [{}]=[{}]", CONTEXT_KEY_STATUS_CODE, statusCode, CONTEXT_KEY_REASON_PHRASE, reasonPhrase);
 		result.getContext().put(CONTEXT_KEY_STATUS_CODE, statusCode);
 		result.getContext().put(CONTEXT_KEY_REASON_PHRASE, reasonPhrase);
 		return new SenderResult(success, result, reasonPhrase, Integer.toString(statusCode));

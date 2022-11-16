@@ -1317,7 +1317,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					tg.activateGuard(getTransactionTimeout());
 					pipeLineResult = adapter.processMessageWithExceptions(messageId, pipelineMessage, session);
 					setExitState(session, pipeLineResult.getState(), pipeLineResult.getExitCode());
-					session.put("exitcode", ""+ pipeLineResult.getExitCode());
+					session.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, ""+ pipeLineResult.getExitCode());
 					result=pipeLineResult.getResult();
 
 					errorMessage = "exitState ["+pipeLineResult.getState()+"], result [";
