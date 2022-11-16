@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.testtool;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -45,9 +46,9 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 	private long defaultTimeout = TestTool.globalTimeout;
 
 	@Override
-	public Message processRequest(IListener<M> origin, M rawMessage, Message message, PipeLineSession session) throws ListenerException {
+	public Message processRequest(IListener<M> origin, M rawMessage, Message message, Map<String,Object> context) throws ListenerException {
 		try {
-			ListenerMessage requestMessage = new ListenerMessage(message.asString(), session);
+			ListenerMessage requestMessage = new ListenerMessage(message.asString(), context);
 			requestMessages.add(requestMessage);
 
 			ListenerMessage responseMessage = getResponseMessage(defaultTimeout);
