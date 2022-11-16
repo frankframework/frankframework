@@ -61,7 +61,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class SendGridSender extends MailSenderBase implements HasKeystore, HasTruststore {
 
-	private final String HTTPSENDERBASE = "nl.nn.adapterframework.http.HttpSenderBase";
+	private static final String HTTPSENDERBASE = "nl.nn.adapterframework.http.HttpSenderBase";
 
 	private String url="http://smtp.sendgrid.net";
 	private SendGrid sendGrid;
@@ -135,7 +135,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	protected GridMailSession createMailSession() throws SenderException {
 		return new GridMailSession();
 	}
-	
+
 	/**
 	 * Creates sendgrid mail object
 	 */
@@ -168,7 +168,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	 * @param headers 
 	 */
 	private void setHeader(Mail mail, Personalization personalization, Collection<Node> headers) {
-		if (headers != null && headers.size() > 0) {
+		if (headers != null && !headers.isEmpty()) {
 			Iterator<Node> iter = headers.iterator();
 			while (iter.hasNext()) {
 				Element headerElement = (Element) iter.next();
@@ -182,12 +182,8 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 
 	/**
 	 * Adds attachments to mail Object if there is any
-	 * @param mail 
-	 * @param attachmentList 
-	 * @throws SenderException 
-	 * @throws IOException 
 	 */
-	private void setAttachments(Mail mail, List<MailAttachmentStream> attachmentList) throws SenderException, IOException {
+	private void setAttachments(Mail mail, List<MailAttachmentStream> attachmentList) {
 		if (attachmentList != null) {
 			Iterator<MailAttachmentStream> iter = attachmentList.iterator();
 			while (iter.hasNext()) {
@@ -244,17 +240,10 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 
 	/**
 	 * Sets recipients, sender and replyto to mail object 
-	 * @param mail 
-	 * @param personalization 
-	 * @param list 
-	 * @param replyTo 
-	 * @param from 
-	 * @throws SenderException 
 	 */
-	private void setEmailAddresses(Mail mail, GridMailSession gridMailSession, EMail from,
-			EMail replyTo) throws SenderException {
+	private void setEmailAddresses(Mail mail, GridMailSession gridMailSession, EMail from, EMail replyTo) throws SenderException {
 		gridMailSession.setRecipientsOnMessage(new StringBuffer());
-		
+
 		Email fromEmail = new Email();
 		if (from != null && from.getAddress() != null && !from.getAddress().isEmpty()) {
 			fromEmail.setEmail(from.getAddress());
@@ -311,6 +300,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	public void setProxyUsername(String string) {
 		httpSender.setProxyUsername(string);
 	}
+
 	@Deprecated
 	@ConfigurationWarning("Please use \"proxyUsername\" instead")
 	public void setProxyUserName(String string) {
@@ -531,10 +521,10 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	public void setProtocol(String protocol) {
 		httpSender.setProtocol(protocol);
 	}
-	
+
 	public class GridMailSession extends MailSessionBase {
 		private @Getter @Setter Personalization personalization = null;
-		
+
 		public GridMailSession() throws SenderException {
 			super();
 			this.setPersonalization(new Personalization());
@@ -568,9 +558,9 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 			List<Email> ccs = personalization.getCcs();
 			List<Email> bccs = personalization.getBccs();
 
-			return (tos != null && tos.size() > 0)
-				|| (ccs != null && ccs.size() > 0)
-				|| (bccs != null && bccs.size() > 0);
+			return (tos != null && !tos.isEmpty())
+				|| (ccs != null && !ccs.isEmpty())
+				|| (bccs != null && !bccs.isEmpty());
 		}
 	}
 }

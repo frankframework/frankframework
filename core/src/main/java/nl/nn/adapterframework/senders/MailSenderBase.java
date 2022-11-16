@@ -85,7 +85,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	private @Getter String bounceAddress;
 	private @Getter String domainWhitelist;
 
-	private ArrayList<String> allowedDomains = new ArrayList<String>();
+	private ArrayList<String> allowedDomains = new ArrayList<>();
 
 	protected abstract String sendEmail(MailSessionBase mailSession) throws SenderException;
 
@@ -209,7 +209,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 			pv = pvl.get("recipients");
 			Collection<EMail> recipientsCollection = retrieveRecipientsFromParameterList(pv);
 			if (recipientsCollection != null && !recipientsCollection.isEmpty()) {
-				recipients = new ArrayList<EMail>(recipientsCollection);
+				recipients = new ArrayList<>(recipientsCollection);
 				mail.setRecipientList(recipients);
 			} else {
 				throw new SenderException("Recipients cannot be empty. At least one recipient is required");
@@ -218,7 +218,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 			pv = pvl.get("attachments");
 			Collection<MailAttachmentStream> attachmentsCollection = retrieveAttachmentsFromParamList(pv, session);
 			if (attachmentsCollection != null && !attachmentsCollection.isEmpty()) {
-				attachments = new ArrayList<MailAttachmentStream>(attachmentsCollection);
+				attachments = new ArrayList<>(attachmentsCollection);
 				mail.setAttachmentList(attachments);
 			}
 
@@ -233,7 +233,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		if (recipientsNode != null && !recipientsNode.isEmpty()) {
 			Iterator<Node> iter = recipientsNode.iterator();
 			if (iter.hasNext()) {
-				recipients = new LinkedList<EMail>();
+				recipients = new LinkedList<>();
 				while (iter.hasNext()) {
 					Element recipientElement = (Element) iter.next();
 					String value = XmlUtils.getStringValue(recipientElement);
@@ -258,7 +258,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		Collection<MailAttachmentStream> attachments = null;
 		Iterator<Node> iter = attachmentsNode.iterator();
 		if (iter != null && iter.hasNext()) {
-			attachments = new LinkedList<MailAttachmentStream>();
+			attachments = new LinkedList<>();
 			while (iter.hasNext()) {
 				Element attachmentElement = (Element) iter.next();
 				String name = attachmentElement.getAttribute("name");
@@ -382,7 +382,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	}
 
 	protected abstract MailSessionBase createMailSession() throws SenderException;
-	
+
 	private EMail getEmailAddress(Element element, String type) throws SenderException {
 		if (element == null) {
 			return null;
@@ -480,15 +480,15 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	public void setDomainWhitelist(String domainWhitelist) {
 		this.domainWhitelist = domainWhitelist;
 	}
-	
+
 	/**
 	 * Generic email class
 	 */
 	public abstract class MailSessionBase {
 		private EMail from = null;
 		private EMail replyto = null;
-		private List<EMail> recipients = new ArrayList<EMail>();
-		private List<MailAttachmentStream> attachmentList = new ArrayList<MailAttachmentStream>();
+		private List<EMail> recipients = new ArrayList<>();
+		private List<MailAttachmentStream> attachmentList = new ArrayList<>();
 		private String subject = getDefaultSubject();
 		private String message = null;
 		private String messageType = getDefaultMessageType();
@@ -497,7 +497,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		private String threadTopic = null;
 		private Collection<Node> headers;
 		private String bounceAddress = getBounceAddress();
-		
+
 		public MailSessionBase() throws SenderException {
 			from = new EMail(getDefaultFrom(),"from");
 		}
@@ -521,15 +521,15 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 				throw new SenderException("Sender [" + getName() + "] did not find any valid recipients");
 			}
 		}
-		
+
 		private boolean isRecipientWhitelisted(EMail recipient) {
 			return allowedDomains.isEmpty() || allowedDomains.contains(StringUtils.substringAfter(recipient.getAddress(),'@').toLowerCase());
 		}
-		
+
 		protected abstract void addRecipientToMessage(EMail recipient) throws SenderException;
-		
+
 		protected abstract boolean hasWhitelistedRecipients() throws SenderException;
-		
+
 		public EMail getFrom() {
 			return from;
 		}
@@ -547,7 +547,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		}
 
 		public List<EMail> getRecipientList() throws SenderException {
-			if (recipients == null || recipients.size() == 0) {
+			if (recipients == null || recipients.isEmpty()) {
 				throw new SenderException("MailSender [" + getName() + "] has no recipients for message");
 			}
 			return recipients;
@@ -671,6 +671,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 			return "Attachment name ["+name+"] type ["+value.getClass().getSimpleName()+"]";
 		}
 	}
+
 	protected class MailAttachmentStream extends MailAttachmentBase<InputStream>{};
 
 	/**

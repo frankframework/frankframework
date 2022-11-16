@@ -178,7 +178,7 @@ public class MailSender extends MailSenderBase {
 	private void setAttachments(MailSessionBase mailSession, MimeMessage msg, String messageTypeWithCharset) throws MessagingException {
 		List<MailAttachmentStream> attachmentList = mailSession.getAttachmentList();
 		String message = mailSession.getMessage();
-		if (attachmentList == null || attachmentList.size() == 0) {
+		if (attachmentList == null || attachmentList.isEmpty()) {
 			log.debug("no attachments found to attach to mailSession");
 			msg.setContent(message, messageTypeWithCharset);
 		} else {
@@ -253,7 +253,7 @@ public class MailSender extends MailSenderBase {
 	private MimeMessage createMessage(Session session, MailSession mailSession, StringBuffer logBuffer) throws SenderException {
 		SMTPMessage msg = new SMTPMessage(session);
 		mailSession.setSmtpMessage(msg);
-		
+
 		try {
 			msg.setFrom(mailSession.getFrom().getInternetAddress());
 		} catch (Exception e) {
@@ -323,7 +323,7 @@ public class MailSender extends MailSenderBase {
 	}
 
 	private void setHeader(Collection<Node> headers, MimeMessage msg) throws MessagingException {
-		if (headers != null && headers.size() > 0) {
+		if (headers != null && !headers.isEmpty()) {
 			for (Node headerElement : headers) {
 				String headerName = ((Element) headerElement).getAttribute("name");
 				String headerValue = XmlUtils.getStringValue(((Element) headerElement));
@@ -384,10 +384,10 @@ public class MailSender extends MailSenderBase {
 	public void setProperties(Properties properties) {
 		this.properties = properties;
 	}
-	
+
 	public class MailSession extends MailSessionBase {
 		private @Getter @Setter SMTPMessage smtpMessage = null;
-		
+
 		public MailSession() throws SenderException {
 			super();
 		}
