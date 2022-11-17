@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -29,11 +30,11 @@ import org.slf4j.LoggerFactory;
 
 public class VaultHandlerTest {
 
-	final static String TEST_STRING = "This is a test";
-	final static String TEST_PASSWORD = "password";
-	final static String TEST_WRONG_PASSWORD = "not_this_one";
-	final static String WRONG_PASS_EX = "HMAC Digest doesn't match - possibly it's the wrong password.";
-	final static String DECODED_VAULT = "!net.wedjaa.ansible.vault.ProvisioningInfo\n" + "apiClientId: The provisioner ClientId\n" + "apiPassword: The secret password\n" + "apiUser: Secret User\n";
+	private static final String TEST_STRING = "This is a test";
+	private static final String TEST_PASSWORD = "password";
+	private static final String TEST_WRONG_PASSWORD = "not_this_one";
+	private static final String WRONG_PASS_EX = "HMAC Digest doesn't match - possibly it's the wrong password.";
+	private static final String DECODED_VAULT = "!net.wedjaa.ansible.vault.ProvisioningInfo\n" + "apiClientId: The provisioner ClientId\n" + "apiPassword: The secret password\n" + "apiUser: Secret User\n";
 
 	Logger logger = LoggerFactory.getLogger(VaultHandlerTest.class);
 
@@ -60,11 +61,11 @@ public class VaultHandlerTest {
 	}
 
 	@Test
-	public void testByteArrayInvalidVault() {
+	public void testByteArrayInvalidVault() throws IOException {
 		logger.info("Testing Byte Array decryption - Invalid Password");
+		byte[] encryptedTest = VaultHandler.encrypt(TEST_STRING.getBytes(), TEST_PASSWORD);
+		logger.debug("Encrypted vault:\n{}", new String(encryptedTest));
 		try {
-			byte[] encryptedTest = VaultHandler.encrypt(TEST_STRING.getBytes(), TEST_PASSWORD);
-			logger.debug("Encrypted vault:\n{}", new String(encryptedTest));
 			byte[] decryptedTest = VaultHandler.decrypt(encryptedTest, TEST_WRONG_PASSWORD);
 			logger.debug("Decrypted vault:\n{}", new String(decryptedTest));
 			fail("Should not be able to decrypt text with the wrong password");
