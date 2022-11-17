@@ -121,6 +121,14 @@
 		maxWaitMillis="5000"
 	/>
 
+	<Resource name="jdbc/ibis4test-db2" auth="Container"
+		type="javax.sql.DataSource" 
+		driverClassName="com.ibm.db2.jcc.DB2Driver"
+		url="jdbc:db2://host.docker.internal:50000/testiaf"
+		username="db2inst1"
+		password="syspw"
+	/>
+
 	<Resource 
 		name="mongodb/ibis4test"
 		type="com.mongodb.MongoClient"
