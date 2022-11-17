@@ -17,7 +17,6 @@ package nl.nn.adapterframework.senders;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -44,6 +43,7 @@ import org.w3c.dom.Node;
 import com.sun.mail.smtp.SMTPMessage;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
@@ -164,40 +164,21 @@ public class MailSender extends MailSenderBase {
 	}
 
 	@Override
-	public String sendEmail(MailSession mailSession) throws SenderException {
+	public String sendEmail(MailSessionBase mailSession) throws SenderException {
 		Session session = createSession();
 		log.debug("sending mail using session [{}]", session);
-		return sendEmail(session, mailSession);
+		return sendEmail(session, (MailSession)mailSession);
 	}
 
-	private void setRecipient(MailSession mailSession, MimeMessage msg, StringBuffer sb) throws UnsupportedEncodingException, MessagingException, SenderException {
-		boolean recipientsFound = false;
-		List<EMail> emailList = mailSession.getRecipientList();
-		for (EMail recipient : emailList) {
-			String type = recipient.getType();
-			Message.RecipientType recipientType;
-			if ("cc".equalsIgnoreCase(type)) {
-				recipientType = Message.RecipientType.CC;
-			} else if ("bcc".equalsIgnoreCase(type)) {
-				recipientType = Message.RecipientType.BCC;
-			} else {
-				recipientType = Message.RecipientType.TO;
-			}
-			msg.addRecipient(recipientType, recipient.getInternetAddress());
-			recipientsFound = true;
-			if (log.isDebugEnabled()) {
-				sb.append("[recipient [" + recipient + "]]");
-			}
-		}
-		if (!recipientsFound) {
-			throw new SenderException("MailSender [" + getName() + "] did not find any valid recipients");
-		}
+	@Override
+	protected MailSession createMailSession() throws SenderException {
+		return new MailSession();
 	}
 
-	private void setAttachments(MailSession mailSession, MimeMessage msg, String messageTypeWithCharset) throws MessagingException {
+	private void setAttachments(MailSessionBase mailSession, MimeMessage msg, String messageTypeWithCharset) throws MessagingException {
 		List<MailAttachmentStream> attachmentList = mailSession.getAttachmentList();
 		String message = mailSession.getMessage();
-		if (attachmentList == null || attachmentList.size() == 0) {
+		if (attachmentList == null || attachmentList.isEmpty()) {
 			log.debug("no attachments found to attach to mailSession");
 			msg.setContent(message, messageTypeWithCharset);
 		} else {
@@ -251,9 +232,13 @@ public class MailSender extends MailSenderBase {
 
 		MimeMessage msg = createMessage(session, mailSession, logBuffer);
 
-
 		// send the message
-		putOnTransport(session, msg);
+		// Only send if some recipients remained after whitelisting
+		if (mailSession.hasWhitelistedRecipients()) {
+			putOnTransport(session, msg);
+		} else if (log.isDebugEnabled()) {
+			log.debug("No recipients left after whitelisting, mail is not send");
+		}
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		try {
@@ -267,6 +252,8 @@ public class MailSender extends MailSenderBase {
 
 	private MimeMessage createMessage(Session session, MailSession mailSession, StringBuffer logBuffer) throws SenderException {
 		SMTPMessage msg = new SMTPMessage(session);
+		mailSession.setSmtpMessage(msg);
+
 		try {
 			msg.setFrom(mailSession.getFrom().getInternetAddress());
 		} catch (Exception e) {
@@ -292,7 +279,7 @@ public class MailSender extends MailSenderBase {
 		}
 
 		try {
-			setRecipient(mailSession, msg, logBuffer);
+			mailSession.setRecipientsOnMessage(logBuffer);
 		} catch (Exception e) {
 			throw new SenderException("Error occurred while processing recipients", e);
 		}
@@ -336,7 +323,7 @@ public class MailSender extends MailSenderBase {
 	}
 
 	private void setHeader(Collection<Node> headers, MimeMessage msg) throws MessagingException {
-		if (headers != null && headers.size() > 0) {
+		if (headers != null && !headers.isEmpty()) {
 			for (Node headerElement : headers) {
 				String headerName = ((Element) headerElement).getAttribute("name");
 				String headerValue = XmlUtils.getStringValue(((Element) headerElement));
@@ -396,5 +383,41 @@ public class MailSender extends MailSenderBase {
 
 	public void setProperties(Properties properties) {
 		this.properties = properties;
+	}
+
+	public class MailSession extends MailSessionBase {
+		private @Getter @Setter SMTPMessage smtpMessage = null;
+
+		public MailSession() throws SenderException {
+			super();
+		}
+
+		@Override
+		protected void addRecipientToMessage(EMail recipient) throws SenderException {
+			String type = recipient.getType();
+			Message.RecipientType recipientType;
+			if ("cc".equalsIgnoreCase(type)) {
+				recipientType = Message.RecipientType.CC;
+			} else if ("bcc".equalsIgnoreCase(type)) {
+				recipientType = Message.RecipientType.BCC;
+			} else {
+				recipientType = Message.RecipientType.TO;
+			}
+
+			try {
+				smtpMessage.addRecipient(recipientType, recipient.getInternetAddress());
+			} catch (Exception e) {
+				throw new SenderException("Error occurred while processing recipients", e);
+			}
+		}
+
+		@Override
+		protected boolean hasWhitelistedRecipients() throws SenderException {
+			try {
+				return smtpMessage.getAllRecipients() != null && smtpMessage.getAllRecipients().length > 0;
+			} catch (MessagingException e) {
+				throw new SenderException("Error occurred while getting mail recipients", e);
+			}
+		}
 	}
 }

@@ -17,6 +17,7 @@ public class MailSenderTest2 extends SenderTestBase<MailSender> {
 	private final String toAddress="testUser@localhost";
 	private final String testUser="testUser";
 	private final String testPassword="testPassword";
+	private final String domainWhitelist="localhost,frankframework.org";
 
 	@Rule
 	public final GreenMailRule greenMail = new GreenMailRule(ServerSetupTest.SMTP);
@@ -33,11 +34,14 @@ public class MailSenderTest2 extends SenderTestBase<MailSender> {
 		mailSender.setSmtpPort(greenMail.getSmtp().getPort());
 		mailSender.setUserId(testUser);
 		mailSender.setPassword(testPassword);
+		mailSender.setDomainWhitelist(domainWhitelist);
 		return mailSender;
 	}
 
 	@Test
 	public void testSendMessageBasic() throws Exception {
+		// For this test disable the whitelist to verify that the empty value lets through all recipients
+		sender.setDomainWhitelist("");
 
 		String subject = "My Subject";
 		String body = "My Message Goes Here";
@@ -62,4 +66,49 @@ public class MailSenderTest2 extends SenderTestBase<MailSender> {
 		assertEquals(body, messages[0].getContent().toString().trim());
 	}
 
+	@Test
+	public void testSendMessageDomainWhitelist() throws Exception {
+		String subject = "My Subject";
+		String body = "My Message Goes Here";
+
+		String mailInput = "<email>"
+				+ "<recipients>"
+				+ "<recipient type=\"to\" name=\"dummy\">" + toAddress + "</recipient>"
+				+ "<recipient type=\"to\" name=\"test\">test@frankframework.org</recipient>"
+				+ "<recipient type=\"to\" name=\"notwhitelisted\">test@notwhitelisted</recipient>"
+				+ "</recipients>"
+				+ "<subject>" + subject + "</subject>"
+				+ "<from name=\"Me, Myself and I\">me@address.org</from>"
+				+ "<message>" + body + "</message>"
+			+ "</email>";
+
+		sender.configure();
+		sender.open();
+		sender.sendMessageOrThrow(new Message(mailInput), session);
+
+		MimeMessage[] messages = greenMail.getReceivedMessages();
+		assertEquals(2, messages.length);
+	}
+
+	@Test
+	public void testSendMessageNoRecipientOnWhitelist() throws Exception {
+		String subject = "My Subject";
+		String body = "My Message Goes Here";
+
+		String mailInput = "<email>"
+				+ "<recipients>"
+				+ "<recipient type=\"to\" name=\"notwhitelisted\">test@notwhitelisted</recipient>"
+				+ "</recipients>"
+				+ "<subject>" + subject + "</subject>"
+				+ "<from name=\"Me, Myself and I\">me@address.org</from>"
+				+ "<message>" + body + "</message>"
+			+ "</email>";
+
+		sender.configure();
+		sender.open();
+		sender.sendMessageOrThrow(new Message(mailInput), session);
+
+		MimeMessage[] messages = greenMail.getReceivedMessages();
+		assertEquals(0, messages.length);
+	}
 }

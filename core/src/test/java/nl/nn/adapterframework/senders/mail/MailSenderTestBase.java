@@ -30,7 +30,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.senders.MailSender;
 import nl.nn.adapterframework.senders.MailSenderBase;
 import nl.nn.adapterframework.senders.MailSenderBase.EMail;
-import nl.nn.adapterframework.senders.MailSenderBase.MailSession;
+import nl.nn.adapterframework.senders.MailSenderBase.MailSessionBase;
 import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestAssertions;
@@ -127,7 +127,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 				+ "</headers>"
 			+ "</email>";
 		sender.configure();
-		MailSession mailSession = sender.extract(new Message(mailInput), session);
+		MailSessionBase mailSession = sender.extract(new Message(mailInput), session);
 		validateAddress(mailSession.getRecipientList().get(0),"to", "dummy","me@address.org");
 		validateAddress(mailSession.getRecipientList().get(1),"cc", null,"cc@address.org");
 		validateAddress(mailSession.getRecipientList().get(2),"bcc", null,"bcc@address.org");
