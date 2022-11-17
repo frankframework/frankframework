@@ -99,7 +99,7 @@ public class BusMessageUtils {
 			builder.type(mimeType);
 		}
 
-		if(status != 200 && !"no-content".equals(response.getPayload())) {
+		if(status == 200 && !"no-content".equals(response.getPayload())) {
 			builder.entity(response.getPayload());
 		}
 
