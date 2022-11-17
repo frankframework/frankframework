@@ -24,6 +24,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 
 import jakarta.json.Json;
@@ -87,7 +88,7 @@ public class IbisstoreSummary extends BusEndpointBase {
 		}
 
 		String resultObject = "{ \"result\":"+result+"}";
-		return ResponseMessage.Builder.create().withPayload(resultObject).raw();
+		return ResponseMessage.Builder.create().withPayload(resultObject).withMimeType(MediaType.APPLICATION_JSON).raw();
 	}
 
 	private Map<String, SlotIdRecord> getSlotmap() {

@@ -105,6 +105,7 @@ public class ResponseMessage {
 					throw new BusException("unable to convert payload to message", e);
 				}
 			}
+			headers.computeIfAbsent(MIMETYPE_KEY, (e)->MediaType.APPLICATION_OCTET_STREAM.toString());
 			return new GenericMessage<>(payload, headers);
 		}
 	}

@@ -1,4 +1,4 @@
-build = "mvn install -Pibissource,codecoverage"
+build = "mvn install -P ibissource,codecoverage"
 jdkVersion = "8"
 
 disableTools = [ "golangci-lint" ]
