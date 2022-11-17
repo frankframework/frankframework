@@ -1847,23 +1847,23 @@ angular.module('iaf.beheerconsole')
 	};
 
 	$scope.pause = function(jobGroup, jobName) {
-		Api.Put("schedules/"+jobGroup+"/job/"+jobName, {action: "pause"});
+		Api.Put("schedules/"+jobGroup+"/jobs/"+jobName, {action: "pause"});
 	};
 
 	$scope.resume = function(jobGroup, jobName) {
-		Api.Put("schedules/"+jobGroup+"/job/"+jobName, {action: "resume"});
+		Api.Put("schedules/"+jobGroup+"/jobs/"+jobName, {action: "resume"});
 	};
 
 	$scope.remove = function(jobGroup, jobName) {
 		SweetAlert.Confirm({title:"Please confirm the deletion of '"+jobName+"'"}, function(imSure) {
 			if(imSure) {
-				Api.Delete("schedules/"+jobGroup+"/job/"+jobName);
+				Api.Delete("schedules/"+jobGroup+"/jobs/"+jobName);
 			}
 		});
 	};
 
 	$scope.trigger = function(jobGroup, jobName) {
-		Api.Put("schedules/"+jobGroup+"/job/"+jobName, {action: "trigger"});
+		Api.Put("schedules/"+jobGroup+"/jobs/"+jobName, {action: "trigger"});
 	};
 
 	$scope.edit = function(jobGroup, jobName) {
@@ -1937,7 +1937,7 @@ angular.module('iaf.beheerconsole')
 	$scope.addLocalAlert = function(type, message) {
 		$scope.state.push({type:type, message: message});
 	};
-	var url ="schedules/"+$stateParams.group+"/job/"+$stateParams.name;
+	var url ="schedules/"+$stateParams.group+"/jobs/"+$stateParams.name;
 	$scope.editMode = true;
 	$scope.selectedConfiguration = "";
 
