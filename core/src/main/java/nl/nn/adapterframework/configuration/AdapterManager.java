@@ -48,15 +48,15 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 
 	public void registerAdapter(Adapter adapter) {
 		if(!inState(BootState.STOPPED)) {
-			log.warn("cannot add adapter, manager in state ["+getState()+"]");
+			log.warn("cannot add adapter, manager in state [{}]", this::getState);
 		}
 
-		if(log.isDebugEnabled()) log.debug("registering adapter ["+adapter+"] with AdapterManager ["+this+"]");
+		log.debug("registering adapter [{}] with AdapterManager [{}]", adapter, this);
 		if(adapter.getName() == null) {
-			throw new IllegalStateException("Adapter has no name");
+			throw new IllegalStateException("adapter has no name");
 		}
 		if(adapters.containsKey(adapter.getName())) {
-			throw new IllegalStateException("Adapter [" + adapter.getName() + "] already registered.");
+			throw new IllegalStateException("adapter [" + adapter.getName() + "] already registered.");
 		}
 
 		adapters.put(adapter.getName(), adapter);
@@ -71,7 +71,7 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 		}
 
 		adapters.remove(name);
-		if(log.isDebugEnabled()) log.debug("unregistered adapter ["+name+"] from AdapterManager ["+this+"]");
+		log.debug("unregistered adapter [{}] from AdapterManager [{}]", name, this);
 	}
 
 	public void setAdapterLifecycleWrappers(List<? extends AdapterLifecycleWrapperBase> adapterLifecycleWrappers) {
@@ -120,12 +120,12 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 	@Override
 	public void configure() {
 		if(!inState(BootState.STOPPED)) {
-			log.warn("unable to configure ["+this+"] while in state ["+getState()+"]");
+			log.warn("unable to configure [{}] while in state [{}]", ()->this, this::getState);
 			return;
 		}
 		updateState(BootState.STARTING);
 
-		log.info("configuring all adapters in AdapterManager ["+this+"]");
+		log.info("configuring all adapters in AdapterManager [{}]", this);
 
 		for (Adapter adapter : getAdapterList()) {
 			try {
@@ -136,7 +136,7 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 				}
 				adapter.configure();
 			} catch (ConfigurationException e) {
-				log.error("error configuring adapter ["+adapter.getName()+"]", e);
+				log.error("error configuring adapter [{}]", adapter.getName(), e);
 			}
 		}
 	}
@@ -151,14 +151,14 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 	@Override
 	public void start() {
 		if(!inState(BootState.STARTING)) {
-			log.warn("unable to start ["+this+"] while in state ["+getState()+"]");
+			log.warn("unable to start [{}] while in state [{}]", ()->this, this::getState);
 			return;
 		}
 
-		log.info("starting all autostart-configured adapters in AdapterManager ["+this+"]");
+		log.info("starting all autostart-configured adapters in AdapterManager [{}]", this);
 		for (Adapter adapter : getAdapterList()) {
 			if (adapter.configurationSucceeded() && adapter.isAutoStart()) {
-				log.info("Starting adapter [" + adapter.getName() + "]");
+				log.info("Starting adapter [{}]", adapter::getName);
 				adapter.startRunning();
 			}
 		}
@@ -172,15 +172,15 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 	@Override
 	public void stop() {
 		if(!inState(BootState.STARTED)) {
-			log.warn("forcing ["+this+"] to stop while in state ["+getState()+"]");
+			log.warn("forcing [{}] to stop while in state [{}]", ()->this, this::getState);
 		}
 		updateState(BootState.STOPPING);
 
-		log.info("stopping all adapters in AdapterManager ["+this+"]");
+		log.info("stopping all adapters in AdapterManager [{}]", this);
 		List<Adapter> adapters = getAdapterList();
 		Collections.reverse(adapters);
 		for (Adapter adapter : adapters) {
-			log.info("stopping adapter [" + adapter.getName() + "]");
+			log.info("stopping adapter [{}]", adapter::getName);
 			adapter.stopRunning();
 		}
 
@@ -189,7 +189,7 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 
 	@Override
 	public void close() {
-		log.info("destroying AdapterManager ["+this+"]");
+		log.info("destroying AdapterManager [{}]", this);
 
 		try {
 			doClose();
@@ -209,11 +209,11 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 	 */
 	private void doClose() {
 		while (!getStartAdapterThreads().isEmpty()) {
-			log.debug("Waiting for start threads to end: " + getStartAdapterThreads());
+			log.debug("waiting for start threads to end: {}", this::getStartAdapterThreads);
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
-				log.warn("Interrupted waiting for start threads to end", e);
+				log.warn("Interrupted thread while waiting for start threads to end", e);
 			}
 		}
 
@@ -222,11 +222,11 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 		}
 
 		while (!getStopAdapterThreads().isEmpty()) {
-			log.debug("Waiting for stop threads to end: " + getStopAdapterThreads());
+			log.debug("waiting for stop threads to end: {}", this::getStopAdapterThreads);
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
-				log.warn("Interrupted waiting for stop threads to end", e);
+				log.warn("Interrupted thread while waiting for stop threads to end", e);
 			}
 		}
 
