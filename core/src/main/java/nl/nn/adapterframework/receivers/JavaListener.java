@@ -42,11 +42,13 @@ import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
 import nl.nn.adapterframework.dispatcher.RequestProcessor;
 import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.Mandatory;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.senders.IbisJavaSender;
 import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 
 // TODO: When anchors are supported by the Frank!Doc, link to https://github.com/ibissource/ibis-servicedispatcher
 /**
@@ -61,39 +63,32 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author  Gerrit van Brakel
  */
 @Category("Basic")
-public class JavaListener implements IPushingListener<String>, RequestProcessor, HasPhysicalDestination {
+public class JavaListener implements IPushingListener<String>, RequestProcessor, HasPhysicalDestination, ReceiverAware<JavaListener> {
 
 	private final @Getter(onMethod = @__(@Override)) String domain = "JVM";
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
-	private String name;
-	private String serviceName;
-	private boolean isolated=false;
-	private boolean synchronous=true;
-	private boolean opened=false;
-	private boolean throwException = true;
-	private boolean httpWsdl = false;
+	private @Getter String name;
+	private @Getter String serviceName;
+	private @Getter boolean synchronous=true;
+	private @Getter String returnedSessionKeys=null;
+	private @Getter boolean throwException = true;
+	private @Getter boolean httpWsdl = false;
 
+	private @Getter boolean open=false;
 	private static Map<String, JavaListener> registeredListeners;
-	private IMessageHandler<String> handler;
+	private @Getter @Setter IMessageHandler<String> handler;
+	private @Getter @Setter Receiver<JavaListener> receiver; // receiverAwareness to support deprecated Receiver.returnedSessionKeys
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (isolated) {
-			throw new ConfigurationException("function of attribute 'isolated' is replaced by 'transactionAttribute' on PipeLine");
+		if (StringUtils.isEmpty(getReturnedSessionKeys()) && receiver!=null && StringUtils.isNotEmpty(receiver.getReturnedSessionKeys())) {
+			returnedSessionKeys = receiver.getReturnedSessionKeys();
 		}
-		try {
-			if (handler==null) {
-				throw new ConfigurationException("handler has not been set");
-			}
-			if (StringUtils.isEmpty(getName())) {
-				throw new ConfigurationException("name has not been set");
-			}
-		}
-		catch (Exception e){
-			throw new ConfigurationException(e);
+		if (handler==null) {
+			throw new ConfigurationException("handler has not been set");
 		}
 	}
 
@@ -108,7 +103,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 			if (StringUtils.isNotEmpty(getServiceName())) {
 				DispatcherManagerFactory.getDispatcherManager().register(getServiceName(), this);
 			}
-			opened=true;
+			open=true;
 		} catch (Exception e) {
 			throw new ListenerException("error occured while starting listener [" + getName() + "]", e);
 		}
@@ -116,7 +111,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 
 	@Override
 	public synchronized void close() throws ListenerException {
-		opened=false;
+		open=false;
 		try {
 			// unregister from local list
 			unregisterListener();
@@ -131,10 +126,6 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 		catch (Exception e) {
 			throw new ListenerException("error occured while stopping listener [" + getName() + "]", e);
 		}
-	}
-
-	public synchronized boolean isOpen() {
-		return opened;
 	}
 
 	@Override
@@ -154,24 +145,29 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 				}
 			}
 		}
-		// Do not autoclose session.
-		context.put(PipeLineSession.correlationIdKey, correlationId);
-		Message message =  new Message(rawMessage);
-		if (throwException) {
+		try (PipeLineSession session = new PipeLineSession(context)) {
+			session.put(PipeLineSession.correlationIdKey, correlationId);
+			Message message =  new Message(rawMessage);
 			try {
-				return handler.processRequest(this, rawMessage, message, context).asString();
-			} catch (IOException e) {
-				throw new ListenerException("cannot convert stream", e);
-			}
-		}
-		try {
-			return handler.processRequest(this, rawMessage, message, context).asString();
-		} catch (ListenerException | IOException e) {
-			try {
-				return handler.formatException(null,correlationId, message, e).asString();
-			} catch (IOException e1) {
-				e.addSuppressed(e1);
-				throw new ListenerException(e);
+				if (throwException) {
+					try {
+						return handler.processRequest(this, rawMessage, message, session).asString();
+					} catch (IOException e) {
+						throw new ListenerException("cannot convert stream", e);
+					}
+				}
+				try {
+					return handler.processRequest(this, rawMessage, message, session).asString();
+				} catch (ListenerException | IOException e) {
+					try {
+						return handler.formatException(null,correlationId, message, e).asString();
+					} catch (IOException e1) {
+						e.addSuppressed(e1);
+						throw new ListenerException(e);
+					}
+				}
+			} finally {
+				Misc.copyContext(getReturnedSessionKeys(), session, context, this);
 			}
 		}
 	}
@@ -240,31 +236,18 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 	}
 
 
-	@Override
-	public void setHandler(IMessageHandler<String> handler) {
-		this.handler = handler;
-	}
-	public IMessageHandler<String> getHandler() {
-		return handler;
-	}
 
 	@IbisDoc({"Internal name of the listener, as known to the adapter. An IbisLocalSender refers to this name in its <code>javaListener</code>-attribute.", ""})
 	@Override
+	@Mandatory
 	public void setName(String name) {
 		this.name = name;
-	}
-	@Override
-	public String getName() {
-		return name;
 	}
 
 
 	@IbisDoc({"External Name of the listener. An IbisJavaSender refers to this name in its <code>serviceName</code>-attribute.", ""})
 	public void setServiceName(String jndiName) {
 		this.serviceName = jndiName;
-	}
-	public String getServiceName() {
-		return serviceName;
 	}
 
 	@Deprecated
@@ -274,7 +257,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 
 	@Deprecated
 	public void setIsolated(boolean b) {
-		isolated = b;
+		throw new RuntimeException("function of attribute 'isolated' is replaced by 'transactionAttribute' on PipeLine");
 	}
 
 	@Deprecated
@@ -282,23 +265,19 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 	public void setSynchronous(boolean b) {
 		synchronous = b;
 	}
-	public boolean isSynchronous() {
-		return synchronous;
+
+	@IbisDoc({"Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results.", ""})
+	public void setReturnedSessionKeys(String string) {
+		returnedSessionKeys = string;
 	}
 
 	@IbisDoc({"Should the JavaListener throw a ListenerException when it occurs or return an error message", "true"})
 	public void setThrowException(boolean throwException) {
 		this.throwException = throwException;
 	}
-	public boolean isThrowException() {
-		return throwException;
-	}
 
 	@IbisDoc({"If <code>true</code>, the WSDL of the service provided by this listener will available for download ", "false"})
 	public void setHttpWsdl(boolean httpWsdl) {
 		this.httpWsdl = httpWsdl;
-	}
-	public boolean isHttpWsdl() {
-		return httpWsdl;
 	}
 }

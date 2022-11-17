@@ -841,24 +841,28 @@ public class Misc {
 			log.debug("returning context, returned sessionkeys ["+keys+"]");
 			copyIfExists(PipeLineSession.EXIT_CODE_CONTEXT_KEY, from, to);
 			copyIfExists(PipeLineSession.EXIT_STATE_CONTEXT_KEY, from, to);
-			if (StringUtils.isNotEmpty(keys) && from!=null && to!=null) {
+			if (StringUtils.isNotEmpty(keys)) {
 				StringTokenizer st = new StringTokenizer(keys,",;");
 				while (st.hasMoreTokens()) {
 					String key=st.nextToken();
-					Object value=from.get(key);
-					Message message = Message.asMessage(value);
-					if (from instanceof PipeLineSession) {
-						message.unscheduleFromCloseOnExitOf((PipeLineSession)from);
-					}
-					if (to instanceof PipeLineSession) {
-						Message.asMessage(value).closeOnCloseOf((PipeLineSession)to, requester);
-					}
-					to.put(key,value);
+					copySessionKey(key, from, to, requester);
 				}
 			}
 		}
 	}
-	
+
+	private static void copySessionKey(String key, Map<String,Object> from, Map<String,Object> to, INamedObject requester) {
+		Object value=from.get(key);
+		Message message = Message.asMessage(value);
+		if (from instanceof PipeLineSession) {
+			message.unscheduleFromCloseOnExitOf((PipeLineSession)from);
+		}
+		if (to instanceof PipeLineSession) {
+			Message.asMessage(value).closeOnCloseOf((PipeLineSession)to, requester);
+		}
+		to.put(key,value);
+	}
+
 	private static void copyIfExists(String key, Map<String,Object> from, Map<String,Object> to) {
 		if (from.containsKey(key)) {
 			to.put(key, from.get(key));

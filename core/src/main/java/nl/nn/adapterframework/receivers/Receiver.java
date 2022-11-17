@@ -1001,30 +1001,37 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	/**
-	 * Process the received message with {@link #processRequest(IListener, Object, Message, Map)}.
+	 * Process the received message with {@link #processRequest(IListener, Object, Message, PipeLineSession)}.
 	 * A messageId is generated that is unique and consists of the name of this listener and a GUID
 	 */
 	@Override
-	public Message processRequest(IListener<M> origin, M rawMessage, Message message, Map<String,Object> context) throws ListenerException {
-		try (PipeLineSession session = new PipeLineSession(context)) {
-			try (final CloseableThreadContext.Instance ctc = getLoggingContext(getListener(), session)) {
-				if (origin!=getListener()) {
-					throw new ListenerException("Listener requested ["+origin.getName()+"] is not my Listener");
+	public Message processRequest(IListener<M> origin, M rawMessage, Message message, PipeLineSession session) throws ListenerException {
+		try (final CloseableThreadContext.Instance ctc = getLoggingContext(getListener(), session)) {
+			if (origin!=getListener()) {
+				throw new ListenerException("Listener requested ["+origin.getName()+"] is not my Listener");
+			}
+			if (getRunState() != RunState.STARTED) {
+				throw new ListenerException(getLogPrefix()+"is not started");
+			}
+
+			boolean sessionCreated=false;
+			try {
+				if (session==null) {
+					session = new PipeLineSession();
+					sessionCreated=true;
 				}
-				if (getRunState() != RunState.STARTED) {
-					throw new ListenerException(getLogPrefix()+"is not started");
-				}
-				try {
-					Date tsReceived = PipeLineSession.getTsReceived(session);
-					Date tsSent = PipeLineSession.getTsSent(session);
-					PipeLineSession.setListenerParameters(session, null, null, tsReceived, tsSent);
-					String messageId = session.getMessageId();
-					String correlationId = session.getCorrelationId();
-					Message result = processMessageInAdapter(rawMessage, message, messageId, correlationId, session, -1, false, false);
-					result.unscheduleFromCloseOnExitOf(session);
-					return result;
-				} finally {
-					Misc.copyContext(getReturnedSessionKeys(), session, context, this);
+
+				Date tsReceived = PipeLineSession.getTsReceived(session);
+				Date tsSent = PipeLineSession.getTsSent(session);
+				PipeLineSession.setListenerParameters(session, null, null, tsReceived, tsSent);
+				String messageId = session.getMessageId();
+				String correlationId = session.getCorrelationId();
+				Message result = processMessageInAdapter(rawMessage, message, messageId, correlationId, session, -1, false, false);
+				result.unscheduleFromCloseOnExitOf(session);
+				return result;
+			} finally {
+				if (sessionCreated) {
+					session.close();
 				}
 			}
 		}
@@ -2073,6 +2080,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	@IbisDoc({"Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. (Only for Listeners that support it, like JavaListener)", ""})
+	@Deprecated
+	@ConfigurationWarning("Please use attribute returnedSessionKeys of the JavaListener")
 	public void setReturnedSessionKeys(String string) {
 		returnedSessionKeys = string;
 	}
