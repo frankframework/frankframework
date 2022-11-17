@@ -165,7 +165,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 	}
 
 	/**
-	 * Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erroneous results. (Only for listeners that support it, like JavaListener)
+	 * Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erroneous results.<br/>N.B. To get this working, the attribute returnedSessionKeys must also be set on the corresponding JavaListener
 	 */
 	public void setReturnedSessionKeys(String string) {
 		returnedSessionKeys = string;

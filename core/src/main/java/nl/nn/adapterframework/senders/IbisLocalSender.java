@@ -311,7 +311,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 		javaListenerSessionKey = string;
 	}
 
-	@IbisDoc({"Comma separated list of keys of session variables that are to be returned from the adapter session called, for correct results as well as for erronous results.<br/>N.B. To get this working, the attribute returnedSessionKeys must also be set on the corresponding Receiver", ""})
+	@IbisDoc({"Comma separated list of keys of session variables that are to be returned from the adapter session called, for correct results as well as for erronous results.<br/>N.B. To get this working, the attribute returnedSessionKeys must also be set on the corresponding JavaListener", ""})
 	public void setReturnedSessionKeys(String string) {
 		returnedSessionKeys = string;
 	}
