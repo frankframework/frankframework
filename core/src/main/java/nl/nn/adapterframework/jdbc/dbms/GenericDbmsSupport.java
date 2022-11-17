@@ -453,7 +453,10 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		for (int i=1;i<=columns.size();i++) {
 			query.append(", "+indexColumnTableName+" aic"+i);
 		}
-		query.append(" where ai."+tableOwnerColumnName+"='"+schemaOwner+"' and ai."+tableNameColumnName+"='"+tableName+"'");
+		query.append(" where ai."+tableNameColumnName+"='"+tableName+"'");
+		if (tableOwnerColumnName!=null) {
+			query.append(" and ai."+tableOwnerColumnName+"='"+schemaOwner+"'");
+		}
 		for (int i=1;i<=columns.size();i++) {
 //			query.append(" and ai."+indexOwnerColumnName+"=aic"+i+"."+indexOwnerColumnName);
 			query.append(" and ai."+indexNameColumnName+"=aic"+i+"."+indexNameColumnName);

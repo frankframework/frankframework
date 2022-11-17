@@ -195,10 +195,16 @@ public abstract class JdbcTestBase {
 		dbmsSupport = dbmsSupportFactory.getDbmsSupport(dataSource);
 
 		dropTableIfPresent(connection, TEST_TABLE);
-		JdbcUtil.executeStatement(connection,
-				"CREATE TABLE "+TEST_TABLE+"(tKEY "+dbmsSupport.getNumericKeyFieldType()+ " PRIMARY KEY, tVARCHAR "+dbmsSupport.getTextFieldType()+"(100), tINT INT, tNUMBER NUMERIC(10,5), " +
+		String query = "CREATE TABLE "+TEST_TABLE+"(tKEY "+dbmsSupport.getNumericKeyFieldType()+ " PRIMARY KEY, tVARCHAR "+dbmsSupport.getTextFieldType()+"(100), tINT INT, tNUMBER NUMERIC(10,5), " +
 				"tDATE DATE, tDATETIME "+dbmsSupport.getTimestampFieldType()+", tBOOLEAN "+dbmsSupport.getBooleanFieldType()+", "+
-				"tCLOB "+dbmsSupport.getClobFieldType()+", tBLOB "+dbmsSupport.getBlobFieldType()+")");
+				"tCLOB "+dbmsSupport.getClobFieldType()+", tBLOB "+dbmsSupport.getBlobFieldType()+")";
+		if (productKey.equals("DB2")) {
+			query = query.replace(" PRIMARY KEY", "");
+		}
+		JdbcUtil.executeStatement(connection, query);
+		if (productKey.equals("DB2")) {
+			JdbcUtil.executeStatement(connection,"CREATE INDEX idx1 ON "+TEST_TABLE+"(tKEY)");
+		}
 		JdbcUtil.executeStatement(connection,"CREATE INDEX idx2 ON "+TEST_TABLE+"(tINT,tDATE)");
 		SQLWarning warnings = connection.getWarnings();
 		if(warnings != null) {

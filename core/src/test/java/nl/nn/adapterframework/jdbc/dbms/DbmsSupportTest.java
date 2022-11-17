@@ -98,14 +98,14 @@ public class DbmsSupportTest extends JdbcTestBase {
 	@Test
 	public void testHasIndexOnColumn() throws JdbcException {
 		String schema = dbmsSupport.getSchema(connection);
-		assertTrue("Should have been index on column", dbmsSupport.hasIndexOnColumn(connection, schema, TEST_TABLE, "TKEY"));
-		assertTrue("Should have been index on column", dbmsSupport.hasIndexOnColumn(connection, schema, TEST_TABLE, "tkey"));
+		assertTrue("Should have been index on primary key column", dbmsSupport.hasIndexOnColumn(connection, schema, TEST_TABLE, "TKEY"));
+		assertTrue("Should have been index on primary key column", dbmsSupport.hasIndexOnColumn(connection, schema, TEST_TABLE, "tkey"));
 		assertTrue("Should have been index on column", dbmsSupport.hasIndexOnColumn(connection, schema, TEST_TABLE, "tINT")); // also check first column of multi column index
 		assertFalse("Should not have been index on column", dbmsSupport.hasIndexOnColumn(connection, schema, TEST_TABLE, "TBOOLEAN"));
 		assertFalse("Should not have been index on column", dbmsSupport.hasIndexOnColumn(connection, schema, TEST_TABLE, "tboolean"));
 		assumeThat(productKey, not(anyOf(equalTo("MariaDB"),equalTo("MySQL")))); // MariaDB and MySQL require exact case for table name parameters
-		assertTrue("Should have been index on column", dbmsSupport.hasIndexOnColumn(connection, schema, TEST_TABLE.toLowerCase(), "TKEY"));
-		assertTrue("Should have been index on column", dbmsSupport.hasIndexOnColumn(connection, schema, TEST_TABLE.toUpperCase(), "TKEY"));
+		assertTrue("Should have been index on primary key column", dbmsSupport.hasIndexOnColumn(connection, schema, TEST_TABLE.toLowerCase(), "TKEY"));
+		assertTrue("Should have been index on primary key column", dbmsSupport.hasIndexOnColumn(connection, schema, TEST_TABLE.toUpperCase(), "TKEY"));
 	}
 
 	@Test
@@ -246,19 +246,19 @@ public class DbmsSupportTest extends JdbcTestBase {
 	@Test
 	public void testNumericAsFloat() throws Exception {
 		assumeFalse(dbmsSupport.getDbms()==Dbms.POSTGRESQL); // This fails on PostgreSQL, precision of setFloat appears to be too low"
-		String number = "1234.5677";
+		Float number = new Float(1234.5677);
 		QueryExecutionContext context = new QueryExecutionContext("INSERT INTO "+TEST_TABLE+"(TKEY, TNUMBER) VALUES (4,?)", QueryType.OTHER, null);
 		dbmsSupport.convertQuery(context, "Oracle");
 		System.out.println("executing query ["+context.getQuery()+"]");
 		try (PreparedStatement stmt = connection.prepareStatement(context.getQuery())) {
-			stmt.setFloat(1, Float.parseFloat(number));
+			stmt.setFloat(1, number);
 			stmt.execute();
 		}
 
 		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TNUMBER FROM "+TEST_TABLE+" WHERE TKEY=4", QueryType.SELECT)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
-				assertThat(resultSet.getString(1), StringStartsWith.startsWith(number));
+				assertEquals(number, resultSet.getFloat(1), 0.01);
 			}
 		}
 	}
@@ -616,6 +616,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 					}
 				}
 			}
+			workConn1.rollback();
 		}
 	}
 
