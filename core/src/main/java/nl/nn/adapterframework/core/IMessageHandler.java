@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.core;
 
-import java.util.Map;
-
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -48,7 +46,7 @@ public interface IMessageHandler<M> {
 	/**
 	 * Alternative to functions above, will NOT use getIdFromRawMessage() and getStringFromRawMessage(). Used by PushingListeners.
 	 */
-	public Message processRequest(IListener<M> origin, M rawMessage, Message message, Map<String,Object> context) throws ListenerException;
+	public Message processRequest(IListener<M> origin, M rawMessage, Message message, PipeLineSession session) throws ListenerException;
 
 	/**
 	 *	Formats any exception thrown by any of the above methods to a message that can be returned.
