@@ -1,18 +1,3 @@
-/*
-   Copyright 2019-2020 Nationale-Nederlanden
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
 package nl.nn.adapterframework.configuration;
 
 import static org.junit.Assert.assertEquals;
@@ -61,18 +46,16 @@ public class ConfigurationUtilsTest extends Mockito {
 
 	@BeforeClass
 	public static void setUp() {
+		AppConstants.removeInstance();
 		AppConstants.getInstance().setProperty("configurations.database.autoLoad", true);
 		AppConstants.getInstance().setProperty("configurations.directory.autoLoad", true);
-		AppConstants.getInstance().setProperty("configurations.config2.parentConfig", "config4");
-		AppConstants.getInstance().setProperty("configurations.config3.parentConfig", "config4");
+		AppConstants.getInstance().setProperty("configurations.configuration2.parentConfig", "configuration4");
+		AppConstants.getInstance().setProperty("configurations.configuration3.parentConfig", "configuration4");
 	}
 
 	@AfterClass
 	public static void tearDown() {
-		AppConstants.getInstance().setProperty("configurations.database.autoLoad", false);
-		AppConstants.getInstance().setProperty("configurations.directory.autoLoad", false);
-		AppConstants.getInstance().remove("configurations.config2.parentConfig");
-		AppConstants.getInstance().remove("configurations.config3.parentConfig");
+		AppConstants.removeInstance();
 	}
 
 	private void mockDatabase() throws Exception {
@@ -244,21 +227,21 @@ public class ConfigurationUtilsTest extends Mockito {
 
 		TestConfiguration applicationContext = new TestConfiguration();
 		ResultSetBuilder builder = ResultSetBuilder.create()
-				.setValue("config1")
-				.addRow().setValue("config2")
-				.addRow().setValue("config3")
-				.addRow().setValue("config4")
-				.addRow().setValue("config5");
+				.setValue("configuration1")
+				.addRow().setValue("configuration2")
+				.addRow().setValue("configuration3")
+				.addRow().setValue("configuration4")
+				.addRow().setValue("configuration5");
 		applicationContext.mockQuery("SELECT COUNT(*) FROM IBISCONFIG", builder.build());
 		Map<String, Class<? extends IConfigurationClassLoader>> configs = ConfigurationUtils.retrieveAllConfigNames(applicationContext);
-		MatcherAssert.assertThat(configs.keySet(), IsIterableContainingInOrder.contains("IAF_Util", "TestConfiguration", "ClassLoader", "Config", "config1", "config4", "config2", "config3", "config5")); //checks order!
+		MatcherAssert.assertThat(configs.keySet(), IsIterableContainingInOrder.contains("IAF_Util", "TestConfiguration", "ClassLoader", "Config", "configuration1", "configuration4", "configuration2", "configuration3", "configuration5")); //checks order!
 
 		assertNull(configs.get("IAF_Util"));
 		assertNull(configs.get("TestConfiguration"));
 
 		assertEquals(DirectoryClassLoader.class, configs.get("ClassLoader"));
 		assertEquals(DirectoryClassLoader.class, configs.get("Config"));
-		assertEquals(DatabaseClassLoader.class, configs.get("config1"));
-		assertEquals(DatabaseClassLoader.class, configs.get("config2"));
+		assertEquals(DatabaseClassLoader.class, configs.get("configuration1"));
+		assertEquals(DatabaseClassLoader.class, configs.get("configuration2"));
 	}
 }
