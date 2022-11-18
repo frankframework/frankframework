@@ -38,7 +38,7 @@ public class CacheEntry<V> {
 	}
 
 	public void update(V value, int timeToLiveMillis) {
-		expiry = System.currentTimeMillis()+timeToLiveMillis;
 		this.value = value;
+		expiry = System.currentTimeMillis()+timeToLiveMillis;
 	}
 }
