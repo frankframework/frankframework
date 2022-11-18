@@ -135,7 +135,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <b>Transaction control</b><br/><br/>
  * If {@link #setTransacted(boolean) transacted} is set to <code>true</code>, messages will be received and processed under transaction control.
  * This means that after a message has been read and processed and the transaction has ended, one of the following apply:
- * <ul>
  * <table border="1">
  * <tr><th>situation</th><th>input listener</th><th>Pipeline</th><th>inProcess storage</th><th>errorSender</th><th>summary of effect</th></tr>
  * <tr><td>successful</td><td>message read and committed</td><td>message processed</td><td>unchanged</td><td>unchanged</td><td>message processed</td></tr>
@@ -153,9 +152,8 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <li>It is not processed at all by the pipeline, or processing by the pipeline has been rolled back;
  *     the message is removed from the input queue and either (one of) still in inProcess storage <i>or</i> sent to the errorSender</li>
  * </ul>
- * </p>
  *
- * <p><b>commit or rollback</b><br>
+ * <p><b>commit or rollback</b><br/>
  * If {@link #setTransacted(boolean) transacted} is set to <code>true</code>, messages will be either committed or rolled back.
  * All message-processing transactions are committed, unless one or more of the following apply:
  * <ul>
@@ -1005,6 +1003,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	/**
 	 * Process the received message with {@link #processRequest(IListener, String, Object, Message, PipeLineSession)}.
 	 * A messageId is generated that is unique and consists of the name of this listener and a GUID
+	 * N.B. callers of this method should clear the remaining ThreadContext if its not to be returned to their callers. 
 	 */
 	@Override
 	public Message processRequest(IListener<M> origin, String correlationId, M rawMessage, Message message, PipeLineSession session) throws ListenerException {
@@ -1119,6 +1118,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				}
 			}
 		}
+		ThreadContext.clearAll();
 	}
 
 	private CloseableThreadContext.Instance getLoggingContext(IListener listener, PipeLineSession session) {

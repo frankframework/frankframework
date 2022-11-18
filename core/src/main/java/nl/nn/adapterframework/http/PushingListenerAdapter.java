@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
@@ -31,12 +32,13 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.Protected;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.receivers.ServiceClient;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * Baseclass of a {@link IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.Receiver}
+ * Baseclass of a {@link IPushingListener IPushingListener} that enables a {@link Receiver}
  * to receive messages from Servlets.
  * </table>
  * @author  Gerrit van Brakel
@@ -99,6 +101,8 @@ public abstract class PushingListenerAdapter implements IPushingListener<Message
 			}
 			log.debug("PushingListenerAdapter.processRequest() formats ListenerException to errormessage");
 			return handler.formatException(null,correlationId, message, e);
+		} finally {
+			ThreadContext.clearAll();
 		}
 	}
 
