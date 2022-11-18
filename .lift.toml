@@ -1,4 +1,7 @@
-build = "mvn install -P ibissource,codecoverage"
+
+setup = ".lift/setup.sh"
+
+build = "mvn install -P ibissource,codecoverage -DskipTests=true"
 jdkVersion = "8"
 
 disableTools = [ "golangci-lint" ]
