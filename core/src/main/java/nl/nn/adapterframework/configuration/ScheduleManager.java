@@ -107,7 +107,7 @@ public class ScheduleManager extends ConfigurableLifecyleBase implements Applica
 		}
 		updateState(BootState.STOPPING);
 
-		log.info("stopping all adapters in ScheduleManager [{}]", ()->this);
+		log.info("stopping all jobs in ScheduleManager [{}]", ()->this);
 		List<IJob> scheduledJobs = getSchedulesList();
 		Collections.reverse(scheduledJobs);
 		for (IJob jobDef : scheduledJobs) {
