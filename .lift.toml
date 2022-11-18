@@ -4,7 +4,7 @@ setup = ".lift/setup.sh"
 build = "mvn install -P ibissource,codecoverage -DskipTests=true"
 jdkVersion = "8"
 
-disableTools = [ "golangci-lint", "JSHint", "Infer" ]
+disableTools = [ "golangci-lint", "JSHint" ]
 
 ignoreFiles = """
 **/js/angular/*.js
@@ -13,5 +13,3 @@ ignoreFiles = """
 **/js/plugins/*.js
 **/js/ui-router/*.js
 """
-
-tools = [ "ErrorProne" ]
