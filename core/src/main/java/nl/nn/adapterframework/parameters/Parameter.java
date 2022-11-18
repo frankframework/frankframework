@@ -278,8 +278,8 @@ public class Parameter implements IConfigurable, IWithParameters {
 
 			transformerPool=TransformerPool.configureTransformer0("Parameter ["+getName()+"] ", this, getNamespaceDefs(),getXpathExpression(), getStyleSheetName(),outputType,includeXmlDeclaration,paramList,getXsltVersion());
 		} else {
-			if (paramList!=null && StringUtils.isEmpty(getXpathExpression())) {
-				throw new ConfigurationException("Parameter ["+getName()+"] can only have parameters itself if a styleSheetName or xpathExpression is specified");
+			if (paramList!=null && StringUtils.isEmpty(getPattern())) {
+				throw new ConfigurationException("Parameter ["+getName()+"] can only have parameters itself if a styleSheetName, xpathExpression or pattern is specified");
 			}
 		}
 		if (isRemoveNamespaces()) {
