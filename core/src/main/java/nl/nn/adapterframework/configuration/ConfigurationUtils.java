@@ -41,6 +41,9 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
+import nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader;
+import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
 import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
@@ -400,8 +403,8 @@ public class ConfigurationUtils {
 	 * 
 	 * @return A map with all configurations to load (KEY = ConfigurationName, VALUE = ClassLoaderType)
 	 */
-	public static Map<String, String> retrieveAllConfigNames(ApplicationContext applicationContext) {
-		Map<String, String> allConfigNameItems = new LinkedHashMap<>();
+	public static Map<String, Class<? extends IConfigurationClassLoader>> retrieveAllConfigNames(ApplicationContext applicationContext) {
+		Map<String, Class<? extends IConfigurationClassLoader>> allConfigNameItems = new LinkedHashMap<>();
 
 		StringTokenizer tokenizer = new StringTokenizer(CONFIGURATIONS, ",");
 		while (tokenizer.hasMoreTokens()) {
@@ -422,7 +425,7 @@ public class ConfigurationUtils {
 
 				for (File subFolder : directory.listFiles()) {
 					if(subFolder.isDirectory()) {
-						allConfigNameItems.put(subFolder.getName(), "DirectoryClassLoader");
+						allConfigNameItems.put(subFolder.getName(), DirectoryClassLoader.class);
 					}
 				}
 			} catch (Exception e) {
@@ -437,7 +440,7 @@ public class ConfigurationUtils {
 					log.debug("found database configurations "+dbConfigNames.toString()+"");
 					for (String dbConfigName : dbConfigNames) {
 						if (allConfigNameItems.get(dbConfigName) == null)
-							allConfigNameItems.put(dbConfigName, "DatabaseClassLoader");
+							allConfigNameItems.put(dbConfigName, DatabaseClassLoader.class);
 						else
 							log.warn("config ["+dbConfigName+"] already exists in "+allConfigNameItems+", cannot add same config twice");
 					}
