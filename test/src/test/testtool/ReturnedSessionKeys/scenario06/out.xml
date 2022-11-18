@@ -3,7 +3,7 @@
 	<reasonCode>INTERNAL_ERROR</reasonCode>
 	<dataStream>SessionKey value from inputStream</dataStream>
 	<localValue>LocalValueParent</localValue>
-	<pipelineResult>PipeLine result from inputStream</pipelineResult>
-	<exitState>SUCCESS</exitState>
-	<forward>success</forward>
+	<pipelineResult>Exception caught</pipelineResult>
+	<exitState/>
+	<forward>exception</forward>
 </reply>

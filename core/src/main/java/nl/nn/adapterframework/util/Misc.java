@@ -112,10 +112,9 @@ public class Misc {
 		String uuidString = java.util.UUID.randomUUID().toString();
 		if (removeDashes) {
 			return uuidString.replaceAll("-", "");
-		} else {
+		}
 			return uuidString;
 		}
-	}
 
 	public static String createRandomUUID() {
 		return createRandomUUID(false);
@@ -188,7 +187,7 @@ public class Misc {
 	 * @return integer that is converted from unsigned byte.
 	 */
 	public static int unsignedByteToInt(byte b) {
-		return (int) b & 0xFF;
+		return b & 0xFF;
 	}
 
 	/**
@@ -598,10 +597,9 @@ public class Misc {
 			char firstChar = string.charAt(0);
 			char lastChar = string.charAt(len - 1);
 			return firstChar + StringUtils.repeat("*", len - 2) + lastChar;
-		} else {
+		}
 			return StringUtils.repeat("*", len);
 		}
-	}
 
 	/**
 	 * Converts a byte array into a string, and adds a specified string to the end of the converted string.
@@ -839,15 +837,36 @@ public class Misc {
 		return localHost;
 	}
 
-	public static void copyContext(String keys, Map<String,Object> from, PipeLineSession to, INamedObject requester) {
-		if (StringUtils.isNotEmpty(keys) && from!=null && to!=null) {
-			StringTokenizer st = new StringTokenizer(keys,",;");
-			while (st.hasMoreTokens()) {
-				String key=st.nextToken();
-				Object value=from.get(key);
-				Message.asMessage(value).closeOnCloseOf(to, requester);
-				to.put(key,value);
+	public static void copyContext(String keys, Map<String,Object> from, Map<String,Object> to, INamedObject requester) {
+		if (to!=null) {
+			log.debug("returning context, returned sessionkeys ["+keys+"]");
+			copyIfExists(PipeLineSession.EXIT_CODE_CONTEXT_KEY, from, to);
+			copyIfExists(PipeLineSession.EXIT_STATE_CONTEXT_KEY, from, to);
+			if (StringUtils.isNotEmpty(keys)) {
+				StringTokenizer st = new StringTokenizer(keys,",;");
+				while (st.hasMoreTokens()) {
+					String key=st.nextToken();
+					copySessionKey(key, from, to, requester);
+				}
 			}
+		}
+	}
+
+	private static void copySessionKey(String key, Map<String,Object> from, Map<String,Object> to, INamedObject requester) {
+		Object value=from.get(key);
+		Message message = Message.asMessage(value);
+		if (from instanceof PipeLineSession) {
+			message.unscheduleFromCloseOnExitOf((PipeLineSession)from);
+		}
+		if (to instanceof PipeLineSession) {
+			Message.asMessage(value).closeOnCloseOf((PipeLineSession)to, requester);
+		}
+		to.put(key,value);
+	}
+
+	private static void copyIfExists(String key, Map<String,Object> from, Map<String,Object> to) {
+		if (from.containsKey(key)) {
+			to.put(key, from.get(key));
 		}
 	}
 
