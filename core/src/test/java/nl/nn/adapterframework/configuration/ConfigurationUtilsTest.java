@@ -30,6 +30,7 @@ import java.util.Map;
 import org.apache.commons.io.FilenameUtils;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.collection.IsIterableContainingInOrder;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -64,6 +65,14 @@ public class ConfigurationUtilsTest extends Mockito {
 		AppConstants.getInstance().setProperty("configurations.directory.autoLoad", true);
 		AppConstants.getInstance().setProperty("configurations.config2.parentConfig", "config4");
 		AppConstants.getInstance().setProperty("configurations.config3.parentConfig", "config4");
+	}
+
+	@AfterClass
+	public static void tearDown() {
+		AppConstants.getInstance().setProperty("configurations.database.autoLoad", false);
+		AppConstants.getInstance().setProperty("configurations.directory.autoLoad", false);
+		AppConstants.getInstance().remove("configurations.config2.parentConfig");
+		AppConstants.getInstance().remove("configurations.config3.parentConfig");
 	}
 
 	private void mockDatabase() throws Exception {
