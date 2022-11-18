@@ -34,8 +34,8 @@ public class Cache<K,V,E extends Exception> {
 			if (entry.isExpired()) {
 				entry.update(valueSupplier.apply(key), timeToLiveMillis);
 			}
+			return entry.getValue();
 		}
-		return entry.getValue();
 	}
 
 }
