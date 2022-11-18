@@ -9,7 +9,8 @@ mkdir -p /opt/muse/packages/ranker/
 cat <<EOF >> /opt/muse/packages/ranker/rank.py
 #!/usr/bin/env python3
 
-if __name__=="__main__": 
+if __name__=="__main__":
+    print([])
     exit()
 
 
