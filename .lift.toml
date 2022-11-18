@@ -13,3 +13,5 @@ ignoreFiles = """
 **/js/plugins/*.js
 **/js/ui-router/*.js
 """
+
+tools = [ "ErrorProne" ]
