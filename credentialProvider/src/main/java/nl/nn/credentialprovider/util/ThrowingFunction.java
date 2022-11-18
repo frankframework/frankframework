@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,30 +15,7 @@
 */
 package nl.nn.credentialprovider.util;
 
-public class CacheEntry<V> {
-
-	private V value;
-	private long expiry;
-
-	public CacheEntry() {
-		expiry = 0L; // make sure it is expired;
-	}
-	
-	public CacheEntry(V value, int timeToLiveMillis) {
-		this.value = value;
-		expiry = System.currentTimeMillis()+timeToLiveMillis;
-	}
-
-	public boolean isExpired() {
-		return System.currentTimeMillis() > expiry;
-	}
-
-	public V getValue() {
-		return value;
-	}
-
-	public void update(V value, int timeToLiveMillis) {
-		expiry = System.currentTimeMillis()+timeToLiveMillis;
-		this.value = value;
-	}
+@FunctionalInterface
+public interface ThrowingFunction<T, R, E extends Exception> {
+	R apply(T param) throws E;
 }

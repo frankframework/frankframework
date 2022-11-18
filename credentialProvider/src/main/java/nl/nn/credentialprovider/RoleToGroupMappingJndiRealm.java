@@ -61,7 +61,7 @@ public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupM
 
 	private final Log log = LogFactory.getLog(this.getClass());
 
-	private Cache<String,Attributes> roleMembershipCache = new Cache<>(3600*1000);
+	private Cache<String,Attributes,NamingException> roleMembershipCache = new Cache<>(3600*1000);
 
 	/**
 	 * The pathname (absolute or relative to Catalina's current working directory "catalina.base")
@@ -169,11 +169,7 @@ public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupM
 			while((role=rolesToCheck.poll())!=null) {
 				groupCheckCount++;
 
-				Attributes attrs = roleMembershipCache.get(role);
-				if (attrs==null) {
-					attrs = connection.context.getAttributes(role, attrIds);
-					roleMembershipCache.put(role, attrs);
-				}
+				Attributes attrs = roleMembershipCache.computeIfAbsentOrExpired(role, r -> connection.context.getAttributes(r, attrIds));
 
 				for (NamingEnumeration<? extends Attribute> attsEnum= attrs.getAll(); attsEnum.hasMoreElements();) {
 					Attribute attr = attsEnum.next();
