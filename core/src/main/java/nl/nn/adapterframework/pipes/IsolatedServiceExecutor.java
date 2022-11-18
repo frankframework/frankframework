@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.pipes;
 
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.RequestReplyExecutor;
@@ -55,6 +56,7 @@ public class IsolatedServiceExecutor extends RequestReplyExecutor {
 			log.warn("IsolatedServiceCaller caught exception",t);
 			throwable=t;
 		} finally {
+			ThreadContext.clearAll();
 			if (guard != null) {
 				guard.releaseResource();
 			}
