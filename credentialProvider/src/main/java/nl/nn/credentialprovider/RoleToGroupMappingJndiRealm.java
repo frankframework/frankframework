@@ -153,7 +153,7 @@ public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupM
 	 */
 	@Override
 	protected List<String> getRoles(JNDIConnection connection, User user) throws NamingException {
-		long t1 = System.currentTimeMillis();
+		long t1 = log.isDebugEnabled() ? System.currentTimeMillis() : 0;
 		int groupCheckCount=0;
 		int nestedRolesFound=0;
 		try {
@@ -190,8 +190,10 @@ public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupM
 			if (this.containerLog.isTraceEnabled()) this.containerLog.trace("allRoles out: "+allRoles);
 			return new ArrayList<>(allRoles);
 		} finally {
-			long t2 = System.currentTimeMillis();
-			log.debug("Role retrieval for user ["+user.getDN()+"] in LDAP took ["+(t2-t1)+"]ms, groupCheckCount ["+groupCheckCount+"] nestedRolesFound ["+nestedRolesFound+"]");
+			if (log.isDebugEnabled()) {
+				long t2 = System.currentTimeMillis();
+				log.debug("Role retrieval for user ["+user.getDN()+"] in LDAP took ["+(t2-t1)+"]ms, groupCheckCount ["+groupCheckCount+"] nestedRolesFound ["+nestedRolesFound+"]");
+			}
 		}
 	}
 
