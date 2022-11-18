@@ -145,7 +145,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 			}
 		}
 
-		PipeLineResult pipeLineResult=new PipeLineResult();
+		PipeLineResult pipeLineResult=new PipeLineResult("unknown", ExitState.ERROR);
 		boolean outputValidationFailed=false;
 		try {
 			while (!ready){
@@ -207,13 +207,11 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 					}
 					if (ready) {
 						ExitState state=plExit.getState();
-						pipeLineResult.setState(state);
-						pipeLineResult.setExitCode(plExit.getExitCode());
-						if (!message.isNull() && !plExit.isEmptyResult()) { //TODO Replace with Message.isEmpty() once Larva can handle NULL responses...
-							pipeLineResult.setResult(message);
-						} else {
-							pipeLineResult.setResult(Message.nullMessage());
+						Message resultMessage = message;
+						if (message.isNull() || plExit.isEmptyResult()) { //TODO Replace with Message.isEmpty() once Larva can handle NULL responses...
+							resultMessage = Message.nullMessage();
 						}
+						pipeLineResult = new PipeLineResult(plExit.getName(), plExit.getState(), resultMessage, plExit.getExitCode());
 						ready=true;
 						if (log.isDebugEnabled()){  // for performance reasons
 							String skString = "";

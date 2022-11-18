@@ -252,12 +252,12 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 
 	@Deprecated
 	public void setLocal(String name) {
-		throw new RuntimeException("do not set attribute 'local=true', just leave serviceName empty!");
+		throw new IllegalArgumentException("do not set attribute 'local=true', just leave serviceName empty!");
 	}
 
 	@Deprecated
 	public void setIsolated(boolean b) {
-		throw new RuntimeException("function of attribute 'isolated' is replaced by 'transactionAttribute' on PipeLine");
+		throw new IllegalArgumentException("function of attribute 'isolated' is replaced by 'transactionAttribute' on PipeLine");
 	}
 
 	@Deprecated

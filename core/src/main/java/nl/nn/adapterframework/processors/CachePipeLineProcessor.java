@@ -28,7 +28,7 @@ import nl.nn.adapterframework.util.EnumUtils;
 
 /**
  * PipelineProcessor that handles caching.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.11
  */
@@ -55,18 +55,17 @@ public class CachePipeLineProcessor extends PipeLineProcessorBase {
 
 		if (log.isDebugEnabled()) log.debug("cache key [{}]", key);
 		Message result;
+		String exitName;
 		String state;
 		synchronized (cache) {
 			result = new Message(cache.get("r"+key));
+			exitName = cache.get("n"+key);
 			state = cache.get("s"+key);
 		}
 
 		if (!result.isNull() && state!=null) {
 			if (log.isDebugEnabled()) log.debug("retrieved result from cache using key [{}]", key);
-			PipeLineResult plr=new PipeLineResult();
-			plr.setState(EnumUtils.parse(ExitState.class, state));
-			plr.setResult(result);
-			return plr;
+			return new PipeLineResult(exitName, EnumUtils.parse(ExitState.class, state), result);
 		}
 
 		if (log.isDebugEnabled()) log.debug("no cached results found using key [{}]", key);
@@ -75,6 +74,7 @@ public class CachePipeLineProcessor extends PipeLineProcessorBase {
 		String cacheValue=cache.transformValue(plr.getResult(), pipeLineSession);
 		synchronized (cache) {
 			cache.put("r"+key, cacheValue);
+			cache.put("n"+key, plr.getExitName());
 			cache.put("s"+key, plr.getState().name());
 		}
 		return plr;

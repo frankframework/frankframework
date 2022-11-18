@@ -16,13 +16,13 @@
 			<pipe name="IbisJavaSender" className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.senders.IbisJavaSender" serviceName="ibis4test-ReturnedSessionKeys" returnedSessionKeys="returnCode,reasonCode,dataStream" />
 				<forward name="success" path="Reply_success" />
-				<forward name="400" path="Reply_400" />
+				<forward name="FAIL" path="Reply_FAIL" />
 				<forward name="exception" path="Reply_exception" />
 			</pipe>
 			<pipe name="IbisLocalSender" className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ReturnedSessionKeys-Local" returnedSessionKeys="returnCode,reasonCode,dataStream" />
 				<forward name="success" path="Reply_success" />
-				<forward name="400" path="Reply_400" />
+				<forward name="FAIL" path="Reply_FAIL" />
 				<forward name="exception" path="Reply_exception" />
 			</pipe>
 
@@ -35,13 +35,13 @@
 				<param name="forward" value="success"/>
 				<forward name="success" path="EXIT" />
 			</pipe>
-			<pipe name="Reply_400" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="ReturnedSessionKeys/Reply.xsl" >
+			<pipe name="Reply_FAIL" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="ReturnedSessionKeys/Reply.xsl" >
 				<param name="returnCode" sessionKey="returnCode"/>
 				<param name="reasonCode" sessionKey="reasonCode"/>
 				<param name="dataStream" sessionKey="dataStream"/>
 				<param name="localValue" sessionKey="localValue"/>
 				<param name="exitState" sessionKey="exitState"/>
-				<param name="forward" value="400"/>
+				<param name="forward" value="FAIL"/>
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<pipe name="Reply_exception" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="ReturnedSessionKeys/Reply.xsl" getInputFromFixedValue="&lt;root&gt;Exception caught&lt;/root&gt;">

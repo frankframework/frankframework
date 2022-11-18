@@ -589,8 +589,7 @@ public class Adapter implements IAdapter, NamedBean {
 		try {
 			return processMessageWithExceptions(messageId, message, pipeLineSession);
 		} catch (Throwable t) {
-			PipeLineResult result = new PipeLineResult();
-			result.setState(ExitState.ERROR);
+			PipeLineResult result = new PipeLineResult("exception", ExitState.ERROR);
 			String msg = "Illegal exception ["+t.getClass().getName()+"]";
 			INamedObject objectInError = null;
 			if (t instanceof ListenerException) {
@@ -614,7 +613,7 @@ public class Adapter implements IAdapter, NamedBean {
 	@Override
 	public PipeLineResult processMessageWithExceptions(String messageId, Message message, PipeLineSession pipeLineSession) throws ListenerException {
 
-		PipeLineResult result = new PipeLineResult();
+		PipeLineResult result = new PipeLineResult("unknown", ExitState.ERROR);
 
 		long startTime = System.currentTimeMillis();
 		boolean processingSuccess = true;

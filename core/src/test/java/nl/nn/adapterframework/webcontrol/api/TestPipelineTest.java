@@ -57,9 +57,7 @@ public class TestPipelineTest extends ApiTestBase<TestPipeline>{
 		adapter.setName("HelloWorld");
 		getConfiguration().autowireByName(adapter);
 
-		PipeLineResult plr = new PipeLineResult();
-		plr.setResult(Message.asMessage("Success"));
-		plr.setState(ExitState.SUCCESS);
+		PipeLineResult plr = new PipeLineResult("", ExitState.SUCCESS, Message.asMessage("Success"));
 
 		doReturn(plr).when(adapter).processMessage(anyString(), any(Message.class), any(PipeLineSession.class));
 
