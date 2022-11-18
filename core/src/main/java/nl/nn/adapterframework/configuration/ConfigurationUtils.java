@@ -25,8 +25,10 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -456,7 +458,33 @@ public class ConfigurationUtils {
 
 		log.info("found configurations to load ["+allConfigNameItems+"]");
 
-		return allConfigNameItems;
+		return sort(allConfigNameItems);
+	}
+
+	private static <T> Map<String, T> sort(Map<String, T> allConfigNameItems) {
+		List<String> sortedConfigurationNames = new LinkedList<>(allConfigNameItems.keySet());
+		sortedConfigurationNames.sort(new ParentConfigComperator());
+
+		Map<String, T> sortedConfigurations = new LinkedHashMap<>();
+
+		sortedConfigurationNames.forEach((name) -> {
+			sortedConfigurations.put(name, allConfigNameItems.get(name));
+		});
+
+		return sortedConfigurations;
+	}
+
+	private static class ParentConfigComperator implements Comparator<String> {
+
+		@Override
+		public int compare(String configName1, String configName2) {
+			String parent = APP_CONSTANTS.getString("configurations." + configName2 + ".parentConfig", null);
+			if(configName1.equals(parent)) {
+				return -1;
+			}
+			return configName1.equals(configName2) ? 0 : 1;
+		}
+
 	}
 
 	public static List<String> retrieveConfigNamesFromDatabase(ApplicationContext applicationContext) throws ConfigurationException {

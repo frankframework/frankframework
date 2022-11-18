@@ -62,7 +62,8 @@ public class ConfigurationUtilsTest extends Mockito {
 	public static void setUp() {
 		AppConstants.getInstance().setProperty("configurations.database.autoLoad", true);
 		AppConstants.getInstance().setProperty("configurations.directory.autoLoad", true);
-		AppConstants.getInstance().setProperty("configurations.config2.parentConfig", "config1");
+		AppConstants.getInstance().setProperty("configurations.config2.parentConfig", "config4");
+		AppConstants.getInstance().setProperty("configurations.config3.parentConfig", "config4");
 	}
 
 	private void mockDatabase() throws Exception {
@@ -235,13 +236,17 @@ public class ConfigurationUtilsTest extends Mockito {
 		TestConfiguration applicationContext = new TestConfiguration();
 		ResultSetBuilder builder = ResultSetBuilder.create()
 				.setValue("config1")
-				.addRow().setValue("config2");
+				.addRow().setValue("config2")
+				.addRow().setValue("config3")
+				.addRow().setValue("config4")
+				.addRow().setValue("config5");
 		applicationContext.mockQuery("SELECT COUNT(*) FROM IBISCONFIG", builder.build());
 		Map<String, Class<? extends IConfigurationClassLoader>> configs = ConfigurationUtils.retrieveAllConfigNames(applicationContext);
-		MatcherAssert.assertThat(configs.keySet(), IsIterableContainingInOrder.contains("IAF_Util", "TestConfiguration", "ClassLoader", "Config", "config1", "config2")); //checks order!
+		MatcherAssert.assertThat(configs.keySet(), IsIterableContainingInOrder.contains("IAF_Util", "TestConfiguration", "ClassLoader", "Config", "config1", "config4", "config2", "config3", "config5")); //checks order!
 
 		assertNull(configs.get("IAF_Util"));
 		assertNull(configs.get("TestConfiguration"));
+
 		assertEquals(DirectoryClassLoader.class, configs.get("ClassLoader"));
 		assertEquals(DirectoryClassLoader.class, configs.get("Config"));
 		assertEquals(DatabaseClassLoader.class, configs.get("config1"));
