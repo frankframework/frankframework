@@ -35,6 +35,7 @@ import org.springframework.messaging.Message;
 import nl.nn.adapterframework.management.bus.ActionSelector;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusAware;
+import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
@@ -125,8 +126,7 @@ public class UpdateLogDefinitions {
 			log2SecurityLog("changed logdefinition ["+logPackage+"] to level ["+level.getStandardLevel().name()+"]");
 			return ResponseMessage.accepted();
 		}
-
-		return ResponseMessage.badRequest();
+		throw new BusException("neither [logPackage] or [level] provided");
 	}
 
 	private void log2SecurityLog(String logMessage) {

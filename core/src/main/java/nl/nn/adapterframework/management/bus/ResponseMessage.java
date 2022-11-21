@@ -78,7 +78,7 @@ public class ResponseMessage {
 			} else {
 				json = toJson(payload);
 			}
-			headers.put(MIMETYPE_KEY, MediaType.APPLICATION_JSON.toString());
+			headers.put(MIMETYPE_KEY, MediaType.APPLICATION_JSON_VALUE);
 			return new GenericMessage<>(json, headers);
 		}
 
@@ -105,7 +105,7 @@ public class ResponseMessage {
 					throw new BusException("unable to convert payload to message", e);
 				}
 			}
-			headers.computeIfAbsent(MIMETYPE_KEY, (e)->MediaType.APPLICATION_OCTET_STREAM.toString());
+			headers.computeIfAbsent(MIMETYPE_KEY, e->MediaType.APPLICATION_OCTET_STREAM_VALUE);
 			return new GenericMessage<>(payload, headers);
 		}
 	}
@@ -131,9 +131,5 @@ public class ResponseMessage {
 
 	public static Message<String> noContent() {
 		return createNoContentResponse(204);
-	}
-
-	public static Message<String> badRequest() {
-		return createNoContentResponse(400);
 	}
 }
