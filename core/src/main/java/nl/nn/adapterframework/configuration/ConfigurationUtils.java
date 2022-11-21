@@ -15,9 +15,12 @@
 */
 package nl.nn.adapterframework.configuration;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -35,6 +38,8 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import javax.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -176,7 +181,7 @@ public class ConfigurationUtils {
 				return null;
 			}
 
-			Map<String, Object> configuration = new HashMap<String, Object>(5);
+			Map<String, Object> configuration = new HashMap<>(5);
 			byte[] jarBytes = rs.getBytes(1);
 			if(jarBytes == null) return null;
 
@@ -286,11 +291,16 @@ public class ConfigurationUtils {
 		}
 	}
 
-	public static void removeConfigFromDatabase(ApplicationContext applicationContext, String name, String jmsRealm, String version) throws ConfigurationException {
+	public static void removeConfigFromDatabase(ApplicationContext applicationContext, String name, String datasourceName, String version) throws ConfigurationException {
+		String workdataSourceName = datasourceName;
+		if (StringUtils.isEmpty(workdataSourceName)) {
+			workdataSourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
+		}
+
 		Connection conn = null;
 		ResultSet rs = null;
 		FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
-		qs.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
+		qs.setDatasourceName(workdataSourceName);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
 		try {
@@ -312,9 +322,8 @@ public class ConfigurationUtils {
 
 	/**
 	 * Set the all ACTIVECONFIG to false and specified version to true
-	 * @param value 
 	 */
-	public static boolean activateConfig(ApplicationContext applicationContext, String name, String version, boolean value, String dataSourceName) throws SenderException, ConfigurationException, JdbcException, SQLException {
+	public static boolean activateConfig(ApplicationContext applicationContext, String name, String version, String dataSourceName) throws SenderException, ConfigurationException, JdbcException, SQLException {
 		String workdataSourceName = dataSourceName;
 		if (StringUtils.isEmpty(workdataSourceName)) {
 			workdataSourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
@@ -406,6 +415,11 @@ public class ConfigurationUtils {
 	 * @return A map with all configurations to load (KEY = ConfigurationName, VALUE = ClassLoaderType)
 	 */
 	public static Map<String, Class<? extends IConfigurationClassLoader>> retrieveAllConfigNames(ApplicationContext applicationContext) {
+		return retrieveAllConfigNames(applicationContext, CONFIG_AUTO_FS_CLASSLOADER, CONFIG_AUTO_DB_CLASSLOADER);
+	}
+
+	//protected because of jUnit tests
+	protected static Map<String, Class<? extends IConfigurationClassLoader>> retrieveAllConfigNames(ApplicationContext applicationContext, boolean directoryConfigurations, boolean databaseConfigurations) {
 		Map<String, Class<? extends IConfigurationClassLoader>> allConfigNameItems = new LinkedHashMap<>();
 
 		StringTokenizer tokenizer = new StringTokenizer(CONFIGURATIONS, ",");
@@ -413,42 +427,31 @@ public class ConfigurationUtils {
 			allConfigNameItems.put(tokenizer.nextToken(), null);
 		}
 
-		if (CONFIG_AUTO_FS_CLASSLOADER) {
+		if (directoryConfigurations) {
+			String configDir = AppConstants.getInstance().getProperty("configurations.directory");
+			log.info("scanning directory [{}] for configurations", configDir);
 			try {
-				String configDir = AppConstants.getInstance().getProperty("configurations.directory");
-				if(StringUtils.isEmpty(configDir))
-					throw new IOException("property [configurations.directory] not set");
-
-				File directory = new File(configDir);
-				if(!directory.exists())
-					throw new IOException("failed to open configurations.directory ["+configDir+"]");
-				if(!directory.isDirectory())
-					throw new IOException("configurations.directory ["+configDir+"] is not a valid directory");
-
-				for (File subFolder : directory.listFiles()) {
-					if(subFolder.isDirectory()) {
-						allConfigNameItems.put(subFolder.getName(), DirectoryClassLoader.class);
+				for(String name : retrieveDirectoryConfigNames(configDir)) {
+					if (allConfigNameItems.get(name) == null) {
+						allConfigNameItems.put(name, DirectoryClassLoader.class);
+					} else {
+						log.warn("config ["+name+"] already exists in "+allConfigNameItems+", cannot add same config twice");
 					}
 				}
-			} catch (Exception e) {
+			} catch (IOException e) {
 				applicationContext.publishEvent(new ApplicationMessageEvent(applicationContext, "failed to autoload configurations", MessageKeeperLevel.WARN, e));
 			}
 		}
-		if (CONFIG_AUTO_DB_CLASSLOADER) {
+		if (databaseConfigurations) {
 			log.info("scanning database for configurations");
 			try {
 				List<String> dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(applicationContext);
-				if (dbConfigNames != null && !dbConfigNames.isEmpty()) {
-					log.debug("found database configurations "+dbConfigNames.toString()+"");
-					for (String dbConfigName : dbConfigNames) {
-						if (allConfigNameItems.get(dbConfigName) == null)
-							allConfigNameItems.put(dbConfigName, DatabaseClassLoader.class);
-						else
-							log.warn("config ["+dbConfigName+"] already exists in "+allConfigNameItems+", cannot add same config twice");
+				for (String dbConfigName : dbConfigNames) {
+					if (allConfigNameItems.get(dbConfigName) == null) {
+						allConfigNameItems.put(dbConfigName, DatabaseClassLoader.class);
+					} else {
+						log.warn("config ["+dbConfigName+"] already exists in "+allConfigNameItems+", cannot add same config twice");
 					}
-				}
-				else {
-					log.debug("did not find any database configurations");
 				}
 			}
 			catch (ConfigurationException e) {
@@ -475,10 +478,11 @@ public class ConfigurationUtils {
 	}
 
 	private static class ParentConfigComperator implements Comparator<String> {
+		AppConstants constants = AppConstants.getInstance();
 
 		@Override
 		public int compare(String configName1, String configName2) {
-			String parent = APP_CONSTANTS.getString("configurations." + configName2 + ".parentConfig", null);
+			String parent = constants.getString("configurations." + configName2 + ".parentConfig", null);
 			if(configName1.equals(parent)) {
 				return -1;
 			}
@@ -487,6 +491,29 @@ public class ConfigurationUtils {
 
 	}
 
+	@Nonnull
+	private static List<String> retrieveDirectoryConfigNames(String configDir) throws IOException {
+		List<String> configurationNames = new ArrayList<>();
+		if(StringUtils.isEmpty(configDir))
+			throw new IOException("property [configurations.directory] not set");
+
+		Path directory = Paths.get(configDir);
+		if(!Files.exists(directory))
+			throw new IOException("failed to open configurations.directory ["+configDir+"]");
+		if(!Files.isDirectory(directory))
+			throw new IOException("configurations.directory ["+configDir+"] is not a valid directory");
+
+		try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory, Files::isDirectory)) {
+			for (Path path : stream) {
+				configurationNames.add(path.getFileName().toString());
+			}
+		}
+
+		log.debug("found directory configurations {}", configurationNames);
+		return configurationNames;
+	}
+
+	@Nonnull
 	public static List<String> retrieveConfigNamesFromDatabase(ApplicationContext applicationContext) throws ConfigurationException {
 		Connection conn = null;
 		ResultSet rs = null;
@@ -509,6 +536,8 @@ public class ConfigurationUtils {
 			while (rs.next()) {
 				stringList.add(rs.getString(1));
 			}
+
+			log.debug("found database configurations {}", stringList);
 			return stringList;
 		} catch (SenderException | JdbcException | SQLException e) {
 			throw new ConfigurationException(e);

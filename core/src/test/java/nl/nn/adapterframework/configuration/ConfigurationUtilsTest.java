@@ -45,12 +45,17 @@ public class ConfigurationUtilsTest extends Mockito {
 	private PreparedStatementMock stmt;
 
 	@BeforeClass
-	public static void setUp() {
+	public static void setUp() throws Exception {
 		AppConstants.removeInstance();
 		AppConstants.getInstance().setProperty("configurations.database.autoLoad", true);
 		AppConstants.getInstance().setProperty("configurations.directory.autoLoad", true);
 		AppConstants.getInstance().setProperty("configurations.configuration2.parentConfig", "configuration4");
 		AppConstants.getInstance().setProperty("configurations.configuration3.parentConfig", "configuration4");
+
+		URL url = TestFileUtils.getTestFileURL("/ClassLoader/DirectoryClassLoaderRoot");
+		assertNotNull(url);
+		File directory = new File(url.toURI());
+		AppConstants.getInstance().setProperty("configurations.directory", directory.getCanonicalPath());
 	}
 
 	@AfterClass
@@ -220,11 +225,6 @@ public class ConfigurationUtilsTest extends Mockito {
 
 	@Test
 	public void retrieveAllConfigNamesTest() throws Exception {
-		URL url = TestFileUtils.getTestFileURL("/ClassLoader/DirectoryClassLoaderRoot");
-		assertNotNull(url);
-		File directory = new File(url.toURI());
-		AppConstants.getInstance().setProperty("configurations.directory", directory.getCanonicalPath());
-
 		TestConfiguration applicationContext = new TestConfiguration();
 		ResultSetBuilder builder = ResultSetBuilder.create()
 				.setValue("configuration1")
@@ -233,8 +233,9 @@ public class ConfigurationUtilsTest extends Mockito {
 				.addRow().setValue("configuration4")
 				.addRow().setValue("configuration5");
 		applicationContext.mockQuery("SELECT COUNT(*) FROM IBISCONFIG", builder.build());
-		Map<String, Class<? extends IConfigurationClassLoader>> configs = ConfigurationUtils.retrieveAllConfigNames(applicationContext);
-		MatcherAssert.assertThat(configs.keySet(), IsIterableContainingInOrder.contains("IAF_Util", "TestConfiguration", "ClassLoader", "Config", "configuration1", "configuration4", "configuration2", "configuration3", "configuration5")); //checks order!
+		Map<String, Class<? extends IConfigurationClassLoader>> configs = ConfigurationUtils.retrieveAllConfigNames(applicationContext, true, true);
+
+		MatcherAssert.assertThat("keyset was: " + configs.keySet(), configs.keySet(), IsIterableContainingInOrder.contains("IAF_Util", "TestConfiguration", "ClassLoader", "Config", "configuration1", "configuration4", "configuration2", "configuration3", "configuration5")); //checks order!
 
 		assertNull(configs.get("IAF_Util"));
 		assertNull(configs.get("TestConfiguration"));

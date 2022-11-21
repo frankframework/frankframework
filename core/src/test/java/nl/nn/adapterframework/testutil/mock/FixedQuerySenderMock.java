@@ -13,7 +13,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -41,7 +40,7 @@ public class FixedQuerySenderMock extends FixedQuerySender {
 			return DbmsSupportMock.newInstance();
 		}
 
-		throw new NotImplementedException();
+		return super.getDbmsSupport();
 	}
 
 	@Override

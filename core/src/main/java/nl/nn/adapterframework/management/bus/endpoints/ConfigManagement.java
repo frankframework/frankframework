@@ -141,7 +141,7 @@ public class ConfigManagement extends BusEndpointBase {
 
 		try {
 			if(activate != null) {
-				if(ConfigurationUtils.activateConfig(getApplicationContext(), configurationName, version, activate, datasourceName)) {
+				if(ConfigurationUtils.activateConfig(getApplicationContext(), configurationName, version, datasourceName)) {
 					return ResponseMessage.accepted();
 				}
 			}
