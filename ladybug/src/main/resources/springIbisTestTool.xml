@@ -66,7 +66,7 @@
 	<bean name="metadataExtractor" class="nl.nn.testtool.MetadataExtractor">
 		<property name="extraMetadataFieldExtractors">
 			<list>
-				<bean class="nl.nn.ibistesttool.metadata.StatusExtractor"/>
+				<bean class="nl.nn.testtool.metadata.StatusMetadataFieldExtractor"/>
 			</list>
 		</property>
 	</bean>
@@ -100,7 +100,7 @@
 				}"
 		/>
 	</bean>
-	<!-- Ladybug API classes autowired by CXF Spring (see LadybugWebContext.xml) expect a bean with name testStorage -->
+	<!-- Ladybug API classes autowired by CXF Spring (see ladybug/cxf-beans.xml) expect a bean with name testStorage -->
 	<bean name="testStorage" class="nl.nn.testtool.storage.proxy.ProxyStorage">
 		<property name="destination">
 			<ref bean="#{testStorageActive}"/>
@@ -186,24 +186,13 @@
 		</property>
 	</bean>
 
-	<bean name="reportXmlTransformer" class="nl.nn.testtool.transform.ReportXmlTransformer">
+	<bean name="reportXmlTransformer" class="nl.nn.testtool.transform.ReportXmlTransformer" init-method="init">
 		<property name="xsltResource" value="${ibistesttool.reportTransformation}"/>
 	</bean>
 
 	<bean name="treePane" class="nl.nn.testtool.echo2.reports.TreePane" autowire="byName" init-method="initBean" scope="prototype"/>
 
-	<bean name="changeReportGeneratorEnabledRoles" class="java.util.ArrayList">
-		<constructor-arg>
-			<list>
-				<value>IbisTester</value>
-				<value>IbisAdmin</value>
-				<value>IbisDataAdmin</value>
-			</list>
-		</constructor-arg>
-	</bean>
-
 	<bean name="reportsComponent" class="nl.nn.testtool.echo2.reports.ReportsComponent" autowire="byName" init-method="initBean" scope="prototype">
-		<property name="changeReportGeneratorEnabledRoles" ref="changeReportGeneratorEnabledRoles"/>
 		<property name="testTool">
 			<ref bean="testTool"/>
 		</property>
@@ -313,7 +302,7 @@
 
 	<bean name="echo2Application" class="nl.nn.testtool.echo2.Echo2Application" autowire="byName" init-method="initBean" scope="prototype">
 		<property name="contentPane">
-			<bean class="nextapp.echo2.app.ContentPane"/>
+			<bean class="nl.nn.testtool.echo2.ContentPane"/>
 		</property>
 		<property name="reportsTreeCellRenderer">
 			<ref bean="reportsTreeCellRenderer"/>
@@ -327,7 +316,28 @@
 
 	<bean name="pipeDescriptionProvider" class="nl.nn.ibistesttool.PipeDescriptionProvider" autowire="byName"/>
 
-	<bean name="rerunRoles" class="java.util.ArrayList">
+	<bean name="observerRoles" class="java.util.ArrayList">
+		<constructor-arg>
+			<list>
+				<value>IbisObserver</value>
+				<value>IbisDataAdmin</value>
+				<value>IbisAdmin</value>
+				<value>IbisTester</value>
+			</list>
+		</constructor-arg>
+	</bean>
+
+	<bean name="dataAdminRoles" class="java.util.ArrayList">
+		<constructor-arg>
+			<list>
+				<value>IbisDataAdmin</value>
+				<value>IbisAdmin</value>
+				<value>IbisTester</value>
+			</list>
+		</constructor-arg>
+	</bean>
+
+	<bean name="testerRoles" class="java.util.ArrayList">
 		<constructor-arg>
 			<list>
 				<value>IbisTester</value>

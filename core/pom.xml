@@ -11,7 +11,7 @@
 	<name>Ibis AdapterFramework core</name>
 
 	<properties>
-		<spring.version>5.3.23</spring.version>
+		<spring.version>5.3.24</spring.version>
 		<spring-security.version>5.7.5</spring-security.version>
 		<spring-integration.version>5.5.15</spring-integration.version>
 		<j2v8.version>4.6.0</j2v8.version>
@@ -309,6 +309,11 @@
 		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-config</artifactId>
+			<version>${spring-security.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-ldap</artifactId>
 			<version>${spring-security.version}</version>
 		</dependency>
 		<!-- not yet used, note that it depends on Spring 4.3.30 
@@ -808,8 +813,13 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
+			<groupId>org.junit.vintage</groupId>
+			<artifactId>junit-vintage-engine</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -843,6 +853,12 @@
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
 			<version>${h2.driver.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.ibm.db2</groupId>
+			<artifactId>jcc</artifactId>
+			<version>${db2.driver.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

@@ -1,21 +1,21 @@
 package nl.nn.credentialprovider;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 
 public class FileSystemCredentialsTest {
 
 	private Path root;
 
-	@Before
+	@BeforeEach
 	public void setup() {
 		String url = this.getClass().getResource("/secrets").toExternalForm();
 		root =  Paths.get(url.substring(url.indexOf(":/")+2));

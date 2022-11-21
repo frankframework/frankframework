@@ -56,7 +56,7 @@ public final class ShowScheduler extends FrankApiBase {
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/schedules/{groupName}/job/{jobName}")
+	@Path("/schedules/{groupName}/jobs/{jobName}")
 	@Relation("schedules")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getSchedule(@PathParam("jobName") String jobName, @PathParam("groupName") String groupName) {
@@ -79,7 +79,7 @@ public final class ShowScheduler extends FrankApiBase {
 
 	@PUT
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/schedules/{groupName}/job/{jobName}")
+	@Path("/schedules/{groupName}/jobs/{jobName}")
 	@Relation("schedules")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -106,7 +106,7 @@ public final class ShowScheduler extends FrankApiBase {
 
 	@PUT
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/schedules/{groupName}/job/{jobName}")
+	@Path("/schedules/{groupName}/jobs/{jobName}")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateSchedule(@PathParam("groupName") String groupName, @PathParam("jobName") String jobName, MultipartBody input) {
@@ -115,7 +115,7 @@ public final class ShowScheduler extends FrankApiBase {
 
 	@POST
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/schedules/{groupName}/job")
+	@Path("/schedules/{groupName}/jobs")
 	@Relation("schedules")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response createScheduleInJobGroup(@PathParam("groupName") String groupName, MultipartBody input) {
@@ -156,7 +156,7 @@ public final class ShowScheduler extends FrankApiBase {
 
 	@DELETE
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/schedules/{groupName}/job/{jobName}")
+	@Path("/schedules/{groupName}/jobs/{jobName}")
 	@Relation("schedules")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response deleteSchedules(@PathParam("jobName") String jobName, @PathParam("groupName") String groupName) {

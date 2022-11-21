@@ -77,16 +77,12 @@
 				name="SimpleZip"
 				className="nl.nn.adapterframework.pipes.FixedResultPipe" 
 				returnString="${testdata.dir}/zip/simple.zip"
-				>
-				<forward name="success" path="SimpleZip2"/>
-			</pipe>
+			/>
 			<pipe
 				name="SimpleZip2"
 				className="nl.nn.adapterframework.compression.ZipWriterPipe" 
 				action="open"
-				>
-				<forward name="success" path="SimpleZip3"/>
-			</pipe>
+			/>
 			<pipe
 				name="SimpleZip3"
 				className="nl.nn.adapterframework.compression.ZipWriterPipe" 
@@ -94,12 +90,16 @@
 				getInputFromSessionKey="originalMessage"
 				>
 					<param name="filename" value="zipentry.txt" />
-				<forward name="success" path="SimpleZip4"/>
 			</pipe>
 			<pipe
 				name="SimpleZip4"
 				className="nl.nn.adapterframework.compression.ZipWriterPipe" 
 				action="close"
+			/>
+			<pipe
+				name="klaar"
+				className="nl.nn.adapterframework.pipes.EchoPipe" 
+				getInputFromFixedValue="klaar"
 				>
 				<forward name="success" path="READY"/>
 			</pipe>
@@ -108,16 +108,12 @@
 				name="SimpleZipX"
 				className="nl.nn.adapterframework.pipes.FixedResultPipe" 
 				returnString="${testdata.dir}/zip/simple.zip"
-				>
-				<forward name="success" path="SimpleZipX2"/>
-			</pipe>
+			/>
 			<pipe
 				name="SimpleZipX2"
 				className="nl.nn.adapterframework.compression.ZipWriterPipe" 
 				action="open"
-				>
-				<forward name="success" path="SimpleZipX3"/>
-			</pipe>
+			/>
 			<pipe
 				name="SimpleZipX3"
 				className="nl.nn.adapterframework.compression.ZipWriterPipe" 
@@ -125,12 +121,16 @@
 				getInputFromSessionKey="originalMessage"
 				>
 					<param name="filename" value="zipentry.xml" />
-				<forward name="success" path="SimpleZipX4"/>
 			</pipe>
 			<pipe
 				name="SimpleZipX4"
 				className="nl.nn.adapterframework.compression.ZipWriterPipe" 
 				action="close"
+			/>
+			<pipe
+				name="klaarX"
+				className="nl.nn.adapterframework.pipes.EchoPipe" 
+				getInputFromFixedValue="klaarX"
 				>
 				<forward name="success" path="READY"/>
 			</pipe>

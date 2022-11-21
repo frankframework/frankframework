@@ -1003,6 +1003,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	/**
 	 * Process the received message with {@link #processRequest(IListener, Object, Message, PipeLineSession)}.
 	 * A messageId is generated that is unique and consists of the name of this listener and a GUID
+	 * N.B. callers of this method should clear the remaining ThreadContext if its not to be returned to their callers. 
 	 */
 	@Override
 	public Message processRequest(IListener<M> origin, M rawMessage, Message message, PipeLineSession session) throws ListenerException {
@@ -1116,6 +1117,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				}
 			}
 		}
+		ThreadContext.clearAll();
 	}
 
 	private CloseableThreadContext.Instance getLoggingContext(IListener listener, PipeLineSession session) {

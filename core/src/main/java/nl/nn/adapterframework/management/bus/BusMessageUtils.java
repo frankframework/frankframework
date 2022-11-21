@@ -93,9 +93,13 @@ public class BusMessageUtils {
 		MessageHeaders headers = response.getHeaders();
 		int status = (int) headers.get(ResponseMessage.STATUS_KEY);
 		String mimeType = (String) headers.get(ResponseMessage.MIMETYPE_KEY);
+		ResponseBuilder builder = Response.status(status);
 
-		ResponseBuilder builder = Response.status(status).type(mimeType);
-		if(mimeType != null && !"no-content".equals(response.getPayload())) {
+		if(mimeType != null) {
+			builder.type(mimeType);
+		}
+
+		if(status == 200 && !"no-content".equals(response.getPayload())) {
 			builder.entity(response.getPayload());
 		}
 

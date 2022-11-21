@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.http;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 
@@ -9,6 +10,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.hamcrest.core.StringContains;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -20,7 +22,7 @@ import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.testutil.PropertyUtil;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class HttpSenderOAuthTest {
+public class HttpSenderOAuthTest1SFResourceOwnerCredentials {
 	protected Logger log = LogUtil.getLogger(this);
 
 	protected String PROPERTY_FILE = "HttpSenderOAuth.properties";
@@ -34,6 +36,7 @@ public class HttpSenderOAuthTest {
 	protected String tokenEndpoint = tokenBaseUrl + tokenContext;
 	protected String client_id     = PropertyUtil.getProperty(PROPERTY_FILE, "client_id");
 	protected String client_secret = PropertyUtil.getProperty(PROPERTY_FILE, "client_secret");
+	protected boolean authTokenReq = PropertyUtil.getProperty(PROPERTY_FILE, "authenticatedTokenRequest", false);
 	protected String username      = PropertyUtil.getProperty(PROPERTY_FILE, "username");
 	protected String password      = PropertyUtil.getProperty(PROPERTY_FILE, "password");
 	protected String proxyHost     = PropertyUtil.getProperty(PROPERTY_FILE, "proxyHost");
@@ -48,7 +51,7 @@ public class HttpSenderOAuthTest {
 
 
 	@Test
-	public void testRetrieveTokenViaGetLikePost() throws Exception {
+	public void testSendResourceOwnerCredentialsRequestWithBothCredentialsAsParameters() throws Exception {
 
 		String tokenUrl = tokenEndpoint
 				+"?grant_type=password"
@@ -86,17 +89,66 @@ public class HttpSenderOAuthTest {
 
 		Message result = sender.sendMessageOrThrow(new Message("<dummy/>"), session);
 
-		//log.debug("result: "+result.asString());
+		log.debug("result: "+result.asString());
 		assertEquals("200", session.getMessage("StatusCode").asString());
+		assertThat(result.asString(), containsString("\"access_token\":"));
 	}
 
 	@Test
-	public void testEmbeddedOAuth() throws Exception {
+	@Ignore("This does not work for this provider")
+	public void testSendResourceOwnerCredentialsRequestWithClientCredentialsAsBasicAuthentication() throws Exception {
+
+		String tokenUrl = tokenEndpoint
+				+"?grant_type=password"
+				+"&username="+ URLEncoder.encode(username)
+				+"&password="+ URLEncoder.encode(password);
+
+		HttpSender sender = new HttpSender();
+		sender.setUrl(tokenUrl);
+		sender.setMethodType(HttpMethod.POST);
+		sender.setUsername(client_id);
+		sender.setPassword(client_secret);
+		if (useProxy) {
+			sender.setProxyHost(proxyHost);
+			sender.setProxyPort(Integer.parseInt(proxyPort));
+			sender.setProxyUsername(proxyUsername);
+			sender.setProxyPassword(proxyPassword);
+		}
+		if (StringUtils.isNotEmpty(truststore)) {
+			sender.setTruststore(truststore);
+			sender.setTruststorePassword(truststorePassword);
+		}
+		sender.setAllowSelfSignedCertificates(true);
+		sender.setResultStatusCodeSessionKey("StatusCode");
+		sender.setTimeout(10000);
+
+		sender.setHeadersParams("Accept,Content-Type");
+
+//		sender.addParameter(new Parameter("Accept", "application/json"));
+//		sender.addParameter(new Parameter("Content-Type", "application/json"));
+
+		sender.configure();
+		sender.open();
+
+		PipeLineSession session = new PipeLineSession();
+
+		Message result = sender.sendMessageOrThrow(new Message("<dummy/>"), session);
+
+		log.debug("result: "+result.asString());
+		assertEquals("200", session.getMessage("StatusCode").asString());
+		assertThat(result.asString(), containsString("\"access_token\":"));
+	}
+
+
+
+	@Test
+	public void testEmbeddedOAuthResourceOwnerCredentialsFlow() throws Exception {
 		HttpSender sender = new HttpSender();
 		sender.setUrl(url);
 		sender.setTokenEndpoint(tokenEndpoint);
 		sender.setClientId(client_id);
 		sender.setClientSecret(client_secret);
+		sender.setAuthenticatedTokenRequest(authTokenReq);
 		sender.setUsername(username);
 		sender.setPassword(password);
 		if (useProxy) {
@@ -131,6 +183,7 @@ public class HttpSenderOAuthTest {
 		log.debug("result: "+result.asString());
 		assertEquals("200", session.getMessage("StatusCode").asString());
 	}
+
 
 
 	@Test

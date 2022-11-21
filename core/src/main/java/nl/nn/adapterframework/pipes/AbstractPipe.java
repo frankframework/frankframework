@@ -32,6 +32,7 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.DummyNamedObject;
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
+import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
@@ -46,6 +47,7 @@ import nl.nn.adapterframework.monitoring.EventPublisher;
 import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Locker;
@@ -318,6 +320,18 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 		return sessionKey.equals(getInputFromSessionKey) || parameterList!=null && parameterList.consumesSessionVariable(sessionKey);
 	}
 
+	protected ParameterValueList getParameterValueList(Message input, PipeLineSession session) throws PipeRunException {
+		try {
+			return getParameterList()!=null ? getParameterList().getValues(input, session) : null;
+		} catch (ParameterException e) {
+			throw new PipeRunException(this,"cannot determine parameter values", e);
+		}
+	}
+
+	protected <T> T getParameterOverriddenAttributeValue(ParameterValueList pvl, String parameterName, T attributeValue) {
+		T result = pvl!=null ? (T)pvl.get(parameterName) : null;
+		return result!=null ? result : attributeValue;
+	}
 
 	/**
 	 * The functional name of this pipe. Can be referenced by the <code>path</code> attribute of a {@link PipeForward}.

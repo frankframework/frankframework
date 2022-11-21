@@ -25,6 +25,13 @@
 			<artifactId>lombok</artifactId>
 		</dependency>
 
+		<!-- Explicit dependency to mitigate CVE-2022-3171 -->
+		<dependency>
+			<groupId>com.google.protobuf</groupId>
+			<artifactId>protobuf-java</artifactId>
+			<version>3.21.9</version>
+		</dependency>
+
 		<!-- Tika library -->
 		<dependency>
 			<groupId>org.apache.tika</groupId>
@@ -277,8 +284,13 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
+			<groupId>org.junit.vintage</groupId>
+			<artifactId>junit-vintage-engine</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

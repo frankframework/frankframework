@@ -203,7 +203,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private @Getter int connectionTimeToLive = 900; // [s]
 	private @Getter int connectionIdleTimeout = 10; // [s]
 	private HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
-	private HttpClientContext httpClientContext = HttpClientContext.create();
+	private @Getter HttpClientContext httpClientContext = HttpClientContext.create();
 	private @Getter CloseableHttpClient httpClient;
 
 	/* SECURITY */
@@ -217,6 +217,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private @Getter String clientId;
 	private @Getter String clientSecret;
 	private @Getter String scope;
+	private @Getter boolean authenticatedTokenRequest;
 
 	/* PROXY */
 	private @Getter String proxyHost;
@@ -264,6 +265,8 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 	protected URI staticUri;
 	private CredentialFactory credentials;
+	private CredentialFactory user_cf;
+	private CredentialFactory client_cf;
 
 	protected Set<String> requestOrBodyParamsSet=new HashSet<>();
 	protected Set<String> headerParamsSet=new LinkedHashSet<>();
@@ -380,9 +383,12 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		AuthSSLContextFactory.verifyKeystoreConfiguration(this, this);
 
 		if (StringUtils.isNotEmpty(getAuthAlias()) || StringUtils.isNotEmpty(getUsername())) {
-			credentials = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
-		} else {
-			credentials = new CredentialFactory(getClientAuthAlias(), getClientId(), getClientSecret());
+			user_cf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
+			credentials = user_cf;
+		}
+		client_cf = new CredentialFactory(getClientAuthAlias(), getClientId(), getClientSecret());
+		if (credentials==null) {
+			credentials = client_cf;
 		}
 		if (StringUtils.isNotEmpty(getTokenEndpoint()) && StringUtils.isEmpty(getClientAuthAlias()) && StringUtils.isEmpty(getClientId())) {
 			throw new ConfigurationException("To obtain accessToken at tokenEndpoint ["+getTokenEndpoint()+"] a clientAuthAlias or ClientId and ClientSecret must be specified");
@@ -397,7 +403,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		}
 
 		try {
-			setupAuthentication(credentials, pcf, proxy, requestConfigBuilder);
+			setupAuthentication(pcf, proxy, requestConfigBuilder);
 		} catch (HttpAuthenticationException e) {
 			throw new ConfigurationException("exception configuring authentication", e);
 		}
@@ -494,9 +500,9 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		}
 	}
 
-	private void setupAuthentication(CredentialFactory user_cf, CredentialFactory proxyCredentials, HttpHost proxy, Builder requestConfigBuilder) throws HttpAuthenticationException {
+	private void setupAuthentication(CredentialFactory proxyCredentials, HttpHost proxy, Builder requestConfigBuilder) throws HttpAuthenticationException {
 		CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-		if (StringUtils.isNotEmpty(user_cf.getUsername()) || StringUtils.isNotEmpty(getTokenEndpoint())) {
+		if (StringUtils.isNotEmpty(credentials.getUsername()) || StringUtils.isNotEmpty(getTokenEndpoint())) {
 
 			credentialsProvider.setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), getCredentials());
 
@@ -505,8 +511,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			requestConfigBuilder.setAuthenticationEnabled(true);
 
 			if (preferredAuthenticationScheme == AuthenticationScheme.OAUTH) {
-				CredentialFactory client_cf = new CredentialFactory(getClientAuthAlias(), getClientId(), getClientSecret());
-				OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(getTokenEndpoint(), getScope(), client_cf, StringUtils.isEmpty(user_cf.getUsername()), this, getTokenExpiry());
+				OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(getTokenEndpoint(), getScope(), client_cf, user_cf==null, isAuthenticatedTokenRequest(), this, getTokenExpiry());
 				httpClientContext.setAttribute(OAuthAuthenticationScheme.ACCESSTOKEN_MANAGER_KEY, accessTokenManager);
 				httpClientBuilder.setTargetAuthenticationStrategy(new OAuthPreferringAuthenticationStrategy());
 			}
@@ -922,6 +927,10 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	/** Space or comma separated list of scope items requested for accessToken, e.g. <code>read write</code>. Only used when <code>tokenEndpoint</code> is specified */
 	public void setScope(String string) {
 		scope = string;
+	}
+	/** if set true, clientId and clientSecret will be added as Basic Authentication header to the tokenRequest, instead of as request parameters */
+	public void setAuthenticatedTokenRequest(boolean authenticatedTokenRequest) {
+		this.authenticatedTokenRequest = authenticatedTokenRequest;
 	}
 
 

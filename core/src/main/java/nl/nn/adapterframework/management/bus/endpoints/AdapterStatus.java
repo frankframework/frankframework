@@ -270,10 +270,10 @@ public class AdapterStatus extends BusEndpointBase {
 				}
 				ITransactionalStorage<?> messageLog = msp.getMessageLog();
 				if (messageLog!=null) {
-					mapPipeMessageLog(messageLog, pipesInfo);
+					mapPipeMessageLog(messageLog, pipesInfo, adapter.getRunState() == RunState.STARTED);
 				} else if(sender instanceof ITransactionalStorage) { // in case no message log specified
 					ITransactionalStorage<?> store = (ITransactionalStorage<?>) sender;
-					mapPipeMessageLog(store, pipesInfo);
+					mapPipeMessageLog(store, pipesInfo, adapter.getRunState() == RunState.STARTED);
 					pipesInfo.put("isSenderTransactionalStorage", true);
 				}
 			}
@@ -282,11 +282,11 @@ public class AdapterStatus extends BusEndpointBase {
 		return pipes;
 	}
 
-	private void mapPipeMessageLog(ITransactionalStorage<?> store, Map<String, Object> data) {
+	private void mapPipeMessageLog(ITransactionalStorage<?> store, Map<String, Object> data, boolean isStarted) {
 		data.put("hasMessageLog", true);
 		String messageLogCount;
 		try {
-			if (showCountMessageLog) {
+			if (showCountMessageLog && isStarted) {
 				messageLogCount=""+store.getMessageCount();
 			} else {
 				messageLogCount="?";
@@ -303,6 +303,19 @@ public class AdapterStatus extends BusEndpointBase {
 		message.put("slotId", store.getSlotId());
 		message.put("count", messageLogCount);
 		data.put("message", message);
+	}
+
+	private Object getMessageCount(RunState runState, IMessageBrowser<?> ts) {
+		if(runState == RunState.STARTED) {
+			try {
+				return ts.getMessageCount();
+			} catch (Exception e) {
+				log.warn("Cannot determine number of messages in MessageBrowser ["+ClassUtils.nameOf(ts)+"]", e);
+				return "error";
+			}
+		} else {
+			return "?";
+		}
 	}
 
 	private ArrayList<Object> mapAdapterReceivers(Adapter adapter, boolean showPendingMsgCount) {
@@ -328,12 +341,7 @@ public class AdapterStatus extends BusEndpointBase {
 				IMessageBrowser<?> ts = receiver.getMessageBrowser(state);
 				if(ts != null) {
 					Map<String, Object> info = new HashMap<>();
-					try {
-						info.put("numberOfMessages", ts.getMessageCount());
-					} catch (Exception e) {
-						log.warn("Cannot determine number of messages in process state ["+state+"]", e);
-						info.put("numberOfMessages", "error");
-					}
+					info.put("numberOfMessages", getMessageCount(receiverRunState, ts));
 					info.put("name", state.getName());
 					tsInfo.put(state, info);
 				}
@@ -377,15 +385,7 @@ public class AdapterStatus extends BusEndpointBase {
 				jmsBrowser.setJmsRealm(jlb.getJmsRealmName());
 				jmsBrowser.setDestinationName(jlb.getDestinationName());
 				jmsBrowser.setDestinationType(jlb.getDestinationType());
-				String numMsgs;
-				try {
-					int messageCount = jmsBrowser.getMessageCount();
-					numMsgs = String.valueOf(messageCount);
-				} catch (Throwable t) {
-					log.warn("Cannot determine number of messages in errorstore ["+jmsBrowser.getName()+"]", t);
-					numMsgs = "?";
-				}
-				receiverInfo.put("pendingMessagesCount", numMsgs);
+				receiverInfo.put("pendingMessagesCount", getMessageCount(receiverRunState, jmsBrowser));
 			}
 			boolean isEsbJmsFFListener = false;
 			if (listener instanceof EsbJmsListener) {
@@ -478,20 +478,22 @@ public class AdapterStatus extends BusEndpointBase {
 				adapterInfo.put("receiverReachedMaxExceptions", "true");
 			}
 
-			IMessageBrowser<?> esmb = rcv.getMessageBrowser(ProcessState.ERROR);
-			if(esmb != null) {
-				try {
-					errorStoreMessageCount += esmb.getMessageCount();
-				} catch (ListenerException e) {
-					log.warn("Cannot determine number of messages in errorstore of ["+rcv.getName()+"]", e);
+			if(rcv.getRunState() == RunState.STARTED) {
+				IMessageBrowser<?> esmb = rcv.getMessageBrowser(ProcessState.ERROR);
+				if(esmb != null) {
+					try {
+						errorStoreMessageCount += esmb.getMessageCount();
+					} catch (ListenerException e) {
+						log.warn("Cannot determine number of messages in errorstore of ["+rcv.getName()+"]", e);
+					}
 				}
-			}
-			IMessageBrowser<?> mlmb = rcv.getMessageBrowser(ProcessState.DONE);
-			if(mlmb != null) {
-				try {
-					messageLogMessageCount += mlmb.getMessageCount();
-				} catch (ListenerException e) {
-					log.warn("Cannot determine number of messages in messagelog of ["+rcv.getName()+"]", e);
+				IMessageBrowser<?> mlmb = rcv.getMessageBrowser(ProcessState.DONE);
+				if(mlmb != null) {
+					try {
+						messageLogMessageCount += mlmb.getMessageCount();
+					} catch (ListenerException e) {
+						log.warn("Cannot determine number of messages in messagelog of ["+rcv.getName()+"]", e);
+					}
 				}
 			}
 		}

@@ -1,81 +1,77 @@
 package nl.nn.credentialprovider;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import java.security.Provider;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.as.domain.management.plugin.Credential;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExternalResource;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.credential.store.CredentialStore;
 import org.wildfly.security.credential.store.CredentialStoreException;
+import org.wildfly.security.credential.store.CredentialStoreSpi;
 import org.wildfly.security.password.interfaces.ClearPassword;
 
 public class WildFlyCredentialFactoryTest {
 
 	private WildFlyCredentialFactory credentialFactory;
+	private Set<String> aliases;
 
-	CredentialStore credentialStore = mock(CredentialStore.class);
+	@BeforeEach
+	public void setUp() throws Exception {
+		credentialFactory = spy(new WildFlyCredentialFactory());
+		ServiceContainer serviceContainer = mock(ServiceContainer.class);
+		when(credentialFactory.getServiceContainer()).thenReturn(serviceContainer);
 
-	Set<String> aliases;
+		ServiceController credStoreService = mock(ServiceController.class);
+		when(serviceContainer.getService(any(ServiceName.class))).thenReturn(credStoreService);
 
+		Provider provider = mock(Provider.class);
+		String algorithm = "dummy";
+		Provider.Service service = mock(Provider.Service.class);
+		CredentialStoreSpi spi = mock(CredentialStoreSpi.class);
+		doReturn(spi).when(service).newInstance(null);
+		doReturn(service).when(provider).getService(eq(CredentialStore.CREDENTIAL_STORE_TYPE), eq(algorithm));
+		CredentialStore credentialStore = CredentialStore.getInstance(algorithm, provider);
 
-	@Rule
-	public final ExternalResource serviceContainerMock = new ExternalResource() {
-		MockedStatic<CurrentServiceContainer> currentServiceContainer;
+		doReturn(credentialStore).when(credStoreService).getValue();
 
-		@Override
-		protected void before() throws Throwable {
-			currentServiceContainer = Mockito.mockStatic(CurrentServiceContainer.class);
-			ServiceContainer serviceContainer = mock(ServiceContainer.class);
-			ServiceController credStoreService = mock(ServiceController.class);
+		when(spi.getAliases()).thenAnswer(i -> aliases);
+		when(spi.exists(any(String.class), isA(Credential.class.getClass()))).thenAnswer(i -> {
+			String alias = i.getArgument(0);
+			Class<? extends Credential> credentialClass = i.getArgument(1);
+			return credentialClass.equals(PasswordCredential.class) && aliases!=null && aliases.contains(alias);
+		});
 
-			currentServiceContainer.when(CurrentServiceContainer::getServiceContainer).thenReturn(serviceContainer);
-			when(serviceContainer.getService(any(ServiceName.class))).thenReturn(credStoreService);
-			when(credStoreService.getValue()).thenReturn(credentialStore);
+		doAnswer(i -> {
+			String alias = i.getArgument(0);
+			ClearPassword clearPassword = mock(ClearPassword.class);
+			when(clearPassword.getPassword()).thenReturn((alias+"-value").toCharArray());
+			return new PasswordCredential(clearPassword);
+		}).when(spi).retrieve(anyString(), isA(Credential.class.getClass()), isNull(), isNull(), isNull());
 
-			when(credentialStore.getAliases()).thenAnswer(i -> aliases);
-			when(credentialStore.exists(any(String.class), any(Class.class))).thenAnswer(i -> {
-				String alias = i.getArgument(0);
-				Class credentialClass = i.getArgument(1);
-				return credentialClass.equals(PasswordCredential.class) && aliases!=null && aliases.contains(alias);
-			});
-			when(credentialStore.retrieve(any(String.class), any(Class.class))).thenAnswer(i -> {
-				String alias = i.getArgument(0);
-				Class credentialClass = i.getArgument(1);
-
-				PasswordCredential passwordCredential = mock(PasswordCredential.class);
-				ClearPassword clearPassword = mock(ClearPassword.class);
-				when(passwordCredential.getPassword()).thenReturn(clearPassword);
-				when(clearPassword.getPassword()).thenReturn((alias+"-value").toCharArray());
-
-				return credentialClass.equals(PasswordCredential.class) && aliases!=null && aliases.contains(alias) ? passwordCredential : null;
-			});
-
-			credentialFactory = new WildFlyCredentialFactory();
-			credentialFactory.initialize();
-		};
-
-		@Override protected void after(){
-			currentServiceContainer.close();
-		};
-	};
-
+		credentialFactory.initialize();
+	}
 
 	@Test
 	public void testGetAliases() throws UnsupportedOperationException, CredentialStoreException {
