@@ -47,8 +47,6 @@ public class ConfigurationUtilsTest extends Mockito {
 	@BeforeClass
 	public static void setUp() throws Exception {
 		AppConstants.removeInstance();
-		AppConstants.getInstance().setProperty("configurations.database.autoLoad", true);
-		AppConstants.getInstance().setProperty("configurations.directory.autoLoad", true);
 		AppConstants.getInstance().setProperty("configurations.configuration2.parentConfig", "configuration4");
 		AppConstants.getInstance().setProperty("configurations.configuration3.parentConfig", "configuration4");
 
