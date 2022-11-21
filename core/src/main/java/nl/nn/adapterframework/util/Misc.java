@@ -839,9 +839,8 @@ public class Misc {
 	public static void copyContext(String keys, Map<String,Object> from, Map<String,Object> to, INamedObject requester) {
 		if (to!=null) {
 			log.debug("returning context, returned sessionkeys ["+keys+"]");
-			copyIfExists(PipeLineSession.EXIT_NAME_CONTEXT_KEY, from, to);
-			copyIfExists(PipeLineSession.EXIT_STATE_CONTEXT_KEY, from, to);
 			copyIfExists(PipeLineSession.EXIT_CODE_CONTEXT_KEY, from, to);
+			copyIfExists(PipeLineSession.EXIT_STATE_CONTEXT_KEY, from, to);
 			if (StringUtils.isNotEmpty(keys)) {
 				StringTokenizer st = new StringTokenizer(keys,",;");
 				while (st.hasMoreTokens()) {
