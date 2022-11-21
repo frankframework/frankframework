@@ -61,8 +61,6 @@ import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 public class IbisContext extends IbisApplicationContext {
 	private static final Logger LOG = LogUtil.getLogger(IbisContext.class);
 
-	private static final String ALL_CONFIGS_KEY = "*ALL*";
-
 	static {
 		if(!Boolean.parseBoolean(APP_CONSTANTS.getProperty("jdbc.convertFieldnamesToUppercase")))
 			ApplicationWarnings.add(LOG, "DEPRECATED: jdbc.convertFieldnamesToUppercase is set to false, please set to true. XML field definitions of SQL senders will be uppercased!");
@@ -247,10 +245,10 @@ public class IbisContext extends IbisApplicationContext {
 		}
 
 		try {
-			loadingConfigs.add(ALL_CONFIGS_KEY);
+			loadingConfigs.add(IbisManager.ALL_CONFIGS_KEY);
 			load(null);
 		} finally {
-			loadingConfigs.remove(ALL_CONFIGS_KEY);
+			loadingConfigs.remove(IbisManager.ALL_CONFIGS_KEY);
 		}
 	}
 

@@ -36,6 +36,7 @@ import nl.nn.adapterframework.statistics.HasStatistics.Action;
  * @since   4.8
  */
 public interface IbisManager extends ApplicationEventPublisherAware, ApplicationContextAware {
+	public static String ALL_CONFIGS_KEY = "*ALL*";
 
 	void setIbisContext(IbisContext ibisContext);
 

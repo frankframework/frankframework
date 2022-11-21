@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -27,6 +29,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.util.Assert;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -79,6 +82,7 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 	}
 
 	@Override
+	@Nullable
 	public Configuration getConfiguration(String configurationName) {
 		for (Configuration configuration : configurations) {
 			if (configurationName.equals(configuration.getName())) {
@@ -103,6 +107,7 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 	}
 
 	private void remove(Configuration configuration) {
+		Assert.notNull(configuration, "no configuration provided");
 		log.info("removing configuration [{}]", configuration);
 		configuration.close();
 
@@ -122,104 +127,65 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 	public void handleAction(IbisAction action, String configurationName, String adapterName, String receiverName, String commandIssuedBy, boolean isAdmin) {
 		switch (action) {
 		case STOPADAPTER:
-			//TODO use provided configuration and check if adapter exists
-			if (adapterName.equals("*ALL*")) {
-				if (configurationName.equals("*ALL*")) {
-					log.info("Stopping all adapters on request of [" + commandIssuedBy+"]");
+			Assert.notNull(adapterName, "no adapterName provided");
+			Assert.notNull(configurationName, "no configurationName provided");
+
+			if (adapterName.equals(ALL_CONFIGS_KEY)) {
+				if (configurationName.equals(ALL_CONFIGS_KEY)) {
+					log.info("Stopping all adapters on request of [{}]", commandIssuedBy);
 					for (Configuration configuration : configurations) {
 						stopAdapters(configuration);
 					}
 				} else {
-					log.info("Stopping all adapters for configuration [" + configurationName + "] on request of [" + commandIssuedBy+"]");
+					log.info("Stopping all adapters for configuration [{}] on request of [{}]", configurationName, commandIssuedBy);
 					stopAdapters(getConfiguration(configurationName));
 				}
 			} else {
-				for (Configuration configuration : configurations) {
-					if (configuration.getRegisteredAdapter(adapterName) != null) {
-						log.info("Stopping adapter [" + adapterName + "], on request of [" + commandIssuedBy+"]");
-						configuration.getRegisteredAdapter(adapterName).stopRunning();
-					}
-				}
+				Configuration configuration = getConfiguration(configurationName);
+				Assert.notNull(configuration, ()->"configuration ["+configuration+"] not found");
+				Adapter adapter = configuration.getRegisteredAdapter(adapterName);
+				Assert.notNull(adapter, ()->"adapter ["+adapterName+"] not found");
+
+				log.info("Stopping adapter [{}], on request of [{}]", adapterName, commandIssuedBy);
+				configuration.getRegisteredAdapter(adapterName).stopRunning();
 			}
 			break;
 
 		case STARTADAPTER:
-			//TODO use provided configuration and check if adapter exists
-			if (adapterName.equals("*ALL*")) {
-				if (configurationName.equals("*ALL*")) {
-					log.info("Starting all adapters on request of [" + commandIssuedBy+"]");
+			Assert.notNull(adapterName, "no adapterName provided");
+			Assert.notNull(configurationName, "no configurationName provided");
+
+			if (adapterName.equals(ALL_CONFIGS_KEY)) {
+				if (configurationName.equals(ALL_CONFIGS_KEY)) {
+					log.info("Starting all adapters on request of [{}]", commandIssuedBy);
 					for (Configuration configuration : configurations) {
 						startAdapters(configuration);
 					}
 				} else {
-					log.info("Starting all adapters for configuration [" + configurationName + "] on request of [" + commandIssuedBy+"]");
+					log.info("Starting all adapters for configuration [{}] on request of [{}]", configurationName, commandIssuedBy);
 					startAdapters(getConfiguration(configurationName));
 				}
 			} else {
 				try {
-					for (Configuration configuration : configurations) {
-						if (configuration.getRegisteredAdapter(adapterName) != null) {
-							log.info("Starting adapter [" + adapterName + "] on request of [" + commandIssuedBy+"]");
-							configuration.getRegisteredAdapter(adapterName).startRunning();
-						}
-					}
+					Configuration configuration = getConfiguration(configurationName);
+					Assert.notNull(configuration, ()->"configuration ["+configuration+"] not found");
+					Adapter adapter = configuration.getRegisteredAdapter(adapterName);
+					Assert.notNull(adapter, ()->"adapter ["+adapterName+"] not found");
+
+					log.info("Starting adapter [{}] on request of [{}]", adapterName, commandIssuedBy);
+					configuration.getRegisteredAdapter(adapterName).startRunning();
 				} catch (Exception e) {
-					log.error("error in execution of command [" + action + "] for adapter [" + adapterName + "]",   e);
-					//errors.add("", new ActionError("errors.generic", e.toString()));
+					log.error("error in execution of command [" + action + "] for adapter [" + adapterName + "]", e);
 				}
 			}
 			break;
 
 		case STOPRECEIVER:
-			//TODO use provided configuration and check if receiver exists
-			for (Configuration configuration : configurations) {
-				if (configuration.getRegisteredAdapter(adapterName) != null) {
-					Adapter adapter = configuration.getRegisteredAdapter(adapterName);
-
-					Receiver<?> receiver = adapter.getReceiverByName(receiverName);
-					RunState receiverRunState = receiver.getRunState();
-					switch(receiverRunState) {
-						case STOPPING:
-						case STOPPED:
-							adapter.getMessageKeeper().info(receiver, "already in state [" + receiverRunState + "]");
-							break;
-						case STARTED:
-						case EXCEPTION_STARTING:
-						case EXCEPTION_STOPPING:
-							receiver.stopRunning();
-							log.info("receiver [" + receiverName + "] stopped by webcontrol on request of " + commandIssuedBy);
-							break;
-						default:
-							log.warn("receiver [" + receiverName + "] currently in state [" + receiverRunState + "], ignoring stop() command");
-							break;
-					}
-				}
-			}
+			stopReceiver(configurationName, adapterName, receiverName, commandIssuedBy);
 			break;
 
 		case STARTRECEIVER:
-			//TODO use provided configuration and check if receiver exists
-			for (Configuration configuration : configurations) {
-				if (configuration.getRegisteredAdapter(adapterName) != null) {
-					Adapter adapter = configuration.getRegisteredAdapter(adapterName);
-
-					Receiver<?> receiver = adapter.getReceiverByName(receiverName);
-					RunState receiverRunState = receiver.getRunState();
-					switch(receiverRunState) {
-						case STARTING:
-						case STARTED:
-							adapter.getMessageKeeper().info(receiver, "already in state [" + receiverRunState + "]");
-							break;
-						case STOPPED:
-							receiver.startRunning();
-							log.info("receiver [" + receiverName + "] started by " + commandIssuedBy);
-							break;
-						default:
-							log.warn("receiver [" + receiverName + "] currently in state [" + receiverRunState + "], ignoring start() command");
-							break;
-					}
-				}
-			}
+			startReceiver(configurationName, adapterName, receiverName, commandIssuedBy);
 			break;
 
 		case RELOAD:
@@ -241,28 +207,34 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 			break;
 
 		case INCTHREADS:
-			for (Configuration configuration : configurations) {
-				if (configuration.getRegisteredAdapter(adapterName) != null) {
-					Adapter adapter = configuration.getRegisteredAdapter(adapterName);
-					Receiver<?> receiver = adapter.getReceiverByName(receiverName);
-					if (receiver.isThreadCountControllable()) {
-						receiver.increaseThreadCount();
-					}
-					log.info("receiver [" + receiverName + "] increased threadcount on request of " + commandIssuedBy);
+			try {
+				Adapter adapter = getAdapterByName(configurationName, adapterName);
+
+				Assert.notNull(receiverName, "no receiverName provided");
+				Receiver<?> receiver = adapter.getReceiverByName(receiverName);
+				Assert.notNull(receiver, ()->"receiver ["+receiverName+"] not found");
+				if (receiver.isThreadCountControllable()) {
+					receiver.increaseThreadCount();
 				}
+				log.info("receiver [{}] increased threadcount on request of [{}]", receiverName, commandIssuedBy);
+			} catch (Exception e) {
+				log.error("error increasing threadcount for receiver [{}]", receiverName, e);
 			}
 			break;
 
 		case DECTHREADS:
-			for (Configuration configuration : configurations) {
-				if (configuration.getRegisteredAdapter(adapterName) != null) {
-					Adapter adapter = configuration.getRegisteredAdapter(adapterName);
-					Receiver<?> receiver = adapter.getReceiverByName(receiverName);
-					if (receiver.isThreadCountControllable()) {
-						receiver.decreaseThreadCount();
-					}
-					log.info("receiver [" + receiverName + "] decreased threadcount on request of " + commandIssuedBy);
+			try {
+				Adapter adapter = getAdapterByName(configurationName, adapterName);
+
+				Assert.notNull(receiverName, "no receiverName provided");
+				Receiver<?> receiver = adapter.getReceiverByName(receiverName);
+				Assert.notNull(receiver, ()->"receiver ["+receiverName+"] not found");
+				if (receiver.isThreadCountControllable()) {
+					receiver.decreaseThreadCount();
 				}
+				log.info("receiver [{}] decreased threadcount on request of [{}]", receiverName, commandIssuedBy);
+			} catch (Exception e) {
+				log.error("error decreasing threadcount for receiver [{}]", receiverName, e);
 			}
 			break;
 
@@ -272,18 +244,81 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 		}
 	}
 
+	private Adapter getAdapterByName(String configurationName, String adapterName) {
+		Assert.notNull(configurationName, "no configurationName provided");
+		Configuration configuration = getConfiguration(configurationName);
+		Assert.notNull(configuration, ()->"configuration ["+configuration+"] not found");
+
+		Assert.notNull(adapterName, "no adapterName provided");
+		Adapter adapter = configuration.getRegisteredAdapter(adapterName);
+		Assert.notNull(adapter, ()->"adapter ["+adapterName+"] not found");
+
+		return adapter;
+	}
+
+	private void stopReceiver(String configurationName, String adapterName, String receiverName, String commandIssuedBy) {
+		Adapter adapter = getAdapterByName(configurationName, adapterName);
+
+		Assert.notNull(receiverName, "no receiverName provided");
+		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
+		Assert.notNull(receiver, ()->"receiver ["+receiverName+"] not found");
+
+		RunState receiverRunState = receiver.getRunState();
+		switch(receiverRunState) {
+			case STOPPING:
+			case STOPPED:
+				adapter.getMessageKeeper().info(receiver, "already in state [" + receiverRunState + "]");
+				break;
+			case STARTED:
+			case EXCEPTION_STARTING:
+			case EXCEPTION_STOPPING:
+				receiver.stopRunning();
+				log.info("receiver [{}] stopped by webcontrol on request of [{}]", receiverName, commandIssuedBy);
+				break;
+			default:
+				log.warn("receiver [{}] currently in state [{}], ignoring stop() command", receiverName, receiverRunState);
+				break;
+		}
+	}
+
+	private void startReceiver(String configurationName, String adapterName, String receiverName, String commandIssuedBy) {
+		Adapter adapter = getAdapterByName(configurationName, adapterName);
+
+		Assert.notNull(receiverName, "no receiverName provided");
+		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
+		Assert.notNull(receiver, ()->"receiver ["+receiverName+"] not found");
+
+		RunState receiverRunState = receiver.getRunState();
+		switch(receiverRunState) {
+			case STARTING:
+			case STARTED:
+				adapter.getMessageKeeper().info(receiver, "already in state [" + receiverRunState + "]");
+				break;
+			case STOPPED:
+				receiver.startRunning();
+				log.info("receiver [{}] started by [{}]", receiverName, commandIssuedBy);
+				break;
+			default:
+				log.warn("receiver [{}] currently in state [{}], ignoring start() command", receiverName, receiverRunState);
+				break;
+		}
+	}
+
 	private void startAdapters(Configuration configuration) {
-		log.info("Starting all autostart-configured adapters for configuation " + configuration.getName());
+		Assert.notNull(configuration, "no configuration provided");
+		log.info("Starting all autostart-configured adapters for configuation [{}]", configuration::getName);
 		configuration.getAdapterManager().start();
 	}
 
 	private void stopAdapters(Configuration configuration) {
+		Assert.notNull(configuration, "no configuration provided");
 		configuration.dumpStatistics(Action.MARK_FULL);
-		log.info("Stopping all adapters for configuation " + configuration.getName());
+		log.info("Stopping all adapters for configuation [{}]", configuration::getName);
 		configuration.getAdapterManager().stop();
 	}
 
 	@Override
+	@Deprecated
 	public Adapter getRegisteredAdapter(String name) {
 		List<Adapter> adapters = getRegisteredAdapters();
 		for (Adapter adapter : adapters) {
@@ -295,6 +330,7 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 	}
 
 	@Override
+	@Deprecated
 	public List<Adapter> getRegisteredAdapters() {
 		List<Adapter> registeredAdapters = new ArrayList<>();
 		for (Configuration configuration : configurations) {

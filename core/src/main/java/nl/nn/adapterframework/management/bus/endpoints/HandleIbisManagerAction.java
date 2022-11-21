@@ -20,6 +20,7 @@ import javax.annotation.security.RolesAllowed;
 import org.springframework.messaging.Message;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
 import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
@@ -33,7 +34,7 @@ public class HandleIbisManagerAction extends BusEndpointBase {
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public void handleIbisAction(Message<?> message) {
 		IbisAction action = BusMessageUtils.getEnumHeader(message, "action", IbisAction.class);
-		String configurationName = BusMessageUtils.getHeader(message, "configuration", "*ALL*");
+		String configurationName = BusMessageUtils.getHeader(message, "configuration", IbisManager.ALL_CONFIGS_KEY);
 		String adapterName = BusMessageUtils.getHeader(message, "adapter");
 		String receiverName = BusMessageUtils.getHeader(message, "receiver");
 		String userPrincipalName = null;
