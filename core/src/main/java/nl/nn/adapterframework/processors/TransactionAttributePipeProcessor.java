@@ -18,6 +18,8 @@ package nl.nn.adapterframework.processors;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.core.HasTransactionAttribute;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IbisTransaction;
@@ -26,17 +28,17 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.functional.ThrowingFunction;
+import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 
 /**
  * @author Jaco de Groot
  */
 public class TransactionAttributePipeProcessor extends PipeProcessorBase {
 
-	private PlatformTransactionManager txManager;
+	private @Getter @Setter PlatformTransactionManager txManager;
 
 	@Override
 	protected PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
@@ -86,10 +88,4 @@ public class TransactionAttributePipeProcessor extends PipeProcessorBase {
 		return pipeRunResult;
 	}
 
-	public void setTxManager(PlatformTransactionManager txManager) {
-		this.txManager = txManager;
-	}
-	public PlatformTransactionManager getTxManager() {
-		return txManager;
-	}
 }

@@ -43,6 +43,8 @@ import javax.naming.NamingException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.xml.sax.SAXException;
 
 import lombok.Getter;
@@ -54,6 +56,7 @@ import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.IbisException;
+import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.DocumentedEnum;
 import nl.nn.adapterframework.doc.EnumLabel;
@@ -63,6 +66,7 @@ import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.EnumUtils;
 
@@ -120,6 +124,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	private @Getter boolean correlationIdToHex = false;
 	private @Getter String correlationIdToHexPrefix = "ID:";
 	private @Getter int correlationIdMaxLength = -1;
+	private @Getter @Setter PlatformTransactionManager txManager;
 
 	public enum AcknowledgeMode implements DocumentedEnum {
 		@EnumLabel("none") NOT_SET(0),
@@ -131,7 +136,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		/** client or client_acknowledge: Specifies that the consumer is to acknowledge all messages delivered in this session. */
 		@EnumLabel("client") CLIENT_ACKNOWLEDGE(Session.CLIENT_ACKNOWLEDGE),
 
-		/** dups or dups_ok_acknowledge: Specifies that the session is to "lazily" acknowledge the 
+		/** dups or dups_ok_acknowledge: Specifies that the session is to "lazily" acknowledge the
 		  * delivery of messages to the consumer. "Lazy" means that the consumer can delay the acknowledgment
 		  * of messages to the server until a convenient time; meanwhile the server might redeliver messages.
 		  * This mode reduces the session overhead. If JMS fails, the consumer may receive duplicate messages. */
@@ -770,6 +775,12 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 
 	protected Message extractMessageBody(Message message, Map<String,Object> context, SoapWrapper soapWrapper) throws SAXException, TransformerException, IOException {
 		return soapWrapper.getBody(message);
+	}
+
+	public void checkTransctionManagerValidity() {
+		if (TransactionSynchronizationManager.isSynchronizationActive() && !IbisTransaction.isDistributedTransactionsSupported(txManager)) {
+			log.warn("{} used in transaction, but no JTA transaction manager found. JMS will not participate in transaction!", ClassUtils.nameOf(this));
+		}
 	}
 
 	@Override
