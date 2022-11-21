@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@ import nl.nn.adapterframework.util.SpringUtils;
  *
  * @ff.parameters All parameters present are set as message-properties.
  * @ff.parameter SoapAction Automatically filled from attribute <code>soapAction</code>
- * 
+ *
  * @author Gerrit van Brakel
  */
 
@@ -121,7 +121,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	}
 
 	/**
-	 * Starts the sender 
+	 * Starts the sender
 	 */
 	@Override
 	public void open() throws SenderException {
@@ -156,6 +156,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 		MessageProducer mp = null;
 		String correlationID = session==null ? null : session.getMessageId();
 
+		checkTransctionManagerValidity();
 		ParameterValueList pvl=null;
 		if (paramList != null) {
 			try {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -97,12 +97,17 @@ public class IbisTransaction {
 					return jtaTxMgr.getClass().getName();
 				}
 				return txMgr.getClass().getName();
-			} else {
-				return platformTxMgr.getClass().getName();
 			}
-		} else {
-			return txManager.getClass().getName();
+			return platformTxMgr.getClass().getName();
 		}
+		return txManager.getClass().getName();
+	}
+
+	public static boolean isDistributedTransactionsSupported(PlatformTransactionManager txManager) {
+		if((txManager instanceof SpringTxManagerProxy)) {
+			return ((SpringTxManagerProxy)txManager).getRealTxManager() instanceof JtaTransactionManager;
+		}
+		return txManager instanceof JtaTransactionManager;
 	}
 
 	public void setRollbackOnly() {
