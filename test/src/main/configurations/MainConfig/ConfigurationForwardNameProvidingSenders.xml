@@ -12,8 +12,8 @@
 			
 			<SenderPipe name="Call ForwardNameSelectable Child Adapter via IbisLocalSender">
 				<IbisLocalSender javaListener="ibis4test-ForwardNameSelectable-Child"/>
-				<forward name="ExitS200" path="fwd200" />
-				<forward name="ExitE400" path="fwd400" />
+				<forward name="200" path="fwd200" />
+				<forward name="400" path="fwd400" />
 				<Forward name="exception" path="FwdException"/>
 			</SenderPipe>
 

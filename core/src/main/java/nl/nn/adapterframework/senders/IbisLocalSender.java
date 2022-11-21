@@ -84,7 +84,7 @@ import nl.nn.adapterframework.util.Misc;
  *   <li>Set the attribute <code>name</code> to <i>yourIbisWebServiceName</i></li>
  * </ul>
  *
- * @ff.forward "&lt;Exit.name&gt;" default
+ * @ff.forward "&lt;Exit.code&gt;" default
  *
  * @author Gerrit van Brakel
  * @since  4.2
@@ -282,11 +282,12 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 				}
 			}
 
-			String exitName = (String)context.remove(PipeLineSession.EXIT_NAME_CONTEXT_KEY);
 			ExitState exitState = (ExitState)context.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
+			Object exitCode = context.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
+			String forwardName = exitCode !=null ? exitCode.toString() : null;
 			result.setSuccess(exitState==ExitState.SUCCESS);
-			result.setErrorMessage("exitName="+exitName);
-			result.setForwardName(exitName);
+			result.setErrorMessage("exitState="+exitState);
+			result.setForwardName(forwardName);
 			return result;
 		}
 	}

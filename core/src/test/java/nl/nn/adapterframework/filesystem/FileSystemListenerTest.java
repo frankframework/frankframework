@@ -549,7 +549,8 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 
 		F rawMessage=fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
-		PipeLineResult processResult = new PipeLineResult("", ExitState.SUCCESS);
+		PipeLineResult processResult = new PipeLineResult();
+		processResult.setState(ExitState.SUCCESS);
 		fileSystemListener.afterMessageProcessed(processResult, rawMessage, null);
 		waitForActionToFinish();
 		// test
@@ -582,7 +583,8 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 
 		F rawMessage=fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
-		PipeLineResult processResult = new PipeLineResult("", ExitState.SUCCESS);
+		PipeLineResult processResult = new PipeLineResult();
+		processResult.setState(ExitState.SUCCESS);
 		fileSystemListener.changeProcessState(rawMessage, ProcessState.DONE, "test");
 		fileSystemListener.afterMessageProcessed(processResult, rawMessage, null);
 		waitForActionToFinish();
@@ -619,7 +621,8 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 
 		F rawMessage=fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
-		PipeLineResult processResult = new PipeLineResult("", ExitState.SUCCESS);
+		PipeLineResult processResult = new PipeLineResult();
+		processResult.setState(ExitState.SUCCESS);
 		fileSystemListener.changeProcessState(rawMessage, ProcessState.DONE, "test");
 		fileSystemListener.afterMessageProcessed(processResult, rawMessage, null);
 		waitForActionToFinish();
@@ -646,7 +649,8 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 
 		F rawMessage=fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
-		PipeLineResult processResult = new PipeLineResult("", ExitState.ERROR);
+		PipeLineResult processResult = new PipeLineResult();
+		processResult.setState(ExitState.ERROR);
 		fileSystemListener.afterMessageProcessed(processResult, rawMessage, null);
 		waitForActionToFinish();
 		// test
@@ -681,7 +685,8 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 
 		F rawMessage=fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
-		PipeLineResult processResult = new PipeLineResult("", ExitState.ERROR);
+		PipeLineResult processResult = new PipeLineResult();
+		processResult.setState(ExitState.ERROR);
 		fileSystemListener.changeProcessState(rawMessage, ProcessState.ERROR, "test");  // this action was formerly executed by afterMessageProcessed(), but has been moved to Receiver.moveInProcessToError()
 		fileSystemListener.afterMessageProcessed(processResult, rawMessage, null);
 		waitForActionToFinish();
@@ -716,7 +721,8 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 
 		F rawMessage=fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
-		PipeLineResult processResult = new PipeLineResult("", ExitState.ERROR);
+		PipeLineResult processResult = new PipeLineResult();
+		processResult.setState(ExitState.ERROR);
 		fileSystemListener.changeProcessState(rawMessage, ProcessState.DONE, "test"); // this action was formerly executed by afterMessageProcessed(), but has been moved to Receiver.moveInProcessToError()
 		fileSystemListener.afterMessageProcessed(processResult, rawMessage, null);
 		waitForActionToFinish();

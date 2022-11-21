@@ -57,7 +57,7 @@ import nl.nn.adapterframework.util.Misc;
  * </ul>
  * N.B. Please make sure that the IbisServiceDispatcher-1.1.jar is present on the class path of the server.
  *
- * @ff.forward "&lt;Exit.name&gt;" default
+ * @ff.forward "&lt;Exit.code&gt;" default
  * 
  * @author  Gerrit van Brakel
  * @since   4.4.5
@@ -145,9 +145,10 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 			}
 			Misc.copyContext(getReturnedSessionKeys(), context, session, this);
 		}
-		String exitName = (String)context.remove(PipeLineSession.EXIT_NAME_CONTEXT_KEY);
 		ExitState exitState = (ExitState)context.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
-		return new SenderResult(exitState==ExitState.SUCCESS, new Message(result), "exitName="+exitName, exitName);
+		Object exitCode = context.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
+		String forwardName = exitCode !=null ? exitCode.toString() : null;
+		return new SenderResult(exitState==ExitState.SUCCESS, new Message(result), "exitState="+exitState, forwardName);
 	}
 
 

@@ -914,8 +914,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			) {
 			moveInProcessToError(messageId, correlationId, messageSupplier, rcvDate, comments, rawMessage, TXREQUIRED);
 		}
+		PipeLineResult plr = new PipeLineResult();
 		Message result=new Message("<error>"+XmlUtils.encodeChars(comments)+"</error>");
-		PipeLineResult plr = new PipeLineResult("error", ExitState.ERROR, result, 500);
+		plr.setResult(result);
+		plr.setState(ExitState.ERROR);
 		if (getSender()!=null) {
 			String sendMsg = sendResultToSender(result);
 			if (sendMsg != null) {
@@ -1265,11 +1267,11 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					log.warn(getLogPrefix()+"received message with messageId [" + messageId + "] which has a problematic history; aborting processing");
 				}
 				numRejected.increase();
-				setExitState(session, "Rejected", ExitState.REJECTED, 500);
+				setExitState(session, ExitState.REJECTED, 500);
 				return Message.nullMessage();
 			}
 			if (isDuplicateAndSkip(getMessageBrowser(ProcessState.DONE), messageId, businessCorrelationId)) {
-				setExitState(session, "Duplicate", ExitState.SUCCESS, 304);
+				setExitState(session, ExitState.SUCCESS, 304);
 				return Message.nullMessage();
 			}
 			if (getCachedProcessResult(messageId)!=null) {
@@ -1321,7 +1323,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"activating TimeoutGuard with transactionTimeout ["+getTransactionTimeout()+"]s");
 					tg.activateGuard(getTransactionTimeout());
 					pipeLineResult = adapter.processMessageWithExceptions(messageId, pipelineMessage, session);
-					setExitState(session, pipeLineResult.getExitName(), pipeLineResult.getState(), pipeLineResult.getExitCode());
+					setExitState(session, pipeLineResult.getState(), pipeLineResult.getExitCode());
+					session.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, ""+ pipeLineResult.getExitCode());
 					result=pipeLineResult.getResult();
 
 					errorMessage = "exitState ["+pipeLineResult.getState()+"], result [";
@@ -1360,7 +1363,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				errorMessage = t.getMessage();
 				messageInError = true;
 				if (pipeLineResult==null) {
-					pipeLineResult=new PipeLineResult("exception", ExitState.ERROR);
+					pipeLineResult=new PipeLineResult();
 				}
 				if (Message.isEmpty(pipeLineResult.getResult())) {
 					pipeLineResult.setResult(adapter.formatErrorMessage("exception caught",t,message,messageId,this,startProcessingTimestamp));
@@ -1423,9 +1426,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		return result;
 	}
 
-	private void setExitState(Map<String,Object> threadContext, String exitName, ExitState state, int code) {
+	private void setExitState(Map<String,Object> threadContext, ExitState state, int code) {
 		if (threadContext!=null) {
-			threadContext.put(PipeLineSession.EXIT_NAME_CONTEXT_KEY, exitName);
 			threadContext.put(PipeLineSession.EXIT_STATE_CONTEXT_KEY, state);
 			threadContext.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, Integer.toString(code));
 		}

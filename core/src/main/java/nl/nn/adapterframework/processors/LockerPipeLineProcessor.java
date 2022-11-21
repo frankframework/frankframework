@@ -41,7 +41,8 @@ public class LockerPipeLineProcessor extends PipeLineProcessorBase {
 			}
 			if (objectId == null) {
 				log.info("could not obtain lock ["+locker+"]");
-				pipeLineResult = new PipeLineResult("NoLock", ExitState.SUCCESS);
+				pipeLineResult = new PipeLineResult();
+				pipeLineResult.setState(ExitState.SUCCESS);
 			} else {
 				try {
 					pipeLineResult = pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);

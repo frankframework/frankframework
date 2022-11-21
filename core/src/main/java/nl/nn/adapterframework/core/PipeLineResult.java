@@ -33,24 +33,8 @@ import nl.nn.adapterframework.stream.Message;
 public class PipeLineResult {
 
 	private @Getter @Setter Message result;
-	private @Getter String exitName;
-	private @Getter ExitState state;
-	private @Getter int exitCode;
-
-	public PipeLineResult(String exitName, ExitState state, Message result, int exitCode) {
-		this.result = result;
-		this.exitName = exitName;
-		this.state = state;
-		this.exitCode = exitCode;
-	}
-
-	public PipeLineResult(String exitName, ExitState state, Message result) {
-		this(exitName, state, result, 0);
-	}
-
-	public PipeLineResult(String exitName, ExitState state) {
-		this(exitName, state, null, 0);
-	}
+	private @Getter @Setter ExitState state;
+	private @Getter @Setter int exitCode;
 
 	public boolean isSuccessful() {
 		return getState()==ExitState.SUCCESS;

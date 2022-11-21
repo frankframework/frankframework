@@ -5,5 +5,5 @@
 	<localValue>LocalValueParent</localValue>
 	<pipelineResult>PipeLine result from inputStream</pipelineResult>
 	<exitState>ERROR</exitState>
-	<forward>FAIL</forward>
+	<forward>400</forward>
 </reply>
