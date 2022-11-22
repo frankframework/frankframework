@@ -39,5 +39,5 @@ public interface IPortConnectedListener<M> extends IPushingListener<M> {
 
 	public IListenerConnector<M> getListenerPortConnector();
 
-	public void checkTransactionManagerValidity();
+	default void checkTransactionManagerValidity() {}
 }
