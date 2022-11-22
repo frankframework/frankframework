@@ -125,7 +125,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	private @Getter String correlationIdToHexPrefix = "ID:";
 	private @Getter int correlationIdMaxLength = -1;
 	private @Getter @Setter PlatformTransactionManager txManager;
-	private boolean transactionManagerValidityWarningIssued=false;
+	private boolean skipCheckForTransactionManagerValidity=false;
 
 	public enum AcknowledgeMode implements DocumentedEnum {
 		@EnumLabel("none") NOT_SET(0),
@@ -779,9 +779,13 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	}
 
 	public void checkTransctionManagerValidity() {
-		if (!transactionManagerValidityWarningIssued && TransactionSynchronizationManager.isSynchronizationActive() && !IbisTransaction.isDistributedTransactionsSupported(txManager)) {
-			transactionManagerValidityWarningIssued = true;
-			ConfigurationWarnings.add(this, log, ClassUtils.nameOf(this)+" used in transaction, but no JTA transaction manager found. JMS will not participate in transaction!");
+		if (!skipCheckForTransactionManagerValidity && !IbisTransaction.isDistributedTransactionsSupported(txManager)) {
+			if (TransactionSynchronizationManager.isSynchronizationActive()) {
+				skipCheckForTransactionManagerValidity = true;
+				ConfigurationWarnings.add(this, log, ClassUtils.nameOf(this)+" used in transaction, but no JTA transaction manager found. JMS will not participate in transaction!");
+			}
+		} else {
+			skipCheckForTransactionManagerValidity = true;
 		}
 	}
 
