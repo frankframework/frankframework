@@ -304,7 +304,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 	private javax.jms.Message getRawMessageFromDestination(String correlationId, Map<String,Object> threadContext) throws ListenerException {
 		Session session=null;
 		javax.jms.Message msg = null;
-		checkTransctionManagerValidity();
+		checkTransactionManagerValidity();
 		try {
 			session = getSession(threadContext);
 			MessageConsumer mc=null;
