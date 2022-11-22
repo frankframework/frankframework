@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
@@ -101,6 +102,8 @@ public abstract class PushingListenerAdapter implements IPushingListener<Message
 			log.debug("PushingListenerAdapter.processRequest() formats ListenerException to errormessage");
 			String correlationId = session.getCorrelationId();
 			return handler.formatException(null,correlationId, message, e);
+		} finally {
+			ThreadContext.clearAll();
 		}
 	}
 

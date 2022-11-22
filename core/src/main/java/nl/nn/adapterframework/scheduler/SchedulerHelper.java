@@ -118,7 +118,7 @@ public class SchedulerHelper {
 					.forJob(jobDetail).withSchedule(schedule).build();
 			scheduler.scheduleJob(jobDetail, simpleTrigger);
 		} else {
-			log.warn("no cronexpression or interval for job [" + jobDetail.getKey().getName() + "], cannot schedule");
+			log.error("no cronexpression or interval for job [{}], cannot schedule", jobDetail::getKey);
 		}
 	}
 
