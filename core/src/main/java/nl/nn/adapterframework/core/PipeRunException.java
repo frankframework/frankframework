@@ -28,12 +28,12 @@ public class PipeRunException extends IbisException {
 	private @Getter IPipe pipeInError = null;
 
 	public PipeRunException(IPipe pipe, String msg) {
-		super(Misc.concatStrings("Pipe ["+pipe.getName()+"]", " ", msg));
+		super(Misc.concatStrings(pipe!=null? "Pipe ["+pipe.getName()+"]" : null, " ", msg));
 		pipeInError = pipe;
 	}
 
 	public PipeRunException(IPipe pipe, String msg, Throwable e) {
-		super(Misc.concatStrings("Pipe ["+pipe.getName()+"]", " ", msg), e);
+		super(Misc.concatStrings(pipe!=null? "Pipe ["+pipe.getName()+"]" : null, " ", msg), e);
 		pipeInError = pipe;
 	}
 
