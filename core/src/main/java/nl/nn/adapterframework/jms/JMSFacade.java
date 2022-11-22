@@ -778,7 +778,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		return soapWrapper.getBody(message);
 	}
 
-	public void checkTransctionManagerValidity() {
+	public void checkTransactionManagerValidity() {
 		if (!skipCheckForTransactionManagerValidity && !IbisTransaction.isDistributedTransactionsSupported(txManager)) {
 			if (TransactionSynchronizationManager.isSynchronizationActive()) {
 				skipCheckForTransactionManagerValidity = true;
