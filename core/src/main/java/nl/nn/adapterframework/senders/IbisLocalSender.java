@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -102,7 +103,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	private @Getter boolean checkDependency=true;
 	private @Getter int dependencyTimeOut=60;
 	private @Getter String returnedSessionKeys=null;
-	private IsolatedServiceCaller isolatedServiceCaller;
+	private @Setter IsolatedServiceCaller isolatedServiceCaller;
 	private @Getter boolean throwJavaListenerNotFoundException = true;
 
 	@Override
@@ -231,9 +232,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 					if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 						log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
 					}
-					if (session!=null) {
-						Misc.copyContext(getReturnedSessionKeys(), context, session, this);
-					}
+					Misc.copyContext(getReturnedSessionKeys(), context, session, this);
 				}
 			} else {
 				String javaListener;
@@ -279,9 +278,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 					if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 						log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
 					}
-					if (session!=null) {
-						Misc.copyContext(getReturnedSessionKeys(), context, session, this);
-					}
+					Misc.copyContext(getReturnedSessionKeys(), context, session, this);
 				}
 			}
 
@@ -298,54 +295,51 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	/**
 	 * Sets a serviceName under which the JavaListener or WebServiceListener is registered.
 	 */
-	@IbisDoc({"name of the {@link WebServiceListener} that should be called", ""})
+	@IbisDoc({"Name of the {@link WebServiceListener} that should be called", ""})
+	@Deprecated
 	public void setServiceName(String serviceName) {
 		this.serviceName = serviceName;
+	}
+
+	@IbisDoc({"Name of the {@link JavaListener} that should be called (will be ignored when javaListenerSessionKey is set)", ""})
+	public void setJavaListener(String string) {
+		javaListener = string;
+	}
+
+	@IbisDoc({"Name of the sessionKey which holds the name of the {@link JavaListener} that should be called", ""})
+	public void setJavaListenerSessionKey(String string) {
+		javaListenerSessionKey = string;
+	}
+
+	@IbisDoc({"Comma separated list of keys of session variables that are to be returned from the adapter session called, for correct results as well as for erronous results.<br/>N.B. To get this working, the attribute returnedSessionKeys must also be set on the corresponding JavaListener", ""})
+	public void setReturnedSessionKeys(String string) {
+		returnedSessionKeys = string;
+	}
+
+	@IbisDoc({" If set <code>false</code>, the call is made asynchronously. This implies isolated=<code>true</code>", "true"})
+	public void setSynchronous(boolean b) {
+		synchronous = b;
 	}
 
 	/**
 	 * When <code>true</code>, the call is made in a separate thread, possibly using separate transaction.
 	 */
-	@IbisDoc({"when <code>true</code>, the call is made in a separate thread, possibly using separate transaction", "false"})
+	@IbisDoc({"If <code>true</code>, the call is made in a separate thread, possibly using separate transaction", "false"})
 	public void setIsolated(boolean b) {
 		isolated = b;
 	}
 
-	@IbisDoc({"name of the sessionkey which holds the name of the {@link JavaListener} that should be called", ""})
-	public void setJavaListenerSessionKey(String string) {
-		javaListenerSessionKey = string;
-	}
-
-	@IbisDoc({"name of the {@link JavaListener} that should be called (will be ignored when javaListenerSessionKey is set)", ""})
-	public void setJavaListener(String string) {
-		javaListener = string;
-	}
-
-	@IbisDoc({" when set <code>false</code>, the call is made asynchronously. this implies <code>isolated=true</code>", "true"})
-	public void setSynchronous(boolean b) {
-		synchronous = b;
-	}
-
-	@IbisDoc({"when <code>true</code>, the sender waits upon open until the called {@link JavaListener} is opened", "true"})
+	@IbisDoc({"If <code>true</code>, the sender waits upon open until the called {@link JavaListener} is opened", "true"})
 	public void setCheckDependency(boolean b) {
 		checkDependency = b;
 	}
 
-	@IbisDoc({"maximum time (in seconds) the sender waits for the listener to start. A value of -1 indicates to wait indefinitely", "60"})
+	@IbisDoc({"Maximum time (in seconds) the sender waits for the listener to start. A value of -1 indicates to wait indefinitely", "60"})
 	public void setDependencyTimeOut(int i) {
 		dependencyTimeOut = i;
 	}
 
-	@IbisDoc({"comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. (Only for listeners that support it, like JavaListener)<br/>N.B. To get this working, the attribute returnedSessionKeys must also be set on the corresponding Receiver", ""})
-	public void setReturnedSessionKeys(String string) {
-		returnedSessionKeys = string;
-	}
-
-	public void setIsolatedServiceCaller(IsolatedServiceCaller isolatedServiceCaller) {
-		this.isolatedServiceCaller = isolatedServiceCaller;
-	}
-
-	@IbisDoc({"when set <code>false</code>, the xml-string \"&lt;error&gt;could not find JavaListener [...]&lt;/error&gt;\" is returned instead of throwing a senderexception", "true"})
+	@IbisDoc({"If set <code>false</code>, the xml-string \"&lt;error&gt;could not find JavaListener [...]&lt;/error&gt;\" is returned instead of throwing a senderexception", "true"})
 	public void setThrowJavaListenerNotFoundException(boolean b) {
 		throwJavaListenerNotFoundException = b;
 	}

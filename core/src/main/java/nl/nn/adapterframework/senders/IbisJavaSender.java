@@ -29,6 +29,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.dispatcher.DispatcherManager;
 import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.http.HttpSender;
@@ -56,6 +57,8 @@ import nl.nn.adapterframework.util.Misc;
  * </ul>
  * N.B. Please make sure that the IbisServiceDispatcher-1.1.jar is present on the class path of the server.
  *
+ * @ff.forward "&lt;Exit.code&gt;" default
+ * 
  * @author  Gerrit van Brakel
  * @since   4.4.5
  */
@@ -140,11 +143,12 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 			if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 				log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
 			}
-			if (session!=null) {
-				Misc.copyContext(getReturnedSessionKeys(), context, session, this);
-			}
+			Misc.copyContext(getReturnedSessionKeys(), context, session, this);
 		}
-		return new SenderResult(result);
+		ExitState exitState = (ExitState)context.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
+		Object exitCode = context.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
+		String forwardName = exitCode !=null ? exitCode.toString() : null;
+		return new SenderResult(exitState==ExitState.SUCCESS, new Message(result), "exitState="+exitState, forwardName);
 	}
 
 
@@ -163,7 +167,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 	}
 
 	/**
-	 * Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erroneous results. (Only for listeners that support it, like JavaListener)
+	 * Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erroneous results.<br/>N.B. To get this working, the attribute returnedSessionKeys must also be set on the corresponding JavaListener
 	 */
 	public void setReturnedSessionKeys(String string) {
 		returnedSessionKeys = string;

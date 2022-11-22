@@ -15,15 +15,17 @@
 */
 package nl.nn.adapterframework.testtool;
 
+import java.io.IOException;
+
+import org.apache.logging.log4j.Logger;
+
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
-import org.apache.logging.log4j.Logger;
-
-import java.io.IOException;
 /**
  * @author Jaco de Groot
  */
@@ -59,7 +61,8 @@ public class SenderThread extends Thread {
 				session = new PipeLineSession();
 			}
 			session.put(PipeLineSession.correlationIdKey, correlationId);
-			response = sender.sendMessageOrThrow(new Message(request), session).asString();
+			SenderResult result = sender.sendMessage(new Message(request), session);
+			response = result.getResult().asString();
 		} catch(SenderException e) {
 			if (convertExceptionToMessage) {
 				response = Util.throwableToXml(e);

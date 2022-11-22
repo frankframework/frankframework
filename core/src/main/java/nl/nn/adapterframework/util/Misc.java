@@ -836,15 +836,36 @@ public class Misc {
 		return localHost;
 	}
 
-	public static void copyContext(String keys, Map<String,Object> from, PipeLineSession to, INamedObject requester) {
-		if (StringUtils.isNotEmpty(keys) && from!=null && to!=null) {
-			StringTokenizer st = new StringTokenizer(keys,",;");
-			while (st.hasMoreTokens()) {
-				String key=st.nextToken();
-				Object value=from.get(key);
-				Message.asMessage(value).closeOnCloseOf(to, requester);
-				to.put(key,value);
+	public static void copyContext(String keys, Map<String,Object> from, Map<String,Object> to, INamedObject requester) {
+		if (to!=null) {
+			log.debug("returning context, returned sessionkeys ["+keys+"]");
+			copyIfExists(PipeLineSession.EXIT_CODE_CONTEXT_KEY, from, to);
+			copyIfExists(PipeLineSession.EXIT_STATE_CONTEXT_KEY, from, to);
+			if (StringUtils.isNotEmpty(keys)) {
+				StringTokenizer st = new StringTokenizer(keys,",;");
+				while (st.hasMoreTokens()) {
+					String key=st.nextToken();
+					copySessionKey(key, from, to, requester);
+				}
 			}
+		}
+	}
+
+	private static void copySessionKey(String key, Map<String,Object> from, Map<String,Object> to, INamedObject requester) {
+		Object value=from.get(key);
+		Message message = Message.asMessage(value);
+		if (from instanceof PipeLineSession) {
+			message.unscheduleFromCloseOnExitOf((PipeLineSession)from);
+		}
+		if (to instanceof PipeLineSession) {
+			message.closeOnCloseOf((PipeLineSession)to, requester);
+		}
+		to.put(key,value);
+	}
+
+	private static void copyIfExists(String key, Map<String,Object> from, Map<String,Object> to) {
+		if (from.containsKey(key)) {
+			to.put(key, from.get(key));
 		}
 	}
 

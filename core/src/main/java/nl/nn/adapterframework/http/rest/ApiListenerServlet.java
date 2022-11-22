@@ -628,7 +628,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				/**
 				 * Check if an exitcode has been defined or if a statuscode has been added to the messageContext.
 				 */
-				int statusCode = messageContext.get("exitcode", 0);
+				int statusCode = messageContext.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 0);
 				if(statusCode > 0) {
 					response.setStatus(statusCode);
 				}

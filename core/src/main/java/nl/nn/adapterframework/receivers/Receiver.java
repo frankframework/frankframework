@@ -1027,7 +1027,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				PipeLineSession.setListenerParameters(session, null, null, tsReceived, tsSent);
 				String messageId = session.getMessageId();
 				String correlationId = session.getCorrelationId();
-				return processMessageInAdapter(rawMessage, message, messageId, correlationId, session, -1, false, false);
+				Message result = processMessageInAdapter(rawMessage, message, messageId, correlationId, session, -1, false, false);
+				result.unscheduleFromCloseOnExitOf(session);
+				return result;
 			} finally {
 				if (sessionCreated) {
 					session.close();
@@ -1324,7 +1326,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					tg.activateGuard(getTransactionTimeout());
 					pipeLineResult = adapter.processMessageWithExceptions(messageId, pipelineMessage, session);
 					setExitState(session, pipeLineResult.getState(), pipeLineResult.getExitCode());
-					session.put("exitcode", ""+ pipeLineResult.getExitCode());
+					session.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, ""+ pipeLineResult.getExitCode());
 					result=pipeLineResult.getResult();
 
 					errorMessage = "exitState ["+pipeLineResult.getState()+"], result [";
@@ -1429,7 +1431,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	private void setExitState(Map<String,Object> threadContext, ExitState state, int code) {
 		if (threadContext!=null) {
 			threadContext.put(PipeLineSession.EXIT_STATE_CONTEXT_KEY, state);
-			threadContext.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, code);
+			threadContext.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, Integer.toString(code));
 		}
 	}
 
@@ -2080,6 +2082,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	@IbisDoc({"Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. (Only for Listeners that support it, like JavaListener)", ""})
+	@Deprecated
+	@ConfigurationWarning("Please use attribute returnedSessionKeys of the JavaListener")
 	public void setReturnedSessionKeys(String string) {
 		returnedSessionKeys = string;
 	}
