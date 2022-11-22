@@ -268,6 +268,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 
 				try {
 					IPortConnectedListener<Message> listener = getListener();
+					listener.checkTransactionManagerValidity();
 					pipeLineSession.put(THREAD_CONTEXT_SESSION_KEY,session);
 	//				if (log.isDebugEnabled()) log.debug("transaction status before: "+JtaUtil.displayTransactionStatus());
 					getReceiver().processRawMessage(listener, message, pipeLineSession, false);
