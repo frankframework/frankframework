@@ -126,7 +126,7 @@ public class UpdateLogDefinitions {
 			log2SecurityLog("changed logdefinition ["+logPackage+"] to level ["+level.getStandardLevel().name()+"]");
 			return ResponseMessage.accepted();
 		}
-		throw new BusException("neither [logPackage] or [level] provided");
+		throw new BusException("neither [reconfigure], [logPackage] or [level] provided");
 	}
 
 	private void log2SecurityLog(String logMessage) {
