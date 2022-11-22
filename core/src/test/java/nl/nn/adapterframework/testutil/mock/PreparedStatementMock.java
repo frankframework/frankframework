@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.configuration;
+package nl.nn.adapterframework.testutil.mock;
 
 import java.io.InputStream;
 import java.sql.PreparedStatement;
