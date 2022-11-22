@@ -188,6 +188,7 @@
 					</sender>
 				</sender>
 				<forward name="success" path="Echo"/>
+				<forward name="exception" path="Echo"/>
 			</pipe>
 
 			<pipe name="Echo" className="nl.nn.adapterframework.pipes.EchoPipe">

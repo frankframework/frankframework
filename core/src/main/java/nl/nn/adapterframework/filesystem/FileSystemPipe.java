@@ -27,11 +27,12 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.SupportsOutputStreaming;
-import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.doc.IbisDocRef;
+import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -118,20 +119,15 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 			throw new PipeRunException(this,"Pipe caught exception evaluating parameters", e);
 		}
 
-		Object result;
 		try {
-			result = actor.doAction(message, pvl, session);
-		} catch (FileSystemException | TimeoutException e) {
+			return actor.doAction(message, pvl, session).asPipeRunResult(this);
+		} catch (FileSystemException | TimeoutException | SenderException e) {
 			Map<String, PipeForward> forwards = getForwards();
 			if (forwards!=null && forwards.containsKey(PipeForward.EXCEPTION_FORWARD_NAME)) {
 				return new PipeRunResult(getForwards().get(PipeForward.EXCEPTION_FORWARD_NAME), e.getMessage());
 			}
 			throw new PipeRunException(this, "cannot perform action", e);
 		}
-		if (result!=null) {
-			return new PipeRunResult(getSuccessForward(), result);
-		}
-		return new PipeRunResult(getSuccessForward(), message);
 	}
 
 	@Override

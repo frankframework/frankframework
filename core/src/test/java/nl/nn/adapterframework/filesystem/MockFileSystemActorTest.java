@@ -48,9 +48,8 @@ public class MockFileSystemActorTest extends FileSystemActorExtraTest <MockFile,
 		Message message = new Message("");
 		PipeLineSession session = new PipeLineSession();
 		ParameterValueList pvl = null;
-		Object result = actor.doAction(message, pvl, session);
-		String stringResult=(String)result;
-		assertThat(stringResult, containsString(normalizedfFilename));
+		String result = actor.doAction(message, pvl, session).getResult().asString();
+		assertThat(result, containsString(normalizedfFilename));
 	}
 
 }

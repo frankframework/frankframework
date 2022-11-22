@@ -57,7 +57,7 @@ public abstract class FileSystemActorExtraTest<F,FS extends IWritableFileSystem<
 			
 			session.put("appendActionwString", contents+i);
 			ParameterValueList pvl = params.getValues(message, session);
-			String result = (String)actor.doAction(message, pvl, null);
+			String result = actor.doAction(message, pvl, null).getResult().asString();
 			
 			TestAssertions.assertXpathValueEquals(filename, result, "file/@name");
 		}

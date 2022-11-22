@@ -131,6 +131,9 @@ public class ParallelSenders extends SenderSeries {
 				}
 			} else {
 				success=false;
+				if (errorMessage==null) {
+					errorMessage=throwable.getMessage();
+				}
 				resultXml.addAttribute("type", ClassUtils.nameOf(throwable));
 				resultXml.addAttribute("success", false);
 				resultXml.setValue(throwable.getMessage());

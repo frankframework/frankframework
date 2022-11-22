@@ -39,11 +39,13 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.GenericSenderResult;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.DocumentedEnum;
 import nl.nn.adapterframework.doc.EnumLabel;
@@ -78,6 +80,8 @@ import nl.nn.adapterframework.util.StreamUtil;
  */
 public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutputStreamingSupport {
 	protected Logger log = LogUtil.getLogger(this);
+
+	private final String NOT_FOUND_FORWARD_NAME="notFound";
 
 	public static final String ACTION_CREATE="create";
 	public static final String ACTION_LIST="list";
@@ -317,7 +321,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		}
 	}
 
-	public Object doAction(Message input, ParameterValueList pvl, PipeLineSession session) throws FileSystemException, TimeoutException {
+	public GenericSenderResult doAction(Message input, ParameterValueList pvl, PipeLineSession session) throws FileSystemException, TimeoutException {
 		FileSystemAction action=null;
 		try {
 			if(input != null) {
@@ -345,7 +349,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 					try (OutputStream out = ((IWritableFileSystem<F>)fileSystem).createFile(file)) {
 						// nothing to write
 					}
-					return FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat());
+					return new SenderResult(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
 				}
 				case DELETE: {
 					return processAction(input, pvl, f -> { fileSystem.deleteFile(f); return f; });
@@ -353,15 +357,15 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				case INFO: {
 					F file=getFile(input, pvl);
 					FileSystemUtils.checkSource(fileSystem, file, FileSystemAction.INFO);
-					return FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat());
+					return new SenderResult(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
 				}
 				case READ: {
 					F file=getFile(input, pvl);
 					Message in = fileSystem.readFile(file, getCharset());
 					if (getBase64()!=null) {
-						return new Base64InputStream(in.asInputStream(), getBase64()==Base64Pipe.Direction.ENCODE);
+						in = new Message(new Base64InputStream(in.asInputStream(), getBase64()==Base64Pipe.Direction.ENCODE));
 					}
-					return in;
+					return new SenderResult(in);
 				}
 				case READDELETE: {
 					F file=getFile(input, pvl);
@@ -392,7 +396,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 					if (getBase64()!=null) {
 						in = new Base64InputStream(in, getBase64()==Base64Pipe.Direction.ENCODE);
 					}
-					return in;
+					return new SenderResult(new Message(in));
 				}
 				case LIST: {
 					String folder = arrangeFolder(determineInputFoldername(input, pvl));
@@ -408,7 +412,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 					} finally {
 						directoryBuilder.close();
 					}
-					return directoryBuilder.toString();
+					return new SenderResult(directoryBuilder.toString());
 				}
 				case WRITE: {
 					F file=getFile(input, pvl);
@@ -419,7 +423,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 					try (OutputStream out = ((IWritableFileSystem<F>)fileSystem).createFile(file)) {
 						writeContentsToFile(out, input, pvl);
 					}
-					return FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat());
+					return new SenderResult(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
 				}
 				case APPEND: {
 					F file=getFile(input, pvl);
@@ -434,17 +438,17 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 					try (OutputStream out = ((IWritableFileSystem<F>)fileSystem).appendFile(file)) {
 						writeContentsToFile(out, input, pvl);
 					}
-					return FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat());
+					return new SenderResult(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
 				}
 				case MKDIR: {
 					String folder = determineInputFoldername(input, pvl);
 					fileSystem.createFolder(folder);
-					return folder;
+					return new SenderResult(folder);
 				}
 				case RMDIR: {
 					String folder = determineInputFoldername(input, pvl);
 					fileSystem.removeFolder(folder, isRemoveNonEmptyFolder());
-					return folder;
+					return new SenderResult(folder);
 				}
 				case RENAME: {
 					F source=getFile(input, pvl);
@@ -459,7 +463,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 						destination = fileSystem.toFile(folderPath,destinationName);
 					}
 					F renamed = FileSystemUtils.renameFile((IWritableFileSystem<F>)fileSystem, source, destination, isOverwrite(), getNumberOfBackups());
-					return fileSystem.getName(renamed);
+					return new SenderResult(fileSystem.getName(renamed));
 				}
 				case MOVE: {
 					String destinationFolder = determineDestination(pvl);
@@ -479,6 +483,8 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				default:
 					throw new FileSystemException("action ["+action+"] is not supported!");
 			}
+		} catch (FileNotFoundException e) {
+			return new SenderResult(false, null, "unable to process ["+action+"] action for File [" + determineFilename(input, pvl) + "]: "+ e.getMessage(), NOT_FOUND_FORWARD_NAME);
 		} catch (Exception e) {
 			throw new FileSystemException("unable to process ["+action+"] action for File [" + determineFilename(input, pvl) + "]", e);
 		}
@@ -495,7 +501,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	 * @throws IOException
 	 * @throws SAXException
 	 */
-	private String processAction(Message input, ParameterValueList pvl, FileAction<F> action) throws FileSystemException, IOException, SAXException {
+	private SenderResult processAction(Message input, ParameterValueList pvl, FileAction<F> action) throws FileSystemException, IOException, SAXException {
 		if(StringUtils.isNotEmpty(getWildcard()) || StringUtils.isNotEmpty(getExcludeWildcard())) {
 			String folder = arrangeFolder(determineInputFoldername(input, pvl));
 			ArrayBuilder directoryBuilder = DocumentBuilderFactory.startArrayDocument(getOutputFormat(), action+"FilesList", "file");
@@ -510,12 +516,12 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				}
 			}
 			deleteEmptyFolder(folder);
-			return directoryBuilder.toString();
+			return new SenderResult(directoryBuilder.toString());
 		}
 		F file=getFile(input, pvl);
 		F resultFile = action.execute(file);
 		deleteEmptyFolder(file);
-		return resultFile!=null ? fileSystem.getName(resultFile) : null;
+		return new SenderResult(resultFile!=null ? fileSystem.getName(resultFile) : null);
 	}
 
 	private String arrangeFolder(String determinedFolderName) throws FileSystemException {
@@ -640,7 +646,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				@Override
 				public Message getResponse() {
 					try {
-						return new Message(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
+						return FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat());
 					} catch (FileSystemException e) {
 						log.warn("cannot get file information", e);
 						return null;

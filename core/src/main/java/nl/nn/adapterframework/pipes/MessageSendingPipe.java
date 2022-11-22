@@ -35,6 +35,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.GenericSenderResult;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
@@ -56,7 +57,6 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.SupportsOutputStreaming;
@@ -449,7 +449,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			if (wrapResult==null) {
 				throw new PipeRunException(inputWrapper, "retrieved null result from inputWrapper");
 			}
-			if (!wrapResult.isSuccessful()) {
+			if (!wrapResult.isSuccess()) {
 				return wrapResult;
 			}
 			input = wrapResult.getResult();
@@ -463,7 +463,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			preserve(input, session);
 			log.debug("validating input");
 			PipeRunResult validationResult = pipeProcessor.processPipe(getPipeLine(), inputValidator, input, session);
-			if (validationResult!=null && !validationResult.isSuccessful()) {
+			if (validationResult!=null && !validationResult.isSuccess()) {
 				return validationResult;
 			}
 			input = validationResult.getResult();
@@ -683,7 +683,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			PipeRunResult validationResult;
 			validationResult = pipeProcessor.processPipe(getPipeLine(), outputValidator, Message.asMessage(result), session);
 			if (validationResult!=null) {
-				if (!validationResult.isSuccessful()) {
+				if (!validationResult.isSuccess()) {
 					return validationResult;
 				}
 				result = validationResult.getResult();
@@ -696,7 +696,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			if (wrapResult==null) {
 				throw new PipeRunException(outputWrapper, "retrieved null result from outputWrapper");
 			}
-			if (!wrapResult.isSuccessful()) {
+			if (!wrapResult.isSuccess()) {
 				return wrapResult;
 			}
 			result = wrapResult.getResult();
@@ -753,21 +753,13 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				}
 			}
 			try {
+				GenericSenderResult senderResult;
 				if (sender instanceof IStreamingSender && canStreamToNextPipe()) {
-					sendResult =  ((IStreamingSender)sender).sendMessage(input, session, getNextPipe());
+					senderResult = ((IStreamingSender)sender).sendMessage(input, session, getNextPipe());
 				} else {
-					SenderResult senderResult = sender.sendMessage(input, session);
-					PipeForward forward = null;
-					String forwardName = senderResult.getForwardName();
-					if (StringUtils.isNotEmpty(forwardName)) {
-						forward = findForward(forwardName);
-					}
-					if (forward==null) {
-						forwardName = senderResult.isSuccess() ? PipeForward.SUCCESS_FORWARD_NAME: PipeForward.EXCEPTION_FORWARD_NAME;
-						forward = findForward(forwardName);
-					}
-					sendResult = new PipeRunResult(forward, senderResult.getResult());
+					senderResult = sender.sendMessage(input, session);
 				}
+				sendResult = senderResult.asPipeRunResult(this);
 			} catch (SenderException se) {
 				exitState = PipeForward.EXCEPTION_FORWARD_NAME;
 				throw se;

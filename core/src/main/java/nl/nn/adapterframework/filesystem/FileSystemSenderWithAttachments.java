@@ -24,10 +24,11 @@ import org.apache.commons.codec.binary.Base64InputStream;
 
 import microsoft.exchange.webservices.data.property.complex.FileAttachment;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.GenericSenderResult;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.stream.Message;
@@ -51,52 +52,51 @@ public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F
 	}
 
 	@Override
-	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
+	public GenericSenderResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
 		if (getAction()!=FileSystemAction.LISTATTACHMENTS) {
 			return super.sendMessage(message, session, next);
-		} else {
-
-			IBasicFileSystem<F> ifs = getFileSystem();
-			F file;
-
-			try {
-				file = ifs.toFile(message.asString());
-			} catch (Exception e) {
-				throw new SenderException(getLogPrefix() + "unable to get file", e);
-			}
-
-			XmlBuilder attachments = new XmlBuilder("attachments");
-			IWithAttachments<F,A> withAttachments = getFileSystem();
-			try {
-				Iterator<A> it = withAttachments.listAttachments(file);
-				if (it!=null) {
-					while (it.hasNext()) {
-						A attachment = it.next();
-						XmlBuilder attachmentXml = new XmlBuilder("attachment");
-						attachmentXml.addAttribute("name", withAttachments.getAttachmentName(attachment));
-						attachmentXml.addAttribute("contentType", withAttachments.getAttachmentContentType(attachment));
-						attachmentXml.addAttribute("size", withAttachments.getAttachmentSize(attachment));
-						attachmentXml.addAttribute("filename", withAttachments.getAttachmentFileName(attachment));
-
-						FileAttachment fileAttachment = (FileAttachment) attachment;
-						fileAttachment.load();
-						if(!attachmentsAsSessionKeys) {
-							InputStream binaryInputStream = new ByteArrayInputStream(fileAttachment.getContent());
-							InputStream base64 = new Base64InputStream(binaryInputStream,true);
-							attachmentXml.setCdataValue(Misc.streamToString(base64, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING));
-						} else {
-							attachmentXml.setValue(fileAttachment.getName());
-							session.put(fileAttachment.getName(), fileAttachment.getContent());
-						}
-						attachments.addSubElement(attachmentXml);
-					}
-				}
-			} catch (Exception e) {
-				log.error("unable to list all attachments", e);
-				throw new SenderException(e);
-			}
-			return new PipeRunResult(null, attachments.toString());
 		}
+
+		IBasicFileSystem<F> ifs = getFileSystem();
+		F file;
+
+		try {
+			file = ifs.toFile(message.asString());
+		} catch (Exception e) {
+			throw new SenderException(getLogPrefix() + "unable to get file", e);
+		}
+
+		XmlBuilder attachments = new XmlBuilder("attachments");
+		IWithAttachments<F,A> withAttachments = getFileSystem();
+		try {
+			Iterator<A> it = withAttachments.listAttachments(file);
+			if (it!=null) {
+				while (it.hasNext()) {
+					A attachment = it.next();
+					XmlBuilder attachmentXml = new XmlBuilder("attachment");
+					attachmentXml.addAttribute("name", withAttachments.getAttachmentName(attachment));
+					attachmentXml.addAttribute("contentType", withAttachments.getAttachmentContentType(attachment));
+					attachmentXml.addAttribute("size", withAttachments.getAttachmentSize(attachment));
+					attachmentXml.addAttribute("filename", withAttachments.getAttachmentFileName(attachment));
+
+					FileAttachment fileAttachment = (FileAttachment) attachment;
+					fileAttachment.load();
+					if(!attachmentsAsSessionKeys) {
+						InputStream binaryInputStream = new ByteArrayInputStream(fileAttachment.getContent());
+						InputStream base64 = new Base64InputStream(binaryInputStream,true);
+						attachmentXml.setCdataValue(Misc.streamToString(base64, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING));
+					} else {
+						attachmentXml.setValue(fileAttachment.getName());
+						session.put(fileAttachment.getName(), fileAttachment.getContent());
+					}
+					attachments.addSubElement(attachmentXml);
+				}
+			}
+		} catch (Exception e) {
+			log.error("unable to list all attachments", e);
+			throw new SenderException(e);
+		}
+		return new SenderResult(new Message(attachments.toString()));
 	}
 
 

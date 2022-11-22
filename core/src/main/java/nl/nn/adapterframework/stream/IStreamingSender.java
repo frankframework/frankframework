@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 WeAreFrank!
+   Copyright 2019, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,15 +15,15 @@
 */
 package nl.nn.adapterframework.stream;
 
+import nl.nn.adapterframework.core.GenericSenderResult;
 import nl.nn.adapterframework.core.IForwardTarget;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
-import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 
 public interface IStreamingSender extends ISenderWithParameters, IOutputStreamingSupport {
 
-	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException;
+	public GenericSenderResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException;
 
 }

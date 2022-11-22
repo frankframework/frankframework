@@ -37,7 +37,7 @@ import nl.nn.adapterframework.stream.Message;
  * @see nl.nn.adapterframework.pipes.AbstractPipe#doPipe
  * @see nl.nn.adapterframework.pipes.AbstractPipe#findForward
  */
-public class PipeRunResult {
+public class PipeRunResult implements GenericSenderResult {
 
 	private @Getter @Setter PipeForward pipeForward;
 	private @Getter Message result;
@@ -56,11 +56,17 @@ public class PipeRunResult {
 	}
 
 	@Override
+	public void setResult(Message result) {
+		this.result = result;
+	}
+
+	@Override
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this);
 	}
 
-	public boolean isSuccessful() {
-		return PipeForward.SUCCESS_FORWARD_NAME.equalsIgnoreCase(getPipeForward().getName());
+	@Override
+	public boolean isSuccess() {
+		return pipeForward==null || PipeForward.SUCCESS_FORWARD_NAME.equalsIgnoreCase(getPipeForward().getName());
 	}
 }

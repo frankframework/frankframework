@@ -148,7 +148,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 		ExitState exitState = (ExitState)context.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
 		Object exitCode = context.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
 		String forwardName = exitCode !=null ? exitCode.toString() : null;
-		return new SenderResult(exitState==ExitState.SUCCESS, new Message(result), "exitState="+exitState, forwardName);
+		return new SenderResult(exitState==null || exitState==ExitState.SUCCESS, new Message(result), "exitState="+exitState, forwardName);
 	}
 
 

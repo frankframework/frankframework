@@ -31,6 +31,7 @@ import org.xml.sax.ContentHandler;
 
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.core.GenericSenderResult;
 import nl.nn.adapterframework.core.IBlockEnabledSender;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
 import nl.nn.adapterframework.core.IExtendedPipe;
@@ -200,7 +201,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 
 	private enum SenderReturnType {
 		MESSAGE,
-		PIPERUNRESULT,
+		GENERICSENDERRESULT,
 		SENDERRESULT;
 	}
 
@@ -248,13 +249,17 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		switch (returnType) {
 			case MESSAGE:
 				return (M)ibisDebugger.senderOutput(sender, correlationId, Message.asMessage(result));
-			case PIPERUNRESULT:
+			case GENERICSENDERRESULT:
 				// Create PipeRunResult when streaming sender is stubbed, this will forward to the next pipe and process the
 				// message in a streaming.auto=false way (also when at the time of the original report the message was
 				// processed with streaming.auto=true)
-				PipeRunResult prr = result!=null ? (PipeRunResult)result : new PipeRunResult();
-				prr.setResult(ibisDebugger.senderOutput(sender, correlationId, prr.getResult()));
-				return (M)prr;
+				GenericSenderResult gsr = result!=null ? (GenericSenderResult)result : new SenderResult(Message.nullMessage());
+				ibisDebugger.showValue(correlationId, "success", gsr.isSuccess());
+				if (gsr.getForwardName()!=null) {
+					ibisDebugger.showValue(correlationId, "forwardName", gsr.getForwardName());
+				}
+				gsr.setResult(ibisDebugger.senderOutput(sender, correlationId, gsr.getResult()));
+				return (M)gsr;
 			case SENDERRESULT:
 				SenderResult senderResult = result!=null ? (SenderResult)result : new SenderResult(Message.nullMessage());
 				ibisDebugger.showValue(correlationId, "success", senderResult.isSuccess());
@@ -272,7 +277,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	}
 
 	/**
-	 * Provides advice for {@link ISender#sendMessageOrThrow(Message message, PipeLineSession session)}
+	 * Provides advice for {@link ISender#sendMessage(Message message, PipeLineSession session)}
 	 */
 	public SenderResult debugSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, PipeLineSession session) throws Throwable {
 		return debugSenderInputOutputAbort(proceedingJoinPoint, message, session, 0, SenderReturnType.SENDERRESULT);
@@ -288,8 +293,8 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	/**
 	 * Provides advice for {@link IStreamingSender#sendMessage(Message message, PipeLineSession session, IForwardTarget next)}
 	 */
-	public PipeRunResult debugStreamingSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, PipeLineSession session, IForwardTarget next) throws Throwable {
-		return debugSenderInputOutputAbort(proceedingJoinPoint, message, session, 0, SenderReturnType.PIPERUNRESULT);
+	public GenericSenderResult debugStreamingSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, PipeLineSession session, IForwardTarget next) throws Throwable {
+		return debugSenderInputOutputAbort(proceedingJoinPoint, message, session, 0, SenderReturnType.GENERICSENDERRESULT);
 	}
 
 	/**

@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.core;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -25,7 +26,7 @@ import nl.nn.adapterframework.stream.Message;
  * The SenderResult is a type to store both the result of the processing of a message by a Sender,
  * as well as the exitState.
  */
-public class SenderResult {
+public class SenderResult implements GenericSenderResult {
 
 	private @Getter @Setter boolean success;
 	private @Getter @Setter Message result;
@@ -49,6 +50,11 @@ public class SenderResult {
 		this.forwardName = forwardName;
 		this.result = result;
 		this.errorMessage = errorMessage;
+	}
+	
+	@Override
+	public String toString() {
+		return ReflectionToStringBuilder.toString(this);
 	}
 
 }

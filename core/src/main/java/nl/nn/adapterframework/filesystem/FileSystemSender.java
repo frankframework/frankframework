@@ -19,17 +19,17 @@ import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.core.GenericSenderResult;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.SupportsOutputStreaming;
-import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.doc.IbisDocRef;
+import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.Base64Pipe;
@@ -100,7 +100,7 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 	}
 
 	@Override
-	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
+	public GenericSenderResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
 		ParameterValueList pvl = null;
 
 		try {
@@ -108,16 +108,11 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 				pvl=paramList.getValues(message, session);
 			}
 		} catch (ParameterException e) {
-			throw new SenderException(
-					getLogPrefix() + "Sender [" + getName() + "] caught exception evaluating parameters", e);
+			throw new SenderException(getLogPrefix() + "Sender [" + getName() + "] caught exception evaluating parameters", e);
 		}
 
 		try {
-			Object result=actor.doAction(message, pvl, session);
-			if (result instanceof PipeRunResult) {
-				return (PipeRunResult)result;
-			}
-			return new PipeRunResult(null, result);
+			return actor.doAction(message, pvl, session);
 		} catch (FileSystemException e) {
 			throw new SenderException(e);
 		}

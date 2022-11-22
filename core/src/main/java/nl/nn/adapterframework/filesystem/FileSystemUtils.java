@@ -31,6 +31,7 @@ import org.xml.sax.SAXException;
 
 import lombok.Lombok;
 import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.stream.document.DocumentBuilderFactory;
 import nl.nn.adapterframework.stream.document.DocumentFormat;
@@ -313,7 +314,7 @@ public class FileSystemUtils {
 	}
 
 
-	public static <F, FS extends IBasicFileSystem<F>> String getFileInfo(FS fileSystem, F f, DocumentFormat format) throws FileSystemException {
+	public static <F, FS extends IBasicFileSystem<F>> Message getFileInfo(FS fileSystem, F f, DocumentFormat format) throws FileSystemException {
 		try {
 			INodeBuilder builder = DocumentBuilderFactory.startDocument(format, "file");
 			try {
@@ -321,7 +322,7 @@ public class FileSystemUtils {
 			} finally {
 				builder.close();
 			}
-			return builder.toString();
+			return new Message(builder.toString());
 		} catch (SAXException e) {
 			throw new FileSystemException("Cannot get FileInfo", e);
 		}

@@ -110,7 +110,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 			String result = prr.getResult().asString();
 			log.debug("result [" + ToStringBuilder.reflectionToString(prr) + "]");
 			ValidationResult event;
-			if (prr.isSuccessful()) {
+			if (prr.isSuccess()) {
 				event = ValidationResult.VALID;
 			} else {
 				if (prr.getPipeForward().getName().equals("failure")) {
