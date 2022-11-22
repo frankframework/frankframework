@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -42,6 +43,8 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
 import lombok.Setter;
 import nl.nn.adapterframework.lifecycle.servlets.AuthenticationType;
@@ -78,6 +81,8 @@ import nl.nn.adapterframework.util.SpringUtils;
  * @author Niels Meijer
  *
  */
+@EnableWebSecurity //Enables Spring Security (classpath)
+@EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false) //Enables JSR 250 (JAX-RS) annotations
 public class ServletManager implements ApplicationContextAware, InitializingBean {
 
 	private ServletContext servletContext = null;
@@ -257,8 +262,9 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 
 		if(initParameters != null && !initParameters.isEmpty()) {
 			//Manually loop through the map as serv.setInitParameters will fail all parameters even if only 1 fails...
-			for(String key : initParameters.keySet()) {
-				String value = initParameters.get(key);
+			for(Entry<String, String> entry : initParameters.entrySet()) {
+				String key = entry.getKey();
+				String value = entry.getValue();
 				if(!serv.setInitParameter(key, value)) {
 					log("unable to set init-parameter ["+key+"] with value ["+value+"] for servlet ["+servletName+"]", Level.ERROR);
 				}

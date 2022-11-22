@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.lifecycle.servlets;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -27,9 +26,6 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.security.web.util.matcher.OrRequestMatcher;
-import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import lombok.Getter;
 import nl.nn.adapterframework.lifecycle.ServletManager;
@@ -42,7 +38,7 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 
 	private @Getter ApplicationContext applicationContext;
 	private @Getter Set<String> endpoints = new HashSet<>();
-	private @Getter List<String> securityRoles = new ArrayList<>();
+	private @Getter Set<String> securityRoles = new HashSet<>();
 
 	@Override
 	public final void setApplicationContext(ApplicationContext applicationContext) {
@@ -59,22 +55,18 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 		if(securityRoles == null || securityRoles.isEmpty()) {
 			securityRoles = ServletManager.DEFAULT_IBIS_ROLES;
 		}
+
 		this.securityRoles.addAll(securityRoles);
 	}
 
 	private void setEndpoints(List<String> urlMappings) {
 		for(String url : urlMappings) {
-			String matcherUrl = url;
-			if(url.endsWith("*")) {
-				matcherUrl = url+"*";
-			}
-
-			if(endpoints.contains(matcherUrl)) {
+			if(endpoints.contains(url)) {
 				throw new IllegalStateException("endpoint already configured");
 			}
 
-			log.info("registering url [{}] with lookup pattern [{}]", url, matcherUrl);
-			endpoints.add(matcherUrl);
+			log.info("registering url pattern [{}]", url, url);
+			endpoints.add(url);
 		}
 	}
 
@@ -89,7 +81,7 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 		}
 
 		ConfigurableListableBeanFactory beanFactory = ((ConfigurableApplicationContext)applicationContext).getBeanFactory();
-		String name = "HttpSecurityChain-"+this.getClass().getSimpleName();
+		String name = "HttpSecurityChain-"+this.getClass().getSimpleName()+"-"+this.hashCode();
 
 		//Register the SecurityFilter in the (WebXml)BeanFactory so the WebSecurityConfiguration can configure them
 		beanFactory.registerSingleton(name, createSecurityFilterChain());
@@ -105,7 +97,7 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 			//Apply defaults to disable bloated filters, see DefaultSecurityFilterChain.getFilters for the actual list.
 			http.headers().frameOptions().sameOrigin(); //Allow same origin iframe request
 			http.csrf().disable();
-			http.requestMatcher(getRequestMatcher());
+			http.requestMatcher(new URLRequestMatcher(endpoints));
 			http.formLogin().disable(); //Disable the form login filter
 			http.anonymous().disable(); //Disable the default anonymous filter
 			http.logout().disable(); //Disable the logout endpoint on every filter
@@ -119,12 +111,4 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 
 	/** Before building it configures the Chain. */
 	protected abstract SecurityFilterChain configure(HttpSecurity http) throws Exception;
-
-	private RequestMatcher getRequestMatcher() {
-		List<RequestMatcher> requestMatchers = new ArrayList<>();
-		for(String url : endpoints) {
-			requestMatchers.add(new AntPathRequestMatcher(url, null, false));
-		}
-		return (requestMatchers.size() == 1) ? requestMatchers.get(0) : new OrRequestMatcher(requestMatchers);
-	}
 }

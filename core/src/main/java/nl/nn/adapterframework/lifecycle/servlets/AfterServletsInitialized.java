@@ -13,22 +13,23 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.lifecycle;
+package nl.nn.adapterframework.lifecycle.servlets;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
 import lombok.Setter;
+import nl.nn.adapterframework.lifecycle.IbisInitializer;
+import nl.nn.adapterframework.lifecycle.ServletManager;
 
+/**
+ * This class is meant to trigger last after all other servlets have been registerd at the ServletManager
+ */
 @Order(Ordered.LOWEST_PRECEDENCE)
 @IbisInitializer
-@EnableWebSecurity //Enables Spring Security (classpath)
-@EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false) //Enables JSR 250 (JAX-RS) annotations
-public class HttpSecurityConfigurer implements InitializingBean {
+public class AfterServletsInitialized implements InitializingBean {
 
 	private @Setter @Autowired ServletManager servletManager;
 
