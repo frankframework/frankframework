@@ -464,20 +464,18 @@ public class ConfigurationUtils {
 		return sort(allConfigNameItems);
 	}
 
-	private static <T> Map<String, T> sort(Map<String, T> allConfigNameItems) {
+	private static <T> Map<String, T> sort(final Map<String, T> allConfigNameItems) {
 		List<String> sortedConfigurationNames = new LinkedList<>(allConfigNameItems.keySet());
-		sortedConfigurationNames.sort(new ParentConfigComperator());
+		sortedConfigurationNames.sort(new ParentConfigComparator());
 
 		Map<String, T> sortedConfigurations = new LinkedHashMap<>();
 
-		sortedConfigurationNames.forEach((name) -> {
-			sortedConfigurations.put(name, allConfigNameItems.get(name));
-		});
+		sortedConfigurationNames.forEach(name -> sortedConfigurations.put(name, allConfigNameItems.get(name)) );
 
 		return sortedConfigurations;
 	}
 
-	private static class ParentConfigComperator implements Comparator<String> {
+	private static class ParentConfigComparator implements Comparator<String> {
 		AppConstants constants = AppConstants.getInstance();
 
 		@Override
