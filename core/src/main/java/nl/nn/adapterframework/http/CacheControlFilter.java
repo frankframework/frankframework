@@ -48,7 +48,11 @@ public class CacheControlFilter implements Filter {
 		HttpServletResponse resp = (HttpServletResponse) response;
 		HttpServletRequest req = (HttpServletRequest) request;
 		//resp.setHeader("Expires", "Tue, 03 Jul 2001 06:00:00 GMT");
-		resp.setDateHeader("Last-Modified", new Date().getTime());
+
+		// 304 Not Modified, nothing has been modified, do not set Last Modified
+		if(resp.getStatus() != 304){
+			resp.setDateHeader("Last-Modified", new Date().getTime());
+		}
 
 		// Browsers refuse setting "If-None-Match" header after a "Cache-Control: no-store, no-cache" response has been served.
 		String etag = resp.getHeader("etag");
