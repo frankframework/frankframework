@@ -168,7 +168,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 		}
 
 		String configurationsXml = getConfigurationXml(configurations);
-		String name = "configurations[*ALL*]";
+		String name = "configurations[ALL]";
 
 		generateFlowDiagram(name, configurationsXml, destFile);
 	}

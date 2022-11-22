@@ -152,8 +152,7 @@ public class ConfigManagement extends BusEndpointBase {
 			throw new BusException("unable to update configuration settings in database", e);
 		}
 
-		log.debug("header [activate] or [autoreload] not found");
-		return ResponseMessage.badRequest();
+		throw new BusException("neither [activate] or [autoreload] provided");
 	}
 
 	@ActionSelector(BusAction.UPLOAD)
