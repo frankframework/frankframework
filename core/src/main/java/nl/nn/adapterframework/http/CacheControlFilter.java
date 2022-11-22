@@ -49,9 +49,15 @@ public class CacheControlFilter implements Filter {
 		HttpServletRequest req = (HttpServletRequest) request;
 		//resp.setHeader("Expires", "Tue, 03 Jul 2001 06:00:00 GMT");
 		resp.setDateHeader("Last-Modified", new Date().getTime());
-		resp.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0, post-check=0, pre-check=0");
-		resp.setHeader("Pragma", "no-cache");
-		log.trace("disabling cache for uri ["+req.getRequestURI()+"]");
+
+		// Browsers refuse setting "If-None-Match" header after a "Cache-Control: no-store, no-cache" response has been served.
+		String etag = resp.getHeader("etag");
+		if(etag == null){
+			resp.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0, post-check=0, pre-check=0");
+			resp.setHeader("Pragma", "no-cache");
+			log.trace("disabling cache for uri ["+req.getRequestURI()+"]");
+		}
+
 		chain.doFilter(request, response);
 	}
 
