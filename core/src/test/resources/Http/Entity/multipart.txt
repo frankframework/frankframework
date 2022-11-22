@@ -1,0 +1,13 @@
+--test-boundary
+Content-Disposition: form-data; name="part1"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+
+content1
+--test-boundary
+Content-Disposition: form-data; name="part2"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+
+content2
+--test-boundary--

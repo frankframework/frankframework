@@ -150,15 +150,15 @@ public class HttpMessageEntityTest {
 		HttpMessageEntity hmeNonRepeatable = new HttpMessageEntity(NON_REPEATABLE_MESSAGE);
 		HttpMessageEntity hmeUrlRepeatable = new HttpMessageEntity(REPEATABLE_TS_MESSAGE);
 
-		assertEquals(MESSAGE_CONTENT, writeTo(bae));
-		assertEquals(MESSAGE_CONTENT, writeTo(ise));
-		assertEquals(MESSAGE_CONTENT, writeTo(hmeRepeatable));
-		assertEquals(MESSAGE_CONTENT, writeTo(hmeRepeatable)); //read twice to prove repeatability
-		assertEquals(MESSAGE_CONTENT, writeTo(hmeNonRepeatable));
-		assertEquals(REPEATABLE_TS_MESSAGE.asString(), writeTo(hmeUrlRepeatable));
+		assertEquals(MESSAGE_CONTENT, toString(bae));
+		assertEquals(MESSAGE_CONTENT, toString(ise));
+		assertEquals(MESSAGE_CONTENT, toString(hmeRepeatable));
+		assertEquals(MESSAGE_CONTENT, toString(hmeRepeatable)); //read twice to prove repeatability
+		assertEquals(MESSAGE_CONTENT, toString(hmeNonRepeatable));
+		assertEquals(REPEATABLE_TS_MESSAGE.asString(), toString(hmeUrlRepeatable));
 	}
 
-	private String writeTo(HttpEntity entity) throws IOException {
+	private String toString(HttpEntity entity) throws IOException {
 		ByteArrayOutputStream boas = new ByteArrayOutputStream();
 		entity.writeTo(boas);
 		return boas.toString();
