@@ -43,8 +43,8 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 
 import lombok.Setter;
 import nl.nn.adapterframework.lifecycle.servlets.AuthenticationType;
@@ -81,9 +81,7 @@ import nl.nn.adapterframework.util.SpringUtils;
  * @author Niels Meijer
  *
  */
-@EnableWebSecurity //Enables Spring Security (classpath)
-@EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false) //Enables JSR 250 (JAX-RS) annotations
-public class ServletManager implements ApplicationContextAware, InitializingBean {
+public class ServletManager implements ApplicationContextAware, InitializingBean, ApplicationListener<ContextRefreshedEvent> {
 
 	private ServletContext servletContext = null;
 	private List<String> registeredRoles = new ArrayList<>();
@@ -129,8 +127,17 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 		}
 	}
 
-	public void startAuthenticators() {
+	@Override
+	public void onApplicationEvent(ContextRefreshedEvent event) {
+		if(applicationContext == event.getApplicationContext()) {
+			startAuthenticators();
+		}
+	}
+
+	private void startAuthenticators() {
 		log.info("starting Authenticators {}", authenticators::values);
+		System.out.println("starting Authenticators "+ authenticators.values());
+
 		for(IAuthenticator authenticator : authenticators.values()) {
 			authenticator.build();
 		}

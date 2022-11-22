@@ -15,30 +15,19 @@
 */
 package nl.nn.adapterframework.lifecycle.servlets;
 
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
 import lombok.Setter;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.lifecycle.ServletManager;
 
-/**
- * This class is meant to trigger last after all other servlets have been registerd at the ServletManager
- */
-@Order(Ordered.LOWEST_PRECEDENCE)
 @IbisInitializer
-public class AfterServletsInitialized implements InitializingBean {
+@EnableWebSecurity //Enables Spring Security (classpath)
+@EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false) //Enables JSR 250 (JAX-RS) annotations
+public class HttpSecurityConfigurer {
 
 	private @Setter @Autowired ServletManager servletManager;
 
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		if(servletManager == null) {
-			throw new IllegalStateException("unable to initialize Spring Security, ServletManager not set");
-		}
-
-		servletManager.startAuthenticators();
-	}
 }
