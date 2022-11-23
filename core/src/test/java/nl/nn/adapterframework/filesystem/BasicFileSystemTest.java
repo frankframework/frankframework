@@ -129,7 +129,6 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		} catch (FileNotFoundException e) {
 			// OK
 		} catch (Exception e) {
-			e.printStackTrace();
 			fail("expected FileNotFoundException, was:"+e.getMessage());
 		}
 	}
