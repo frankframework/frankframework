@@ -125,8 +125,8 @@
 		type="javax.sql.DataSource" 
 		driverClassName="com.ibm.db2.jcc.DB2Driver"
 		url="jdbc:db2://host.docker.internal:50000/testiaf"
-		username="db2inst1"
-		password="syspw"
+		username="${testiaf_user/username:-testiaf_user}"
+		password="${testiaf_user/password:-testiaf_user00}"
 	/>
 
 	<Resource 

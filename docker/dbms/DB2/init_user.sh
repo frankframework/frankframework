@@ -1,3 +1,2 @@
-useradd -s /bin/bash -d /home/testiaf_user -m -p testiaf_user00 testiaf_user
-
-db2 grant dataaccess on testiaf to user testiaf_user
+/opt/ibm/db2/V11.5/bin/db2 CONNECT TO testiaf user db2inst1 using syspw
+/opt/ibm/db2/V11.5/bin/db2 GRANT DBADM,CREATETAB,BINDADD,CONNECT,CREATE_NOT_FENCED_ROUTINE,IMPLICIT_SCHEMA,LOAD,CREATE_EXTERNAL_ROUTINE,QUIESCE_CONNECT,SECADM ON DATABASE TO USER testiaf_user
