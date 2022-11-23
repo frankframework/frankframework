@@ -51,7 +51,7 @@ public class SenderResult implements GenericSenderResult {
 		this.result = result;
 		this.errorMessage = errorMessage;
 	}
-	
+
 	@Override
 	public String toString() {
 		return ReflectionToStringBuilder.toString(this);

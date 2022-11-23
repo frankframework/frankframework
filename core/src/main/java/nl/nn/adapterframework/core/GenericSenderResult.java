@@ -33,17 +33,16 @@ public interface GenericSenderResult {
 	public boolean isSuccess();
 	public Message getResult();
 	public void setResult(Message result);
-	
+
 	default String getForwardName() {
 		PipeRunResult pipeRunResult = (PipeRunResult)this;
 		return pipeRunResult.getPipeForward()!=null?pipeRunResult.getPipeForward().getName():null;
 	}
-	
+
 	default SenderResult asSenderResult() {
 		if (this instanceof SenderResult) {
 			return (SenderResult)this;
 		}
-		PipeRunResult pipeRunResult = (PipeRunResult)this;
 		// if a SenderResult is needed, a next pipe to stream to cannot have been supplied, so the result can only be local.
 		return new SenderResult(isSuccess(),getResult(),null, getForwardName());
 	}
