@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -123,7 +124,14 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 
 		// test
 		F file = fileSystem.toFile(filename);
-		assertThrows(FileNotFoundException.class, ()->fileSystem.deleteFile(file));
+		try {
+			fileSystem.deleteFile(file);
+		} catch (FileNotFoundException e) {
+			// OK
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail("expected FileNotFoundException, was:"+e.getMessage());
+		}
 	}
 
 	public void testReadFile(F file, String expectedContents, String charset) throws IOException, FileSystemException {

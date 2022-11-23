@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -119,7 +120,7 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	public void deleteFile(Path f) throws FileSystemException {
 		try {
 			Files.delete(f);
-		} catch (java.io.FileNotFoundException e) {
+		} catch (NoSuchFileException e) {
 			throw new FileNotFoundException(e);
 		} catch (IOException e) {
 			throw new FileSystemException(e);
