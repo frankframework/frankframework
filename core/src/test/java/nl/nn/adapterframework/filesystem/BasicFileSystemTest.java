@@ -114,6 +114,18 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		assertFalse("Expected file [" + filename + "] not to be present", _fileExists(filename));
 	}
 
+	@Test
+	public void basicFileSystemTestDeleteNonExisting() throws Exception {
+		String filename = "tobeDeletedNonExisting" + FILE1;
+
+		fileSystem.configure();
+		fileSystem.open();
+
+		// test
+		F file = fileSystem.toFile(filename);
+		assertThrows(FileNotFoundException.class, ()->fileSystem.deleteFile(file));
+	}
+
 	public void testReadFile(F file, String expectedContents, String charset) throws IOException, FileSystemException {
 		Message in = fileSystem.readFile(file, charset);
 		String actual = in.asString();

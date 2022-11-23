@@ -158,13 +158,12 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	public void deleteFile(SmbFile f) throws FileSystemException {
 		try {
 			if (!f.exists()) {
-				throw new FileSystemException("File ["+f.getName()+"] not found");
+				throw new FileNotFoundException("File ["+f.getName()+"] not found");
 			}
 			if (f.isFile()) {
 				f.delete();
 			} else {
-				throw new FileSystemException(
-						"Trying to remove [" + f.getName() + "] which is a directory instead of a file");
+				throw new FileSystemException("Trying to remove [" + f.getName() + "] which is a directory instead of a file");
 			}
 		} catch (SmbException e) {
 			throw new FileSystemException(e);

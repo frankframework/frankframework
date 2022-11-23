@@ -119,6 +119,8 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	public void deleteFile(Path f) throws FileSystemException {
 		try {
 			Files.delete(f);
+		} catch (java.io.FileNotFoundException e) {
+			throw new FileNotFoundException(e);
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}

@@ -194,7 +194,13 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 
 	@Override
 	public void deleteFile(MockFile f) throws FileSystemException {
-		checkOpenAndExists(f);
+		try {
+			checkOpenAndExists(f);
+		} catch (FileNotFoundException e) {
+			throw e;
+		} catch (FileSystemException e) {
+			throw new FileNotFoundException(e);
+		}
 		f.getOwner().getFiles().remove(f.getName());
 	}
 

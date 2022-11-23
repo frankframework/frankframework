@@ -1,9 +1,9 @@
 package nl.nn.adapterframework.filesystem;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
@@ -25,6 +25,7 @@ import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -1673,6 +1674,22 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 			filename = "tostay"+i + FILE1;
 			assertTrue(_fileExists(srcFolderName, filename));
 		}
+	}
+
+	@Test
+	public void fileSystemActorDeleteActionTestNonExistingFile() throws Exception {
+		String filename = "tobedeletedNonExisting" + FILE1;
+
+		actor.setAction(FileSystemAction.DELETE);
+		actor.configure(fileSystem,null,owner);
+		actor.open();
+
+		Message message = new Message(filename);
+		ParameterValueList pvl = null;
+		SenderResult result = actor.doAction(message, pvl, session).asSenderResult();
+
+		assertFalse("Action should not be successful", result.isSuccess());
+		assertEquals("notFound", result.getForwardName());
 	}
 
 	public void fileSystemActorRenameActionTest(boolean destinationExists) throws Exception {
