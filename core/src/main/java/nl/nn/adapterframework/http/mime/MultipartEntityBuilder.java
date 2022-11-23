@@ -58,6 +58,8 @@ public class MultipartEntityBuilder {
 	private boolean mtom = false;
 	private String firstPart = null;
 
+	private static final Random RANDOM = new Random();
+
 	public static MultipartEntityBuilder create() {
 		return new MultipartEntityBuilder();
 	}
@@ -154,15 +156,14 @@ public class MultipartEntityBuilder {
 		if(mtom)
 			buffer.append("----=_Part_");
 
-		Random rand = new Random();
-		int count = rand.nextInt(11) + 30; // a random size from 30 to 40
+		int count = RANDOM.nextInt(11) + 30; // a random size from 30 to 40
 		for (int i = 0; i < count; i++) {
-			buffer.append(MULTIPART_CHARS[rand.nextInt(MULTIPART_CHARS.length)]);
+			buffer.append(MULTIPART_CHARS[RANDOM.nextInt(MULTIPART_CHARS.length)]);
 		}
 		return buffer.toString();
 	}
 
-	private MultipartEntity buildEntity() {
+	public MultipartEntity build() {
 		String boundaryCopy = boundary;
 		if (boundaryCopy == null && contentType != null) {
 			boundaryCopy = contentType.getParameter("boundary");
@@ -197,9 +198,5 @@ public class MultipartEntityBuilder {
 		List<FormBodyPart> bodyPartsCopy = bodyParts != null ? new ArrayList<>(bodyParts) : Collections.<FormBodyPart>emptyList();
 		MultipartForm form = new MultipartForm(charsetCopy, boundaryCopy, bodyPartsCopy);
 		return new MultipartEntity(form, contentTypeCopy);
-	}
-
-	public HttpEntity build() {
-		return buildEntity();
 	}
 }

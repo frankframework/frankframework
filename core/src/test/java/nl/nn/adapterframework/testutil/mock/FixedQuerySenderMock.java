@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.sql.DataSource;
 
@@ -18,6 +19,7 @@ import org.mockito.stubbing.Answer;
 
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 
 /**
@@ -30,6 +32,16 @@ import nl.nn.adapterframework.testutil.TestConfiguration;
  */
 public class FixedQuerySenderMock extends FixedQuerySender {
 	private Map<String, ResultSet> mocks = new HashMap<>();
+
+	@Override
+	public IDbmsSupport getDbmsSupport() {
+		ResultSet mock = mocks.get(getQuery());
+		if(mock != null) {
+			return DbmsSupportMock.newInstance();
+		}
+
+		return super.getDbmsSupport();
+	}
 
 	@Override
 	public Connection getConnection() throws JdbcException {
@@ -62,6 +74,8 @@ public class FixedQuerySenderMock extends FixedQuerySender {
 	public static class ResultSetBuilder {
 		private List<Map<String, Object>> rows = new ArrayList<>();
 		private Map<String, Object> row = new HashMap<>();
+		private final String INDEX_PREFIX = "index::";
+		private AtomicInteger index = new AtomicInteger(1);
 
 		public static ResultSetBuilder create() {
 			return new ResultSetBuilder();
@@ -70,10 +84,16 @@ public class FixedQuerySenderMock extends FixedQuerySender {
 		public ResultSetBuilder addRow() {
 			if(row != null) {
 				rows.add(row);
+				index = new AtomicInteger(1); //Reset the row index
 			}
 
 			row = new HashMap<>();
 			return this;
+		}
+
+		/** Add index based values in chronological order */
+		public ResultSetBuilder setValue(Object value) {
+			return setValue(INDEX_PREFIX+index.getAndIncrement(), value);
 		}
 
 		public ResultSetBuilder setValue(String rowName, Object value) {
@@ -100,6 +120,12 @@ public class FixedQuerySenderMock extends FixedQuerySender {
 					String key = invocation.getArgument(0);
 					return (String) row.get(key);
 				}}).when(rs).getString(Mockito.anyString());
+			Mockito.doAnswer(new Answer<String>() {
+				@Override
+				public String answer(InvocationOnMock invocation) throws Throwable {
+					int index = invocation.getArgument(0);
+					return (String) row.get(INDEX_PREFIX+index);
+				}}).when(rs).getString(Mockito.anyInt());
 
 			return rs;
 		}

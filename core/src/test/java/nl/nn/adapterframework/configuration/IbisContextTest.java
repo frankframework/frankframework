@@ -19,18 +19,18 @@ import nl.nn.adapterframework.util.MessageKeeperMessage;
 public class IbisContextTest {
 
 	private static final class IbisTestContext extends IbisContext {
-		private Map<String, String> configurations = new HashMap<>();
+		private Map<String, Class<? extends IConfigurationClassLoader>> configurations = new HashMap<>();
 
 		public IbisTestContext(String configurationToLoad) {
 			this(configurationToLoad, null);
 		}
 
 		public IbisTestContext(String configurationName, Class<? extends IConfigurationClassLoader> classLoaderClass) {
-			configurations.put(configurationName, (classLoaderClass == null) ? null : classLoaderClass.getCanonicalName());
+			configurations.put(configurationName, classLoaderClass);
 		}
 
 		@Override
-		protected Map<String, String> retrieveAllConfigNames() {
+		protected Map<String, Class<? extends IConfigurationClassLoader>> retrieveAllConfigNames() {
 			return configurations;
 		}
 	}

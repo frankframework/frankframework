@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @SuppressWarnings("unchecked") //can be removed once we implement a DAO
 public class TestUpdateLogDefinitions extends BusTestBase {
 	private static final String LOG_DEFINITION_PACKAGE = "nl.nn.adapterframework.management.bus";
+	private static final String EXCEPTION_MESSAGE = "neither [reconfigure], [logPackage] or [level] provided";
 
 	@Test
 	public void getLogDefinitions() throws Exception {
@@ -74,9 +75,14 @@ public class TestUpdateLogDefinitions extends BusTestBase {
 	@Test
 	public void reconfigureLogDefinitionsNoHeaders() throws Exception {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.LOG_DEFINITIONS, BusAction.MANAGE);
-		Message<?> response = callSyncGateway(request);
 
-		assertEquals(400, response.getHeaders().get(ResponseMessage.STATUS_KEY));
+		try {
+			callSyncGateway(request);
+		} catch (Exception e) {
+			assertTrue(e.getCause() instanceof BusException);
+			BusException be = (BusException) e.getCause();
+			assertEquals(EXCEPTION_MESSAGE, be.getMessage());
+		}
 	}
 
 	@Test
@@ -102,18 +108,28 @@ public class TestUpdateLogDefinitions extends BusTestBase {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.LOG_DEFINITIONS, BusAction.MANAGE);
 		request.setHeader("logPackage", LOG_DEFINITION_PACKAGE);
 		request.setHeader("level", "");
-		Message<?> response = callSyncGateway(request);
 
-		assertEquals(400, response.getHeaders().get(ResponseMessage.STATUS_KEY));
+		try {
+			callSyncGateway(request);
+		} catch (Exception e) {
+			assertTrue(e.getCause() instanceof BusException);
+			BusException be = (BusException) e.getCause();
+			assertEquals(EXCEPTION_MESSAGE, be.getMessage());
+		}
 	}
 
 	@Test
 	public void updateLogDefinitionsNoHeader() throws Exception {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.LOG_DEFINITIONS, BusAction.MANAGE);
 		request.setHeader("logPackage", LOG_DEFINITION_PACKAGE);
-		Message<?> response = callSyncGateway(request);
 
-		assertEquals(400, response.getHeaders().get(ResponseMessage.STATUS_KEY));
+		try {
+			callSyncGateway(request);
+		} catch (Exception e) {
+			assertTrue(e.getCause() instanceof BusException);
+			BusException be = (BusException) e.getCause();
+			assertEquals(EXCEPTION_MESSAGE, be.getMessage());
+		}
 	}
 
 	@Test

@@ -99,7 +99,7 @@ public class BusMessageUtils {
 			builder.type(mimeType);
 		}
 
-		if(status == 200 && !"no-content".equals(response.getPayload())) {
+		if(status == 200 || status > 204) {
 			builder.entity(response.getPayload());
 		}
 
@@ -115,7 +115,7 @@ public class BusMessageUtils {
 	public static EntityTag generateETagHeaderValue(Message<?> response) {
 		MessageHeaders headers = response.getHeaders();
 		String mime = headers.get(ResponseMessage.MIMETYPE_KEY, String.class);
-		if(MediaType.APPLICATION_JSON.toString().equals(mime)) {
+		if(MediaType.APPLICATION_JSON_VALUE.equals(mime)) {
 			String json = (String) response.getPayload();
 			return generateETagHeaderValue(json, true);
 		}

@@ -157,6 +157,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 		MessageProducer mp = null;
 		String correlationID = session==null ? null : session.getCorrelationId();
 
+		checkTransactionManagerValidity();
 		ParameterValueList pvl=null;
 		if (paramList != null) {
 			try {
