@@ -43,8 +43,6 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
 
 import lombok.Setter;
 import nl.nn.adapterframework.lifecycle.servlets.AuthenticationType;
@@ -81,7 +79,7 @@ import nl.nn.adapterframework.util.SpringUtils;
  * @author Niels Meijer
  *
  */
-public class ServletManager implements ApplicationContextAware, InitializingBean, ApplicationListener<ContextRefreshedEvent> {
+public class ServletManager implements ApplicationContextAware, InitializingBean {
 
 	private ServletContext servletContext = null;
 	private List<String> registeredRoles = new ArrayList<>();
@@ -127,16 +125,8 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 		}
 	}
 
-	@Override
-	public void onApplicationEvent(ContextRefreshedEvent event) {
-		if(applicationContext == event.getApplicationContext()) {
-			startAuthenticators();
-		}
-	}
-
-	private void startAuthenticators() {
+	public void startAuthenticators() {
 		log.info("starting Authenticators {}", authenticators::values);
-		System.out.println("starting Authenticators "+ authenticators.values());
 
 		for(IAuthenticator authenticator : authenticators.values()) {
 			authenticator.build();

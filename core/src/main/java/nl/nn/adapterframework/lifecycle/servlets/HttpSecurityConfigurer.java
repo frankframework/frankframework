@@ -15,19 +15,60 @@
 */
 package nl.nn.adapterframework.lifecycle.servlets;
 
+import java.util.Map;
+
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.web.SecurityFilterChain;
 
 import lombok.Setter;
-import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.lifecycle.ServletManager;
+import nl.nn.adapterframework.util.LogUtil;
 
-@IbisInitializer
-@EnableWebSecurity //Enables Spring Security (classpath)
+@Order(Ordered.LOWEST_PRECEDENCE)
+@Configuration
+@EnableWebSecurity(debug = true) //Enables Spring Security (classpath)
 @EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false) //Enables JSR 250 (JAX-RS) annotations
-public class HttpSecurityConfigurer {
+public class HttpSecurityConfigurer implements WebSecurityConfigurer<WebSecurity>, InitializingBean {
 
+	private Logger log = LogUtil.getLogger(this);
 	private @Setter @Autowired ServletManager servletManager;
+	private @Setter @Autowired BeanFactory beanFactory;
 
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		if(servletManager == null) {
+			throw new IllegalStateException("unable to initialize Spring Security, ServletManager not set");
+		}
+
+		if(!(beanFactory instanceof ConfigurableListableBeanFactory)) {
+			throw new IllegalStateException("beanFactory not set or not instanceof ConfigurableListableBeanFactory");
+		}
+	}
+
+	@Override
+	public void init(WebSecurity webSecurity) throws Exception {
+		servletManager.startAuthenticators();
+	}
+
+	@Override
+	public void configure(WebSecurity webSecurity) throws Exception {
+		ConfigurableListableBeanFactory factory = (ConfigurableListableBeanFactory) this.beanFactory;
+		Map<String, SecurityFilterChain> filters = factory.getBeansOfType(SecurityFilterChain.class);
+
+		for(SecurityFilterChain chain : filters.values()) {
+			log.info("adding SecurityFilterChain [{}] to WebSecurity", chain);
+			webSecurity.addSecurityFilterChainBuilder(() -> chain);
+		}
+	}
 }

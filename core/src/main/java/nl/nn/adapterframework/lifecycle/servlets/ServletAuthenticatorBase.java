@@ -36,8 +36,8 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 
 	protected final Logger log = LogUtil.getLogger(this);
 
+	private Set<String> endpoints = new HashSet<>();
 	private @Getter ApplicationContext applicationContext;
-	private @Getter Set<String> endpoints = new HashSet<>();
 	private @Getter Set<String> securityRoles = new HashSet<>();
 
 	@Override

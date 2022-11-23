@@ -62,4 +62,11 @@ public class URLRequestMatcher implements RequestMatcher {
 		}
 		return url;
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("RequestPatterns ").append(this.endpoints);
+		return sb.toString();
+	}
 }
