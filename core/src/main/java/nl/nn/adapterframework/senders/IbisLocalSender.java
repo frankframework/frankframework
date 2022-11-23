@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -35,6 +36,7 @@ import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.pipes.IsolatedServiceCaller;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
@@ -46,7 +48,7 @@ import nl.nn.adapterframework.util.Misc;
  * 
  * Returns exit.code as forward name to SenderPipe. 
  *
- * An IbisLocalSender makes a call to a Receiver with either a {@link nl.nn.adapterframework.http.WebServiceListener WebServiceListener}
+ * An IbisLocalSender makes a call to a Receiver with either a {@link WebServiceListener}
  * or a {@link JavaListener JavaListener}.
  *
  * Any parameters are copied to the PipeLineSession of the service called.
@@ -54,7 +56,7 @@ import nl.nn.adapterframework.util.Misc;
  * <h3>Configuration of the Adapter to be called</h3>
  * A call to another Adapter in the same IBIS instance is preferably made using the combination
  * of an IbisLocalSender and a {@link JavaListener JavaListener}. If,
- * however, a Receiver with a {@link nl.nn.adapterframework.http.WebServiceListener WebServiceListener} is already present, that can be used in some cases, too.
+ * however, a Receiver with a {@link WebServiceListener} is already present, that can be used in some cases, too.
  *
  * <h4>configuring IbisLocalSender and JavaListener</h4>
  * <ul>
@@ -99,8 +101,8 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 	private @Getter(onMethod = @__({@Override})) boolean synchronous=true;
 	private @Getter boolean checkDependency=true;
 	private @Getter int dependencyTimeOut=60;
-	private @Getter String returnedSessionKeys=null;
-	private IsolatedServiceCaller isolatedServiceCaller;
+	private @Getter String returnedSessionKeys=""; // do not intialize with null, returned session keys must be set explicitly
+	private @Setter IsolatedServiceCaller isolatedServiceCaller;
 	private @Getter boolean throwJavaListenerNotFoundException = true;
 
 	@Override
@@ -295,6 +297,14 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 		javaListenerSessionKey = string;
 	}
 
+	/**
+	 * Comma separated list of keys of session variables that will be returned to caller, for correct results as well as for erroneous results.
+	 * The set of available sessionKeys to be returned might be limited by the returnedSessionKeys attribute of the corresponding JavaListener.
+	 */
+	public void setReturnedSessionKeys(String string) {
+		returnedSessionKeys = string;
+	}
+
 	@IbisDoc({"name of the {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} that should be called (will be ignored when javaListenerSessionKey is set)", ""})
 	public void setJavaListener(String string) {
 		javaListener = string;
@@ -313,15 +323,6 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 	@IbisDoc({"maximum time (in seconds) the sender waits for the listener to start. A value of -1 indicates to wait indefinitely", "60"})
 	public void setDependencyTimeOut(int i) {
 		dependencyTimeOut = i;
-	}
-
-	@IbisDoc({"comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. (Only for listeners that support it, like JavaListener)<br/>N.B. To get this working, the attribute returnedSessionKeys must also be set on the corresponding Receiver", ""})
-	public void setReturnedSessionKeys(String string) {
-		returnedSessionKeys = string;
-	}
-
-	public void setIsolatedServiceCaller(IsolatedServiceCaller isolatedServiceCaller) {
-		this.isolatedServiceCaller = isolatedServiceCaller;
 	}
 
 	@IbisDoc({"when set <code>false</code>, the xml-string \"&lt;error&gt;could not find JavaListener [...]&lt;/error&gt;\" is returned instead of throwing a senderexception", "true"})

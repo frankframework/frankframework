@@ -113,8 +113,8 @@ public class Misc {
 		if (removeDashes) {
 			return uuidString.replaceAll("-", "");
 		}
-			return uuidString;
-		}
+		return uuidString;
+	}
 
 	public static String createRandomUUID() {
 		return createRandomUUID(false);
@@ -218,7 +218,7 @@ public class Misc {
 		}
 		return url;
 	}
-	
+
 	/**
 	 * Copies the content of the specified file to a writer.
 	 *
@@ -257,7 +257,7 @@ public class Misc {
 	public static void streamToStream(InputStream input, OutputStream output) throws IOException {
 		streamToStream(input, output, null);
 	}
-	
+
 	/**
 	 * Writes the content of an input stream to an output stream by copying the buffer of input stream to the buffer of the output stream.
 	 * If eof is specified, appends the eof(could represent a new line) to the outputstream
@@ -332,7 +332,7 @@ public class Misc {
 				}
 				out.write(buffer, 0, r);
 			}
-	
+
 			return out.toByteArray();
 		} finally {
 			inputStream.close();
@@ -526,7 +526,7 @@ public class Misc {
 	}
 
 	/**
-	 * Concatenates two strings, if specified, uses the separator in between two strings. 
+	 * Concatenates two strings, if specified, uses the separator in between two strings.
 	 * Does not use any separators if both or one of the strings are empty.
 	 *<p>
 	 *     Example:
@@ -846,6 +846,10 @@ public class Misc {
 				StringTokenizer st = new StringTokenizer(keys,",;");
 				while (st.hasMoreTokens()) {
 					String key=st.nextToken();
+					copySessionKey(key, from, to, requester);
+				}
+			} else if (keys==null) { // if keys are not set explicity, all keys will be copied
+				for (String key:from.keySet()) {
 					copySessionKey(key, from, to, requester);
 				}
 			}

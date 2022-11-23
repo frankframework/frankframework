@@ -63,7 +63,7 @@ import nl.nn.adapterframework.util.Misc;
  * @author  Gerrit van Brakel
  */
 @Category("Basic")
-public class JavaListener implements IPushingListener<String>, RequestProcessor, HasPhysicalDestination, ReceiverAware<JavaListener> {
+public class JavaListener implements IPushingListener<String>, RequestProcessor, HasPhysicalDestination {
 
 	private final @Getter(onMethod = @__(@Override)) String domain = "JVM";
 	protected Logger log = LogUtil.getLogger(this);
@@ -80,13 +80,9 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 	private @Getter boolean open=false;
 	private static Map<String, JavaListener> registeredListeners;
 	private @Getter @Setter IMessageHandler<String> handler;
-	private @Getter @Setter Receiver<JavaListener> receiver; // receiverAwareness to support deprecated Receiver.returnedSessionKeys
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (StringUtils.isEmpty(getReturnedSessionKeys()) && receiver!=null && StringUtils.isNotEmpty(receiver.getReturnedSessionKeys())) {
-			returnedSessionKeys = receiver.getReturnedSessionKeys();
-		}
 		if (handler==null) {
 			throw new ConfigurationException("handler has not been set");
 		}
@@ -252,12 +248,12 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 
 	@Deprecated
 	public void setLocal(String name) {
-		throw new RuntimeException("do not set attribute 'local=true', just leave serviceName empty!");
+		throw new IllegalArgumentException("do not set attribute 'local=true', just leave serviceName empty!");
 	}
 
 	@Deprecated
 	public void setIsolated(boolean b) {
-		throw new RuntimeException("function of attribute 'isolated' is replaced by 'transactionAttribute' on PipeLine");
+		throw new IllegalArgumentException("function of attribute 'isolated' is replaced by 'transactionAttribute' on PipeLine");
 	}
 
 	@Deprecated
@@ -266,7 +262,11 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 		synchronous = b;
 	}
 
-	@IbisDoc({"Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results.", "returnedSessionKeys set on Receiver"})
+	/** 
+	 * Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erroneous results. 
+	 * If not set (not even to an empty value), all session keys can be returned.
+	 * @ff.default all session keys can be returned
+	 */
 	public void setReturnedSessionKeys(String string) {
 		returnedSessionKeys = string;
 	}
