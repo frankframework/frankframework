@@ -847,8 +847,8 @@ public class Misc {
 					String key=st.nextToken();
 					copySessionKey(key, from, to, requester);
 				}
-			} else if (keys==null) { // if keys are not set explicity, all keys will be copied
-				for (String key:from.keySet()) {
+			} else if (keys==null) { // if keys are not set explicitly ...
+				for (String key:from.keySet()) { // ... all keys will be copied
 					copySessionKey(key, from, to, requester);
 				}
 			}
