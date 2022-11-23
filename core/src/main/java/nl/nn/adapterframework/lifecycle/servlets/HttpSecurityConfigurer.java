@@ -17,6 +17,8 @@ package nl.nn.adapterframework.lifecycle.servlets;
 
 import java.util.Map;
 
+import javax.servlet.ServletContext;
+
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -44,6 +46,7 @@ public class HttpSecurityConfigurer implements WebSecurityConfigurer<WebSecurity
 	private Logger log = LogUtil.getLogger(this);
 	private @Setter @Autowired ServletManager servletManager;
 	private @Setter @Autowired BeanFactory beanFactory;
+	private @Setter @Autowired ServletContext servletContext;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -58,6 +61,7 @@ public class HttpSecurityConfigurer implements WebSecurityConfigurer<WebSecurity
 
 	@Override
 	public void init(WebSecurity webSecurity) throws Exception {
+		if(servletContext != null && log.isInfoEnabled()) servletContext.log("Enabling Spring WebSecurity");
 		servletManager.startAuthenticators();
 	}
 
