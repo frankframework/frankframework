@@ -1,3 +1,4 @@
+#!/bin/bash
 # Create user, not setting password yet as useradd requires encrypted password
 useradd -s /bin/bash -d /home/testiaf_user -m testiaf_user
 # Use chpasswd to store the password, chpasswd encrypts it
