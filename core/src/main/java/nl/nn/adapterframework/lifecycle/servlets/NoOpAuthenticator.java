@@ -17,6 +17,7 @@ package nl.nn.adapterframework.lifecycle.servlets;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.GrantedAuthority;
@@ -33,7 +34,7 @@ public class NoOpAuthenticator extends ServletAuthenticatorBase {
 	}
 
 	private List<GrantedAuthority> getAuthorities() {
-		List<String> securityRoles = getSecurityRoles();
+		Set<String> securityRoles = getSecurityRoles();
 		List<GrantedAuthority> grantedAuthorities = new ArrayList<>(securityRoles.size());
 		for (String role : securityRoles) {
 			grantedAuthorities.add(new SimpleGrantedAuthority(ROLE_PREFIX + role));

@@ -69,7 +69,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 
 	private @Getter String serviceName;
 	private @Getter String serviceNameSessionKey;
-	private @Getter String returnedSessionKeys = null;
+	private @Getter String returnedSessionKeys = ""; // do not intialize with null, returned session keys must be set explicitly
 	private @Getter boolean multipartResponse = false;
 	private String multipartResponseContentType = "application/octet-stream";
 	private String multipartResponseCharset = "UTF-8";
@@ -167,7 +167,8 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 	}
 
 	/**
-	 * Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erroneous results.<br/>N.B. To get this working, the attribute returnedSessionKeys must also be set on the corresponding JavaListener
+	 * Comma separated list of keys of session variables that will be returned to caller, for correct results as well as for erroneous results.
+	 * The set of available sessionKeys to be returned might be limited by the returnedSessionKeys attribute of the corresponding JavaListener.
 	 */
 	public void setReturnedSessionKeys(String string) {
 		returnedSessionKeys = string;

@@ -418,6 +418,36 @@ public class MiscTest {
 		assertEquals(from,to);
 	}
 
+	@Test
+	public void testCopyContextNullKeys() throws Exception {
+		Map<String, Object> from = new HashMap<>();
+		PipeLineSession to = new PipeLineSession();
+		from.put("a", 15);
+		from.put("b", 16);
+		Misc.copyContext(null, from, to, null);
+		assertEquals(from,to);
+	}
+
+	@Test
+	public void testCopyContextLimitedKeys() throws Exception {
+		Map<String, Object> from = new HashMap<>();
+		PipeLineSession to = new PipeLineSession();
+		String keys = "a";
+		from.put("a", 15);
+		from.put("b", 16);
+		Misc.copyContext(keys, from, to, null);
+		assertEquals(1,to.size());
+	}
+
+	@Test
+	public void testCopyContextEmptyKeys() throws Exception {
+		Map<String, Object> from = new HashMap<>();
+		PipeLineSession to = new PipeLineSession();
+		from.put("a", 15);
+		from.put("b", 16);
+		Misc.copyContext("", from, to, null);
+		assertEquals(0,to.size());
+	}
 	/**
 	 * Method: toFileSize(String value, long defaultValue)
 	 */
