@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -126,6 +127,7 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 
 	public void startAuthenticators() {
 		log.info("starting Authenticators {}", authenticators::values);
+
 		for(IAuthenticator authenticator : authenticators.values()) {
 			authenticator.build();
 		}
@@ -257,8 +259,9 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 
 		if(initParameters != null && !initParameters.isEmpty()) {
 			//Manually loop through the map as serv.setInitParameters will fail all parameters even if only 1 fails...
-			for(String key : initParameters.keySet()) {
-				String value = initParameters.get(key);
+			for(Entry<String, String> entry : initParameters.entrySet()) {
+				String key = entry.getKey();
+				String value = entry.getValue();
 				if(!serv.setInitParameter(key, value)) {
 					log("unable to set init-parameter ["+key+"] with value ["+value+"] for servlet ["+servletName+"]", Level.ERROR);
 				}

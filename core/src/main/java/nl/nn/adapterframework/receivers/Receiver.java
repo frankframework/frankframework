@@ -252,8 +252,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	private @Getter int processResultCacheSize = 100;
 	private @Getter boolean supportProgrammaticRetry=false;
 
-	private @Getter String returnedSessionKeys=null;
-
 	private @Getter String correlationIDXPath;
 	private @Getter String correlationIDNamespaceDefs;
 	private @Getter String correlationIDStyleSheet;
@@ -2081,11 +2079,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		this.processResultCacheSize = processResultCacheSize;
 	}
 
-	@IbisDoc({"Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. (Only for Listeners that support it, like JavaListener)", ""})
 	@Deprecated
-	@ConfigurationWarning("Please use attribute returnedSessionKeys of the JavaListener")
+	@ConfigurationWarning("attribute is no longer used. Please use attribute returnedSessionKeys of the JavaListener if the set of sessionsKeys that can be returned to callers session must be limited.")
 	public void setReturnedSessionKeys(String string) {
-		returnedSessionKeys = string;
+		// no longer used
 	}
 
 	@IbisDoc({"XPath expression to extract correlationid from message", ""})
