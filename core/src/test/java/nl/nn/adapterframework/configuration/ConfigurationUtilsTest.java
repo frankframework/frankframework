@@ -49,7 +49,7 @@ public class ConfigurationUtilsTest extends Mockito {
 		AppConstants.removeInstance();
 		AppConstants.getInstance().setProperty("configurations.configuration2.parentConfig", "configuration4");
 		AppConstants.getInstance().setProperty("configurations.configuration3.parentConfig", "configuration4");
-		AppConstants.getInstance().setProperty("configurations.configuration3.Config", "ClassLoader");
+		AppConstants.getInstance().setProperty("configurations.Config.parentConfig", "ClassLoader");
 
 		URL url = TestFileUtils.getTestFileURL("/ClassLoader/DirectoryClassLoaderRoot");
 		assertNotNull(url);
