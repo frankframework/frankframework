@@ -112,7 +112,7 @@ public class MultipartEntityTest {
 		MultipartEntity entity = builder.build();
 		String contentType = entity.getContentType().getValue();
 		String boundary = contentType.split("boundary=")[1];
-		assertTrue(boundary.length() > 30);
+		assertTrue(boundary.length() >= 30, "boundary was ["+boundary+"]");
 	}
 
 	@Test
