@@ -28,5 +28,5 @@
 	<bean id="jndiContextPrefixFactory" class="nl.nn.adapterframework.core.JndiContextPrefixFactory" />
 	<bean id="dataSourceFactory" class="nl.nn.adapterframework.testutil.URLDataSourceFactory" />
 
-	<bean name="metricsRegistry" class="nl.nn.adapterframework.metrics.MetricsRegistry" autowire="byName"/>
+	<bean name="meterRegistry" class="nl.nn.adapterframework.metrics.MetricsRegistryFactoryBean" autowire="byName"/>
 </beans>
