@@ -54,7 +54,7 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 	/**
 	 * Should only be called once, either on the first {@link #getConnection()} or when explicitly requested {@link #getMetaData()}.
 	 */
-	private void populate(Connection connection) throws SQLException {
+	private synchronized void populate(Connection connection) throws SQLException {
 		metadata = new HashMap<>();
 		DatabaseMetaData md = connection.getMetaData();
 		metadata.put("catalog", connection.getCatalog());
@@ -93,7 +93,7 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder(getTargetDataSource().toString());
+		StringBuilder builder = new StringBuilder(obtainTargetDataSource().toString());
 
 		if(metadata != null && log.isWarnEnabled()) {
 			builder.append(";");
