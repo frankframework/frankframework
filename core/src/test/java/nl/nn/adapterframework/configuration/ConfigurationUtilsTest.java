@@ -49,6 +49,7 @@ public class ConfigurationUtilsTest extends Mockito {
 		AppConstants.removeInstance();
 		AppConstants.getInstance().setProperty("configurations.configuration2.parentConfig", "configuration4");
 		AppConstants.getInstance().setProperty("configurations.configuration3.parentConfig", "configuration4");
+		AppConstants.getInstance().setProperty("configurations.configuration3.Config", "ClassLoader");
 
 		URL url = TestFileUtils.getTestFileURL("/ClassLoader/DirectoryClassLoaderRoot");
 		assertNotNull(url);
@@ -222,7 +223,28 @@ public class ConfigurationUtilsTest extends Mockito {
 	}
 
 	@Test
-	public void retrieveAllConfigNamesTest() throws Exception {
+	public void retrieveAllConfigNamesTestWithDB() throws Exception {
+		TestConfiguration applicationContext = new TestConfiguration();
+		ResultSetBuilder builder = ResultSetBuilder.create()
+				.setValue("configuration1")
+				.addRow().setValue("configuration2")
+				.addRow().setValue("configuration3")
+				.addRow().setValue("configuration4")
+				.addRow().setValue("configuration5");
+		applicationContext.mockQuery("SELECT COUNT(*) FROM IBISCONFIG", builder.build());
+		Map<String, Class<? extends IConfigurationClassLoader>> configs = ConfigurationUtils.retrieveAllConfigNames(applicationContext, false, true);
+
+		MatcherAssert.assertThat("keyset was: " + configs.keySet(), configs.keySet(), IsIterableContainingInOrder.contains("IAF_Util", "TestConfiguration", "configuration1", "configuration4", "configuration2", "configuration3", "configuration5")); //checks order!
+
+		assertNull(configs.get("IAF_Util"));
+		assertNull(configs.get("TestConfiguration"));
+
+		assertEquals(DatabaseClassLoader.class, configs.get("configuration1"));
+		assertEquals(DatabaseClassLoader.class, configs.get("configuration2"));
+	}
+
+	@Test
+	public void retrieveAllConfigNamesTestWithFS() throws Exception {
 		TestConfiguration applicationContext = new TestConfiguration();
 		ResultSetBuilder builder = ResultSetBuilder.create()
 				.setValue("configuration1")
