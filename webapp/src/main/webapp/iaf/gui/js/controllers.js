@@ -479,13 +479,6 @@ angular.module('iaf.beheerconsole')
 		$(".rating i").removeClass("fa-star").addClass("fa-star-o");
 		$(".rating i:nth-child(-n+"+ (rating + 1) +")").addClass("fa-star").removeClass("fa-star-o");
 	};
-
-	$scope.showStrutsConsoleDisabled = function () {
-		SweetAlert.Warning({
-			title: "Struts Console Disabled",
-			text: "The struts console has been disabled. In order to enable it, set the property [strutsConsole.enabled] to true.",
-		});
-	}
 }])
 
 .controller('LoadingPageCtrl', ['$scope', 'Api', '$state', function($scope, Api, $state) {
@@ -835,7 +828,7 @@ angular.module('iaf.beheerconsole')
 	$scope.showReferences = function() {
 		window.open($scope.configurationFlowDiagram);
 	};
-	$scope.configurationFlowDiagram;
+	$scope.configurationFlowDiagram = null;
 	$scope.updateConfigurationFlowDiagram = function(configurationName) {
 		var url = Misc.getServerPath() + 'iaf/api/configurations/';
 		if(configurationName == "All") {
@@ -1840,23 +1833,23 @@ angular.module('iaf.beheerconsole')
 	};
 
 	$scope.pause = function(jobGroup, jobName) {
-		Api.Put("schedules/"+jobGroup+"/job/"+jobName, {action: "pause"});
+		Api.Put("schedules/"+jobGroup+"/jobs/"+jobName, {action: "pause"});
 	};
 
 	$scope.resume = function(jobGroup, jobName) {
-		Api.Put("schedules/"+jobGroup+"/job/"+jobName, {action: "resume"});
+		Api.Put("schedules/"+jobGroup+"/jobs/"+jobName, {action: "resume"});
 	};
 
 	$scope.remove = function(jobGroup, jobName) {
 		SweetAlert.Confirm({title:"Please confirm the deletion of '"+jobName+"'"}, function(imSure) {
 			if(imSure) {
-				Api.Delete("schedules/"+jobGroup+"/job/"+jobName);
+				Api.Delete("schedules/"+jobGroup+"/jobs/"+jobName);
 			}
 		});
 	};
 
 	$scope.trigger = function(jobGroup, jobName) {
-		Api.Put("schedules/"+jobGroup+"/job/"+jobName, {action: "trigger"});
+		Api.Put("schedules/"+jobGroup+"/jobs/"+jobName, {action: "trigger"});
 	};
 
 	$scope.edit = function(jobGroup, jobName) {
@@ -1870,11 +1863,12 @@ angular.module('iaf.beheerconsole')
 		$scope.state.push({type:type, message: message});
 	};
 
+	$scope.selectedConfiguration = "";
 	$scope.form = {
 			name:"",
 			group:"",
 			adapter:"",
-			receiver:"",
+			listener:"",
 			cron:"",
 			interval:"",
 			message:"",
@@ -1890,8 +1884,9 @@ angular.module('iaf.beheerconsole')
 
 		fd.append("name", $scope.form.name);
 		fd.append("group", $scope.form.group);
+		fd.append("configuration", $scope.selectedConfiguration);
 		fd.append("adapter", $scope.form.adapter);
-		fd.append("receiver", $scope.form.receiver);
+		fd.append("listener", $scope.form.listener);
 		fd.append("cron", $scope.form.cron);
 		fd.append("interval", $scope.form.interval);
 		fd.append("persistent", $scope.form.persistent);
@@ -1902,11 +1897,12 @@ angular.module('iaf.beheerconsole')
 
 		Api.Post("schedules", fd, function(data) {
 			$scope.addLocalAlert("success", "Successfully added schedule!");
+			$scope.selectedConfiguration = "";
 			$scope.form = {
 					name:"",
 					group:"",
 					adapter:"",
-					receiver:"",
+					listener:"",
 					cron:"",
 					interval:"",
 					message:"",
@@ -1927,14 +1923,15 @@ angular.module('iaf.beheerconsole')
 	$scope.addLocalAlert = function(type, message) {
 		$scope.state.push({type:type, message: message});
 	};
-	var url ="schedules/"+$stateParams.group+"/job/"+$stateParams.name;
+	var url ="schedules/"+$stateParams.group+"/jobs/"+$stateParams.name;
 	$scope.editMode = true;
+	$scope.selectedConfiguration = "";
 
 	$scope.form = {
 			name:"",
 			group:"",
 			adapter:"",
-			receiver:"",
+			listener:"",
 			cron:"",
 			interval:"",
 			message:"",
@@ -1944,27 +1941,13 @@ angular.module('iaf.beheerconsole')
 			persistent:true,
 	};
 
-	function findReceiver() {
-		let adapter = $scope.form.adapter;
-		let listener = $scope.form.listener;
-		let receivers = ($scope.adapters && $scope.adapters[adapter]) ? $scope.adapters[adapter].receivers : null;
-		if(receivers != null) {
-			for(i in receivers) {
-				let receiver = receivers[i];
-				if(listener == receiver.listener.name) {
-					$scope.form.receiver = receiver.name;
-				}
-			}
-		}
-	}
-
 	Api.Get(url, function(data) {
+		$scope.selectedConfiguration = data.configuration;
 		$scope.form = {
 				name: data.name,
 				group: data.group,
 				adapter: data.adapter,
 				listener: data.listener,
-				receiver: null,
 				cron: data.triggers[0].cronExpression || "",
 				interval: data.triggers[0].repeatInterval || "",
 				message: data.message,
@@ -1973,7 +1956,6 @@ angular.module('iaf.beheerconsole')
 				lockkey: data.lockkey,
 				persistent: true,
 		};
-		findReceiver();
 	});
 
 	$scope.submit = function(form) {
@@ -1982,8 +1964,9 @@ angular.module('iaf.beheerconsole')
 
 		fd.append("name", $scope.form.name);
 		fd.append("group", $scope.form.group);
+		fd.append("configuration", $scope.selectedConfiguration);
 		fd.append("adapter", $scope.form.adapter);
-		fd.append("receiver", $scope.form.receiver);
+		fd.append("listener", $scope.form.listener);
 		if($scope.form.cron)
 			fd.append("cron", $scope.form.cron);
 		if($scope.form.interval)
@@ -2269,6 +2252,15 @@ angular.module('iaf.beheerconsole')
 		angular.element("select[name='type']").val($scope.destinationTypes[0]);
 	});
 
+	$scope.file = null;
+	$scope.handleFile = function(files) {
+		if(files.length == 0) {
+			$scope.file = null;
+			return;
+		}
+		$scope.file = files[0]; //Can only parse 1 file!
+	};
+
 	$scope.submit = function(formData) {
 		$scope.processing = true;
 		if(!formData) return;
@@ -2293,25 +2285,29 @@ angular.module('iaf.beheerconsole')
 		if(formData.lookupDestination && formData.lookupDestination != "")
 			fd.append("lookupDestination", formData.lookupDestination);
 
-		if(!formData.message && !formData.file) {
-			$scope.error = "Please specify a file or message!";
-			return;
-		}
-
 		if(formData.propertyKey && formData.propertyKey != "" && formData.propertyValue && formData.propertyValue != "")
 			fd.append("property", formData.propertyKey+","+formData.propertyValue);
-		if(formData.message && formData.message != "")
-			fd.append("message", formData.message);
+		if(formData.message && formData.message != "") {
+			var encoding = (formData.encoding && formData.encoding != "") ? ";charset="+formData.encoding : "";
+			fd.append("message", new Blob([formData.message], {type: "text/plain"+encoding}), 'message');
+		}
 		if($scope.file)
 			fd.append("file", $scope.file, $scope.file.name);
 		if(formData.encoding && formData.encoding != "")
 			fd.append("encoding", formData.encoding);
 
+		if(!formData.message && !$scope.file) {
+			$scope.error = "Please specify a file or message!";
+			$scope.processing = false;
+			return;
+		}
+
 		Api.Post("jms/message", fd, function(returnData) {
-			//?
+			$scope.error = null;
 			$scope.processing = false;
 		}, function(errorData, status, errorMsg) {
 			$scope.processing = false;
+			errorMsg = (errorMsg) ? errorMsg : "An unknown error occured, check the logs for more info.";
 			$scope.error = (errorData.error) ? errorData.error : errorMsg;
 		});
 	};

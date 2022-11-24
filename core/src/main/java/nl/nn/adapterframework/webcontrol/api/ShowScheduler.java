@@ -109,7 +109,7 @@ public final class ShowScheduler extends Base {
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/schedules/{groupName}/job/{jobName}")
+	@Path("/schedules/{groupName}/jobs/{jobName}")
 	@Relation("schedules")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getSchedule(@PathParam("jobName") String jobName, @PathParam("groupName") String groupName) throws ApiException {
@@ -229,6 +229,7 @@ public final class ShowScheduler extends Base {
 				jobData.put("adapter", dbJob.getAdapterName());
 				jobData.put("listener", dbJob.getJavaListener());
 				jobData.put("message", dbJob.getMessage());
+				jobData.put("configuration", dbJob.getApplicationContext().getId());
 			}
 
 			Locker locker = jobDef.getLocker();
@@ -395,7 +396,7 @@ public final class ShowScheduler extends Base {
 
 	@PUT
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/schedules/{groupName}/job/{jobName}")
+	@Path("/schedules/{groupName}/jobs/{jobName}")
 	@Relation("schedules")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -466,7 +467,7 @@ public final class ShowScheduler extends Base {
 
 	@PUT
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/schedules/{groupName}/job/{jobName}")
+	@Path("/schedules/{groupName}/jobs/{jobName}")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateSchedule(@PathParam("groupName") String groupName, @PathParam("jobName") String jobName, MultipartBody input) throws ApiException {
@@ -504,27 +505,31 @@ public final class ShowScheduler extends Base {
 			throw new ApiException("Either 'cron' or 'interval' has to be set");
 		}
 
+		String configurationName = resolveStringFromMap(inputDataMap, "configuration");
 		String adapterName = resolveStringFromMap(inputDataMap, "adapter");
 		//Make sure the adapter exists!
 		DefaultIbisManager manager = (DefaultIbisManager) getIbisManager();
-		IAdapter adapter = manager.getRegisteredAdapter(adapterName);
+		Configuration configuration = manager.getConfiguration(configurationName);
+		if(configuration == null) {
+			throw new ApiException("Configuration ["+configurationName+"] not found");
+		}
+		IAdapter adapter = configuration.getRegisteredAdapter(adapterName);
 		if(adapter == null) {
 			throw new ApiException("Adapter ["+adapterName+"] not found");
 		}
 
+		String listenerName = resolveTypeFromMap(inputDataMap, "listener", String.class, "");
+		String receiverName = resolveTypeFromMap(inputDataMap, "receiver", String.class, "");
 		//Make sure the receiver exists!
-		String receiverName = resolveStringFromMap(inputDataMap, "receiver");
-		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
-		if(receiver == null) {
-			throw new ApiException("Receiver ["+receiverName+"] not found");
-		}
-		String listenerName = null;
-		IListener<?> listener = receiver.getListener();
-		if(listener != null) {
-			listenerName = listener.getName();
+		if(StringUtils.isEmpty(listenerName) && StringUtils.isNotEmpty(receiverName)) {
+			Receiver<?> receiver = adapter.getReceiverByName(receiverName);
+			IListener<?> listener = receiver.getListener();
+			if(listener != null) {
+				listenerName = listener.getName();
+			}
 		}
 		if(StringUtils.isEmpty(listenerName)) {
-			throw new ApiException("unable to determine listener for receiver ["+receiverName+"]");
+			throw new ApiException("no listener specified");
 		}
 
 		Configuration applicationContext = adapter.getConfiguration();
@@ -628,7 +633,7 @@ public final class ShowScheduler extends Base {
 
 	@DELETE
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/schedules/{groupName}/job/{jobName}")
+	@Path("/schedules/{groupName}/jobs/{jobName}")
 	@Relation("schedules")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response deleteSchedules(@PathParam("jobName") String jobName, @PathParam("groupName") String groupName) throws ApiException {
