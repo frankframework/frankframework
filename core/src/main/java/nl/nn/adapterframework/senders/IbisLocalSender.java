@@ -102,7 +102,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	private @Getter(onMethod = @__({@Override})) boolean synchronous=true;
 	private @Getter boolean checkDependency=true;
 	private @Getter int dependencyTimeOut=60;
-	private @Getter String returnedSessionKeys=null;
+	private @Getter String returnedSessionKeys=""; // do not intialize with null, returned session keys must be set explicitly
 	private @Setter IsolatedServiceCaller isolatedServiceCaller;
 	private @Getter boolean throwJavaListenerNotFoundException = true;
 
@@ -311,7 +311,10 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 		javaListenerSessionKey = string;
 	}
 
-	@IbisDoc({"Comma separated list of keys of session variables that are to be returned from the adapter session called, for correct results as well as for erronous results.<br/>N.B. To get this working, the attribute returnedSessionKeys must also be set on the corresponding JavaListener", ""})
+	/**
+	 * Comma separated list of keys of session variables that will be returned to caller, for correct results as well as for erroneous results.
+	 * The set of available sessionKeys to be returned might be limited by the returnedSessionKeys attribute of the corresponding JavaListener.
+	 */
 	public void setReturnedSessionKeys(String string) {
 		returnedSessionKeys = string;
 	}

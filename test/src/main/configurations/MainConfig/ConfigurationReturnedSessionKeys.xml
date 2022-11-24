@@ -25,6 +25,18 @@
 				<forward name="400" path="Reply_400" />
 				<forward name="exception" path="Reply_exception" />
 			</pipe>
+			<pipe name="IbisJavaSenderNoReceiverLimit" className="nl.nn.adapterframework.pipes.SenderPipe">
+				<sender className="nl.nn.adapterframework.senders.IbisJavaSender" serviceName="ibis4test-ReturnedSessionKeysNoLimit" returnedSessionKeys="returnCode,reasonCode,dataStream" />
+				<forward name="success" path="Reply_success" />
+				<forward name="400" path="Reply_400" />
+				<forward name="exception" path="Reply_exception" />
+			</pipe>
+			<pipe name="IbisLocalSenderNoReceiverLimit" className="nl.nn.adapterframework.pipes.SenderPipe">
+				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ReturnedSessionKeys-LocalNoLimit" returnedSessionKeys="returnCode,reasonCode,dataStream" />
+				<forward name="success" path="Reply_success" />
+				<forward name="400" path="Reply_400" />
+				<forward name="exception" path="Reply_exception" />
+			</pipe>
 
 			<pipe name="Reply_success" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="ReturnedSessionKeys/Reply.xsl" >
 				<param name="returnCode" sessionKey="returnCode"/>
@@ -57,11 +69,17 @@
 	</adapter>
 
 	<adapter name="ReturnedSessionKeysChild" description="Test the functioning of the attribute returnedSessionKeys">
-		<receiver returnedSessionKeys="returnCode,reasonCode,dataStream">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-ReturnedSessionKeys" />
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-ReturnedSessionKeys" returnedSessionKeys="returnCode,dataStream" />
 		</receiver>
-		<receiver returnedSessionKeys="returnCode,reasonCode,dataStream">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="ReturnedSessionKeys-Local" />
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="ReturnedSessionKeys-Local" returnedSessionKeys="returnCode,dataStream" />
+		</receiver>
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-ReturnedSessionKeysNoLimit" />
+		</receiver>
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="ReturnedSessionKeys-LocalNoLimit" />
 		</receiver>
 		<pipeline>
 			<exits>
