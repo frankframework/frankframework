@@ -61,17 +61,10 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- commons-collections 3.2.2 included to override 3.2.1 version included in apacheds-test-framework -->
 		<dependency>
-			<groupId>commons-collections</groupId>
-			<artifactId>commons-collections</artifactId>
-			<version>3.2.2</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.directory.server</groupId>
-			<artifactId>apacheds-test-framework</artifactId>
-			<version>${apache-directory-server.version}</version>
+			<groupId>com.unboundid</groupId>
+			<artifactId>unboundid-ldapsdk</artifactId>
+			<version>6.0.6</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
