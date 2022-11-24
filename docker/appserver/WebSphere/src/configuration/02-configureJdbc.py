@@ -83,7 +83,7 @@ createDatasource('ibis4test-postgres-xa', 'PostgreSQL JDBC Driver', authAliasNam
 createDatasource('ibis4test-db2', 'DB2 JDBC Driver', authAliasName, [
 		[['name', 'serverName'], ['value', 'host.docker.internal']],
 		[['name', 'portNumber'], ['value', '50000']],
-		[['name', 'databaseName'],['value', 'testiaf']],
-		[['name', 'driverType'],['value', '4']]
+		[['name', 'databaseName'], ['value', 'testiaf']],
+		[['name', 'driverType'], ['value', '4']]
 	])
 	

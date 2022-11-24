@@ -68,3 +68,5 @@ TransformerHandlerImpl.java
 secrets/
 secrets\
 .lift.toml
+.lift/
+.lift\
