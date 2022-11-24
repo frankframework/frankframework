@@ -39,7 +39,7 @@ import nl.nn.adapterframework.util.LogUtil;
 
 @Order(Ordered.LOWEST_PRECEDENCE)
 @Configuration
-@EnableWebSecurity(debug = true) //Enables Spring Security (classpath)
+@EnableWebSecurity //Enables Spring Security (classpath)
 @EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false) //Enables JSR 250 (JAX-RS) annotations
 public class HttpSecurityConfigurer implements WebSecurityConfigurer<WebSecurity>, InitializingBean {
 
@@ -69,6 +69,7 @@ public class HttpSecurityConfigurer implements WebSecurityConfigurer<WebSecurity
 	public void configure(WebSecurity webSecurity) throws Exception {
 		ConfigurableListableBeanFactory factory = (ConfigurableListableBeanFactory) this.beanFactory;
 		Map<String, SecurityFilterChain> filters = factory.getBeansOfType(SecurityFilterChain.class);
+		webSecurity.debug(log.isTraceEnabled());
 
 		for(SecurityFilterChain chain : filters.values()) {
 			log.info("adding SecurityFilterChain [{}] to WebSecurity", chain);
