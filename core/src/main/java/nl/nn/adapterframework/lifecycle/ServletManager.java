@@ -280,8 +280,8 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 
 		getServletContext().log(builder.toString());
 
-		builder.append(" class ["+serv.getClassName()+"]");
-		log.debug(builder.toString());
+		if(log.isDebugEnabled()) builder.append(" class ["+serv.getClassName()+"]");
+		log.info(builder::toString);
 	}
 
 	private ServletSecurityElement getServletSecurity(ServletConfiguration config) {

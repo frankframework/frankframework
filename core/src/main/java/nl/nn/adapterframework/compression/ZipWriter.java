@@ -121,7 +121,7 @@ public class ZipWriter implements ICollector<IZipWritingElement> {
 			String filename=pv.asStringValue("download.zip");
 			try {
 				HttpServletResponse response=(HttpServletResponse)input;
-				StreamUtil.openZipDownload(response,filename);
+				openZipDownload(response,filename);
 				resultStream=response.getOutputStream();
 			} catch (IOException e) {
 				throw new CollectionException("cannot open download for ["+filename+"]",e);
@@ -141,6 +141,13 @@ public class ZipWriter implements ICollector<IZipWritingElement> {
 			throw new CollectionException("did not find OutputStream or HttpResponse, and could not find filename");
 		}
 		return new ZipWriter(resultStream,writingElement.isCloseOutputstreamOnExit());
+	}
+
+	private static ZipOutputStream openZipDownload(HttpServletResponse response, String filename) throws IOException {
+		OutputStream out = response.getOutputStream();
+		response.setContentType("application/x-zip-compressed");
+		response.setHeader("Content-Disposition","attachment; filename=\""+filename+"\"");
+		return new ZipOutputStream(out);
 	}
 
 	public void openEntry(String filename) throws CompressionException {

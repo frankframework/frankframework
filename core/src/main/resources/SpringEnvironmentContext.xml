@@ -31,8 +31,6 @@
 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Repository"/>
 	</context:component-scan>
 
-	<bean name="meterRegistry" class="nl.nn.adapterframework.metrics.MetricsRegistryFactoryBean" autowire="byName"/>
-
 	<bean id="cxf" class="org.apache.cxf.bus.spring.SpringBus" destroy-method="shutdown">
 		<property name="id" value="ff-soap-bus"/>
 	</bean>
@@ -45,5 +43,6 @@
 	<bean id="servletManager" scope="singleton" class="nl.nn.adapterframework.lifecycle.ServletManager" autowire="byName" />
 
 	<bean id="MessageEventListener" class="nl.nn.adapterframework.lifecycle.MessageEventListener" scope="singleton" />
+	<bean name="meterRegistry" class="nl.nn.adapterframework.metrics.MetricsRegistryFactoryBean" autowire="byName" lazy-init="true" />
 
 </beans>

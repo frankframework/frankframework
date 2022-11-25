@@ -32,9 +32,6 @@ import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Function;
-import java.util.zip.ZipOutputStream;
-
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.ByteOrderMark;
 import org.apache.commons.io.input.BOMInputStream;
@@ -57,6 +54,7 @@ import nl.nn.adapterframework.stream.Message;
  *
  * @author  Gerrit van Brakel
  */
+//Be careful: UTIL classes should NOT depend on the Servlet-API
 public class StreamUtil {
 
 	public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
@@ -95,18 +93,6 @@ public class StreamUtil {
 			fnfe.initCause(e);
 			throw fnfe;
 		}
-	}
-
-	@Deprecated
-	public static Writer getWriter(Object target) throws IOException {
-		if (target instanceof HttpServletResponse) {
-			return ((HttpServletResponse)target).getWriter();
-		}
-		if (target instanceof Writer) {
-			return (Writer)target;
-		}
-
-		return null;
 	}
 
 	public static InputStream dontClose(InputStream stream) {
@@ -256,14 +242,6 @@ public class StreamUtil {
 				}
 			}
 		}
-	}
-
-	public static ZipOutputStream openZipDownload(HttpServletResponse response, String filename) throws IOException {
-		OutputStream out = response.getOutputStream();
-		response.setContentType("application/x-zip-compressed");
-		response.setHeader("Content-Disposition","attachment; filename=\""+filename+"\"");
-		ZipOutputStream zipOutputStream = new ZipOutputStream(out);
-		return zipOutputStream;
 	}
 
 	public static InputStream onClose(InputStream stream, ThrowingRunnable<IOException> onClose) {
