@@ -121,8 +121,7 @@ public class ZipWriter implements ICollector<IZipWritingElement> {
 			String filename=pv.asStringValue("download.zip");
 			try {
 				HttpServletResponse response=(HttpServletResponse)input;
-				openZipDownload(response,filename);
-				resultStream=response.getOutputStream();
+				resultStream = openZipDownload(response,filename);
 			} catch (IOException e) {
 				throw new CollectionException("cannot open download for ["+filename+"]",e);
 			}
