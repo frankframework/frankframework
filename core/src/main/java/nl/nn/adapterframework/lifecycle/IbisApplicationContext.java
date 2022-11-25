@@ -130,7 +130,7 @@ public class IbisApplicationContext implements Closeable {
 	 * @param classLoader to use in order to find and validate the Spring Configuration files
 	 * @return A String array containing all files to use.
 	 */
-	private String[] getSpringConfigurationFiles(ClassLoader classLoader) {
+	protected String[] getSpringConfigurationFiles(ClassLoader classLoader) {
 		List<String> springConfigurationFiles = new ArrayList<>();
 		if(parentContext == null) { //When not running in a web container, popularize beans so they can be found throughout this/sub-contexts.
 			springConfigurationFiles.add(SpringContextScope.STANDALONE.getContextFile());
