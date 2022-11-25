@@ -223,12 +223,12 @@
 						<credential-reference store="CS" alias="testiaf_user"/>
 					</security>
 				</xa-datasource>
-				<xa-datasource jndi-name="java:/jdbc/ibis4test-db2" pool-name="ibis4test-db2">
+				<xa-datasource jndi-name="java:/jdbc/ibis4test-db2-xa" pool-name="ibis4test-db2">
 					<driver>db2</driver>
 					<xa-datasource-property name="databaseName">testiaf</xa-datasource-property>
-				    <xa-datasource-property name="serverName">host.docker.internal</xa-datasource-property>
-				    <xa-datasource-property name="portNumber">50000</xa-datasource-property>
-				    <xa-datasource-property name="driverType">4</xa-datasource-property>
+					<xa-datasource-property name="serverName">host.docker.internal</xa-datasource-property>
+					<xa-datasource-property name="portNumber">50000</xa-datasource-property>
+					<xa-datasource-property name="driverType">4</xa-datasource-property>
 					<security>
 						<user-name>testiaf_user</user-name>
 						<credential-reference store="CS" alias="testiaf_user"/>
