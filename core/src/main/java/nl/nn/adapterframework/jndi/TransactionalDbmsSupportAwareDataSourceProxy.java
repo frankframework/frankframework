@@ -95,7 +95,7 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 	public String toString() {
 		StringBuilder builder = new StringBuilder(getTargetDataSource().toString());
 
-		if(metadata != null && log.isInfoEnabled()) {
+		if(metadata != null && log.isWarnEnabled()) {
 			builder.append(" user ["+metadata.get("user")+"]");
 			builder.append(" url ["+metadata.get("url")+"]");
 			builder.append(" product ["+metadata.get("product")+"]");
