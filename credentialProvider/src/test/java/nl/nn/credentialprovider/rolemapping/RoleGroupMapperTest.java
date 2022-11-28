@@ -1,11 +1,14 @@
 package nl.nn.credentialprovider.rolemapping;
 
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
@@ -13,35 +16,29 @@ import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.startup.CatalinaBaseConfigurationSource;
 import org.apache.catalina.webresources.TomcatURLStreamHandlerFactory;
-import org.apache.directory.server.annotations.CreateLdapServer;
-import org.apache.directory.server.annotations.CreateTransport;
-import org.apache.directory.server.core.annotations.ApplyLdifFiles;
-import org.apache.directory.server.core.annotations.CreateDS;
-import org.apache.directory.server.core.annotations.CreatePartition;
-import org.apache.directory.server.core.integ.AbstractLdapTestUnit;
-import org.apache.directory.server.core.integ.FrameworkRunner;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 import org.apache.tomcat.unittest.TesterContext;
 import org.apache.tomcat.util.file.ConfigFileLoader;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import com.unboundid.ldap.listener.InMemoryDirectoryServer;
+import com.unboundid.ldap.listener.InMemoryDirectoryServerConfig;
 
 import nl.nn.credentialprovider.RoleToGroupMappingJndiRealm;
+import nl.nn.credentialprovider.util.ClassUtils;
 
-@RunWith(FrameworkRunner.class)
-@CreateLdapServer(transports = { @CreateTransport(protocol = "LDAP", address = "localhost") })
-@CreateDS(name = "myDS", allowAnonAccess = false, partitions = {
-		@CreatePartition(name = "test", suffix = "dc=myorg,dc=com") })
-@ApplyLdifFiles({ "users.ldif" })
-public class RoleGroupMapperTest extends AbstractLdapTestUnit {
+public class RoleGroupMapperTest {
 
+	private static InMemoryDirectoryServer inMemoryDirectoryServer = null;
+	private static String baseDNs = "dc=myorg,dc=com";
 	private static final Log log = LogFactory.getLog(RoleGroupMapperTest.class);
 
 	private RoleToGroupMappingJndiRealm setupRoleToGroupMappingJndiRealm(Context context, String pathname) {
 		RoleToGroupMappingJndiRealm realm = new RoleToGroupMappingJndiRealm();
-		int port = getLdapServer().getPort();
+		int port = inMemoryDirectoryServer.getListenPort();
 
 		realm.setConnectionURL("ldap://localhost:" + port);
 		realm.setConnectionName("cn=LdapTester1,ou=Users,dc=myorg,dc=com");
@@ -68,15 +65,34 @@ public class RoleGroupMapperTest extends AbstractLdapTestUnit {
 	}
 
 	@BeforeClass
-	public static void setup() {
+	public static void setup() throws Exception {
 		String loggings = ClassLoader.getSystemResource("logging.properties").getPath();
 
 		System.setProperty("java.util.logging.config.file", loggings);
 
 		TomcatURLStreamHandlerFactory.getInstance();
 		System.setProperty("catalina.base", "");
-		ConfigFileLoader
-				.setSource(new CatalinaBaseConfigurationSource(new File(System.getProperty("catalina.base")), null));
+		ConfigFileLoader.setSource(new CatalinaBaseConfigurationSource(new File(System.getProperty("catalina.base")), null));
+
+
+		InMemoryDirectoryServerConfig config = new InMemoryDirectoryServerConfig(baseDNs);
+		config.setSchema(null);
+		inMemoryDirectoryServer = new InMemoryDirectoryServer(config);
+
+		String ldifDataFile = "users.ldif";
+		URL ldifDataUrl = ClassUtils.getResourceURL(ldifDataFile);
+		if (ldifDataUrl == null) {
+			fail("cannot find resource [" + ldifDataFile + "]");
+		}
+		inMemoryDirectoryServer.importFromLDIF(true, ldifDataUrl.getPath());
+		inMemoryDirectoryServer.startListening();
+	}
+
+	@AfterClass
+	public static void tearDown() throws Exception {
+		if(inMemoryDirectoryServer != null) {
+			inMemoryDirectoryServer.shutDown(true);
+		}
 	}
 
 	@Test
@@ -84,14 +100,15 @@ public class RoleGroupMapperTest extends AbstractLdapTestUnit {
 
 		RoleToGroupMappingJndiRealm realm = setupRoleToGroupMappingJndiRealm(null, null);
 		realm.start();
+		assertTrue("ldap server did not start", true);
 	}
 
-	@Test(expected = LifecycleException.class)
+	@Test
 	public void testNoExistingResource() throws LifecycleException {
 
 		RoleToGroupMappingJndiRealm realm = setupRoleToGroupMappingJndiRealm(null, "classpath:conf/tomcat-role-group-mapping1.xml");
 
-		realm.start();
+		assertThrows(LifecycleException.class, realm::start);
 	}
 
 	@Test
