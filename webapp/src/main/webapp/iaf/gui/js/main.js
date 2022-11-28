@@ -42,7 +42,7 @@ $(document).ready(function () {
 	}
 
 	window.addEventListener("keydown", function(e) {
-		if(e.which == 70 && (e.ctrlKey || e.metaKey)) {
+		if(e.which == 70 && (e.ctrlKey || e.metaKey) && e.shiftKey) {
 			var searchbar = document.getElementById("searchbar");
 			if(searchbar) {
 				e.preventDefault();
