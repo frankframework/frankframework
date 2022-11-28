@@ -22,7 +22,7 @@
 		<dependency>
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-java-sdk-s3</artifactId>
-			<version>1.12.324</version>
+			<version>1.12.349</version>
 		</dependency>
 		<dependency>
 			<groupId>io.micrometer</groupId>
@@ -40,11 +40,6 @@
 		</dependency>
 
 		<!-- Test scoped and provided dependencies -->
-		<dependency>
-			<groupId>org.junit.vintage</groupId>
-			<artifactId>junit-vintage-engine</artifactId>
-			<scope>test</scope>
-		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter</artifactId>
