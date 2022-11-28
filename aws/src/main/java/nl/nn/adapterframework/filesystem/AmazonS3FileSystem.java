@@ -55,7 +55,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
 
 public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWritableFileSystem<S3Object> {
 	private final @Getter(onMethod = @__(@Override)) String domain = "Amazon";
-	public static final List<String> AVAILABLE_REGIONS = getAvailableRegions();
+	private static final List<String> AVAILABLE_REGIONS = getAvailableRegions();
 //	public static final List<String> STORAGE_CLASSES = getStorageClasses();
 //	public static final List<String> TIERS = getTiers();
 
@@ -235,7 +235,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		private S3Object file;
 
 		public S3Message(S3Object file, Map<String,Object> context) {
-			super(() -> file.getObjectContent(), context, file.getClass());
+			super(file::getObjectContent, context, file.getClass());
 			this.file = file;
 		}
 
@@ -312,7 +312,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	@Override
 	public Map<String, Object> getAdditionalFileProperties(S3Object f) {
-		Map<String, Object> attributes = new HashMap<String, Object>();
+		Map<String, Object> attributes = new HashMap<>();
 		attributes.put("name", bucketName);
 		return attributes;
 	}
@@ -344,8 +344,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 			return null;
 		}
 		file = s3Client.getObject(bucketName, f.getKey());
-		Date date = file.getObjectMetadata().getLastModified();
-		return date;
+		return file.getObjectMetadata().getLastModified();
 	}
 
 //	/**
