@@ -4,7 +4,7 @@
 	<!ENTITY ConfigurationResultSetIteratingPipe SYSTEM "./ConfigurationResultSetIteratingPipe.xml">
 	<!ENTITY ManageDatabaseWrapper SYSTEM "./ConfigurationManageDatabaseWrapper.xml">
 ]>
-<configuration name="JDBC">
+<configuration>
 	&JdbcListener;
 	&JdbcSenders;
 	&ConfigurationResultSetIteratingPipe;
