@@ -479,16 +479,16 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 *
 	 * The DisplayName will always be updated, which is purely used for logging purposes.
 	 */
-	@Protected
 	@Override
 	public void setName(String name) {
 		if(StringUtils.isNotEmpty(name)) {
 			if(state == BootState.STARTING && !getName().equals(name)) {
 				publishEvent(new ConfigurationMessageEvent(this, "name ["+getName()+"] does not match XML name attribute ["+name+"]", MessageKeeperLevel.WARN));
 			}
-			setBeanName(name);
+			setDisplayName(name);
 		}
 	}
+
 	@Override
 	public String getName() {
 		return getId();
@@ -591,12 +591,15 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	public void registerMonitoring(MonitorManager factory) {
 	}
 
-
-
 	@Override
 	@Protected
 	public void setBeanName(String name) {
 		super.setBeanName(name);
-		setDisplayName("ConfigurationContext [" + name + "]");
+		setDisplayName(name); //Overwrite the DisplayName created by the super.setBeanName
+	}
+
+	@Override
+	public void setDisplayName(String name) {
+		super.setDisplayName("ConfigurationContext [" + name + "]");
 	}
 }
