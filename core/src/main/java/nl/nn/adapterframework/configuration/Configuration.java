@@ -485,7 +485,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 			if(state == BootState.STARTING && !getName().equals(name)) {
 				publishEvent(new ConfigurationMessageEvent(this, "name ["+getName()+"] does not match XML name attribute ["+name+"]", MessageKeeperLevel.WARN));
 			}
-			setDisplayName(name);
+			setBeanName(name);
 		}
 	}
 
@@ -591,15 +591,14 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	public void registerMonitoring(MonitorManager factory) {
 	}
 
+	/**
+	 * Overwrite the DisplayName created by the super.setBeanName which prepends 'ApplicationContext'.
+	 * The BeanName can only be set once, after which it only updates the DisplayName.
+	 */
 	@Override
 	@Protected
 	public void setBeanName(String name) {
 		super.setBeanName(name);
-		setDisplayName(name); //Overwrite the DisplayName created by the super.setBeanName
-	}
-
-	@Override
-	public void setDisplayName(String name) {
-		super.setDisplayName("ConfigurationContext [" + name + "]");
+		setDisplayName("ConfigurationContext [" + name + "]");
 	}
 }
