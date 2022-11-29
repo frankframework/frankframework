@@ -3,11 +3,15 @@
 	xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:task="http://www.springframework.org/schema/task"
+	xmlns:context="http://www.springframework.org/schema/context"
 	xsi:schemaLocation="
-		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-		http://www.springframework.org/schema/task  http://www.springframework.org/schema/task/spring-task.xsd
+		http://www.springframework.org/schema/beans   http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/task    http://www.springframework.org/schema/task/spring-task.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
 	"
 	>
+
+	<context:component-scan base-package="nl.nn.testtool"/>
 
 	<bean
 		name="lowerCasePropertySourcePostProcessor"
@@ -62,14 +66,6 @@
 	<task:scheduled-tasks scheduler="closeReportsScheduler">
 		<task:scheduled ref="closeReportsTask" method="closeReports" fixed-delay="10000" />
 	</task:scheduled-tasks>
-
-	<bean name="metadataExtractor" class="nl.nn.testtool.MetadataExtractor">
-		<property name="extraMetadataFieldExtractors">
-			<list>
-				<bean class="nl.nn.testtool.metadata.StatusMetadataFieldExtractor"/>
-			</list>
-		</property>
-	</bean>
 
 	<bean name="debugStorage" class="nl.nn.testtool.storage.file.Storage" autowire="byName" init-method="init">
 		<property name="name" value="Logging"/>
@@ -143,7 +139,7 @@
 	
 	<bean name="whiteBoxView" class="nl.nn.testtool.filter.View" scope="prototype">
 		<property name="name" value="White box"/>
-		<property name="storage">
+		<property name="debugStorage">
 			<ref bean="debugStorage"/>
 		</property>
 		<property name="metadataNames">
@@ -176,7 +172,7 @@
 		</property>
 	</bean>
 
-	<bean name="views" class="nl.nn.testtool.filter.Views" scope="prototype">
+	<bean name="views" class="nl.nn.testtool.filter.Views">
 		<property name="views">
 			<list>
 				<ref bean="whiteBoxView"/>
@@ -186,133 +182,9 @@
 		</property>
 	</bean>
 
-	<bean name="reportXmlTransformer" class="nl.nn.testtool.transform.ReportXmlTransformer" init-method="init">
-		<property name="xsltResource" value="${ibistesttool.reportTransformation}"/>
+	<bean name="xsltResource" class="java.lang.String" primary="true">
+		<constructor-arg value="${ibistesttool.reportTransformation}"/>
 	</bean>
-
-	<bean name="treePane" class="nl.nn.testtool.echo2.reports.TreePane" autowire="byName" init-method="initBean" scope="prototype"/>
-
-	<bean name="reportsComponent" class="nl.nn.testtool.echo2.reports.ReportsComponent" autowire="byName" init-method="initBean" scope="prototype">
-		<property name="testTool">
-			<ref bean="testTool"/>
-		</property>
-		<property name="views">
-			<ref bean="views"/>
-		</property>
-		<property name="metadataExtractor">
-			<ref bean="metadataExtractor"/>
-		</property>
-	</bean>
-
-	<bean name="debugPane" class="nl.nn.testtool.echo2.DebugPane" init-method="initBean" scope="prototype">
-		<property name="reportsTreeCellRenderer">
-			<ref bean="reportsTreeCellRenderer"/>
-		</property>
-		<property name="testTool">
-			<ref bean="testTool"/>
-		</property>
-		<property name="testStorage">
-			<ref bean="testStorage"/>
-		</property>
-		<property name="reportsComponent">
-			<ref bean="reportsComponent"/>
-		</property>
-		<property name="treePane">
-			<ref bean="treePane"/>
-		</property>
-		<property name="reportXmlTransformer">
-			<ref bean="reportXmlTransformer"/>
-		</property>
-	</bean>
-
-	<bean name="testPane" class="nl.nn.testtool.echo2.TestPane" init-method="initBean" scope="prototype">
-		<property name="treePane">
-			<bean class="nl.nn.testtool.echo2.test.TreePane" autowire="byName" init-method="initBean" >
-				<property name="storage">
-					<ref bean="testStorage"/>
-				</property>
-			</bean>
-		</property>
-		<property name="infoPane">
-			<bean class="nl.nn.testtool.echo2.test.InfoPane" init-method="initBean">
-				<property name="testComponent">
-					<bean class="nl.nn.testtool.echo2.test.TestComponent" init-method="initBean">
-						<property name="testTool">
-							<ref bean="testTool"/>
-						</property>
-						<property name="debugStorage">
-							<ref bean="debugStorage"/>
-						</property>
-						<property name="testStorage">
-							<ref bean="testStorage"/>
-						</property>
-						<property name="reportXmlTransformer">
-							<ref bean="reportXmlTransformer"/>
-						</property>
-					</bean>
-				</property>
-			</bean>
-		</property>
-	</bean>
-
-	<bean name="comparePane" class="nl.nn.testtool.echo2.ComparePane" init-method="initBean" scope="prototype">
-		<property name="reportsTreeCellRenderer">
-			<ref bean="reportsTreeCellRenderer"/>
-		</property>
-		<property name="testTool">
-			<ref bean="testTool"/>
-		</property>
-		<property name="testStorage">
-			<ref bean="testStorage"/>
-		</property>
-		<property name="reportsComponent1">
-			<bean parent="reportsComponent">
-				<property name="addCompareButton" value="true"/>
-				<property name="addSeparateOptionsRow" value="true"/>
-				<property name="focusMaxMetadataTableSize" value="false"/>
-			</bean>
-		</property>
-		<property name="reportsComponent2">
-			<bean parent="reportsComponent">
-				<property name="addCompareButton" value="true"/>
-				<property name="addSeparateOptionsRow" value="true"/>
-				<property name="focusMaxMetadataTableSize" value="false"/>
-			</bean>
-		</property>
-		<property name="treePane1">
-			<ref bean="treePane"/>
-		</property>
-		<property name="treePane2">
-			<ref bean="treePane"/>
-		</property>
-		<property name="reportXmlTransformer">
-			<ref bean="reportXmlTransformer"/>
-		</property>
-	</bean>
-
-	<bean name="tabs" class="nl.nn.testtool.echo2.Tabs" scope="prototype">
-		<property name="tabs">
-			<list>
-				<ref bean="debugPane"/>
-				<ref bean="testPane"/>
-				<ref bean="comparePane"/>
-			</list>
-		</property>
-	</bean>
-
-	<bean name="echo2Application" class="nl.nn.testtool.echo2.Echo2Application" autowire="byName" init-method="initBean" scope="prototype">
-		<property name="contentPane">
-			<bean class="nl.nn.testtool.echo2.ContentPane"/>
-		</property>
-		<property name="reportsTreeCellRenderer">
-			<ref bean="reportsTreeCellRenderer"/>
-		</property>
-		<property name="tabs">
-			<ref bean="tabs"/>
-		</property>
-	</bean>
-
-	<bean name="reportsTreeCellRenderer" class="nl.nn.testtool.echo2.reports.ReportsTreeCellRenderer"/>
 
 	<bean name="pipeDescriptionProvider" class="nl.nn.ibistesttool.PipeDescriptionProvider" autowire="byName"/>
 
