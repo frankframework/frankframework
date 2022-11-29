@@ -15,18 +15,29 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
+import java.io.OutputStream;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
-
-import nl.nn.adapterframework.core.IbisException;
-import nl.nn.adapterframework.util.LogUtil;
+import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.logging.log4j.Logger;
+
+import jakarta.json.Json;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonStructure;
+import jakarta.json.JsonWriter;
+import jakarta.json.JsonWriterFactory;
+import jakarta.json.stream.JsonGenerator;
+import nl.nn.adapterframework.core.IbisException;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Custom errors for the API.
@@ -36,11 +47,15 @@ import org.apache.logging.log4j.Logger;
  */
 
 public class ApiException extends WebApplicationException implements Serializable {
-	private static final long serialVersionUID = 1L;
-	private transient Logger log = LogUtil.getLogger(this);
 
-	public ApiException() {
-		super();
+	private static final long serialVersionUID = 2L;
+	private final transient Logger log = LogUtil.getLogger(this);
+	private final Status status;
+	private final String expandedMessage;
+	private transient Response response;
+
+	public ApiException(String msg) {
+		this(msg, Status.INTERNAL_SERVER_ERROR);
 	}
 
 	public ApiException(Throwable t) {
@@ -48,23 +63,11 @@ public class ApiException extends WebApplicationException implements Serializabl
 	}
 
 	public ApiException(String msg, Throwable t) {
-		this(msg, t, Status.INTERNAL_SERVER_ERROR);
+		this(msg, t, null);
 	}
 
 	private ApiException(Throwable t, int status) {
 		this(null, t, Status.fromStatusCode(status));
-	}
-
-	private ApiException(String msg, Throwable t, Status status) {
-		super(msg, t, formatException(IbisException.expandMessage(msg, t), status));
-
-		log.warn(msg, t);
-	}
-
-
-
-	public ApiException(String msg) {
-		this(msg, Status.INTERNAL_SERVER_ERROR);
 	}
 
 	public ApiException(String msg, int status) {
@@ -72,18 +75,68 @@ public class ApiException extends WebApplicationException implements Serializabl
 	}
 
 	public ApiException(String msg, Status status) {
-		super(msg, formatException(msg, status));
+		this(msg, null, status);
 	}
 
-	protected static Response formatException(String message, Status status) {
-		ResponseBuilder response = Response.status(status).type(MediaType.TEXT_PLAIN);
+	private ApiException(String msg, Throwable t, Status status) {
+		super(msg, t);
+
+		this.status = (status!=null) ? status: Status.INTERNAL_SERVER_ERROR;
+		if(msg == null && t == null) {
+			this.expandedMessage = null;
+		} else {
+			this.expandedMessage = IbisException.expandMessage(super.getMessage(), this, false);
+		}
+
+		log.warn(this.expandedMessage, t);
+	}
+
+	@Override
+	public String getMessage() {
+		return expandedMessage;
+	}
+
+	@Override
+	public Response getResponse() {
+		if(response == null) {
+			response = formatExceptionResponse(expandedMessage, status);
+		}
+		return response;
+	}
+
+	protected static Response formatExceptionResponse(String message, Status status) {
+		ResponseBuilder builder = Response.status(status).type(MediaType.TEXT_PLAIN);
 
 		if(message != null) {
-			message = message.replace("\"", "\\\"").replace("\n", " ").replace(System.getProperty("line.separator"), " ");
+			JsonObjectBuilder json = Json.createObjectBuilder();
+			json.add("status", status.getReasonPhrase());
+			//Replace non ASCII characters, tabs, spaces and newlines.
+			message = message.replaceAll("[^\\x00-\\x7F]", " ").replace("\n", " ").replace(System.getProperty("line.separator"), " ");
+			json.add("error", message);
 
-			response.type(MediaType.APPLICATION_JSON);
-			response.entity(("{\"status\":\""+status.getReasonPhrase()+"\", \"error\":\"" + message + "\"}"));
+			builder.type(MediaType.APPLICATION_JSON);
+			builder.entity(new FormattedJsonEntity(json.build()));
 		}
-		return response.build();
+
+		return builder.build();
+	}
+
+	static class FormattedJsonEntity implements StreamingOutput {
+		private final JsonWriterFactory factory;
+		private final JsonStructure json;
+
+		public FormattedJsonEntity(JsonStructure json) {
+			Map<String, Boolean> config = new HashMap<>();
+			config.put(JsonGenerator.PRETTY_PRINTING, true);
+			factory = Json.createWriterFactory(config);
+			this.json = json;
+		}
+
+		@Override
+		public void write(OutputStream output) {
+			try (JsonWriter jsonWriter = factory.createWriter(output, StreamUtil.DEFAULT_CHARSET)) {
+				jsonWriter.write(json);
+			}
+		}
 	}
 }

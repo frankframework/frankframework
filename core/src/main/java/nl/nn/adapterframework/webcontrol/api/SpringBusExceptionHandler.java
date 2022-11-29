@@ -50,10 +50,10 @@ public class SpringBusExceptionHandler implements ExceptionMapper<MessageHandlin
 
 		if(cause != null) { //Found a BusException, throw it directly
 			log.info("caught exception while sending/receiving information from the Application Bus", cause);
-			return ApiException.formatException(cause.getMessage(), cause instanceof AccessDeniedException ? Status.FORBIDDEN : Status.INTERNAL_SERVER_ERROR);
+			return ApiException.formatExceptionResponse(cause.getMessage(), cause instanceof AccessDeniedException ? Status.FORBIDDEN : Status.INTERNAL_SERVER_ERROR);
 		}
 
 		log.warn("unhandled exception while sending/receiving information from the Application Bus", mhe);
-		return ApiException.formatException(mhe.getMessage(), Status.INTERNAL_SERVER_ERROR);
+		return ApiException.formatExceptionResponse(mhe.getMessage(), Status.INTERNAL_SERVER_ERROR);
 	}
 }

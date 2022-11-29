@@ -51,6 +51,6 @@ public class ApiExceptionHandler implements ExceptionMapper<WebApplicationExcept
 		if(response != null && response.getStatus() > 0) {
 			status = Status.fromStatusCode(response.getStatus());
 		}
-		return ApiException.formatException(exception.getMessage(), status);
+		return ApiException.formatExceptionResponse(exception.getMessage(), status);
 	}
 }
