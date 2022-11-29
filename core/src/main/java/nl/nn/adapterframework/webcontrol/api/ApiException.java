@@ -111,8 +111,7 @@ public class ApiException extends WebApplicationException implements Serializabl
 			JsonObjectBuilder json = Json.createObjectBuilder();
 			json.add("status", status.getReasonPhrase());
 			//Replace non ASCII characters, tabs, spaces and newlines.
-			message = message.replaceAll("[^\\x00-\\x7F]", " ").replace("\n", " ").replace(System.getProperty("line.separator"), " ");
-			json.add("error", message);
+			json.add("error", message.replace("\n", " ").replace(System.getProperty("line.separator"), " "));
 
 			builder.type(MediaType.APPLICATION_JSON);
 			builder.entity(new FormattedJsonEntity(json.build()));
