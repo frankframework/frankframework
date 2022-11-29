@@ -39,6 +39,8 @@ public class FixedQuerySenderTest extends JdbcSenderTestBase<FixedQuerySender> {
 	private void assertSenderException(SenderException ex) {
 		if(getDataSourceName().equals("H2")) {
 			assertThat(ex.getMessage(), CoreMatchers.containsString("Syntax error in SQL statement"));
+		} else if(getDataSourceName().equals("DB2")) {
+			assertThat(ex.getMessage(), CoreMatchers.containsString("(SqlSyntaxErrorException) SQLState [42601]"));
 		} else if(getDataSourceName().equals("PostgreSQL")) {
 			assertThat(ex.getMessage(), CoreMatchers.containsString("No value specified for parameter 1"));
 		} else if(getDataSourceName().equals("Oracle")) {

@@ -38,6 +38,7 @@ createTemplatedProvider('Microsoft SQL Server JDBC Driver (XA)', 'com.microsoft.
 createProvider('H2 JDBC Driver (XA)', 'org.h2.jdbcx.JdbcDataSource', 'classpath=/work/drivers/h2.jar,xa=true')
 createProvider('MySQL JDBC Driver', 'com.mysql.cj.jdbc.MysqlXADataSource', 'classpath=/work/drivers/mysql-connector-j.jar')
 createProvider('PostgreSQL JDBC Driver', 'org.postgresql.xa.PGXADataSource', 'classpath=/work/drivers/postgresql.jar')
+createProvider('DB2 JDBC Driver', 'com.ibm.db2.jcc.DB2XADataSource', 'classpath=/work/drivers/jcc.jar')
 
 createDatasource('ibis4test-h2', 'H2 JDBC Driver (XA)', [], [
 		[['name', 'URL'],['value', 'jdbc:h2:file:/work/ibis4test;NON_KEYWORDS=VALUE;DB_CLOSE_ON_EXIT=FALSE;AUTO_SERVER=TRUE']]
@@ -78,3 +79,11 @@ createDatasource('ibis4test-mariadb', 'MySQL JDBC Driver', authAliasName, [
 createDatasource('ibis4test-postgres-xa', 'PostgreSQL JDBC Driver', authAliasName, [
 		[['name', 'URL'],  ['value', 'jdbc:postgresql://host.docker.internal:5432/testiaf']]
 	])
+
+createDatasource('ibis4test-db2-xa', 'DB2 JDBC Driver', authAliasName, [
+		[['name', 'serverName'], ['value', 'host.docker.internal']],
+		[['name', 'portNumber'], ['value', '50000']],
+		[['name', 'databaseName'], ['value', 'testiaf']],
+		[['name', 'driverType'], ['value', '4']]
+	])
+	

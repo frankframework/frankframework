@@ -49,6 +49,11 @@
 			<version>${postgresql.driver.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>com.ibm.db2</groupId>
+			<artifactId>jcc</artifactId>
+			<version>${db2.driver.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>org.apache.geronimo.specs</groupId>
 			<artifactId>geronimo-j2ee-management_1.1_spec</artifactId>
 			<version>1.0.1</version>
