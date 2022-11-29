@@ -31,7 +31,7 @@ import org.xml.sax.ContentHandler;
 
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.IbisManager;
-import nl.nn.adapterframework.core.GenericSenderResult;
+import nl.nn.adapterframework.core.ProcessBlockResult;
 import nl.nn.adapterframework.core.IBlockEnabledSender;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
 import nl.nn.adapterframework.core.IExtendedPipe;
@@ -253,7 +253,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 				// Create PipeRunResult when streaming sender is stubbed, this will forward to the next pipe and process the
 				// message in a streaming.auto=false way (also when at the time of the original report the message was
 				// processed with streaming.auto=true)
-				GenericSenderResult gsr = result!=null ? (GenericSenderResult)result : new SenderResult(Message.nullMessage());
+				ProcessBlockResult gsr = result!=null ? (ProcessBlockResult)result : new SenderResult(Message.nullMessage());
 				ibisDebugger.showValue(correlationId, "success", gsr.isSuccess());
 				if (gsr.getForwardName()!=null) {
 					ibisDebugger.showValue(correlationId, "forwardName", gsr.getForwardName());
@@ -293,7 +293,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	/**
 	 * Provides advice for {@link IStreamingSender#sendMessage(Message message, PipeLineSession session, IForwardTarget next)}
 	 */
-	public GenericSenderResult debugStreamingSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, PipeLineSession session, IForwardTarget next) throws Throwable {
+	public ProcessBlockResult debugStreamingSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, PipeLineSession session, IForwardTarget next) throws Throwable {
 		return debugSenderInputOutputAbort(proceedingJoinPoint, message, session, 0, SenderReturnType.GENERICSENDERRESULT);
 	}
 
