@@ -20,7 +20,7 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import nl.nn.adapterframework.core.GenericSenderResult;
+import nl.nn.adapterframework.core.ProcessBlockResult;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -642,7 +642,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		assertEquals(contents.trim(), actualContents.trim());
 	}
 
-	protected GenericSenderResult doAction(Message message, ParameterValueList pvl, PipeLineSession session, boolean viaOutputStream, boolean expectStreamable) throws Exception {
+	protected ProcessBlockResult doAction(Message message, ParameterValueList pvl, PipeLineSession session, boolean viaOutputStream, boolean expectStreamable) throws Exception {
 		boolean streamable = actor.canProvideOutputStream();
 		assertEquals("streamability", expectStreamable, streamable);
 		if (viaOutputStream && streamable) {

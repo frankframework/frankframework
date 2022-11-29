@@ -35,7 +35,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.GenericSenderResult;
+import nl.nn.adapterframework.core.ProcessBlockResult;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
@@ -753,7 +753,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				}
 			}
 			try {
-				GenericSenderResult senderResult;
+				ProcessBlockResult senderResult;
 				if (sender instanceof IStreamingSender && canStreamToNextPipe()) {
 					senderResult = ((IStreamingSender)sender).sendMessage(input, session, getNextPipe());
 				} else {

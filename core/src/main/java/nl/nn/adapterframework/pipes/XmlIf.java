@@ -146,6 +146,16 @@ public class XmlIf extends AbstractPipe {
 		return super.consumesSessionVariable(sessionKey) || sessionKey.equals(getSessionKey());
 	}
 
+	@IbisDoc({"xpath expression to be applied to the input-message. if not set, no transformation is done", ""})
+	public void setXpathExpression(String string) {
+		xpathExpression = string;
+	}
+
+	@IbisDoc({"regular expression to be applied to the input-message (ignored if xpathexpression is specified). the input-message matching the given regular expression leads to the 'then'-forward", ""})
+	public void setRegex(String regex){
+		this.regex = regex;
+	}
+
 	@Deprecated
 	@ConfigurationWarning("Please use getInputFromSessionKey instead.")
 	@IbisDoc({"name of the key in the <code>pipelinesession</code> to retrieve the input-message from. if not set, the current input message of the pipe is taken. n.b. same as <code>getinputfromsessionkey</code>", ""})
@@ -159,23 +169,15 @@ public class XmlIf extends AbstractPipe {
 	}
 
 	@IbisDoc({"forward returned when <code>'true'</code>", "then"})
+	@Deprecated
 	public void setThenForwardName(String thenForwardName){
 		this.thenForwardName = thenForwardName;
 	}
 
 	@IbisDoc({"forward returned when 'false'", "else"})
+	@Deprecated
 	public void setElseForwardName(String elseForwardName){
 		this.elseForwardName = elseForwardName;
-	}
-
-	@IbisDoc({"xpath expression to be applied to the input-message. if not set, no transformation is done", ""})
-	public void setXpathExpression(String string) {
-		xpathExpression = string;
-	}
-
-	@IbisDoc({"regular expression to be applied to the input-message (ignored if xpathexpression is specified). the input-message matching the given regular expression leads to the 'then'-forward", ""})
-	public void setRegex(String regex){
-		this.regex = regex;
 	}
 
 	@IbisDoc({"specifies the version of xslt to use", "2"})

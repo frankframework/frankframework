@@ -379,7 +379,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		handlePipeStat(getOutputValidator(),pipeStatistics,pipeStatsData, hski, true, action);
 		handlePipeStat(getInputWrapper(),pipeStatistics,pipeStatsData, hski, true, action);
 		handlePipeStat(getOutputWrapper(),pipeStatistics,pipeStatsData, hski, true, action);
-		for (IPipe pipe : adapter.getPipeLine().getPipes()) {
+		for (IPipe pipe : getPipes()) {
 			handlePipeStat(pipe, pipeStatistics, pipeStatsData, hski, true, action);
 			if (pipe instanceof MessageSendingPipe) {
 				MessageSendingPipe messageSendingPipe = (MessageSendingPipe) pipe;
@@ -404,7 +404,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 		if (pipeWaitingStatistics.size() > 0) {
 			Object waitStatsData = hski.openGroup(data, null, PIPELINE_WAIT_STATS);
-			for (IPipe pipe : adapter.getPipeLine().getPipes()) {
+			for (IPipe pipe : getPipes()) {
 				handlePipeStat(pipe, pipeWaitingStatistics, waitStatsData, hski, false, action);
 			}
 			hski.closeGroup(waitStatsData);
@@ -412,7 +412,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 		Object sizeStatsData = hski.openGroup(data, null, PIPELINE_SIZE_STATS);
 		hski.handleStatisticsKeeper(sizeStatsData,getRequestSizeStats());
-		for (IPipe pipe : adapter.getPipeLine().getPipes()) {
+		for (IPipe pipe : getPipes()) {
 			if (pipe instanceof AbstractPipe) {
 				AbstractPipe aPipe = (AbstractPipe) pipe;
 				if (aPipe.getInSizeStatDummyObject() != null) {

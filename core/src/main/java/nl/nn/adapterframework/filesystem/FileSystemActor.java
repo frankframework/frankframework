@@ -39,7 +39,7 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.GenericSenderResult;
+import nl.nn.adapterframework.core.ProcessBlockResult;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.INamedObject;
@@ -321,7 +321,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		}
 	}
 
-	public GenericSenderResult doAction(Message input, ParameterValueList pvl, PipeLineSession session) throws FileSystemException, TimeoutException {
+	public ProcessBlockResult doAction(Message input, ParameterValueList pvl, PipeLineSession session) throws FileSystemException, TimeoutException {
 		FileSystemAction action=null;
 		try {
 			if(input != null) {
@@ -705,7 +705,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		this.rotateSize = rotateSize;
 	}
 
-	@IbisDoc({"For the actions "+ACTION_WRITE1+" and "+ACTION_APPEND+", with rotateSize>0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides", "0"})
+	@IbisDoc({"The number of backups to be kept of the destination file or the file to be created.", "0"})
 	public void setNumberOfBackups(int numberOfBackups) {
 		this.numberOfBackups = numberOfBackups;
 	}

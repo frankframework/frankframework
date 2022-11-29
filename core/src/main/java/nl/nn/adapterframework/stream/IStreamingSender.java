@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.stream;
 
-import nl.nn.adapterframework.core.GenericSenderResult;
+import nl.nn.adapterframework.core.ProcessBlockResult;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -24,6 +24,14 @@ import nl.nn.adapterframework.core.TimeoutException;
 
 public interface IStreamingSender extends ISenderWithParameters, IOutputStreamingSupport {
 
-	public GenericSenderResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException;
+	/**
+	 * IStreamingSender can return one of:
+	 * <ul>
+	 * <li>a SenderResult, with possibly a local forwardName suggestion, to be resolved by the enclosing pipe,</li>
+	 * <li>a PipeRunResult with a resolved forward, e.g. when the sender provided a MessageOutputStream, or it has sent it's result via a MessageOutputStream.</li>
+	 * </ul>
+	 * 
+	 */
+	public ProcessBlockResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException;
 
 }

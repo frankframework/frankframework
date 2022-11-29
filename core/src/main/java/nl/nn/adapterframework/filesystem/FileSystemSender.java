@@ -19,7 +19,7 @@ import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.GenericSenderResult;
+import nl.nn.adapterframework.core.ProcessBlockResult;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.ParameterException;
@@ -100,7 +100,7 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 	}
 
 	@Override
-	public GenericSenderResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
+	public ProcessBlockResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
 		ParameterValueList pvl = null;
 
 		try {

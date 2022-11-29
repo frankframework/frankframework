@@ -16,19 +16,17 @@
 package nl.nn.adapterframework.core;
 
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.stream.IStreamingSender;
 import nl.nn.adapterframework.stream.Message;
 
 /**
- * Marker interface for sender results.
- * Senders can either return one of:
- * <ul>
- * <li>a SenderResult with possibly a local forwardName suggestion, to be resolved by the enclosing pipe,</li>
- * <li>a PipeRunResult with a resolved forward, e.g. when the sender provided a MessageOutputStream, or it has sent it's result via a MessageOutputStream.</li>
- * </ul>
+ * Marker interface for results of Senders and Pipes.
+ * @see IStreamingSender
+
  * @author Gerrit van Brakel
  *
  */
-public interface GenericSenderResult {
+public interface ProcessBlockResult {
 
 	public boolean isSuccess();
 	public Message getResult();

@@ -37,7 +37,7 @@ import nl.nn.adapterframework.stream.Message;
  * @see nl.nn.adapterframework.pipes.AbstractPipe#doPipe
  * @see nl.nn.adapterframework.pipes.AbstractPipe#findForward
  */
-public class PipeRunResult implements GenericSenderResult {
+public class PipeRunResult implements ProcessBlockResult {
 
 	private @Getter @Setter PipeForward pipeForward;
 	private @Getter Message result;

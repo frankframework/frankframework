@@ -26,7 +26,7 @@ import nl.nn.adapterframework.stream.Message;
  * The SenderResult is a type to store both the result of the processing of a message by a Sender,
  * as well as the exitState.
  */
-public class SenderResult implements GenericSenderResult {
+public class SenderResult implements ProcessBlockResult {
 
 	private @Getter @Setter boolean success;
 	private @Getter @Setter Message result;
