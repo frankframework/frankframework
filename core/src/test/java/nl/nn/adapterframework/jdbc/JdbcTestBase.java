@@ -143,6 +143,7 @@ public abstract class JdbcTestBase {
 			try {
 				dropTableIfPresent(connection, TEST_TABLE);
 			} finally {
+				connection.rollback();
 				connection.close();
 			}
 		}

@@ -1,6 +1,6 @@
 <throwable>
   <class>nl.nn.adapterframework.core.SenderException</class>
-  <message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-EsbJmsFFSender]: (RequestProcessorException) RequestProcessor [ibis4test-EsbJmsFFSender] caught exception: &lt;request action=&quot;exception&quot;&gt;
+  <message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-EsbJmsFFSender]: (RequestProcessorException) RequestProcessor [ibis4test-EsbJmsFFSender] caught exception: Pipe [exception] &lt;request action=&quot;exception&quot;&gt;
 	&lt;value&gt;test&lt;/value&gt;
 &lt;/request&gt;</message>
   <cause>
@@ -10,13 +10,13 @@
       <cause>
         <throwable>
           <class>nl.nn.adapterframework.core.ListenerException</class>
-          <message>&lt;request action=&quot;exception&quot;&gt;
+          <message>Pipe [exception] &lt;request action=&quot;exception&quot;&gt;
 	&lt;value&gt;test&lt;/value&gt;
 &lt;/request&gt;</message>
           <cause>
             <throwable>
               <class>nl.nn.adapterframework.core.PipeRunException</class>
-              <message>&lt;request action=&quot;exception&quot;&gt;
+              <message>Pipe [exception] &lt;request action=&quot;exception&quot;&gt;
 	&lt;value&gt;test&lt;/value&gt;
 &lt;/request&gt;</message>
             </throwable>
