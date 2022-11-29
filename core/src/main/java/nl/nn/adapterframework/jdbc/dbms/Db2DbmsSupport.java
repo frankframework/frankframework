@@ -54,19 +54,12 @@ public class Db2DbmsSupport extends GenericDbmsSupport {
 		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
 			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
 		}
-		// Tried FOR UPDATE SKIP LOCKED (DATA) with DB2 version 10.5 on Linux
-		// but generates a SqlSyntaxErrorException.
-		// http://publib.boulder.ibm.com/infocenter/dzichelp/v2r2/topic/com.ibm.db2z10.doc/src/alltoc/db2z_10_prodhome.htm
-		// http://publib.boulder.ibm.com/infocenter/dzichelp/v2r2/topic/com.ibm.db2z10.doc.sqlref/src/tpc/db2z_sql_selectstatement.htm#db2z_sql_selectstatement
-		// http://publib.boulder.ibm.com/infocenter/dzichelp/v2r2/topic/com.ibm.db2z10.doc.sqlref/src/tpc/db2z_sql_updateclause.htm
-		// http://publib.boulder.ibm.com/infocenter/dzichelp/v2r2/topic/com.ibm.db2z10.doc.sqlref/src/tpc/db2z_sql_skiplockeddata.htm
-		// http://www.ibm.com/developerworks/data/library/techarticle/dm-0907oracleappsondb2/#code-hd
-		return selectQuery+" FOR UPDATE"; // TODO: test to add SKIP LOCKED DATA";
+		return selectQuery+" FOR UPDATE SKIP LOCKED DATA";
 	}
 
 	@Override
 	public String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery, int wait) throws JdbcException {
-		return selectQuery; // + " SKIP LOCKED DATA";
+		return selectQuery+ " SKIP LOCKED DATA";
 	}
 
 	@Override
