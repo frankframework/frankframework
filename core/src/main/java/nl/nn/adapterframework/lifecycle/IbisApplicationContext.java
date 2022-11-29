@@ -132,7 +132,7 @@ public class IbisApplicationContext implements Closeable {
 	 */
 	protected String[] getSpringConfigurationFiles(ClassLoader classLoader) {
 		List<String> springConfigurationFiles = new ArrayList<>();
-		if(parentContext == null) { //When not running in a web container, popularize beans so they can be found throughout this/sub-contexts.
+		if(parentContext == null) { //When not running in a web container, populate top-level beans so they can be found throughout this/sub-contexts.
 			springConfigurationFiles.add(SpringContextScope.STANDALONE.getContextFile());
 		}
 		springConfigurationFiles.add(SpringContextScope.APPLICATION.getContextFile());
