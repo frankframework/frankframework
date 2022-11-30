@@ -96,7 +96,8 @@
 		<Logger name="org.apache.cxf.interceptor" level="WARN" />
 		<Logger name="org.aspectj.weaver" level="WARN" />
 		<Logger name="bitronix.tm" level="INFO" />
-		<Logger name="nl.nn.adapterframework.jta.btm.BtmJtaTransactionManager" level="INFO" />
+		<Logger name="nl.nn.adapterframework.jta.btm.BtmJtaTransactionManager" level="WARN" />
+		<Logger name="nl.nn.adapterframework.jta.narayana.NarayanaJtaTransactionManager" level="WARN" />
 		<Logger name="nl.nn.adapterframework.jta.ThreadConnectableDataSourceTransactionManager" level="INFO" />
 		<Logger name="org.mongodb" level="INFO" />
 		<Logger name="org.quartz" level="WARN" />
