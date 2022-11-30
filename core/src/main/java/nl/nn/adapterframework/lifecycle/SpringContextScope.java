@@ -21,7 +21,8 @@ import org.springframework.util.ResourceUtils;
 import lombok.Getter;
 
 public enum SpringContextScope {
-	ENVIRONMENT("SpringEnvironmentContext.xml"), // IbisInitializer
+	STANDALONE("SpringStandaloneContext.xml"), // Standalone Jar Environment
+	ENVIRONMENT("SpringEnvironmentContext.xml"), // Web Application Environment
 	APPLICATION("SpringApplicationContext.xml"), //IbisContext
 	CONFIGURATION("SpringConfigurationContext.xml"); //Configurations
 

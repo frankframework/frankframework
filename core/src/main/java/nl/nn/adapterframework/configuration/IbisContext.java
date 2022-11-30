@@ -110,7 +110,7 @@ public class IbisContext extends IbisApplicationContext {
 		try {
 			long start = System.currentTimeMillis();
 
-			LOG.info("Attempting to start IBIS application");
+			LOG.info("Attempting to start IBIS application [{}]", getApplicationName());
 			createApplicationContext();
 			LOG.debug("Created Ibis Application Context");
 
