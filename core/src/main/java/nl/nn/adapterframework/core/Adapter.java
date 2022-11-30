@@ -336,15 +336,8 @@ public class Adapter implements IAdapter, NamedBean {
 		if (errorMessageFormatter == null) {
 			errorMessageFormatter = new ErrorMessageFormatter();
 		}
-		// you never can trust an implementation, so try/catch!
 		try {
-			Message formattedErrorMessage= errorMessageFormatter.format(errorMessage, t, objectInError, originalMessage, messageID, receivedTime);
-
-			try (final CloseableThreadContext.Instance ctc = LogUtil.getThreadContext(this, messageID, null)) {
-				logToMessageLogWithMessageContentsOrSize(Level.INFO, "Error", "result", formattedErrorMessage, null);
-			}
-
-			return formattedErrorMessage;
+			return errorMessageFormatter.format(errorMessage, t, objectInError, originalMessage, messageID, receivedTime);
 		} catch (Exception e) {
 			String msg = "got error while formatting errormessage, original errorMessage [" + errorMessage + "]";
 			msg = msg + " from [" + (objectInError == null ? "unknown-null" : objectInError.getName()) + "]";
@@ -551,17 +544,23 @@ public class Adapter implements IAdapter, NamedBean {
 		return new Date(statsUpSince);
 	}
 
-	private void messageLogResult(String messageId, PipeLineResult result, String duration) {
+	private void messageLogResult(String tag, String messageId, PipeLineResult result, long startTime) {
 		Map<String,String> mdcValues = new HashMap<>();
 		mdcValues.put("exitState", result.getState().name());
 		if (result.getExitCode()!=0) {
 			mdcValues.put("exitCode", Integer.toString(result.getExitCode()));
 		}
-		if (duration!=null) {
+		if (startTime!=0) {
+			String duration;
+			if(msgLogHumanReadable) {
+				duration = Misc.getAge(startTime);
+			} else {
+				duration = Misc.getDurationInMs(startTime);
+			}
 			mdcValues.put("duration", duration);
 		}
 
-		logToMessageLogWithMessageContentsOrSize(Level.INFO, "Pipeline returned", "result", result.getResult(), mdcValues);
+		logToMessageLogWithMessageContentsOrSize(Level.INFO, tag, "result", result.getResult(), mdcValues);
 		if (log.isDebugEnabled()) {
 			String exitCode = ", exit-code ["+result.getExitCode()+"]";
 			String format = "got exit-state [{}]"+(result.getExitCode()!=0 ? exitCode : "" ) +" and result [{}] from PipeLine";
@@ -662,13 +661,7 @@ public class Adapter implements IAdapter, NamedBean {
 					}
 					result = pipeline.process(messageId, message, pipeLineSession);
 
-					String duration;
-					if(msgLogHumanReadable) {
-						duration = Misc.getAge(startTime);
-					} else {
-						duration = Misc.getDurationInMs(startTime);
-					}
-					messageLogResult(messageId, result, duration);
+					messageLogResult("Pipeline returned", messageId, result, startTime);
 					return result;
 
 				} catch (Throwable t) {
@@ -681,6 +674,10 @@ public class Adapter implements IAdapter, NamedBean {
 					processingSuccess = false;
 					incNumOfMessagesInError();
 					addErrorMessageToMessageKeeper("error processing message with messageId [" + messageId+"]: ",e);
+					result = new PipeLineResult();
+					result.setState(ExitState.ERROR);
+					result.setResult(new Message(e.getMessage()));
+					messageLogResult("Error", messageId, result, startTime);
 					throw e;
 				} finally {
 					long endTime = System.currentTimeMillis();
