@@ -109,7 +109,7 @@ public class IbisApplicationContext implements Closeable {
 		try {
 			applicationContext = createClassPathApplicationContext();
 			if(parentContext != null) {
-				log.debug("found Spring rootContext ["+parentContext+"]");
+				log.debug("found Spring rootContext [{}]", parentContext);
 				applicationContext.setParent(parentContext);
 			}
 			applicationContext.refresh();
@@ -119,7 +119,7 @@ public class IbisApplicationContext implements Closeable {
 			throw be;
 		}
 
-		log.info("created "+applicationContext.getClass().getSimpleName()+" in " + (System.currentTimeMillis() - start) + " ms");
+		log.info("created {} in {} ms", ()->applicationContext.getClass().getSimpleName(), ()->(System.currentTimeMillis() - start));
 		state = BootState.STARTED;
 	}
 
@@ -130,18 +130,21 @@ public class IbisApplicationContext implements Closeable {
 	 * @param classLoader to use in order to find and validate the Spring Configuration files
 	 * @return A String array containing all files to use.
 	 */
-	private String[] getSpringConfigurationFiles(ClassLoader classLoader) {
+	protected String[] getSpringConfigurationFiles(ClassLoader classLoader) {
 		List<String> springConfigurationFiles = new ArrayList<>();
+		if(parentContext == null) { //When not running in a web container, populate top-level beans so they can be found throughout this/sub-contexts.
+			springConfigurationFiles.add(SpringContextScope.STANDALONE.getContextFile());
+		}
 		springConfigurationFiles.add(SpringContextScope.APPLICATION.getContextFile());
 
 		StringTokenizer locationTokenizer = AppConstants.getInstance().getTokenizedProperty("SPRING.CONFIG.LOCATIONS");
 		while(locationTokenizer.hasMoreTokens()) {
 			String file = locationTokenizer.nextToken();
-			if(log.isDebugEnabled()) log.debug("found spring configuration file to load ["+file+"]");
+			log.debug("found spring configuration file to load [{}]", file);
 
 			URL fileURL = classLoader.getResource(file);
 			if(fileURL == null) {
-				log.error("unable to locate Spring configuration file ["+file+"]");
+				log.error("unable to locate Spring configuration file [{}]", file);
 			} else {
 				if(file.indexOf(":") == -1) {
 					file = ResourceUtils.CLASSPATH_URL_PREFIX+"/"+file;
@@ -153,7 +156,7 @@ public class IbisApplicationContext implements Closeable {
 
 		addJmxConfigurationIfEnabled(springConfigurationFiles);
 
-		log.info("loading Spring configuration files "+springConfigurationFiles+"");
+		log.info("loading Spring configuration files {}", springConfigurationFiles);
 		return springConfigurationFiles.toArray(new String[springConfigurationFiles.size()]);
 	}
 
@@ -169,18 +172,22 @@ public class IbisApplicationContext implements Closeable {
 	 * @throws BeansException when the Context fails to initialize
 	 */
 	private ClassPathXmlApplicationContext createClassPathApplicationContext() {
-		ClassPathXmlApplicationContext classPathapplicationContext = new ClassPathXmlApplicationContext();
+		ClassPathXmlApplicationContext classPathApplicationContext = new ClassPathXmlApplicationContext();
 
-		MutablePropertySources propertySources = classPathapplicationContext.getEnvironment().getPropertySources();
+		MutablePropertySources propertySources = classPathApplicationContext.getEnvironment().getPropertySources();
 		propertySources.remove(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME);
 		propertySources.remove(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME);
 		propertySources.addFirst(new PropertiesPropertySource(SpringContextScope.APPLICATION.getFriendlyName(), APP_CONSTANTS));
-		classPathapplicationContext.setConfigLocations(getSpringConfigurationFiles(classPathapplicationContext.getClassLoader()));
-		String instanceName = APP_CONSTANTS.getResolvedProperty("instance.name");
-		classPathapplicationContext.setId(instanceName);
-		classPathapplicationContext.setDisplayName("IbisApplicationContext ["+instanceName+"]");
 
-		return classPathapplicationContext;
+		ClassLoader classLoader = classPathApplicationContext.getClassLoader();
+		if(classLoader == null) throw new IllegalStateException("no ClassLoader found to initialize Spring from");
+		classPathApplicationContext.setConfigLocations(getSpringConfigurationFiles(classLoader));
+
+		String instanceName = APP_CONSTANTS.getResolvedProperty("instance.name");
+		classPathApplicationContext.setId(instanceName);
+		classPathApplicationContext.setDisplayName("IbisApplicationContext ["+instanceName+"]");
+
+		return classPathApplicationContext;
 	}
 
 	/**
@@ -190,12 +197,12 @@ public class IbisApplicationContext implements Closeable {
 	public void close() {
 		if (applicationContext != null) {
 			String oldContextName = applicationContext.getDisplayName();
-			log.debug("destroying Ibis Application Context ["+oldContextName+"]");
+			log.debug("destroying Ibis Application Context [{}]", oldContextName);
 
 			applicationContext.close();
 			applicationContext = null;
 
-			log.info("destroyed Ibis Application Context ["+oldContextName+"]");
+			log.info("destroyed Ibis Application Context [{}]", oldContextName);
 		}
 	}
 
@@ -267,7 +274,7 @@ public class IbisApplicationContext implements Closeable {
 			if(version != null) {
 				iafModules.put(module, version);
 				APP_CONSTANTS.put(module+".version", version);
-				log.info("Loading IAF module ["+module+"] version ["+version+"]");
+				log.info("Loading IAF module [{}] version [{}]", module, version);
 			}
 		}
 	}

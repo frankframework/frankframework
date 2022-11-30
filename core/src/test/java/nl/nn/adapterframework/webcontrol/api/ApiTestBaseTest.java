@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ import org.junit.Test;
  * This is a test class to test the {@link ApiTestBase} class.
  * It tests path parameters, query parameters and json convertions
  */
-public class ApiTestBaseTest extends Base {
+public class ApiTestBaseTest extends FrankApiBase {
 
 	@GET
 	@Path("/test/{path}")
@@ -79,14 +79,14 @@ public class ApiTestBaseTest extends Base {
 		InputStream boolFalse = new ByteArrayInputStream("false".getBytes());
 		InputStream boolNull = new ByteArrayInputStream("".getBytes());
 
-		assertEquals("string", Base.convert(String.class, string));
-		assertEquals(true, Base.convert(boolean.class, boolTrue));
-		assertEquals(false, Base.convert(Boolean.class, boolFalse));
-		assertEquals(false, Base.convert(boolean.class, boolNull));
-		assertEquals(50, Base.convert(Integer.class, number).intValue());
+		assertEquals("string", FrankApiBase.convert(String.class, string));
+		assertEquals(true, FrankApiBase.convert(boolean.class, boolTrue));
+		assertEquals(false, FrankApiBase.convert(Boolean.class, boolFalse));
+		assertEquals(false, FrankApiBase.convert(boolean.class, boolNull));
+		assertEquals(50, FrankApiBase.convert(Integer.class, number).intValue());
 	}
 
-	public static class TestApi extends ApiTestBase<ApiTestBaseTest> {
+	public static class TestApi extends FrankApiTestBase<ApiTestBaseTest> {
 
 		@Override
 		public ApiTestBaseTest createJaxRsResource() {

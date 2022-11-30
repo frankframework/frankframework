@@ -76,6 +76,7 @@ import nl.nn.adapterframework.stream.Message;
 /**
  * Miscellaneous conversion functions.
  */
+//Be careful: UTIL classes should NOT depend on the Servlet-API
 public class Misc {
 	static Logger log = LogUtil.getLogger(Misc.class);
 	public static final int BUFFERSIZE=20000;
