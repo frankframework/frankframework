@@ -4,7 +4,7 @@
 			<listener
 				name="test_esb_listener"
 				className="nl.nn.adapterframework.extensions.esb.EsbJmsListener"
-				destinationName="jms/GetMessageRequest"
+				destinationName="${tibco.rr_queue}"
 				jmsRealm="qcf_tibco_esb_rr"
 				messageProtocol="RR"
 				messageSelector="SOURCE='${hostname}_jmsHeaderTest'"
@@ -50,7 +50,7 @@
 				>
 				<sender
 					className="nl.nn.adapterframework.extensions.esb.EsbJmsSender"
-					destinationName="jms/GetMessageRequest"
+					destinationName="${tibco.rr_queue}"
 					jmsRealm="qcf_tibco_esb_rr"
 					messageProtocol="RR"
 					responseHeadersToSessionKeys="value,sessionkey,sessionkeyWithValue,sessionkeyWithSessionKey"
