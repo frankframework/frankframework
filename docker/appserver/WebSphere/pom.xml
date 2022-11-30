@@ -68,6 +68,11 @@
 			<version>${postgresql.driver.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>com.ibm.db2</groupId>
+			<artifactId>jcc</artifactId>
+			<version>${db2.driver.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>org.mongodb</groupId>
 			<artifactId>mongodb-driver-sync</artifactId>
 			<version>${mongodb.driver.version}</version>

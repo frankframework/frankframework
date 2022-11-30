@@ -124,7 +124,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	public String getDatasourceInfo() throws JdbcException {
 		String dsinfo=null;
 		if(getDatasource() instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
-			return getDatasource().toString();
+			return ((TransactionalDbmsSupportAwareDataSourceProxy) getDatasource()).getInfo();
 		}
 		try (Connection conn=getConnection()) {
 			DatabaseMetaData md=conn.getMetaData();
@@ -136,7 +136,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 			String user=md.getUserName();
 			dsinfo ="user ["+user+"] url ["+url+"] product ["+product+"] product version ["+productVersion+"] driver ["+driver+"] driver version ["+driverVersion+"]";
 		} catch (SQLException e) {
-			log.warn("Exception determining databaseinfo",e);
+			log.warn("Exception determining databaseinfo", e);
 		}
 		return dsinfo;
 	}

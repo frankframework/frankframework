@@ -635,44 +635,48 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (10,1)", null);
 
 		try (Connection connection = getConnection()) {
-			connection.setAutoCommit(false);
+			try {
+				connection.setAutoCommit(false);
 
-			if (checkpoint==1) secondaryRead = getMessageInParallel();
+				if (checkpoint==1) secondaryRead = getMessageInParallel();
 
-			String query = dbmsSupport.prepareQueryTextForWorkQueueReading(1, "SELECT TKEY,TINT FROM "+TEST_TABLE+" WHERE TINT='1'");
-			log.debug("prepare query ["+query+"]");
-			try (PreparedStatement stmt = connection.prepareStatement(query, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
+				String query = dbmsSupport.prepareQueryTextForWorkQueueReading(1, "SELECT TKEY,TINT FROM "+TEST_TABLE+" WHERE TINT='1'");
+				log.debug("prepare query ["+query+"]");
+				try (PreparedStatement stmt = connection.prepareStatement(query, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
 
-				if (checkpoint==2) secondaryRead = getMessageInParallel();
+					if (checkpoint==2) secondaryRead = getMessageInParallel();
 
-				try (ResultSet rs = stmt.executeQuery()) {
+					try (ResultSet rs = stmt.executeQuery()) {
 
-					if (checkpoint==3) secondaryRead = getMessageInParallel();
+						if (checkpoint==3) secondaryRead = getMessageInParallel();
 
-					if (rs.next()) {
+						if (rs.next()) {
 
-						if (checkpoint==4) secondaryRead = getMessageInParallel();
+							if (checkpoint==4) secondaryRead = getMessageInParallel();
 
-						if (useUpdateRow) {
-							rs.updateInt(2, 4);
-							if (checkpoint==5) secondaryRead = getMessageInParallel();
-							rs.updateRow();
-						} else {
-							int key = rs.getInt(1);
-							try (PreparedStatement stmt2 = connection.prepareStatement("UPDATE "+TEST_TABLE+" SET TINT='4' WHERE TKEY=?")) {
-								stmt2.setInt(1, key);
+							if (useUpdateRow) {
+								rs.updateInt(2, 4);
 								if (checkpoint==5) secondaryRead = getMessageInParallel();
-								stmt2.execute();
+								rs.updateRow();
+							} else {
+								int key = rs.getInt(1);
+								try (PreparedStatement stmt2 = connection.prepareStatement("UPDATE "+TEST_TABLE+" SET TINT='4' WHERE TKEY=?")) {
+									stmt2.setInt(1, key);
+									if (checkpoint==5) secondaryRead = getMessageInParallel();
+									stmt2.execute();
+								}
 							}
+
+							if (checkpoint==6) secondaryRead = getMessageInParallel();
+
+							connection.commit();
+							primaryRead = true;
+							if (checkpoint==7) secondaryRead = getMessageInParallel();
 						}
-
-						if (checkpoint==6) secondaryRead = getMessageInParallel();
-
-						connection.commit();
-						primaryRead = true;
-						if (checkpoint==7) secondaryRead = getMessageInParallel();
 					}
 				}
+			} finally {
+				connection.rollback(); // required for DB2
 			}
 		}
 		assertFalse("At most one attempt should have passed",primaryRead && secondaryRead);

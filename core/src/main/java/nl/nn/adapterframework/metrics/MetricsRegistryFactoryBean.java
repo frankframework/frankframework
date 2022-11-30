@@ -19,8 +19,14 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.util.Assert;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
@@ -32,7 +38,6 @@ import io.micrometer.core.instrument.binder.logging.Log4j2Metrics;
 import io.micrometer.core.instrument.binder.system.DiskSpaceMetrics;
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
-import lombok.Getter;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -41,15 +46,17 @@ import nl.nn.adapterframework.util.Misc;
  * Singleton bean that keeps track of a Spring Application's uptime.
  *
  */
-public class MetricsRegistry {
-	private Logger log = LogUtil.getLogger(this);
+public class MetricsRegistryFactoryBean implements InitializingBean, DisposableBean, FactoryBean<MeterRegistry> {
 
-	private static final String CONFIGURATOR_CLASS_SUFFIX=".configurator";
-	private @Getter MeterRegistry registry;
-
+	private static final String CONFIGURATOR_CLASS_SUFFIX = ".configurator";
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 
-	public MetricsRegistry() {
+	private Logger log = LogUtil.getLogger(this);
+	private MeterRegistry registry;
+	private @Nullable JvmGcMetrics jvmGcMetrics;
+	private @Nullable Log4j2Metrics log4j2Metrics;
+
+	public MetricsRegistryFactoryBean() {
 		CompositeMeterRegistry compositeRegistry = new CompositeMeterRegistry();
 
 		for(Object keyObj:APP_CONSTANTS.keySet()) {
@@ -78,30 +85,69 @@ public class MetricsRegistry {
 		}
 
 		this.registry = compositeRegistry;
-		configureRegistry();
 	}
 
-	private void configureRegistry() {
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		Assert.notNull(registry, "unable to create registry");
+
+		setupCommonTags();
+		addSystemMetrics();
+	}
+
+	private void setupCommonTags() {
 		registry.config().commonTags(
 			"instance", APP_CONSTANTS.getString("instance.name",""),
 			"ff_version", APP_CONSTANTS.getString("application.version", "unknown"),
 			"hostname" , Misc.getHostname(),
 			"dtap_stage" , APP_CONSTANTS.getProperty("dtap.stage")
 		);
+	}
 
+	// These classes are for exposing JVM specific metrics
+	private void addSystemMetrics() {
 		List<Tag> tags = new ArrayList<>();
 		tags.add(Tag.of("type", "system"));
-		// These classes are for exposing JVM specific metrics
 		new ClassLoaderMetrics(tags).bindTo(registry);
 		new JvmMemoryMetrics(tags).bindTo(registry);
-		new JvmGcMetrics(tags).bindTo(registry);
 		new ProcessorMetrics(tags).bindTo(registry);
 		new JvmThreadMetrics(tags).bindTo(registry);
+
+		jvmGcMetrics = new JvmGcMetrics(tags);
+		jvmGcMetrics.bindTo(registry);
+
+		log4j2Metrics = new Log4j2Metrics(tags);
+		log4j2Metrics.bindTo(registry);
+
 		String logDir = APP_CONSTANTS.get("log.dir");
 		if(StringUtils.isNotEmpty(logDir)) {
 			File f = new File(logDir);
 			new DiskSpaceMetrics(f, tags).bindTo(registry);
 		}
-		new Log4j2Metrics(tags).bindTo(registry);
+	}
+
+	@Override
+	public MeterRegistry getObject() {
+		return registry;
+	}
+
+	@Override
+	public Class<? extends MeterRegistry> getObjectType() {
+		return  (this.registry != null ? this.registry.getClass() : MeterRegistry.class);
+	}
+
+	@Override
+	public boolean isSingleton() {
+		return true;
+	}
+
+	@Override
+	public void destroy() throws Exception {
+		try {
+			if(jvmGcMetrics != null) jvmGcMetrics.close();
+			if(log4j2Metrics != null) log4j2Metrics.close();
+		} finally {
+			registry.close();
+		}
 	}
 }

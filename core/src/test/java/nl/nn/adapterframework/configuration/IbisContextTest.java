@@ -4,16 +4,20 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.hamcrest.Matchers;
 import org.junit.Test;
+import org.springframework.beans.BeansException;
 
 import nl.nn.adapterframework.configuration.classloaders.DummyClassLoader;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
 import nl.nn.adapterframework.lifecycle.MessageEventListener;
 import nl.nn.adapterframework.testutil.TestClassLoader;
+import nl.nn.adapterframework.testutil.mock.MockIbisManager;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
 
 public class IbisContextTest {
@@ -32,6 +36,23 @@ public class IbisContextTest {
 		@Override
 		protected Map<String, Class<? extends IConfigurationClassLoader>> retrieveAllConfigNames() {
 			return configurations;
+		}
+
+		@Override
+		protected String[] getSpringConfigurationFiles(ClassLoader classLoader) {
+			List<String> springConfigurationFiles = new ArrayList<>();
+			springConfigurationFiles.add("testApplicationContext.xml");
+
+			return springConfigurationFiles.toArray(new String[springConfigurationFiles.size()]);
+		}
+
+		@Override
+		protected void createApplicationContext() throws BeansException {
+			super.createApplicationContext();
+
+			IbisManager ibisManager = new MockIbisManager();
+			ibisManager.setIbisContext(this);
+			getApplicationContext().getBeanFactory().registerSingleton("ibisManager", ibisManager);
 		}
 	}
 
