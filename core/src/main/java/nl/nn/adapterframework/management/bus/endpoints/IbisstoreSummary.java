@@ -43,13 +43,13 @@ import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.management.bus.BusAware;
+import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.Receiver;
-import nl.nn.adapterframework.webcontrol.api.ApiException;
 import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 @BusAware("frank-management-bus")
@@ -79,12 +79,12 @@ public class IbisstoreSummary extends BusEndpointBase {
 				qs.open();
 				result = qs.sendMessageOrThrow(new nl.nn.adapterframework.stream.Message(query!=null?query:qs.getDbmsSupport().getIbisStoreSummaryQuery()), null).asString();
 			} catch (Throwable t) {
-				throw new ApiException("An error occured on executing jdbc query", t);
+				throw new BusException("An error occured on executing jdbc query", t);
 			} finally {
 				qs.close();
 			}
 		} catch (Exception e) {
-			throw new ApiException("An error occured on creating or closing the connection", e);
+			throw new BusException("An error occured on creating or closing the connection", e);
 		}
 
 		String resultObject = "{ \"result\":"+result+"}";

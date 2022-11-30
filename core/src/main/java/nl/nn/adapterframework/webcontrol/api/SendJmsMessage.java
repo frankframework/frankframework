@@ -56,7 +56,7 @@ public final class SendJmsMessage extends FrankApiBase {
 	@Path("jms/message")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response putJmsMessage(MultipartBody inputDataMap) throws ApiException {
+	public Response putJmsMessage(MultipartBody inputDataMap) {
 
 		String message = null, fileName = null;
 		InputStream file = null;

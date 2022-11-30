@@ -59,7 +59,7 @@ public final class Webservices extends Base {
 	@Path("/webservices")
 	@Relation("webservices")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getWebServices() throws ApiException {
+	public Response getWebServices() {
 		return callSyncGateway(RequestMessageBuilder.create(this, BusTopic.WEBSERVICES));
 	}
 
@@ -71,7 +71,7 @@ public final class Webservices extends Base {
 	public Response getWsdl(
 		@PathParam("resourceName") String resourceName,
 		@DefaultValue("true") @QueryParam("indent") boolean indent,
-		@DefaultValue("false") @QueryParam("useIncludes") boolean useIncludes) throws ApiException {
+		@DefaultValue("false") @QueryParam("useIncludes") boolean useIncludes) {
 
 		String adapterName;
 		boolean zip;

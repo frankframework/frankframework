@@ -40,7 +40,7 @@ public final class ShowSecurityItems extends FrankApiBase {
 	@Path("/securityitems")
 	@Relation("securityitems")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getSecurityItems() throws ApiException {
+	public Response getSecurityItems() {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.SECURITY_ITEMS);
 		return callSyncGateway(builder);
 	}

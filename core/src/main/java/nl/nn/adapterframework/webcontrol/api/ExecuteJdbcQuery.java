@@ -56,7 +56,7 @@ public final class ExecuteJdbcQuery extends FrankApiBase {
 	@Path("/jdbc/query")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response execute(Map<String, Object> json) throws ApiException {
+	public Response execute(Map<String, Object> json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.JDBC, BusAction.MANAGE);
 		String datasource = getValue(json, "datasource");
 		String query = getValue(json, "query");

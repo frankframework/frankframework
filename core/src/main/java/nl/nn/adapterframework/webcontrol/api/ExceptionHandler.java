@@ -39,6 +39,6 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
 	public Response toResponse(Exception exception) {
 		log.warn("Caught unhandled Exception while executing FF!API call", exception);
 
-		return ApiException.formatException(exception.getMessage(), Status.INTERNAL_SERVER_ERROR);
+		return ApiException.formatExceptionResponse(exception.getMessage(), Status.INTERNAL_SERVER_ERROR);
 	}
 }

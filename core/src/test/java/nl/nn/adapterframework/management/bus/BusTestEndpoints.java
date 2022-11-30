@@ -20,19 +20,40 @@ import javax.annotation.security.RolesAllowed;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.GenericMessage;
 
-import lombok.Getter;
-import lombok.Setter;
-import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.stream.StreamingException;
 
 @BusAware("frank-management-bus")
-public class BusAuthorisationEndpoint {
-	private @Getter @Setter IbisManager ibisManager;
+public class BusTestEndpoints {
+	public enum ExceptionTestTypes {
+		MESSAGE, MESSAGE_WITH_CAUSE, CAUSE
+	}
 
+	//Test authorization
 	@TopicSelector(BusTopic.DEBUG)
 	@ActionSelector(BusAction.MANAGE)
 	@RolesAllowed({"IbisAdmin", "IbisTester"})
 	public Message<String> handleIbisAction(Message<?> message) {
 		String isAdmin = ""+BusMessageUtils.hasAnyRole("IbisTester");
 		return new GenericMessage<String>(isAdmin);
+	}
+
+	//Test exceptions
+	@TopicSelector(BusTopic.DEBUG)
+	@ActionSelector(BusAction.WARNINGS)
+	public Message<String> throwException(Message<?> message) {
+		ExceptionTestTypes type = BusMessageUtils.getEnumHeader(message, "type", ExceptionTestTypes.class);
+		Exception cause = new StreamingException("cannot stream",
+			new ConfigurationException("cannot configure",
+				new IllegalStateException("something is wrong")));
+		switch (type) {
+		case MESSAGE:
+			throw new BusException("message with a cause");
+		case CAUSE:
+			throw new IllegalStateException("uncaught exception", cause);
+		case MESSAGE_WITH_CAUSE:
+		default:
+			throw new BusException("message with a cause", cause);
+		}
 	}
 }
