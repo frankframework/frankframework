@@ -43,8 +43,6 @@ import nl.nn.adapterframework.util.Misc;
  * An IbisJavaSender makes a call to a Receiver with a {@link JavaListener}
  * or any other application in the same JVM that has registered a <code>RequestProcessor</code> with the IbisServiceDispatcher.
  *
- * Any parameters are copied to the PipeLineSession of the service called.
- *
  * <h4>configuring IbisJavaSender and JavaListener</h4>
  * <ul>
  *   <li>Define a SenderPipe with an IbisJavaSender</li>
@@ -57,6 +55,7 @@ import nl.nn.adapterframework.util.Misc;
  * </ul>
  * N.B. Please make sure that the IbisServiceDispatcher-1.1.jar is present on the class path of the server.
  *
+ * @ff.parameters All parameters are copied to the PipeLineSession of the service called.
  * @ff.forward "&lt;Exit.code&gt;" default
  * 
  * @author  Gerrit van Brakel
