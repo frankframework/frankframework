@@ -40,7 +40,7 @@ public class ApiExceptionTest {
 		});
 	}
 
-	private String toJsonString(Object entity) {
+	public static String toJsonString(Object entity) {
 		assertTrue(entity instanceof FormattedJsonEntity);
 		FormattedJsonEntity fje = (FormattedJsonEntity) entity;
 		ByteArrayOutputStream boas = new ByteArrayOutputStream();

@@ -46,7 +46,6 @@ import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.scheduler.IbisJobDetail;
 import nl.nn.adapterframework.scheduler.IbisJobDetail.JobType;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
-import nl.nn.adapterframework.webcontrol.api.ApiException;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.SCHEDULER)
@@ -69,7 +68,7 @@ public class ManageScheduler extends BusEndpointBase {
 	private JobKey getJobKey(String jobName, String groupName) {
 		JobKey jobKey = JobKey.jobKey(jobName, groupName);
 		if(jobKey == null) {
-			throw new ApiException("JobKey not found, unable to remove schedule");
+			throw new BusException("JobKey not found, unable to remove schedule");
 		}
 		return jobKey;
 	}
