@@ -172,22 +172,22 @@ public class IbisApplicationContext implements Closeable {
 	 * @throws BeansException when the Context fails to initialize
 	 */
 	private ClassPathXmlApplicationContext createClassPathApplicationContext() {
-		ClassPathXmlApplicationContext classPathapplicationContext = new ClassPathXmlApplicationContext();
+		ClassPathXmlApplicationContext classPathApplicationContext = new ClassPathXmlApplicationContext();
 
-		MutablePropertySources propertySources = classPathapplicationContext.getEnvironment().getPropertySources();
+		MutablePropertySources propertySources = classPathApplicationContext.getEnvironment().getPropertySources();
 		propertySources.remove(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME);
 		propertySources.remove(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME);
 		propertySources.addFirst(new PropertiesPropertySource(SpringContextScope.APPLICATION.getFriendlyName(), APP_CONSTANTS));
 
-		ClassLoader classLoader = classPathapplicationContext.getClassLoader();
+		ClassLoader classLoader = classPathApplicationContext.getClassLoader();
 		if(classLoader == null) throw new IllegalStateException("no ClassLoader found to initialize Spring from");
-		classPathapplicationContext.setConfigLocations(getSpringConfigurationFiles(classLoader));
+		classPathApplicationContext.setConfigLocations(getSpringConfigurationFiles(classLoader));
 
 		String instanceName = APP_CONSTANTS.getResolvedProperty("instance.name");
-		classPathapplicationContext.setId(instanceName);
-		classPathapplicationContext.setDisplayName("IbisApplicationContext ["+instanceName+"]");
+		classPathApplicationContext.setId(instanceName);
+		classPathApplicationContext.setDisplayName("IbisApplicationContext ["+instanceName+"]");
 
-		return classPathapplicationContext;
+		return classPathApplicationContext;
 	}
 
 	/**
