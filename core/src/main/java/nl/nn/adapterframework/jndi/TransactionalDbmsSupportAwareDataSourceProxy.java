@@ -54,7 +54,7 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 	/**
 	 * Should only be called once, either on the first {@link #getConnection()} or when explicitly requested {@link #getMetaData()}.
 	 */
-	private synchronized void populateMetadata(Connection connection) throws SQLException {
+	private void populateMetadata(Connection connection) throws SQLException {
 		Map<String, String> databaseMetadata = new HashMap<>();
 		DatabaseMetaData md = connection.getMetaData();
 		databaseMetadata.put("catalog", connection.getCatalog());
