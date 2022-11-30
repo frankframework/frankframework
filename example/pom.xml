@@ -37,6 +37,13 @@
 			<artifactId>geronimo-jms_1.1_spec</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+
+		<!-- This should be the only required test dependency to run IbisTester -->
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
