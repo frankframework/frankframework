@@ -30,7 +30,7 @@ import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * Catch Spring Channel exceptions. When the cause is instanceof BusException, throw it directly.
+ * Catch Spring Channel exceptions. Some Exceptions may be thrown direct, see {@link ManagedException}.
  * 
  * @author	Niels Meijer
  */
