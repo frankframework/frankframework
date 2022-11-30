@@ -2,7 +2,6 @@ package nl.nn.adapterframework.management.bus;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import javax.ws.rs.core.Response;
 
@@ -31,10 +30,8 @@ public class TestSpringBusExceptionHandler extends BusTestBase {
 		request.setHeader("type", ExceptionTestTypes.MESSAGE.name());
 		try {
 			callSyncGateway(request);
-		} catch (Exception e) {
-			assertTrue(e instanceof MessageHandlingException);
-
-			Response response = handler.toResponse((MessageHandlingException) e);
+		} catch (MessageHandlingException e) {
+			Response response = handler.toResponse(e);
 			assertEquals(500, response.getStatus());
 			String json = ApiExceptionTest.toJsonString(response.getEntity());
 			assertEquals("message with a cause", json);
@@ -47,10 +44,8 @@ public class TestSpringBusExceptionHandler extends BusTestBase {
 		request.setHeader("type", ExceptionTestTypes.MESSAGE_WITH_CAUSE.name());
 		try {
 			callSyncGateway(request);
-		} catch (Exception e) {
-			assertTrue(e instanceof MessageHandlingException);
-
-			Response response = handler.toResponse((MessageHandlingException) e);
+		} catch (MessageHandlingException e) {
+			Response response = handler.toResponse(e);
 			assertEquals(500, response.getStatus());
 			String json = ApiExceptionTest.toJsonString(response.getEntity());
 			assertEquals("message with a cause: cannot stream: cannot configure: (IllegalStateException) something is wrong", json);
@@ -63,10 +58,8 @@ public class TestSpringBusExceptionHandler extends BusTestBase {
 		request.setHeader("type", ExceptionTestTypes.CAUSE.name());
 		try {
 			callSyncGateway(request);
-		} catch (Exception e) {
-			assertTrue(e instanceof MessageHandlingException);
-
-			Response response = handler.toResponse((MessageHandlingException) e);
+		} catch (MessageHandlingException e) {
+			Response response = handler.toResponse(e);
 			assertEquals(500, response.getStatus());
 			String json = ApiExceptionTest.toJsonString(response.getEntity());
 			assertThat(json, Matchers.startsWith("error occurred during processing message in 'MethodInvokingMessageProcessor'"));
@@ -79,10 +72,8 @@ public class TestSpringBusExceptionHandler extends BusTestBase {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.DEBUG, BusAction.MANAGE);
 		try {
 			callSyncGateway(request);
-		} catch (Exception e) {
-			assertTrue(e instanceof MessageHandlingException);
-
-			Response response = handler.toResponse((MessageHandlingException) e);
+		} catch (MessageHandlingException e) {
+			Response response = handler.toResponse(e);
 			assertEquals(401, response.getStatus());
 			String json = ApiExceptionTest.toJsonString(response.getEntity());
 			assertEquals("An Authentication object was not found in the SecurityContext", json);
@@ -95,10 +86,8 @@ public class TestSpringBusExceptionHandler extends BusTestBase {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.DEBUG, BusAction.MANAGE);
 		try {
 			callSyncGateway(request);
-		} catch (Exception e) {
-			assertTrue(e instanceof MessageHandlingException);
-
-			Response response = handler.toResponse((MessageHandlingException) e);
+		} catch (MessageHandlingException e) {
+			Response response = handler.toResponse(e);
 			assertEquals(403, response.getStatus());
 			String json = ApiExceptionTest.toJsonString(response.getEntity());
 			assertEquals("Access Denied", json);
