@@ -134,12 +134,18 @@ public class IbisException extends Exception {
 	}
 
 	public static String expandMessage(String msg, Throwable e) {
+		return expandMessage(msg, e, true);
+	}
+
+	public static String expandMessage(String msg, Throwable e, boolean prependExceptionType) {
 		String result=null;
 		List<String> msgChain = getMessages(e, msg);
 		Throwable t = e;
 		for(String message:msgChain) {
-			String exceptionType = t instanceof IbisException ? "" : "("+t.getClass().getSimpleName()+")";
-			message = Misc.concatStrings(exceptionType, " ", message);
+			if(prependExceptionType) {
+				String exceptionType = t instanceof IbisException ? "" : "("+t.getClass().getSimpleName()+")";
+				message = Misc.concatStrings(exceptionType, " ", message);
+			}
 			result = Misc.concatStrings(result, ": ", message);
 			t = getCause(t);
 		}
