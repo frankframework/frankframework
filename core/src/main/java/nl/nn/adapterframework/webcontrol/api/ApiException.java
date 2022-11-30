@@ -85,7 +85,7 @@ public class ApiException extends WebApplicationException implements Serializabl
 		if(msg == null && t == null) {
 			this.expandedMessage = null;
 		} else {
-			this.expandedMessage = IbisException.expandMessage(super.getMessage(), this, false);
+			this.expandedMessage = IbisException.expandMessage(super.getMessage(), this, e -> e instanceof IbisException || e instanceof ApiException);
 		}
 
 		log.warn(this.expandedMessage, t);
