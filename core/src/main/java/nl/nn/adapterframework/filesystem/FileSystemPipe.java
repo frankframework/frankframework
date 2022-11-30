@@ -29,6 +29,8 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.SupportsOutputStreaming;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
+import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -38,6 +40,8 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingPipe;
+import nl.nn.adapterframework.stream.document.DocumentFormat;
+import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * Base class for Pipes that use a {@link IBasicFileSystem FileSystem}.
@@ -52,6 +56,7 @@ import nl.nn.adapterframework.stream.StreamingPipe;
  *
  * @author Gerrit van Brakel
  */
+@ElementType(ElementTypes.ENDPOINT)
 @SupportsOutputStreaming
 public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends StreamingPipe implements HasPhysicalDestination {
 
@@ -62,12 +67,10 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		getFileSystem().configure();
-		try {
-			actor.configure(fileSystem, getParameterList(), this);
-		} catch (ConfigurationException e) {
-			throw new ConfigurationException(getLogPrefix(null),e);
-		}
+		FS fileSystem = getFileSystem();
+		SpringUtils.autowireByName(getApplicationContext(), fileSystem);
+		fileSystem.configure();
+		actor.configure(fileSystem, getParameterList(), this);
 	}
 
 	@Override
@@ -112,7 +115,7 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 				pvl = paramList.getValues(message, session);
 			}
 		} catch (ParameterException e) {
-			throw new PipeRunException(this,getLogPrefix(session) + "Pipe [" + getName() + "] caught exception evaluating parameters", e);
+			throw new PipeRunException(this,"Pipe caught exception evaluating parameters", e);
 		}
 
 		Object result;
@@ -245,5 +248,10 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 	@IbisDocRef({FILESYSTEMACTOR})
 	public void setDeleteEmptyFolder(boolean deleteEmptyFolder) {
 		actor.setDeleteEmptyFolder(deleteEmptyFolder);
+	}
+
+	@IbisDocRef({FILESYSTEMACTOR})
+	public void setOutputFormat(DocumentFormat outputFormat) {
+		actor.setOutputFormat(outputFormat);
 	}
 }

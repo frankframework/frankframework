@@ -32,7 +32,7 @@ import nl.nn.adapterframework.stream.Message;
 
 /**
  * Pipe for retreiving files via (s)ftp. The path of the created local file is returned.
- * 
+ *
  * @author John Dekker
  * @since   4.4
  */
@@ -43,10 +43,9 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 	private FtpSession ftpSession;
 
 	private String localFilenamePattern=null;
-	private String localDirectory=null;;
+	private String localDirectory=null;
 	private String remoteDirectory=null;
-	private boolean deleteAfterGet=false;
-	
+	private boolean deleteAfterGet = false;
 
 	public FtpFileRetrieverPipe() {
 		ftpSession = new FtpSession();
@@ -57,22 +56,22 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 		super.configure();
 //		PipeForward exceptionForward = findForward(EXCEPTIONFORWARD);
 //		if (exceptionForward==null) {
-//			throw new ConfigurationException(getLogPrefix(null)+"must specify forward ["+EXCEPTIONFORWARD+"]"); 
+//			throw new ConfigurationException("must specify forward ["+EXCEPTIONFORWARD+"]");
 //		}
 		ftpSession.configure();
 	}
-	
+
 	@Override
 	public void stop() {
 		super.stop();
-		try {		
+		try {
 			ftpSession.closeClient();
-		} catch(Exception e) {
-			log.warn(getLogPrefix(null)+"exception closing ftpSession",e);
+		} catch (Exception e) {
+			log.warn("exception closing ftpSession", e);
 		}
 	}
- 
-	/** 
+
+	/**
 * @see nl.nn.adapterframework.core.IPipe#doPipe(Message, PipeLineSession)
 	 */
 	@Override
@@ -81,14 +80,14 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 		try {
 			orgFilename = message.asString();
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+			throw new PipeRunException(this, "cannot open stream", e);
 		}
 		try {
 			boolean close = ! deleteAfterGet;
 			String localFilename = ftpSession.get(getParameterList(), session, localDirectory, remoteDirectory, orgFilename, localFilenamePattern, close);
-			if (deleteAfterGet) {
+			if(deleteAfterGet) {
 				ftpSession.deleteRemote(remoteDirectory, orgFilename, true);
-			} 
+			}
 			return new PipeRunResult(getSuccessForward(), localFilename);
 		}
 		catch(Exception e) {

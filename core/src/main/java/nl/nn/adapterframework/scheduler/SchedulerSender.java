@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2019 Nationale-Nederlanden
+   Copyright 2013, 2015, 2019 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.quartz.SchedulerException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -54,7 +55,7 @@ public class SchedulerSender extends SenderWithParametersBase {
 		if (StringUtils.isEmpty(cronExpressionPattern)) {
 			throw new ConfigurationException("Property [cronExpressionPattern] is empty");
 		}
-		
+
 		Parameter p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 		p.setName("_cronexpression");
 		p.setPattern(cronExpressionPattern);
@@ -85,22 +86,20 @@ public class SchedulerSender extends SenderWithParametersBase {
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException {
 		try {
-			String correlationID = session==null ? "" : session.getMessageId();
+			String correlationID = session==null ? "" : session.getCorrelationId();
 			ParameterValueList values = paramList.getValues(message, session);
 			String jobName = getName() + correlationID;
-			String cronExpression = values.getParameterValue("_cronexpression").asStringValue();
+			String cronExpression = values.get("_cronexpression").asStringValue();
 			if (StringUtils.isNotEmpty(jobNamePattern)) {
-				jobName = values.getParameterValue("_jobname").asStringValue();
+				jobName = values.get("_jobname").asStringValue();
 			}
 			schedule(jobName, cronExpression, correlationID, message.asString());
-			return new Message(jobName);
-		}
-		catch(SenderException e) {
+			return new SenderResult(jobName);
+		} catch(SenderException e) {
 			throw e;
-		}
-		catch(Exception e) {
+		} catch(Exception e) {
 			throw new SenderException("Error during scheduling " + message, e);
 		}
 	}

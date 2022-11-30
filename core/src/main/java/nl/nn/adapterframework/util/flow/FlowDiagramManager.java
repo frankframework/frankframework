@@ -33,6 +33,7 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.http.MediaType;
+import org.springframework.util.MimeType;
 
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.Configuration;
@@ -75,9 +76,8 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 		}
 	}
 
-	public String getMediaType() {
-		MediaType type = (flowGenerator != null) ? flowGenerator.getMediaType() : MediaType.TEXT_PLAIN;
-		return type.toString();
+	public MimeType getMediaType() {
+		return (flowGenerator != null) ? flowGenerator.getMediaType() : MediaType.TEXT_PLAIN;
 	}
 
 	/**
@@ -168,7 +168,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 		}
 
 		String configurationsXml = getConfigurationXml(configurations);
-		String name = "configurations[*ALL*]";
+		String name = "configurations[ALL]";
 
 		generateFlowDiagram(name, configurationsXml, destFile);
 	}

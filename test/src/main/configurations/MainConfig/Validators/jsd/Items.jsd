@@ -1,0 +1,133 @@
+{
+    "$schema":"http://json-schema.org/draft-04/schema#",
+    "$id":"urn:item",
+    "$ref":"#/components/Item_Request",
+    "components":{
+           "Result": {
+                "$ref": "#/components/ResultType"
+            },
+           "ResultType": {
+            },
+        "InputValidationFailure": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "msg": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "Result"
+            ]
+        },
+        "Item_Request": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "Status": {
+                    "type": "string",
+                    "enum": [
+                        "a",
+                        "b",
+                        "c",
+                        "d"
+                    ]
+                },
+                "Item": {
+                    "$ref": "#/components/ItemType"
+                }
+            }
+        },
+        "Item_Response": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "Status": {
+                    "type": "string",
+                    "enum": [
+                        "a",
+                        "b"
+                    ]
+                },
+                "Item": {
+                    "$ref": "#/components/ItemType"
+                },
+                "Result": {
+                    "$ref": "#/components/Result"
+                }
+            },
+            "required": [
+                "Result"
+            ]
+        },
+        "OutputValidationFailure": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "Status": {
+                    "type": "string",
+                    "enum": [
+                        "a",
+                        "b"
+                    ]
+                },
+                "Item": {
+                    "$ref": "#/components/ItemType"
+                },
+                "Result": {
+                    "$ref": "#/components/Result"
+                }
+            },
+            "required": [
+                "Result"
+            ]
+        },
+        "SpecialResponse": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "Status": {
+                    "type": "string",
+                    "enum": [
+                        "a",
+                        "b"
+                    ]
+                },
+                "Item": {
+                    "$ref": "#/components/ItemType"
+                },
+                "Result": {
+                    "$ref": "#/components/Result"
+                }
+            },
+            "required": [
+                "Result"
+            ]
+        },
+        "ItemType": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "Id": {
+                    "type": "string"
+                },
+                "Attributes": {
+                    "type": "array",
+                    "maxItems": 10,
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "Id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "Id"
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}

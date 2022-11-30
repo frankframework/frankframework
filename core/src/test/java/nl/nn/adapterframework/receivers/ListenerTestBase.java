@@ -24,6 +24,7 @@ import org.junit.Before;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
+import nl.nn.adapterframework.core.ConfiguredTestBase;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
@@ -47,15 +48,13 @@ public abstract class ListenerTestBase<M extends Object, S extends IListener<M>>
 	@Before
 	@SuppressWarnings("unchecked")
 	public void setUp() throws Exception {
-		String messageId = "testmessageac13ecb1--30fe9225_16caa708707_-7fb1";
-		String technicalCorrelationId = "testmessageac13ecb1--30fe9225_16caa708707_-7fb2";
 		if(listener instanceof IPullingListener) {
 			threadContext = ((IPullingListener<M>) listener).openThread();
 		} else {
 			threadContext = new HashMap<>();
 		}
 
-		PipeLineSession.setListenerParameters(threadContext, messageId, technicalCorrelationId, null, null);
+		PipeLineSession.setListenerParameters(threadContext, ConfiguredTestBase.testMessageId, ConfiguredTestBase.testCorrelationId, null, null);
 		listener = createListener();
 	}
 

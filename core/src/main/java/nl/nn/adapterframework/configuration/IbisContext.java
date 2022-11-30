@@ -29,6 +29,7 @@ import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
@@ -59,8 +60,6 @@ import nl.nn.adapterframework.util.flow.FlowDiagramManager;
  */
 public class IbisContext extends IbisApplicationContext {
 	private static final Logger LOG = LogUtil.getLogger(IbisContext.class);
-
-	private static final String ALL_CONFIGS_KEY = "*ALL*";
 
 	static {
 		if(!Boolean.parseBoolean(APP_CONSTANTS.getProperty("jdbc.convertFieldnamesToUppercase")))
@@ -111,7 +110,7 @@ public class IbisContext extends IbisApplicationContext {
 		try {
 			long start = System.currentTimeMillis();
 
-			LOG.info("Attempting to start IBIS application");
+			LOG.info("Attempting to start IBIS application [{}]", getApplicationName());
 			createApplicationContext();
 			LOG.debug("Created Ibis Application Context");
 
@@ -246,10 +245,10 @@ public class IbisContext extends IbisApplicationContext {
 		}
 
 		try {
-			loadingConfigs.add(ALL_CONFIGS_KEY);
+			loadingConfigs.add(IbisManager.ALL_CONFIGS_KEY);
 			load(null);
 		} finally {
-			loadingConfigs.remove(ALL_CONFIGS_KEY);
+			loadingConfigs.remove(IbisManager.ALL_CONFIGS_KEY);
 		}
 	}
 
@@ -260,17 +259,17 @@ public class IbisContext extends IbisApplicationContext {
 	 * @param configurationName name of the configuration to load or null when you want to load all configurations
 	 * 
 	 * @see ClassLoaderManager#get(String)
-	 * @see ConfigurationUtils#retrieveAllConfigNames(IbisContext)
+	 * @see ConfigurationUtils#retrieveAllConfigNames(ApplicationContext)
 	 * @see #createAndConfigureConfigurationWithClassLoader(ClassLoader, String, ClassLoaderException)
 	 */
 	public void load(String configurationName) {
 		boolean configFound = false;
 
 		//We have an ordered list with all configurations, lets loop through!
-		Map<String, String> allConfigNamesItems = retrieveAllConfigNames();
-		for (Entry<String, String> currentConfigNameItem : allConfigNamesItems.entrySet()) {
+		Map<String, Class<? extends IConfigurationClassLoader>> allConfigNamesItems = retrieveAllConfigNames();
+		for (Entry<String, Class<? extends IConfigurationClassLoader>> currentConfigNameItem : allConfigNamesItems.entrySet()) {
 			String currentConfigurationName = currentConfigNameItem.getKey();
-			String classLoaderType = currentConfigNameItem.getValue();
+			String classLoaderType = (currentConfigNameItem.getValue() == null) ? null : currentConfigNameItem.getValue().getCanonicalName();
 
 			if (configurationName == null || configurationName.equals(currentConfigurationName)) {
 				LOG.info("loading configuration ["+currentConfigurationName+"]");
@@ -313,8 +312,8 @@ public class IbisContext extends IbisApplicationContext {
 	}
 
 	/** Helper method to create stubbed configurations used in JunitTests */
-	protected Map<String, String> retrieveAllConfigNames() {
-		return ConfigurationUtils.retrieveAllConfigNames(this);
+	protected Map<String, Class<? extends IConfigurationClassLoader>> retrieveAllConfigNames() {
+		return ConfigurationUtils.retrieveAllConfigNames(getApplicationContext());
 	}
 
 	/**

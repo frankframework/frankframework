@@ -21,215 +21,184 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 /**
- * Implementation of a FilenameFilter to support wildcards.
- * <br/>
+ * Implementation of a FilenameFilter to support wildcards. <br/>
  * <b>use:</b><br/>
  * <code><pre>
  * WildCardFilter filter = new WildCardFilter("*.java");
  * File currDir = new File(".");
  * String files[] = currDir.list(filter);
- * </pre></code>
- * <br/>
- * Examples:<ul>
+ * </pre></code> <br/>
+ * Examples:
+ * <ul>
  * <li>*.java</li>
  * <li>in*.log</li>
- * <li>data*.* </li>
+ * <li>data*.*</li>
  * </ul>
+ * 
  * @author Johan Verrips IOS
  **/
 
+public class WildCardFilter implements FilenameFilter {
 
-public class WildCardFilter implements FilenameFilter
-{
-	
-    String wildPattern = null;
-    Vector pattern = new Vector();
+	String wildPattern = null;
+	Vector<String> pattern = new Vector<>();
 
-    final String FIND     = "find";
-    final String EXPECT   = "expect";
-    final String ANYTHING = "anything";
-    final String NOTHING  = "nothing";
+	private static final String FIND = "find";
+	private static final String EXPECT = "expect";
+	private static final String ANYTHING = "anything";
+	private static final String NOTHING = "nothing";
 
-    public WildCardFilter(String wildString)
-    {
-        wildPattern = wildString;
+	public WildCardFilter(String wildString) {
+		wildPattern = wildString;
 
-        // ensure wildString is lowercase for all testing
+		// ensure wildString is lowercase for all testing
+		wildString = wildString.toLowerCase();
 
-        wildString = wildString.toLowerCase();
+		// remove duplicate asterisks
+		int i = wildString.indexOf("**");
+		while(i >= 0) {
+			wildString = wildString.substring(0, i + 1) + wildString.substring(i + 2);
+			i = wildString.indexOf("**");
+		}
 
-        // remove duplicate asterisks
+		// parse the input string
+		StringTokenizer tokens = new StringTokenizer(wildString, "*", true);
+		String token = null;
+		while(tokens.hasMoreTokens()) {
+			token = tokens.nextToken();
 
-        int i = wildString.indexOf("**");
-        while ( i >= 0 )
-        {
-            wildString = wildString.substring(0, i+1)
-                       + wildString.substring(i+2);
+			if(token.equals("*")) {
+				pattern.addElement(FIND);
+				if(tokens.hasMoreTokens()) {
+					token = tokens.nextToken();
+					pattern.addElement(token);
+				} else {
+					pattern.addElement(ANYTHING);
+				}
+			} else {
+				pattern.addElement(EXPECT);
+				pattern.addElement(token);
+			}
+		}
 
-            i = wildString.indexOf("**");
-        }
+		if(!"*".equals(token)) {
+			pattern.addElement(EXPECT);
+			pattern.addElement(NOTHING);
+		}
 
-        // parse the input string
-        StringTokenizer tokens = new StringTokenizer(wildString, "*", true);
-        String token = null;
-        while (tokens.hasMoreTokens())
-        {
-            token = tokens.nextToken();
+	}
 
-            if (token.equals("*"))
-            {
-                pattern.addElement(FIND);
-                if (tokens.hasMoreTokens())
-                {
-                    token = tokens.nextToken();
-                    pattern.addElement(token);
-                }
-                else
-                {
-                    pattern.addElement(ANYTHING);
-                }
-            }
-            else
-            {
-                pattern.addElement(EXPECT);
-                pattern.addElement(token);
-            }
-        }
+	@Override
+	public boolean accept(File dir, String name) {
+		// allow directories to match all patterns
+		// not sure if this is the best idea, but
+		// suits my needs for now
+		if(dir != null) {
+			String path = dir.getPath();
+			if(!path.endsWith("/") && !path.endsWith("\\")) {
+				path += File.separator;
+			}
+			File tempFile = new File(path, name);
 
-        if ( !token.equals("*") )
-        {
-            pattern.addElement(EXPECT);
-            pattern.addElement(NOTHING);
-        }
+			if(tempFile.isDirectory()) {
+				return true;
+			}
+		}
 
-    }
-    public boolean accept(File dir, String name)
-    {
-        // allow directories to match all patterns
-        // not sure if this is the best idea, but
-        // suits my needs for now
-    	if(dir != null) {
-    		String path = dir.getPath();
-            if ( !path.endsWith("/") && !path.endsWith("\\") )
-            {
-                path += File.separator;
-            }
-            File tempFile = new File(path, name);
+		// ensure name is lowercase for all testing
 
-            if ( tempFile.isDirectory() )
-            {
-                return true;
-            }
-    	}
+		name = name.toLowerCase();
 
-        // ensure name is lowercase for all testing
+		// start processing the pattern vector
 
-        name = name.toLowerCase();
+		boolean acceptName = true;
 
-        // start processing the pattern vector
+		String command = null;
+		String param = null;
 
-        boolean acceptName = true;
+		int currPos = 0;
+		int cmdPos = 0;
 
-        String command = null;
-        String param = null;
+		while(cmdPos < pattern.size()) {
+			command = pattern.elementAt(cmdPos);
+			param = pattern.elementAt(cmdPos + 1);
 
-        int currPos = 0;
-        int cmdPos = 0;
+			if(command.equals(FIND)) {
+				// if we are to find 'anything'
+				// then we are done
 
-        while ( cmdPos < pattern.size() )
-        {
-            command = (String) pattern.elementAt(cmdPos);
-            param = (String) pattern.elementAt(cmdPos + 1);
+				if(param.equals(ANYTHING)) {
+					break;
+				}
 
-            if ( command.equals(FIND) )
-            {
-                // if we are to find 'anything'
-                // then we are done
+				// otherwise search for the param
+				// from the curr pos
 
-                if ( param.equals(ANYTHING) )
-                {
-                    break;
-                }
+				int nextPos = name.indexOf(param, currPos);
+				if(nextPos >= 0) {
+					// found it
+					currPos = nextPos + param.length();
+				} else {
+					acceptName = false;
+					break;
+				}
+			} else {
+				if(command.equals(EXPECT)) {
+					// if we are to expect 'nothing'
+					// then we MUST be at the end of the string
 
-                // otherwise search for the param
-                // from the curr pos
+					if(param.equals(NOTHING)) {
+						if(currPos != name.length()) {
+							acceptName = false;
+						}
 
-                int nextPos = name.indexOf(param, currPos);
-                if (nextPos >= 0)
-                {
-                    // found it
-                   currPos = nextPos + param.length();
-                }
-                else
-                {
-                    acceptName = false;
-                    break;
-                }
-            }
-            else
-            {
-                if ( command.equals(EXPECT) )
-                {
-                    // if we are to expect 'nothing'
-                    // then we MUST be at the end of the string
+						// since we expect nothing else,
+						// we must finish here
 
-                    if ( param.equals(NOTHING) )
-                    {
-                        if ( currPos != name.length() )
-                        {
-                            acceptName = false;
-                        }
+						break;
+					} else {
+						// otherwise, check if the expected string
+						// is at our current position
 
-                        // since we expect nothing else,
-                        // we must finish here
+						int nextPos = name.indexOf(param, currPos);
+						if(nextPos != currPos) {
+							acceptName = false;
+							break;
+						}
 
-                        break;
-                    }
-                    else
-                    {
-                        // otherwise, check if the expected string
-                        // is at our current position
+						// if we've made it this far, then we've
+						// found what we're looking for
 
-                        int nextPos = name.indexOf(param, currPos);
-                        if ( nextPos != currPos )
-                        {
-                            acceptName = false;
-                            break;
-                        }
+						currPos += param.length();
+					}
+				}
+			}
 
-                        // if we've made it this far, then we've
-                        // found what we're looking for
+			cmdPos += 2;
+		}
 
-                        currPos += param.length();
-                    }
-                }
-            }
+		return acceptName;
+	}
 
-            cmdPos += 2;
-        }
+	public String toPattern() {
+		StringBuilder out = new StringBuilder();
 
-        return acceptName;
-    }
-    public String toPattern()
-    {
-        StringBuffer out = new StringBuffer();
+		int i = 0;
+		while(i < pattern.size()) {
+			out.append("(");
+			out.append(pattern.elementAt(i));
+			out.append(" ");
+			out.append(pattern.elementAt(i + 1));
+			out.append(") ");
 
-        int i=0;
-        while (i<pattern.size())
-        {
-             out.append( "(" );
-             out.append( (String) pattern.elementAt(i) );
-             out.append( " " );
-             out.append( (String) pattern.elementAt(i+1) );
-             out.append( ") " );
+			i += 2;
+		}
 
-             i += 2;
-        }
+		return out.toString();
+	}
 
-        return out.toString();
-    }
-    public String toString()
-    {
-        return wildPattern;
-    }
+	@Override
+	public String toString() {
+		return wildPattern;
+	}
 }

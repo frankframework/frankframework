@@ -32,8 +32,10 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.DummyNamedObject;
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
+import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -45,6 +47,7 @@ import nl.nn.adapterframework.monitoring.EventPublisher;
 import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Locker;
@@ -145,7 +148,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 				params.setNamesMustBeUnique(parameterNamesMustBeUnique);
 				params.configure();
 			} catch (ConfigurationException e) {
-				throw new ConfigurationException(getLogPrefix(null)+"while configuring parameters",e);
+				throw new ConfigurationException("while configuring parameters",e);
 			}
 		}
 
@@ -180,22 +183,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	 */
 	@Override
 	public abstract PipeRunResult doPipe (Message message, PipeLineSession session) throws PipeRunException;
-
-	/**
-	 * Convenience method for building up log statements.
-	 * This method may be called from within the <code>doPipe()</code> method with the current <code>PipeLineSession</code>
-	 * as a parameter. Then it will use this parameter to retrieve the messageId. The method can be called with a <code>null</code> parameter
-	 * from the <code>configure()</code>, <code>start()</code> and <code>stop()</code> methods.
-	 * @return String with the name of the pipe and the message id of the current message.
-	 */
-	protected String getLogPrefix(PipeLineSession session) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("Pipe ["+getName()+"] ");
-		if (session!=null) {
-			sb.append("msgId ["+session.getMessageId()+"] ");
-		}
-		return sb.toString();
-	}
 
 	@Override
 	public void start() throws PipeStartException {}
@@ -234,13 +221,13 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 				pipeForwards.put(forwardName, forward);
 			} else {
 				if (forward.getPath()!=null && forward.getPath().equals(current.getPath())) {
-					ConfigurationWarnings.add(this, log, "has forward ["+forwardName+"] which is already registered");
+					ConfigurationWarnings.add(this, log, "forward ["+forwardName+"] is already registered");
 				} else {
-					log.info(getLogPrefix(null)+"PipeForward ["+forwardName+"] already registered, pointing to ["+current.getPath()+"]. Ignoring new one, that points to ["+forward.getPath()+"]");
+					log.info("PipeForward ["+forwardName+"] already registered, pointing to ["+current.getPath()+"]. Ignoring new one, that points to ["+forward.getPath()+"]");
 				}
 			}
 		} else {
-			throw new ConfigurationException(getLogPrefix(null)+"has a forward without a name");
+			throw new ConfigurationException("forward without a name");
 		}
 	}
 
@@ -266,6 +253,12 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 				if (result == null) {
 					IPipe pipe = pipeLine.getPipe(forward);
 					if (pipe!=null) {
+						result = new PipeForward(forward, forward);
+					}
+				}
+				if (result == null) {
+					PipeLineExit exit = pipeLine.getPipeLineExits().get(forward);
+					if (exit!=null) {
 						result = new PipeForward(forward, forward);
 					}
 				}
@@ -298,8 +291,9 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 
 	@Override
 	public String getEventSourceName() {
-		return getLogPrefix(null).trim();
+		return getName().trim();
 	}
+
 	@Override
 	public void registerEvent(String description) {
 		if (eventPublisher != null) {
@@ -326,6 +320,18 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 		return sessionKey.equals(getInputFromSessionKey) || parameterList!=null && parameterList.consumesSessionVariable(sessionKey);
 	}
 
+	protected ParameterValueList getParameterValueList(Message input, PipeLineSession session) throws PipeRunException {
+		try {
+			return getParameterList()!=null ? getParameterList().getValues(input, session) : null;
+		} catch (ParameterException e) {
+			throw new PipeRunException(this,"cannot determine parameter values", e);
+		}
+	}
+
+	protected <T> T getParameterOverriddenAttributeValue(ParameterValueList pvl, String parameterName, T attributeValue) {
+		T result = pvl!=null ? (T)pvl.get(parameterName) : null;
+		return result!=null ? result : attributeValue;
+	}
 
 	/**
 	 * The functional name of this pipe. Can be referenced by the <code>path</code> attribute of a {@link PipeForward}.
@@ -358,6 +364,10 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 		this.preserveInput = preserveInput;
 	}
 
+	/**
+	 * If set, the pipe result is copied to a session key that has the name defined by this attribute. The
+	 * pipe result is still written as the output message as usual.
+	 */
 	@Override
 	public void setStoreResultInSessionKey(String string) {
 		storeResultInSessionKey = string;

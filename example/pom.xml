@@ -43,7 +43,7 @@
 			<plugin>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-maven-plugin</artifactId>
-				<version>9.4.46.v20220331</version>
+				<version>9.4.49.v20220914</version>
 				<configuration>
 					<systemProperties>
 						<systemProperty>

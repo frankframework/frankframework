@@ -15,6 +15,8 @@ The Frank!Doc provides reference information for Frank developers as explained i
 | `@ff.optional` | `@Optional` | Attribute or child setter | Undoes inherited `@ff.mandatory`, making the attribute or child optional even if it overrides a mandatory attribute or child.
 | `@ff.defaultElement` | | Child setter | Set default value of `className` attribute in XSD syntax 1 element. |
 | | `@EnumLabel` | Enum constant | Set representation required in Frank configs. |
+| `@ff.reintroduce` | `@Reintroduce` | Attribute or child setter | Used to change the order of config children or attributes; see Frank!Doc's README file for details. |
+| - | `@Label` | Java Annotation | When the target annotation is placed on a Java class, a label is added in the Frank!Doc webapp. The value of the label is the `value()` field of the target annotation. The name of the label comes from the `@Label` annotation within the definition of the target annotation, attribute `name`.
 
 **Annotation @FrankDocGroup, on interface:**  When a Java class implements an interface that has a `@FrankDocGroup` annotation, then the class is put in the group non-exclusively. A class can belong to multiple groups when it implements multiple interfaces with different groups.
 

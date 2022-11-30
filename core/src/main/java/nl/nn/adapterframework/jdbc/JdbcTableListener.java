@@ -30,7 +30,6 @@ import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IProvidesMessageBrowsers;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.ProcessState;
 
 /**
@@ -39,7 +38,7 @@ import nl.nn.adapterframework.core.ProcessState;
  * @since   4.7
  */
 public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMessageBrowsers<M> {
-	
+
 	private @Getter String tableName;
 	private @Getter String tableAlias="t";
 	private @Getter String statusField;
@@ -48,7 +47,7 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 	private @Getter String commentField;
 	private @Getter String selectCondition;
 	private @Getter int maxCommentLength=ITransactionalStorage.MAXCOMMENTLEN;
-	
+
 	private Map<ProcessState, String> statusValues = new HashMap<>();
 
 	@Override
@@ -72,12 +71,14 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 			throw new ConfigurationException("must specify statusValueProcessed");
 		}
 		String alias = StringUtils.isNotBlank(getTableAlias())?getTableAlias().trim():"";
-		setSelectQuery("SELECT "+getKeyField() + (StringUtils.isNotEmpty(getMessageField())?","+getMessageField():"")+
+		setSelectQuery("SELECT "+getKeyField() +
+								(StringUtils.isNotEmpty(getMessageIdField())?","+getMessageIdField():"")+(StringUtils.isNotEmpty(getCorrelationIdField())?","+getCorrelationIdField():"")+
+								(StringUtils.isNotEmpty(getMessageField())?","+getMessageField():"") +
 						" FROM "+getTableName() + (StringUtils.isNotBlank(tableAlias)?" "+tableAlias.trim():"") +
 						" WHERE "+getStatusField()+
 						(StringUtils.isNotEmpty(getStatusValue(ProcessState.AVAILABLE))?
-						 "='"+getStatusValue(ProcessState.AVAILABLE)+"'":
-						 " NOT IN ('"+getStatusValue(ProcessState.ERROR)+"','"+getStatusValue(ProcessState.DONE)+(StringUtils.isNotEmpty(getStatusValue(ProcessState.HOLD))?"','"+getStatusValue(ProcessState.HOLD):"")+"')")+
+						"='"+getStatusValue(ProcessState.AVAILABLE)+"'":
+						" NOT IN ('"+getStatusValue(ProcessState.ERROR)+"','"+getStatusValue(ProcessState.DONE)+(StringUtils.isNotEmpty(getStatusValue(ProcessState.HOLD))?"','"+getStatusValue(ProcessState.HOLD):"")+"')")+
 						(StringUtils.isNotEmpty(getSelectCondition()) ? " AND ("+getSelectCondition()+")": "") +
 						(StringUtils.isNotEmpty(getOrderField())? " ORDER BY "+getOrderField():""));
 		statusValues.forEach((state, value) -> setUpdateStatusQuery(state, "dummy query to register status value in JdbcListener")); // must have set updateStatusQueries before calling super.configure()
@@ -86,11 +87,11 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 		if (StringUtils.isEmpty(getStatusValue(ProcessState.INPROCESS)) && !getDbmsSupport().hasSkipLockedFunctionality()) {
 			ConfigurationWarnings.add(this, log, "Database ["+getDbmsSupport().getDbmsName()+"] needs statusValueInProcess to run in multiple threads");
 		}
-		
+
 	}
 
 	protected String createUpdateStatusQuery(String fieldValue, String additionalSetClause) {
-		return "UPDATE "+getTableName()+ 
+		return "UPDATE "+getTableName()+
 				" SET "+getStatusField()+"='"+fieldValue+"'"+
 				(StringUtils.isNotEmpty(getTimestampField())?","+getTimestampField()+"="+getDbmsSupport().getSysDate():"")+
 				(StringUtils.isNotEmpty(getCommentField())?","+getCommentField()+"=?":"")+
@@ -101,10 +102,10 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 	@Override
 	protected M changeProcessState(Connection connection, M rawMessage, ProcessState toState, String reason) throws ListenerException {
 		String query = getUpdateStatusQuery(toState);
-		String key=getIdFromRawMessage(rawMessage, null);
+		String key=getKeyFromRawMessage(rawMessage);
 		List<String> parameters = new ArrayList<>();
 		if (StringUtils.isNotEmpty(getCommentField()) && query.substring(query.indexOf('?')+1).contains("?")) {
-			if (getMaxCommentLength()>=0 && reason.length()>getMaxCommentLength()) {
+			if (getMaxCommentLength()>=0 && reason!=null && reason.length()>getMaxCommentLength()) {
 				parameters.add(reason.substring(0, getMaxCommentLength()));
 			} else {
 				parameters.add(reason);
@@ -130,7 +131,7 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 	public String getStatusValue(ProcessState state) {
 		return statusValues.get(state);
 	}
-	
+
 	public IMessageBrowser.StorageType getStorageType(ProcessState state) {
 		switch (state) {
 		case AVAILABLE:
@@ -143,11 +144,6 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 		default:
 			throw new IllegalStateException("Unknown state ["+state+"]");
 		}
-	}
-	
-	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String,Object> context) throws ListenerException {
-		// skip moving message to DONE or ERROR, as this is now performed by Receiver calling changeProcessState()
 	}
 
 	@Override

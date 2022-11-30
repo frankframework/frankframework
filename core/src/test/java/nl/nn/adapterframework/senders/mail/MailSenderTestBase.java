@@ -16,8 +16,8 @@ import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.mail.Session;
-import javax.mail.internet.MimeMessage;
+import jakarta.mail.Session;
+import jakarta.mail.internet.MimeMessage;
 
 import org.junit.Test;
 
@@ -30,15 +30,12 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.senders.MailSender;
 import nl.nn.adapterframework.senders.MailSenderBase;
 import nl.nn.adapterframework.senders.MailSenderBase.EMail;
-import nl.nn.adapterframework.senders.MailSenderBase.MailSession;
+import nl.nn.adapterframework.senders.MailSenderBase.MailSessionBase;
 import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestAssertions;
-import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public abstract class MailSenderTestBase<S extends MailSenderBase> extends SenderTestBase<S> {
-
-	protected abstract String getTestRootFolder();
 
 	@Test(expected = SenderException.class)
 	public void noRecipient() throws Exception {
@@ -50,7 +47,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 
 		sender.configure();
 		sender.open();
-		sender.sendMessage(new Message(mailInput), session);
+		sender.sendMessageOrThrow(new Message(mailInput), session);
 	}
 
 	private void validateAuthentication(Session session) {
@@ -68,8 +65,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		ByteArrayOutputStream boas = new ByteArrayOutputStream();
 		message.writeTo(boas);
 		String rawResult = new String(boas.toByteArray());
-		String expected = TestFileUtils.getTestFile(getTestRootFolder()+file);
-		assertNotNull("expected folder ["+getTestRootFolder()+"] file ["+file+"] not found", expected);
+		String expected = getResource(file).asString();
 		rawResult = rawResult.replace(message.getMessageID(), "MESSAGE-ID");
 		rawResult = rawResult.replaceFirst("Date: (.+)", "Date: DATE");
 		int i = rawResult.indexOf("boundary=\"----");
@@ -131,7 +127,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 				+ "</headers>"
 			+ "</email>";
 		sender.configure();
-		MailSession mailSession = sender.extract(new Message(mailInput), session);
+		MailSessionBase mailSession = sender.extract(new Message(mailInput), session);
 		validateAddress(mailSession.getRecipientList().get(0),"to", "dummy","me@address.org");
 		validateAddress(mailSession.getRecipientList().get(1),"cc", null,"cc@address.org");
 		validateAddress(mailSession.getRecipientList().get(2),"bcc", null,"bcc@address.org");
@@ -140,13 +136,13 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		validateAddress(mailSession.getRecipientList().get(5),"bcc", "personalpart2","addresspart2@address.org");
 		validateAddress(mailSession.getFrom(),"from", "Me, Myself and I","myself@address.org");
 	}
-	
+
 	public void validateAddress(EMail address, String expectedType, String expectedPersonal, String expectedAddress) {
 		assertEquals(expectedAddress, address.getAddress());
 		assertEquals(expectedPersonal, address.getName());
 		assertEquals(expectedType, address.getType());
 	}
-	
+
 	@Test
 	public void mailWithMultipleRecipients() throws Exception {
 		String mailInput = "<email>"
@@ -173,7 +169,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		sender.configure();
 		sender.open();
 
-		sender.sendMessage(new Message(mailInput), session);
+		sender.sendMessageOrThrow(new Message(mailInput), session);
 		Session mailSession = (Session) session.get("mailSession");
 		assertEquals("localhost", mailSession.getProperty("mail.smtp.host"));
 
@@ -207,7 +203,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		sender.open();
 
 		exception.expectMessage("messageType [MessageTypeWithoutASlash] must contain a forward slash ('/')");
-		sender.sendMessage(new Message(mailInput), session);
+		sender.sendMessageOrThrow(new Message(mailInput), session);
 	}
 
 	@Test
@@ -228,7 +224,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		sender.configure();
 		sender.open();
 
-		sender.sendMessage(new Message(mailInput), session);
+		sender.sendMessageOrThrow(new Message(mailInput), session);
 		Session mailSession = (Session) session.get("mailSession");
 		assertEquals("localhost", mailSession.getProperty("mail.smtp.host"));
 
@@ -255,7 +251,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		sender.configure();
 		sender.open();
 
-		sender.sendMessage(new Message(mailInput), session);
+		sender.sendMessageOrThrow(new Message(mailInput), session);
 	}
 
 	@Test
@@ -278,7 +274,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		sender.configure();
 		sender.open();
 
-		sender.sendMessage(new Message(mailInput), session);
+		sender.sendMessageOrThrow(new Message(mailInput), session);
 		Session mailSession = (Session) session.get("mailSession");
 		assertEquals("localhost", mailSession.getProperty("mail.smtp.host"));
 
@@ -308,7 +304,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		sender.configure();
 		sender.open();
 
-		sender.sendMessage(new Message(mailInput), session);
+		sender.sendMessageOrThrow(new Message(mailInput), session);
 		Session mailSession = (Session) session.get("mailSession");
 		assertEquals("localhost", mailSession.getProperty("mail.smtp.host"));
 
@@ -338,7 +334,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		sender.configure();
 		sender.open();
 
-		sender.sendMessage(new Message(mailInput), session);
+		sender.sendMessageOrThrow(new Message(mailInput), session);
 		Session mailSession = (Session) session.get("mailSession");
 		assertEquals("localhost", mailSession.getProperty("mail.smtp.host"));
 
@@ -368,7 +364,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		sender.configure();
 		sender.open();
 
-		sender.sendMessage(new Message(mailInput), session);
+		sender.sendMessageOrThrow(new Message(mailInput), session);
 		Session mailSession = (Session) session.get("mailSession");
 		assertEquals("localhost", mailSession.getProperty("mail.smtp.host"));
 
@@ -376,7 +372,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		validateAuthentication(mailSession);
 		compare("mailWithBase64MessageAndAttachmentWithContentType.txt", message);
 	}
-	
+
 	@Test
 	public void mailWithBase64MessageAndAttachmentWithIllegalContentType() throws Exception {
 		String mailInput = "<email>"
@@ -399,9 +395,9 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		sender.open();
 
 		exception.expectMessage("mimeType [messageTypeWithoutASlash] of attachment [test.txt] must contain a forward slash ('/')");
-		sender.sendMessage(new Message(mailInput), session);
+		sender.sendMessageOrThrow(new Message(mailInput), session);
 	}
-	
+
 	@Test
 	public void mailWithPRC() throws Exception {
 		String mailInput = "<email/>";
@@ -411,7 +407,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		sender.configure();
 		sender.open();
 
-		sender.sendMessage(new Message(mailInput), session);
+		sender.sendMessageOrThrow(new Message(mailInput), session);
 		Session mailSession = (Session) session.get("mailSession");
 		assertEquals("localhost", mailSession.getProperty("mail.smtp.host"));
 
@@ -433,7 +429,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		sender.configure();
 		sender.open();
 
-		sender.sendMessage(new Message(mailInput), session);
+		sender.sendMessageOrThrow(new Message(mailInput), session);
 		Session mailSession = (Session) session.get("mailSession");
 		assertEquals("localhost", mailSession.getProperty("mail.smtp.host"));
 
@@ -464,7 +460,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		session.put("attachment3", new ByteArrayInputStream(bytes));
 		session.put("attachment4", new ByteArrayInputStream(base64Bytes));
 
-		sender.sendMessage(new Message(mailInput), session);
+		sender.sendMessageOrThrow(new Message(mailInput), session);
 		Session mailSession = (Session) session.get("mailSession");
 		assertEquals("localhost", mailSession.getProperty("mail.smtp.host"));
 
@@ -496,7 +492,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		sender.configure();
 		sender.open();
 
-		sender.sendMessage(new Message(mailInput), session);
+		sender.sendMessageOrThrow(new Message(mailInput), session);
 		Session mailSession = (Session) session.get("mailSession");
 		assertEquals("localhost", mailSession.getProperty("mail.smtp.host"));
 
@@ -526,7 +522,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		sender.configure();
 		sender.open();
 
-		sender.sendMessage(new Message(mailInput), session);
+		sender.sendMessageOrThrow(new Message(mailInput), session);
 		Session mailSession = (Session) session.get("mailSession");
 		assertEquals("localhost", mailSession.getProperty("mail.smtp.host"));
 
@@ -567,12 +563,12 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 					sender2.open();
 
 					PipeLineSession session1 = new PipeLineSession();
-					sender2.sendMessage(new Message(mailInput), session1);
+					sender2.sendMessageOrThrow(new Message(mailInput), session1);
 					Session mailSession1 = (Session) session1.get("mailSession");
 					mailSession1.getProperties().setProperty("bounce", bounce);
 
 					PipeLineSession session2 = new PipeLineSession();
-					sender2.sendMessage(new Message(mailInput), session2);
+					sender2.sendMessageOrThrow(new Message(mailInput), session2);
 					Session mailSession2 = (Session) session2.get("mailSession");
 					assertEquals("same session should be used", mailSession1, mailSession2);
 					validateNDR(mailSession1, bounce);

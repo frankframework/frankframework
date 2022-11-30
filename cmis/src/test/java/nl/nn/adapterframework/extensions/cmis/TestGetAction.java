@@ -15,9 +15,12 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import nl.nn.adapterframework.extensions.cmis.CmisSender.CmisAction;
+import nl.nn.adapterframework.extensions.cmis.CmisSessionBuilder.BindingTypes;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestAssertions;
+import nl.nn.adapterframework.util.EnumUtils;
 
 @RunWith(Parameterized.class)
 public class TestGetAction extends CmisSenderTestBase {
@@ -41,6 +44,14 @@ public class TestGetAction extends CmisSenderTestBase {
 			+ "<property name=\"project:lastModified\" type=\"datetime\">2019-02-26T16:31:15</property>"
 			+ "<property name=\"project:onTime\" type=\"boolean\">true</property></properties></cmis>";
 
+	private String bindingType;
+	private String action;
+	private Message input;
+	private String expectedResult;
+	private Boolean resultToServlet;
+	private Boolean getProperties;
+	private Boolean getDocumentContent;
+
 	@Parameters(name = "{0} - {1} - toServlet = {4} - getProperties = {5} - getDocumentContent = {6}")
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
@@ -61,14 +72,6 @@ public class TestGetAction extends CmisSenderTestBase {
 		});
 	}
 
-	private String bindingType;
-	private String action;
-	private Message input;
-	private String expectedResult;
-	private Boolean resultToServlet;
-	private Boolean getProperties;
-	private Boolean getDocumentContent;
-
 	public TestGetAction(String bindingType, String action, String input, String expected, Boolean resultToServlet, Boolean getProperties, Boolean getDocumentContent) {
 		this.bindingType = bindingType;
 		this.action = action;
@@ -84,8 +87,8 @@ public class TestGetAction extends CmisSenderTestBase {
 		sender.setGetDocumentContent(getDocumentContent);
 
 		sender.setStreamResultToServlet(resultToServlet);
-		sender.setBindingType(bindingType);
-		sender.setAction(action);
+		sender.setBindingType(EnumUtils.parse(BindingTypes.class, bindingType));
+		sender.setAction(EnumUtils.parse(CmisAction.class, action));
 		sender.configure();
 
 		if(!STUBBED) {
@@ -105,7 +108,7 @@ public class TestGetAction extends CmisSenderTestBase {
 		sender.setFileInputStreamSessionKey("fis");
 		configure();
 
-		String actualResult = sender.sendMessage(input, session).asString();
+		String actualResult = sender.sendMessageOrThrow(input, session).asString();
 		if(!getProperties && !resultToServlet) {
 			assertNull(actualResult);
 		} else {
@@ -122,11 +125,11 @@ public class TestGetAction extends CmisSenderTestBase {
 
 	@Test
 	public void sendMessageStreamResult() throws Exception {
-		sender.setBindingType(bindingType);
-		sender.setAction(action);
+		sender.setBindingType(EnumUtils.parse(BindingTypes.class, bindingType));
+		sender.setAction(EnumUtils.parse(CmisAction.class, action));
 		sender.configure();
 
-		Message actualResult = sender.sendMessage(input, session);
+		Message actualResult = sender.sendMessageOrThrow(input, session);
 		assertTrue(actualResult.asObject() instanceof InputStream);
 		assertEquals(GET_RESULT_FOR_INPUT, actualResult.asString());
 	}
@@ -136,7 +139,7 @@ public class TestGetAction extends CmisSenderTestBase {
 		sender.setFileContentSessionKey("fileContent");
 		configure();
 
-		String actualResult = sender.sendMessage(input, session).asString();
+		String actualResult = sender.sendMessageOrThrow(input, session).asString();
 		if(!getProperties && !resultToServlet) {
 			assertNull(actualResult);
 		} else {
@@ -156,7 +159,7 @@ public class TestGetAction extends CmisSenderTestBase {
 		sender.setFileInputStreamSessionKey("fis");
 		configureWithParameters();
 
-		String actualResult = sender.sendMessage(input, session).asString();
+		String actualResult = sender.sendMessageOrThrow(input, session).asString();
 		if(!getProperties && !resultToServlet) {
 			assertNull(actualResult);
 		} else {
@@ -176,7 +179,7 @@ public class TestGetAction extends CmisSenderTestBase {
 		sender.setFileContentSessionKey("fileContent");
 		configureWithParameters();
 
-		String actualResult = sender.sendMessage(input, session).asString();
+		String actualResult = sender.sendMessageOrThrow(input, session).asString();
 		if(!getProperties && !resultToServlet) {
 			assertNull(actualResult);
 		} else {

@@ -32,6 +32,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.Lifecycle;
 import org.springframework.context.LifecycleProcessor;
 import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.context.support.AbstractRefreshableConfigApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import lombok.Getter;
@@ -109,7 +110,9 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		try {
 			Object groupData= hski.openGroup(root, rootName, rootType);
 			for (Adapter adapter : adapterManager.getAdapterList()) {
-				adapter.iterateOverStatistics(hski,groupData,action);
+				if (adapter.isConfigurationSucceeded()) {
+					adapter.iterateOverStatistics(hski,groupData,action);
+				}
 			}
 			IbisCacheManager.iterateOverStatistics(hski, groupData, action);
 			hski.closeGroup(groupData);
@@ -431,6 +434,13 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	/**
+	 * Include the referenced Module in this configuration
+	 */
+	public void registerInclude(Include module) {
+		// method exists to trigger FrankDoc.
+	}
+
+	/**
 	 * Add adapter.
 	 */
 	public void registerAdapter(Adapter adapter) {
@@ -470,7 +480,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		handler.configure();
 	}
 
-	/*
+	/**
 	 * Configurations should be wired through Spring, which in turn should call {@link #setBeanName(String)}.
 	 * Once the ConfigurationContext has a name it should not be changed anymore, hence
 	 * {@link AbstractRefreshableConfigApplicationContext#setBeanName(String) super.setBeanName(String)} only sets the name once.
@@ -478,7 +488,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 *
 	 * The DisplayName will always be updated, which is purely used for logging purposes.
 	 */
-	/** Name of the Configuration */
 	@Override
 	public void setName(String name) {
 		if(StringUtils.isNotEmpty(name)) {
@@ -488,12 +497,14 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 			setBeanName(name);
 		}
 	}
+
 	@Override
 	public String getName() {
 		return getId();
 	}
 
 	/** The version of the Configuration, typically provided by the BuildInfo.properties file. */
+	@Protected
 	public void setVersion(String version) {
 		if(StringUtils.isNotEmpty(version)) {
 			if(state == BootState.STARTING && this.version != null && !this.version.equals(version)) {
@@ -589,8 +600,10 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	public void registerMonitoring(MonitorManager factory) {
 	}
 
-
-
+	/**
+	 * Overwrite the DisplayName created by the super.setBeanName which prepends 'ApplicationContext'.
+	 * The BeanName can only be set once, after which it only updates the DisplayName.
+	 */
 	@Override
 	@Protected
 	public void setBeanName(String name) {

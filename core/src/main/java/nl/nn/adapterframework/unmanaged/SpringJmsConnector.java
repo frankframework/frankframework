@@ -46,12 +46,13 @@ import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.jms.IbisMessageListenerContainer;
+import nl.nn.adapterframework.jms.PushingJmsListener;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DateUtils;
 
 /**
- * Configure a Spring JMS Container from a {@link nl.nn.adapterframework.jms.PushingJmsListener}.
+ * Configure a Spring JMS Container from a {@link PushingJmsListener}.
  *
  * <p>
  * This implementation expects to receive an instance of
@@ -81,7 +82,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 	public static final int IDLE_TASK_EXECUTION_LIMIT=1000;
 
 	private CredentialFactory credentialFactory;
-	private String cacheMode;
+	private CacheMode cacheMode;
 	private int acknowledgeMode;
 	private boolean sessionTransacted;
 	private String messageSelector;
@@ -110,7 +111,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 	@Override
 	public void configureEndpointConnection(final IPortConnectedListener<Message> jmsListener,
 			ConnectionFactory connectionFactory, CredentialFactory credentialFactory, Destination destination,
-			IbisExceptionListener exceptionListener, String cacheMode, int acknowledgeMode, boolean sessionTransacted,
+			IbisExceptionListener exceptionListener, CacheMode cacheMode, int acknowledgeMode, boolean sessionTransacted,
 			String messageSelector, long receiveTimeout, long pollGuardInterval) throws ConfigurationException {
 		super.configureEndpointConnection(jmsListener, connectionFactory, destination, exceptionListener);
 		this.credentialFactory = credentialFactory;
@@ -172,8 +173,8 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		}
 		jmsContainer.setIdleTaskExecutionLimit(IDLE_TASK_EXECUTION_LIMIT);
 
-		if (StringUtils.isNotEmpty(cacheMode)) {
-			jmsContainer.setCacheLevelName(cacheMode);
+		if (cacheMode!=null) {
+			jmsContainer.setCacheLevelName(cacheMode.name());
 		} else {
 			if (getReceiver().isTransacted()) {
 				jmsContainer.setCacheLevel(DEFAULT_CACHE_LEVEL_TRANSACTED);
@@ -267,6 +268,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 
 				try {
 					IPortConnectedListener<Message> listener = getListener();
+					listener.checkTransactionManagerValidity();
 					pipeLineSession.put(THREAD_CONTEXT_SESSION_KEY,session);
 	//				if (log.isDebugEnabled()) log.debug("transaction status before: "+JtaUtil.displayTransactionStatus());
 					getReceiver().processRawMessage(listener, message, pipeLineSession, false);

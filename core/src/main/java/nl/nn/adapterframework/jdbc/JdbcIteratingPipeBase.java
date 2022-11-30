@@ -102,7 +102,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 		querySender.close();
 	}
 
-	protected abstract IDataIterator<String> getIterator(IDbmsSupport dbmsSupport, Connection conn, ResultSet rs) throws SenderException; 
+	protected abstract IDataIterator<String> getIterator(IDbmsSupport dbmsSupport, Connection conn, ResultSet rs) throws SenderException;
 
 	@Override
 	protected IDataIterator<String> getIterator(Message message, PipeLineSession session, Map<String,Object> threadContext) throws SenderException {
@@ -133,7 +133,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 			} catch (Throwable t2) {
 				t.addSuppressed(t2);
 			}
-			throw new SenderException(getLogPrefix(session), t);
+			throw new SenderException(t);
 		}
 	}
 
@@ -153,7 +153,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 		querySender.setJmsRealm(jmsRealmName);
 	}
 
-	@IbisDoc({"1", "The SQL query text to be excecuted each time sendMessage() is called. When not set, the input message is taken as the query", ""})
+	@IbisDoc({"The SQL query text to be excecuted each time sendMessage() is called. When not set, the input message is taken as the query", ""})
 	public void setQuery(String query) {
 		querySender.setQuery(query);
 	}
@@ -177,7 +177,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 	public void setSqlDialect(String string) {
 		querySender.setSqlDialect(string);
 	}
-	
+
 	@IbisDocRef({"6", FIXEDQUERYSENDER})
 	public void setLockRows(boolean b) {
 		querySender.setLockRows(b);

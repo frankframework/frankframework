@@ -7,6 +7,8 @@ import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.extensions.cmis.CmisSender.CmisAction;
+import nl.nn.adapterframework.extensions.cmis.CmisSessionBuilder.BindingTypes;
 import nl.nn.adapterframework.stream.Message;
 
 public class CmisDeleteAction extends CmisSenderTestBase {
@@ -16,15 +18,15 @@ public class CmisDeleteAction extends CmisSenderTestBase {
 
 	@Test
 	public void canConfigure() throws Exception {
-		sender.setBindingType("browser");
-		sender.setAction("delete");
+		sender.setBindingType(BindingTypes.BROWSER);
+		sender.setAction(CmisAction.DELETE);
 		sender.configure();
 	}
 
 	@Test
 	public void notAllowedToDelete() throws Exception {
-		sender.setBindingType("browser");
-		sender.setAction("delete");
+		sender.setBindingType(BindingTypes.BROWSER);
+		sender.setAction(CmisAction.DELETE);
 		sender.configure();
 
 		SenderException exception = assertThrows(
@@ -37,8 +39,8 @@ public class CmisDeleteAction extends CmisSenderTestBase {
 
 	@Test
 	public void deleteObject() throws Exception {
-		sender.setBindingType("browser");
-		sender.setAction("delete");
+		sender.setBindingType(BindingTypes.BROWSER);
+		sender.setAction(CmisAction.DELETE);
 		sender.configure();
 
 		Message result = sendMessage(ALLOWED_SELECTOR);
@@ -47,8 +49,8 @@ public class CmisDeleteAction extends CmisSenderTestBase {
 
 	@Test
 	public void objectNotFound() throws Exception {
-		sender.setBindingType("browser");
-		sender.setAction("delete");
+		sender.setBindingType(BindingTypes.BROWSER);
+		sender.setAction(CmisAction.DELETE);
 		sender.setResultOnNotFound("document-not-found");
 		sender.configure();
 

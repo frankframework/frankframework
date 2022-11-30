@@ -32,6 +32,9 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.Category;
+import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -50,20 +53,20 @@ import nl.nn.adapterframework.util.TransformerPool;
  * Using parameters and the attributes of this pipe, it is possible to substitute values. This pipe
  * performs the following steps:
  * <ol>
- * <li>During execution, this pipe first obtains a string based on attributes <code>returnString</code>, <code>filename</code> or <code>filenameSessionKey</code>.
+ * <li>During execution, this pipe first obtains a string based on attributes <code>returnString</code>, <code>filename</code> or <code>filenameSessionKey</code>.</li>
  * <li>The resulting string is transformed according to attributes <code>replaceFrom</code> and <code>replaceTo</code> if set.
- * Please note that the plain value of attribute <code>replaceFrom</code> is matched, no <code>${...}</code> here.
+ * Please note that the plain value of attribute <code>replaceFrom</code> is matched, no <code>${...}</code> here.</li>
  * <li>The resulting string is substituted based on the parameters of this pipe. This step depends on attribute <code>replaceFixedParams</code>.
  * Assume that there is a parameter with name <code>xyz</code>. If <code>replaceFixedParams</code> is <code>false</code>, then
  * each occurrence of <code>${xyz}</code> is replaced by the parameter's value. Otherwise, the text <code>xyz</code>
- * is substituted. See {@link nl.nn.adapterframework.parameters.Parameter} to see how parameter values are determined.
+ * is substituted. See {@link Parameter} to see how parameter values are determined.</li>
  * <li>If attribute <code>substituteVars</code> is <code>true</code>, then expressions <code>${...}</code> are substituted using
  * system properties, pipelinesession variables and application properties. Please note that
  * no <code>${...}</code> patterns are left if the initial string came from attribute <code>returnString</code>, because
- * any <code>${...}</code> pattern in attribute <code>returnString</code> is substituted when the configuration is loaded.
- * <li>If attribute <code>styleSheetName</code> is set, then the referenced XSLT stylesheet is applied to the resulting string.
+ * any <code>${...}</code> pattern in attribute <code>returnString</code> is substituted when the configuration is loaded.</li>
+ * <li>If attribute <code>styleSheetName</code> is set, then the referenced XSLT stylesheet is applied to the resulting string.</li>
  * </ol>
- * <br/><br/>
+ * <br/>
  * Many attributes of this pipe reference file names. If a file is referenced by a relative path, the path
  * is relative to the configuration's root directory.
  *
@@ -75,6 +78,7 @@ import nl.nn.adapterframework.util.TransformerPool;
  * @author Johan Verrips
  */
 @Category("Basic")
+@ElementType(ElementTypes.TRANSLATOR)
 public class FixedResultPipe extends FixedForwardPipe {
 
 	private static final String FILE_NOT_FOUND_FORWARD = "filenotfound";
@@ -124,7 +128,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 			throw new ConfigurationException("has neither filename nor filenameSessionKey nor returnString specified");
 		}
 		if (StringUtils.isNotEmpty(getStyleSheetName())) {
-			transformerPool = TransformerPool.configureStyleSheetTransformer(getLogPrefix(null), this, getStyleSheetName(), 0);
+			transformerPool = TransformerPool.configureStyleSheetTransformer(this, getStyleSheetName(), 0);
 		}
 	}
 
@@ -136,7 +140,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 			try {
 				filename = session.getMessage(getFilenameSessionKey()).asString();
 			} catch (IOException e) {
-				throw new PipeRunException(this, getLogPrefix(session) + "unable to get filename from session key ["+getFilenameSessionKey()+"]", e);
+				throw new PipeRunException(this, "unable to get filename from session key ["+getFilenameSessionKey()+"]", e);
 			}
 		}
 		if (StringUtils.isNotEmpty(filename)) {
@@ -144,20 +148,20 @@ public class FixedResultPipe extends FixedForwardPipe {
 			try {
 				resource = ClassUtils.getResourceURL(this, filename);
 			} catch (Throwable e) {
-				throw new PipeRunException(this,getLogPrefix(session)+"got exception searching for ["+filename+"]", e);
+				throw new PipeRunException(this,"got exception searching for ["+filename+"]", e);
 			}
 			if (resource == null) {
 				PipeForward fileNotFoundForward = findForward(FILE_NOT_FOUND_FORWARD);
 				if (fileNotFoundForward != null) {
 					return new PipeRunResult(fileNotFoundForward, message);
 				}
-				throw new PipeRunException(this,getLogPrefix(session)+"cannot find resource ["+filename+"]");
+				throw new PipeRunException(this,"cannot find resource ["+filename+"]");
 			}
 			try {
 				Message msg = new UrlMessage(resource);
 				result = msg.asString();
 			} catch (Throwable e) {
-				throw new PipeRunException(this,getLogPrefix(session)+"got exception loading ["+filename+"]", e);
+				throw new PipeRunException(this,"got exception loading ["+filename+"]", e);
 			}
 		}
 		if (StringUtils.isNotEmpty(getReplaceFrom()) && result != null) {
@@ -176,7 +180,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 					result=replace(result, replaceFrom, pv.asStringValue(""));
 				}
 			} catch (ParameterException e) {
-				throw new PipeRunException(this, getLogPrefix(session)+"exception extracting parameters", e);
+				throw new PipeRunException(this, "exception extracting parameters", e);
 			}
 		}
 
@@ -189,13 +193,13 @@ public class FixedResultPipe extends FixedForwardPipe {
 			try{
 				result = transformerPool.transform(Message.asSource(result));
 			} catch (SAXException e) {
-				throw new PipeRunException(this, getLogPrefix(session)+"got error converting string [" + result + "] to source", e);
+				throw new PipeRunException(this, "got error converting string [" + result + "] to source", e);
 			} catch (IOException | TransformerException e) {
-				throw new PipeRunException(this, getLogPrefix(session)+"got error transforming message [" + result + "] with [" + getStyleSheetName() + "]", e);
+				throw new PipeRunException(this, "got error transforming message [" + result + "] with [" + getStyleSheetName() + "]", e);
 			}
 		}
 
-		log.debug("{}returning fixed result [{}]", getLogPrefix(session), result);
+		log.debug("returning fixed result [{}]", result);
 		return new PipeRunResult(getSuccessForward(), result);
 	}
 

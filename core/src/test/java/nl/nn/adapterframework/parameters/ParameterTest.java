@@ -181,6 +181,21 @@ public class ParameterTest {
 	}
 
 	@Test
+	public void testPatternUnknownSessionVariableOrParameterSilentlyIgnored() throws ConfigurationException, ParameterException {
+		Parameter p = new Parameter();
+		p.setName("dummy");
+		p.setPattern("{unknown}");
+		p.setIgnoreUnresolvablePatternElements(true);
+		p.configure();
+
+		PipeLineSession session = new PipeLineSession();
+
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+
+		assertEquals("", p.getValue(alreadyResolvedParameters, null, session, false));
+	}
+
+	@Test
 	public void testContextKey() throws ConfigurationException, ParameterException {
 		Parameter p = new Parameter();
 		p.setName("dummy");
@@ -248,6 +263,37 @@ public class ParameterTest {
 	public void testEmptyParameterResolvesToMessage() throws ConfigurationException, ParameterException {
 		Parameter p = new Parameter();
 		p.setName("dummy");
+		p.configure();
+
+		PipeLineSession session = new PipeLineSession();
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+
+		Message message = new Message("fakeMessage");
+
+		assertEquals("fakeMessage", p.getValue(alreadyResolvedParameters, message, session, false));
+	}
+
+	@Test
+	public void testValueSetEmptyDoesNotResolveToMessage() throws ConfigurationException, ParameterException {
+		Parameter p = new Parameter();
+		p.setName("dummy");
+		p.setValue("");
+		p.configure();
+
+		PipeLineSession session = new PipeLineSession();
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+
+		Message message = new Message("fakeMessage");
+
+		assertEquals("", p.getValue(alreadyResolvedParameters, message, session, false));
+	}
+
+	@Test
+	public void testValueSetEmptyDoesResolveToMessageWhenDefaultValueIsSetToInput() throws ConfigurationException, ParameterException {
+		Parameter p = new Parameter();
+		p.setName("dummy");
+		p.setValue("");
+		p.setDefaultValueMethods("input");
 		p.configure();
 
 		PipeLineSession session = new PipeLineSession();

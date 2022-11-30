@@ -22,28 +22,24 @@ import io.micrometer.statsd.StatsdFlavor;
 import io.micrometer.statsd.StatsdMeterRegistry;
 import nl.nn.adapterframework.util.EnumUtils;
 
-public class StatsDRegistryConfigurator extends MetricsRegistryConfiguratorBase {
+public class StatsDRegistryConfigurator extends MetricsRegistryConfiguratorBase<StatsdConfig> {
 
 	private final String FLAVOR_PROPERTY="flavor";
 
-	public StatsDRegistryConfigurator() {
-		super("statsd");
+	private class Config extends MeterRegistryConfigBase implements StatsdConfig {
+		@Override
+		public StatsdFlavor flavor() {
+			return EnumUtils.parse(StatsdFlavor.class, getProperty(FLAVOR_PROPERTY));
+		}
 	}
 
 	@Override
-	protected MeterRegistry createRegistry() {
+	protected StatsdConfig createConfig() {
+		return new Config();
+	}
 
-		StatsdConfig config = new StatsdConfig() {
-			@Override
-			public String get(String s) {
-				return getProperty(s);
-			}
-
-			@Override
-			public StatsdFlavor flavor() {
-				return EnumUtils.parse(StatsdFlavor.class, getProperty(FLAVOR_PROPERTY));
-			}
-		};
+	@Override
+	protected MeterRegistry createRegistry(StatsdConfig config) {
 		return new StatsdMeterRegistry(config, Clock.SYSTEM);
 	}
 }

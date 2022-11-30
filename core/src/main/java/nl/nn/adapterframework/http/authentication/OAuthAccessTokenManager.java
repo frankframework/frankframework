@@ -73,12 +73,12 @@ public class OAuthAccessTokenManager {
 	private boolean useClientCredentialsGrant;
 	private HttpSenderBase httpSender;
 	private int expiryMs;
-	private boolean basicAuthenticateWithClientCredentials = false;
+	private boolean authenticatedTokenRequest; // if set true, clientId and clientSecret will be added as Basic Authentication header, instead of as request parameters
 
 	private AccessToken accessToken;
 	private long accessTokenRefreshTime;
 
-	public OAuthAccessTokenManager(String tokenEndpoint, String scope, CredentialFactory client_cf, boolean useClientCredentialsGrant, HttpSenderBase httpSender, int expiry) throws HttpAuthenticationException {
+	public OAuthAccessTokenManager(String tokenEndpoint, String scope, CredentialFactory client_cf, boolean useClientCredentialsGrant, boolean authenticatedTokenRequest, HttpSenderBase httpSender, int expiry) throws HttpAuthenticationException {
 		try {
 			this.tokenEndpoint = new URI(tokenEndpoint);
 		} catch (URISyntaxException e) {
@@ -88,6 +88,7 @@ public class OAuthAccessTokenManager {
 		this.scope = StringUtils.isNotEmpty(scope) ? Scope.parse(scope) : null;
 		this.client_cf = client_cf;
 		this.useClientCredentialsGrant = useClientCredentialsGrant;
+		this.authenticatedTokenRequest = authenticatedTokenRequest;
 		this.httpSender = httpSender;
 		this.expiryMs = expiry * 1000;
 	}
@@ -119,7 +120,7 @@ public class OAuthAccessTokenManager {
 		}
 	}
 
-	private TokenRequest createRequest(Credentials credentials) {
+	protected TokenRequest createRequest(Credentials credentials) {
 		AuthorizationGrant grant;
 
 		if (useClientCredentialsGrant) {
@@ -166,10 +167,10 @@ public class OAuthAccessTokenManager {
 	}
 
 	// convert the Nimbus HTTPRequest into an Apache HttpClient HttpRequest
-	private HttpRequestBase convertToApacheHttpRequest(HTTPRequest httpRequest) throws HttpAuthenticationException {
+	protected HttpRequestBase convertToApacheHttpRequest(HTTPRequest httpRequest) throws HttpAuthenticationException {
 		HttpRequestBase apacheHttpRequest;
 		String query = httpRequest.getQuery();
-		if (!basicAuthenticateWithClientCredentials) {
+		if (!authenticatedTokenRequest) {
 			List<NameValuePair> clientInfo= new LinkedList<>();
 			clientInfo.add(new BasicNameValuePair("client_id",client_cf.getUsername()));
 			clientInfo.add(new BasicNameValuePair("client_secret",client_cf.getPassword()));

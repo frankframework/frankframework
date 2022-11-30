@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,15 +33,15 @@ import nl.nn.adapterframework.util.ClassUtils;
 
 /**
  * ResultHandler that collects a number of records and sends them together to a sender.
- * 
+ *
  * @ff.parameters any parameters defined on the resultHandler will be handed to the sender, if this is a {@link ISenderWithParameters ISenderWithParameters}
- * 
+ *
  * @author  Gerrit van Brakel
- * @since   4.7  
+ * @since   4.7
  */
 public class ResultBlock2Sender extends Result2StringWriter {
 
-	private @Getter ISender sender = null; 
+	private @Getter ISender sender = null;
 	private Map<String,Integer> counters = new HashMap<>();
 	private Map<String,Integer> levels = new HashMap<>();
 
@@ -156,15 +156,15 @@ public class ResultBlock2Sender extends Result2StringWriter {
 				writer.getBuffer().setLength(0);
 				/*
 				 * This used to be:
-				 * getSender().sendMessage(streamId+"-"+incCounter(streamId),message, session); 
+				 * getSender().sendMessage(streamId+"-"+incCounter(streamId),message, session);
 				 * Be aware that 'correlationId' no longer reflects streamId and counter
 				 */
-				getSender().sendMessage(message,session);
+				getSender().sendMessageOrThrow(message,session);
 			}
 		}
 	}
 
-	@IbisDoc({"10", "Sender to which each block of results is sent"})
+	@IbisDoc({"Sender to which each block of results is sent"})
 	public void setSender(ISender sender) {
 		this.sender = sender;
 	}

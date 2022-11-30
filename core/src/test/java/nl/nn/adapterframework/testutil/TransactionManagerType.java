@@ -1,7 +1,6 @@
 package nl.nn.adapterframework.testutil;
 
-import static org.junit.Assert.fail;
-
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -50,25 +49,20 @@ public enum TransactionManagerType {
 	}
 
 	private synchronized TestConfiguration create(String productKey) {
-		try {
-			TestConfiguration config = new TestConfiguration(springConfigurationFiles);
-			MutablePropertySources propertySources = config.getEnvironment().getPropertySources();
-			propertySources.remove(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME);
-			propertySources.remove(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME);
-			Properties properties = new Properties();
-			properties.setProperty("URLDataSourceFactory", factory.getCanonicalName());
-			properties.setProperty("DataSourceName", productKey);
-			properties.setProperty("TransactionManagerType", this.name());
-			propertySources.addFirst(new PropertiesPropertySource("testProperties", properties));
+		TestConfiguration config = new TestConfiguration(springConfigurationFiles);
+		MutablePropertySources propertySources = config.getEnvironment().getPropertySources();
+		propertySources.remove(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME);
+		propertySources.remove(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME);
+		Properties properties = new Properties();
+		properties.setProperty("URLDataSourceFactory", factory.getCanonicalName());
+		properties.setProperty("DataSourceName", productKey);
+		properties.setProperty("TransactionManagerType", this.name());
+		propertySources.addFirst(new PropertiesPropertySource("testProperties", properties));
 
-			config.setName(this.name());
-			config.refresh();
+		config.setName(this.name());
+		config.refresh();
 
-			return config;
-		} catch (Throwable t) {
-			fail(t.getMessage());
-			throw t;
-		}
+		return config;
 	}
 
 	public TestConfiguration getConfigurationContext(String productKey) {
@@ -80,11 +74,13 @@ public enum TransactionManagerType {
 
 	public synchronized void closeConfigurationContext() {
 		if(this == TransactionManagerType.DATASOURCE) {
-			for (String productKey : datasourceConfigurations.keySet()) {
-				TestConfiguration ac = datasourceConfigurations.remove(productKey);
+			Iterator<TestConfiguration> it = datasourceConfigurations.values().iterator();
+			while(it.hasNext()) {
+				TestConfiguration ac = it.next();
 				if(ac != null) {
 					ac.close();
 				}
+				it.remove();
 			}
 		} else {
 			TestConfiguration ac = transactionManagerConfigurations.remove(this);

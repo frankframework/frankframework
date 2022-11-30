@@ -42,8 +42,8 @@
 			<version>${mssql.driver.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
+			<groupId>com.mysql</groupId>
+			<artifactId>mysql-connector-j</artifactId>
 			<version>${mysql.driver.version}</version>
 		</dependency>
 		<dependency>
@@ -57,15 +57,20 @@
 			<version>${postgresql.driver.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.mongodb</groupId>
-			<artifactId>mongodb-driver-sync</artifactId>
-			<version>4.2.3</version>
+			<groupId>com.ibm.db2</groupId>
+			<artifactId>jcc</artifactId>
+			<version>${db2.driver.version}</version>
 		</dependency>
 		<dependency>
-		    <groupId>org.apache.activemq</groupId>
-		    <artifactId>activemq-rar</artifactId>
-		    <version>${activemq.driver.version}</version>
-		    <type>rar</type>
+			<groupId>org.mongodb</groupId>
+			<artifactId>mongodb-driver-sync</artifactId>
+			<version>${mongodb.driver.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-rar</artifactId>
+			<version>${activemq.driver.version}</version>
+			<type>rar</type>
 		</dependency>
 		<!-- Artemis is already part of JBOSS, so not added explicitly -->
 	</dependencies>
@@ -76,7 +81,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
-				<version>3.1.2</version>
 				<executions>
 					<execution>
 						<id>copy-dependencies</id>
@@ -111,11 +115,29 @@
 							<outputDirectory>${project.build.directory}/dependencies/frank/testtool</outputDirectory>
 						</configuration>
 					</execution>
+					<execution>
+						<id>unpack-secrets</id>
+						<phase>package</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>org.ibissource</groupId>
+									<artifactId>ibis-adapterframework-test</artifactId>
+									<classifier>secrets</classifier>
+									<excludes>META-INF/</excludes>
+								</artifactItem>
+							</artifactItems>
+							<excludeTransitive>true</excludeTransitive>
+							<outputDirectory>${project.build.directory}/dependencies/secrets</outputDirectory>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
-				<version>3.2.0</version>
 				<executions>
 					<execution>
 						<id>prepare-as-dependencies</id>
@@ -137,7 +159,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
-				<version>1.6</version>
 				<executions>
 					<execution>
 						<id>prepare-package</id>

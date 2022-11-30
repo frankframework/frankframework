@@ -22,6 +22,9 @@ public class ExchangeFileSystemTest extends MailFileSystemTestBase<EmailMessage,
 	private String mailaddress = PropertyUtil.getProperty(PROPERTY_FILE, "mailaddress");
 //	private String basefolder2 = PropertyUtil.getProperty(PROPERTY_FILE, "basefolder2");
 //	private String basefolder3 = PropertyUtil.getProperty(PROPERTY_FILE, "basefolder3");
+	private String client_id   = PropertyUtil.getProperty(PROPERTY_FILE, "client_id");
+	private String client_secr = PropertyUtil.getProperty(PROPERTY_FILE, "client_secret");
+	private String tenantId    = PropertyUtil.getProperty(PROPERTY_FILE, "tenant_id");
 
 
 	private String nonExistingFileName = "AAMkAGNmZTczMWUwLWQ1MDEtNDA3Ny1hNjU4LTlmYTQzNjE0NjJmYgBGAAAAAAALFKqetECyQKQyuRBrRSzgBwDx14SZku4LS5ibCBco+nmXAAAAAAEMAADx14SZku4LS5ibCBco+nmXAABMFuwsAAA=";
@@ -34,6 +37,9 @@ public class ExchangeFileSystemTest extends MailFileSystemTestBase<EmailMessage,
 		fileSystem.setUsername(username);
 		fileSystem.setPassword(password);
 		fileSystem.setBaseFolder(basefolder1);
+		fileSystem.setClientId(client_id);
+		fileSystem.setClientSecret(client_secr);
+		fileSystem.setTenantId(tenantId);
 		return fileSystem;
 	}
 
@@ -45,6 +51,7 @@ public class ExchangeFileSystemTest extends MailFileSystemTestBase<EmailMessage,
 
 	public ExchangeMailListener getConfiguredListener(String sourceFolder, String inProcessFolder) throws Exception {
 		ExchangeMailListener listener = new ExchangeMailListener();
+		autowireByName(listener);
 		if (StringUtils.isNotEmpty(url)) listener.setUrl(url);
 		listener.setMailAddress(mailaddress);
 		listener.setUsername(username);

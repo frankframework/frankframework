@@ -1,31 +1,15 @@
-<!DOCTYPE configuration [
-	<!ENTITY MonitorConfig SYSTEM "./MonitorConfig.xml">
+<Configuration>
+	<Include ref="TransactionTimeoutHandling.xml"/>
+	<Include ref="TransactionTimeoutFxfListener.xml"/>
 
-	<!ENTITY TransactionTimeoutHandling SYSTEM "./TransactionTimeoutHandling.xml">
-	<!ENTITY TransactionTimeoutFxfListener SYSTEM "./TransactionTimeoutFxfListener.xml">
+	<Include ref="TransactionHandlingMandatorySubAdapter.xml"/>
+	<Include ref="TransactionHandlingNotSupportedSubAdapter.xml"/>
 
-	<!ENTITY TransactionHandlingMandatorySubAdapter SYSTEM "./TransactionHandlingMandatorySubAdapter.xml">
-	<!ENTITY TransactionHandlingNotSupportedSubAdapter SYSTEM "./TransactionHandlingNotSupportedSubAdapter.xml">
+	<Include ref="TransactionHandlingNotSupportedSubAdapterException.xml"/>
+	<Include ref="TransactionHandlingRequiredSubAdapterException.xml"/>
 
-	<!ENTITY TransactionHandlingNotSupportedSubAdapterException SYSTEM "./TransactionHandlingNotSupportedSubAdapterException.xml">
-	<!ENTITY TransactionHandlingRequiredSubAdapterException SYSTEM "./TransactionHandlingRequiredSubAdapterException.xml">
+	<Include ref="TransactionHandlingMultiAdapter.xml"/>
+	<Include ref="TransactionHandlingMultiThread.xml"/>
 
-	<!ENTITY TransactionHandlingMultiAdapter SYSTEM "./TransactionHandlingMultiAdapter.xml">
-	<!ENTITY TransactionHandlingMultiThread SYSTEM "./TransactionHandlingMultiThread.xml">
-]>
-
-<configuration name="TX">
-	&TransactionTimeoutHandling;
-	&TransactionTimeoutFxfListener;
-
-	&TransactionHandlingMandatorySubAdapter;
-	&TransactionHandlingNotSupportedSubAdapter;
-
-	&TransactionHandlingNotSupportedSubAdapterException;
-	&TransactionHandlingRequiredSubAdapterException;
-
-	&TransactionHandlingMultiAdapter;
-	&TransactionHandlingMultiThread;
-
-	&MonitorConfig;
-</configuration>
+	<Include ref="MonitorConfig.xml"/>
+</Configuration>

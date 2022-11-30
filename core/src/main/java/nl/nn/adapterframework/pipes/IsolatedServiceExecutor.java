@@ -16,9 +16,11 @@
 package nl.nn.adapterframework.pipes;
 
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.RequestReplyExecutor;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.stream.Message;
@@ -32,10 +34,10 @@ public class IsolatedServiceExecutor extends RequestReplyExecutor {
 	boolean targetIsJavaListener;
 	Guard guard;
 
-	public IsolatedServiceExecutor(String serviceName, String correlationID, Message message, PipeLineSession session, boolean targetIsJavaListener, Guard guard) {
+	public IsolatedServiceExecutor(String serviceName, Message message, PipeLineSession session, boolean targetIsJavaListener, Guard guard) {
 		super();
 		this.serviceName=serviceName;
-		this.correlationID=correlationID;
+		this.correlationID=session.getCorrelationId();
 		request=message;
 		this.session=session;
 		this.targetIsJavaListener=targetIsJavaListener;
@@ -46,14 +48,15 @@ public class IsolatedServiceExecutor extends RequestReplyExecutor {
 	public void run() {
 		try {
 			if (targetIsJavaListener) {
-				reply = new Message(JavaListener.getListener(serviceName).processRequest(correlationID, request.asString(), session));
+				reply = new SenderResult(JavaListener.getListener(serviceName).processRequest(correlationID, request.asString(), session));
 			} else {
-				reply = new Message(ServiceDispatcher.getInstance().dispatchRequest(serviceName, correlationID, request.asString(), session));
+				reply = new SenderResult(ServiceDispatcher.getInstance().dispatchRequest(serviceName, request.asString(), session));
 			}
 		} catch (Throwable t) {
 			log.warn("IsolatedServiceCaller caught exception",t);
 			throwable=t;
 		} finally {
+			ThreadContext.clearAll();
 			if (guard != null) {
 				guard.releaseResource();
 			}

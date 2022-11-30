@@ -113,7 +113,10 @@
 			</pipe>
 			<pipe name="Exec_Query"
 				storeResultInSessionKey="xml">
-				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ManageDatabase" />
+				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ManageDatabaseWrapper" >
+					<param name="expectedNumberOfResults" sessionKey="expectedNumberOfResults"/>
+					<param name="numberOfAttempts" sessionKey="numberOfAttempts"/>
+				</sender>
 				<forward name="success" path="AddIgnores"/>
 			</pipe>
 			<pipe name="AddIgnores" className="nl.nn.adapterframework.pipes.XsltPipe"

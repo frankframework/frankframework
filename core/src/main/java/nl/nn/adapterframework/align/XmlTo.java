@@ -50,13 +50,13 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 	private boolean writeAttributes=true;
 
 	private XmlAligner aligner;
-	
+
 	private C documentContainer;
 	Stack<String> element=new Stack<String>();
 	String topElement;
 
 	public XmlTo(XmlAligner aligner, C documentContainer) {
-		this.aligner=aligner;	
+		this.aligner=aligner;
 		this.documentContainer=documentContainer;
 	}
 
@@ -69,7 +69,7 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 		if (!localName.equals(topElement)) {
 			if (topElement!=null) {
 				if (log.isTraceEnabled()) log.trace("endElementGroup ["+topElement+"]");
-				documentContainer.endElementGroup(topElement);	
+				documentContainer.endElementGroup(topElement);
 			}
 			if (log.isTraceEnabled()) log.trace("startElementGroup ["+localName+"]");
 			documentContainer.startElementGroup(localName, xmlArrayContainer, repeatedElement, typeDefinition);
@@ -147,7 +147,7 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 	public void endElement(String uri, String localName, String qName) throws SAXException {
 		if (topElement!=null) {
 			if (log.isTraceEnabled()) log.trace("endElementGroup ["+topElement+"]");
-			documentContainer.endElementGroup(topElement);	
+			documentContainer.endElementGroup(topElement);
 		}
 		topElement=element.pop();
 		if (log.isTraceEnabled()) log.trace("endElement ["+localName+"]");
@@ -180,7 +180,7 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 		aligner.setContentHandler(xml2object);
 
 		return validatorHandler;
-	} 
+	}
 
 	public static void translate(String xml, URL schemaURL, DocumentContainer documentContainer) throws SAXException, IOException {
 		ValidatorHandler validatorHandler = setupHandler(schemaURL, documentContainer);

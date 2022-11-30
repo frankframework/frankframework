@@ -200,6 +200,7 @@ public class JndiBase implements IConfigurable {
 		urlPkgPrefixes = newUrlPkgPrefixes;
 	}
 
+	@Override
 	public String toString() {
 		ToStringBuilder ts = new ToStringBuilder(this);
 		ts.append("context", context);

@@ -16,39 +16,29 @@
 package nl.nn.adapterframework.metrics;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleConfig;
-import nl.nn.adapterframework.util.AppConstants;
 
 /**
- * Set management.metrics.use-global-registry=false to disable
+ * Set management.metrics.export.local=false to disable
  * 
  * @see <a href="https://docs.spring.io/spring-boot/docs/2.1.9.RELEASE/reference/html/production-ready-metrics.html">Spring Metrics</a>
  */
-public class FrankRegistryConfigurator extends MetricsRegistryConfiguratorBase {
-	private boolean enabled = AppConstants.getInstance().getBoolean("management.metrics.use-global-registry", true);
+public class FrankRegistryConfigurator extends MetricsRegistryConfiguratorBase<SimpleConfig> {
 
-	public FrankRegistryConfigurator() {
-		super("global-registry");
-	}
-
-	@Override
-	protected MeterRegistry createRegistry() {
-
-		SimpleConfig defaultConfig = new SimpleConfig() {
-			@Override
-			public String get(String s) {
-				return getProperty(s);
-			}
-
-		};
-		return new FrankStatisticsRegistry(defaultConfig);
-	}
-
-	@Override
-	public void registerAt(CompositeMeterRegistry compositeRegistry) {
-		if (enabled && !"false".equals(getProperty("enabled"))) {
-			compositeRegistry.add(createRegistry());
+	private class Config extends MeterRegistryConfigBase implements SimpleConfig {
+		@Override
+		public String prefix() {
+			return "local";
 		}
+	}
+
+	@Override
+	protected SimpleConfig createConfig() {
+		return new Config();
+	}
+
+	@Override
+	protected MeterRegistry createRegistry(SimpleConfig config) {
+		return new FrankStatisticsRegistry(config);
 	}
 }

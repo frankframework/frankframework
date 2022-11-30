@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,6 +24,8 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
+import nl.nn.adapterframework.util.XmlUtils;
+
 public class SaxElementBuilder implements AutoCloseable {
 
 	private ContentHandler handler;
@@ -31,6 +33,7 @@ public class SaxElementBuilder implements AutoCloseable {
 	private SaxElementBuilder parent;
 
 	private AttributesImpl attributes=null;
+	private boolean promotedToObject = false;
 
 	public SaxElementBuilder() throws SAXException {
 		this(new XmlWriter());
@@ -77,7 +80,7 @@ public class SaxElementBuilder implements AutoCloseable {
 		String attrlocalName = name;
 		String attrqName = attrlocalName;
 		String attrType = "";
-		attributes.addAttribute(attruri, attrlocalName, attrqName, attrType, value);
+		attributes.addAttribute(attruri, attrlocalName, attrqName, attrType, XmlUtils.normalizeAttributeValue(value));
 		return this;
 	}
 
@@ -124,6 +127,10 @@ public class SaxElementBuilder implements AutoCloseable {
 	}
 
 	public SaxElementBuilder startElement(String elementName) throws SAXException {
+		if (elementName==null) {
+			promotedToObject = true;
+			return this;
+		}
 		writePendingStartElement();
 		return new SaxElementBuilder(elementName, handler, this);
 	}
@@ -150,8 +157,12 @@ public class SaxElementBuilder implements AutoCloseable {
 
 	@Override
 	public void close() throws SAXException {
-		if (elementName != null) {
-			endElement();
+		if (promotedToObject) {
+			promotedToObject=false;
+		} else {
+			if (elementName != null) {
+				endElement();
+			}
 		}
 	}
 

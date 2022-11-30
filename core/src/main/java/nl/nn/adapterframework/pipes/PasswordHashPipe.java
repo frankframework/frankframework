@@ -25,7 +25,9 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.PasswordHash;
 
@@ -36,18 +38,19 @@ import nl.nn.adapterframework.util.PasswordHash;
  * isn't used a hash of the password is returned. In case hashSessionKey is used
  * it is validated against the hash in the session key which will determine
  * the forward to be used (success or failure).
- *  
- * 
+ *
+ *
  * @ff.forward failure when hashSessionKey is used and password doesn't validate against the hash
- * 
+ *
  * @author Jaco de Groot
  */
+@ElementType(ElementTypes.TRANSLATOR)
 public class PasswordHashPipe extends FixedForwardPipe {
 	private static String FAILURE_FORWARD_NAME = "failure";
 	private String hashSessionKey;
 	private int rounds = 40000;
 	private String roundsSessionKey = null;
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -66,7 +69,7 @@ public class PasswordHashPipe extends FixedForwardPipe {
 		try {
 			input = message.asString();
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+			throw new PipeRunException(this, "cannot open stream", e);
 		}
 		if (StringUtils.isEmpty(getHashSessionKey())) {
 			try {

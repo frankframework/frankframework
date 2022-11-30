@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2017-2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.akamai.NetStorageCmsSigner.SignType;
@@ -47,14 +48,13 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Sender for Akamai NetStorage (HTTP based).
  *
- * <p>See {@link nl.nn.adapterframework.http.HttpSenderBase} for more arguments and parameters!</p>
+ * <p>See {@link HttpSenderBase} for more arguments and parameters!</p>
  *
  *
  * <p><b>AuthAlias:</b></p>
@@ -163,7 +163,7 @@ public class NetStorageSender extends HttpSenderBase {
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 
 		//The input of this sender is the path where to send or retrieve info from.
 		String path;
@@ -210,9 +210,9 @@ public class NetStorageSender extends HttpSenderBase {
 		} else {
 			if (statusCode==HttpServletResponse.SC_OK) {
 				ok = true;
-			} else if (isFollowRedirects() && 
-					statusCode == HttpServletResponse.SC_MOVED_PERMANENTLY || 
-					statusCode == HttpServletResponse.SC_MOVED_TEMPORARILY || 
+			} else if (isFollowRedirects() &&
+					statusCode == HttpServletResponse.SC_MOVED_PERMANENTLY ||
+					statusCode == HttpServletResponse.SC_MOVED_TEMPORARILY ||
 					statusCode == HttpServletResponse.SC_TEMPORARY_REDIRECT) {
 				ok = true;
 			}
@@ -271,7 +271,7 @@ public class NetStorageSender extends HttpSenderBase {
 	}
 
 	/**
-	 * When an exception occurs and the response cannot be parsed, we do not want to throw a 'missing response' exception. 
+	 * When an exception occurs and the response cannot be parsed, we do not want to throw a 'missing response' exception.
 	 * Since this method is used when handling exceptions, silently return null, to avoid NPE's and IOExceptions
 	 */
 	public String getResponseBodyAsString(HttpResponseHandler responseHandler, boolean throwIOExceptionWhenParsingResponse) throws IOException {
@@ -280,22 +280,14 @@ public class NetStorageSender extends HttpSenderBase {
 
 		Message response = responseHandler.getResponseMessage();
 
-		String responseBody = null;
 		try {
-			responseBody = response.asString();
+			return response.asString();
 		} catch(IOException e) {
 			if(throwIOExceptionWhenParsingResponse) {
 				throw e;
 			}
 			return null;
 		}
-
-		int rbLength = responseBody.length();
-		long rbSizeWarn = Misc.getResponseBodySizeWarnByDefault();
-		if (rbLength >= rbSizeWarn) {
-			log.warn(getLogPrefix()+"retrieved result size [" +Misc.toFileSize(rbLength)+"] exceeds ["+Misc.toFileSize(rbSizeWarn)+"]");
-		}
-		return responseBody;
 	}
 
 	/** Only works in combination with the UPLOAD action. If set, and not specified as parameter, the sender will sign the file to be uploaded.*/

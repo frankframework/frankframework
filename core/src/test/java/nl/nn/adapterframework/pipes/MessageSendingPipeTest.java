@@ -7,10 +7,10 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.processors.CorePipeProcessor;
 import nl.nn.adapterframework.senders.EchoSender;
@@ -23,14 +23,14 @@ import nl.nn.adapterframework.testutil.TestFileUtils;
 public class MessageSendingPipeTest extends StreamingPipeTestBase<MessageSendingPipe> {
 
 	@Override
-	public MessageSendingPipe createPipe() throws ConfigurationException {
+	public MessageSendingPipe createPipe() {
 		MessageSendingPipe result = new MessageSendingPipe();
 		result.setSender(new EchoSender() {
 
 			@Override
-			public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+			public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 				try {
-					return new Message("{ \"input\": \""+message.asString()+"\"}");
+					return new SenderResult("{ \"input\": \""+message.asString()+"\"}");
 				} catch (IOException e) {
 					throw new SenderException(e);
 				}

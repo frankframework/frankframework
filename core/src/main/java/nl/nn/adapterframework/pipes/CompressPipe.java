@@ -48,7 +48,7 @@ import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Pipe to zip or unzip a message or file.
- * 
+ *
  * @author John Dekker
  * @author Jaco de Groot (***@dynasol.nl)
  */
@@ -64,10 +64,10 @@ public class CompressPipe extends StreamingPipe {
 	private @Getter FileFormat fileFormat;
 
 	public enum FileFormat {
-		/** Gzip format; also used when direction is compress and resultIsContent=<code>true</code> 
+		/** Gzip format; also used when direction is compress and resultIsContent=<code>true</code>
 		 * or when direction is decompress and messageIsContent=<code>true</code> */
 		GZ,
-		/** Zip format; also used when direction is compress and resultIsContent=<code>false</code> 
+		/** Zip format; also used when direction is compress and resultIsContent=<code>false</code>
 		 * or when direction is decompress and messageIsContent=<code>false</code> */
 		ZIP
 	}
@@ -126,10 +126,10 @@ public class CompressPipe extends StreamingPipe {
 		} catch(Exception e) {
 			PipeForward exceptionForward = findForward(PipeForward.EXCEPTION_FORWARD_NAME);
 			if (exceptionForward!=null) {
-				log.warn(getLogPrefix(session) + "exception occured, forwarded to ["+exceptionForward.getPath()+"]", e);
-				return new PipeRunResult(exceptionForward, new ErrorMessageFormatter().format(getLogPrefix(session),e,this,message,session.getMessageId(),0));
+				log.warn("exception occured, forwarded to ["+exceptionForward.getPath()+"]", e);
+				return new PipeRunResult(exceptionForward, new ErrorMessageFormatter().format(null,e,this,message,session.getMessageId(),0));
 			}
-			throw new PipeRunException(this, getLogPrefix(session) + "Unexpected exception during compression", e);
+			throw new PipeRunException(this, "Unexpected exception during compression", e);
 		}
 	}
 
@@ -154,7 +154,7 @@ public class CompressPipe extends StreamingPipe {
 				if (getFileFormat() == FileFormat.GZ || getFileFormat() == null && resultIsContent) {
 					out = new GZIPOutputStream(out);
 				} else {
-					ZipOutputStream zipper = new ZipOutputStream(out); 
+					ZipOutputStream zipper = new ZipOutputStream(out);
 					String zipEntryName = getZipEntryName(filename, session);
 					zipper.putNextEntry(new ZipEntry(zipEntryName));
 					out = zipper;

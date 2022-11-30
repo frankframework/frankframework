@@ -26,7 +26,7 @@ import org.xml.sax.Attributes;
 public class AlignmentContext {
 
 	private AlignmentContext parent;
-	
+
 	private String namespaceUri;
 	private String localName;
 	private String qName;
@@ -88,6 +88,4 @@ public class AlignmentContext {
 	public boolean isParentOfSingleMultipleOccurringChildElement() {
 		return parentOfSingleMultipleOccurringChildElement;
 	}
-
-
 }

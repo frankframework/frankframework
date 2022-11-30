@@ -149,4 +149,43 @@
 		</pipeline>
 	</adapter>
 
+	<adapter name="JsonValidator">
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-JsonValidator" throwException="false" />
+		</receiver>
+		<receiver>
+			<listener className="nl.nn.adapterframework.http.rest.ApiListener" uriPattern="jsonvalidator/item/post" method="POST"/>
+		</receiver>
+		<pipeline firstPipe="Convert2XML">
+			<exits>
+				<exit path="EXIT" state="success" code="200"/>
+				<exit path="SpecialExit" state="success" code="201" responseRoot="SpecialResponse" />
+				<exit path="NotModified" state="success" code="304" empty="true" />
+				<exit path="BadRequest" state="error" code="400" responseRoot="InputValidationFailure" />
+				<exit path="ServerError" state="error" code="500" />
+			</exits>
+	
+			<JsonInputValidator schema="/Validators/jsd/Items.jsd" 
+				root="Item_Request" subSchemaPrefix="/components/">
+				<forward name="failure" path="InputValidationFailure" />
+				<forward name="outputFailure" path="OutputValidationFailure" />
+			</JsonInputValidator>
+
+			<pipe name="InputValidationFailure" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="{ &quot;message&quot;:&quot;input validation failure: REASON&quot; }" replaceFixedParams="true" >
+				<param name="REASON" sessionKey="failureReason" />
+				<forward name="success" path="BadRequest" />
+			</pipe>
+			<pipe name="OutputValidationFailure" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="{ &quot;message&quot;:&quot;output validation failure: REASON&quot; }" replaceFixedParams="true" >
+				<param name="REASON" sessionKey="failureReason" />
+				<forward name="success" path="ServerError" />
+			</pipe>
+
+			<Json2XmlValidatorPipe name="Convert2XML" schemaLocation="urn:items /Validators/xsd/Items.xsd" root="Item_Request" throwException="true"/>
+			<XsltPipe name="CopyItem" styleSheetName="Validators/xsl/CopyItem.xsl" />
+			<JsonPipe name="Convert2JSON" direction="XML2JSON" >
+				<Forward name="success" path="EXIT" />
+			</JsonPipe>
+		</pipeline>
+	</adapter>
+
 </module>

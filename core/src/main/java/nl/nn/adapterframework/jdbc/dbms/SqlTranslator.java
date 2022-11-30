@@ -43,7 +43,7 @@ public class SqlTranslator implements ISqlTranslator {
 	private Map<String,Pattern> sources;
 	private Map<String,String>  targets;
 	private String target;
-	
+
 	private boolean configured=false;
 
 	public SqlTranslator(String source, String target) throws JdbcException {
@@ -68,7 +68,7 @@ public class SqlTranslator implements ISqlTranslator {
 	public boolean canConvert(String from, String to) {
 		return configured && to.equals(target);
 	}
-	
+
 	/**
 	 * Translates the given query to the target language.
 	 * Uses the translation rules set by this and the target translators.

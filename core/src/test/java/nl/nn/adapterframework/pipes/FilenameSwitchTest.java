@@ -51,7 +51,7 @@ public class FilenameSwitchTest extends PipeTestBase<FilenameSwitch>{
     @Test
     public void testConfigureWithoutForwardNameAndWithoutAlternativeForward() throws Exception {
         exception.expect(PipeRunException.class);
-        exception.expectMessage("Pipe [FilenameSwitch under test] msgId [null] cannot find forward or pipe named []");
+        exception.expectMessage("cannot find forward or pipe named []");
         pipe.setNotFoundForwardName(null);
         pipe.configure();
         PipeRunResult res = doPipe(pipe, "", session);
@@ -81,7 +81,7 @@ public class FilenameSwitchTest extends PipeTestBase<FilenameSwitch>{
 
     @Test
     public void testValidForwardNameToLowerCaseFalse() throws Exception {
-        exception.expectMessage("Pipe [FilenameSwitch under test] msgId [null] cannot find forward or pipe named [SUCCESS]");
+        exception.expectMessage("cannot find forward or pipe named [SUCCESS]");
         pipe.setToLowercase(false);
         doPipe(pipe, "https:\\www.delft.nl/corona-besmettingsgeval-gevonden-in-delft/a\\SUCCESS", session);
         fail("this is expected to fail");

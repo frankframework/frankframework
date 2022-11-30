@@ -27,7 +27,6 @@ import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
-import nl.nn.adapterframework.xml.PrettyPrintFilter;
 import nl.nn.adapterframework.xml.SaxDocumentBuilder;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
 import nl.nn.adapterframework.xml.XmlWriter;
@@ -96,8 +95,7 @@ public class DB2XMLWriter {
 	public String getXML(IDbmsSupport dbmsSupport, ResultSet rs, int maxlength, boolean includeFieldDefinition) {
 		try {
 			XmlWriter xmlWriter = new XmlWriter();
-			PrettyPrintFilter ppf = new PrettyPrintFilter(xmlWriter);
-			getXML(dbmsSupport, rs, maxlength, includeFieldDefinition, ppf);
+			getXML(dbmsSupport, rs, maxlength, includeFieldDefinition, xmlWriter, true);
 			return xmlWriter.toString();
 		} catch (SAXException e) {
 			log.warn("cannot convert ResultSet to XML", e);
@@ -106,9 +104,9 @@ public class DB2XMLWriter {
 	}
 
 
-	public void getXML(IDbmsSupport dbmsSupport, ResultSet rs, int maxlength, boolean includeFieldDefinition, ContentHandler handler) throws SAXException {
+	public void getXML(IDbmsSupport dbmsSupport, ResultSet rs, int maxlength, boolean includeFieldDefinition, ContentHandler handler, boolean prettyPrint) throws SAXException {
 
-		try (SaxDocumentBuilder root = new SaxDocumentBuilder(docname, handler)) {
+		try (SaxDocumentBuilder root = new SaxDocumentBuilder(docname, handler, prettyPrint)) {
 			if (null == rs) {
 				return;
 			}

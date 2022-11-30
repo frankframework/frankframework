@@ -29,7 +29,9 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.SupportsOutputStreaming;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.doc.Category;
+import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -52,6 +54,7 @@ import nl.nn.adapterframework.util.TransformerPool.OutputType;
  */
 @Category("Basic")
 @SupportsOutputStreaming
+@ElementType(ElementTypes.TRANSLATOR)
 public class XsltPipe extends StreamingPipe implements InitializingBean {
 
 	private String sessionKey=null;
@@ -99,7 +102,7 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 		try {
 			sender.close();
 		} catch (SenderException e) {
-			log.warn(getLogPrefix(null)+"exception closing XsltSender",e);
+			log.warn("exception closing XsltSender",e);
 		}
 		super.stop();
 	}
@@ -118,7 +121,7 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 	@Override
 	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
 		if (Message.isEmpty(input)) {
-			throw new PipeRunException(this, getLogPrefix(session)+"got null input");
+			throw new PipeRunException(this, "got null input");
 		}
 		try {
 			IForwardTarget nextPipe;
@@ -142,13 +145,21 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 			}
 			return new PipeRunResult(forward, result);
 		} catch (Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session) + " Exception on transforming input", e);
+			throw new PipeRunException(this, "Exception on transforming input", e);
 		}
 	}
 
 	@Override
 	public boolean supportsOutputStreamPassThrough() {
 		return false;
+	}
+
+	/**
+	 * If true, then this pipe will process the XSLT while streaming in a different thread. Can be used to switch streaming xslt off for debugging purposes
+	 * @ff.default set by appconstant xslt.streaming.default
+	 */
+	public void setStreamingXslt(boolean streamingActive) {
+		sender.setStreamingXslt(streamingActive);
 	}
 
 

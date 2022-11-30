@@ -314,27 +314,27 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 		return null;
 	}
 
-	@IbisDoc({ "1", "the destination, aka smb://xxx/yyy share", "" })
+	@IbisDoc({"the destination, aka smb://xxx/yyy share", "" })
 	public void setShare(String share) {
 		this.share = share;
 	}
 
-	@IbisDoc({ "2", "the smb share username", "" })
+	@IbisDoc({"the smb share username", "" })
 	public void setUsername(String username) {
 		this.username = username;
 	}
 
-	@IbisDoc({ "3", "the smb share password", "" })
+	@IbisDoc({"the smb share password", "" })
 	public void setPassword(String password) {
 		this.password = password;
 	}
 
-	@IbisDoc({ "4", "alias used to obtain credentials for the smb share", "" })
+	@IbisDoc({"alias used to obtain credentials for the smb share", "" })
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}
 
-	@IbisDoc({ "5", "domain, in case the user account is bound to a domain", "" })
+	@IbisDoc({"domain, in case the user account is bound to a domain", "" })
 	public void setAuthenticationDomain(String domain) {
 		this.authenticationDomain = domain;
 	}
@@ -344,12 +344,12 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 		setAuthenticationDomain(domain);
 	}
 
-	@IbisDoc({ "6", "when <code>true</code>, intermediate directories are created also", "false" })
+	@IbisDoc({"when <code>true</code>, intermediate directories are created also", "false" })
 	public void setForce(boolean force) {
 		isForce = force;
 	}
 
-	@IbisDoc({ "7", "controls whether hidden files are seen or not", "false" })
+	@IbisDoc({"controls whether hidden files are seen or not", "false" })
 	public void setListHiddenFiles(boolean listHiddenFiles) {
 		this.listHiddenFiles = listHiddenFiles;
 	}

@@ -18,8 +18,9 @@ package nl.nn.adapterframework.pipes;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-
+import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
 
 import java.io.IOException;
@@ -31,7 +32,7 @@ import org.apache.commons.lang3.StringUtils;
  * 
  * @author  Gerrit van Brakel
  */
-
+@ElementType(ElementTypes.ERRORHANDLING)
 public class ExceptionPipe extends FixedForwardPipe {
 
 	private boolean throwException = true;
@@ -43,18 +44,17 @@ public class ExceptionPipe extends FixedForwardPipe {
 		try {
 			errorMessage = message.asString();
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+			throw new PipeRunException(this, "cannot open stream", e);
 		}
 		if (StringUtils.isEmpty(errorMessage)) {
 			errorMessage="exception: "+getName();
 		}
 
-		if (isThrowException())
+		if (isThrowException()) {
 			throw new PipeRunException(this, errorMessage);
-		else {
-			log.error(errorMessage);
-			return new PipeRunResult(getSuccessForward(), errorMessage);
 		}
+		log.error(errorMessage);
+		return new PipeRunResult(getSuccessForward(), errorMessage);
 	}
 
 

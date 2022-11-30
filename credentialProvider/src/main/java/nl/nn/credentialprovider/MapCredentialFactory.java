@@ -24,6 +24,7 @@ import java.net.URL;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import nl.nn.credentialprovider.util.AppConstants;
 import nl.nn.credentialprovider.util.ClassUtils;
@@ -81,8 +82,8 @@ public abstract class MapCredentialFactory implements ICredentialFactory {
 	}
 
 	@Override
-	public ICredentials getCredentials(String alias, String defaultUsername, String defaultPassword) {
-		return new MapCredentials(alias, defaultUsername, defaultPassword, usernameSuffix, passwordSuffix, aliases);
+	public ICredentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {
+		return new MapCredentials(alias, defaultUsernameSupplier, defaultPasswordSupplier, usernameSuffix, passwordSuffix, aliases);
 	}
 
 	@Override

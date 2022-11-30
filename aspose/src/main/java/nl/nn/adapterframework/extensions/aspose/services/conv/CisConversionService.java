@@ -39,7 +39,4 @@ public interface CisConversionService {
 	 *             when a failure occurs.
 	 */
 	CisConversionResult convertToPdf(Message input, String filename, ConversionOption conversionOption) throws IOException;
-
-
-	String getFontsDirectory();
 }

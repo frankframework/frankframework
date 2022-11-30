@@ -21,9 +21,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonStructure;
 import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang3.StringUtils;
@@ -31,6 +28,9 @@ import org.apache.xerces.xs.XSModel;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.helpers.XMLFilterImpl;
 
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonStructure;
 import lombok.Getter;
 import nl.nn.adapterframework.align.Json2Xml;
 import nl.nn.adapterframework.align.Xml2Json;
@@ -93,7 +93,6 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		if (StringUtils.isNotEmpty(getSoapNamespace())) {
 			throw new ConfigurationException("soapNamespace attribute not supported");
 		}
-		if (log.isDebugEnabled()) log.debug(getLogPrefix(null)+getPhysicalDestinationName());
 		if (StringUtils.isEmpty(getInputFormatSessionKey())) {
 			setInputFormatSessionKey(INPUT_FORMAT_SESSION_KEY_PREFIX+getName());
 		}
@@ -131,7 +130,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		if (!responseMode) {
 			String sessionKey = getInputFormatSessionKey();
 			if (!session.containsKey(sessionKey)) {
-				if (log.isDebugEnabled()) log.debug("storing inputFormat ["+format+"] under session key ["+sessionKey+"]");
+				log.debug("storing inputFormat [{}] under session key [{}]", format, sessionKey);
 				session.put(sessionKey, format);
 			}
 		}
@@ -148,7 +147,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		try {
 			messageToValidate = Message.isNull(input) ?"{}":input.asString();
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+			throw new PipeRunException(this, "cannot open stream", e);
 		}
 		int i=0;
 		while (i<messageToValidate.length() && Character.isWhitespace(messageToValidate.charAt(i))) i++;
@@ -161,7 +160,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 				// message is XML
 				if (isAcceptNamespacelessXml()) {
 					messageToValidate=addNamespace(messageToValidate); // TODO: do this via a filter
-					//if (log.isDebugEnabled()) log.debug("added namespace to message ["+messageToValidate+"]");
+					//log.debug("added namespace to message [{}]", messageToValidate);
 				}
 				storeInputFormat(DocumentFormat.XML, session, responseMode);
 				if (getOutputFormat(session,responseMode) != DocumentFormat.JSON) {
@@ -215,7 +214,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		// Make sure to use Xerces' ValidatorHandlerImpl, otherwise casting below will fail.
 		XmlAligner aligner = new XmlAligner(validatorHandler, context.getXsModels());
 		if (isIgnoreUndeclaredElements()) {
-			log.warn(getLogPrefix(session)+"cannot ignore undeclared elements when converting from XML");
+			log.warn("cannot ignore undeclared elements when converting from XML");
 		}
 		//aligner.setIgnoreUndeclaredElements(isIgnoreUndeclaredElements()); // cannot ignore XML Schema Validation failure in this case, currently
 		Xml2Json xml2json = new Xml2Json(aligner, isCompactJsonArrays(), !isJsonWithRootElements());
@@ -229,7 +228,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		aligner.setContentHandler(handler);
 		aligner.setErrorHandler(context.getErrorHandler());
 
-		ValidationResult validationResult= validator.validate(messageToValidate, session, getLogPrefix(session), validatorHandler, xml2json, context);
+		ValidationResult validationResult= validator.validate(messageToValidate, session, validatorHandler, xml2json, context);
 		String out=xml2json.toString();
 		PipeForward forward=determineForward(validationResult, session, responseMode);
 		PipeRunResult result=new PipeRunResult(forward,out);
@@ -341,7 +340,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	}
 	public JsonStructure createResponseJsonSchema() {
 		return createJsonSchema(getResponseRoot());
- 	}
+	}
 
 	public JsonObject createJsonSchemaDefinitions(String definitionsPath) {
 		List<XSModel> models = validator.getXSModels();

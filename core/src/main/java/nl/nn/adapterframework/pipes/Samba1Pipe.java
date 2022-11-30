@@ -26,32 +26,32 @@ public class Samba1Pipe extends FileSystemPipe<SmbFile, Samba1FileSystem> {
 		setFileSystem(new Samba1FileSystem());
 	}
 
-	@IbisDoc({ "1", "Shared folder name in the samba server", "" })
+	@IbisDoc({"Shared folder name in the samba server", "" })
 	public void setShare(String share) {
 		getFileSystem().setShare(share);
 	}
 
-	@IbisDoc({"2", "the smb share username", "" })
+	@IbisDoc({"the smb share username", "" })
 	public void setUsername(String username) {
 		getFileSystem().setUsername(username);
 	}
 
-	@IbisDoc({ "3", "the smb share password", "" })
+	@IbisDoc({"the smb share password", "" })
 	public void setPassword(String password) {
 		getFileSystem().setPassword(password);
 	}
 
-	@IbisDoc({ "4", "alias used to obtain credentials for the smb share", "" })
+	@IbisDoc({"alias used to obtain credentials for the smb share", "" })
 	public void setAuthAlias(String authAlias) {
 		getFileSystem().setAuthAlias(authAlias);
 	}
 
-	@IbisDoc({ "5", "in case the user account is bound to a domain", "" })
+	@IbisDoc({"in case the user account is bound to a domain", "" })
 	public void setDomain(String domain) {
 		getFileSystem().setDomain(domain);
 	}
 
-	@IbisDoc({ "7", "controls whether hidden files are seen or not", "false" })
+	@IbisDoc({"controls whether hidden files are seen or not", "false" })
 	public void setForce(boolean force) {
 		getFileSystem().setForce(force);
 	}

@@ -31,9 +31,10 @@ import jcifs.smb.SmbFile;
 import jcifs.smb.SmbFileInputStream;
 import jcifs.smb.SmbFileOutputStream;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -129,15 +130,14 @@ public class SambaSenderOld extends SenderWithParametersBase {
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		ParameterValueList pvl = null;
 		try {
 			if (paramList != null) {
 				pvl = paramList.getValues(message, session);
 			}
 		} catch (ParameterException e) {
-			throw new SenderException(getLogPrefix() + "Sender [" + getName()
-					+ "] caught exception evaluating parameters", e);
+			throw new SenderException(getLogPrefix() + "Sender [" + getName() + "] caught exception evaluating parameters", e);
 		}
 
 		SmbFile file;
@@ -151,17 +151,17 @@ public class SambaSenderOld extends SenderWithParametersBase {
 			if (getAction().equalsIgnoreCase("download")) {
 				SmbFileInputStream is = new SmbFileInputStream(file);
 				InputStream base64 = new Base64InputStream(is, true);
-				return new Message(Misc.streamToString(base64));
+				return new SenderResult(Misc.streamToString(base64));
 			} else if (getAction().equalsIgnoreCase("list")) {
-				return new Message(listFilesInDirectory(file));
+				return new SenderResult(listFilesInDirectory(file));
 			} else if (getAction().equalsIgnoreCase("upload")) {
-				Message paramValue = pvl.getParameterValue("file").asMessage();
+				Message paramValue = pvl.get("file").asMessage();
 
 				try(SmbFileOutputStream out = new SmbFileOutputStream(file)) {
 					out.write(paramValue.asByteArray());
 				}
 
-				return new Message(getFileAsXmlBuilder(new SmbFile(smbContext, message.asString())).toXML());
+				return new SenderResult(getFileAsXmlBuilder(new SmbFile(smbContext, message.asString())).toXML());
 			} else if (getAction().equalsIgnoreCase("delete")) {
 				if (!file.exists())
 					throw new SenderException("file not found");
@@ -184,7 +184,7 @@ public class SambaSenderOld extends SenderWithParametersBase {
 				else
 					throw new SenderException("trying to remove a file instead of a directory");
 			} else if (getAction().equalsIgnoreCase("rename")) {
-				String destination = pvl.getParameterValue("destination").asStringValue();
+				String destination = pvl.get("destination").asStringValue();
 				if (destination == null)
 					throw new SenderException("unknown destination[+destination+]");
 
@@ -199,7 +199,7 @@ public class SambaSenderOld extends SenderWithParametersBase {
 					+ file.getCanonicalPath() + "]", e);
 		}
 
-		return new Message("<result>ok</result>");
+		return new SenderResult("<result>ok</result>");
 	}
 
 	private String listFilesInDirectory(SmbFile directory) throws IOException {

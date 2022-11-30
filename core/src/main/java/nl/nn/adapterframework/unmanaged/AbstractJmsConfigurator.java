@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,30 +15,33 @@
 */
 package nl.nn.adapterframework.unmanaged;
 
+import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
+import javax.jms.Message;
+
+import org.apache.logging.log4j.Logger;
+
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPortConnectedListener;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.LogUtil;
-import org.apache.logging.log4j.Logger;
-
-import javax.jms.ConnectionFactory;
-import javax.jms.Destination;
-import javax.jms.Message;
 /**
  * Base class for JMS Configurator implementations.
- * 
+ *
  * @author  Tim van der Leeuw
  * @since   4.8
  */
-abstract public class AbstractJmsConfigurator {
+public abstract class AbstractJmsConfigurator {
 	protected Logger log=LogUtil.getLogger(this);
 
-	private IPortConnectedListener<Message> listener;
-	private ConnectionFactory connectionFactory;
-	private Destination destination;
-	private Receiver<Message> receiver;
-	private IbisExceptionListener exceptionListener;
+	private @Getter @Setter IPortConnectedListener<Message> listener;
+	private @Getter @Setter ConnectionFactory connectionFactory;
+	private @Getter @Setter Destination destination;
+	private @Getter Receiver<Message> receiver;
+	private @Getter IbisExceptionListener exceptionListener;
 
 	public void configureEndpointConnection(IPortConnectedListener<Message> listener, ConnectionFactory connectionFactory, Destination destination, IbisExceptionListener exceptionListener) throws ConfigurationException {
 		if (connectionFactory == null) {
@@ -54,32 +57,4 @@ abstract public class AbstractJmsConfigurator {
 		this.exceptionListener = exceptionListener;
 	}
 
-	public void setListener(IPortConnectedListener<Message> listener) {
-		this.listener = listener;
-	}
-	public IPortConnectedListener<Message> getListener() {
-		return listener;
-	}
-
-	public void setConnectionFactory(ConnectionFactory connectionFactory) {
-		this.connectionFactory = connectionFactory;
-	}
-	public ConnectionFactory getConnectionFactory() {
-		return connectionFactory;
-	}
-
-	public void setDestination(Destination destination) {
-		this.destination = destination;
-	}
-	public Destination getDestination() {
-		return destination;
-	}
-
-	public Receiver<Message> getReceiver() {
-		return receiver;
-	}
-
-	public IbisExceptionListener getExceptionListener() {
-		return exceptionListener;
-	}
 }

@@ -31,7 +31,7 @@ public interface ItemList {
 	final String PRINT_FORMAT_COUNT="#,##0";
 	final String PRINT_FORMAT_TIME="#,##0";
 	final String PRINT_FORMAT_PERC="##0.0";
-	
+
 	public enum Type {
 		INTEGER,
 		TIME,
@@ -47,7 +47,7 @@ public interface ItemList {
 	final String ITEM_NAME_SUMSQ="sumsq";
 
 	final String ITEM_VALUE_NAN="-";
-	
+
 	int getItemCount();
 	String getItemName(int index);
 	Type getItemType(int index);

@@ -7,25 +7,28 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<revision>7.8-SNAPSHOT</revision>
+		<revision>7.9-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<log4j2.version>2.18.0</log4j2.version>
-		<cxf.version>3.5.3</cxf.version>
+		<log4j2.version>2.19.0</log4j2.version>
+		<cxf.version>3.5.4</cxf.version>
 		<btm.version>3.0.0-mk1</btm.version>
-		<narayana.version>5.11.4.Final</narayana.version>
+		<narayana.version>5.12.7.Final</narayana.version>
 		<jboss-logging.version>3.4.2.Final</jboss-logging.version>
+		<micrometer.version>1.10.2</micrometer.version>
 		<argLine /> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
-		<frankdoc.version>1.1-SNAPSHOT</frankdoc.version>
+		<frankdoc.version>1.2-SNAPSHOT</frankdoc.version>
 
 		<!-- DB Driver Versions -->
-		<h2.driver.version>2.1.212</h2.driver.version>
+		<h2.driver.version>2.1.214</h2.driver.version>
+		<db2.driver.version>11.5.8.0</db2.driver.version>
 		<oracle.driver.version>18.3.0.0</oracle.driver.version>
 		<oracle.driver.jdkversion>8</oracle.driver.jdkversion>
 		<mssql.driver.version>7.4.1.jre8</mssql.driver.version>
-		<mysql.driver.version>8.0.29</mysql.driver.version>
-		<mariadb.driver.version>2.7.5</mariadb.driver.version>
-		<postgresql.driver.version>42.3.3</postgresql.driver.version>
+		<mysql.driver.version>8.0.31</mysql.driver.version>
+		<mariadb.driver.version>2.7.7</mariadb.driver.version>
+		<postgresql.driver.version>42.5.1</postgresql.driver.version>
+		<mongodb.driver.version>4.8.0</mongodb.driver.version>
 	</properties>
 
 	<name>Ibis AdapterFramework parent</name>
@@ -161,6 +164,11 @@
 				<artifactId>ibis-adapterframework-aspose</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.ibissource</groupId>
+				<artifactId>ibis-adapterframework-aws</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 
 			<!-- explicit dependency to force version 1.1.1 -->
 			<dependency><!-- this dependency handles javax.activation.* imports, compatible with the IBM JRE -->
@@ -191,17 +199,29 @@
 				<artifactId>log4j-slf4j-impl</artifactId>
 				<version>${log4j2.version}</version>
 			</dependency>
-			<!-- Apache Commons Logging Binding-->
+			<!-- Apache Commons Logging Binding -->
 			<dependency>
 				<groupId>org.apache.logging.log4j</groupId>
 				<artifactId>log4j-jcl</artifactId>
 				<version>${log4j2.version}</version>
 			</dependency>
-			<!-- Java Util Logging Binding-->
+			<!-- Java Util Logging Binding -->
 			<dependency>
 				<groupId>org.apache.logging.log4j</groupId>
 				<artifactId>log4j-jul</artifactId>
 				<version>${log4j2.version}</version>
+			</dependency>
+
+			<!-- SLF4J Log bindings -->
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-api</artifactId>
+				<version>1.7.36</version>
+			</dependency>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-jcl</artifactId>
+				<version>1.7.36</version>
 			</dependency>
 
 			<dependency>
@@ -255,7 +275,7 @@
 			<dependency>
 				<groupId>com.sun.mail</groupId>
 				<artifactId>jakarta.mail</artifactId>
-				<version>1.6.7</version>
+				<version>2.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>org.projectlombok</groupId>
@@ -264,14 +284,21 @@
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
-				<groupId>junit</groupId>
-				<artifactId>junit</artifactId>
-				<version>[4.13.1,)</version>
+				<groupId>org.junit.vintage</groupId>
+				<artifactId>junit-vintage-engine</artifactId>
+				<version>[5.9.1,)</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.junit.jupiter</groupId>
+				<artifactId>junit-jupiter</artifactId>
+				<version>[5.9.1,)</version>
+				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.mockito</groupId>
 				<artifactId>mockito-core</artifactId>
-				<version>4.5.1</version>
+				<version>4.9.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hamcrest</groupId>
@@ -310,58 +337,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
-				<version>3.1.0</version>
-				<executions>
-					<execution>
-						<id>enforce-lib-ban</id>
-						<goals>
-							<goal>enforce</goal>
-						</goals>
-						<configuration>
-							<rules>
-								<bannedDependencies>
-									<excludes>
-										<exclude>com.sun.mail:javax.mail</exclude><!-- Java Mail was renamed to the Jakarta Mail -->
-										<exclude>javax.transaction:javax.transaction-api</exclude><!-- javax.transaction-api was renamed to the jakarta.transaction-api -->
-									</excludes>
-									<message>use jakarta packages instead</message>
-								</bannedDependencies>
-								<bannedDependencies>
-									<!-- Java Annotations was renamed to the Jakarta Annotations -->
-									<excludes>
-										<exclude>javax.annotation:javax.annotation-api</exclude>
-										<exclude>javax.xml.ws:javax.xml.ws-api</exclude>
-										<exclude>javax.xml.soap:javax.xml.soap-api</exclude>
-									</excludes>
-									<message>Prevent the use of both javax and jakarta packages</message>
-								</bannedDependencies>
-								<bannedDependencies>
-									<excludes>
-										<exclude>javax.xml.stream:stax-api</exclude>
-										<exclude>xml-apis:xml-apis</exclude>
-									</excludes>
-									<message>Prevent the use of STAX1, use STAX 2 (org.codehaus.woodstox:stax2-api) instead!</message>
-								</bannedDependencies>
-								<bannedDependencies>
-									<!-- the activation framework was renamed to the jarkata activation framework -->
-									<excludes>
-										<exclude>javax.activation:javax.activation-api</exclude>
-										<exclude>com.sun.activation:javax.activation</exclude>
-								<!-- 	<exclude>javax.activation:activation</exclude> -->
-									</excludes>
-									<message>use com.sun.activation:jakarta.activation instead of jakarta.activation:jakarta.activation-api</message>
-								</bannedDependencies>
-								<bannedDependencies>
-									<!-- the implementation com.sun.activation:jakarta.activation contains the api classes too -->
-									<excludes>
-										<exclude>jakarta.activation:jakarta.activation-api</exclude>
-									</excludes>
-									<message>the implementation com.sun.activation:jakarta.activation is included and it contains the api classes too</message>
-								</bannedDependencies>
-							</rules>
-						</configuration>
-					</execution>
-				</executions>
 			</plugin>
 			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
@@ -417,7 +392,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-jar-plugin</artifactId>
-					<version>3.2.2</version>
+					<version>3.3.0</version>
 					<configuration>
 						<archive>
 							<addMavenDescriptor>true</addMavenDescriptor>
@@ -515,7 +490,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
-					<version>3.4.0</version>
+					<version>3.4.1</version>
 					<configuration>
 						<doclint>none</doclint>
 						<tags>
@@ -575,14 +550,15 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-site-plugin</artifactId>
-					<version>3.9.1</version>
+					<version>3.12.1</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-checkstyle-plugin</artifactId>
-					<version>3.1.2</version>
+					<version>3.2.0</version>
 					<configuration>
 						<configLocation>${iaf.rootdir}/checkstyle.xml</configLocation>
+						<propertyExpansion>config_loc=${iaf.rootdir}</propertyExpansion>
 						<logViolationsToConsole>true</logViolationsToConsole>
 					</configuration>
 					<executions>
@@ -605,7 +581,7 @@
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>flatten-maven-plugin</artifactId>
-					<version>1.2.7</version>
+					<version>1.3.0</version>
 					<configuration>
 						<updatePomFile>true</updatePomFile>
 						<flattenMode>resolveCiFriendliesOnly</flattenMode>
@@ -681,6 +657,63 @@
 						</lifecycleMappingMetadata>
 					</configuration>
 				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-enforcer-plugin</artifactId>
+					<version>3.1.0</version>
+					<executions>
+						<execution>
+							<id>enforce-lib-ban</id>
+							<goals>
+								<goal>enforce</goal>
+							</goals>
+							<configuration>
+								<rules>
+									<bannedDependencies>
+										<excludes>
+											<exclude>com.sun.mail:javax.mail</exclude><!-- Java Mail was renamed to the Jakarta Mail -->
+											<exclude>javax.transaction:javax.transaction-api</exclude><!-- javax.transaction-api was renamed to the jakarta.transaction-api -->
+											<exclude>org.glassfish:javax.json</exclude>
+										</excludes>
+										<message>use jakarta packages instead</message>
+									</bannedDependencies>
+									<bannedDependencies>
+										<!-- Java Annotations was renamed to the Jakarta Annotations -->
+										<excludes>
+											<exclude>javax.annotation:javax.annotation-api</exclude>
+											<exclude>javax.xml.ws:jaxws-api</exclude>
+											<exclude>javax.xml.bind:jaxb-api</exclude>
+											<exclude>javax.xml.soap:javax.xml.soap-api</exclude>
+										</excludes>
+										<message>Prevent the use of both javax and jakarta packages</message>
+									</bannedDependencies>
+									<bannedDependencies>
+										<excludes>
+											<exclude>javax.xml.stream:stax-api</exclude>
+											<exclude>xml-apis:xml-apis</exclude>
+										</excludes>
+										<message>Prevent the use of STAX1, use STAX 2 (org.codehaus.woodstox:stax2-api) instead!</message>
+									</bannedDependencies>
+									<bannedDependencies>
+										<!-- the activation framework was renamed to the jarkata activation framework -->
+										<excludes>
+											<exclude>javax.activation:javax.activation-api</exclude>
+											<exclude>com.sun.activation:javax.activation</exclude>
+									<!-- 	<exclude>javax.activation:activation</exclude> -->
+										</excludes>
+										<message>use com.sun.activation:jakarta.activation instead of jakarta.activation:jakarta.activation-api</message>
+									</bannedDependencies>
+									<bannedDependencies>
+										<excludes>
+											<exclude>jakarta.activation:jakarta.activation-api</exclude>
+										</excludes>
+										<message>the implementation com.sun.activation:jakarta.activation is included and it contains the api classes too</message>
+									</bannedDependencies>
+								</rules>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 	</build>
@@ -690,16 +723,16 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-project-info-reports-plugin</artifactId>
-				<version>3.1.0</version>
+				<version>3.4.1</version>
 			</plugin>
-			<!-- 
-				http://maven.apache.org/plugins/maven-javadoc-plugin/usage.html 
-				Generate Javadocs As Part Of Project Reports 
+			<!--
+				http://maven.apache.org/plugins/maven-javadoc-plugin/usage.html
+				Generate Javadocs As Part Of Project Reports
 			-->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.4.0</version>
+				<version>3.4.1</version>
 				<inherited>false</inherited>
 				<reportSets>
 					<reportSet>
@@ -752,7 +785,7 @@
 					<plugin>
 						<groupId>org.sonatype.plugins</groupId>
 						<artifactId>nexus-staging-maven-plugin</artifactId>
-						<version>1.6.8</version>
+						<version>1.6.13</version>
 						<extensions>true</extensions>
 						<configuration>
 							<serverId>ossrh</serverId>
@@ -842,6 +875,28 @@
 			</modules>
 		</profile>
 		<profile>
+			<id>aspose</id>
+			<activation>
+				<property>
+					<name>!no-aspose</name>
+				</property>
+			</activation>
+			<modules>
+				<module>aspose</module>
+			</modules>
+		</profile>
+		<profile>
+			<id>aws</id>
+			<activation>
+				<property>
+					<name>!no-aws</name>
+				</property>
+			</activation>
+			<modules>
+				<module>aws</module>
+			</modules>
+		</profile>
+		<profile>
 			<id>proprietary</id>
 			<activation>
 				<property>
@@ -855,7 +910,6 @@
 				<module>sap</module>
 				<module>tibco</module>
 				<module>idin</module>
-				<module>aspose</module>
 			</modules>
 			<repositories>
 				<repository>
@@ -893,7 +947,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-javadoc-plugin</artifactId>
-						<version>3.4.0</version>
+						<version>3.4.1</version>
 						<configuration>
 							<sourcepath>${project.build.directory}/generated-sources/delombok</sourcepath>
 						</configuration>
@@ -936,16 +990,21 @@
 					<plugin>
 						<groupId>org.ibissource</groupId>
 						<artifactId>frank-doc-plugin</artifactId>
-						<version>0.1</version>
+						<version>0.2-SNAPSHOT</version>
 						<inherited>false</inherited> <!-- Only run the Frank!Doc once and include all modules -->
 						<configuration>
 							<doclint>none</doclint>
 							<doclet>org.frankframework.frankdoc.doclet.DocletBuilder</doclet>
 							<docletArtifact>
 								<groupId>org.ibissource</groupId>
-								<artifactId>frank-doc</artifactId>
+								<artifactId>frank-doc-doclet</artifactId>
 								<version>${frankdoc.version}</version>
 							</docletArtifact>
+							<frontendArtifact>
+								<groupId>org.ibissource</groupId>
+								<artifactId>frank-doc-frontend</artifactId>
+								<version>${frankdoc.version}</version>
+							</frontendArtifact>
 							<additionalOptions>
 								<additionalOption>-outputDirectory</additionalOption>
 								<additionalOption>${project.build.directory}/frankdoc</additionalOption>

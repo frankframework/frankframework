@@ -23,14 +23,22 @@
 						<div class="form-group">
 							<label class="col-sm-3 control-label">Job Group</label>
 							<div class="col-sm-9">
-								<input class="form-control m-b" name="group" type="text" ng-model="form.group" ng-disabled="editMode"/>
+								<input class="form-control m-b" name="group" type="text" ng-model="form.group" ng-disabled="jobGroup"/>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Configuration</label>
+							<div class="col-sm-9">
+								<select class="form-control m-b" name="configuration" ng-model="selectedConfiguration">
+									<option ng-repeat="config in configurations" ng-value="config.name">{{config.name}}</option>
+								</select>
 							</div>
 						</div>
 						<div class="form-group">
 							<label class="col-sm-3 control-label">Select an adapter</label>
 							<div class="col-sm-9">
-								<select class="form-control m-b" name="adapter" ng-model="form.adapter">
-									<option ng-repeat="adapter in schedulerEligibleAdapters" ng-value="adapter.name">{{adapter.name + (adapter.description != null? " - "+adapter.description:"")}}</option>
+								<select class="form-control m-b" name="adapter" ng-model="form.adapter" ng-disabled="selectedConfiguration ==''">
+									<option ng-repeat="adapter in adapters | configurationFilter:this | withJavaListener" ng-value="adapter.name">{{adapter.name + (adapter.description != null? " - "+adapter.description:"")}}</option>
 								</select>
 							</div>
 						</div>
@@ -40,21 +48,21 @@
 								<input class="form-control m-b" disabled="disabled" value="Select an adapter first.."/>
 							</div>
 							<div class="col-sm-9" ng-if="form.adapter">
-								<select class="form-control m-b" name="receiver" ng-model="form.receiver">
-									<option ng-repeat="receiver in schedulerEligibleAdapters[form.adapter].receivers" ng-if="receiver.listener.class.startsWith('JavaListener')" ng-value="receiver.name">{{receiver.listener.name}}</option>
+								<select class="form-control m-b" name="receiver" ng-model="form.listener">
+									<option ng-repeat="receiver in adapters[form.adapter].receivers" ng-if="receiver.listener.class.startsWith('JavaListener')" ng-value="receiver.listener.name">{{receiver.listener.name}}</option>
 								</select>
 							</div>
 						</div>
-						<div class="form-group" title="Quatz CRON Expression to specify execution times. Overrides Interval">
+						<div class="form-group" title="Quartz CRON Expression to specify execution times. Overrides Interval">
 							<label class="col-sm-3 control-label">CRON Expression</label>
 							<div class="col-sm-9">
-								<input class="form-control m-b" name="cron" type="text" ng-disabled="form.interval!='' && form.interval!=-1" ng-model="form.cron"/>
+								<input class="form-control m-b" name="cron" type="text" ng-disabled="form.interval!=''" ng-model="form.cron"/>
 							</div>
 						</div>
 						<div class="form-group" title="Interval between executions. Only used when NO cron expression specified">
 							<label class="col-sm-3 control-label">Interval</label>
 							<div class="col-sm-9">
-								<input class="form-control m-b" name="interval" type="text" ng-disabled="form.cron!='' && form.cron!=null" ng-model="form.interval"/>
+								<input class="form-control m-b" name="interval" type="text" ng-disabled="form.cron!=''" ng-model="form.interval"/>
 							</div>
 						</div>
 						<div class="form-group">

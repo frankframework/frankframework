@@ -47,6 +47,8 @@ public class PipeLineSessionTest {
 		session.put("key7", new Date());
 		session.put("key8", 123);
 		session.put("key8b", "456");
+		session.put("key8c", Message.asMessage("456"));
+		session.put("key8d", Message.asByteArray((Object)"456"));
 		session.put("key9", true);
 		session.put("key9b", "true");
 		session.put("key9c", "false");
@@ -124,6 +126,8 @@ public class PipeLineSessionTest {
 		assertEquals(123, session.get("key8", 0));
 		assertEquals(0, session.get("key8a", 0));
 		assertEquals(456, session.get("key8b", 0));
+		assertEquals(456, session.get("key8c", 0));
+		assertEquals(456, session.get("key8d", 0));
 	}
 
 	@Test
@@ -149,5 +153,27 @@ public class PipeLineSessionTest {
 		assertEquals(123L, session.get("key11", 0L));
 		assertEquals(0L, session.get("key11a", 0L));
 		assertEquals(456L, session.get("key11b", 0L));
+	}
+
+	@Test
+	public void ladybugStubMessageIDTest() {
+		String messageId = "I am a messageID!";
+
+		session.put(PipeLineSession.messageIdKey, messageId); //key inserted as String
+		assertEquals(messageId, session.getMessageId());
+
+		session.put(PipeLineSession.messageIdKey, Message.asMessage(messageId)); //key inserted as Message
+		assertEquals(messageId, session.getMessageId());
+	}
+
+	@Test
+	public void ladybugStubCorrelationIDTest() {
+		String correlationId = "I am something else";
+
+		session.put(PipeLineSession.correlationIdKey, correlationId); //key inserted as String
+		assertEquals(correlationId, session.getCorrelationId());
+
+		session.put(PipeLineSession.correlationIdKey, Message.asMessage(correlationId)); //key inserted as Message
+		assertEquals(correlationId, session.getCorrelationId());
 	}
 }

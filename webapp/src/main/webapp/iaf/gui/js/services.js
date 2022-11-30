@@ -737,6 +737,21 @@ angular.module('iaf.beheerconsole')
 			input = input.replace(/\[(.*?)\]\((.+?)\)/g, '<a target="_blank" href="$2" alt="$1">$1</a>');
 			return input;
 		};
+	}).filter('withJavaListener', function() {
+		return function(adapters) {
+			if(!adapters) return;
+			let schedulerEligibleAdapters={};
+			for(adapter in adapters) {
+				let receivers = adapters[adapter].receivers;
+				for(r in receivers) {
+					let receiver=receivers[r];
+					if(receiver.listener.class.startsWith('JavaListener')){
+						schedulerEligibleAdapters[adapter] = adapters[adapter];
+					}
+				}
+			}
+			return schedulerEligibleAdapters;
+		};
 	}).filter('dash', function() {
 		return function(input) {
 			if(input || input === 0) return input;
@@ -1093,12 +1108,15 @@ angular.module('iaf.beheerconsole')
 									}
 								}
 								break;
+							case 400:
+								Toastr.error("Request failed", "Bad Request, check the application logs for more information.");
+								break;
 							case 401:
 								sessionStorage.clear();
 								$location.path("login");
 								break;
 							case 403:
-								Toastr.error("Forbidden", "You do not have the permissions to complete this operation");
+								Toastr.error("Forbidden", "You do not have the permissions to complete this operation.");
 								break;
 							case 500:
 								if(rejection.config.intercept != undefined && rejection.config.intercept === false) return $q.reject(rejection); //Don't capture when explicitly disabled

@@ -113,11 +113,11 @@ public class SoapWrapper {
 		try {
 			responseBody.preserve();
 			faultCount = getFaultCount(responseBody);
-			log.debug("fault count=" + faultCount);
+			log.debug("fault count={}", faultCount);
 			if (faultCount > 0) {
 				faultCode = getFaultCode(responseBody);
 				faultString = getFaultString(responseBody);
-				log.debug("faultCode=" + faultCode + ", faultString=" + faultString);
+				log.debug("faultCode={}, faultString={}", faultCode, faultString);
 			}
 		} catch (SAXException|IOException e) {
 			log.debug("IOException extracting fault message", e);
@@ -134,7 +134,7 @@ public class SoapWrapper {
 	public Message getBody(Message message) throws SAXException, TransformerException, IOException  {
 		return getBody(message, false, null, null);
 	}
-	
+
 	public Message getBody(Message message, boolean allowPlainXml, PipeLineSession session, String soapNamespaceSessionKey) throws SAXException, TransformerException, IOException  {
 		message.preserve();
 		Message result = new Message(extractBodySoap11.transform(message.asSource()));
@@ -172,9 +172,7 @@ public class SoapWrapper {
 			log.warn("getFaultCount(): could not extract fault count, result is empty");
 			return 0;
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("getFaultCount(): transformation result [" + faultCount + "]");
-		}
+		log.debug("getFaultCount(): transformation result [{}]", faultCount);
 		return Integer.parseInt(faultCount);
 	}
 
@@ -214,13 +212,13 @@ public class SoapWrapper {
 		}
 		if (StringUtils.isNotEmpty(soapHeaderInitial)) {
 			soapHeader = "<soapenv:Header>" + XmlUtils.skipXmlDeclaration(soapHeaderInitial) + "</soapenv:Header>";
-		} 
+		}
 		StringBuilder namespaceClause = new StringBuilder();
 		if (StringUtils.isNotEmpty(namespaceDefs)) {
 			StringTokenizer st1 = new StringTokenizer(namespaceDefs, ", \t\r\n\f");
 			while (st1.hasMoreTokens()) {
 				String namespaceDef = st1.nextToken();
-				log.debug("namespaceDef [" + namespaceDef + "]");
+				log.debug("namespaceDef [{}]", namespaceDef);
 				int separatorPos = namespaceDef.indexOf('=');
 				if (separatorPos < 1) {
 					namespaceClause.append(" xmlns=\"" + namespaceDef + "\"");
@@ -228,7 +226,7 @@ public class SoapWrapper {
 					namespaceClause.append(" xmlns:" + namespaceDef.substring(0, separatorPos) + "=\"" + namespaceDef.substring(separatorPos + 1) + "\"");
 				}
 			}
-			log.debug("namespaceClause [" + namespaceClause + "]");
+			log.debug("namespaceClause [{}]", namespaceClause);
 		}
 		String soapns = StringUtils.isNotEmpty(soapNamespace) ? soapNamespace : SoapVersion.SOAP11.namespace;
 		Message result = new Message("<soapenv:Envelope xmlns:soapenv=\"" + soapns + "\"" + encodingStyle + targetObjectNamespaceClause
@@ -242,7 +240,7 @@ public class SoapWrapper {
 
 	public Message createSoapFaultMessage(String faultcode, String faultstring) {
 		String faultCdataString = "<![CDATA[" + faultstring + "]]>";
-		String fault = "<soapenv:Fault>" + "<faultcode>" + faultcode + "</faultcode>" + 
+		String fault = "<soapenv:Fault>" + "<faultcode>" + faultcode + "</faultcode>" +
 						"<faultstring>" + faultCdataString + "</faultstring>" + "</soapenv:Fault>";
 		try {
 			return putInEnvelope(new Message(fault), null, null, null);

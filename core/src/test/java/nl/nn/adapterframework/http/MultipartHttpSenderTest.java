@@ -52,7 +52,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(input, pls).asString();
+			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("simpleMockedMultipartHttp1.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -82,7 +82,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(input, pls).asString();
+			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("simpleMockedMultipartHttp2.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -112,7 +112,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(input, pls).asString();
+			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("simpleMockedMultipartHttp3.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -143,7 +143,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(input, pls).asString();
+			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("simpleMockedMultipartMtom1.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -174,7 +174,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(input, pls).asString();
+			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("simpleMockedMultipartMtom2.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -205,7 +205,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(input, pls).asString();
+			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("simpleMockedMultipartMtom3.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();

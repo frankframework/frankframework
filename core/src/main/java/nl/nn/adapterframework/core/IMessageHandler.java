@@ -45,10 +45,8 @@ public interface IMessageHandler<M> {
 
 	/**
 	 * Alternative to functions above, will NOT use getIdFromRawMessage() and getStringFromRawMessage(). Used by PushingListeners.
-	 * Does a processRequest() with a correlationId from the client. This is useful for logging purposes,
-	 * as the correlationId is logged also.
 	 */
-	public Message processRequest(IListener<M> origin, String correlationId, M rawMessage, Message message, PipeLineSession session) throws ListenerException;
+	public Message processRequest(IListener<M> origin, M rawMessage, Message message, PipeLineSession session) throws ListenerException;
 
 	/**
 	 *	Formats any exception thrown by any of the above methods to a message that can be returned.

@@ -56,19 +56,19 @@ public class NarayanaDataSource implements DataSource {
 
 	@Override
 	public Connection getConnection() throws SQLException {
-		Properties properties = new Properties();
-		properties.put(TransactionalDriver.XADataSource, getTargetDataSource());
-		properties.setProperty(TransactionalDriver.poolConnections, ""+connectionPooling);
-		properties.setProperty(TransactionalDriver.maxConnections, ""+maxConnections);
-		return ConnectionManager.create(dbUrl, properties);
+		return getConnection(null, null);
 	}
 
 	@Override
 	public Connection getConnection(String username, String password) throws SQLException {
 		Properties properties = new Properties();
 		properties.put(TransactionalDriver.XADataSource, getTargetDataSource());
-		properties.put(TransactionalDriver.userName, username);
-		properties.put(TransactionalDriver.password, password);
+		if (username!=null) {
+			properties.put(TransactionalDriver.userName, username);
+		}
+		if (password!=null) {
+			properties.put(TransactionalDriver.password, password);
+		}
 		properties.setProperty(TransactionalDriver.poolConnections, ""+connectionPooling);
 		properties.setProperty(TransactionalDriver.maxConnections, ""+maxConnections);
 		return ConnectionManager.create(dbUrl, properties);

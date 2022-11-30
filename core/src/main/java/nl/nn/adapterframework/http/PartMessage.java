@@ -17,8 +17,8 @@ package nl.nn.adapterframework.http;
 
 import java.util.Map;
 
-import javax.mail.MessagingException;
-import javax.mail.Part;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Part;
 
 import org.apache.commons.lang3.StringUtils;
 

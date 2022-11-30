@@ -34,21 +34,21 @@ public class Y01ErrorMessageFormatter extends ErrorMessageFormatter {
 	@Override
 	public Message format(String message, Throwable t, INamedObject location, Message originalMessage, String messageId, long receivedTime) {
 		String result= "<ServiceResponse>\n" +
-	            "   <ResponseEnvelope>\n" +
-	            "       <serviceType>ING_RES1006</serviceType>\n" +
-	            "       <messageId>" +messageId+   "</messageId>\n" +
-	            "       <from>"+applicationName+ " "+applicationVersion+ "</from>\n" +
-	            "       <to>JUICE</to>\n" +
-	            "       <timeStamp>" + DateUtils.getIsoTimeStamp() + "</timeStamp>\n" +
-	            "       <ResponseStatus>\n" +
-	            "           <statusCode>999</statusCode>\n" +
-	            "           <statusType>SYSTEM</statusType>\n" +
-	            "           <statusText>" + message + "</statusText>\n" +
-	            "       </ResponseStatus>\n" +
-	            "   </ResponseEnvelope>\n" +
-	            "   <Body>\n" +location.getName()+
-	            "   </Body>\n" +
-	            "</ServiceResponse>\n";
+				"   <ResponseEnvelope>\n" +
+				"       <serviceType>ING_RES1006</serviceType>\n" +
+				"       <messageId>" +messageId+   "</messageId>\n" +
+				"       <from>"+applicationName+ " "+applicationVersion+ "</from>\n" +
+				"       <to>JUICE</to>\n" +
+				"       <timeStamp>" + DateUtils.getIsoTimeStamp() + "</timeStamp>\n" +
+				"       <ResponseStatus>\n" +
+				"           <statusCode>999</statusCode>\n" +
+				"           <statusType>SYSTEM</statusType>\n" +
+				"           <statusText>" + message + "</statusText>\n" +
+				"       </ResponseStatus>\n" +
+				"   </ResponseEnvelope>\n" +
+				"   <Body>\n" +location.getName()+
+				"   </Body>\n" +
+				"</ServiceResponse>\n";
 
 		return new Message(result);
 	}

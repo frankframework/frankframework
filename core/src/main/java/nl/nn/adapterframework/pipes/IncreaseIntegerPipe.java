@@ -25,7 +25,9 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -34,11 +36,12 @@ import nl.nn.adapterframework.stream.Message;
 /**
  * Pipe that increases the integer value of a session variable.
  * Can be used in combination with {@link CompareIntegerPipe} to construct loops.
- * 
+ *
  * @ff.parameter increment integer value to be added to the session variable
- * 
+ *
  * @author Richard Punt / Gerrit van Brakel
  */
+@ElementType(ElementTypes.SESSION)
 public class IncreaseIntegerPipe extends FixedForwardPipe {
 
 	private static final String PARAMETER_INCREMENT = "increment";
@@ -61,7 +64,7 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 		try {
 			sessionKeyString = session.getMessage(sessionKey).asString();
 		} catch (IOException e1) {
-			throw new PipeRunException(this, getLogPrefix(session) + "unable to determine sessionkey from pipeline session");
+			throw new PipeRunException(this, "unable to determine sessionkey from pipeline session");
 		}
 		Integer sessionKeyInteger = Integer.valueOf(sessionKeyString);
 		int incrementBy = increment;
@@ -69,19 +72,17 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 		if(pl != null && pl.size() > 0) {
 			try {
 				ParameterValueList pvl = pl.getValues(message, session);
-				ParameterValue pv = pvl.getParameterValue(PARAMETER_INCREMENT);
+				ParameterValue pv = pvl.get(PARAMETER_INCREMENT);
 				if(pv != null) {
 					incrementBy = pv.asIntegerValue(increment);
 				}
 			} catch (ParameterException e) {
-				throw new PipeRunException(this, getLogPrefix(session) + "exception extracting parameters", e);
+				throw new PipeRunException(this, "exception extracting parameters", e);
 			}
 		}
 		session.put(sessionKey, sessionKeyInteger.intValue() + incrementBy + "");
 
-		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix(session)+"stored ["+sessionKeyString+"] in pipeLineSession under key ["+getSessionKey()+"]");
-		}
+		log.debug("stored [{}] in pipeLineSession under key [{}]", sessionKeyString, getSessionKey());
 		return new PipeRunResult(getSuccessForward(), message);
 	}
 

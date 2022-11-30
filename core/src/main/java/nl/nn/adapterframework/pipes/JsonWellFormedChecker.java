@@ -17,13 +17,14 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
 
-import javax.json.Json;
-import javax.json.JsonException;
-import javax.json.JsonReader;
-
+import jakarta.json.Json;
+import jakarta.json.JsonException;
+import jakarta.json.JsonReader;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -33,6 +34,7 @@ import nl.nn.adapterframework.stream.Message;
  * 
  * @author  Tom van der Heijden
  */
+@ElementType(ElementTypes.VALIDATOR)
 public class JsonWellFormedChecker extends FixedForwardPipe {
 
 	@Override
@@ -46,7 +48,7 @@ public class JsonWellFormedChecker extends FixedForwardPipe {
 		} catch (JsonException e) {
 			return new PipeRunResult(findForward("failure"), message);
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+			throw new PipeRunException(this, "cannot open stream", e);
 		}
 
 		return new PipeRunResult(getSuccessForward(), message);

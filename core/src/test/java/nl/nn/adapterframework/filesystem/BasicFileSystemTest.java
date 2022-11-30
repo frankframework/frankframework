@@ -29,11 +29,13 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 	protected abstract FS createFileSystem();
 
 	@Before
+	@Override
 	public void setUp() throws Exception {
 		fileSystem = createFileSystem();
 	}
 
 	@After
+	@Override
 	public void tearDown() throws Exception {
 		if (fileSystem!=null) fileSystem.close();
 	}
@@ -279,7 +281,6 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		assertFileExistsWithContents(dstFolder, filename, dstContents);
 
 		F f = fileSystem.toFile(srcFolder, filename);
-		F f2 = fileSystem.toFile(srcFolder, filename);
 
 		assertThrows(FileSystemException.class, ()->{
 			fileSystem.moveFile(f, dstFolder, false, true);

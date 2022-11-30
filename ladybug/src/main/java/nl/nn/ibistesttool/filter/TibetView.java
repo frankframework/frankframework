@@ -47,7 +47,7 @@ public class TibetView extends View {
 	@Override
 	public void initBean(BeanParent beanParent) {
 		super.initBean(beanParent);
-		Storage storage = (Storage)getStorage();
+		Storage storage = (Storage)getDebugStorage();
 		try {
 			storage.configure();
 		} catch (ConfigurationException e) {

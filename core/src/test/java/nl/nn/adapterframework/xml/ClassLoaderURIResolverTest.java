@@ -14,6 +14,7 @@ import java.util.jar.JarFile;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -25,11 +26,13 @@ import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.testutil.TestScopeProvider;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 @RunWith(Parameterized.class)
 public class ClassLoaderURIResolverTest {
 
+	private Logger log = LogUtil.getLogger(this);
 	private enum BaseType { LOCAL, BYTES, CLASSPATH, FILE_SCHEME, NULL }
 	private enum RefType  { ROOT, ABS_PATH, DOTDOT, SAME_FOLDER, OVERRIDABLE, CLASSPATH, FILE_SCHEME(TransformerException.class);
 		private Class<? extends Exception> exception;
@@ -65,7 +68,6 @@ public class ClassLoaderURIResolverTest {
 		return result;
 	}
 
-	
 	private void testUri(String baseType, String refType, IScopeProvider cl, String base, String ref, String expected) throws TransformerException {
 		ClassLoaderURIResolver resolver = new ClassLoaderURIResolver(cl);
 
@@ -134,15 +136,15 @@ public class ClassLoaderURIResolverTest {
 
 	private String getExpected(BaseType baseType, RefType refType) throws ConfigurationException {
 		switch(refType) {
-		case ROOT: 
+		case ROOT:
 			return "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>/ClassLoaderTestFile.xml</file>";
 		case ABS_PATH:
 			return "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>/ClassLoader/ClassLoaderTestFile.xml</file>";
-		case DOTDOT: 
+		case DOTDOT:
 			return "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>/ClassLoader/subfolder/ClassLoaderTestFile.xml</file>";
-		case SAME_FOLDER: 
+		case SAME_FOLDER:
 			return null;
-		case OVERRIDABLE: 
+		case OVERRIDABLE:
 		case CLASSPATH:
 			if (baseType==BaseType.BYTES) {
 				return "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>zip:/overrideablefile.xml</file>";
@@ -159,11 +161,11 @@ public class ClassLoaderURIResolverTest {
 	public void test() throws Exception {
 		IScopeProvider classLoaderProvider = getClassLoaderProvider(baseType);
 		String baseUrl = getBase(classLoaderProvider, baseType);
-		System.out.println("BaseType ["+baseType+"] classLoader ["+classLoaderProvider+"] BaseUrl ["+baseUrl+"]");
+		log.debug("BaseType [{}] classLoader [{}] BaseUrl [{}]", baseType, classLoaderProvider, baseUrl);
 
 		String ref = getRef(baseType,refType);
 		String expected = getExpected(baseType,refType);
-		System.out.println("BaseType ["+baseType+"] refType ["+refType+"] ref ["+ref+"] expected ["+expected+"]");
+		log.debug("BaseType [{}] refType [{}] ref [{}] expected [{}]", baseType, refType, ref, expected);
 		if (ref!=null) {
 			if(refType.expectsException() != null) {
 				assertThrows(refType.expectsException(), () -> {

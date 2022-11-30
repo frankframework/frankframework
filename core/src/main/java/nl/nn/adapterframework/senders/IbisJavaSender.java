@@ -27,17 +27,20 @@ import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.dispatcher.DispatcherManager;
 import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.http.HttpSender;
+import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
 
 /**
  * Posts a message to another IBIS-adapter or application in the same JVM using IbisServiceDispatcher.
  *
- * An IbisJavaSender makes a call to a Receiver with a {@link nl.nn.adapterframework.receivers.JavaListener JavaListener}
+ * An IbisJavaSender makes a call to a Receiver with a {@link JavaListener}
  * or any other application in the same JVM that has registered a <code>RequestProcessor</code> with the IbisServiceDispatcher.
  *
  * Any parameters are copied to the PipeLineSession of the service called.
@@ -54,6 +57,8 @@ import nl.nn.adapterframework.util.Misc;
  * </ul>
  * N.B. Please make sure that the IbisServiceDispatcher-1.1.jar is present on the class path of the server.
  *
+ * @ff.forward "&lt;Exit.code&gt;" default
+ * 
  * @author  Gerrit van Brakel
  * @since   4.4.5
  */
@@ -64,7 +69,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 
 	private @Getter String serviceName;
 	private @Getter String serviceNameSessionKey;
-	private @Getter String returnedSessionKeys = null;
+	private @Getter String returnedSessionKeys = ""; // do not intialize with null, returned session keys must be set explicitly
 	private @Getter boolean multipartResponse = false;
 	private String multipartResponseContentType = "application/octet-stream";
 	private String multipartResponseCharset = "UTF-8";
@@ -92,7 +97,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		String result = null;
 		HashMap context = null;
 		try {
@@ -124,10 +129,10 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 				serviceName = getServiceName();
 			}
 
-			String correlationID = session==null ? null : session.getMessage(PipeLineSession.businessCorrelationIdKey).asString();
+			String correlationID = session==null ? null : session.getMessage(PipeLineSession.correlationIdKey).asString();
 			result = dm.processRequest(serviceName, correlationID, message.asString(), context);
 			if (isMultipartResponse()) {
-				return HttpSender.handleMultipartResponse(multipartResponseContentType, new ByteArrayInputStream(result.getBytes(multipartResponseCharset)), session);
+				return new SenderResult(HttpSender.handleMultipartResponse(multipartResponseContentType, new ByteArrayInputStream(result.getBytes(multipartResponseCharset)), session));
 			}
 
 		} catch (ParameterException e) {
@@ -138,17 +143,17 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 			if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 				log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
 			}
-			if (session!=null) {
-				Misc.copyContext(getReturnedSessionKeys(), context, session, this);
-			}
+			Misc.copyContext(getReturnedSessionKeys(), context, session, this);
 		}
-		return new Message(result);
+		ExitState exitState = (ExitState)context.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
+		Object exitCode = context.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
+		String forwardName = exitCode !=null ? exitCode.toString() : null;
+		return new SenderResult(exitState==ExitState.SUCCESS, new Message(result), "exitState="+exitState, forwardName);
 	}
 
 
-
 	/**
-	 * ServiceName of the {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} that should be called.
+	 * ServiceName of the {@link JavaListener} that should be called.
 	 */
 	public void setServiceName(String string) {
 		serviceName = string;
@@ -162,7 +167,8 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 	}
 
 	/**
-	 * Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erroneous results. (Only for listeners that support it, like JavaListener)
+	 * Comma separated list of keys of session variables that will be returned to caller, for correct results as well as for erroneous results.
+	 * The set of available sessionKeys to be returned might be limited by the returnedSessionKeys attribute of the corresponding JavaListener.
 	 */
 	public void setReturnedSessionKeys(String string) {
 		returnedSessionKeys = string;

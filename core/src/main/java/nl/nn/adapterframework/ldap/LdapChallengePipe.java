@@ -60,7 +60,6 @@ public class LdapChallengePipe extends FixedForwardPipe {
 	private String ldapProviderURL=null;
 	private String initialContextFactoryName=null;
 	private String errorSessionKey=null;
-	
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -88,11 +87,11 @@ public class LdapChallengePipe extends FixedForwardPipe {
 	public PipeRunResult doPipe(Message msg, PipeLineSession pls) throws PipeRunException {
 
 		LdapSender ldapSender = new LdapSender();
-		
+
 		String ldapProviderURL;
 		String credentials;
 		String principal;
-		
+
 		Map<String,Object> paramMap=null;
 		try {
 			paramMap = getParameterList().getValues(msg, pls).getValueMap();
@@ -106,10 +105,10 @@ public class LdapChallengePipe extends FixedForwardPipe {
 		} catch (ParameterException e) {
 			throw new PipeRunException(this, "Invalid parameter", e);
 		}
-			
+
 		ldapSender.setErrorSessionKey(getErrorSessionKey());
 		if (StringUtils.isEmpty(ldapProviderURL)) {
-			throw new PipeRunException(this, "ldapProviderURL is empty");			
+			throw new PipeRunException(this, "ldapProviderURL is empty");
 		}
 		if (StringUtils.isEmpty(principal)) {
 //			throw new PipeRunException(this, "principal is empty");
@@ -121,9 +120,9 @@ public class LdapChallengePipe extends FixedForwardPipe {
 			handleError(ldapSender,pls,49,"Credentials are Empty");
 			return new PipeRunResult(findForward("invalid"), msg);
 		}
-			
+
 		ldapSender.addParameter(new Parameter("entryName", principal));
-			
+
 		ldapSender.setUsePooling(false);
 		ldapSender.setLdapProviderURL(ldapProviderURL);
 		if (StringUtils.isNotEmpty(getInitialContextFactoryName())) {
@@ -144,10 +143,10 @@ public class LdapChallengePipe extends FixedForwardPipe {
 			}
 			return new PipeRunResult(findForward("invalid"), msg);
 		}
-						
+
 		return new PipeRunResult(getSuccessForward(), msg);
 	}
-	
+
 	protected void handleError(LdapSender ldapSender, PipeLineSession session, int code, String message) {
 		Throwable t = new ConfigurationException(LdapSender.LDAP_ERROR_MAGIC_STRING+code+"-"+message+"]");
 		ldapSender.storeLdapException(t, session);

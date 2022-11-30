@@ -23,7 +23,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  */
 public class PercentileEstimatorRanked extends PercentileEstimatorBase {
 
-	private long ranks[];
+	private long[] ranks;
 	private int local_count;
 
 	public PercentileEstimatorRanked(String configKey, String defaultPList, int arraySize) {
@@ -81,7 +81,7 @@ public class PercentileEstimatorRanked extends PercentileEstimatorBase {
 				long valueBefore;
 				long valueAfter;
 
-  				if (i==0) {
+				if (i==0) {
 					rankBefore=1;
 					valueBefore=min;
 				} else {
@@ -171,13 +171,13 @@ public class PercentileEstimatorRanked extends PercentileEstimatorBase {
 		return getInterpolatedPercentile(getPercentage(index),count,min,max);
 	}
 
-	public void printInternals(long count, long min, long max) {
-		System.out.print("c"+count+"/lc"+local_count+" min="+min);
-		for (int i=0; i<local_count; i++) {
-			System.out.print(" "+i+":(v"+values[i]+",r"+ranks[i]+")");
-		}
-		System.out.println(" max="+max);
-	}
+//	public void printInternals(long count, long min, long max) {
+//		System.out.print("c"+count+"/lc"+local_count+" min="+min);
+//		for (int i=0; i<local_count; i++) {
+//			System.out.print(" "+i+":(v"+values[i]+",r"+ranks[i]+")");
+//		}
+//		System.out.println(" max="+max);
+//	}
 
 
 

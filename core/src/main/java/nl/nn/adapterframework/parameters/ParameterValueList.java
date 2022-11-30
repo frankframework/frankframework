@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import nl.nn.adapterframework.stream.Message;
 
 /**
  * List of {@link ParameterValue ParameterValues}.
- * 
+ *
  * @author Gerrit van Brakel
  */
 public class ParameterValueList implements Iterable<ParameterValue> {
@@ -85,7 +85,7 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 		return map.containsKey(name);
 	}
 
-	/** 
+	/**
 	 * should not be used in combination with {@link ParameterValueList#iterator()}!
 	 */
 	@Deprecated
@@ -113,6 +113,27 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 			result.put(pv.getDefinition().getName(), pv.getValue());
 		}
 		return result;
+	}
+
+	public static Message getValue(ParameterValueList pvl, String name, Message defaultValue) {
+		if (pvl!=null) {
+			ParameterValue pv = pvl.get(name);
+			Message value = pv!=null ? pv.asMessage() : null;
+			if (!Message.isNull(value)) {
+				return value;
+			}
+		}
+		return defaultValue;
+	}
+
+	public static String getValue(ParameterValueList pvl, String name, String defaultValue) {
+		if (pvl!=null) {
+			ParameterValue pv = pvl.get(name);
+			if (pv!=null) {
+				return pv.asStringValue(defaultValue);
+			}
+		}
+		return defaultValue;
 	}
 
 	/////// List implementations, can differ in size from Map implementation when multiple ParameterValues with the same name exist!

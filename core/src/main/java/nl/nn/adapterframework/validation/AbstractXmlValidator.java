@@ -198,10 +198,10 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 	public ValidationResult validate(Object input, PipeLineSession session, String logPrefix, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws XmlValidatorException, PipeRunException, ConfigurationException {
 		ValidationContext context = createValidationContext(session, rootValidations, invalidRootNamespaces);
 		ValidatorHandler validatorHandler = getValidatorHandler(session, context);
-		return validate(input, session, logPrefix, validatorHandler, null, context);
+		return validate(input, session, validatorHandler, null, context);
 	}
 
-	public ValidationResult validate(Object input, PipeLineSession session, String logPrefix, ValidatorHandler validatorHandler, XMLFilterImpl filter, ValidationContext context) throws XmlValidatorException, PipeRunException, ConfigurationException {
+	public ValidationResult validate(Object input, PipeLineSession session, ValidatorHandler validatorHandler, XMLFilterImpl filter, ValidationContext context) throws XmlValidatorException, PipeRunException, ConfigurationException {
 
 		if (filter != null) {
 			// If a filter is present, connect its output to the context.contentHandler.
@@ -272,7 +272,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 	 * see property
 	 * http://apache.org/xml/features/validation/schema-full-checking
 	 * </p>
-	 * @default <code>false</code>
+	 * @ff.default <code>false</code>
 	 */
 	public void setFullSchemaChecking(boolean fullSchemaChecking) {
 		this.fullSchemaChecking = fullSchemaChecking;

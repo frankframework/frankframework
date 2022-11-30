@@ -26,7 +26,9 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.Category;
+import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -59,6 +61,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author  Peter Leeuwenburgh
  */
 @Category("Basic")
+@ElementType(ElementTypes.ROUTER)
 public class CompareStringPipe extends AbstractPipe {
 
 	private static final String LESSTHANFORWARD = "lessthan";
@@ -100,7 +103,7 @@ public class CompareStringPipe extends AbstractPipe {
 			try {
 				pvl = getParameterList().getValues(message, session);
 			} catch (ParameterException e) {
-				throw new PipeRunException(this, getLogPrefix(session) + "exception extracting parameters", e);
+				throw new PipeRunException(this, "exception extracting parameters", e);
 			}
 		}
 		String operand1 = getParameterValue(pvl, OPERAND1);
@@ -114,7 +117,7 @@ public class CompareStringPipe extends AbstractPipe {
 				}
 			}
 		} catch (Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session) + " Exception on getting operand1 from input message", e);
+			throw new PipeRunException(this, "Exception on getting operand1 from input message", e);
 		}
 		String operand2 = getParameterValue(pvl, OPERAND2);
 		try {
@@ -127,14 +130,14 @@ public class CompareStringPipe extends AbstractPipe {
 				}
 			}
 		} catch (Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session) + " Exception on getting operand2 from input message", e);
+			throw new PipeRunException(this, "Exception on getting operand2 from input message", e);
 		}
 		if (isXml()) {
 			try {
 				operand1 = XmlUtils.canonicalize(operand1);
 				operand2 = XmlUtils.canonicalize(operand2);
 			} catch (Exception e) {
-				throw new PipeRunException(this, getLogPrefix(session) + " Exception on pretty printing input", e);
+				throw new PipeRunException(this, "Exception on pretty printing input", e);
 			}
 		}
 
@@ -167,7 +170,7 @@ public class CompareStringPipe extends AbstractPipe {
 					}
 				}
 			} catch (Exception e) {
-				throw new PipeRunException(this, getLogPrefix(session) + " Exception on ignoring parts of input", e);
+				throw new PipeRunException(this, "Exception on ignoring parts of input", e);
 			}
 		}
 

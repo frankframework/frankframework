@@ -1,5 +1,4 @@
 <root xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
-  <item>cid=[CorrelationMessageIdXPath2-3d1a6e2f_1276c49be07_-7fba]</item>
-  <item>messageId=[CorrelationMessageIdXPath2-3d1a6e2f_1276c49be07_-7fba]</item>
-  <item>tcid=[]</item>
+	<item>cid=[0a720bd5--79b672e5_1837dff937e_-7fe9]</item>
+	<item>messageId=[0a720bd5--79b672e5_1837dff937e_-7fe9]</item>
 </root>

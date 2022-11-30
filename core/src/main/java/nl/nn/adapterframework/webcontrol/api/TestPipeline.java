@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -58,7 +59,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Test a PipeLine.
- * 
+ *
  * @since	7.0-B1
  * @author	Niels Meijer
  */
@@ -72,6 +73,8 @@ public class TestPipeline extends Base {
 	public static final String PIPELINE_RESULT_STATE_ERROR="ERROR";
 	public static final String PIPELINE_RESULT_STATE="state";
 	public static final String PIPELINE_RESULT="result";
+
+	private static AtomicInteger requestCount = new AtomicInteger();
 
 	@Data
 	public static class PostedSessionKey {
@@ -183,12 +186,12 @@ public class TestPipeline extends Base {
 	@SuppressWarnings("rawtypes")
 	private PipeLineResult processMessage(IAdapter adapter, String message, Map<String, String> sessionKeyMap, boolean writeSecLogMessage) {
 		String messageId = "testmessage" + Misc.createSimpleUUID();
+		String correlationId = "Test a Pipeline " + requestCount.incrementAndGet();
 		try (PipeLineSession pls = new PipeLineSession()) {
 			if(sessionKeyMap != null) {
 				pls.putAll(sessionKeyMap);
 			}
 			Map ibisContexts = getIbisContext(message);
-			String technicalCorrelationId = null;
 			if (ibisContexts != null) {
 				String contextDump = "ibisContext:";
 				for (Iterator it = ibisContexts.keySet().iterator(); it.hasNext();) {
@@ -197,18 +200,14 @@ public class TestPipeline extends Base {
 					if (log.isDebugEnabled()) {
 						contextDump = contextDump + "\n " + key + "=[" + value + "]";
 					}
-					if (key.equals(PipeLineSession.technicalCorrelationIdKey)) {
-						technicalCorrelationId = value;
-					} else {
-						pls.put(key, value);
-					}
+					pls.put(key, value);
 				}
 				if (log.isDebugEnabled()) {
 					log.debug(contextDump);
 				}
 			}
 			Date now = new Date();
-			PipeLineSession.setListenerParameters(pls, messageId, technicalCorrelationId, now, now);
+			PipeLineSession.setListenerParameters(pls, messageId, correlationId, now, now);
 
 			secLog.info(String.format("testing pipeline of adapter [%s] %s", adapter.getName(), (writeSecLogMessage ? "message [" + message + "]" : "")));
 
@@ -265,9 +264,8 @@ public class TestPipeline extends Base {
 			} catch (Exception e) {
 				return null;
 			}
-		} else {
-			return null;
 		}
+		return null;
 	}
 
 	private String makeGetIbisContextXslt() {

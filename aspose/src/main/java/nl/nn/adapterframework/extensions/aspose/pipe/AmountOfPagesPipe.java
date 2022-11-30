@@ -30,9 +30,9 @@ import nl.nn.adapterframework.stream.Message;
 
 /**
  * Returns the amount of pages of a PDF file.
- * 
+ *
  * @ff.forward passwordProtected the File is password protected
- * 
+ *
  * @author Laurens Mäkel
  * @since  7.6
  *
@@ -48,7 +48,7 @@ public class AmountOfPagesPipe extends FixedForwardPipe {
 			Document doc = new Document(binaryInputStream);
 			result = doc.getPages().size();
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session) + "cannot encode message using charset [" + getCharset() + "]", e);
+			throw new PipeRunException(this, "cannot encode message using charset [" + getCharset() + "]", e);
 		} catch (InvalidPasswordException ip) {
 			return new PipeRunResult(findForward("passwordProtected"), "File is password protected." );
 		}

@@ -24,7 +24,7 @@ import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
@@ -40,6 +40,7 @@ import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
 import nl.nn.adapterframework.core.IDualModeValidator;
 import nl.nn.adapterframework.core.IMessageBrowser;
+import nl.nn.adapterframework.core.IMessageBrowser.HideMethod;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
@@ -55,9 +56,10 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.http.RestListenerUtils;
@@ -98,13 +100,13 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @ff.forward illegalResult
  * @ff.forward presumedTimeout
  * @ff.forward interrupt
+ * @ff.forward "&lt;defined-by-sender&gt;" any forward, as returned by name by {@link ISender sender}
  *
  * @author  Gerrit van Brakel
  */
 @SupportsOutputStreaming
 public class MessageSendingPipe extends StreamingPipe implements HasSender, HasStatistics {
-	protected Logger msgLog = LogUtil.getLogger("MSG");
-	private Level MSGLOG_LEVEL_TERSE = Level.toLevel("TERSE");
+	protected Logger msgLog = LogUtil.getLogger(LogUtil.MESSAGE_LOGGER);
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
 	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";
@@ -133,7 +135,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	private @Getter String auditTrailXPath;
 	private @Getter String auditTrailNamespaceDefs;
 	private @Getter boolean useInputForExtract = true;
-	private @Getter String hideMethod = "all";
+	private @Getter HideMethod hideMethod = HideMethod.ALL;
 
 	private @Getter boolean checkXmlWellFormed = false;
 	private @Getter String checkRootTag;
@@ -144,7 +146,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	private @Getter int retryMaxInterval=1;
 	private @Getter String retryXPath;
 	private @Getter String retryNamespaceDefs;
-	private @Getter int presumedTimeOutInterval=10;
+	private @Getter int presumedTimeOutInterval=0;
 
 	private @Getter boolean streamResultToServlet=false;
 
@@ -190,9 +192,6 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		MESSAGEID, CORRELATIONID
 	}
 
-	/**
-	 * Checks whether a sender is defined for this pipe.
-	 */
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -238,7 +237,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				throw new ConfigurationException("while configuring sender",e);
 			}
 			if (getSender() instanceof HasPhysicalDestination) {
-				log.info(getLogPrefix(null)+"has sender on "+((HasPhysicalDestination)getSender()).getPhysicalDestinationName());
+				log.info("has sender on {}", ((HasPhysicalDestination)getSender()).getPhysicalDestinationName());
 			}
 			if (getListener() != null) {
 				if (getSender().isSynchronous()) {
@@ -250,13 +249,8 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					throw new ConfigurationException("while configuring listener",e);
 				}
 				if (getListener() instanceof HasPhysicalDestination) {
-					log.info(getLogPrefix(null)+"has listener on "+((HasPhysicalDestination)getListener()).getPhysicalDestinationName());
+					log.info("has listener on {}", ((HasPhysicalDestination)getListener()).getPhysicalDestinationName());
 				}
-			}
-
-			if (!(getHideMethod().equalsIgnoreCase("all"))
-					&& (!(getHideMethod().equalsIgnoreCase("firstHalf")))) {
-				throw new ConfigurationException("invalid value for hideMethod [" + getHideMethod() + "], must be 'all' or 'firstHalf'");
 			}
 
 			if (isCheckXmlWellFormed() || StringUtils.isNotEmpty(getCheckRootTag())) {
@@ -313,23 +307,23 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			}
 			messageLog.configure();
 			if (messageLog instanceof HasPhysicalDestination) {
-				String msg = getLogPrefix(null)+"has messageLog in "+((HasPhysicalDestination)messageLog).getPhysicalDestinationName();
+				String msg = "has messageLog in "+((HasPhysicalDestination)messageLog).getPhysicalDestinationName();
 				log.info(msg);
 				if (getAdapter() != null)
 					getAdapter().getMessageKeeper().add(msg);
 			}
 			if (StringUtils.isNotEmpty(getAuditTrailXPath())) {
-				auditTrailTp = TransformerPool.configureTransformer(getLogPrefix(null), this, getAuditTrailNamespaceDefs(), getAuditTrailXPath(), null,OutputType.TEXT,false,null);
+				auditTrailTp = TransformerPool.configureTransformer(this, getAuditTrailNamespaceDefs(), getAuditTrailXPath(), null, OutputType.TEXT,false,null);
 			}
 			if (StringUtils.isNotEmpty(getCorrelationIDXPath()) || StringUtils.isNotEmpty(getCorrelationIDStyleSheet())) {
-				correlationIDTp=TransformerPool.configureTransformer(getLogPrefix(null), this, getCorrelationIDNamespaceDefs(), getCorrelationIDXPath(), getCorrelationIDStyleSheet(),OutputType.TEXT,false,null);
+				correlationIDTp=TransformerPool.configureTransformer(this, getCorrelationIDNamespaceDefs(), getCorrelationIDXPath(), getCorrelationIDStyleSheet(), OutputType.TEXT,false,null);
 			}
 			if (StringUtils.isNotEmpty(getLabelXPath()) || StringUtils.isNotEmpty(getLabelStyleSheet())) {
-				labelTp=TransformerPool.configureTransformer(getLogPrefix(null), this, getLabelNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(),OutputType.TEXT,false,null);
+				labelTp=TransformerPool.configureTransformer(this, getLabelNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(), OutputType.TEXT,false,null);
 			}
 		}
 		if (StringUtils.isNotEmpty(getRetryXPath())) {
-			retryTp = TransformerPool.configureTransformer(getLogPrefix(null), this, getRetryNamespaceDefs(), getRetryXPath(), null,OutputType.TEXT,false,null);
+			retryTp = TransformerPool.configureTransformer(this, getRetryNamespaceDefs(), getRetryXPath(), null, OutputType.TEXT,false,null);
 		}
 
 		IValidator inputValidator = getInputValidator();
@@ -434,15 +428,15 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		try {
 			input.preserve();
 		} catch (IOException e) {
-			throw new PipeRunException(this,getLogPrefix(session)+"cannot preserve message",e);
+			throw new PipeRunException(this,"cannot preserve message",e);
 		}
 	}
 
 	@Override
 	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
-		String correlationID = session==null?null:session.getMessageId();
- 		Message originalMessage = null;
- 		Message result = null;
+		String correlationID = session==null?null:session.getCorrelationId();
+		Message originalMessage = null;
+		Message result = null;
 		PipeForward forward = getSuccessForward();
 
 		if (messageLog!=null) {
@@ -450,7 +444,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			originalMessage=input;
 		}
 		if (getInputWrapper()!=null) {
-			log.debug(getLogPrefix(session)+"wrapping input");
+			log.debug("wrapping input");
 			PipeRunResult wrapResult = pipeProcessor.processPipe(getPipeLine(), inputWrapper, input, session);
 			if (wrapResult==null) {
 				throw new PipeRunException(inputWrapper, "retrieved null result from inputWrapper");
@@ -462,12 +456,12 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			if (messageLog!=null) {
 				preserve(input, session);
 			}
-			log.debug(getLogPrefix(session)+"input after wrapping ("+ClassUtils.nameOf(input)+") [" + input.toString() + "]");
+			log.debug("input after wrapping [{}]", input);
 		}
 
 		if (getInputValidator()!=null) {
 			preserve(input, session);
-			log.debug(getLogPrefix(session)+"validating input");
+			log.debug("validating input");
 			PipeRunResult validationResult = pipeProcessor.processPipe(getPipeLine(), inputValidator, input, session);
 			if (validationResult!=null && !validationResult.isSuccessful()) {
 				return validationResult;
@@ -483,7 +477,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				try {
 					params = pl.getValues(input, session).getValueMap();
 				} catch (ParameterException e1) {
-					throw new PipeRunException(this,getLogPrefix(session)+"got exception evaluating parameters",e1);
+					throw new PipeRunException(this,"got exception evaluating parameters",e1);
 				}
 				String sfn = null;
 				if (params != null && params.size() > 0) {
@@ -492,15 +486,15 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				if (sfn != null) {
 					try {
 						result = new Message(Misc.resourceToString(ClassUtils.getResourceURL(this, sfn), Misc.LINE_SEPARATOR));
-						log.info(getLogPrefix(session)+"returning result from dynamic stub ["+sfn+"]");
+						log.info("returning result from dynamic stub [{}]", sfn);
 					} catch (Throwable e) {
-						throw new PipeRunException(this,getLogPrefix(session)+"got exception loading result from stub [" + sfn + "]",e);
+						throw new PipeRunException(this,"got exception loading result from stub [" + sfn + "]",e);
 					}
 				} else {
-					log.info(getLogPrefix(session)+"returning result from static stub ["+getStubFilename()+"]");
+					log.info("returning result from static stub [{}]", getStubFilename());
 				}
 			} else {
-				log.info(getLogPrefix(session)+"returning result from static stub ["+getStubFilename()+"]");
+				log.info("returning result from static stub [{}]", getStubFilename());
 			}
 		} else {
 			Map<String,Object> threadContext=new LinkedHashMap<String,Object>();
@@ -547,11 +541,11 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				}
 
 				if (!replyIsValid){
-					throw new PipeRunException(this, getLogPrefix(session)+"invalid reply message is received");
+					throw new PipeRunException(this, "invalid reply message is received");
 				}
 
 				if (sendResult==null){
-					throw new PipeRunException(this, getLogPrefix(session)+"retrieved null result from sender");
+					throw new PipeRunException(this, "retrieved null result from sender");
 				}
 
 				if (sendResult.getPipeForward()!=null) {
@@ -560,19 +554,19 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 
 				if (getSender().isSynchronous()) {
 					if (log.isInfoEnabled()) {
-						log.info(getLogPrefix(session)+ "sent message to ["+ getSender().getName()+ "] synchronously");
+						log.info("sent message to [{}] synchronously", getSender().getName());
 					}
 					result = sendResult.getResult();
 				} else {
 					messageID = sendResult.getResult().asString();
 					if (log.isInfoEnabled()) {
-						log.info(getLogPrefix(session) + "sent message to [" + getSender().getName()+ "] messageID ["+ messageID+ "] linkMethod ["+ getLinkMethod()	+ "]");
+						log.info("sent message to [{}] messageID [{}] linkMethod [{}]", getSender().getName(), messageID, getLinkMethod());
 					}
 					// if linkMethod is MESSAGEID overwrite correlationID with the messageID
 					// as this will be used with the listener
 					if (getLinkMethod() == LinkMethod.MESSAGEID) {
 						correlationID = sendResult.getResult().asString();
-						if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"setting correlationId to listen for to messageId ["+correlationID+"]");
+						log.debug("setting correlationId to listen for to messageId [{}]", correlationID);
 					}
 				}
 
@@ -645,7 +639,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					timeoutPending=true;
 				}
 				PipeForward timeoutForward = findForward(TIMEOUT_FORWARD);
-				log.warn(getLogPrefix(session) + "timeout occured");
+				log.warn("timeout occured");
 				if (timeoutForward==null) {
 					if (StringUtils.isEmpty(getResultOnTimeOut())) {
 						timeoutForward=findForward(PipeForward.EXCEPTION_FORWARD_NAME);
@@ -658,20 +652,20 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					if (StringUtils.isNotEmpty(getResultOnTimeOut())) {
 						resultmsg =new Message(getResultOnTimeOut());
 					} else {
-						resultmsg=new ErrorMessageFormatter().format(getLogPrefix(session),toe,this,input,session.getMessageId(),0);
+						resultmsg=new ErrorMessageFormatter().format(null,toe,this,input,session.getMessageId(),0);
 					}
 					return new PipeRunResult(timeoutForward,resultmsg);
 				}
-				throw new PipeRunException(this, getLogPrefix(session) + "caught timeout-exception", toe);
+				throw new PipeRunException(this, "caught timeout-exception", toe);
 
 			} catch (Throwable t) {
 				throwEvent(PIPE_EXCEPTION_MONITOR_EVENT);
 				PipeForward exceptionForward = findForward(PipeForward.EXCEPTION_FORWARD_NAME);
 				if (exceptionForward!=null) {
-					log.warn(getLogPrefix(session) + "exception occured, forwarding to exception-forward ["+exceptionForward.getPath()+"], exception:\n", t);
-					return new PipeRunResult(exceptionForward, new ErrorMessageFormatter().format(getLogPrefix(session),t,this,input,session.getMessageId(),0));
+					log.warn("exception occured, forwarding to exception-forward ["+exceptionForward.getPath()+"], exception:\n", t);
+					return new PipeRunResult(exceptionForward, new ErrorMessageFormatter().format(null,t,this,input,session.getMessageId(),0));
 				}
-				throw new PipeRunException(this, getLogPrefix(session) + "caught exception", t);
+				throw new PipeRunException(this, "caught exception", t);
 			}
 		}
 
@@ -681,11 +675,11 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				return new PipeRunResult(illegalResultForward, result);
 			}
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session) + "caught exception", e);
+			throw new PipeRunException(this, "caught exception", e);
 		}
 		IPipe outputValidator = getOutputValidator();
 		if (outputValidator!=null) {
-			log.debug(getLogPrefix(session)+"validating response");
+			log.debug("validating response");
 			PipeRunResult validationResult;
 			validationResult = pipeProcessor.processPipe(getPipeLine(), outputValidator, Message.asMessage(result), session);
 			if (validationResult!=null) {
@@ -695,9 +689,10 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				result = validationResult.getResult();
 			}
 		}
-		if (getOutputWrapper()!=null) {
-			log.debug(getLogPrefix(session)+"wrapping response");
-			PipeRunResult wrapResult = pipeProcessor.processPipe(getPipeLine(), outputWrapper, Message.asMessage(result), session);
+		IPipe outputWrapper = getOutputWrapper();
+		if (outputWrapper!=null) {
+			log.debug("wrapping response");
+			PipeRunResult wrapResult = pipeProcessor.processPipe(getPipeLine(), outputWrapper, result, session);
 			if (wrapResult==null) {
 				throw new PipeRunException(outputWrapper, "retrieved null result from outputWrapper");
 			}
@@ -705,7 +700,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				return wrapResult;
 			}
 			result = wrapResult.getResult();
-			log.debug(getLogPrefix(session)+"response after wrapping  ("+ClassUtils.nameOf(result)+") [" + result + "]");
+			log.debug("response after wrapping  ("+ClassUtils.nameOf(result)+") [" + result + "]");
 		}
 
 		if (isStreamResultToServlet()) {
@@ -719,7 +714,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				}
 				RestListenerUtils.writeToResponseOutputStream(session, resultStream);
 			} catch (IOException e) {
-				throw new PipeRunException(this, getLogPrefix(session) + "caught exception", e);
+				throw new PipeRunException(this, "caught exception", e);
 			}
 			return new PipeRunResult(forward, "");
 		}
@@ -745,25 +740,33 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			if  (pipeline!=null) {
 				Adapter adapter = pipeline.getAdapter();
 				if (adapter!=null) {
-					if (getPresumedTimeOutInterval()>=0 && !isConfigurationStubbed) {
+					if (getPresumedTimeOutInterval()>0 && !isConfigurationStubbed) {
 						long lastExitIsTimeoutDate = adapter.getLastExitIsTimeoutDate(getName());
 						if (lastExitIsTimeoutDate>0) {
 							long duration = startTime - lastExitIsTimeoutDate;
 							if (duration < (1000L * getPresumedTimeOutInterval())) {
 								exitState = PRESUMED_TIMEOUT_FORWARD;
-								throw new TimeoutException(getLogPrefix(session)+exitState);
+								throw new TimeoutException(exitState);
 							}
 						}
 					}
 				}
 			}
 			try {
-				if (sender instanceof IStreamingSender && canStreamToNextPipe() && getOutputValidator()==null && getOutputWrapper()==null && !isStreamResultToServlet()) {
+				if (sender instanceof IStreamingSender && canStreamToNextPipe()) {
 					sendResult =  ((IStreamingSender)sender).sendMessage(input, session, getNextPipe());
 				} else {
-					// sendResult has a messageID for async senders, the result for sync senders
-					Message result = sender.sendMessage(input, session);
-					sendResult = new PipeRunResult(null,result);
+					SenderResult senderResult = sender.sendMessage(input, session);
+					PipeForward forward = null;
+					String forwardName = senderResult.getForwardName();
+					if (StringUtils.isNotEmpty(forwardName)) {
+						forward = findForward(forwardName);
+					}
+					if (forward==null) {
+						forwardName = senderResult.isSuccess() ? PipeForward.SUCCESS_FORWARD_NAME: PipeForward.EXCEPTION_FORWARD_NAME;
+						forward = findForward(forwardName);
+					}
+					sendResult = new PipeRunResult(forward, senderResult.getResult());
 				}
 			} catch (SenderException se) {
 				exitState = PipeForward.EXCEPTION_FORWARD_NAME;
@@ -781,11 +784,11 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				String result = (String)sendResultMessage.asObject();
 				if (StringUtils.isNotEmpty(getTimeOutOnResult()) && getTimeOutOnResult().equals(result)) {
 					exitState = TIMEOUT_FORWARD;
-					throw new TimeoutException(getLogPrefix(session)+"timeOutOnResult ["+getTimeOutOnResult()+"]");
+					throw new TimeoutException("timeOutOnResult ["+getTimeOutOnResult()+"]");
 				}
 				if (StringUtils.isNotEmpty(getExceptionOnResult()) && getExceptionOnResult().equals(result)) {
 					exitState = PipeForward.EXCEPTION_FORWARD_NAME;
-					throw new SenderException(getLogPrefix(session)+"exceptionOnResult ["+getExceptionOnResult()+"]");
+					throw new SenderException("exceptionOnResult ["+getExceptionOnResult()+"]");
 				}
 			}
 		} finally {
@@ -796,7 +799,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			if (pipeline!=null) {
 				Adapter adapter = pipeline.getAdapter();
 				if (adapter!=null) {
-					if (getPresumedTimeOutInterval()>=0 && !ConfigurationUtils.isConfigurationStubbed(getConfigurationClassLoader())) {
+					if (getPresumedTimeOutInterval()>0 && !ConfigurationUtils.isConfigurationStubbed(getConfigurationClassLoader())) {
 						if (!PRESUMED_TIMEOUT_FORWARD.equals(exitState)) {
 							adapter.setLastExitState(getName(), System.currentTimeMillis(), exitState);
 						}
@@ -809,8 +812,15 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 						duration = Misc.getDurationInMs(startTime);
 					}
 
-					if(msgLog.getLevel().isMoreSpecificThan(MSGLOG_LEVEL_TERSE)) {
-						msgLog.log(MSGLOG_LEVEL_TERSE, String.format("Sender [%s] class [%s] duration [%s] got exit-state [%s]", sender.getName(), ClassUtils.nameOf(sender), duration, exitState));
+					if(msgLog.isDebugEnabled()) {
+						try (final CloseableThreadContext.Instance ctc = CloseableThreadContext
+								.put("pipe", getName())
+								.put("sender.type", ClassUtils.classNameOf(sender))
+								.put("duration", duration)
+								.put("exit-state", exitState)
+								) {
+							msgLog.debug("Sender returned");
+						}
 					}
 				}
 			}
@@ -831,7 +841,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			currentInterval = retryInterval;
 			retryInterval = retryInterval * 2;
 		}
-		log.warn(getLogPrefix(session)+description+", starts waiting for [" + currentInterval + "] seconds");
+		log.warn(description+", starts waiting for [" + currentInterval + "] seconds");
 		while (currentInterval-->0) {
 			Thread.sleep(1000);
 		}
@@ -848,7 +858,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				}
 
 			} catch (Throwable t) {
-				PipeStartException pse = new PipeStartException(getLogPrefix(null)+"could not start", t);
+				PipeStartException pse = new PipeStartException("could not start", t);
 				pse.setPipeNameInError(getName());
 				throw pse;
 			}
@@ -872,7 +882,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			try {
 				messageLog.open();
 			} catch (Exception e) {
-				PipeStartException pse = new PipeStartException(getLogPrefix(null)+"could not open messagelog", e);
+				PipeStartException pse = new PipeStartException("could not open messagelog", e);
 				pse.setPipeNameInError(getName());
 				throw pse;
 			}
@@ -881,18 +891,18 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	@Override
 	public void stop() {
 		if (StringUtils.isEmpty(getStubFilename())) {
-			log.info(getLogPrefix(null) + "is closing");
+			log.info("is closing");
 			try {
 				getSender().close();
 			} catch (SenderException e) {
-				log.warn(getLogPrefix(null) + "exception closing sender", e);
+				log.warn("exception closing sender", e);
 			}
 			if (getListener() != null) {
 				try {
-					log.info(getLogPrefix(null) + "is closing; closing listener");
+					log.info("is closing; closing listener");
 					getListener().close();
 				} catch (ListenerException e) {
-					log.warn(getLogPrefix(null) + "Exception closing listener", e);
+					log.warn("Exception closing listener", e);
 				}
 			}
 		}
@@ -915,7 +925,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			try {
 				messageLog.close();
 			} catch (Exception e) {
-				log.warn(getLogPrefix(null) + "Exception closing messageLog", e);
+				log.warn("Exception closing messageLog", e);
 			}
 		}
 	}
@@ -1014,89 +1024,89 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	 *
 	 * @param method either MESSAGEID or CORRELATIONID
 	 */
-	@IbisDoc({"1", "For asynchronous communication, the server side may either use the messageID or the correlationID "
+	@IbisDoc({"For asynchronous communication, the server side may either use the messageID or the correlationID "
 		+ "in the correlationID field of the reply message. Use this property to set the behaviour of the reply-listener.", "CORRELATIONID"})
 	public void setLinkMethod(LinkMethod method) {
 		linkMethod = method;
 	}
 
 
-	@IbisDoc({"2", "stylesheet to extract correlationid from message", ""})
+	@IbisDoc({"Stylesheet to extract correlationid from message", ""})
 	public void setCorrelationIDStyleSheet(String string) {
 		correlationIDStyleSheet = string;
 	}
 
-	@IbisDoc({"3", "xpath expression to extract correlationid from message", ""})
+	@IbisDoc({"XPath expression to extract correlationid from message", ""})
 	public void setCorrelationIDXPath(String string) {
 		correlationIDXPath = string;
 	}
 
-	@IbisDoc({"4", "namespace defintions for correlationidxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
+	@IbisDoc({"Namespace defintions for correlationIDXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceUri</code>-definitions", ""})
 	public void setCorrelationIDNamespaceDefs(String correlationIDNamespaceDefs) {
 		this.correlationIDNamespaceDefs = correlationIDNamespaceDefs;
 	}
 
-	@IbisDoc({"5", "key of a pipelinesession-variable. is specified, the value of the pipelinesession variable is used as input for the xpathexpression or stylesheet, instead of the current input message", ""})
+	@IbisDoc({"Key of a PipelineSession-variable. If specified, the value of the PipelineSession variable is used as input for the XPathExpression or stylesheet, instead of the current input message", ""})
 	public void setCorrelationIDSessionKey(String string) {
 		correlationIDSessionKey = string;
 	}
 
 
-	@IbisDoc({"6", "stylesheet to extract label from message", ""})
+	@IbisDoc({"Stylesheet to extract label from message", ""})
 	public void setLabelStyleSheet(String string) {
 		labelStyleSheet = string;
 	}
 
-	@IbisDoc({"7", "xpath expression to extract label from message", ""})
+	@IbisDoc({"XPath expression to extract label from message", ""})
 	public void setLabelXPath(String string) {
 		labelXPath = string;
 	}
 
-	@IbisDoc({"8", "namespace defintions for labelxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
+	@IbisDoc({"Namespace defintions for labelXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceUri</code>-definitions", ""})
 	public void setLabelNamespaceDefs(String labelXNamespaceDefs) {
 		this.labelNamespaceDefs = labelXNamespaceDefs;
 	}
 
 
-	@IbisDoc({"9", "xpath expression to extract audit trail from message", ""})
+	@IbisDoc({"XPath expression to extract audit trail from message", ""})
 	public void setAuditTrailXPath(String string) {
 		auditTrailXPath = string;
 	}
 
-	@IbisDoc({"10", "namespace defintions for audittrailxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
+	@IbisDoc({"Namespace defintions for auditTrailXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceUri</code>-definitions", ""})
 	public void setAuditTrailNamespaceDefs(String auditTrailNamespaceDefs) {
 		this.auditTrailNamespaceDefs = auditTrailNamespaceDefs;
 	}
 
-	@IbisDoc({"11", "key of a pipelinesession-variable. if specified, the value of the pipelinesession variable is used as audit trail (instead of the default 'no audit trail)", ""})
+	@IbisDoc({"Key of a PipelineSession-variable. If specified, the value of the PipelineSession variable is used as audit trail (instead of the default 'no audit trail)", ""})
 	public void setAuditTrailSessionKey(String string) {
 		auditTrailSessionKey = string;
 	}
 
-	@IbisDoc({"12", "when set <code>true</code>, the input of a pipe is used to extract audit trail, correlationid and label (instead of the wrapped input)", "true"})
+	@IbisDoc({"If set <code>true</code>, the input of the Pipe is used to extract audit trail, correlationid and label (instead of the wrapped input)", "true"})
 	public void setUseInputForExtract(boolean b) {
 		useInputForExtract = b;
 	}
 
 	@Override
-	@IbisDoc({"13", "next to common usage in {@link AbstractPipe}, also strings in the error/logstore are masked", ""})
+	@IbisDoc({"Next to common usage in {@link AbstractPipe}, also strings in the error/logstore are masked", ""})
 	public void setHideRegex(String hideRegex) {
 		super.setHideRegex(hideRegex);
 	}
 
-	@IbisDoc({"14", "(only used when hideregex is not empty and only applies to error/logstore) either <code>all</code> or <code>firsthalf</code>. when <code>firsthalf</code> only the first half of the string is masked, otherwise (<code>all</code>) the entire string is masked", "all"})
-	public void setHideMethod(String hideMethod) {
+	@IbisDoc({"(Only used when hideRegex is not empty and only applies to error/logstore)", "all"})
+	public void setHideMethod(HideMethod hideMethod) {
 		this.hideMethod = hideMethod;
 	}
 
 
 
-	@IbisDoc({"15", "when set <code>true</code>, the xml well-formedness of the result is checked", "false"})
+	@IbisDoc({"If set <code>true</code>, the XML Well-Formedness of the result is checked", "false"})
 	public void setCheckXmlWellFormed(boolean b) {
 		checkXmlWellFormed = b;
 	}
 
-	@IbisDoc({"16", "when set, besides the xml well-formedness the root element of the result is checked to be equal to the value set", ""})
+	@IbisDoc({"If set, besides the XML Well-Formedness the root element of the result is checked to be equal to the value set", ""})
 	public void setCheckRootTag(String s) {
 		checkRootTag = s;
 	}
@@ -1106,47 +1116,46 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 
 
 	/**
-	 * The message that is returned when the time listening for a reply message
+	 * The message (e.g. 'receiver timed out') that is returned when the time listening for a reply message
 	 * exceeds the timeout, or in other situations no reply message is received.
 	 */
-	@IbisDoc({"17", "result returned when no return-message was received within the timeout limit (e.g. 'receiver timed out').", ""})
 	public void setResultOnTimeOut(String newResultOnTimeOut) {
 		resultOnTimeOut = newResultOnTimeOut;
 	}
 
-	@IbisDoc({"18", "the number of times a processing attempt is retried after a timeout or an exception is caught or after a incorrect reply is received (see also <code>retryxpath</code>)", "0"})
+	@IbisDoc({"The number of times a processing attempt is retried after a timeout or an exception is caught or after an incorrect reply is received (see also <code>retryXPath</code>)", "0"})
 	public void setMaxRetries(int i) {
 		maxRetries = i;
 	}
 
-	@IbisDoc({"19", "the starting number of seconds waited after an unsuccessful processing attempt before another processing attempt is made. each next retry this interval is doubled with a upper limit of <code>retrymaxinterval</code>", "1"})
+	@IbisDoc({"The starting number of seconds waited after an unsuccessful processing attempt before another processing attempt is made. Each next retry this interval is doubled with a upper limit of <code>retryMaxInterval</code>", "1"})
 	public void setRetryMinInterval(int i) {
 		retryMinInterval = i;
 	}
 
-	@IbisDoc({"20", "the maximum number of seconds waited after an unsuccessful processing attempt before another processing attempt is made", "600"})
+	@IbisDoc({"The maximum number of seconds waited after an unsuccessful processing attempt before another processing attempt is made", "600"})
 	public void setRetryMaxInterval(int i) {
 		retryMaxInterval = i;
 	}
 
-	@IbisDoc({"21", "xpath expression evaluated on each technical successful reply. retry is done if condition returns true", ""})
+	@IbisDoc({"XPath expression evaluated on each technical successful reply. Retry is done if condition returns true", ""})
 	public void setRetryXPath(String string) {
 		retryXPath = string;
 	}
 
-	@IbisDoc({"22", "namespace defintions for retryxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
+	@IbisDoc({"Namespace defintions for retryXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceUri</code>-definitions", ""})
 	public void setRetryNamespaceDefs(String retryNamespaceDefs) {
 		this.retryNamespaceDefs = retryNamespaceDefs;
 	}
 
-	@IbisDoc({"23", "when the previous call was a timeout, the maximum time <i>in seconds</i> after this timeout to presume the current call is also a timeout. a value of -1 indicates to never presume timeouts", "10"})
+	@IbisDoc({"If the previous call was a timeout, the maximum time <i>in seconds</i> after this timeout to presume the current call is also a timeout.", "0"})
 	public void setPresumedTimeOutInterval(int i) {
 		presumedTimeOutInterval = i;
 	}
 
 	@Deprecated
 	@ConfigurationWarning("Please use a base64pipe to decode the message and send the result to the pipeline exit")
-	@IbisDoc({"24", "if set, the result is first base64 decoded and then streamed to the httpservletresponse object", "false"})
+	@IbisDoc({"If set, the result is first base64 decoded and then streamed to the HttpServletResponse object", "false"})
 	public void setStreamResultToServlet(boolean b) {
 		streamResultToServlet = b;
 	}
@@ -1157,17 +1166,17 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		setStubFilename(fileName);
 	}
 
-	@IbisDoc({"25", "when set, the pipe returns a message from a file, instead of doing the regular process", ""})
+	@IbisDoc({"If set, the pipe returns a message from a file, instead of doing the regular process", ""})
 	public void setStubFilename(String filename) {
 		stubFilename = filename;
 	}
 
-	@IbisDoc({"26", "when not empty, a timeoutexception is thrown when the result equals this value (for testing purposes only)", ""})
+	@IbisDoc({"If not empty, a TimeoutException is thrown when the result equals this value (for testing purposes only)", ""})
 	public void setTimeOutOnResult(String string) {
 		timeOutOnResult = string;
 	}
 
-	@IbisDoc({"27", "when not empty, a piperunexception is thrown when the result equals this value (for testing purposes only)", ""})
+	@IbisDoc({"If not empty, a PipeRunException is thrown when the result equals this value (for testing purposes only)", ""})
 	public void setExceptionOnResult(String string) {
 		exceptionOnResult = string;
 	}

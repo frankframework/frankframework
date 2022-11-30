@@ -53,7 +53,7 @@ import nl.nn.adapterframework.util.TransformerPool;
 
 /**
  * Sends a message to a Tibco queue.
- * 
+ *
  * @ff.parameter url When a parameter with name url is present, it is used instead of the url specified by the attribute
  * @ff.parameter authAlias When a parameter with name authAlias is present, it is used instead of the authAlias specified by the attribute
  * @ff.parameter username When a parameter with name userName is present, it is used instead of the userName specified by the attribute
@@ -62,7 +62,7 @@ import nl.nn.adapterframework.util.TransformerPool;
  * @ff.parameter messageProtocol When a parameter with name messageProtocol is present, it is used instead of the messageProtocol specified by the attribute
  * @ff.parameter replyTimeout When a parameter with name replyTimeout is present, it is used instead of the replyTimeout specified by the attribute
  * @ff.parameter When a parameter with name soapAction is present, it is used instead of the soapAction specified by the attribute
- * 
+ *
  * @author Peter Leeuwenburgh
  */
 public class SendTibcoMessage extends TimeoutGuardPipe {
@@ -119,7 +119,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 			try {
 				pvl = getParameterList().getValues(input, session);
 			} catch (ParameterException e) {
-				throw new PipeRunException(this, getLogPrefix(session) + "exception on extracting parameters", e);
+				throw new PipeRunException(this, "exception on extracting parameters", e);
 			}
 		}
 
@@ -171,18 +171,18 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 		}
 
 		if (StringUtils.isEmpty(soapAction_work)) {
-			log.debug(getLogPrefix(session) + "deriving default soapAction");
+			log.debug("deriving default soapAction");
 			try {
 				Resource resource = Resource.getResource(this, "/xml/xsl/esb/soapAction.xsl");
 				TransformerPool tp = TransformerPool.getInstance(resource, 2);
 				soapAction_work = tp.transform(input.asString(), null);
 			} catch (Exception e) {
-				log.error(getLogPrefix(session) + "failed to execute soapAction.xsl");
+				log.error("failed to execute soapAction.xsl");
 			}
 		}
 
 		if (protocol == null) {
-			throw new PipeRunException(this, getLogPrefix(session) + "messageProtocol must be set");
+			throw new PipeRunException(this, "messageProtocol must be set");
 		}
 
 		CredentialFactory cf = new CredentialFactory(authAlias_work, userName_work, password_work);
@@ -191,7 +191,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 			try {
 				admin = TibcoUtils.getActiveServerAdmin(url_work, cf);
 			} catch (TibjmsAdminException e) {
-				log.debug(getLogPrefix(session) + "caught exception", e);
+				log.debug("caught exception", e);
 				admin = null;
 			}
 			if (admin != null) {
@@ -199,16 +199,16 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 				try {
 					queueInfo = admin.getQueue(queueName_work);
 				} catch (Exception e) {
-					throw new PipeRunException(this, getLogPrefix(session) + " exception on getting queue info", e);
+					throw new PipeRunException(this, "exception on getting queue info", e);
 				}
 				if (queueInfo == null) {
-					throw new PipeRunException(this, getLogPrefix(session) + " queue [" + queueName_work + "] does not exist");
+					throw new PipeRunException(this, "queue [" + queueName_work + "] does not exist");
 				}
 
 				try {
 					admin.close();
 				} catch (TibjmsAdminException e) {
-					log.warn(getLogPrefix(session) + "exception on closing Tibjms Admin", e);
+					log.warn("exception on closing Tibjms Admin", e);
 				}
 			}
 
@@ -232,43 +232,26 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 				msgProducer.setDeliveryMode(DeliveryMode.PERSISTENT);
 			}
 			if (StringUtils.isNotEmpty(soapAction_work)) {
-				log.debug(getLogPrefix(session) + "setting [SoapAction] property to value [" + soapAction_work + "]");
+				log.debug("setting [SoapAction] property to value [" + soapAction_work + "]");
 				msg.setStringProperty("SoapAction", soapAction_work);
 			}
 			msgProducer.send(msg);
 			if (log.isDebugEnabled()) {
-				log.debug(getLogPrefix(session) + "sent message ["
-						+ msg.getText() + "] " + "to ["
-						+ msgProducer.getDestination() + "] " + "msgID ["
-						+ msg.getJMSMessageID() + "] " + "correlationID ["
-						+ msg.getJMSCorrelationID() + "] " + "replyTo ["
-						+ msg.getJMSReplyTo() + "]");
+				log.debug("sent message ["+ msg.getText() + "] " + "to ["+ msgProducer.getDestination() + "] " + "msgID ["+ msg.getJMSMessageID() + "] " + "correlationID ["+ msg.getJMSCorrelationID() + "] " + "replyTo ["+ msg.getJMSReplyTo() + "]");
 			} else {
 				if (log.isInfoEnabled()) {
-					log.info(getLogPrefix(session) + "sent message to ["
-							+ msgProducer.getDestination() + "] " + "msgID ["
-							+ msg.getJMSMessageID() + "] " + "correlationID ["
-							+ msg.getJMSCorrelationID() + "] " + "replyTo ["
-							+ msg.getJMSReplyTo() + "]");
+					log.info("sent message to ["+ msgProducer.getDestination() + "] " + "msgID ["+ msg.getJMSMessageID() + "] " + "correlationID ["+ msg.getJMSCorrelationID() + "] " + "replyTo ["+ msg.getJMSReplyTo() + "]");
 				}
 			}
 			if (protocol == MessageProtocol.REQUEST_REPLY) {
 				String replyCorrelationId = msg.getJMSMessageID();
-				MessageConsumer msgConsumer = jSession.createConsumer(
-						replyQueue, "JMSCorrelationID='" + replyCorrelationId
-								+ "'");
-				log.debug(getLogPrefix(session)
-						+ "] start waiting for reply on [" + replyQueue
-						+ "] selector [" + replyCorrelationId + "] for ["
-						+ replyTimeout_work + "] ms");
+				MessageConsumer msgConsumer = jSession.createConsumer(replyQueue, "JMSCorrelationID='" + replyCorrelationId+ "'");
+				log.debug("start waiting for reply on [" + replyQueue+ "] selector [" + replyCorrelationId + "] for ["+ replyTimeout_work + "] ms");
 
 				connection.start();
 				javax.jms.Message rawReplyMsg = msgConsumer.receive(replyTimeout_work);
 				if (rawReplyMsg == null) {
-					throw new PipeRunException(this, getLogPrefix(session)
-							+ "did not receive reply on [" + replyQueue
-							+ "] replyCorrelationId [" + replyCorrelationId
-							+ "] within [" + replyTimeout_work + "] ms");
+					throw new PipeRunException(this, "did not receive reply on [" + replyQueue+ "] replyCorrelationId [" + replyCorrelationId+ "] within [" + replyTimeout_work + "] ms");
 				}
 				TextMessage replyMsg = (TextMessage) rawReplyMsg;
 				result = replyMsg.getText();
@@ -277,13 +260,13 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 				result = msg.getJMSMessageID();
 			}
 		} catch (IOException|JMSException e) {
-			throw new PipeRunException(this, getLogPrefix(session)+ " exception on sending message to Tibco queue", e);
+			throw new PipeRunException(this, "exception on sending message to Tibco queue", e);
 		} finally {
 			if (connection != null) {
 				try {
 					connection.close();
 				} catch (JMSException e) {
-					log.warn(getLogPrefix(session) + "exception on closing connection", e);
+					log.warn("exception on closing connection", e);
 				}
 			}
 		}

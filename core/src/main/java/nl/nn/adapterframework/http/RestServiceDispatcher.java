@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2018, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013-2018, 2020 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -185,30 +185,31 @@ public class RestServiceDispatcher {
 							DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
 							ServletFileUpload servletFileUpload = new ServletFileUpload(diskFileItemFactory);
 							List<FileItem> items = servletFileUpload.parseRequest(httpServletRequest);
-					        for (FileItem item : items) {
-					        	if (item.isFormField()) {
-					                // Process regular form field (input type="text|radio|checkbox|etc", select, etc).
-					                String fieldName = item.getFieldName();
-					                String fieldValue = item.getString();
-					    			log.trace("setting parameter ["+fieldName+"] to ["+fieldValue+"]");
-					    			context.put(fieldName, fieldValue);
-					            } else {
-					                // Process form file field (input type="file").
-					                String fieldName = item.getFieldName();
-					                String fieldNameName = fieldName + "Name";
-					                String fileName = FilenameUtils.getName(item.getName());
-					    			if (log.isTraceEnabled()) log.trace("setting parameter ["+fieldNameName+"] to ["+fileName+"]");
-					    			context.put(fieldNameName, fileName);
-					                InputStream inputStream = item.getInputStream();
-					                if (inputStream.available() > 0) {
-					                	log.trace("setting parameter ["+fieldName+"] to input stream of file ["+fileName+"]");
-						    			context.put(fieldName, inputStream);
-					                } else {
-						    			log.trace("setting parameter ["+fieldName+"] to ["+null+"]");
-						    			context.put(fieldName, null);
-					                }
-					            }
-					        }
+							for(FileItem item : items) {
+								if(item.isFormField()) {
+									// Process regular form field (input type="text|radio|checkbox|etc", select,
+									// etc).
+									String fieldName = item.getFieldName();
+									String fieldValue = item.getString();
+									log.trace("setting parameter [" + fieldName + "] to [" + fieldValue + "]");
+									context.put(fieldName, fieldValue);
+								} else {
+									// Process form file field (input type="file").
+									String fieldName = item.getFieldName();
+									String fieldNameName = fieldName + "Name";
+									String fileName = FilenameUtils.getName(item.getName());
+									if(log.isTraceEnabled()) log.trace("setting parameter [" + fieldNameName + "] to [" + fileName + "]");
+									context.put(fieldNameName, fileName);
+									InputStream inputStream = item.getInputStream();
+									if(inputStream.available() > 0) {
+										log.trace("setting parameter [" + fieldName + "] to input stream of file [" + fileName + "]");
+										context.put(fieldName, inputStream);
+									} else {
+										log.trace("setting parameter [" + fieldName + "] to [" + null + "]");
+										context.put(fieldName, null);
+									}
+								}
+							}
 						} catch (FileUploadException e) {
 							throw new ListenerException(e);
 						} catch (IOException e) {
@@ -219,7 +220,7 @@ public class RestServiceDispatcher {
 				writeToSecLog = restListener.isWriteToSecLog();
 				if (writeToSecLog) {
 					context.put("writeSecLogMessage", restListener.isWriteSecLogMessage());
- 				}
+				}
 				boolean authorized = false;
 				if (principal == null) {
 					authorized = true;
@@ -264,13 +265,13 @@ public class RestServiceDispatcher {
 
 				if(ifNoneMatch != null && ifNoneMatch.equalsIgnoreCase(cachedEtag) && method.equalsIgnoreCase("GET")) {
 					//Exit with 304
-					context.put("exitcode", 304);
+					context.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 304);
 					if(log.isDebugEnabled()) log.trace("aborting request with status 304, matched if-none-match ["+ifNoneMatch+"]");
 					return null;
 				}
 				if(ifMatch != null && !ifMatch.equalsIgnoreCase(cachedEtag) && !method.equalsIgnoreCase("GET")) {
 					//Exit with 412
-					context.put("exitcode", 412);
+					context.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 412);
 					if(log.isDebugEnabled()) log.trace("aborting request with status 412, matched if-match ["+ifMatch+"] method ["+method+"]");
 					return null;
 				}
@@ -278,7 +279,7 @@ public class RestServiceDispatcher {
 
 			String result;
 			try {
-				result=listener.processRequest(null, new Message(request), context).asString();
+				result=listener.processRequest(new Message(request), context).asString();
 			} catch (IOException e) {
 				throw new ListenerException(e);
 			}
@@ -287,7 +288,7 @@ public class RestServiceDispatcher {
 				cache.put(etagCacheKey, context.get("etag"));
 			}
 
-			if (result == null && !context.containsKey("exitcode")) {
+			if (result == null && !context.containsKey(PipeLineSession.EXIT_CODE_CONTEXT_KEY)) {
 				log.warn("result is null!");
 			}
 			return result;

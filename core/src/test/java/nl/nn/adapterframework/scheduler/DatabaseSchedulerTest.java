@@ -11,9 +11,9 @@ import org.mockito.Mockito;
 
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.scheduler.job.LoadDatabaseSchedulesJob;
-import nl.nn.adapterframework.testutil.FixedQuerySenderMock;
-import nl.nn.adapterframework.testutil.FixedQuerySenderMock.ResultSetBuilder;
 import nl.nn.adapterframework.testutil.TestConfiguration;
+import nl.nn.adapterframework.testutil.mock.FixedQuerySenderMock;
+import nl.nn.adapterframework.testutil.mock.FixedQuerySenderMock.ResultSetBuilder;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.MessageKeeperMessage;

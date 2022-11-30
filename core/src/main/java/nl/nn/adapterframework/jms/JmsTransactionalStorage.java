@@ -112,7 +112,7 @@ public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageB
 	@Override
 	public String getSelector() {
 		if (StringUtils.isEmpty(getSlotId())) {
-			return null; 
+			return null;
 		}
 		return FIELD_SLOTID+"='"+getSlotId()+"'";
 	}

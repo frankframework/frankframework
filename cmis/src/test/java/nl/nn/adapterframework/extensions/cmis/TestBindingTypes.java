@@ -15,8 +15,11 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.extensions.cmis.CmisSender.CmisAction;
+import nl.nn.adapterframework.extensions.cmis.CmisSessionBuilder.BindingTypes;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestAssertions;
+import nl.nn.adapterframework.util.EnumUtils;
 
 @RunWith(Parameterized.class)
 public class TestBindingTypes extends CmisSenderTestBase {
@@ -57,6 +60,11 @@ public class TestBindingTypes extends CmisSenderTestBase {
 	private static String createActionExpectedBase64 = "ZmlsZUlucHV0LnR4dA==";
 	private static String updateActionExpectedBase64 = "aWQ=";
 
+	private String bindingType;
+	private String action;
+	private Message input;
+	private String expectedResult;
+
 	@Parameters(name = "{0} - {1}")
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
@@ -79,11 +87,6 @@ public class TestBindingTypes extends CmisSenderTestBase {
 				{ "browser", "fetch", INPUT, FETCH_RESULT },
 		});
 	}
-
-	private String bindingType;
-	private String action;
-	private Message input;
-	private String expectedResult;
 
 	public TestBindingTypes(String bindingType, String action, String input, String expected) {
 		this.bindingType = bindingType;
@@ -108,8 +111,8 @@ public class TestBindingTypes extends CmisSenderTestBase {
 
 	@Test
 	public void configure() throws Exception {
-		sender.setBindingType(bindingType);
-		sender.setAction(action);
+		sender.setBindingType(EnumUtils.parse(BindingTypes.class, bindingType));
+		sender.setAction(EnumUtils.parse(CmisAction.class, action));
 		sender.configure();
 		sender.open();
 	}
@@ -124,7 +127,7 @@ public class TestBindingTypes extends CmisSenderTestBase {
 
 		configure();
 
-		String actualResult = sender.sendMessage(input, session).asString();
+		String actualResult = sender.sendMessageOrThrow(input, session).asString();
 		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 	}
 
@@ -134,7 +137,7 @@ public class TestBindingTypes extends CmisSenderTestBase {
 
 		configure();
 
-		assertTrue(Message.isEmpty(sender.sendMessage(input, session)));
+		assertTrue(Message.isEmpty(sender.sendMessageOrThrow(input, session)));
 		String base64 = (String) session.get("fileContent");
 		TestAssertions.assertEqualsIgnoreRNTSpace(Base64.encodeBase64String(expectedResult.getBytes()), base64);
 	}

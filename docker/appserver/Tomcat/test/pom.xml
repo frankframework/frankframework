@@ -12,7 +12,7 @@
 		<artifactId>ibis-adapterframework-docker-as-tomcat</artifactId>
 		<version>${revision}</version>
 	</parent>
-	
+
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
@@ -34,7 +34,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
-				<version>3.1.2</version>
 				<executions>
 					<execution>
 						<id>copy-dependencies</id>
@@ -48,7 +47,7 @@
 							<overWriteSnapshots>true</overWriteSnapshots>
 							<excludeTransitive>true</excludeTransitive>
 							<stripVersion>true</stripVersion>
-							<excludeClassifiers>configurations,resources,scenarios</excludeClassifiers>
+							<excludeClassifiers>configurations,resources,scenarios,secrets</excludeClassifiers>
 						</configuration>
 					</execution>
 				</executions>
@@ -56,7 +55,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
-				<version>1.6</version>
 				<executions>
 					<execution>
 						<id>prepare-package</id>

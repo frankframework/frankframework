@@ -26,7 +26,9 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
 
 
@@ -36,27 +38,28 @@ import nl.nn.adapterframework.stream.Message;
  * @author  Milan Tomc
  * @since   4.5
  */
+@ElementType(ElementTypes.TRANSLATOR)
 public class PasswordGeneratorPipe extends FixedForwardPipe {
-	
+
 	private String lCharacters="abcdefghijklmnopqrstuvwxyz";
 	private String uCharacters="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	private String numbers="0123456789";
 	private String signs=";:_%$#@!><";
-	
+
 	private SecureRandom random;
 	private boolean useSecureRandom = true; // more secure but mutch slower
- 
-	int numOfLCharacters=2; 
-	int numOfUCharacters=2; 
+
+	int numOfLCharacters=2;
+	int numOfUCharacters=2;
 	int numOfDigits=2;
-	int numOfSigns=2; 
+	int numOfSigns=2;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		
+
 		if (useSecureRandom){
-			 try {
+			try {
 				random= SecureRandom.getInstance("SHA1PRNG");
 			} catch (NoSuchAlgorithmException e) {
 				try{
@@ -69,12 +72,11 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 		}
 	}
 
-	
+
 	@Override
 	public PipeRunResult doPipe (Message message, PipeLineSession session) throws PipeRunException {
-		
 		String result;
-		 try {
+		try {
 				//generate password containing: 2 LC-letters, 2 UC-letters, 2 symbols and 2 numbers
 				result =  generate(getNumOfLCharacters(),getNumOfUCharacters(),getNumOfSigns(),getNumOfDigits());
 			} catch (Exception e) {

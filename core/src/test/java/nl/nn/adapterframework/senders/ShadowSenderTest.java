@@ -1,5 +1,10 @@
 package nl.nn.adapterframework.senders;
 
+import static org.hamcrest.CoreMatchers.both;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.number.OrderingComparison.greaterThanOrEqualTo;
+import static org.hamcrest.number.OrderingComparison.lessThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
@@ -8,6 +13,7 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.util.Collection;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -18,6 +24,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -58,7 +65,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 		private @Getter @Setter Message result;
 
 		@Override
-		public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 			result = Message.asMessage(message);
 			return super.sendMessage(message, session);
 		}
@@ -67,8 +74,8 @@ public class ShadowSenderTest extends ParallelSendersTest {
 	private ISender createOriginalSender() {
 		EchoSender originalSender = new EchoSender() {
 			@Override
-			public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-				return new Message(ORIGINAL_SENDER_RESULT);
+			public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+				return new SenderResult(ORIGINAL_SENDER_RESULT);
 			}
 		};
 		originalSender.setName(ORIGINAL_SENDER_NAME);
@@ -77,23 +84,19 @@ public class ShadowSenderTest extends ParallelSendersTest {
 	}
 
 	@Test
-	public void testWithoutResultSender() throws Exception {
-		ConfigurationException exception = assertThrows(ConfigurationException.class, () -> {
-			((ShadowSender)sender).setResultSender(null);
-			sender.configure();
-			sender.open();
-		});
-		assertEquals("no originalSender or resultSender defined", exception.getMessage());
+	public void testWithDefaultResultSender() throws Exception {
+		((ShadowSender)sender).setResultSender(null);
+		sender.configure();
+		sender.open();
+		assertEquals("resultSender", ((ShadowSender)sender).getResultSenderName());
 	}
 
 	@Test
-	public void testWithoutOriginalSender() throws Exception {
-		ConfigurationException exception = assertThrows(ConfigurationException.class, () -> {
-			((ShadowSender)sender).setOriginalSender(null);
-			sender.configure();
-			sender.open();
-		});
-		assertEquals("no originalSender or resultSender defined", exception.getMessage());
+	public void testWithoutDefaultOriginalSender() throws Exception {
+		((ShadowSender)sender).setOriginalSender(null);
+		sender.configure();
+		sender.open();
+		assertEquals("originalSender", ((ShadowSender)sender).getOriginalSenderName());
 	}
 
 	@Test
@@ -123,17 +126,20 @@ public class ShadowSenderTest extends ParallelSendersTest {
 			ps.configure();
 			ps.open();
 		});
-		assertEquals("no originalSender or resultSender defined", exception.getMessage());
+		assertEquals("ShadowSender should contain at least 2 Senders, none found", exception.getMessage());
 	}
 
-	@Test
-	public void testNoShadowSenders() throws Exception {
+	public void testNoShadowSenders(boolean waitForCompletionOfShadows) throws Exception {
+		((ShadowSender)sender).setWaitForShadowsToFinish(waitForCompletionOfShadows);
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(new Message(INPUT_MESSAGE), session).asString();
+		String result = sender.sendMessageOrThrow(new Message(INPUT_MESSAGE), session).asString();
 		assertEquals(ORIGINAL_SENDER_RESULT, result);
 
+		if (!waitForCompletionOfShadows) {
+			Thread.sleep(1000); // wait for results to be collected in the background
+		}
 		Message senderResult = null;
 		for(ISender sender : sender.getSenders()) {
 			if(RESULT_SENDER_NAME.equals(sender.getName())) {
@@ -152,10 +158,21 @@ public class ShadowSenderTest extends ParallelSendersTest {
 		Element origResult = XmlUtils.getFirstChildTag(el, "originalResult");
 		assertEquals(ORIGINAL_SENDER_RESULT, XmlUtils.getStringValue(origResult, true));
 		assertEquals(ORIGINAL_SENDER_NAME, origResult.getAttribute("senderName"));
-		assertTrue(Integer.parseInt(origResult.getAttribute("duration")) < 10);
+		int duration = Integer.parseInt(origResult.getAttribute("duration"));
+		assertTrue("test took more then [15s] duration ["+duration+"]", duration < 15);
 
 		Collection<Node> shadowResults = XmlUtils.getChildTags(el, "shadowResult");
 		assertEquals(0, shadowResults.size());
+	}
+
+	@Test
+	public void testNoShadowSenders() throws Exception {
+		testNoShadowSenders(false);
+	}
+
+	@Test
+	public void testNoShadowSendersWaitForCompletion() throws Exception {
+		testNoShadowSenders(true);
 	}
 
 	@Test
@@ -166,9 +183,10 @@ public class ShadowSenderTest extends ParallelSendersTest {
 
 		sender.configure();
 		sender.open();
-		String result = sender.sendMessage(new Message(INPUT_MESSAGE), session).asString();
+		String result = sender.sendMessageOrThrow(new Message(INPUT_MESSAGE), session).asString();
 		assertEquals(ORIGINAL_SENDER_RESULT, result);
 
+		Thread.sleep(3000); // wait for results to be collected in the background
 		Message senderResult = null;
 		for(ISender sender : sender.getSenders()) {
 			if(RESULT_SENDER_NAME.equals(sender.getName())) {
@@ -187,7 +205,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 		Element origResult = XmlUtils.getFirstChildTag(el, "originalResult");
 		assertEquals(ORIGINAL_SENDER_RESULT, XmlUtils.getStringValue(origResult, true));
 		assertEquals(ORIGINAL_SENDER_NAME, origResult.getAttribute("senderName"));
-		assertTrue(Integer.parseInt(origResult.getAttribute("duration")) < 10);
+		assertThat(Integer.parseInt(origResult.getAttribute("duration")), lessThan(10));
 
 		Collection<Node> shadowResults = XmlUtils.getChildTags(el, "shadowResult");
 		assertEquals(3, shadowResults.size());
@@ -196,7 +214,20 @@ public class ShadowSenderTest extends ParallelSendersTest {
 			assertEquals(INPUT_MESSAGE, XmlUtils.getStringValue(shadowResult, true));
 			assertTrue(shadowResult.getAttribute("senderName").startsWith("shadowSenderWithDelay"));
 			int duration = Integer.parseInt(shadowResult.getAttribute("duration"));
-			assertTrue("test duration was ["+duration+"]", duration >= 2000 && duration < 2050);
+			assertThat("test duration was ["+duration+"]", duration, is(both(greaterThanOrEqualTo(2000)).and(lessThan(2050))));
 		}
 	}
+	
+	@Override
+	@Ignore("Test not suited for ShadowSender")
+	public void testSingleExceptionHandling() throws Exception {
+		//Test not suited for ShadowSender
+	}
+	
+	@Override
+	@Ignore("Test not suited for ShadowSender")
+	public void testExceptionHandling() throws Exception {
+		//Test not suited for ShadowSender
+	}
+
 }

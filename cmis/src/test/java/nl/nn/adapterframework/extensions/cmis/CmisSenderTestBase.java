@@ -39,6 +39,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.extensions.cmis.CmisSessionBuilder.BindingTypes;
 import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.credentialprovider.util.Misc;
@@ -51,17 +52,17 @@ public class CmisSenderTestBase extends SenderTestBase<CmisSender> {
 	public CmisSender createSender() throws Exception {
 		CmisSender sender = new CmisSender() {
 			@Override
-			public void setBindingType(String bindingType) {
+			public void setBindingType(BindingTypes bindingType) {
 				super.setBindingType(bindingType);
 
 				switch (bindingType) {
-				case "atompub":
+				case ATOMPUB:
 					setUrl(ENDPOINT+"/atom11");
 					break;
-				case "webservices":
+				case WEBSERVICES:
 					setUrl(ENDPOINT+"/services11/cmis");
 					break;
-				case "browser":
+				case BROWSER:
 					setUrl(ENDPOINT+"/browser");
 					break;
 				default:

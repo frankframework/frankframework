@@ -202,39 +202,39 @@ function showDiffs(elementId, elementIdResult, elementIdExpected) {
 			value = value + escapeChars(lineResult) + "<BR/>";
 		} else {
 			// show result line
-			value = value + "<SPAN ID=\"styleLineResult\">" + escapeChars(lineResult) + "</SPAN><BR/>";
+			value = value + "<SPAN ID=\"styleLineExpected\">" + escapeChars(lineExpected) + "</SPAN><BR/>";
 			// show expected line
-			value = value + "<SPAN ID=\"styleLineExpected\"><FONT STYLE=\"color: green\">" ;
+			value = value + "<SPAN ID=\"styleLineResult\"><FONT STYLE=\"color: green\">" ;
 
 			// check each character and color it when it differs.
 			var minLength;
-			if (lineResult.length < lineExpected.length) {
-				minLength = lineResult.length;
-			}
-			else {
+			if (lineExpected.length < lineResult.length) {
 				minLength = lineExpected.length;
 			}
+			else {
+				minLength = lineResult.length;
+			}
 			for (var i=0; i < minLength; i++) {
-				if ( lineResult.charAt(i) == lineExpected.charAt(i) ) {
-					value += escapeChars(lineExpected.charAt(i));
+				if ( lineExpected.charAt(i) == lineResult.charAt(i) ) {
+					value += escapeChars(lineResult.charAt(i));
 				}
 				else {
 					value += fontTagStart;
-					value += escapeChars(lineExpected.charAt(i));
+					value += escapeChars(lineResult.charAt(i));
 					value += fontTagEnd;
 				}
 			}
-			// if lineExpected > lineResult then write and color the remaining chars
-			if (lineExpected.length > lineResult.length) {
+			// if lineResult > lineExpected then write and color the remaining chars
+			if (lineResult.length > lineExpected.length) {
 					value += fontTagStart;
-					value += escapeChars( lineExpected.substring(minLength) );
+					value += escapeChars( lineResult.substring(minLength) );
 					value += fontTagEnd;
 			}
 			// en een nieuwe regel
 			value = value + "</FONT></SPAN><BR/>";
 
 			// Forceer einde while, als enkel firstDiff wil laten zien.
-			// numberOfCharsResult = valueResult.length;
+			// numberOfCharsExpected = valueExpected.length;
 		}
 	}
 	

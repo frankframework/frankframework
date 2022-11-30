@@ -47,7 +47,7 @@ public class DirectWrapperPipe extends TimeoutGuardPipe {
 			try {
 				pvl = getParameterList().getValues(message, session);
 			} catch (ParameterException e) {
-				throw new PipeRunException(this, getLogPrefix(session) + "exception extracting parameters", e);
+				throw new PipeRunException(this, "exception extracting parameters", e);
 			}
 		}
 
@@ -77,7 +77,7 @@ public class DirectWrapperPipe extends TimeoutGuardPipe {
 			eswPipe.configure();
 			return eswPipe.doPipe(message, session);
 		} catch (Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session) + "Exception on wrapping input", e);
+			throw new PipeRunException(this, "Exception on wrapping input", e);
 		}
 	}
 }

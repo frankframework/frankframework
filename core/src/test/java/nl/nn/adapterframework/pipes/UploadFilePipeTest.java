@@ -72,7 +72,7 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
 	@Test
 	public void testNullInputStream() throws Exception {
 		// exception.expect(PipeRunException.class);
-		exception.expectMessage("Pipe [UploadFilePipe under test] msgId [null] got null value from session under key [fdsf123]");
+		exception.expectMessage("got null value from session under key [fdsf123]");
 		pipe.setSessionKey("fdsf123");
 		configureAndStartPipe();
 		doPipe(pipe, "das", session);
@@ -101,7 +101,7 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
 	@Test
 	public void testDoPipeFailWrongExtension() throws Exception {
 		exception.expect(PipeRunException.class);
-		exception.expectMessage("Pipe [UploadFilePipe under test] msgId [null] file extension [txt] should be 'zip'");
+		exception.expectMessage("file extension [txt] should be 'zip'");
 		String key = "key";
 		pipe.setSessionKey(key);
 		pipe.setDirectory(sourceFolderPath);

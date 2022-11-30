@@ -26,7 +26,9 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.Category;
+import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -36,14 +38,15 @@ import nl.nn.adapterframework.stream.Message;
  * If the role is not specified by the role attribute, the input of
  * the pipe is used as role.
  *
- * N.B. The role itself must be specified by hand in the deployement descriptors web.xml and application.xml.
- *
+ * N.B. The role itself must be specified by hand in the deployment descriptors web.xml and application.xml.
+ * </p>
  * @ff.forward notInRole user may not assume role
  *
  * @author  Gerrit van Brakel
  * @since   4.4.3
  */
 @Category("Advanced")
+@ElementType(ElementTypes.ROUTER)
 public class IsUserInRolePipe extends FixedForwardPipe {
 
 	private String role=null;
@@ -63,7 +66,7 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 
 	protected void assertUserIsInRole(PipeLineSession session, String role) throws SecurityException {
 		if (!session.isUserInRole(role)) {
-			throw new SecurityException(getLogPrefix(session)+"user is not in role ["+role+"]");
+			throw new SecurityException("user is not in role ["+role+"]");
 		}
 	}
 
@@ -75,7 +78,7 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 				try {
 					inputString = message.asString();
 				} catch (IOException e) {
-					throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+					throw new PipeRunException(this, "cannot open stream", e);
 				}
 				if (StringUtils.isEmpty(inputString)) {
 					throw new PipeRunException(this, "role cannot be empty");

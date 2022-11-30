@@ -27,6 +27,8 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.SupportsOutputStreaming;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
+import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -35,6 +37,8 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingSenderBase;
+import nl.nn.adapterframework.stream.document.DocumentFormat;
+import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * Base class for Senders that use a {@link IBasicFileSystem FileSystem}.
@@ -49,6 +53,7 @@ import nl.nn.adapterframework.stream.StreamingSenderBase;
  *
  * @author Gerrit van Brakel
  */
+@ElementType(ElementTypes.ENDPOINT)
 @SupportsOutputStreaming
 public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends StreamingSenderBase implements HasPhysicalDestination {
 
@@ -59,7 +64,9 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		getFileSystem().configure();
+		FS fileSystem = getFileSystem();
+		SpringUtils.autowireByName(getApplicationContext(), fileSystem);
+		fileSystem.configure();
 		try {
 			actor.configure(fileSystem, getParameterList(), this);
 		} catch (ConfigurationException e) {
@@ -228,8 +235,13 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 		actor.setCharset(charset);
 	}
 
-	@IbisDocRef({"15", FILESYSTEMACTOR})
+	@IbisDocRef({FILESYSTEMACTOR})
 	public void setDeleteEmptyFolder(boolean deleteEmptyFolder) {
 		actor.setDeleteEmptyFolder(deleteEmptyFolder);
+	}
+
+	@IbisDocRef({FILESYSTEMACTOR})
+	public void setOutputFormat(DocumentFormat outputFormat) {
+		actor.setOutputFormat(outputFormat);
 	}
 }

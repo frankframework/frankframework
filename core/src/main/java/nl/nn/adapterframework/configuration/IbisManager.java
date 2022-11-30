@@ -17,6 +17,8 @@ package nl.nn.adapterframework.configuration;
 
 import java.util.List;
 
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -33,11 +35,14 @@ import nl.nn.adapterframework.statistics.HasStatistics.Action;
  * @author  Tim van der Leeuw
  * @since   4.8
  */
-public interface IbisManager extends ApplicationEventPublisherAware {
+public interface IbisManager extends ApplicationEventPublisherAware, ApplicationContextAware {
+	public static String ALL_CONFIGS_KEY = "*ALL*";
 
 	void setIbisContext(IbisContext ibisContext);
 
 	IbisContext getIbisContext();
+
+	ApplicationContext getApplicationContext();
 
 	void addConfiguration(Configuration configuration);
 

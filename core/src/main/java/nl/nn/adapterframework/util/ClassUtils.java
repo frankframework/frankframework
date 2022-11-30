@@ -265,12 +265,6 @@ public abstract class ClassUtils {
 	 * returns the className of the object, without the package name.
 	 */
 	public static String nameOf(Object o) {
-		if (o==null) {
-			return "<null>";
-		}
-		if(o instanceof Class) {
-			return org.springframework.util.ClassUtils.getUserClass((Class<?>)o).getSimpleName();
-		}
 		String tail=null;
 		if (o instanceof INamedObject) {
 			String name = ((INamedObject)o).getName();
@@ -278,13 +272,51 @@ public abstract class ClassUtils {
 				tail = "["+ name +"]";
 			}
 		}
+		return Misc.concatStrings(classNameOf(o), " ", tail);
+	}
+
+	/**
+	 * returns the className of the object, like {@link #nameOf(Object)}, but without [name] suffix for a {@link INamedObject}.
+	 */
+	public static String classNameOf(Object o) {
+		if (o==null) {
+			return "<null>";
+		}
+		if(o instanceof Class) {
+			return org.springframework.util.ClassUtils.getUserClass((Class<?>)o).getSimpleName();
+		}
 		Class<?> clazz = org.springframework.util.ClassUtils.getUserClass(o);
 		String simpleName = clazz.getSimpleName();
 
 		if (StringUtils.isEmpty(simpleName)) {
 			simpleName = clazz.getTypeName();
 		}
-		return Misc.concatStrings(simpleName, " ", tail);
+		return simpleName;
+	}
+
+	public static void invokeSetter(Object bean, Method method, String valueToSet) {
+		if(!method.getName().startsWith("set") || method.getParameterTypes().length != 1) {
+			throw new IllegalArgumentException("method must start with [set] and may only contain [1] parameter");
+		}
+
+		try {//Only always grab the first value because we explicitly check method.getParameterTypes().length != 1
+			Object castValue = castAsType(method.getParameterTypes()[0], valueToSet);
+			if(log.isDebugEnabled()) log.debug("trying to set method ["+method.getName()+"] with value ["+valueToSet+"] of type ["+castValue.getClass().getCanonicalName()+"] on ["+ClassUtils.nameOf(bean)+"]");
+
+			method.invoke(bean, castValue);
+		} catch (Exception e) {
+			throw new IllegalArgumentException("error while calling method ["+method.getName()+"] on ["+ClassUtils.nameOf(bean)+"]", e);
+		}
+	}
+
+	private static Object castAsType(Class<?> type, String value) {
+		String className = type.getName().toLowerCase();
+		if("boolean".equals(className))
+			return Boolean.parseBoolean(value);
+		else if("int".equals(className) || "integer".equals(className))
+			return Integer.parseInt(value);
+		else
+			return value;
 	}
 
 	public static void invokeSetter(Object o, String name, Object value) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {

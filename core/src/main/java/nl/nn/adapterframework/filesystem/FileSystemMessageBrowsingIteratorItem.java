@@ -34,7 +34,7 @@ public class FileSystemMessageBrowsingIteratorItem<F, FS extends IBasicFileSyste
 		this.item = item;
 		this.messageIdPropertyKey = messageIdPropertyKey;
 	}
-	
+
 	@Override
 	public String getId() throws ListenerException {
 		return fileSystem.getName(item);

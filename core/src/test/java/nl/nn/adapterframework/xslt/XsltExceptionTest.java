@@ -23,7 +23,7 @@ public class XsltExceptionTest {
 		
 		String xpathExpression="*/*";
 		int xsltVersion = 1;
-		TransformerPool tp = TransformerPool.configureTransformer0(null, null, null, xpathExpression, null, OutputType.XML, false, null, xsltVersion);
+		TransformerPool tp = TransformerPool.configureTransformer0(null, null, xpathExpression, null, OutputType.XML, false, null, xsltVersion);
 		
 		XmlWriter writer = new XmlWriter();
 		
@@ -37,11 +37,11 @@ public class XsltExceptionTest {
 				super.startElement(uri, localName, qName, atts);
 			}
 		};
-		try (ThreadConnector threadConnector = expectChildThreads ? new ThreadConnector(null, null, null, (PipeLineSession)null) : null) {
+		try (ThreadConnector threadConnector = expectChildThreads ? new ThreadConnector(null, null, null, null, (PipeLineSession)null) : null) {
 			TransformerFilter transformer = tp.getTransformerFilter(threadConnector, filter);
 			
 			try {
-				try (SaxDocumentBuilder seb = new SaxDocumentBuilder("root", transformer)) {
+				try (SaxDocumentBuilder seb = new SaxDocumentBuilder("root", transformer, false)) {
 					seb.addElement("elem");
 					seb.addElement("error");
 					for(int i=0; i<tailCount; i++) {

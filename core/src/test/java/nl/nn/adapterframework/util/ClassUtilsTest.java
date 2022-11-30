@@ -31,14 +31,14 @@ public class ClassUtilsTest {
 	private IScopeProvider scopeProvider = TestScopeProvider.wrap(contextClassLoader);
 	private String fileContent = "<test />";
 
+	protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
+	private IScopeProvider nullScopeProvider = null;
+
 	private static class ContextClassLoader extends ClassLoader {
 		public ContextClassLoader() {
 			super(Thread.currentThread().getContextClassLoader());
 		}
 	}
-
-	protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
-	private IScopeProvider nullScopeProvider = null;
 
 	@Test
 	public void getResourceURL() throws URISyntaxException, IOException {
@@ -179,7 +179,7 @@ public class ClassUtilsTest {
 
 	public void verifyUrl(URL url, String uri, String expected) throws IOException  {
 		assertNotNull("URL for ["+uri+"] should not be null",url);
-		
+
 		if (expected!=null) {
 			assertEquals(expected, Misc.streamToString(url.openStream()));
 		}

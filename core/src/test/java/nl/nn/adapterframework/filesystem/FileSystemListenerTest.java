@@ -45,6 +45,7 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 	public void setUp() throws Exception {
 		super.setUp();
 		fileSystemListener = createFileSystemListener();
+		autowireByName(fileSystemListener);
 		threadContext=new HashMap<String,Object>();
 	}
 
@@ -75,10 +76,10 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		String folder=fileAndFolderPrefix+"xxx";
 		fileSystemListener.setInputFolder(folder);
 		if (testFullErrorMessages) {
-			thrown.expectMessage("The value for inputFolder ["+folder+"], canonical name [");
-			thrown.expectMessage("It is not a folder.");
+			exception.expectMessage("The value for inputFolder ["+folder+"], canonical name [");
+			exception.expectMessage("It is not a folder.");
 		} else {
-			thrown.expectMessage("["+folder+"] is invalid.");
+			exception.expectMessage("["+folder+"] is invalid.");
 		}
 		fileSystemListener.configure();
 		fileSystemListener.open();
@@ -89,10 +90,10 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		String folder=fileAndFolderPrefix+"xxx";
 		fileSystemListener.setInProcessFolder(folder);
 		if (testFullErrorMessages) {
-			thrown.expectMessage("The value for inProcessFolder ["+folder+"], canonical name [");
-			thrown.expectMessage("It is not a folder.");
+			exception.expectMessage("The value for inProcessFolder ["+folder+"], canonical name [");
+			exception.expectMessage("It is not a folder.");
 		} else {
-			thrown.expectMessage("["+folder+"] is invalid.");
+			exception.expectMessage("["+folder+"] is invalid.");
 		}
 		fileSystemListener.configure();
 		fileSystemListener.open();
@@ -103,10 +104,10 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		String folder=fileAndFolderPrefix+"xxx";
 		fileSystemListener.setProcessedFolder(folder);
 		if (testFullErrorMessages) {
-			thrown.expectMessage("The value for processedFolder ["+folder+"], canonical name [");
-			thrown.expectMessage("It is not a folder.");
+			exception.expectMessage("The value for processedFolder ["+folder+"], canonical name [");
+			exception.expectMessage("It is not a folder.");
 		} else {
-			thrown.expectMessage("["+folder+"] is invalid.");
+			exception.expectMessage("["+folder+"] is invalid.");
 		}
 		fileSystemListener.configure();
 		fileSystemListener.open();

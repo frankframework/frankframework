@@ -10,30 +10,20 @@
 	</description>
 
 	<filter>
-		<filter-name>LoginFilter</filter-name>
-		<filter-class>nl.nn.adapterframework.webcontrol.LoginFilter</filter-class>
-		<init-param>
-			<param-name>allowedExtensions</param-name>
-			<param-value>css js gif jpg png svg</param-value>
-		</init-param>
-		<init-param>
-			<param-name>allowedObserverPaths</param-name>
-			<param-value>/index.jsp /FileViewerServlet /testtool</param-value>
-		</init-param>
-		<init-param>
-			<param-name>allowedDataAdminPaths</param-name>
-			<param-value>/testtool</param-value>
-		</init-param>
-		<init-param>
-			<param-name>allowedTesterPaths</param-name>
-			<param-value>/testtool</param-value>
-		</init-param>
-	</filter>
-
-	<filter>
 		<filter-name>CacheControlFilter</filter-name>
 		<filter-class>nl.nn.adapterframework.http.CacheControlFilter</filter-class>
 	</filter>
+
+	<!-- Spring Security -->
+	<filter>
+		<filter-name>springSecurityFilterChain</filter-name>
+		<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+	</filter>
+
+	<filter-mapping>
+		<filter-name>springSecurityFilterChain</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
 
 	<filter-mapping>
 		<filter-name>CacheControlFilter</filter-name>
@@ -48,11 +38,6 @@
 	<filter-mapping>
 		<filter-name>CacheControlFilter</filter-name>
 		<url-pattern>/iaf/api/*</url-pattern>
-	</filter-mapping>
-
-	<filter-mapping>
-		<filter-name>LoginFilter</filter-name>
-		<url-pattern>/*</url-pattern>
 	</filter-mapping>
 
 	<!--
@@ -94,6 +79,16 @@
 		<auth-method>BASIC</auth-method>
 		<realm-name>Frank</realm-name>
 	</login-config>
+
+	<security-constraint>
+		<display-name>PublicAccess</display-name>
+		<web-resource-collection>
+			<web-resource-name>PublicAccessResourceCollection</web-resource-name>
+			<description>collection of url's for public access (overruled by other collections for specific url's)</description>
+			<url-pattern>/*</url-pattern>
+			<url-pattern>/iaf/api/server/health</url-pattern>
+		</web-resource-collection>
+	</security-constraint>
 
 	<!--
 	LEGACY URL-based security configuration, now superseded by dynamic servlet configuration.
@@ -171,26 +166,13 @@
 			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
 		</user-data-constraint>
 	</security-constraint>
+	<security-role>
+		<description>all authenticated users</description>
+		<role-name>**</role-name>
+	</security-role -->
+	<!-- The above role exists solely for the ibis-war-plugin which removes the 'dashes' from the endElement tag -->
 
-	<security-constraint>
-		<display-name>WebServiceAccess</display-name>
-		<web-resource-collection>
-			<web-resource-name>WebServiceAccessResourceCollection</web-resource-name>
-			<description>collection of url's for webservice access</description>
-			<url-pattern>/servlet/rpcrouter/*</url-pattern>
-			<url-pattern>/servlet/messagerouter</url-pattern>
-			<url-pattern>/services/*</url-pattern>
-		</web-resource-collection>
-		<auth-constraint>
-			<description></description>
-			<role-name>IbisWebService</role-name>
-			<role-name>IbisTester</role-name>
-		</auth-constraint>
-		<user-data-constraint>
-			<transport-guarantee>NONE</transport-guarantee>
-		</user-data-constraint>
-	</security-constraint>
-
+	<!-- These roles are parsed when Spring Security is enabled and uses JEE container authorization. -->
 	<security-role>
 		<description>can call Ibis WebServices</description>
 		<role-name>IbisWebService</role-name>
@@ -210,6 +192,5 @@
 	<security-role>
 		<description>can execute jdbc query, send jms message and test a service, has all IbisAdmin and IbisWebService permissions</description>
 		<role-name>IbisTester</role-name>
-	</security-role -->
-
+	</security-role>
 </web-app>

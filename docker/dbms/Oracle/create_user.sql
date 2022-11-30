@@ -28,4 +28,5 @@ grant select on sys.pending_trans$ to testiaf_user;
 grant select on sys.dba_2pc_pending to testiaf_user;
 grant execute on sys.dbms_system to testiaf_user;
 commit;
+
 exit

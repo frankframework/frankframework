@@ -19,6 +19,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
 
@@ -32,12 +33,12 @@ public abstract class StreamingSenderBase extends SenderWithParametersBase imple
 		super.configure();
 		canProvideOutputStream = getParameterList()==null || !getParameterList().isInputValueOrContextRequiredForResolution();
 	}
-	
+
 	@Override
 	// can make this sendMessage() 'final', debugging handled by IStreamingSender.sendMessage(), that includes the MessageOutputStream
-	public final Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public final SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		PipeRunResult result = sendMessage(message, session, null);
-		return result.getResult();
+		return new SenderResult(result.getResult());
 	}
 
 	/**
@@ -52,5 +53,4 @@ public abstract class StreamingSenderBase extends SenderWithParametersBase imple
 	public boolean supportsOutputStreamPassThrough() {
 		return true;
 	}
-	
 }

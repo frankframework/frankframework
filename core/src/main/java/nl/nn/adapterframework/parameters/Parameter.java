@@ -72,8 +72,9 @@ import nl.nn.adapterframework.util.XmlUtils;
  * parameters get their value at the time of processing the message. Value can be retrieved from the message itself,
  * a fixed value, or from the pipelineSession. If this does not result in a value (or if neither of these is specified), a default value
  * can be specified. If an XPathExpression or stylesheet is specified, it will be applied to the message, the value retrieved
- * from the pipelineSession or the fixed value specified.
- * <br/>
+ * from the pipelineSession or the fixed value specified. If the transformation produces no output, the default value
+ * of the parameter is taken if provided.
+ * <br/><br/>
  * Examples:
  * <pre><code>
  * stored under SessionKey 'TransportInfo':
@@ -93,7 +94,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  *   &lt;to&gt;***@zonnet.nl&lt;/to&gt;
  * </code></pre>
  *
- * N.B. to obtain a fixed value: a non-existing 'dummy' <code>sessionKey</code> in combination with the fixed value in <code>DefaultValue</code> is used traditionally.
+ * N.B. to obtain a fixed value: a non-existing 'dummy' <code>sessionKey</code> in combination with the fixed value in <code>defaultValue</code> is used traditionally.
  * The current version of parameter supports the 'value' attribute, that is sufficient to set a fixed value.
  * @author Gerrit van Brakel
  * @ff.parameters Parameters themselves can have parameters too, for instance if a XSLT transformation is used, that transformation can have parameters.
@@ -123,6 +124,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 	private @Getter String authAlias;
 	private @Getter String username;
 	private @Getter String password;
+	private @Getter boolean ignoreUnresolvablePatternElements = false;
 	private @Getter String defaultValue = null;
 	private @Getter String defaultValueMethods = "defaultValue";
 	private @Getter String value = null;
@@ -204,8 +206,13 @@ public class Parameter implements IConfigurable, IWithParameters {
 		@ConfigurationWarning("use type [BINARY] instead")
 		@Deprecated BYTES,
 
-		/** Forces the parameter value to be treated as binary data (eg. when using a SQL BLOB field). */
+		/** Forces the parameter value to be treated as binary data (e.g. when using a SQL BLOB field).
+		 * When applied as a JDBC parameter, the method setBinaryStream() or setBytes() is used */
 		BINARY,
+
+		/** Forces the parameter value to be treated as character data (e.g. when using a SQL CLOB field).
+		 * When applied as a JDBC parameter, the method setCharacterStream() or setString() is used */
+		CHARACTER,
 
 		/** (Used in larva only) Converts a List to a xml-string (&lt;items&gt;&lt;item&gt;...&lt;/item&gt;&lt;item&gt;...&lt;/item&gt;&lt;/items&gt;) */
 		@Deprecated LIST,
@@ -269,17 +276,17 @@ public class Parameter implements IConfigurable, IWithParameters {
 			OutputType outputType=getType() == ParameterType.XML || getType()==ParameterType.NODE || getType()==ParameterType.DOMDOC ? OutputType.XML : OutputType.TEXT;
 			boolean includeXmlDeclaration=false;
 
-			transformerPool=TransformerPool.configureTransformer0("Parameter ["+getName()+"] ", this, getNamespaceDefs(),getXpathExpression(), getStyleSheetName(),outputType,includeXmlDeclaration,paramList,getXsltVersion());
+			transformerPool=TransformerPool.configureTransformer0(this, getNamespaceDefs(), getXpathExpression(),getStyleSheetName(), outputType,includeXmlDeclaration,paramList,getXsltVersion());
 		} else {
-			if (paramList!=null && StringUtils.isEmpty(getXpathExpression())) {
-				throw new ConfigurationException("Parameter ["+getName()+"] can only have parameters itself if a styleSheetName or xpathExpression is specified");
+			if (paramList!=null && StringUtils.isEmpty(getPattern())) {
+				throw new ConfigurationException("Parameter ["+getName()+"] can only have parameters itself if a styleSheetName, xpathExpression or pattern is specified");
 			}
 		}
 		if (isRemoveNamespaces()) {
 			transformerPoolRemoveNamespaces = XmlUtils.getRemoveNamespacesTransformerPool(true,false);
 		}
 		if (StringUtils.isNotEmpty(getSessionKeyXPath())) {
-			tpDynamicSessionKey = TransformerPool.configureTransformer("SessionKey for parameter ["+getName()+"] ", this, getNamespaceDefs(), getSessionKeyXPath(), null,OutputType.TEXT,false,null);
+			tpDynamicSessionKey = TransformerPool.configureTransformer(this, getNamespaceDefs(), getSessionKeyXPath(), null, OutputType.TEXT,false,null);
 		}
 		if(getType()==null) {
 			log.info("parameter ["+getName()+" has no type. Setting the type to ["+ParameterType.STRING+"]");
@@ -426,7 +433,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 				 * N.B. this order differs from untransformed parameters
 				 */
 				Source source=null;
-				if (StringUtils.isNotEmpty(getValue())) {
+				if (getValue()!=null) {
 					source = XmlUtils.stringToSourceForSingleUse(getValue(), namespaceAware);
 				} else if (StringUtils.isNotEmpty(requestedSessionKey)) {
 					Object sourceObject = session.get(requestedSessionKey);
@@ -524,7 +531,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 				}
 			} else if (StringUtils.isNotEmpty(getPattern())) {
 				result=formatPattern(alreadyResolvedParameters, session);
-			} else if (StringUtils.isNotEmpty(getValue())) {
+			} else if (getValue()!=null) {
 				result = getValue();
 			} else {
 				try {
@@ -550,31 +557,31 @@ public class Parameter implements IConfigurable, IWithParameters {
 				result = (String) ((Message) result).asObject();
 			}
 		}
-		if (result != null) {
+		if (result != null && !"".equals(result)) {
 			if (log.isDebugEnabled()) log.debug("Parameter ["+getName()+"] resolved to ["+(isHidden()?hide(result.toString()):result)+"]");
 		} else {
-			// if result is null then return specified default value
-			// N.B.
+			// if result is empty then return specified default value
+			Object valueByDefault=null;
 			Iterator<DefaultValueMethods> it = getDefaultValueMethodsList().iterator();
-			while (result == null && it.hasNext()) {
+			while (valueByDefault == null && it.hasNext()) {
 				DefaultValueMethods method = it.next();
 				switch(method) {
 					case DEFAULTVALUE:
-						result = getDefaultValue();
+						valueByDefault = getDefaultValue();
 						break;
 					case SESSIONKEY:
-						result = session.get(requestedSessionKey);
+						valueByDefault = session.get(requestedSessionKey);
 						break;
 					case PATTERN:
-						result = formatPattern(alreadyResolvedParameters, session);
+						valueByDefault = formatPattern(alreadyResolvedParameters, session);
 						break;
 					case VALUE:
-						result = getValue();
+						valueByDefault = getValue();
 						break;
 					case INPUT:
 						try {
 							message.preserve();
-							result=message.asString();
+							valueByDefault=message.asString();
 						} catch (IOException e) {
 							throw new ParameterException(e);
 						}
@@ -583,7 +590,8 @@ public class Parameter implements IConfigurable, IWithParameters {
 						throw new IllegalArgumentException("Unknown defaultValues method ["+method+"]");
 				}
 			}
-			if (result!=null) {
+			if (valueByDefault!=null) {
+				result = valueByDefault;
 				log.debug("Parameter ["+getName()+"] resolved to defaultvalue ["+(isHidden()?hide(result.toString()):result)+"]");
 			}
 		}
@@ -809,7 +817,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 		String formatType = patternElements.length>1 ? patternElements[1].trim() : null;
 		String formatString = patternElements.length>2 ? patternElements[2].trim() : null;
 
-		ParameterValue paramValue = alreadyResolvedParameters.getParameterValue(name);
+		ParameterValue paramValue = alreadyResolvedParameters.get(name);
 		Object substitutionValue = paramValue == null ? null : paramValue.getValue();
 
 		if (substitutionValue == null) {
@@ -867,7 +875,11 @@ public class Parameter implements IConfigurable, IWithParameters {
 			}
 		}
 		if (substitutionValue == null) {
-			throw new ParameterException("Parameter or session variable with name [" + name + "] in pattern [" + getPattern() + "] cannot be resolved");
+			if (isIgnoreUnresolvablePatternElements()) {
+				substitutionValue="";
+			} else {
+				throw new ParameterException("Parameter or session variable with name [" + name + "] in pattern [" + getPattern() + "] cannot be resolved");
+			}
 		}
 		return substitutionValue;
 	}
@@ -891,6 +903,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 		return name;
 	}
 
+	/** The target data type of the parameter, related to the database or XSLT stylesheet to which the parameter is applied. */
 	public void setType(ParameterType type) {
 		this.type = type;
 	}
@@ -933,7 +946,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 
 	/**
 	 * when set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto detect
-	 * @default 0
+	 * @ff.default 0
 	 */
 	public void setXsltVersion(int xsltVersion) {
 		this.xsltVersion=xsltVersion;
@@ -955,7 +968,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 
 	/**
 	 * When set <code>true</code> namespaces (and prefixes) in the input message are removed before the stylesheet/xpathExpression is executed
-	 * @default <code>false</code>
+	 * @ff.default <code>false</code>
 	 */
 	public void setRemoveNamespaces(boolean b) {
 		removeNamespaces = b;
@@ -968,14 +981,14 @@ public class Parameter implements IConfigurable, IWithParameters {
 
 	/**
 	 * Comma separated list of methods (<code>defaultValue</code>, <code>sessionKey</code>, <code>pattern</code>, <code>value</code> or <code>input</code>) to use as default value. Used in the order they appear until a non-null value is found.
-	 * @default <code>defaultValue</code>
+	 * @ff.default <code>defaultValue</code>
 	 */
 	public void setDefaultValueMethods(String string) {
 		defaultValueMethods = string;
 	}
 
 	/**
-	 * Value of parameter is determined using substitution and formating, following MessageFormat syntax with named parameters. The expression can contain references
+	 * Value of parameter is determined using substitution and formatting, following MessageFormat syntax with named parameters. The expression can contain references
 	 * to session-variables or other parameters using {name-of-parameter} and is formatted using java.text.MessageFormat.
 	 * <br/>If for instance <code>fname</code> is a parameter or session variable that resolves to eric, then the pattern
 	 * 'hi {fname}, hoe gaat het?' resolves to 'hi eric, hoe gaat het?'.<br/>
@@ -991,11 +1004,11 @@ public class Parameter implements IConfigurable, IWithParameters {
 	 * <li>{fixedhostname}: fake hostname, for testing only</li>
 	 * </ul>
 	 * A guid can be generated using {hostname}_{uid}, see also
-	 * <a href=\"http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html\">http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html</a> for more information about (g)uid's or
-	 * <a href=\"http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html\">http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html</a> for more information about uuid's.
+	 * <a href="http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html">http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html</a> for more information about (g)uid's or
+	 * <a href="http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html">http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html</a> for more information about uuid's.
 	 * <br/>
 	 * When combining a date or time <code>pattern</code> like {now} or {fixeddate} with a DATE, TIME, DATETIME or TIMESTAMP <code>type</code>, the effective value of the attribute
-	 * <code>formatString</code> must match the effective value of the formatString in the </code>pattern</code>.
+	 * <code>formatString</code> must match the effective value of the formatString in the <code>pattern</code>.
 	 */
 	public void setPattern(String string) {
 		pattern = string;
@@ -1021,9 +1034,14 @@ public class Parameter implements IConfigurable, IWithParameters {
 		password = string;
 	}
 
+	/** If set <code>true</code> pattern elements that cannot be resolved to a parameter or sessionKey are silently resolved to an empty string */
+	public void setIgnoreUnresolvablePatternElements(boolean b) {
+		ignoreUnresolvablePatternElements = b;
+	}
+
 	/**
 	 * Used in combination with types <code>DATE</code>, <code>TIME</code>, <code>DATETIME</code> and <code>TIMESTAMP</code> to parse the raw parameter string data into an object of the respective type
-	 * @default depends on type
+	 * @ff.default depends on type
 	 */
 	public void setFormatString(String string) {
 		formatString = string;
@@ -1031,7 +1049,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 
 	/**
 	 * Used in combination with type <code>NUMBER</code>
-	 * @default system default
+	 * @ff.default system default
 	 */
 	public void setDecimalSeparator(String string) {
 		decimalSeparator = string;
@@ -1039,7 +1057,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 
 	/**
 	 * Used in combination with type <code>NUMBER</code>
-	 * @default system default
+	 * @ff.default system default
 	 */
 	public void setGroupingSeparator(String string) {
 		groupingSeparator = string;
@@ -1047,7 +1065,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 
 	/**
 	 * If set (>=0) and the length of the value of the parameter falls short of this minimum length, the value is padded
-	 * @default -1
+	 * @ff.default -1
 	 */
 	public void setMinLength(int i) {
 		minLength = i;
@@ -1055,7 +1073,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 
 	/**
 	 * If set (>=0) and the length of the value of the parameter exceeds this maximum length, the length is trimmed to this maximum length
-	 * @default -1
+	 * @ff.default -1
 	 */
 	public void setMaxLength(int i) {
 		maxLength = i;
@@ -1073,7 +1091,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 
 	/**
 	 * If set to <code>true</code>, the value of the parameter will not be shown in the log (replaced by asterisks)
-	 * @default <code>false</code>
+	 * @ff.default <code>false</code>
 	 */
 	public void setHidden(boolean b) {
 		hidden = b;

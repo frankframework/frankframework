@@ -324,7 +324,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		}
 
 		if (getExtractElementsTp()!=null) {
-			if (log.isDebugEnabled()) log.debug("transforming input to obtain list of elements using xpath ["+getElementXPathExpression()+"]");
+			log.debug("transforming input to obtain list of elements using xpath [{}]", getElementXPathExpression());
 			TransformerFilter transformerFilter = getExtractElementsTp().getTransformerFilter(threadConnector, result.inputHandler);
 			if (getParameterList()!=null) {
 				try {
@@ -384,7 +384,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
 		HandlerRecord handlerRecord = new HandlerRecord();
 		try {
-			ThreadConnector<?> threadConnector = streamingXslt ? new ThreadConnector<>(this, threadLifeCycleEventListener, txManager, session) : null;
+			ThreadConnector<?> threadConnector = streamingXslt ? new ThreadConnector<>(this, "provideOutputStream", threadLifeCycleEventListener, txManager, session) : null;
 			MessageOutputStream target=getTargetStream(session);
 			Writer resultWriter = target.asWriter();
 			ItemCallback callback = createItemCallBack(session, getSender(), resultWriter);
@@ -404,7 +404,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 				try {
 					filename = input.asString();
 				} catch (IOException e) {
-					throw new SenderException(getLogPrefix(session)+"cannot find filename", e);
+					throw new SenderException("cannot find filename", e);
 				}
 				src = new InputSource(new FileInputStream(filename));
 			} catch (FileNotFoundException e) {
@@ -420,7 +420,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		HandlerRecord handlerRecord = new HandlerRecord();
 		Map<AutoCloseable,String> closeables = new LinkedHashMap<>();
 		SenderException mainException = null;
-		try (ThreadConnector<?> threadConnector = streamingXslt ? new ThreadConnector<>(this, threadLifeCycleEventListener, txManager, session) : null) {
+		try (ThreadConnector<?> threadConnector = streamingXslt ? new ThreadConnector<>(this, "iterateOverInput", threadLifeCycleEventListener, txManager, session) : null) {
 			try {
 				createHandler(handlerRecord, threadConnector, input, session, callback, closeables::put);
 			} catch (TransformerException e) {
@@ -454,7 +454,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			for(Entry<AutoCloseable,String> entry:closeables.entrySet()) {
 				String label = entry.getValue();
 				try (AutoCloseable resource = entry.getKey()) {
-					log.debug("Closing resource "+label);
+					log.debug("Closing resource {}", label);
 				} catch (Exception e) {
 					if (mainException==null) {
 						mainException = new SenderException("Could not close resource "+label, e);

@@ -9,7 +9,6 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.HashPipe.HashAlgorithm;
 import nl.nn.adapterframework.pipes.HashPipe.HashEncoding;
-import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class HashPipeTest extends PipeTestBase<HashPipe> {
 
@@ -61,7 +60,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 		String hash=prr.getResult().asString();
 		assertEquals("56V9GhAPU9NPP76zJ5KVLrfMaCherC8JcY16PTPEO3W+yxNnoXwmLS+Ic61J3gqZyeUfc0VZzzgg23WqesXm2g==", hash);
 	}
-	
+
 	@Test
 	public void hex() throws Exception {
 		pipe.setSecret("Potato");
@@ -118,7 +117,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 		pipe.setSecret("Aardappel");
 		pipe.setHashEncoding(HashEncoding.Hex);
 		pipe.setAlgorithm(HashAlgorithm.HmacSHA512);
-		pipe.addParameter(new Parameter("secret", ""));
+		pipe.addParameter(new Parameter("secret", null));
 		pipe.configure();
 		pipe.start();
 
@@ -133,7 +132,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult prr = doPipe(pipe, TestFileUtils.getTestFile("/HashPipe/largeInput.txt"), session);
+		PipeRunResult prr = doPipe(pipe, getResource("largeInput.txt"), session);
 		String hash=prr.getResult().asString();
 		assertEquals("M7Z60BhL72SMyCEUVesQOuvBRUcokJPyy95lSQODDZU=", hash);
 	}
@@ -145,7 +144,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult prr = doPipe(pipe, TestFileUtils.getTestFile("/HashPipe/largeInput.txt"), session);
+		PipeRunResult prr = doPipe(pipe, getResource("largeInput.txt"), session);
 		String hash=prr.getResult().asString();
 		assertEquals("33b67ad0184bef648cc8211455eb103aebc14547289093f2cbde654903830d95", hash);
 	}
