@@ -25,16 +25,16 @@ import io.micrometer.core.instrument.distribution.HistogramGauges;
 import io.micrometer.core.instrument.simple.SimpleConfig;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 
-public class FrankStatisticsRegistry extends SimpleMeterRegistry {
+public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 
-	public FrankStatisticsRegistry(SimpleConfig config) {
+	public LocalStatisticsRegistry(SimpleConfig config) {
 		super(config, Clock.SYSTEM);
 	}
 
 	@Override
 	protected DistributionSummary newDistributionSummary(Id id, DistributionStatisticConfig distributionStatisticConfig, double scale) {
 		DistributionStatisticConfig merged = distributionStatisticConfig.merge(DistributionStatisticConfig.builder().expiry(Duration.ofHours(1)).build());
-		DistributionSummary summary = new FrankDistributionSummary(id, clock, merged, scale, false);
+		DistributionSummary summary = new LocalDistributionSummary(id, clock, merged, scale, false);
 
 		HistogramGauges.registerWithCommonFormat(summary, this);
 

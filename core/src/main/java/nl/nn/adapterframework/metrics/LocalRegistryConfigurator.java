@@ -23,7 +23,7 @@ import io.micrometer.core.instrument.simple.SimpleConfig;
  * 
  * @see <a href="https://docs.spring.io/spring-boot/docs/2.1.9.RELEASE/reference/html/production-ready-metrics.html">Spring Metrics</a>
  */
-public class FrankRegistryConfigurator extends MetricsRegistryConfiguratorBase<SimpleConfig> {
+public class LocalRegistryConfigurator extends MetricsRegistryConfiguratorBase<SimpleConfig> {
 
 	private class Config extends MeterRegistryConfigBase implements SimpleConfig {
 		@Override
@@ -39,6 +39,6 @@ public class FrankRegistryConfigurator extends MetricsRegistryConfiguratorBase<S
 
 	@Override
 	protected MeterRegistry createRegistry(SimpleConfig config) {
-		return new FrankStatisticsRegistry(config);
+		return new LocalStatisticsRegistry(config);
 	}
 }

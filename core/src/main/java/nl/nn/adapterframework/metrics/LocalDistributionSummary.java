@@ -29,7 +29,7 @@ import io.micrometer.core.instrument.distribution.HistogramSnapshot;
 import io.micrometer.core.instrument.distribution.TimeWindowFixedBoundaryHistogram;
 import io.micrometer.core.instrument.distribution.TimeWindowMax;
 
-public class FrankDistributionSummary extends AbstractDistributionSummary {
+public class LocalDistributionSummary extends AbstractDistributionSummary {
 	private static final CountAtBucket[] EMPTY_HISTOGRAM = new CountAtBucket[0];
 	private final LongAdder count;
 	private final DoubleAdder amount;
@@ -38,9 +38,9 @@ public class FrankDistributionSummary extends AbstractDistributionSummary {
 	private final LongAdder sumOfSquares;
 	private final AtomicLong first;
 	private final AtomicLong last;
-	private final Histogram histogram;
+	private final Histogram histogram; //Overwrite the default time bound histogram
 
-	public FrankDistributionSummary(Id id, Clock clock, DistributionStatisticConfig distributionStatisticConfig, double scale, boolean supportsAggregablePercentiles) {
+	public LocalDistributionSummary(Id id, Clock clock, DistributionStatisticConfig distributionStatisticConfig, double scale, boolean supportsAggregablePercentiles) {
 		super(id, clock, distributionStatisticConfig, scale, supportsAggregablePercentiles);
 
 		histogram = new TimeWindowFixedBoundaryHistogram(clock, DistributionStatisticConfig.builder()
