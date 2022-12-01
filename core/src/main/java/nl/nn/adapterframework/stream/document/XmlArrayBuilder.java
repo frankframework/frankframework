@@ -31,15 +31,6 @@ public class XmlArrayBuilder extends ArrayBuilder {
 	}
 
 
-	@Override
-	public void close() throws SAXException {
-		try {
-			current.close();
-		} finally {
-			super.close();
-		}
-	}
-
 
 	@Override
 	public INodeBuilder addElement() throws SAXException {
