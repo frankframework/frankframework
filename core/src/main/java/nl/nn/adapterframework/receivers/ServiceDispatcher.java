@@ -16,11 +16,13 @@
 package nl.nn.adapterframework.receivers;
 
 import java.io.IOException;
-import java.util.Iterator;
+import java.util.Collections;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentSkipListMap;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.ListenerException;
@@ -43,7 +45,7 @@ import nl.nn.adapterframework.util.LogUtil;
 public class ServiceDispatcher  {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private ConcurrentSkipListMap<String, ServiceClient> registeredListeners = new ConcurrentSkipListMap<String, ServiceClient>();
+	private ConcurrentSkipListMap<String, ServiceClient> registeredListeners = new ConcurrentSkipListMap<>();
 	private static ServiceDispatcher self = null;
 
 	/**
@@ -87,9 +89,9 @@ public class ServiceDispatcher  {
 	 * Retrieve the names of the registered listeners in alphabetical order.
 	 * @return Iterator with the names.
 	 */
-	public Iterator<String> getRegisteredListenerNames() {
-		SortedSet<String> sortedKeys = new TreeSet<String>(registeredListeners.keySet());
-		return sortedKeys.iterator();
+	public Set<String> getRegisteredListenerNames() {
+		SortedSet<String> sortedKeys = new TreeSet<>(registeredListeners.keySet());
+		return Collections.unmodifiableSet(sortedKeys);
 	}
 
 	/**
@@ -97,13 +99,15 @@ public class ServiceDispatcher  {
 	 * @return true if the service is registered at this dispatcher, otherwise false
 	 */
 	public boolean isRegisteredServiceListener(String name) {
-		return (registeredListeners.get(name)!=null);
+		return registeredListeners.get(name) != null;
 	}
 
-	public void registerServiceClient(String name, ServiceClient listener) throws ListenerException{
+	public synchronized void registerServiceClient(String name, ServiceClient listener) throws ListenerException {
+		if(StringUtils.isEmpty(name)) {
+			throw new ListenerException("Cannot register a ServiceClient without name");
+		}
 		if (isRegisteredServiceListener(name)) {
-			//TODO throw ListenerException if already registered!
-			log.warn("listener ["+name+"] already registered with ServiceDispatcher");
+			throw new ListenerException("Dispatcher already has a ServiceClient registered under name ["+name+"]");
 		}
 
 		registeredListeners.put(name, listener);
