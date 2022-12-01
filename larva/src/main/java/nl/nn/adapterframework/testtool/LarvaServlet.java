@@ -138,8 +138,7 @@ public class LarvaServlet extends HttpServletBase {
 		resp.setContentType("text/html");
 		writer.append(getTemplate("Larva Test Tool"));
 
-		String cleanServletPath = getUrlMapping().replace("/*", "");
-		String realPath = getServletContext().getRealPath(cleanServletPath);
+		String realPath = getServletContext().getRealPath("/iaf/");
 
 		TestTool.runScenarios(getServletContext(), req, writer, realPath);
 		writer.append("</body></html>");
