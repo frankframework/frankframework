@@ -143,7 +143,11 @@ public abstract class JdbcTestBase {
 			try {
 				dropTableIfPresent(connection, TEST_TABLE);
 			} finally {
-				connection.rollback();
+				try {
+					connection.rollback();
+				} catch (Exception e) {
+					log.debug("Could not rollback: "+e.getMessage());
+				}
 				connection.close();
 			}
 		}
