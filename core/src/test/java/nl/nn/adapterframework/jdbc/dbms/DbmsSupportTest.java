@@ -55,6 +55,26 @@ public class DbmsSupportTest extends JdbcTestBase {
 	}
 
 	@Test
+	public void testTableLessSelect() throws JdbcException {
+		assertEquals(4, JdbcUtil.executeIntQuery(connection,"SELECT 2+2 "+dbmsSupport.getFromForTablelessSelect()));
+	}
+
+	@Test
+	public void testTableLessSelectWithIntParam() throws JdbcException {
+		assertEquals(4, JdbcUtil.executeIntQuery(connection,"SELECT 1+? "+dbmsSupport.getFromForTablelessSelect(), 3));
+	}
+
+//	@Test
+//	public void testTableLessSelectWithStringParam() throws JdbcException {
+//		assertEquals(3, JdbcUtil.executeIntQuery(connection,"SELECT ''||? "+dbmsSupport.getFromForTablelessSelect(), 3));
+//	}
+
+	@Test
+	public void testInsertSelect() throws JdbcException {
+		JdbcUtil.executeStatement(connection,"INSERT INTO "+TEST_TABLE+" (TKEY, TINT) SELECT 11, 2+2 "+dbmsSupport.getFromForTablelessSelect()+" WHERE 1=1");
+	}
+
+	@Test
 	public void testIsTablePresent() throws JdbcException {
 		assertTrue("Should have found existing table", dbmsSupport.isTablePresent(connection, TEST_TABLE));
 		assertFalse(dbmsSupport.isTablePresent(connection, "XXXX"));
@@ -555,7 +575,6 @@ public class DbmsSupportTest extends JdbcTestBase {
 
 	private boolean peek(String query) throws Exception {
 		try (Connection peekConnection=getConnection()) {
-			peekConnection.setAutoCommit(false);
 			return !JdbcUtil.isQueryResultEmpty(peekConnection, query);
 		}
 	}
@@ -612,6 +631,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 									assertEquals(41,rs2.getInt(1));	// find the second record
 								}
 							}
+							workConn2.rollback();
 						}
 					}
 				}
