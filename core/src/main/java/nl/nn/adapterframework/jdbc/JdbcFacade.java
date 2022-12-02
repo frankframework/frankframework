@@ -218,9 +218,15 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	@Override
 	public String getPhysicalDestinationName() {
 		try {
+			DataSource dataSource;
+			try {
+				dataSource = getDatasource();
+			} catch (Exception e) {
+				return "no datasource found for datasourceName ["+getDatasourceName()+"]";
+			}
 			//Try to minimise the amount of DB connections
-			if(getDatasource() instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
-				return ((TransactionalDbmsSupportAwareDataSourceProxy) getDatasource()).getDestinationName();
+			if(dataSource instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
+				return ((TransactionalDbmsSupportAwareDataSourceProxy) dataSource).getDestinationName();
 			}
 
 			try (Connection connection = getConnection()) {

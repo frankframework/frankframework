@@ -566,15 +566,16 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				db2xml.setGetBlobSmart(isBlobSmartGet());
 				ContentHandler handler = target.asContentHandler();
 				db2xml.getXML(getDbmsSupport(), resultset, getMaxRows(), isIncludeFieldDefinition(), handler, isPrettyPrint());
-				return target.getPipeRunResult();
+			} else {
+				DB2DocumentWriter db2document = new DB2DocumentWriter();
+				db2document.setNullValue(getNullValue());
+				db2document.setTrimSpaces(isTrimSpaces());
+				if (StringUtils.isNotEmpty(getBlobCharset())) db2document.setBlobCharset(getBlobCharset());
+				db2document.setDecompressBlobs(isBlobsCompressed());
+				db2document.setGetBlobSmart(isBlobSmartGet());
+				db2document.writeDocument(getOutputFormat(), getDbmsSupport(), resultset, getMaxRows(), isIncludeFieldDefinition(), target, isPrettyPrint());
 			}
-			DB2DocumentWriter db2document = new DB2DocumentWriter();
-			db2document.setNullValue(getNullValue());
-			db2document.setTrimSpaces(isTrimSpaces());
-			if (StringUtils.isNotEmpty(getBlobCharset())) db2document.setBlobCharset(getBlobCharset());
-			db2document.setDecompressBlobs(isBlobsCompressed());
-			db2document.setGetBlobSmart(isBlobSmartGet());
-			db2document.writeDocument(getOutputFormat(), getDbmsSupport(), resultset, getMaxRows(), isIncludeFieldDefinition(), target, isPrettyPrint());
+			target.close();
 			return target.getPipeRunResult();
 		} catch (Exception e) {
 			throw new JdbcException(e);

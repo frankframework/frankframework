@@ -409,8 +409,8 @@ public class SecurityItems extends BusEndpointBase {
 			serverProps.put("totalTransactionLifetimeTimeout", totalTransactionLifetimeTimeout);
 		}
 
-		Integer maximumTransactionTimeout = Misc.getMaximumTransactionTimeout();
-		if(maximumTransactionTimeout == null) {
+		int maximumTransactionTimeout = Misc.getMaximumTransactionTimeout();
+		if(maximumTransactionTimeout <= 0 ) {
 			serverProps.put("maximumTransactionTimeout", "-");
 		} else {
 			serverProps.put("maximumTransactionTimeout", maximumTransactionTimeout);
