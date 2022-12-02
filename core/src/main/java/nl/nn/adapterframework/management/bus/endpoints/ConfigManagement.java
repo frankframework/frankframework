@@ -77,17 +77,6 @@ public class ConfigManagement extends BusEndpointBase {
 		return ResponseMessage.Builder.create().withPayload(result.toString()).withMimeType(MediaType.APPLICATION_XML).raw();
 	}
 
-	private Configuration getConfigurationByName(String configurationName) {
-		if(StringUtils.isEmpty(configurationName)) {
-			throw new BusException("no configuration name specified");
-		}
-		Configuration configuration = getIbisManager().getConfiguration(configurationName);
-		if(configuration == null) {
-			throw new BusException("configuration ["+configurationName+"] does not exists");
-		}
-		return configuration;
-	}
-
 	/**
 	 * @return If the configuration is of type DatabaseClassLoader, the metadata of the configurations found in the database.
 	 * header configuration The name of the Configuration to find

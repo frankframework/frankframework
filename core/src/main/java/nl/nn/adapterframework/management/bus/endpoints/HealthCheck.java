@@ -154,17 +154,6 @@ public class HealthCheck extends BusEndpointBase {
 		return ResponseMessage.Builder.create().withPayload(response).withStatus(status.getStatusCode()).toJson();
 	}
 
-	private Configuration getConfigurationByName(String configurationName) {
-		if(StringUtils.isEmpty(configurationName)) {
-			throw new BusException("no configuration name specified");
-		}
-		Configuration configuration = getIbisManager().getConfiguration(configurationName);
-		if(configuration == null) {
-			throw new BusException("configuration ["+configurationName+"] does not exists");
-		}
-		return configuration;
-	}
-
 	/**
 	 * @return The status of a configuration. If an Adapter is not in state STARTED it is flagged as NOT-OK.
 	 * header configuration The name of the Configuration to delete

@@ -1,17 +1,17 @@
 /*
-Copyright 2016-2017, 2020-2022 WeAreFrank!
+   Copyright 2016-2022 WeAreFrank!
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+       http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
@@ -35,6 +35,7 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
+import org.springframework.messaging.Message;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -42,6 +43,7 @@ import lombok.Data;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.RequestMessageBuilder;
+import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -91,9 +93,6 @@ public class TestPipeline extends FrankApiBase {
 
 		String fileEncoding = resolveTypeFromMap(inputDataMap, "encoding", String.class, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 
-		boolean synchronous = resolveTypeFromMap(inputDataMap, "synchronous", boolean.class, true);
-		builder.addHeader("synchronous", synchronous);
-
 		Attachment filePart = inputDataMap.getAttachment("file");
 		if(filePart != null) {
 			String fileName = filePart.getContentDisposition().getParameter("filename");
@@ -101,8 +100,8 @@ public class TestPipeline extends FrankApiBase {
 
 			if (StringUtils.endsWithIgnoreCase(fileName, ".zip")) {
 				try {
-					processZipFile(file, builder);
-					return Response.status(Response.Status.OK).build();
+					String zipResults = processZipFile(file, builder);
+					return Response.status(Response.Status.OK).entity(zipResults).build();
 				} catch (Exception e) {
 					throw new ApiException("An exception occurred while processing zip file", e);
 				}
@@ -125,12 +124,16 @@ public class TestPipeline extends FrankApiBase {
 		}
 
 		builder.setPayload(message);
-		return (synchronous) ? callSyncGateway(builder) : callAsyncGateway(builder);
+		return callSyncGateway(builder);
 	}
 
-	private void processZipFile(InputStream file, RequestMessageBuilder builder) throws IOException {
+	// cannot call callAsyncGateway, backend calls are not synchronous
+	private String processZipFile(InputStream file, RequestMessageBuilder builder) throws IOException {
+		StringBuilder result = new StringBuilder();
+
 		ZipInputStream archive = new ZipInputStream(file);
 		for (ZipEntry entry=archive.getNextEntry(); entry!=null; entry=archive.getNextEntry()) {
+			String name = entry.getName();
 			int size = (int)entry.getSize();
 			if (size>0) {
 				byte[] b=new byte[size];
@@ -146,10 +149,14 @@ public class TestPipeline extends FrankApiBase {
 				String currentMessage = XmlUtils.readXml(b,0,rb,StreamUtil.DEFAULT_INPUT_STREAM_ENCODING,false);
 
 				builder.setPayload(currentMessage);
-				callAsyncGateway(builder);
+				Message response = getGateway().sendSyncMessage(builder.build());
+				int status = (int) response.getHeaders().get(ResponseMessage.STATUS_KEY);
+				result.append(name + ":" + (status==200?"SUCCESS":"ERROR"));
 			}
 			archive.closeEntry();
 		}
 		archive.close();
+
+		return result.toString();
 	}
 }

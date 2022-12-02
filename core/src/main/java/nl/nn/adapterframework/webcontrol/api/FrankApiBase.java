@@ -77,13 +77,16 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 	protected Logger log = LogUtil.getLogger(this);
 	protected static String HATEOASImplementation = AppConstants.getInstance().getString("ibis-api.hateoasImplementation", "default");
 
+	protected final Gateway getGateway() {
+		return getApplicationContext().getBean("gateway", Gateway.class);
+	}
+
 	public Response callSyncGateway(RequestMessageBuilder input) throws ApiException {
 		return callSyncGateway(input, false);
 	}
 
-	@SuppressWarnings("unchecked")
 	public Response callSyncGateway(RequestMessageBuilder input, boolean evaluateEtag) throws ApiException {
-		Gateway gateway = getApplicationContext().getBean("gateway", Gateway.class);
+		Gateway gateway = getGateway();
 		Message<?> response = gateway.sendSyncMessage(input.build());
 		if(response != null) {
 			EntityTag eTag = null;
@@ -109,7 +112,7 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 	}
 
 	public Response callAsyncGateway(RequestMessageBuilder input) throws ApiException {
-		Gateway gateway = getApplicationContext().getBean("gateway", Gateway.class);
+		Gateway gateway = getGateway();
 		gateway.sendAsyncMessage(input.build());
 		return Response.ok().build();
 	}

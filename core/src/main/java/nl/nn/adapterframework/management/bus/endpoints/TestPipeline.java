@@ -30,6 +30,7 @@ import org.springframework.messaging.Message;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.management.bus.ActionSelector;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusAware;
@@ -71,10 +72,10 @@ public class TestPipeline extends BusEndpointBase {
 
 		Map<String, String> threadContext = null;
 		String payload = (String) message.getPayload();
-		System.out.println(payload);
 		return processMessage(adapter, payload, threadContext, expectsReply);
 	}
 
+	//Does not support async requests because receiver requests are synchronous
 	private Message<Object> processMessage(IAdapter adapter, String payload, Map<String, String> sessionKeyMap, boolean expectsReply) {
 		String messageId = "testmessage" + Misc.createSimpleUUID();
 		String correlationId = "Test a Pipeline " + requestCount.incrementAndGet();
@@ -95,16 +96,17 @@ public class TestPipeline extends BusEndpointBase {
 			try {
 				PipeLineResult plr = adapter.processMessage(messageId, new nl.nn.adapterframework.stream.Message(payload), pls);
 
-				if(expectsReply) {
-					plr.getResult().unscheduleFromCloseOnExitOf(pls);
-					ResponseMessage.Builder.create().withPayload(plr.getResult()).raw();
+				if(!expectsReply) {
+					return null; //Abort here, we do not need a reply.
 				}
 
+				plr.getResult().unscheduleFromCloseOnExitOf(pls);
+				int status = plr.getState() == ExitState.SUCCESS ? 200 : 500;
+				return ResponseMessage.Builder.create().withPayload(plr.getResult()).withStatus(status).raw();
 			} catch (Exception e) {
 				throw new BusException("an exception occurred while processing the message", e);
 			}
 		}
-		return null;
 	}
 
 	/**
