@@ -1,5 +1,5 @@
 /*
-   Copyright 2018, 2020 Nationale-Nederlanden
+   Copyright 2018, 2020 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -52,10 +52,10 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>{@link #setTimeout(int) timeout}</td><td>the larva timeout</td>30000</tr>
  * </table>
  * </p>
- * 
+ *
  * @ff.forward success no errors and all tests passed
  * @ff.forward failure errors or failed tests
- * 
+ *
  * @author Jaco de Groot
  *
  */
@@ -97,7 +97,7 @@ public class LarvaPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		IbisContext ibisContext = getAdapter().getConfiguration().getIbisManager().getIbisContext();
-		String realPath = AppConstants.getInstance().getResolvedProperty("webapp.realpath") + "larva/";
+		String realPath = AppConstants.getInstance().getResolvedProperty("webapp.realpath") + "iaf/";
 		List<String> scenariosRootDirectories = new ArrayList<>();
 		List<String> scenariosRootDescriptions = new ArrayList<>();
 		String currentScenariosRootDirectory = TestTool.initScenariosRootDirectories(

@@ -2,6 +2,6 @@
 	<select>
 		<tableName>IBISSTORE</tableName>
 		<where>SLOTID IN ('${applicationId}/JmsFFSender', '${applicationId}/JmsFFSenderJmsFFSenderWithDatasource', '${applicationId}/JmsFFSenderWithRead', '${applicationId}/JmsFFListener')</where>
-		<order>messagekey</order>
+		<order>MESSAGEKEY</order>
 	</select>
 </manageDatabaseREQ>

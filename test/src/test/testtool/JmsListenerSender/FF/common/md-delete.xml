@@ -1,7 +1,9 @@
 <manageDatabaseREQ>
-	<select>
+	<delete>
 		<tableName>IBISSTORE</tableName>
 		<where>SLOTID IN ('${applicationId}/JmsFFSender', '${applicationId}/JmsFFSenderJmsFFSenderWithDatasource', '${applicationId}/JmsFFSenderWithRead', '${applicationId}/JmsFFListener')</where>
-		<order>messagekey</order>
-	</select>
+	</delete>
+	<delete>
+		<tableName>IBISPROP</tableName>
+	</delete>
 </manageDatabaseREQ>
