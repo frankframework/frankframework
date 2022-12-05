@@ -1,0 +1,10 @@
+<result>
+	<rowset>
+		<row>
+			<CNT>0</CNT>
+			<STR>string</STR>
+			<NUM>5</NUM>
+			<NULLCOL nil="true"/>
+		</row>
+	</rowset>
+</result>
