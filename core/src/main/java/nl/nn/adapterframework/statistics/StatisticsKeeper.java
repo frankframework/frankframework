@@ -131,9 +131,6 @@ public class StatisticsKeeper<B extends IBasics<S>, S> implements ItemList {
 			}
 		}
 		DistributionSummary distributionSummary = builder.register(registry);
-		if (percentiles!=null) {
-			pest = new PercentileEstimatorRanked(percentileConfigKey,DEFAULT_P_LIST,100);
-		}
 
 		if (cumulative instanceof MicroMeterBasics) {
 			((MicroMeterBasics)cumulative).setDistributionSummary(distributionSummary);
