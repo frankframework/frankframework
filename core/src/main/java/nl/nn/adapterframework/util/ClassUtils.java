@@ -239,8 +239,8 @@ public abstract class ClassUtils {
 		catch(Exception e) {
 			throw new ConfigurationException("Could not instantiate class ["+name+"]", e);
 		}
-
 	}
+
 	/**
 	 * Gets the absolute pathname of the class file containing the specified class name, as prescribed by the current classpath.
 	 */
