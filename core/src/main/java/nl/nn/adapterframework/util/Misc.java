@@ -1195,7 +1195,7 @@ public class Misc {
 				}
 				transactionTimeout=getMaximumTransactionTimeout(confSrvString);
 			} finally {
-				maximumTransactionTimeout=transactionTimeout!=null ? transactionTimeout : 0;;
+				maximumTransactionTimeout=transactionTimeout!=null ? transactionTimeout : 0;
 			}
 		}
 		return maximumTransactionTimeout;
