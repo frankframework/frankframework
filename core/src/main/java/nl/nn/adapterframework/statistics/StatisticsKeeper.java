@@ -28,7 +28,6 @@ import org.apache.logging.log4j.Logger;
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.statistics.HasStatistics.Action;
 import nl.nn.adapterframework.statistics.percentiles.PercentileEstimator;
 import nl.nn.adapterframework.statistics.percentiles.PercentileEstimatorRanked;
@@ -147,8 +146,8 @@ public class StatisticsKeeper<B extends IBasics<S>, S> implements ItemList {
 		if (basics==null) {
 			String basicsClass = appConstants.getString(BASICS_KEY, Basics.class.getName());
 			try {
-				basics = (B)ClassUtils.instantiateClass(basicsClass);
-			} catch (ConfigurationException e) {
+				basics = (B)ClassUtils.newInstance(basicsClass);
+			} catch (Exception e) {
 				log.warn("Could not instantiate Basics class ["+basicsClass+"]", e);
 				basics = (B)new Basics();
 			}
