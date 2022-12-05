@@ -358,7 +358,7 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="put something in log context" export="true" className="nl.nn.adapterframework.pipes.MdcPipe">
+			<pipe name="put something in log context" export="true" className="nl.nn.adapterframework.pipes.LogContextPipe">
 				<param name="testMdc" value="testMdc" />
 			</pipe>
 			<pipe name="switchAction" className="nl.nn.adapterframework.pipes.XmlSwitch"
