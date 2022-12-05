@@ -18,6 +18,7 @@ package nl.nn.adapterframework.webcontrol.api;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -43,7 +44,6 @@ import lombok.Data;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.RequestMessageBuilder;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -101,7 +101,7 @@ public class TestPipeline extends FrankApiBase {
 			if (StringUtils.endsWithIgnoreCase(fileName, ".zip")) {
 				try {
 					String zipResults = processZipFile(file, builder);
-					return Response.status(Response.Status.OK).entity(zipResults).build();
+					return testPipelineResponse(zipResults);
 				} catch (Exception e) {
 					throw new ApiException("An exception occurred while processing zip file", e);
 				}
@@ -124,7 +124,23 @@ public class TestPipeline extends FrankApiBase {
 		}
 
 		builder.setPayload(message);
-		return callSyncGateway(builder);
+		Message response = getGateway().sendSyncMessage(builder.build());
+		String payload = (String) response.getPayload();
+		String state = (String) response.getHeaders().get("state");
+		return testPipelineResponse(payload, state, message);
+	}
+
+	private Response testPipelineResponse(String payload) {
+		return testPipelineResponse(payload, "SUCCESS", null);
+	}
+	private Response testPipelineResponse(String payload, String state, String message) {
+		Map<String, Object> result = new HashMap<>();
+		result.put("state", state);
+		result.put("result", payload);
+		if(message != null) {
+			result.put("message", message);
+		}
+		return Response.status(200).entity(result).build();
 	}
 
 	// cannot call callAsyncGateway, backend calls are not synchronous
@@ -150,8 +166,7 @@ public class TestPipeline extends FrankApiBase {
 
 				builder.setPayload(currentMessage);
 				Message response = getGateway().sendSyncMessage(builder.build());
-				int status = (int) response.getHeaders().get(ResponseMessage.STATUS_KEY);
-				result.append(name + ":" + (status==200?"SUCCESS":"ERROR"));
+				result.append(name + ":" + response.getHeaders().get("state"));
 			}
 			archive.closeEntry();
 		}

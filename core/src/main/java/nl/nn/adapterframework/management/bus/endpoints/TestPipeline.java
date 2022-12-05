@@ -101,8 +101,7 @@ public class TestPipeline extends BusEndpointBase {
 				}
 
 				plr.getResult().unscheduleFromCloseOnExitOf(pls);
-				int status = plr.getState() == ExitState.SUCCESS ? 200 : 500;
-				return ResponseMessage.Builder.create().withPayload(plr.getResult()).withStatus(status).raw();
+				return ResponseMessage.Builder.create().withPayload(plr.getResult()).setHeader("state", plr.getState().name()).raw();
 			} catch (Exception e) {
 				throw new BusException("an exception occurred while processing the message", e);
 			}

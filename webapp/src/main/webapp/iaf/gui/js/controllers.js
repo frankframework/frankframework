@@ -2740,9 +2740,12 @@ angular.module('iaf.beheerconsole')
 .controller('TestPipelineCtrl', ['$scope', 'Api', 'Alert', function($scope, Api, Alert) {
 	$scope.state = [];
 	$scope.file = null;
+	$scope.selectedConfiguration = "";
+
 	$scope.addNote = function(type, message, removeQueue) {
 		$scope.state.push({type:type, message: message});
 	};
+
 	$scope.handleFile = function(files) {
 		if(files.length == 0) {
 			$scope.file = null;
@@ -2786,27 +2789,28 @@ angular.module('iaf.beheerconsole')
 	$scope.submit = function(formData) {
 		$scope.result = "";
 		$scope.state = [];
-		if(!formData) {
-			$scope.addNote("warning", "Please specify an adapter!");
+		if(!formData && $scope.selectedConfiguration == "") {
+			$scope.addNote("warning", "Please specify a configuration");
 			return;
 		}
 
-		var fd = new FormData();
-		if(formData.adapter && formData.adapter != "")
+		let fd = new FormData();
+		fd.append("configuration", $scope.selectedConfiguration);
+		if(formData && formData.adapter && formData.adapter != "") {
 			fd.append("adapter", formData.adapter);
+		} else {
+			$scope.addNote("warning", "Please specify an adapter!");
+			return;
+		}
 		if(formData.encoding && formData.encoding != "")
 			fd.append("encoding", formData.encoding);
 		if(formData.message && formData.message != "") {
-			var encoding = (formData.encoding && formData.encoding != "") ? ";charset="+formData.encoding : "";
+			let encoding = (formData.encoding && formData.encoding != "") ? ";charset="+formData.encoding : "";
 			fd.append("message", new Blob([formData.message], {type: "text/plain"+encoding}), 'message');
 		}
 		if($scope.file)
 			fd.append("file", $scope.file, $scope.file.name);
 
-		if(!formData.adapter) {
-			$scope.addNote("warning", "Please specify an adapter!");
-			return;
-		}
 		if(sessionKeys.length > 0){
 			let incompleteKeyIndex = sessionKeys.findIndex(f => (f.key==="" || f.value===""));
 			if(incompleteKeyIndex < 0) {
@@ -2829,8 +2833,10 @@ angular.module('iaf.beheerconsole')
 				$scope.file = null;
 				formData.message = returnData.message;
 			}
-		}, function(returnData) {
+		}, function(errorData, status, errorMsg) {
+			let error = (errorData && errorData.error) ? errorData.error : "An error occured!";
 			$scope.result = "";
+			$scope.addNote("warning", error);
 			$scope.processingMessage = false;
 		});
 	};
