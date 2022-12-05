@@ -30,7 +30,6 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.statistics.HasStatistics.Action;
-import nl.nn.adapterframework.statistics.percentiles.MicroMeterPercentileEstimator;
 import nl.nn.adapterframework.statistics.percentiles.PercentileEstimator;
 import nl.nn.adapterframework.statistics.percentiles.PercentileEstimatorRanked;
 import nl.nn.adapterframework.util.AppConstants;
@@ -133,7 +132,7 @@ public class StatisticsKeeper<B extends IBasics<S>, S> implements ItemList {
 		}
 		DistributionSummary distributionSummary = builder.register(registry);
 		if (percentiles!=null) {
-			pest = new MicroMeterPercentileEstimator(distributionSummary, percentiles);
+			pest = new PercentileEstimatorRanked(percentileConfigKey,DEFAULT_P_LIST,100);
 		}
 
 		if (cumulative instanceof MicroMeterBasics) {
@@ -202,7 +201,6 @@ public class StatisticsKeeper<B extends IBasics<S>, S> implements ItemList {
 //			pest = new PercentileEstimatorBase(percentileConfigKey,DEFAULT_P_LIST,1000);
 			pest = new PercentileEstimatorRanked(percentileConfigKey,DEFAULT_P_LIST,100);
 		}
-
 	}
 
 	public String getUnits() {
